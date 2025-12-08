@@ -81,7 +81,8 @@ function runSetupCommands() {
     "bun add papaparse@^5.4.1",
     "bun add xlsx@^0.18.5",
     "bun add file-saver@^2.0.5",
-    "bun add react-dropzone@^14.2.3"
+    "bun add react-dropzone@^14.2.3",
+    "bun add -d @types/papaparse"
 ];
     
     if (commands.length === 0) {
