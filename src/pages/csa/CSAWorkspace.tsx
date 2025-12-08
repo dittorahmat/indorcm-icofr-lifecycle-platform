@@ -15,7 +15,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { api } from '@/lib/api-client';
 import type { Control, CSARecord } from '@shared/types';
 import { toast } from 'sonner';
-import { UploadCloud, File as FileIcon, X } from 'lucide-react';
+import { UploadCloud, File as FileIcon, X, AlertTriangle } from 'lucide-react';
 const csaSchema = z.object({
   result: z.enum(['Pass', 'Fail', 'N/A']),
   comments: z.string().optional(),
@@ -47,7 +47,6 @@ function ControlAssessmentCard({ control }: { control: Control }) {
     if (acceptedFiles.length > 0) {
       const file = acceptedFiles[0];
       setEvidenceFile(file);
-      // Mock preview for demo
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreview(reader.result as string);
@@ -61,7 +60,6 @@ function ControlAssessmentCard({ control }: { control: Control }) {
       controlId: control.id,
       result: values.result,
       comments: values.comments || '',
-      // In a real app, you'd upload the file and get a URL
       evidenceUrl: evidenceFile ? `mock-uploads/${evidenceFile.name}` : undefined,
     });
   }
@@ -74,59 +72,27 @@ function ControlAssessmentCard({ control }: { control: Control }) {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="result"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <FormLabel className="font-semibold">Is the control operating effectively?</FormLabel>
-                  <FormControl>
-                    <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex space-x-4">
-                      <FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="Pass" /></FormControl><FormLabel className="font-normal">Pass</FormLabel></FormItem>
-                      <FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="Fail" /></FormControl><FormLabel className="font-normal">Fail</FormLabel></FormItem>
-                      <FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="N/A" /></FormControl><FormLabel className="font-normal">N/A</FormLabel></FormItem>
-                    </RadioGroup>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="comments"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="font-semibold">Comments</FormLabel>
-                  <FormControl><Textarea placeholder="Provide comments or context..." {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <FormField control={form.control} name="result" render={({ field }) => (
+              <FormItem className="space-y-3"><FormLabel className="font-semibold">Is the control operating effectively?</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex space-x-4"><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="Pass" /></FormControl><FormLabel className="font-normal">Pass</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="Fail" /></FormControl><FormLabel className="font-normal">Fail</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="N/A" /></FormControl><FormLabel className="font-normal">N/A</FormLabel></FormItem></RadioGroup></FormControl><FormMessage /></FormItem>
+            )} />
+            <FormField control={form.control} name="comments" render={({ field }) => (
+              <FormItem><FormLabel className="font-semibold">Comments</FormLabel><FormControl><Textarea placeholder="Provide comments or context..." {...field} /></FormControl><FormMessage /></FormItem>
+            )} />
             <div>
               <Label className="font-semibold">Evidence</Label>
               {!evidenceFile ? (
                 <div {...getRootProps()} className={`mt-2 flex justify-center rounded-md border-2 border-dashed border-input px-6 pt-5 pb-6 cursor-pointer hover:border-primary ${isDragActive ? 'border-primary bg-accent' : ''}`}>
                   <input {...getInputProps()} />
-                  <div className="space-y-1 text-center">
-                    <UploadCloud className="mx-auto h-12 w-12 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">Drag & drop a file here, or click to select</p>
-                  </div>
+                  <div className="space-y-1 text-center"><UploadCloud className="mx-auto h-12 w-12 text-muted-foreground" /><p className="text-sm text-muted-foreground">Drag & drop a file here, or click to select</p></div>
                 </div>
               ) : (
                 <div className="mt-2 flex items-center justify-between rounded-md border border-input p-3">
-                  <div className="flex items-center gap-2">
-                    {preview && preview.startsWith('data:image') ? <img src={preview} alt="preview" className="h-10 w-10 rounded object-cover" /> : <FileIcon className="h-8 w-8 text-muted-foreground" />}
-                    <span className="text-sm font-medium">{evidenceFile.name}</span>
-                  </div>
+                  <div className="flex items-center gap-2">{preview && preview.startsWith('data:image') ? <img src={preview} alt="preview" className="h-10 w-10 rounded object-cover" /> : <FileIcon className="h-8 w-8 text-muted-foreground" />}<span className="text-sm font-medium">{evidenceFile.name}</span></div>
                   <Button variant="ghost" size="icon" onClick={() => { setEvidenceFile(null); setPreview(null); }}><X className="h-4 w-4" /></Button>
                 </div>
               )}
             </div>
-            <div className="flex justify-end">
-              <Button type="submit" disabled={mutation.isPending}>
-                {mutation.isPending ? 'Submitting...' : 'Submit Assessment'}
-              </Button>
-            </div>
+            <div className="flex justify-end"><Button type="submit" disabled={mutation.isPending}>{mutation.isPending ? 'Submitting...' : 'Submit Assessment'}</Button></div>
           </form>
         </Form>
       </CardContent>
@@ -138,7 +104,25 @@ export function CSAWorkspace() {
     queryKey: ['controls'],
     queryFn: () => api<{ items: Control[] }>('/api/controls'),
   });
-  // In a real app, this would come from the user's session
+  const mockRole = localStorage.getItem('mockRole') || 'Line 1';
+  if (mockRole !== 'Line 1') {
+    return (
+      <div className="flex flex-col min-h-screen bg-muted/40">
+        <MainHeader />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <Card>
+              <CardContent className="p-8 text-center flex flex-col items-center gap-4">
+                <AlertTriangle className="h-12 w-12 text-destructive" />
+                <h2 className="text-2xl font-bold">Access Denied</h2>
+                <p className="text-muted-foreground">This workspace is only available to Process Owners (Line 1).</p>
+              </CardContent>
+            </Card>
+          </div>
+        </main>
+      </div>
+    );
+  }
   const mockUserId = 'u1';
   const assignedControls = controlsData?.items.filter(c => c.ownerId === mockUserId);
   return (
@@ -155,11 +139,7 @@ export function CSAWorkspace() {
               ) : assignedControls && assignedControls.length > 0 ? (
                 assignedControls.map(control => <ControlAssessmentCard key={control.id} control={control} />)
               ) : (
-                <Card>
-                  <CardContent className="p-8 text-center text-muted-foreground">
-                    You have no controls assigned for self-assessment.
-                  </CardContent>
-                </Card>
+                <Card><CardContent className="p-8 text-center text-muted-foreground">You have no controls assigned for self-assessment.</CardContent></Card>
               )}
             </div>
           </div>

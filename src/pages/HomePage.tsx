@@ -38,7 +38,7 @@ export function HomePage() {
                 Streamline Your Internal Controls
               </h1>
               <p className="mt-6 max-w-2xl mx-auto text-lg md:text-xl text-muted-foreground text-pretty">
-                AstraICOFR provides a standardized, transparent, and auditable platform for the entire ICOFR lifecycle—from planning to reporting.
+                AstraICOFR provides a standardized, transparent, and auditable platform for the entire ICOFR lifecycle��from planning to reporting.
               </p>
               <div className="mt-10 flex justify-center gap-4">
                 <Button size="lg" asChild className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-primary/40 transition-all duration-300 transform hover:-translate-y-0.5">

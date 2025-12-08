@@ -27,10 +27,11 @@ export function DeficiencyCard({ deficiency, actionPlan }: DeficiencyCardProps) 
     <motion.div
       ref={setNodeRef}
       style={style}
+      animate={{ scale: isDragging ? 1.05 : 1 }}
       whileHover={{ y: -2, scale: 1.02 }}
       className="mb-4"
     >
-      <Card className={cn("bg-background hover:shadow-md transition-shadow", isDragging && "shadow-xl")}>
+      <Card className={cn("bg-background hover:shadow-md transition-shadow", isDragging && "shadow-xl ring-2 ring-primary")}>
         <CardHeader className="flex flex-row items-start justify-between p-4">
           <CardTitle className="text-base font-medium leading-tight">{deficiency.description}</CardTitle>
           <div {...attributes} {...listeners} className="cursor-grab p-2 -m-2 text-muted-foreground hover:text-foreground">

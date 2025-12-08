@@ -9,7 +9,7 @@ import type { Control, RCM, CSARecord, TestRecord, Deficiency, ActionPlan, UserR
 import { z } from "zod";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
-type HonoEnv = { Bindings: Env; Variables: { userRole: UserRole; userId: string } };
+export type HonoEnv = { Bindings: Env; Variables: { userRole: UserRole; userId: string } };
 const createWithAudit = async <T extends { id: string }>(Entity: any, env: Env, data: T, userId: string) => {
   const auditableData = { ...data, auditTrail: [{ action: 'created', userId, timestamp: Date.now() }] };
   return await Entity.create(env, auditableData);

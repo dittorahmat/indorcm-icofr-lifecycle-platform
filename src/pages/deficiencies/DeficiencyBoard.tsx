@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -6,9 +6,11 @@ import { MainHeader } from '@/components/layout/MainHeader';
 import { api } from '@/lib/api-client';
 import type { Deficiency, ActionPlan, ActionPlanStatus } from '@shared/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent } from '@/components/ui/card';
 import { DeficiencyCard } from '@/components/deficiencies/DeficiencyCard';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
+import { AlertTriangle } from 'lucide-react';
 const KANBAN_COLUMNS: ActionPlanStatus[] = ["Draft", "In Progress", "Resolved", "Verified"];
 function KanbanColumn({ status, deficiencies, actionPlans }: { status: ActionPlanStatus; deficiencies: Deficiency[]; actionPlans: ActionPlan[] }) {
   const plansInColumn = actionPlans.filter(ap => ap.status === status);
@@ -58,37 +60,50 @@ export function DeficiencyBoard() {
     },
     onError: (error) => {
       toast.error(`Update failed: ${error.message}`);
-      // Revert optimistic update by refetching from the server
       queryClient.invalidateQueries({ queryKey: ['actionplans'] });
     },
   });
-  function handleDragEnd(event: DragEndEvent) {
+  const findContainer = useCallback((id: string) => {
+    return actionPlans.find(ap => ap.id === id)?.status;
+  }, [actionPlans]);
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event;
     if (over && active.id !== over.id) {
       const activeContainer = findContainer(active.id as string);
       const overContainerId = over.data.current?.sortable?.containerId || over.id;
       const overContainer = KANBAN_COLUMNS.includes(overContainerId as any) ? overContainerId as ActionPlanStatus : null;
       if (activeContainer && overContainer && activeContainer !== overContainer) {
-        // Optimistic update
         setActionPlans(previousPlans => {
           const activeIndex = previousPlans.findIndex(ap => ap.id === active.id);
           if (activeIndex === -1) return previousPlans;
           const newPlans = [...previousPlans];
-          newPlans[activeIndex] = {
-            ...newPlans[activeIndex],
-            status: overContainer,
-          };
+          newPlans[activeIndex] = { ...newPlans[activeIndex], status: overContainer };
           return newPlans;
         });
-        // Fire mutation
         mutation.mutate({ id: active.id as string, status: overContainer });
       }
     }
-  }
-  function findContainer(id: string) {
-    return actionPlans.find(ap => ap.id === id)?.status;
-  }
+  }, [findContainer, mutation]);
   const isLoading = deficienciesLoading || actionPlansLoading;
+  const mockRole = localStorage.getItem('mockRole') || 'Line 1';
+  if (!['Line 2', 'Line 3', 'Admin'].includes(mockRole)) {
+    return (
+      <div className="flex flex-col h-screen bg-muted/40">
+        <MainHeader />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <Card>
+              <CardContent className="p-8 text-center flex flex-col items-center gap-4">
+                <AlertTriangle className="h-12 w-12 text-destructive" />
+                <h2 className="text-2xl font-bold">Access Denied</h2>
+                <p className="text-muted-foreground">The Deficiency Board is restricted to Line 2, Line 3, and Admin roles.</p>
+              </CardContent>
+            </Card>
+          </div>
+        </main>
+      </div>
+    );
+  }
   return (
     <div className="flex flex-col h-screen bg-muted/40">
       <MainHeader />

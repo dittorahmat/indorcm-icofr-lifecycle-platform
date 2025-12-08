@@ -18,6 +18,7 @@ import { api } from '@/lib/api-client';
 import type { Control, TestRecord } from '@shared/types';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
+import { AlertTriangle } from 'lucide-react';
 const testSchema = z.object({
   testType: z.enum(['TOD', 'TOE']),
   result: z.enum(['Pass', 'Fail']),
@@ -110,9 +111,14 @@ export function TestWorkbench() {
       <div className="flex flex-col min-h-screen bg-muted/40">
         <MainHeader />
         <main className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold">Access Denied</h2>
-            <p className="text-muted-foreground">This workbench is only available to Internal Audit (Line 3).</p>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <Card>
+              <CardContent className="p-8 text-center flex flex-col items-center gap-4">
+                <AlertTriangle className="h-12 w-12 text-destructive" />
+                <h2 className="text-2xl font-bold">Access Denied</h2>
+                <p className="text-muted-foreground">This workbench is only available to Internal Audit (Line 3).</p>
+              </CardContent>
+            </Card>
           </div>
         </main>
       </div>
