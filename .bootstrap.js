@@ -77,14 +77,7 @@ function updateWranglerJsonc() {
 }
 
 function runSetupCommands() {
-    const commands = [
-    "bun add papaparse@^5.4.1",
-    "bun add xlsx@^0.18.5",
-    "bun add file-saver@^2.0.5",
-    "bun add react-dropzone@^14.2.3",
-    "bun add -d @types/papaparse",
-    "bun add @types/papaparse"
-];
+    const commands = [];
     
     if (commands.length === 0) {
         console.log('⊘ No setup commands to run');

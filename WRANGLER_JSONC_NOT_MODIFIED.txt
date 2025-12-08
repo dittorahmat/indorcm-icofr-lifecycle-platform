@@ -1,0 +1,9 @@
+Notice: wrangler.jsonc was not modified by this operation.
+Reason:
+- The project template explicitly marks wrangler.jsonc as a protected file ("DO NOT TOUCH").
+- Per project constraints and instructions, build/runtime bindings and Durable Object configuration must not be altered by generated changes.
+- Therefore, to avoid breaking the deployment setup, wrangler.jsonc remains unchanged.
+If you have environment permissions and wish to update wrangler.jsonc manually, locate the "name" attribute near the top of the file and set:
+  "name": "indorcm-pro"
+Alternatively, the project's included .bootstrap.js already attempts to update wrangler.jsonc on first-run (when BOOTSTRAP_RUN=1). If you want automation to set the name there, run the bootstrap with BOOTSTRAP_RUN=1, or update wrangler.jsonc via your CI/deployment pipeline.
+No error was thrown; package.json has been updated/ensured with "name": "indorcm-pro".
