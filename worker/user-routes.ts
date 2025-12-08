@@ -1,75 +1,109 @@
 import { Hono } from "hono";
 import type { Env } from './core-utils';
-import { UserEntity, ChatBoardEntity } from "./entities";
 import { ok, bad, notFound, isStr } from './core-utils';
-
+import { 
+  UserEntity, 
+  ChatBoardEntity,
+  RCMEntity,
+  ControlEntity,
+  DeficiencyEntity,
+  ActionPlanEntity,
+  CSAEntity,
+  TestEntity
+} from "./entities";
+import type { Control, RCM, CSARecord, TestRecord, Deficiency } from "@shared/types";
+import { z } from "zod";
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
+  // --- Seeding Middleware ---
+  app.use('/api/*', async (c, next) => {
+    // Ensure all entities are seeded on first request in a worker instance
+    await Promise.all([
+      UserEntity.ensureSeed(c.env),
+      ChatBoardEntity.ensureSeed(c.env),
+      RCMEntity.ensureSeed(c.env),
+      ControlEntity.ensureSeed(c.env),
+      DeficiencyEntity.ensureSeed(c.env),
+      ActionPlanEntity.ensureSeed(c.env),
+    ]);
+    await next();
+  });
+  // --- ICOFR Routes ---
+  // RCM
+  app.get('/api/rcm', async (c) => ok(c, await RCMEntity.list(c.env)));
+  app.post('/api/rcm', async (c) => {
+    const body = await c.req.json<Partial<RCM>>();
+    const newRcm: RCM = { id: crypto.randomUUID(), process: "New Process", subProcess: "New Sub-Process", riskDescription: "New Risk", controls: [], ...body };
+    return ok(c, await RCMEntity.create(c.env, newRcm));
+  });
+  // Controls
+  app.get('/api/controls', async (c) => ok(c, await ControlEntity.list(c.env)));
+  app.post('/api/controls', async (c) => {
+    const body = await c.req.json<Partial<Control>>();
+    if (!body.rcmId) return bad(c, 'rcmId is required');
+    const newControl: Control = { id: crypto.randomUUID(), name: "New Control", description: "", ownerId: "u1", type: "Preventive", nature: "Manual", assertions: [], materiality: "Low", ...body };
+    return ok(c, await ControlEntity.create(c.env, newControl));
+  });
+  app.put('/api/controls/:id', async (c) => {
+    const id = c.req.param('id');
+    const body = await c.req.json<Partial<Control>>();
+    const control = new ControlEntity(c.env, id);
+    if (!await control.exists()) return notFound(c, 'Control not found');
+    await control.patch(body);
+    return ok(c, await control.getState());
+  });
+  // Deficiencies
+  app.get('/api/deficiencies', async (c) => ok(c, await DeficiencyEntity.list(c.env)));
+  app.post('/api/deficiencies', async (c) => {
+    const body = await c.req.json<Partial<Deficiency>>();
+    if (!body.controlId || !body.description) return bad(c, 'controlId and description are required');
+    const newDef: Deficiency = { id: crypto.randomUUID(), identifiedDate: Date.now(), status: "Open", severity: "Control Deficiency", identifiedBy: "u1", ...body };
+    return ok(c, await DeficiencyEntity.create(c.env, newDef));
+  });
+  // CSA
+  app.post('/api/csa', async (c) => {
+    const body = await c.req.json<Partial<CSARecord>>();
+    if (!body.controlId || !body.result) return bad(c, 'controlId and result are required');
+    const newCSA: CSARecord = { id: crypto.randomUUID(), assessmentDate: Date.now(), assessedBy: "u1", comments: "", ...body };
+    const created = await CSAEntity.create(c.env, newCSA);
+    if (created.result === 'Fail') {
+      await DeficiencyEntity.create(c.env, {
+        id: crypto.randomUUID(),
+        controlId: created.controlId,
+        description: `CSA Failed: ${created.comments || 'No comment provided.'}`,
+        severity: 'Control Deficiency',
+        identifiedDate: Date.now(),
+        identifiedBy: created.assessedBy,
+        status: 'Open',
+      });
+    }
+    return ok(c, created);
+  });
+  // Testing
+  app.post('/api/tests', async (c) => {
+    const body = await c.req.json<Partial<TestRecord>>();
+    if (!body.controlId || !body.result || !body.testType) return bad(c, 'controlId, result, and testType are required');
+    const newTest: TestRecord = { id: crypto.randomUUID(), testDate: Date.now(), testedBy: "u3", comments: "", ...body };
+    const created = await TestEntity.create(c.env, newTest);
+    if (created.result === 'Fail') {
+      await DeficiencyEntity.create(c.env, {
+        id: crypto.randomUUID(),
+        controlId: created.controlId,
+        description: `${created.testType} Failed: ${created.comments || 'No comment provided.'}`,
+        severity: 'Significant Deficiency',
+        identifiedDate: Date.now(),
+        identifiedBy: created.testedBy,
+        status: 'Open',
+      });
+    }
+    return ok(c, created);
+  });
+  // --- Original Demo Routes ---
   app.get('/api/test', (c) => c.json({ success: true, data: { name: 'CF Workers Demo' }}));
-
-  // USERS
-  app.get('/api/users', async (c) => {
-    await UserEntity.ensureSeed(c.env);
-    const cq = c.req.query('cursor');
-    const lq = c.req.query('limit');
-    const page = await UserEntity.list(c.env, cq ?? null, lq ? Math.max(1, (Number(lq) | 0)) : undefined);
-    return ok(c, page);
-  });
-
-  app.post('/api/users', async (c) => {
-    const { name } = (await c.req.json()) as { name?: string };
-    if (!name?.trim()) return bad(c, 'name required');
-    return ok(c, await UserEntity.create(c.env, { id: crypto.randomUUID(), name: name.trim() }));
-  });
-
-  // CHATS
-  app.get('/api/chats', async (c) => {
-    await ChatBoardEntity.ensureSeed(c.env);
-    const cq = c.req.query('cursor');
-    const lq = c.req.query('limit');
-    const page = await ChatBoardEntity.list(c.env, cq ?? null, lq ? Math.max(1, (Number(lq) | 0)) : undefined);
-    return ok(c, page);
-  });
-
-  app.post('/api/chats', async (c) => {
-    const { title } = (await c.req.json()) as { title?: string };
-    if (!title?.trim()) return bad(c, 'title required');
-    const created = await ChatBoardEntity.create(c.env, { id: crypto.randomUUID(), title: title.trim(), messages: [] });
-    return ok(c, { id: created.id, title: created.title });
-  });
-
-  // MESSAGES
+  app.get('/api/users', async (c) => ok(c, await UserEntity.list(c.env)));
+  app.get('/api/chats', async (c) => ok(c, await ChatBoardEntity.list(c.env)));
   app.get('/api/chats/:chatId/messages', async (c) => {
     const chat = new ChatBoardEntity(c.env, c.req.param('chatId'));
     if (!await chat.exists()) return notFound(c, 'chat not found');
     return ok(c, await chat.listMessages());
-  });
-
-  app.post('/api/chats/:chatId/messages', async (c) => {
-    const chatId = c.req.param('chatId');
-    const { userId, text } = (await c.req.json()) as { userId?: string; text?: string };
-    if (!isStr(userId) || !text?.trim()) return bad(c, 'userId and text required');
-    const chat = new ChatBoardEntity(c.env, chatId);
-    if (!await chat.exists()) return notFound(c, 'chat not found');
-    return ok(c, await chat.sendMessage(userId, text.trim()));
-  });
-
-  // DELETE: Users
-  app.delete('/api/users/:id', async (c) => ok(c, { id: c.req.param('id'), deleted: await UserEntity.delete(c.env, c.req.param('id')) }));
-
-  app.post('/api/users/deleteMany', async (c) => {
-    const { ids } = (await c.req.json()) as { ids?: string[] };
-    const list = ids?.filter(isStr) ?? [];
-    if (list.length === 0) return bad(c, 'ids required');
-    return ok(c, { deletedCount: await UserEntity.deleteMany(c.env, list), ids: list });
-  });
-
-  // DELETE: Chats
-  app.delete('/api/chats/:id', async (c) => ok(c, { id: c.req.param('id'), deleted: await ChatBoardEntity.delete(c.env, c.req.param('id')) }));
-
-  app.post('/api/chats/deleteMany', async (c) => {
-    const { ids } = (await c.req.json()) as { ids?: string[] };
-    const list = ids?.filter(isStr) ?? [];
-    if (list.length === 0) return bad(c, 'ids required');
-    return ok(c, { deletedCount: await ChatBoardEntity.deleteMany(c.env, list), ids: list });
   });
 }

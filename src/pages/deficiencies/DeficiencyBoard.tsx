@@ -1,143 +1,14 @@
-import React, { useCallback } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
-import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import React from 'react';
 import { MainHeader } from '@/components/layout/MainHeader';
-import { api } from '@/lib/api-client';
-import type { Deficiency, ActionPlan, ActionPlanStatus } from '@shared/types';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Card, CardContent } from '@/components/ui/card';
-import { DeficiencyCard } from '@/components/deficiencies/DeficiencyCard';
-import { toast } from 'sonner';
-import { motion } from 'framer-motion';
-import { AlertTriangle } from 'lucide-react';
-const KANBAN_COLUMNS: ActionPlanStatus[] = ["Draft", "In Progress", "Resolved", "Verified"];
-function KanbanColumn({ status, deficiencies, actionPlans }: { status: ActionPlanStatus; deficiencies: Deficiency[]; actionPlans: ActionPlan[] }) {
-  const plansInColumn = actionPlans.filter(ap => ap.status === status);
-  return (
-    <div className="w-72 md:w-80 flex-shrink-0">
-      <div className="flex items-center justify-between mb-4 px-2">
-        <h2 className="font-semibold text-lg">{status}</h2>
-        <span className="text-sm font-medium bg-muted text-muted-foreground rounded-full px-2 py-0.5">{plansInColumn.length}</span>
-      </div>
-      <SortableContext id={status} items={plansInColumn.map(ap => ap.id)} strategy={verticalListSortingStrategy}>
-        <div className="space-y-4 h-full min-h-[200px] bg-muted/50 rounded-lg p-2">
-          {plansInColumn.map(ap => {
-            const deficiency = deficiencies.find(d => d.id === ap.deficiencyId);
-            if (!deficiency) return null;
-            return <DeficiencyCard key={ap.id} deficiency={deficiency} actionPlan={ap} />;
-          })}
-        </div>
-      </SortableContext>
-    </div>
-  );
-}
 export function DeficiencyBoard() {
-  const queryClient = useQueryClient();
-  const { data: deficienciesData, isLoading: deficienciesLoading } = useQuery({
-    queryKey: ['deficiencies'],
-    queryFn: () => api<{ items: Deficiency[] }>('/api/deficiencies'),
-  });
-  const { data: actionPlansData, isLoading: actionPlansLoading } = useQuery({
-    queryKey: ['actionplans'],
-    queryFn: () => api<{ items: ActionPlan[] }>('/api/actionplans'),
-  });
-  const [actionPlans, setActionPlans] = React.useState<ActionPlan[]>([]);
-  React.useEffect(() => {
-    if (actionPlansData?.items) {
-      setActionPlans(actionPlansData.items);
-    }
-  }, [actionPlansData]);
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
-  );
-  const mutation = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: ActionPlanStatus }) => api(`/api/actionplans/${id}`, { method: 'PUT', body: JSON.stringify({ status }) }),
-    onSuccess: () => {
-      toast.success("Action plan status updated.");
-      queryClient.invalidateQueries({ queryKey: ['actionplans'] });
-    },
-    onError: (error) => {
-      toast.error(`Update failed: ${error.message}`);
-      queryClient.invalidateQueries({ queryKey: ['actionplans'] });
-    },
-  });
-  const findContainer = useCallback((id: string) => {
-    return actionPlans.find(ap => ap.id === id)?.status;
-  }, [actionPlans]);
-  const handleDragEnd = useCallback((event: DragEndEvent) => {
-    const { active, over } = event;
-    if (over && active.id !== over.id) {
-      const activeContainer = findContainer(active.id as string);
-      const overContainerId = over.data.current?.sortable?.containerId || over.id;
-      const overContainer = KANBAN_COLUMNS.includes(overContainerId as any) ? overContainerId as ActionPlanStatus : null;
-      if (activeContainer && overContainer && activeContainer !== overContainer) {
-        setActionPlans(previousPlans => {
-          const activeIndex = previousPlans.findIndex(ap => ap.id === active.id);
-          if (activeIndex === -1) return previousPlans;
-          const newPlans = [...previousPlans];
-          newPlans[activeIndex] = { ...newPlans[activeIndex], status: overContainer };
-          return newPlans;
-        });
-        mutation.mutate({ id: active.id as string, status: overContainer });
-      }
-    }
-  }, [findContainer, mutation]);
-  const isLoading = deficienciesLoading || actionPlansLoading;
-  const mockRole = localStorage.getItem('mockRole') || 'Line 1';
-  if (!['Line 2', 'Line 3', 'Admin'].includes(mockRole)) {
-    return (
-      <div className="flex flex-col h-screen bg-muted/40">
-        <MainHeader />
-        <main className="flex-1 flex items-center justify-center">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <Card>
-              <CardContent className="p-8 text-center flex flex-col items-center gap-4">
-                <AlertTriangle className="h-12 w-12 text-destructive" />
-                <h2 className="text-2xl font-bold">Access Denied</h2>
-                <p className="text-muted-foreground">The Deficiency Board is restricted to Line 2, Line 3, and Admin roles.</p>
-              </CardContent>
-            </Card>
-          </div>
-        </main>
-      </div>
-    );
-  }
   return (
-    <div className="flex flex-col h-screen bg-muted/40">
+    <div className="flex flex-col min-h-screen bg-muted/40">
       <MainHeader />
-      <main className="flex-1 flex flex-col overflow-hidden">
-        <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="py-8 md:py-10">
+      <main className="flex-1">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="py-8 md:py-10 lg:py-12">
             <h1 className="text-3xl font-bold mb-6">Deficiency Board</h1>
-          </div>
-        </div>
-        <div className="flex-1 overflow-x-auto pb-8">
-          <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8">
-            {isLoading ? (
-              <div className="flex gap-6">
-                {KANBAN_COLUMNS.map(status => (
-                  <div key={status} className="w-80 flex-shrink-0">
-                    <Skeleton className="h-8 w-3/4 mb-4" />
-                    <div className="space-y-4"><Skeleton className="h-24 w-full" /><Skeleton className="h-24 w-full" /></div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                <motion.div className="flex gap-6" layout>
-                  {KANBAN_COLUMNS.map(status => (
-                    <KanbanColumn
-                      key={status}
-                      status={status}
-                      deficiencies={deficienciesData?.items || []}
-                      actionPlans={actionPlans}
-                    />
-                  ))}
-                </motion.div>
-              </DndContext>
-            )}
+            <p className="text-muted-foreground">This feature is coming in Phase 2.</p>
           </div>
         </div>
       </main>

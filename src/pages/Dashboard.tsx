@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { MainHeader } from '@/components/layout/MainHeader';
 import { api } from '@/lib/api-client';
-import type { RCM, Deficiency } from '@shared/types';
+import type { RCM, Control, Deficiency } from '@shared/types';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { CheckCircle, AlertTriangle, Clock } from 'lucide-react';
 const COLORS = ['#16A34A', '#F97316', '#DC2626']; // Green, Orange, Red
