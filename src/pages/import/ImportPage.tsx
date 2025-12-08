@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useMutation } from '@tanstack/react-query';
-
+import Papa from 'papaparse';
 import { z } from 'zod';
 import { MainHeader } from '@/components/layout/MainHeader';
 import { Button } from '@/components/ui/button';
@@ -9,17 +9,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
-import { UploadCloud, File as FileIcon, X, Download, AlertTriangle } from 'lucide-react';
+import { UploadCloud, File as FileIcon, X, Download } from 'lucide-react';
 import { api } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
-import { Badge } from '@/components/ui/badge';
 const rcmRowSchema = z.object({
-  process: z.string().min(1, "Process is required"),
-  subProcess: z.string().min(1, "Sub-process is required"),
-  riskDescription: z.string().min(1, "Risk description is required"),
-  controlName: z.string().min(1, "Control name is required"),
-  controlDescription: z.string().min(1, "Control description is required"),
+  process: z.string().min(1),
+  subProcess: z.string().min(1),
+  riskDescription: z.string().min(1),
+  controlName: z.string().min(1),
+  controlDescription: z.string().min(1),
 });
 type RcmRow = z.infer<typeof rcmRowSchema>;
 type ValidatedRow = { data: RcmRow; errors: z.ZodIssue[] | null };
@@ -29,6 +27,7 @@ Record-to-Report (R2R),Journal Entry,Risk of unauthorized journal entries,R2R-02
 export function ImportPage() {
   const [rows, setRows] = useState<ValidatedRow[]>([]);
   const [fileName, setFileName] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const mutation = useMutation({
     mutationFn: (fileContent: string) => api('/api/import/rcm', { method: 'POST', body: JSON.stringify({ fileContent }) }),
     onSuccess: (result: { imported: number; errors: string[] }) => {
@@ -44,6 +43,9 @@ export function ImportPage() {
     onError: (error) => {
       toast.error(`Import failed: ${error.message}`);
     },
+    onSettled: () => {
+      setIsUploading(false);
+    },
   });
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
@@ -52,27 +54,19 @@ export function ImportPage() {
       const reader = new FileReader();
       reader.onload = (event) => {
         const csvData = event.target?.result as string;
-        import('papaparse').then((mod) => {
-          const Papa = (mod as any).default || mod;
-          (Papa as any).parse(csvData, {
-            header: true,
-            skipEmptyLines: true,
-            complete: (results: any) => {
-              const validated = results.data.map((row: RcmRow) => {
-                const validationResult = rcmRowSchema.safeParse(row);
-                return {
-                  data: row,
-                  errors: validationResult.success ? null : validationResult.error.issues,
-                };
-              });
-              setRows(validated);
-            },
-          });
-        }).catch((err) => {
-          toast.error('Failed to parse CSV file.');
-          // keep existing behavior but log for debugging
-          // eslint-disable-next-line no-console
-          console.error(err);
+        Papa.parse<RcmRow>(csvData, {
+          header: true,
+          skipEmptyLines: true,
+          complete: (results) => {
+            const validated = results.data.map(row => {
+              const validationResult = rcmRowSchema.safeParse(row);
+              return {
+                data: row,
+                errors: validationResult.success ? null : validationResult.error.issues,
+              };
+            });
+            setRows(validated);
+          },
         });
       };
       reader.readAsText(file);
@@ -85,15 +79,9 @@ export function ImportPage() {
       toast.error("No valid rows to import.");
       return;
     }
-    import('papaparse').then((mod) => {
-      const Papa = (mod as any).default || mod;
-      const csvToUpload = (Papa as any).unparse(validRows.map(r => r.data));
-      mutation.mutate(csvToUpload);
-    }).catch((err) => {
-      toast.error('Failed to prepare CSV for upload.');
-      // eslint-disable-next-line no-console
-      console.error(err);
-    });
+    setIsUploading(true);
+    const csvToUpload = Papa.unparse(validRows.map(r => r.data));
+    mutation.mutate(csvToUpload);
   };
   const handleDownloadTemplate = () => {
     const blob = new Blob([SAMPLE_CSV], { type: 'text/csv;charset=utf-8;' });
@@ -107,8 +95,6 @@ export function ImportPage() {
     document.body.removeChild(link);
   };
   const hasErrors = rows.some(r => r.errors);
-const mockRole = localStorage.getItem('mockRole') || 'Line 1';
-const isAuthorized = mockRole === 'Line 2';
   return (
     <div className="flex flex-col min-h-screen bg-muted/40">
       <MainHeader />
@@ -116,54 +102,43 @@ const isAuthorized = mockRole === 'Line 2';
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="py-8 md:py-10 lg:py-12">
             <div className="flex items-center justify-between mb-6">
-              <div className="flex-1">
-                <h1 className="text-3xl font-bold">Bulk Import RCM</h1>
-                <p className="text-muted-foreground">Upload a CSV file to bulk-create processes, risks, and controls.</p>
-                {!isAuthorized && (
-                  <Card className="mt-4">
-                    <CardContent className="p-4 flex items-center gap-3">
-                      <AlertTriangle className="h-6 w-6 text-destructive" />
-                      <div>
-                        <p className="font-medium">Access restricted</p>
-                        <p className="text-sm text-muted-foreground">Only users with the 'Line 2' role can perform imports. Upload and download are disabled.</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
-              <Button variant="outline" onClick={handleDownloadTemplate} disabled={!isAuthorized}><Download className="h-4 w-4 mr-2" /> Download Template</Button>
+                <div>
+                    <h1 className="text-3xl font-bold">Bulk Import RCM</h1>
+                    <p className="text-muted-foreground">Upload a CSV file to bulk-create processes, risks, and controls.</p>
+                </div>
+                <Button variant="outline" onClick={handleDownloadTemplate}><Download className="h-4 w-4 mr-2" /> Download Template</Button>
             </div>
             <Card>
               <CardContent className="p-6">
                 {rows.length === 0 ? (
-                  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-                      <div {...getRootProps()} className={cn("flex justify-center rounded-md border-2 border-dashed border-input px-6 py-12 cursor-pointer hover:border-primary transition-colors", isDragActive && 'border-primary bg-accent', !isAuthorized && 'pointer-events-none opacity-50')}>
-                      <input {...getInputProps()} />
-                      <div className="space-y-1 text-center">
-                        <UploadCloud className="mx-auto h-12 w-12 text-muted-foreground" />
-                        <p className="text-sm text-muted-foreground">Drag & drop a CSV file here, or click to select</p>
-                      </div>
+                  <div {...getRootProps()} className={cn("flex justify-center rounded-md border-2 border-dashed border-input px-6 py-12 cursor-pointer hover:border-primary", isDragActive && 'border-primary bg-accent')}>
+                    <input {...getInputProps()} />
+                    <div className="space-y-1 text-center">
+                      <UploadCloud className="mx-auto h-12 w-12 text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground">Drag & drop a CSV file here, or click to select</p>
                     </div>
-                  </motion.div>
+                  </div>
                 ) : (
                   <div>
                     <div className="flex items-center justify-between p-3 mb-4 rounded-md border bg-background">
-                      <div className="flex items-center gap-2"><FileIcon className="h-6 w-6 text-muted-foreground" /><span className="text-sm font-medium">{fileName}</span></div>
+                      <div className="flex items-center gap-2">
+                        <FileIcon className="h-6 w-6 text-muted-foreground" />
+                        <span className="text-sm font-medium">{fileName}</span>
+                      </div>
                       <Button variant="ghost" size="icon" onClick={() => { setRows([]); setFileName(null); }}><X className="h-4 w-4" /></Button>
                     </div>
                     <div className="max-h-96 overflow-auto border rounded-md">
                       <Table>
                         <TableHeader className="sticky top-0 bg-muted">
-                          <TableRow>{Object.keys(rcmRowSchema.shape).map(key => <TableHead key={key}>{key}</TableHead>)}</TableRow>
+                          <TableRow>
+                            {Object.keys(rcmRowSchema.shape).map(key => <TableHead key={key}>{key}</TableHead>)}
+                          </TableRow>
                         </TableHeader>
                         <TableBody>
                           {rows.map((row, index) => (
                             <TableRow key={index} className={cn(row.errors && "bg-destructive/10")}>
                               {Object.keys(rcmRowSchema.shape).map(key => (
-                                <TableCell key={key} className={cn("text-sm", row.errors?.some(e => e.path[0] === key) && "bg-destructive/10")}>
-                                  {row.data[key as keyof RcmRow]}
-                                  {row.errors?.some(e => e.path[0] === key) && <Badge variant="destructive" className="ml-2">Error</Badge>}
-                                </TableCell>
+                                <TableCell key={key} className="text-sm">{row.data[key as keyof RcmRow]}</TableCell>
                               ))}
                             </TableRow>
                           ))}
@@ -171,17 +146,14 @@ const isAuthorized = mockRole === 'Line 2';
                       </Table>
                     </div>
                     <div className="mt-6 flex items-center justify-between">
-                      <div>{hasErrors && <p className="text-sm text-destructive">Some rows have errors and will be skipped.</p>}</div>
-                      <Button onClick={handleImport} disabled={mutation.status === 'pending' || rows.filter(r => !r.errors).length === 0 || !isAuthorized}>
-                        {mutation.status === 'pending' ? 'Importing...' : `Import ${rows.filter(r => !r.errors).length} Valid Rows`}
+                      <div>
+                        {hasErrors && <p className="text-sm text-destructive">Some rows have errors and will be skipped.</p>}
+                      </div>
+                      <Button onClick={handleImport} disabled={isUploading || rows.filter(r => !r.errors).length === 0}>
+                        {isUploading ? 'Importing...' : `Import ${rows.filter(r => !r.errors).length} Valid Rows`}
                       </Button>
                     </div>
-                    {mutation.status === 'pending' && (
-                      <div className="mt-4 flex items-center gap-3">
-                        <Progress className="h-2 w-full" />
-                        <span className="h-3 w-3 rounded-full bg-primary animate-pulse" aria-hidden />
-                      </div>
-                    )}
+                    {isUploading && <Progress value={(mutation.progress ?? 0) * 100} className="mt-4" />}
                   </div>
                 )}
               </CardContent>

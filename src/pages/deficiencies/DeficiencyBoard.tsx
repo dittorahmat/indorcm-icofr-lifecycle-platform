@@ -11,7 +11,6 @@ import { toast } from 'sonner';
 const KANBAN_COLUMNS: ActionPlanStatus[] = ["Draft", "In Progress", "Resolved", "Verified"];
 function KanbanColumn({ status, deficiencies, actionPlans }: { status: ActionPlanStatus; deficiencies: Deficiency[]; actionPlans: ActionPlan[] }) {
   const plansInColumn = actionPlans.filter(ap => ap.status === status);
-  const deficiencyMap = new Map(deficiencies.map(d => [d.id, d]));
   return (
     <div className="w-72 md:w-80 flex-shrink-0">
       <div className="flex items-center justify-between mb-4">
@@ -58,21 +57,27 @@ export function DeficiencyBoard() {
     },
     onError: (error) => {
       toast.error(`Update failed: ${error.message}`);
-      // Revert optimistic update
-      setActionPlans(actionPlansData?.items || []);
+      // Revert optimistic update by refetching from the server
+      queryClient.refetchQueries({ queryKey: ['actionplans'] });
     },
   });
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     if (over && active.id !== over.id) {
       const activeContainer = findContainer(active.id as string);
-      const overContainer = over.id as ActionPlanStatus;
+      const overContainerId = over.data.current?.sortable?.containerId || over.id;
+      const overContainer = KANBAN_COLUMNS.includes(overContainerId) ? overContainerId as ActionPlanStatus : null;
       if (activeContainer && overContainer && activeContainer !== overContainer) {
         const activeIndex = actionPlans.findIndex(ap => ap.id === active.id);
-        const updatedPlans = [...actionPlans];
-        updatedPlans[activeIndex].status = overContainer;
         // Optimistic update
-        setActionPlans(updatedPlans);
+        setActionPlans(previousPlans => {
+            const newPlans = [...previousPlans];
+            newPlans[activeIndex] = {
+                ...newPlans[activeIndex],
+                status: overContainer,
+            };
+            return newPlans;
+        });
         // Fire mutation
         mutation.mutate({ id: active.id as string, status: overContainer });
       }

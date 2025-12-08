@@ -1,41 +1,31 @@
 import { Hono } from "hono";
 import type { Env } from './core-utils';
-import { ok, bad, notFound, isStr } from './core-utils';
+import { ok, bad, notFound } from './core-utils';
 import {
-  UserEntity,
-  ChatBoardEntity,
-  RCMEntity,
-  ControlEntity,
-  DeficiencyEntity,
-  ActionPlanEntity,
-  CSAEntity,
-  TestEntity
+  UserEntity, ChatBoardEntity, RCMEntity, ControlEntity,
+  DeficiencyEntity, ActionPlanEntity, CSAEntity, TestEntity
 } from "./entities";
 import type { Control, RCM, CSARecord, TestRecord, Deficiency, ActionPlan } from "@shared/types";
 import { z } from "zod";
+import Papa from "papaparse";
+import * as XLSX from "xlsx";
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
   // --- Seeding Middleware ---
   app.use('/api/*', async (c, next) => {
-    // Ensure all entities are seeded on first request in a worker instance
     await Promise.all([
-      UserEntity.ensureSeed(c.env),
-      ChatBoardEntity.ensureSeed(c.env),
-      RCMEntity.ensureSeed(c.env),
-      ControlEntity.ensureSeed(c.env),
-      DeficiencyEntity.ensureSeed(c.env),
-      ActionPlanEntity.ensureSeed(c.env),
+      UserEntity.ensureSeed(c.env), ChatBoardEntity.ensureSeed(c.env),
+      RCMEntity.ensureSeed(c.env), ControlEntity.ensureSeed(c.env),
+      DeficiencyEntity.ensureSeed(c.env), ActionPlanEntity.ensureSeed(c.env),
     ]);
     await next();
   });
   // --- ICOFR Routes ---
-  // RCM
   app.get('/api/rcm', async (c) => ok(c, await RCMEntity.list(c.env)));
   app.post('/api/rcm', async (c) => {
     const body = await c.req.json<Partial<RCM>>();
     const newRcm: RCM = { id: crypto.randomUUID(), process: "New Process", subProcess: "New Sub-Process", riskDescription: "New Risk", controls: [], ...body };
     return ok(c, await RCMEntity.create(c.env, newRcm));
   });
-  // Controls
   app.get('/api/controls', async (c) => ok(c, await ControlEntity.list(c.env)));
   app.post('/api/controls', async (c) => {
     const body = await c.req.json<Partial<Control>>();
@@ -51,7 +41,6 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     await control.patch(body);
     return ok(c, await control.getState());
   });
-  // Deficiencies
   app.get('/api/deficiencies', async (c) => ok(c, await DeficiencyEntity.list(c.env)));
   app.post('/api/deficiencies', async (c) => {
     const body = await c.req.json<Partial<Deficiency>>();
@@ -67,7 +56,6 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     await def.patch(body);
     return ok(c, await def.getState());
   });
-  // Action Plans
   app.get('/api/actionplans', async (c) => ok(c, await ActionPlanEntity.list(c.env)));
   app.post('/api/actionplans', async (c) => {
     const body = await c.req.json<Partial<ActionPlan>>();
@@ -83,7 +71,6 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     await ap.patch(body);
     return ok(c, await ap.getState());
   });
-  // CSA
   app.post('/api/csa', async (c) => {
     if (c.req.header('X-Mock-Role') !== 'Line 1') return bad(c, 'Access Denied: Only Line 1 can submit CSAs.');
     const body = await c.req.json<Partial<CSARecord>>();
@@ -92,18 +79,14 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const created = await CSAEntity.create(c.env, newCSA);
     if (created.result === 'Fail') {
       await DeficiencyEntity.create(c.env, {
-        id: crypto.randomUUID(),
-        controlId: created.controlId,
+        id: crypto.randomUUID(), controlId: created.controlId,
         description: `CSA Failed: ${created.comments || 'No comment provided.'}`,
-        severity: 'Control Deficiency',
-        identifiedDate: Date.now(),
-        identifiedBy: created.assessedBy,
-        status: 'Open',
+        severity: 'Control Deficiency', identifiedDate: Date.now(),
+        identifiedBy: created.assessedBy, status: 'Open',
       });
     }
     return ok(c, created);
   });
-  // Testing
   app.post('/api/tests', async (c) => {
     if (c.req.header('X-Mock-Role') !== 'Line 3') return bad(c, 'Access Denied: Only Line 3 can submit tests.');
     const body = await c.req.json<Partial<TestRecord>>();
@@ -112,16 +95,94 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const created = await TestEntity.create(c.env, newTest);
     if (created.result === 'Fail') {
       await DeficiencyEntity.create(c.env, {
-        id: crypto.randomUUID(),
-        controlId: created.controlId,
+        id: crypto.randomUUID(), controlId: created.controlId,
         description: `${created.testType} Failed: ${created.comments || 'No comment provided.'}`,
-        severity: 'Significant Deficiency',
-        identifiedDate: Date.now(),
-        identifiedBy: created.testedBy,
-        status: 'Open',
+        severity: 'Significant Deficiency', identifiedDate: Date.now(),
+        identifiedBy: created.testedBy, status: 'Open',
       });
     }
     return ok(c, created);
+  });
+  // --- Reporting & Import/Export ---
+  app.get('/api/reports/summary', async (c) => {
+    const [controls, deficiencies] = await Promise.all([
+      ControlEntity.list(c.env),
+      DeficiencyEntity.list(c.env),
+    ]);
+    const deficienciesBySeverity = deficiencies.items.reduce((acc, d) => {
+      acc[d.severity] = (acc[d.severity] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    const deficienciesByStatus = deficiencies.items.reduce((acc, d) => {
+      acc[d.status] = (acc[d.status] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    const summary = {
+      effectiveness: 95.2, // Mocked
+      totalControls: controls.items.length,
+      openDeficiencies: deficiencies.items.filter(d => d.status === 'Open').length,
+      deficienciesBySeverity: Object.entries(deficienciesBySeverity).map(([name, count]) => ({ name, count })),
+      deficienciesByStatus: Object.entries(deficienciesByStatus).map(([name, count]) => ({ name, count })),
+      allDeficiencies: deficiencies.items,
+    };
+    return ok(c, summary);
+  });
+  app.post('/api/reports/export', async (c) => {
+    const format = c.req.query('format');
+    const [rcms, controls, deficiencies] = await Promise.all([
+      RCMEntity.list(c.env), ControlEntity.list(c.env), DeficiencyEntity.list(c.env)
+    ]);
+    const dataToExport = { RCMs: rcms.items, Controls: controls.items, Deficiencies: deficiencies.items };
+    if (format === 'csv') {
+      const csv = Papa.unparse(dataToExport.Controls);
+      return new Response(csv, { headers: { 'Content-Type': 'text/csv', 'Content-Disposition': 'attachment; filename="controls.csv"' } });
+    }
+    if (format === 'excel') {
+      const wb = XLSX.utils.book_new();
+      Object.entries(dataToExport).forEach(([sheetName, data]) => {
+        const ws = XLSX.utils.json_to_sheet(data);
+        XLSX.utils.book_append_sheet(wb, ws, sheetName);
+      });
+      const buf = XLSX.write(wb, { type: 'array', bookType: 'xlsx' });
+      return new Response(buf, { headers: { 'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'Content-Disposition': 'attachment; filename="report.xlsx"' } });
+    }
+    return bad(c, 'Invalid format');
+  });
+  const rcmRowSchema = z.object({
+    process: z.string().min(1), subProcess: z.string().min(1),
+    riskDescription: z.string().min(1), controlName: z.string().min(1),
+    controlDescription: z.string().min(1),
+  });
+  app.post('/api/import/rcm', async (c) => {
+    if (c.req.header('X-Mock-Role') !== 'Line 2') return bad(c, 'Access Denied');
+    const { fileContent } = await c.req.json<{ fileContent: string }>();
+    const parsed = Papa.parse(fileContent, { header: true, skipEmptyLines: true });
+    let imported = 0;
+    const errors: string[] = [];
+    const rcmMap = new Map<string, RCM>();
+    for (const [index, row] of parsed.data.entries()) {
+      const result = rcmRowSchema.safeParse(row);
+      if (!result.success) {
+        errors.push(`Row ${index + 2}: ${result.error.errors.map(e => e.message).join(', ')}`);
+        continue;
+      }
+      const { process, subProcess, riskDescription, controlName, controlDescription } = result.data;
+      const rcmKey = `${process}-${subProcess}`;
+      let rcm = rcmMap.get(rcmKey);
+      if (!rcm) {
+        rcm = { id: crypto.randomUUID(), process, subProcess, riskDescription, controls: [] };
+        rcmMap.set(rcmKey, rcm);
+      }
+      const control: Control = {
+        id: crypto.randomUUID(), rcmId: rcm.id, name: controlName, description: controlDescription,
+        ownerId: 'u1', type: 'Preventive', nature: 'Manual', assertions: [], materiality: 'Low'
+      };
+      rcm.controls.push(control.id);
+      await ControlEntity.create(c.env, control);
+      imported++;
+    }
+    await Promise.all(Array.from(rcmMap.values()).map(rcm => RCMEntity.create(c.env, rcm)));
+    return ok(c, { imported, errors });
   });
   // --- Original Demo Routes ---
   app.get('/api/test', (c) => c.json({ success: true, data: { name: 'CF Workers Demo' }}));

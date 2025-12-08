@@ -1,14 +1,147 @@
 import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { saveAs } from 'file-saver';
 import { MainHeader } from '@/components/layout/MainHeader';
+import { api } from '@/lib/api-client';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { FileDown, Printer } from 'lucide-react';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, PieChart, Pie, Cell } from 'recharts';
+import { toast } from 'sonner';
+import type { Deficiency } from '@shared/types';
+const COLORS = {
+  'Material Weakness': '#DC2626',
+  'Significant Deficiency': '#F97316',
+  'Control Deficiency': '#FBBF24',
+};
 export function ReportsPage() {
+  const { data: summaryData, isLoading } = useQuery({
+    queryKey: ['reportSummary'],
+    queryFn: () => api<any>('/api/reports/summary'),
+  });
+  const handleExport = async (format: 'csv' | 'excel') => {
+    const toastId = toast.loading(`Exporting to ${format.toUpperCase()}...`);
+    try {
+      const response = await fetch(`/api/reports/export?format=${format}`, {
+        method: 'POST',
+        headers: { 'X-Mock-Role': localStorage.getItem('mockRole') || 'Line 2' },
+      });
+      if (!response.ok) throw new Error('Export failed');
+      const blob = await response.blob();
+      saveAs(blob, `icofr_report.${format === 'csv' ? 'csv' : 'xlsx'}`);
+      toast.success('Export successful!', { id: toastId });
+    } catch (error) {
+      toast.error('Export failed.', { id: toastId });
+    }
+  };
   return (
     <div className="flex flex-col min-h-screen bg-muted/40">
       <MainHeader />
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="py-8 md:py-10 lg:py-12">
-            <h1 className="text-3xl font-bold mb-6">Reports & Exports</h1>
-            <p className="text-muted-foreground">This feature is coming in Phase 3.</p>
+            <div className="flex items-center justify-between mb-6">
+              <h1 className="text-3xl font-bold">Reports & Exports</h1>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" onClick={() => handleExport('csv')}><FileDown className="h-4 w-4 mr-2" /> Export CSV</Button>
+                <Button onClick={() => handleExport('excel')}><FileDown className="h-4 w-4 mr-2" /> Export Excel</Button>
+                <Button variant="secondary" onClick={() => window.print()}><Printer className="h-4 w-4 mr-2" /> Print</Button>
+              </div>
+            </div>
+            <div className="grid gap-6 md:grid-cols-3 mb-8">
+              <Card>
+                <CardHeader><CardTitle>Overall Control Effectiveness</CardTitle></CardHeader>
+                <CardContent>
+                  {isLoading ? <Skeleton className="h-12 w-24" /> : <div className="text-4xl font-bold text-green-600">{summaryData?.effectiveness}%</div>}
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader><CardTitle>Total Controls</CardTitle></CardHeader>
+                <CardContent>
+                  {isLoading ? <Skeleton className="h-12 w-24" /> : <div className="text-4xl font-bold">{summaryData?.totalControls}</div>}
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader><CardTitle>Open Deficiencies</CardTitle></CardHeader>
+                <CardContent>
+                  {isLoading ? <Skeleton className="h-12 w-24" /> : <div className="text-4xl font-bold text-red-600">{summaryData?.openDeficiencies}</div>}
+                </CardContent>
+              </Card>
+            </div>
+            <div className="grid gap-8 md:grid-cols-2">
+              <Card>
+                <CardHeader><CardTitle>Deficiencies by Severity</CardTitle></CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={300}>
+                    {isLoading ? <Skeleton className="h-full w-full" /> : (
+                      <BarChart data={summaryData?.deficienciesBySeverity}>
+                        <XAxis dataKey="name" stroke="#888888" fontSize={12} />
+                        <YAxis stroke="#888888" fontSize={12} />
+                        <Tooltip />
+                        <Bar dataKey="count" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    )}
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader><CardTitle>Deficiency Status</CardTitle></CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={300}>
+                    {isLoading ? <Skeleton className="h-full w-full" /> : (
+                      <PieChart>
+                        <Pie data={summaryData?.deficienciesByStatus} dataKey="count" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
+                          {summaryData?.deficienciesByStatus.map((entry: any, index: number) => (
+                            <Cell key={`cell-${index}`} fill={entry.name === 'Open' ? '#F97316' : '#16A34A'} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                        <Legend />
+                      </PieChart>
+                    )}
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </div>
+            <Card className="mt-8">
+              <CardHeader><CardTitle>Detailed Deficiency List</CardTitle></CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Description</TableHead>
+                      <TableHead>Severity</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Identified Date</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {isLoading ? (
+                      Array.from({ length: 3 }).map((_, i) => (
+                        <TableRow key={i}>
+                          <TableCell><Skeleton className="h-4 w-full" /></TableCell>
+                          <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                          <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                          <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      summaryData?.allDeficiencies.map((def: Deficiency) => (
+                        <TableRow key={def.id}>
+                          <TableCell>{def.description}</TableCell>
+                          <TableCell><Badge variant={def.severity === 'Material Weakness' ? 'destructive' : def.severity === 'Significant Deficiency' ? 'secondary' : 'outline'}>{def.severity}</Badge></TableCell>
+                          <TableCell>{def.status}</TableCell>
+                          <TableCell>{new Date(def.identifiedDate).toLocaleDateString()}</TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </main>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Shield, LayoutDashboard, ListChecks, FlaskConical, ClipboardX, BarChart, Menu } from 'lucide-react';
+import { Shield, LayoutDashboard, ListChecks, FlaskConical, ClipboardX, BarChart, Menu, UploadCloud } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -13,7 +13,9 @@ const navItems = [
   { href: '/rcm', label: 'RCM', icon: ListChecks },
   { href: '/csa', label: 'CSA', icon: ClipboardX },
   { href: '/testing', label: 'Testing', icon: FlaskConical },
+  { href: '/deficiencies', label: 'Deficiencies', icon: ClipboardX },
   { href: '/reports', label: 'Reports', icon: BarChart },
+  { href: '/import', label: 'Import', icon: UploadCloud },
 ];
 const roles: UserRole[] = ["Line 1", "Line 2", "Line 3", "Admin"];
 export function MainHeader() {
