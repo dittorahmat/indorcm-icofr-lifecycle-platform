@@ -23,11 +23,11 @@ const roles: UserRole[] = ["Line 1", "Line 2", "Line 3", "Admin"];
 export function MainHeader() {
   const [currentRole, setCurrentRole] = React.useState<UserRole>(() => (localStorage.getItem('mockRole') as UserRole) || 'Line 1');
   const location = useLocation();
-  const handleRoleChange = (role: UserRole) => {
+  const handleRoleChange = React.useCallback((role: UserRole) => {
     setCurrentRole(role);
     localStorage.setItem('mockRole', role);
     window.location.reload(); // Easiest way to refresh app state for demo
-  };
+  }, []);
   const visibleNavItems = navItems.filter(item => item.roles.includes(currentRole));
   const roleBadgeVariant = {
     'Line 1': 'default',

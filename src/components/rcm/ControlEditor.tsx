@@ -83,7 +83,7 @@ export function ControlEditor({ isOpen, setIsOpen, control }: ControlEditorProps
   }, []);
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, multiple: false });
   const onSubmit = (values: z.infer<typeof controlSchema>) => {
-    mutation.mutate(values);
+    mutation.mutate({ ...values, assertions: values.assertions as ControlAssertion[] });
   };
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
