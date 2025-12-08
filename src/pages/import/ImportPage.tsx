@@ -9,15 +9,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
-import { UploadCloud, File as FileIcon, X, Download } from 'lucide-react';
+import { UploadCloud, File as FileIcon, X, Download, AlertTriangle } from 'lucide-react';
 import { api } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
+import { Badge } from '@/components/ui/badge';
 const rcmRowSchema = z.object({
-  process: z.string().min(1),
-  subProcess: z.string().min(1),
-  riskDescription: z.string().min(1),
-  controlName: z.string().min(1),
-  controlDescription: z.string().min(1),
+  process: z.string().min(1, "Process is required"),
+  subProcess: z.string().min(1, "Sub-process is required"),
+  riskDescription: z.string().min(1, "Risk description is required"),
+  controlName: z.string().min(1, "Control name is required"),
+  controlDescription: z.string().min(1, "Control description is required"),
 });
 type RcmRow = z.infer<typeof rcmRowSchema>;
 type ValidatedRow = { data: RcmRow; errors: z.ZodIssue[] | null };
@@ -27,7 +29,6 @@ Record-to-Report (R2R),Journal Entry,Risk of unauthorized journal entries,R2R-02
 export function ImportPage() {
   const [rows, setRows] = useState<ValidatedRow[]>([]);
   const [fileName, setFileName] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
   const mutation = useMutation({
     mutationFn: (fileContent: string) => api('/api/import/rcm', { method: 'POST', body: JSON.stringify({ fileContent }) }),
     onSuccess: (result: { imported: number; errors: string[] }) => {
@@ -42,9 +43,6 @@ export function ImportPage() {
     },
     onError: (error) => {
       toast.error(`Import failed: ${error.message}`);
-    },
-    onSettled: () => {
-      setIsUploading(false);
     },
   });
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -79,7 +77,6 @@ export function ImportPage() {
       toast.error("No valid rows to import.");
       return;
     }
-    setIsUploading(true);
     const csvToUpload = Papa.unparse(validRows.map(r => r.data));
     mutation.mutate(csvToUpload);
   };
@@ -95,6 +92,27 @@ export function ImportPage() {
     document.body.removeChild(link);
   };
   const hasErrors = rows.some(r => r.errors);
+  const mockRole = localStorage.getItem('mockRole') || 'Line 1';
+  if (mockRole !== 'Line 2') {
+    return (
+      <div className="flex flex-col min-h-screen bg-muted/40">
+        <MainHeader />
+        <main className="flex-1">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="py-8 md:py-10 lg:py-12">
+              <Card>
+                <CardContent className="p-8 text-center flex flex-col items-center gap-4">
+                  <AlertTriangle className="h-12 w-12 text-destructive" />
+                  <h2 className="text-2xl font-bold">Access Denied</h2>
+                  <p className="text-muted-foreground">Only users with the 'Line 2' role can access the bulk import feature.</p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
   return (
     <div className="flex flex-col min-h-screen bg-muted/40">
       <MainHeader />
@@ -102,43 +120,43 @@ export function ImportPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="py-8 md:py-10 lg:py-12">
             <div className="flex items-center justify-between mb-6">
-                <div>
-                    <h1 className="text-3xl font-bold">Bulk Import RCM</h1>
-                    <p className="text-muted-foreground">Upload a CSV file to bulk-create processes, risks, and controls.</p>
-                </div>
-                <Button variant="outline" onClick={handleDownloadTemplate}><Download className="h-4 w-4 mr-2" /> Download Template</Button>
+              <div>
+                <h1 className="text-3xl font-bold">Bulk Import RCM</h1>
+                <p className="text-muted-foreground">Upload a CSV file to bulk-create processes, risks, and controls.</p>
+              </div>
+              <Button variant="outline" onClick={handleDownloadTemplate}><Download className="h-4 w-4 mr-2" /> Download Template</Button>
             </div>
             <Card>
               <CardContent className="p-6">
                 {rows.length === 0 ? (
-                  <div {...getRootProps()} className={cn("flex justify-center rounded-md border-2 border-dashed border-input px-6 py-12 cursor-pointer hover:border-primary", isDragActive && 'border-primary bg-accent')}>
-                    <input {...getInputProps()} />
-                    <div className="space-y-1 text-center">
-                      <UploadCloud className="mx-auto h-12 w-12 text-muted-foreground" />
-                      <p className="text-sm text-muted-foreground">Drag & drop a CSV file here, or click to select</p>
+                  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+                    <div {...getRootProps()} className={cn("flex justify-center rounded-md border-2 border-dashed border-input px-6 py-12 cursor-pointer hover:border-primary transition-colors", isDragActive && 'border-primary bg-accent')}>
+                      <input {...getInputProps()} />
+                      <div className="space-y-1 text-center">
+                        <UploadCloud className="mx-auto h-12 w-12 text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground">Drag & drop a CSV file here, or click to select</p>
+                      </div>
                     </div>
-                  </div>
+                  </motion.div>
                 ) : (
                   <div>
                     <div className="flex items-center justify-between p-3 mb-4 rounded-md border bg-background">
-                      <div className="flex items-center gap-2">
-                        <FileIcon className="h-6 w-6 text-muted-foreground" />
-                        <span className="text-sm font-medium">{fileName}</span>
-                      </div>
+                      <div className="flex items-center gap-2"><FileIcon className="h-6 w-6 text-muted-foreground" /><span className="text-sm font-medium">{fileName}</span></div>
                       <Button variant="ghost" size="icon" onClick={() => { setRows([]); setFileName(null); }}><X className="h-4 w-4" /></Button>
                     </div>
                     <div className="max-h-96 overflow-auto border rounded-md">
                       <Table>
                         <TableHeader className="sticky top-0 bg-muted">
-                          <TableRow>
-                            {Object.keys(rcmRowSchema.shape).map(key => <TableHead key={key}>{key}</TableHead>)}
-                          </TableRow>
+                          <TableRow>{Object.keys(rcmRowSchema.shape).map(key => <TableHead key={key}>{key}</TableHead>)}</TableRow>
                         </TableHeader>
                         <TableBody>
                           {rows.map((row, index) => (
                             <TableRow key={index} className={cn(row.errors && "bg-destructive/10")}>
                               {Object.keys(rcmRowSchema.shape).map(key => (
-                                <TableCell key={key} className="text-sm">{row.data[key as keyof RcmRow]}</TableCell>
+                                <TableCell key={key} className="text-sm">
+                                  {row.data[key as keyof RcmRow]}
+                                  {row.errors?.some(e => e.path[0] === key) && <Badge variant="destructive" className="ml-2">Error</Badge>}
+                                </TableCell>
                               ))}
                             </TableRow>
                           ))}
@@ -146,14 +164,12 @@ export function ImportPage() {
                       </Table>
                     </div>
                     <div className="mt-6 flex items-center justify-between">
-                      <div>
-                        {hasErrors && <p className="text-sm text-destructive">Some rows have errors and will be skipped.</p>}
-                      </div>
-                      <Button onClick={handleImport} disabled={isUploading || rows.filter(r => !r.errors).length === 0}>
-                        {isUploading ? 'Importing...' : `Import ${rows.filter(r => !r.errors).length} Valid Rows`}
+                      <div>{hasErrors && <p className="text-sm text-destructive">Some rows have errors and will be skipped.</p>}</div>
+                      <Button onClick={handleImport} disabled={mutation.status === 'pending' || rows.filter(r => !r.errors).length === 0}>
+                        {mutation.status === 'pending' ? 'Importing...' : `Import ${rows.filter(r => !r.errors).length} Valid Rows`}
                       </Button>
                     </div>
-                    {isUploading && <Progress value={(mutation.progress ?? 0) * 100} className="mt-4" />}
+                    {mutation.status === 'pending' && <Progress value={100} className="mt-4 h-2 animate-pulse" />}
                   </div>
                 )}
               </CardContent>

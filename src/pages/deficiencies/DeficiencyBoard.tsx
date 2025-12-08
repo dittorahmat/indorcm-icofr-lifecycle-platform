@@ -1,19 +1,20 @@
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { MainHeader } from '@/components/layout/MainHeader';
 import { api } from '@/lib/api-client';
 import type { Deficiency, ActionPlan, ActionPlanStatus } from '@shared/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DeficiencyCard } from '@/components/deficiencies/DeficiencyCard';
 import { toast } from 'sonner';
+import { motion } from 'framer-motion';
 const KANBAN_COLUMNS: ActionPlanStatus[] = ["Draft", "In Progress", "Resolved", "Verified"];
 function KanbanColumn({ status, deficiencies, actionPlans }: { status: ActionPlanStatus; deficiencies: Deficiency[]; actionPlans: ActionPlan[] }) {
   const plansInColumn = actionPlans.filter(ap => ap.status === status);
   return (
     <div className="w-72 md:w-80 flex-shrink-0">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4 px-2">
         <h2 className="font-semibold text-lg">{status}</h2>
         <span className="text-sm font-medium bg-muted text-muted-foreground rounded-full px-2 py-0.5">{plansInColumn.length}</span>
       </div>
@@ -58,7 +59,7 @@ export function DeficiencyBoard() {
     onError: (error) => {
       toast.error(`Update failed: ${error.message}`);
       // Revert optimistic update by refetching from the server
-      queryClient.refetchQueries({ queryKey: ['actionplans'] });
+      queryClient.invalidateQueries({ queryKey: ['actionplans'] });
     },
   });
   function handleDragEnd(event: DragEndEvent) {
@@ -66,17 +67,18 @@ export function DeficiencyBoard() {
     if (over && active.id !== over.id) {
       const activeContainer = findContainer(active.id as string);
       const overContainerId = over.data.current?.sortable?.containerId || over.id;
-      const overContainer = KANBAN_COLUMNS.includes(overContainerId) ? overContainerId as ActionPlanStatus : null;
+      const overContainer = KANBAN_COLUMNS.includes(overContainerId as any) ? overContainerId as ActionPlanStatus : null;
       if (activeContainer && overContainer && activeContainer !== overContainer) {
-        const activeIndex = actionPlans.findIndex(ap => ap.id === active.id);
         // Optimistic update
         setActionPlans(previousPlans => {
-            const newPlans = [...previousPlans];
-            newPlans[activeIndex] = {
-                ...newPlans[activeIndex],
-                status: overContainer,
-            };
-            return newPlans;
+          const activeIndex = previousPlans.findIndex(ap => ap.id === active.id);
+          if (activeIndex === -1) return previousPlans;
+          const newPlans = [...previousPlans];
+          newPlans[activeIndex] = {
+            ...newPlans[activeIndex],
+            status: overContainer,
+          };
+          return newPlans;
         });
         // Fire mutation
         mutation.mutate({ id: active.id as string, status: overContainer });
@@ -109,7 +111,7 @@ export function DeficiencyBoard() {
               </div>
             ) : (
               <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                <div className="flex gap-6">
+                <motion.div className="flex gap-6" layout>
                   {KANBAN_COLUMNS.map(status => (
                     <KanbanColumn
                       key={status}
@@ -118,7 +120,7 @@ export function DeficiencyBoard() {
                       actionPlans={actionPlans}
                     />
                   ))}
-                </div>
+                </motion.div>
               </DndContext>
             )}
           </div>
