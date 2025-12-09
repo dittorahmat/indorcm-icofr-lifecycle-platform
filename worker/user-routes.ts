@@ -7,10 +7,9 @@ import {
 } from "./entities";
 import type { Control, RCM, CSARecord, TestRecord, Deficiency, ActionPlan, UserRole } from "@shared/types";
 import { z } from "zod";
-import Papa from "papaparse";
+import { parseCsv, unparseCsv } from './csv';
 
-declare module 'xlsx/xlsx.mjs';
-declare module 'xlsx';
+
 
 const createWithAudit = async <T extends { id: string }>(Entity: any, env: Env, data: T, userId: string) => {
   const auditableData = { ...data, auditTrail: [{ action: 'created', userId, timestamp: Date.now() }] };
@@ -134,38 +133,12 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   });
   app.post('/api/reports/export', async (c) => {
     if ((c as any).get('userRole') !== 'Line 2') return bad(c, 'Access Denied');
-    const format = c.req.query('format');
     const [rcms, controls, deficiencies] = await Promise.all([
       RCMEntity.list(c.env), ControlEntity.list(c.env), DeficiencyEntity.list(c.env)
     ]);
     const dataToExport = { RCMs: rcms.items, Controls: controls.items, Deficiencies: deficiencies.items };
-    if (format === 'csv') {
-      const csv = Papa.unparse(dataToExport.Controls);
-      return new Response(csv, { headers: { 'Content-Type': 'text/csv', 'Content-Disposition': 'attachment; filename="controls.csv"' } });
-    }
-    if (format === 'excel') {
-      try {
-        let XLSX: any;
-        try {
-          XLSX = (await import('xlsx/xlsx.mjs')) as any;
-        } catch (e) {
-          XLSX = (await import('xlsx')) as any;
-        }
-        const wb = XLSX.utils.book_new();
-        Object.entries(dataToExport).forEach(([sheetName, data]) => {
-          const ws = XLSX.utils.json_to_sheet(data as any[]);
-          XLSX.utils.book_append_sheet(wb, ws, sheetName);
-        });
-        const bufArr = XLSX.write(wb, { type: 'array', bookType: 'xlsx' });
-        const buf = bufArr instanceof Uint8Array
-          ? bufArr.buffer
-          : (bufArr instanceof ArrayBuffer ? bufArr : new Uint8Array(bufArr).buffer);
-        return new Response(buf, { headers: { 'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'Content-Disposition': 'attachment; filename="report.xlsx"' } });
-      } catch (e) {
-        return bad(c, 'Excel export not available');
-      }
-    }
-    return bad(c, 'Invalid format');
+    // Return JSON payload instead of generating files in the worker
+    return ok(c, dataToExport);
   });
   const rcmRowSchema = z.object({
     process: z.string().min(1), subProcess: z.string().min(1),
@@ -176,7 +149,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   app.post('/api/import/rcm', async (c) => {
     if ((c as any).get('userRole') !== 'Line 2') return bad(c, 'Access Denied');
     const { fileContent } = await c.req.json<{ fileContent: string }>();
-    const parsed = Papa.parse<RcmRow>(fileContent, { header: true, skipEmptyLines: true });
+    const parsed = parseCsv<RcmRow>(fileContent, { header: true, skipEmptyLines: true });
     let imported = 0;
     const errors: string[] = [];
     const rcmMap = new Map<string, RCM>();
@@ -205,7 +178,8 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     return ok(c, { imported, errors });
   });
   app.get('/api/audits/:entityType/:id', async (c) => {
-    const { entityType, id } = c.req.param();
+    const entityType = c.req.param('entityType');
+    const id = c.req.param('id');
     let entity: any;
     if (entityType === 'rcm') entity = new RCMEntity(c.env, id);
     else if (entityType === 'control') entity = new ControlEntity(c.env, id);

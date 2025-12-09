@@ -11,13 +11,19 @@ const { execSync } = require('child_process');
 const PROJECT_NAME = "astra-icofr-j8g56mdumjdlhublhajoy";
 const BOOTSTRAP_MARKER = '.bootstrap-complete';
 
-// Check if already bootstrapped
+ // Check if already bootstrapped
 if (fs.existsSync(BOOTSTRAP_MARKER)) {
     console.log('✓ Bootstrap already completed');
     process.exit(0);
 }
 
-console.log('🚀 Running first-time project setup...\n');
+// Opt-in guard: only run bootstrap actions when BOOTSTRAP_RUN=1
+if (process.env.BOOTSTRAP_RUN !== '1') {
+    console.log('⊘ Bootstrap skipped (opt-in). To run, set BOOTSTRAP_RUN=1 and re-run this script.');
+    process.exit(0);
+}
+
+console.log('🚀 Running first-time project setup (BOOTSTRAP_RUN=1)...\n');
 
 try {
     // Update package.json
@@ -31,9 +37,8 @@ try {
     
     // Mark as complete
     fs.writeFileSync(BOOTSTRAP_MARKER, new Date().toISOString());
-    
-    // Self-delete
-    fs.unlinkSync(__filename);
+
+    // Note: do not self-delete the bootstrap script to avoid permission issues in some environments.
     
     console.log('\n✅ Bootstrap complete! Project ready.');
 } catch (error) {
@@ -77,6 +82,12 @@ function updateWranglerJsonc() {
 }
 
 function runSetupCommands() {
+    // Respect opt-in guard: only execute package installation when BOOTSTRAP_RUN=1
+    if (process.env.BOOTSTRAP_RUN !== '1') {
+        console.log('⊘ BOOTSTRAP_RUN not set; skipping setup commands.');
+        return;
+    }
+
     const commands = [
     "bun add papaparse@^5.4.1",
     "bun add xlsx@^0.18.5",
@@ -85,21 +96,21 @@ function runSetupCommands() {
     "bun add -d @types/papaparse",
     "bun add @types/papaparse"
 ];
-    
+
     if (commands.length === 0) {
         console.log('⊘ No setup commands to run');
         return;
     }
-    
+
     console.log('\n📦 Running setup commands...\n');
-    
+
     let successCount = 0;
     let failCount = 0;
-    
+
     for (const cmd of commands) {
         console.log(`▸ ${cmd}`);
         try {
-            execSync(cmd, { 
+            execSync(cmd, {
                 stdio: 'inherit',
                 cwd: process.cwd()
             });
@@ -110,6 +121,6 @@ function runSetupCommands() {
             console.warn(`   Error: ${error.message}`);
         }
     }
-    
+
     console.log(`\n✓ Commands completed: ${successCount} successful, ${failCount} failed\n`);
 }
