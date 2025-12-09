@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useDropzone } from 'react-dropzone';
+
 import { MainHeader } from '@/components/layout/MainHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -43,9 +43,8 @@ function ControlAssessmentCard({ control }: { control: Control }) {
       toast.error(`Submission failed: ${error.message}`);
     },
   });
-  const onDrop = React.useCallback((acceptedFiles: File[]) => {
-    if (acceptedFiles.length > 0) {
-      const file = acceptedFiles[0];
+  const onDrop = React.useCallback((file: File | null) => {
+    if (file) {
       setEvidenceFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -54,7 +53,38 @@ function ControlAssessmentCard({ control }: { control: Control }) {
       reader.readAsDataURL(file);
     }
   }, []);
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, multiple: false, accept: { 'image/*': [], 'application/pdf': [] } });
+
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+  const [isDragActive, setIsDragActive] = React.useState(false);
+
+  function handleRootClick() {
+    fileInputRef.current?.click();
+  }
+
+  function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files && e.target.files[0];
+    onDrop(f || null);
+  }
+
+  function handleDragOver(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragActive(true);
+  }
+
+  function handleDragLeave(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragActive(false);
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragActive(false);
+    const f = e.dataTransfer.files && e.dataTransfer.files[0];
+    onDrop(f || null);
+  }
   function onSubmit(values: z.infer<typeof csaSchema>) {
     mutation.mutate({
       controlId: control.id,
@@ -81,8 +111,8 @@ function ControlAssessmentCard({ control }: { control: Control }) {
             <div>
               <Label className="font-semibold">Evidence</Label>
               {!evidenceFile ? (
-                <div {...getRootProps()} className={`mt-2 flex justify-center rounded-md border-2 border-dashed border-input px-6 pt-5 pb-6 cursor-pointer hover:border-primary ${isDragActive ? 'border-primary bg-accent' : ''}`}>
-                  <input {...getInputProps()} />
+                <div onClick={handleRootClick} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} role="button" tabIndex={0} className={`mt-2 flex justify-center rounded-md border-2 border-dashed border-input px-6 pt-5 pb-6 cursor-pointer hover:border-primary ${isDragActive ? 'border-primary bg-accent' : ''}`}>
+                  <input ref={fileInputRef} type="file" className="hidden" onChange={handleInputChange} accept="image/*,application/pdf" />
                   <div className="space-y-1 text-center"><UploadCloud className="mx-auto h-12 w-12 text-muted-foreground" /><p className="text-sm text-muted-foreground">Drag & drop a file here, or click to select</p></div>
                 </div>
               ) : (
@@ -124,7 +154,7 @@ export function CSAWorkspace() {
     );
   }
   const mockUserId = 'u1';
-  const assignedControls = controlsData?.items.filter(c => c.ownerId === mockUserId);
+  const assignedControls = controlsData?.items?.filter(c => c.ownerId === mockUserId) ?? [];
   return (
     <div className="flex flex-col min-h-screen bg-muted/40">
       <MainHeader />

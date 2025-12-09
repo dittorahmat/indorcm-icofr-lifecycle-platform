@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useDropzone } from 'react-dropzone';
+
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -74,14 +74,51 @@ export function ControlEditor({ isOpen, setIsOpen, control }: ControlEditorProps
       toast.error(`Failed to save control: ${error.message}`);
     },
   });
-  const onDrop = React.useCallback((acceptedFiles: File[]) => {
-    if (acceptedFiles.length > 0) {
-      const file = acceptedFiles[0];
+  const inputRef = React.useRef<HTMLInputElement | null>(null);
+  const [isDragActive, setIsDragActive] = React.useState(false);
+
+  const handleFiles = (files: FileList | File[]) => {
+    const file = files && 'length' in files ? files[0] : (files as File[])[0];
+    if (file) {
       setEvidenceFile(file);
       setPreview('https://images.unsplash.com/photo-1526628953301-3e589a6a8b74?q=80&w=800&auto=format&fit=crop');
     }
-  }, []);
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, multiple: false });
+  };
+
+  const onFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      handleFiles(e.target.files);
+    }
+  };
+
+  const onDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragActive(true);
+  };
+
+  const onDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragActive(true);
+  };
+
+  const onDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragActive(false);
+  };
+
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragActive(false);
+    if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
+      handleFiles(e.dataTransfer.files);
+      e.dataTransfer.clearData();
+    }
+  };
+
   const onSubmit = (values: z.infer<typeof controlSchema>) => {
     mutation.mutate({ ...values, assertions: values.assertions as ControlAssertion[] });
   };
@@ -131,8 +168,8 @@ export function ControlEditor({ isOpen, setIsOpen, control }: ControlEditorProps
               <div>
                 <Label>BPM Artifacts (Flowchart/Narrative)</Label>
                 {!evidenceFile ? (
-                  <div {...getRootProps()} className={`mt-2 flex justify-center rounded-md border-2 border-dashed border-input px-6 pt-5 pb-6 cursor-pointer hover:border-primary ${isDragActive ? 'border-primary bg-accent' : ''}`}>
-                    <input {...getInputProps()} />
+                  <div onClick={() => inputRef.current?.click()} onDragOver={onDragOver} onDragEnter={onDragEnter} onDragLeave={onDragLeave} onDrop={onDrop} className={`mt-2 flex justify-center rounded-md border-2 border-dashed border-input px-6 pt-5 pb-6 cursor-pointer hover:border-primary ${isDragActive ? 'border-primary bg-accent' : ''}`}>
+                    <input ref={inputRef} type="file" onChange={onFileInputChange} className="hidden" />
                     <div className="space-y-1 text-center"><UploadCloud className="mx-auto h-12 w-12 text-muted-foreground" /><p className="text-sm text-muted-foreground">Drag & drop or click to upload</p></div>
                   </div>
                 ) : (
