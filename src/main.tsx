@@ -16,37 +16,43 @@ import { RCMList } from '@/pages/rcm/RCMList';
 import { CSAWorkspace } from '@/pages/csa/CSAWorkspace';
 import { TestWorkbench } from '@/pages/testing/TestWorkbench';
 import { DeficiencyBoard } from '@/pages/deficiencies/DeficiencyBoard';
+import { RootLayout } from '@/components/layout/RootLayout';
 // Lazy load non-critical pages using static imports
 const ReportsPage = lazy(() => import('@/pages/reports/ReportsPage').then(module => ({ default: module.ReportsPage })));
 const ImportPage = lazy(() => import('@/pages/import/ImportPage').then(module => ({ default: module.ImportPage })));
 enableMapSet();
 const queryClient = new QueryClient();
 const router = createBrowserRouter([
-  { path: "/", element: <HomePage />, errorElement: <RouteErrorBoundary /> },
-  { path: "/dashboard", element: <Dashboard />, errorElement: <RouteErrorBoundary /> },
-  { path: "/rcm", element: <RCMList />, errorElement: <RouteErrorBoundary /> },
-  { path: "/csa", element: <CSAWorkspace />, errorElement: <RouteErrorBoundary /> },
-  { path: "/testing", element: <TestWorkbench />, errorElement: <RouteErrorBoundary /> },
-  { path: "/deficiencies", element: <DeficiencyBoard />, errorElement: <RouteErrorBoundary /> },
-  { 
-    path: "/reports", 
-    element: (
-      <Suspense fallback={<div className="max-w-7xl mx-auto px-4 py-8"><Skeleton className="h-screen w-full" /></div>}>
-        <ReportsPage />
-      </Suspense>
-    ), 
-    errorElement: <RouteErrorBoundary /> 
-  },
-  { 
-    path: "/import", 
-    element: (
-      <Suspense fallback={<div className="max-w-7xl mx-auto px-4 py-8"><Skeleton className="h-screen w-full" /></div>}>
-        <ImportPage />
-      </Suspense>
-    ), 
-    errorElement: <RouteErrorBoundary /> 
-  },
-  { path: "*", element: <Navigate to="/" replace /> },
+  {
+    path: "/",
+    element: <RootLayout />,
+    errorElement: <RouteErrorBoundary />,
+    children: [
+      { path: "/", element: <HomePage /> },
+      { path: "dashboard", element: <Dashboard /> },
+      { path: "rcm", element: <RCMList /> },
+      { path: "csa", element: <CSAWorkspace /> },
+      { path: "testing", element: <TestWorkbench /> },
+      { path: "deficiencies", element: <DeficiencyBoard /> },
+      {
+        path: "reports",
+        element: (
+          <Suspense fallback={<div className="max-w-7xl mx-auto px-4 py-8"><Skeleton className="h-screen w-full" /></div>}>
+            <ReportsPage />
+          </Suspense>
+        )
+      },
+      {
+        path: "import",
+        element: (
+          <Suspense fallback={<div className="max-w-7xl mx-auto px-4 py-8"><Skeleton className="h-screen w-full" /></div>}>
+            <ImportPage />
+          </Suspense>
+        )
+      },
+      { path: "*", element: <Navigate to="/" replace /> },
+    ]
+  }
 ]);
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
