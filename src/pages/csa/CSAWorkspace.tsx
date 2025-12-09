@@ -66,25 +66,25 @@ function ControlAssessmentCard({ control }: { control: Control }) {
     onDrop(f || null);
   }
 
-  function handleDragOver(e: React.DragEvent) {
+  const handleDragOver = React.useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragActive(true);
-  }
+  }, []);
 
-  function handleDragLeave(e: React.DragEvent) {
+  const handleDragLeave = React.useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragActive(false);
-  }
+  }, []);
 
-  function handleDrop(e: React.DragEvent) {
+  const handleDrop = React.useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragActive(false);
     const f = e.dataTransfer.files && e.dataTransfer.files[0];
     onDrop(f || null);
-  }
+  }, [onDrop]);
   function onSubmit(values: z.infer<typeof csaSchema>) {
     mutation.mutate({
       controlId: control.id,
@@ -111,7 +111,7 @@ function ControlAssessmentCard({ control }: { control: Control }) {
             <div>
               <Label className="font-semibold">Evidence</Label>
               {!evidenceFile ? (
-                <div onClick={handleRootClick} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} role="button" tabIndex={0} className={`mt-2 flex justify-center rounded-md border-2 border-dashed border-input px-6 pt-5 pb-6 cursor-pointer hover:border-primary ${isDragActive ? 'border-primary bg-accent' : ''}`}>
+                  <div onClick={handleRootClick} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} role="button" tabIndex={0} className={`mt-2 flex justify-center rounded-md border-2 border-dashed border-input px-6 pt-5 pb-6 cursor-pointer hover:border-primary ${isDragActive ? 'border-primary bg-accent' : ''}`}>
                   <input ref={fileInputRef} type="file" className="hidden" onChange={handleInputChange} accept="image/*,application/pdf" />
                   <div className="space-y-1 text-center"><UploadCloud className="mx-auto h-12 w-12 text-muted-foreground" /><p className="text-sm text-muted-foreground">Drag & drop a file here, or click to select</p></div>
                 </div>
