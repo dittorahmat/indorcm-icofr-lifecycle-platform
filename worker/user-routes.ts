@@ -8,8 +8,10 @@ import {
 import type { Control, RCM, CSARecord, TestRecord, Deficiency, ActionPlan, UserRole } from "@shared/types";
 import { z } from "zod";
 import Papa from "papaparse";
-import * as XLSX from "xlsx";
-export type HonoEnv = { Bindings: Env; Variables: { userRole: UserRole; userId: string } };
+
+declare module 'xlsx/xlsx.mjs';
+declare module 'xlsx';
+
 const createWithAudit = async <T extends { id: string }>(Entity: any, env: Env, data: T, userId: string) => {
   const auditableData = { ...data, auditTrail: [{ action: 'created', userId, timestamp: Date.now() }] };
   return await Entity.create(env, auditableData);
@@ -21,7 +23,7 @@ const patchWithAudit = async <T>(entity: any, patchData: Partial<T>, userId: str
     auditTrail: [...(s.auditTrail || []), { action: 'updated', userId, timestamp: Date.now() }],
   }));
 };
-export function userRoutes(app: Hono<HonoEnv>) {
+export function userRoutes(app: Hono<{ Bindings: Env }>) {
   // --- Middleware for Auth and Seeding ---
   app.use('/api/*', async (c, next) => {
     // Seed data on first load
@@ -33,33 +35,33 @@ export function userRoutes(app: Hono<HonoEnv>) {
     // Mock Auth
     const role = (c.req.header('X-Mock-Role') as UserRole) || 'Line 1';
     const user = (await UserEntity.list(c.env)).items.find(u => u.role === role);
-    c.set('userRole', role);
-    c.set('userId', user?.id || 'u1');
+    (c as any).set('userRole', role);
+    (c as any).set('userId', user?.id || 'u1');
     await next();
   });
   // --- ICOFR Routes ---
   app.get('/api/rcm', async (c) => ok(c, await RCMEntity.list(c.env)));
   app.post('/api/rcm', async (c) => {
-    if (c.get('userRole') !== 'Line 2') return bad(c, 'Access Denied');
+    if ((c as any).get('userRole') !== 'Line 2') return bad(c, 'Access Denied');
     const body = await c.req.json<Partial<RCM>>();
     const newRcm: RCM = { id: crypto.randomUUID(), process: "New Process", subProcess: "New Sub-Process", riskDescription: "New Risk", controls: [], ...body };
-    return ok(c, await createWithAudit(RCMEntity, c.env, newRcm, c.get('userId')));
+    return ok(c, await createWithAudit(RCMEntity, c.env, newRcm, (c as any).get('userId')));
   });
   app.get('/api/controls', async (c) => ok(c, await ControlEntity.list(c.env)));
   app.post('/api/controls', async (c) => {
-    if (c.get('userRole') !== 'Line 2') return bad(c, 'Access Denied');
+    if ((c as any).get('userRole') !== 'Line 2') return bad(c, 'Access Denied');
     const body = await c.req.json<Partial<Control>>();
     if (!body.rcmId) return bad(c, 'rcmId is required');
     const newControl: Control = { id: crypto.randomUUID(), name: "New Control", description: "", ownerId: "u1", type: "Preventive", nature: "Manual", assertions: [], materiality: "Low", ...body, rcmId: body.rcmId };
-    return ok(c, await createWithAudit(ControlEntity, c.env, newControl, c.get('userId')));
+    return ok(c, await createWithAudit(ControlEntity, c.env, newControl, (c as any).get('userId')));
   });
   app.put('/api/controls/:id', async (c) => {
-    if (c.get('userRole') !== 'Line 2') return bad(c, 'Access Denied');
+    if ((c as any).get('userRole') !== 'Line 2') return bad(c, 'Access Denied');
     const id = c.req.param('id');
     const body = await c.req.json<Partial<Control>>();
     const control = new ControlEntity(c.env, id);
     if (!await control.exists()) return notFound(c, 'Control not found');
-    await patchWithAudit(control, body, c.get('userId'));
+    await patchWithAudit(control, body, (c as any).get('userId'));
     return ok(c, await control.getState());
   });
   app.get('/api/deficiencies', async (c) => ok(c, await DeficiencyEntity.list(c.env)));
@@ -68,7 +70,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
     const body = await c.req.json<Partial<Deficiency>>();
     const def = new DeficiencyEntity(c.env, id);
     if (!await def.exists()) return notFound(c, 'Deficiency not found');
-    await patchWithAudit(def, body, c.get('userId'));
+    await patchWithAudit(def, body, (c as any).get('userId'));
     return ok(c, await def.getState());
   });
   app.get('/api/actionplans', async (c) => ok(c, await ActionPlanEntity.list(c.env)));
@@ -77,15 +79,15 @@ export function userRoutes(app: Hono<HonoEnv>) {
     const body = await c.req.json<Partial<ActionPlan>>();
     const ap = new ActionPlanEntity(c.env, id);
     if (!await ap.exists()) return notFound(c, 'Action Plan not found');
-    await patchWithAudit(ap, body, c.get('userId'));
+    await patchWithAudit(ap, body, (c as any).get('userId'));
     return ok(c, await ap.getState());
   });
   app.post('/api/csa', async (c) => {
-    if (c.get('userRole') !== 'Line 1') return bad(c, 'Access Denied: Only Line 1 can submit CSAs.');
+    if ((c as any).get('userRole') !== 'Line 1') return bad(c, 'Access Denied: Only Line 1 can submit CSAs.');
     const body = await c.req.json<Partial<CSARecord>>();
     if (!body.controlId || !body.result) return bad(c, 'controlId and result are required');
-    const newCSA: CSARecord = { id: crypto.randomUUID(), assessmentDate: Date.now(), assessedBy: c.get('userId'), comments: "", ...body, controlId: body.controlId, result: body.result };
-    const created = await createWithAudit(CSAEntity, c.env, newCSA, c.get('userId'));
+    const newCSA: CSARecord = { id: crypto.randomUUID(), assessmentDate: Date.now(), assessedBy: (c as any).get('userId'), comments: "", ...body, controlId: body.controlId, result: body.result };
+    const created = await createWithAudit(CSAEntity, c.env, newCSA, (c as any).get('userId'));
     if (created.result === 'Fail') {
       const newDef: Deficiency = {
         id: crypto.randomUUID(), controlId: created.controlId,
@@ -93,16 +95,16 @@ export function userRoutes(app: Hono<HonoEnv>) {
         severity: 'Control Deficiency', identifiedDate: Date.now(),
         identifiedBy: created.assessedBy, status: 'Open',
       };
-      await createWithAudit(DeficiencyEntity, c.env, newDef, c.get('userId'));
+      await createWithAudit(DeficiencyEntity, c.env, newDef, (c as any).get('userId'));
     }
     return ok(c, created);
   });
   app.post('/api/tests', async (c) => {
-    if (c.get('userRole') !== 'Line 3') return bad(c, 'Access Denied: Only Line 3 can submit tests.');
+    if ((c as any).get('userRole') !== 'Line 3') return bad(c, 'Access Denied: Only Line 3 can submit tests.');
     const body = await c.req.json<Partial<TestRecord>>();
     if (!body.controlId || !body.result || !body.testType) return bad(c, 'controlId, result, and testType are required');
-    const newTest: TestRecord = { id: crypto.randomUUID(), testDate: Date.now(), testedBy: c.get('userId'), comments: "", ...body, controlId: body.controlId, result: body.result, testType: body.testType };
-    const created = await createWithAudit(TestEntity, c.env, newTest, c.get('userId'));
+    const newTest: TestRecord = { id: crypto.randomUUID(), testDate: Date.now(), testedBy: (c as any).get('userId'), comments: "", ...body, controlId: body.controlId, result: body.result, testType: body.testType };
+    const created = await createWithAudit(TestEntity, c.env, newTest, (c as any).get('userId'));
     if (created.result === 'Fail') {
       const newDef: Deficiency = {
         id: crypto.randomUUID(), controlId: created.controlId,
@@ -110,7 +112,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
         severity: 'Significant Deficiency', identifiedDate: Date.now(),
         identifiedBy: created.testedBy, status: 'Open',
       };
-      await createWithAudit(DeficiencyEntity, c.env, newDef, c.get('userId'));
+      await createWithAudit(DeficiencyEntity, c.env, newDef, (c as any).get('userId'));
     }
     return ok(c, created);
   });
@@ -131,7 +133,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
     return ok(c, summary);
   });
   app.post('/api/reports/export', async (c) => {
-    if (c.get('userRole') !== 'Line 2') return bad(c, 'Access Denied');
+    if ((c as any).get('userRole') !== 'Line 2') return bad(c, 'Access Denied');
     const format = c.req.query('format');
     const [rcms, controls, deficiencies] = await Promise.all([
       RCMEntity.list(c.env), ControlEntity.list(c.env), DeficiencyEntity.list(c.env)
@@ -142,13 +144,26 @@ export function userRoutes(app: Hono<HonoEnv>) {
       return new Response(csv, { headers: { 'Content-Type': 'text/csv', 'Content-Disposition': 'attachment; filename="controls.csv"' } });
     }
     if (format === 'excel') {
-      const wb = XLSX.utils.book_new();
-      Object.entries(dataToExport).forEach(([sheetName, data]) => {
-        const ws = XLSX.utils.json_to_sheet(data as any[]);
-        XLSX.utils.book_append_sheet(wb, ws, sheetName);
-      });
-      const buf = XLSX.write(wb, { type: 'array', bookType: 'xlsx' });
-      return new Response(buf, { headers: { 'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'Content-Disposition': 'attachment; filename="report.xlsx"' } });
+      try {
+        let XLSX: any;
+        try {
+          XLSX = (await import('xlsx/xlsx.mjs')) as any;
+        } catch (e) {
+          XLSX = (await import('xlsx')) as any;
+        }
+        const wb = XLSX.utils.book_new();
+        Object.entries(dataToExport).forEach(([sheetName, data]) => {
+          const ws = XLSX.utils.json_to_sheet(data as any[]);
+          XLSX.utils.book_append_sheet(wb, ws, sheetName);
+        });
+        const bufArr = XLSX.write(wb, { type: 'array', bookType: 'xlsx' });
+        const buf = bufArr instanceof Uint8Array
+          ? bufArr.buffer
+          : (bufArr instanceof ArrayBuffer ? bufArr : new Uint8Array(bufArr).buffer);
+        return new Response(buf, { headers: { 'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'Content-Disposition': 'attachment; filename="report.xlsx"' } });
+      } catch (e) {
+        return bad(c, 'Excel export not available');
+      }
     }
     return bad(c, 'Invalid format');
   });
@@ -159,7 +174,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
   });
   type RcmRow = z.infer<typeof rcmRowSchema>;
   app.post('/api/import/rcm', async (c) => {
-    if (c.get('userRole') !== 'Line 2') return bad(c, 'Access Denied');
+    if ((c as any).get('userRole') !== 'Line 2') return bad(c, 'Access Denied');
     const { fileContent } = await c.req.json<{ fileContent: string }>();
     const parsed = Papa.parse<RcmRow>(fileContent, { header: true, skipEmptyLines: true });
     let imported = 0;
@@ -183,10 +198,10 @@ export function userRoutes(app: Hono<HonoEnv>) {
         ownerId: 'u1', type: 'Preventive', nature: 'Manual', assertions: [], materiality: 'Low'
       };
       rcm.controls.push(control.id);
-      await createWithAudit(ControlEntity, c.env, control, c.get('userId'));
+      await createWithAudit(ControlEntity, c.env, control, (c as any).get('userId'));
       imported++;
     }
-    await Promise.all(Array.from(rcmMap.values()).map(rcm => createWithAudit(RCMEntity, c.env, rcm, c.get('userId'))));
+    await Promise.all(Array.from(rcmMap.values()).map(rcm => createWithAudit(RCMEntity, c.env, rcm, (c as any).get('userId'))));
     return ok(c, { imported, errors });
   });
   app.get('/api/audits/:entityType/:id', async (c) => {
