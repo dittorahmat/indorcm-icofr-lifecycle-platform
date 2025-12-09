@@ -1,6 +1,6 @@
 # IndoRCM Pro — ICOFR Lifecycle Platform
 IndoRCM Pro is a production-grade web application that digitizes the ICOFR (Internal Control over Financial Reporting) lifecycle for BUMN (State-Owned Enterprises). It streamlines compliance with Regulation SK-5/DKU.MBU/11/2024 by providing a standardized, transparent, and auditable platform covering the entire process—from planning and scoping to reporting. Built with a focus on visual excellence and enterprise readiness, the app features a stunning, minimal UX with strict Role-Based Access Control (RBAC) aligned to the Three Lines Model, comprehensive audit trails, and seamless export capabilities.
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/dittorahmat/indorcm-icofr-lifecycle-platform)
 ## Overview
 IndoRCM Pro enables efficient management of internal controls based on COSO 2013 and COBIT 2019 frameworks. It centralizes Risk Control Matrices (RCM), testing workflows, remediation tracking, and reporting to reduce manual effort and enhance visibility for executives.
 Key UI surfaces include:
@@ -45,7 +45,7 @@ Critical runtime errors (invalid hook calls, Vite dependency chunk issues, serve
 - **Auth**: Better Auth (integrated for secure sessions and RBAC).
 ## Quick Start
 To get started instantly, deploy this project to Cloudflare Workers:
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/dittorahmat/indorcm-icofr-lifecycle-platform)
 ## Installation
 1. **Prerequisites**:
    - Node.js 18+ (or Bun for optimal performance).
@@ -101,7 +101,7 @@ Deploy to Cloudflare Workers for production:
    - Add custom secrets: `wrangler secret put <KEY>`.
 3. **Instant Deployment**:
    Use the button below to deploy directly from this repository:
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/dittorahmat/indorcm-icofr-lifecycle-platform)
 4. **Post-Deployment**:
    - Access at `<your-worker>.workers.dev`.
    - Monitor via Cloudflare Dashboard (logs, metrics).
