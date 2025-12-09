@@ -6,7 +6,7 @@
  */
 
 const fs = require('fs');
-const { execSync } = require('child_process');
+
 
 const PROJECT_NAME = "astra-icofr-j8g56mdumjdlhublhajoy";
 const BOOTSTRAP_MARKER = '.bootstrap-complete';
@@ -26,20 +26,11 @@ if (process.env.BOOTSTRAP_RUN !== '1') {
 console.log('🚀 Running first-time project setup (BOOTSTRAP_RUN=1)...\n');
 
 try {
-    // Update package.json
-    updatePackageJson();
-    
-    // Update wrangler.jsonc if exists
-    updateWranglerJsonc();
-    
-    // Run setup commands
-    runSetupCommands();
-    
-    // Mark as complete
+    // Only create bootstrap marker; skip package.json/wrangler modifications and package installs
     fs.writeFileSync(BOOTSTRAP_MARKER, new Date().toISOString());
 
     // Note: do not self-delete the bootstrap script to avoid permission issues in some environments.
-    
+
     console.log('\n✅ Bootstrap complete! Project ready.');
 } catch (error) {
     console.error('❌ Bootstrap failed:', error.message);
@@ -82,45 +73,7 @@ function updateWranglerJsonc() {
 }
 
 function runSetupCommands() {
-    // Respect opt-in guard: only execute package installation when BOOTSTRAP_RUN=1
-    if (process.env.BOOTSTRAP_RUN !== '1') {
-        console.log('⊘ BOOTSTRAP_RUN not set; skipping setup commands.');
-        return;
-    }
-
-    const commands = [
-    "bun add papaparse@^5.4.1",
-    "bun add xlsx@^0.18.5",
-    "bun add file-saver@^2.0.5",
-    "bun add react-dropzone@^14.2.3",
-    "bun add -d @types/papaparse",
-    "bun add @types/papaparse"
-];
-
-    if (commands.length === 0) {
-        console.log('⊘ No setup commands to run');
-        return;
-    }
-
-    console.log('\n📦 Running setup commands...\n');
-
-    let successCount = 0;
-    let failCount = 0;
-
-    for (const cmd of commands) {
-        console.log(`▸ ${cmd}`);
-        try {
-            execSync(cmd, {
-                stdio: 'inherit',
-                cwd: process.cwd()
-            });
-            successCount++;
-        } catch (error) {
-            failCount++;
-            console.warn(`⚠️  Command failed: ${cmd}`);
-            console.warn(`   Error: ${error.message}`);
-        }
-    }
-
-    console.log(`\n✓ Commands completed: ${successCount} successful, ${failCount} failed\n`);
+    // Setup commands disabled to avoid automatic package installation.
+    console.log('⊘ Setup commands disabled by bootstrap; skipping command execution.');
+    return;
 }
