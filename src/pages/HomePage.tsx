@@ -35,10 +35,10 @@ export function HomePage() {
                 Enterprise-Grade ICOFR Compliance
               </div>
               <h1 className="text-5xl md:text-7xl font-display font-bold text-balance leading-tight bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/70">
-                Streamline Your Internal Controls
+                Streamline Your Internal Controls with IndoRCM Pro
               </h1>
               <p className="mt-6 max-w-2xl mx-auto text-lg md:text-xl text-muted-foreground text-pretty">
-                AstraICOFR provides a standardized, transparent, and auditable platform for the entire ICOFR lifecycle��from planning to reporting.
+                IndoRCM Pro provides a standardized, transparent, and auditable platform for the entire ICOFR lifecycle—from planning to reporting.
               </p>
               <div className="mt-10 flex justify-center gap-4">
                 <Button size="lg" asChild className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-primary/40 transition-all duration-300 transform hover:-translate-y-0.5">
@@ -56,7 +56,7 @@ export function HomePage() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="grid gap-6 md:grid-cols-3"
           >
-            <StatCard icon={<Zap className="h-5 w-5 text-muted-foreground" />} title="Control Coverage" value="98.7%" />
+            <StatCard icon={<Zap className="h-5 w-5 text-muted-foreground" />} title="IndoRCM Control Coverage" value="98.7%" />
             <StatCard icon={<CheckCircle className="h-5 w-5 text-muted-foreground" />} title="Controls Effective" value="95.2%" />
             <StatCard icon={<BarChart className="h-5 w-5 text-muted-foreground" />} title="Open Deficiencies" value="12" />
           </motion.div>

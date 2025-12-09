@@ -42,7 +42,7 @@ export function MainHeader() {
           <div className="flex items-center gap-6">
             <Link to="/" className="flex items-center gap-2 font-bold text-lg">
               <Shield className="h-7 w-7 text-primary" />
-              <span className="font-display">AstraICOFR</span>
+              <span className="font-display">IndoRCM Pro</span>
             </Link>
             <nav className="hidden md:flex items-center gap-4">
               {visibleNavItems.map((item) => (
@@ -79,7 +79,7 @@ export function MainHeader() {
                   </DropdownMenu>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Simulate user role for access control</p>
+                  <p>Simulate user role for IndoRCM Pro access control</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>

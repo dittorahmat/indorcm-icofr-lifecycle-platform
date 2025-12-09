@@ -2,10 +2,18 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
-import { userRoutes, HonoEnv } from './user-routes';
+import { userRoutes } from './user-routes';
 import { Env, GlobalDurableObject } from './core-utils';
+import type { UserRole } from '@shared/types';
 // Need to export GlobalDurableObject to make it available in wrangler
 export { GlobalDurableObject };
+export interface HonoEnv {
+  Bindings: Env;
+  Variables: {
+    userRole: UserRole;
+    userId: string;
+  };
+}
 export interface ClientErrorReport {
     message: string;
     url: string;
@@ -18,7 +26,7 @@ export interface ClientErrorReport {
     lineno?: number;
     colno?: number;
     error?: unknown;
-  }
+}
 const app = new Hono<HonoEnv>();
 app.use('*', logger());
 app.use('/api/*', cors({ origin: '*', allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], allowHeaders: ['Content-Type', 'Authorization', 'X-Mock-Role'] }));
@@ -35,6 +43,9 @@ app.post('/api/client-errors', async (c) => {
   }
 });
 app.notFound((c) => c.json({ success: false, error: 'Not Found' }, 404));
-app.onError((err, c) => { console.error(`[ERROR] ${err}`); return c.json({ success: false, error: 'Internal Server Error' }, 500); });
-console.log(`Server is running`)
+app.onError((err, c) => { 
+  console.error(`[WORKER ERROR] Path: ${c.req.path}`, err); 
+  return c.json({ success: false, error: err.message || 'Internal Server Error' }, 500); 
+});
+console.log(`Server is running`);
 export default { fetch: app.fetch } satisfies ExportedHandler<Env>;
