@@ -81,6 +81,8 @@
         "@cloudflare/vite-plugin": "^1.9.4",
         "@cloudflare/workers-types": "^4.20250807.0",
         "@eslint/js": "^9.22.0",
+        "@rollup/rollup-linux-arm64-gnu": "^4.55.1",
+        "@rollup/rollup-linux-x64-gnu": "^4.55.1",
         "@types/node": "^22.15.3",
         "@types/papaparse": "^5.5.1",
         "@types/react": "^18.3.1",
@@ -395,6 +397,10 @@
     "@remix-run/router": ["@remix-run/router@1.23.0", "", {}, ""],
 
     "@rolldown/pluginutils": ["@rolldown/pluginutils@1.0.0-beta.27", "", {}, ""],
+
+    "@rollup/rollup-linux-arm64-gnu": ["@rollup/rollup-linux-arm64-gnu@4.55.1", "", { "os": "linux", "cpu": "arm64" }, "sha512-a59mwd1k6x8tXKcUxSyISiquLwB5pX+fJW9TkWU46lCqD/GRDe9uDN31jrMmVP3feI3mhAdvcCClhV8V5MhJFQ=="],
+
+    "@rollup/rollup-linux-x64-gnu": ["@rollup/rollup-linux-x64-gnu@4.55.1", "", { "os": "linux", "cpu": "x64" }, "sha512-a8G4wiQxQG2BAvo+gU6XrReRRqj+pLS2NGXKm8io19goR+K8lw269eTrPkSdDTALwMmJp4th2Uh0D8J9bEV1vg=="],
 
     "@rollup/rollup-win32-x64-gnu": ["@rollup/rollup-win32-x64-gnu@4.53.3", "", { "os": "win32", "cpu": "x64" }, ""],
 

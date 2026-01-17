@@ -89,6 +89,8 @@
     "@cloudflare/vite-plugin": "^1.9.4",
     "@cloudflare/workers-types": "^4.20250807.0",
     "@eslint/js": "^9.22.0",
+    "@rollup/rollup-linux-arm64-gnu": "^4.55.1",
+    "@rollup/rollup-linux-x64-gnu": "^4.55.1",
     "@types/node": "^22.15.3",
     "@types/papaparse": "^5.5.1",
     "@types/react": "^18.3.1",
