@@ -4,7 +4,7 @@
  */
  {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "indorcm-pro",
+	"name": "astra-icofr-j8g56mdumjdlhublhajoy",
 	"main": "worker/index.ts",
 	"compatibility_date": "2025-04-24",
 	"assets": {

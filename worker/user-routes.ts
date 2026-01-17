@@ -3,18 +3,19 @@ import type { Env } from './core-utils';
 import { ok, bad, notFound } from './core-utils';
 import {
   UserEntity, ChatBoardEntity, RCMEntity, ControlEntity,
-  DeficiencyEntity, ActionPlanEntity, CSAEntity, TestEntity
+  DeficiencyEntity, ActionPlanEntity, CSAEntity, TestEntity,
+  MaterialityEntity, ScopingEntity, ChangeLogEntity, SOCReportEntity,
+  ApplicationEntity, RiskLibraryEntity
 } from "./entities";
-import type { Control, RCM, CSARecord, TestRecord, Deficiency, ActionPlan, UserRole } from "@shared/types";
+import type { Control, RCM, CSARecord, TestRecord, Deficiency, ActionPlan, UserRole, Materiality, Scoping, ChangeLog, SOCReport, Application, BUMNCluster, RiskLibrary } from "@shared/types";
 import { z } from "zod";
 import { parseCsv, unparseCsv } from './csv';
-
-
 
 const createWithAudit = async <T extends { id: string }>(Entity: any, env: Env, data: T, userId: string) => {
   const auditableData = { ...data, auditTrail: [{ action: 'created', userId, timestamp: Date.now() }] };
   return await Entity.create(env, auditableData);
 };
+
 const patchWithAudit = async <T>(entity: any, patchData: Partial<T>, userId: string) => {
   await entity.mutate((s: any) => ({
     ...s,
@@ -22,6 +23,7 @@ const patchWithAudit = async <T>(entity: any, patchData: Partial<T>, userId: str
     auditTrail: [...(s.auditTrail || []), { action: 'updated', userId, timestamp: Date.now() }],
   }));
 };
+
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
   // --- Middleware for Auth and Seeding ---
   app.use('/api/*', async (c, next) => {
@@ -30,6 +32,9 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       UserEntity.ensureSeed(c.env), ChatBoardEntity.ensureSeed(c.env),
       RCMEntity.ensureSeed(c.env), ControlEntity.ensureSeed(c.env),
       DeficiencyEntity.ensureSeed(c.env), ActionPlanEntity.ensureSeed(c.env),
+      MaterialityEntity.ensureSeed(c.env), ScopingEntity.ensureSeed(c.env),
+      ChangeLogEntity.ensureSeed(c.env), SOCReportEntity.ensureSeed(c.env),
+      ApplicationEntity.ensureSeed(c.env), RiskLibraryEntity.ensureSeed(c.env),
     ]);
     // Mock Auth
     const role = (c.req.header('X-Mock-Role') as UserRole) || 'Line 1';
@@ -38,22 +43,55 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     (c as any).set('userId', user?.id || 'u1');
     await next();
   });
+
   // --- ICOFR Routes ---
   app.get('/api/rcm', async (c) => ok(c, await RCMEntity.list(c.env)));
   app.post('/api/rcm', async (c) => {
     if ((c as any).get('userRole') !== 'Line 2') return bad(c, 'Access Denied');
     const body = await c.req.json<Partial<RCM>>();
-    const newRcm: RCM = { id: crypto.randomUUID(), process: "New Process", subProcess: "New Sub-Process", riskDescription: "New Risk", controls: [], ...body };
+    const newRcm: RCM = { id: crypto.randomUUID(), process: "New Process", subProcess: "New Sub-Process", riskDescription: "New Risk", status: "Draft", controls: [], ...body };
     return ok(c, await createWithAudit(RCMEntity, c.env, newRcm, (c as any).get('userId')));
   });
+
+  app.post('/api/rcm/:id/validate', async (c) => {
+    if ((c as any).get('userRole') !== 'Line 2') return bad(c, 'Access Denied');
+    const id = c.req.param('id');
+    const rcm = new RCMEntity(c.env, id);
+    if (!await rcm.exists()) return notFound(c, 'RCM not found');
+    await patchWithAudit(rcm, { status: 'Active' }, (c as any).get('userId'));
+    return ok(c, await rcm.getState());
+  });
+
   app.get('/api/controls', async (c) => ok(c, await ControlEntity.list(c.env)));
   app.post('/api/controls', async (c) => {
     if ((c as any).get('userRole') !== 'Line 2') return bad(c, 'Access Denied');
     const body = await c.req.json<Partial<Control>>();
     if (!body.rcmId) return bad(c, 'rcmId is required');
-    const newControl: Control = { id: crypto.randomUUID(), name: "New Control", description: "", ownerId: "u1", type: "Preventive", nature: "Manual", assertions: [], materiality: "Low", ...body, rcmId: body.rcmId };
+    const newControl: Control = { 
+      id: crypto.randomUUID(), code: "", name: "New Control", description: "", ownerId: "u1", 
+      type: "Preventive", nature: "Manual", frequency: "Monthly", assertions: [], ipos: [], 
+      cosoPrinciples: [], riskRating: "Low", isKeyControl: false, ...body, rcmId: body.rcmId 
+    };
     return ok(c, await createWithAudit(ControlEntity, c.env, newControl, (c as any).get('userId')));
   });
+
+  app.get('/api/materiality', async (c) => ok(c, await MaterialityEntity.list(c.env)));
+  app.post('/api/materiality', async (c) => {
+    if ((c as any).get('userRole') !== 'Line 2') return bad(c, 'Access Denied');
+    const body = await c.req.json<Partial<Materiality>>();
+    const newMat: Materiality = { id: crypto.randomUUID(), year: new Date().getFullYear(), overallMateriality: 0, performanceMateriality: 0, benchmark: "Pre-Tax Income", percentage: 5, haircut: 25, ...body };
+    return ok(c, await createWithAudit(MaterialityEntity, c.env, newMat, (c as any).get('userId')));
+  });
+
+  app.get('/api/scoping', async (c) => ok(c, await ScopingEntity.list(c.env)));
+  app.post('/api/scoping', async (c) => {
+    if ((c as any).get('userRole') !== 'Line 2') return bad(c, 'Access Denied');
+    const body = await c.req.json<Partial<Scoping>>();
+    const newScope: Scoping = { id: crypto.randomUUID(), year: new Date().getFullYear(), significantAccounts: [], significantLocations: [], significantProcesses: [], ...body };
+    return ok(c, await createWithAudit(ScopingEntity, c.env, newScope, (c as any).get('userId')));
+  });
+
+  app.get('/api/changelogs', async (c) => ok(c, await ChangeLogEntity.list(c.env)));
   app.put('/api/controls/:id', async (c) => {
     if ((c as any).get('userRole') !== 'Line 2') return bad(c, 'Access Denied');
     const id = c.req.param('id');
@@ -133,11 +171,25 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   });
   app.post('/api/reports/export', async (c) => {
     if ((c as any).get('userRole') !== 'Line 2') return bad(c, 'Access Denied');
+    const format = c.req.query('format');
     const [rcms, controls, deficiencies] = await Promise.all([
       RCMEntity.list(c.env), ControlEntity.list(c.env), DeficiencyEntity.list(c.env)
     ]);
     const dataToExport = { RCMs: rcms.items, Controls: controls.items, Deficiencies: deficiencies.items };
-    // Return JSON payload instead of generating files in the worker
+    
+    if (format === 'csv') {
+      let csvContent = '';
+      csvContent += '--- RCMs ---\n';
+      csvContent += unparseCsv(dataToExport.RCMs as any[]);
+      csvContent += '\n\n--- Controls ---\n';
+      csvContent += unparseCsv(dataToExport.Controls as any[]);
+      csvContent += '\n\n--- Deficiencies ---\n';
+      csvContent += unparseCsv(dataToExport.Deficiencies as any[]);
+
+      return new Response(csvContent, { headers: { 'Content-Type': 'text/csv', 'Content-Disposition': 'attachment; filename="report.csv"' } });
+    }
+    
+    // Return JSON payload if no recognized format is provided
     return ok(c, dataToExport);
   });
   const rcmRowSchema = z.object({
@@ -188,11 +240,29 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     return ok(c, await entity.getAuditTrail());
   });
   // --- Original Demo Routes ---
+  app.get('/api/socreports', async (c) => ok(c, await SOCReportEntity.list(c.env)));
+  app.post('/api/socreports', async (c) => {
+    if ((c as any).get('userRole') !== 'Line 2') return bad(c, 'Access Denied');
+    const body = await c.req.json<Partial<SOCReport>>();
+    const newSoc: SOCReport = { id: crypto.randomUUID(), vendorName: "New Vendor", reportType: "SOC 1 Type 2", periodStart: Date.now(), periodEnd: Date.now(), issuer: "", status: "Pending Review", lastValidatedDate: Date.now(), ...body };
+    return ok(c, await createWithAudit(SOCReportEntity, c.env, newSoc, (c as any).get('userId')));
+  });
+
+  app.get('/api/applications', async (c) => ok(c, await ApplicationEntity.list(c.env)));
+  app.post('/api/applications', async (c) => {
+    if ((c as any).get('userRole') !== 'Line 2') return bad(c, 'Access Denied');
+    const body = await c.req.json<Partial<Application>>();
+    const newApp: Application = { id: crypto.randomUUID(), name: "New Application", description: "", statusITGC: "Not Tested", criticality: "Medium", ...body };
+    return ok(c, await createWithAudit(ApplicationEntity, c.env, newApp, (c as any).get('userId')));
+  });
+
+  app.get('/api/risklibrary', async (c) => ok(c, await RiskLibraryEntity.list(c.env)));
+
   app.get('/api/users', async (c) => ok(c, await UserEntity.list(c.env)));
   app.get('/api/chats', async (c) => ok(c, await ChatBoardEntity.list(c.env)));
   app.get('/api/chats/:chatId/messages', async (c) => {
     const chat = new ChatBoardEntity(c.env, c.req.param('chatId'));
-    if (!await chat.exists()) return notFound(c, 'chat not found');
+    if (!await chat.exists()) return notFound(c, 'chat find failed');
     return ok(c, await chat.listMessages());
   });
 }

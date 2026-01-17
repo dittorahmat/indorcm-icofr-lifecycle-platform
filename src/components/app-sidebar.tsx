@@ -1,6 +1,16 @@
-/* This is a demo sidebar. **COMPULSORY** Edit this file to customize the sidebar OR remove it from appLayout OR don't use appLayout at all */
 import React from "react";
-import { Home, Layers, Compass, Star, Settings, LifeBuoy } from "lucide-react";
+import { 
+  LayoutDashboard, 
+  Target, 
+  ShieldCheck, 
+  CheckSquare, 
+  Microscope, 
+  AlertTriangle, 
+  BarChart3, 
+  Settings,
+  FileText,
+  Briefcase
+} from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -13,60 +23,123 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarMenuAction,
   SidebarMenuBadge,
 } from "@/components/ui/sidebar";
+import { Link, useLocation } from "react-router-dom";
 
 export function AppSidebar(): JSX.Element {
+  const location = useLocation();
+  const pathname = location.pathname;
+  const mockRole = localStorage.getItem('mockRole');
+
+  const isActive = (path: string) => pathname === path || pathname.startsWith(path);
+
   return (
     <Sidebar>
       <SidebarHeader>
         <div className="flex items-center gap-2 px-2 py-1">
-          <div className="h-6 w-6 rounded-md bg-gradient-to-br from-indigo-500 to-purple-500" />
-          <span className="text-sm font-medium">Demo Sidebar</span>
+          <div className="h-6 w-6 rounded-md bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-xs">
+            I
+          </div>
+          <span className="text-sm font-medium">IndoRCM Pro</span>
         </div>
-        <SidebarInput placeholder="Search" />
+        <SidebarInput placeholder="Search..." />
       </SidebarHeader>
       <SidebarContent>
+        {mockRole === 'External Auditor' && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-blue-600 font-bold">External Assurance</SidebarGroupLabel>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={isActive("/audit-portal")}>
+                  <Link to="/audit-portal"><Briefcase className="text-blue-600" /> <span className="font-semibold text-blue-700">Audit Portal (KAP)</span></Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroup>
+        )}
+
         <SidebarGroup>
+          <SidebarGroupLabel>Planning</SidebarGroupLabel>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive>
-                <a href="#"><Home /> <span>Home</span></a>
+              <SidebarMenuButton asChild isActive={isActive("/dashboard")}>
+                <Link to="/dashboard"><LayoutDashboard /> <span>Dashboard</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <a href="#"><Layers /> <span>Projects</span></a>
+              <SidebarMenuButton asChild isActive={isActive("/scoping")}>
+                <Link to="/scoping"><Target /> <span>Scoping & Materiality</span></Link>
               </SidebarMenuButton>
-              <SidebarMenuAction>
-                <Star className="size-4" />
-              </SidebarMenuAction>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <a href="#"><Compass /> <span>Explore</span></a>
+              <SidebarMenuButton asChild isActive={isActive("/rcm")}>
+                <Link to="/rcm"><ShieldCheck /> <span>RCM Manager</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
 
+        <SidebarGroup>
+          <SidebarGroupLabel>Implementation</SidebarGroupLabel>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={isActive("/csa")}>
+                <Link to="/csa"><CheckSquare /> <span>CSA Workspace</span></Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Evaluation</SidebarGroupLabel>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={isActive("/testing")}>
+                <Link to="/testing"><Microscope /> <span>Testing Workbench</span></Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Remediation</SidebarGroupLabel>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={isActive("/deficiencies")}>
+                <Link to="/deficiencies"><AlertTriangle /> <span>Deficiency Board</span></Link>
+              </SidebarMenuButton>
+              <SidebarMenuBadge className="bg-red-100 text-red-700 hover:bg-red-100">3</SidebarMenuBadge>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Reporting</SidebarGroupLabel>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={isActive("/reports")}>
+                <Link to="/reports"><BarChart3 /> <span>Reports & Exports</span></Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
+        
         <SidebarSeparator />
-
+        
         <SidebarGroup>
-          <SidebarGroupLabel>Quick Links</SidebarGroupLabel>
-          <SidebarMenu>
+           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <a href="#"><Star /> <span>Starred</span></a>
+              <SidebarMenuButton asChild isActive={isActive("/settings")}>
+                <Link to="/settings"><Settings /> <span>Settings</span></Link>
               </SidebarMenuButton>
-              <SidebarMenuBadge>5</SidebarMenuBadge>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
+
       </SidebarContent>
       <SidebarFooter>
-        <div className="px-2 text-xs text-muted-foreground">A simple shadcn sidebar</div>
+        <div className="px-2 text-xs text-muted-foreground">© 2026 IndoRCM Pro</div>
       </SidebarFooter>
     </Sidebar>
   );

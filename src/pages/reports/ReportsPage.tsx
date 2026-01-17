@@ -1,111 +1,340 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { saveAs } from 'file-saver';
-import { MainHeader } from '@/components/layout/MainHeader';
+import { AppLayout } from '@/components/layout/AppLayout';
 import { api } from '@/lib/api-client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { FileDown, Printer, Shield } from 'lucide-react';
+import { FileDown, Printer, Shield, FileText, CheckCircle2, AlertTriangle, Lock } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, PieChart, Pie, Cell } from 'recharts';
 import { toast } from 'sonner';
 import type { Deficiency } from '@shared/types';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 };
+
 export function ReportsPage() {
+  const [isSigned, setIsSigned] = React.useState(false);
   const { data: summaryData, isLoading } = useQuery({
     queryKey: ['reportSummary'],
     queryFn: () => api<any>('/api/reports/summary'),
   });
-  const { data: auditTrailData, isLoading: auditLoading } = useQuery({
-    queryKey: ['auditTrailSample'],
-    queryFn: () => api<any[]>('/api/audits/rcm/rcm-p2p-1'),
-    enabled: !!summaryData,
-  });
+
+  const handleSignOff = () => {
+    setIsSigned(true);
+    toast.success('Report signed and locked by CEO & CFO.', {
+      description: 'Audit trail entry created. Data is now immutable for this period.',
+      icon: <CheckCircle2 className="h-4 w-4 text-green-600" />
+    });
+  };
+
   const handleExport = async (format: 'csv' | 'excel') => {
     const toastId = toast.loading(`Exporting to ${format.toUpperCase()}...`);
     try {
-      // Fetch JSON payload from the export endpoint and generate files client-side
-      const response = await fetch(`/api/reports/export`, {
+      if (format === 'excel') {
+        toast.error('Excel export not available in this environment', { id: toastId });
+        return;
+      }
+      const response = await fetch(`/api/reports/export?format=${format}`, {
         method: 'POST',
         headers: { 'X-Mock-Role': localStorage.getItem('mockRole') || 'Line 2' },
       });
       if (!response.ok) throw new Error('Export failed');
-      const json = await response.json();
-
-      if (format === 'csv') {
-        // Dynamic import of papaparse for client-side CSV generation
-        const { unparse } = await import('papaparse');
-        const csv = unparse(json);
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        saveAs(blob, 'icofr_report.csv');
-      } else {
-        // Dynamic import of xlsx (SheetJS) for client-side Excel generation
-        const XLSX = await import('xlsx');
-        // Ensure we pass an array of objects to json_to_sheet
-        const rows = Array.isArray(json) ? json : [json];
-        const ws = XLSX.utils.json_to_sheet(rows);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Report');
-        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-        const blob = new Blob([wbout], { type: 'application/octet-stream' });
-        saveAs(blob, 'icofr_report.xlsx');
-      }
-
+      const blob = await response.blob();
+      saveAs(blob, `icofr_report.${format === 'csv' ? 'csv' : 'xlsx'}`);
       toast.success('Export successful!', { id: toastId });
     } catch (error) {
       toast.error('Export failed.', { id: toastId });
     }
   };
+
   return (
-    <div className="flex flex-col min-h-screen bg-muted/40">
-      <MainHeader />
-      <main className="flex-1">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="py-8 md:py-10 lg:py-12">
-            <div className="flex items-center justify-between mb-6 no-print">
-              <h1 className="text-3xl font-bold">Reports & Exports</h1>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" onClick={() => handleExport('csv')}><FileDown className="h-4 w-4 mr-2" /> Export CSV</Button>
-                <Button onClick={() => handleExport('excel')}><FileDown className="h-4 w-4 mr-2" /> Export Excel</Button>
-                <Button variant="secondary" onClick={() => window.print()}><Printer className="h-4 w-4 mr-2" /> Print</Button>
-              </div>
-            </div>
-            <motion.div
-              className="grid gap-6 md:grid-cols-3 mb-8"
-              initial="hidden"
-              animate="visible"
-              variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
-            >
-              <motion.div variants={cardVariants}><Card><CardHeader><CardTitle>Overall Control Effectiveness</CardTitle></CardHeader><CardContent>{isLoading ? <Skeleton className="h-12 w-24" /> : <div className="text-4xl font-bold text-green-600">{summaryData?.effectiveness}%</div>}</CardContent></Card></motion.div>
-              <motion.div variants={cardVariants}><Card><CardHeader><CardTitle>Total Controls</CardTitle></CardHeader><CardContent>{isLoading ? <Skeleton className="h-12 w-24" /> : <div className="text-4xl font-bold">{summaryData?.totalControls}</div>}</CardContent></Card></motion.div>
-              <motion.div variants={cardVariants}><Card><CardHeader><CardTitle>Open Deficiencies</CardTitle></CardHeader><CardContent>{isLoading ? <Skeleton className="h-12 w-24" /> : <div className="text-4xl font-bold text-red-600">{summaryData?.openDeficiencies}</div>}</CardContent></Card></motion.div>
-            </motion.div>
-            <div className="grid gap-8 md:grid-cols-2">
-              <Card><CardHeader><CardTitle>Deficiencies by Severity</CardTitle></CardHeader><CardContent><ResponsiveContainer width="100%" height={300}>{isLoading ? <Skeleton className="h-full w-full" /> : (<BarChart data={summaryData?.deficienciesBySeverity}><XAxis dataKey="name" stroke="#888888" fontSize={12} /><YAxis stroke="#888888" fontSize={12} /><Tooltip cursor={{ fill: 'hsl(var(--muted))' }} /><Bar dataKey="count" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} className="cursor-pointer hover:opacity-80 transition-opacity" /></BarChart>)}</ResponsiveContainer></CardContent></Card>
-              <Card><CardHeader><CardTitle>Deficiency Status</CardTitle></CardHeader><CardContent><ResponsiveContainer width="100%" height={300}>{isLoading ? <Skeleton className="h-full w-full" /> : (<PieChart><Pie data={summaryData?.deficienciesByStatus} dataKey="count" nameKey="name" cx="50%" cy="50%" outerRadius={80} label className="cursor-pointer hover:opacity-80 transition-opacity">{summaryData?.deficienciesByStatus?.map((entry: any, index: number) => (<Cell key={`cell-${index}`} fill={entry.name === 'Open' ? '#F97316' : '#16A34A'} />))}</Pie><Tooltip /><Legend /></PieChart>)}</ResponsiveContainer></CardContent></Card>
-            </div>
-            <Card className="mt-8"><CardHeader><CardTitle>Detailed Deficiency List</CardTitle></CardHeader><CardContent><Table><TableHeader><TableRow><TableHead>Description</TableHead><TableHead>Severity</TableHead><TableHead>Status</TableHead><TableHead>Identified Date</TableHead></TableRow></TableHeader><TableBody>{isLoading ? (Array.from({ length: 3 }).map((_, i) => (<TableRow key={i}><TableCell><Skeleton className="h-4 w-full" /></TableCell><TableCell><Skeleton className="h-4 w-24" /></TableCell><TableCell><Skeleton className="h-4 w-16" /></TableCell><TableCell><Skeleton className="h-4 w-32" /></TableCell></TableRow>))) : (summaryData?.allDeficiencies?.map((def: Deficiency) => (<TableRow key={def.id}><TableCell>{def.description}</TableCell><TableCell><Badge variant={def.severity === 'Material Weakness' ? 'destructive' : def.severity === 'Significant Deficiency' ? 'secondary' : 'outline'}>{def.severity}</Badge></TableCell><TableCell>{def.status}</TableCell><TableCell>{new Date(def.identifiedDate).toLocaleDateString()}</TableCell></TableRow>)))}</TableBody></Table></CardContent></Card>
-            <Card className="mt-8"><CardHeader><CardTitle>Audit Trail Sample (RCM: P2P)</CardTitle></CardHeader><CardContent><Table><TableHeader><TableRow><TableHead>Action</TableHead><TableHead>User ID</TableHead><TableHead>Timestamp</TableHead></TableRow></TableHeader><TableBody>{auditLoading ? (<TableRow><TableCell colSpan={3}><Skeleton className="h-20 w-full" /></TableCell></TableRow>) : (auditTrailData?.map((audit, i) => (<TableRow key={i} className="hover:bg-muted/50 cursor-pointer"><TableCell className="capitalize">{audit.action}</TableCell><TableCell>{audit.userId}</TableCell><TableCell>{new Date(audit.timestamp).toLocaleString()}</TableCell></TableRow>)))}</TableBody></Table></CardContent></Card>
-            <motion.div variants={cardVariants} initial="hidden" animate="visible" className="mt-8 management-assessment"><Card><CardHeader className="text-center"><Shield className="h-12 w-12 mx-auto text-primary" /><CardTitle className="text-2xl mt-4">Management Assessment Report</CardTitle><CardDescription>For the period ending {new Date().toLocaleDateString()}</CardDescription></CardHeader><CardContent className="space-y-6"><p className="text-center text-muted-foreground">Based on our assessment, management concludes that the company maintained, in all material respects, effective internal control over financial reporting as of {new Date().toLocaleDateString()}.</p><div className="grid grid-cols-2 gap-4 border-t pt-4"><div className="font-semibold">Overall Effectiveness:</div><div className="text-right font-bold text-green-600">{summaryData?.effectiveness}%</div><div className="font-semibold">Open Material Weaknesses:</div><div className="text-right font-bold text-red-600">{summaryData?.deficienciesBySeverity?.find((d: any) => d.name === 'Material Weakness')?.count || 0}</div></div><div className="border-t pt-6 mt-6 flex justify-between items-end"><div className="space-y-2"><div className="w-48 h-0.5 bg-foreground"></div><p className="text-sm font-medium">CFO Signature</p></div><div className="space-y-2"><div className="w-48 h-0.5 bg-foreground"></div><p className="text-sm font-medium">CEO Signature</p></div></div></CardContent></Card></motion.div>
+    <AppLayout container>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between no-print">
+          <div>
+            <h1 className="text-3xl font-bold">Reports & Exports</h1>
+            <p className="text-muted-foreground">Standardized ICOFR reports for BUMN compliance.</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => handleExport('csv')}><FileDown className="h-4 w-4 mr-2" /> Export CSV</Button>
+            <Button variant="secondary" onClick={() => window.print()}><Printer className="h-4 w-4 mr-2" /> Print Report</Button>
           </div>
         </div>
-      </main>
-      <style dangerouslySetInnerHTML={{ __html: `
+
+        <Tabs defaultValue="dashboard" className="no-print">
+          <TabsList>
+            <TabsTrigger value="dashboard">Overview</TabsTrigger>
+            <TabsTrigger value="management">Asesmen Manajemen</TabsTrigger>
+            <TabsTrigger value="audit">Laporan Hasil Pengujian</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="dashboard" className="space-y-6 pt-4">
+            <div className="grid gap-6 md:grid-cols-3">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Overall Effectiveness</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {isLoading ? <Skeleton className="h-10 w-24" /> : <div className="text-3xl font-bold text-green-600">{summaryData?.effectiveness}%</div>}
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Total Controls</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {isLoading ? <Skeleton className="h-10 w-24" /> : <div className="text-3xl font-bold">{summaryData?.totalControls}</div>}
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Open Deficiencies</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {isLoading ? <Skeleton className="h-10 w-24" /> : <div className="text-3xl font-bold text-red-600">{summaryData?.openDeficiencies}</div>}
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Deficiencies by Severity</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={250}>
+                    {isLoading ? <Skeleton className="h-full w-full" /> : (
+                      <BarChart data={summaryData?.deficienciesBySeverity}>
+                        <XAxis dataKey="name" stroke="#888888" fontSize={10} />
+                        <YAxis stroke="#888888" fontSize={10} />
+                        <Tooltip />
+                        <Bar dataKey="count" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    )}
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Deficiency Status</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={250}>
+                    {isLoading ? <Skeleton className="h-full w-full" /> : (
+                      <PieChart>
+                        <Pie data={summaryData?.deficienciesByStatus} dataKey="count" nameKey="name" cx="50%" cy="50%" outerRadius={60} label>
+                          {summaryData?.deficienciesByStatus.map((entry: any, index: number) => (
+                            <Cell key={`cell-${index}`} fill={entry.name === 'Open' ? '#F97316' : '#16A34A'} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                        <Legend />
+                      </PieChart>
+                    )}
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="management" className="pt-4">
+            <div className="flex justify-end mb-4 gap-2 no-print">
+              {!isSigned ? (
+                <Button onClick={handleSignOff} variant="destructive" className="font-bold">
+                  <Lock className="h-4 w-4 mr-2" /> Sign & Lock Report (CEO/CFO)
+                </Button>
+              ) : (
+                <Badge className="bg-blue-600 text-white px-4 py-2 text-sm">
+                  <Shield className="h-4 w-4 mr-2" /> PERIOD FINALIZED & SIGNED
+                </Badge>
+              )}
+            </div>
+            <Card className="print:shadow-none border-none sm:border relative overflow-hidden">
+              <AnimatePresence>
+                {isSigned && (
+                  <motion.div 
+                    initial={{ scale: 2, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 0.15 }}
+                    className="absolute inset-0 flex items-center justify-center pointer-events-none z-10"
+                  >
+                    <div className="border-8 border-green-600 text-green-600 font-black text-9xl p-10 rotate-[-30deg] uppercase tracking-tighter">
+                      Signed
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              <CardHeader className="text-center border-b pb-8">
+                <div className="flex justify-center mb-4"><Shield className="h-12 w-12 text-primary" /></div>
+                <CardTitle className="text-2xl uppercase">Asesmen Manajemen atas Efektivitas Implementasi ICOFR</CardTitle>
+                <CardDescription>Lampiran 11 - SK-5/DKU.MBU/11/2024</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-8 py-8 px-10">
+                <div className="space-y-4 text-justify leading-relaxed">
+                  <p>Direksi PT [Nama Perusahaan] menyatakan bahwa:</p>
+                  
+                  {/* Conditional Conclusion based on MW */}
+                  {summaryData?.deficienciesBySeverity.find((d: any) => d.name === 'Material Weakness')?.count > 0 ? (
+                    <div className="p-4 bg-red-50 border border-red-200 rounded-md mb-6">
+                      <p className="font-bold text-red-800 underline mb-2 text-center">KESIMPULAN: TIDAK EFEKTIF</p>
+                      <p className="text-sm text-red-700">
+                        Berdasarkan evaluasi yang dilakukan, manajemen menyimpulkan bahwa Perusahaan <strong>tidak mempertahankan</strong> pengendalian internal yang efektif atas pelaporan keuangan per tanggal laporan, sehubungan dengan ditemukannya kelemahan material (Material Weakness) sebagaimana dirinci di bawah ini.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="p-4 bg-green-50 border border-green-200 rounded-md mb-6">
+                      <p className="font-bold text-green-800 underline mb-2 text-center">KESIMPULAN: EFEKTIF</p>
+                      <p className="text-sm text-green-700">
+                        Berdasarkan evaluasi yang dilakukan, manajemen menyimpulkan bahwa Perusahaan <strong>telah mempertahankan</strong>, dalam semua hal yang material, pengendalian internal yang efektif atas pelaporan keuangan per tanggal laporan.
+                      </p>
+                    </div>
+                  )}
+
+                  <ol className="list-decimal pl-5 space-y-4">
+                    <li>Kami telah menelaah laporan keuangan yang berakhir pada {new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}.</li>
+                    <li>Berdasarkan pengetahuan kami, laporan keuangan tidak memuat pernyataan yang tidak benar tentang fakta material atau tidak mencantumkan fakta material yang diperlukan.</li>
+                    <li>Kami telah mengimplementasikan pengendalian dan prosedur atas penyusunan laporan keuangan yang dianggap perlu.</li>
+                    <li>Kami telah mengungkapkan, berdasarkan hasil evaluasi, seluruh defisiensi signifikan dan kelemahan material kepada Dewan Komisaris dan Komite Audit.</li>
+                  </ol>
+                </div>
+
+                <div className="bg-muted/30 p-6 rounded-lg space-y-4">
+                  <h3 className="font-bold border-b pb-2 flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4" /> Rincian Defisiensi & Rencana Remediasi
+                  </h3>
+                  <Table className="text-xs">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Defisiensi</TableHead>
+                        <TableHead>Severity</TableHead>
+                        <TableHead>Rencana Remediasi</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {summaryData?.allDeficiencies.filter((d: any) => d.severity !== 'Control Deficiency').map((def: any) => (
+                        <TableRow key={def.id}>
+                          <TableCell className="font-medium">{def.description}</TableCell>
+                          <TableCell><Badge variant="outline" className="text-[10px]">{def.severity}</Badge></TableCell>
+                          <TableCell className="italic text-muted-foreground">Monitor progress via Deficiency Board</TableCell>
+                        </TableRow>
+                      ))}
+                      {!summaryData?.allDeficiencies.some((d: any) => d.severity !== 'Control Deficiency') && (
+                        <TableRow>
+                          <TableCell colSpan={3} className="text-center py-4 text-muted-foreground">Tidak ditemukan defisiensi signifikan atau kelemahan material.</TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="grid grid-cols-2 gap-20 pt-12">
+                  <div className="text-center space-y-24">
+                    <p className="font-semibold border-b pb-2">Direktur Keuangan (CFO)</p>
+                    <p className="font-bold">[Nama CFO]</p>
+                  </div>
+                  <div className="text-center space-y-24">
+                    <p className="font-semibold border-b pb-2">Direktur Utama (CEO)</p>
+                    <p className="font-bold">[Nama CEO]</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="audit" className="pt-4">
+            <Card className="print:shadow-none border-none sm:border">
+              <CardHeader className="border-b">
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-primary" />
+                  Laporan Hasil Pengujian Efektivitas ICOFR
+                </CardTitle>
+                <CardDescription>Oleh Lini Ketiga (Audit Internal)</CardDescription>
+              </CardHeader>
+              <CardContent className="py-6">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>No</TableHead>
+                      <TableHead>Control Code</TableHead>
+                      <TableHead>Control Name</TableHead>
+                      <TableHead>Method</TableHead>
+                      <TableHead>Result</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell>1</TableCell>
+                      <TableCell className="font-mono">P2P-01</TableCell>
+                      <TableCell>3-Way Match</TableCell>
+                      <TableCell>TOE (Sampling)</TableCell>
+                      <TableCell><Badge className="bg-green-100 text-green-700 hover:bg-green-100">Efektif</Badge></TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>2</TableCell>
+                      <TableCell className="font-mono">R2R-01</TableCell>
+                      <TableCell>Bank Reconciliation</TableCell>
+                      <TableCell>TOE (Inspection)</TableCell>
+                      <TableCell><Badge className="bg-green-100 text-green-700 hover:bg-green-100">Efektif</Badge></TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>3</TableCell>
+                      <TableCell className="font-mono">P2P-02</TableCell>
+                      <TableCell>Vendor Master Changes</TableCell>
+                      <TableCell>TOD (Walkthrough)</TableCell>
+                      <TableCell><Badge variant="destructive">Tidak Efektif</Badge></TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+
+        {/* This section is visible only during printing */}
+        <div className="hidden print:block space-y-10">
+           <div className="text-center space-y-4">
+              <Shield className="h-16 w-12 mx-auto text-primary" />
+              <h1 className="text-3xl font-bold uppercase">Laporan Tahunan ICOFR PT [Nama Perusahaan]</h1>
+              <p className="text-lg font-medium">Periode Laporan: {new Date().getFullYear()}</p>
+           </div>
+           
+           <div className="border-t-2 pt-8">
+              <h2 className="text-xl font-bold mb-4">1. Asesmen Manajemen</h2>
+              <p className="text-justify leading-relaxed mb-10">
+                Berdasarkan evaluasi yang telah dilakukan, Manajemen menyimpulkan bahwa pengendalian internal 
+                atas pelaporan keuangan (ICOFR) telah berjalan secara efektif dalam semua hal yang material.
+              </p>
+              
+              <div className="grid grid-cols-2 gap-20 pt-12">
+                <div className="text-center space-y-20">
+                  <p className="font-semibold border-b">Direktur Keuangan</p>
+                  <p className="font-bold">( ____________________ )</p>
+                </div>
+                <div className="text-center space-y-20">
+                  <p className="font-semibold border-b">Direktur Utama</p>
+                  <p className="font-bold">( ____________________ )</p>
+                </div>
+              </div>
+           </div>
+        </div>
+      </div>
+
+      <style>{`
         @media print {
-          body * { visibility: hidden; }
-          .management-assessment, .management-assessment * { visibility: visible; }
-          .management-assessment { position: absolute; left: 0; top: 0; width: 100%; }
-          .no-print { display: none; }
-          table { border-collapse: collapse !important; width: 100%; }
-          th, td { border: 1px solid #ddd; padding: 8px; }
+          .no-print { display: none !important; }
+          body { background: white !important; }
+          .AppLayout_content { padding: 0 !important; }
+          [data-radix-collection-item] { display: block !important; opacity: 1 !important; }
+          .tabs-content { display: block !important; border: none !important; }
         }
-      ` }} />
-    </div>
+      `}</style>
+    </AppLayout>
   );
 }
