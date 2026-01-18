@@ -267,6 +267,7 @@ export function DeficiencyBoard() {
         isOpen={isWizardOpen} 
         setIsOpen={setWizardOpen} 
         onComplete={handleWizardComplete} 
+        isAggregate={isAggregateMode}
       />
     </AppLayout>
   );

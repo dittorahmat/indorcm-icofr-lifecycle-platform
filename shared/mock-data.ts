@@ -87,7 +87,19 @@ export const MOCK_MATERIALITY: Materiality[] = [
 ];
 
 export const MOCK_SCOPING: Scoping[] = [
-  { id: 'scope-2024', year: 2024, significantAccounts: ['Cash', 'Accounts Receivable', 'Inventory', 'Accounts Payable'], significantLocations: ['Head Office', 'Branch A'], significantProcesses: ['Order to Cash', 'Procure to Pay', 'Financial Closing'] }
+  { 
+    id: 'scope-2024', 
+    year: 2024, 
+    significantAccounts: [
+      { name: 'Cash', balance: 5000000000, isQuantitative: true },
+      { name: 'Accounts Receivable', balance: 4200000000, isQuantitative: true },
+      { name: 'Inventory', balance: 3800000000, isQuantitative: true },
+      { name: 'Accounts Payable', balance: 3500000000, isQuantitative: true },
+      { name: 'Prepaid Expenses', balance: 150000000, isQuantitative: false, qualitativeReasons: ["Akun yang memerlukan judgement tinggi"] }
+    ], 
+    significantLocations: ['Head Office', 'Branch A'], 
+    significantProcesses: ['Order to Cash', 'Procure to Pay', 'Financial Closing'] 
+  }
 ];
 
 // --- New SK-5 Compliance Data ---
@@ -99,13 +111,51 @@ export const MOCK_APPLICATIONS: Application[] = [
 ];
 
 export const MOCK_RISK_LIBRARY: RiskLibrary[] = [
-  // Klaster Energi
-  { id: 'risk-energy-01', cluster: 'Industri Energi', riskDescription: 'Kegagalan pencatatan cadangan terbukti (proven reserves) yang tidak sesuai standar PSAK/IFRS.', suggestedAssertions: ['Accuracy', 'Valuation'] },
-  { id: 'risk-energy-02', cluster: 'Industri Energi', riskDescription: 'Ketidakakuratan perhitungan cost recovery pada kontrak bagi hasil.', suggestedAssertions: ['Accuracy', 'Completeness'] },
-  // Klaster Keuangan
-  { id: 'risk-fin-01', cluster: 'Jasa Keuangan', riskDescription: 'Kesalahan perhitungan Cadangan Kerugian Penurunan Nilai (CKPN) kredit.', suggestedAssertions: ['Valuation', 'Accuracy'] },
-  { id: 'risk-fin-02', cluster: 'Jasa Keuangan', riskDescription: 'Kegagalan sistem rekonsiliasi transaksi switching antar bank.', suggestedAssertions: ['Completeness', 'Accuracy'] },
-  // Klaster Umum (Cross-Industry)
+  // 1. Umum
   { id: 'risk-gen-01', cluster: 'Umum', riskDescription: 'Pembayaran kepada vendor fiktif atau tidak terotorisasi dalam siklus P2P.', suggestedAssertions: ['Validity', 'Existence'] },
   { id: 'risk-gen-02', cluster: 'Umum', riskDescription: 'Pengakuan pendapatan (Revenue Recognition) yang terlalu dini (Cut-off error).', suggestedAssertions: ['Cut-off', 'Occurrence'] },
+  { id: 'risk-gen-03', cluster: 'Umum', riskDescription: 'Risiko terkait struktur keuangan yang kompleks (subsidi, hibah) yang meningkatkan risiko kesalahan pelaporan.', suggestedAssertions: ['Presentation', 'Accuracy'] },
+  { id: 'risk-gen-04', cluster: 'Umum', riskDescription: 'Risiko pelaporan utang dan kewajiban kontinjensi yang dijamin pemerintah tidak akurat.', suggestedAssertions: ['Completeness', 'Valuation'] },
+
+  // 2. Industri Energi Minyak dan Gas
+  { id: 'risk-energy-01', cluster: 'Industri Energi', riskDescription: 'Kegagalan pencatatan cadangan terbukti (proven reserves) yang tidak sesuai standar PSAK/IFRS.', suggestedAssertions: ['Accuracy', 'Valuation'] },
+  { id: 'risk-energy-02', cluster: 'Industri Energi', riskDescription: 'Ketidakakuratan perhitungan cost recovery pada kontrak bagi hasil.', suggestedAssertions: ['Accuracy', 'Completeness'] },
+  { id: 'risk-energy-03', cluster: 'Industri Energi', riskDescription: 'Penurunan nilai aset (impairment) akibat volatilitas harga minyak dan gas.', suggestedAssertions: ['Valuation'] },
+
+  // 3. Industri Pangan dan Pupuk
+  { id: 'risk-food-01', cluster: 'Industri Pangan dan Pupuk', riskDescription: 'Kompleksitas kontrak dengan distributor/pengecer (rabat, retur) mempersulit pengakuan pendapatan.', suggestedAssertions: ['Accuracy', 'Cut-off'] },
+  { id: 'risk-food-02', cluster: 'Industri Pangan dan Pupuk', riskDescription: 'Penilaian persediaan pupuk dengan masa simpan panjang dan siklus produksi kompleks.', suggestedAssertions: ['Valuation'] },
+
+  // 4. Jasa Keuangan
+  { id: 'risk-fin-01', cluster: 'Jasa Keuangan', riskDescription: 'Kesalahan perhitungan Cadangan Kerugian Penurunan Nilai (CKPN) kredit.', suggestedAssertions: ['Valuation', 'Accuracy'] },
+  { id: 'risk-fin-02', cluster: 'Jasa Keuangan', riskDescription: 'Kegagalan sistem rekonsiliasi transaksi switching antar bank.', suggestedAssertions: ['Completeness', 'Accuracy'] },
+  { id: 'risk-fin-03', cluster: 'Jasa Keuangan', riskDescription: 'Penilaian aset keuangan (derivatif, surat berharga) yang melibatkan estimasi signifikan.', suggestedAssertions: ['Valuation'] },
+
+  // 5. Industri Mineral dan Batubara
+  { id: 'risk-mining-01', cluster: 'Industri Mineral dan Batubara', riskDescription: 'Estimasi cadangan mineral/batubara yang kompleks dan melibatkan asumsi signifikan.', suggestedAssertions: ['Valuation'] },
+  { id: 'risk-mining-02', cluster: 'Industri Mineral dan Batubara', riskDescription: 'Kewajiban lingkungan (reklamasi tambang) tidak dicadangkan dengan memadai.', suggestedAssertions: ['Completeness', 'Valuation'] },
+
+  // 6. Jasa Telekomunikasi dan Media
+  { id: 'risk-telco-01', cluster: 'Jasa Telekomunikasi dan Media', riskDescription: 'Pengakuan pendapatan dari kontrak bundling (produk + layanan) yang kompleks.', suggestedAssertions: ['Accuracy', 'Cut-off'] },
+  { id: 'risk-telco-02', cluster: 'Jasa Telekomunikasi dan Media', riskDescription: 'Impairment aset infrastruktur jaringan dan spektrum frekuensi akibat perubahan teknologi.', suggestedAssertions: ['Valuation'] },
+
+  // 7. Jasa Infrastruktur
+  { id: 'risk-infra-01', cluster: 'Jasa Infrastruktur', riskDescription: 'Pengakuan pendapatan metode persentase penyelesaian (POC) pada kontrak konstruksi jangka panjang.', suggestedAssertions: ['Accuracy', 'Cut-off'] },
+  { id: 'risk-infra-02', cluster: 'Jasa Infrastruktur', riskDescription: 'Penilaian aset infrastruktur (jalan tol, pelabuhan) dan depresiasinya.', suggestedAssertions: ['Valuation'] },
+
+  // 8. Jasa Asuransi dan Dana Pensiun
+  { id: 'risk-ins-01', cluster: 'Jasa Asuransi dan Dana Pensiun', riskDescription: 'Estimasi cadangan klaim (IBNR) yang tidak memadai.', suggestedAssertions: ['Valuation', 'Completeness'] },
+  { id: 'risk-ins-02', cluster: 'Jasa Asuransi dan Dana Pensiun', riskDescription: 'Pengakuan pendapatan premi diterima dimuka (unearned premium).', suggestedAssertions: ['Cut-off', 'Accuracy'] },
+
+  // 9. Jasa Pariwisata dan Pendukung
+  { id: 'risk-tour-01', cluster: 'Jasa Pariwisata dan Pendukung', riskDescription: 'Pengakuan pendapatan tiket/layanan yang melibatkan pihak ketiga (agen perjalanan).', suggestedAssertions: ['Accuracy', 'Cut-off'] },
+  { id: 'risk-tour-02', cluster: 'Jasa Pariwisata dan Pendukung', riskDescription: 'Impairment aset hotel/armada akibat fluktuasi permintaan wisata.', suggestedAssertions: ['Valuation'] },
+
+  // 10. Industri Perkebunan dan Kehutanan
+  { id: 'risk-agro-01', cluster: 'Industri Perkebunan dan Kehutanan', riskDescription: 'Penilaian aset biologis (tanaman belum menghasilkan/menghasilkan) yang kompleks.', suggestedAssertions: ['Valuation'] },
+  { id: 'risk-agro-02', cluster: 'Industri Perkebunan dan Kehutanan', riskDescription: 'Estimasi kewajiban lingkungan dan dampak perubahan iklim.', suggestedAssertions: ['Completeness', 'Valuation'] },
+
+  // 11. Jasa Logistik
+  { id: 'risk-log-01', cluster: 'Jasa Logistik', riskDescription: 'Kapitalisasi vs beban untuk biaya pemeliharaan aset (kapal, kereta, armada).', suggestedAssertions: ['Accuracy', 'Classification'] },
+  { id: 'risk-log-02', cluster: 'Jasa Logistik', riskDescription: 'Pengakuan pendapatan jasa pengiriman yang belum selesai pada akhir periode (Cut-off).', suggestedAssertions: ['Cut-off', 'Completeness'] }
 ];

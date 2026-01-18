@@ -205,7 +205,10 @@ function ControlTestCard({ control, openDeficiencyDate }: { control: Control, op
                           <p className="text-[10px] font-bold text-orange-800 uppercase">Table 15 & 20: IPE Verifications ({control.ipeType})</p>
                           <div className="flex items-center space-x-2"><Checkbox id={`ipe1-${control.id}`} /><Label htmlFor={`ipe1-${control.id}`} className="text-[10px]">Verify report parameters & filters match design</Label></div>
                           {control.ipeType === "Query" && (
-                            <div className="flex items-center space-x-2"><Checkbox id={`ipeq-${control.id}`} /><Label htmlFor={`ipeq-${control.id}`} className="text-[10px] text-red-700 font-semibold">Technical Reperformance of SQL Logic (Query Validation)</Label></div>
+                            <>
+                              <div className="flex items-center space-x-2"><Checkbox id={`ipeq-${control.id}`} /><Label htmlFor={`ipeq-${control.id}`} className="text-[10px] text-red-700 font-semibold">Technical Reperformance of SQL Logic (Query Validation)</Label></div>
+                              <div className="flex items-center space-x-2"><Checkbox id={`ipet-${control.id}`} /><Label htmlFor={`ipet-${control.id}`} className="text-[10px]">Compare total rows/values with source data (Completeness)</Label></div>
+                            </>
                           )}
                           <div className="flex items-center space-x-2"><Checkbox id={`ipe2-${control.id}`} /><Label htmlFor={`ipe2-${control.id}`} className="text-[10px]">Ensure source ITGCs are effective</Label></div>
                         </div>
@@ -216,6 +219,7 @@ function ControlTestCard({ control, openDeficiencyDate }: { control: Control, op
                         <div className="p-3 bg-purple-50 border border-purple-100 rounded-md space-y-2">
                           <p className="text-[10px] font-bold text-purple-800 uppercase">Table 14: EUC Controls ({control.eucComplexity} Complexity)</p>
                           <div className="flex items-center space-x-2"><Checkbox id={`euc1-${control.id}`} /><Label htmlFor={`euc1-${control.id}`} className="text-[10px]">Data Integrity (Formula cells locked)</Label></div>
+                          <div className="flex items-center space-x-2"><Checkbox id={`eucav-${control.id}`} /><Label htmlFor={`eucav-${control.id}`} className="text-[10px]">Availability (Periodic backup & restore test)</Label></div>
                           {(control.eucComplexity === "Medium" || control.eucComplexity === "High") && (
                             <>
                               <div className="flex items-center space-x-2"><Checkbox id={`eucv-${control.id}`} /><Label htmlFor={`eucv-${control.id}`} className="text-[10px]">Version Control (Current template used)</Label></div>

@@ -109,6 +109,28 @@ export function isReadyForRemediationTest(
 }
 
 /**
+ * Pemetaan COBIT 2019 ke Area ITGC berdasarkan Tabel 1 (Hal 16)
+ */
+export const COBIT_ITGC_MAPPING: Record<string, string[]> = {
+  "APO09": ["Program Development", "Program Changes", "Computer Operations", "Access to Program and Data"],
+  "APO10": ["Program Development", "Program Changes", "Computer Operations", "Access to Program and Data"],
+  "APO13": ["Computer Operations", "Access to Program and Data"],
+  "BAI02": ["Program Development", "Program Changes"],
+  "BAI03": ["Program Development", "Program Changes"],
+  "BAI04": ["Program Development", "Program Changes"],
+  "BAI06": ["Program Changes", "Computer Operations", "Access to Program and Data"],
+  "BAI07": ["Program Development", "Program Changes", "Computer Operations", "Access to Program and Data"],
+  "BAI10": ["Program Changes", "Computer Operations", "Access to Program and Data"],
+  "DSS01": ["Program Development", "Computer Operations", "Access to Program and Data"],
+  "DSS02": ["Program Development", "Program Changes", "Computer Operations"],
+  "DSS03": ["Computer Operations"],
+  "DSS04": ["Computer Operations", "Access to Program and Data"],
+  "DSS05": ["Computer Operations", "Access to Program and Data"],
+  "DSS06": ["Computer Operations", "Access to Program and Data"],
+};
+
+
+/**
  * Matriks Distribusi Laporan Defisiensi berdasarkan Tabel 24 (Hal 103)
  */
 export type DeficiencyStakeholder = "Unit Kerja / Process Owner" | "Manajemen (Lini 2 & Lini 3)" | "Direksi (CEO/CFO)" | "Komite Audit" | "Dewan Komisaris";
@@ -123,6 +145,52 @@ export function getDeficiencyDistribution(severity: string): DeficiencyStakehold
       return ["Unit Kerja / Process Owner", "Manajemen (Lini 2 & Lini 3)", "Direksi (CEO/CFO)", "Komite Audit", "Dewan Komisaris"];
     default:
       return ["Unit Kerja / Process Owner"];
+  }
+}
+
+/**
+ * Get Multiplier based on Table 25 (Hal 104)
+ */
+export function getGroupMultiplier(count: number): number {
+  if (count <= 1) return 1;
+  if (count === 2) return 1.5;
+  if (count <= 4) return 2;
+  if (count <= 6) return 2.5;
+  if (count <= 9) return 3;
+  if (count <= 14) return 3.5;
+  if (count <= 19) return 4;
+  if (count <= 25) return 4.5;
+  if (count <= 30) return 5;
+  if (count <= 40) return 5.5;
+  if (count <= 50) return 6;
+  if (count <= 64) return 6.5;
+  if (count <= 80) return 7;
+  if (count <= 94) return 7.5;
+  if (count <= 110) return 8;
+  if (count <= 130) return 8.5;
+  return 9;
+}
+
+export type QualitativeScopingReason = 
+  | "Besarnya eksposur risiko kecurangan"
+  | "Volume transaksi, kompleksitas, dan homogenitas"
+  | "Adanya perubahan signifikan dalam karakteristik akun"
+  | "Akun yang memerlukan judgement tinggi"
+  | "Akun yang dipengaruhi oleh estimasi"
+  | "Kepatuhan terhadap loan covenant"
+  | "Aset yang dikelola oleh pihak ketiga"
+  | "Lainnya";
+
+/**
+ * Saran Pengendalian Utama berdasarkan Prinsip COSO (Lampiran 1)
+ */
+export function getSuggestedControl(principle: number): { name: string; description: string } {
+  switch (principle) {
+    case 1: return { name: "Penetapan Kode Etik", description: "Perusahaan memiliki kode etik tertulis yang dikomunikasikan ke seluruh personil dan dipantau kepatuhannya." };
+    case 10: return { name: "Pemisahan Tugas (SoD)", description: "Terdapat pemisahan tugas yang memadai antara fungsi otorisasi, pencatatan, dan penyimpanan aset." };
+    case 11: return { name: "Kontrol Umum TI (ITGC)", description: "Manajemen menetapkan aktivitas pengendalian atas infrastruktur teknologi untuk mendukung pencapaian tujuan." };
+    case 13: return { name: "Keandalan Informasi (IPE)", description: "Manajemen menetapkan prosedur untuk memastikan akurasi, kelengkapan, dan ketepatan waktu data sistem." };
+    default: return { name: "Otorisasi Transaksi", description: "Setiap transaksi material harus diotorisasi oleh pejabat yang berwenang sesuai dengan limit kewenangan." };
   }
 }
 

@@ -38,17 +38,32 @@ export function ReportsPage() {
   const handleExport = async (format: 'csv' | 'excel') => {
     const toastId = toast.loading(`Exporting to ${format.toUpperCase()}...`);
     try {
-      if (format === 'excel') {
-        toast.error('Excel export not available in this environment', { id: toastId });
-        return;
-      }
-      const response = await fetch(`/api/reports/export?format=${format}`, {
+      const response = await fetch(`/api/reports/export`, {
         method: 'POST',
         headers: { 'X-Mock-Role': localStorage.getItem('mockRole') || 'Line 2' },
       });
       if (!response.ok) throw new Error('Export failed');
-      const blob = await response.blob();
-      saveAs(blob, `icofr_report.${format === 'csv' ? 'csv' : 'xlsx'}`);
+      const json = await response.json();
+
+      if (format === 'csv') {
+        // Dynamic import of papaparse for client-side CSV generation
+        const { unparse } = await import('papaparse');
+        const csv = unparse(json);
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        saveAs(blob, 'icofr_report.csv');
+      } else {
+        // Dynamic import of xlsx (SheetJS) for client-side Excel generation
+        const XLSX = await import('xlsx');
+        // Ensure we pass an array of objects to json_to_sheet
+        const rows = Array.isArray(json) ? json : [json];
+        const ws = XLSX.utils.json_to_sheet(rows);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Report');
+        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+        const blob = new Blob([wbout], { type: 'application/octet-stream' });
+        saveAs(blob, 'icofr_report.xlsx');
+      }
+
       toast.success('Export successful!', { id: toastId });
     } catch (error) {
       toast.error('Export failed.', { id: toastId });
@@ -197,11 +212,27 @@ export function ReportsPage() {
                     </div>
                   )}
 
-                  <ol className="list-decimal pl-5 space-y-4">
-                    <li>Kami telah menelaah laporan keuangan yang berakhir pada {new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}.</li>
-                    <li>Berdasarkan pengetahuan kami, laporan keuangan tidak memuat pernyataan yang tidak benar tentang fakta material atau tidak mencantumkan fakta material yang diperlukan.</li>
-                    <li>Kami telah mengimplementasikan pengendalian dan prosedur atas penyusunan laporan keuangan yang dianggap perlu.</li>
-                    <li>Kami telah mengungkapkan, berdasarkan hasil evaluasi, seluruh defisiensi signifikan dan kelemahan material kepada Dewan Komisaris dan Komite Audit.</li>
+                  <ol className="list-decimal pl-5 space-y-6 text-sm text-foreground/90">
+                    <li>Kami telah menelaah laporan keuangan PT [Nama Perusahaan] yang berakhir pada tanggal {new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}.</li>
+                    
+                    <li>Berdasarkan pengetahuan kami, laporan keuangan tidak memuat pernyataan yang tidak benar tentang fakta material atau tidak mencantumkan fakta material yang diperlukan untuk membuat pernyataan yang dibuat, mengingat keadaan di mana pernyataan tersebut dibuat, tidak menyesatkan.</li>
+                    
+                    <li>Berdasarkan pengetahuan kami, laporan keuangan, dan informasi keuangan lainnya yang termasuk dalam laporan keuangan, secara wajar menyajikan dalam semua hal yang material atas kondisi keuangan dan hasil operasi untuk periode-periode yang disajikan dalam laporan ini.</li>
+                    
+                    <li>Kami telah mengimplementasikan pengendalian dan prosedur atas penyusunan laporan keuangan yang dianggap perlu untuk menyusun dan menyajikan secara wajar laporan keuangan (konsolidasi) dan bebas dari salah saji material:
+                      <ul className="list-[lower-alpha] pl-5 mt-2 space-y-2">
+                        <li>Merancang pengendalian dan prosedur atas penyusunan laporan keuangan, di bawah pengawasan kami untuk memastikan bahwa informasi material Perusahaan yang berkaitan dengan pelaporan keuangan telah diketahui oleh para manajemen, khususnya selama periode penyusunan laporan.</li>
+                        <li>Mengevaluasi efektivitas pengendalian dan prosedur atas penyusunan laporan keuangan, menyampaikan kesimpulan kami tentang efektivitas pengendalian berdasarkan periode pelaporan yang dicakup dalam laporan ini.</li>
+                      </ul>
+                    </li>
+                    
+                    <li>Kami telah mengungkapkan, berdasarkan hasil evaluasi pengendalian internal atas pelaporan keuangan kepada Dewan Komisaris, Direksi dan Komite Audit, perihal:
+                      <ul className="list-[lower-alpha] pl-5 mt-2 space-y-2">
+                        <li>Seluruh defisiensi signifikan dan kelemahan material dalam rancangan dan pengoperasian pengendalian internal yang cukup mungkin dapat berdampak pada kemampuan perusahaan untuk mencatat, memproses, merangkum, dan melaporkan informasi keuangan.</li>
+                        <li>Setiap perubahan signifikan dalam kebijakan akuntansi, prosedur dan faktor lainnya selama tahun berjalan yang dapat memengaruhi pengendalian internal atas pelaporan keuangan Perusahaan.</li>
+                        <li>Setiap kecurangan (fraud), baik yang berdampak secara material maupun tidak, yang melibatkan manajemen atau personel lain yang memiliki peran penting dalam pengendalian internal.</li>
+                      </ul>
+                    </li>
                   </ol>
                 </div>
 

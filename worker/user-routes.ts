@@ -53,6 +53,16 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     return ok(c, await createWithAudit(RCMEntity, c.env, newRcm, (c as any).get('userId')));
   });
 
+  app.put('/api/rcm/:id', async (c) => {
+    if ((c as any).get('userRole') !== 'Line 2') return bad(c, 'Access Denied');
+    const id = c.req.param('id');
+    const body = await c.req.json<Partial<RCM>>();
+    const rcm = new RCMEntity(c.env, id);
+    if (!await rcm.exists()) return notFound(c, 'RCM not found');
+    await patchWithAudit(rcm, body, (c as any).get('userId'));
+    return ok(c, await rcm.getState());
+  });
+
   app.post('/api/rcm/:id/validate', async (c) => {
     if ((c as any).get('userRole') !== 'Line 2') return bad(c, 'Access Denied');
     const id = c.req.param('id');

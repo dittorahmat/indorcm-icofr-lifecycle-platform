@@ -1,4 +1,6 @@
 import React from 'react';
+import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -12,11 +14,11 @@ import type { Materiality } from '@shared/types';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Tabs, TabsContent, Select as SelectPrimitive, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle2, Wand2, Info } from 'lucide-react';
+import { CheckCircle2, Wand2, Info, Plus } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
@@ -41,109 +43,268 @@ type MaterialityForm = z.infer<typeof materialitySchema>;
 /**
  * Get Multiplier based on Table 25 (Hal 104)
  */
-function getGroupMultiplier(count: number): number {
-  if (count <= 1) return 1;
-  if (count === 2) return 1.5;
-  if (count <= 4) return 2;
-  if (count <= 6) return 2.5;
-  if (count <= 9) return 3;
-  if (count <= 14) return 3.5;
-  if (count <= 19) return 4;
-  if (count <= 25) return 4.5;
-  if (count <= 30) return 5;
-  if (count <= 40) return 5.5;
-  if (count <= 50) return 6;
-  if (count <= 64) return 6.5;
-  if (count <= 80) return 7;
-  if (count <= 94) return 7.5;
-  if (count <= 110) return 8;
-  if (count <= 130) return 8.5;
-  return 9;
-}
+import { getGroupMultiplier, QualitativeScopingReason } from '@/lib/compliance-utils';
+import type { Scoping, SignificantAccount } from '@shared/types';
 
 interface HaircutWizardProps {
   onApply: (value: number) => void;
 }
 
 function HaircutWizard({ onApply }: HaircutWizardProps) {
-  const [factors, setFactors] = React.useState({
-    pastAdjustments: false,
-    complexOps: false,
-    weakInternalControl: false,
-    significantChanges: false,
-    staffTurnover: false,
+  const [riskFactors, setRiskFactors] = React.useState({
+    newImplementation: false,
+    highTurnover: false,
+    historyOfDeficiencies: false,
+    complexChanges: false,
   });
 
-  const riskScore = Object.values(factors).filter(Boolean).length;
-  
-  // Suggested haircut based on Table 4 logic
-  // 0 factors: 25% (Low Risk)
-  // 1-2 factors: 35-45% (Medium Risk)
-  // 3+ factors: 55%+ (High Risk)
-  const suggestedHaircut = riskScore === 0 ? 25 : riskScore <= 2 ? 45 : 55;
+  const calculateHaircut = () => {
+    const activeFactors = Object.values(riskFactors).filter(Boolean).length;
+    if (activeFactors === 0) return 25;
+    if (activeFactors <= 2) return 50;
+    return 75;
+  };
+
+  const currentHaircut = calculateHaircut();
 
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
-          <Wand2 className="h-4 w-4" /> Determine Haircut (Table 4)
+        <Button variant="ghost" size="sm" className="h-6 text-[10px] gap-1 text-primary">
+          <Wand2 className="h-3 w-3" /> Help me decide
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent>
         <DialogHeader>
-          <DialogTitle>Haircut Determination Wizard</DialogTitle>
+          <DialogTitle>Haircut Risk Assessment</DialogTitle>
           <DialogDescription>
-            Menentukan persentase haircut untuk Performance Materiality berdasarkan faktor kualitatif Tabel 4.
+            Determine the Performance Materiality (PM) haircut based on the entity's control environment risk.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
-          {[
-            { id: 'pastAdjustments', label: 'Terdapat riwayat salah saji material atau audit adjustment signifikan dalam 2 tahun terakhir.' },
-            { id: 'complexOps', label: 'Proses bisnis atau transaksi bersifat sangat kompleks/tidak rutin.' },
-            { id: 'weakInternalControl', label: 'Ditemukan defisiensi signifikan/kelemahan material pada tahun sebelumnya.' },
-            { id: 'significantChanges', label: 'Terdapat perubahan sistem akuntansi atau restrukturisasi organisasi yang masif.' },
-            { id: 'staffTurnover', label: 'Tingkat turnover personil kunci di fungsi akuntansi/pelaporan cukup tinggi.' },
-          ].map((item) => (
-            <div key={item.id} className="flex items-start space-x-3 space-y-0 rounded-md border p-3 hover:bg-muted/50 transition-colors">
-              <Checkbox 
-                id={item.id} 
-                checked={(factors as any)[item.id]} 
-                onCheckedChange={(checked) => setFactors({ ...factors, [item.id]: !!checked })} 
-              />
-              <Label htmlFor={item.id} className="text-xs font-normal leading-tight cursor-pointer">
-                {item.label}
-              </Label>
-            </div>
-          ))}
+          <div className="flex items-center space-x-2">
+            <Checkbox 
+              id="newImpl" 
+              checked={riskFactors.newImplementation} 
+              onCheckedChange={(checked) => setRiskFactors(f => ({ ...f, newImplementation: !!checked }))}
+            />
+            <Label htmlFor="newImpl">First year of ICOFR implementation</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox 
+              id="turnover" 
+              checked={riskFactors.highTurnover} 
+              onCheckedChange={(checked) => setRiskFactors(f => ({ ...f, highTurnover: !!checked }))}
+            />
+            <Label htmlFor="turnover">High turnover in key accounting/IT staff</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox 
+              id="deficiencies" 
+              checked={riskFactors.historyOfDeficiencies} 
+              onCheckedChange={(checked) => setRiskFactors(f => ({ ...f, historyOfDeficiencies: !!checked }))}
+            />
+            <Label htmlFor="deficiencies">History of significant deficiencies or material weaknesses</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox 
+              id="changes" 
+              checked={riskFactors.complexChanges} 
+              onCheckedChange={(checked) => setRiskFactors(f => ({ ...f, complexChanges: !!checked }))}
+            />
+            <Label htmlFor="changes">Significant changes in business or accounting processes</Label>
+          </div>
 
-          <div className={`mt-6 p-4 rounded-lg border flex items-center justify-between ${suggestedHaircut <= 25 ? 'bg-green-50 border-green-200' : suggestedHaircut <= 45 ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200'}`}>
-             <div className="flex items-center gap-3">
-                <Info className={`h-5 w-5 ${suggestedHaircut <= 25 ? 'text-green-600' : suggestedHaircut <= 45 ? 'text-amber-600' : 'text-red-600'}`} />
-                <div>
-                   <p className="text-[10px] uppercase font-bold text-muted-foreground">Saran Haircut</p>
-                   <p className="text-2xl font-black tracking-tight">{suggestedHaircut}%</p>
-                </div>
-             </div>
-             <Badge variant="outline" className="uppercase text-[10px] font-bold">
-                {suggestedHaircut <= 25 ? 'Low Risk' : suggestedHaircut <= 45 ? 'Medium Risk' : 'High Risk'}
-             </Badge>
+          <div className="mt-6 p-4 rounded-lg bg-muted/50 border">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-semibold">Recommended Haircut:</span>
+              <Badge variant={currentHaircut === 25 ? "secondary" : currentHaircut === 50 ? "default" : "destructive"}>
+                {currentHaircut}%
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground italic">
+              Resulting PM will be {(100 - currentHaircut)}% of Overall Materiality.
+            </p>
           </div>
         </div>
         <DialogFooter>
-          <Button onClick={() => onApply(suggestedHaircut)} className="w-full">Terapkan Persentase</Button>
+          <Button onClick={() => onApply(currentHaircut)}>Apply Recommended Haircut</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
 
+interface QualitativeScopingWizardProps {
+  onAdd: (account: SignificantAccount) => void;
+}
+
+function QualitativeScopingWizard({ onAdd }: QualitativeScopingWizardProps) {
+  const [name, setName] = React.useState("");
+  const [balance, setBalance] = React.useState(0);
+  const [reasons, setReasons] = React.useState<QualitativeScopingReason[]>([]);
+
+  const allReasons: QualitativeScopingReason[] = [
+    "Besarnya eksposur risiko kecurangan",
+    "Volume transaksi, kompleksitas, dan homogenitas",
+    "Adanya perubahan signifikan dalam karakteristik akun",
+    "Akun yang memerlukan judgement tinggi",
+    "Akun yang dipengaruhi oleh estimasi",
+    "Kepatuhan terhadap loan covenant",
+    "Aset yang dikelola oleh pihak ketiga",
+    "Lainnya"
+  ];
+
+  const toggleReason = (reason: QualitativeScopingReason) => {
+    setReasons(prev => prev.includes(reason) ? prev.filter(r => r !== reason) : [...prev, reason]);
+  };
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" className="gap-2 shadow-sm">
+          <Plus className="h-4 w-4" /> Add Qualitative Account (Table 5)
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[500px]">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+          <DialogHeader>
+            <DialogTitle>Qualitative Scoping Entry</DialogTitle>
+            <DialogDescription>
+              Menambahkan akun signifikan berdasarkan faktor kualitatif meskipun di bawah ambang batas PM.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="name" className="text-xs font-bold uppercase">Account Name</Label>
+              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Construction in Progress" className="h-9" />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="balance" className="text-xs font-bold uppercase">Balance (IDR)</Label>
+              <Input id="balance" type="number" value={balance} onChange={(e) => setBalance(Number(e.target.value))} className="h-9" />
+            </div>
+            <div className="grid gap-2">
+              <Label className="text-xs font-bold uppercase">Qualitative Reasons (Refer to Table 5)</Label>
+              <div className="space-y-2 border rounded-md p-3 max-h-[200px] overflow-y-auto bg-muted/10">
+                {allReasons.map(r => (
+                  <div key={r} className="flex items-center space-x-2">
+                    <Checkbox id={r} checked={reasons.includes(r)} onCheckedChange={() => toggleReason(r)} />
+                    <Label htmlFor={r} className="text-[11px] font-normal leading-tight cursor-pointer">{r}</Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => {
+              onAdd({ name, balance, isQuantitative: false, qualitativeReasons: reasons });
+              setName(""); setBalance(0); setReasons([]);
+            }} disabled={!name || reasons.length === 0} className="w-full">Add to Scope</Button>
+          </DialogFooter>
+        </motion.div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+interface GroupAllocationProps {
+  baseOM: number;
+  totalEntities: number;
+  multiplier: number;
+}
+
+function GroupAllocation({ baseOM, totalEntities, multiplier }: GroupAllocationProps) {
+  const maxGroupOM = baseOM * multiplier;
+  
+  // Mock child entities for simulation
+  const [entities, setEntities] = React.useState([
+    { id: '1', name: 'Subsidiary A (Energy)', assets: 5000000000 },
+    { id: '2', name: 'Subsidiary B (Logistics)', assets: 3000000000 },
+    { id: '3', name: 'Subsidiary C (Finance)', assets: 2000000000 },
+  ]);
+
+  const totalAssets = entities.reduce((sum, e) => sum + e.assets, 0);
+
+  return (
+    <Card className="mt-6 border-blue-200 bg-blue-50/30">
+      <CardHeader>
+        <div className="flex justify-between items-center">
+          <div>
+            <CardTitle className="text-blue-800 flex items-center gap-2">
+              <Network className="h-5 w-5" /> Group Materiality Allocation (FAQ No. 4)
+            </CardTitle>
+            <CardDescription className="text-blue-600/80 italic">Proporsional alokasi berdasarkan total aset masing-masing entitas anak.</CardDescription>
+          </div>
+          <Badge className="bg-blue-600">Max Group OM: {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(maxGroupOM)}</Badge>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent border-blue-200">
+              <TableHead className="text-blue-800">Entity Name</TableHead>
+              <TableHead className="text-blue-800 text-right">Total Assets</TableHead>
+              <TableHead className="text-blue-800 text-right">Prop. Share (%)</TableHead>
+              <TableHead className="text-blue-800 text-right">Allocated OM</TableHead>
+              <TableHead className="text-blue-800">Compliance</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {entities.map(e => {
+              const share = (e.assets / totalAssets);
+              const allocated = maxGroupOM * share;
+              const isOverLimit = allocated > baseOM; // Limit: Individual OM cannot exceed Group base OM
+
+              return (
+                <TableRow key={e.id} className="border-blue-100">
+                  <TableCell className="font-medium">{e.name}</TableCell>
+                  <TableCell className="text-right font-mono text-xs">{new Intl.NumberFormat('id-ID').format(e.assets)}</TableCell>
+                  <TableCell className="text-right">{(share * 100).toFixed(1)}%</TableCell>
+                  <TableCell className="text-right font-bold text-blue-700">
+                    {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(allocated)}
+                  </TableCell>
+                  <TableCell>
+                    {isOverLimit ? (
+                      <Badge variant="destructive" className="gap-1"><AlertTriangle className="h-3 w-3" /> Capped at Base OM</Badge>
+                    ) : (
+                      <Badge className="bg-green-600 gap-1"><CheckCircle2 className="h-3 w-3" /> Within Limit</Badge>
+                    )}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+        <div className="mt-4 p-3 bg-blue-100/50 rounded text-[10px] text-blue-800 leading-relaxed">
+          <strong>Regulasi Rule:</strong> Nilai alokasi materialitas dari masing-masing Lokasi/Perusahaan tidak boleh melebihi nilai OM Grup (Base OM). Total alokasi atas seluruh Lokasi tidak boleh melebihi nilai maksimal materialitas dari Grup OM (Multiplier x Base OM).
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export function ScopingPage() {
-  const { data: materialityData, isLoading } = useQuery({
+  const { data: materialityData, isLoading: matLoading } = useQuery({
     queryKey: ['materiality'],
     queryFn: () => api<{ items: Materiality[] }>('/api/materiality'),
   });
 
-  const currentMateriality = materialityData?.items?.[0];
+  const { data: scopingData, isLoading: scopeLoading } = useQuery({
+    queryKey: ['scoping'],
+    queryFn: () => api<{ items: Scoping[] }>('/api/scoping'),
+  });
+
+  const currentScope = scopingData?.items?.[0];
+  const [localAccounts, setLocalAccounts] = React.useState<SignificantAccount[]>([]);
+
+  React.useEffect(() => {
+    if (currentScope?.significantAccounts) {
+      setLocalAccounts(currentScope.significantAccounts);
+    }
+  }, [currentScope]);
+
+  const isLoading = matLoading || scopeLoading;
+
 
   const { register, control, watch, handleSubmit, setValue } = useForm<MaterialityForm>({
     resolver: zodResolver(materialitySchema),
@@ -269,7 +430,15 @@ export function ScopingPage() {
                     </div>
                   </div>
 
-                  <div className="flex justify-end">
+                  {formValues.locationCount > 1 && (
+                    <GroupAllocation 
+                      baseOM={baseOM} 
+                      totalEntities={formValues.locationCount} 
+                      multiplier={multiplier} 
+                    />
+                  )}
+
+                  <div className="flex justify-end mt-6">
                     <Button type="button">Save Calculation</Button>
                   </div>
                 </form>
@@ -281,8 +450,13 @@ export function ScopingPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Card className="md:col-span-2">
                 <CardHeader>
-                  <CardTitle>Significant Accounts Matrix</CardTitle>
-                  <CardDescription>Accounts flagged based on PM threshold: {formatCurrency(performanceMateriality)}</CardDescription>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle>Significant Accounts Matrix</CardTitle>
+                      <CardDescription>Accounts flagged based on PM threshold: {formatCurrency(performanceMateriality)}</CardDescription>
+                    </div>
+                    <QualitativeScopingWizard onAdd={(acc) => setLocalAccounts(prev => [...prev, acc])} />
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <Table>
@@ -295,24 +469,32 @@ export function ScopingPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {[
-                        { name: "Kas & Bank", balance: 5000000000, reason: "> PM" },
-                        { name: "Piutang Usaha", balance: 4200000000, reason: "> PM" },
-                        { name: "Persediaan", balance: 3800000000, reason: "> PM" },
-                        { name: "Aset Tetap", balance: 12000000000, reason: "> PM" },
-                        { name: "Biaya Dibayar Dimuka", balance: 150000000, reason: "Qualitative (Risk)" },
-                      ].map((acc, i) => (
+                      {localAccounts.map((acc, i) => (
                         <TableRow key={i}>
                           <TableCell className="font-medium">{acc.name}</TableCell>
                           <TableCell className="text-right font-mono text-xs">{formatCurrency(acc.balance)}</TableCell>
-                          <TableCell className="text-xs text-muted-foreground">{acc.reason}</TableCell>
-                          <TableCell><Badge className="bg-blue-100 text-blue-700">Significant</Badge></TableCell>
+                          <TableCell className="text-xs text-muted-foreground">
+                            {acc.isQuantitative ? "> PM (Quantitative)" : (
+                              <div className="flex flex-col gap-1">
+                                <span className="font-bold text-amber-700">Qualitative (Table 5):</span>
+                                <ul className="list-disc pl-4 space-y-0.5">
+                                  {acc.qualitativeReasons?.map(r => <li key={r}>{r}</li>)}
+                                </ul>
+                              </div>
+                            )}
+                          </TableCell>
+                          <TableCell><Badge className={acc.isQuantitative ? "bg-blue-100 text-blue-700" : "bg-amber-100 text-amber-700"}>Significant</Badge></TableCell>
                         </TableRow>
                       ))}
+                      {localAccounts.length === 0 && !isLoading && (
+                        <TableRow>
+                          <TableCell colSpan={4} className="text-center py-8 text-muted-foreground italic">No accounts in scope. Upload TB or add qualitative entries.</TableCell>
+                        </TableRow>
+                      )}
                     </TableBody>
                   </Table>
                   <div className="mt-4 flex justify-between items-center bg-muted/30 p-4 rounded-lg border-2 border-dashed">
-                     <p className="text-sm italic">Simulasi: Upload Trial Balance (Excel/CSV) untuk update otomatis.</p>
+                     <p className="text-sm italic text-muted-foreground">Simulasi: Upload Trial Balance (Excel/CSV) untuk identifikasi kuantitatif otomatis.</p>
                      <Button variant="outline" size="sm">Upload TB</Button>
                   </div>
                 </CardContent>
@@ -325,17 +507,30 @@ export function ScopingPage() {
                     <CardDescription className="text-[10px]">SK-5 Bab III 1.3 (Syarat 2/3)</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div>
-                      <div className="flex justify-between text-xs mb-1">
-                        <span>Total FSLI Covered</span>
-                        <span className="font-bold">82%</span>
-                      </div>
-                      <Progress value={82} className="h-2" />
-                    </div>
-                    <div className="pt-2 border-t flex items-center gap-2">
-                       <CheckCircle2 className="h-4 w-4 text-green-600" />
-                       <span className="text-xs font-semibold text-green-700 italic">Memenuhi Syarat 2/3</span>
-                    </div>
+                    {/* Simplified calculation for demo: sum of account balances vs benchmark value */}
+                    {(() => {
+                      const totalInScope = localAccounts.reduce((sum, a) => sum + a.balance, 0);
+                      const coverage = formValues.benchmarkValue > 0 ? (totalInScope / formValues.benchmarkValue) * 100 : 0;
+                      const isPassing = coverage >= 66.6;
+
+                      return (
+                        <>
+                          <div>
+                            <div className="flex justify-between text-xs mb-1">
+                              <span>Account Balance Coverage</span>
+                              <span className="font-bold">{coverage.toFixed(1)}%</span>
+                            </div>
+                            <Progress value={coverage} className="h-2" />
+                          </div>
+                          <div className="pt-2 border-t flex items-center gap-2">
+                             <CheckCircle2 className={cn("h-4 w-4", isPassing ? "text-green-600" : "text-muted-foreground")} />
+                             <span className={cn("text-xs font-semibold italic", isPassing ? "text-green-700" : "text-muted-foreground")}>
+                               {isPassing ? "Memenuhi Syarat 2/3 (Precision)" : "Belum Memenuhi Syarat 2/3"}
+                             </span>
+                          </div>
+                        </>
+                      );
+                    })()}
                   </CardContent>
                 </Card>
 

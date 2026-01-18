@@ -53,20 +53,27 @@ export type TestMethod = "Inquiry" | "Observation" | "Inspection" | "Reperforman
 export type EUCComplexity = "Low" | "Medium" | "High";
 export type IPEType = "Standard/Custom" | "Query";
 
-export interface Materiality {
-  id: string;
-  year: number;
-  overallMateriality: number; // OM
-  performanceMateriality: number; // PM
-  benchmark: "Pre-Tax Income" | "Revenue" | "Assets" | "Equity";
-  percentage: number;
-  haircut: number; // Percentage for PM calculation
+export type QualitativeScopingReason = 
+  | "Besarnya eksposur risiko kecurangan"
+  | "Volume transaksi, kompleksitas, dan homogenitas"
+  | "Adanya perubahan signifikan dalam karakteristik akun"
+  | "Akun yang memerlukan judgement tinggi"
+  | "Akun yang dipengaruhi oleh estimasi"
+  | "Kepatuhan terhadap loan covenant"
+  | "Aset yang dikelola oleh pihak ketiga"
+  | "Lainnya";
+
+export interface SignificantAccount {
+  name: string;
+  balance: number;
+  isQuantitative: boolean; // Over PM
+  qualitativeReasons?: QualitativeScopingReason[];
 }
 
 export interface Scoping {
   id: string;
   year: number;
-  significantAccounts: string[]; // List of account names/IDs
+  significantAccounts: SignificantAccount[]; 
   significantLocations: string[];
   significantProcesses: string[];
 }
@@ -108,6 +115,10 @@ export interface RCM {
   riskDescription: string;
   status: "Draft" | "Pending Validation" | "Active" | "Archived"; // Updated for Line 2 workflow
   controls: string[]; // Array of Control IDs
+  bpmData?: {
+    nodes: any[];
+    edges: any[];
+  };
 }
 
 export interface CSARecord {
@@ -119,6 +130,11 @@ export interface CSARecord {
   result: "Pass" | "Fail" | "N/A";
   evidenceUrl?: string;
   comments: string;
+  // Line 2 Validation
+  line2Status?: "Pending" | "Validated" | "Rejected";
+  line2Comments?: string;
+  line2ValidatedBy?: string;
+  line2ValidatedDate?: number;
 }
 
 export interface TestRecord {
@@ -154,6 +170,11 @@ export interface Deficiency {
   identifiedBy: string; // User ID
   status: "Open" | "Remediated";
   relatedAssertions: ControlAssertion[];
+  // SK-5 Requirement: Compensating Controls (Bab VII 1.1.e)
+  compensatingControlIds?: string[]; 
+  rootCause?: string;
+  magnitude?: number; // Value exposed to risk
+  likelihood?: "Low" | "Medium" | "High";
 }
 
 export interface ActionPlan {
@@ -165,14 +186,29 @@ export interface ActionPlan {
   status: ActionPlanStatus;
 }
 
+// SK-5 Requirement: Lampiran 6 - Log Perubahan
 export interface ChangeLog {
   id: string;
   entityId: string;
-  entityType: "RCM" | "Control";
+  entityType: "RCM" | "Control" | "BPM";
   descriptionBefore: string;
   descriptionAfter: string;
+  referenceBefore?: string;
+  referenceAfter?: string;
   userId: string;
   timestamp: number;
+  effectiveDate: number;
+  approvedBy?: string;
+}
+
+// SK-5 Requirement: Bab III.4.3 - Evaluasi SOC Report
+export interface SOCReportEvaluation {
+  scopeAlignment: boolean;
+  periodAlignment: boolean;
+  methodologyAlignment: boolean;
+  hasIneffectiveControls: boolean;
+  compensatingControlsTested: boolean;
+  auditorOpinion: string;
 }
 
 export interface SOCReport {
@@ -184,6 +220,43 @@ export interface SOCReport {
   issuer: string;
   status: "Valid" | "Expired" | "Pending Review";
   lastValidatedDate: number;
+  evaluation?: SOCReportEvaluation;
+}
+
+// SK-5 Requirement: Whistleblowing System Integration (Lampiran 1 Prinsip 14 & 15)
+export interface WBSReport {
+  id: string;
+  reportDate: number;
+  category: "Financial Reporting" | "Asset Misappropriation" | "Corruption" | "Other";
+  description: string;
+  impactMagnitude: number;
+  status: "Investigating" | "Confirmed" | "Closed";
+  isFinancialImpact: boolean;
+  relatedControlIds?: string[];
+}
+
+// SK-5 Requirement: Group Materiality & Multiplier (Tabel 25)
+export interface EntityMateriality {
+  entityId: string;
+  entityName: string;
+  totalAssets: number;
+  allocatedOM: number;
+  allocatedPM: number;
+}
+
+export interface Materiality {
+  id: string;
+  year: number;
+  overallMateriality: number; // Group OM
+  performanceMateriality: number; // Group PM
+  benchmark: "Pre-Tax Income" | "Revenue" | "Assets" | "Equity";
+  percentage: number;
+  haircut: number;
+  // Group logic
+  isGroupConsolidation: boolean;
+  subsidiaryCount?: number;
+  multiplier?: number; // From Table 25 (1.5x - 9x)
+  entityAllocations?: EntityMateriality[];
 }
 // --- Original Demo Types (can be removed later if not needed) ---
 export interface User {

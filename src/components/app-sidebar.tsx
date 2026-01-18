@@ -9,7 +9,10 @@ import {
   BarChart3, 
   Settings,
   FileText,
-  Briefcase
+  Briefcase,
+  History,
+  Megaphone,
+  Network
 } from "lucide-react";
 import {
   Sidebar,
@@ -60,7 +63,7 @@ export function AppSidebar(): JSX.Element {
         )}
 
         <SidebarGroup>
-          <SidebarGroupLabel>Planning</SidebarGroupLabel>
+          <SidebarGroupLabel>Planning & Risk</SidebarGroupLabel>
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/dashboard")}>
@@ -73,8 +76,23 @@ export function AppSidebar(): JSX.Element {
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={isActive("/wbs-recap")}>
+                <Link to="/wbs-recap"><Megaphone className="text-amber-600" /> <span>Whistleblowing Recap</span></Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/rcm")}>
-                <Link to="/rcm"><ShieldCheck /> <span>RCM Manager</span></Link>
+                <Link to="/rcm"><ShieldCheck /> <span>RCM & BPM (Lampiran 4)</span></Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={isActive("/change-log")}>
+                <Link to="/change-log"><History /> <span>Change Log (Lampiran 6)</span></Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={isActive("/soc-monitoring")}>
+                <Link to="/soc-monitoring"><Network /> <span>SOC Monitoring (SO)</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

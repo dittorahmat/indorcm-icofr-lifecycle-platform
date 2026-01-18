@@ -8,6 +8,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { RouteErrorBoundary } from '@/components/RouteErrorBoundary';
 import { Toaster } from '@/components/ui/sonner';
 import { Skeleton } from '@/components/ui/skeleton';
+import { PageSuspense } from '@/components/PageSuspense';
 import '@/index.css';
 
 // Lazy load all pages for optimized bundle size
@@ -21,12 +22,9 @@ const ReportsPage = lazy(() => import('@/pages/reports/ReportsPage').then(module
 const ImportPage = lazy(() => import('@/pages/import/ImportPage').then(module => ({ default: module.ImportPage })));
 const ScopingPage = lazy(() => import('@/pages/scoping/ScopingPage').then(module => ({ default: module.ScopingPage })));
 const ExternalAuditPortal = lazy(() => import('@/pages/audit/ExternalAuditPortal').then(module => ({ default: module.ExternalAuditPortal })));
-
-const PageSuspense = ({ children }: { children: React.ReactNode }) => (
-  <Suspense fallback={<div className="max-w-7xl mx-auto px-4 py-8"><Skeleton className="h-screen w-full" /></div>}>
-    {children}
-  </Suspense>
-);
+const WBSPage = lazy(() => import('@/pages/reports/WBSPage').then(module => ({ default: module.WBSPage })));
+const ChangeLogPage = lazy(() => import('@/pages/rcm/ChangeLogPage').then(module => ({ default: module.ChangeLogPage })));
+const SOCMonitoringPage = lazy(() => import('@/pages/rcm/SOCMonitoringPage').then(module => ({ default: module.SOCMonitoringPage })));
 
 enableMapSet();
 const queryClient = new QueryClient();
@@ -35,10 +33,13 @@ const router = createBrowserRouter([
   { path: "/dashboard", element: <PageSuspense><Dashboard /></PageSuspense>, errorElement: <RouteErrorBoundary /> },
   { path: "/scoping", element: <PageSuspense><ScopingPage /></PageSuspense>, errorElement: <RouteErrorBoundary /> },
   { path: "/rcm", element: <PageSuspense><RCMList /></PageSuspense>, errorElement: <RouteErrorBoundary /> },
+  { path: "/change-log", element: <PageSuspense><ChangeLogPage /></PageSuspense>, errorElement: <RouteErrorBoundary /> },
+  { path: "/soc-monitoring", element: <PageSuspense><SOCMonitoringPage /></PageSuspense>, errorElement: <RouteErrorBoundary /> },
   { path: "/csa", element: <PageSuspense><CSAWorkspace /></PageSuspense>, errorElement: <RouteErrorBoundary /> },
   { path: "/testing", element: <PageSuspense><TestWorkbench /></PageSuspense>, errorElement: <RouteErrorBoundary /> },
   { path: "/deficiencies", element: <PageSuspense><DeficiencyBoard /></PageSuspense>, errorElement: <RouteErrorBoundary /> },
   { path: "/reports", element: <PageSuspense><ReportsPage /></PageSuspense>, errorElement: <RouteErrorBoundary /> },
+  { path: "/wbs-recap", element: <PageSuspense><WBSPage /></PageSuspense>, errorElement: <RouteErrorBoundary /> },
   { path: "/audit-portal", element: <PageSuspense><ExternalAuditPortal /></PageSuspense>, errorElement: <RouteErrorBoundary /> },
   { path: "/import", element: <PageSuspense><ImportPage /></PageSuspense>, errorElement: <RouteErrorBoundary /> },
   { path: "*", element: <Navigate to="/" replace /> },

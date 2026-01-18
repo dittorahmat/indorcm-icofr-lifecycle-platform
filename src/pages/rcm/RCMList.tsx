@@ -249,29 +249,40 @@ export function RCMList() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Entity</TableHead>
-                      <TableHead>Sebelum Perubahan</TableHead>
-                      <TableHead>Setelah Perubahan</TableHead>
-                      <TableHead>User</TableHead>
-                      <TableHead>Tanggal</TableHead>
+                      <TableHead className="text-[10px] uppercase font-bold">Proses / Sub-Proses</TableHead>
+                      <TableHead className="text-[10px] uppercase font-bold">Pemilik</TableHead>
+                      <TableHead className="text-[10px] uppercase font-bold">Deskripsi Sebelum</TableHead>
+                      <TableHead className="text-[10px] uppercase font-bold">Deskripsi Sesudah</TableHead>
+                      <TableHead className="text-[10px] uppercase font-bold">Tgl Laporan</TableHead>
+                      <TableHead className="text-[10px] uppercase font-bold">Tgl Efektif</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {logsLoading ? (
-                      <TableRow><TableCell colSpan={5} className="text-center">Loading logs...</TableCell></TableRow>
+                      <TableRow><TableCell colSpan={6} className="text-center">Loading logs...</TableCell></TableRow>
                     ) : changeLogsData?.items?.length ? (
-                      changeLogsData.items.map(log => (
-                        <TableRow key={log.id}>
-                          <TableCell><Badge variant="outline">{log.entityType}</Badge></TableCell>
-                          <TableCell className="text-xs max-w-xs">{log.descriptionBefore}</TableCell>
-                          <TableCell className="text-xs max-w-xs">{log.descriptionAfter}</TableCell>
-                          <TableCell className="text-xs font-medium">{log.userId}</TableCell>
-                          <TableCell className="text-xs">{new Date(log.timestamp).toLocaleDateString()}</TableCell>
-                        </TableRow>
-                      ))
+                      changeLogsData.items.map(log => {
+                        const relatedRcm = rcmData?.items.find(r => r.id === log.entityId);
+                        return (
+                          <TableRow key={log.id}>
+                            <TableCell className="text-xs font-semibold">
+                              {relatedRcm ? `${relatedRcm.process} - ${relatedRcm.subProcess}` : log.entityId}
+                            </TableCell>
+                            <TableCell className="text-xs font-medium">{log.userId}</TableCell>
+                            <TableCell className="text-[10px] max-w-[200px] text-muted-foreground truncate" title={log.descriptionBefore}>
+                              {log.descriptionBefore}
+                            </TableCell>
+                            <TableCell className="text-[10px] max-w-[200px] font-medium" title={log.descriptionAfter}>
+                              {log.descriptionAfter}
+                            </TableCell>
+                            <TableCell className="text-[10px]">{new Date(log.timestamp).toLocaleDateString()}</TableCell>
+                            <TableCell className="text-[10px] font-bold text-primary italic">As Per Cycle</TableCell>
+                          </TableRow>
+                        );
+                      })
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={5} className="text-center h-24 text-muted-foreground italic">No change logs found.</TableCell>
+                        <TableCell colSpan={6} className="text-center h-24 text-muted-foreground italic">No change logs found.</TableCell>
                       </TableRow>
                     )}
                   </TableBody>
@@ -469,7 +480,10 @@ export function RCMList() {
           </DialogHeader>
           <div className="flex-1 overflow-hidden p-1">
             <React.Suspense fallback={<div className="flex items-center justify-center h-full"><Skeleton className="h-full w-full" /></div>}>
-              <BPMEditor />
+              <BPMEditor 
+                rcmId={selectedRcmForBpm?.id} 
+                initialData={selectedRcmForBpm?.bpmData} 
+              />
             </React.Suspense>
           </div>
         </DialogContent>

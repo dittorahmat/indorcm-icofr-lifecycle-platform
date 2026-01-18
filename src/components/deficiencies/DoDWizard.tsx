@@ -11,9 +11,10 @@ interface DoDWizardProps {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
   onComplete: (severity: "Control Deficiency" | "Significant Deficiency" | "Material Weakness") => void;
+  isAggregate?: boolean;
 }
 
-export function DoDWizard({ isOpen, setIsOpen, onComplete }: DoDWizardProps) {
+export function DoDWizard({ isOpen, setIsOpen, onComplete, isAggregate = false }: DoDWizardProps) {
   const [step, setStep] = React.useState<DoDStep>(1);
   const [answers, setStepAnswers] = React.useState<Record<number, boolean>>({});
 
@@ -70,10 +71,12 @@ export function DoDWizard({ isOpen, setIsOpen, onComplete }: DoDWizardProps) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <ShieldCheck className="h-5 w-5 text-primary" />
-            Degree of Deficiency Wizard
+            {isAggregate ? "Aggregate Deficiency Assessment (Lampiran 10)" : "Degree of Deficiency Wizard"}
           </DialogTitle>
           <DialogDescription>
-            Logika penentuan tingkat defisiensi berdasarkan Gambar 5 (SK-5/2024).
+            {isAggregate 
+              ? "Mengevaluasi dampak kolektif dari beberapa defisiensi terpilih."
+              : "Logika penentuan tingkat defisiensi berdasarkan Gambar 5 (SK-5/2024)."}
           </DialogDescription>
         </DialogHeader>
 

@@ -15,16 +15,105 @@ import { Badge } from '@/components/ui/badge';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { toast } from 'sonner';
 import { api } from '@/lib/api-client';
-import { calculateRiskRating } from '@/lib/compliance-utils';
+import { calculateRiskRating, COBIT_ITGC_MAPPING, getSuggestedControl } from '@/lib/compliance-utils';
 import type { Control, ControlAssertion, InformationProcessingObjective, ControlFrequency, COSOPrinciple, ITGCArea, Application } from '@shared/types';
-import { UploadCloud, File as FileIcon, X, Calculator } from 'lucide-react';
+import { UploadCloud, File as FileIcon, X, Calculator, Wand2, Info, Lightbulb } from 'lucide-react';
 import { motion } from 'framer-motion';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 const ALL_ASSERTIONS: ControlAssertion[] = ["Completeness", "Accuracy", "Validity", "Cut-off", "Presentation", "Existence"];
 const ALL_IPOS: InformationProcessingObjective[] = ["Completeness", "Accuracy", "Validity", "Restricted Access"];
 const ALL_FREQUENCIES: ControlFrequency[] = ["Annual", "Semi-Annual", "Quarterly", "Monthly", "Weekly", "Daily", "Ad-hoc"];
 const ALL_COSO: COSOPrinciple[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
 const ITGC_AREAS: ITGCArea[] = ["Access to Program and Data", "Program Development", "Program Changes", "Computer Operations"];
+
+interface QualitativeRiskWizardProps {
+  onApply: (rating: "High" | "Medium" | "Low") => void;
+}
+
+function QualitativeRiskWizard({ onApply }: QualitativeRiskWizardProps) {
+  const [factors, setFactors] = React.useState({
+    inherentRisk: false, // a) Risiko bawaan akun/asersi
+    volumeChanges: false, // b) Perubahan volume/sifat transaksi
+    errorHistory: false, // c) Riwayat error
+    elcWeakness: false, // d) Efektivitas ELC pemantau
+    complexity: false, // e) Karakteristik/frekuensi pengendalian
+    dependence: false, // f) Ketergantungan pada pengendalian lain
+    personnelIssue: false, // g) Kompetensi/perubahan personil
+    manualNature: false, // h) Bergantung pada kinerja individu (manual)
+    highJudgement: false, // i) Kompleksitas judgement pelaksanaan
+  });
+
+  const count = Object.values(factors).filter(Boolean).length;
+  // Calculation logic based on Table 11
+  const suggestedRating: "High" | "Medium" | "Low" = count >= 6 ? "High" : count >= 3 ? "Medium" : "Low";
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" className="h-7 text-[10px] gap-1">
+          <Wand2 className="h-3 w-3" /> Wizard (Table 11)
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+          <DialogHeader>
+            <DialogTitle>Qualitative Risk Assessment Wizard</DialogTitle>
+            <DialogDescription>
+              Menentukan rating risiko kualitatif berdasarkan 9 kriteria mandatori Tabel 11 (Hal 27).
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-4">
+            {[
+              { id: 'inherentRisk', label: 'a) Risiko bawaan yang tinggi pada akun dan asersi terkait.' },
+              { id: 'volumeChanges', label: 'b) Terjadi perubahan signifikan dalam volume atau sifat transaksi.' },
+              { id: 'errorHistory', label: 'c) Terdapat riwayat error/salah saji pada pengendalian ini.' },
+              { id: 'elcWeakness', label: 'd) Pengendalian tingkat entitas (ELC) pemantau kurang efektif.' },
+              { id: 'complexity', label: 'e) Pengendalian memiliki karakteristik kompleks atau frekuensi rendah.' },
+              { id: 'dependence', label: 'f) Sangat bergantung pada efektivitas pengendalian lain (ITGC/ELC).' },
+              { id: 'personnelIssue', label: 'g) Terdapat isu kompetensi atau perubahan personil pelaksana.' },
+              { id: 'manualNature', label: 'h) Pengendalian bersifat manual (bergantung pada kinerja individu).' },
+              { id: 'highJudgement', label: 'i) Memerlukan judgement/pertimbangan profesional yang signifikan.' },
+            ].map((item) => (
+              <div key={item.id} className="flex items-start space-x-3 space-y-0 rounded-md border p-2 hover:bg-muted/50 transition-colors">
+                <Checkbox 
+                  id={item.id} 
+                  checked={(factors as any)[item.id]} 
+                  onCheckedChange={(checked) => setFactors({ ...factors, [item.id]: !!checked })} 
+                />
+                <Label htmlFor={item.id} className="text-[11px] font-normal leading-tight cursor-pointer">
+                  {item.label}
+                </Label>
+              </div>
+            ))}
+
+            <div className={`mt-4 p-4 rounded-lg border flex items-center justify-between ${suggestedRating === 'Low' ? 'bg-green-50 border-green-200' : suggestedRating === 'Medium' ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200'}`}>
+               <div className="flex items-center gap-3">
+                  <Info className={`h-5 w-5 ${suggestedRating === 'Low' ? 'text-green-600' : suggestedRating === 'Medium' ? 'text-amber-600' : 'text-red-600'}`} />
+                  <div>
+                     <p className="text-[10px] uppercase font-bold text-muted-foreground">Rating Kualitatif Disarankan</p>
+                     <p className="text-2xl font-black tracking-tight uppercase">{suggestedRating}</p>
+                  </div>
+               </div>
+               <Badge variant="outline" className="text-[10px]">Criteria met: {count}/9</Badge>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => onApply(suggestedRating)} className="w-full">Terapkan Rating</Button>
+          </DialogFooter>
+        </motion.div>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 const controlSchema = z.object({
   code: z.string().optional(),
@@ -91,7 +180,7 @@ export function ControlEditor({ isOpen, setIsOpen, control }: ControlEditorProps
     },
   });
 
-  const { watch } = form;
+  const { watch, setValue } = form;
   const quant = watch('riskQuantitative');
   const qual = watch('riskQualitative');
   const calculatedRating = calculateRiskRating(quant, qual);
@@ -281,7 +370,15 @@ export function ControlEditor({ isOpen, setIsOpen, control }: ControlEditorProps
                     <FormItem><FormLabel>ITGC Area</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select ITGC Area" /></SelectTrigger></FormControl><SelectContent>{ITGC_AREAS.map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}</SelectContent></Select></FormItem>
                   )} />
                   <FormField control={form.control} name="cobitId" render={({ field }) => (
-                    <FormItem><FormLabel>COBIT 2019 ID (Optional)</FormLabel><FormControl><Input placeholder="e.g. APO09" {...field} /></FormControl></FormItem>
+                    <FormItem>
+                      <FormLabel>COBIT 2019 ID (Optional)</FormLabel>
+                      <FormControl><Input placeholder="e.g. APO09" {...field} onChange={e => field.onChange(e.target.value.toUpperCase())} /></FormControl>
+                      {field.value && COBIT_ITGC_MAPPING[field.value] && form.watch('itgcArea') && !COBIT_ITGC_MAPPING[field.value].includes(form.watch('itgcArea') as string) && (
+                        <p className="text-[10px] text-amber-600 font-bold mt-1">
+                          Peringatan: Berdasarkan Tabel 1, {field.value} biasanya tidak dipetakan ke area {form.watch('itgcArea')}.
+                        </p>
+                      )}
+                    </FormItem>
                   )} />
                 </div>
               )}
@@ -346,7 +443,20 @@ export function ControlEditor({ isOpen, setIsOpen, control }: ControlEditorProps
                   <FormItem><FormLabel className="text-[10px] uppercase">Kuantitatif (Table 10)</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="High">High (&gt;= OM)</SelectItem><SelectItem value="Medium">Medium (PM to OM)</SelectItem><SelectItem value="Low">Low (&lt; PM)</SelectItem></SelectContent></Select></FormItem>
                 )} />
                 <FormField control={form.control} name="riskQualitative" render={({ field }) => (
-                  <FormItem><FormLabel className="text-[10px] uppercase">Kualitatif (Table 11)</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="High">High (Frequent)</SelectItem><SelectItem value="Medium">Medium (Possible)</SelectItem><SelectItem value="Low">Low (Rare)</SelectItem></SelectContent></Select></FormItem>
+                  <FormItem>
+                    <div className="flex justify-between items-center mb-1">
+                      <FormLabel className="text-[10px] uppercase">Kualitatif (Table 11)</FormLabel>
+                      <QualitativeRiskWizard onApply={(val) => setValue("riskQualitative", val)} />
+                    </div>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger></FormControl>
+                      <SelectContent>
+                        <SelectItem value="High">High (Frequent)</SelectItem>
+                        <SelectItem value="Medium">Medium (Possible)</SelectItem>
+                        <SelectItem value="Low">Low (Rare)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
                 )} />
               </div>
 
@@ -354,7 +464,29 @@ export function ControlEditor({ isOpen, setIsOpen, control }: ControlEditorProps
                 <Label className="text-xs font-bold uppercase tracking-wider text-primary">Regulatory Mapping</Label>
                 
                 <FormField control={form.control} name="cosoPrinciples" render={() => (
-                  <FormItem><FormLabel className="text-xs">COSO Principles (1-17)</FormLabel>
+                  <FormItem>
+                    <div className="flex justify-between items-center mb-1">
+                      <FormLabel className="text-xs">COSO Principles (1-17)</FormLabel>
+                      <Button 
+                        type="button" 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-6 text-[9px] gap-1 text-primary"
+                        onClick={() => {
+                          const firstP = form.watch('cosoPrinciples')?.[0];
+                          if (firstP) {
+                            const suggestion = getSuggestedControl(firstP);
+                            form.setValue('name', suggestion.name);
+                            form.setValue('description', suggestion.description);
+                            toast.info(`Template diterapkan berdasarkan Prinsip ${firstP}`);
+                          } else {
+                            toast.error("Pilih minimal satu Prinsip COSO untuk mendapatkan saran template.");
+                          }
+                        }}
+                      >
+                        <Lightbulb className="h-3 w-3" /> Suggest Template (Appx 1)
+                      </Button>
+                    </div>
                     <div className="grid grid-cols-6 gap-1 pt-2">
                       {ALL_COSO.map((p) => (
                         <FormField key={p} control={form.control} name="cosoPrinciples" render={({ field }) => (

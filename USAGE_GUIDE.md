@@ -4,9 +4,9 @@ Selamat datang di **IndoRCM Pro**, platform digital yang dirancang khusus untuk 
 
 ## Daftar Isi
 1. [Peran Pengguna (RBAC)](#peran-pengguna-rbac)
-2. [Tahap 1: Perancangan (Scoping & RCM)](#tahap-1-perancangan-scoping--rcm)
-3. [Tahap 2: Implementasi (CSA)](#tahap-2-implementasi-csa)
-4. [Tahap 3: Evaluasi (Testing)](#tahap-3-evaluasi-testing)
+2. [Tahap 1: Perancangan (Planning & Scoping)](#tahap-1-perancangan-planning--scoping)
+3. [Tahap 2: Implementasi (CSA & Validation)](#tahap-2-implementasi-csa--validation)
+4. [Tahap 3: Evaluasi (Testing Workbench)](#tahap-3-evaluasi-testing-workbench)
 5. [Tahap 4: Remediasi (Deficiency Board)](#tahap-4-remediasi-deficiency-board)
 6. [Tahap 5: Pelaporan & Atestasi Eksternal](#tahap-5-pelaporan--atestasi-eksternal)
 
@@ -14,62 +14,74 @@ Selamat datang di **IndoRCM Pro**, platform digital yang dirancang khusus untuk 
 
 ## Peran Pengguna (RBAC)
 Aplikasi ini menggunakan sistem *Role-Based Access Control* (RBAC) yang ketat:
-*   **Line 1 (Process Owner):** Bertanggung jawab mengisi CSA (Control Self-Assessment).
-*   **Line 2 (ICOFR Officer):** Melakukan scoping, menyusun RCM, validasi desain, dan inventarisasi aplikasi.
-*   **Line 3 (Internal Audit):** Melakukan pengujian independen (TOD & TOE).
-*   **Admin/Executive:** Meninjau dashboard COSO dan melakukan Digital Sign-off.
-*   **External Auditor (KAP):** Melakukan reviu independen dan memberikan opini atestasi.
+*   **Line 1 (Process Owner):** Mengisi self-assessment (CSA) dan mengunggah bukti kontrol.
+*   **Line 2 (ICOFR Officer):** Mengelola scoping, menyusun RCM, validasi desain, reviu CSA, dan monitoring SOC/WBS.
+*   **Line 3 (Internal Audit):** Melakukan pengujian independen (TOD & TOE) secara objektif.
+*   **Admin/Executive:** Meninjau dashboard kepatuhan dan melakukan Digital Sign-off (CEO/CFO).
+*   **External Auditor (KAP):** Melakukan reviu independen atas kertas kerja Lini 3 dan memberikan opini atestasi.
 
 ---
 
-## Tahap 1: Perancangan (Scoping & RCM)
+## Tahap 1: Perancangan (Planning & Scoping)
 
-### 1.1 Penentuan Materialitas & Haircut Wizard
+### 1.1 Penentuan Materialitas Grup
 *   Navigasi ke menu **Planning > Scoping & Materiality**.
-*   Gunakan tombol **Determine Haircut (Table 4)**. Jawab kuesioner kualitatif (riwayat salah saji, perubahan sistem, dll) untuk mendapatkan saran persentase haircut yang objektif (25% - 55%).
+*   Masukkan jumlah entitas anak untuk mengaktifkan **Group Multiplier (Tabel 25)**.
+*   Sistem secara otomatis menghitung alokasi materialitas anak perusahaan berdasarkan pangsa aset (**FAQ No. 4**) dengan batasan (*cap*) sesuai regulasi.
 
-### 1.2 BPM Visualization
-*   Pada daftar RCM, klik tombol **BPM Flow** pada kartu proses.
-*   Gunakan kanvas visual untuk memetakan alur proses bisnis dengan legenda standar (Aktivitas, Sistem, Dokumen, Keputusan) sesuai **Lampiran 4**.
+### 1.2 Integrasi Whistleblowing (WBS)
+*   Buka menu **Whistleblowing Recap** untuk meninjau indikator fraud yang masuk.
+*   Gunakan data ini sebagai input kualitatif dalam menentukan akun signifikan di tahap scoping.
 
-### 1.3 Risk Library (Standardisasi Klaster)
-*   Saat menambah proses baru (**Add Process**), klik tombol **Lookup Risk Library**.
-*   Pilih risiko standar berdasarkan klaster BUMN Anda (misal: Industri Energi atau Jasa Keuangan) untuk memastikan keselarasan dengan **Lampiran 2**.
+### 1.3 Change Management Log
+*   Setiap perubahan pada RCM atau BPM didokumentasikan di menu **Change Log (Lampiran 6)**.
+*   Laporan ini memuat perbandingan *Before vs After* yang wajib tersedia saat audit.
 
-### 1.4 Application Inventory & Precision Detail
-*   Navigasi ke tab **Significant Apps** di menu RCM untuk memonitor status **ITGC**.
-*   Pada saat membuat kontrol baru, tentukan **Kompleksitas Spreadsheet (Tabel 14)** atau **Tipe Laporan IPE (Tabel 20)** untuk menyesuaikan prosedur pengujian secara otomatis.
-
----
-
-## Tahap 2: Implementasi (CSA)
-
-### 2.1 Pengisian Self-Assessment
-*   Pengguna **Lini 1** masuk ke menu **Implementation > CSA Workspace**.
-*   Unggah bukti pelaksanaan kontrol dan berikan komentar untuk setiap periode assessment.
+### 1.4 SOC Monitoring (Pihak Ketiga)
+*   Menu **SOC Monitoring** digunakan untuk mendokumentasikan reviu atas laporan asurans vendor.
+*   Gunakan checklist evaluasi untuk memvalidasi keselarasan ruang lingkup dan periode laporan SOC dengan siklus ICOFR perusahaan.
 
 ---
 
-## Tahap 3: Evaluasi (Testing)
+## Tahap 2: Implementasi (CSA & Validation)
 
-### 3.1 Workbench Pengujian (Lini 3)
-*   **6 Atribut Evaluasi (Tabel 21):** Auditor wajib memvalidasi 6 atribut kepatuhan (Pencapaian Objektif, Ketepatan Waktu, Wewenang, Keandalan Informasi, Cakupan, dan Bukti).
-*   **Technical Reperformance:** Jika tipe IPE adalah **Query**, sistem akan mewajibkan reviu teknis atas logika SQL (Tabel 20).
+### 2.1 Pengisian CSA (Lini 1)
+*   Lini 1 mengisi penilaian di **CSA Workspace**. Kontrol dengan **Fraud Risk** ditandai khusus.
+
+### 2.2 Validasi Lini 2 (ICOFR)
+*   Pengguna **Lini 2** wajib meninjau hasil CSA Lini 1 melalui tab **Pending Action**.
+*   Berikan status **Validated** atau **Rejected** berdasarkan kecukupan bukti pendukung (**Bab IV.2.3**).
+
+---
+
+## Tahap 3: Evaluasi (Testing Workbench)
+
+### 3.1 6 Pilar Atribut Evaluasi (Lini 3)
+*   Saat melakukan pengetesan TOD/TOE, auditor wajib mengisi 6 atribut kepatuhan mandatori (Tabel 21):
+    1. Pencapaian Objektif
+    2. Ketepatan Waktu
+    3. Wewenang & Kompetensi
+    4. Keandalan Informasi (IPE/EUC)
+    5. Cakupan Periode
+    6. Kecukupan Bukti
 
 ---
 
 ## Tahap 4: Remediasi (Deficiency Board)
 
-### 4.1 Aggregate Analysis
-*   Gunakan tombol **Aggregate Analysis (Lampiran 10)** untuk memilih beberapa temuan kecil dan mengevaluasi dampak gabungannya terhadap saldo akun atau asersi tertentu.
+### 4.1 Compensating Controls
+*   Jika ditemukan defisiensi, tautkan **Compensating Control** untuk memitigasi risiko dan menurunkan tingkat keparahan (*Severity*).
+
+### 4.2 Aggregate Analysis
+*   Pilih beberapa temuan di board dan gunakan tombol **Aggregate Analysis (Lampiran 10)** untuk mengevaluasi dampak kolektifnya terhadap asersi laporan keuangan.
 
 ---
 
 ## Tahap 5: Pelaporan & Atestasi Eksternal
 
 ### 5.1 Digital Sign-off & Lock
-*   Pengguna Admin/Executive melakukan sign-off pada tab **Asesmen Manajemen**. 
-*   Laporan akan dicap **SIGNED** dan seluruh data periode tersebut akan dikunci (**Locked**) agar tidak dapat diubah lagi.
+*   Setelah siklus selesai, CEO/CFO melakukan sign-off pada tab **Asesmen Manajemen**. 
+*   Data akan dikunci (**Locked**) untuk memastikan integritas laporan tahunan.
 
 ---
 *Dokumen ini disusun untuk IndoRCM Pro v1.0 — © 2026 IndoRCM Pro Team.*

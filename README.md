@@ -7,19 +7,21 @@ IndoRCM Pro is a production-grade web application that digitizes the ICOFR (Inte
 ## Overview
 
 IndoRCM Pro centralizes the 5-step ICOFR lifecycle required for BUMN compliance:
-1.  **Perancangan (Planning)**: Scoping significant accounts and building Risk Control Matrices (RCM).
-2.  **Implementasi (Implementation)**: Self-assessments by process owners (CSA).
-3.  **Evaluasi (Evaluation)**: Independent testing (TOD/TOE) by internal audit.
-4.  **Remediasi (Remediation)**: Tracking and correcting control deficiencies.
-5.  **Pelaporan (Reporting)**: Management assessment and audit result generation.
+1.  **Perancangan (Planning)**: Scoping significant accounts, building Risk Control Matrices (RCM), and mapping BPM.
+2.  **Implementasi (Implementation)**: Self-assessments by process owners (CSA) with Line 2 validation.
+3.  **Evaluasi (Evaluation)**: Independent testing (TOD/TOE) by internal audit with 6 mandatory attributes.
+4.  **Remediasi (Remediation)**: Tracking deficiencies with aggregate impact analysis and compensating controls.
+5.  **Pelaporan (Reporting)**: Fraud indicators (WBS) integration, management assessment, and CEO/CFO sign-off.
 
 ## Key Compliance Features
 
-- **Standardized BPM**: Visual process mapping with regulatory legends (Start, Manual, System, etc.) as per **Lampiran 4**.
-- **Industry Risk Library**: Built-in risk repository for 11 BUMN clusters (Energy, Finance, etc.) as per **Lampiran 2**.
-- **Regulatory Scoping**: Automated OM/PM calculation with **Precision Group Multipliers** and a **Qualitative Haircut Wizard** (Table 4).
+- **Standardized BPM**: Visual process mapping with regulatory legends (Oval Start/End, Hexagon Risk, Cylinder Archive) as per **Lampiran 3**.
+- **Whistleblowing Integration**: Recap of fraud indicators to drive risk-based scoping (**Prinsip 14 & 15**).
+- **Group Consolidation**: Automated OM/PM calculation with **Precision Group Multipliers** (Table 25) and **Subsidiary Materiality Allocation** (FAQ No. 4).
+- **Change Management Log**: Immutable audit trail of process and control changes as per **Lampiran 6**.
+- **SOC Monitoring**: Formal reviu of 3rd party SOC reports with compliance checklist (**Bab III 4.3**).
 - **IT Asset Governance**: Centralized **Significant Application Inventory** with ITGC status tracking (Bab III 1.5).
-- **Precision Control Testing**: Dynamic checklists for **EUC Complexity (Table 14)** and **IPE Query Validation (Table 20)**.
+- **Precision Risk Assessment**: Objective **Qualitative Risk Wizard** based on 9 criteria (Table 11) and **COBIT-to-ITGC Area Validation** (Table 1).
 - **Independent Assurance**: Dedicated **External Audit Portal** for KAP review and digital attestation (Bab VIII).
 - **Granular Audit Evidence**: TOD/TOE workbench with **6 Mandatory Evaluation Attributes** (Table 21).
 - **Aggregate Analysis**: deficiency board with **Aggregate Assessment (Appendix 10)** to evaluate collective impact of related findings.
@@ -52,7 +54,7 @@ IndoRCM Pro centralizes the 5-step ICOFR lifecycle required for BUMN compliance:
 ## Development
 
 -   **Start Dev Server**: `bun dev` (Frontend: `http://localhost:3000`).
--   **Quality**: `bun lint` and `bun tsc --noEmit`.
+-   **Quality**: `bun lint` and `bun x tsc --noEmit`.
 
 ## License
 MIT License.
