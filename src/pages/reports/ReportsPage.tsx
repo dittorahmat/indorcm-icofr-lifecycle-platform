@@ -8,23 +8,24 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { FileDown, Printer, Shield, FileText, CheckCircle2, AlertTriangle, Lock } from 'lucide-react';
+import { FileDown, Printer, Shield, FileText, CheckCircle2, AlertTriangle, Lock, Layers } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, PieChart, Pie, Cell } from 'recharts';
 import { toast } from 'sonner';
 import type { Deficiency } from '@shared/types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const cardVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-};
-
 export function ReportsPage() {
   const [isSigned, setIsSigned] = React.useState(false);
+  
   const { data: summaryData, isLoading } = useQuery({
     queryKey: ['reportSummary'],
     queryFn: () => api<any>('/api/reports/summary'),
+  });
+
+  const { data: aggregateData } = useQuery({
+    queryKey: ['aggregatedeficiencies'],
+    queryFn: () => api<{ items: any[] }>('/api/aggregatedeficiencies'),
   });
 
   const handleSignOff = () => {
@@ -46,15 +47,12 @@ export function ReportsPage() {
       const json = await response.json();
 
       if (format === 'csv') {
-        // Dynamic import of papaparse for client-side CSV generation
         const { unparse } = await import('papaparse');
         const csv = unparse(json);
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         saveAs(blob, 'icofr_report.csv');
       } else {
-        // Dynamic import of xlsx (SheetJS) for client-side Excel generation
         const XLSX = await import('xlsx');
-        // Ensure we pass an array of objects to json_to_sheet
         const rows = Array.isArray(json) ? json : [json];
         const ws = XLSX.utils.json_to_sheet(rows);
         const wb = XLSX.utils.book_new();
@@ -63,7 +61,6 @@ export function ReportsPage() {
         const blob = new Blob([wbout], { type: 'application/octet-stream' });
         saveAs(blob, 'icofr_report.xlsx');
       }
-
       toast.success('Export successful!', { id: toastId });
     } catch (error) {
       toast.error('Export failed.', { id: toastId });
@@ -214,25 +211,9 @@ export function ReportsPage() {
 
                   <ol className="list-decimal pl-5 space-y-6 text-sm text-foreground/90">
                     <li>Kami telah menelaah laporan keuangan PT [Nama Perusahaan] yang berakhir pada tanggal {new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}.</li>
-                    
                     <li>Berdasarkan pengetahuan kami, laporan keuangan tidak memuat pernyataan yang tidak benar tentang fakta material atau tidak mencantumkan fakta material yang diperlukan untuk membuat pernyataan yang dibuat, mengingat keadaan di mana pernyataan tersebut dibuat, tidak menyesatkan.</li>
-                    
-                    <li>Berdasarkan pengetahuan kami, laporan keuangan, dan informasi keuangan lainnya yang termasuk dalam laporan keuangan, secara wajar menyajikan dalam semua hal yang material atas kondisi keuangan dan hasil operasi untuk periode-periode yang disajikan dalam laporan ini.</li>
-                    
-                    <li>Kami telah mengimplementasikan pengendalian dan prosedur atas penyusunan laporan keuangan yang dianggap perlu untuk menyusun dan menyajikan secara wajar laporan keuangan (konsolidasi) dan bebas dari salah saji material:
-                      <ul className="list-[lower-alpha] pl-5 mt-2 space-y-2">
-                        <li>Merancang pengendalian dan prosedur atas penyusunan laporan keuangan, di bawah pengawasan kami untuk memastikan bahwa informasi material Perusahaan yang berkaitan dengan pelaporan keuangan telah diketahui oleh para manajemen, khususnya selama periode penyusunan laporan.</li>
-                        <li>Mengevaluasi efektivitas pengendalian dan prosedur atas penyusunan laporan keuangan, menyampaikan kesimpulan kami tentang efektivitas pengendalian berdasarkan periode pelaporan yang dicakup dalam laporan ini.</li>
-                      </ul>
-                    </li>
-                    
-                    <li>Kami telah mengungkapkan, berdasarkan hasil evaluasi pengendalian internal atas pelaporan keuangan kepada Dewan Komisaris, Direksi dan Komite Audit, perihal:
-                      <ul className="list-[lower-alpha] pl-5 mt-2 space-y-2">
-                        <li>Seluruh defisiensi signifikan dan kelemahan material dalam rancangan dan pengoperasian pengendalian internal yang cukup mungkin dapat berdampak pada kemampuan perusahaan untuk mencatat, memproses, merangkum, dan melaporkan informasi keuangan.</li>
-                        <li>Setiap perubahan signifikan dalam kebijakan akuntansi, prosedur dan faktor lainnya selama tahun berjalan yang dapat memengaruhi pengendalian internal atas pelaporan keuangan Perusahaan.</li>
-                        <li>Setiap kecurangan (fraud), baik yang berdampak secara material maupun tidak, yang melibatkan manajemen atau personel lain yang memiliki peran penting dalam pengendalian internal.</li>
-                      </ul>
-                    </li>
+                    <li>Berdasarkan pengetahuan kami, laporan keuangan, dan informasi keuangan lainnya yang termasuk dalam laporan keuangan, secara wajar menyajikan dalam semua hal yang material atas kondisi keuangan dan hasil operasi untuk periode tersebut.</li>
+                    <li>Kami telah mengimplementasikan pengendalian dan prosedur atas penyusunan laporan keuangan yang dianggap perlu untuk menyusun dan menyajikan secara wajar laporan keuangan (konsolidasi) dan bebas dari salah saji material.</li>
                   </ol>
                 </div>
 
@@ -264,6 +245,45 @@ export function ReportsPage() {
                     </TableBody>
                   </Table>
                 </div>
+
+                {aggregateData?.items && aggregateData.items.length > 0 && (
+                  <div className="bg-blue-50/50 p-6 rounded-lg border-2 border-blue-200 space-y-4">
+                    <h3 className="font-bold border-b border-blue-200 pb-2 flex items-center gap-2 text-blue-800">
+                      <Layers className="h-4 w-4" /> Analisis Agregasi (Lampiran 10)
+                    </h3>
+                    <p className="text-[10px] text-blue-700 italic">
+                      Evaluasi atas kombinasi beberapa defisiensi yang memengaruhi saldo akun atau pengungkapan yang sama (Box 7 Loop-back).
+                    </p>
+                    <Table className="text-xs">
+                      <TableHeader>
+                        <TableRow className="border-blue-200">
+                          <TableHead className="text-blue-800">Group Name</TableHead>
+                          <TableHead className="text-blue-800">Combined Severity</TableHead>
+                          <TableHead className="text-blue-800 text-right">Agg. Magnitude</TableHead>
+                          <TableHead className="text-blue-800">Rationale</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {aggregateData.items.map((aggr) => (
+                          <TableRow key={aggr.id} className="border-blue-100">
+                            <TableCell className="font-bold text-blue-900">{aggr.name}</TableCell>
+                            <TableCell>
+                              <Badge className={aggr.finalSeverity === 'Material Weakness' ? 'bg-red-600' : 'bg-orange-500'}>
+                                {aggr.finalSeverity}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-right font-mono font-bold text-blue-700">
+                              {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(aggr.combinedMagnitude)}
+                            </TableCell>
+                            <TableCell className="max-w-[250px] text-[10px] text-blue-800 leading-tight">
+                              {aggr.conclusionRationale}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
 
                 <div className="grid grid-cols-2 gap-20 pt-12">
                   <div className="text-center space-y-24">
@@ -329,30 +349,86 @@ export function ReportsPage() {
         </Tabs>
 
         {/* This section is visible only during printing */}
-        <div className="hidden print:block space-y-10">
-           <div className="text-center space-y-4">
-              <Shield className="h-16 w-12 mx-auto text-primary" />
-              <h1 className="text-3xl font-bold uppercase">Laporan Tahunan ICOFR PT [Nama Perusahaan]</h1>
-              <p className="text-lg font-medium">Periode Laporan: {new Date().getFullYear()}</p>
-           </div>
-           
-           <div className="border-t-2 pt-8">
-              <h2 className="text-xl font-bold mb-4">1. Asesmen Manajemen</h2>
-              <p className="text-justify leading-relaxed mb-10">
-                Berdasarkan evaluasi yang telah dilakukan, Manajemen menyimpulkan bahwa pengendalian internal 
-                atas pelaporan keuangan (ICOFR) telah berjalan secara efektif dalam semua hal yang material.
-              </p>
-              
-              <div className="grid grid-cols-2 gap-20 pt-12">
-                <div className="text-center space-y-20">
-                  <p className="font-semibold border-b">Direktur Keuangan</p>
-                  <p className="font-bold">( ____________________ )</p>
-                </div>
-                <div className="text-center space-y-20">
-                  <p className="font-semibold border-b">Direktur Utama</p>
-                  <p className="font-bold">( ____________________ )</p>
+        <div className="hidden print:block space-y-8 font-serif">
+           <div className="flex items-start justify-between border-b-4 border-double pb-4 mb-8">
+              <div className="flex items-center gap-4">
+                <Shield className="h-16 w-12 text-primary" />
+                <div>
+                  <h1 className="text-2xl font-black uppercase tracking-tighter leading-none">IndoRCM Pro</h1>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">ICOFR Lifecycle Management Platform</p>
                 </div>
               </div>
+              <div className="text-right">
+                <p className="text-xs font-bold uppercase">Dokumen Rahasia Negara</p>
+                <p className="text-[10px]">Klasifikasi: INTERNAL</p>
+                <p className="text-[10px]">Lampiran 11 - SK-5/DKU.MBU/11/2024</p>
+              </div>
+           </div>
+
+           <div className="text-center space-y-2 mb-10">
+              <h2 className="text-xl font-bold uppercase underline">Asesmen Manajemen atas Efektivitas Implementasi ICOFR</h2>
+              <p className="text-sm font-medium">PT [NAMA PERUSAHAAN BUMN]</p>
+              <p className="text-xs">Periode Laporan: {new Date().getFullYear()}</p>
+           </div>
+           
+           <div className="space-y-6 text-sm text-justify leading-relaxed">
+              <p>Direksi PT [Nama Perusahaan] menyatakan bahwa:</p>
+              
+              {/* Conditional Conclusion based on MW */}
+              {summaryData?.deficienciesBySeverity.find((d: any) => d.name === 'Material Weakness')?.count > 0 ? (
+                <div className="p-4 border-2 border-red-800 rounded-md bg-red-50/50 mb-6">
+                  <p className="font-bold text-red-900 underline mb-2 text-center">KESIMPULAN: TIDAK EFEKTIF</p>
+                  <p className="text-xs text-red-800">
+                    Berdasarkan evaluasi yang dilakukan, manajemen menyimpulkan bahwa Perusahaan <strong>tidak mempertahankan</strong> pengendalian internal yang efektif atas pelaporan keuangan per tanggal laporan, sehubungan dengan ditemukannya kelemahan material (Material Weakness).
+                  </p>
+                </div>
+              ) : (
+                <div className="p-4 border-2 border-green-800 rounded-md bg-green-50/50 mb-6">
+                  <p className="font-bold text-green-900 underline mb-2 text-center">KESIMPULAN: EFEKTIF</p>
+                  <p className="text-xs text-green-800">
+                    Berdasarkan evaluasi yang dilakukan, manajemen menyimpulkan bahwa Perusahaan <strong>telah mempertahankan</strong>, dalam semua hal yang material, pengendalian internal yang efektif atas pelaporan keuangan per tanggal laporan.
+                  </p>
+                </div>
+              )}
+
+              <ol className="list-decimal pl-5 space-y-4">
+                <li>Kami telah menelaah laporan keuangan yang berakhir pada tanggal {new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}.</li>
+                <li>Laporan keuangan tidak memuat pernyataan yang tidak benar tentang fakta material atau tidak mencantumkan fakta material yang diperlukan untuk membuat pernyataan yang dibuat, mengingat keadaan di mana pernyataan tersebut dibuat, tidak menyesatkan.</li>
+                <li>Laporan keuangan, secara wajar menyajikan dalam semua hal yang material atas kondisi keuangan dan hasil operasi untuk periode tersebut.</li>
+                <li>Kami telah mengimplementasikan pengendalian dan prosedur atas penyusunan laporan keuangan yang dianggap perlu untuk menyusun dan menyajikan secara wajar laporan keuangan (konsolidasi) dan bebas dari salah saji material.</li>
+              </ol>
+           </div>
+
+           <div className="pt-12">
+              <div className="grid grid-cols-3 gap-10 items-end">
+                <div className="text-center space-y-20">
+                  <p className="font-semibold border-b">Direktur Keuangan (CFO)</p>
+                  <p className="font-bold text-lg">[Nama Pejabat]</p>
+                </div>
+                
+                {/* QR Verification - Bab VII 2 */}
+                <div className="flex flex-col items-center justify-center p-4 border-2 border-slate-200 rounded-lg bg-white shadow-sm">
+                   <div className="w-24 h-24 bg-slate-100 border-2 border-slate-300 flex items-center justify-center relative">
+                      <div className="grid grid-cols-3 gap-1 opacity-20">
+                         {Array.from({ length: 9 }).map((_, i) => <div key={i} className="w-4 h-4 bg-black" />)}
+                      </div>
+                      <Shield className="h-10 w-10 text-primary absolute z-10" />
+                   </div>
+                   <p className="text-[8px] font-bold text-slate-500 uppercase mt-2 tracking-tighter">Verified by IndoRCM Pro</p>
+                   <p className="text-[6px] text-slate-400 font-mono mt-0.5">ID: {crypto.randomUUID().slice(0,8).toUpperCase()}</p>
+                </div>
+
+                <div className="text-center space-y-20">
+                  <p className="font-semibold border-b">Direktur Utama (CEO)</p>
+                  <p className="font-bold text-lg">[Nama Pejabat]</p>
+                </div>
+              </div>
+           </div>
+
+           <div className="absolute bottom-0 left-0 right-0 border-t pt-2 text-[8px] text-muted-foreground flex justify-between">
+              <span>Dicetak otomatis oleh IndoRCM Pro v1.0</span>
+              <span>Timestamp: {new Date().toLocaleString()}</span>
+              <span>Halaman 1 dari 1</span>
            </div>
         </div>
       </div>
@@ -360,10 +436,10 @@ export function ReportsPage() {
       <style>{`
         @media print {
           .no-print { display: none !important; }
-          body { background: white !important; }
+          body { background: white !important; padding: 2cm !important; }
           .AppLayout_content { padding: 0 !important; }
-          [data-radix-collection-item] { display: block !important; opacity: 1 !important; }
-          .tabs-content { display: block !important; border: none !important; }
+          .print\:block { display: block !important; }
+          @page { size: A4; margin: 0; }
         }
       `}</style>
     </AppLayout>

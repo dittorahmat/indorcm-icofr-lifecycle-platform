@@ -4,19 +4,22 @@ import { Button } from '@/components/ui/button';
 import { ShieldCheck, ChevronRight, CheckCircle2, AlertCircle, Info } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
+import { toast } from 'sonner';
 
 type DoDStep = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 'RESULT';
 
 interface DoDWizardProps {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
-  onComplete: (severity: "Control Deficiency" | "Significant Deficiency" | "Material Weakness") => void;
+  onComplete: (severity: "Control Deficiency" | "Significant Deficiency" | "Material Weakness", rationale?: string) => void;
   isAggregate?: boolean;
 }
 
 export function DoDWizard({ isOpen, setIsOpen, onComplete, isAggregate = false }: DoDWizardProps) {
   const [step, setStep] = React.useState<DoDStep>(1);
   const [answers, setStepAnswers] = React.useState<Record<number, boolean>>({});
+  const [rationale, setRationale] = React.useState("");
 
   const handleAnswer = (val: boolean) => {
     const newAnswers = { ...answers, [step as number]: val };
@@ -37,9 +40,22 @@ export function DoDWizard({ isOpen, setIsOpen, onComplete, isAggregate = false }
       else setStep(6); // No -> Box 6
     } else if (step === 4) {
       if (val) setStep(6); // Yes -> Box 6
-      else setStep('RESULT'); // Result: Control Deficiency
+      else {
+        if (isAggregate) setStep(7); // Check for aggregation loop in aggregate mode
+        else setStep('RESULT'); 
+      }
     } else if (step === 6) {
-      setStep('RESULT'); // Final decision
+      if (isAggregate) setStep(7);
+      else setStep('RESULT'); 
+    } else if (step === 7) {
+      if (val) {
+        toast.info("Loop Agregasi: Kembali ke Box 2 untuk mengevaluasi dampak gabungan.", {
+          description: "Sesuai mandat Box 7 pada Gambar 5 (Hal 73)."
+        });
+        setStep(2); // Loop back to Box 2
+      } else {
+        setStep('RESULT');
+      }
     }
   };
 
@@ -47,8 +63,8 @@ export function DoDWizard({ isOpen, setIsOpen, onComplete, isAggregate = false }
     if (step !== 'RESULT') return null;
     
     // Final Decision Logic
-    if (answers[4] === false) return "Control Deficiency";
-    if (answers[6] === true) return "Material Weakness";
+    if (answers[4] === false && !answers[7]) return "Control Deficiency";
+    if (answers[6] === true || answers[7] === true) return "Material Weakness";
     return "Significant Deficiency";
   };
 
@@ -57,10 +73,11 @@ export function DoDWizard({ isOpen, setIsOpen, onComplete, isAggregate = false }
   const reset = () => {
     setStep(1);
     setStepAnswers({});
+    setRationale("");
   };
 
   const handleFinish = () => {
-    if (result) onComplete(result as any);
+    if (result) onComplete(result as any, rationale);
     setIsOpen(false);
     reset();
   };
@@ -123,6 +140,13 @@ export function DoDWizard({ isOpen, setIsOpen, onComplete, isAggregate = false }
               onAnswer={handleAnswer}
             />
           )}
+          {step === 7 && (
+            <Question 
+              title="Box 7: Agregasi Akun Sejenis"
+              q="Apakah terdapat beberapa pengendalian defisiensi yang memengaruhi account balance atau disclosure dari laporan keuangan yang sama?"
+              onAnswer={handleAnswer}
+            />
+          )}
 
           {step === 'RESULT' && (
             <div className="text-center space-y-4 animate-in fade-in zoom-in duration-300">
@@ -135,6 +159,17 @@ export function DoDWizard({ isOpen, setIsOpen, onComplete, isAggregate = false }
                   {result}
                 </Badge>
               </div>
+
+              <div className="text-left space-y-2 mt-4">
+                <label className="text-[10px] font-bold uppercase text-muted-foreground">Rationale / Justifikasi (Mandatori)</label>
+                <Textarea 
+                  value={rationale}
+                  onChange={(e) => setRationale(e.target.value)}
+                  placeholder="Jelaskan dasar pertimbangan penentuan severity ini..."
+                  className="text-xs h-20"
+                />
+              </div>
+
               <p className="text-sm text-muted-foreground italic">
                 {result === "Material Weakness" ? "Segera laporkan kepada Komite Audit dan buat rencana remediasi prioritas." : "Dokumentasikan temuan dan monitor rencana aksi."}
               </p>
@@ -144,7 +179,7 @@ export function DoDWizard({ isOpen, setIsOpen, onComplete, isAggregate = false }
 
         <DialogFooter>
           {step === 'RESULT' ? (
-            <Button onClick={handleFinish} className="w-full">Apply Severity</Button>
+            <Button onClick={handleFinish} disabled={!rationale} className="w-full">Apply Severity</Button>
           ) : (
             <div className="w-full flex justify-between items-center">
                <span className="text-[10px] text-muted-foreground uppercase font-bold">Box {step} of 6</span>

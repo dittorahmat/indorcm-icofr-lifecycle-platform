@@ -35,6 +35,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       MaterialityEntity.ensureSeed(c.env), ScopingEntity.ensureSeed(c.env),
       ChangeLogEntity.ensureSeed(c.env), SOCReportEntity.ensureSeed(c.env),
       ApplicationEntity.ensureSeed(c.env), RiskLibraryEntity.ensureSeed(c.env),
+      AggregateDeficiencyEntity.ensureSeed(c.env),
     ]);
     // Mock Auth
     const role = (c.req.header('X-Mock-Role') as UserRole) || 'Line 1';
@@ -54,12 +55,45 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   });
 
   app.put('/api/rcm/:id', async (c) => {
-    if ((c as any).get('userRole') !== 'Line 2') return bad(c, 'Access Denied');
+    const role = (c as any).get('userRole');
     const id = c.req.param('id');
     const body = await c.req.json<Partial<RCM>>();
     const rcm = new RCMEntity(c.env, id);
     if (!await rcm.exists()) return notFound(c, 'RCM not found');
+
+    if (role === 'Line 1') {
+      // Line 1 can only request changes
+      await patchWithAudit(rcm, { 
+        status: 'Pending Change Approval',
+        changeRequest: {
+          requestedBy: (c as any).get('userId'),
+          requestedAt: Date.now(),
+          description: "Update requested by Process Owner",
+          proposedData: body
+        }
+      }, (c as any).get('userId'));
+      return ok(c, await rcm.getState());
+    }
+
+    if (role !== 'Line 2') return bad(c, 'Access Denied');
     await patchWithAudit(rcm, body, (c as any).get('userId'));
+    return ok(c, await rcm.getState());
+  });
+
+  app.post('/api/rcm/:id/approve-change', async (c) => {
+    if ((c as any).get('userRole') !== 'Line 2') return bad(c, 'Access Denied');
+    const id = c.req.param('id');
+    const rcm = new RCMEntity(c.env, id);
+    if (!await rcm.exists()) return notFound(c, 'RCM not found');
+    const state = await rcm.getState();
+    if (state.status !== 'Pending Change Approval' || !state.changeRequest) return bad(c, 'No pending change request');
+
+    await patchWithAudit(rcm, { 
+      ...state.changeRequest.proposedData,
+      status: 'Active',
+      changeRequest: undefined 
+    }, (c as any).get('userId'));
+    
     return ok(c, await rcm.getState());
   });
 
@@ -112,6 +146,19 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     return ok(c, await control.getState());
   });
   app.get('/api/deficiencies', async (c) => ok(c, await DeficiencyEntity.list(c.env)));
+  app.get('/api/aggregatedeficiencies', async (c) => ok(c, await AggregateDeficiencyEntity.list(c.env)));
+  app.post('/api/aggregatedeficiencies', async (c) => {
+    if (!['Line 2', 'Line 3', 'Admin'].includes((c as any).get('userRole'))) return bad(c, 'Access Denied');
+    const body = await c.req.json<Partial<AggregateDeficiency>>();
+    const newAggr: AggregateDeficiency = { 
+      id: crypto.randomUUID(), name: "Aggregate Analysis", year: new Date().getFullYear(), 
+      deficiencyIds: [], affectedAccounts: [], affectedAssertions: [], 
+      combinedMagnitude: 0, aggregateLikelihood: "Low", finalSeverity: "Control Deficiency", 
+      conclusionRationale: "", identifiedBy: (c as any).get('userId'), 
+      identifiedDate: Date.now(), ...body 
+    };
+    return ok(c, await createWithAudit(AggregateDeficiencyEntity, c.env, newAggr, (c as any).get('userId')));
+  });
   app.put('/api/deficiencies/:id', async (c) => {
     const id = c.req.param('id');
     const body = await c.req.json<Partial<Deficiency>>();

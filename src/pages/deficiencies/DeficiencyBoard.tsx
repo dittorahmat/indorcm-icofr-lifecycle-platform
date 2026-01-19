@@ -131,13 +131,33 @@ export function DeficiencyBoard() {
     },
   });
 
+  const aggregateMutation = useMutation({
+    mutationFn: (data: Partial<AggregateDeficiency>) => 
+      api(`/api/aggregatedeficiencies`, { method: 'POST', body: JSON.stringify(data) }),
+    onSuccess: () => {
+      toast.success("Aggregate deficiency analysis saved (Lampiran 10).");
+      queryClient.invalidateQueries({ queryKey: ['aggregatedeficiencies'] });
+      setAggregateMode(false);
+      setSelectedDeficiencies([]);
+    },
+  });
+
   const handleAssess = (id: string) => {
     setActiveDeficiencyId(id);
     setWizardOpen(true);
   };
 
-  const handleWizardComplete = (severity: DeficiencySeverity) => {
-    if (activeDeficiencyId) {
+  const handleWizardComplete = (severity: DeficiencySeverity, rationale?: string) => {
+    if (isAggregateMode) {
+      const selectedData = deficienciesData?.items.filter(d => selectedDeficiencies.includes(d.id)) || [];
+      aggregateMutation.mutate({
+        deficiencyIds: selectedDeficiencies,
+        finalSeverity: severity,
+        conclusionRationale: rationale || "Evaluasi agregasi akun sejenis (Box 7 loop-back).",
+        combinedMagnitude: selectedData.reduce((sum, d) => sum + (d.magnitude || 0), 0),
+        affectedAccounts: [...new Set(selectedData.map(d => d.controlId))], // Simplified mapping
+      });
+    } else if (activeDeficiencyId) {
       severityMutation.mutate({ id: activeDeficiencyId, severity });
     }
   };

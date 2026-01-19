@@ -417,6 +417,29 @@ export function ControlEditor({ isOpen, setIsOpen, control }: ControlEditorProps
                 )}
               </div>
 
+              {/* MRC Specific Metadata (Table 21) */}
+              {nature === "MRC" && (
+                <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg space-y-4">
+                  <p className="text-[10px] font-bold text-orange-800 uppercase tracking-widest flex items-center gap-2">
+                    <ShieldAlert className="h-3 w-3" /> Management Review Control Parameters (Table 21)
+                  </p>
+                  <div className="space-y-3">
+                    <div className="space-y-1">
+                      <Label className="text-[11px]">Management Expectation (Kewajaran Ekspektasi)</Label>
+                      <Input className="h-8 text-xs" placeholder="e.g. Varians biaya operasional < 5% per bulan" />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[11px]">Investigation Threshold (Ambang Batas)</Label>
+                      <Input className="h-8 text-xs" placeholder="e.g. Selisih absolut > Rp 50.000.000" />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[11px]">Investigation Procedures (Prosedur Tindak Lanjut)</Label>
+                      <Textarea className="text-xs" placeholder="Langkah-langkah jika threshold terlampaui..." />
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField control={form.control} name="effectiveDate" render={({ field }) => (
                   <FormItem><FormLabel>Effective Date</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>

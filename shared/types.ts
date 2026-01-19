@@ -78,6 +78,21 @@ export interface Scoping {
   significantProcesses: string[];
 }
 
+export interface AggregateDeficiency {
+  id: string;
+  name: string;
+  year: number;
+  deficiencyIds: string[];
+  affectedAccounts: string[];
+  affectedAssertions: ControlAssertion[];
+  combinedMagnitude: number;
+  aggregateLikelihood: "Low" | "Medium" | "High";
+  finalSeverity: DeficiencySeverity; // CD, SD, or MW
+  conclusionRationale: string;
+  identifiedBy: string; // User ID
+  identifiedDate: number;
+}
+
 export interface Control {
   id: string;
   rcmId: string;
@@ -106,6 +121,20 @@ export interface Control {
   itApplication?: string; // For Automated/ITDM
   eucComplexity?: EUCComplexity; // New: (Tabel 14)
   ipeType?: IPEType; // New: (Tabel 20)
+  // MRC Specific Metadata - Tabel 21 (Hal 45 & 55)
+  mrcMetadata?: {
+    expectation: string; // Kewajaran ekspektasi
+    investigationThreshold: string; // Batasan/Kriteria anomali
+    investigationProcedures: string; // Prosedur investigasi
+  };
+  // Line 2 Validation (Test of One) - Bab III 4
+  line2Validation?: {
+    status: "Pending" | "Validated" | "Rejected";
+    validatedBy?: string;
+    validatedDate?: number;
+    testOfOneEvidenceUrl?: string;
+    comments?: string;
+  };
 }
 
 export interface RCM {
@@ -113,11 +142,17 @@ export interface RCM {
   process: string;
   subProcess: string;
   riskDescription: string;
-  status: "Draft" | "Pending Validation" | "Active" | "Archived"; // Updated for Line 2 workflow
+  status: "Draft" | "Pending Validation" | "Active" | "Archived" | "Pending Change Approval"; // Added Pending Change Approval
   controls: string[]; // Array of Control IDs
   bpmData?: {
     nodes: any[];
     edges: any[];
+  };
+  changeRequest?: {
+    requestedBy: string;
+    requestedAt: number;
+    description: string;
+    proposedData: any;
   };
 }
 
@@ -130,6 +165,12 @@ export interface CSARecord {
   result: "Pass" | "Fail" | "N/A";
   evidenceUrl?: string;
   comments: string;
+  // ITAC Specific (Lampiran 7 Hal 91-92)
+  itacScenario?: string;
+  itacMethod?: string;
+  itacSampleInfo?: string;
+  itacExpectedResult?: string;
+  itacActualResult?: string;
   // Line 2 Validation
   line2Status?: "Pending" | "Validated" | "Rejected";
   line2Comments?: string;
@@ -263,6 +304,7 @@ export interface User {
   id: string;
   name: string;
   role?: UserRole;
+  processOwnershipHistory?: { processId: string; role: UserRole; endDate: number }[]; // For cooling-off validation
 }
 export interface Chat {
   id: string;

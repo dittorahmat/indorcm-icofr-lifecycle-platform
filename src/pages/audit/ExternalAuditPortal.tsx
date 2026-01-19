@@ -16,9 +16,12 @@ export function ExternalAuditPortal() {
     queryFn: () => api<any>('/api/reports/summary'),
   });
 
+  const [opinionType, setOpinionType] = React.useState("Wajar Tanpa Pengecualian (Unqualified Opinion)");
+  const [basisOpinion, setBasisOpinion] = React.useState("");
+
   const handleSubmitOpinion = () => {
     toast.success('Opini Atestasi berhasil diserahkan.', {
-      description: 'Laporan audit independen telah dikunci dan dikirim ke Komite Audit.'
+      description: `Opini: ${opinionType}. Laporan audit independen telah dikunci dan dikirim ke Komite Audit.`
     });
   };
 
@@ -122,27 +125,61 @@ export function ExternalAuditPortal() {
           </TabsContent>
 
           <TabsContent value="opinion" className="pt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Independent Auditor's Report</CardTitle>
-                <CardDescription>Pernyataan pendapat atas efektivitas pengendalian internal pelaporan keuangan.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Opini Audit</label>
-                  <select className="w-full p-2 border rounded-md bg-background">
-                    <option>Wajar Tanpa Pengecualian (Unqualified Opinion)</option>
-                    <option>Wajar Dengan Pengecualian (Qualified Opinion)</option>
-                    <option>Tidak Wajar (Adverse Opinion)</option>
-                    <option>Menolak Memberikan Pendapat (Disclaimer)</option>
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Basis Opini & Catatan Penting</label>
-                  <Textarea placeholder="Jelaskan dasar opini dan temuan audit utama..." className="min-h-[150px]" />
-                </div>
-              </CardContent>
-            </Card>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Draft Opini Auditor Independen</CardTitle>
+                  <CardDescription>Pernyataan pendapat atas efektivitas pengendalian internal pelaporan keuangan.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Jenis Opini</label>
+                    <select 
+                      className="w-full p-2 border rounded-md bg-background"
+                      value={opinionType}
+                      onChange={(e) => setOpinionType(e.target.value)}
+                    >
+                      <option value="Wajar Tanpa Pengecualian (Unqualified Opinion)">Wajar Tanpa Pengecualian (Unqualified Opinion)</option>
+                      <option value="Wajar Dengan Pengecualian (Qualified Opinion)">Wajar Dengan Pengecualian (Qualified Opinion)</option>
+                      <option value="Tidak Wajar (Adverse Opinion)">Tidak Wajar (Adverse Opinion)</option>
+                      <option value="Menolak Memberikan Pendapat (Disclaimer)">Menolak Memberikan Pendapat (Disclaimer)</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Basis Opini & Catatan Penting</label>
+                    <Textarea 
+                      placeholder="Jelaskan dasar opini dan temuan audit utama..." 
+                      className="min-h-[150px]" 
+                      value={basisOpinion}
+                      onChange={(e) => setBasisOpinion(e.target.value)}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-slate-50 border-slate-200">
+                <CardHeader>
+                  <CardTitle className="text-slate-800">Preview Laporan Auditor</CardTitle>
+                </CardHeader>
+                <CardContent className="text-xs text-slate-700 space-y-4 font-serif leading-relaxed">
+                  <p className="font-bold text-center uppercase">Laporan Auditor Independen</p>
+                  <p>Kepada Pemegang Saham dan Dewan Komisaris PT [Nama Perusahaan]</p>
+                  <p>
+                    Kami telah mengaudit pengendalian internal atas pelaporan keuangan PT [Nama Perusahaan] pada tanggal [Tanggal], berdasarkan kriteria yang ditetapkan dalam <em>Internal Control - Integrated Framework</em> yang dikeluarkan oleh <em>Committee of Sponsoring Organizations of the Treadway Commission (COSO)</em>.
+                  </p>
+                  <p className="font-bold underline">Opini</p>
+                  <p>
+                    Menurut opini kami, PT [Nama Perusahaan] {opinionType === "Wajar Tanpa Pengecualian (Unqualified Opinion)" ? "telah mempertahankan, dalam semua hal yang material, pengendalian internal yang efektif" : "tidak mempertahankan pengendalian internal yang efektif"} atas pelaporan keuangan pada tanggal [Tanggal], berdasarkan kriteria COSO.
+                  </p>
+                  {basisOpinion && (
+                    <>
+                      <p className="font-bold underline">Basis Opini</p>
+                      <p>{basisOpinion}</p>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

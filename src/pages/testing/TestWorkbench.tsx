@@ -17,8 +17,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { api } from '@/lib/api-client';
+import { cn } from '@/lib/utils';
 import { getSuggestedSampleRange, isReadyForRemediationTest } from '@/lib/compliance-utils';
-import type { Control, TestRecord, Deficiency } from '@shared/types';
+import type { Control, TestRecord, Deficiency, User } from '@shared/types';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { AlertTriangle, Info, Clock } from 'lucide-react';
@@ -29,6 +30,7 @@ const testSchema = z.object({
   result: z.enum(['Pass', 'Fail']),
   comments: z.string().min(1, 'Comments are required'),
   sampleSize: z.number().optional(),
+  homogeneityJustification: z.string().optional(),
   evaluationAttributes: z.object({
     objectiveAchieved: z.boolean().default(true),
     timingAccuracy: z.boolean().default(true),
@@ -45,6 +47,7 @@ function ControlTestCard({ control, openDeficiencyDate }: { control: Control, op
     resolver: zodResolver(testSchema),
     defaultValues: {
       method: "Inspection",
+      homogeneityJustification: "",
       evaluationAttributes: {
         objectiveAchieved: true,
         timingAccuracy: true,
@@ -74,6 +77,10 @@ function ControlTestCard({ control, openDeficiencyDate }: { control: Control, op
   });
 
   function onSubmit(values: z.infer<typeof testSchema>) {
+    if (values.testType === 'TOE' && !values.homogeneityJustification) {
+      form.setError('homogeneityJustification', { type: 'manual', message: 'Justifikasi homogenitas wajib diisi untuk TOE (Bab V 1.3.a)' });
+      return;
+    }
     mutation.mutate({
       controlId: control.id,
       ...values,
@@ -160,7 +167,10 @@ function ControlTestCard({ control, openDeficiencyDate }: { control: Control, op
              <Badge variant="outline" className="text-[10px]">{control.frequency}</Badge>
              <Badge 
                 variant="secondary" 
-                className={`text-[10px] uppercase font-bold ${control.riskRating === 'High' ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}
+                className={cn(
+                  "text-[10px] uppercase font-bold",
+                  control.riskRating === 'High' ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'
+                )}
               >
                 {control.riskRating} RISK
               </Badge>
@@ -169,13 +179,19 @@ function ControlTestCard({ control, openDeficiencyDate }: { control: Control, op
       </CardHeader>
       <CardContent className="pt-6">
         {remediationStatus && (
-          <div className={`mb-6 p-4 rounded-lg border flex items-start gap-3 ${remediationStatus.isReady ? 'bg-green-50 border-green-100' : 'bg-amber-50 border-amber-100'}`}>
-            <Clock className={`h-5 w-5 ${remediationStatus.isReady ? 'text-green-600' : 'text-amber-600'}`} />
+          <div className={cn(
+            "mb-6 p-4 rounded-lg border flex items-start gap-3",
+            remediationStatus.isReady ? 'bg-green-50 border-green-100' : 'bg-amber-50 border-amber-100'
+          )}>
+            <Clock className={cn("h-5 w-5", remediationStatus.isReady ? 'text-green-600' : 'text-amber-600')} />
             <div>
-              <p className={`text-xs font-bold uppercase tracking-tight ${remediationStatus.isReady ? 'text-green-800' : 'text-amber-800'}`}>
+              <p className={cn(
+                "text-xs font-bold uppercase tracking-tight",
+                remediationStatus.isReady ? 'text-green-800' : 'text-amber-800'
+              )}>
                 Remediation Testing Readiness (Table 23)
               </p>
-              <p className={`text-sm ${remediationStatus.isReady ? 'text-green-700' : 'text-amber-700'}`}>
+              <p className={cn("text-sm", remediationStatus.isReady ? 'text-green-700' : 'text-amber-700')}>
                 {remediationStatus.message}
               </p>
             </div>
@@ -199,7 +215,6 @@ function ControlTestCard({ control, openDeficiencyDate }: { control: Control, op
                         <div className="flex items-center space-x-2"><Checkbox id={`tod2-${control.id}`} /><Label htmlFor={`tod2-${control.id}`} className="text-xs">Is there a clear segregation of duties?</Label></div>
                       </div>
 
-                      {/* SK-5 Table 15: IPE Specific Checklist */}
                       {control.nature === "ITDM - IPE" && (
                         <div className="p-3 bg-orange-50 border border-orange-100 rounded-md space-y-2">
                           <p className="text-[10px] font-bold text-orange-800 uppercase">Table 15 & 20: IPE Verifications ({control.ipeType})</p>
@@ -214,7 +229,6 @@ function ControlTestCard({ control, openDeficiencyDate }: { control: Control, op
                         </div>
                       )}
 
-                      {/* SK-5 Table 14: EUC Specific Checklist */}
                       {control.nature === "ITDM - EUC" && (
                         <div className="p-3 bg-purple-50 border border-purple-100 rounded-md space-y-2">
                           <p className="text-[10px] font-bold text-purple-800 uppercase">Table 14: EUC Controls ({control.eucComplexity} Complexity)</p>
@@ -269,6 +283,20 @@ function ControlTestCard({ control, openDeficiencyDate }: { control: Control, op
                           <FormItem><FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Sample Size</FormLabel><FormControl><Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10))} className="h-8 text-xs" /></FormControl></FormItem>
                         )} />
                       </div>
+
+                      <FormField control={form.control} name="homogeneityJustification" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Justifikasi Homogenitas (Wajib Bab V 1.3.a)</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              {...field} 
+                              className="h-16 text-xs" 
+                              placeholder="Jelaskan alasan populasi dianggap homogen (e.g. kesamaan sistem, personil, SOP)..." 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
                     </div>
 
                     <FormField control={form.control} name="method" render={({ field }) => (
@@ -307,7 +335,23 @@ export function TestWorkbench() {
     queryFn: () => api<{ items: Deficiency[] }>('/api/deficiencies'),
   });
 
+  const { data: userData } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => api<User>('/api/users/me'),
+  });
+
   const mockRole = localStorage.getItem('mockRole') || 'Line 1';
+
+  // Bab II poin d.2 - Cooling Off Period Validation
+  const isCoolingOffViolation = (control: Control) => {
+    if (!userData?.processOwnershipHistory) return false;
+    const oneYearAgo = Date.now() - (365 * 24 * 60 * 60 * 1000);
+    return userData.processOwnershipHistory.some(h => 
+      h.processId === control.rcmId && 
+      (h.role === 'Line 1' || h.role === 'Line 2') && 
+      h.endDate > oneYearAgo
+    );
+  };
 
   if (mockRole !== 'Line 3') {
     return (
@@ -344,19 +388,39 @@ export function TestWorkbench() {
                 .filter(d => d.controlId === control.id && d.status === 'Open')
                 .sort((a, b) => b.identifiedDate - a.identifiedDate)[0];
 
+              const violation = isCoolingOffViolation(control);
+
               return (
                 <AccordionItem value={control.id} key={control.id} className="border-none">
-                  <AccordionTrigger className="bg-background p-4 rounded-lg hover:bg-accent transition-colors shadow-sm">
-                    <div className="flex items-center gap-3">
+                  <AccordionTrigger className={cn(
+                    "bg-background p-4 rounded-lg hover:bg-accent transition-colors shadow-sm",
+                    violation && "opacity-60 cursor-not-allowed grayscale"
+                  )}>
+                    <div className="flex items-center gap-3 text-left">
                       <span className="font-semibold">{control.name}</span>
                       {latestOpenDeficiency && <Badge variant="destructive" className="text-[8px] h-4">OPEN DEFICIENCY</Badge>}
+                      {violation && (
+                        <Badge variant="outline" className="text-[8px] h-4 border-amber-500 text-amber-700 bg-amber-50 gap-1">
+                          <AlertTriangle className="h-2 w-2" /> COOLING-OFF VIOLATION (BAB II)
+                        </Badge>
+                      )}
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="pt-4">
-                    <ControlTestCard 
-                      control={control} 
-                      openDeficiencyDate={latestOpenDeficiency?.identifiedDate}
-                    />
+                    {violation ? (
+                      <div className="p-6 bg-amber-50 border border-amber-200 rounded-lg text-center">
+                        <AlertTriangle className="h-8 w-8 text-amber-600 mx-auto mb-2" />
+                        <h4 className="font-bold text-amber-800">Akses Dibatasi (Bab II poin d.2)</h4>
+                        <p className="text-xs text-amber-700 max-w-md mx-auto mt-1 leading-relaxed">
+                          Sesuai regulasi, Auditor Internal dilarang menguji aktivitas yang sebelumnya menjadi tanggung jawabnya (sebagai Lini 1 atau Lini 2) sebelum melewati periode pendinginan (cooling-off) minimal 12 bulan.
+                        </p>
+                      </div>
+                    ) : (
+                      <ControlTestCard 
+                        control={control} 
+                        openDeficiencyDate={latestOpenDeficiency?.identifiedDate}
+                      />
+                    )}
                   </AccordionContent>
                 </AccordionItem>
               );

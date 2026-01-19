@@ -1,11 +1,23 @@
 import { IndexedEntity } from "./core-utils";
-import type { User, Chat, ChatMessage, RCM, Control, CSARecord, TestRecord, Deficiency, ActionPlan, Materiality, Scoping, Application, RiskLibrary } from "@shared/types";
+import type { User, Chat, ChatMessage, RCM, Control, CSARecord, TestRecord, Deficiency, ActionPlan, Materiality, Scoping, Application, RiskLibrary, AggregateDeficiency } from "@shared/types";
 import { MOCK_USERS, MOCK_CHATS, MOCK_CHAT_MESSAGES, MOCK_RCM, MOCK_CONTROLS, MOCK_DEFICIENCIES, MOCK_ACTION_PLANS, MOCK_MATERIALITY, MOCK_SCOPING, MOCK_APPLICATIONS, MOCK_RISK_LIBRARY } from "@shared/mock-data";
 
 // --- ICOFR Entities ---
 
 interface Auditable {
   auditTrail: { action: string; userId: string; timestamp: number }[];
+}
+
+export class AggregateDeficiencyEntity extends IndexedEntity<AggregateDeficiency & Auditable> {
+  static readonly entityName = "aggregatedeficiency";
+  static readonly indexName = "aggregatedeficiencies";
+  static readonly initialState: AggregateDeficiency & Auditable = { 
+    id: "", name: "", year: new Date().getFullYear(), deficiencyIds: [], affectedAccounts: [], 
+    affectedAssertions: [], combinedMagnitude: 0, aggregateLikelihood: "Low", 
+    finalSeverity: "Control Deficiency", conclusionRationale: "", 
+    identifiedBy: "", identifiedDate: 0, auditTrail: [] 
+  };
+  async getAuditTrail() { return (await this.getState()).auditTrail; }
 }
 
 export class RCMEntity extends IndexedEntity<RCM & Auditable> {

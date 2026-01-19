@@ -5,20 +5,12 @@ IndoRCM Pro is a production-grade web application designed to digitize the ICOFR
 
 **Key Features:**
 *   **BPM Visualization:** Visual business process mapping with standardized legends as per **Lampiran 3** (Oval for Start/End, Hexagon for Risk, Cylinder for Archive).
-*   **Risk Library Cluster:** Industry-specific risk repository for 11 BUMN clusters as per **Lampiran 2**.
-*   **Scoping & Materiality:** Automated OM/PM calculation with **Precision Group Multiplier (1.5x - 9x)** and proportional **Group Materiality Allocation** based on asset share (**FAQ No. 4**).
-*   **Haircut Wizard:** Risk-based PM determination based on **Table 4**.
+*   **Risk Library Cluster:** Industry-specific risk repository for **11 BUMN clusters** (Energy, Food, Finance, Mining, etc.) as per **Lampiran 2**.
+*   **Scoping & Materiality:** Automated OM/PM calculation with **Group Multipliers**, proportional allocation, and a dedicated **Equity Investee Monitoring** module (**FAQ No. 5**).
 *   **Whistleblowing Recap:** Integration of fraud indicators from WBS into ICOFR risk assessment (**Lampiran 1 Principle 14 & 15**).
-*   **Change Management Log:** Regulatory documentation of all business process and control modifications as per **Lampiran 6**.
-*   **Significant Application Inventory:** Centralized repository for IT assets with ITGC status tracking and criticality mapping (**Bab III 1.5**).
-*   **SOC Monitoring:** Formal evaluation and reviu of Third-Party Service Organization reports (**Bab III 4.3**).
-*   **Precision Risk Assessment:** Objective **Qualitative Risk Wizard** based on 9 regulatory criteria (Tabel 11) and **COBIT to ITGC validation** (Tabel 1).
-*   **Precision EUC/IPE:** Granular classification for spreadsheet complexity (**Table 14**) and IPE report types (**Table 20**) with dynamic testing checklists.
-*   **CSA Validation Workflow:** Two-tier self-assessment with **Line 2 (ICOFR Officer)** formal validation of Line 1 results (**Bab IV 2.3**).
-*   **Testing Workbench:** TOD & TOE modules with **6 Mandatory Evaluation Attributes** (Table 21) and **Automated Sample Size Calculator** (Table 22).
-*   **Deficiency Board:** Kanban remediation tracking with **Compensating Control** mapping and **Aggregate Deficiency Analysis** (**Appendix 10**).
-*   **External Audit Portal:** Dedicated portal for **Independent Practitioners (KAP)** to review working papers and submit assurance opinions (**Bab VIII**).
-*   **Regulatory Reporting:** Automated "Asesmen Manajemen" with **Digital Sign-off & Lock** (CEO/CFO) and **Client-side Excel/CSV Export**.
+*   **Change Management Log:** Regulatory documentation of all modifications with a formal **Change Request & Approval Workflow** (Lini 1 to Lini 2) as per **Lampiran 6**.
+*   **Regulatory Reporting:** Automated "Asesmen Manajemen" (Appendix 11) with **Digital Sign-off & Lock**, **QR Code Document Verification**, and automatic effectiveness conclusions.
+*   **Governance & Integrity:** Built-in **Auditor Cooling-off Validation** (Bab II) and accountability **KPI Dashboards** for cycle tracking.
 
 ## Technology Stack
 

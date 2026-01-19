@@ -13,12 +13,12 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { Button } from '@/components/ui/button';
-import { FileText, Database, Activity, GitCommit, PlayCircle, StopCircle, Save } from 'lucide-react';
+import { FileText, Database, Activity, GitCommit, PlayCircle, StopCircle, Save, AlertTriangle, ShieldCheck } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
 
-// --- Custom Nodes sesuai Legenda Lampiran 4 ---
+// --- Custom Nodes sesuai Legenda Lampiran 3 & 4 ---
 // ... (rest of the node components remain the same)
 
 const StartNode = ({ data }: NodeProps) => (
@@ -71,12 +71,12 @@ const DocumentNode = ({ data }: NodeProps) => (
 );
 
 const SystemNode = ({ data }: NodeProps) => (
-  <div className="px-4 py-2 shadow-sm bg-blue-50 border-2 border-blue-800 min-w-[120px] text-center relative">
-    <div className="absolute inset-x-0 -top-1 h-2 bg-blue-100 border-x-2 border-t-2 border-blue-800 rounded-t-full" />
+  <div className="w-24 h-20 relative flex items-center justify-center">
     <Handle type="target" position={Position.Top} className="opacity-0" />
-    <div className="flex flex-col items-center gap-1 py-1">
-      <span className="text-[10px] font-bold text-blue-900 uppercase">{data.label}</span>
-    </div>
+    {/* Cylinder Shape */}
+    <div className="absolute inset-0 border-2 border-blue-800 bg-blue-50" />
+    <div className="absolute -top-3 left-0 right-0 h-6 border-2 border-blue-800 bg-blue-100 rounded-[100%]" />
+    <div className="z-10 text-[9px] font-black text-blue-900 text-center px-2 uppercase leading-tight">{data.label}</div>
     <Handle type="source" position={Position.Bottom} className="opacity-0" />
   </div>
 );

@@ -16,16 +16,15 @@ IndoRCM Pro centralizes the 5-step ICOFR lifecycle required for BUMN compliance:
 ## Key Compliance Features
 
 - **Standardized BPM**: Visual process mapping with regulatory legends (Oval Start/End, Hexagon Risk, Cylinder Archive) as per **Lampiran 3**.
+- **Line 2 Validation**: Formal **"Test of One"** walkthrough for design validation with evidence upload requirement (**Bab III 4**).
+- **RCM Change Approval**: Formal workflow for RCM/BPM updates requiring Lini 2 approval before effective as per **Lampiran 6**.
+- **Automated Sample Size**: Dynamic calculator following **Table 22** with mandatory **Homogeneity Justification** (Bab V 1.3.a).
+- **Equity Investee Monitoring**: Dedicated tracking for associate entities (Equity Method) as per **FAQ No. 5**.
+- **External Assurance**: **Independent Audit Portal** for KAP partners to submit formal opinions with automated report drafting (**Bab VIII**).
 - **Whistleblowing Integration**: Recap of fraud indicators to drive risk-based scoping (**Prinsip 14 & 15**).
-- **Group Consolidation**: Automated OM/PM calculation with **Precision Group Multipliers** (Table 25) and **Subsidiary Materiality Allocation** (FAQ No. 4).
-- **Change Management Log**: Immutable audit trail of process and control changes as per **Lampiran 6**.
-- **SOC Monitoring**: Formal reviu of 3rd party SOC reports with compliance checklist (**Bab III 4.3**).
-- **IT Asset Governance**: Centralized **Significant Application Inventory** with ITGC status tracking (Bab III 1.5).
-- **Precision Risk Assessment**: Objective **Qualitative Risk Wizard** based on 9 criteria (Table 11) and **COBIT-to-ITGC Area Validation** (Table 1).
-- **Independent Assurance**: Dedicated **External Audit Portal** for KAP review and digital attestation (Bab VIII).
-- **Granular Audit Evidence**: TOD/TOE workbench with **6 Mandatory Evaluation Attributes** (Table 21).
-- **Aggregate Analysis**: deficiency board with **Aggregate Assessment (Appendix 10)** to evaluate collective impact of related findings.
-- **Digital Sign-off**: CEO & CFO **Sign & Lock** workflow for Asesmen Manajemen (Appendix 11).
+- **11 BUMN Clusters**: Pre-loaded Risk Library for Energy, Food, Finance, Mining, and other sectors (**Lampiran 2**).
+- **Digital Sign-off**: CEO & CFO **Sign & Lock** workflow with **Dynamic QR Code Verification** for formal report integrity (Appendix 11).
+- **Governance Metrics**: Auditor **Cooling-off Period Validation** (Bab II) and cycle completion **KPI Dashboards**.
 
 ## Technology Stack
 
