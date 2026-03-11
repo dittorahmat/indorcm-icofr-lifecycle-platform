@@ -375,7 +375,14 @@ export function RCMList() {
         <DialogContent className="max-w-6xl h-[90vh] flex flex-col">
           <DialogHeader><DialogTitle>BPM Flow: {selectedRcmForBpm?.process}</DialogTitle></DialogHeader>
           <div className="flex-1 overflow-hidden">
-            <React.Suspense fallback={<Skeleton className="h-full w-full" />}><BPMEditor rcmId={selectedRcmForBpm?.id} initialData={selectedRcmForBpm?.bpmData} /></React.Suspense>
+            <React.Suspense fallback={<Skeleton className="h-full w-full" />}>
+              {selectedRcmForBpm && (
+                <BPMEditor 
+                  rcm={selectedRcmForBpm} 
+                  controls={controlsData?.items || []} 
+                />
+              )}
+            </React.Suspense>
           </div>
         </DialogContent>
       </Dialog>

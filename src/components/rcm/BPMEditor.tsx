@@ -13,11 +13,17 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { Button } from '@/components/ui/button';
-import { FileText, Database, Activity, GitCommit, PlayCircle, StopCircle, Save, AlertTriangle, ShieldCheck, Info, X } from 'lucide-react';
+import { 
+  FileText, Database, Activity, GitCommit, PlayCircle, StopCircle, 
+  Save, AlertTriangle, ShieldCheck, Info, X, RefreshCw, Link as LinkIcon 
+} from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import type { RCM, Control } from '@shared/types';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 
 // --- Custom Nodes sesuai Legenda Lampiran 3 & 4 ---
 
@@ -70,7 +76,7 @@ const RiskNode = ({ data, selected }: NodeProps) => (
       "absolute -bottom-10 left-1/2 -translate-x-1/2 w-40 text-center text-[10px] font-black uppercase leading-tight py-1 px-2 rounded-md transition-colors",
       selected ? "bg-red-700 text-white" : "text-red-700 bg-red-50/80"
     )}>
-      RISIKO: {data.label}
+      {data.label}
     </div>
   </div>
 );
@@ -91,7 +97,7 @@ const ControlPointNode = ({ data, selected }: NodeProps) => (
       "absolute -bottom-10 left-1/2 -translate-x-1/2 w-40 text-center text-[10px] font-black uppercase leading-tight py-1 px-2 rounded-md transition-colors",
       selected ? "bg-green-700 text-white" : "text-green-700 bg-green-50/80"
     )}>
-      KONTROL: {data.label}
+      {data.code ? `[${data.code}] ${data.label}` : data.label}
     </div>
   </div>
 );
@@ -191,28 +197,55 @@ const defaultEdges = [
 ];
 
 interface BPMEditorProps {
-  rcmId?: string;
-  initialData?: {
-    nodes: any[];
-    edges: any[];
-  };
+  rcm: RCM;
+  controls: Control[];
 }
 
-export function BPMEditor({ rcmId, initialData }: BPMEditorProps) {
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialData?.nodes || defaultNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialData?.edges || defaultEdges);
+export function BPMEditor({ rcm, controls }: BPMEditorProps) {
+  const [nodes, setNodes, onNodesChange] = useNodesState(rcm.bpmData?.nodes || defaultNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(rcm.bpmData?.edges || defaultEdges);
   const [selectedNodeId, setSelectedNodeId] = React.useState<string | null>(null);
   
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    if (initialData) {
-      setNodes(initialData.nodes);
-      setEdges(initialData.edges);
+    if (rcm.bpmData) {
+      setNodes(rcm.bpmData.nodes);
+      setEdges(rcm.bpmData.edges);
     }
-  }, [initialData, setNodes, setEdges]);
+  }, [rcm.bpmData, setNodes, setEdges]);
 
   const selectedNode = useMemo(() => nodes.find(n => n.id === selectedNodeId), [nodes, selectedNodeId]);
+
+  // --- Metadata Sync Logic ---
+  const syncStatus = useMemo(() => {
+    const riskNodes = nodes.filter(n => n.type === 'risk');
+    const controlNodes = nodes.filter(n => n.type === 'control');
+    
+    const errors: string[] = [];
+    
+    // Check Risk Node Sync
+    if (riskNodes.length > 0) {
+      const riskNode = riskNodes[0]; // Assuming 1 Risk per RCM
+      if (riskNode.data.label !== rcm.riskDescription) {
+        errors.push("Risk label mismatch with RCM description");
+      }
+    } else {
+      errors.push("Missing Risk Node in BPM diagram");
+    }
+
+    // Check Controls Sync
+    const linkedControlIds = controlNodes.map(n => n.data.controlId).filter(Boolean);
+    const missingControls = rcm.controls.filter(id => !linkedControlIds.includes(id));
+    if (missingControls.length > 0) {
+      errors.push(`${missingControls.length} Controls defined in matrix are not linked in BPM`);
+    }
+
+    return { 
+      isSynced: errors.length === 0,
+      errors 
+    };
+  }, [nodes, rcm]);
 
   const onConnect = useCallback((params: Connection) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
 
@@ -225,7 +258,7 @@ export function BPMEditor({ rcmId, initialData }: BPMEditorProps) {
   }, []);
 
   const saveMutation = useMutation({
-    mutationFn: (data: any) => api(`/api/rcm/${rcmId}`, { 
+    mutationFn: (data: any) => api(`/api/rcm/${rcm.id}`, { 
       method: 'PUT', 
       body: JSON.stringify({ bpmData: data }) 
     }),
@@ -237,10 +270,6 @@ export function BPMEditor({ rcmId, initialData }: BPMEditorProps) {
   });
 
   const handleSave = () => {
-    if (!rcmId) {
-      toast.error('Cannot save: No RCM ID provided');
-      return;
-    }
     saveMutation.mutate({ nodes, edges });
   };
 
@@ -255,8 +284,13 @@ export function BPMEditor({ rcmId, initialData }: BPMEditorProps) {
     setNodes((nds) => [...nds, newNode]);
   };
 
-  const updateNodeLabel = (id: string, label: string) => {
-    setNodes(nds => nds.map(node => node.id === id ? { ...node, data: { ...node.data, label } } : node));
+  const updateNodeData = (id: string, partialData: any) => {
+    setNodes(nds => nds.map(node => node.id === id ? { ...node, data: { ...node.data, ...partialData } } : node));
+  };
+
+  const syncRiskNode = () => {
+    setNodes(nds => nds.map(n => n.type === 'risk' ? { ...n, data: { ...n.data, label: rcm.riskDescription } } : n));
+    toast.info("Risk label synced from Matrix");
   };
 
   return (
@@ -264,7 +298,7 @@ export function BPMEditor({ rcmId, initialData }: BPMEditorProps) {
       {/* Sidebar Palette */}
       <div className="w-52 bg-white border-r p-4 flex flex-col gap-3 z-20 shadow-sm">
         <h3 className="text-xs font-bold uppercase text-muted-foreground mb-2 flex items-center gap-2">
-          <Workflow className="h-3.5 w-3.5" /> BPM Palette (Lamp. 4)
+          <Workflow className="h-3.5 w-3.5" /> BPM Palette
         </h3>
         <Button variant="outline" size="sm" className="justify-start gap-2 h-9 text-[11px]" onClick={() => addNode('activity', 'Aktivitas Manual')}>
           <Activity className="h-4 w-4" /> Activity
@@ -282,23 +316,39 @@ export function BPMEditor({ rcmId, initialData }: BPMEditorProps) {
         <h3 className="text-[10px] font-bold uppercase text-red-600 mb-1 flex items-center gap-2">
           <AlertTriangle className="h-3 w-3" /> ICOFR Design
         </h3>
-        <Button variant="outline" size="sm" className="justify-start gap-2 h-9 text-[11px] border-red-200 bg-red-50 text-red-700 hover:bg-red-100" onClick={() => addNode('risk', 'Identifikasi Risiko')}>
+        <Button variant="outline" size="sm" className="justify-start gap-2 h-9 text-[11px] border-red-200 bg-red-50 text-red-700 hover:bg-red-100" onClick={() => addNode('risk', rcm.riskDescription)}>
           <AlertTriangle className="h-4 w-4" /> Risk (Hexagon)
         </Button>
-        <Button variant="outline" size="sm" className="justify-start gap-2 h-9 text-[11px] border-green-200 bg-green-50 text-green-700 hover:bg-green-100" onClick={() => addNode('control', 'Titik Kontrol')}>
+        <Button variant="outline" size="sm" className="justify-start gap-2 h-9 text-[11px] border-green-200 bg-green-50 text-green-700 hover:bg-green-100" onClick={() => addNode('control', 'Pilih Kontrol...')}>
           <ShieldCheck className="h-4 w-4" /> Control Point
         </Button>
         <Button variant="outline" size="sm" className="justify-start gap-2 h-9 text-[11px]" onClick={() => addNode('archive', 'Arsip Dokumen')}>
           <GitCommit className="h-4 w-4 rotate-180" /> Archive
         </Button>
+        
+        {/* Sync Check Section */}
         <div className="mt-auto border-t pt-4">
-          <div className="flex gap-2">
-            <Button variant="ghost" size="sm" className="flex-1 gap-1 text-[10px] text-green-600" onClick={() => addNode('start', 'Start', { type: 'start' })}>
-              <PlayCircle className="h-3.5 w-3.5" /> Start
-            </Button>
-            <Button variant="ghost" size="sm" className="flex-1 gap-1 text-[10px] text-red-600" onClick={() => addNode('end', 'End', { type: 'end' })}>
-              <StopCircle className="h-3.5 w-3.5" /> End
-            </Button>
+          <div className="p-3 rounded-md bg-slate-50 border border-slate-200 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[9px] font-bold uppercase text-slate-400 tracking-tighter">Sync Status</span>
+              {syncStatus.isSynced ? (
+                <Badge className="bg-green-500 h-4 text-[8px] uppercase px-1">Synced</Badge>
+              ) : (
+                <Badge variant="destructive" className="h-4 text-[8px] uppercase px-1">Out of Sync</Badge>
+              )}
+            </div>
+            {!syncStatus.isSynced && (
+              <div className="space-y-1">
+                {syncStatus.errors.map((err, i) => (
+                  <p key={i} className="text-[8px] text-red-600 leading-tight flex gap-1 items-start">
+                    <AlertTriangle className="h-2 w-2 flex-shrink-0 mt-0.5" /> {err}
+                  </p>
+                ))}
+                <Button variant="ghost" size="sm" className="w-full h-5 text-[8px] text-blue-600 p-0" onClick={syncRiskNode}>
+                  <RefreshCw className="h-2 w-2 mr-1" /> Auto-sync Risk Label
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -341,19 +391,62 @@ export function BPMEditor({ rcmId, initialData }: BPMEditorProps) {
             className="absolute top-0 right-0 bottom-0 w-72 bg-white border-l z-30 shadow-2xl p-5 flex flex-col gap-4"
           >
             <div className="flex items-center justify-between border-b pb-3">
-              <h4 className="font-bold text-sm uppercase text-slate-500">Node Properties</h4>
+              <div className="flex flex-col">
+                <h4 className="font-bold text-xs uppercase text-slate-500">Node Properties</h4>
+                <span className="text-[9px] text-slate-400 font-mono">ID: {selectedNode.id}</span>
+              </div>
               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSelectedNodeId(null)}><X className="h-4 w-4" /></Button>
             </div>
             
             <div className="space-y-4">
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-400 uppercase">Label / Description</label>
-                <textarea 
-                  className="w-full text-xs border rounded-md p-2 min-h-[80px] focus:ring-2 focus:ring-primary/20 outline-none"
-                  value={selectedNode.data.label}
-                  onChange={(e) => updateNodeLabel(selectedNode.id, e.target.value)}
-                />
-              </div>
+              {/* Special Linking for Controls */}
+              {selectedNode.type === 'control' ? (
+                <div className="space-y-3">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1">
+                      <LinkIcon className="h-2.5 w-2.5" /> Link to RCM Control
+                    </label>
+                    <Select 
+                      value={selectedNode.data.controlId} 
+                      onValueChange={(val) => {
+                        const ctrl = controls.find(c => c.id === val);
+                        updateNodeData(selectedNode.id, { 
+                          controlId: val, 
+                          label: ctrl?.name || "Unknown",
+                          code: ctrl?.code 
+                        });
+                      }}
+                    >
+                      <SelectTrigger className="h-9 text-xs">
+                        <SelectValue placeholder="Select control from matrix..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {controls.filter(c => c.rcmId === rcm.id).map(c => (
+                          <SelectItem key={c.id} value={c.id} className="text-xs">
+                            <span className="font-bold text-slate-400 mr-2">[{c.code}]</span> {c.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="p-3 rounded-md bg-green-50 border border-green-100 text-[10px] text-green-700">
+                    Linking a control point ensures that the visual flow matches the audit procedures defined in the matrix.
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase">Label / Description</label>
+                  <textarea 
+                    className="w-full text-xs border rounded-md p-2 min-h-[80px] focus:ring-2 focus:ring-primary/20 outline-none"
+                    value={selectedNode.data.label}
+                    onChange={(e) => updateNodeData(selectedNode.id, { label: e.target.value })}
+                    disabled={selectedNode.type === 'risk'}
+                  />
+                  {selectedNode.type === 'risk' && (
+                    <p className="text-[9px] text-muted-foreground italic">Risk description is synced from the RCM matrix.</p>
+                  )}
+                </div>
+              )}
 
               {selectedNode.type === 'activity' && (
                 <div className="space-y-1.5">
@@ -361,9 +454,7 @@ export function BPMEditor({ rcmId, initialData }: BPMEditorProps) {
                   <input 
                     className="w-full text-xs border rounded-md p-2 focus:ring-2 focus:ring-primary/20 outline-none"
                     value={selectedNode.data.role}
-                    onChange={(e) => {
-                      setNodes(nds => nds.map(n => n.id === selectedNode.id ? { ...n, data: { ...n.data, role: e.target.value } } : n));
-                    }}
+                    onChange={(e) => updateNodeData(selectedNode.id, { role: e.target.value })}
                   />
                 </div>
               )}
@@ -391,4 +482,9 @@ function Loader2({ className }: { className?: string }) {
   return (
     <svg className={cn("animate-spin", className)} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
   );
+}
+
+function motion(props: any) {
+  // Simple shim for framer-motion since we use it in other parts
+  return <div {...props} />;
 }
