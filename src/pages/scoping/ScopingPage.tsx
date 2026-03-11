@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
-import type { Materiality, UserRole } from '@shared/types';
+import type { Materiality, UserRole, EntityMateriality } from '@shared/types';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -18,7 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle2, Wand2, Info, Plus, Network, AlertTriangle, Save, Loader2 } from 'lucide-react';
+import { CheckCircle2, Wand2, Info, Plus, Network, AlertTriangle, Save, Loader2, Trash2 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
@@ -207,19 +207,35 @@ function QualitativeScopingWizard({ onAdd }: QualitativeScopingWizardProps) {
 
 interface GroupAllocationProps {
   baseOM: number;
-  totalEntities: number;
   multiplier: number;
+  haircut: number;
+  allocations: EntityMateriality[];
+  onUpdate: (allocations: EntityMateriality[]) => void;
 }
 
-function GroupAllocation({ baseOM, totalEntities, multiplier }: GroupAllocationProps) {
+function GroupAllocation({ baseOM, multiplier, haircut, allocations, onUpdate }: GroupAllocationProps) {
   const maxGroupOM = baseOM * multiplier;
-  const [entities] = React.useState([
-    { id: '1', name: 'Subsidiary A (Energy)', assets: 5000000000 },
-    { id: '2', name: 'Subsidiary B (Logistics)', assets: 3000000000 },
-    { id: '3', name: 'Subsidiary C (Finance)', assets: 2000000000 },
-  ]);
+  
+  const addEntity = () => {
+    const newEntity: EntityMateriality = {
+      entityId: crypto.randomUUID(),
+      entityName: "New Entity",
+      totalAssets: 0,
+      allocatedOM: 0,
+      allocatedPM: 0,
+    };
+    onUpdate([...allocations, newEntity]);
+  };
 
-  const totalAssets = entities.reduce((sum, e) => sum + e.assets, 0);
+  const removeEntity = (id: string) => {
+    onUpdate(allocations.filter(a => a.entityId !== id));
+  };
+
+  const updateEntity = (id: string, field: keyof EntityMateriality, value: any) => {
+    onUpdate(allocations.map(a => a.entityId === id ? { ...a, [field]: value } : a));
+  };
+
+  const totalAssets = allocations.reduce((sum, e) => sum + e.totalAssets, 0);
 
   return (
     <Card className="mt-6 border-blue-200 bg-blue-50/30">
@@ -231,7 +247,12 @@ function GroupAllocation({ baseOM, totalEntities, multiplier }: GroupAllocationP
             </CardTitle>
             <CardDescription className="text-blue-600/80 italic">Proporsional alokasi berdasarkan total aset masing-masing entitas anak.</CardDescription>
           </div>
-          <Badge className="bg-blue-600">Max Group OM: {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(maxGroupOM)}</Badge>
+          <div className="flex items-center gap-4">
+            <Badge className="bg-blue-600">Max Group OM: {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(maxGroupOM)}</Badge>
+            <Button type="button" size="sm" variant="outline" onClick={addEntity} className="h-8 border-blue-300 text-blue-700 hover:bg-blue-100">
+              <Plus className="h-3 w-3 mr-1" /> Add Entity
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -243,32 +264,63 @@ function GroupAllocation({ baseOM, totalEntities, multiplier }: GroupAllocationP
               <TableHead className="text-blue-800 text-right">Prop. Share (%)</TableHead>
               <TableHead className="text-blue-800 text-right">Allocated OM</TableHead>
               <TableHead className="text-blue-800">Compliance</TableHead>
+              <TableHead className="w-10"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {entities.map(e => {
-              const share = (e.assets / totalAssets);
-              const allocated = maxGroupOM * share;
+            {allocations.map(e => {
+              const share = totalAssets > 0 ? (e.totalAssets / totalAssets) : 0;
+              let allocated = maxGroupOM * share;
               const isOverLimit = allocated > baseOM; 
+              
+              // Enforce "Capped at Base OM" rule in display logic
+              const finalAllocated = isOverLimit ? baseOM : allocated;
+              const allocatedPM = finalAllocated * (1 - haircut / 100);
 
               return (
-                <TableRow key={e.id} className="border-blue-100">
-                  <TableCell className="font-medium">{e.name}</TableCell>
-                  <TableCell className="text-right font-mono text-xs">{new Intl.NumberFormat('id-ID').format(e.assets)}</TableCell>
+                <TableRow key={e.entityId} className="border-blue-100">
+                  <TableCell>
+                    <Input 
+                      className="h-8 text-xs bg-white" 
+                      value={e.entityName} 
+                      onChange={(ev) => updateEntity(e.entityId, 'entityName', ev.target.value)}
+                    />
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Input 
+                      type="number"
+                      className="h-8 text-xs text-right bg-white font-mono" 
+                      value={e.totalAssets} 
+                      onChange={(ev) => updateEntity(e.entityId, 'totalAssets', Number(ev.target.value))}
+                    />
+                  </TableCell>
                   <TableCell className="text-right">{(share * 100).toFixed(1)}%</TableCell>
                   <TableCell className="text-right font-bold text-blue-700">
-                    {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(allocated)}
+                    <div className="flex flex-col items-end">
+                      <span className="text-[11px] font-mono">OM: {new Intl.NumberFormat('id-ID').format(finalAllocated)}</span>
+                      <span className="text-[10px] text-blue-500 font-mono">PM: {new Intl.NumberFormat('id-ID').format(allocatedPM)}</span>
+                    </div>
                   </TableCell>
                   <TableCell>
                     {isOverLimit ? (
-                      <Badge variant="destructive" className="gap-1"><AlertTriangle className="h-3 w-3" /> Capped at Base OM</Badge>
+                      <Badge variant="destructive" className="h-5 text-[9px] gap-1 uppercase font-bold"><AlertTriangle className="h-3 w-3" /> Capped at Base OM</Badge>
                     ) : (
-                      <Badge className="bg-green-600 gap-1"><CheckCircle2 className="h-3 w-3" /> Within Limit</Badge>
+                      <Badge className="bg-green-600 h-5 text-[9px] gap-1 uppercase font-bold"><CheckCircle2 className="h-3 w-3" /> Within Limit</Badge>
                     )}
+                  </TableCell>
+                  <TableCell>
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-red-400 hover:text-red-600 hover:bg-red-50" onClick={() => removeEntity(e.entityId)}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
                   </TableCell>
                 </TableRow>
               );
             })}
+            {allocations.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground text-xs">No subsidiaries added. Click "Add Entity" to start group allocation.</TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </CardContent>
@@ -291,6 +343,7 @@ export function ScopingPage() {
   const currentMateriality = materialityData?.items?.[0];
   const currentScope = scopingData?.items?.[0];
   const [localAccounts, setLocalAccounts] = React.useState<SignificantAccount[]>([]);
+  const [localAllocations, setLocalAllocations] = React.useState<EntityMateriality[]>([]);
 
   const { register, control, watch, setValue, reset, handleSubmit } = useForm<MaterialityForm>({
     resolver: zodResolver(materialitySchema),
@@ -312,6 +365,9 @@ export function ScopingPage() {
         haircut: currentMateriality.haircut,
         locationCount: currentMateriality.subsidiaryCount || 1,
       });
+      if (currentMateriality.entityAllocations) {
+        setLocalAllocations(currentMateriality.entityAllocations);
+      }
     }
   }, [currentMateriality, reset]);
 
@@ -337,6 +393,21 @@ export function ScopingPage() {
   const performanceMateriality = overallMateriality * (1 - formValues.haircut / 100);
 
   const onSaveMateriality = (data: MaterialityForm) => {
+    // Process allocations to ensure they follow the "Capped at Base OM" rule before saving
+    const processedAllocations = localAllocations.map(a => {
+      const totalAssets = localAllocations.reduce((sum, e) => sum + e.totalAssets, 0);
+      const share = totalAssets > 0 ? (a.totalAssets / totalAssets) : 0;
+      let allocatedOM = overallMateriality * share;
+      if (allocatedOM > baseOM) allocatedOM = baseOM;
+      const allocatedPM = allocatedOM * (1 - data.haircut / 100);
+      
+      return {
+        ...a,
+        allocatedOM,
+        allocatedPM
+      };
+    });
+
     const payload: Materiality = {
       id: currentMateriality?.id || crypto.randomUUID(),
       year: new Date().getFullYear(),
@@ -348,6 +419,7 @@ export function ScopingPage() {
       isGroupConsolidation: data.locationCount > 1,
       subsidiaryCount: data.locationCount,
       multiplier: multiplier,
+      entityAllocations: processedAllocations,
     };
     saveMateriality.mutate(payload);
   };
@@ -432,7 +504,13 @@ export function ScopingPage() {
                   </div>
 
                   {formValues.locationCount > 1 && (
-                    <GroupAllocation baseOM={baseOM} totalEntities={formValues.locationCount} multiplier={multiplier} />
+                    <GroupAllocation 
+                      baseOM={baseOM} 
+                      multiplier={multiplier} 
+                      haircut={formValues.haircut}
+                      allocations={localAllocations}
+                      onUpdate={setLocalAllocations}
+                    />
                   )}
                 </form>
               </CardContent>
