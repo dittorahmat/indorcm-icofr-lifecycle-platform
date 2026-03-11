@@ -8,9 +8,9 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
-import type { Materiality } from '@shared/types';
+import type { Materiality, UserRole } from '@shared/types';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -18,7 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle2, Wand2, Info, Plus, Network, AlertTriangle } from 'lucide-react';
+import { CheckCircle2, Wand2, Info, Plus, Network, AlertTriangle, Save, Loader2 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
@@ -29,6 +29,7 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { toast } from 'sonner';
 
 const materialitySchema = z.object({
   benchmark: z.enum(["Pre-Tax Income", "Revenue", "Assets", "Equity"]),
@@ -276,6 +277,7 @@ function GroupAllocation({ baseOM, totalEntities, multiplier }: GroupAllocationP
 }
 
 export function ScopingPage() {
+  const queryClient = useQueryClient();
   const { data: materialityData, isLoading: matLoading } = useQuery({
     queryKey: ['materiality'],
     queryFn: () => api<{ items: Materiality[] }>('/api/materiality'),
@@ -286,18 +288,11 @@ export function ScopingPage() {
     queryFn: () => api<{ items: Scoping[] }>('/api/scoping'),
   });
 
+  const currentMateriality = materialityData?.items?.[0];
   const currentScope = scopingData?.items?.[0];
   const [localAccounts, setLocalAccounts] = React.useState<SignificantAccount[]>([]);
 
-  React.useEffect(() => {
-    if (currentScope?.significantAccounts) {
-      setLocalAccounts(currentScope.significantAccounts);
-    }
-  }, [currentScope]);
-
-  const isLoading = matLoading || scopeLoading;
-
-  const { register, control, watch, setValue } = useForm<MaterialityForm>({
+  const { register, control, watch, setValue, reset, handleSubmit } = useForm<MaterialityForm>({
     resolver: zodResolver(materialitySchema),
     defaultValues: {
       benchmark: "Pre-Tax Income",
@@ -308,20 +303,74 @@ export function ScopingPage() {
     }
   });
 
+  React.useEffect(() => {
+    if (currentMateriality) {
+      reset({
+        benchmark: currentMateriality.benchmark,
+        benchmarkValue: (currentMateriality.overallMateriality / (currentMateriality.multiplier || 1)) / (currentMateriality.percentage / 100),
+        percentage: currentMateriality.percentage,
+        haircut: currentMateriality.haircut,
+        locationCount: currentMateriality.subsidiaryCount || 1,
+      });
+    }
+  }, [currentMateriality, reset]);
+
+  React.useEffect(() => {
+    if (currentScope?.significantAccounts) {
+      setLocalAccounts(currentScope.significantAccounts);
+    }
+  }, [currentScope]);
+
+  const saveMateriality = useMutation({
+    mutationFn: (data: Materiality) => api('/api/materiality', { method: 'POST', body: JSON.stringify(data) }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['materiality'] });
+      toast.success("Materiality settings saved successfully.");
+    },
+    onError: (err) => toast.error(`Failed to save: ${err.message}`),
+  });
+
   const formValues = watch();
   const baseOM = (formValues.benchmarkValue * formValues.percentage) / 100;
   const multiplier = getGroupMultiplier(formValues.locationCount);
   const overallMateriality = baseOM * multiplier;
   const performanceMateriality = overallMateriality * (1 - formValues.haircut / 100);
 
+  const onSaveMateriality = (data: MaterialityForm) => {
+    const payload: Materiality = {
+      id: currentMateriality?.id || crypto.randomUUID(),
+      year: new Date().getFullYear(),
+      overallMateriality,
+      performanceMateriality,
+      benchmark: data.benchmark,
+      percentage: data.percentage,
+      haircut: data.haircut,
+      isGroupConsolidation: data.locationCount > 1,
+      subsidiaryCount: data.locationCount,
+      multiplier: multiplier,
+    };
+    saveMateriality.mutate(payload);
+  };
+
+  const isLoading = matLoading || scopeLoading;
   const formatCurrency = (val: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(val);
 
   return (
     <AppLayout container>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Scoping & Materiality</h1>
-          <p className="text-muted-foreground">Define materiality thresholds and scope significant accounts for ICOFR.</p>
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-bold">Scoping & Materiality</h1>
+            <p className="text-muted-foreground">Define materiality thresholds and scope significant accounts for ICOFR.</p>
+          </div>
+          <Button 
+            onClick={handleSubmit(onSaveMateriality)} 
+            disabled={saveMateriality.isPending}
+            className="gap-2"
+          >
+            {saveMateriality.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+            Save Materiality Settings
+          </Button>
         </div>
 
         <Tabs defaultValue="materiality">
@@ -343,7 +392,7 @@ export function ScopingPage() {
                     <div className="space-y-2">
                       <Label>Benchmark Basis</Label>
                       <Controller control={control} name="benchmark" render={({ field }) => (
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value}>
                           <SelectTrigger><SelectValue placeholder="Select benchmark" /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="Pre-Tax Income">Pre-Tax Income</SelectItem>
