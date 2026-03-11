@@ -88,11 +88,37 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const state = await rcm.getState();
     if (state.status !== 'Pending Change Approval' || !state.changeRequest) return bad(c, 'No pending change request');
 
+    const userId = (c as any).get('userId');
+    const proposed = state.changeRequest.proposedData;
+    
+    // Generate a simple summary of changes
+    const changes: string[] = [];
+    if (proposed.riskDescription && proposed.riskDescription !== state.riskDescription) changes.push(`Risk: ${state.riskDescription} -> ${proposed.riskDescription}`);
+    if (proposed.process && proposed.process !== state.process) changes.push(`Process: ${state.process} -> ${proposed.process}`);
+    if (proposed.subProcess && proposed.subProcess !== state.subProcess) changes.push(`Sub-Process: ${state.subProcess} -> ${proposed.subProcess}`);
+    if (proposed.bpmData) changes.push("BPM Diagram structure updated");
+
+    const descriptionAfter = changes.join("; ") || "General RCM/BPM updates";
+
+    // Create ChangeLog record
+    const log: ChangeLog = {
+      id: crypto.randomUUID(),
+      entityId: id,
+      entityType: "RCM",
+      descriptionBefore: "Original Design / Previous State",
+      descriptionAfter: descriptionAfter,
+      userId: state.changeRequest.requestedBy,
+      timestamp: Date.now(),
+      effectiveDate: Date.now(),
+      approvedBy: userId
+    };
+    await createWithAudit(ChangeLogEntity, c.env, log, userId);
+
     await patchWithAudit(rcm, { 
-      ...state.changeRequest.proposedData,
+      ...proposed,
       status: 'Active',
       changeRequest: undefined 
-    }, (c as any).get('userId'));
+    }, userId);
     
     return ok(c, await rcm.getState());
   });
