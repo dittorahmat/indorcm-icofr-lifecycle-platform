@@ -304,6 +304,17 @@ export interface EntityMateriality {
   allocatedPM: number;
 }
 
+export interface InvesteeMateriality {
+  id: string;
+  name: string;
+  ownershipPercentage: number;
+  investmentValue: number;
+  auditStatus: "Audit Report Received" | "Pending Review" | "Not Audited";
+  controlsTested: string; // Brief description of what was tested
+  allocatedOM: number;
+  allocatedPM: number;
+}
+
 export interface Materiality {
   id: string;
   year: number;
@@ -317,6 +328,7 @@ export interface Materiality {
   subsidiaryCount?: number;
   multiplier?: number; // From Table 25 (1.5x - 9x)
   entityAllocations?: EntityMateriality[];
+  investeeAllocations?: InvesteeMateriality[]; // FAQ No. 5
 }
 // --- Original Demo Types (can be removed later if not needed) ---
 export interface User {

@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
-import type { Materiality, UserRole, EntityMateriality } from '@shared/types';
+import type { Materiality, UserRole, EntityMateriality, InvesteeMateriality } from '@shared/types';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -18,7 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle2, Wand2, Info, Plus, Network, AlertTriangle, Save, Loader2, Trash2 } from 'lucide-react';
+import { CheckCircle2, Wand2, Info, Plus, Network, AlertTriangle, Save, Loader2, Trash2, Target } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
@@ -248,7 +248,7 @@ function GroupAllocation({ baseOM, multiplier, haircut, allocations, onUpdate }:
             <CardDescription className="text-blue-600/80 italic">Proporsional alokasi berdasarkan total aset masing-masing entitas anak.</CardDescription>
           </div>
           <div className="flex items-center gap-4">
-            <Badge className="bg-blue-600">Max Group OM: {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(maxGroupOM)}</Badge>
+            <Badge className="bg-blue-600">Max Group OM: {new Intl.NumberFormat('id-ID').format(maxGroupOM)}</Badge>
             <Button type="button" size="sm" variant="outline" onClick={addEntity} className="h-8 border-blue-300 text-blue-700 hover:bg-blue-100">
               <Plus className="h-3 w-3 mr-1" /> Add Entity
             </Button>
@@ -259,11 +259,11 @@ function GroupAllocation({ baseOM, multiplier, haircut, allocations, onUpdate }:
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent border-blue-200">
-              <TableHead className="text-blue-800">Entity Name</TableHead>
-              <TableHead className="text-blue-800 text-right">Total Assets</TableHead>
-              <TableHead className="text-blue-800 text-right">Prop. Share (%)</TableHead>
-              <TableHead className="text-blue-800 text-right">Allocated OM</TableHead>
-              <TableHead className="text-blue-800">Compliance</TableHead>
+              <TableHead className="text-blue-800 text-[11px] uppercase">Entity Name</TableHead>
+              <TableHead className="text-blue-800 text-right text-[11px] uppercase">Total Assets</TableHead>
+              <TableHead className="text-blue-800 text-right text-[11px] uppercase">Prop. Share (%)</TableHead>
+              <TableHead className="text-blue-800 text-right text-[11px] uppercase">Allocated OM</TableHead>
+              <TableHead className="text-blue-800 text-[11px] uppercase">Compliance</TableHead>
               <TableHead className="w-10"></TableHead>
             </TableRow>
           </TableHeader>
@@ -273,28 +273,18 @@ function GroupAllocation({ baseOM, multiplier, haircut, allocations, onUpdate }:
               let allocated = maxGroupOM * share;
               const isOverLimit = allocated > baseOM; 
               
-              // Enforce "Capped at Base OM" rule in display logic
               const finalAllocated = isOverLimit ? baseOM : allocated;
               const allocatedPM = finalAllocated * (1 - haircut / 100);
 
               return (
                 <TableRow key={e.entityId} className="border-blue-100">
                   <TableCell>
-                    <Input 
-                      className="h-8 text-xs bg-white" 
-                      value={e.entityName} 
-                      onChange={(ev) => updateEntity(e.entityId, 'entityName', ev.target.value)}
-                    />
+                    <Input className="h-8 text-xs bg-white" value={e.entityName} onChange={(ev) => updateEntity(e.entityId, 'entityName', ev.target.value)} />
                   </TableCell>
                   <TableCell className="text-right">
-                    <Input 
-                      type="number"
-                      className="h-8 text-xs text-right bg-white font-mono" 
-                      value={e.totalAssets} 
-                      onChange={(ev) => updateEntity(e.entityId, 'totalAssets', Number(ev.target.value))}
-                    />
+                    <Input type="number" className="h-8 text-xs text-right bg-white font-mono" value={e.totalAssets} onChange={(ev) => updateEntity(e.entityId, 'totalAssets', Number(ev.target.value))} />
                   </TableCell>
-                  <TableCell className="text-right">{(share * 100).toFixed(1)}%</TableCell>
+                  <TableCell className="text-right text-xs">{(share * 100).toFixed(1)}%</TableCell>
                   <TableCell className="text-right font-bold text-blue-700">
                     <div className="flex flex-col items-end">
                       <span className="text-[11px] font-mono">OM: {new Intl.NumberFormat('id-ID').format(finalAllocated)}</span>
@@ -309,18 +299,115 @@ function GroupAllocation({ baseOM, multiplier, haircut, allocations, onUpdate }:
                     )}
                   </TableCell>
                   <TableCell>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-red-400 hover:text-red-600 hover:bg-red-50" onClick={() => removeEntity(e.entityId)}>
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-red-400 hover:text-red-600" onClick={() => removeEntity(e.entityId)}>
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   </TableCell>
                 </TableRow>
               );
             })}
-            {allocations.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground text-xs">No subsidiaries added. Click "Add Entity" to start group allocation.</TableCell>
-              </TableRow>
-            )}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  );
+}
+
+interface InvesteeMonitoringProps {
+  overallMateriality: number;
+  haircut: number;
+  investees: InvesteeMateriality[];
+  onUpdate: (investees: InvesteeMateriality[]) => void;
+}
+
+function InvesteeMonitoring({ overallMateriality, haircut, investees, onUpdate }: InvesteeMonitoringProps) {
+  const addInvestee = () => {
+    const newInvestee: InvesteeMateriality = {
+      id: crypto.randomUUID(),
+      name: "New Investee",
+      ownershipPercentage: 20,
+      investmentValue: 0,
+      auditStatus: "Pending Review",
+      controlsTested: "",
+      allocatedOM: 0,
+      allocatedPM: 0,
+    };
+    onUpdate([...investees, newInvestee]);
+  };
+
+  const removeInvestee = (id: string) => {
+    onUpdate(investees.filter(i => i.id !== id));
+  };
+
+  const updateInvestee = (id: string, field: keyof InvesteeMateriality, value: any) => {
+    onUpdate(investees.map(i => i.id === id ? { ...i, [field]: value } : i));
+  };
+
+  return (
+    <Card className="border-purple-200 bg-purple-50/30">
+      <CardHeader>
+        <div className="flex justify-between items-center">
+          <div>
+            <CardTitle className="text-purple-800 flex items-center gap-2">
+              <Target className="h-5 w-5" /> Equity Method Investee Monitoring (FAQ No. 5)
+            </CardTitle>
+            <CardDescription className="text-purple-600/80 italic">Pemantauan atas investee non-konsolidasi berdasarkan nilai investasi.</CardDescription>
+          </div>
+          <Button type="button" size="sm" variant="outline" onClick={addInvestee} className="h-8 border-purple-300 text-purple-700 hover:bg-purple-100">
+            <Plus className="h-3 w-3 mr-1" /> Add Investee
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent border-purple-200">
+              <TableHead className="text-purple-800 text-[11px] uppercase">Investee Name</TableHead>
+              <TableHead className="text-purple-800 text-right text-[11px] uppercase">Investment (IDR)</TableHead>
+              <TableHead className="text-purple-800 text-[11px] uppercase">Audit Status</TableHead>
+              <TableHead className="text-purple-800 text-right text-[11px] uppercase">Materiality</TableHead>
+              <TableHead className="w-10"></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {investees.map(i => {
+              // FAQ No. 5 logic: Investee materiality is proportional to investment value relative to group benchmark
+              // Simplified: We use overallMateriality as the base for the group
+              const allocatedOM = i.investmentValue > 0 ? (overallMateriality * 0.05) : 0; // Placeholder logic
+              const allocatedPM = allocatedOM * (1 - haircut / 100);
+
+              return (
+                <TableRow key={i.id} className="border-purple-100">
+                  <TableCell>
+                    <Input className="h-8 text-xs bg-white" value={i.name} onChange={(ev) => updateInvestee(i.id, 'name', ev.target.value)} />
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Input type="number" className="h-8 text-xs text-right bg-white font-mono" value={i.investmentValue} onChange={(ev) => updateInvestee(i.id, 'investmentValue', Number(ev.target.value))} />
+                  </TableCell>
+                  <TableCell>
+                    <Select value={i.auditStatus} onValueChange={(val) => updateInvestee(i.id, 'auditStatus', val)}>
+                      <SelectTrigger className="h-8 text-[10px] bg-white"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Audit Report Received">Audit Report Received</SelectItem>
+                        <SelectItem value="Pending Review">Pending Review</SelectItem>
+                        <SelectItem value="Not Audited">Not Audited</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
+                  <TableCell className="text-right font-bold text-purple-700">
+                    <div className="flex flex-col items-end">
+                      <span className="text-[11px] font-mono">OM: {new Intl.NumberFormat('id-ID').format(allocatedOM)}</span>
+                      <span className="text-[10px] text-purple-500 font-mono">PM: {new Intl.NumberFormat('id-ID').format(allocatedPM)}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-red-400 hover:text-red-600" onClick={() => removeInvestee(i.id)}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </CardContent>
@@ -344,6 +431,7 @@ export function ScopingPage() {
   const currentScope = scopingData?.items?.[0];
   const [localAccounts, setLocalAccounts] = React.useState<SignificantAccount[]>([]);
   const [localAllocations, setLocalAllocations] = React.useState<EntityMateriality[]>([]);
+  const [localInvestees, setLocalInvestees] = React.useState<InvesteeMateriality[]>([]);
 
   const { register, control, watch, setValue, reset, handleSubmit } = useForm<MaterialityForm>({
     resolver: zodResolver(materialitySchema),
@@ -365,16 +453,13 @@ export function ScopingPage() {
         haircut: currentMateriality.haircut,
         locationCount: currentMateriality.subsidiaryCount || 1,
       });
-      if (currentMateriality.entityAllocations) {
-        setLocalAllocations(currentMateriality.entityAllocations);
-      }
+      if (currentMateriality.entityAllocations) setLocalAllocations(currentMateriality.entityAllocations);
+      if (currentMateriality.investeeAllocations) setLocalInvestees(currentMateriality.investeeAllocations);
     }
   }, [currentMateriality, reset]);
 
   React.useEffect(() => {
-    if (currentScope?.significantAccounts) {
-      setLocalAccounts(currentScope.significantAccounts);
-    }
+    if (currentScope?.significantAccounts) setLocalAccounts(currentScope.significantAccounts);
   }, [currentScope]);
 
   const saveMateriality = useMutation({
@@ -393,21 +478,6 @@ export function ScopingPage() {
   const performanceMateriality = overallMateriality * (1 - formValues.haircut / 100);
 
   const onSaveMateriality = (data: MaterialityForm) => {
-    // Process allocations to ensure they follow the "Capped at Base OM" rule before saving
-    const processedAllocations = localAllocations.map(a => {
-      const totalAssets = localAllocations.reduce((sum, e) => sum + e.totalAssets, 0);
-      const share = totalAssets > 0 ? (a.totalAssets / totalAssets) : 0;
-      let allocatedOM = overallMateriality * share;
-      if (allocatedOM > baseOM) allocatedOM = baseOM;
-      const allocatedPM = allocatedOM * (1 - data.haircut / 100);
-      
-      return {
-        ...a,
-        allocatedOM,
-        allocatedPM
-      };
-    });
-
     const payload: Materiality = {
       id: currentMateriality?.id || crypto.randomUUID(),
       year: new Date().getFullYear(),
@@ -419,12 +489,12 @@ export function ScopingPage() {
       isGroupConsolidation: data.locationCount > 1,
       subsidiaryCount: data.locationCount,
       multiplier: multiplier,
-      entityAllocations: processedAllocations,
+      entityAllocations: localAllocations,
+      investeeAllocations: localInvestees,
     };
     saveMateriality.mutate(payload);
   };
 
-  const isLoading = matLoading || scopeLoading;
   const formatCurrency = (val: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(val);
 
   return (
@@ -435,11 +505,7 @@ export function ScopingPage() {
             <h1 className="text-3xl font-bold">Scoping & Materiality</h1>
             <p className="text-muted-foreground">Define materiality thresholds and scope significant accounts for ICOFR.</p>
           </div>
-          <Button 
-            onClick={handleSubmit(onSaveMateriality)} 
-            disabled={saveMateriality.isPending}
-            className="gap-2"
-          >
+          <Button onClick={handleSubmit(onSaveMateriality)} disabled={saveMateriality.isPending} className="gap-2">
             {saveMateriality.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             Save Materiality Settings
           </Button>
@@ -454,10 +520,7 @@ export function ScopingPage() {
 
           <TabsContent value="materiality" className="space-y-6">
             <Card>
-              <CardHeader>
-                <CardTitle>Materiality Calculation</CardTitle>
-                <CardDescription>Determine Overall Materiality (OM) and Performance Materiality (PM).</CardDescription>
-              </CardHeader>
+              <CardHeader><CardTitle>Materiality Calculation</CardTitle></CardHeader>
               <CardContent>
                 <form className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -465,7 +528,7 @@ export function ScopingPage() {
                       <Label>Benchmark Basis</Label>
                       <Controller control={control} name="benchmark" render={({ field }) => (
                         <Select onValueChange={field.onChange} value={field.value}>
-                          <SelectTrigger><SelectValue placeholder="Select benchmark" /></SelectTrigger>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="Pre-Tax Income">Pre-Tax Income</SelectItem>
                             <SelectItem value="Revenue">Revenue</SelectItem>
@@ -484,33 +547,16 @@ export function ScopingPage() {
                       <Input type="number" {...register("locationCount", { valueAsNumber: true })} />
                     </div>
                     <div className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <Label>Haircut for PM (%)</Label>
-                        <HaircutWizard onApply={(val) => setValue("haircut", val)} />
-                      </div>
+                      <div className="flex justify-between items-center"><Label>Haircut for PM (%)</Label><HaircutWizard onApply={(val) => setValue("haircut", val)} /></div>
                       <Input type="number" {...register("haircut", { valueAsNumber: true })} />
                     </div>
                   </div>
-
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-muted/20 p-6 rounded-lg border-2 border-primary/10">
-                    <div>
-                      <h3 className="text-lg font-semibold text-muted-foreground flex items-center gap-2">Overall Materiality (OM)</h3>
-                      <p className="text-3xl font-bold text-primary">{formatCurrency(overallMateriality)}</p>
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-muted-foreground">Performance Materiality (PM)</h3>
-                      <p className="text-3xl font-bold text-primary">{formatCurrency(performanceMateriality)}</p>
-                    </div>
+                    <div><h3 className="text-lg font-semibold text-muted-foreground">Overall Materiality (OM)</h3><p className="text-3xl font-bold text-primary">{formatCurrency(overallMateriality)}</p></div>
+                    <div><h3 className="text-lg font-semibold text-muted-foreground">Performance Materiality (PM)</h3><p className="text-3xl font-bold text-primary">{formatCurrency(performanceMateriality)}</p></div>
                   </div>
-
                   {formValues.locationCount > 1 && (
-                    <GroupAllocation 
-                      baseOM={baseOM} 
-                      multiplier={multiplier} 
-                      haircut={formValues.haircut}
-                      allocations={localAllocations}
-                      onUpdate={setLocalAllocations}
-                    />
+                    <GroupAllocation baseOM={baseOM} multiplier={multiplier} haircut={formValues.haircut} allocations={localAllocations} onUpdate={setLocalAllocations} />
                   )}
                 </form>
               </CardContent>
@@ -520,17 +566,10 @@ export function ScopingPage() {
           <TabsContent value="scoping" className="space-y-6 pt-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Card className="md:col-span-2">
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <CardTitle>Significant Accounts Matrix</CardTitle>
-                    <QualitativeScopingWizard onAdd={(acc) => setLocalAccounts(prev => [...prev, acc])} />
-                  </div>
-                </CardHeader>
+                <CardHeader><div className="flex justify-between items-start"><CardTitle>Significant Accounts Matrix</CardTitle><QualitativeScopingWizard onAdd={(acc) => setLocalAccounts(prev => [...prev, acc])} /></div></CardHeader>
                 <CardContent>
                   <Table>
-                    <TableHeader>
-                      <TableRow><TableHead>Account Name</TableHead><TableHead className="text-right">Balance</TableHead><TableHead>Reason</TableHead><TableHead>Status</TableHead></TableRow>
-                    </TableHeader>
+                    <TableHeader><TableRow><TableHead>Account Name</TableHead><TableHead className="text-right">Balance</TableHead><TableHead>Reason</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
                     <TableBody>
                       {localAccounts.map((acc, i) => (
                         <TableRow key={i}>
@@ -556,37 +595,10 @@ export function ScopingPage() {
           </TabsContent>
 
           <TabsContent value="investee" className="space-y-6 pt-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-blue-800"><Target className="h-5 w-5" /> Equity Method Investee Monitoring</CardTitle>
-                <CardDescription>Sesuai FAQ No. 5 (Hal 105), pemantauan atas investee non-konsolidasi.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow><TableHead>Investee Name</TableHead><TableHead>Ownership %</TableHead><TableHead>Audit Status</TableHead><TableHead>Controls</TableHead><TableHead>Action</TableHead></TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    <TableRow>
-                      <TableCell className="font-semibold">PT Energy Associate (JV)</TableCell>
-                      <TableCell>35.0%</TableCell>
-                      <TableCell><Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Audit Report Received</Badge></TableCell>
-                      <TableCell className="text-[10px]">Equity Adjustment Review</TableCell>
-                      <TableCell><Button variant="ghost" size="sm">Review</Button></TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+            <InvesteeMonitoring overallMateriality={overallMateriality} haircut={formValues.haircut} investees={localInvestees} onUpdate={setLocalInvestees} />
           </TabsContent>
         </Tabs>
       </div>
     </AppLayout>
   );
-}
-
-function Target({ className }: { className?: string }) {
-  return (
-    <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" /></svg>
-  )
 }
