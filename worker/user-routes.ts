@@ -5,7 +5,7 @@ import {
   UserEntity, ChatBoardEntity, RCMEntity, ControlEntity,
   DeficiencyEntity, ActionPlanEntity, CSAEntity, TestEntity,
   MaterialityEntity, ScopingEntity, ChangeLogEntity, SOCReportEntity,
-  ApplicationEntity, RiskLibraryEntity
+  ApplicationEntity, RiskLibraryEntity, AggregateDeficiencyEntity
 } from "./entities";
 import type { Control, RCM, CSARecord, TestRecord, Deficiency, ActionPlan, UserRole, Materiality, Scoping, ChangeLog, SOCReport, Application, BUMNCluster, RiskLibrary } from "@shared/types";
 import { z } from "zod";

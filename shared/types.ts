@@ -137,6 +137,25 @@ export interface Control {
   };
 }
 
+export interface BPMNode {
+  id: string;
+  type: "standard" | "risk" | "archive" | "start" | "end";
+  position: { x: number; y: number };
+  data: {
+    label: string;
+    description?: string;
+    riskId?: string;
+    controlIds?: string[];
+  };
+}
+
+export interface BPMEdge {
+  id: string;
+  source: string;
+  target: string;
+  label?: string;
+}
+
 export interface RCM {
   id: string;
   process: string;
@@ -145,14 +164,14 @@ export interface RCM {
   status: "Draft" | "Pending Validation" | "Active" | "Archived" | "Pending Change Approval"; // Added Pending Change Approval
   controls: string[]; // Array of Control IDs
   bpmData?: {
-    nodes: any[];
-    edges: any[];
+    nodes: BPMNode[];
+    edges: BPMEdge[];
   };
   changeRequest?: {
     requestedBy: string;
     requestedAt: number;
     description: string;
-    proposedData: any;
+    proposedData: Partial<RCM>;
   };
 }
 

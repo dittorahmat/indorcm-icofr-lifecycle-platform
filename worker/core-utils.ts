@@ -256,6 +256,28 @@ export abstract class IndexedEntity<S extends { id: string }> extends Entity<S> 
     return state;
   }
 
+  /**
+   * Creates many entities and adds them to the index.
+   * Note: Individual entity saves are not transactional with each other,
+   * but the index update is performed in a single batch.
+   */
+  static async createMany<TCtor extends CtorAny>(this: HS<TCtor>, env: Env, states: IS<TCtor>[]): Promise<IS<TCtor>[]> {
+    if (states.length === 0) return [];
+    
+    // Save all entity documents (concurrently)
+    await Promise.all(states.map(async (state) => {
+      const id = this.keyOf(state);
+      const inst = new this(env, id);
+      await inst.save(state);
+    }));
+
+    // Batch add to index
+    const idx = new Index<string>(env, this.indexName);
+    await idx.addBatch(states.map(s => this.keyOf(s)));
+    
+    return states;
+  }
+
   static async list<TCtor extends CtorAny>(
     this: HS<TCtor>,
     env: Env,
