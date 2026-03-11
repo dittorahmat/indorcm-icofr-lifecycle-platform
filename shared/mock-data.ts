@@ -117,10 +117,13 @@ export const MOCK_RISK_LIBRARY: RiskLibrary[] = [
   { id: 'risk-gen-03', cluster: 'Umum', riskDescription: 'Risiko terkait struktur keuangan yang kompleks (subsidi, hibah) yang meningkatkan risiko kesalahan pelaporan.', suggestedAssertions: ['Presentation', 'Accuracy'] },
   { id: 'risk-gen-04', cluster: 'Umum', riskDescription: 'Risiko pelaporan utang dan kewajiban kontinjensi yang dijamin pemerintah tidak akurat.', suggestedAssertions: ['Completeness', 'Valuation'] },
 
-  // 2. Industri Energi Minyak dan Gas
+  // 2. Industri Energi Minyak dan Gas (Lampiran 2)
   { id: 'risk-energy-01', cluster: 'Industri Energi', riskDescription: 'Kegagalan pencatatan cadangan terbukti (proven reserves) yang tidak sesuai standar PSAK/IFRS.', suggestedAssertions: ['Accuracy', 'Valuation'] },
   { id: 'risk-energy-02', cluster: 'Industri Energi', riskDescription: 'Ketidakakuratan perhitungan cost recovery pada kontrak bagi hasil.', suggestedAssertions: ['Accuracy', 'Completeness'] },
   { id: 'risk-energy-03', cluster: 'Industri Energi', riskDescription: 'Penurunan nilai aset (impairment) akibat volatilitas harga minyak dan gas.', suggestedAssertions: ['Valuation'] },
+  { id: 'risk-energy-04', cluster: 'Industri Energi', riskDescription: 'Risiko kegagalan kepatuhan atas ketentuan perpajakan khusus migas (misal: PBB migas, DMO).', suggestedAssertions: ['Accuracy', 'Completeness'] },
+  { id: 'risk-energy-05', cluster: 'Industri Energi', riskDescription: 'Kesalahan pengakuan kewajiban pemulihan lingkungan (AARO - Asset Retirement Obligation).', suggestedAssertions: ['Valuation', 'Completeness'] },
+  { id: 'risk-energy-06', cluster: 'Industri Energi', riskDescription: 'Kecurangan (fraud) dalam pengukuran volume produksi (metering) di sumur atau terminal.', suggestedAssertions: ['Existence', 'Accuracy'] },
 
   // 3. Industri Pangan dan Pupuk
   { id: 'risk-food-01', cluster: 'Industri Pangan dan Pupuk', riskDescription: 'Kompleksitas kontrak dengan distributor/pengecer (rabat, retur) mempersulit pengakuan pendapatan.', suggestedAssertions: ['Accuracy', 'Cut-off'] },
