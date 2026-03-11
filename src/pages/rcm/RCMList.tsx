@@ -300,8 +300,6 @@ export function RCMList() {
               )}
             </div>
           </TabsContent>
-
-          {/* ... other tabs ... */}
         </Tabs>
       </div>
 
@@ -389,7 +387,6 @@ export function RCMList() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
-  </AppLayout>
-);
+    </AppLayout>
+  );
 }
