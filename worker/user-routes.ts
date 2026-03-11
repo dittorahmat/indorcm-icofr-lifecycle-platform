@@ -123,6 +123,28 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     return ok(c, await rcm.getState());
   });
 
+  app.post('/api/rcm/:id/reject-change', async (c) => {
+    if ((c as any).get('userRole') !== 'Line 2') return bad(c, 'Access Denied');
+    const id = c.req.param('id');
+    const { reason } = await c.req.json<{ reason: string }>();
+    const rcm = new RCMEntity(c.env, id);
+    if (!await rcm.exists()) return notFound(c, 'RCM not found');
+    
+    await rcm.mutate((s: any) => ({
+      ...s,
+      status: 'Active',
+      changeRequest: undefined,
+      auditTrail: [...(s.auditTrail || []), { 
+        action: 'rejected', 
+        userId: (c as any).get('userId'), 
+        timestamp: Date.now(),
+        comment: reason
+      }],
+    }));
+    
+    return ok(c, await rcm.getState());
+  });
+
   app.post('/api/rcm/:id/validate', async (c) => {
     if ((c as any).get('userRole') !== 'Line 2') return bad(c, 'Access Denied');
     const id = c.req.param('id');
