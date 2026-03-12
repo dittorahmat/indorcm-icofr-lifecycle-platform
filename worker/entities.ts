@@ -133,6 +133,28 @@ export class RiskLibraryEntity extends IndexedEntity<RiskLibrary> {
   static readonly initialState: RiskLibrary = { id: "", cluster: "Umum", riskDescription: "", suggestedAssertions: [] };
   static seedData = MOCK_RISK_LIBRARY;
 }
+
+export class SettingsEntity extends IndexedEntity<Settings> {
+  static readonly entityName = "settings";
+  static readonly indexName = "settings";
+  static readonly initialState: Settings = { 
+    id: "global", 
+    companyName: "PT BUMN Energi Utama", 
+    ceoName: "Budi Santoso", 
+    cfoName: "Siti Aminah", 
+    fiscalYear: new Date().getFullYear(),
+    isPeriodLocked: false 
+  };
+  static seedData = [{ 
+    id: "global", 
+    companyName: "PT BUMN Energi Utama", 
+    ceoName: "Budi Santoso", 
+    cfoName: "Siti Aminah", 
+    fiscalYear: new Date().getFullYear(),
+    isPeriodLocked: false 
+  }];
+}
+
 // --- Original Demo Entities ---
 export class UserEntity extends IndexedEntity<User> {
   static readonly entityName = "user";

@@ -35,7 +35,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       MaterialityEntity.ensureSeed(c.env), ScopingEntity.ensureSeed(c.env),
       ChangeLogEntity.ensureSeed(c.env), SOCReportEntity.ensureSeed(c.env),
       ApplicationEntity.ensureSeed(c.env), RiskLibraryEntity.ensureSeed(c.env),
-      AggregateDeficiencyEntity.ensureSeed(c.env),
+      AggregateDeficiencyEntity.ensureSeed(c.env), SettingsEntity.ensureSeed(c.env),
     ]);
     // Mock Auth
     const role = (c.req.header('X-Mock-Role') as UserRole) || 'Line 1';
@@ -206,6 +206,17 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       identifiedDate: Date.now(), ...body 
     };
     return ok(c, await createWithAudit(AggregateDeficiencyEntity, c.env, newAggr, (c as any).get('userId')));
+  });
+  app.get('/api/settings', async (c) => {
+    const settings = new SettingsEntity(c.env, 'global');
+    return ok(c, await settings.getState());
+  });
+  app.put('/api/settings', async (c) => {
+    if ((c as any).get('userRole') !== 'Line 2' && (c as any).get('userRole') !== 'Admin') return bad(c, 'Access Denied');
+    const body = await c.req.json<Partial<Settings>>();
+    const settings = new SettingsEntity(c.env, 'global');
+    await settings.mutate(s => ({ ...s, ...body }));
+    return ok(c, await settings.getState());
   });
   app.put('/api/deficiencies/:id', async (c) => {
     const id = c.req.param('id');

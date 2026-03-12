@@ -249,6 +249,18 @@ export interface ActionPlan {
   completionDate?: number;
 }
 
+export interface Settings {
+  id: string;
+  companyName: string;
+  ceoName: string;
+  cfoName: string;
+  fiscalYear: number;
+  reportHeaderUrl?: string;
+  isPeriodLocked: boolean;
+  signedOffDate?: number;
+  signedOffBy?: string;
+}
+
 // SK-5 Requirement: Lampiran 6 - Log Perubahan
 export interface ChangeLog {
   id: string;
