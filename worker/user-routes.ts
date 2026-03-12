@@ -241,6 +241,32 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     }
     return ok(c, created);
   });
+
+  app.post('/api/csa/:id/validate', async (c) => {
+    if ((c as any).get('userRole') !== 'Line 2') return bad(c, 'Access Denied: Only Line 2 can validate CSAs.');
+    const id = c.req.param('id');
+    const { status, comments } = await c.req.json<{ status: "Validated" | "Rejected", comments: string }>();
+    const csa = new CSAEntity(c.env, id);
+    if (!await csa.exists()) return notFound(c, 'CSA record not found');
+
+    const userId = (c as any).get('userId');
+    await csa.mutate((s: any) => ({
+      ...s,
+      line2Status: status,
+      line2Comments: comments,
+      line2ValidatedBy: userId,
+      line2ValidatedDate: Date.now(),
+      auditTrail: [...(s.auditTrail || []), { 
+        action: status === 'Validated' ? 'validated' : 'rejected_by_l2', 
+        userId, 
+        timestamp: Date.now(),
+        comment: comments
+      }],
+    }));
+
+    return ok(c, await csa.getState());
+  });
+
   app.post('/api/tests', async (c) => {
     if ((c as any).get('userRole') !== 'Line 3') return bad(c, 'Access Denied: Only Line 3 can submit tests.');
     const body = await c.req.json<Partial<TestRecord>>();
