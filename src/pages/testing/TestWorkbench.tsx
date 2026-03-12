@@ -22,7 +22,8 @@ import { getSuggestedSampleRange, isReadyForRemediationTest } from '@/lib/compli
 import type { Control, TestRecord, Deficiency, User } from '@shared/types';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
-import { AlertTriangle, Info, Clock } from 'lucide-react';
+import { AlertTriangle, Info, Clock, CheckCircle2, XCircle, History, ListFilter } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 
 const testSchema = z.object({
   testType: z.enum(['TOD', 'TOE']),
@@ -41,7 +42,7 @@ const testSchema = z.object({
   })
 });
 
-function ControlTestCard({ control, openDeficiencyDate }: { control: Control, openDeficiencyDate?: number }) {
+function ControlTestCard({ control, openDeficiencyDate, history }: { control: Control, openDeficiencyDate?: number, history: TestRecord[] }) {
   const queryClient = useQueryClient();
   const form = useForm<z.infer<typeof testSchema>>({
     resolver: zodResolver(testSchema),
@@ -66,6 +67,7 @@ function ControlTestCard({ control, openDeficiencyDate }: { control: Control, op
     mutationFn: (data: Omit<TestRecord, 'id' | 'testDate' | 'testedBy'>) => api('/api/tests', { method: 'POST', body: JSON.stringify(data) }),
     onSuccess: (data: TestRecord) => {
       toast.success(`${data.testType} for ${control.name} submitted.`);
+      queryClient.invalidateQueries({ queryKey: ['tests'] });
       if (data.result === 'Fail') {
         queryClient.invalidateQueries({ queryKey: ['deficiencies'] });
       }
@@ -83,6 +85,7 @@ function ControlTestCard({ control, openDeficiencyDate }: { control: Control, op
     }
     mutation.mutate({
       controlId: control.id,
+      period: "2024-Q1", // Default period
       ...values,
     });
   }
@@ -156,171 +159,225 @@ function ControlTestCard({ control, openDeficiencyDate }: { control: Control, op
   );
 
   return (
-    <Card className="overflow-hidden">
-      <CardHeader className="bg-muted/30 border-b">
-        <div className="flex justify-between items-start">
-          <div>
-            <CardTitle className="text-base">{control.code}: {control.name}</CardTitle>
-            <CardDescription className="text-xs">{control.description}</CardDescription>
-          </div>
-          <div className="flex flex-col items-end gap-1">
-             <Badge variant="outline" className="text-[10px]">{control.frequency}</Badge>
-             <Badge 
-                variant="secondary" 
-                className={cn(
-                  "text-[10px] uppercase font-bold",
-                  control.riskRating === 'High' ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'
-                )}
-              >
-                {control.riskRating} RISK
-              </Badge>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="pt-6">
-        {remediationStatus && (
-          <div className={cn(
-            "mb-6 p-4 rounded-lg border flex items-start gap-3",
-            remediationStatus.isReady ? 'bg-green-50 border-green-100' : 'bg-amber-50 border-amber-100'
-          )}>
-            <Clock className={cn("h-5 w-5", remediationStatus.isReady ? 'text-green-600' : 'text-amber-600')} />
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <Card className="overflow-hidden lg:col-span-2">
+        <CardHeader className="bg-muted/30 border-b">
+          <div className="flex justify-between items-start">
             <div>
-              <p className={cn(
-                "text-xs font-bold uppercase tracking-tight",
-                remediationStatus.isReady ? 'text-green-800' : 'text-amber-800'
-              )}>
-                Remediation Testing Readiness (Table 23)
-              </p>
-              <p className={cn("text-sm", remediationStatus.isReady ? 'text-green-700' : 'text-amber-700')}>
-                {remediationStatus.message}
-              </p>
+              <CardTitle className="text-base">{control.code}: {control.name}</CardTitle>
+              <CardDescription className="text-xs">{control.description}</CardDescription>
+            </div>
+            <div className="flex flex-col items-end gap-1">
+               <Badge variant="outline" className="text-[10px]">{control.frequency}</Badge>
+               <Badge 
+                  variant="secondary" 
+                  className={cn(
+                    "text-[10px] uppercase font-bold",
+                    control.riskRating === 'High' ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'
+                  )}
+                >
+                  {control.riskRating} RISK
+                </Badge>
             </div>
           </div>
-        )}
+        </CardHeader>
+        <CardContent className="pt-6">
+          {remediationStatus && (
+            <div className={cn(
+              "mb-6 p-4 rounded-lg border flex items-start gap-3",
+              remediationStatus.isReady ? 'bg-green-50 border-green-100' : 'bg-amber-50 border-amber-100'
+            )}>
+              <Clock className={cn("h-5 w-5", remediationStatus.isReady ? 'text-green-600' : 'text-amber-600')} />
+              <div>
+                <p className={cn(
+                  "text-xs font-bold uppercase tracking-tight",
+                  remediationStatus.isReady ? 'text-green-800' : 'text-amber-800'
+                )}>
+                  Remediation Testing Readiness (Table 23)
+                </p>
+                <p className={cn("text-sm", remediationStatus.isReady ? 'text-green-700' : 'text-amber-700')}>
+                  {remediationStatus.message}
+                </p>
+              </div>
+            </div>
+          )}
 
-        <Tabs defaultValue="tod" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="tod">Test of Design (TOD)</TabsTrigger>
-            <TabsTrigger value="toe">Test of Effectiveness (TOE)</TabsTrigger>
-          </TabsList>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)}>
-              <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.3 }}>
-                <TabsContent value="tod" className="pt-6 space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-4">
-                      <h3 className="font-semibold text-sm">Design Checklist</h3>
-                      <div className="space-y-2">
-                        <div className="flex items-center space-x-2"><Checkbox id={`tod1-${control.id}`} /><Label htmlFor={`tod1-${control.id}`} className="text-xs">Is the control designed to prevent/detect the risk?</Label></div>
-                        <div className="flex items-center space-x-2"><Checkbox id={`tod2-${control.id}`} /><Label htmlFor={`tod2-${control.id}`} className="text-xs">Is there a clear segregation of duties?</Label></div>
+          <Tabs defaultValue="tod" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="tod">Test of Design (TOD)</TabsTrigger>
+              <TabsTrigger value="toe">Test of Effectiveness (TOE)</TabsTrigger>
+            </TabsList>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)}>
+                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.3 }}>
+                  <TabsContent value="tod" className="pt-6 space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-4">
+                        <h3 className="font-semibold text-sm">Design Checklist</h3>
+                        <div className="space-y-2">
+                          <div className="flex items-center space-x-2"><Checkbox id={`tod1-${control.id}`} /><Label htmlFor={`tod1-${control.id}`} className="text-xs">Is the control designed to prevent/detect the risk?</Label></div>
+                          <div className="flex items-center space-x-2"><Checkbox id={`tod2-${control.id}`} /><Label htmlFor={`tod2-${control.id}`} className="text-xs">Is there a clear segregation of duties?</Label></div>
+                        </div>
+
+                        {control.nature === "ITDM - IPE" && (
+                          <div className="p-3 bg-orange-50 border border-orange-100 rounded-md space-y-2">
+                            <p className="text-[10px] font-bold text-orange-800 uppercase">Table 15 & 20: IPE Verifications ({control.ipeType})</p>
+                            <div className="flex items-center space-x-2"><Checkbox id={`ipe1-${control.id}`} /><Label htmlFor={`ipe1-${control.id}`} className="text-[10px]">Verify report parameters & filters match design</Label></div>
+                            {control.ipeType === "Query" && (
+                              <>
+                                <div className="flex items-center space-x-2"><Checkbox id={`ipeq-${control.id}`} /><Label htmlFor={`ipeq-${control.id}`} className="text-[10px] text-red-700 font-semibold">Technical Reperformance of SQL Logic (Query Validation)</Label></div>
+                                <div className="flex items-center space-x-2"><Checkbox id={`ipet-${control.id}`} /><Label htmlFor={`ipet-${control.id}`} className="text-[10px]">Compare total rows/values with source data (Completeness)</Label></div>
+                              </>
+                            )}
+                            <div className="flex items-center space-x-2"><Checkbox id={`ipe2-${control.id}`} /><Label htmlFor={`ipe2-${control.id}`} className="text-[10px]">Ensure source ITGCs are effective</Label></div>
+                          </div>
+                        )}
+
+                        {control.nature === "ITDM - EUC" && (
+                          <div className="p-3 bg-purple-50 border border-purple-100 rounded-md space-y-2">
+                            <p className="text-[10px] font-bold text-purple-800 uppercase">Table 14: EUC Controls ({control.eucComplexity} Complexity)</p>
+                            <div className="flex items-center space-x-2"><Checkbox id={`euc1-${control.id}`} /><Label htmlFor={`euc1-${control.id}`} className="text-[10px]">Data Integrity (Formula cells locked)</Label></div>
+                            <div className="flex items-center space-x-2"><Checkbox id={`eucav-${control.id}`} /><Label htmlFor={`eucav-${control.id}`} className="text-[10px]">Availability (Periodic backup & restore test)</Label></div>
+                            {(control.eucComplexity === "Medium" || control.eucComplexity === "High") && (
+                              <>
+                                <div className="flex items-center space-x-2"><Checkbox id={`eucv-${control.id}`} /><Label htmlFor={`eucv-${control.id}`} className="text-[10px]">Version Control (Current template used)</Label></div>
+                                <div className="flex items-center space-x-2"><Checkbox id={`euca-${control.id}`} /><Label htmlFor={`euca-${control.id}`} className="text-[10px]">Access Control Validation (Password protected)</Label></div>
+                              </>
+                            )}
+                            {control.eucComplexity === "High" && (
+                              <div className="flex items-center space-x-2"><Checkbox id={`eucch-${control.id}`} /><Label htmlFor={`eucch-${control.id}`} className="text-[10px]">Change Control Documentation Review</Label></div>
+                            )}
+                          </div>
+                        )}
                       </div>
-
-                      {control.nature === "ITDM - IPE" && (
-                        <div className="p-3 bg-orange-50 border border-orange-100 rounded-md space-y-2">
-                          <p className="text-[10px] font-bold text-orange-800 uppercase">Table 15 & 20: IPE Verifications ({control.ipeType})</p>
-                          <div className="flex items-center space-x-2"><Checkbox id={`ipe1-${control.id}`} /><Label htmlFor={`ipe1-${control.id}`} className="text-[10px]">Verify report parameters & filters match design</Label></div>
-                          {control.ipeType === "Query" && (
-                            <>
-                              <div className="flex items-center space-x-2"><Checkbox id={`ipeq-${control.id}`} /><Label htmlFor={`ipeq-${control.id}`} className="text-[10px] text-red-700 font-semibold">Technical Reperformance of SQL Logic (Query Validation)</Label></div>
-                              <div className="flex items-center space-x-2"><Checkbox id={`ipet-${control.id}`} /><Label htmlFor={`ipet-${control.id}`} className="text-[10px]">Compare total rows/values with source data (Completeness)</Label></div>
-                            </>
-                          )}
-                          <div className="flex items-center space-x-2"><Checkbox id={`ipe2-${control.id}`} /><Label htmlFor={`ipe2-${control.id}`} className="text-[10px]">Ensure source ITGCs are effective</Label></div>
-                        </div>
-                      )}
-
-                      {control.nature === "ITDM - EUC" && (
-                        <div className="p-3 bg-purple-50 border border-purple-100 rounded-md space-y-2">
-                          <p className="text-[10px] font-bold text-purple-800 uppercase">Table 14: EUC Controls ({control.eucComplexity} Complexity)</p>
-                          <div className="flex items-center space-x-2"><Checkbox id={`euc1-${control.id}`} /><Label htmlFor={`euc1-${control.id}`} className="text-[10px]">Data Integrity (Formula cells locked)</Label></div>
-                          <div className="flex items-center space-x-2"><Checkbox id={`eucav-${control.id}`} /><Label htmlFor={`eucav-${control.id}`} className="text-[10px]">Availability (Periodic backup & restore test)</Label></div>
-                          {(control.eucComplexity === "Medium" || control.eucComplexity === "High") && (
-                            <>
-                              <div className="flex items-center space-x-2"><Checkbox id={`eucv-${control.id}`} /><Label htmlFor={`eucv-${control.id}`} className="text-[10px]">Version Control (Current template used)</Label></div>
-                              <div className="flex items-center space-x-2"><Checkbox id={`euca-${control.id}`} /><Label htmlFor={`euca-${control.id}`} className="text-[10px]">Access Control Validation (Password protected)</Label></div>
-                            </>
-                          )}
-                          {control.eucComplexity === "High" && (
-                            <div className="flex items-center space-x-2"><Checkbox id={`eucch-${control.id}`} /><Label htmlFor={`eucch-${control.id}`} className="text-[10px]">Change Control Documentation Review</Label></div>
-                          )}
-                        </div>
-                      )}
+                      
+                      <FormField control={form.control} name="method" render={({ field }) => (
+                        <FormItem><FormLabel className="text-xs">Testing Method</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Inquiry">Inquiry</SelectItem><SelectItem value="Observation">Observation</SelectItem><SelectItem value="Inspection">Inspection</SelectItem><SelectItem value="Reperformance">Reperformance</SelectItem></SelectContent></Select></FormItem>
+                      )} />
                     </div>
                     
-                    <FormField control={form.control} name="method" render={({ field }) => (
-                      <FormItem><FormLabel className="text-xs">Testing Method</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Inquiry">Inquiry</SelectItem><SelectItem value="Observation">Observation</SelectItem><SelectItem value="Inspection">Inspection</SelectItem><SelectItem value="Reperformance">Reperformance</SelectItem></SelectContent></Select></FormItem>
+                    <EvaluationAttributesSection />
+                    
+                    <FormField control={form.control} name="comments" render={({ field }) => (
+                      <FormItem><FormLabel className="text-xs">TOD Comments</FormLabel><FormControl><Textarea placeholder="Enter TOD results and walkthrough notes..." {...field} className="min-h-[100px] text-xs" /></FormControl><FormMessage /></FormItem>
                     )} />
-                  </div>
-                  
-                  <EvaluationAttributesSection />
-                  
-                  <FormField control={form.control} name="comments" render={({ field }) => (
-                    <FormItem><FormLabel className="text-xs">TOD Comments</FormLabel><FormControl><Textarea placeholder="Enter TOD results and walkthrough notes..." {...field} className="min-h-[100px] text-xs" /></FormControl><FormMessage /></FormItem>
-                  )} />
-                  
-                  <div className="flex justify-end gap-2 mt-4">
-                    <Button type="submit" onClick={() => { form.setValue('testType', 'TOD'); form.setValue('result', 'Fail'); }} variant="destructive" size="sm">Fail TOD</Button>
-                    <Button type="submit" onClick={() => { form.setValue('testType', 'TOD'); form.setValue('result', 'Pass'); }} size="sm">Pass TOD</Button>
-                  </div>
-                </TabsContent>
+                    
+                    <div className="flex justify-end gap-2 mt-4">
+                      <Button type="submit" onClick={() => { form.setValue('testType', 'TOD'); form.setValue('result', 'Fail'); }} variant="destructive" size="sm">Fail TOD</Button>
+                      <Button type="submit" onClick={() => { form.setValue('testType', 'TOD'); form.setValue('result', 'Pass'); }} size="sm">Pass TOD</Button>
+                    </div>
+                  </TabsContent>
 
-                <TabsContent value="toe" className="pt-6 space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <h3 className="font-semibold text-sm">Sampling Details</h3>
-                      
-                      <div className="p-3 bg-blue-50 border border-blue-100 rounded-md flex items-start gap-3">
-                        <Info className="h-4 w-4 text-blue-600 mt-0.5" />
-                        <div className="space-y-1">
-                          <p className="text-[10px] font-bold text-blue-800 uppercase leading-none">SK-5 Table 22 Suggestion</p>
-                          <p className="text-xs text-blue-700">Required Sample: <span className="font-bold">{suggestion.label}</span></p>
+                  <TabsContent value="toe" className="pt-6 space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <h3 className="font-semibold text-sm">Sampling Details</h3>
+                        
+                        <div className="p-3 bg-blue-50 border border-blue-100 rounded-md flex items-start gap-3">
+                          <Info className="h-4 w-4 text-blue-600 mt-0.5" />
+                          <div className="space-y-1">
+                            <p className="text-[10px] font-bold text-blue-800 uppercase leading-none">SK-5 Table 22 Suggestion</p>
+                            <p className="text-xs text-blue-700">Required Sample: <span className="font-bold">{suggestion.label}</span></p>
+                          </div>
                         </div>
-                      </div>
 
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="space-y-1"><Label htmlFor={`pop-${control.id}`} className="text-[10px] uppercase font-bold text-muted-foreground">Population</Label><Input id={`pop-${control.id}`} type="number" defaultValue="250" className="h-8 text-xs" /></div>
-                        <FormField control={form.control} name="sampleSize" render={({ field }) => (
-                          <FormItem><FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Sample Size</FormLabel><FormControl><Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10))} className="h-8 text-xs" /></FormControl></FormItem>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="space-y-1"><Label htmlFor={`pop-${control.id}`} className="text-[10px] uppercase font-bold text-muted-foreground">Population</Label><Input id={`pop-${control.id}`} type="number" defaultValue="250" className="h-8 text-xs" /></div>
+                          <FormField control={form.control} name="sampleSize" render={({ field }) => (
+                            <FormItem><FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Sample Size</FormLabel><FormControl><Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10))} className="h-8 text-xs" /></FormControl></FormItem>
+                          )} />
+                        </div>
+
+                        <FormField control={form.control} name="homogeneityJustification" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Justifikasi Homogenitas (Wajib Bab V 1.3.a)</FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                {...field} 
+                                className="h-16 text-xs" 
+                                placeholder="Jelaskan alasan populasi dianggap homogen (e.g. kesamaan sistem, personil, SOP)..." 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
                         )} />
                       </div>
 
-                      <FormField control={form.control} name="homogeneityJustification" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Justifikasi Homogenitas (Wajib Bab V 1.3.a)</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              {...field} 
-                              className="h-16 text-xs" 
-                              placeholder="Jelaskan alasan populasi dianggap homogen (e.g. kesamaan sistem, personil, SOP)..." 
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
+                      <FormField control={form.control} name="method" render={({ field }) => (
+                        <FormItem><FormLabel className="text-xs">Testing Method</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Inquiry">Inquiry</SelectItem><SelectItem value="Observation">Observation</SelectItem><SelectItem value="Inspection">Inspection</SelectItem><SelectItem value="Reperformance">Reperformance</SelectItem></SelectContent></Select></FormItem>
                       )} />
                     </div>
 
-                    <FormField control={form.control} name="method" render={({ field }) => (
-                      <FormItem><FormLabel className="text-xs">Testing Method</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Inquiry">Inquiry</SelectItem><SelectItem value="Observation">Observation</SelectItem><SelectItem value="Inspection">Inspection</SelectItem><SelectItem value="Reperformance">Reperformance</SelectItem></SelectContent></Select></FormItem>
+                    <EvaluationAttributesSection />
+
+                    <FormField control={form.control} name="comments" render={({ field }) => (
+                      <FormItem><FormLabel className="text-xs">TOE Comments</FormLabel><FormControl><Textarea placeholder="Enter TOE results, sample details, and deviations..." {...field} className="min-h-[100px] text-xs" /></FormControl><FormMessage /></FormItem>
                     )} />
+
+                    <div className="flex justify-end gap-2 mt-4">
+                      <Button type="submit" onClick={() => { form.setValue('testType', 'TOE'); form.setValue('result', 'Fail'); }} variant="destructive" size="sm">Fail TOE</Button>
+                      <Button type="submit" onClick={() => { form.setValue('testType', 'TOE'); form.setValue('result', 'Pass'); }} size="sm">Pass TOE</Button>
+                    </div>
+                  </TabsContent>
+                </motion.div>
+              </form>
+            </Form>
+          </Tabs>
+        </CardContent>
+      </Card>
+
+      <Card className="h-fit">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-bold flex items-center gap-2">
+            <History className="h-4 w-4" /> Testing History
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {history.length > 0 ? (
+              history.sort((a, b) => b.testDate - a.testDate).map((h) => (
+                <div key={h.id} className="text-xs border rounded-md p-3 space-y-2 bg-slate-50/50">
+                  <div className="flex justify-between items-center">
+                    <Badge variant="outline" className="text-[9px]">{h.testType}</Badge>
+                    <span className="text-[9px] text-muted-foreground">{new Date(h.testDate).toLocaleDateString()}</span>
                   </div>
-
-                  <EvaluationAttributesSection />
-
-                  <FormField control={form.control} name="comments" render={({ field }) => (
-                    <FormItem><FormLabel className="text-xs">TOE Comments</FormLabel><FormControl><Textarea placeholder="Enter TOE results, sample details, and deviations..." {...field} className="min-h-[100px] text-xs" /></FormControl><FormMessage /></FormItem>
-                  )} />
-
-                  <div className="flex justify-end gap-2 mt-4">
-                    <Button type="submit" onClick={() => { form.setValue('testType', 'TOE'); form.setValue('result', 'Fail'); }} variant="destructive" size="sm">Fail TOE</Button>
-                    <Button type="submit" onClick={() => { form.setValue('testType', 'TOE'); form.setValue('result', 'Pass'); }} size="sm">Pass TOE</Button>
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold">{h.method}</span>
+                    {h.result === 'Pass' ? (
+                      <Badge className="bg-green-100 text-green-700 hover:bg-green-100 gap-1 text-[9px]">
+                        <CheckCircle2 className="h-2 w-2" /> PASS
+                      </Badge>
+                    ) : (
+                      <Badge variant="destructive" className="gap-1 text-[9px]">
+                        <XCircle className="h-2 w-2" /> FAIL
+                      </Badge>
+                    )}
                   </div>
-                </TabsContent>
-              </motion.div>
-            </form>
-          </Form>
-        </Tabs>
-      </CardContent>
-    </Card>
+                  <p className="text-muted-foreground line-clamp-2 italic">"{h.comments}"</p>
+                  
+                  {h.evaluationAttributes && (
+                    <div className="pt-2 border-t flex flex-wrap gap-1">
+                      {Object.entries(h.evaluationAttributes).map(([key, val]) => (
+                        <Badge key={key} variant={val ? "secondary" : "outline"} className={cn(
+                          "text-[8px] h-4 px-1",
+                          !val && "text-red-500 border-red-200"
+                        )}>
+                          {key.substring(0, 3)}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-8 text-muted-foreground italic text-xs">
+                No previous tests recorded.
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 
@@ -333,6 +390,11 @@ export function TestWorkbench() {
   const { data: deficienciesData, isLoading: deficienciesLoading } = useQuery({
     queryKey: ['deficiencies'],
     queryFn: () => api<{ items: Deficiency[] }>('/api/deficiencies'),
+  });
+
+  const { data: testsData, isLoading: testsLoading } = useQuery({
+    queryKey: ['tests'],
+    queryFn: () => api<{ items: TestRecord[] }>('/api/tests'),
   });
 
   const { data: userData } = useQuery({
@@ -369,14 +431,14 @@ export function TestWorkbench() {
     );
   }
 
-  const isLoading = controlsLoading || deficienciesLoading;
+  const isLoading = controlsLoading || deficienciesLoading || testsLoading;
 
   return (
     <AppLayout container>
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Testing Workbench</h1>
-          <p className="text-muted-foreground">Perform TOD and TOE for in-scope controls.</p>
+          <p className="text-muted-foreground">Perform TOD and TOE for in-scope controls according to Regulation SK-5.</p>
         </div>
         
         <Accordion type="single" collapsible className="w-full space-y-4">
@@ -389,6 +451,7 @@ export function TestWorkbench() {
                 .sort((a, b) => b.identifiedDate - a.identifiedDate)[0];
 
               const violation = isCoolingOffViolation(control);
+              const controlHistory = testsData?.items.filter(t => t.controlId === control.id) || [];
 
               return (
                 <AccordionItem value={control.id} key={control.id} className="border-none">
@@ -402,6 +465,11 @@ export function TestWorkbench() {
                       {violation && (
                         <Badge variant="outline" className="text-[8px] h-4 border-amber-500 text-amber-700 bg-amber-50 gap-1">
                           <AlertTriangle className="h-2 w-2" /> COOLING-OFF VIOLATION (BAB II)
+                        </Badge>
+                      )}
+                      {controlHistory.length > 0 && (
+                        <Badge variant="secondary" className="text-[8px] h-4 gap-1">
+                          <History className="h-2 w-2" /> {controlHistory.length} TESTS
                         </Badge>
                       )}
                     </div>
@@ -419,6 +487,7 @@ export function TestWorkbench() {
                       <ControlTestCard 
                         control={control} 
                         openDeficiencyDate={latestOpenDeficiency?.identifiedDate}
+                        history={controlHistory}
                       />
                     )}
                   </AccordionContent>

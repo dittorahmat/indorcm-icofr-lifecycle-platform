@@ -284,6 +284,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     }
     return ok(c, created);
   });
+  app.get('/api/tests', async (c) => ok(c, await TestEntity.list(c.env)));
   // --- Reporting & Import/Export ---
   app.get('/api/reports/summary', async (c) => {
     const [controls, deficiencies, rcms] = await Promise.all([
