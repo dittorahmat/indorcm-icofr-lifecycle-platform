@@ -15,7 +15,7 @@ import 'reactflow/dist/style.css';
 import { Button } from '@/components/ui/button';
 import { 
   FileText, Database, Activity, GitCommit, PlayCircle, StopCircle, 
-  Save, AlertTriangle, ShieldCheck, Info, X, RefreshCw, Link as LinkIcon 
+  Save, AlertTriangle, ShieldCheck, Info, X, RefreshCw, Link as LinkIcon, Workflow 
 } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
@@ -24,6 +24,8 @@ import { cn } from '@/lib/utils';
 import type { RCM, Control } from '@shared/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+
+import { motion, AnimatePresence } from 'framer-motion';
 
 // --- Custom Nodes sesuai Legenda Lampiran 3 & 4 ---
 
