@@ -313,6 +313,36 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   });
   app.get('/api/tests', async (c) => ok(c, await TestEntity.list(c.env)));
   // --- Reporting & Import/Export ---
+  app.post('/api/reports/sign-off', async (c) => {
+    if (!['Line 2', 'Admin'].includes((c as any).get('userRole'))) return bad(c, 'Access Denied');
+    const settings = new SettingsEntity(c.env, 'global');
+    const state = await settings.getState();
+    if (state.isPeriodLocked) return bad(c, 'Period already locked');
+
+    const userId = (c as any).get('userId');
+    const hash = crypto.randomUUID().split('-')[0].toUpperCase(); // Simple hash for prototype
+    
+    await settings.mutate(s => ({
+      ...s,
+      isPeriodLocked: true,
+      signedOffDate: Date.now(),
+      signedOffBy: userId,
+      verificationHash: hash
+    }));
+
+    return ok(c, await settings.getState());
+  });
+
+  app.get('/api/reports/verify/:hash', async (c) => {
+    const hash = c.req.param('hash');
+    const settings = new SettingsEntity(c.env, 'global');
+    const state = await settings.getState();
+    if (state.verificationHash === hash) {
+      return ok(c, { verified: true, company: state.companyName, date: state.signedOffDate });
+    }
+    return bad(c, 'Invalid verification hash');
+  });
+
   app.get('/api/reports/summary', async (c) => {
     const [controls, deficiencies, rcms] = await Promise.all([
       ControlEntity.list(c.env), DeficiencyEntity.list(c.env), RCMEntity.list(c.env)

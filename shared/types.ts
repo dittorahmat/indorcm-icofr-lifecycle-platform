@@ -259,6 +259,7 @@ export interface Settings {
   isPeriodLocked: boolean;
   signedOffDate?: number;
   signedOffBy?: string;
+  verificationHash?: string;
 }
 
 // SK-5 Requirement: Lampiran 6 - Log Perubahan

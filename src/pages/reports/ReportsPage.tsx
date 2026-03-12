@@ -8,12 +8,13 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { FileDown, Printer, Shield, FileText, CheckCircle2, AlertTriangle, Lock, Layers, Loader2 } from 'lucide-react';
+import { FileDown, Printer, Shield, FileText, CheckCircle2, AlertTriangle, Lock, Layers, Loader2, QrCode } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, PieChart, Pie, Cell } from 'recharts';
 import { toast } from 'sonner';
 import type { Deficiency, Settings } from '@shared/types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { cn } from '@/lib/utils';
 
 export function ReportsPage() {
   const queryClient = useQueryClient();
@@ -34,17 +35,10 @@ export function ReportsPage() {
   });
 
   const signOffMutation = useMutation({
-    mutationFn: () => api('/api/settings', { 
-      method: 'PUT', 
-      body: JSON.stringify({ 
-        isPeriodLocked: true, 
-        signedOffDate: Date.now(),
-        signedOffBy: localStorage.getItem('userId') || 'ceo-1' 
-      }) 
-    }),
-    onSuccess: () => {
+    mutationFn: () => api<Settings>('/api/reports/sign-off', { method: 'POST' }),
+    onSuccess: (updatedSettings) => {
       toast.success('Report signed and locked by CEO & CFO.', {
-        description: 'Audit trail entry created. Data is now immutable for this period.',
+        description: `Verification Hash: ${updatedSettings.verificationHash}`,
         icon: <CheckCircle2 className="h-4 w-4 text-green-600" />
       });
       queryClient.invalidateQueries({ queryKey: ['settings'] });
@@ -132,9 +126,7 @@ export function ReportsPage() {
           <TabsContent value="dashboard" className="space-y-6 pt-4">
             <div className="grid gap-6 md:grid-cols-3">
               <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Overall Effectiveness</CardTitle>
-                </CardHeader>
+                <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Overall Effectiveness</CardTitle></CardHeader>
                 <CardContent>
                   <div className={cn("text-3xl font-bold", isEffective ? "text-green-600" : "text-red-600")}>
                     {isEffective ? "EFEKTIF" : "TIDAK EFEKTIF"}
@@ -142,17 +134,11 @@ export function ReportsPage() {
                 </CardContent>
               </Card>
               <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Total Controls</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold">{summaryData?.totalControls}</div>
-                </CardContent>
+                <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Total Controls</CardTitle></CardHeader>
+                <CardContent><div className="text-3xl font-bold">{summaryData?.totalControls}</div></CardContent>
               </Card>
               <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Open Deficiencies</CardTitle>
-                </CardHeader>
+                <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Open Deficiencies</CardTitle></CardHeader>
                 <CardContent>
                   <div className={cn("text-3xl font-bold", summaryData?.openDeficiencies > 0 ? "text-red-600" : "text-green-600")}>
                     {summaryData?.openDeficiencies}
@@ -202,8 +188,8 @@ export function ReportsPage() {
                   Sign & Lock Report (CEO & CFO)
                 </Button>
               ) : (
-                <Badge className="bg-blue-600 text-white px-4 py-2 text-sm">
-                  <Shield className="h-4 w-4 mr-2" /> PERIOD FINALIZED & SIGNED
+                <Badge className="bg-blue-600 text-white px-4 py-2 text-sm shadow-md gap-2">
+                  <CheckCircle2 className="h-4 w-4" /> PERIOD FINALIZED & SIGNED
                 </Badge>
               )}
             </div>
@@ -226,14 +212,14 @@ export function ReportsPage() {
                   
                   {!isEffective ? (
                     <div className="p-4 bg-red-50 border border-red-200 rounded-md mb-6">
-                      <p className="font-bold text-red-800 underline mb-2 text-center">KESIMPULAN: TIDAK EFEKTIF</p>
+                      <p className="font-bold text-red-800 underline mb-2 text-center uppercase">Kesimpulan: Tidak Efektif</p>
                       <p className="text-sm text-red-700">
                         Berdasarkan evaluasi yang dilakukan, manajemen menyimpulkan bahwa Perusahaan <strong>tidak mempertahankan</strong> pengendalian internal yang efektif atas pelaporan keuangan per tanggal laporan, sehubungan dengan ditemukannya kelemahan material (Material Weakness).
                       </p>
                     </div>
                   ) : (
                     <div className="p-4 bg-green-50 border border-green-200 rounded-md mb-6">
-                      <p className="font-bold text-green-800 underline mb-2 text-center">KESIMPULAN: EFEKTIF</p>
+                      <p className="font-bold text-green-800 underline mb-2 text-center uppercase">Kesimpulan: Efektif</p>
                       <p className="text-sm text-green-700">
                         Berdasarkan evaluasi yang dilakukan, manajemen menyimpulkan bahwa Perusahaan <strong>telah mempertahankan</strong>, dalam semua hal yang material, pengendalian internal yang efektif atas pelaporan keuangan per tanggal laporan.
                       </p>
@@ -241,7 +227,7 @@ export function ReportsPage() {
                   )}
 
                   <ol className="list-decimal pl-5 space-y-6 text-sm text-foreground/90">
-                    <li>Kami telah menelaah laporan keuangan {settings?.companyName} yang berakhir pada tanggal {new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}.</li>
+                    <li>Kami telah menelaah laporan keuangan {settings?.companyName} yang berakhir pada tanggal {new Date(settings?.signedOffDate || Date.now()).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}.</li>
                     <li>Berdasarkan pengetahuan kami, laporan keuangan tidak memuat pernyataan yang tidak benar tentang fakta material atau tidak mencantumkan fakta material yang diperlukan untuk membuat pernyataan yang dibuat, mengingat keadaan di mana pernyataan tersebut dibuat, tidak menyesatkan.</li>
                     <li>Berdasarkan pengetahuan kami, laporan keuangan, dan informasi keuangan lainnya yang termasuk dalam laporan keuangan, secara wajar menyajikan dalam semua hal yang material atas kondisi keuangan dan hasil operasi untuk periode tersebut.</li>
                     <li>Kami telah mengimplementasikan pengendalian dan prosedur atas penyusunan laporan keuangan yang dianggap perlu untuk menyusun dan menyajikan secara wajar laporan keuangan (konsolidasi) dan bebas dari salah saji material.</li>
@@ -254,11 +240,7 @@ export function ReportsPage() {
                   </h3>
                   <Table className="text-xs">
                     <TableHeader>
-                      <TableRow>
-                        <TableHead>Defisiensi</TableHead>
-                        <TableHead>Severity</TableHead>
-                        <TableHead>Rencana Remediasi</TableHead>
-                      </TableRow>
+                      <TableRow><TableHead>Defisiensi</TableHead><TableHead>Severity</TableHead><TableHead>Rencana Remediasi</TableHead></TableRow>
                     </TableHeader>
                     <TableBody>
                       {summaryData?.allDeficiencies.filter((d: any) => d.severity !== 'Control Deficiency').map((def: any) => (
@@ -269,9 +251,7 @@ export function ReportsPage() {
                         </TableRow>
                       ))}
                       {!summaryData?.allDeficiencies.some((d: any) => d.severity !== 'Control Deficiency') && (
-                        <TableRow>
-                          <TableCell colSpan={3} className="text-center py-4 text-muted-foreground">Tidak ditemukan defisiensi signifikan atau kelemahan material.</TableCell>
-                        </TableRow>
+                        <TableRow><TableCell colSpan={3} className="text-center py-4 text-muted-foreground">Tidak ditemukan defisiensi signifikan atau kelemahan material.</TableCell></TableRow>
                       )}
                     </TableBody>
                   </Table>
@@ -292,11 +272,11 @@ export function ReportsPage() {
           </TabsContent>
 
           <TabsContent value="audit" className="pt-4">
-            {/* ... audit content unchanged ... */}
+             {/* ... audit content ... */}
           </TabsContent>
         </Tabs>
 
-        {/* Print Section updated with settings */}
+        {/* Print Section updated with settings and QR Verification */}
         <div className="hidden print:block space-y-8 font-serif">
            <div className="flex items-start justify-between border-b-4 border-double pb-4 mb-8">
               <div className="flex items-center gap-4">
@@ -332,7 +312,7 @@ export function ReportsPage() {
                 </div>
               )}
               <ol className="list-decimal pl-5 space-y-4">
-                <li>Kami telah menelaah laporan keuangan yang berakhir pada tanggal {new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}.</li>
+                <li>Kami telah menelaah laporan keuangan yang berakhir pada tanggal {new Date(settings?.signedOffDate || Date.now()).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}.</li>
                 <li>Laporan keuangan tidak memuat pernyataan yang tidak benar tentang fakta material...</li>
               </ol>
            </div>
@@ -344,13 +324,27 @@ export function ReportsPage() {
                   <p className="font-bold text-lg">{settings?.cfoName}</p>
                 </div>
                 
-                <div className="flex flex-col items-center justify-center p-4 border-2 border-slate-200 rounded-lg bg-white shadow-sm">
-                   <div className="w-24 h-24 bg-slate-100 border-2 border-slate-300 flex items-center justify-center relative">
-                      <Shield className="h-10 w-10 text-primary opacity-20" />
-                      <div className="text-[8px] font-bold text-primary absolute">VERIFIED</div>
-                   </div>
-                   <p className="text-[8px] font-bold text-slate-500 uppercase mt-2">Verified by IndoRCM Pro</p>
-                   <p className="text-[6px] text-slate-400 font-mono">ID: {settings?.id.toUpperCase()}</p>
+                {/* QR Code Verification Placeholder (Bab VII Requirement) */}
+                <div className="flex flex-col items-center justify-center p-4 border-2 border-slate-200 rounded-lg bg-white shadow-sm relative overflow-hidden">
+                   {isSigned ? (
+                     <>
+                       <div className="w-24 h-24 bg-slate-50 border border-slate-200 flex items-center justify-center relative">
+                          {/* Stylized SVG QR Placeholder */}
+                          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="text-slate-300">
+                            <rect width="18" height="18" x="3" y="3" rx="2" />
+                            <path d="M7 7h.01M7 17h.01M17 7h.01M17 17h.01" />
+                            <path d="M12 7v10M7 12h10" />
+                          </svg>
+                          <QrCode className="h-8 w-8 text-primary absolute opacity-80" />
+                       </div>
+                       <p className="text-[8px] font-bold text-slate-500 uppercase mt-2 tracking-tighter">Verified by IndoRCM Pro</p>
+                       <p className="text-[7px] text-blue-600 font-mono mt-0.5 font-bold">VERIF-ID: {settings?.verificationHash}</p>
+                     </>
+                   ) : (
+                     <div className="w-24 h-24 flex items-center justify-center border-2 border-dashed border-slate-200 rounded text-[8px] text-muted-foreground text-center px-2">
+                       Awaiting CEO/CFO Sign-off
+                     </div>
+                   )}
                 </div>
 
                 <div className="text-center space-y-20">
@@ -358,6 +352,12 @@ export function ReportsPage() {
                   <p className="font-bold text-lg">{settings?.ceoName}</p>
                 </div>
               </div>
+           </div>
+
+           <div className="absolute bottom-0 left-0 right-0 border-t pt-2 text-[8px] text-muted-foreground flex justify-between">
+              <span>Dicetak otomatis oleh IndoRCM Pro v1.0</span>
+              <span>Hash Verifikasi: {settings?.verificationHash || 'NOT-SIGNED'}</span>
+              <span>Timestamp: {new Date().toLocaleString()}</span>
            </div>
         </div>
       </div>
