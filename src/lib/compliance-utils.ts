@@ -45,19 +45,21 @@ export function getSuggestedSampleRange(
     case "Annual":
       return { min: 1, max: 1, label: "1 (Tahunan)" };
     case "Semi-Annual":
-      // Regulasi tidak eksplisit untuk Semi-Annual, mengikuti pola antara Annual & Quarterly
       return riskRating === "High" ? { min: 2, max: 2, label: "2 (High Risk)" } : { min: 1, max: 1, label: "1 (Low Risk)" };
     case "Quarterly":
       return riskRating === "High" ? { min: 3, max: 3, label: "3 (High Risk)" } : { min: 2, max: 2, label: "2 (Low Risk)" };
     case "Monthly":
-      return riskRating === "High" ? { min: 5, max: 5, label: "5 (High Risk)" } : { min: 2, max: 2, label: "2 (Low Risk)" };
+      // Tabel 22: Monthly (2-5 samples)
+      return riskRating === "High" ? { min: 5, max: 5, label: "5 (High Risk)" } : { min: 2, max: 3, label: "2-3 (Low Risk)" };
     case "Weekly":
-      return riskRating === "High" ? { min: 15, max: 15, label: "15 (High Risk)" } : { min: 5, max: 5, label: "5 (Low Risk)" };
+      // Tabel 22: Weekly (5-15 samples)
+      return riskRating === "High" ? { min: 15, max: 15, label: "15 (High Risk)" } : { min: 5, max: 8, label: "5-8 (Low Risk)" };
     case "Daily":
-      return riskRating === "High" ? { min: 40, max: 40, label: "40 (High Risk)" } : { min: 15, max: 15, label: "15 (Low Risk)" };
+      // Tabel 22: Daily (15-40 samples)
+      return riskRating === "High" ? { min: 40, max: 40, label: "40 (High Risk)" } : { min: 15, max: 20, label: "15-20 (Low Risk)" };
     case "Ad-hoc":
-      // "Lebih dari sekali dalam sehari" di Tabel 22 (30-60 sampel)
-      return riskRating === "High" ? { min: 60, max: 60, label: "60 (High Risk)" } : { min: 30, max: 30, label: "30 (Low Risk)" };
+      // Tabel 22: Multiple times per day (30-60 samples)
+      return riskRating === "High" ? { min: 60, max: 60, label: "60 (High Risk)" } : { min: 30, max: 45, label: "30-45 (Low Risk)" };
     default:
       return { min: 1, max: 1, label: "1" };
   }
@@ -70,11 +72,11 @@ export function getRemediationSampleSize(frequency: ControlFrequency): number {
   switch (frequency) {
     case "Annual": return 1;
     case "Semi-Annual": return 1;
-    case "Quarterly": return 2; // Min 2 kuartal
-    case "Monthly": return 2; // Min 3 bulan, tapi sampel 2
-    case "Weekly": return 5; // Min 5 minggu
-    case "Daily": return 15; // Min 30 hari
-    case "Ad-hoc": return 30; // Min 25 kali selama periode beberapa hari
+    case "Quarterly": return 2;
+    case "Monthly": return 2;
+    case "Weekly": return 5;
+    case "Daily": return 15;
+    case "Ad-hoc": return 25;
     default: return 1;
   }
 }
@@ -84,13 +86,13 @@ export function getRemediationSampleSize(frequency: ControlFrequency): number {
  */
 export function getMinRemediationPeriod(frequency: ControlFrequency): { value: number; unit: 'days' | 'weeks' | 'months' | 'quarters' } {
   switch (frequency) {
-    case "Annual": return { value: 1, unit: 'quarters' }; // Not specified, but logically needs time
+    case "Annual": return { value: 1, unit: 'quarters' }; 
     case "Semi-Annual": return { value: 1, unit: 'quarters' };
     case "Quarterly": return { value: 2, unit: 'quarters' };
     case "Monthly": return { value: 3, unit: 'months' };
     case "Weekly": return { value: 5, unit: 'weeks' };
     case "Daily": return { value: 30, unit: 'days' };
-    case "Ad-hoc": return { value: 25, unit: 'days' }; // 25 times over several days
+    case "Ad-hoc": return { value: 15, unit: 'days' }; // 25 times over multiple days (approx 15 days for testing)
     default: return { value: 1, unit: 'days' };
   }
 }
@@ -197,6 +199,30 @@ export type QualitativeScopingReason =
   | "Kepatuhan terhadap loan covenant"
   | "Aset yang dikelola oleh pihak ketiga"
   | "Lainnya";
+
+/**
+ * Benford's Law Analysis
+ * Calculates the distribution of first digits in a set of numbers.
+ * Standard distribution: [0.301, 0.176, 0.125, 0.097, 0.079, 0.067, 0.058, 0.051, 0.046]
+ */
+export function calculateBenfordDistribution(data: number[]): number[] {
+  const counts = new Array(9).fill(0);
+  let total = 0;
+
+  data.forEach(val => {
+    const absVal = Math.abs(val);
+    if (absVal === 0) return;
+    const firstDigit = parseInt(absVal.toString().replace(/[^1-9]/, '')[0]);
+    if (firstDigit >= 1 && firstDigit <= 9) {
+      counts[firstDigit - 1]++;
+      total++;
+    }
+  });
+
+  return total === 0 ? new Array(9).fill(0) : counts.map(c => (c / total) * 100);
+}
+
+export const BENFORD_STANDARD = [30.1, 17.6, 12.5, 9.7, 7.9, 6.7, 5.8, 5.1, 4.6];
 
 /**
  * Saran Pengendalian Utama berdasarkan Prinsip COSO (Lampiran 1)

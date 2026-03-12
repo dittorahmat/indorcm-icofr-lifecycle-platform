@@ -284,10 +284,17 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
                         <div className="grid grid-cols-2 gap-2">
                           <div className="space-y-1"><Label htmlFor={`pop-${control.id}`} className="text-[10px] uppercase font-bold text-muted-foreground">Population</Label><Input id={`pop-${control.id}`} type="number" defaultValue="250" className="h-8 text-xs" /></div>
                           <FormField control={form.control} name="sampleSize" render={({ field }) => (
-                            <FormItem><FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Sample Size</FormLabel><FormControl><Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10))} className="h-8 text-xs" /></FormControl></FormItem>
+                            <FormItem>
+                              <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground flex justify-between">
+                                Sample Size
+                                {field.value !== undefined && field.value < suggestion.min && (
+                                  <span className="text-[8px] text-amber-600 font-black animate-pulse">! BELOW MIN</span>
+                                )}
+                              </FormLabel>
+                              <FormControl><Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10))} className={cn("h-8 text-xs", field.value !== undefined && field.value < suggestion.min && "border-amber-500 bg-amber-50")} /></FormControl>
+                            </FormItem>
                           )} />
                         </div>
-
                         <FormField control={form.control} name="homogeneityJustification" render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Justifikasi Homogenitas (Wajib Bab V 1.3.a)</FormLabel>
