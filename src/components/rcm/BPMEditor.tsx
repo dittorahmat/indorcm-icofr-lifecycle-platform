@@ -15,7 +15,7 @@ import 'reactflow/dist/style.css';
 import { Button } from '@/components/ui/button';
 import { 
   FileText, Database, Activity, GitCommit, PlayCircle, StopCircle, 
-  Save, AlertTriangle, ShieldCheck, Info, X, RefreshCw, Link as LinkIcon, Workflow 
+  Save, AlertTriangle, ShieldCheck, Info, X, RefreshCw, Link as LinkIcon, Workflow, Trash2 
 } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
@@ -24,6 +24,7 @@ import { cn } from '@/lib/utils';
 import type { RCM, Control } from '@shared/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -290,6 +291,13 @@ export function BPMEditor({ rcm, controls }: BPMEditorProps) {
     setNodes(nds => nds.map(node => node.id === id ? { ...node, data: { ...node.data, ...partialData } } : node));
   };
 
+  const deleteNode = (id: string) => {
+    setNodes(nds => nds.filter(n => n.id !== id));
+    setEdges(eds => eds.filter(e => e.source !== id && e.target !== id));
+    setSelectedNodeId(null);
+    toast.info("Node and its connections removed");
+  };
+
   const syncRiskNode = () => {
     setNodes(nds => nds.map(n => n.type === 'risk' ? { ...n, data: { ...n.data, label: rcm.riskDescription } } : n));
     toast.info("Risk label synced from Matrix");
@@ -472,6 +480,17 @@ export function BPMEditor({ rcm, controls }: BPMEditorProps) {
                     "Pastikan setiap aktivitas memiliki dokumen output jika menghasilkan bukti audit (Lampiran 8)."}
                 </p>
               </div>
+
+              <Separator className="my-2" />
+              
+              <Button 
+                variant="destructive" 
+                size="sm" 
+                className="w-full gap-2 text-[10px] h-8 font-bold uppercase"
+                onClick={() => deleteNode(selectedNode.id)}
+              >
+                <Trash2 className="h-3.5 w-3.5" /> Delete Node
+              </Button>
             </div>
           </motion.div>
         )}
@@ -484,9 +503,4 @@ function Loader2({ className }: { className?: string }) {
   return (
     <svg className={cn("animate-spin", className)} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
   );
-}
-
-function motion(props: any) {
-  // Simple shim for framer-motion since we use it in other parts
-  return <div {...props} />;
 }
