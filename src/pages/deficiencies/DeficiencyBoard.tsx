@@ -111,10 +111,24 @@ export function DeficiencyBoard() {
   );
 
   const planMutation = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: ActionPlanStatus }) => api(`/api/actionplans/${id}`, { method: 'PUT', body: JSON.stringify({ status }) }),
+    mutationFn: async ({ id, status, deficiencyId }: { id: string; status: ActionPlanStatus; deficiencyId: string }) => {
+      // 1. Update Action Plan Status
+      await api(`/api/actionplans/${id}`, { method: 'PUT', body: JSON.stringify({ 
+        status,
+        completionDate: status === 'Resolved' || status === 'Verified' ? Date.now() : undefined
+      }) });
+
+      // 2. Sync Deficiency Status based on Action Plan (SK-5 Requirement)
+      let defStatus: Deficiency['status'] = 'Open';
+      if (status === 'Resolved') defStatus = 'Remediated';
+      if (status === 'Verified') defStatus = 'Verified';
+      
+      await api(`/api/deficiencies/${deficiencyId}`, { method: 'PUT', body: JSON.stringify({ status: defStatus }) });
+    },
     onSuccess: () => {
-      toast.success("Action plan status updated.");
+      toast.success("Status updated and synchronized.");
       queryClient.invalidateQueries({ queryKey: ['actionplans'] });
+      queryClient.invalidateQueries({ queryKey: ['deficiencies'] });
     },
     onError: (error) => {
       toast.error(`Update failed: ${error.message}`);
@@ -170,11 +184,12 @@ export function DeficiencyBoard() {
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
-      const activeContainer = findContainer(active.id as string);
+      const plan = actionPlans.find(p => p.id === active.id);
+      const activeContainer = plan?.status;
       const overContainerId = over.data.current?.sortable?.containerId || over.id;
       const overContainer = KANBAN_COLUMNS.includes(overContainerId as any) ? overContainerId as ActionPlanStatus : null;
 
-      if (activeContainer && overContainer && activeContainer !== overContainer) {
+      if (plan && activeContainer && overContainer && activeContainer !== overContainer) {
         setActionPlans(previousPlans => {
           const activeIndex = previousPlans.findIndex(ap => ap.id === active.id);
           if (activeIndex === -1) return previousPlans;
@@ -184,10 +199,14 @@ export function DeficiencyBoard() {
           return newPlans;
         });
         
-        planMutation.mutate({ id: active.id as string, status: overContainer });
+        planMutation.mutate({ 
+          id: active.id as string, 
+          status: overContainer, 
+          deficiencyId: plan.deficiencyId 
+        });
       }
     }
-  }, [findContainer, planMutation]);
+  }, [actionPlans, findContainer, planMutation]);
 
   const isLoading = deficienciesLoading || actionPlansLoading;
   const mockRole = localStorage.getItem('mockRole') || 'Line 1';

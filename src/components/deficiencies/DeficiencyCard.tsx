@@ -68,6 +68,27 @@ export function DeficiencyCard({ deficiency, actionPlan }: DeficiencyCardProps) 
                 ))}
              </div>
           </div>
+
+          {(deficiency.correctiveActionTaken || deficiency.remediationEvidence) && (
+            <div className="pt-2 border-t border-muted space-y-2">
+              {deficiency.correctiveActionTaken && (
+                <div className="space-y-1">
+                  <div className="text-[10px] font-bold text-green-700 uppercase">Corrective Action Taken</div>
+                  <p className="text-[11px] leading-tight text-muted-foreground italic">
+                    {deficiency.correctiveActionTaken}
+                  </p>
+                </div>
+              )}
+              {deficiency.remediationEvidence && (
+                <div className="space-y-1">
+                  <div className="text-[10px] font-bold text-blue-700 uppercase">Remediation Evidence</div>
+                  <div className="flex items-center gap-1 text-[11px] text-blue-600 bg-blue-50 px-2 py-1 rounded border border-blue-100 w-fit">
+                    <History className="h-3 w-3" /> {deficiency.remediationEvidence}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
     </motion.div>

@@ -228,13 +228,15 @@ export interface Deficiency {
   severity: DeficiencySeverity;
   identifiedDate: number; // epoch millis
   identifiedBy: string; // User ID
-  status: "Open" | "Remediated";
+  status: "Open" | "Remediated" | "Verified" | "Closed";
   relatedAssertions: ControlAssertion[];
   // SK-5 Requirement: Compensating Controls (Bab VII 1.1.e)
   compensatingControlIds?: string[]; 
   rootCause?: string;
   magnitude?: number; // Value exposed to risk
   likelihood?: "Low" | "Medium" | "High";
+  remediationEvidence?: string;
+  correctiveActionTaken?: string;
 }
 
 export interface ActionPlan {
@@ -244,6 +246,7 @@ export interface ActionPlan {
   ownerId: string; // User ID
   dueDate: number; // epoch millis
   status: ActionPlanStatus;
+  completionDate?: number;
 }
 
 // SK-5 Requirement: Lampiran 6 - Log Perubahan
