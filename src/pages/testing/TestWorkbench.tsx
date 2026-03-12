@@ -22,8 +22,9 @@ import { getSuggestedSampleRange, isReadyForRemediationTest } from '@/lib/compli
 import type { Control, TestRecord, Deficiency, User } from '@shared/types';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
-import { AlertTriangle, Info, Clock, CheckCircle2, XCircle, History, ListFilter } from 'lucide-react';
+import { AlertTriangle, Info, Clock, CheckCircle2, XCircle, History, ListFilter, UserCheck } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
 
 const testSchema = z.object({
   testType: z.enum(['TOD', 'TOE']),
@@ -182,6 +183,16 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
           </div>
         </CardHeader>
         <CardContent className="pt-6">
+          {control.line2Validation?.status === 'Validated' && (
+            <div className="mb-6 p-3 bg-green-50 border border-green-100 rounded-md flex items-center gap-3">
+              <UserCheck className="h-4 w-4 text-green-600" />
+              <div className="text-[11px] text-green-800">
+                <span className="font-bold uppercase mr-2">Validated by Line 2:</span>
+                "{control.line2Validation.comments}" ({new Date(control.line2Validation.validatedDate!).toLocaleDateString()})
+              </div>
+            </div>
+          )}
+
           {remediationStatus && (
             <div className={cn(
               "mb-6 p-4 rounded-lg border flex items-start gap-3",
@@ -295,6 +306,7 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
                             </FormItem>
                           )} />
                         </div>
+
                         <FormField control={form.control} name="homogeneityJustification" render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Justifikasi Homogenitas (Wajib Bab V 1.3.a)</FormLabel>
@@ -389,6 +401,8 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
 }
 
 export function TestWorkbench() {
+  const [showOnlyValidated, setShowOnlyValidated] = React.useState(true);
+
   const { data: controlsData, isLoading: controlsLoading } = useQuery({
     queryKey: ['controls'],
     queryFn: () => api<{ items: Control[] }>('/api/controls'),
@@ -440,19 +454,36 @@ export function TestWorkbench() {
 
   const isLoading = controlsLoading || deficienciesLoading || testsLoading;
 
+  const filteredControls = controlsData?.items.filter(c => {
+    if (showOnlyValidated) return c.line2Validation?.status === 'Validated';
+    return true;
+  }) || [];
+
   return (
     <AppLayout container>
       <div className="max-w-6xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Testing Workbench</h1>
-          <p className="text-muted-foreground">Perform TOD and TOE for in-scope controls according to Regulation SK-5.</p>
+        <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Testing Workbench</h1>
+            <p className="text-muted-foreground">Perform TOD and TOE for in-scope controls according to Regulation SK-5.</p>
+          </div>
+          <div className="flex items-center gap-2 bg-muted/30 p-2 rounded-lg border">
+            <Switch 
+              id="validated-filter" 
+              checked={showOnlyValidated} 
+              onCheckedChange={setShowOnlyValidated} 
+            />
+            <Label htmlFor="validated-filter" className="text-xs font-bold cursor-pointer flex items-center gap-2">
+              <UserCheck className="h-3.5 w-3.5 text-green-600" /> Ready for Testing (L2 Validated)
+            </Label>
+          </div>
         </div>
         
         <Accordion type="single" collapsible className="w-full space-y-4">
           {isLoading ? (
             Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24 w-full" />)
-          ) : (
-            controlsData?.items.map(control => {
+          ) : filteredControls.length > 0 ? (
+            filteredControls.map(control => {
               const latestOpenDeficiency = deficienciesData?.items
                 .filter(d => d.controlId === control.id && d.status === 'Open')
                 .sort((a, b) => b.identifiedDate - a.identifiedDate)[0];
@@ -501,6 +532,14 @@ export function TestWorkbench() {
                 </AccordionItem>
               );
             })
+          ) : (
+            <div className="text-center py-20 bg-muted/10 rounded-xl border-2 border-dashed">
+              <ListFilter className="h-12 w-12 text-muted-foreground/40 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-muted-foreground">No controls match the current filter.</h3>
+              <p className="text-sm text-muted-foreground/60 max-w-xs mx-auto mt-1">
+                Toggle "Ready for Testing" or check if any controls have been validated by Line 2.
+              </p>
+            </div>
           )}
         </Accordion>
       </div>

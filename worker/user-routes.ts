@@ -250,6 +250,8 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     if (!await csa.exists()) return notFound(c, 'CSA record not found');
 
     const userId = (c as any).get('userId');
+    const csaState = await csa.getState();
+    
     await csa.mutate((s: any) => ({
       ...s,
       line2Status: status,
@@ -263,6 +265,20 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         comment: comments
       }],
     }));
+
+    // Sync status to the Control Entity for handover visibility
+    const control = new ControlEntity(c.env, csaState.controlId);
+    if (await control.exists()) {
+      await control.mutate((s: any) => ({
+        ...s,
+        line2Validation: {
+          status,
+          validatedBy: userId,
+          validatedDate: Date.now(),
+          comments
+        }
+      }));
+    }
 
     return ok(c, await csa.getState());
   });
