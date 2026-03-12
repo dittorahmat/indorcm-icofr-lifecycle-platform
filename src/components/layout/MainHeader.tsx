@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Shield, LayoutDashboard, ListChecks, FlaskConical, ClipboardX, BarChart, Menu, UploadCloud } from 'lucide-react';
+import { Shield, LayoutDashboard, ListChecks, FlaskConical, ClipboardX, BarChart, Menu, UploadCloud, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -10,6 +10,9 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { UserRole } from '@shared/types';
+import { api } from '@/lib/api-client';
+import { toast } from 'sonner';
+
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['Line 1', 'Line 2', 'Line 3', 'Admin'] },
   { href: '/rcm', label: 'RCM', icon: ListChecks, roles: ['Line 1', 'Line 2', 'Line 3', 'Admin'] },
@@ -19,22 +22,47 @@ const navItems = [
   { href: '/reports', label: 'Reports', icon: BarChart, roles: ['Line 2', 'Line 3', 'Admin'] },
   { href: '/import', label: 'Import', icon: UploadCloud, roles: ['Line 2'] },
 ];
-const roles: UserRole[] = ["Line 1", "Line 2", "Line 3", "Admin"];
+
+const roles: UserRole[] = ["Line 1", "Line 2", "Line 3", "Admin", "External Auditor"];
+
 export function MainHeader() {
   const [currentRole, setCurrentRole] = React.useState<UserRole>(() => (localStorage.getItem('mockRole') as UserRole) || 'Line 1');
+  const [isLoggingIn, setIsLoggingIn] = React.useState(false);
   const location = useLocation();
-  const handleRoleChange = React.useCallback((role: UserRole) => {
-    setCurrentRole(role);
-    localStorage.setItem('mockRole', role);
-    window.location.reload(); // Easiest way to refresh app state for demo
-  }, []);
+
+  const handleRoleChange = async (role: UserRole) => {
+    setIsLoggingIn(true);
+    try {
+      const { token, user } = await api<{ token: string, user: any }>('/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ role })
+      });
+      
+      localStorage.setItem('authToken', token);
+      localStorage.setItem('mockRole', role);
+      localStorage.setItem('userId', user.id);
+      
+      setCurrentRole(role);
+      toast.success(`Switched to ${role} context`);
+      
+      // Delay reload to allow toast visibility
+      setTimeout(() => window.location.reload(), 500);
+    } catch (err) {
+      toast.error("Failed to switch role context");
+      setIsLoggingIn(false);
+    }
+  };
+
   const visibleNavItems = navItems.filter(item => item.roles.includes(currentRole));
+
   const roleBadgeVariant = {
     'Line 1': 'default',
     'Line 2': 'secondary',
     'Line 3': 'destructive',
     'Admin': 'outline',
+    'External Auditor': 'outline',
   } as const;
+
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -62,10 +90,13 @@ export function MainHeader() {
           <div className="flex items-center gap-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm">Role: {currentRole}</Button>
+                <Button variant="outline" size="sm" disabled={isLoggingIn}>
+                  {isLoggingIn ? <Loader2 className="h-3 w-3 animate-spin mr-2" /> : null}
+                  Role: {currentRole}
+                </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuLabel>Switch Mock Role</DropdownMenuLabel>
+                <DropdownMenuLabel>Switch Role Context</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {roles.map(role => (
                   <DropdownMenuItem key={role} onClick={() => handleRoleChange(role)}>
@@ -82,7 +113,7 @@ export function MainHeader() {
                     <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
                     <AvatarFallback>CN</AvatarFallback>
                   </Avatar>
-                  <Badge variant={roleBadgeVariant[currentRole]} className="absolute -bottom-1 -right-2 text-xs px-1">{currentRole.split(' ')[1] || 'A'}</Badge>
+                  <Badge variant={roleBadgeVariant[currentRole as keyof typeof roleBadgeVariant]} className="absolute -bottom-1 -right-2 text-[10px] px-1 h-4">{currentRole.split(' ').pop()?.substring(0, 1)}</Badge>
                 </div>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -91,7 +122,10 @@ export function MainHeader() {
                 <DropdownMenuItem>Profile</DropdownMenuItem>
                 <DropdownMenuItem>Settings</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Logout</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => {
+                  localStorage.removeItem('authToken');
+                  window.location.reload();
+                }}>Logout</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             <div className="md:hidden">

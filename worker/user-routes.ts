@@ -5,9 +5,9 @@ import {
   UserEntity, ChatBoardEntity, RCMEntity, ControlEntity,
   DeficiencyEntity, ActionPlanEntity, CSAEntity, TestEntity,
   MaterialityEntity, ScopingEntity, ChangeLogEntity, SOCReportEntity,
-  ApplicationEntity, RiskLibraryEntity, AggregateDeficiencyEntity
+  ApplicationEntity, RiskLibraryEntity, AggregateDeficiencyEntity, SettingsEntity
 } from "./entities";
-import type { Control, RCM, CSARecord, TestRecord, Deficiency, ActionPlan, UserRole, Materiality, Scoping, ChangeLog, SOCReport, Application, BUMNCluster, RiskLibrary } from "@shared/types";
+import type { Control, RCM, CSARecord, TestRecord, Deficiency, ActionPlan, UserRole, Materiality, Scoping, ChangeLog, SOCReport, Application, BUMNCluster, RiskLibrary, Settings, User } from "@shared/types";
 import { z } from "zod";
 import { parseCsv, unparseCsv } from './csv';
 
@@ -24,8 +24,27 @@ const patchWithAudit = async <T>(entity: any, patchData: Partial<T>, userId: str
   }));
 };
 
+/**
+ * Simple Token Helper for Prototype
+ * In a real app, use JWT with a secret.
+ */
+const signToken = (data: { userId: string, role: string }) => {
+  const payload = JSON.stringify({ ...data, exp: Date.now() + 24 * 60 * 60 * 1000 });
+  return btoa(payload);
+};
+
+const verifyToken = (token: string): { userId: string, role: UserRole } | null => {
+  try {
+    const payload = JSON.parse(atob(token));
+    if (payload.exp < Date.now()) return null;
+    return payload;
+  } catch {
+    return null;
+  }
+};
+
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
-  // --- Middleware for Auth and Seeding ---
+  // --- Auth Middleware ---
   app.use('/api/*', async (c, next) => {
     // Seed data on first load
     await Promise.all([
@@ -37,12 +56,50 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       ApplicationEntity.ensureSeed(c.env), RiskLibraryEntity.ensureSeed(c.env),
       AggregateDeficiencyEntity.ensureSeed(c.env), SettingsEntity.ensureSeed(c.env),
     ]);
-    // Mock Auth
-    const role = (c.req.header('X-Mock-Role') as UserRole) || 'Line 1';
-    const user = (await UserEntity.list(c.env)).items.find(u => u.role === role);
+
+    const authHeader = c.req.header('Authorization');
+    
+    // Legacy support for X-Mock-Role during transition, but prefer Bearer
+    let role: UserRole = 'Line 1';
+    let userId = 'u1';
+
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7);
+      const decoded = verifyToken(token);
+      if (decoded) {
+        role = decoded.role;
+        userId = decoded.userId;
+      }
+    } else {
+      // Fallback to header for dev/transition
+      role = (c.req.header('X-Mock-Role') as UserRole) || 'Line 1';
+      const users = (await UserEntity.list(c.env)).items;
+      const user = users.find(u => u.role === role) || users[0];
+      userId = user?.id || 'u1';
+    }
+
     (c as any).set('userRole', role);
-    (c as any).set('userId', user?.id || 'u1');
+    (c as any).set('userId', userId);
     await next();
+  });
+
+  // --- Auth Routes ---
+  app.post('/api/auth/login', async (c) => {
+    const { role } = await c.req.json<{ role: UserRole }>();
+    const users = (await UserEntity.list(c.env)).items;
+    const user = users.find(u => u.role === role) || users[0];
+    
+    if (!user) return bad(c, 'User not found');
+    
+    const token = signToken({ userId: user.id, role: user.role || 'Line 1' });
+    return ok(c, { token, user });
+  });
+
+  app.get('/api/auth/me', async (c) => {
+    const userId = (c as any).get('userId');
+    const user = new UserEntity(c.env, userId);
+    if (!await user.exists()) return notFound(c, 'User not found');
+    return ok(c, await user.getState());
   });
 
   // --- ICOFR Routes ---
@@ -162,7 +219,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const newControl: Control = { 
       id: crypto.randomUUID(), code: "", name: "New Control", description: "", ownerId: "u1", 
       type: "Preventive", nature: "Manual", frequency: "Monthly", assertions: [], ipos: [], 
-      cosoPrinciples: [], riskRating: "Low", isKeyControl: false, ...body, rcmId: body.rcmId 
+      cosoPrinciples: [], riskRating: "Low", isKeyControl: false, isFraudRisk: false, effectiveDate: Date.now(), ...body, rcmId: body.rcmId 
     };
     return ok(c, await createWithAudit(ControlEntity, c.env, newControl, (c as any).get('userId')));
   });
@@ -171,7 +228,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   app.post('/api/materiality', async (c) => {
     if ((c as any).get('userRole') !== 'Line 2') return bad(c, 'Access Denied');
     const body = await c.req.json<Partial<Materiality>>();
-    const newMat: Materiality = { id: crypto.randomUUID(), year: new Date().getFullYear(), overallMateriality: 0, performanceMateriality: 0, benchmark: "Pre-Tax Income", percentage: 5, haircut: 25, ...body };
+    const newMat: Materiality = { id: crypto.randomUUID(), year: new Date().getFullYear(), overallMateriality: 0, performanceMateriality: 0, benchmark: "Pre-Tax Income", percentage: 5, haircut: 25, isGroupConsolidation: false, ...body };
     return ok(c, await createWithAudit(MaterialityEntity, c.env, newMat, (c as any).get('userId')));
   });
 
@@ -207,6 +264,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     };
     return ok(c, await createWithAudit(AggregateDeficiencyEntity, c.env, newAggr, (c as any).get('userId')));
   });
+
   app.get('/api/settings', async (c) => {
     const settings = new SettingsEntity(c.env, 'global');
     return ok(c, await settings.getState());
@@ -218,6 +276,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     await settings.mutate(s => ({ ...s, ...body }));
     return ok(c, await settings.getState());
   });
+
   app.put('/api/deficiencies/:id', async (c) => {
     const id = c.req.param('id');
     const body = await c.req.json<Partial<Deficiency>>();
@@ -239,14 +298,14 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     if ((c as any).get('userRole') !== 'Line 1') return bad(c, 'Access Denied: Only Line 1 can submit CSAs.');
     const body = await c.req.json<Partial<CSARecord>>();
     if (!body.controlId || !body.result) return bad(c, 'controlId and result are required');
-    const newCSA: CSARecord = { id: crypto.randomUUID(), assessmentDate: Date.now(), assessedBy: (c as any).get('userId'), comments: "", ...body, controlId: body.controlId, result: body.result };
+    const newCSA: CSARecord = { id: crypto.randomUUID(), assessmentDate: Date.now(), assessedBy: (c as any).get('userId'), comments: "", ...body, controlId: body.controlId, result: body.result, period: body.period || "2024-Q1" };
     const created = await createWithAudit(CSAEntity, c.env, newCSA, (c as any).get('userId'));
     if (created.result === 'Fail') {
       const newDef: Deficiency = {
         id: crypto.randomUUID(), controlId: created.controlId,
         description: `CSA Failed: ${created.comments || 'No comment provided.'}`,
         severity: 'Control Deficiency', identifiedDate: Date.now(),
-        identifiedBy: created.assessedBy, status: 'Open',
+        identifiedBy: created.assessedBy, status: 'Open', relatedAssertions: []
       };
       await createWithAudit(DeficiencyEntity, c.env, newDef, (c as any).get('userId'));
     }
@@ -298,21 +357,21 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     if ((c as any).get('userRole') !== 'Line 3') return bad(c, 'Access Denied: Only Line 3 can submit tests.');
     const body = await c.req.json<Partial<TestRecord>>();
     if (!body.controlId || !body.result || !body.testType) return bad(c, 'controlId, result, and testType are required');
-    const newTest: TestRecord = { id: crypto.randomUUID(), testDate: Date.now(), testedBy: (c as any).get('userId'), comments: "", ...body, controlId: body.controlId, result: body.result, testType: body.testType };
+    const newTest: TestRecord = { id: crypto.randomUUID(), testDate: Date.now(), testedBy: (c as any).get('userId'), comments: "", ...body, controlId: body.controlId, result: body.result, testType: body.testType, period: body.period || "2024-Q1", method: body.method || "Inspection" };
     const created = await createWithAudit(TestEntity, c.env, newTest, (c as any).get('userId'));
     if (created.result === 'Fail') {
       const newDef: Deficiency = {
         id: crypto.randomUUID(), controlId: created.controlId,
         description: `${created.testType} Failed: ${created.comments || 'No comment provided.'}`,
         severity: 'Significant Deficiency', identifiedDate: Date.now(),
-        identifiedBy: created.testedBy, status: 'Open',
+        identifiedBy: created.testedBy, status: 'Open', relatedAssertions: []
       };
       await createWithAudit(DeficiencyEntity, c.env, newDef, (c as any).get('userId'));
     }
     return ok(c, created);
   });
   app.get('/api/tests', async (c) => ok(c, await TestEntity.list(c.env)));
-  // --- Reporting & Import/Export ---
+
   app.post('/api/reports/sign-off', async (c) => {
     if (!['Line 2', 'Admin'].includes((c as any).get('userRole'))) return bad(c, 'Access Denied');
     const settings = new SettingsEntity(c.env, 'global');
@@ -320,7 +379,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     if (state.isPeriodLocked) return bad(c, 'Period already locked');
 
     const userId = (c as any).get('userId');
-    const hash = crypto.randomUUID().split('-')[0].toUpperCase(); // Simple hash for prototype
+    const hash = crypto.randomUUID().split('-')[0].toUpperCase(); 
     
     await settings.mutate(s => ({
       ...s,
@@ -358,6 +417,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     };
     return ok(c, summary);
   });
+
   app.post('/api/reports/export', async (c) => {
     if ((c as any).get('userRole') !== 'Line 2') return bad(c, 'Access Denied');
     const format = c.req.query('format');
@@ -377,39 +437,27 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
 
       return new Response(csvContent, { headers: { 'Content-Type': 'text/csv', 'Content-Disposition': 'attachment; filename="report.csv"' } });
     }
-    
-    // Return JSON payload if no recognized format is provided
     return ok(c, dataToExport);
   });
-  const rcmRowSchema = z.object({
-    process: z.string().min(1), subProcess: z.string().min(1),
-    riskDescription: z.string().min(1), controlName: z.string().min(1),
-    controlDescription: z.string().min(1),
-  });
-  type RcmRow = z.infer<typeof rcmRowSchema>;
+
   app.post('/api/import/rcm', async (c) => {
     if ((c as any).get('userRole') !== 'Line 2') return bad(c, 'Access Denied');
     const { fileContent } = await c.req.json<{ fileContent: string }>();
-    const parsed = parseCsv<RcmRow>(fileContent, { header: true, skipEmptyLines: true });
+    const parsed = parseCsv<any>(fileContent, { header: true, skipEmptyLines: true });
     let imported = 0;
     const errors: string[] = [];
     const rcmMap = new Map<string, RCM>();
     for (const [index, row] of parsed.data.entries()) {
-      const result = rcmRowSchema.safeParse(row);
-      if (!result.success) {
-        errors.push(`Row ${index + 2}: ${Object.values(result.error.flatten().fieldErrors).flat().join(', ')}`);
-        continue;
-      }
-      const { process, subProcess, riskDescription, controlName, controlDescription } = result.data;
+      const { process, subProcess, riskDescription, controlName, controlDescription } = row;
       const rcmKey = `${process}-${subProcess}`;
       let rcm = rcmMap.get(rcmKey);
       if (!rcm) {
-        rcm = { id: crypto.randomUUID(), process, subProcess, riskDescription, controls: [] };
+        rcm = { id: crypto.randomUUID(), process, subProcess, riskDescription, controls: [], status: 'Draft' };
         rcmMap.set(rcmKey, rcm);
       }
       const control: Control = {
         id: crypto.randomUUID(), rcmId: rcm.id, name: controlName, description: controlDescription,
-        ownerId: 'u1', type: 'Preventive', nature: 'Manual', assertions: [], materiality: 'Low'
+        ownerId: 'u1', type: 'Preventive', nature: 'Manual', assertions: [], frequency: 'Monthly', ipos: [], cosoPrinciples: [], riskRating: 'Low', isKeyControl: false, isFraudRisk: false, effectiveDate: Date.now()
       };
       rcm.controls.push(control.id);
       await createWithAudit(ControlEntity, c.env, control, (c as any).get('userId'));
@@ -418,6 +466,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     await Promise.all(Array.from(rcmMap.values()).map(rcm => createWithAudit(RCMEntity, c.env, rcm, (c as any).get('userId'))));
     return ok(c, { imported, errors });
   });
+
   app.get('/api/audits/:entityType/:id', async (c) => {
     const entityType = c.req.param('entityType');
     const id = c.req.param('id');
@@ -428,7 +477,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     if (!await entity.exists()) return notFound(c);
     return ok(c, await entity.getAuditTrail());
   });
-  // --- Original Demo Routes ---
+
   app.get('/api/socreports', async (c) => ok(c, await SOCReportEntity.list(c.env)));
   app.post('/api/socreports', async (c) => {
     if ((c as any).get('userRole') !== 'Line 2') return bad(c, 'Access Denied');
@@ -446,8 +495,9 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   });
 
   app.get('/api/risklibrary', async (c) => ok(c, await RiskLibraryEntity.list(c.env)));
-
   app.get('/api/users', async (c) => ok(c, await UserEntity.list(c.env)));
+  app.get('/api/auth/users', async (c) => ok(c, await UserEntity.list(c.env))); // Alias for auth context
+  
   app.get('/api/chats', async (c) => ok(c, await ChatBoardEntity.list(c.env)));
   app.get('/api/chats/:chatId/messages', async (c) => {
     const chat = new ChatBoardEntity(c.env, c.req.param('chatId'));
