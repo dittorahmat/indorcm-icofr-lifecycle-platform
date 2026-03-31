@@ -1,6 +1,6 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Shield, LayoutDashboard, ListChecks, FlaskConical, ClipboardX, BarChart, Menu, UploadCloud, Loader2 } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Shield, LayoutDashboard, ListChecks, FlaskConical, ClipboardX, BarChart, Menu, UploadCloud, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -10,7 +10,6 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { UserRole } from '@shared/types';
-import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
 
 const navItems = [
@@ -23,35 +22,10 @@ const navItems = [
   { href: '/import', label: 'Import', icon: UploadCloud, roles: ['Line 2'] },
 ];
 
-const roles: UserRole[] = ["Line 1", "Line 2", "Line 3", "Admin", "External Auditor"];
-
 export function MainHeader() {
-  const [currentRole, setCurrentRole] = React.useState<UserRole>(() => (localStorage.getItem('mockRole') as UserRole) || 'Line 1');
-  const [isLoggingIn, setIsLoggingIn] = React.useState(false);
+  const currentRole = (localStorage.getItem('mockRole') as UserRole) || 'Line 1';
   const location = useLocation();
-
-  const handleRoleChange = async (role: UserRole) => {
-    setIsLoggingIn(true);
-    try {
-      const { token, user } = await api<{ token: string, user: any }>('/api/auth/login', {
-        method: 'POST',
-        body: JSON.stringify({ role })
-      });
-      
-      localStorage.setItem('authToken', token);
-      localStorage.setItem('mockRole', role);
-      localStorage.setItem('userId', user.id);
-      
-      setCurrentRole(role);
-      toast.success(`Switched to ${role} context`);
-      
-      // Delay reload to allow toast visibility
-      setTimeout(() => window.location.reload(), 500);
-    } catch (err) {
-      toast.error("Failed to switch role context");
-      setIsLoggingIn(false);
-    }
-  };
+  const navigate = useNavigate();
 
   const visibleNavItems = navItems.filter(item => item.roles.includes(currentRole));
 
@@ -63,12 +37,20 @@ export function MainHeader() {
     'External Auditor': 'outline',
   } as const;
 
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('mockRole');
+    localStorage.removeItem('userId');
+    toast.success('Logout berhasil');
+    navigate('/');
+  };
+
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center gap-6">
-            <Link to="/" className="flex items-center gap-2 font-bold text-lg">
+            <Link to="/dashboard" className="flex items-center gap-2 font-bold text-lg">
               <Shield className="h-7 w-7 text-primary" />
               <span className="font-display">IndoRCM Pro</span>
             </Link>
@@ -88,23 +70,6 @@ export function MainHeader() {
             </nav>
           </div>
           <div className="flex items-center gap-4">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" disabled={isLoggingIn}>
-                  {isLoggingIn ? <Loader2 className="h-3 w-3 animate-spin mr-2" /> : null}
-                  Role: {currentRole}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuLabel>Switch Role Context</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {roles.map(role => (
-                  <DropdownMenuItem key={role} onClick={() => handleRoleChange(role)}>
-                    {role}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
             <ThemeToggle className="relative top-0 right-0" />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -122,10 +87,10 @@ export function MainHeader() {
                 <DropdownMenuItem>Profile</DropdownMenuItem>
                 <DropdownMenuItem>Settings</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => {
-                  localStorage.removeItem('authToken');
-                  window.location.reload();
-                }}>Logout</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Logout
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             <div className="md:hidden">

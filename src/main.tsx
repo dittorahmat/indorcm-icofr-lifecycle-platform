@@ -1,6 +1,6 @@
 import React, { StrictMode, lazy, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
-import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Navigate, Outlet } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { enableMapSet } from "immer";
 import '@/lib/errorReporter';
@@ -14,6 +14,8 @@ import '@/index.css';
 
 // Lazy load all pages for optimized bundle size
 const HomePage = lazy(() => import('@/pages/HomePage').then(module => ({ default: module.HomePage })));
+const LoginPage = lazy(() => import('@/pages/LoginPage').then(module => ({ default: module.LoginPage })));
+const WelcomePage = lazy(() => import('@/pages/WelcomePage').then(module => ({ default: module.WelcomePage })));
 const Dashboard = lazy(() => import('@/pages/Dashboard').then(module => ({ default: module.Dashboard })));
 const RCMList = lazy(() => import('@/pages/rcm/RCMList').then(module => ({ default: module.RCMList })));
 const CSAWorkspace = lazy(() => import('@/pages/csa/CSAWorkspace').then(module => ({ default: module.CSAWorkspace })));
@@ -29,24 +31,47 @@ const SOCMonitoringPage = lazy(() => import('@/pages/rcm/SOCMonitoringPage').the
 
 enableMapSet();
 const queryClient = new QueryClient();
+
+// Check if user is authenticated
+const isAuthenticated = () => {
+  return !!localStorage.getItem('authToken');
+};
+
+// Protected Route Component
+const ProtectedRoute = () => {
+  return isAuthenticated() ? <Outlet /> : <Navigate to="/" replace />;
+};
+
 const router = createBrowserRouter([
   {
-    element: <RootLayout />,
-    errorElement: <RouteErrorBoundary />,
+    path: "/",
+    element: <LoginPage />,
+  },
+  {
+    path: "/welcome",
+    element: <WelcomePage />,
+  },
+  {
+    element: <ProtectedRoute />,
     children: [
-      { path: "/", element: <PageSuspense><HomePage /></PageSuspense> },
-      { path: "/dashboard", element: <PageSuspense><Dashboard /></PageSuspense> },
-      { path: "/scoping", element: <PageSuspense><ScopingPage /></PageSuspense> },
-      { path: "/rcm", element: <PageSuspense><RCMList /></PageSuspense> },
-      { path: "/change-log", element: <PageSuspense><ChangeLogPage /></PageSuspense> },
-      { path: "/soc-monitoring", element: <PageSuspense><SOCMonitoringPage /></PageSuspense> },
-      { path: "/csa", element: <PageSuspense><CSAWorkspace /></PageSuspense> },
-      { path: "/testing", element: <PageSuspense><TestWorkbench /></PageSuspense> },
-      { path: "/deficiencies", element: <PageSuspense><DeficiencyBoard /></PageSuspense> },
-      { path: "/reports", element: <PageSuspense><ReportsPage /></PageSuspense> },
-      { path: "/wbs-recap", element: <PageSuspense><WBSPage /></PageSuspense> },
-      { path: "/audit-portal", element: <PageSuspense><ExternalAuditPortal /></PageSuspense> },
-      { path: "/import", element: <PageSuspense><ImportPage /></PageSuspense> },
+      {
+        element: <RootLayout />,
+        errorElement: <RouteErrorBoundary />,
+        children: [
+          { path: "/dashboard", element: <PageSuspense><Dashboard /></PageSuspense> },
+          { path: "/scoping", element: <PageSuspense><ScopingPage /></PageSuspense> },
+          { path: "/rcm", element: <PageSuspense><RCMList /></PageSuspense> },
+          { path: "/change-log", element: <PageSuspense><ChangeLogPage /></PageSuspense> },
+          { path: "/soc-monitoring", element: <PageSuspense><SOCMonitoringPage /></PageSuspense> },
+          { path: "/csa", element: <PageSuspense><CSAWorkspace /></PageSuspense> },
+          { path: "/testing", element: <PageSuspense><TestWorkbench /></PageSuspense> },
+          { path: "/deficiencies", element: <PageSuspense><DeficiencyBoard /></PageSuspense> },
+          { path: "/reports", element: <PageSuspense><ReportsPage /></PageSuspense> },
+          { path: "/wbs-recap", element: <PageSuspense><WBSPage /></PageSuspense> },
+          { path: "/audit-portal", element: <PageSuspense><ExternalAuditPortal /></PageSuspense> },
+          { path: "/import", element: <PageSuspense><ImportPage /></PageSuspense> },
+        ]
+      },
     ]
   },
   { path: "*", element: <Navigate to="/" replace /> },
