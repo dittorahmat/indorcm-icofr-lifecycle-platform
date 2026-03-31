@@ -18,8 +18,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle2, Wand2, Info, Plus, Network, AlertTriangle, Save, Loader2, Trash2, Target } from 'lucide-react';
+import { CheckCircle2, Wand2, Info, Plus, Network, AlertTriangle, Save, Loader2, Trash2, Target, Upload, Database, RefreshCw, FileJson } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Dialog,
   DialogContent,
@@ -30,6 +31,8 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { toast } from 'sonner';
+import Papa from 'papaparse';
+import { useDropzone } from 'react-dropzone';
 
 const materialitySchema = z.object({
   benchmark: z.enum(["Pre-Tax Income", "Revenue", "Assets", "Equity"]),
@@ -415,6 +418,196 @@ function InvesteeMonitoring({ overallMateriality, haircut, investees, onUpdate }
   );
 }
 
+interface GLUploadDialogProps {
+  onUpload: (accounts: SignificantAccount[]) => void;
+  pmThreshold: number;
+}
+
+function GLUploadDialog({ onUpload, pmThreshold }: GLUploadDialogProps) {
+  const [isProcessing, setIsProcessing] = React.useState(false);
+  const [open, setOpen] = React.useState(false);
+
+  const onDrop = React.useCallback((acceptedFiles: File[]) => {
+    const file = acceptedFiles[0];
+    if (!file) return;
+
+    setIsProcessing(true);
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: (results) => {
+        const data = results.data as any[];
+        const newAccounts: SignificantAccount[] = data.map(row => {
+          const name = row.Account || row.AccountName || row['Account Name'] || row.Name || '';
+          const balance = Number(row.Balance || row.Amount || row.EndingBalance || 0);
+          return {
+            name,
+            balance,
+            isQuantitative: balance >= pmThreshold,
+            qualitativeReasons: []
+          };
+        }).filter(a => a.name !== '');
+
+        onUpload(newAccounts);
+        setIsProcessing(false);
+        setOpen(false);
+        toast.success(`Successfully imported ${newAccounts.length} accounts from GL.`);
+      },
+      error: (error) => {
+        toast.error(`Failed to parse CSV: ${error.message}`);
+        setIsProcessing(false);
+      }
+    });
+  }, [onUpload, pmThreshold]);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({ 
+    onDrop,
+    accept: { 'text/csv': ['.csv'] },
+    multiple: false
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" className="gap-2 border-primary/30 hover:bg-primary/5">
+          <Upload className="h-4 w-4" /> Upload GL Data
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Upload General Ledger</DialogTitle>
+          <DialogDescription>
+            Upload a CSV file containing your GL accounts and balances. 
+            Accounts with balances above {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(pmThreshold)} will be auto-flagged as significant.
+          </DialogDescription>
+        </DialogHeader>
+        <div 
+          {...getRootProps()} 
+          className={cn(
+            "mt-4 border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-colors",
+            isDragActive ? "border-primary bg-primary/5" : "border-muted-foreground/20 hover:border-primary/50"
+          )}
+        >
+          <input {...getInputProps()} />
+          <div className="flex flex-col items-center gap-2">
+            <div className="p-3 rounded-full bg-primary/10">
+              <FileJson className="h-8 w-8 text-primary" />
+            </div>
+            {isProcessing ? (
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <Loader2 className="h-4 w-4 animate-spin" /> Processing file...
+              </div>
+            ) : (
+              <>
+                <p className="text-sm font-medium">Click or drag CSV file to upload</p>
+                <p className="text-xs text-muted-foreground">Requirements: CSV with 'Account' and 'Balance' columns</p>
+              </>
+            )}
+          </div>
+        </div>
+        <div className="mt-4 p-3 bg-muted/30 rounded-lg border text-[11px] text-muted-foreground flex gap-2">
+          <Info className="h-4 w-4 shrink-0 text-blue-500" />
+          <p>Sistem akan memetakan kolom secara otomatis berdasarkan nama header yang umum digunakan (Account, Balance, Amount, etc).</p>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function ERPSyncCard() {
+  const [isSyncing, setIsSyncing] = React.useState(false);
+  const [lastSync, setLastSync] = React.useState<Date | null>(new Date());
+  const [provider, setProvider] = React.useState("SAP S/4HANA");
+  const [schedule, setSchedule] = React.useState("Daily");
+
+  const handleSync = () => {
+    setIsSyncing(true);
+    // Simulate ETL process
+    setTimeout(() => {
+      setIsSyncing(false);
+      setLastSync(new Date());
+      toast.success("ERP Data Synchronization complete (Simulation). Scoping matrix updated with latest GL values.");
+    }, 2500);
+  };
+
+  return (
+    <Card className="border-indigo-200 bg-indigo-50/20 overflow-hidden relative">
+      <div className="absolute top-0 right-0 p-4 opacity-10">
+        <Database className="h-24 w-24 text-indigo-900" />
+      </div>
+      <CardHeader>
+        <div className="flex justify-between items-start">
+          <div>
+            <CardTitle className="text-indigo-900 flex items-center gap-2">
+              <RefreshCw className={cn("h-5 w-5", isSyncing && "animate-spin")} /> ERP Data Synchronization (Simulasi ETL)
+            </CardTitle>
+            <CardDescription className="text-indigo-700/70">
+              Konfigurasi integrasi otomatis dengan sistem ERP utama untuk penarikan saldo GL secara real-time.
+            </CardDescription>
+          </div>
+          <Badge variant="outline" className="bg-white/50 border-indigo-200 text-indigo-700">
+            {isSyncing ? "Syncing..." : "Connected"}
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-3">
+            <Label className="text-xs font-bold uppercase text-indigo-900/60">ERP Provider</Label>
+            <Select value={provider} onValueChange={setProvider}>
+              <SelectTrigger className="bg-white border-indigo-200"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="SAP S/4HANA">SAP S/4HANA</SelectItem>
+                <SelectItem value="Oracle ERP Cloud">Oracle ERP Cloud</SelectItem>
+                <SelectItem value="Microsoft Dynamics 365">Microsoft Dynamics 365</SelectItem>
+                <SelectItem value="Odoo Enterprise">Odoo Enterprise</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-3">
+            <Label className="text-xs font-bold uppercase text-indigo-900/60">Sync Schedule</Label>
+            <RadioGroup value={schedule} onValueChange={setSchedule} className="flex gap-4 mt-2">
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="Daily" id="daily" />
+                <Label htmlFor="daily" className="text-xs">Daily</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="Weekly" id="weekly" />
+                <Label htmlFor="weekly" className="text-xs">Weekly</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="Monthly" id="monthly" />
+                <Label htmlFor="monthly" className="text-xs">Monthly</Label>
+              </div>
+            </RadioGroup>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between p-4 bg-white/60 border border-indigo-100 rounded-xl">
+          <div className="flex items-center gap-3">
+            <div className={cn("p-2 rounded-lg", isSyncing ? "bg-indigo-100" : "bg-green-100")}>
+              <RefreshCw className={cn("h-5 w-5", isSyncing ? "text-indigo-600 animate-spin" : "text-green-600")} />
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-indigo-900">Status Integrasi Sehat</p>
+              <p className="text-[10px] text-indigo-700/60">Terakhir Sinkronisasi: {lastSync ? lastSync.toLocaleString('id-ID') : 'Never'}</p>
+            </div>
+          </div>
+          <Button 
+            variant="default" 
+            size="sm" 
+            className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200"
+            onClick={handleSync}
+            disabled={isSyncing}
+          >
+            {isSyncing ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Syncing...</> : "Sync Now"}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export function ScopingPage() {
   const queryClient = useQueryClient();
   const { data: materialityData, isLoading: matLoading } = useQuery({
@@ -432,6 +625,8 @@ export function ScopingPage() {
   const [localAccounts, setLocalAccounts] = React.useState<SignificantAccount[]>([]);
   const [localAllocations, setLocalAllocations] = React.useState<EntityMateriality[]>([]);
   const [localInvestees, setLocalInvestees] = React.useState<InvesteeMateriality[]>([]);
+  const mockRole = localStorage.getItem('mockRole') || 'Line 1';
+  const isLine2 = mockRole === 'Line 2';
 
   const { register, control, watch, setValue, reset, handleSubmit } = useForm<MaterialityForm>({
     resolver: zodResolver(materialitySchema),
@@ -566,7 +761,20 @@ export function ScopingPage() {
           <TabsContent value="scoping" className="space-y-6 pt-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Card className="md:col-span-2">
-                <CardHeader><div className="flex justify-between items-start"><CardTitle>Significant Accounts Matrix</CardTitle><QualitativeScopingWizard onAdd={(acc) => setLocalAccounts(prev => [...prev, acc])} /></div></CardHeader>
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <CardTitle>Significant Accounts Matrix</CardTitle>
+                    <div className="flex gap-2">
+                      {isLine2 && (
+                        <GLUploadDialog 
+                          pmThreshold={performanceMateriality} 
+                          onUpload={(newAccs) => setLocalAccounts(prev => [...prev, ...newAccs])} 
+                        />
+                      )}
+                      <QualitativeScopingWizard onAdd={(acc) => setLocalAccounts(prev => [...prev, acc])} />
+                    </div>
+                  </div>
+                </CardHeader>
                 <CardContent>
                   <Table>
                     <TableHeader><TableRow><TableHead>Account Name</TableHead><TableHead className="text-right">Balance</TableHead><TableHead>Reason</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
@@ -592,6 +800,8 @@ export function ScopingPage() {
                 </CardContent>
               </Card>
             </div>
+
+            {isLine2 && <ERPSyncCard />}
           </TabsContent>
 
           <TabsContent value="investee" className="space-y-6 pt-4">
