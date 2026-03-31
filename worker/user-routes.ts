@@ -10,6 +10,8 @@ import {
 import type { Control, RCM, CSARecord, TestRecord, Deficiency, ActionPlan, UserRole, Materiality, Scoping, ChangeLog, SOCReport, Application, BUMNCluster, RiskLibrary, Settings, User } from "@shared/types";
 import { z } from "zod";
 import { parseCsv, unparseCsv } from './csv';
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { ICOFR_KNOWLEDGE_BASE, METADATA } from './knowledge-base';
 
 const createWithAudit = async <T extends { id: string }>(Entity: any, env: Env, data: T, userId: string) => {
   const auditableData = { ...data, auditTrail: [{ action: 'created', userId, timestamp: Date.now() }] };
@@ -503,5 +505,121 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const chat = new ChatBoardEntity(c.env, c.req.param('chatId'));
     if (!await chat.exists()) return notFound(c, 'chat find failed');
     return ok(c, await chat.listMessages());
+  });
+
+  // === AI Chatbot Endpoint ===
+  // Simple in-memory rate limiting for development
+  const rateLimitStore = new Map<string, { count: number; resetDate: number }>();
+  
+  app.post('/api/ai/chat', async (c) => {
+    // Validate API key
+    const apiKey = c.env.GEMINI_API_KEY;
+    if (!apiKey || apiKey === 'YOUR_GEMINI_API_KEY_HERE') {
+      console.error('[AI CHAT] GEMINI_API_KEY not configured');
+      return bad(c, 'GEMINI_API_KEY not configured. Please set your API key in wrangler.jsonc or .dev.vars');
+    }
+
+    // Parse request body
+    let body: { message: string; conversationHistory?: Array<{ role: string; content: string }> };
+    try {
+      body = await c.req.json();
+    } catch (e) {
+      return bad(c, 'Invalid request body');
+    }
+
+    const { message, conversationHistory = [] } = body;
+
+    if (!message || typeof message !== 'string') {
+      return bad(c, 'Message is required and must be a string');
+    }
+
+    // Simple in-memory rate limiting
+    const clientId = c.req.header('X-Forwarded-For') || c.req.header('CF-Connecting-IP') || 'unknown';
+    const now = Date.now();
+    const dayMs = 86400000; // 24 hours in ms
+    
+    let rateLimitData = rateLimitStore.get(clientId);
+    
+    // Reset if expired or initialize
+    if (!rateLimitData || now > rateLimitData.resetDate) {
+      rateLimitData = { count: 0, resetDate: now + dayMs };
+      rateLimitStore.set(clientId, rateLimitData);
+    }
+
+    if (rateLimitData.count >= 100) {
+      return bad(c, 'Rate limit exceeded (100 requests/day). Please try again tomorrow.', 429);
+    }
+
+    // Increment counter
+    rateLimitData.count++;
+
+    try {
+      // Initialize Gemini
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({
+        model: "gemini-2.5-flash-lite",
+        systemInstruction: `Anda adalah Asisten AI ICOFR yang membantu pengguna memahami regulasi Pengendalian Internal atas Pelaporan Keuangan (ICOFR) berdasarkan SK-5/DKU.MBU/11/2024.
+
+Jawablah pertanyaan dengan akurat berdasarkan dokumen yang disediakan di bawah ini.
+Sebutkan referensi BAB dan Pasal jika relevan.
+
+Jika pertanyaan tidak terkait ICOFR, jawab dengan sopan bahwa Anda hanya dapat membantu pertanyaan tentang ICOFR.
+
+Bahasa: Bahasa Indonesia
+
+--- DOKUMEN ICOFR ---
+${ICOFR_KNOWLEDGE_BASE}
+--- END DOKUMEN ---`
+      });
+
+      // Build conversation history (last 10 messages)
+      const recentHistory = conversationHistory.slice(-10);
+      const chat = model.startChat({
+        history: recentHistory.map(msg => ({
+          role: msg.role === 'user' ? 'user' : 'model',
+          parts: [{ text: msg.content }]
+        }))
+      });
+
+      // Send message and get response
+      const result = await chat.sendMessage(message);
+      const response = await result.response;
+      const responseText = response.text();
+
+      // Log for monitoring
+      console.log('[AI CHAT] Success:', {
+        clientId,
+        messageLength: message.length,
+        responseLength: responseText.length,
+        requestCount: rateLimitData.count
+      });
+
+      return ok(c, {
+        response: responseText,
+        sources: [] // Can be enhanced to extract specific references
+      });
+
+    } catch (error: any) {
+      console.error('[AI CHAT] Error:', {
+        message: error.message,
+        stack: error.stack,
+        clientId
+      });
+
+      // Handle specific errors
+      if (error.message?.includes('API key')) {
+        return bad(c, 'Invalid GEMINI_API_KEY');
+      }
+
+      if (error.message?.includes('quota') || error.message?.includes('rate limit')) {
+        return bad(c, 'Gemini API quota exceeded. Please try again later.', 429);
+      }
+
+      if (error.message?.includes('timeout')) {
+        return bad(c, 'Request timeout. Please try again.', 504);
+      }
+
+      return bad(c, `AI service error: ${error.message}`, 500);
+    }
   });
 }

@@ -50,6 +50,73 @@ IndoRCM Pro centralizes the 5-step ICOFR lifecycle required for BUMN compliance:
 3.  **Setup**:
     - Run `bun cf-typegen` to generate Worker types.
 
+## AI Chatbot Assistant
+
+IndoRCM Pro includes an AI-powered chatbot assistant to help you understand ICOFR regulations.
+
+### Features
+
+- **Smart Q&A**: Ask questions about SK-5/DKU.MBU/11/2024 and get instant answers
+- **Context-Aware**: Remembers conversation history for follow-up questions
+- **Regulation Reference**: Cites specific BAB and Pasal when relevant
+- **Rate Limited**: 100 requests per day per user for fair usage
+
+### Setup
+
+1. **Get Gemini API Key**:
+   - Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
+   - Sign in with your Google account
+   - Create a new API key
+
+2. **Configure API Key**:
+   - Open `wrangler.jsonc`
+   - Replace `YOUR_GEMINI_API_KEY_HERE` with your actual API key:
+   ```jsonc
+   {
+     "vars": {
+       "GEMINI_API_KEY": "your-actual-api-key-here"
+     }
+   }
+   ```
+
+3. **Deploy**:
+   ```bash
+   bun run deploy
+   ```
+
+### Usage
+
+- Click the 🤖 **floating button** at bottom-right corner of Dashboard
+- Type your question (e.g., "Apa itu Test of One?", "Jelaskan BAB III Pasal 5")
+- Press Enter or click Send
+- Chat history is automatically saved locally
+
+### Model Information
+
+- **Model**: Gemini 2.5 Flash Lite (`gemini-2.5-flash-lite`)
+- **Knowledge Base**: SK-5/DKU.MBU/11/2024 (119 pages, 234K characters)
+- **Language**: Bahasa Indonesia
+
+### Troubleshooting
+
+**Error: "GEMINI_API_KEY not configured"**
+- Make sure you've set your API key in `wrangler.jsonc`
+- Restart the development server after changing the key
+
+**Error: "Rate limit exceeded"**
+- You've reached 100 requests for today
+- Wait until tomorrow or contact admin to increase limit
+
+**Error: "Invalid GEMINI_API_KEY"**
+- Check your API key is correct
+- Ensure no extra spaces in the key
+- Verify API key is active in Google AI Studio
+
+**Slow responses**
+- Check your internet connection
+- Gemini API may be under high load
+- Consider upgrading to Gemini API paid tier for faster responses
+
 ## Development
 
 -   **Start Dev Server**: `bun dev` (Frontend: `http://localhost:3000`).

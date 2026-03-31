@@ -6,10 +6,12 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { api } from '@/lib/api-client';
 import type { RCM, Deficiency, Control } from '@shared/types';
 import { CheckCircle, AlertTriangle, Clock, ShieldCheck, UserCheck, Zap } from 'lucide-react';
+import { AIFabButton, AIChatModal } from '@/components/ai-chatbot';
 
 const ComplianceCharts = React.lazy(() => import('@/components/dashboard/ComplianceCharts').then(m => ({ default: m.ComplianceCharts })));
 
 export function Dashboard() {
+  const [isChatOpen, setIsChatOpen] = React.useState(false);
   const { data: rcmData, isLoading: rcmLoading } = useQuery({
     queryKey: ['rcm'],
     queryFn: () => api<{ items: RCM[] }>('/api/rcm'),
@@ -156,6 +158,10 @@ export function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* AI Chatbot */}
+      <AIFabButton isOpen={isChatOpen} onToggle={() => setIsChatOpen(!isChatOpen)} />
+      <AIChatModal isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
     </AppLayout>
   );
 }
