@@ -30,6 +30,12 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { GLDataIntake } from '@/components/scoping/GLDataIntake';
 import { toast } from 'sonner';
 import Papa from 'papaparse';
@@ -784,6 +790,26 @@ export function ScopingPage() {
                     <div className="space-y-2">
                       <div className="flex justify-between items-center"><Label>Haircut for PM (%)</Label><HaircutWizard onApply={(val) => setValue("haircut", val)} /></div>
                       <Input type="number" {...register("haircut", { valueAsNumber: true })} />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <Label>% OM (Overall Materiality)</Label>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-[300px]">
+                              <p className="text-xs">Referensi: <strong>SK-5/2024 Table 3</strong></p>
+                              <p className="text-xs mt-1">
+                                Judgment profesional: <strong>5%</strong> untuk profit-based benchmarks (Pre-Tax Income), 
+                                <strong>1%</strong> untuk asset/revenue-based benchmarks (Assets, Revenue).
+                              </p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                      <Input type="number" {...register("percentage", { valueAsNumber: true })} />
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-muted/20 p-6 rounded-lg border-2 border-primary/10">

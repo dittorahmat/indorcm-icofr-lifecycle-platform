@@ -1,10 +1,12 @@
 import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-  LineChart, Line, AreaChart, Area, PieChart, Pie, Cell 
+  LineChart, Line, AreaChart, Area, PieChart, Pie, Cell,
+  ScatterChart, Scatter, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
 } from 'recharts';
 import { 
   BrainCircuit, 
@@ -17,9 +19,11 @@ import {
   Zap, 
   AlertTriangle,
   CheckCircle2,
-  Clock
+  Clock,
+  ArrowLeft
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { AI_DRILLDOWN_DATA } from '@shared/ai-mock-data';
 
 const MOCK_COMPANY = "PT BATUBARA NUSANTARA SEJAHTERA";
 
@@ -216,36 +220,227 @@ function AnalyticsTab() {
 }
 
 function AICasesTab() {
+  const [selectedCaseId, setSelectedCaseId] = React.useState<string | null>(null);
+
   const useCases = [
-    { title: "Fraud Detection", icon: <ShieldAlert className="h-6 w-6" />, desc: "Anomali pada pengadaan jasa kontraktor dan klaim lembur.", status: "LIVE", color: "text-red-600 bg-red-50 border-red-100" },
-    { title: "Anomaly Journal Entry", icon: <FileSearch className="h-6 w-6" />, desc: "Pattern matching untuk mendeteksi 'Unusual Description' dan 'Account Mismatch'.", status: "LIVE", color: "text-indigo-600 bg-indigo-50 border-indigo-100" },
-    { title: "Predictive Control Failure", icon: <AlertTriangle className="h-6 w-6" />, desc: "Forecasting kegagalan kontrol berdasarkan tren historis (Early Warning).", status: "BETA", color: "text-amber-600 bg-amber-50 border-amber-100" },
-    { title: "NLP Contract Review", icon: <Search className="h-6 w-6" />, desc: "Review otomatis klausul 'Penalty' dan 'Escalation' pada kontrak PKP2B.", status: "LIVE", color: "text-blue-600 bg-blue-50 border-blue-100" },
-    { title: "Vendor Risk Scoring", icon: <UserCheck className="h-6 w-6" />, desc: "Scoring otomatis performa dan kepatuhan vendor kontraktor tambang.", status: "BETA", color: "text-purple-600 bg-purple-50 border-purple-100" },
-    { title: "Predictive Maintenance", icon: <Zap className="h-6 w-6" />, desc: "Korelasi biaya maintenance alat berat vs umur operasional.", status: "POC", color: "text-orange-600 bg-orange-50 border-orange-100" },
+    { id: "fraud-detection", title: "Fraud Detection", icon: <ShieldAlert className="h-6 w-6" />, desc: "Anomali pada pengadaan jasa kontraktor dan klaim lembur.", status: "LIVE", color: "text-red-600 bg-red-50 border-red-100" },
+    { id: "anomaly-journal", title: "Anomaly Journal Entry", icon: <FileSearch className="h-6 w-6" />, desc: "Pattern matching untuk mendeteksi 'Unusual Description' dan 'Account Mismatch'.", status: "LIVE", color: "text-indigo-600 bg-indigo-50 border-indigo-100" },
+    { id: "predictive-control", title: "Predictive Control Failure", icon: <AlertTriangle className="h-6 w-6" />, desc: "Forecasting kegagalan kontrol berdasarkan tren historis (Early Warning).", status: "BETA", color: "text-amber-600 bg-amber-50 border-amber-100" },
+    { id: "nlp-contracts", title: "NLP Contract Review", icon: <Search className="h-6 w-6" />, desc: "Review otomatis klausul 'Penalty' dan 'Escalation' pada kontrak PKP2B.", status: "LIVE", color: "text-blue-600 bg-blue-50 border-blue-100" },
+    { id: "vendor-risk", title: "Vendor Risk Scoring", icon: <UserCheck className="h-6 w-6" />, desc: "Scoring otomatis performa dan kepatuhan vendor kontraktor tambang.", status: "BETA", color: "text-purple-600 bg-purple-50 border-purple-100" },
+    { id: "predictive-maintenance", title: "Predictive Maintenance", icon: <Zap className="h-6 w-6" />, desc: "Korelasi biaya maintenance alat berat vs umur operasional.", status: "POC", color: "text-orange-600 bg-orange-50 border-orange-100" },
   ];
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      {useCases.map((uc) => (
-        <Card key={uc.title} className="hover:shadow-lg transition-shadow overflow-hidden group">
-          <CardHeader className={cn("pb-4", uc.color)}>
-            <div className="flex items-center justify-between">
-              <div className="p-2 bg-white rounded-lg shadow-sm">{uc.icon}</div>
-              <Badge variant="outline" className="bg-white/50 text-[10px] font-bold">{uc.status}</Badge>
-            </div>
-            <CardTitle className="mt-4 text-lg font-black tracking-tight">{uc.title}</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-4">
-            <p className="text-sm text-slate-600 leading-relaxed italic">"{uc.desc}"</p>
-            <div className="mt-6 flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-              <span>Model Accuracy: 94.2%</span>
-              <span className="group-hover:text-primary cursor-pointer transition-colors">Details →</span>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+    <div className="relative min-h-[600px]">
+      <AnimatePresence mode="wait">
+        {selectedCaseId ? (
+          <motion.div
+            key="detail"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+            className="absolute inset-0"
+          >
+            <AIDrilldownView 
+              useCase={useCases.find(u => u.id === selectedCaseId)} 
+              onBack={() => setSelectedCaseId(null)} 
+            />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="grid"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.3 }}
+            className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
+          >
+            {useCases.map((uc) => (
+              <motion.div layoutId={`card-${uc.id}`} key={uc.id}>
+                <Card 
+                  className="h-full hover:shadow-lg transition-shadow overflow-hidden group cursor-pointer"
+                  onClick={() => setSelectedCaseId(uc.id)}
+                >
+                  <CardHeader className={cn("pb-4 h-full", uc.color)}>
+                    <div className="flex items-center justify-between">
+                      <div className="p-2 bg-white rounded-lg shadow-sm">{uc.icon}</div>
+                      <Badge variant="outline" className="bg-white/50 text-[10px] font-bold">{uc.status}</Badge>
+                    </div>
+                    <CardTitle className="mt-4 text-lg font-black tracking-tight">{uc.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-4">
+                    <p className="text-sm text-slate-600 leading-relaxed italic">"{uc.desc}"</p>
+                    <div className="mt-6 flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                      <span>Model Accuracy: 94.2%</span>
+                      <span className="group-hover:text-primary transition-colors">Details →</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
+  );
+}
+
+function AIDrilldownView({ useCase, onBack }: { useCase: any, onBack: () => void }) {
+  const data = AI_DRILLDOWN_DATA[useCase.id];
+
+  if (!data) return null;
+
+  const mainColorClass = useCase.color.split(' ')[0]; // e.g., "text-red-600"
+  
+  const colorMap: Record<string, string> = {
+    "text-red-600": "#dc2626",
+    "text-indigo-600": "#4f46e5",
+    "text-amber-600": "#d97706",
+    "text-blue-600": "#2563eb",
+    "text-purple-600": "#9333ea",
+    "text-orange-600": "#ea580c"
+  };
+
+  const activeColor = colorMap[mainColorClass] || "#6366f1";
+
+  return (
+    <motion.div layoutId={`card-${useCase.id}`} className="h-full">
+      <Card className="min-h-[600px] border-slate-200/60 shadow-xl overflow-hidden flex flex-col h-full">
+        <CardHeader className={cn("pb-6 transition-colors duration-500", useCase.color)}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={onBack}
+                className="p-2 hover:bg-white/20 rounded-lg transition-colors text-current group"
+              >
+                <ArrowLeft className="h-5 w-5 group-hover:-translate-x-1 transition-transform" />
+              </button>
+              <div className="p-2 bg-white rounded-lg shadow-sm">{useCase.icon}</div>
+              <div>
+                <CardTitle className="text-2xl font-black tracking-tighter">{useCase.title}</CardTitle>
+                <CardDescription className="text-current opacity-70">Analytical Workbench & Pattern Discovery</CardDescription>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Badge className="bg-white text-slate-900 font-bold uppercase tracking-tighter px-2 py-0.5">{useCase.status}</Badge>
+              <Badge variant="outline" className="border-white/30 text-white bg-white/10 uppercase tracking-tighter">Mining Cluster</Badge>
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent className="p-6 space-y-8 flex-1 overflow-auto">
+
+        {/* Metric Row */}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          {data.metrics.map((m, i) => (
+            <div key={i} className="p-4 rounded-xl border bg-slate-50/50 border-slate-200/60 shadow-sm space-y-1">
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{m.label}</p>
+              <div className="flex items-center justify-between">
+                <span className="text-2xl font-black tracking-tight">{m.value}</span>
+                {m.trend && (
+                  <TrendingUp className={cn(
+                    "h-4 w-4",
+                    m.trend === 'up' ? "text-green-500" : "text-red-500"
+                  )} />
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Chart Section */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-bold uppercase tracking-tight text-slate-600 flex items-center gap-2">
+              <Activity className="h-4 w-4" /> {data.chart.title}
+            </h3>
+            <span className="text-[10px] font-mono text-slate-400">Visualization: {data.chart.type.toUpperCase()}</span>
+          </div>
+          
+          <div className="h-[300px] w-full bg-slate-50/30 rounded-xl border border-dashed border-slate-200 p-4">
+            <ResponsiveContainer width="100%" height="100%">
+              {data.chart.type === 'bar' ? (
+                <BarChart data={data.chart.data}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                  <XAxis dataKey={Object.keys(data.chart.data[0])[0]} fontSize={10} axisLine={false} tickLine={false} />
+                  <YAxis fontSize={10} axisLine={false} tickLine={false} />
+                  <Tooltip 
+                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                  />
+                  <Bar dataKey={Object.keys(data.chart.data[0])[1]} fill={activeColor} radius={[4, 4, 0, 0]} />
+                </BarChart>
+              ) : data.chart.type === 'line' ? (
+                <LineChart data={data.chart.data}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                  <XAxis dataKey={Object.keys(data.chart.data[0])[0]} fontSize={10} axisLine={false} tickLine={false} />
+                  <YAxis fontSize={10} axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                  <Line type="monotone" dataKey={Object.keys(data.chart.data[0])[1]} stroke={activeColor} strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                </LineChart>
+              ) : data.chart.type === 'scatter' ? (
+                <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <XAxis type="number" dataKey={Object.keys(data.chart.data[0])[0]} fontSize={10} axisLine={false} tickLine={false} />
+                  <YAxis type="number" dataKey={Object.keys(data.chart.data[0])[1]} fontSize={10} axisLine={false} tickLine={false} />
+                  <Tooltip cursor={{ strokeDasharray: '3 3' }} />
+                  <Scatter name="Data" data={data.chart.data} fill={activeColor} />
+                </ScatterChart>
+              ) : data.chart.type === 'radar' ? (
+                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data.chart.data}>
+                  <PolarGrid stroke="#e2e8f0" />
+                  <PolarAngleAxis dataKey="subject" fontSize={10} />
+                  <PolarRadiusAxis angle={30} domain={[0, 100]} fontSize={8} />
+                  <Radar name="Score" dataKey="A" stroke={activeColor} fill={activeColor} fillOpacity={0.6} />
+                </RadarChart>
+              ) : (
+                <div className="flex items-center justify-center h-full text-slate-300 italic">Unsupported chart type</div>
+              )}
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Findings Section */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between border-b pb-2">
+            <h3 className="text-sm font-bold uppercase tracking-tight text-slate-600 flex items-center gap-2">
+              <Search className="h-4 w-4" /> Discovery Log (Mock Data)
+            </h3>
+            <Badge variant="outline" className="text-[8px] font-black uppercase tracking-tighter">Real-time Analysis</Badge>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="text-slate-400 font-bold uppercase tracking-widest border-b">
+                  {Object.keys(data.findings[0]).map(k => (
+                    <th key={k} className="pb-2 px-2">{k.toUpperCase().replace('_', ' ')}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {data.findings.map((f, i) => (
+                  <tr key={i} className="hover:bg-slate-50 transition-colors">
+                    {Object.values(f).map((v: any, j) => (
+                      <td key={j} className="py-3 px-2 font-medium">
+                        {v === 'High' || v === 'Critical' || v === 'Fail' ? (
+                          <Badge className="bg-red-500 text-[8px] h-4 uppercase">{v}</Badge>
+                        ) : v === 'Pass' || v === 'Good' || v === 'Low Risk' ? (
+                          <Badge className="bg-green-500 text-[8px] h-4 uppercase">{v}</Badge>
+                        ) : (
+                          <span className="text-slate-700">{v}</span>
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+    </motion.div>
   );
 }
 

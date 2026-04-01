@@ -364,3 +364,22 @@ export interface ChatMessage {
   text: string;
   ts: number; // epoch millis
 }
+
+// --- AI & Analytics Types ---
+
+export interface AIUseCaseStat {
+  label: string;
+  value: string;
+  trend?: 'up' | 'down';
+}
+
+export interface AIUseCaseDrilldown {
+  id: string;
+  metrics: AIUseCaseStat[];
+  chart: {
+    type: 'bar' | 'line' | 'scatter' | 'radar';
+    title: string;
+    data: any[];
+  };
+  findings: any[]; // Table-friendly data
+}

@@ -4,7 +4,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { GripVertical, Users } from 'lucide-react';
+import { GripVertical, Users, History } from 'lucide-react';
 import type { Deficiency, ActionPlan } from '@shared/types';
 import { cn } from '@/lib/utils';
 import { getDeficiencyDistribution } from '@/lib/compliance-utils';

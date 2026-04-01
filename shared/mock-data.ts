@@ -870,8 +870,8 @@ export const MOCK_MATERIALITY: Materiality[] = [
   {
     id: 'mat-2024',
     year: 2024,
-    overallMateriality: 17500000000, // Rp 17.5B (5% of Pre-Tax Income Rp 350B)
-    performanceMateriality: 13125000000, // Rp 13.125B (75% of OM)
+    overallMateriality: 17500000000, // Rp 17.5B (5% of Pre-Tax Income Rp 345.3B from GL.csv)
+    performanceMateriality: 13125000000, // Rp 13.125B (75% of OM, 25% haircut)
     benchmark: 'Pre-Tax Income',
     percentage: 5,
     haircut: 25,
@@ -879,7 +879,14 @@ export const MOCK_MATERIALITY: Materiality[] = [
     subsidiaryCount: 1,
     multiplier: 1,
     entityAllocations: [],
-    investeeAllocations: []
+    investeeAllocations: [],
+    // Calculation from Sample Data GL.csv:
+    // Revenue (601xxxx): Rp 345,324,452,000
+    // COGS (602xxxx): Rp 45,079,200
+    // Operating Expenses (603xxxx): Rp 0
+    // Pre-Tax Income: Rp 345,279,372,800
+    // OM: Rp 345.3B × 5% = Rp 17.26B → rounded to Rp 17.5B
+    // PM: Rp 17.5B × 75% = Rp 13.125B
   }
 ];
 
@@ -888,18 +895,18 @@ export const MOCK_SCOPING: Scoping[] = [
     id: 'scope-2024',
     year: 2024,
     significantAccounts: [
-      { name: 'Kas dan Setara Kas', balance: 45000000000, isQuantitative: true },
-      { name: 'Piutang Usaha - Coal Sales', balance: 62000000000, isQuantitative: true },
-      { name: 'Persediaan Batubara - ROM', balance: 85000000000, isQuantitative: true },
-      { name: 'Persediaan Batubara - Cleaned', balance: 120000000000, isQuantitative: true },
-      { name: 'Aset Tetap - Mining Equipment', balance: 350000000000, isQuantitative: true },
-      { name: 'Biaya Pengembangan Tambang', balance: 180000000000, isQuantitative: true },
-      { name: 'Provisi Reklamasi (ARO)', balance: 95000000000, isQuantitative: true },
-      { name: 'Pendapatan - Coal Export', balance: 245000000000, isQuantitative: true },
-      { name: 'Pendapatan - Coal Domestic', balance: 105000000000, isQuantitative: true },
-      { name: 'Harga Pokok Penjualan', balance: 175000000000, isQuantitative: true },
-      { name: 'Beban Royalty', balance: 17500000000, isQuantitative: false, qualitativeReasons: ['Akun yang dipengaruhi oleh regulasi pemerintah', 'Kompleksitas perhitungan DMO vs export'] },
-      { name: 'Beban Reklamasi', balance: 8500000000, isQuantitative: false, qualitativeReasons: ['Akun yang memerlukan judgement tinggi', 'Estimasi berbasis mine plan'] }
+      { name: 'Kas dan Bank (1010100)', balance: 11622215994, isQuantitative: true, fsliCode: '1010100' },
+      { name: 'Piutang Usaha - PT AAA (1010201)', balance: 91285215502, isQuantitative: true, fsliCode: '1010201' },
+      { name: 'Piutang Usaha - PT BBB (1010202)', balance: 115576724009, isQuantitative: true, fsliCode: '1010202' },
+      { name: 'Persediaan Barang Hasil Tambang (1011000)', balance: 47357831548, isQuantitative: true, fsliCode: '1011000' },
+      { name: 'Uang Muka Sewa (1011200)', balance: 27729993950, isQuantitative: true, fsliCode: '1011200' },
+      { name: 'Hutang Usaha - Pihak Berelasi (1020501)', balance: 125751000000, isQuantitative: true, fsliCode: '1020501' },
+      { name: 'Aset Pajak Tangguhan (1021400)', balance: 85200765236, isQuantitative: true, fsliCode: '1021400' },
+      { name: 'Pendapatan - Export & Domestic (6010000)', balance: 345324452000, isQuantitative: true, fsliCode: '6010000' },
+      { name: 'Beban Pokok Pendapatan (6100000)', balance: 94245245545, isQuantitative: true, fsliCode: '6100000' },
+      { name: 'Beban Umum dan Administrasi (6120000)', balance: 3452434500, isQuantitative: false, qualitativeReasons: ['Akun dengan volume transaksi tinggi', 'Meliputi berbagai jenis beban operasional'] },
+      { name: 'Beban Royalty ( implied dari HPP)', balance: 17500000000, isQuantitative: false, qualitativeReasons: ['Akun yang dipengaruhi oleh regulasi pemerintah', 'Kompleksitas perhitungan DMO vs export'] },
+      { name: 'Beban Lain-Lain (6360000)', balance: 4979000044, isQuantitative: false, qualitativeReasons: ['Memerlukan review untuk klasifikasi yang tepat', 'Potensi misclassification ke expense accounts lain'] }
     ],
     significantLocations: ['Mine Site - Kalimantan Timur', 'Stockpile & Port Facility', 'Kantor Pusat Jakarta'],
     significantProcesses: ['Revenue & Receivables', 'Production & Inventory', 'Procure to Pay', 'Fixed Assets & Capex', 'Reclamation & Environmental']

@@ -135,11 +135,11 @@ export function AppSidebar(): JSX.Element {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="font-bold text-slate-900 uppercase text-[10px] tracking-widest">Deficiency</SidebarGroupLabel>
+          <SidebarGroupLabel className="font-bold text-slate-900 uppercase text-[10px] tracking-widest">Deficiency & Remediasi</SidebarGroupLabel>
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/deficiencies")}>
-                <Link to="/deficiencies"><AlertTriangle /> <span>Deficiency Board</span></Link>
+                <Link to="/deficiencies"><AlertTriangle /> <span>Remediation Tracker</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -169,13 +169,11 @@ export function AppSidebar(): JSX.Element {
                 <Link to="/wbs-recap"><FileBarChart /> <span>WBS Recap</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
-            {Array.from({ length: 11 }).map((_, i) => (
-              <SidebarMenuItem key={i}>
-                <SidebarMenuButton asChild isActive={isActive("/reports")}>
-                  <Link to="/reports"><FileText className="h-3 w-3 opacity-50" /> <span>Lampiran {i + 1}</span></Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={isActive("/reports")}>
+                <Link to="/reports"><FileText className="h-3 w-3 opacity-50" /> <span>Lampiran 11</span></Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
 
