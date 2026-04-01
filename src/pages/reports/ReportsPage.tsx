@@ -16,6 +16,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { RegulatoryAppendices } from '@/components/reports/RegulatoryAppendices';
+import { AIAnalyticsMockup } from '@/components/reports/AIAnalyticsMockup';
+import { RiskHeatmap } from '@/components/reports/RiskHeatmap';
 
 export function ReportsPage() {
   const queryClient = useQueryClient();
@@ -139,12 +141,19 @@ export function ReportsPage() {
             <TabsTrigger value="dashboard">Overview</TabsTrigger>
             <TabsTrigger value="management">Asesmen Manajemen</TabsTrigger>
             <TabsTrigger value="audit">Laporan Hasil Pengujian</TabsTrigger>
-            <TabsTrigger value="appendices" className="text-blue-700 font-bold border-b-2 border-transparent data-[state=active]:border-blue-600">Regulatory Appendices (Lmp 5-11)</TabsTrigger>
+            <TabsTrigger value="appendices">Regulatory Appendices</TabsTrigger>
+            <TabsTrigger value="analytics-hub" className="text-indigo-700 font-bold border-b-2 border-transparent data-[state=active]:border-indigo-600 gap-2">
+              <BrainCircuit className="h-3 w-3" /> Digital Analytics Hub
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="dashboard" className="space-y-6 pt-4">
             <div className="grid gap-6 md:grid-cols-3">
-              <Card>
+              <div className="md:col-span-2">
+                <RiskHeatmap />
+              </div>
+              <div className="space-y-6">
+                <Card>
                 <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Overall Effectiveness</CardTitle></CardHeader>
                 <CardContent>
                   <div className={cn("text-3xl font-bold", isEffective ? "text-green-600" : "text-red-600")}>
@@ -444,6 +453,10 @@ export function ReportsPage() {
 
           <TabsContent value="appendices" className="pt-4">
             <RegulatoryAppendices />
+          </TabsContent>
+
+          <TabsContent value="analytics-hub" className="pt-4">
+            <AIAnalyticsMockup />
           </TabsContent>
         </Tabs>
 

@@ -124,3 +124,25 @@ export const MOCK_CHANGELOG = [
     effective: "01 Mei 2026"
   }
 ];
+
+export const MOCK_HEATMAP_DATA = {
+  "High-High": [
+    { id: 1, title: "Mark-up Biaya Kontraktor OB Removal", process: "Procurement" },
+    { id: 2, title: "Manipulasi Tonase Coal Getting", process: "Production" },
+    { id: 3, title: "Ketidakefektifan Reklamasi Tambang (ESG)", process: "Environment" }
+  ],
+  "High-Medium": [
+    { id: 4, title: "Selisih Timbang Weighbridge > 5%", process: "Inventory" },
+    { id: 5, title: "Keterlambatan Pembayaran Royalty (PNBP)", process: "Finance" }
+  ],
+  "Medium-High": [
+    { id: 6, title: "Pengabaian Safety Procedure di PIT", process: "Operations" }
+  ],
+  "Medium-Medium": [
+    { id: 7, title: "Duplikasi Pembayaran Vendor Sparepart", process: "Finance" },
+    { id: 8, title: "Kelemahan Kontrol Akses ERP (SAP)", process: "ITGC" }
+  ],
+  "Low-Low": [
+    { id: 9, title: "Kesalahan Input Data Karyawan", process: "HR" }
+  ]
+};

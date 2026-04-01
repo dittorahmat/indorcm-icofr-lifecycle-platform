@@ -1,0 +1,134 @@
+import React from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
+import { MOCK_HEATMAP_DATA } from './mock-regulatory-data';
+import { Info, ExternalLink } from 'lucide-react';
+
+type RiskLevel = 'High' | 'Medium' | 'Low';
+
+interface CellProps {
+  qn: RiskLevel;
+  ql: RiskLevel;
+}
+
+const getOutcome = (qn: RiskLevel, ql: RiskLevel): { label: string, color: string, textColor: string } => {
+  if (qn === 'High') {
+    if (ql === 'High' || ql === 'Medium') return { label: 'TINGGI', color: 'bg-red-500 hover:bg-red-600', textColor: 'text-white' };
+    return { label: 'MEDIUM', color: 'bg-amber-400 hover:bg-amber-500', textColor: 'text-amber-950' };
+  }
+  if (qn === 'Medium') {
+    if (ql === 'High') return { label: 'TINGGI', color: 'bg-red-500 hover:bg-red-600', textColor: 'text-white' };
+    if (ql === 'Medium') return { label: 'MEDIUM', color: 'bg-amber-400 hover:bg-amber-500', textColor: 'text-amber-950' };
+    return { label: 'RENDAH', color: 'bg-green-500 hover:bg-green-600', textColor: 'text-white' };
+  }
+  // Low Qn
+  if (ql === 'High') return { label: 'MEDIUM', color: 'bg-amber-400 hover:bg-amber-500', textColor: 'text-amber-950' };
+  return { label: 'RENDAH', color: 'bg-green-500 hover:bg-green-600', textColor: 'text-white' };
+};
+
+export function RiskHeatmap() {
+  const levels: RiskLevel[] = ['High', 'Medium', 'Low'];
+
+  return (
+    <Card className="overflow-hidden border-slate-200 shadow-sm">
+      <CardHeader className="bg-slate-50/50 border-b pb-4">
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <CardTitle className="text-lg flex items-center gap-2">
+              Heatmap Risiko (SK-5/2024)
+            </CardTitle>
+            <CardDescription>Kombinasi Faktor Kuantitatif vs Kualitatif - PT BATUBARA NUSANTARA SEJAHTERA</CardDescription>
+          </div>
+          <Badge variant="outline" className="bg-white gap-1 text-[10px] font-bold">
+            <Info className="h-3 w-3" /> Tabel 12 Juknis
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="pt-8">
+        <div className="flex flex-col items-center">
+          <div className="grid grid-cols-[40px_1fr] gap-4 w-full max-w-[600px]">
+            {/* Y-Axis Label */}
+            <div className="flex flex-col justify-between py-10">
+              <span className="text-[10px] font-black text-slate-400 uppercase vertical-text -rotate-180 h-full flex items-center justify-center">Kuantitatif</span>
+            </div>
+
+            <div className="space-y-4">
+              <div className="grid grid-cols-3 gap-2">
+                {levels.map((qn) => (
+                  levels.slice().reverse().map((ql) => {
+                    const outcome = getOutcome(qn, ql);
+                    const key = `${qn}-${ql}`;
+                    const risks = MOCK_HEATMAP_DATA[key as keyof typeof MOCK_HEATMAP_DATA] || [];
+                    
+                    return (
+                      <Popover key={key}>
+                        <PopoverTrigger asChild>
+                          <button className={cn(
+                            "aspect-square rounded-lg flex flex-col items-center justify-center p-2 transition-all transform hover:scale-[1.02] shadow-sm relative group",
+                            outcome.color,
+                            outcome.textColor
+                          )}>
+                            <span className="text-[10px] font-black opacity-60 uppercase tracking-tighter">{qn}-{ql}</span>
+                            <span className="text-xs font-black mt-1">{outcome.label}</span>
+                            {risks.length > 0 && (
+                              <Badge className="absolute -top-2 -right-2 bg-slate-900 text-white border-white border-2 h-5 w-5 flex items-center justify-center p-0 text-[10px]">
+                                {risks.length}
+                              </Badge>
+                            )}
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-80 p-0 overflow-hidden shadow-2xl border-indigo-100">
+                          <div className={cn("p-3 text-white text-xs font-bold flex justify-between items-center", outcome.color.replace('hover:', ''))}>
+                            <span>RISIKO: {qn} Qn / {ql} Ql</span>
+                            <Badge variant="outline" className="bg-white/20 border-white/30 text-white text-[10px]">{outcome.label}</Badge>
+                          </div>
+                          <div className="p-4 space-y-3">
+                            {risks.length > 0 ? (
+                              risks.map(r => (
+                                <div key={r.id} className="space-y-1">
+                                  <div className="flex items-center gap-2">
+                                    <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
+                                    <p className="text-xs font-bold text-slate-800">{r.title}</p>
+                                  </div>
+                                  <p className="text-[10px] text-slate-500 ml-3.5 uppercase font-medium">Process: {r.process}</p>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-xs text-slate-400 italic text-center py-2">Tidak ada data risiko di kategori ini.</p>
+                            )}
+                            <div className="pt-2 border-t mt-2">
+                              <button className="text-[10px] font-bold text-primary hover:underline flex items-center gap-1">
+                                <ExternalLink className="h-3 w-3" /> Lihat Detail di RCM Matrix
+                              </button>
+                            </div>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    );
+                  })
+                ))}
+              </div>
+
+              {/* X-Axis Labels */}
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Rendah</span>
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Medium</span>
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Tinggi</span>
+              </div>
+              <div className="text-center">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Kualitatif</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+      <style>{`
+        .vertical-text {
+          writing-mode: vertical-rl;
+        }
+      `}</style>
+    </Card>
+  );
+}
