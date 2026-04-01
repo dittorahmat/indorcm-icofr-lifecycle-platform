@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { 
   PlusCircle, FileDown, ShieldCheck, History, Search, Cloud, 
-  Server, Workflow, CheckCircle2, XCircle, ArrowRight, Eye, AlertTriangle 
+  Server, Workflow, CheckCircle2, XCircle, ArrowRight, Eye, AlertTriangle, Info 
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { ControlEditor } from '@/components/rcm/ControlEditor';
@@ -183,7 +183,9 @@ export function RCMList() {
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline"><FileDown className="h-4 w-4 mr-2" /> Export</Button>
-            <Button onClick={() => setAddProcessOpen(true)}><PlusCircle className="h-4 w-4 mr-2" /> Add Process</Button>
+            {mockRole === 'Line 2' && (
+              <Button onClick={() => setAddProcessOpen(true)}><PlusCircle className="h-4 w-4 mr-2" /> Add Process</Button>
+            )}
           </div>
         </div>
 
@@ -385,6 +387,66 @@ export function RCMList() {
               {selectedRcm && <BPMEditor rcm={selectedRcm} controls={controlsData?.items || []} />}
             </React.Suspense>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Process Dialog */}
+      <Dialog open={isAddProcessOpen} onOpenChange={setAddProcessOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Add New Process / Risk</DialogTitle>
+            <DialogDescription>
+              Identify a new business process and its associated financial reporting risk.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="process">Process Name (Main)</Label>
+              <Input 
+                id="process" 
+                placeholder="e.g. Order to Cash, Treasury..." 
+                value={newRcmData.process}
+                onChange={(e) => setNewRcmData(prev => ({ ...prev, process: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="subProcess">Sub-Process Name</Label>
+              <Input 
+                id="subProcess" 
+                placeholder="e.g. Sales Order Entry, Bank Reconciliation..." 
+                value={newRcmData.subProcess}
+                onChange={(e) => setNewRcmData(prev => ({ ...prev, subProcess: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2 border-t pt-4">
+              <div className="flex items-center justify-between mb-2">
+                <Label htmlFor="risk" className="flex items-center gap-2">
+                  Risk Description
+                </Label>
+                <RiskLibraryLookup onSelect={(risk) => setNewRcmData(prev => ({ ...prev, riskDescription: risk }))} />
+              </div>
+              <Textarea 
+                id="risk" 
+                placeholder="Describe what can go wrong in this process that affects financial reporting..." 
+                className="min-h-[100px]"
+                value={newRcmData.riskDescription}
+                onChange={(e) => setNewRcmData(prev => ({ ...prev, riskDescription: e.target.value }))}
+              />
+              <p className="text-[10px] text-muted-foreground italic flex items-center gap-1">
+                <Info className="h-3 w-3" /> Tip: Penjelasan risiko harus mencakup asersi yang terancam (Completeness, Accuracy, etc).
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddProcessOpen(false)}>Cancel</Button>
+            <Button 
+              className="bg-primary hover:bg-primary/90"
+              disabled={!newRcmData.process || !newRcmData.riskDescription || createRcmMutation.isPending}
+              onClick={() => createRcmMutation.mutate(newRcmData)}
+            >
+              {createRcmMutation.isPending ? "Creating..." : "Create RCM Entry"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </AppLayout>

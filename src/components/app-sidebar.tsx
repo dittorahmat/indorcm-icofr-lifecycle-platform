@@ -12,7 +12,8 @@ import {
   Briefcase,
   History,
   Megaphone,
-  Network
+  Network,
+  UploadCloud
 } from "lucide-react";
 import {
   Sidebar,
@@ -81,20 +82,17 @@ export function AppSidebar(): JSX.Element {
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/rcm")}>
-                <Link to="/rcm"><ShieldCheck /> <span>RCM & BPM (Lampiran 4)</span></Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/change-log")}>
-                <Link to="/change-log"><History /> <span>Change Log (Lampiran 6)</span></Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/soc-monitoring")}>
                 <Link to="/soc-monitoring"><Network /> <span>SOC Monitoring (SO)</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
+            {mockRole === 'Line 2' && (
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={isActive("/import")}>
+                  <Link to="/import"><UploadCloud /> <span>Import RCM Data</span></Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )}
           </SidebarMenu>
         </SidebarGroup>
 

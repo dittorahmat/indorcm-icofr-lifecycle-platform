@@ -78,12 +78,13 @@ const router = createBrowserRouter([
 ]);
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
+  // Remove StrictMode for demo to avoid double-mounting issues
+  // <StrictMode>
     <QueryClientProvider client={queryClient}>
       <ErrorBoundary>
         <RouterProvider router={router} />
         <Toaster richColors closeButton />
       </ErrorBoundary>
     </QueryClientProvider>
-  </StrictMode>,
+  // </StrictMode>,
 );

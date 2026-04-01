@@ -30,9 +30,13 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { GLDataIntake } from '@/components/scoping/GLDataIntake';
 import { toast } from 'sonner';
 import Papa from 'papaparse';
 import { useDropzone } from 'react-dropzone';
+import { getGroupMultiplier, QualitativeScopingReason, calculateBenchmarkValue, getBenchmarkBreakdown, calculateDataQualityScore, BenchmarkCategory } from '@/lib/compliance-utils';
+import type { Scoping, SignificantAccount } from '@shared/types';
+import type { GLRow } from '@/components/scoping/GLDataIntake';
 
 const materialitySchema = z.object({
   benchmark: z.enum(["Pre-Tax Income", "Revenue", "Assets", "Equity"]),
@@ -43,9 +47,6 @@ const materialitySchema = z.object({
 });
 
 type MaterialityForm = z.infer<typeof materialitySchema>;
-
-import { getGroupMultiplier, QualitativeScopingReason } from '@/lib/compliance-utils';
-import type { Scoping, SignificantAccount } from '@shared/types';
 
 interface HaircutWizardProps {
   onApply: (value: number) => void;
@@ -421,96 +422,58 @@ function InvesteeMonitoring({ overallMateriality, haircut, investees, onUpdate }
 interface GLUploadDialogProps {
   onUpload: (accounts: SignificantAccount[]) => void;
   pmThreshold: number;
+  onGLDataLoaded?: (data: GLRow[]) => void;
 }
 
-function GLUploadDialog({ onUpload, pmThreshold }: GLUploadDialogProps) {
-  const [isProcessing, setIsProcessing] = React.useState(false);
-  const [open, setOpen] = React.useState(false);
+function GLUploadDialog({ onUpload, pmThreshold, onGLDataLoaded }: GLUploadDialogProps) {
+  const [isOpen, setIsOpen] = React.useState(false);
 
-  const onDrop = React.useCallback((acceptedFiles: File[]) => {
-    const file = acceptedFiles[0];
-    if (!file) return;
-
-    setIsProcessing(true);
-    Papa.parse(file, {
-      header: true,
-      skipEmptyLines: true,
-      complete: (results) => {
-        const data = results.data as any[];
-        const newAccounts: SignificantAccount[] = data.map(row => {
-          const name = row.Account || row.AccountName || row['Account Name'] || row.Name || '';
-          const balance = Number(row.Balance || row.Amount || row.EndingBalance || 0);
-          return {
-            name,
-            balance,
-            isQuantitative: balance >= pmThreshold,
-            qualitativeReasons: []
-          };
-        }).filter(a => a.name !== '');
-
-        onUpload(newAccounts);
-        setIsProcessing(false);
-        setOpen(false);
-        toast.success(`Successfully imported ${newAccounts.length} accounts from GL.`);
-      },
-      error: (error) => {
-        toast.error(`Failed to parse CSV: ${error.message}`);
-        setIsProcessing(false);
-      }
-    });
-  }, [onUpload, pmThreshold]);
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ 
-    onDrop,
-    accept: { 'text/csv': ['.csv'] },
-    multiple: false
-  });
+  const handleDataImported = (data: any[], pm: number) => {
+    const newAccounts: SignificantAccount[] = data.map(row => ({
+      name: row.accountName,
+      balance: row.balance,
+      isQuantitative: row.balance >= pm,
+      qualitativeReasons: [],
+      fsliCode: row.fsliCode,
+      entityCode: row.entityCode,
+    }));
+    onUpload(newAccounts);
+    // Pass GL data to parent for benchmark calculation
+    if (onGLDataLoaded) {
+      onGLDataLoaded(data);
+    }
+    // Don't auto-close, let user review the data
+  };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2 border-primary/30 hover:bg-primary/5">
-          <Upload className="h-4 w-4" /> Upload GL Data
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Upload General Ledger</DialogTitle>
-          <DialogDescription>
-            Upload a CSV file containing your GL accounts and balances. 
-            Accounts with balances above {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(pmThreshold)} will be auto-flagged as significant.
-          </DialogDescription>
-        </DialogHeader>
-        <div 
-          {...getRootProps()} 
-          className={cn(
-            "mt-4 border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-colors",
-            isDragActive ? "border-primary bg-primary/5" : "border-muted-foreground/20 hover:border-primary/50"
-          )}
-        >
-          <input {...getInputProps()} />
-          <div className="flex flex-col items-center gap-2">
-            <div className="p-3 rounded-full bg-primary/10">
-              <FileJson className="h-8 w-8 text-primary" />
-            </div>
-            {isProcessing ? (
-              <div className="flex items-center gap-2 text-sm font-medium">
-                <Loader2 className="h-4 w-4 animate-spin" /> Processing file...
-              </div>
-            ) : (
-              <>
-                <p className="text-sm font-medium">Click or drag CSV file to upload</p>
-                <p className="text-xs text-muted-foreground">Requirements: CSV with 'Account' and 'Balance' columns</p>
-              </>
-            )}
+    <>
+      <Button 
+        variant="outline" 
+        size="sm" 
+        className="gap-2 border-primary/30 hover:bg-primary/5"
+        onClick={() => setIsOpen(true)}
+      >
+        <Upload className="h-4 w-4" /> Upload GL Data
+      </Button>
+
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogContent className="max-w-7xl h-[85vh] max-h-[800px]">
+          <DialogHeader>
+            <DialogTitle>Upload General Ledger</DialogTitle>
+            <DialogDescription>
+              Upload GL data dari file CSV atau Excel (.xlsx, .xls). 
+              Sistem akan auto-detect kolom dan parse format Indonesia.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-4 h-[70vh] overflow-y-auto">
+            <GLDataIntake 
+              onDataImported={handleDataImported} 
+              pmThreshold={pmThreshold} 
+            />
           </div>
-        </div>
-        <div className="mt-4 p-3 bg-muted/30 rounded-lg border text-[11px] text-muted-foreground flex gap-2">
-          <Info className="h-4 w-4 shrink-0 text-blue-500" />
-          <p>Sistem akan memetakan kolom secara otomatis berdasarkan nama header yang umum digunakan (Account, Balance, Amount, etc).</p>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
@@ -625,6 +588,15 @@ export function ScopingPage() {
   const [localAccounts, setLocalAccounts] = React.useState<SignificantAccount[]>([]);
   const [localAllocations, setLocalAllocations] = React.useState<EntityMateriality[]>([]);
   const [localInvestees, setLocalInvestees] = React.useState<InvesteeMateriality[]>([]);
+  
+  // GL Data state for auto-populate
+  const [glData, setGlData] = React.useState<GLRow[]>([]);
+  const [autoPopulateEnabled, setIsAutoPopulateEnabled] = React.useState(true);
+  const [isOMManual, setIsOMManual] = React.useState(false);
+  const [manualOMValue, setManualOMValue] = React.useState<number | null>(null);
+  const [benchmarkBreakdown, setBenchmarkBreakdown] = React.useState<Record<string, number> | null>(null);
+  const [dataQuality, setDataQuality] = React.useState<{ score: number; level: string; hasFSLI: boolean; message: string } | null>(null);
+  
   const mockRole = localStorage.getItem('mockRole') || 'Line 1';
   const isLine2 = mockRole === 'Line 2';
 
@@ -657,6 +629,35 @@ export function ScopingPage() {
     if (currentScope?.significantAccounts) setLocalAccounts(currentScope.significantAccounts);
   }, [currentScope]);
 
+  const formValues = watch();
+
+  // Auto-populate benchmark value from GL data
+  React.useEffect(() => {
+    if (autoPopulateEnabled && glData.length > 0) {
+      const benchmark = formValues.benchmark as BenchmarkCategory;
+      const value = calculateBenchmarkValue(glData, benchmark);
+      if (value > 0) {
+        setValue('benchmarkValue', value);
+      }
+
+      // Calculate breakdown for all categories
+      const breakdown = getBenchmarkBreakdown(glData);
+      setBenchmarkBreakdown(breakdown);
+
+      // Calculate data quality
+      const quality = calculateDataQualityScore(glData);
+      setDataQuality(quality);
+    }
+  }, [autoPopulateEnabled, glData, formValues.benchmark, setValue]);
+
+  // Handle GL data import from GLDataIntake
+  const handleGLDataImported = React.useCallback((data: GLRow[], pm: number) => {
+    setGlData(data);
+    // Auto-enable populate when GL data is uploaded
+    setIsAutoPopulateEnabled(true);
+    toast.success(`GL data imported: ${data.length} accounts. Benchmark auto-populated.`);
+  }, []);
+
   const saveMateriality = useMutation({
     mutationFn: (data: Materiality) => api('/api/materiality', { method: 'POST', body: JSON.stringify(data) }),
     onSuccess: () => {
@@ -666,11 +667,32 @@ export function ScopingPage() {
     onError: (err) => toast.error(`Failed to save: ${err.message}`),
   });
 
-  const formValues = watch();
   const baseOM = (formValues.benchmarkValue * formValues.percentage) / 100;
   const multiplier = getGroupMultiplier(formValues.locationCount);
-  const overallMateriality = baseOM * multiplier;
+  const calculatedOM = baseOM * multiplier;
+  
+  // Use manual OM if override enabled, otherwise use calculated
+  const overallMateriality = isOMManual && manualOMValue !== null ? manualOMValue : calculatedOM;
   const performanceMateriality = overallMateriality * (1 - formValues.haircut / 100);
+
+  // Handle OM manual override toggle
+  const handleOMToggle = () => {
+    if (isOMManual) {
+      // Reset to calculated
+      setIsOMManual(false);
+      setManualOMValue(null);
+      toast.info('OM reset to calculated value');
+    } else {
+      // Enable manual override
+      setIsOMManual(true);
+      setManualOMValue(overallMateriality);
+      toast.info('OM manual override enabled');
+    }
+  };
+
+  const handleManualOMChange = (value: number) => {
+    setManualOMValue(value);
+  };
 
   const onSaveMateriality = (data: MaterialityForm) => {
     const payload: Materiality = {
@@ -735,7 +757,25 @@ export function ScopingPage() {
                     </div>
                     <div className="space-y-2">
                       <Label>Benchmark Value (IDR)</Label>
-                      <Input type="number" {...register("benchmarkValue", { valueAsNumber: true })} />
+                      <div className="flex gap-2">
+                        <Input type="number" {...register("benchmarkValue", { valueAsNumber: true })} className="flex-1" />
+                        {glData.length > 0 && (
+                          <Button
+                            type="button"
+                            variant={autoPopulateEnabled ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setIsAutoPopulateEnabled(!autoPopulateEnabled)}
+                            className="shrink-0"
+                          >
+                            {autoPopulateEnabled ? "Auto: ON" : "Auto: OFF"}
+                          </Button>
+                        )}
+                      </div>
+                      {glData.length > 0 && autoPopulateEnabled && (
+                        <p className="text-xs text-muted-foreground">
+                          Auto-populated from GL data ({glData.length} accounts)
+                        </p>
+                      )}
                     </div>
                     <div className="space-y-2">
                       <Label>Significant Locations (Multiplier: {multiplier}x)</Label>
@@ -747,9 +787,90 @@ export function ScopingPage() {
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-muted/20 p-6 rounded-lg border-2 border-primary/10">
-                    <div><h3 className="text-lg font-semibold text-muted-foreground">Overall Materiality (OM)</h3><p className="text-3xl font-bold text-primary">{formatCurrency(overallMateriality)}</p></div>
+                    <div>
+                      <div className="flex justify-between items-center">
+                        <h3 className="text-lg font-semibold text-muted-foreground">Overall Materiality (OM)</h3>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleOMToggle}
+                          className="h-6 text-xs"
+                        >
+                          {isOMManual ? (
+                            <span className="text-orange-600">✏️ Manual [Reset]</span>
+                          ) : (
+                            <span className="text-muted-foreground">🔒 Calculated</span>
+                          )}
+                        </Button>
+                      </div>
+                      {isOMManual ? (
+                        <Input
+                          type="number"
+                          value={manualOMValue || 0}
+                          onChange={(e) => handleManualOMChange(Number(e.target.value))}
+                          className="text-2xl font-bold text-primary mt-2"
+                        />
+                      ) : (
+                        <p className="text-3xl font-bold text-primary">{formatCurrency(overallMateriality)}</p>
+                      )}
+                      {isOMManual && (
+                        <p className="text-xs text-orange-600 mt-1">⚠️ Manual Override Active</p>
+                      )}
+                    </div>
                     <div><h3 className="text-lg font-semibold text-muted-foreground">Performance Materiality (PM)</h3><p className="text-3xl font-bold text-primary">{formatCurrency(performanceMateriality)}</p></div>
                   </div>
+
+                  {/* Benchmark Breakdown Display */}
+                  {benchmarkBreakdown && glData.length > 0 && (
+                    <Card className="border-blue-200 bg-blue-50/30">
+                      <CardHeader className="pb-3">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <CardTitle className="text-blue-800 text-sm">Benchmark Breakdown (dari GL Data)</CardTitle>
+                            <CardDescription className="text-blue-600/80 text-xs">
+                              {dataQuality?.hasFSLI 
+                                ? `✅ High quality - FSLI code matching (${dataQuality.message})` 
+                                : `⚠️ Using account name matching - ${dataQuality?.message}`
+                              }
+                            </CardDescription>
+                          </div>
+                          {dataQuality && (
+                            <Badge className={dataQuality.level === 'High' ? 'bg-green-600' : dataQuality.level === 'Medium' ? 'bg-yellow-600' : 'bg-orange-600'}>
+                              {dataQuality.level} Confidence
+                            </Badge>
+                          )}
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          {Object.entries(benchmarkBreakdown).map(([category, value]) => (
+                            <div 
+                              key={category} 
+                              className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                                formValues.benchmark === category 
+                                  ? 'border-primary bg-primary/5 shadow-md' 
+                                  : 'border-transparent bg-white hover:border-primary/30'
+                              }`}
+                              onClick={() => {
+                                setValue('benchmark', category as any);
+                                setIsAutoPopulateEnabled(true);
+                              }}
+                            >
+                              <p className="text-[10px] text-muted-foreground uppercase font-semibold">{category}</p>
+                              <p className="text-sm font-bold text-primary mt-1">{formatCurrency(value)}</p>
+                              {formValues.benchmark === category && (
+                                <p className="text-[9px] text-primary mt-1">✓ Selected</p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                        <p className="text-[10px] text-muted-foreground mt-3 text-center">
+                          💡 Click on any benchmark category to select it
+                        </p>
+                      </CardContent>
+                    </Card>
+                  )}
                   {formValues.locationCount > 1 && (
                     <GroupAllocation baseOM={baseOM} multiplier={multiplier} haircut={formValues.haircut} allocations={localAllocations} onUpdate={setLocalAllocations} />
                   )}
@@ -766,9 +887,10 @@ export function ScopingPage() {
                     <CardTitle>Significant Accounts Matrix</CardTitle>
                     <div className="flex gap-2">
                       {isLine2 && (
-                        <GLUploadDialog 
-                          pmThreshold={performanceMateriality} 
-                          onUpload={(newAccs) => setLocalAccounts(prev => [...prev, ...newAccs])} 
+                        <GLUploadDialog
+                          pmThreshold={performanceMateriality}
+                          onUpload={(newAccs) => setLocalAccounts(prev => [...prev, ...newAccs])}
+                          onGLDataLoaded={handleGLDataImported}
                         />
                       )}
                       <QualitativeScopingWizard onAdd={(acc) => setLocalAccounts(prev => [...prev, acc])} />

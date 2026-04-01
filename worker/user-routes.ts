@@ -57,6 +57,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       ChangeLogEntity.ensureSeed(c.env), SOCReportEntity.ensureSeed(c.env),
       ApplicationEntity.ensureSeed(c.env), RiskLibraryEntity.ensureSeed(c.env),
       AggregateDeficiencyEntity.ensureSeed(c.env), SettingsEntity.ensureSeed(c.env),
+      TestEntity.ensureSeed(c.env),
     ]);
 
     const authHeader = c.req.header('Authorization');
@@ -288,6 +289,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     return ok(c, await def.getState());
   });
   app.get('/api/actionplans', async (c) => ok(c, await ActionPlanEntity.list(c.env)));
+  app.get('/api/csa', async (c) => ok(c, await CSAEntity.list(c.env)));
   app.put('/api/actionplans/:id', async (c) => {
     const id = c.req.param('id');
     const body = await c.req.json<Partial<ActionPlan>>();
@@ -302,10 +304,10 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     if (!body.controlId || !body.result) return bad(c, 'controlId and result are required');
     const newCSA: CSARecord = { id: crypto.randomUUID(), assessmentDate: Date.now(), assessedBy: (c as any).get('userId'), comments: "", ...body, controlId: body.controlId, result: body.result, period: body.period || "2024-Q1" };
     const created = await createWithAudit(CSAEntity, c.env, newCSA, (c as any).get('userId'));
-    if (created.result === 'Fail') {
+    if (created.result === 'High' || created.result === 'Medium') {
       const newDef: Deficiency = {
         id: crypto.randomUUID(), controlId: created.controlId,
-        description: `CSA Failed: ${created.comments || 'No comment provided.'}`,
+        description: `CSA Issue (${created.result}): ${created.comments || 'No comment provided.'}`,
         severity: 'Control Deficiency', identifiedDate: Date.now(),
         identifiedBy: created.assessedBy, status: 'Open', relatedAssertions: []
       };

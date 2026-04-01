@@ -190,6 +190,32 @@ export function getGroupMultiplier(count: number): number {
   return 9;
 }
 
+/**
+ * Mendapatkan saran kontrol berdasarkan Prinsip COSO (Lampiran 1)
+ */
+export function getSuggestedControl(principle: number): { name: string; description: string } {
+  switch (principle) {
+    case 1: return { name: "Kode Etik & Integritas", description: "Perusahaan memiliki dan mensosialisasikan kode etik serta nilai-integritas kepada seluruh pegawai secara berkala." };
+    case 2: return { name: "Pengawasan Dewan Komisaris", description: "Dewan Komisaris melakukan pengawasan independen atas pengembangan dan kinerja pengendalian internal." };
+    case 3: return { name: "Struktur Organisasi & Pelaporan", description: "Manajemen menetapkan struktur pelaporan, wewenang, dan tanggung jawab yang memadai dalam pencapaian tujuan." };
+    case 4: return { name: "Kompetensi SDM", description: "Perusahaan menetapkan kebijakan untuk menarik, mengembangkan, dan mempertahankan individu yang kompeten." };
+    case 5: return { name: "Akuntabilitas Kinerja", description: "Individu dimintai pertanggungjawaban atas tugas pengendalian internal mereka dalam pencapaian tujuan." };
+    case 6: return { name: "Identifikasi Risiko Pelaporan", description: "Manajemen mengidentifikasi risiko yang relevan dengan penyusunan laporan keuangan sesuai standar akuntansi." };
+    case 7: return { name: "Analisis Dampak Risiko", description: "Risiko diidentifikasi dan dianalisis untuk menentukan dasar pengelolaan risiko." };
+    case 8: return { name: "Penilaian Risiko Fraud", description: "Potensi kecurangan (fraud) dipertimbangkan dalam menilai risiko pencapaian tujuan." };
+    case 9: return { name: "Identifikasi Perubahan Signifikan", description: "Manajemen mengidentifikasi dan menilai perubahan yang dapat memengaruhi sistem pengendalian internal secara signifikan." };
+    case 10: return { name: "Aktivitas Pengendalian Transaksi", description: "Aktivitas pengendalian dipilih dan dikembangkan untuk memitigasi risiko hingga tingkat yang dapat diterima." };
+    case 11: return { name: "Pengendalian Umum TI (ITGC)", description: "Pengendalian umum atas teknologi (ITGC) dipilih dan dikembangkan untuk mendukung pencapaian tujuan." };
+    case 12: return { name: "Kebijakan & Prosedur", description: "Aktivitas pengendalian diimplementasikan melalui kebijakan dan prosedur yang jelas." };
+    case 13: return { name: "Kualitas Informasi", description: "Perusahaan memperoleh atau menghasilkan informasi yang relevan dan berkualitas untuk mendukung fungsi pengendalian." };
+    case 14: return { name: "Komunikasi Internal", description: "Informasi dikomunikasikan secara internal untuk mendukung berfungsinya pengendalian internal." };
+    case 15: return { name: "Komunikasi Eksternal", description: "Komunikasi dilakukan dengan pihak eksternal mengenai hal-hal yang memengaruhi berfungsinya pengendalian internal." };
+    case 16: return { name: "Evaluasi Berkelanjutan", description: "Evaluasi dilakukan untuk memastikan apakah komponen pengendalian internal ada dan berfungsi." };
+    case 17: return { name: "Pelaporan Defisiensi", description: "Defisiensi pengendalian internal dievaluasi dan dikomunikasikan kepada pihak yang bertanggung jawab untuk perbaikan." };
+    default: return { name: "Otorisasi Transaksi", description: "Setiap transaksi material harus diotorisasi oleh pejabat yang berwenang sesuai dengan limit kewenangan." };
+  }
+}
+
 export type QualitativeScopingReason = 
   | "Besarnya eksposur risiko kecurangan"
   | "Volume transaksi, kompleksitas, dan homogenitas"
@@ -225,30 +251,240 @@ export function calculateBenfordDistribution(data: number[]): number[] {
 export const BENFORD_STANDARD = [30.1, 17.6, 12.5, 9.7, 7.9, 6.7, 5.8, 5.1, 4.6];
 
 /**
- * Saran Pengendalian Utama berdasarkan Prinsip COSO (Lampiran 1)
- * Memetakan seluruh 17 Prinsip sesuai SK-5/2024
+ * Parse Indonesian number format for GL balances
+ * Handles: spaces, period thousand separator, comma decimal, parentheses for negative
  */
-export function getSuggestedControl(principle: number): { name: string; description: string } {
-  switch (principle) {
-    case 1: return { name: "Penetapan Kode Etik", description: "Perusahaan memiliki pedoman perilaku (code of conduct) tertulis yang diperbarui berkala dan diakses seluruh personil." };
-    case 2: return { name: "Piagam Komite Audit", description: "Terdapat pengaturan independensi Dewan Komisaris dan Komite Audit dalam pengawasan pelaporan keuangan." };
-    case 3: return { name: "Struktur Organisasi & DoA", description: "Manajemen menetapkan struktur alur pelaporan dan matriks Delegation of Authority (DoA) yang jelas." };
-    case 4: return { name: "Kebijakan Rekrutmen & Kompetensi", description: "Proses rekrutmen mencakup verifikasi referensi dan program pelatihan berkala sesuai kebutuhan fungsi." };
-    case 5: return { name: "Penetapan KPI ICOFR", description: "Evaluasi kinerja (KPI) mencakup akuntabilitas personil terhadap tanggung jawab pengendalian internal." };
-    case 6: return { name: "Dokumentasi Scoping", description: "Manajemen mendokumentasikan hasil kajian ruang lingkup ICOFR berdasarkan faktor kuantitatif dan kualitatif." };
-    case 7: return { name: "Identifikasi Risiko Signifikan", description: "Koordinasi antar lini untuk mengidentifikasi risiko yang memengaruhi pencapaian tujuan pelaporan keuangan." };
-    case 8: return { name: "Asesmen Risiko Kecurangan (Fraud)", description: "Perancangan RCM secara spesifik mempertimbangkan potensi penyalahgunaan aset dan korupsi." };
-    case 9: return { name: "Monitoring Perubahan Bisnis", description: "Mekanisme identifikasi perubahan organisasi atau teknologi yang berdampak pada sistem pengendalian." };
-    case 10: return { name: "Pemisahan Tugas (SoD)", description: "Terdapat pemisahan tugas yang memadai antara fungsi otorisasi, pencatatan, dan penyimpanan aset." };
-    case 11: return { name: "Kontrol Umum TI (ITGC)", description: "Aktivitas pengendalian atas infrastruktur teknologi (akses, perubahan, operasi) ditetapkan secara menyeluruh." };
-    case 12: return { name: "Kebijakan & SOP", description: "Penyusunan dan reviu berkala atas SOP kegiatan operasional dan pelaporan keuangan." };
-    case 13: return { name: "Validasi IPE/EUC", description: "Pengendalian untuk memastikan akurasi dan kelengkapan informasi yang dihasilkan sistem atau spreadsheet." };
-    case 14: return { name: "Whistleblowing System (WBS)", description: "Tersedianya kanal pengaduan internal untuk melaporkan kecurangan dengan mekanisme investigasi formal." };
-    case 15: return { name: "Komunikasi Eksternal & SOC", description: "Prosedur pemeriksaan informasi sebelum disampaikan ke pihak eksternal dan reviu laporan SOC pihak ketiga." };
-    case 16: return { name: "Monitoring Berkala (CSA/Audit)", description: "Pelaksanaan evaluasi berkelanjutan melalui sertifikasi mandiri (CSA) dan audit internal independen." };
-    case 17: return { name: "Remediasi Defisiensi", description: "Evaluasi dan komunikasi defisiensi secara tepat waktu serta pelaksanaan aktivitas perbaikan (remediasi)." };
-    default: return { name: "Otorisasi Transaksi", description: "Setiap transaksi material harus diotorisasi oleh pejabat yang berwenang sesuai dengan limit kewenangan." };
+export function parseBalance(value: string | number): { success: boolean; value: number; error?: string } {
+  // Handle numeric input
+  if (typeof value === 'number') {
+    return { success: true, value };
   }
+
+  // Handle empty/null/undefined
+  if (!value || value.trim() === '' || value === '-') {
+    return { success: true, value: 0 };
+  }
+
+  let cleaned = value.trim();
+
+  // Detect and handle parentheses for negative
+  const isNegative = cleaned.startsWith('(') && cleaned.endsWith(')');
+  if (isNegative) {
+    cleaned = cleaned.slice(1, -1);
+  }
+
+  // Remove all spaces
+  cleaned = cleaned.replace(/\s/g, '');
+
+  // Remove thousand separator (period in Indonesian format)
+  cleaned = cleaned.replace(/\./g, '');
+
+  // Convert comma to period for decimal
+  cleaned = cleaned.replace(',', '.');
+
+  // Parse as float
+  const parsed = parseFloat(cleaned);
+
+  if (isNaN(parsed)) {
+    return { 
+      success: false, 
+      value: 0, 
+      error: `Invalid balance format: ${value}` 
+    };
+  }
+
+  return { 
+    success: true, 
+    value: isNegative ? -parsed : parsed 
+  };
 }
+
+/**
+ * Column mapping for GL auto-detection
+ * Priority order: first match wins
+ */
+export const GL_COLUMN_MAPPING = {
+  accountCode: ['No_GL', 'Kode_GL', 'AccountCode', 'Account Code', 'Code', 'Kode_Entity'],
+  accountName: ['GL_Desc', 'GLDesc', 'AccountName', 'Account Name', 'Account', 'Description', 'GL_Desc'],
+  balance: ['GL_Balance', 'GLBalance', 'Balance', 'Amount', 'EndingBalance', 'Saldo'],
+  fsliCode: ['Kode_FSLI', 'FSLICode', 'FSLI_Code', 'FSLI'],
+  entityCode: ['Kode_Entity', 'EntityCode', 'Entity_Code', 'Kode_Cabang'],
+  currency: ['Kode_Valuta', 'Currency', 'Valuta', 'Curr'],
+  period: ['YMD', 'Date', 'Period', 'Tanggal'],
+} as const;
+
+export type GLField = keyof typeof GL_COLUMN_MAPPING;
+
+/**
+ * Auto-detect column mapping from CSV headers
+ */
+export function detectGLColumns(headers: string[]): Record<string, string> {
+  const mapping: Record<string, string> = {};
+
+  headers.forEach(header => {
+    const trimmedHeader = header.trim();
+    
+    // Check each field type
+    (Object.keys(GL_COLUMN_MAPPING) as GLField[]).forEach(field => {
+      // If this field already has a mapping, skip
+      if (mapping[field]) return;
+      
+      // Check if header matches any variation
+      const variations = GL_COLUMN_MAPPING[field];
+      if (variations.includes(trimmedHeader)) {
+        mapping[field] = trimmedHeader;
+      }
+    });
+  });
+
+  return mapping;
+}
+
+/**
+ * Validate GL column mapping has required fields
+ */
+export function validateGLMapping(mapping: Record<string, string>): { valid: boolean; missing: string[] } {
+  const required = ['accountName', 'balance'];
+  const missing = required.filter(field => !mapping[field]);
+  
+  return {
+    valid: missing.length === 0,
+    missing
+  };
+}
+
+/**
+ * Filter empty rows from GL data
+ */
+export function filterEmptyRows(rows: any[]): any[] {
+  return rows.filter(row => {
+    const hasData = Object.values(row).some(val => 
+      val !== null && val !== undefined && val.toString().trim() !== ''
+    );
+    return hasData;
+  });
+}
+
+/**
+ * GL Account to Benchmark Category Mapping
+ * Maps FSLI codes and account patterns to materiality benchmark categories
+ */
+export const BENCHMARK_MAPPING = {
+  'Pre-Tax Income': {
+    fsliCodes: ['6480000', '6490000', '6510000'], // Laba/Rugi Sebelum Pajak, Laba Bersih
+    accountPatterns: ['laba', 'rugi', 'pendapatan', 'beban'],
+    glSection: '6', // P&L accounts
+    description: 'Net Income Before Tax'
+  },
+  'Revenue': {
+    fsliCodes: ['6010000'], // Pendapatan
+    accountPatterns: ['pendapatan', 'revenue', 'penjualan'],
+    glSection: '60',
+    description: 'Total Revenue'
+  },
+  'Assets': {
+    fsliCodes: ['1010100', '1010200', '1011000', '1020100', '1021400'], // Kas, Piutang, Persediaan, Aset
+    accountPatterns: ['kas', 'bank', 'piutang', 'persediaan', 'aset', 'tanah', 'bangunan', 'kendaraan'],
+    glSection: '1', // Balance Sheet assets
+    description: 'Total Assets'
+  },
+  'Equity': {
+    fsliCodes: ['3010100', '3010200', '3010300'], // Modal, Saldo Laba
+    accountPatterns: ['modal', 'ekuitas', 'saldo laba', 'laba ditahan'],
+    glSection: '3',
+    description: 'Total Equity'
+  }
+} as const;
+
+export type BenchmarkCategory = keyof typeof BENCHMARK_MAPPING;
+
+/**
+ * Calculate benchmark value from GL data based on selected category
+ */
+export function calculateBenchmarkValue(glData: any[], benchmark: BenchmarkCategory): number {
+  const mapping = BENCHMARK_MAPPING[benchmark];
+  
+  const matching = glData.filter(row => {
+    // Priority 1: FSLI code match
+    if (row.fsliCode && mapping.fsliCodes.includes(row.fsliCode)) {
+      return true;
+    }
+    
+    // Priority 2: Account name pattern match
+    if (row.accountName) {
+      const accountNameLower = row.accountName.toLowerCase();
+      if (mapping.accountPatterns.some(pattern => 
+        accountNameLower.includes(pattern.toLowerCase())
+      )) {
+        return true;
+      }
+    }
+    
+    return false;
+  });
+  
+  // Sum absolute values for conservatism
+  return matching.reduce((sum, row) => {
+    const balance = typeof row.balance === 'number' ? row.balance : parseFloat(row.balance) || 0;
+    return sum + Math.abs(balance);
+  }, 0);
+}
+
+/**
+ * Get benchmark breakdown for all categories
+ */
+export function getBenchmarkBreakdown(glData: any[]): Record<BenchmarkCategory, number> {
+  return {
+    'Pre-Tax Income': calculateBenchmarkValue(glData, 'Pre-Tax Income'),
+    'Revenue': calculateBenchmarkValue(glData, 'Revenue'),
+    'Assets': calculateBenchmarkValue(glData, 'Assets'),
+    'Equity': calculateBenchmarkValue(glData, 'Equity')
+  };
+}
+
+/**
+ * Calculate data quality confidence score
+ */
+export function calculateDataQualityScore(glData: any[]): {
+  score: number;
+  level: 'High' | 'Medium' | 'Low';
+  hasFSLI: boolean;
+  message: string;
+} {
+  const hasFSLI = glData.some(row => row.fsliCode);
+  const fSLICoverage = hasFSLI 
+    ? (glData.filter(row => row.fsliCode).length / glData.length) * 100 
+    : 0;
+  
+  let score = 0;
+  let level: 'High' | 'Medium' | 'Low' = 'Low';
+  
+  if (hasFSLI) {
+    score += 50;
+    if (fSLICoverage > 80) score += 30;
+    else if (fSLICoverage > 50) score += 20;
+  }
+  
+  // Check for complete account info
+  const hasCompleteInfo = glData.filter(row => row.accountCode && row.accountName && row.balance).length;
+  const completenessScore = (hasCompleteInfo / glData.length) * 100;
+  score += (completenessScore / 100) * 20;
+  
+  if (score >= 80) level = 'High';
+  else if (score >= 50) level = 'Medium';
+  
+  return {
+    score,
+    level,
+    hasFSLI,
+    message: hasFSLI 
+      ? `High quality data with FSLI codes (${fSLICoverage.toFixed(0)}% coverage)`
+      : 'Using account name matching - verify accuracy'
+  };
+}
+
+/**
+ * Get Multiplier based on Table 25 (Hal 104)
+ */
 
 

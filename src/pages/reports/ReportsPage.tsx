@@ -8,16 +8,18 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { FileDown, Printer, Shield, FileText, CheckCircle2, AlertTriangle, Lock, Layers, Loader2, QrCode } from 'lucide-react';
+import { FileDown, Printer, Shield, FileText, CheckCircle2, AlertTriangle, Lock, Layers, Loader2, QrCode, XCircle } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, PieChart, Pie, Cell } from 'recharts';
 import { toast } from 'sonner';
-import type { Deficiency, Settings } from '@shared/types';
+import type { Deficiency, Settings, Control, TestRecord } from '@shared/types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 
 export function ReportsPage() {
   const queryClient = useQueryClient();
+  const [testTypeFilter, setTestTypeFilter] = React.useState<'ALL' | 'TOD' | 'TOE'>('ALL');
+  const [testStatusFilter, setTestStatusFilter] = React.useState<'ALL' | 'Pass' | 'Fail'>('ALL');
   
   const { data: summaryData, isLoading: summaryLoading } = useQuery({
     queryKey: ['reportSummary'],
@@ -32,6 +34,21 @@ export function ReportsPage() {
   const { data: settings, isLoading: settingsLoading } = useQuery({
     queryKey: ['settings'],
     queryFn: () => api<Settings>('/api/settings'),
+  });
+
+  const { data: rcmData } = useQuery({
+    queryKey: ['rcm'],
+    queryFn: () => api<{ items: any[] }>('/api/rcm'),
+  });
+
+  const { data: controlsData } = useQuery({
+    queryKey: ['controls'],
+    queryFn: () => api<{ items: Control[] }>('/api/controls'),
+  });
+
+  const { data: testsData } = useQuery({
+    queryKey: ['tests'],
+    queryFn: () => api<{ items: TestRecord[] }>('/api/tests'),
   });
 
   const signOffMutation = useMutation({
@@ -271,8 +288,156 @@ export function ReportsPage() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="audit" className="pt-4">
-             {/* ... audit content ... */}
+          <TabsContent value="audit" className="pt-4 space-y-6">
+            <div className="flex flex-wrap items-center justify-between gap-4 bg-muted/20 p-4 rounded-lg border border-dashed no-print">
+              <div className="flex items-center gap-4">
+                <div className="space-y-1">
+                  <p className="text-[10px] font-bold uppercase text-muted-foreground">Tipe Pengujian</p>
+                  <div className="flex gap-1">
+                    {['ALL', 'TOD', 'TOE'].map(t => (
+                      <Button 
+                        key={t} 
+                        size="sm" 
+                        variant={testTypeFilter === t ? 'default' : 'outline'} 
+                        className="h-7 text-[10px]"
+                        onClick={() => setTestTypeFilter(t as any)}
+                      >
+                        {t}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[10px] font-bold uppercase text-muted-foreground">Status</p>
+                  <div className="flex gap-1">
+                    {['ALL', 'Pass', 'Fail'].map(s => (
+                      <Button 
+                        key={s} 
+                        size="sm" 
+                        variant={testStatusFilter === s ? 'default' : 'outline'} 
+                        className="h-7 text-[10px]"
+                        onClick={() => setTestStatusFilter(s as any)}
+                      >
+                        {s}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-[10px] font-bold text-blue-700 uppercase">Regulatory Reference</p>
+                <p className="text-[11px] text-blue-600 italic">SK-5 Bab V & Lampiran 8</p>
+              </div>
+            </div>
+
+            <Card>
+              <CardHeader className="pb-0">
+                <CardTitle className="text-lg">Laporan Hasil Pengujian (TOD & TOE)</CardTitle>
+                <CardDescription>Konsolidasi hasil pengujian rancangan dan efektivitas operasi kontrol.</CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <div className="rounded-md border overflow-x-auto">
+                  <Table>
+                    <TableHeader className="bg-muted/50">
+                      <TableRow>
+                        <TableHead className="w-[40px] text-[10px] uppercase font-bold text-center">No</TableHead>
+                        <TableHead className="w-[180px] text-[10px] uppercase font-bold">Process Context (Lmp 5)</TableHead>
+                        <TableHead className="w-[180px] text-[10px] uppercase font-bold">Control Reference</TableHead>
+                        <TableHead className="w-[120px] text-[10px] uppercase font-bold text-center">Asersi (Tabel 8)</TableHead>
+                        <TableHead className="w-[60px] text-[10px] uppercase font-bold text-center">Type</TableHead>
+                        <TableHead className="w-[80px] text-[10px] uppercase font-bold text-center">Method</TableHead>
+                        <TableHead className="text-[10px] uppercase font-bold text-center">Kriteria Lmp 8 (xxvii-xxxii)</TableHead>
+                        <TableHead className="w-[60px] text-[10px] uppercase font-bold text-center">Sample</TableHead>
+                        <TableHead className="w-[90px] text-[10px] uppercase font-bold text-center">Result</TableHead>
+                        <TableHead className="w-[200px] text-[10px] uppercase font-bold text-left">Walkthrough / Notes</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {(testsData?.items || [])
+                        .filter(t => testTypeFilter === 'ALL' || t.testType === testTypeFilter)
+                        .filter(t => testStatusFilter === 'ALL' || t.result === testStatusFilter)
+                        .map((test, index) => {
+                          const control = controlsData?.items.find(c => c.id === test.controlId);
+                          const rcm = rcmData?.items.find(r => r.id === control?.rcmId);
+                          const attrCount = test.evaluationAttributes ? Object.values(test.evaluationAttributes).filter(Boolean).length : 0;
+                          
+                          return (
+                            <TableRow key={test.id} className="hover:bg-muted/30">
+                              <TableCell className="text-center text-xs font-medium text-muted-foreground">{index + 1}</TableCell>
+                              <TableCell className="py-3">
+                                <div className="space-y-0.5">
+                                  <p className="text-[10px] font-bold text-blue-800 uppercase tracking-tighter">{rcm?.process || 'N/A'}</p>
+                                  <p className="text-[10px] text-slate-600 line-clamp-1 italic">{rcm?.subProcess || 'N/A'}</p>
+                                </div>
+                              </TableCell>
+                              <TableCell className="py-3">
+                                <div className="space-y-0.5">
+                                  <p className="text-xs font-bold text-primary leading-none">{control?.code || '???'}</p>
+                                  <p className="text-[11px] font-medium leading-tight text-slate-700 line-clamp-2">{control?.name || 'Unknown Control'}</p>
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-center">
+                                <div className="flex flex-wrap justify-center gap-0.5">
+                                  {control?.assertions.map(a => (
+                                    <Badge key={a} variant="outline" className="text-[8px] h-3.5 px-1 bg-slate-50">{a.substring(0,1)}</Badge>
+                                  ))}
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-center">
+                                <Badge variant="outline" className={cn(
+                                  "text-[9px] h-5",
+                                  test.testType === 'TOD' ? "border-blue-200 text-blue-700 bg-blue-50" : "border-purple-200 text-purple-700 bg-purple-50"
+                                )}>
+                                  {test.testType}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="text-center text-[10px] font-medium text-slate-600 font-mono italic">{test.method}</TableCell>
+                              <TableCell className="text-center">
+                                <div className="flex flex-col items-center gap-1">
+                                  <div className="flex gap-0.5">
+                                    {[1, 2, 3, 4, 5, 6].map(i => (
+                                      <div 
+                                        key={i} 
+                                        className={cn(
+                                          "w-1.5 h-3 rounded-full",
+                                          i <= attrCount ? "bg-green-500 shadow-[0_0_4px_rgba(34,197,94,0.5)]" : "bg-slate-200"
+                                        )} 
+                                      />
+                                    ))}
+                                  </div>
+                                  <span className="text-[9px] font-bold text-slate-500">{attrCount}/6 Criteria</span>
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-center text-xs font-mono font-bold text-slate-600">
+                                {test.testType === 'TOE' ? (test.sampleSize || '-') : 'N/A'}
+                              </TableCell>
+                              <TableCell className="text-center">
+                                <Badge className={cn(
+                                  "text-[10px] uppercase font-bold",
+                                  test.result === 'Pass' ? "bg-green-100 text-green-700 hover:bg-green-100 border-green-200" : "bg-red-100 text-red-700 hover:bg-red-100 border-red-200"
+                                )} variant="outline">
+                                  {test.result === 'Pass' ? <><CheckCircle2 className="h-2 w-2 mr-1" /> PASS</> : <><XCircle className="h-2 w-2 mr-1" /> FAIL</>}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="py-3 text-[10px] text-muted-foreground leading-relaxed">
+                                <p className="line-clamp-3 italic">"{test.comments}"</p>
+                                <p className="text-[8px] mt-1 uppercase font-bold">Audit Ref: {test.id.substring(0,8).toUpperCase()}</p>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      {(!testsData?.items || testsData.items.length === 0) && (
+                        <TableRow>
+                          <TableCell colSpan={8} className="text-center py-12 text-muted-foreground italic">
+                            Belum ada data pengujian yang tercatat untuk periode ini.
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
 

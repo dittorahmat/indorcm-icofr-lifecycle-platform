@@ -8,7 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
 import { UploadCloud, File as FileIcon, X, BarChart3, ShieldCheck, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { calculateBenfordDistribution, BENFORD_STANDARD } from '@/lib/compliance-utils';
+import { calculateBenfordDistribution, BENFORD_STANDARD, parseBalance, detectGLColumns, validateGLMapping, filterEmptyRows, GL_COLUMN_MAPPING } from '@/lib/compliance-utils';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Line, ComposedChart } from 'recharts';
 import * as XLSX from 'xlsx';
 import Papa from 'papaparse';
@@ -17,6 +17,9 @@ interface GLRow {
   accountCode: string;
   accountName: string;
   balance: number;
+  fsliCode?: string;
+  entityCode?: string;
+  currency?: string;
 }
 
 interface GLDataIntakeProps {
@@ -29,16 +32,107 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
   const [fileName, setFileName] = useState<string | null>(null);
   const [benfordData, setBenfordData] = useState<{ digit: number; actual: number; standard: number }[]>([]);
   const [balanceStatus, setBalanceStatus] = useState<{ total: number; isBalanced: boolean } | null>(null);
+  const [detectedMapping, setDetectedMapping] = useState<Record<string, string> | null>(null);
+  const [emptyRowCount, setEmptyRowCount] = useState(0);
 
-  const processData = (rawRows: any[]) => {
-    // Map raw rows to GLRow format (Pragmatic mapping)
-    const glRows: GLRow[] = rawRows.map(row => ({
-      accountCode: row.accountCode || row['Account Code'] || row['Code'] || '',
-      accountName: row.accountName || row['Account Name'] || row['Account'] || '',
-      balance: parseFloat(row.balance || row['Balance'] || row['Amount'] || '0'),
-    })).filter(row => row.accountName && !isNaN(row.balance));
+  const processData = (rawRows: any[], headers?: string[]) => {
+    console.log('========== [GL DEBUG] START PROCESSING ==========');
+    console.log('[1] Raw rows received:', rawRows.length);
+    console.log('[1] Headers:', headers);
+    console.log('[1] First 3 raw rows:', rawRows.slice(0, 3));
+    
+    // 1. Filter empty rows
+    const filteredRows = filterEmptyRows(rawRows);
+    const emptyCount = rawRows.length - filteredRows.length;
+    console.log('[2] After filtering empty rows:', filteredRows.length, '(removed:', emptyCount, ')');
+    console.log('[2] First 3 filtered rows:', filteredRows.slice(0, 3));
+    
+    setEmptyRowCount(emptyCount);
+    if (emptyCount > 0) {
+      toast.info(`Filtered ${emptyCount} empty rows`);
+    }
 
-    // 1. Balance Check
+    // 2. Auto-detect column mapping
+    let mapping: Record<string, string>;
+    if (headers && headers.length > 0) {
+      console.log('[3] Detecting columns from headers:', headers);
+      mapping = detectGLColumns(headers);
+    } else {
+      const firstRowKeys = Object.keys(filteredRows[0] || {});
+      console.log('[3] Detecting columns from first row keys:', firstRowKeys);
+      mapping = detectGLColumns(firstRowKeys);
+    }
+    console.log('[3] Detected mapping:', mapping);
+    setDetectedMapping(mapping);
+
+    // 3. Validate mapping
+    const validation = validateGLMapping(mapping);
+    console.log('[4] Validation result:', validation);
+    if (!validation.valid) {
+      toast.error(`Missing required columns: ${validation.missing.join(', ')}`, {
+        description: `Expected columns: ${validation.missing.map(m => Object.keys(GL_COLUMN_MAPPING).find(k => GL_COLUMN_MAPPING[k as keyof typeof GL_COLUMN_MAPPING].includes(m)) || m).join(', ')}`
+      });
+      console.log('[4] ❌ VALIDATION FAILED - Returning early');
+      return;
+    }
+    console.log('[4] ✅ Validation PASSED');
+
+    // 4. Map rows using detected mapping
+    console.log('[5] Starting row mapping...');
+    const glRows: GLRow[] = filteredRows.map((row, index) => {
+      // Get raw balance value - handle various column name formats
+      let balanceRaw = row[mapping.balance];
+      
+      // Try lowercase if not found
+      if (!balanceRaw && mapping.balance?.toLowerCase()) {
+        balanceRaw = row[mapping.balance.toLowerCase()];
+      }
+      
+      // Fallback to '0' if still not found
+      if (!balanceRaw) {
+        balanceRaw = '0';
+      }
+      
+      if (index < 3) {
+        console.log(`[5] Row ${index}:`, {
+          balanceColumn: mapping.balance,
+          balanceRaw: balanceRaw,
+          balanceType: typeof balanceRaw,
+          accountName: row[mapping.accountName]
+        });
+      }
+      
+      // Parse balance using Indonesian format parser
+      const parsedBalance = parseBalance(balanceRaw);
+      
+      if (index < 3) {
+        console.log(`[5] Row ${index} parsed:`, parsedBalance);
+      }
+
+      if (!parsedBalance.success) {
+        toast.warning(`Invalid balance for ${row[mapping.accountName] || 'Unknown'}: ${balanceRaw}`);
+      }
+
+      return {
+        accountCode: row[mapping.accountCode] || row[mapping.accountCode?.toLowerCase()] || '',
+        accountName: row[mapping.accountName] || row[mapping.accountName?.toLowerCase()] || '',
+        balance: parsedBalance.value,
+        fsliCode: mapping.fsliCode ? (row[mapping.fsliCode] || row[mapping.fsliCode?.toLowerCase()]) : undefined,
+        entityCode: mapping.entityCode ? (row[mapping.entityCode] || row[mapping.entityCode?.toLowerCase()]) : undefined,
+        currency: mapping.currency ? (row[mapping.currency] || row[mapping.currency?.toLowerCase()]) : undefined,
+      };
+    }).filter(row => {
+      const hasBalance = row.balance !== undefined && row.balance !== 0;
+      if (!hasBalance) {
+        console.log('[5] Filtered out row with 0 balance:', row.accountName);
+      }
+      return row.accountName && row.balance !== undefined;
+    });
+    
+    console.log('[5] ✅ Mapped rows:', glRows.length);
+    console.log('[5] First 3 mapped rows:', glRows.slice(0, 3));
+
+    // 5. Balance Check
     const totalBalance = glRows.reduce((sum, row) => sum + row.balance, 0);
     const isBalanced = Math.abs(totalBalance) < 0.01;
     setBalanceStatus({ total: totalBalance, isBalanced });
@@ -49,7 +143,7 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
       });
     }
 
-    // 2. Benford's Law Analysis
+    // 6. Benford's Law Analysis
     const distribution = calculateBenfordDistribution(glRows.map(r => r.balance));
     const benfordChartData = distribution.map((val, i) => ({
       digit: i + 1,
@@ -60,7 +154,7 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
 
     setData(glRows);
     onDataImported(glRows, pmThreshold);
-    toast.success(`Successfully processed ${glRows.length} GL accounts.`);
+    toast.success(`Successfully processed ${glRows.length} GL accounts from ${fileName || 'uploaded file'}`);
   };
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -68,23 +162,44 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
     if (!file) return;
 
     setFileName(file.name);
-    const reader = new FileReader();
-
-    reader.onload = (e) => {
-      const bstr = e.target?.result;
-      const workbook = XLSX.read(bstr, { type: 'binary' });
-      const firstSheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[firstSheetName];
-      const json = XLSX.utils.sheet_to_json(worksheet);
-      processData(json);
-    };
 
     if (file.name.endsWith('.csv')) {
+      // CSV: Auto-detect delimiter (comma, semicolon, tab)
       Papa.parse(file, {
         header: true,
-        complete: (results) => processData(results.data),
+        skipEmptyLines: false,
+        transformHeader: (header) => header.trim(), // TRIM SPACES!
+        complete: (results) => {
+          const headers = results.meta.fields || [];
+          processData(results.data, headers);
+        },
+        error: (error) => {
+          toast.error(`Failed to parse CSV: ${error.message}`);
+        }
       });
     } else {
+      // Excel: Read as binary
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const bstr = e.target?.result;
+        const workbook = XLSX.read(bstr, { type: 'binary' });
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        const json = XLSX.utils.sheet_to_json(worksheet);
+        
+        // TRIM field names untuk XLSX juga!
+        const trimmedJson = json.map((row: any) => {
+          const trimmedRow: any = {};
+          Object.keys(row).forEach(key => {
+            trimmedRow[key.trim()] = row[key];
+          });
+          return trimmedRow;
+        });
+        
+        // For Excel, detect columns from first row keys
+        const headers = trimmedJson.length > 0 ? Object.keys(trimmedJson[0]) : [];
+        processData(trimmedJson, headers);
+      };
       reader.readAsBinaryString(file);
     }
   }, [pmThreshold, onDataImported]);
@@ -114,20 +229,33 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
               <div className="text-center">
                 <h3 className="text-lg font-semibold">Upload General Ledger</h3>
                 <p className="text-sm text-muted-foreground">Drag & drop your GL Excel or CSV file here</p>
+                <p className="text-xs text-muted-foreground mt-1">Support: .csv, .xlsx, .xls</p>
               </div>
               <Button variant="outline" size="sm">Select File</Button>
             </div>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Card className="lg:col-span-2">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <Card className="lg:col-span-3">
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <div>
                 <CardTitle className="text-xl">Imported GL Data</CardTitle>
-                <CardDescription>Reviewing {data.length} accounts from {fileName}</CardDescription>
+                <CardDescription>
+                  Reviewing {data.length} accounts from {fileName}
+                  {detectedMapping && (
+                    <div className="text-xs mt-1 text-muted-foreground">
+                      Detected: {Object.entries(detectedMapping).map(([k, v]) => `${k}: ${v}`).join(', ')}
+                    </div>
+                  )}
+                  {emptyRowCount > 0 && (
+                    <div className="text-xs mt-1 text-orange-600">
+                      Filtered {emptyRowCount} empty rows
+                    </div>
+                  )}
+                </CardDescription>
               </div>
-              <Button variant="ghost" size="sm" onClick={() => { setData([]); setFileName(null); setBenfordData([]); }}>
+              <Button variant="ghost" size="sm" onClick={() => { setData([]); setFileName(null); setBenfordData([]); setDetectedMapping(null); setEmptyRowCount(0); }}>
                 <X className="h-4 w-4 mr-2" /> Reset
               </Button>
             </CardHeader>
@@ -139,17 +267,19 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
                       <TableHead>Code</TableHead>
                       <TableHead>Account Name</TableHead>
                       <TableHead className="text-right">Balance</TableHead>
+                      {data[0]?.fsliCode && <TableHead>FSLI Code</TableHead>}
                       <TableHead>Significance</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {data.slice(0, 50).map((row, i) => (
                       <TableRow key={i}>
-                        <TableCell className="font-mono text-xs">{row.accountCode}</TableCell>
+                        <TableCell className="font-mono text-xs">{row.accountCode || '-'}</TableCell>
                         <TableCell className="text-sm">{row.accountName}</TableCell>
                         <TableCell className="text-right font-mono text-xs">
                           {new Intl.NumberFormat('id-ID').format(row.balance)}
                         </TableCell>
+                        {row.fsliCode && <TableCell className="font-mono text-xs">{row.fsliCode}</TableCell>}
                         <TableCell>
                           {Math.abs(row.balance) >= pmThreshold ? (
                             <Badge className="bg-orange-500">Above PM</Badge>
@@ -161,7 +291,7 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
                     ))}
                     {data.length > 50 && (
                       <TableRow>
-                        <TableCell colSpan={4} className="text-center text-muted-foreground italic py-4">
+                        <TableCell colSpan={data[0]?.fsliCode ? 5 : 4} className="text-center text-muted-foreground italic py-4">
                           Showing first 50 of {data.length} accounts...
                         </TableCell>
                       </TableRow>
@@ -172,7 +302,7 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
             </CardContent>
           </Card>
 
-          <div className="space-y-6">
+          <div className="space-y-6 lg:col-span-1">
             <Card className={cn(balanceStatus?.isBalanced ? "border-green-200 bg-green-50/20" : "border-destructive/20 bg-destructive/5")}>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-bold uppercase flex items-center gap-2">
@@ -204,7 +334,7 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
                 <CardDescription className="text-[10px]">Statistical audit for data manipulation detection.</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-[200px] w-full mt-4">
+                <div className="h-[300px] w-full mt-4">
                   <ResponsiveContainer width="100%" height="100%">
                     <ComposedChart data={benfordData}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} />

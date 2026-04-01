@@ -181,7 +181,7 @@ export interface CSARecord {
   period: string; // e.g., "2024-Q1"
   assessmentDate: number; // epoch millis
   assessedBy: string; // User ID
-  result: "Pass" | "Fail" | "N/A";
+  result: "High" | "Medium" | "Low";
   evidenceUrl?: string;
   comments: string;
   // ITAC Specific (Lampiran 7 Hal 91-92)

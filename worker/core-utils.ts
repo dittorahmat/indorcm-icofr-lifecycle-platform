@@ -290,11 +290,20 @@ export abstract class IndexedEntity<S extends { id: string }> extends Entity<S> 
     return { items: rows, next };
   }
 
-  static async ensureSeed<TCtor extends CtorAny>(this: HS<TCtor>, env: Env): Promise<void> {
+  static async ensureSeed<TCtor extends CtorAny>(this: HS<TCtor>, env: Env, forceReseed = false): Promise<void> {
     const idx = new Index<string>(env, this.indexName);
     const ids = await idx.list();
     const seeds = this.seedData;
-    if (ids.length === 0 && seeds && seeds.length > 0) {
+    
+    if (seeds && seeds.length > 0 && (ids.length === 0 || forceReseed)) {
+      if (forceReseed) {
+        // Simple cleanup for reseed
+        for (const id of ids) {
+          const inst = new this(env, id);
+          await inst.delete();
+        }
+        await idx.clear();
+      }
       await Promise.all(seeds.map(s => new this(env, this.keyOf(s)).save(s)));
       await idx.addBatch(seeds.map(s => this.keyOf(s)));
     }

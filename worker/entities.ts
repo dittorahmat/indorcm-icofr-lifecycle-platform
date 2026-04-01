@@ -45,7 +45,7 @@ export class ControlEntity extends IndexedEntity<Control & Auditable> {
 export class CSAEntity extends IndexedEntity<CSARecord & Auditable> {
   static readonly entityName = "csa";
   static readonly indexName = "csas";
-  static readonly initialState: CSARecord & Auditable = { id: "", controlId: "", period: "", assessmentDate: 0, assessedBy: "", result: "N/A", comments: "", auditTrail: [] };
+  static readonly initialState: CSARecord & Auditable = { id: "", controlId: "", period: "", assessmentDate: 0, assessedBy: "", result: "Low", comments: "", auditTrail: [] };
   async getAuditTrail() { return (await this.getState()).auditTrail; }
 }
 
@@ -65,6 +65,38 @@ export class TestEntity extends IndexedEntity<TestRecord & Auditable> {
     },
     auditTrail: [] 
   };
+  static seedData: (TestRecord & Auditable)[] = [
+    {
+      id: "test-1", controlId: "ctrl-001", testType: "TOD", method: "Inspection", period: "2024-Q1",
+      testDate: Date.now() - 172800000, testedBy: "Internal Audit A", result: "Pass", 
+      comments: "Walkthrough confirms control design is aligned with policy.",
+      evaluationAttributes: {
+        objectiveAchieved: true, timingAccuracy: true, authorityCompetence: true,
+        infoReliability: true, periodCoverage: true, evidenceAvailability: true,
+      },
+      auditTrail: []
+    },
+    {
+      id: "test-2", controlId: "ctrl-001", testType: "TOE", method: "Reperformance", period: "2024-Q1",
+      testDate: Date.now() - 86400000, testedBy: "Internal Audit A", result: "Pass", sampleSize: 25,
+      comments: "Tested 25 samples from Q1 population. No deviations found.",
+      evaluationAttributes: {
+        objectiveAchieved: true, timingAccuracy: true, authorityCompetence: true,
+        infoReliability: true, periodCoverage: true, evidenceAvailability: true,
+      },
+      auditTrail: []
+    },
+    {
+      id: "test-3", controlId: "ctrl-002", testType: "TOD", method: "Inquiry", period: "2024-Q1",
+      testDate: Date.now() - 259200000, testedBy: "Internal Audit B", result: "Fail",
+      comments: "Missing evidence of secondary review in the current workflow design.",
+      evaluationAttributes: {
+        objectiveAchieved: false, timingAccuracy: true, authorityCompetence: true,
+        infoReliability: true, periodCoverage: true, evidenceAvailability: false,
+      },
+      auditTrail: []
+    }
+  ];
   async getAuditTrail() { return (await this.getState()).auditTrail; }
 }
 

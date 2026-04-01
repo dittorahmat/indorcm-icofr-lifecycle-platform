@@ -14,9 +14,6 @@
 	"observability": {
 		"enabled": true
 	},
-    "vars": {
-        "GEMINI_API_KEY": "AIzaSyAue1NlXXG0z1aO1UZ0nGL5dzFNf7WEpdw"
-    },
     "durable_objects": {
       "bindings": [
         {
