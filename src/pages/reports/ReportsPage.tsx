@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { FileDown, Printer, Shield, FileText, CheckCircle2, AlertTriangle, Lock, Layers, Loader2, QrCode, XCircle } from 'lucide-react';
+import { FileDown, Printer, Shield, FileText, CheckCircle2, AlertTriangle, Lock, Layers, Loader2, QrCode, XCircle, BrainCircuit } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, PieChart, Pie, Cell } from 'recharts';
 import { toast } from 'sonner';
 import type { Deficiency, Settings, Control, TestRecord } from '@shared/types';
@@ -174,8 +174,10 @@ export function ReportsPage() {
                 </CardContent>
               </Card>
             </div>
+          </div>
 
-            <div className="grid gap-6 md:grid-cols-2">
+              <div className="grid gap-6 md:grid-cols-2">
+
               <Card>
                 <CardHeader><CardTitle>Deficiencies by Severity</CardTitle></CardHeader>
                 <CardContent>
