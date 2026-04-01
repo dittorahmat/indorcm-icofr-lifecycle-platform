@@ -106,40 +106,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   });
 
   // --- ICOFR Routes ---
-  // Force clear and re-seed all data (for development only!)
-  app.post('/api/dev/force-seed', async (c) => {
-    console.log('[DEV] Force re-seeding all data...');
-    
-    // Clear all entities by re-creating them
-    await Promise.all([
-      UserEntity.ensureSeed(c.env, true),
-      RCMEntity.ensureSeed(c.env, true),
-      ControlEntity.ensureSeed(c.env, true),
-      DeficiencyEntity.ensureSeed(c.env, true),
-      ActionPlanEntity.ensureSeed(c.env, true),
-      MaterialityEntity.ensureSeed(c.env, true),
-      ScopingEntity.ensureSeed(c.env, true),
-      ApplicationEntity.ensureSeed(c.env, true),
-      RiskLibraryEntity.ensureSeed(c.env, true),
-    ]);
-    
-    console.log('[DEV] Force re-seed complete!');
-    
-    const rcmCount = (await RCMEntity.list(c.env)).items.length;
-    const controlCount = (await ControlEntity.list(c.env)).items.length;
-    
-    return ok(c, {
-      message: 'Force re-seed complete',
-      rcmCount,
-      controlCount
-    });
-  });
-  
-  app.get('/api/rcm', async (c) => {
-    const result = await RCMEntity.list(c.env);
-    console.log('[API /api/rcm] Returning', result.items.length, 'RCMs');
-    return ok(c, result);
-  });
+  app.get('/api/rcm', async (c) => ok(c, await RCMEntity.list(c.env)));
   app.post('/api/rcm', async (c) => {
     if ((c as any).get('userRole') !== 'Line 2') return bad(c, 'Access Denied');
     const body = await c.req.json<Partial<RCM>>();

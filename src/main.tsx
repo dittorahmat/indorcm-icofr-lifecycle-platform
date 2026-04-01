@@ -11,8 +11,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { PageSuspense } from '@/components/PageSuspense';
 import { RootLayout } from '@/components/layout/RootLayout';
 import '@/index.css';
-// Import force reload script
-import '@/lib/force-reload-mock-data';
 
 // Lazy load all pages for optimized bundle size
 const HomePage = lazy(() => import('@/pages/HomePage').then(module => ({ default: module.HomePage })));
