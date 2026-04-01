@@ -183,23 +183,23 @@ export function AppSidebar(): JSX.Element {
           <SidebarGroupLabel className="font-bold text-slate-900 uppercase text-[10px] tracking-widest">AI</SidebarGroupLabel>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton className="cursor-not-allowed opacity-60">
-                <Search className="h-4 w-4" /> <span>Anomaly Check</span>
+              <SidebarMenuButton asChild isActive={isActive("/ai-hub")}>
+                <Link to="/ai-hub"><Search className="h-4 w-4" /> <span>Anomaly Check</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton className="cursor-not-allowed opacity-60">
-                <FileBarChart className="h-4 w-4" /> <span>Financial Journal Check</span>
+              <SidebarMenuButton asChild isActive={isActive("/ai-hub")}>
+                <Link to="/ai-hub"><FileBarChart className="h-4 w-4" /> <span>Financial Journal Check</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton className="cursor-not-allowed opacity-60">
-                <Bot className="h-4 w-4" /> <span>Predictive Story Life</span>
+              <SidebarMenuButton asChild isActive={isActive("/ai-hub")}>
+                <Link to="/ai-hub"><Bot className="h-4 w-4" /> <span>Predictive Story Life</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton className="cursor-not-allowed opacity-60">
-                <Cpu className="h-4 w-4" /> <span>Continuous Improvement</span>
+              <SidebarMenuButton asChild isActive={isActive("/ai-hub")}>
+                <Link to="/ai-hub"><Cpu className="h-4 w-4" /> <span>Continuous Improvement</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

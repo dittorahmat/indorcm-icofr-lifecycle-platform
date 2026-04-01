@@ -142,9 +142,6 @@ export function ReportsPage() {
             <TabsTrigger value="management">Asesmen Manajemen</TabsTrigger>
             <TabsTrigger value="audit">Laporan Hasil Pengujian</TabsTrigger>
             <TabsTrigger value="appendices">Regulatory Appendices</TabsTrigger>
-            <TabsTrigger value="analytics-hub" className="text-indigo-700 font-bold border-b-2 border-transparent data-[state=active]:border-indigo-600 gap-2">
-              <BrainCircuit className="h-3 w-3" /> Digital Analytics Hub
-            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="dashboard" className="space-y-6 pt-4">
@@ -455,10 +452,6 @@ export function ReportsPage() {
 
           <TabsContent value="appendices" className="pt-4">
             <RegulatoryAppendices />
-          </TabsContent>
-
-          <TabsContent value="analytics-hub" className="pt-4">
-            <AIAnalyticsMockup />
           </TabsContent>
         </Tabs>
 
