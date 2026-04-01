@@ -489,21 +489,22 @@ export function CSAWorkspace() {
     }
   });
 
-  if (!['Line 1', 'Line 2', 'Admin'].includes(mockRole)) {
-    return (
-      <AppLayout container>
-        <div className="flex items-center justify-center h-[calc(100vh-200px)]">
-          <Card className="max-w-md">
-            <CardContent className="p-8 text-center flex flex-col items-center gap-4">
-              <AlertTriangle className="h-12 w-12 text-destructive" />
-              <h2 className="text-2xl font-bold">Access Denied</h2>
-              <p className="text-muted-foreground">This workspace is restricted to Line 1 (Process Owners) and Line 2 (ICOFR).</p>
-            </CardContent>
-          </Card>
-        </div>
-      </AppLayout>
-    );
-  }
+  // DEMO MODE: Removed access restriction - All lines can access
+  // if (!['Line 1', 'Line 2', 'Admin'].includes(mockRole)) {
+  //   return (
+  //     <AppLayout container>
+  //       <div className="flex items-center justify-center h-[calc(100vh-200px)]">
+  //         <Card className="max-w-md">
+  //           <CardContent className="p-8 text-center flex flex-col items-center gap-4">
+  //             <AlertTriangle className="h-12 w-12 text-destructive" />
+  //             <h2 className="text-2xl font-bold">Access Denied</h2>
+  //             <p className="text-muted-foreground">This workspace is restricted to Line 1 (Process Owners) and Line 2 (ICOFR).</p>
+  //           </CardContent>
+  //         </Card>
+  //       </div>
+  //     </AppLayout>
+  //   );
+  // }
 
   const isLoading = controlsLoading || csaLoading;
   

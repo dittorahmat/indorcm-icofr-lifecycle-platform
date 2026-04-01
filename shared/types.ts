@@ -13,7 +13,7 @@ export type AutomatedSubNature = "Automated Control" | "Automated Calculation" |
 export type ControlFrequency = "Annual" | "Semi-Annual" | "Quarterly" | "Monthly" | "Weekly" | "Daily" | "Ad-hoc";
 export type InformationProcessingObjective = "Completeness" | "Accuracy" | "Validity" | "Restricted Access";
 export type DeficiencySeverity = "Control Deficiency" | "Significant Deficiency" | "Material Weakness";
-export type ActionPlanStatus = "Draft" | "In Progress" | "Resolved" | "Verified";
+export type ActionPlanStatus = "Draft" | "In Review" | "In Progress" | "Resolved" | "Verified";
 export type UserRole = "Line 1" | "Line 2" | "Line 3" | "Admin" | "External Auditor";
 
 export type BUMNCluster = 
@@ -205,7 +205,7 @@ export interface TestRecord {
   period: string; // e.g., "2024-Q1"
   testDate: number; // epoch millis
   testedBy: string; // User ID
-  result: "Pass" | "Fail";
+  result: "Effective" | "Ineffective";
   sampleSize?: number;
   deviations?: number;
   evidenceUrl?: string;
@@ -247,6 +247,16 @@ export interface ActionPlan {
   dueDate: number; // epoch millis
   status: ActionPlanStatus;
   completionDate?: number;
+  // SK-5 Regulatory Fields (Lampiran 6 & 11)
+  relatedFunction: string; // Fungsi Terkait
+  picName: string; // Penanggung Jawab
+  planDescription: string; // Deskripsi Rencana
+  activityDetail: string; // Detail Aktivitas
+  remediatedControlDescription?: string; // Deskripsi Pengendalian setelah Remediasi
+  targetDate: number; // Target Tanggal (epoch millis)
+  actualCompletionDate?: number; 
+  isApprovedByLine2: boolean;
+  isBeforeYearEnd: boolean; // For effectiveness conclusion
 }
 
 export interface Settings {

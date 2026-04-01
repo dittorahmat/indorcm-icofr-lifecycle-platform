@@ -18,7 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { api } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
-import { getSuggestedSampleRange, isReadyForRemediationTest } from '@/lib/compliance-utils';
+import { getSuggestedSampleRange, isReadyForRemediationTest, getTestResultLabel } from '@/lib/compliance-utils';
 import type { Control, TestRecord, Deficiency, User } from '@shared/types';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
@@ -29,7 +29,7 @@ import { Switch } from '@/components/ui/switch';
 const testSchema = z.object({
   testType: z.enum(['TOD', 'TOE']),
   method: z.enum(["Inquiry", "Observation", "Inspection", "Reperformance"]),
-  result: z.enum(['Pass', 'Fail']),
+  result: z.enum(['Effective', 'Ineffective']),
   comments: z.string().min(1, 'Comments are required'),
   sampleSize: z.number().optional(),
   homogeneityJustification: z.string().optional(),
@@ -69,7 +69,7 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
     onSuccess: (data: TestRecord) => {
       toast.success(`${data.testType} for ${control.name} submitted.`);
       queryClient.invalidateQueries({ queryKey: ['tests'] });
-      if (data.result === 'Fail') {
+      if (data.result === 'Ineffective') {
         queryClient.invalidateQueries({ queryKey: ['deficiencies'] });
       }
       form.reset();
@@ -274,8 +274,8 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
                     )} />
                     
                     <div className="flex justify-end gap-2 mt-4">
-                      <Button type="submit" onClick={() => { form.setValue('testType', 'TOD'); form.setValue('result', 'Fail'); }} variant="destructive" size="sm">Fail TOD</Button>
-                      <Button type="submit" onClick={() => { form.setValue('testType', 'TOD'); form.setValue('result', 'Pass'); }} size="sm">Pass TOD</Button>
+                      <Button type="submit" onClick={() => { form.setValue('testType', 'TOD'); form.setValue('result', 'Ineffective'); }} variant="destructive" size="sm">Not Effective (Tidak Efektif)</Button>
+                      <Button type="submit" onClick={() => { form.setValue('testType', 'TOD'); form.setValue('result', 'Effective'); }} className="bg-green-600 hover:bg-green-700" size="sm">Effective (Efektif)</Button>
                     </div>
                   </TabsContent>
 
@@ -334,8 +334,8 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
                     )} />
 
                     <div className="flex justify-end gap-2 mt-4">
-                      <Button type="submit" onClick={() => { form.setValue('testType', 'TOE'); form.setValue('result', 'Fail'); }} variant="destructive" size="sm">Fail TOE</Button>
-                      <Button type="submit" onClick={() => { form.setValue('testType', 'TOE'); form.setValue('result', 'Pass'); }} size="sm">Pass TOE</Button>
+                      <Button type="submit" onClick={() => { form.setValue('testType', 'TOE'); form.setValue('result', 'Ineffective'); }} variant="destructive" size="sm">Not Effective (Tidak Efektif)</Button>
+                      <Button type="submit" onClick={() => { form.setValue('testType', 'TOE'); form.setValue('result', 'Effective'); }} className="bg-green-600 hover:bg-green-700" size="sm">Effective (Efektif)</Button>
                     </div>
                   </TabsContent>
                 </motion.div>
@@ -362,15 +362,14 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="font-bold">{h.method}</span>
-                    {h.result === 'Pass' ? (
-                      <Badge className="bg-green-100 text-green-700 hover:bg-green-100 gap-1 text-[9px]">
-                        <CheckCircle2 className="h-2 w-2" /> PASS
-                      </Badge>
-                    ) : (
-                      <Badge variant="destructive" className="gap-1 text-[9px]">
-                        <XCircle className="h-2 w-2" /> FAIL
-                      </Badge>
-                    )}
+                    <Badge className={cn("gap-1 text-[9px]", getTestResultLabel(h.result).color)}>
+                      {h.result === 'Effective' || h.result === 'Pass' ? (
+                        <CheckCircle2 className="h-2 w-2" />
+                      ) : (
+                        <XCircle className="h-2 w-2" />
+                      )}
+                      {getTestResultLabel(h.result).label}
+                    </Badge>
                   </div>
                   <p className="text-muted-foreground line-clamp-2 italic">"{h.comments}"</p>
                   
@@ -425,32 +424,36 @@ export function TestWorkbench() {
 
   const mockRole = localStorage.getItem('mockRole') || 'Line 1';
 
+  // DEMO MODE: All lines can access Testing Workbench
+  // Original restriction: if (mockRole !== 'Line 3') { return AccessDenied... }
+
   // Bab II poin d.2 - Cooling Off Period Validation
   const isCoolingOffViolation = (control: Control) => {
     if (!userData?.processOwnershipHistory) return false;
     const oneYearAgo = Date.now() - (365 * 24 * 60 * 60 * 1000);
     return userData.processOwnershipHistory.some(h => 
-      h.processId === control.rcmId && 
-      (h.role === 'Line 1' || h.role === 'Line 2') && 
+      h.processId === control.rcmId &&
+      (h.role === 'Line 1' || h.role === 'Line 2') &&
       h.endDate > oneYearAgo
     );
   };
 
-  if (mockRole !== 'Line 3') {
-    return (
-      <AppLayout container>
-        <div className="flex items-center justify-center h-[calc(100vh-200px)]">
-          <Card className="max-w-md">
-            <CardContent className="p-8 text-center flex flex-col items-center gap-4">
-              <AlertTriangle className="h-12 w-12 text-destructive" />
-              <h2 className="text-2xl font-bold">Access Denied</h2>
-              <p className="text-muted-foreground">This workbench is only available to Internal Audit (Line 3).</p>
-            </CardContent>
-          </Card>
-        </div>
-      </AppLayout>
-    );
-  }
+  // DEMO MODE: Removed access restriction - All lines can access
+  // if (mockRole !== 'Line 3') {
+  //   return (
+  //     <AppLayout container>
+  //       <div className="flex items-center justify-center h-[calc(100vh-200px)]">
+  //         <Card className="max-w-md">
+  //           <CardContent className="p-8 text-center flex flex-col items-center gap-4">
+  //             <AlertTriangle className="h-12 w-12 text-destructive" />
+  //             <h2 className="text-2xl font-bold">Access Denied</h2>
+  //             <p className="text-muted-foreground">This workbench is only available to Internal Audit (Line 3).</p>
+  //           </CardContent>
+  //         </Card>
+  //       </div>
+  //     </AppLayout>
+  //   );
+  // }
 
   const isLoading = controlsLoading || deficienciesLoading || testsLoading;
 

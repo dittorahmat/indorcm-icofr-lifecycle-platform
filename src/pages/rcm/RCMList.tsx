@@ -178,14 +178,15 @@ export function RCMList() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">Risk Control Matrix (RCM)</h1>
+            <h1 className="text-3xl font-bold">Risk Control</h1>
             <p className="text-muted-foreground">Manage processes, risks, and internal controls.</p>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline"><FileDown className="h-4 w-4 mr-2" /> Export</Button>
-            {mockRole === 'Line 2' && (
-              <Button onClick={() => setAddProcessOpen(true)}><PlusCircle className="h-4 w-4 mr-2" /> Add Process</Button>
-            )}
+            {/* DEMO MODE: All lines can add process */}
+            {/* {mockRole === 'Line 2' && ( */}
+              <Button onClick={() => setAddProcessOpen(true)}><PlusCircle className="h-4 w-4 mr-2" /> Add Risk</Button>
+            {/* )} */}
           </div>
         </div>
 
@@ -238,10 +239,11 @@ export function RCMList() {
                               {rcm.status}
                             </Badge>
                           </div>
-                          {rcm.status === 'Pending Validation' && mockRole === 'Line 2' && (
-                            <Button 
-                              size="sm" 
-                              variant="destructive" 
+                          {/* DEMO MODE: All lines can validate */}
+                          {rcm.status === 'Pending Validation' && (
+                            <Button
+                              size="sm"
+                              variant="destructive"
                               className="h-7 text-[10px] uppercase font-bold"
                               onClick={() => validateMutation.mutate(rcm.id)}
                               disabled={validateMutation.isPending}
@@ -249,11 +251,12 @@ export function RCMList() {
                               Validate Design (Lini 2)
                             </Button>
                           )}
-                          {rcm.status === 'Pending Change Approval' && mockRole === 'Line 2' && (
+                          {/* DEMO MODE: All lines can review changes */}
+                          {rcm.status === 'Pending Change Approval' && (
                             <div className="p-2 border rounded bg-amber-50 border-amber-200 mt-2 space-y-2 max-w-[250px]">
                               <p className="text-[9px] font-bold text-amber-800 uppercase tracking-tighter">Proposed Changes by Lini 1</p>
-                              <Button 
-                                size="sm" 
+                              <Button
+                                size="sm"
                                 className="h-7 text-[10px] w-full bg-amber-600 hover:bg-amber-700 gap-1 font-bold"
                                 onClick={() => { setSelectedRcm(rcm); setCompareOpen(true); }}
                               >

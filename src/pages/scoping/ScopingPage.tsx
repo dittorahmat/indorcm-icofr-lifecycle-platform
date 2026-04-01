@@ -604,7 +604,9 @@ export function ScopingPage() {
   const [dataQuality, setDataQuality] = React.useState<{ score: number; level: string; hasFSLI: boolean; message: string } | null>(null);
   
   const mockRole = localStorage.getItem('mockRole') || 'Line 1';
-  const isLine2 = mockRole === 'Line 2';
+  // DEMO MODE: All lines can access Line 2 features
+  // const isLine2 = mockRole === 'Line 2';
+  const isLine2 = true; // DEMO MODE
 
   const { register, control, watch, setValue, reset, handleSubmit } = useForm<MaterialityForm>({
     resolver: zodResolver(materialitySchema),

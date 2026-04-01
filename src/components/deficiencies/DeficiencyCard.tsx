@@ -56,6 +56,17 @@ export function DeficiencyCard({ deficiency, actionPlan }: DeficiencyCardProps) 
             )}
           </div>
 
+          {actionPlan && (
+            <div className="flex flex-wrap gap-2 pt-1">
+              <Badge variant="outline" className="text-[9px] gap-1 bg-slate-50 border-slate-200">
+                <Users className="h-2.5 w-2.5" /> {actionPlan.picName || 'No PIC'}
+              </Badge>
+              <Badge variant="outline" className="text-[9px] bg-slate-50 border-slate-200">
+                {actionPlan.relatedFunction || 'No Function'}
+              </Badge>
+            </div>
+          )}
+
           <div className="pt-2 border-t border-muted">
              <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase mb-1.5">
                 <Users className="h-3 w-3" /> Report Distribution (Tabel 24)

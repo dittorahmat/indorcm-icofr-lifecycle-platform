@@ -84,7 +84,8 @@ export const MOCK_FINDINGS = [
     owner: "Manager Logistik Site & KTT",
     remediation: "Catch-up pengukuran ulang & pengadaan layanan drone backup.",
     actionPlan: "1. Joint Survey akhir Desember. 2. Kontrak payung vendor surveyor cadangan. 3. Teguran tertulis kepada PIC.",
-    status: "YA (Disetujui CFO)"
+    status: "YA (Disetujui CFO)",
+    conclusion: "Tidak Efektif"
   }
 ];
 

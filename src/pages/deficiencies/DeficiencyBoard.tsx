@@ -12,27 +12,34 @@ import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { AlertTriangle, ShieldAlert, Layers, Plus, CheckCircle2 } from 'lucide-react';
 import { DoDWizard } from '@/components/deficiencies/DoDWizard';
+import { RemediationForm } from '@/components/deficiencies/RemediationForm';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 
-const KANBAN_COLUMNS: ActionPlanStatus[] = ["Draft", "In Progress", "Resolved", "Verified"];
+const KANBAN_COLUMNS: ActionPlanStatus[] = ["Draft", "In Review", "In Progress", "Resolved", "Verified"];
 
 function KanbanColumn({ 
   status, 
   deficiencies, 
   actionPlans, 
   onAssess,
+  onEditPlan,
   isSelectionMode,
   selectedIds,
-  onToggleSelect 
+  onToggleSelect,
+  role,
+  onStatusChange
 }: { 
   status: ActionPlanStatus; 
   deficiencies: Deficiency[]; 
   actionPlans: ActionPlan[], 
   onAssess: (dId: string) => void,
+  onEditPlan: (plan: ActionPlan) => void,
   isSelectionMode: boolean,
   selectedIds: string[],
-  onToggleSelect: (id: string) => void
+  onToggleSelect: (id: string) => void,
+  role: string,
+  onStatusChange: (apId: string, newStatus: ActionPlanStatus) => void
 }) {
   const plansInColumn = actionPlans.filter(ap => ap.status === status);
 
@@ -60,6 +67,50 @@ function KanbanColumn({
                 <div className={isSelectionMode ? "ml-6" : ""}>
                   <DeficiencyCard deficiency={deficiency} actionPlan={ap} />
                 </div>
+                
+                <div className="flex gap-2 mt-2 px-1">
+                  {status === "Draft" && (
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="flex-1 h-7 text-[10px]"
+                      onClick={() => onEditPlan(ap)}
+                    >
+                      Edit Plan
+                    </Button>
+                  )}
+                  {status === "Draft" && ['Line 1', 'Admin'].includes(role) && (
+                    <Button 
+                      size="sm" 
+                      variant="default" 
+                      className="flex-1 h-7 text-[10px] bg-blue-600 hover:bg-blue-700"
+                      onClick={() => onStatusChange(ap.id, "In Review")}
+                    >
+                      Submit for Review
+                    </Button>
+                  )}
+                  {status === "In Review" && ['Line 2', 'Admin'].includes(role) && (
+                    <>
+                      <Button 
+                        size="sm" 
+                        variant="default" 
+                        className="flex-1 h-7 text-[10px] bg-green-600 hover:bg-green-700"
+                        onClick={() => onStatusChange(ap.id, "In Progress")}
+                      >
+                        Approve Plan
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="flex-1 h-7 text-[10px] text-red-600 border-red-200 hover:bg-red-50"
+                        onClick={() => onStatusChange(ap.id, "Draft")}
+                      >
+                        Reject
+                      </Button>
+                    </>
+                  )}
+                </div>
+
                 {!isSelectionMode && (
                   <Button 
                     size="icon" 
@@ -83,9 +134,11 @@ function KanbanColumn({
 export function DeficiencyBoard() {
   const queryClient = useQueryClient();
   const [isWizardOpen, setWizardOpen] = React.useState(false);
+  const [isRemediationOpen, setRemediationOpen] = React.useState(false);
   const [isAggregateMode, setAggregateMode] = React.useState(false);
   const [selectedDeficiencies, setSelectedDeficiencies] = React.useState<string[]>([]);
   const [activeDeficiencyId, setActiveDeficiencyId] = React.useState<string | null>(null);
+  const [activePlan, setActivePlan] = React.useState<ActionPlan | null>(null);
 
   const { data: deficienciesData, isLoading: deficienciesLoading } = useQuery({
     queryKey: ['deficiencies'],
@@ -111,24 +164,36 @@ export function DeficiencyBoard() {
   );
 
   const planMutation = useMutation({
-    mutationFn: async ({ id, status, deficiencyId }: { id: string; status: ActionPlanStatus; deficiencyId: string }) => {
-      // 1. Update Action Plan Status
-      await api(`/api/actionplans/${id}`, { method: 'PUT', body: JSON.stringify({ 
-        status,
-        completionDate: status === 'Resolved' || status === 'Verified' ? Date.now() : undefined
-      }) });
+    mutationFn: async (payload: Partial<ActionPlan> & { id: string; deficiencyId: string }) => {
+      // 1. Update Action Plan
+      const currentPlan = actionPlans.find(p => p.id === payload.id);
+      const updatedStatus = payload.status || currentPlan?.status;
+      const compDate = updatedStatus === 'Resolved' || updatedStatus === 'Verified' ? Date.now() : payload.completionDate;
+      
+      const updateBody = {
+        ...payload,
+        completionDate: compDate,
+        actualCompletionDate: compDate,
+        isApprovedByLine2: updatedStatus === 'In Progress' ? true : payload.isApprovedByLine2,
+        isBeforeYearEnd: compDate ? isBeforeYearEnd(compDate, 2024) : payload.isBeforeYearEnd, // Hardcoded 2024 for now
+      };
+
+      await api(`/api/actionplans/${payload.id}`, { method: 'PUT', body: JSON.stringify(updateBody) });
 
       // 2. Sync Deficiency Status based on Action Plan (SK-5 Requirement)
-      let defStatus: Deficiency['status'] = 'Open';
-      if (status === 'Resolved') defStatus = 'Remediated';
-      if (status === 'Verified') defStatus = 'Verified';
-      
-      await api(`/api/deficiencies/${deficiencyId}`, { method: 'PUT', body: JSON.stringify({ status: defStatus }) });
+      if (updatedStatus) {
+        let defStatus: Deficiency['status'] = 'Open';
+        if (updatedStatus === 'Resolved') defStatus = 'Remediated';
+        if (updatedStatus === 'Verified') defStatus = 'Verified';
+        
+        await api(`/api/deficiencies/${payload.deficiencyId}`, { method: 'PUT', body: JSON.stringify({ status: defStatus }) });
+      }
     },
     onSuccess: () => {
-      toast.success("Status updated and synchronized.");
+      toast.success("Action plan updated and synchronized.");
       queryClient.invalidateQueries({ queryKey: ['actionplans'] });
       queryClient.invalidateQueries({ queryKey: ['deficiencies'] });
+      setRemediationOpen(false);
     },
     onError: (error) => {
       toast.error(`Update failed: ${error.message}`);
@@ -211,21 +276,22 @@ export function DeficiencyBoard() {
   const isLoading = deficienciesLoading || actionPlansLoading;
   const mockRole = localStorage.getItem('mockRole') || 'Line 1';
 
-  if (!['Line 2', 'Line 3', 'Admin'].includes(mockRole)) {
-    return (
-      <AppLayout container>
-        <div className="flex items-center justify-center h-[calc(100vh-200px)]">
-          <Card className="max-w-md">
-            <CardContent className="p-8 text-center flex flex-col items-center gap-4">
-              <AlertTriangle className="h-12 w-12 text-destructive" />
-              <h2 className="text-2xl font-bold">Access Denied</h2>
-              <p className="text-muted-foreground">The Deficiency Board is restricted to Line 2, Line 3, and Admin roles.</p>
-            </CardContent>
-          </Card>
-        </div>
-      </AppLayout>
-    );
-  }
+  // DEMO MODE: Removed access restriction - All lines can access
+  // if (!['Line 2', 'Line 3', 'Admin'].includes(mockRole)) {
+  //   return (
+  //     <AppLayout container>
+  //       <div className="flex items-center justify-center h-[calc(100vh-200px)]">
+  //         <Card className="max-w-md">
+  //           <CardContent className="p-8 text-center flex flex-col items-center gap-4">
+  //             <AlertTriangle className="h-12 w-12 text-destructive" />
+  //             <h2 className="text-2xl font-bold">Access Denied</h2>
+  //             <p className="text-muted-foreground">The Deficiency Board is restricted to Line 2, Line 3, and Admin roles.</p>
+  //           </CardContent>
+  //         </Card>
+  //       </div>
+  //     </AppLayout>
+  //   );
+  // }
 
   const handleToggleSelect = (id: string) => {
     setSelectedDeficiencies(prev => 
@@ -294,6 +360,21 @@ export function DeficiencyBoard() {
                     isSelectionMode={isAggregateMode}
                     selectedIds={selectedDeficiencies}
                     onToggleSelect={handleToggleSelect}
+                    role={mockRole}
+                    onEditPlan={(plan) => {
+                      setActivePlan(plan);
+                      setRemediationOpen(true);
+                    }}
+                    onStatusChange={(apId, newStatus) => {
+                      const plan = actionPlans.find(p => p.id === apId);
+                      if (plan) {
+                        planMutation.mutate({ 
+                          id: apId, 
+                          status: newStatus, 
+                          deficiencyId: plan.deficiencyId 
+                        });
+                      }
+                    }}
                   />
                 ))}
               </motion.div>
@@ -307,6 +388,14 @@ export function DeficiencyBoard() {
         setIsOpen={setWizardOpen} 
         onComplete={handleWizardComplete} 
         isAggregate={isAggregateMode}
+      />
+
+      <RemediationForm
+        isOpen={isRemediationOpen}
+        setIsOpen={setRemediationOpen}
+        actionPlan={activePlan || undefined}
+        onSubmit={(updatedPlan) => planMutation.mutate(updatedPlan)}
+        isLoading={planMutation.isPending}
       />
     </AppLayout>
   );

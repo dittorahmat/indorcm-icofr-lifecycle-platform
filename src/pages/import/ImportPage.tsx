@@ -114,7 +114,9 @@ export function ImportPage() {
 
   const hasErrors = rows.some(r => r.errors);
   const mockRole = localStorage.getItem('mockRole') || 'Line 1';
-  const isAuthorized = mockRole === 'Line 2';
+  // DEMO MODE: All lines can import
+  // const isAuthorized = mockRole === 'Line 2';
+  const isAuthorized = true; // DEMO MODE
 
   return (
     <AppLayout container>
@@ -124,7 +126,8 @@ export function ImportPage() {
             <div className="flex-1">
               <h1 className="text-3xl font-bold text-foreground">Bulk Import RCM</h1>
               <p className="text-muted-foreground">Upload a CSV file to bulk-create processes, risks, and controls.</p>
-              {!isAuthorized && (
+              {/* DEMO MODE: Removed access warning */}
+              {!isAuthorized && false && (
                 <Card className="mt-4 bg-destructive/5 border-destructive/20">
                   <CardContent className="p-4 flex items-center gap-3">
                     <AlertTriangle className="h-6 w-6 text-destructive" />
@@ -136,7 +139,7 @@ export function ImportPage() {
                 </Card>
               )}
             </div>
-            <Button variant="outline" onClick={handleDownloadTemplate} disabled={!isAuthorized} className="shadow-sm">
+            <Button variant="outline" onClick={handleDownloadTemplate} className="shadow-sm">
               <Download className="h-4 w-4 mr-2" /> Download Template
             </Button>
           </div>

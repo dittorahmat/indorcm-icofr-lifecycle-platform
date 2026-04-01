@@ -484,7 +484,25 @@ export function calculateDataQualityScore(glData: any[]): {
 }
 
 /**
- * Get Multiplier based on Table 25 (Hal 104)
+ * Menentukan apakah remediasi selesai sebelum akhir tahun fiskal (Lampiran 11)
  */
+export function isBeforeYearEnd(completionDate: number, fiscalYear: number): boolean {
+  // Akhir tahun fiskal (31 Desember)
+  const yearEnd = new Date(fiscalYear, 11, 31, 23, 59, 59).getTime();
+  return completionDate <= yearEnd;
+}
 
+/**
+ * Pemetaan hasil pengujian ke label regulatif (SK-5/2024)
+ */
+export const TEST_RESULT_MAP = {
+  Effective: { label: "Efektif", variant: "success", color: "text-green-600" },
+  Ineffective: { label: "Tidak Efektif", variant: "destructive", color: "text-red-600" },
+  // Legacy support
+  Pass: { label: "Efektif", variant: "success", color: "text-green-600" },
+  Fail: { label: "Tidak Efektif", variant: "destructive", color: "text-red-600" }
+} as const;
 
+export function getTestResultLabel(result: string): { label: string; variant: string; color: string } {
+  return (TEST_RESULT_MAP as any)[result] || { label: result, variant: "outline", color: "text-slate-500" };
+}

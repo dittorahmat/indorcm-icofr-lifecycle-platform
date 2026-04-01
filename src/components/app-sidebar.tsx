@@ -139,7 +139,7 @@ export function AppSidebar(): JSX.Element {
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/deficiencies")}>
-                <Link to="/deficiencies"><AlertTriangle /> <span>Remediation Tracker</span></Link>
+                <Link to="/deficiencies"><ShieldAlert /> <span>Deficiency & Remediasi</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

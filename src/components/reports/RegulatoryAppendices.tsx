@@ -245,14 +245,22 @@ function FindingsReport() {
               {MOCK_FINDINGS.map((item) => (
                 <TableRow key={item.ref} className="text-xs">
                   <TableCell>
-                    <p className="font-bold text-red-700">{item.title}</p>
+                    <p className="font-bold text-red-700">{item.ref}</p>
+                    <p className="font-medium">{item.title}</p>
                     <p className="text-[10px] text-slate-500 line-clamp-2">{item.detail}</p>
                   </TableCell>
                   <TableCell>{item.account}</TableCell>
-                  <TableCell className="font-mono font-bold text-red-600">Rp {item.exposure.toLocaleString()}</TableCell>
+                  <TableCell className="font-mono font-bold text-red-600 text-[10px]">Rp {item.exposure.toLocaleString()}</TableCell>
                   <TableCell><Badge variant="outline" className="text-[9px] border-amber-200 text-amber-700 bg-amber-50">{item.type}</Badge></TableCell>
-                  <TableCell className="italic text-slate-600">{item.remediation}</TableCell>
-                  <TableCell><Badge className="bg-green-600">{item.status}</Badge></TableCell>
+                  <TableCell className="italic text-slate-600 text-[10px]">{item.remediation}</TableCell>
+                  <TableCell>
+                    <div className="flex flex-col gap-1">
+                      <Badge className={cn(item.conclusion === 'Efektif' ? "bg-green-600" : "bg-red-600")}>
+                        {item.conclusion || 'Tidak Efektif'}
+                      </Badge>
+                      <span className="text-[8px] text-muted-foreground uppercase font-bold text-center">{item.status}</span>
+                    </div>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
