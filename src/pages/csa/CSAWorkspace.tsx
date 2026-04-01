@@ -18,9 +18,9 @@ import { cn } from '@/lib/utils';
 import { getGroupMultiplier, QualitativeScopingReason } from '@/lib/compliance-utils';
 import type { Control, CSARecord } from '@shared/types';
 import { toast } from 'sonner';
-import { 
-  UploadCloud, File as FileIcon, X, AlertTriangle, CheckCircle2, UserCheck, 
-  Search, Workflow, PlusCircle, FileDown, ShieldCheck, History, Eye, ArrowRight, Info 
+import {
+  UploadCloud, File as FileIcon, X, AlertTriangle, CheckCircle2, UserCheck,
+  Search, Workflow, PlusCircle, FileDown, ShieldCheck, History, Eye, ArrowRight, Info, XCircle
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';

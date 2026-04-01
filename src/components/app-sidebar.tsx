@@ -13,7 +13,19 @@ import {
   History,
   Megaphone,
   Network,
-  UploadCloud
+  UploadCloud,
+  Cpu,
+  Bot,
+  UserCog,
+  Workflow,
+  Database,
+  ShieldAlert,
+  ClipboardCheck,
+  Search,
+  ListChecks,
+  Settings2,
+  RefreshCw,
+  FileBarChart
 } from "lucide-react";
 import {
   Sidebar,
@@ -52,7 +64,7 @@ export function AppSidebar(): JSX.Element {
       <SidebarContent>
         {mockRole === 'External Auditor' && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-blue-600 font-bold">External Assurance</SidebarGroupLabel>
+            <SidebarGroupLabel className="text-blue-600 font-bold uppercase text-[10px]">External Assurance</SidebarGroupLabel>
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={isActive("/audit-portal")}>
@@ -64,90 +76,141 @@ export function AppSidebar(): JSX.Element {
         )}
 
         <SidebarGroup>
-          <SidebarGroupLabel>Planning & Risk</SidebarGroupLabel>
+          <SidebarGroupLabel className="font-bold text-slate-900 uppercase text-[10px] tracking-widest">MASTER</SidebarGroupLabel>
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/dashboard")}>
                 <Link to="/dashboard"><LayoutDashboard /> <span>Dashboard</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
+            {mockRole === 'Line 2' && (
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={isActive("/import")}>
+                  <Link to="/import"><RefreshCw /> <span>Sync Financial Statement</span></Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )}
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/scoping")}>
-                <Link to="/scoping"><Target /> <span>Scoping & Materiality</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/csa")}>
+                <Link to="/csa"><Workflow /> <span>Select BPM</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/wbs-recap")}>
-                <Link to="/wbs-recap"><Megaphone className="text-amber-600" /> <span>Whistleblowing Recap</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/scoping")}>
+                <Link to="/scoping"><Settings2 /> <span>Config OM/PM</span></Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel className="font-bold text-slate-900 uppercase text-[10px] tracking-widest">RCSA</SidebarGroupLabel>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={isActive("/rcm")}>
+                <Link to="/rcm"><ListChecks /> <span>RCM List</span></Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={isActive("/change-log")}>
+                <Link to="/change-log"><History /> <span>Change Log</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/soc-monitoring")}>
-                <Link to="/soc-monitoring"><Network /> <span>SOC Monitoring (SO)</span></Link>
+                <Link to="/soc-monitoring"><ShieldCheck /> <span>SOC Monitoring</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
-            {mockRole === 'Line 2' && (
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive("/import")}>
-                  <Link to="/import"><UploadCloud /> <span>Import RCM Data</span></Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            )}
-          </SidebarMenu>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Implementation</SidebarGroupLabel>
-          <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/csa")}>
-                <Link to="/csa"><CheckSquare /> <span>CSA Workspace</span></Link>
+                <Link to="/csa"><Search /> <span>Identifikasi Risiko</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Evaluation</SidebarGroupLabel>
-          <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/testing")}>
-                <Link to="/testing"><Microscope /> <span>Testing Workbench</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/csa")}>
+                <Link to="/csa"><ClipboardCheck /> <span>Self Assessment</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Remediation</SidebarGroupLabel>
+          <SidebarGroupLabel className="font-bold text-slate-900 uppercase text-[10px] tracking-widest">Deficiency</SidebarGroupLabel>
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/deficiencies")}>
                 <Link to="/deficiencies"><AlertTriangle /> <span>Deficiency Board</span></Link>
               </SidebarMenuButton>
-              <SidebarMenuBadge className="bg-red-100 text-red-700 hover:bg-red-100">3</SidebarMenuBadge>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Reporting</SidebarGroupLabel>
+          <SidebarGroupLabel className="font-bold text-slate-900 uppercase text-[10px] tracking-widest">TOD/TOE</SidebarGroupLabel>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/reports")}>
-                <Link to="/reports"><BarChart3 /> <span>Reports & Exports</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/testing")}>
+                <Link to="/testing"><ShieldCheck /> <span>Test Operasi Design</span></Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={isActive("/testing")}>
+                <Link to="/testing"><ShieldAlert /> <span>Test Operasi Efektivitas</span></Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel className="font-bold text-slate-900 uppercase text-[10px] tracking-widest">Report</SidebarGroupLabel>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={isActive("/wbs-recap")}>
+                <Link to="/wbs-recap"><FileBarChart /> <span>WBS Recap</span></Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            {Array.from({ length: 11 }).map((_, i) => (
+              <SidebarMenuItem key={i}>
+                <SidebarMenuButton asChild isActive={isActive("/reports")}>
+                  <Link to="/reports"><FileText className="h-3 w-3 opacity-50" /> <span>Lampiran {i + 1}</span></Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel className="font-bold text-slate-900 uppercase text-[10px] tracking-widest">AI</SidebarGroupLabel>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton className="cursor-not-allowed opacity-60">
+                <Search className="h-4 w-4" /> <span>Anomaly Check</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton className="cursor-not-allowed opacity-60">
+                <FileBarChart className="h-4 w-4" /> <span>Financial Journal Check</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton className="cursor-not-allowed opacity-60">
+                <Bot className="h-4 w-4" /> <span>Predictive Story Life</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton className="cursor-not-allowed opacity-60">
+                <Cpu className="h-4 w-4" /> <span>Continuous Improvement</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
         
-        <SidebarSeparator />
-        
         <SidebarGroup>
-           <SidebarMenu>
+          <SidebarGroupLabel className="font-bold text-slate-900 uppercase text-[10px] tracking-widest">User</SidebarGroupLabel>
+          <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/settings")}>
-                <Link to="/settings"><Settings /> <span>Settings</span></Link>
+                <Link to="/settings"><UserCog /> <span>User Admin</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

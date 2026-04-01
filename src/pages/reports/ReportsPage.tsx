@@ -15,6 +15,7 @@ import type { Deficiency, Settings, Control, TestRecord } from '@shared/types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
+import { RegulatoryAppendices } from '@/components/reports/RegulatoryAppendices';
 
 export function ReportsPage() {
   const queryClient = useQueryClient();
@@ -134,10 +135,11 @@ export function ReportsPage() {
         </div>
 
         <Tabs defaultValue="dashboard" className="no-print">
-          <TabsList>
+          <TabsList className="mb-4">
             <TabsTrigger value="dashboard">Overview</TabsTrigger>
             <TabsTrigger value="management">Asesmen Manajemen</TabsTrigger>
             <TabsTrigger value="audit">Laporan Hasil Pengujian</TabsTrigger>
+            <TabsTrigger value="appendices" className="text-blue-700 font-bold border-b-2 border-transparent data-[state=active]:border-blue-600">Regulatory Appendices (Lmp 5-11)</TabsTrigger>
           </TabsList>
 
           <TabsContent value="dashboard" className="space-y-6 pt-4">
@@ -438,6 +440,10 @@ export function ReportsPage() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="appendices" className="pt-4">
+            <RegulatoryAppendices />
           </TabsContent>
         </Tabs>
 

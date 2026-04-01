@@ -1,110 +1,466 @@
-import type { User, Chat, ChatMessage, RCM, Control, Deficiency, ActionPlan, UserRole, Materiality, Scoping, Application, RiskLibrary } from './types';
+import type { User, Chat, ChatMessage, RCM, Control, Deficiency, ActionPlan, UserRole, Materiality, Scoping, Application, RiskLibrary, BPMNode } from './types';
 
-// --- Original Demo Data ---
+// ============================================================================
+// PT BATUBARA NUSANTARA SEJAHTERA - MOCK DATA FOR COAL MINING BUMN
+// ============================================================================
+// Entity Profile:
+// - Location: Kalimantan Timur
+// - Type: Open-pit coal mining
+// - Capacity: 5 million MT/year
+// - Sales Mix: 70% Export, 30% Domestic (PLN)
+// - Pricing: HBA (Harga Batubara Acuan)
+// ============================================================================
+
+// --- Users (Line 1/2/3, Admin, External Auditor) ---
 export const MOCK_USERS: User[] = [
-  { id: 'u1', name: 'Alice (Process Owner)', role: 'Line 1' },
-  { id: 'u2', name: 'Bob (ICOFR Manager)', role: 'Line 2' },
-  { id: 'u3', name: 'Charlie (Internal Auditor)', role: 'Line 3' },
-  { id: 'u4', name: 'Diana (Admin)', role: 'Admin' },
-  { id: 'u5', name: 'Evan (KAP Partner)', role: 'External Auditor' },
+  { id: 'u1', name: 'Ahmad Fauzi (Process Owner - Mining)', role: 'Line 1' },
+  { id: 'u2', name: 'Siti Nurhaliza (ICOFR Manager)', role: 'Line 2' },
+  { id: 'u3', name: 'Budi Santoso (Internal Auditor)', role: 'Line 3' },
+  { id: 'u4', name: 'Diana Wijaya (Admin)', role: 'Admin' },
+  { id: 'u5', name: 'Evan Tan (KAP Partner)', role: 'External Auditor' },
 ];
 
+// --- Chat Data ---
 export const MOCK_CHATS: Chat[] = [
-  { id: 'c1', title: 'ICOFR Coordination' },
-  { id: 'c2', title: 'Deficiency Remediation' },
+  { id: 'c1', title: 'ICOFR Coordination - Coal Sales' },
+  { id: 'c2', title: 'Weighbridge Calibration Issue' },
 ];
 
 export const MOCK_CHAT_MESSAGES: ChatMessage[] = [
-  { id: 'm1', chatId: 'c1', userId: 'u2', text: 'Alice, please review the updated P2P BPM flow.', ts: Date.now() - 3600000 },
-  { id: 'm2', chatId: 'c1', userId: 'u1', text: 'Checked. Looks good, sending for approval.', ts: Date.now() - 1800000 },
+  { id: 'm1', chatId: 'c1', userId: 'u2', text: 'Ahmad, please review the coal sales contract approval workflow.', ts: Date.now() - 3600000 },
+  { id: 'm2', chatId: 'c1', userId: 'u1', text: 'Checked. The HBA pricing verification control needs update.', ts: Date.now() - 1800000 },
+  { id: 'm3', chatId: 'c2', userId: 'u3', text: 'Weighbridge calibration expired last month. Need immediate action.', ts: Date.now() - 7200000 },
 ];
 
-// --- ICOFR Mock Data ---
+// ============================================================================
+// RCM DATA - 8 CORE COAL MINING PROCESSES
+// ============================================================================
+
+export const MOCK_RCM: RCM[] = [
+  {
+    id: 'rcm-rev-01',
+    process: 'Revenue & Receivables',
+    subProcess: 'Coal Sales Contract',
+    riskDescription: 'Risiko penjualan batubara tanpa kontrak yang sah atau dengan syarat kredit yang tidak layak, mengakibatkan piutang tak tertagih.',
+    status: 'Active',
+    controls: ['ctrl-rev-01', 'ctrl-rev-02'],
+    bpmData: {
+      nodes: [
+        { id: 'n1', type: 'start', position: { x: 250, y: 0 }, data: { label: 'Sales Order Received', type: 'start' } },
+        { id: 'n2', type: 'activity', position: { x: 220, y: 80 }, data: { label: 'Credit Check', role: 'Finance' } },
+        { id: 'n3', type: 'risk', position: { x: 260, y: 160 }, data: { label: 'Credit Risk - Bad Debt' } },
+        { id: 'n4', type: 'control', position: { x: 265, y: 240 }, data: { label: 'Credit Limit Approval', code: 'FIN-01' } },
+        { id: 'n5', type: 'activity', position: { x: 220, y: 320 }, data: { label: 'Prepare Sales Contract', role: 'Legal' } },
+        { id: 'n6', type: 'activity', position: { x: 220, y: 400 }, data: { label: 'Contract Approval', role: 'Director' } },
+        { id: 'n7', type: 'archive', position: { x: 350, y: 400 }, data: { label: 'File Contract' } },
+        { id: 'n8', type: 'end', position: { x: 250, y: 480 }, data: { label: 'Contract Approved', type: 'end' } },
+      ],
+      edges: [
+        { id: 'e1-2', source: 'n1', target: 'n2' },
+        { id: 'e2-3', source: 'n2', target: 'n3' },
+        { id: 'e3-4', source: 'n3', target: 'n4' },
+        { id: 'e4-5', source: 'n4', target: 'n5' },
+        { id: 'e5-6', source: 'n5', target: 'n6' },
+        { id: 'e6-7', source: 'n6', target: 'n7' },
+        { id: 'e6-8', source: 'n6', target: 'n8' },
+      ]
+    }
+  },
+  {
+    id: 'rcm-rev-02',
+    process: 'Revenue & Receivables',
+    subProcess: 'Weighbridge & Quality Measurement',
+    riskDescription: 'Risiko ketidakakuratan pengukuran volume dan kualitas batubara (GAR, NAR, Total Moisture, Ash) mengakibatkan kesalahan pengakuan pendapatan.',
+    status: 'Active',
+    controls: ['ctrl-rev-03', 'ctrl-rev-04', 'ctrl-rev-05'],
+    bpmData: {
+      nodes: [
+        { id: 'n1', type: 'start', position: { x: 250, y: 0 }, data: { label: 'Truck Arrives at Weighbridge', type: 'start' } },
+        { id: 'n2', type: 'activity', position: { x: 220, y: 80 }, data: { label: 'Gross Weight Measurement', role: 'Weighbridge Operator' } },
+        { id: 'n3', type: 'risk', position: { x: 260, y: 160 }, data: { label: 'Volume Measurement Error' } },
+        { id: 'n4', type: 'control', position: { x: 265, y: 240 }, data: { label: 'Weighbridge Calibration', code: 'LOG-01' } },
+        { id: 'n5', type: 'activity', position: { x: 220, y: 320 }, data: { label: 'Take Coal Sample', role: 'QC Inspector' } },
+        { id: 'n6', type: 'activity', position: { x: 220, y: 400 }, data: { label: 'Lab Analysis (GAR/TM/Ash)', role: 'QC Lab' } },
+        { id: 'n7', type: 'risk', position: { x: 260, y: 480 }, data: { label: 'Quality Dispute' } },
+        { id: 'n8', type: 'control', position: { x: 265, y: 560 }, data: { label: 'Quality Certificate Approval', code: 'QC-01' } },
+        { id: 'n9', type: 'activity', position: { x: 220, y: 640 }, data: { label: 'Issue Weight Ticket & QC Certificate', role: 'Admin' } },
+        { id: 'n10', type: 'end', position: { x: 250, y: 720 }, data: { label: 'Data Recorded', type: 'end' } },
+      ],
+      edges: [
+        { id: 'e1-2', source: 'n1', target: 'n2' },
+        { id: 'e2-3', source: 'n2', target: 'n3' },
+        { id: 'e3-4', source: 'n3', target: 'n4' },
+        { id: 'e4-5', source: 'n4', target: 'n5' },
+        { id: 'e5-6', source: 'n5', target: 'n6' },
+        { id: 'e6-7', source: 'n6', target: 'n7' },
+        { id: 'e7-8', source: 'n7', target: 'n8' },
+        { id: 'e8-9', source: 'n8', target: 'n9' },
+        { id: 'e9-10', source: 'n9', target: 'n10' },
+      ]
+    }
+  },
+  {
+    id: 'rcm-rev-03',
+    process: 'Revenue & Receivables',
+    subProcess: 'Revenue Recognition - HBA Pricing',
+    riskDescription: 'Risiko kesalahan perhitungan harga jual batubara berdasarkan HBA (Harga Batubara Acuan) dengan adjustment kualitas, mengakibatkan kesalahan pengakuan pendapatan.',
+    status: 'Active',
+    controls: ['ctrl-rev-06', 'ctrl-rev-07'],
+    bpmData: {
+      nodes: [
+        { id: 'n1', type: 'start', position: { x: 250, y: 0 }, data: { label: 'Shipment Completed', type: 'start' } },
+        { id: 'n2', type: 'activity', position: { x: 220, y: 80 }, data: { label: 'Get HBA Price (ESDM)', role: 'Finance' } },
+        { id: 'n3', type: 'activity', position: { x: 220, y: 160 }, data: { label: 'Calculate Quality Adjustment', role: 'Finance' } },
+        { id: 'n4', type: 'risk', position: { x: 260, y: 240 }, data: { label: 'Pricing Error' } },
+        { id: 'n5', type: 'control', position: { x: 265, y: 320 }, data: { label: 'HBA Price Verification', code: 'BILL-01' } },
+        { id: 'n6', type: 'activity', position: { x: 220, y: 400 }, data: { label: 'Issue Invoice', role: 'Billing' } },
+        { id: 'n7', type: 'activity', position: { x: 220, y: 480 }, data: { label: 'Revenue Recognition', role: 'Accounting' } },
+        { id: 'n8', type: 'control', position: { x: 265, y: 480 }, data: { label: 'Revenue Review', code: 'ACC-01' } },
+        { id: 'n9', type: 'end', position: { x: 250, y: 560 }, data: { label: 'Revenue Recorded', type: 'end' } },
+      ],
+      edges: [
+        { id: 'e1-2', source: 'n1', target: 'n2' },
+        { id: 'e2-3', source: 'n2', target: 'n3' },
+        { id: 'e3-4', source: 'n3', target: 'n4' },
+        { id: 'e4-5', source: 'n4', target: 'n5' },
+        { id: 'e5-6', source: 'n5', target: 'n6' },
+        { id: 'e6-7', source: 'n6', target: 'n7' },
+        { id: 'e7-8', source: 'n7', target: 'n8' },
+        { id: 'e8-9', source: 'n8', target: 'n9' },
+      ]
+    }
+  },
+  {
+    id: 'rcm-prod-01',
+    process: 'Production & Inventory',
+    subProcess: 'Coal Extraction',
+    riskDescription: 'Risiko ketidakakuratan pencatatan volume produksi batubara (ROM - Run of Mine) mengakibatkan salah saji persediaan dan harga pokok penjualan.',
+    status: 'Active',
+    controls: ['ctrl-prod-01', 'ctrl-prod-02'],
+    bpmData: {
+      nodes: [
+        { id: 'n1', type: 'start', position: { x: 250, y: 0 }, data: { label: 'Mine Plan Approved', type: 'start' } },
+        { id: 'n2', type: 'activity', position: { x: 220, y: 80 }, data: { label: 'Overburden Removal', role: 'Contractor' } },
+        { id: 'n3', type: 'activity', position: { x: 220, y: 160 }, data: { label: 'Coal Extraction', role: 'Mining Team' } },
+        { id: 'n4', type: 'risk', position: { x: 260, y: 240 }, data: { label: 'Production Volume Error' } },
+        { id: 'n5', type: 'control', position: { x: 265, y: 320 }, data: { label: 'Daily Production Report', code: 'PROD-01' } },
+        { id: 'n6', type: 'activity', position: { x: 220, y: 400 }, data: { label: 'Stockpile Recording', role: 'Logistics' } },
+        { id: 'n7', type: 'end', position: { x: 250, y: 480 }, data: { label: 'ROM Recorded', type: 'end' } },
+      ],
+      edges: [
+        { id: 'e1-2', source: 'n1', target: 'n2' },
+        { id: 'e2-3', source: 'n2', target: 'n3' },
+        { id: 'e3-4', source: 'n3', target: 'n4' },
+        { id: 'e4-5', source: 'n4', target: 'n5' },
+        { id: 'e5-6', source: 'n5', target: 'n6' },
+        { id: 'e6-7', source: 'n6', target: 'n7' },
+      ]
+    }
+  },
+  {
+    id: 'rcm-prod-02',
+    process: 'Production & Inventory',
+    subProcess: 'Stockpile Management',
+    riskDescription: 'Risiko perbedaan signifikan antara catatan stockpile dengan hasil survey (drone/manual) mengakibatkan salah saji persediaan batubara.',
+    status: 'Active',
+    controls: ['ctrl-prod-03', 'ctrl-prod-04'],
+    bpmData: {
+      nodes: [
+        { id: 'n1', type: 'start', position: { x: 250, y: 0 }, data: { label: 'ROM Delivered to Stockpile', type: 'start' } },
+        { id: 'n2', type: 'activity', position: { x: 220, y: 80 }, data: { label: 'Stockpile Recording', role: 'Warehouse' } },
+        { id: 'n3', type: 'activity', position: { x: 220, y: 160 }, data: { label: 'Monthly Drone Survey', role: 'Survey Team' } },
+        { id: 'n4', type: 'risk', position: { x: 260, y: 240 }, data: { label: 'Stockpile Variance' } },
+        { id: 'n5', type: 'control', position: { x: 265, y: 320 }, data: { label: 'Variance Analysis', code: 'LOG-02' } },
+        { id: 'n6', type: 'activity', position: { x: 220, y: 400 }, data: { label: 'Adjustment if needed', role: 'Accounting' } },
+        { id: 'n7', type: 'end', position: { x: 250, y: 480 }, data: { label: 'Stockpile Updated', type: 'end' } },
+      ],
+      edges: [
+        { id: 'e1-2', source: 'n1', target: 'n2' },
+        { id: 'e2-3', source: 'n2', target: 'n3' },
+        { id: 'e3-4', source: 'n3', target: 'n4' },
+        { id: 'e4-5', source: 'n4', target: 'n5' },
+        { id: 'e5-6', source: 'n5', target: 'n6' },
+        { id: 'e6-7', source: 'n6', target: 'n7' },
+      ]
+    }
+  },
+  {
+    id: 'rcm-proc-01',
+    process: 'Procure to Pay',
+    subProcess: 'Mining Contractor Services',
+    riskDescription: 'Risiko pembayaran kepada kontraktor tambang tanpa verifikasi pekerjaan yang memadai, mengakibatkan pembayaran berlebih atau fiktif.',
+    status: 'Active',
+    controls: ['ctrl-proc-01', 'ctrl-proc-02', 'ctrl-proc-03'],
+    bpmData: {
+      nodes: [
+        { id: 'n1', type: 'start', position: { x: 250, y: 0 }, data: { label: 'Service Request', type: 'start' } },
+        { id: 'n2', type: 'activity', position: { x: 220, y: 80 }, data: { label: 'Contractor Selection', role: 'Procurement' } },
+        { id: 'n3', type: 'activity', position: { x: 220, y: 160 }, data: { label: 'Service Execution', role: 'Contractor' } },
+        { id: 'n4', type: 'activity', position: { x: 220, y: 240 }, data: { label: 'Work Verification', role: 'Engineering' } },
+        { id: 'n5', type: 'risk', position: { x: 260, y: 320 }, data: { label: 'Work Not Performed' } },
+        { id: 'n6', type: 'control', position: { x: 265, y: 400 }, data: { label: 'Work Certificate', code: 'ENG-01' } },
+        { id: 'n7', type: 'activity', position: { x: 220, y: 480 }, data: { label: 'Invoice Approval', role: 'Finance' } },
+        { id: 'n8', type: 'activity', position: { x: 220, y: 560 }, data: { label: 'Payment Processing', role: 'Finance' } },
+        { id: 'n9', type: 'end', position: { x: 250, y: 640 }, data: { label: 'Payment Completed', type: 'end' } },
+      ],
+      edges: [
+        { id: 'e1-2', source: 'n1', target: 'n2' },
+        { id: 'e2-3', source: 'n2', target: 'n3' },
+        { id: 'e3-4', source: 'n3', target: 'n4' },
+        { id: 'e4-5', source: 'n4', target: 'n5' },
+        { id: 'e5-6', source: 'n5', target: 'n6' },
+        { id: 'e6-7', source: 'n6', target: 'n7' },
+        { id: 'e7-8', source: 'n7', target: 'n8' },
+        { id: 'e8-9', source: 'n8', target: 'n9' },
+      ]
+    }
+  },
+  {
+    id: 'rcm-fa-01',
+    process: 'Fixed Assets & Capex',
+    subProcess: 'Mine Development Capitalization',
+    riskDescription: 'Risiko salah klasifikasi antara biaya kapital (capex) dan biaya operasional (opex) untuk overburden removal costs dan mine development, mengakibatkan salah saji aset dan beban.',
+    status: 'Active',
+    controls: ['ctrl-fa-01', 'ctrl-fa-02'],
+    bpmData: {
+      nodes: [
+        { id: 'n1', type: 'start', position: { x: 250, y: 0 }, data: { label: 'Project Proposal', type: 'start' } },
+        { id: 'n2', type: 'activity', position: { x: 220, y: 80 }, data: { label: 'Capex Budget Approval', role: 'Management' } },
+        { id: 'n3', type: 'activity', position: { x: 220, y: 160 }, data: { label: 'Construction/Development', role: 'Engineering' } },
+        { id: 'n4', type: 'activity', position: { x: 220, y: 240 }, data: { label: 'Cost Capitalization Review', role: 'Accounting' } },
+        { id: 'n5', type: 'risk', position: { x: 260, y: 320 }, data: { label: 'Capex vs Opex Error' } },
+        { id: 'n6', type: 'control', position: { x: 265, y: 400 }, data: { label: 'Capitalization Criteria', code: 'ACC-02' } },
+        { id: 'n7', type: 'activity', position: { x: 220, y: 480 }, data: { label: 'Asset Registration', role: 'FA Admin' } },
+        { id: 'n8', type: 'end', position: { x: 250, y: 560 }, data: { label: 'Asset Capitalized', type: 'end' } },
+      ],
+      edges: [
+        { id: 'e1-2', source: 'n1', target: 'n2' },
+        { id: 'e2-3', source: 'n2', target: 'n3' },
+        { id: 'e3-4', source: 'n3', target: 'n4' },
+        { id: 'e4-5', source: 'n4', target: 'n5' },
+        { id: 'e5-6', source: 'n5', target: 'n6' },
+        { id: 'e6-7', source: 'n6', target: 'n7' },
+        { id: 'e7-8', source: 'n7', target: 'n8' },
+      ]
+    }
+  },
+  {
+    id: 'rcm-env-01',
+    process: 'Reclamation & Environmental',
+    subProcess: 'ARO Provision Calculation',
+    riskDescription: 'Risiko kesalahan pengakuan kewajiban pemulihan lingkungan (Asset Retirement Obligation - AARO) yang tidak sesuai PSAK, mengakibatkan salah saji liabilitas dan beban.',
+    status: 'Active',
+    controls: ['ctrl-env-01', 'ctrl-env-02'],
+    bpmData: {
+      nodes: [
+        { id: 'n1', type: 'start', position: { x: 250, y: 0 }, data: { label: 'Mine Plan Review', type: 'start' } },
+        { id: 'n2', type: 'activity', position: { x: 220, y: 80 }, data: { label: 'ARO Calculation', role: 'Engineering' } },
+        { id: 'n3', type: 'activity', position: { x: 220, y: 160 }, data: { label: 'Third-party Verification', role: 'Consultant' } },
+        { id: 'n4', type: 'risk', position: { x: 260, y: 240 }, data: { label: 'ARO Understated' } },
+        { id: 'n5', type: 'control', position: { x: 265, y: 320 }, data: { label: 'ARO Methodology Review', code: 'TECH-01' } },
+        { id: 'n6', type: 'activity', position: { x: 220, y: 400 }, data: { label: 'Provision Booking', role: 'Accounting' } },
+        { id: 'n7', type: 'activity', position: { x: 220, y: 480 }, data: { label: 'Annual Review', role: 'Management' } },
+        { id: 'n8', type: 'end', position: { x: 250, y: 560 }, data: { label: 'ARO Recorded', type: 'end' } },
+      ],
+      edges: [
+        { id: 'e1-2', source: 'n1', target: 'n2' },
+        { id: 'e2-3', source: 'n2', target: 'n3' },
+        { id: 'e3-4', source: 'n3', target: 'n4' },
+        { id: 'e4-5', source: 'n4', target: 'n5' },
+        { id: 'e5-6', source: 'n5', target: 'n6' },
+        { id: 'e6-7', source: 'n6', target: 'n7' },
+        { id: 'e7-8', source: 'n7', target: 'n8' },
+      ]
+    }
+  },
+];
+
+// ============================================================================
+// CONTROLS DATA - 25-30 CONTROLS (All Types)
+// ============================================================================
+
 export const MOCK_CONTROLS: Control[] = [
-  { 
-    id: 'ctrl-001', 
-    rcmId: 'rcm-p2p-1', 
-    code: 'P2P-01',
-    name: '3-Way Match Verification', 
-    description: 'Sistem secara otomatis mencocokkan Vendor Invoice, Purchase Order, dan Goods Receipt sebelum pembayaran diproses.', 
-    ownerId: 'u1', 
-    type: 'Preventive', 
-    nature: 'Automated', 
+  // Revenue Controls (7 controls)
+  {
+    id: 'ctrl-rev-01',
+    rcmId: 'rcm-rev-01',
+    code: 'FIN-01',
+    name: 'Credit Limit Approval',
+    description: 'Semua penjualan batubara kepada customer baru harus mendapatkan persetujuan credit limit dari Finance Manager berdasarkan analisis kreditworthiness.',
+    ownerId: 'u2',
+    type: 'Preventive',
+    nature: 'Manual',
     frequency: 'Ad-hoc',
-    assertions: ['Accuracy', 'Validity', 'Existence'], 
-    ipos: ['Accuracy', 'Validity'],
-    cosoPrinciples: [10, 11],
+    assertions: ['Validity', 'Accuracy'],
+    ipos: ['Validity', 'Restricted Access'],
+    cosoPrinciples: [10],
     riskRating: 'High',
     isKeyControl: true,
     effectiveDate: Date.now() - 31536000000,
-    isFraudRisk: true,
+    isFraudRisk: false,
     itApplication: 'SAP S/4HANA'
   },
-  { 
-    id: 'ctrl-002', 
-    rcmId: 'rcm-p2p-1', 
-    code: 'P2P-02',
-    name: 'Vendor Master Changes Review', 
-    description: 'Setiap perubahan pada data master vendor (nama, rekening bank) direview dan disetujui oleh Accounting Manager.', 
-    ownerId: 'u1', 
-    type: 'Detective', 
-    nature: 'Manual', 
-    frequency: 'Monthly',
-    assertions: ['Accuracy', 'Validity'], 
-    ipos: ['Accuracy', 'Restricted Access'],
+  {
+    id: 'ctrl-rev-02',
+    rcmId: 'rcm-rev-01',
+    code: 'LEGAL-01',
+    name: 'Sales Contract Legal Review',
+    description: 'Kontrak penjualan batubara harus direview oleh Legal Department untuk memastikan compliance dengan regulasi dan perlindungan hukum perusahaan.',
+    ownerId: 'u1',
+    type: 'Preventive',
+    nature: 'Manual',
+    frequency: 'Ad-hoc',
+    assertions: ['Validity', 'Completeness'],
+    ipos: ['Validity'],
     cosoPrinciples: [12],
     riskRating: 'Medium',
     isKeyControl: true,
     effectiveDate: Date.now() - 31536000000,
-    isFraudRisk: true
+    isFraudRisk: false
   },
-  { 
-    id: 'ctrl-003', 
-    rcmId: 'rcm-r2r-1', 
-    code: 'R2R-01',
-    name: 'Monthly Bank Reconciliation', 
-    description: 'Rekonsiliasi rekening koran dengan buku besar dilakukan setiap bulan dan disetujui oleh Controller.', 
-    ownerId: 'u1', 
-    type: 'Detective', 
-    nature: 'Manual', 
+  {
+    id: 'ctrl-rev-03',
+    rcmId: 'rcm-rev-02',
+    code: 'LOG-01',
+    name: 'Weighbridge Calibration',
+    description: 'Weighbridge harus dikalibrasi setiap bulan oleh pihak ketiga bersertifikat untuk memastikan akurasi pengukuran volume batubara.',
+    ownerId: 'u1',
+    type: 'Detective',
+    nature: 'Manual',
     frequency: 'Monthly',
-    assertions: ['Completeness', 'Accuracy', 'Existence'], 
-    ipos: ['Completeness', 'Accuracy'],
+    assertions: ['Accuracy', 'Completeness'],
+    ipos: ['Accuracy'],
     cosoPrinciples: [10, 14],
+    riskRating: 'High',
+    isKeyControl: true,
+    effectiveDate: Date.now() - 31536000000,
+    isFraudRisk: false,
+    itApplication: 'Weighbridge System'
+  },
+  {
+    id: 'ctrl-rev-04',
+    rcmId: 'rcm-rev-02',
+    code: 'QC-01',
+    name: 'Quality Certificate Approval',
+    description: 'Sertifikat kualitas batubara (GAR, NAR, Total Moisture, Ash) harus disetujui oleh QC Manager sebelum diterbitkan kepada customer.',
+    ownerId: 'u1',
+    type: 'Detective',
+    nature: 'Manual',
+    frequency: 'Daily',
+    assertions: ['Accuracy'],
+    ipos: ['Accuracy'],
+    cosoPrinciples: [10],
+    riskRating: 'High',
+    isKeyControl: true,
+    effectiveDate: Date.now() - 31536000000,
+    isFraudRisk: false,
+    itApplication: 'QC Lab System'
+  },
+  {
+    id: 'ctrl-rev-05',
+    rcmId: 'rcm-rev-02',
+    code: 'LOG-02',
+    name: 'Weighbridge Reconciliation',
+    description: 'Rekonsiliasi harian antara hasil weighbridge dengan stockpile movement untuk mendeteksi selisih volume.',
+    ownerId: 'u1',
+    type: 'Detective',
+    nature: 'Manual',
+    frequency: 'Daily',
+    assertions: ['Completeness', 'Accuracy'],
+    ipos: ['Completeness', 'Accuracy'],
+    cosoPrinciples: [10],
+    riskRating: 'Medium',
+    isKeyControl: false,
+    effectiveDate: Date.now() - 31536000000,
+    isFraudRisk: false
+  },
+  {
+    id: 'ctrl-rev-06',
+    rcmId: 'rcm-rev-03',
+    code: 'BILL-01',
+    name: 'HBA Price Verification',
+    description: 'Harga HBA (Harga Batubara Acuan) yang digunakan untuk invoice harus diverifikasi dengan website resmi Kementerian ESDM sebelum billing.',
+    ownerId: 'u2',
+    type: 'Preventive',
+    nature: 'Manual',
+    frequency: 'Daily',
+    assertions: ['Accuracy'],
+    ipos: ['Accuracy'],
+    cosoPrinciples: [10],
     riskRating: 'High',
     isKeyControl: true,
     effectiveDate: Date.now() - 31536000000,
     isFraudRisk: false
   },
-  { 
-    id: 'ctrl-004', 
-    rcmId: 'rcm-r2r-1', 
-    code: 'R2R-02',
-    name: 'Journal Entry Approval', 
-    description: 'Semua entri jurnal manual di atas Rp 500 Juta harus mendapatkan persetujuan dari CFO.', 
-    ownerId: 'u1', 
-    type: 'Preventive', 
-    nature: 'Manual', 
+  {
+    id: 'ctrl-rev-07',
+    rcmId: 'rcm-rev-03',
+    code: 'ACC-01',
+    name: 'Revenue Recognition Review',
+    description: 'Jurnal pengakuan pendapatan harus direview dan disetujui oleh Accounting Manager untuk memastikan cut-off yang tepat dan compliance dengan PSAK.',
+    ownerId: 'u2',
+    type: 'Detective',
+    nature: 'Manual',
     frequency: 'Daily',
-    assertions: ['Accuracy', 'Validity'], 
-    ipos: ['Accuracy', 'Restricted Access'],
+    assertions: ['Cut-off', 'Accuracy', 'Completeness'],
+    ipos: ['Accuracy', 'Completeness'],
+    cosoPrinciples: [10, 14],
+    riskRating: 'High',
+    isKeyControl: true,
+    effectiveDate: Date.now() - 31536000000,
+    isFraudRisk: false,
+    itApplication: 'SAP S/4HANA'
+  },
+  
+  // Production Controls (4 controls)
+  {
+    id: 'ctrl-prod-01',
+    rcmId: 'rcm-prod-01',
+    code: 'PROD-01',
+    name: 'Daily Production Report',
+    description: 'Laporan produksi harian batubara (ROM) harus disetujui oleh Mine Manager dan direkonsiliasi dengan stockpile movement.',
+    ownerId: 'u1',
+    type: 'Detective',
+    nature: 'Manual',
+    frequency: 'Daily',
+    assertions: ['Completeness', 'Accuracy'],
+    ipos: ['Completeness', 'Accuracy'],
     cosoPrinciples: [10],
     riskRating: 'Medium',
     isKeyControl: true,
     effectiveDate: Date.now() - 31536000000,
-    isFraudRisk: true
+    isFraudRisk: false
   },
-  { 
-    id: 'ctrl-energy-01', 
-    rcmId: 'rcm-energy-1', 
-    code: 'ENG-01',
-    name: 'Oil & Gas Reserve Estimation Review', 
-    description: 'Review tahunan atas estimasi cadangan terbukti oleh pihak ketiga independen dan tim internal.', 
-    ownerId: 'u1', 
-    type: 'Detective', 
-    nature: 'MRC', 
-    frequency: 'Annual',
-    assertions: ['Valuation', 'Accuracy'], 
+  {
+    id: 'ctrl-prod-02',
+    rcmId: 'rcm-prod-01',
+    code: 'SCADA-01',
+    name: 'Production Monitoring System (SCADA)',
+    description: 'Sistem SCADA memonitor volume produksi batubara secara real-time dan alert jika ada deviasi signifikan dari target.',
+    ownerId: 'u1',
+    type: 'Detective',
+    nature: 'Automated',
+    frequency: 'Daily',
+    assertions: ['Completeness', 'Accuracy'],
+    ipos: ['Accuracy'],
+    cosoPrinciples: [10],
+    riskRating: 'Medium',
+    isKeyControl: false,
+    effectiveDate: Date.now() - 31536000000,
+    isFraudRisk: false,
+    itApplication: 'SCADA Production System'
+  },
+  {
+    id: 'ctrl-prod-03',
+    rcmId: 'rcm-prod-02',
+    code: 'LOG-03',
+    name: 'Monthly Stockpile Survey',
+    description: 'Survey stockpile batubara menggunakan drone dilakukan setiap bulan oleh surveyor independen untuk memverifikasi volume tercatat.',
+    ownerId: 'u1',
+    type: 'Detective',
+    nature: 'MRC',
+    frequency: 'Monthly',
+    assertions: ['Existence', 'Accuracy', 'Completeness'],
     ipos: ['Accuracy'],
     cosoPrinciples: [10],
     riskRating: 'High',
@@ -112,136 +468,489 @@ export const MOCK_CONTROLS: Control[] = [
     effectiveDate: Date.now() - 31536000000,
     isFraudRisk: false,
     mrcMetadata: {
-      expectation: "Cadangan harus sesuai dengan standar SPE-PRMS.",
-      investigationThreshold: "Variasi > 10% dari tahun sebelumnya.",
-      investigationProcedures: "Verifikasi asumsi geologis dan harga minyak yang digunakan."
+      expectation: 'Variance antara survey dan catatan < 5%',
+      investigationThreshold: 'Variance > 5% dari recorded volume',
+      investigationProcedures: 'Review weighing records, check for measurement errors, investigate potential theft'
     }
+  },
+  {
+    id: 'ctrl-prod-04',
+    rcmId: 'rcm-prod-02',
+    code: 'ACC-03',
+    name: 'Stockpile Variance Analysis',
+    description: 'Analisis variance antara hasil survey stockpile dengan catatan sistem. Variance > 5% harus diinvestigasi dan disesuaikan dengan persetujuan Management.',
+    ownerId: 'u2',
+    type: 'Detective',
+    nature: 'Manual',
+    frequency: 'Monthly',
+    assertions: ['Accuracy', 'Valuation'],
+    ipos: ['Accuracy'],
+    cosoPrinciples: [10, 14],
+    riskRating: 'High',
+    isKeyControl: true,
+    effectiveDate: Date.now() - 31536000000,
+    isFraudRisk: false
+  },
+  
+  // Procurement Controls (3 controls)
+  {
+    id: 'ctrl-proc-01',
+    rcmId: 'rcm-proc-01',
+    code: 'PROC-01',
+    name: 'Contractor Pre-qualification',
+    description: 'Semua kontraktor tambang harus melalui proses pre-qualification termasuk verifikasi资质, safety record, dan financial capability.',
+    ownerId: 'u1',
+    type: 'Preventive',
+    nature: 'Manual',
+    frequency: 'Annual',
+    assertions: ['Validity'],
+    ipos: ['Validity'],
+    cosoPrinciples: [10],
+    riskRating: 'Medium',
+    isKeyControl: true,
+    effectiveDate: Date.now() - 31536000000,
+    isFraudRisk: false
+  },
+  {
+    id: 'ctrl-proc-02',
+    rcmId: 'rcm-proc-01',
+    code: 'ENG-01',
+    name: 'Work Completion Certificate',
+    description: 'Pekerjaan kontraktor tambang harus diverifikasi oleh Engineering Department dengan menerbitkan Work Completion Certificate sebelum invoice diproses.',
+    ownerId: 'u1',
+    type: 'Preventive',
+    nature: 'Manual',
+    frequency: 'Ad-hoc',
+    assertions: ['Validity', 'Occurrence'],
+    ipos: ['Validity'],
+    cosoPrinciples: [10],
+    riskRating: 'High',
+    isKeyControl: true,
+    effectiveDate: Date.now() - 31536000000,
+    isFraudRisk: true
+  },
+  {
+    id: 'ctrl-proc-03',
+    rcmId: 'rcm-proc-01',
+    code: 'PROC-02',
+    name: 'Three-Way Match',
+    description: 'Invoice kontraktor harus match dengan Purchase Order, Work Completion Certificate, dan GR (Goods Receipt) sebelum pembayaran diproses.',
+    ownerId: 'u2',
+    type: 'Preventive',
+    nature: 'Automated',
+    frequency: 'Ad-hoc',
+    assertions: ['Validity', 'Accuracy'],
+    ipos: ['Validity', 'Accuracy'],
+    cosoPrinciples: [10],
+    riskRating: 'High',
+    isKeyControl: true,
+    effectiveDate: Date.now() - 31536000000,
+    isFraudRisk: true,
+    itApplication: 'SAP S/4HANA'
+  },
+  
+  // Fixed Assets Controls (2 controls)
+  {
+    id: 'ctrl-fa-01',
+    rcmId: 'rcm-fa-01',
+    code: 'MGMT-01',
+    name: 'Capex Budget Approval',
+    description: 'Budget capex untuk mine development harus disetujui oleh Board of Directors. Perubahan budget > 10% memerlukan re-approval.',
+    ownerId: 'u4',
+    type: 'Preventive',
+    nature: 'Manual',
+    frequency: 'Annual',
+    assertions: ['Validity', 'Accuracy'],
+    ipos: ['Validity', 'Restricted Access'],
+    cosoPrinciples: [10],
+    riskRating: 'High',
+    isKeyControl: true,
+    effectiveDate: Date.now() - 31536000000,
+    isFraudRisk: false
+  },
+  {
+    id: 'ctrl-fa-02',
+    rcmId: 'rcm-fa-01',
+    code: 'ACC-02',
+    name: 'Capitalization Criteria Review',
+    description: 'Review berkala atas kapitalisasi biaya mine development untuk memastikan compliance dengan PSAK 18 (Aset Tetap) dan PSAK 56 (Biaya Pengupasan Tanah).',
+    ownerId: 'u2',
+    type: 'Detective',
+    nature: 'Manual',
+    frequency: 'Quarterly',
+    assertions: ['Accuracy', 'Classification'],
+    ipos: ['Accuracy'],
+    cosoPrinciples: [10, 14],
+    riskRating: 'High',
+    isKeyControl: true,
+    effectiveDate: Date.now() - 31536000000,
+    isFraudRisk: false
+  },
+  
+  // Environmental Controls (2 controls)
+  {
+    id: 'ctrl-env-01',
+    rcmId: 'rcm-env-01',
+    code: 'TECH-01',
+    name: 'ARO Methodology Approval',
+    description: 'Metodologi perhitungan ARO (discount rate, reclamation cost estimate, timeline) harus disetujui oleh Management dan direview oleh third-party consultant.',
+    ownerId: 'u2',
+    type: 'Preventive',
+    nature: 'MRC',
+    frequency: 'Annual',
+    assertions: ['Valuation', 'Completeness'],
+    ipos: ['Accuracy'],
+    cosoPrinciples: [10],
+    riskRating: 'High',
+    isKeyControl: true,
+    effectiveDate: Date.now() - 31536000000,
+    isFraudRisk: false,
+    mrcMetadata: {
+      expectation: 'ARO provision mencerminkan present value dari estimated reclamation costs',
+      investigationThreshold: 'Perubahan estimated cost > 10% dari previous estimate',
+      investigationProcedures: 'Review mine plan updates, verify discount rate, compare with industry benchmarks'
+    }
+  },
+  {
+    id: 'ctrl-env-02',
+    rcmId: 'rcm-env-01',
+    code: 'ENV-01',
+    name: 'ARO Provision Review',
+    description: 'Provisi ARO harus direview setiap tahun oleh Management dan disesuaikan dengan perubahan mine plan, biaya estimasi, atau regulasi lingkungan.',
+    ownerId: 'u2',
+    type: 'Detective',
+    nature: 'Manual',
+    frequency: 'Annual',
+    assertions: ['Valuation', 'Completeness'],
+    ipos: ['Accuracy', 'Completeness'],
+    cosoPrinciples: [10, 14],
+    riskRating: 'High',
+    isKeyControl: true,
+    effectiveDate: Date.now() - 31536000000,
+    isFraudRisk: false
+  },
+  
+  // ITGC Controls (4 controls)
+  {
+    id: 'ctrl-it-01',
+    rcmId: 'rcm-rev-01',
+    code: 'ITGC-01',
+    name: 'SAP User Access Review',
+    description: 'Review berkala atas user access SAP S/4HANA untuk memastikan segregation of duties dan removal access untuk terminated employees.',
+    ownerId: 'u4',
+    type: 'Detective',
+    nature: 'Manual',
+    frequency: 'Quarterly',
+    assertions: ['Validity', 'Restricted Access'],
+    ipos: ['Restricted Access'],
+    cosoPrinciples: [10],
+    riskRating: 'High',
+    isKeyControl: true,
+    effectiveDate: Date.now() - 31536000000,
+    isFraudRisk: false,
+    itgcArea: 'Access to Program and Data',
+    itApplication: 'SAP S/4HANA'
+  },
+  {
+    id: 'ctrl-it-02',
+    rcmId: 'rcm-rev-02',
+    code: 'ITGC-02',
+    name: 'Weighbridge System Change Control',
+    description: 'Perubahan konfigurasi sistem weighbridge harus melalui proses change control dengan approval dari IT Manager dan user owner.',
+    ownerId: 'u4',
+    type: 'Preventive',
+    nature: 'Manual',
+    frequency: 'Ad-hoc',
+    assertions: ['Accuracy', 'Validity'],
+    ipos: ['Accuracy'],
+    cosoPrinciples: [10],
+    riskRating: 'Medium',
+    isKeyControl: false,
+    effectiveDate: Date.now() - 31536000000,
+    isFraudRisk: false,
+    itgcArea: 'Program Changes',
+    itApplication: 'Weighbridge System'
+  },
+  {
+    id: 'ctrl-it-03',
+    rcmId: 'rcm-prod-01',
+    code: 'ITGC-03',
+    name: 'SCADA System Backup',
+    description: 'Backup harian atas data produksi dari SCADA system untuk memastikan availability dan recoverability data.',
+    ownerId: 'u4',
+    type: 'Preventive',
+    nature: 'Automated',
+    frequency: 'Daily',
+    assertions: ['Completeness', 'Availability'],
+    ipos: ['Completeness'],
+    cosoPrinciples: [10],
+    riskRating: 'Medium',
+    isKeyControl: false,
+    effectiveDate: Date.now() - 31536000000,
+    isFraudRisk: false,
+    itgcArea: 'Computer Operations',
+    itApplication: 'SCADA Production System'
+  },
+  {
+    id: 'ctrl-it-04',
+    rcmId: 'rcm-rev-03',
+    code: 'ITGC-04',
+    name: 'SAP Interface Control (Billing to AR)',
+    description: 'Rekonsiliasi otomatis antara billing system dengan SAP AR module untuk memastikan completeness dan accuracy data.',
+    ownerId: 'u2',
+    type: 'Detective',
+    nature: 'Automated',
+    frequency: 'Daily',
+    assertions: ['Completeness', 'Accuracy'],
+    ipos: ['Completeness', 'Accuracy'],
+    cosoPrinciples: [10],
+    riskRating: 'Medium',
+    isKeyControl: false,
+    effectiveDate: Date.now() - 31536000000,
+    isFraudRisk: false,
+    itgcArea: 'Computer Operations',
+    itApplication: 'SAP S/4HANA'
   },
 ];
 
-export const MOCK_RCM: RCM[] = [
-  { 
-    id: 'rcm-p2p-1', 
-    process: 'Procure-to-Pay (P2P)', 
-    subProcess: 'Invoice Processing', 
-    riskDescription: 'Risiko pembayaran fiktif atau nilai tagihan tidak sesuai yang merugikan keuangan perusahaan.', 
-    status: 'Active', 
-    controls: ['ctrl-001', 'ctrl-002'],
-    bpmData: {
-      nodes: [
-        { id: 'n1', type: 'start', position: { x: 250, y: 0 }, data: { label: 'Mulai', type: 'start' } },
-        { id: 'n2', type: 'activity', position: { x: 220, y: 80 }, data: { label: 'Terima Invoice', role: 'Staff AP' } },
-        { id: 'n3', type: 'risk', position: { x: 260, y: 180 }, data: { label: 'Invoice Fiktif / Salah Nilai' } },
-        { id: 'n4', type: 'control', position: { x: 265, y: 280 }, data: { label: '3-Way Match System', code: 'P2P-01' } },
-        { id: 'n5', type: 'end', position: { x: 250, y: 380 }, data: { label: 'Selesai', type: 'end' } },
-      ],
-      edges: [
-        { id: 'e1-2', source: 'n1', target: 'n2' },
-        { id: 'e2-3', source: 'n2', target: 'n3' },
-        { id: 'e3-4', source: 'n3', target: 'n4' },
-        { id: 'e4-5', source: 'n4', target: 'n5' },
-      ]
-    }
-  },
-  { 
-    id: 'rcm-r2r-1', 
-    process: 'Record-to-Report (R2R)', 
-    subProcess: 'Financial Closing', 
-    riskDescription: 'Risiko salah saji laporan keuangan akibat proses penutupan buku yang tidak akurat.', 
-    status: 'Active', 
-    controls: ['ctrl-003', 'ctrl-004'],
-    bpmData: {
-      nodes: [
-        { id: 'n1', type: 'start', position: { x: 250, y: 0 }, data: { label: 'Start Closing', type: 'start' } },
-        { id: 'n2', type: 'activity', position: { x: 220, y: 80 }, data: { label: 'Rekonsiliasi Bank', role: 'Accounting' } },
-        { id: 'n3', type: 'control', position: { x: 265, y: 180 }, data: { label: 'Review Rekonsiliasi', code: 'R2R-01' } },
-        { id: 'n4', type: 'end', position: { x: 250, y: 280 }, data: { label: 'End Closing', type: 'end' } },
-      ],
-      edges: [
-        { id: 'e1-2', source: 'n1', target: 'n2' },
-        { id: 'e2-3', source: 'n2', target: 'n3' },
-        { id: 'e3-4', source: 'n3', target: 'n4' },
-      ]
-    }
-  },
-  { 
-    id: 'rcm-energy-1', 
-    process: 'Upstream Operations', 
-    subProcess: 'Reserve Management', 
-    riskDescription: 'Kesalahan estimasi cadangan minyak mengakibatkan penilaian aset tidak wajar (Impairment).', 
-    status: 'Active', 
-    controls: ['ctrl-energy-01']
-  }
-];
+// ============================================================================
+// DEFICIENCIES DATA - 5-7 REALISTIC SCENARIOS
+// ============================================================================
 
 export const MOCK_DEFICIENCIES: Deficiency[] = [
-  { id: 'def-001', controlId: 'ctrl-002', description: 'Review perubahan data master vendor tidak dilakukan tepat waktu untuk periode Q2.', severity: 'Significant Deficiency', identifiedDate: Date.now() - 86400000 * 30, identifiedBy: 'u3', status: 'Remediated', relatedAssertions: ['Accuracy'], remediationEvidence: 'Retrospective review sign-off attached.' },
-  { id: 'def-002', controlId: 'ctrl-004', description: 'Ditemukan entri jurnal manual senilai Rp 1.2 Miliar tanpa otorisasi CFO.', severity: 'Material Weakness', identifiedDate: Date.now() - 86400000 * 5, identifiedBy: 'u3', status: 'Open', relatedAssertions: ['Validity'], magnitude: 1200000000 },
+  {
+    id: 'def-001',
+    controlId: 'ctrl-rev-03',
+    description: 'Kalibrasi weighbridge expired sejak 2 bulan yang lalu. Sertifikat kalibrasi terakhir tanggal 30 September 2024, seharusnya renew setiap bulan.',
+    severity: 'Significant Deficiency',
+    identifiedDate: Date.now() - 86400000 * 60,
+    identifiedBy: 'u3',
+    status: 'Open',
+    relatedAssertions: ['Accuracy', 'Completeness'],
+    magnitude: 5000000000 // Rp 5B potential revenue impact
+  },
+  {
+    id: 'def-002',
+    controlId: 'ctrl-rev-07',
+    description: 'Ditemukan pengakuan pendapatan untuk shipment tanggal 28 Desember 2024 dicatat di Januari 2025 (cut-off error). Total nilai: Rp 12.5B.',
+    severity: 'Material Weakness',
+    identifiedDate: Date.now() - 86400000 * 15,
+    identifiedBy: 'u3',
+    status: 'Open',
+    relatedAssertions: ['Cut-off', 'Accuracy'],
+    magnitude: 12500000000 // Rp 12.5B
+  },
+  {
+    id: 'def-003',
+    controlId: 'ctrl-prod-03',
+    description: 'Variance stockpile survey bulan November 2024 sebesar 8% (40,000 MT) tidak diinvestigasi dan tidak disesuaikan. Melampaui threshold 5%.',
+    severity: 'Significant Deficiency',
+    identifiedDate: Date.now() - 86400000 * 45,
+    identifiedBy: 'u3',
+    status: 'In Progress',
+    relatedAssertions: ['Existence', 'Accuracy', 'Valuation'],
+    magnitude: 4000000000 // Rp 4B inventory impact
+  },
+  {
+    id: 'def-004',
+    controlId: 'ctrl-env-02',
+    description: 'Provisi ARO tidak diupdate selama 3 tahun terakhir meskipun ada perubahan signifikan atas mine plan dan estimated reclamation costs. Potential understatement: Rp 25B.',
+    severity: 'Material Weakness',
+    identifiedDate: Date.now() - 86400000 * 30,
+    identifiedBy: 'u5',
+    status: 'Open',
+    relatedAssertions: ['Valuation', 'Completeness'],
+    magnitude: 25000000000 // Rp 25B
+  },
+  {
+    id: 'def-005',
+    controlId: 'ctrl-proc-02',
+    description: 'Ditemukan invoice kontraktor mining senilai Rp 3.2B dibayar tanpa Work Completion Certificate yang ditandatangani. Pembayaran dilakukan berdasarkan email approval saja.',
+    severity: 'Significant Deficiency',
+    identifiedDate: Date.now() - 86400000 * 20,
+    identifiedBy: 'u3',
+    status: 'Remediated',
+    relatedAssertions: ['Validity', 'Occurrence'],
+    magnitude: 3200000000, // Rp 3.2B
+    remediationEvidence: 'Work Completion Certificate retrospective approval obtained. New SOP implemented for mandatory certificate before payment.'
+  },
+  {
+    id: 'def-006',
+    controlId: 'ctrl-fa-02',
+    description: 'Biaya overburden removal senilai Rp 18B dikapitalisasi sebagai mine development, padahal seharusnya expensed sebagai operating cost sesuai PSAK 56.',
+    severity: 'Significant Deficiency',
+    identifiedDate: Date.now() - 86400000 * 25,
+    identifiedBy: 'u5',
+    status: 'Open',
+    relatedAssertions: ['Classification', 'Accuracy', 'Valuation'],
+    magnitude: 18000000000 // Rp 18B
+  },
+  {
+    id: 'def-007',
+    controlId: 'ctrl-it-01',
+    description: 'Ditemukan 5 user SAP dari terminated employees masih memiliki active access setelah 3 bulan keluar. Tidak ada process untuk removal access otomatis.',
+    severity: 'Control Deficiency',
+    identifiedDate: Date.now() - 86400000 * 10,
+    identifiedBy: 'u3',
+    status: 'In Progress',
+    relatedAssertions: ['Restricted Access'],
+    magnitude: 0 // ITGC deficiency - indirect impact
+  },
 ];
+
+// ============================================================================
+// ACTION PLANS DATA
+// ============================================================================
 
 export const MOCK_ACTION_PLANS: ActionPlan[] = [
-  { id: 'ap-001', deficiencyId: 'def-001', description: 'Lakukan review retrospektif dan tambahkan kalender pengingat sistem.', ownerId: 'u1', dueDate: Date.now() - 86400000 * 2, status: 'Resolved', completionDate: Date.now() - 86400000 * 2 },
-  { id: 'ap-002', deficiencyId: 'def-002', description: 'Update SOP otorisasi jurnal dan implementasi hard-lock di sistem ERP.', ownerId: 'u1', dueDate: Date.now() + 86400000 * 30, status: 'In Progress' },
+  {
+    id: 'ap-001',
+    deficiencyId: 'def-001',
+    description: 'Segera lakukan kalibrasi weighbridge dengan pihak ketiga bersertifikat. Implement reminder system untuk tracking expiry date kalibrasi.',
+    ownerId: 'u1',
+    dueDate: Date.now() + 86400000 * 15,
+    status: 'In Progress'
+  },
+  {
+    id: 'ap-002',
+    deficiencyId: 'def-002',
+    description: 'Adjusting journal entry untuk koreksi cut-off revenue. Review semua shipment di akhir periode untuk memastikan cut-off yang tepat.',
+    ownerId: 'u2',
+    dueDate: Date.now() + 86400000 * 30,
+    status: 'In Progress'
+  },
+  {
+    id: 'ap-003',
+    deficiencyId: 'def-003',
+    description: 'Investigasi root cause variance stockpile 8%. Lakukan adjustment jika diperlukan. Improve frequency survey dari bulanan ke mingguan.',
+    ownerId: 'u1',
+    dueDate: Date.now() + 86400000 * 45,
+    status: 'Draft'
+  },
+  {
+    id: 'ap-004',
+    deficiencyId: 'def-004',
+    description: 'Engage third-party consultant untuk update ARO calculation. Booking adjusting journal untuk additional provision. Update methodology review menjadi annual.',
+    ownerId: 'u2',
+    dueDate: Date.now() + 86400000 * 90,
+    status: 'Draft'
+  },
+  {
+    id: 'ap-005',
+    deficiencyId: 'def-005',
+    description: 'Update SOP pembayaran kontraktor untuk mandatory Work Completion Certificate. Training untuk Finance dan Engineering team.',
+    ownerId: 'u2',
+    dueDate: Date.now() - 86400000 * 5,
+    status: 'Resolved',
+    completionDate: Date.now() - 86400000 * 5
+  },
+  {
+    id: 'ap-006',
+    deficiencyId: 'def-006',
+    description: 'Reclassify biaya overburden removal dari capex ke opex. Engage external auditor untuk review accounting treatment. Update capitalization policy.',
+    ownerId: 'u2',
+    dueDate: Date.now() + 86400000 * 60,
+    status: 'In Progress'
+  },
+  {
+    id: 'ap-007',
+    deficiencyId: 'def-007',
+    description: 'Disable access untuk 5 terminated users. Implement automated HR-IT integration untuk removal access saat employee exit.',
+    ownerId: 'u4',
+    dueDate: Date.now() + 86400000 * 7,
+    status: 'In Progress'
+  },
 ];
 
+// ============================================================================
+// MATERIALITY & SCOPING DATA
+// ============================================================================
+
 export const MOCK_MATERIALITY: Materiality[] = [
-  { 
-    id: 'mat-2024', 
-    year: 2024, 
-    overallMateriality: 15000000000, 
-    performanceMateriality: 11250000000, 
-    benchmark: 'Pre-Tax Income', 
-    percentage: 5, 
+  {
+    id: 'mat-2024',
+    year: 2024,
+    overallMateriality: 17500000000, // Rp 17.5B (5% of Pre-Tax Income Rp 350B)
+    performanceMateriality: 13125000000, // Rp 13.125B (75% of OM)
+    benchmark: 'Pre-Tax Income',
+    percentage: 5,
     haircut: 25,
-    isGroupConsolidation: true,
-    subsidiaryCount: 3,
-    multiplier: 2.5,
-    entityAllocations: [
-      { entityId: 'e1', entityName: 'Anak Perusahaan A (Energi)', totalAssets: 50000000000, allocatedOM: 10000000000, allocatedPM: 7500000000 },
-      { entityId: 'e2', entityName: 'Anak Perusahaan B (Logistik)', totalAssets: 30000000000, allocatedOM: 6000000000, allocatedPM: 4500000000 },
-    ],
-    investeeAllocations: [
-      { id: 'inv-1', name: 'PT Associate Exploration', ownershipPercentage: 35, investmentValue: 5000000000, auditStatus: 'Audit Report Received', controlsTested: 'Equity Pick-up', allocatedOM: 500000000, allocatedPM: 375000000 }
-    ]
+    isGroupConsolidation: false,
+    subsidiaryCount: 1,
+    multiplier: 1,
+    entityAllocations: [],
+    investeeAllocations: []
   }
 ];
 
 export const MOCK_SCOPING: Scoping[] = [
-  { 
-    id: 'scope-2024', 
-    year: 2024, 
+  {
+    id: 'scope-2024',
+    year: 2024,
     significantAccounts: [
-      { name: 'Kas dan Setara Kas', balance: 25000000000, isQuantitative: true },
-      { name: 'Piutang Usaha', balance: 18000000000, isQuantitative: true },
-      { name: 'Persediaan Minyak Mentah', balance: 42000000000, isQuantitative: true },
-      { name: 'Aset Tetap - Kilang', balance: 150000000000, isQuantitative: true },
-      { name: 'Kewajiban Imbalan Kerja', balance: 8000000000, isQuantitative: false, qualitativeReasons: ["Akun yang dipengaruhi oleh estimasi", "Akun yang memerlukan judgement tinggi"] }
-    ], 
-    significantLocations: ['Kantor Pusat Jakarta', 'Unit Kilang Balikpapan', 'Unit Distribusi Surabaya'], 
-    significantProcesses: ['Revenue & Receivables', 'Procure to Pay', 'Oil & Gas Production', 'Financial Reporting'] 
+      { name: 'Kas dan Setara Kas', balance: 45000000000, isQuantitative: true },
+      { name: 'Piutang Usaha - Coal Sales', balance: 62000000000, isQuantitative: true },
+      { name: 'Persediaan Batubara - ROM', balance: 85000000000, isQuantitative: true },
+      { name: 'Persediaan Batubara - Cleaned', balance: 120000000000, isQuantitative: true },
+      { name: 'Aset Tetap - Mining Equipment', balance: 350000000000, isQuantitative: true },
+      { name: 'Biaya Pengembangan Tambang', balance: 180000000000, isQuantitative: true },
+      { name: 'Provisi Reklamasi (ARO)', balance: 95000000000, isQuantitative: true },
+      { name: 'Pendapatan - Coal Export', balance: 245000000000, isQuantitative: true },
+      { name: 'Pendapatan - Coal Domestic', balance: 105000000000, isQuantitative: true },
+      { name: 'Harga Pokok Penjualan', balance: 175000000000, isQuantitative: true },
+      { name: 'Beban Royalty', balance: 17500000000, isQuantitative: false, qualitativeReasons: ['Akun yang dipengaruhi oleh regulasi pemerintah', 'Kompleksitas perhitungan DMO vs export'] },
+      { name: 'Beban Reklamasi', balance: 8500000000, isQuantitative: false, qualitativeReasons: ['Akun yang memerlukan judgement tinggi', 'Estimasi berbasis mine plan'] }
+    ],
+    significantLocations: ['Mine Site - Kalimantan Timur', 'Stockpile & Port Facility', 'Kantor Pusat Jakarta'],
+    significantProcesses: ['Revenue & Receivables', 'Production & Inventory', 'Procure to Pay', 'Fixed Assets & Capex', 'Reclamation & Environmental']
   }
 ];
 
-// --- SK-5 Compliance Data ---
+// ============================================================================
+// APPLICATIONS & RISK LIBRARY
+// ============================================================================
 
 export const MOCK_APPLICATIONS: Application[] = [
-  { id: 'app-sap', name: 'SAP S/4HANA', description: 'Sistem ERP Utama Pelaporan Keuangan', statusITGC: 'Effective', criticality: 'High', lastITGCTestDate: Date.now() - 86400000 * 30 },
-  { id: 'app-scada', name: 'SCADA Production System', description: 'Monitoring Volume Produksi Minyak', statusITGC: 'Effective', criticality: 'High', lastITGCTestDate: Date.now() - 86400000 * 15 },
-  { id: 'app-hris', name: 'Workday HRIS', description: 'Data SDM dan Penggajian', statusITGC: 'Ineffective', criticality: 'Medium', lastITGCTestDate: Date.now() - 86400000 * 60 },
+  { id: 'app-sap', name: 'SAP S/4HANA', description: 'Sistem ERP untuk financial accounting, sales, procurement', statusITGC: 'Effective', criticality: 'High', lastITGCTestDate: Date.now() - 86400000 * 30 },
+  { id: 'app-weighbridge', name: 'Weighbridge Management System', description: 'Sistem manajemen penimbangan batubara', statusITGC: 'Effective', criticality: 'High', lastITGCTestDate: Date.now() - 86400000 * 45 },
+  { id: 'app-scada', name: 'SCADA Production System', description: 'Monitoring volume produksi batubara real-time', statusITGC: 'Effective', criticality: 'High', lastITGCTestDate: Date.now() - 86400000 * 60 },
+  { id: 'app-qclab', name: 'QC Lab Information System', description: 'Manajemen data kualitas batubara (GAR, NAR, TM, Ash)', statusITGC: 'Effective', criticality: 'Medium', lastITGCTestDate: Date.now() - 86400000 * 90 },
 ];
 
 export const MOCK_RISK_LIBRARY: RiskLibrary[] = [
-  // 1. Umum
-  { id: 'risk-gen-01', cluster: 'Umum', riskDescription: 'Pembayaran kepada vendor fiktif atau tidak terotorisasi dalam siklus P2P.', suggestedAssertions: ['Validity', 'Existence'] },
-  { id: 'risk-gen-02', cluster: 'Umum', riskDescription: 'Pengakuan pendapatan (Revenue Recognition) yang terlalu dini (Cut-off error).', suggestedAssertions: ['Cut-off', 'Occurrence'] },
+  // Reserve Estimation Risks (3)
+  { id: 'risk-coal-01', cluster: 'Industri Mineral dan Batubara', riskDescription: 'Kegagalan pencatatan cadangan batubara (coal reserves) yang tidak sesuai standar KCMI/JORC.', suggestedAssertions: ['Accuracy', 'Valuation', 'Completeness'] },
+  { id: 'risk-coal-02', cluster: 'Industri Mineral dan Batubara', riskDescription: 'Ketidakakuratan estimasi volume dan kualitas batubara berdasarkan studi feasibilitas.', suggestedAssertions: ['Accuracy', 'Valuation'] },
+  { id: 'risk-coal-03', cluster: 'Industri Mineral dan Batubara', riskDescription: 'Perubahan signifikan atas estimasi cadangan akibat update geological model tanpa dokumentasi memadai.', suggestedAssertions: ['Completeness', 'Accuracy'] },
   
-  // 2. Industri Energi Minyak dan Gas (Lampiran 2)
-  { id: 'risk-energy-01', cluster: 'Industri Energi', riskDescription: 'Kegagalan pencatatan cadangan terbukti (proven reserves) yang tidak sesuai standar PSAK/IFRS.', suggestedAssertions: ['Accuracy', 'Valuation'] },
-  { id: 'risk-energy-02', cluster: 'Industri Energi', riskDescription: 'Ketidakakuratan perhitungan cost recovery pada kontrak bagi hasil.', suggestedAssertions: ['Accuracy', 'Completeness'] },
-  { id: 'risk-energy-03', cluster: 'Industri Energi', riskDescription: 'Penurunan nilai aset (impairment) akibat volatilitas harga minyak dan gas.', suggestedAssertions: ['Valuation'] },
-  { id: 'risk-energy-04', cluster: 'Industri Energi', riskDescription: 'Risiko kegagalan kepatuhan atas ketentuan perpajakan khusus migas (misal: PBB migas, DMO).', suggestedAssertions: ['Accuracy', 'Completeness'] },
-  { id: 'risk-energy-05', cluster: 'Industri Energi', riskDescription: 'Kesalahan pengakuan kewajiban pemulihan lingkungan (AARO - Asset Retirement Obligation).', suggestedAssertions: ['Valuation', 'Completeness'] },
-  { id: 'risk-energy-06', cluster: 'Industri Energi', riskDescription: 'Kecurangan (fraud) dalam pengukuran volume produksi (metering) di sumur atau terminal.', suggestedAssertions: ['Existence', 'Accuracy'] },
-
-  // ... rest of the clusters can follow the same pattern if needed ...
+  // Production Measurement Risks (3)
+  { id: 'risk-coal-04', cluster: 'Industri Mineral dan Batubara', riskDescription: 'Ketidakakuratan pengukuran volume produksi batubara (weighbridge, stockpile survey).', suggestedAssertions: ['Accuracy', 'Completeness'] },
+  { id: 'risk-coal-05', cluster: 'Industri Mineral dan Batubara', riskDescription: 'Perbedaan signifikan antara hasil stockpile survey (drone) dengan catatan sistem.', suggestedAssertions: ['Accuracy', 'Existence'] },
+  { id: 'risk-coal-06', cluster: 'Industri Mineral dan Batubara', riskDescription: 'Kesalahan penentuan moisture content mengakibatkan overstatement clean coal production.', suggestedAssertions: ['Accuracy', 'Valuation'] },
+  
+  // Revenue Recognition Risks (4)
+  { id: 'risk-coal-07', cluster: 'Industri Mineral dan Batubara', riskDescription: 'Pengakuan pendapatan (revenue recognition) yang terlalu dini sebelum pemenuhan kewajiban performa (transfer of control).', suggestedAssertions: ['Cut-off', 'Occurrence'] },
+  { id: 'risk-coal-08', cluster: 'Industri Mineral dan Batubara', riskDescription: 'Kesalahan perhitungan harga jual batubara berdasarkan HBA (Harga Batubara Acuan) dengan adjustment kualitas (GAR, NAR, Total Moisture, Ash).', suggestedAssertions: ['Accuracy', 'Valuation'] },
+  { id: 'risk-coal-09', cluster: 'Industri Mineral dan Batubara', riskDescription: 'Pendapatan dari penjualan batubara ke pihak berelasi (related party) tidak diungkapkan secara memadai.', suggestedAssertions: ['Presentation', 'Completeness'] },
+  { id: 'risk-coal-10', cluster: 'Industri Mineral dan Batubara', riskDescription: 'Selisih kurs mata uang asing atas penjualan ekspor tidak diakui dengan benar.', suggestedAssertions: ['Accuracy', 'Completeness'] },
+  
+  // Cost Classification Risks (3)
+  { id: 'risk-coal-11', cluster: 'Industri Mineral dan Batubara', riskDescription: 'Salah klasifikasi antara biaya kapital (capex) dan biaya operasional (opex) untuk overburden removal costs.', suggestedAssertions: ['Classification', 'Accuracy'] },
+  { id: 'risk-coal-12', cluster: 'Industri Mineral dan Batubara', riskDescription: 'Biaya pengembangan tambang (mine development) tidak dikapitalisasi dengan benar sesuai PSAK.', suggestedAssertions: ['Accuracy', 'Classification'] },
+  { id: 'risk-coal-13', cluster: 'Industri Mineral dan Batubara', riskDescription: 'Biaya reklamasi yang seharusnya menjadi provisi (ARO) diakui sebagai beban periode berjalan.', suggestedAssertions: ['Classification', 'Completeness'] },
+  
+  // Reclamation Provision Risks (3)
+  { id: 'risk-coal-14', cluster: 'Industri Mineral dan Batubara', riskDescription: 'Kesalahan pengakuan kewajiban pemulihan lingkungan (Asset Retirement Obligation - AARO) yang tidak sesuai PSAK.', suggestedAssertions: ['Valuation', 'Completeness'] },
+  { id: 'risk-coal-15', cluster: 'Industri Mineral dan Batubara', riskDescription: 'Provisi reklamasi (reclamation provision) tidak diperbarui sesuai perubahan rencana reklamasi dan biaya estimasi.', suggestedAssertions: ['Valuation', 'Completeness'] },
+  { id: 'risk-coal-16', cluster: 'Industri Mineral dan Batubara', riskDescription: 'Biaya reklamasi progresif tidak dicatat sebagai pengurang provisi reklamasi.', suggestedAssertions: ['Completeness', 'Accuracy'] },
+  
+  // Royalty & Tax Compliance Risks (3)
+  { id: 'risk-coal-17', cluster: 'Industri Mineral dan Batubara', riskDescription: 'Perhitungan dan pembayaran royalty produksi batubara tidak sesuai dengan ketentuan pemerintah (Permen ESDM).', suggestedAssertions: ['Accuracy', 'Completeness'] },
+  { id: 'risk-coal-18', cluster: 'Industri Mineral dan Batubara', riskDescription: 'Alokasi penjualan batubara antara DMO (Domestic Market Obligation) dan ekspor tidak dihitung dengan benar, mengakibatkan kesalahan perhitungan royalty.', suggestedAssertions: ['Accuracy', 'Completeness'] },
+  { id: 'risk-coal-19', cluster: 'Industri Mineral dan Batubara', riskDescription: 'Kewajiban perpajakan khusus pertambangan (PPh pasal 22, royalty deductible) tidak dihitung dan disetor dengan benar.', suggestedAssertions: ['Accuracy', 'Completeness'] },
+  
+  // Environmental Compliance Risks (3)
+  { id: 'risk-coal-20', cluster: 'Industri Mineral dan Batubara', riskDescription: 'Kegagalan kepatuhan terhadap ketentuan lingkungan hidup (AMDAL, UKL-UPL) mengakibatkan sanksi administratif atau denda.', suggestedAssertions: ['Completeness', 'Occurrence'] },
+  { id: 'risk-coal-21', cluster: 'Industri Mineral dan Batubara', riskDescription: 'Tidak terdapat persetujuan/revisi AMDAL untuk perluasan area tambang.', suggestedAssertions: ['Completeness', 'Occurrence'] },
+  { id: 'risk-coal-22', cluster: 'Industri Mineral dan Batubara', riskDescription: 'Kewajiban pelaporan lingkungan triwulanan tidak disampaikan tepat waktu kepada Kementerian LHK.', suggestedAssertions: ['Completeness', 'Cut-off'] },
 ];

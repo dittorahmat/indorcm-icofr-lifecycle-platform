@@ -26,6 +26,19 @@ IndoRCM Pro centralizes the 5-step ICOFR lifecycle required for BUMN compliance:
 - **Digital Sign-off**: CEO & CFO **Sign & Lock** workflow with **Dynamic QR Code Verification** for formal report integrity (Appendix 11).
 - **Governance Metrics**: Auditor **Cooling-off Period Validation** (Bab II) and cycle completion **KPI Dashboards**.
 
+## Mock Data Context
+
+**Current Demo Entity:** PT Batubara Nusantara Sejahtera (Fictional Coal Mining BUMN)
+
+The application includes comprehensive mock data for coal mining industry scenario:
+- **50-60 GL Accounts** specific to coal mining operations
+- **8 RCMs** with BPM diagrams (Revenue, Production, Procurement, Fixed Assets, Environmental)
+- **25 Controls** (Automated, Manual, MRC, ITGC)
+- **7 Deficiencies** with realistic mining scenarios
+- **22 Risks** for Industri Mineral dan Batubara cluster
+
+For detailed mock data documentation, see [`docs/MOCK-DATA-COAL-MINING.md`](docs/MOCK-DATA-COAL-MINING.md).
+
 ## Technology Stack
 
 ### Frontend

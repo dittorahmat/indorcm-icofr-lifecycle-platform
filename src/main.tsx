@@ -11,10 +11,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { PageSuspense } from '@/components/PageSuspense';
 import { RootLayout } from '@/components/layout/RootLayout';
 import '@/index.css';
+// Import force reload script
+import '@/lib/force-reload-mock-data';
 
 // Lazy load all pages for optimized bundle size
 const HomePage = lazy(() => import('@/pages/HomePage').then(module => ({ default: module.HomePage })));
-const LoginPage = lazy(() => import('@/pages/LoginPage').then(module => ({ default: module.LoginPage })));
+// Don't lazy load LoginPage - critical route for auth flow (prevents logout errors)
+import { LoginPage } from '@/pages/LoginPage';
 const WelcomePage = lazy(() => import('@/pages/WelcomePage').then(module => ({ default: module.WelcomePage })));
 const Dashboard = lazy(() => import('@/pages/Dashboard').then(module => ({ default: module.Dashboard })));
 const RCMList = lazy(() => import('@/pages/rcm/RCMList').then(module => ({ default: module.RCMList })));
