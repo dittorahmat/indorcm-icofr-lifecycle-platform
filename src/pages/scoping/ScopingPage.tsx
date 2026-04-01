@@ -435,20 +435,28 @@ function GLUploadDialog({ onUpload, pmThreshold, onGLDataLoaded }: GLUploadDialo
   const [isOpen, setIsOpen] = React.useState(false);
 
   const handleDataImported = (data: any[], pm: number) => {
-    const newAccounts: SignificantAccount[] = data.map(row => ({
-      name: row.accountName,
-      balance: row.balance,
-      isQuantitative: row.balance >= pm,
-      qualitativeReasons: [],
-      fsliCode: row.fsliCode,
-      entityCode: row.entityCode,
-    }));
+    const newAccounts: SignificantAccount[] = data
+      .map(row => ({
+        name: row.accountName,
+        balance: row.balance,
+        isQuantitative: row.balance >= pm,
+        qualitativeReasons: [],
+        fsliCode: row.fsliCode,
+        entityCode: row.entityCode,
+      }))
+      .filter(acc => acc.isQuantitative);
+
     onUpload(newAccounts);
     // Pass GL data to parent for benchmark calculation
     if (onGLDataLoaded) {
       onGLDataLoaded(data);
     }
     // Don't auto-close, let user review the data
+    if (newAccounts.length > 0) {
+      toast.success(`Identified ${newAccounts.length} quantitatively significant accounts (> PM).`);
+    } else {
+      toast.warning('No accounts found above the PM threshold.');
+    }
   };
 
   return (
@@ -722,6 +730,17 @@ export function ScopingPage() {
 
   const formatCurrency = (val: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(val);
 
+  const totalGLBalance = glData.reduce((sum, row) => sum + row.balance, 0);
+  const significantBalance = localAccounts
+    .filter(acc => acc.isQuantitative || (acc.qualitativeReasons && acc.qualitativeReasons.length > 0))
+    .reduce((sum, acc) => sum + acc.balance, 0);
+  
+  const coveragePercentage = totalGLBalance > 0 
+    ? (significantBalance / totalGLBalance) * 100 
+    : (localAccounts.length > 0 ? 100 : 0); // Default to 100 if no GL data but manual accounts exist
+
+  const isCoverageAdequate = coveragePercentage >= 66.67;
+
   return (
     <AppLayout container>
       <div className="space-y-6">
@@ -929,14 +948,27 @@ export function ScopingPage() {
                   <Table>
                     <TableHeader><TableRow><TableHead>Account Name</TableHead><TableHead className="text-right">Balance</TableHead><TableHead>Reason</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
                     <TableBody>
-                      {localAccounts.map((acc, i) => (
-                        <TableRow key={i}>
-                          <TableCell className="font-medium">{acc.name}</TableCell>
-                          <TableCell className="text-right font-mono text-xs">{formatCurrency(acc.balance)}</TableCell>
-                          <TableCell className="text-xs text-muted-foreground">{acc.isQuantitative ? "> PM" : "Qualitative"}</TableCell>
-                          <TableCell><Badge>Significant</Badge></TableCell>
-                        </TableRow>
-                      ))}
+                      {localAccounts.map((acc, i) => {
+                        const isSignificant = acc.isQuantitative || (acc.qualitativeReasons && acc.qualitativeReasons.length > 0);
+                        return (
+                          <TableRow key={i}>
+                            <TableCell className="font-medium">{acc.name}</TableCell>
+                            <TableCell className="text-right font-mono text-xs">{formatCurrency(acc.balance)}</TableCell>
+                            <TableCell className="text-xs text-muted-foreground">
+                              {acc.isQuantitative ? (
+                                <span className="font-bold text-blue-600 dark:text-blue-400">&gt; PM</span>
+                              ) : (
+                                acc.qualitativeReasons?.join(", ") || "None"
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant={isSignificant ? "default" : "secondary"}>
+                                {isSignificant ? "Significant" : "Insignificant"}
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </CardContent>
@@ -944,9 +976,22 @@ export function ScopingPage() {
               <Card className="bg-primary/5 border-primary/20 h-fit">
                 <CardHeader className="pb-2"><CardTitle className="text-sm font-bold uppercase">Cakupan Ruang Lingkup</CardTitle></CardHeader>
                 <CardContent>
-                  <div className="flex justify-between text-xs mb-1"><span>Account Coverage</span><span className="font-bold">82.1%</span></div>
-                  <Progress value={82.1} className="h-2" />
-                  <div className="pt-4 flex items-center gap-2 text-green-700 text-xs font-semibold"><CheckCircle2 className="h-4 w-4" /> Memenuhi Syarat 2/3 (Bab III 1.3)</div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span>Account Coverage</span>
+                    <span className="font-bold">{coveragePercentage.toFixed(1)}%</span>
+                  </div>
+                  <Progress value={coveragePercentage} className="h-2" />
+                  <div className={cn(
+                    "pt-4 flex items-center gap-2 text-xs font-semibold",
+                    isCoverageAdequate ? "text-green-700" : "text-amber-700"
+                  )}>
+                    {isCoverageAdequate ? (
+                      <CheckCircle2 className="h-4 w-4" />
+                    ) : (
+                      <AlertTriangle className="h-4 w-4" />
+                    )}
+                    {isCoverageAdequate ? "Memenuhi Syarat 2/3 (Bab III 1.3)" : "Belum Memenuhi Syarat 2/3 (Bab III 1.3)"}
+                  </div>
                 </CardContent>
               </Card>
             </div>
