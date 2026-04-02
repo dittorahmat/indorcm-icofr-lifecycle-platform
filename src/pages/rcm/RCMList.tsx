@@ -397,14 +397,14 @@ export function RCMList() {
       <Dialog open={isAddProcessOpen} onOpenChange={setAddProcessOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>Add New Process / Risk</DialogTitle>
+            <DialogTitle>Add New Risk</DialogTitle>
             <DialogDescription>
               Identify a new business process and its associated financial reporting risk.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="process">Process Name (Main)</Label>
+              <Label htmlFor="process">Risk Name (Main)</Label>
               <Input 
                 id="process" 
                 placeholder="e.g. Order to Cash, Treasury..." 
@@ -413,7 +413,7 @@ export function RCMList() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="subProcess">Sub-Process Name</Label>
+              <Label htmlFor="subProcess">Sub-Risk Name</Label>
               <Input 
                 id="subProcess" 
                 placeholder="e.g. Sales Order Entry, Bank Reconciliation..." 
