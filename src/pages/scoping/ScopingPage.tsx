@@ -439,12 +439,11 @@ function GLUploadDialog({ onUpload, pmThreshold, onGLDataLoaded }: GLUploadDialo
       .map(row => ({
         name: row.accountName,
         balance: row.balance,
-        isQuantitative: row.balance >= pm,
+        isQuantitative: false, // Default false, will be calculated dynamically
         qualitativeReasons: [],
         fsliCode: row.fsliCode,
         entityCode: row.entityCode,
-      }))
-      .filter(acc => acc.isQuantitative);
+      }));
 
     onUpload(newAccounts);
     // Pass GL data to parent for benchmark calculation
@@ -731,13 +730,20 @@ export function ScopingPage() {
   const formatCurrency = (val: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(val);
 
   const totalGLBalance = glData.reduce((sum, row) => sum + row.balance, 0);
-  const significantBalance = localAccounts
+  
+  // Dynamic calculation for significant accounts
+  const processedAccounts = localAccounts.map(acc => ({
+    ...acc,
+    isQuantitative: acc.balance >= performanceMateriality
+  }));
+
+  const significantBalance = processedAccounts
     .filter(acc => acc.isQuantitative || (acc.qualitativeReasons && acc.qualitativeReasons.length > 0))
     .reduce((sum, acc) => sum + acc.balance, 0);
   
   const coveragePercentage = totalGLBalance > 0 
     ? (significantBalance / totalGLBalance) * 100 
-    : (localAccounts.length > 0 ? 100 : 0); // Default to 100 if no GL data but manual accounts exist
+    : (processedAccounts.length > 0 ? (significantBalance > 0 ? 100 : 0) : 0);
 
   const isCoverageAdequate = coveragePercentage >= 66.67;
 
@@ -931,7 +937,13 @@ export function ScopingPage() {
               <Card className="md:col-span-2">
                 <CardHeader>
                   <div className="flex justify-between items-start">
-                    <CardTitle>Significant Accounts Matrix</CardTitle>
+                    <div className="space-y-1">
+                      <CardTitle>Significant Accounts Matrix</CardTitle>
+                      <CardDescription className="text-[10px] flex items-center gap-2">
+                        <Badge variant="outline" className="h-4 px-1 text-[9px]">{processedAccounts.filter(a => a.isQuantitative || (a.qualitativeReasons && a.qualitativeReasons.length > 0)).length} Significant</Badge>
+                        <span>from {processedAccounts.length} total accounts</span>
+                      </CardDescription>
+                    </div>
                     <div className="flex gap-2">
                       {isLine2 && (
                         <GLUploadDialog
@@ -948,10 +960,10 @@ export function ScopingPage() {
                   <Table>
                     <TableHeader><TableRow><TableHead>Account Name</TableHead><TableHead className="text-right">Balance</TableHead><TableHead>Reason</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
                     <TableBody>
-                      {localAccounts.map((acc, i) => {
+                      {processedAccounts.map((acc, i) => {
                         const isSignificant = acc.isQuantitative || (acc.qualitativeReasons && acc.qualitativeReasons.length > 0);
                         return (
-                          <TableRow key={i}>
+                          <TableRow key={i} className={cn(!isSignificant && "opacity-60 bg-muted/20")}>
                             <TableCell className="font-medium">{acc.name}</TableCell>
                             <TableCell className="text-right font-mono text-xs">{formatCurrency(acc.balance)}</TableCell>
                             <TableCell className="text-xs text-muted-foreground">
