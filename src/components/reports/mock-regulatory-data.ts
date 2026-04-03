@@ -126,6 +126,49 @@ export const MOCK_CHANGELOG = [
   }
 ];
 
+export const MOCK_ITGC = [
+  {
+    domain: "Access to Program and Data",
+    controlRef: "ITGC-ACC-001",
+    activity: "User Access Provisioning & De-provisioning: Semua permintaan akses baru, perubahan, atau penghapusan akses user ke sistem SAP S/4HANA wajib melalui workflow persetujuan berjenjang dan terdokumentasi.",
+    nature: "Preventif",
+    natureExecution: "Manual",
+    freq: "Ad-hoc",
+    assertion: "Restricted Access",
+    evidence: "Form Permohonan Akses, Approval Log SAP"
+  },
+  {
+    domain: "Program Development",
+    controlRef: "ITGC-DEV-001",
+    activity: "SDLC Methodology: Pengembangan modul baru (misal: Smelter Inventory Tracking) mengikuti metodologi SDLC resmi, mencakup fase testing (UAT) dan persetujuan user owner sebelum go-live.",
+    nature: "Preventif",
+    natureExecution: "Manual",
+    freq: "Ad-hoc",
+    assertion: "Accuracy, Validity",
+    evidence: "Dokumen UAT, Berita Acara Serah Terima"
+  },
+  {
+    domain: "Program Changes",
+    controlRef: "ITGC-CHG-001",
+    activity: "Change Management: Semua perubahan program/parameter di lingkungan production wajib melalui workflow Change Request (CR) dan tidak dilakukan langsung oleh developer di production (Segregation of Duties).",
+    nature: "Preventif",
+    natureExecution: "Automated",
+    freq: "Ad-hoc",
+    assertion: "Validity",
+    evidence: "Change Request Log, Transport Request (TR) SAP"
+  },
+  {
+    domain: "Computer Operations",
+    controlRef: "ITGC-OPS-001",
+    activity: "Backup & Recovery: Backup data base SAP dilakukan secara otomatis setiap hari dan disimpan di lokasi off-site/cloud yang aman. Pemulihan data diuji secara berkala (Restore Test).",
+    nature: "Detektif",
+    natureExecution: "Automated",
+    freq: "Harian",
+    assertion: "Availability, Completeness",
+    evidence: "Log Backup Harian, Laporan Restore Test Semesteran"
+  }
+];
+
 export const MOCK_HEATMAP_DATA = {
   "High-High": [
     { id: 1, title: "Mark-up Biaya Kontraktor OB Removal", process: "Procurement" },

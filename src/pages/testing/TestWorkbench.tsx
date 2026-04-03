@@ -22,9 +22,10 @@ import { getSuggestedSampleRange, isReadyForRemediationTest, getTestResultLabel 
 import type { Control, TestRecord, Deficiency, User } from '@shared/types';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
-import { AlertTriangle, Info, Clock, CheckCircle2, XCircle, History, ListFilter, UserCheck } from 'lucide-react';
+import { AlertTriangle, Info, Clock, CheckCircle2, XCircle, History, ListFilter, UserCheck, Loader2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
+import { promptBiometricAuth } from '@/lib/forensic-utils';
 
 const testSchema = z.object({
   testType: z.enum(['TOD', 'TOE']),
@@ -45,6 +46,7 @@ const testSchema = z.object({
 
 function ControlTestCard({ control, openDeficiencyDate, history }: { control: Control, openDeficiencyDate?: number, history: TestRecord[] }) {
   const queryClient = useQueryClient();
+  const [isAuthenticating, setIsAuthenticating] = React.useState(false);
   const form = useForm<z.infer<typeof testSchema>>({
     resolver: zodResolver(testSchema),
     defaultValues: {
@@ -79,11 +81,22 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
     },
   });
 
-  function onSubmit(values: z.infer<typeof testSchema>) {
+  async function onSubmit(values: z.infer<typeof testSchema>) {
     if (values.testType === 'TOE' && !values.homogeneityJustification) {
       form.setError('homogeneityJustification', { type: 'manual', message: 'Justifikasi homogenitas wajib diisi untuk TOE (Bab V 1.3.a)' });
       return;
     }
+
+    setIsAuthenticating(true);
+    const verified = await promptBiometricAuth('authenticate');
+    setIsAuthenticating(false);
+
+    if (!verified) {
+      toast.error("Biometric authentication failed. Cannot submit test.");
+      return;
+    }
+    toast.success("Biometric identity verified (FR9).");
+
     mutation.mutate({
       controlId: control.id,
       period: "2024-Q1", // Default period
@@ -274,8 +287,12 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
                     )} />
                     
                     <div className="flex justify-end gap-2 mt-4">
-                      <Button type="submit" onClick={() => { form.setValue('testType', 'TOD'); form.setValue('result', 'Ineffective'); }} variant="destructive" size="sm">Not Effective (Tidak Efektif)</Button>
-                      <Button type="submit" onClick={() => { form.setValue('testType', 'TOD'); form.setValue('result', 'Effective'); }} className="bg-green-600 hover:bg-green-700" size="sm">Effective (Efektif)</Button>
+                      <Button type="submit" disabled={isAuthenticating || mutation.isPending} onClick={() => { form.setValue('testType', 'TOD'); form.setValue('result', 'Ineffective'); }} variant="destructive" size="sm">
+                        {isAuthenticating ? <Loader2 className="h-4 w-4 animate-spin mr-1"/> : <UserCheck className="h-4 w-4 mr-1"/>} Not Effective (Tidak Efektif)
+                      </Button>
+                      <Button type="submit" disabled={isAuthenticating || mutation.isPending} onClick={() => { form.setValue('testType', 'TOD'); form.setValue('result', 'Effective'); }} className="bg-green-600 hover:bg-green-700" size="sm">
+                        {isAuthenticating ? <Loader2 className="h-4 w-4 animate-spin mr-1"/> : <UserCheck className="h-4 w-4 mr-1"/>} Effective (Efektif)
+                      </Button>
                     </div>
                   </TabsContent>
 
@@ -334,8 +351,12 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
                     )} />
 
                     <div className="flex justify-end gap-2 mt-4">
-                      <Button type="submit" onClick={() => { form.setValue('testType', 'TOE'); form.setValue('result', 'Ineffective'); }} variant="destructive" size="sm">Not Effective (Tidak Efektif)</Button>
-                      <Button type="submit" onClick={() => { form.setValue('testType', 'TOE'); form.setValue('result', 'Effective'); }} className="bg-green-600 hover:bg-green-700" size="sm">Effective (Efektif)</Button>
+                      <Button type="submit" disabled={isAuthenticating || mutation.isPending} onClick={() => { form.setValue('testType', 'TOE'); form.setValue('result', 'Ineffective'); }} variant="destructive" size="sm">
+                        {isAuthenticating ? <Loader2 className="h-4 w-4 animate-spin mr-1"/> : <UserCheck className="h-4 w-4 mr-1"/>} Not Effective (Tidak Efektif)
+                      </Button>
+                      <Button type="submit" disabled={isAuthenticating || mutation.isPending} onClick={() => { form.setValue('testType', 'TOE'); form.setValue('result', 'Effective'); }} className="bg-green-600 hover:bg-green-700" size="sm">
+                        {isAuthenticating ? <Loader2 className="h-4 w-4 animate-spin mr-1"/> : <UserCheck className="h-4 w-4 mr-1"/>} Effective (Efektif)
+                      </Button>
                     </div>
                   </TabsContent>
                 </motion.div>

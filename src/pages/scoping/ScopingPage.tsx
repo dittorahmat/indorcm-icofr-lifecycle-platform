@@ -325,12 +325,13 @@ function GroupAllocation({ baseOM, multiplier, haircut, allocations, onUpdate }:
 
 interface InvesteeMonitoringProps {
   overallMateriality: number;
+  benchmarkValue: number;
   haircut: number;
   investees: InvesteeMateriality[];
   onUpdate: (investees: InvesteeMateriality[]) => void;
 }
 
-function InvesteeMonitoring({ overallMateriality, haircut, investees, onUpdate }: InvesteeMonitoringProps) {
+function InvesteeMonitoring({ overallMateriality, benchmarkValue, haircut, investees, onUpdate }: InvesteeMonitoringProps) {
   const addInvestee = () => {
     const newInvestee: InvesteeMateriality = {
       id: crypto.randomUUID(),
@@ -1012,7 +1013,7 @@ export function ScopingPage() {
           </TabsContent>
 
           <TabsContent value="investee" className="space-y-6 pt-4">
-            <InvesteeMonitoring overallMateriality={overallMateriality} haircut={formValues.haircut} investees={localInvestees} onUpdate={setLocalInvestees} />
+            <InvesteeMonitoring overallMateriality={overallMateriality} benchmarkValue={formValues.benchmarkValue || 0} haircut={formValues.haircut} investees={localInvestees} onUpdate={setLocalInvestees} />
           </TabsContent>
         </Tabs>
       </div>

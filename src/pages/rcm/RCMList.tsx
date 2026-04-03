@@ -3,13 +3,13 @@ import { useQuery } from '@tanstack/react-query';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { api } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
-import type { RCM, Control, ChangeLog, SOCReport, Application } from '@shared/types';
+import type { RCM, Control, ChangeLog, SOCReport, Application, WBSReport } from '@shared/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { 
   PlusCircle, FileDown, ShieldCheck, History, Search, Cloud, 
-  Server, Workflow, CheckCircle2, XCircle, ArrowRight, Eye, AlertTriangle, Info 
+  Server, Workflow, CheckCircle2, XCircle, ArrowRight, Eye, AlertTriangle, Info, BellRing
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { ControlEditor } from '@/components/rcm/ControlEditor';
@@ -22,6 +22,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
@@ -110,6 +111,11 @@ export function RCMList() {
     queryFn: () => api<{ items: Application[] }>('/api/applications'),
   });
 
+  const { data: wbsData } = useQuery({
+    queryKey: ['wbsreports'],
+    queryFn: () => api<{ items: WBSReport[] }>('/api/wbsreports'),
+  });
+
   const queryClient = useQueryClient();
   const mockRole = localStorage.getItem('mockRole') || 'Line 1';
 
@@ -160,6 +166,17 @@ export function RCMList() {
     }, {} as Record<string, Control[]>);
   }, [controlsData]);
 
+  const wbsByControlId = React.useMemo(() => {
+    if (!wbsData) return {};
+    const map: Record<string, WBSReport[]> = {};
+    wbsData.items.forEach(report => {
+      report.relatedControlIds?.forEach(cid => {
+        (map[cid] = map[cid] || []).push(report);
+      });
+    });
+    return map;
+  }, [wbsData]);
+
   const handleEditControl = (control: Control) => {
     setSelectedControl(control);
     setEditorOpen(true);
@@ -197,6 +214,7 @@ export function RCMList() {
             <TabsTrigger value="logs">Log Perubahan (Appendix 6)</TabsTrigger>
             <TabsTrigger value="soc">Third Party / SOC (Bab III 4.3)</TabsTrigger>
             <TabsTrigger value="apps">Significant Apps (Bab III 1.5)</TabsTrigger>
+            <TabsTrigger value="wbs">WBS Indicators (Prinsip 14)</TabsTrigger>
           </TabsList>
 
           <TabsContent value="matrix" className="space-y-6 pt-4">
@@ -269,32 +287,60 @@ export function RCMList() {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">
-                        {(controlsByRcmId[rcm.id] || []).map(control => (
-                          <div key={control.id} className="border p-4 rounded-md flex justify-between items-start bg-card hover:bg-accent/50 transition-colors gap-4 group">
-                            <div className="flex-1 space-y-1">
-                              <div className="flex items-center gap-2">
-                                {control.isKeyControl && <ShieldCheck className="h-4 w-4 text-green-600" />}
-                                <span className="font-mono text-xs font-bold text-muted-foreground px-1.5 py-0.5 rounded bg-muted">
-                                  {control.code || "NO-CODE"}
-                                </span>
-                                <h4 className="font-semibold text-sm">{control.name}</h4>
+                        {(controlsByRcmId[rcm.id] || []).map(control => {
+                          const relatedWBS = wbsByControlId[control.id] || [];
+                          const hasConfirmedWBS = relatedWBS.some(r => r.status === 'Confirmed');
+                          
+                          return (
+                            <div key={control.id} className="border p-4 rounded-md flex justify-between items-start bg-card hover:bg-accent/50 transition-colors gap-4 group">
+                              <div className="flex-1 space-y-1">
+                                <div className="flex items-center gap-2">
+                                  {control.isKeyControl && <ShieldCheck className="h-4 w-4 text-green-600" />}
+                                  <span className="font-mono text-xs font-bold text-muted-foreground px-1.5 py-0.5 rounded bg-muted">
+                                    {control.code || "NO-CODE"}
+                                  </span>
+                                  <h4 className="font-semibold text-sm">{control.name}</h4>
+                                  {relatedWBS.length > 0 && (
+                                    <TooltipProvider>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <div className={cn(
+                                            "flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase cursor-help",
+                                            hasConfirmedWBS ? "bg-red-100 text-red-700 animate-pulse" : "bg-amber-100 text-amber-700"
+                                          )}>
+                                            <BellRing className="h-3 w-3" /> 
+                                            WBS Indicator ({relatedWBS.length})
+                                          </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                          <p className="font-bold mb-1">Whistleblowing Alerts:</p>
+                                          <ul className="text-xs list-disc pl-4">
+                                            {relatedWBS.map(r => (
+                                              <li key={r.id}>{r.category}: {r.status}</li>
+                                            ))}
+                                          </ul>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
+                                  )}
+                                </div>
+                                <p className="text-sm text-muted-foreground line-clamp-2">{control.description}</p>
+                                <div className="flex gap-2 mt-2">
+                                  <Badge variant="outline" className="text-[10px]">{control.frequency}</Badge>
+                                  <Badge variant="outline" className="text-[10px]">{control.type}</Badge>
+                                  <Badge variant="outline" className="text-[10px]">{control.nature}</Badge>
+                                  <Badge variant="secondary" className={cn(
+                                    "text-[10px]",
+                                    control.riskRating === 'High' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+                                  )}>
+                                    {control.riskRating} Risk
+                                  </Badge>
+                                </div>
                               </div>
-                              <p className="text-sm text-muted-foreground line-clamp-2">{control.description}</p>
-                              <div className="flex gap-2 mt-2">
-                                <Badge variant="outline" className="text-[10px]">{control.frequency}</Badge>
-                                <Badge variant="outline" className="text-[10px]">{control.type}</Badge>
-                                <Badge variant="outline" className="text-[10px]">{control.nature}</Badge>
-                                <Badge variant="secondary" className={cn(
-                                  "text-[10px]",
-                                  control.riskRating === 'High' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
-                                )}>
-                                  {control.riskRating} Risk
-                                </Badge>
-                              </div>
+                              <Button variant="ghost" size="sm" onClick={() => handleEditControl(control)} className="opacity-0 group-hover:opacity-100">Edit</Button>
                             </div>
-                            <Button variant="ghost" size="sm" onClick={() => handleEditControl(control)} className="opacity-0 group-hover:opacity-100">Edit</Button>
-                          </div>
-                        ))}
+                          );
+                        })}
                         <Button variant="outline" size="sm" className="w-full border-dashed" onClick={() => handleAddNewControl(rcm.id)}>
                           <PlusCircle className="h-4 w-4 mr-2" /> Add Control
                         </Button>
@@ -304,6 +350,71 @@ export function RCMList() {
                 ))
               )}
             </div>
+          </TabsContent>
+
+          <TabsContent value="wbs" className="pt-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BellRing className="h-5 w-5 text-red-600" />
+                  Whistleblowing System Integration (Prinsip 14 & 15)
+                </CardTitle>
+                <CardDescription>
+                  Monitoring fraud indicators from WBS reports that impact financial reporting controls.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Description</TableHead>
+                      <TableHead>Magnitude</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Impacted Controls</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {wbsData?.items.map(report => (
+                      <TableRow key={report.id}>
+                        <TableCell className="text-xs font-mono">{new Date(report.reportDate).toLocaleDateString()}</TableCell>
+                        <TableCell><Badge variant="secondary">{report.category}</Badge></TableCell>
+                        <TableCell className="text-xs leading-tight max-w-md">{report.description}</TableCell>
+                        <TableCell className="text-xs font-bold text-red-600">Rp {report.impactMagnitude.toLocaleString()}</TableCell>
+                        <TableCell>
+                          <Badge className={cn(
+                            report.status === 'Confirmed' ? 'bg-red-600' : 
+                            report.status === 'Investigating' ? 'bg-amber-600' : 'bg-slate-600'
+                          )}>
+                            {report.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-wrap gap-1">
+                            {report.relatedControlIds?.map(cid => {
+                              const ctrl = controlsData?.items.find(c => c.id === cid);
+                              return (
+                                <Badge key={cid} variant="outline" className="text-[9px]">
+                                  {ctrl?.code || cid}
+                                </Badge>
+                              );
+                            })}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {(!wbsData?.items || wbsData.items.length === 0) && (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-12 text-muted-foreground italic">
+                          No WBS fraud indicators recorded.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>

@@ -960,4 +960,16 @@ export const MOCK_RISK_LIBRARY: RiskLibrary[] = [
   { id: 'risk-coal-20', cluster: 'Industri Mineral dan Batubara', riskDescription: 'Kegagalan kepatuhan terhadap ketentuan lingkungan hidup (AMDAL, UKL-UPL) mengakibatkan sanksi administratif atau denda.', suggestedAssertions: ['Completeness', 'Occurrence'] },
   { id: 'risk-coal-21', cluster: 'Industri Mineral dan Batubara', riskDescription: 'Tidak terdapat persetujuan/revisi AMDAL untuk perluasan area tambang.', suggestedAssertions: ['Completeness', 'Occurrence'] },
   { id: 'risk-coal-22', cluster: 'Industri Mineral dan Batubara', riskDescription: 'Kewajiban pelaporan lingkungan triwulanan tidak disampaikan tepat waktu kepada Kementerian LHK.', suggestedAssertions: ['Completeness', 'Cut-off'] },
+
+  // --- Other BUMN Clusters (Lampiran 2) ---
+  { id: 'risk-umum-01', cluster: 'Umum', riskDescription: 'Struktur keuangan yang kompleks dengan transaksi antar BUMN meningkatkan risiko kesalahan konsolidasi.', suggestedAssertions: ['Completeness', 'Accuracy'] },
+  { id: 'risk-energi-01', cluster: 'Industri Energi', riskDescription: 'Ketidakakuratan estimasi cadangan minyak dan gas yang memerlukan penilaian signifikan.', suggestedAssertions: ['Valuation', 'Accuracy'] },
+  { id: 'risk-pangan-01', cluster: 'Industri Pangan dan Pupuk', riskDescription: 'Kompleksitas kontrak dengan distributor/pengecer menyebabkan kesalahan pengakuan pendapatan.', suggestedAssertions: ['Occurrence', 'Cut-off'] },
+  { id: 'risk-keuangan-01', cluster: 'Jasa Keuangan', riskDescription: 'Kesalahan penilaian aset keuangan atau instrumen derivatif yang kompleks.', suggestedAssertions: ['Valuation'] },
+  { id: 'risk-telkom-01', cluster: 'Jasa Telekomunikasi dan Media', riskDescription: 'Kesalahan pengakuan pendapatan dari kontrak layanan bundling yang kompleks.', suggestedAssertions: ['Occurrence', 'Accuracy'] },
+  { id: 'risk-infrastruktur-01', cluster: 'Jasa Infrastruktur', riskDescription: 'Kesalahan perhitungan persentase penyelesaian (percentage of completion) pada proyek jangka panjang.', suggestedAssertions: ['Accuracy', 'Cut-off'] },
+  { id: 'risk-asuransi-01', cluster: 'Jasa Asuransi dan Dana Pensiun', riskDescription: 'Estimasi cadangan klaim (IBNR) yang tidak memadai akibat asumsi aktuarial yang tidak tepat.', suggestedAssertions: ['Valuation', 'Completeness'] },
+  { id: 'risk-pariwisata-01', cluster: 'Jasa Pariwisata dan Pendukung', riskDescription: 'Kesalahan pencatatan pendapatan yang dipengaruhi oleh pengaturan pembatalan/refund kontrak layanan pariwisata.', suggestedAssertions: ['Accuracy', 'Occurrence'] },
+  { id: 'risk-perkebunan-01', cluster: 'Industri Perkebunan dan Kehutanan', riskDescription: 'Kesalahan dalam penilaian aset biologis dan tanaman menghasilkan (bearer plants).', suggestedAssertions: ['Valuation'] },
+  { id: 'risk-logistik-01', cluster: 'Jasa Logistik', riskDescription: 'Kesalahan akuntansi sewa (PSAK 73/IFRS 16) untuk armada transportasi dan fasilitas gudang.', suggestedAssertions: ['Completeness', 'Valuation'] },
 ];

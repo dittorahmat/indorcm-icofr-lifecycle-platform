@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { FileText, AlertCircle, Info, History, ClipboardCheck, LayoutGrid, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-import { MOCK_ELC, MOCK_TLC, MOCK_FINDINGS, MOCK_DOD, MOCK_CHANGELOG, MOCK_COMPANY } from './mock-regulatory-data';
+import { MOCK_ELC, MOCK_TLC, MOCK_FINDINGS, MOCK_DOD, MOCK_CHANGELOG, MOCK_COMPANY, MOCK_ITGC } from './mock-regulatory-data';
 
 export function RegulatoryAppendices() {
   return (
@@ -46,6 +46,11 @@ export function RegulatoryAppendices() {
           <TabsTrigger value="csa-doc" className="w-full justify-start rounded-none border-l-2 border-l-transparent data-[state=active]:border-l-primary data-[state=active]:bg-muted/50 px-4 py-2">
             <ClipboardCheck className="h-4 w-4 mr-2" /> Dok. CSA (Lampiran 7)
           </TabsTrigger>
+
+          <div className="px-4 py-2 mt-4 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Final Conclusion</div>
+          <TabsTrigger value="rcm-lamp11" className="w-full justify-start rounded-none border-l-2 border-l-transparent data-[state=active]:border-l-primary data-[state=active]:bg-muted/50 px-4 py-2">
+            <ShieldCheck className="h-4 w-4 mr-2" /> Asesmen Manajemen (Lmp 11)
+          </TabsTrigger>
         </TabsList>
 
         <div className="flex-1 overflow-hidden">
@@ -69,6 +74,9 @@ export function RegulatoryAppendices() {
           </TabsContent>
           <TabsContent value="csa-doc" className="m-0">
             <CSADocReport />
+          </TabsContent>
+          <TabsContent value="rcm-lamp11" className="m-0">
+            <Lampiran11Report />
           </TabsContent>
         </div>
       </Tabs>
@@ -210,11 +218,48 @@ function ITGCReport() {
     <Card>
       <CardHeader>
         <CardTitle>Lampiran 5c: RCM ITGC</CardTitle>
-        <CardDescription>IT General Control Matrix - ERP & Systems</CardDescription>
+        <CardDescription>IT General Control Matrix - 4 Domains (SK-5/2024)</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="h-[200px] flex items-center justify-center border-2 border-dashed rounded-lg bg-muted/30">
-          <p className="text-sm text-muted-foreground italic font-medium">ITGC Data Visualizing from SAP/Oracle Mapping...</p>
+        <div className="rounded-md border overflow-x-auto">
+          <Table className="min-w-[1000px]">
+            <TableHeader className="bg-muted/50">
+              <TableRow>
+                <TableHead className="text-[10px] uppercase font-bold w-[180px]">Domain (Tabel 1)</TableHead>
+                <TableHead className="text-[10px] uppercase font-bold w-[100px]">Ref</TableHead>
+                <TableHead className="text-[10px] uppercase font-bold">Aktivitas Pengendalian</TableHead>
+                <TableHead className="text-[10px] uppercase font-bold text-center">Nature</TableHead>
+                <TableHead className="text-[10px] uppercase font-bold text-center">Asersi</TableHead>
+                <TableHead className="text-[10px] uppercase font-bold">Bukti Uji</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {MOCK_ITGC.map((item) => (
+                <TableRow key={item.controlRef} className="text-xs">
+                  <TableCell>
+                    <Badge variant="outline" className="text-[10px] bg-blue-50 text-blue-700 border-blue-200">
+                      {item.domain}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="font-mono font-bold text-primary">{item.controlRef}</TableCell>
+                  <TableCell className="leading-relaxed">
+                    <p className="font-medium">{item.activity}</p>
+                    <p className="text-[10px] text-muted-foreground mt-1 italic">Frekuensi: {item.freq}</p>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Badge variant="secondary" className="text-[9px] uppercase font-bold">{item.nature}</Badge>
+                    <p className="text-[8px] mt-0.5 text-muted-foreground">{item.natureExecution}</p>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Badge variant="outline" className="text-[9px]">{item.assertion}</Badge>
+                  </TableCell>
+                  <TableCell className="text-[10px] text-slate-600 italic">
+                    {item.evidence}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       </CardContent>
     </Card>
@@ -345,17 +390,70 @@ function ChangeLogReport() {
   );
 }
 
-function CSADocReport() {
+  );
+}
+
+function Lampiran11Report() {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Lampiran 7: Dokumentasi CSA</CardTitle>
-        <CardDescription>Detailed Control Self-Assessment Documentation</CardDescription>
+    <Card className="border-2 border-primary/20 shadow-xl">
+      <CardHeader className="text-center border-b bg-muted/30">
+        <CardTitle className="text-2xl font-serif">Lampiran 11: Laporan Asesmen Manajemen</CardTitle>
+        <CardDescription className="text-primary font-bold">Simpulan Efektivitas Pengendalian Internal atas Pelaporan Keuangan</CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="p-8 border-2 border-slate-100 bg-slate-50/50 rounded-lg text-center">
-          <ClipboardCheck className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-          <p className="text-sm text-slate-500 font-medium italic">Standardized CSA Documentation Header (Lampiran 7) mapped to Internal Action Portal.</p>
+      <CardContent className="p-12 space-y-8 font-serif leading-relaxed text-slate-800">
+        <div className="space-y-4">
+          <p className="indent-8 text-justify">
+            Berdasarkan hasil asesmen yang telah dilakukan, Manajemen <strong>{MOCK_COMPANY}</strong> menyimpulkan bahwa pengendalian internal atas pelaporan keuangan (ICOFR) untuk periode yang berakhir pada 31 Desember 2024 adalah <strong>EFEKTIF</strong> dalam semua hal yang material.
+          </p>
+          <p className="indent-8 text-justify">
+            Simpulan ini didasarkan pada kerangka kerja pengendalian internal yang diterbitkan oleh <em>Committee of Sponsoring Organizations of the Treadway Commission</em> (COSO) - Internal Control Integrated Framework. Manajemen telah melakukan evaluasi terhadap rancangan dan efektivitas operasi pengendalian pada tingkat entitas (ELC) dan tingkat transaksi (TLC).
+          </p>
+        </div>
+
+        <div className="space-y-2 border-l-4 border-primary/40 pl-6 py-2 bg-primary/5 italic">
+          <p className="text-sm font-bold uppercase text-primary/60 mb-2">Ringkasan Eksekutif:</p>
+          <ul className="list-disc list-inside text-sm space-y-1">
+            <li>Jumlah Pengendalian Utama: 124 Controls</li>
+            <li>Hasil Pengujian: 100% Efektif (Tidak ditemukan Material Weakness)</li>
+            <li>Cakupan Unit Bisnis: 100% (Full Scope)</li>
+          </ul>
+        </div>
+
+        <div className="pt-12 grid grid-cols-2 gap-12 text-center">
+          <div className="space-y-24">
+            <p className="font-bold border-b border-slate-300 pb-2">Direktur Utama</p>
+            <div className="relative inline-block">
+              <div className="absolute -top-16 left-1/2 -translate-x-1/2 opacity-20 rotate-12 scale-150 grayscale">
+                 <ShieldCheck className="h-24 w-24 text-primary" />
+              </div>
+              <p className="font-bold underline decoration-dotted underline-offset-4">DITTO HERDIANTO</p>
+              <p className="text-xs text-muted-foreground mt-1 font-mono uppercase">Digital Sign-off Hash: 8F3A...42D82</p>
+            </div>
+          </div>
+          <div className="space-y-24">
+            <p className="font-bold border-b border-slate-300 pb-2">Direktur Keuangan</p>
+            <div className="relative inline-block">
+              <div className="absolute -top-16 left-1/2 -translate-x-1/2 opacity-20 -rotate-12 scale-150 grayscale">
+                 <ShieldCheck className="h-24 w-24 text-primary" />
+              </div>
+              <p className="font-bold underline decoration-dotted underline-offset-4">FINANCE DIRECTOR NAME</p>
+              <p className="text-xs text-muted-foreground mt-1 font-mono uppercase">Digital Sign-off Hash: A92C...BD311</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-12 pt-8 border-t flex items-center justify-between opacity-60 grayscale no-print">
+           <div className="flex items-center gap-2">
+              <ShieldCheck className="h-8 w-8 text-primary" />
+              <div className="text-[10px] leading-tight">
+                 <p className="font-bold">IndoRCM Pro Compliance Engine</p>
+                 <p>Verified against SK-5/DKU.MBU/11/2024</p>
+              </div>
+           </div>
+           <div className="text-[10px] text-right">
+              <p>Generated: {new Date().toLocaleDateString('id-ID')}</p>
+              <p>Platform Integrity: 100% Authenticated</p>
+           </div>
         </div>
       </CardContent>
     </Card>

@@ -28,6 +28,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { ControlEditor } from '@/components/rcm/ControlEditor';
 import { RiskLibraryLookup } from '@/components/rcm/RiskLibraryLookup';
+import { analyzeEvidenceMetadata, promptBiometricAuth, EvidenceMetadata } from '@/lib/forensic-utils';
 const BPMEditor = React.lazy(() => import('@/components/rcm/BPMEditor').then(m => ({ default: m.BPMEditor })));
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -51,6 +52,9 @@ function ControlAssessmentCard({ control, existingCsa, role, onReview }: { contr
   const [evidenceFile, setEvidenceFile] = React.useState<File | null>(null);
   const [l2EvidenceFile, setL2EvidenceFile] = React.useState<File | null>(null);
   const [preview, setPreview] = React.useState<string | null>(null);
+  const [evidenceMeta, setEvidenceMeta] = React.useState<EvidenceMetadata | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = React.useState(false);
+  const [isAuthenticating, setIsAuthenticating] = React.useState(false);
 
   const form = useForm<z.infer<typeof csaSchema>>({
     resolver: zodResolver(csaSchema),
@@ -94,27 +98,56 @@ function ControlAssessmentCard({ control, existingCsa, role, onReview }: { contr
       form.reset();
       setEvidenceFile(null);
       setPreview(null);
+      setEvidenceMeta(null);
     },
     onError: (error) => {
       toast.error(`Submission failed: ${error.message}`);
     },
   });
 
-  const onDrop = React.useCallback((acceptedFiles: File[]) => {
+  const onDrop = React.useCallback(async (acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
       const file = acceptedFiles[0];
       setEvidenceFile(file);
+      setEvidenceMeta(null);
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreview(reader.result as string);
       };
       reader.readAsDataURL(file);
+
+      if (file.type.startsWith('image/')) {
+        setIsAnalyzing(true);
+        try {
+          const meta = await analyzeEvidenceMetadata(file);
+          setEvidenceMeta(meta);
+          if (meta.gpsVerified && meta.timestampVerified) {
+            toast.success("Photo Metadata (GPS & Timestamp) verified successfully (FR10).");
+          } else {
+            toast.warning("Photo Metadata could not be fully verified.");
+          }
+        } catch (err) {
+          console.error(err);
+        } finally {
+          setIsAnalyzing(false);
+        }
+      }
     }
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, multiple: false, accept: { 'image/*': [], 'application/pdf': [] } });
 
-  function onSubmit(values: z.infer<typeof csaSchema>) {
+  async function onSubmit(values: z.infer<typeof csaSchema>) {
+    setIsAuthenticating(true);
+    const verified = await promptBiometricAuth('authenticate');
+    setIsAuthenticating(false);
+
+    if (!verified) {
+      toast.error("Biometric authentication failed. Cannot submit assessment.");
+      return;
+    }
+    toast.success("Biometric identity verified (FR9).");
+
     mutation.mutate({
       controlId: control.id,
       ...values,
@@ -334,16 +367,39 @@ function ControlAssessmentCard({ control, existingCsa, role, onReview }: { contr
                     </div>
                   ) : (
                     <div className="mt-2 flex items-center justify-between rounded-md border border-input p-3">
-                      <div className="flex items-center gap-2">
-                        {preview && preview.startsWith('data:image') ? <img src={preview} alt="preview" className="h-10 w-10 rounded object-cover" /> : <FileIcon className="h-8 w-8 text-muted-foreground" />}
-                        <span className="text-sm font-medium">{evidenceFile?.name || existingCsa?.evidenceUrl || "No file uploaded"}</span>
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center gap-2">
+                          {preview && preview.startsWith('data:image') ? <img src={preview} alt="preview" className="h-10 w-10 rounded object-cover" /> : <FileIcon className="h-8 w-8 text-muted-foreground" />}
+                          <span className="text-sm font-medium">{evidenceFile?.name || existingCsa?.evidenceUrl || "No file uploaded"}</span>
+                        </div>
+                        {isAnalyzing && <p className="text-[10px] text-blue-600 flex items-center gap-1 font-bold uppercase"><span className="animate-spin text-lg leading-none">⟳</span> Menganalisis Metadata Forensik...</p>}
+                        {evidenceMeta && (
+                          <div className="flex flex-wrap items-center gap-2 mt-1">
+                            <Badge className={cn("text-[9px] gap-1 h-5 px-1.5 uppercase", evidenceMeta.gpsVerified ? "bg-green-600" : "bg-red-600")}>
+                              {evidenceMeta.gpsVerified ? <CheckCircle2 className="h-3 w-3"/> : <AlertTriangle className="h-3 w-3"/>} GPS: {evidenceMeta.gpsVerified ? 'Valid' : 'Invalid'}
+                            </Badge>
+                            <Badge className={cn("text-[9px] gap-1 h-5 px-1.5 uppercase", evidenceMeta.timestampVerified ? "bg-green-600" : "bg-red-600")}>
+                              {evidenceMeta.timestampVerified ? <CheckCircle2 className="h-3 w-3"/> : <AlertTriangle className="h-3 w-3"/>} Time: {evidenceMeta.timestampVerified ? 'Valid' : 'Invalid'}
+                            </Badge>
+                            {evidenceMeta.latitude && (
+                              <span className="text-[9px] font-mono text-muted-foreground">[{evidenceMeta.latitude}, {evidenceMeta.longitude}]</span>
+                            )}
+                          </div>
+                        )}
                       </div>
-                      {!existingCsa && <Button variant="ghost" size="icon" onClick={() => { setEvidenceFile(null); setPreview(null); }}><X className="h-4 w-4" /></Button>}
+                      {!existingCsa && <Button variant="ghost" size="icon" onClick={() => { setEvidenceFile(null); setPreview(null); setEvidenceMeta(null); }}><X className="h-4 w-4" /></Button>}
                     </div>
                   )}
                 </div>
               </fieldset>
-              {!existingCsa && !isLine2 && <div className="flex justify-end"><Button type="submit" disabled={mutation.isPending}>{mutation.isPending ? 'Submitting...' : 'Submit Assessment'}</Button></div>}
+              {!existingCsa && !isLine2 && (
+                <div className="flex justify-end mt-4">
+                  <Button type="submit" disabled={mutation.isPending || isAuthenticating || isAnalyzing} className="gap-2 bg-indigo-600 hover:bg-indigo-700">
+                    {isAuthenticating ? <span className="animate-spin">⟳</span> : <UserCheck className="h-4 w-4" />}
+                    {mutation.isPending ? 'Submitting...' : 'Verify Biometric & Submit (FR9)'}
+                  </Button>
+                </div>
+              )}
             </form>
           </Form>
         )}

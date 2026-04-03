@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils';
 import { RegulatoryAppendices } from '@/components/reports/RegulatoryAppendices';
 import { AIAnalyticsMockup } from '@/components/reports/AIAnalyticsMockup';
 import { RiskHeatmap } from '@/components/reports/RiskHeatmap';
+import { COSOHeatmap } from '@/components/reports/COSOHeatmap';
 
 export function ReportsPage() {
   const queryClient = useQueryClient();
@@ -173,7 +174,9 @@ export function ReportsPage() {
             </div>
           </div>
 
-              <div className="grid gap-6 md:grid-cols-2">
+          <COSOHeatmap />
+
+          <div className="grid gap-6 md:grid-cols-2">
 
               <Card>
                 <CardHeader><CardTitle>Deficiencies by Severity</CardTitle></CardHeader>
