@@ -430,7 +430,7 @@ export function RCMList() {
               Review Proposed RCM Changes
             </DialogTitle>
             <DialogDescription>
-              Comparing current design with changes proposed by Lini 1.
+              Bandingkan desain RCM saat ini dengan usulan perubahan dari Lini 1 sesuai Lampiran 6.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
@@ -495,7 +495,12 @@ export function RCMList() {
       {/* BPM Dialog */}
       <Dialog open={isBpmOpen} onOpenChange={setBpmOpen}>
         <DialogContent className="max-w-6xl h-[90vh] flex flex-col">
-          <DialogHeader><DialogTitle>BPM Flow: {selectedRcm?.process}</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>BPM Flow: {selectedRcm?.process}</DialogTitle>
+            <DialogDescription>
+              Visualisasi Business Process Mapping sesuai standar Lampiran 3 (SK-5/2024).
+            </DialogDescription>
+          </DialogHeader>
           <div className="flex-1 overflow-hidden">
             <React.Suspense fallback={<Skeleton className="h-full w-full" />}>
               {selectedRcm && <BPMEditor rcm={selectedRcm} controls={controlsData?.items || []} />}

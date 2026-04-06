@@ -390,9 +390,6 @@ function ChangeLogReport() {
   );
 }
 
-  );
-}
-
 function Lampiran11Report() {
   return (
     <Card className="border-2 border-primary/20 shadow-xl">

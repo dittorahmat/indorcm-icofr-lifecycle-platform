@@ -498,6 +498,31 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     return ok(c, await createWithAudit(ApplicationEntity, c.env, newApp, (c as any).get('userId')));
   });
 
+  app.get('/api/wbsreports', async (c) => {
+    // For now, return static mock data since Entity isn't implemented yet
+    const mockWBS = [
+      {
+        id: "wbs-1",
+        reportDate: Date.now() - 5 * 86400000,
+        category: "Fraudulent Financial Reporting",
+        description: "Potential override of controls in revenue recognition for Coal Export division.",
+        impactMagnitude: 1500000000,
+        status: "Confirmed",
+        relatedControlIds: ["c1", "c2"]
+      },
+      {
+        id: "wbs-2",
+        reportDate: Date.now() - 12 * 86400000,
+        category: "Asset Misappropriation",
+        description: "Unauthorized fuel disposal detected in East Mining site.",
+        impactMagnitude: 250000000,
+        status: "Investigating",
+        relatedControlIds: ["c5"]
+      }
+    ];
+    return ok(c, { items: mockWBS });
+  });
+
   app.get('/api/risklibrary', async (c) => ok(c, await RiskLibraryEntity.list(c.env)));
   app.get('/api/users', async (c) => ok(c, await UserEntity.list(c.env)));
   app.get('/api/auth/users', async (c) => ok(c, await UserEntity.list(c.env))); // Alias for auth context
