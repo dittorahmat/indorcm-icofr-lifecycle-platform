@@ -263,8 +263,8 @@ export function BPMEditor({ rcm, controls }: BPMEditorProps) {
   const [edges, setEdges, onEdgesChange] = useEdgesState(rcm.bpmData?.edges || defaultEdges);
   const [selectedNodeId, setSelectedNodeId] = React.useState<string | null>(null);
   
-  // Navigation stack for Drilldown: [{ id: string, type: 'node' | 'risk' | 'control' }]
-  const [navStack, setNavStack] = React.useState<{ id: string, type: 'node' | 'risk' | 'control' }[]>([]);
+  // Navigation stack for Drilldown: [{ id: string, type: 'node' | 'risk' | 'control' | 'fsli' }]
+  const [navStack, setNavStack] = React.useState<{ id: string, type: 'node' | 'risk' | 'control' | 'fsli' }[]>([]);
 
   const queryClient = useQueryClient();
 
@@ -279,7 +279,7 @@ export function BPMEditor({ rcm, controls }: BPMEditorProps) {
 
   const currentNav = navStack[navStack.length - 1];
 
-  const pushNav = (id: string, type: 'node' | 'risk' | 'control') => {
+  const pushNav = (id: string, type: 'node' | 'risk' | 'control' | 'fsli') => {
     setNavStack(prev => [...prev, { id, type }]);
   };
 
@@ -405,6 +405,50 @@ export function BPMEditor({ rcm, controls }: BPMEditorProps) {
               {ctrl.assertions.map(a => <Badge key={a} variant="secondary" className="text-[8px] px-1 h-4">{a}</Badge>)}
             </div>
           </div>
+
+          <Separator />
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1">
+              <FileText className="h-3 w-3 text-blue-500" /> Affected FSLI (Account)
+            </label>
+            <div className="space-y-1">
+              {ctrl.fsliCodes && ctrl.fsliCodes.length > 0 ? ctrl.fsliCodes.map(code => (
+                <Button 
+                  key={code}
+                  variant="outline" 
+                  className="w-full justify-start text-left h-auto py-2 px-3 border-blue-100 bg-blue-50/30 hover:bg-blue-50"
+                  onClick={() => pushNav(code, 'fsli')}
+                >
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[11px] font-bold text-blue-700">{code}</span>
+                    <span className="text-[10px] text-slate-600">Click to view account detail</span>
+                  </div>
+                </Button>
+              )) : (
+                <p className="text-[10px] text-slate-400 italic">No FSLI accounts linked yet.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (currentNav.type === 'fsli') {
+      return (
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold text-blue-400 uppercase">FSLI Detail</label>
+            <p className="text-sm font-semibold text-slate-800">Account Code: {currentNav.id}</p>
+          </div>
+          <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+             <p className="text-[10px] text-blue-800 leading-relaxed italic">
+               Informasi saldo dan signifikansi diambil dari modul Scoping (Lampiran 5).
+             </p>
+          </div>
+          <Button variant="outline" size="sm" className="w-full text-[10px]" onClick={() => window.location.href = `/scoping?fsliCode=${currentNav.id}`}>
+             Go to Scoping Matrix
+          </Button>
         </div>
       );
     }

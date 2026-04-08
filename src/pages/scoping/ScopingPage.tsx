@@ -18,7 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle2, Wand2, Info, Plus, Network, AlertTriangle, Save, Loader2, Trash2, Target, Upload, Database, RefreshCw, FileJson } from 'lucide-react';
+import { CheckCircle2, Wand2, Info, Plus, Network, AlertTriangle, Save, Loader2, Trash2, Target, Upload, Database, RefreshCw, FileJson, Workflow } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
@@ -959,13 +959,26 @@ export function ScopingPage() {
                 </CardHeader>
                 <CardContent>
                   <Table>
-                    <TableHeader><TableRow><TableHead>Account Name</TableHead><TableHead className="text-right">Balance</TableHead><TableHead>Reason</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Account Name</TableHead>
+                        <TableHead className="text-right">Balance</TableHead>
+                        <TableHead>Reason</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Action</TableHead>
+                      </TableRow>
+                    </TableHeader>
                     <TableBody>
                       {processedAccounts.map((acc, i) => {
                         const isSignificant = acc.isQuantitative || (acc.qualitativeReasons && acc.qualitativeReasons.length > 0);
                         return (
                           <TableRow key={i} className={cn(!isSignificant && "opacity-60 bg-muted/20")}>
-                            <TableCell className="font-medium">{acc.name}</TableCell>
+                            <TableCell className="font-medium">
+                              <div className="flex flex-col">
+                                <span>{acc.name}</span>
+                                {acc.fsliCode && <span className="text-[10px] font-mono text-muted-foreground uppercase">{acc.fsliCode}</span>}
+                              </div>
+                            </TableCell>
                             <TableCell className="text-right font-mono text-xs">{formatCurrency(acc.balance)}</TableCell>
                             <TableCell className="text-xs text-muted-foreground">
                               {acc.isQuantitative ? (
@@ -978,6 +991,27 @@ export function ScopingPage() {
                               <Badge variant={isSignificant ? "default" : "secondary"}>
                                 {isSignificant ? "Significant" : "Insignificant"}
                               </Badge>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {isSignificant && (
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        className="h-8 w-8 text-primary hover:bg-primary/10"
+                                        onClick={() => window.location.href = `/rcm?fsliCode=${acc.fsliCode || acc.name}`}
+                                      >
+                                        <Workflow className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p className="text-xs">Lihat mitigasi proses bisnis (BPM)</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              )}
                             </TableCell>
                           </TableRow>
                         );

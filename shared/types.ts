@@ -68,6 +68,8 @@ export interface SignificantAccount {
   balance: number;
   isQuantitative: boolean; // Over PM
   qualitativeReasons?: QualitativeScopingReason[];
+  fsliCode?: string;
+  relatedProcessIds?: string[]; // New: IDs of RCM processes covering this account
 }
 
 export interface Scoping {
@@ -121,6 +123,7 @@ export interface Control {
   itApplication?: string; // For Automated/ITDM
   eucComplexity?: EUCComplexity; // New: (Tabel 14)
   ipeType?: IPEType; // New: (Tabel 20)
+  fsliCodes?: string[]; // New: Linked FSLI codes from Scoping
   // MRC Specific Metadata - Tabel 21 (Hal 45 & 55)
   mrcMetadata?: {
     expectation: string; // Kewajaran ekspektasi

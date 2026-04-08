@@ -222,7 +222,8 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const newControl: Control = { 
       id: crypto.randomUUID(), code: "", name: "New Control", description: "", ownerId: "u1", 
       type: "Preventive", nature: "Manual", frequency: "Monthly", assertions: [], ipos: [], 
-      cosoPrinciples: [], riskRating: "Low", isKeyControl: false, isFraudRisk: false, effectiveDate: Date.now(), ...body, rcmId: body.rcmId 
+      cosoPrinciples: [], riskRating: "Low", isKeyControl: false, isFraudRisk: false, effectiveDate: Date.now(), 
+      fsliCodes: [], ...body, rcmId: body.rcmId 
     };
     return ok(c, await createWithAudit(ControlEntity, c.env, newControl, (c as any).get('userId')));
   });

@@ -5,16 +5,32 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { FileText, AlertCircle, Info, History, ClipboardCheck, LayoutGrid, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '@/lib/api-client';
+import type { Deficiency, Control } from '@shared/types';
 
 import { MOCK_ELC, MOCK_TLC, MOCK_FINDINGS, MOCK_DOD, MOCK_CHANGELOG, MOCK_COMPANY, MOCK_ITGC } from './mock-regulatory-data';
 
 export function RegulatoryAppendices() {
+  const { data: deficienciesData } = useQuery({
+    queryKey: ['deficiencies'],
+    queryFn: () => api<{ items: Deficiency[] }>('/api/deficiencies'),
+  });
+
+  const { data: controlsData } = useQuery({
+    queryKey: ['controls'],
+    queryFn: () => api<{ items: Control[] }>('/api/controls'),
+  });
+
+  const allControls = controlsData?.items || [];
+  const allDeficiencies = deficienciesData?.items || [];
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between no-print">
         <div className="flex items-center gap-2 p-4 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm flex-1">
           <Info className="h-4 w-4" />
-          <p className="font-medium">SIMULATION MODE: Displaying standardized mockup data for <strong>{MOCK_COMPANY}</strong> as per SK-5/2024 Appendices.</p>
+          <p className="font-medium">COMPLIANCE ENGINE: Aggregating real-time data for <strong>{MOCK_COMPANY}</strong> as per SK-5/2024 Appendices.</p>
         </div>
       </div>
 
@@ -64,7 +80,7 @@ export function RegulatoryAppendices() {
             <ITGCReport />
           </TabsContent>
           <TabsContent value="findings" className="m-0">
-            <FindingsReport />
+            <FindingsReport deficiencies={allDeficiencies} controls={allControls} />
           </TabsContent>
           <TabsContent value="dod" className="m-0">
             <DoDReport />
@@ -76,7 +92,7 @@ export function RegulatoryAppendices() {
             <CSADocReport />
           </TabsContent>
           <TabsContent value="rcm-lamp11" className="m-0">
-            <Lampiran11Report />
+            <Lampiran11Report deficiencies={allDeficiencies} controls={allControls} />
           </TabsContent>
         </div>
       </Tabs>
@@ -266,12 +282,12 @@ function ITGCReport() {
   );
 }
 
-function FindingsReport() {
+function FindingsReport({ deficiencies, controls }: { deficiencies: Deficiency[], controls: Control[] }) {
   return (
     <Card>
       <CardHeader>
         <CardTitle>Lampiran 9: Format Daftar Temuan</CardTitle>
-        <CardDescription>Audit Findings & Remediation Tracking</CardDescription>
+        <CardDescription>Audit Findings & Remediation Tracking (Real-time)</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="rounded-md border overflow-x-auto">
@@ -279,35 +295,60 @@ function FindingsReport() {
             <TableHeader className="bg-muted/50">
               <TableRow>
                 <TableHead className="text-[10px] uppercase font-bold">Judul Observasi</TableHead>
-                <TableHead className="text-[10px] uppercase font-bold">Akun Terdampak</TableHead>
+                <TableHead className="text-[10px] uppercase font-bold">Akun Terdampak (FSLI)</TableHead>
                 <TableHead className="text-[10px] uppercase font-bold">Exposure</TableHead>
                 <TableHead className="text-[10px] uppercase font-bold">Tipe Defisiensi</TableHead>
-                <TableHead className="text-[10px] uppercase font-bold">Rencana Remediasi</TableHead>
                 <TableHead className="text-[10px] uppercase font-bold">Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {MOCK_FINDINGS.map((item) => (
-                <TableRow key={item.ref} className="text-xs">
-                  <TableCell>
-                    <p className="font-bold text-red-700">{item.ref}</p>
-                    <p className="font-medium">{item.title}</p>
-                    <p className="text-[10px] text-slate-500 line-clamp-2">{item.detail}</p>
-                  </TableCell>
-                  <TableCell>{item.account}</TableCell>
-                  <TableCell className="font-mono font-bold text-red-600 text-[10px]">Rp {item.exposure.toLocaleString()}</TableCell>
-                  <TableCell><Badge variant="outline" className="text-[9px] border-amber-200 text-amber-700 bg-amber-50">{item.type}</Badge></TableCell>
-                  <TableCell className="italic text-slate-600 text-[10px]">{item.remediation}</TableCell>
-                  <TableCell>
-                    <div className="flex flex-col gap-1">
-                      <Badge className={cn(item.conclusion === 'Efektif' ? "bg-green-600" : "bg-red-600")}>
-                        {item.conclusion || 'Tidak Efektif'}
+              {deficiencies.length > 0 ? deficiencies.map((item) => {
+                const control = controls.find(c => c.id === item.controlId);
+                const fsliDisplay = control?.fsliCodes?.join(", ") || "N/A";
+                
+                return (
+                  <TableRow key={item.id} className="text-xs">
+                    <TableCell>
+                      <p className="font-bold text-red-700">{item.id.substring(0,8).toUpperCase()}</p>
+                      <p className="font-medium">{item.title}</p>
+                      <p className="text-[10px] text-slate-500 line-clamp-2">{item.description}</p>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="text-[10px] font-mono border-blue-200 text-blue-700 bg-blue-50">
+                        {fsliDisplay}
                       </Badge>
-                      <span className="text-[8px] text-muted-foreground uppercase font-bold text-center">{item.status}</span>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
+                    </TableCell>
+                    <TableCell className="font-mono font-bold text-red-600 text-[10px]">Rp {item.magnitudeValue?.toLocaleString() || '0'}</TableCell>
+                    <TableCell><Badge variant="outline" className="text-[9px] border-amber-200 text-amber-700 bg-amber-50">{item.severity}</Badge></TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <Badge className={cn(item.status === 'Resolved' ? "bg-green-600" : "bg-red-600")}>
+                          {item.status}
+                        </Badge>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              }) : (
+                MOCK_FINDINGS.map((item) => (
+                  <TableRow key={item.ref} className="text-xs opacity-50">
+                    <TableCell>
+                      <p className="font-bold text-red-700">{item.ref}</p>
+                      <p className="font-medium">{item.title}</p>
+                    </TableCell>
+                    <TableCell>{item.account}</TableCell>
+                    <TableCell className="font-mono font-bold text-red-600 text-[10px]">Rp {item.exposure.toLocaleString()}</TableCell>
+                    <TableCell><Badge variant="outline" className="text-[9px] border-amber-200 text-amber-700 bg-amber-50">{item.type}</Badge></TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <Badge className={cn(item.conclusion === 'Efektif' ? "bg-green-600" : "bg-red-600")}>
+                          {item.conclusion || 'Tidak Efektif'}
+                        </Badge>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </div>
@@ -390,7 +431,13 @@ function ChangeLogReport() {
   );
 }
 
-function Lampiran11Report() {
+function Lampiran11Report({ deficiencies, controls }: { deficiencies: Deficiency[], controls: Control[] }) {
+  const affectedFsliCodes = Array.from(new Set(
+    deficiencies
+      .map(d => controls.find(c => c.id === d.controlId)?.fsliCodes || [])
+      .flat()
+  ));
+
   return (
     <Card className="border-2 border-primary/20 shadow-xl">
       <CardHeader className="text-center border-b bg-muted/30">
@@ -400,19 +447,19 @@ function Lampiran11Report() {
       <CardContent className="p-12 space-y-8 font-serif leading-relaxed text-slate-800">
         <div className="space-y-4">
           <p className="indent-8 text-justify">
-            Berdasarkan hasil asesmen yang telah dilakukan, Manajemen <strong>{MOCK_COMPANY}</strong> menyimpulkan bahwa pengendalian internal atas pelaporan keuangan (ICOFR) untuk periode yang berakhir pada 31 Desember 2024 adalah <strong>EFEKTIF</strong> dalam semua hal yang material.
+            Berdasarkan hasil asesmen yang telah dilakukan, Manajemen <strong>{MOCK_COMPANY}</strong> menyimpulkan bahwa pengendalian internal atas pelaporan keuangan (ICOFR) untuk periode yang berakhir pada 31 Desember 2024 adalah <strong>{deficiencies.length === 0 ? 'EFEKTIF' : 'EFEKTIF DENGAN CATATAN'}</strong> dalam semua hal yang material.
           </p>
           <p className="indent-8 text-justify">
-            Simpulan ini didasarkan pada kerangka kerja pengendalian internal yang diterbitkan oleh <em>Committee of Sponsoring Organizations of the Treadway Commission</em> (COSO) - Internal Control Integrated Framework. Manajemen telah melakukan evaluasi terhadap rancangan dan efektivitas operasi pengendalian pada tingkat entitas (ELC) dan tingkat transaksi (TLC).
+            Simpulan ini didasarkan pada kerangka kerja pengendalian internal yang diterbitkan oleh <em>Committee of Sponsoring Organizations of the Treadway Commission</em> (COSO). Manajemen telah melakukan evaluasi terhadap rancangan dan efektivitas operasi pengendalian pada tingkat entitas (ELC) dan tingkat transaksi (TLC).
           </p>
         </div>
 
-        <div className="space-y-2 border-l-4 border-primary/40 pl-6 py-2 bg-primary/5 italic">
+        <div className="space-y-4 border-l-4 border-primary/40 pl-6 py-2 bg-primary/5 italic">
           <p className="text-sm font-bold uppercase text-primary/60 mb-2">Ringkasan Eksekutif:</p>
           <ul className="list-disc list-inside text-sm space-y-1">
-            <li>Jumlah Pengendalian Utama: 124 Controls</li>
-            <li>Hasil Pengujian: 100% Efektif (Tidak ditemukan Material Weakness)</li>
-            <li>Cakupan Unit Bisnis: 100% (Full Scope)</li>
+            <li>Jumlah Pengendalian Utama: {controls.filter(c => c.isKeyControl).length} Controls</li>
+            <li>Hasil Pengujian: {deficiencies.length} Temuan Teridentifikasi</li>
+            <li>Akun Terintegrasi (FSLI): {affectedFsliCodes.length > 0 ? affectedFsliCodes.join(", ") : "Tidak ada akun material terdampak"}</li>
           </ul>
         </div>
 

@@ -1,5 +1,6 @@
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useLocation } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { api } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
@@ -23,7 +24,6 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 interface RCMDiffViewerProps {
@@ -86,6 +86,10 @@ export function RCMList() {
   const [rejectReason, setRejectReason] = React.useState("");
   const [newRcmData, setNewRcmData] = React.useState({ process: '', subProcess: '', riskDescription: '' });
 
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const fsliFilter = searchParams.get('fsliCode');
+
   const { data: rcmData, isLoading: rcmLoading } = useQuery({
     queryKey: ['rcm'],
     queryFn: () => api<{ items: RCM[] }>('/api/rcm'),
@@ -95,6 +99,18 @@ export function RCMList() {
     queryKey: ['controls'],
     queryFn: () => api<{ items: Control[] }>('/api/controls'),
   });
+
+  const filteredRcm = React.useMemo(() => {
+    if (!rcmData?.items) return [];
+    if (!fsliFilter) return rcmData.items;
+
+    // Filter RCMs where at least one linked control covers the FSLI code
+    return rcmData.items.filter(rcm => {
+      const rcmControls = controlsData?.items.filter(c => c.rcmId === rcm.id) || [];
+      return rcmControls.some(c => c.fsliCodes?.includes(fsliFilter)) || 
+             rcm.process.toLowerCase().includes(fsliFilter.toLowerCase());
+    });
+  }, [rcmData, controlsData, fsliFilter]);
 
   const { data: changeLogsData } = useQuery({
     queryKey: ['changelogs'],
@@ -229,7 +245,7 @@ export function RCMList() {
               {isLoading ? (
                 Array.from({ length: 2 }).map((_, i) => <Skeleton key={i} className="h-64 w-full" />)
               ) : (
-                rcmData?.items.map(rcm => (
+                filteredRcm.map(rcm => (
                   <Card key={rcm.id}>
                     <CardHeader>
                       <div className="flex justify-between items-start">
