@@ -14,7 +14,7 @@ export type ControlFrequency = "Annual" | "Semi-Annual" | "Quarterly" | "Monthly
 export type InformationProcessingObjective = "Completeness" | "Accuracy" | "Validity" | "Restricted Access";
 export type DeficiencySeverity = "Control Deficiency" | "Significant Deficiency" | "Material Weakness";
 export type ActionPlanStatus = "Draft" | "In Review" | "In Progress" | "Resolved" | "Verified";
-export type UserRole = "Line 1" | "Line 2" | "Line 3" | "Admin" | "External Auditor" | "Komisaris";
+export type UserRole = "Line 1" | "Line 2" | "Line 3" | "Admin" | "External Auditor" | "Komisaris" | "CFO";
 
 export type QualitativeLevel = "Low" | "Medium" | "High";
 
@@ -46,11 +46,22 @@ export interface GLSnapshot {
   rows: GLRow[];
 }
 
+export type SimulationStatus = "Draft" | "Pending CFO" | "Pending Komut" | "Approved" | "Rejected";
+
+export interface ApprovalHistoryEntry {
+  id: string;
+  action: "Submit" | "Approve" | "Reject" | "Update";
+  role: UserRole;
+  userId: string;
+  timestamp: number;
+  note: string;
+}
+
 export interface MaterialitySimulation {
   id: string;
   name: string;
   year: number;
-  status: "Draft" | "Submitted" | "Approved" | "Rejected";
+  status: SimulationStatus;
   basis: "Revenue" | "PBT" | "Assets" | "Equity" | "Net Current Assets";
   omPercentage: number;
   haircutPercentage: number;
@@ -59,11 +70,11 @@ export interface MaterialitySimulation {
   pmValue: number;
   glSnapshotId: string;
   assessmentData: Record<string, Record<number, QualitativeLevel>>; // Key: No_GL, Sub-Key: ruleId (1-8)
-  approvalNote?: string;
   approvedBy?: string;
   approvedDate?: number;
   createdBy: string;
   createdAt: number;
+  history: ApprovalHistoryEntry[];
 }
 
 export type BUMNCluster = 

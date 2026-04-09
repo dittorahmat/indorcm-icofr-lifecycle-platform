@@ -42,6 +42,33 @@ import {
   SidebarMenuBadge,
 } from "@/components/ui/sidebar";
 import { Link, useLocation } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/api-client";
+import { MaterialitySimulation } from "@shared/types";
+
+function PendingApprovalBadge({ role }: { role: string | null }) {
+  const { data: simulations } = useQuery({
+    queryKey: ['simulations-pending-badge'],
+    queryFn: () => api<{ items: MaterialitySimulation[] }>('/api/simulations'),
+    enabled: role === 'CFO' || role === 'Komisaris' || role === 'Admin',
+    refetchInterval: 30000, // Poll every 30s
+  });
+
+  const count = simulations?.items.filter(s => {
+    if (role === 'CFO') return s.status === 'Pending CFO';
+    if (role === 'Komisaris') return s.status === 'Pending Komut';
+    if (role === 'Admin') return s.status === 'Pending CFO' || s.status === 'Pending Komut';
+    return false;
+  }).length || 0;
+
+  if (count === 0) return null;
+
+  return (
+    <div className="h-5 w-5 rounded-full bg-red-500 text-[10px] font-bold text-white flex items-center justify-center animate-pulse shadow-sm shadow-red-200">
+      {count}
+    </div>
+  );
+}
 
 export function AppSidebar(): JSX.Element {
   const location = useLocation();
@@ -100,10 +127,15 @@ export function AppSidebar(): JSX.Element {
                 <Link to="/scoping"><Settings2 /> <span>Config OM/PM</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
-            {(mockRole === 'Komisaris' || mockRole === 'Line 2' || mockRole === 'Admin') && (
+            {(mockRole === 'Komisaris' || mockRole === 'CFO' || mockRole === 'Line 2' || mockRole === 'Admin') && (
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={isActive("/scoping/approval")}>
-                  <Link to="/scoping/approval"><ShieldCheck /> <span>Materiality Approval</span></Link>
+                  <Link to="/scoping/approval" className="flex items-center justify-between w-full">
+                    <div className="flex items-center gap-2">
+                      <ShieldCheck /> <span>Materiality Approval</span>
+                    </div>
+                    <PendingApprovalBadge role={mockRole} />
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             )}

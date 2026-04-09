@@ -66,8 +66,12 @@ export function LoginPage() {
 
       toast.success(`Login berhasil sebagai ${response.user.name}`);
 
-      // Redirect ke welcome page
-      navigate('/welcome');
+      // Smart Redirect based on role
+      if (response.user.role === 'CFO' || response.user.role === 'Komisaris') {
+        navigate('/scoping/approval');
+      } else {
+        navigate('/welcome');
+      }
     } catch (err) {
       setError('Invalid credentials. Pastikan email dan password benar.');
       toast.error('Login gagal');
@@ -81,6 +85,7 @@ export function LoginPage() {
     if (emailLower.startsWith('line1@')) return 'Line 1';
     if (emailLower.startsWith('line2@')) return 'Line 2';
     if (emailLower.startsWith('line3@')) return 'Line 3';
+    if (emailLower.startsWith('cfo@')) return 'CFO';
     if (emailLower.startsWith('komisaris@')) return 'Komisaris';
     if (emailLower.startsWith('admin@')) return 'Admin';
     if (emailLower.startsWith('external@')) return 'External Auditor';
@@ -169,6 +174,7 @@ export function LoginPage() {
                 <span>line1@bumn.go.id → Line 1</span>
                 <span>line2@bumn.go.id → Line 2</span>
                 <span>line3@bumn.go.id → Line 3</span>
+                <span>cfo@bumn.go.id → CFO</span>
                 <span>komisaris@bumn.go.id → Komut</span>
                 <span>admin@bumn.go.id → Admin</span>
                 <span>external@bumn.go.id → Ext. Auditor</span>

@@ -95,9 +95,25 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   app.post('/api/auth/login', async (c) => {
     const { role } = await c.req.json<{ role: UserRole }>();
     const users = (await UserEntity.list(c.env)).items;
-    const user = users.find(u => u.role === role) || users[0];
     
-    if (!user) return bad(c, 'User not found');
+    // Cari user yang sudah ada
+    let user = users.find(u => u.role === role);
+    
+    // Jika tidak ada (karena data stale/lama), buatkan otomatis untuk demo
+    if (!user) {
+      const names: Record<string, string> = {
+        'CFO': 'Hendro Wijaya (CFO)',
+        'Komisaris': 'Dodi Prasetyo (Komut)',
+        'Line 1': 'Ahmad Fauzi (Line 1)',
+        'Line 2': 'Siti Nurhaliza (Line 2)',
+        'Line 3': 'Budi Santoso (Line 3)',
+      };
+      user = await UserEntity.create(c.env, { 
+        id: `u-${role.toLowerCase().replace(' ', '')}`, 
+        name: names[role] || `${role} User`, 
+        role 
+      });
+    }
     
     const token = signToken({ userId: user.id, role: user.role || 'Line 1' });
     return ok(c, { token, user });
@@ -124,6 +140,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       status: "Draft", basis: "PBT", omPercentage: 5, haircutPercentage: 25,
       omValue: 0, pmValue: 0, glSnapshotId: "", assessmentData: {},
       createdBy: (c as any).get('userId') || "u1", createdAt: Date.now(),
+      history: [],
       ...body
     };
     return ok(c, await SimulationEntity.create(c.env, sim));
@@ -143,17 +160,78 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   app.post('/api/simulations/:id/submit', async (c) => {
     const sim = new SimulationEntity(c.env, c.req.param('id'));
     if (!await sim.exists()) return notFound(c);
-    await sim.mutate(s => ({ ...s, status: "Submitted" }));
+    const userId = (c as any).get('userId');
+    const userRole = (c as any).get('userRole') as UserRole;
+    await sim.mutate(s => ({ 
+      ...s, 
+      status: "Pending CFO",
+      history: [...(s.history || []), {
+        id: crypto.randomUUID(),
+        action: "Submit",
+        role: userRole,
+        userId: userId,
+        timestamp: Date.now(),
+        note: "Submitted for CFO review"
+      }]
+    }));
     return ok(c, await sim.getState());
   });
   app.post('/api/simulations/:id/approve', async (c) => {
     const sim = new SimulationEntity(c.env, c.req.param('id'));
     if (!await sim.exists()) return notFound(c);
-    await sim.mutate(s => ({ 
-      ...s, 
-      status: "Approved", 
-      approvedBy: (c as any).get('userId') || "u1", 
-      approvedDate: Date.now() 
+    const userId = (c as any).get('userId');
+    const userRole = (c as any).get('userRole') as UserRole;
+    const { note } = await c.req.json<{ note: string }>();
+
+    const existing = await sim.getState();
+    let nextStatus: SimulationStatus = existing.status;
+
+    if (userRole === 'CFO' && existing.status === 'Pending CFO') {
+      nextStatus = 'Pending Komut';
+    } else if (userRole === 'Komisaris' && existing.status === 'Pending Komut') {
+      nextStatus = 'Approved';
+    } else if (userRole === 'Admin') {
+      nextStatus = 'Approved';
+    } else {
+      return bad(c, "You do not have permission to approve in current state");
+    }
+
+    await sim.mutate(s => ({
+      ...s,
+      status: nextStatus,
+      approvedBy: nextStatus === 'Approved' ? userId : s.approvedBy,
+      approvedDate: nextStatus === 'Approved' ? Date.now() : s.approvedDate,
+      history: [...(s.history || []), {
+        id: crypto.randomUUID(),
+        action: "Approve",
+        role: userRole,
+        userId: userId,
+        timestamp: Date.now(),
+        note: note || `Approved by ${userRole}`
+      }]
+    }));
+    return ok(c, await sim.getState());
+  });
+  app.post('/api/simulations/:id/reject', async (c) => {
+    const sim = new SimulationEntity(c.env, c.req.param('id'));
+    if (!await sim.exists()) return notFound(c);
+    const userId = (c as any).get('userId');
+    const userRole = (c as any).get('userRole') as UserRole;
+    const { note } = await c.req.json<{ note: string }>();
+
+    if (!note) return bad(c, "Rejection note is required");
+
+    await sim.mutate(s => ({
+      ...s,
+      status: "Rejected",
+      history: [...(s.history || []), {
+        id: crypto.randomUUID(),
+        action: "Reject",
+        role: userRole,
+        userId: userId,
+        timestamp: Date.now(),
+        note: note
+      }]
     }));
     return ok(c, await sim.getState());
   });
