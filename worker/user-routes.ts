@@ -5,9 +5,14 @@ import {
   UserEntity, ChatBoardEntity, RCMEntity, ControlEntity,
   DeficiencyEntity, ActionPlanEntity, CSAEntity, TestEntity,
   MaterialityEntity, ScopingEntity, ChangeLogEntity, SOCReportEntity,
-  ApplicationEntity, RiskLibraryEntity, AggregateDeficiencyEntity, SettingsEntity
+  ApplicationEntity, RiskLibraryEntity, AggregateDeficiencyEntity, SettingsEntity,
+  GLSnapshotEntity, SimulationEntity
 } from "./entities";
-import type { Control, RCM, CSARecord, TestRecord, Deficiency, ActionPlan, UserRole, Materiality, Scoping, ChangeLog, SOCReport, Application, BUMNCluster, RiskLibrary, Settings, User } from "@shared/types";
+import type { 
+  Control, RCM, CSARecord, TestRecord, Deficiency, ActionPlan, 
+  UserRole, Materiality, Scoping, ChangeLog, SOCReport, Application, 
+  BUMNCluster, RiskLibrary, Settings, User, GLSnapshot, MaterialitySimulation 
+} from "@shared/types";
 import { z } from "zod";
 import { parseCsv, unparseCsv } from './csv';
 import { GoogleGenerativeAI } from "@google/generative-ai";
@@ -103,6 +108,69 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const user = new UserEntity(c.env, userId);
     if (!await user.exists()) return notFound(c, 'User not found');
     return ok(c, await user.getState());
+  });
+
+  // --- Simulation & Scoping Overhaul ---
+  app.get('/api/simulations', async (c) => ok(c, await SimulationEntity.list(c.env)));
+  app.get('/api/simulations/:id', async (c) => {
+    const sim = new SimulationEntity(c.env, c.req.param('id'));
+    if (!await sim.exists()) return notFound(c);
+    return ok(c, await sim.getState());
+  });
+  app.post('/api/simulations', async (c) => {
+    const body = await c.req.json<Partial<MaterialitySimulation>>();
+    const sim: MaterialitySimulation = {
+      id: crypto.randomUUID(), name: "New Simulation", year: new Date().getFullYear(),
+      status: "Draft", basis: "PBT", omPercentage: 5, haircutPercentage: 25,
+      omValue: 0, pmValue: 0, glSnapshotId: "", assessmentData: {},
+      createdBy: (c as any).get('userId') || "u1", createdAt: Date.now(),
+      ...body
+    };
+    return ok(c, await SimulationEntity.create(c.env, sim));
+  });
+  app.put('/api/simulations/:id', async (c) => {
+    const body = await c.req.json<Partial<MaterialitySimulation>>();
+    const sim = new SimulationEntity(c.env, c.req.param('id'));
+    if (!await sim.exists()) return notFound(c);
+    const existing = await sim.getState();
+    if (existing.status === 'Approved') return bad(c, "Approved simulations cannot be modified");
+    await sim.mutate(s => ({ ...s, ...body }));
+    return ok(c, await sim.getState());
+  });
+  app.delete('/api/simulations/:id', async (c) => {
+    return ok(c, await SimulationEntity.delete(c.env, c.req.param('id')));
+  });
+  app.post('/api/simulations/:id/submit', async (c) => {
+    const sim = new SimulationEntity(c.env, c.req.param('id'));
+    if (!await sim.exists()) return notFound(c);
+    await sim.mutate(s => ({ ...s, status: "Submitted" }));
+    return ok(c, await sim.getState());
+  });
+  app.post('/api/simulations/:id/approve', async (c) => {
+    const sim = new SimulationEntity(c.env, c.req.param('id'));
+    if (!await sim.exists()) return notFound(c);
+    await sim.mutate(s => ({ 
+      ...s, 
+      status: "Approved", 
+      approvedBy: (c as any).get('userId') || "u1", 
+      approvedDate: Date.now() 
+    }));
+    return ok(c, await sim.getState());
+  });
+
+  app.get('/api/gl-snapshots', async (c) => ok(c, await GLSnapshotEntity.list(c.env)));
+  app.get('/api/gl-snapshots/:id', async (c) => {
+    const snap = new GLSnapshotEntity(c.env, c.req.param('id'));
+    if (!await snap.exists()) return notFound(c);
+    return ok(c, await snap.getState());
+  });
+  app.post('/api/gl-snapshots', async (c) => {
+    const body = await c.req.json<Partial<GLSnapshot>>();
+    const snap: GLSnapshot = {
+      id: crypto.randomUUID(), filename: "upload.csv", uploadDate: Date.now(),
+      rows: [], ...body
+    };
+    return ok(c, await GLSnapshotEntity.create(c.env, snap));
   });
 
   // --- ICOFR Routes ---

@@ -100,6 +100,13 @@ export function AppSidebar(): JSX.Element {
                 <Link to="/scoping"><Settings2 /> <span>Config OM/PM</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
+            {(mockRole === 'Komisaris' || mockRole === 'Line 2' || mockRole === 'Admin') && (
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={isActive("/scoping/approval")}>
+                  <Link to="/scoping/approval"><ShieldCheck /> <span>Materiality Approval</span></Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )}
           </SidebarMenu>
         </SidebarGroup>
 

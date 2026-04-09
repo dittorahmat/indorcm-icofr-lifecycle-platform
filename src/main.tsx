@@ -26,6 +26,7 @@ const ReportsPage = lazy(() => import('@/pages/reports/ReportsPage').then(module
 const AIHubPage = lazy(() => import('@/pages/reports/AIHubPage').then(module => ({ default: module.AIHubPage })));
 const ImportPage = lazy(() => import('@/pages/import/ImportPage').then(module => ({ default: module.ImportPage })));
 const ScopingPage = lazy(() => import('@/pages/scoping/ScopingPage').then(module => ({ default: module.ScopingPage })));
+const ApprovalPage = lazy(() => import('@/pages/scoping/ApprovalPage').then(module => ({ default: module.ApprovalPage })));
 const ExternalAuditPortal = lazy(() => import('@/pages/audit/ExternalAuditPortal').then(module => ({ default: module.ExternalAuditPortal })));
 const WBSPage = lazy(() => import('@/pages/reports/WBSPage').then(module => ({ default: module.WBSPage })));
 const ChangeLogPage = lazy(() => import('@/pages/rcm/ChangeLogPage').then(module => ({ default: module.ChangeLogPage })));
@@ -62,6 +63,7 @@ const router = createBrowserRouter([
         children: [
           { path: "/dashboard", element: <PageSuspense><Dashboard /></PageSuspense> },
           { path: "/scoping", element: <PageSuspense><ScopingPage /></PageSuspense> },
+          { path: "/scoping/approval", element: <PageSuspense><ApprovalPage /></PageSuspense> },
           { path: "/rcm", element: <PageSuspense><RCMList /></PageSuspense> },
           { path: "/change-log", element: <PageSuspense><ChangeLogPage /></PageSuspense> },
           { path: "/soc-monitoring", element: <PageSuspense><SOCMonitoringPage /></PageSuspense> },

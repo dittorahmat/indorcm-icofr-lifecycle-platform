@@ -1,11 +1,33 @@
 import { IndexedEntity } from "./core-utils";
-import type { User, Chat, ChatMessage, RCM, Control, CSARecord, TestRecord, Deficiency, ActionPlan, Materiality, Scoping, Application, RiskLibrary, AggregateDeficiency } from "@shared/types";
+import type { 
+  User, Chat, ChatMessage, RCM, Control, CSARecord, TestRecord, 
+  Deficiency, ActionPlan, Materiality, Scoping, Application, 
+  RiskLibrary, AggregateDeficiency, GLSnapshot, MaterialitySimulation 
+} from "@shared/types";
 import { MOCK_USERS, MOCK_CHATS, MOCK_CHAT_MESSAGES, MOCK_RCM, MOCK_CONTROLS, MOCK_DEFICIENCIES, MOCK_ACTION_PLANS, MOCK_MATERIALITY, MOCK_SCOPING, MOCK_APPLICATIONS, MOCK_RISK_LIBRARY } from "@shared/mock-data";
 
 // --- ICOFR Entities ---
 
 interface Auditable {
   auditTrail: { action: string; userId: string; timestamp: number }[];
+}
+
+export class GLSnapshotEntity extends IndexedEntity<GLSnapshot & Auditable> {
+  static readonly entityName = "glsnapshot";
+  static readonly indexName = "glsnapshots";
+  static readonly initialState: GLSnapshot & Auditable = { id: "", filename: "", uploadDate: 0, rows: [], auditTrail: [] };
+  async getAuditTrail() { return (await this.getState()).auditTrail; }
+}
+
+export class SimulationEntity extends IndexedEntity<MaterialitySimulation & Auditable> {
+  static readonly entityName = "simulation";
+  static readonly indexName = "simulations";
+  static readonly initialState: MaterialitySimulation & Auditable = { 
+    id: "", name: "", year: new Date().getFullYear(), status: "Draft", 
+    basis: "PBT", omPercentage: 5, haircutPercentage: 25, omValue: 0, pmValue: 0, 
+    glSnapshotId: "", assessmentData: {}, createdBy: "", createdAt: 0, auditTrail: [] 
+  };
+  async getAuditTrail() { return (await this.getState()).auditTrail; }
 }
 
 export class AggregateDeficiencyEntity extends IndexedEntity<AggregateDeficiency & Auditable> {

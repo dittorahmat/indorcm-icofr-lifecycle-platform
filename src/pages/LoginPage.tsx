@@ -81,6 +81,7 @@ export function LoginPage() {
     if (emailLower.startsWith('line1@')) return 'Line 1';
     if (emailLower.startsWith('line2@')) return 'Line 2';
     if (emailLower.startsWith('line3@')) return 'Line 3';
+    if (emailLower.startsWith('komisaris@')) return 'Komisaris';
     if (emailLower.startsWith('admin@')) return 'Admin';
     if (emailLower.startsWith('external@')) return 'External Auditor';
     return 'Line 1'; // Default
@@ -168,8 +169,9 @@ export function LoginPage() {
                 <span>line1@bumn.go.id → Line 1</span>
                 <span>line2@bumn.go.id → Line 2</span>
                 <span>line3@bumn.go.id → Line 3</span>
+                <span>komisaris@bumn.go.id → Komut</span>
                 <span>admin@bumn.go.id → Admin</span>
-                <span colSpan={2}>external@bumn.go.id → Ext. Auditor</span>
+                <span>external@bumn.go.id → Ext. Auditor</span>
               </div>
               <p className="pt-1">Password: <code className="bg-muted px-1 rounded">password</code></p>
             </div>

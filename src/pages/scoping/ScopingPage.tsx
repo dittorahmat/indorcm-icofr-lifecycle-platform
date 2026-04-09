@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,17 +10,22 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
-import type { Materiality, UserRole, EntityMateriality, InvesteeMateriality } from '@shared/types';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
+import type { 
+  MaterialitySimulation, GLRow, GLSnapshot, QualitativeLevel, UserRole 
+} from '@shared/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { CheckCircle2, Wand2, Info, Plus, Network, AlertTriangle, Save, Loader2, Trash2, Target, Upload, Database, RefreshCw, FileJson, Workflow } from 'lucide-react';
-import { Checkbox } from '@/components/ui/checkbox';
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { 
+  CheckCircle2, Info, Plus, AlertTriangle, Save, Loader2, 
+  Trash2, Upload, Database, RefreshCw, FileText, ArrowLeft, 
+  Send, History, Search, Filter, Workflow, ShieldCheck, Settings2
+} from 'lucide-react';
+import { GLDataGrid } from '@/components/scoping/GLDataGrid';
+import { ScopingHealthDashboard } from '@/components/scoping/ScopingHealthDashboard';
+import { toast } from 'sonner';
+import { useDropzone } from 'react-dropzone';
+import Papa from 'papaparse';
+import * as XLSX from 'xlsx';
 import {
   Dialog,
   DialogContent,
@@ -30,1026 +35,475 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { GLDataIntake } from '@/components/scoping/GLDataIntake';
-import { toast } from 'sonner';
-import Papa from 'papaparse';
-import { useDropzone } from 'react-dropzone';
-import { getGroupMultiplier, QualitativeScopingReason, calculateBenchmarkValue, getBenchmarkBreakdown, calculateDataQualityScore, BenchmarkCategory } from '@/lib/compliance-utils';
-import type { Scoping, SignificantAccount } from '@shared/types';
-import type { GLRow } from '@/components/scoping/GLDataIntake';
-
-const materialitySchema = z.object({
-  benchmark: z.enum(["Pre-Tax Income", "Revenue", "Assets", "Equity"]),
-  benchmarkValue: z.number().min(0),
-  percentage: z.number().min(0).max(100),
-  haircut: z.number().min(0).max(100),
-  locationCount: z.number().min(1).default(1),
-});
-
-type MaterialityForm = z.infer<typeof materialitySchema>;
-
-interface HaircutWizardProps {
-  onApply: (value: number) => void;
-}
-
-function HaircutWizard({ onApply }: HaircutWizardProps) {
-  const [riskFactors, setRiskFactors] = React.useState({
-    newImplementation: false,
-    highTurnover: false,
-    historyOfDeficiencies: false,
-    complexChanges: false,
-  });
-
-  const calculateHaircut = () => {
-    const activeFactors = Object.values(riskFactors).filter(Boolean).length;
-    if (activeFactors === 0) return 25;
-    if (activeFactors <= 2) return 50;
-    return 75;
-  };
-
-  const currentHaircut = calculateHaircut();
-
-  return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-6 text-[10px] gap-1 text-primary">
-          <Wand2 className="h-3 w-3" /> Help me decide
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Haircut Risk Assessment</DialogTitle>
-          <DialogDescription>
-            Determine the Performance Materiality (PM) haircut based on the entity's control environment risk.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4 py-4">
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="newImpl" 
-              checked={riskFactors.newImplementation} 
-              onCheckedChange={(checked) => setRiskFactors(f => ({ ...f, newImplementation: !!checked }))}
-            />
-            <Label htmlFor="newImpl">First year of ICOFR implementation</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="turnover" 
-              checked={riskFactors.highTurnover} 
-              onCheckedChange={(checked) => setRiskFactors(f => ({ ...f, highTurnover: !!checked }))}
-            />
-            <Label htmlFor="turnover">High turnover in key accounting/IT staff</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="deficiencies" 
-              checked={riskFactors.historyOfDeficiencies} 
-              onCheckedChange={(checked) => setRiskFactors(f => ({ ...f, historyOfDeficiencies: !!checked }))}
-            />
-            <Label htmlFor="deficiencies">History of significant deficiencies or material weaknesses</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="changes" 
-              checked={riskFactors.complexChanges} 
-              onCheckedChange={(checked) => setRiskFactors(f => ({ ...f, complexChanges: !!checked }))}
-            />
-            <Label htmlFor="changes">Significant changes in business or accounting processes</Label>
-          </div>
-
-          <div className="mt-6 p-4 rounded-lg bg-muted/50 border">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-semibold">Recommended Haircut:</span>
-              <Badge variant={currentHaircut === 25 ? "secondary" : currentHaircut === 50 ? "default" : "destructive"}>
-                {currentHaircut}%
-              </Badge>
-            </div>
-            <p className="text-xs text-muted-foreground italic">
-              Resulting PM will be {(100 - currentHaircut)}% of Overall Materiality.
-            </p>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button onClick={() => onApply(currentHaircut)}>Apply Recommended Haircut</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-interface QualitativeScopingWizardProps {
-  onAdd: (account: SignificantAccount) => void;
-}
-
-function QualitativeScopingWizard({ onAdd }: QualitativeScopingWizardProps) {
-  const [name, setName] = React.useState("");
-  const [balance, setBalance] = React.useState(0);
-  const [reasons, setReasons] = React.useState<QualitativeScopingReason[]>([]);
-
-  const allReasons: QualitativeScopingReason[] = [
-    "Besarnya eksposur risiko kecurangan",
-    "Volume transaksi, kompleksitas, dan homogenitas",
-    "Adanya perubahan signifikan dalam karakteristik akun",
-    "Akun yang memerlukan judgement tinggi",
-    "Akun yang dipengaruhi oleh estimasi",
-    "Kepatuhan terhadap loan covenant",
-    "Aset yang dikelola oleh pihak ketiga",
-    "Lainnya"
-  ];
-
-  const toggleReason = (reason: QualitativeScopingReason) => {
-    setReasons(prev => prev.includes(reason) ? prev.filter(r => r !== reason) : [...prev, reason]);
-  };
-
-  return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2 shadow-sm">
-          <Plus className="h-4 w-4" /> Add Qualitative Account (Table 5)
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-          <DialogHeader>
-            <DialogTitle>Qualitative Scoping Entry</DialogTitle>
-            <DialogDescription>
-              Menambahkan akun signifikan berdasarkan faktor kualitatif meskipun di bawah ambang batas PM.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="name" className="text-xs font-bold uppercase">Account Name</Label>
-              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Construction in Progress" className="h-9" />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="balance" className="text-xs font-bold uppercase">Balance (IDR)</Label>
-              <Input id="balance" type="number" value={balance} onChange={(e) => setBalance(Number(e.target.value))} className="h-9" />
-            </div>
-            <div className="grid gap-2">
-              <Label className="text-xs font-bold uppercase">Qualitative Reasons (Refer to Table 5)</Label>
-              <div className="space-y-2 border rounded-md p-3 max-h-[200px] overflow-y-auto bg-muted/10">
-                {allReasons.map(r => (
-                  <div key={r} className="flex items-center space-x-2">
-                    <Checkbox id={r} checked={reasons.includes(r)} onCheckedChange={() => toggleReason(r)} />
-                    <Label htmlFor={r} className="text-[11px] font-normal leading-tight cursor-pointer">{r}</Label>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button onClick={() => {
-              onAdd({ name, balance, isQuantitative: false, qualitativeReasons: reasons });
-              setName(""); setBalance(0); setReasons([]);
-            }} disabled={!name || reasons.length === 0} className="w-full">Add to Scope</Button>
-          </DialogFooter>
-        </motion.div>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-interface GroupAllocationProps {
-  baseOM: number;
-  multiplier: number;
-  haircut: number;
-  allocations: EntityMateriality[];
-  onUpdate: (allocations: EntityMateriality[]) => void;
-}
-
-function GroupAllocation({ baseOM, multiplier, haircut, allocations, onUpdate }: GroupAllocationProps) {
-  const maxGroupOM = baseOM * multiplier;
-  
-  const addEntity = () => {
-    const newEntity: EntityMateriality = {
-      entityId: crypto.randomUUID(),
-      entityName: "New Entity",
-      totalAssets: 0,
-      allocatedOM: 0,
-      allocatedPM: 0,
-    };
-    onUpdate([...allocations, newEntity]);
-  };
-
-  const removeEntity = (id: string) => {
-    onUpdate(allocations.filter(a => a.entityId !== id));
-  };
-
-  const updateEntity = (id: string, field: keyof EntityMateriality, value: any) => {
-    onUpdate(allocations.map(a => a.entityId === id ? { ...a, [field]: value } : a));
-  };
-
-  const totalAssets = allocations.reduce((sum, e) => sum + e.totalAssets, 0);
-
-  return (
-    <Card className="mt-6 border-blue-200 bg-blue-50/30">
-      <CardHeader>
-        <div className="flex justify-between items-center">
-          <div>
-            <CardTitle className="text-blue-800 flex items-center gap-2">
-              <Network className="h-5 w-5" /> Group Materiality Allocation (FAQ No. 4)
-            </CardTitle>
-            <CardDescription className="text-blue-600/80 italic">Proporsional alokasi berdasarkan total aset masing-masing entitas anak.</CardDescription>
-          </div>
-          <div className="flex items-center gap-4">
-            <Badge className="bg-blue-600">Max Group OM: {new Intl.NumberFormat('id-ID').format(maxGroupOM)}</Badge>
-            <Button type="button" size="sm" variant="outline" onClick={addEntity} className="h-8 border-blue-300 text-blue-700 hover:bg-blue-100">
-              <Plus className="h-3 w-3 mr-1" /> Add Entity
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow className="hover:bg-transparent border-blue-200">
-              <TableHead className="text-blue-800 text-[11px] uppercase">Entity Name</TableHead>
-              <TableHead className="text-blue-800 text-right text-[11px] uppercase">Total Assets</TableHead>
-              <TableHead className="text-blue-800 text-right text-[11px] uppercase">Prop. Share (%)</TableHead>
-              <TableHead className="text-blue-800 text-right text-[11px] uppercase">Allocated OM</TableHead>
-              <TableHead className="text-blue-800 text-[11px] uppercase">Compliance</TableHead>
-              <TableHead className="w-10"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {allocations.map(e => {
-              const share = totalAssets > 0 ? (e.totalAssets / totalAssets) : 0;
-              let allocated = maxGroupOM * share;
-              const isOverLimit = allocated > baseOM; 
-              
-              const finalAllocated = isOverLimit ? baseOM : allocated;
-              const allocatedPM = finalAllocated * (1 - haircut / 100);
-
-              return (
-                <TableRow key={e.entityId} className="border-blue-100">
-                  <TableCell>
-                    <Input className="h-8 text-xs bg-white" value={e.entityName} onChange={(ev) => updateEntity(e.entityId, 'entityName', ev.target.value)} />
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Input type="number" className="h-8 text-xs text-right bg-white font-mono" value={e.totalAssets} onChange={(ev) => updateEntity(e.entityId, 'totalAssets', Number(ev.target.value))} />
-                  </TableCell>
-                  <TableCell className="text-right text-xs">{(share * 100).toFixed(1)}%</TableCell>
-                  <TableCell className="text-right font-bold text-blue-700">
-                    <div className="flex flex-col items-end">
-                      <span className="text-[11px] font-mono">OM: {new Intl.NumberFormat('id-ID').format(finalAllocated)}</span>
-                      <span className="text-[10px] text-blue-500 font-mono">PM: {new Intl.NumberFormat('id-ID').format(allocatedPM)}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {isOverLimit ? (
-                      <Badge variant="destructive" className="h-5 text-[9px] gap-1 uppercase font-bold"><AlertTriangle className="h-3 w-3" /> Capped at Base OM</Badge>
-                    ) : (
-                      <Badge className="bg-green-600 h-5 text-[9px] gap-1 uppercase font-bold"><CheckCircle2 className="h-3 w-3" /> Within Limit</Badge>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-red-400 hover:text-red-600" onClick={() => removeEntity(e.entityId)}>
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
-  );
-}
-
-interface InvesteeMonitoringProps {
-  overallMateriality: number;
-  benchmarkValue: number;
-  haircut: number;
-  investees: InvesteeMateriality[];
-  onUpdate: (investees: InvesteeMateriality[]) => void;
-}
-
-function InvesteeMonitoring({ overallMateriality, benchmarkValue, haircut, investees, onUpdate }: InvesteeMonitoringProps) {
-  const addInvestee = () => {
-    const newInvestee: InvesteeMateriality = {
-      id: crypto.randomUUID(),
-      name: "New Investee",
-      ownershipPercentage: 20,
-      investmentValue: 0,
-      auditStatus: "Pending Review",
-      controlsTested: "",
-      allocatedOM: 0,
-      allocatedPM: 0,
-    };
-    onUpdate([...investees, newInvestee]);
-  };
-
-  const removeInvestee = (id: string) => {
-    onUpdate(investees.filter(i => i.id !== id));
-  };
-
-  const updateInvestee = (id: string, field: keyof InvesteeMateriality, value: any) => {
-    onUpdate(investees.map(i => i.id === id ? { ...i, [field]: value } : i));
-  };
-
-  return (
-    <Card className="border-purple-200 bg-purple-50/30">
-      <CardHeader>
-        <div className="flex justify-between items-center">
-          <div>
-            <CardTitle className="text-purple-800 flex items-center gap-2">
-              <Target className="h-5 w-5" /> Equity Method Investee Monitoring (FAQ No. 5)
-            </CardTitle>
-            <CardDescription className="text-purple-600/80 italic">Pemantauan atas investee non-konsolidasi berdasarkan nilai investasi.</CardDescription>
-          </div>
-          <Button type="button" size="sm" variant="outline" onClick={addInvestee} className="h-8 border-purple-300 text-purple-700 hover:bg-purple-100">
-            <Plus className="h-3 w-3 mr-1" /> Add Investee
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow className="hover:bg-transparent border-purple-200">
-              <TableHead className="text-purple-800 text-[11px] uppercase">Investee Name</TableHead>
-              <TableHead className="text-purple-800 text-right text-[11px] uppercase">Investment (IDR)</TableHead>
-              <TableHead className="text-purple-800 text-[11px] uppercase">Audit Status</TableHead>
-              <TableHead className="text-purple-800 text-right text-[11px] uppercase">Materiality</TableHead>
-              <TableHead className="w-10"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {investees.map(i => {
-              // FAQ No. 5 logic: Investee materiality is proportional to investment value relative to group benchmark
-              // Simplified: We use overallMateriality as the base for the group
-              const allocatedOM = i.investmentValue > 0 ? (overallMateriality * 0.05) : 0; // Placeholder logic
-              const allocatedPM = allocatedOM * (1 - haircut / 100);
-
-              return (
-                <TableRow key={i.id} className="border-purple-100">
-                  <TableCell>
-                    <Input className="h-8 text-xs bg-white" value={i.name} onChange={(ev) => updateInvestee(i.id, 'name', ev.target.value)} />
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Input type="number" className="h-8 text-xs text-right bg-white font-mono" value={i.investmentValue} onChange={(ev) => updateInvestee(i.id, 'investmentValue', Number(ev.target.value))} />
-                  </TableCell>
-                  <TableCell>
-                    <Select value={i.auditStatus} onValueChange={(val) => updateInvestee(i.id, 'auditStatus', val)}>
-                      <SelectTrigger className="h-8 text-[10px] bg-white"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Audit Report Received">Audit Report Received</SelectItem>
-                        <SelectItem value="Pending Review">Pending Review</SelectItem>
-                        <SelectItem value="Not Audited">Not Audited</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                  <TableCell className="text-right font-bold text-purple-700">
-                    <div className="flex flex-col items-end">
-                      <span className="text-[11px] font-mono">OM: {new Intl.NumberFormat('id-ID').format(allocatedOM)}</span>
-                      <span className="text-[10px] text-purple-500 font-mono">PM: {new Intl.NumberFormat('id-ID').format(allocatedPM)}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-red-400 hover:text-red-600" onClick={() => removeInvestee(i.id)}>
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
-  );
-}
-
-interface GLUploadDialogProps {
-  onUpload: (accounts: SignificantAccount[]) => void;
-  pmThreshold: number;
-  onGLDataLoaded?: (data: GLRow[]) => void;
-}
-
-function GLUploadDialog({ onUpload, pmThreshold, onGLDataLoaded }: GLUploadDialogProps) {
-  const [isOpen, setIsOpen] = React.useState(false);
-
-  const handleDataImported = (data: any[], pm: number) => {
-    const newAccounts: SignificantAccount[] = data
-      .map(row => ({
-        name: row.accountName,
-        balance: row.balance,
-        isQuantitative: false, // Default false, will be calculated dynamically
-        qualitativeReasons: [],
-        fsliCode: row.fsliCode,
-        entityCode: row.entityCode,
-      }));
-
-    onUpload(newAccounts);
-    // Pass GL data to parent for benchmark calculation
-    if (onGLDataLoaded) {
-      onGLDataLoaded(data);
-    }
-    // Don't auto-close, let user review the data
-    if (newAccounts.length > 0) {
-      toast.success(`Identified ${newAccounts.length} quantitatively significant accounts (> PM).`);
-    } else {
-      toast.warning('No accounts found above the PM threshold.');
-    }
-  };
-
-  return (
-    <>
-      <Button 
-        variant="outline" 
-        size="sm" 
-        className="gap-2 border-primary/30 hover:bg-primary/5"
-        onClick={() => setIsOpen(true)}
-      >
-        <Upload className="h-4 w-4" /> Upload GL Data
-      </Button>
-
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="max-w-7xl h-[85vh] max-h-[800px]">
-          <DialogHeader>
-            <DialogTitle>Upload General Ledger</DialogTitle>
-            <DialogDescription>
-              Upload GL data dari file CSV atau Excel (.xlsx, .xls). 
-              Sistem akan auto-detect kolom dan parse format Indonesia.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="mt-4 h-[70vh] overflow-y-auto">
-            <GLDataIntake 
-              onDataImported={handleDataImported} 
-              pmThreshold={pmThreshold} 
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
-    </>
-  );
-}
-
-function ERPSyncCard() {
-  const [isSyncing, setIsSyncing] = React.useState(false);
-  const [lastSync, setLastSync] = React.useState<Date | null>(new Date());
-  const [provider, setProvider] = React.useState("SAP S/4HANA");
-  const [schedule, setSchedule] = React.useState("Daily");
-
-  const handleSync = () => {
-    setIsSyncing(true);
-    // Simulate ETL process
-    setTimeout(() => {
-      setIsSyncing(false);
-      setLastSync(new Date());
-      toast.success("ERP Data Synchronization complete (Simulation). Scoping matrix updated with latest GL values.");
-    }, 2500);
-  };
-
-  return (
-    <Card className="border-indigo-200 bg-indigo-50/20 overflow-hidden relative">
-      <div className="absolute top-0 right-0 p-4 opacity-10">
-        <Database className="h-24 w-24 text-indigo-900" />
-      </div>
-      <CardHeader>
-        <div className="flex justify-between items-start">
-          <div>
-            <CardTitle className="text-indigo-900 flex items-center gap-2">
-              <RefreshCw className={cn("h-5 w-5", isSyncing && "animate-spin")} /> ERP Data Synchronization (Simulasi ETL)
-            </CardTitle>
-            <CardDescription className="text-indigo-700/70">
-              Konfigurasi integrasi otomatis dengan sistem ERP utama untuk penarikan saldo GL secara real-time.
-            </CardDescription>
-          </div>
-          <Badge variant="outline" className="bg-white/50 border-indigo-200 text-indigo-700">
-            {isSyncing ? "Syncing..." : "Connected"}
-          </Badge>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-3">
-            <Label className="text-xs font-bold uppercase text-indigo-900/60">ERP Provider</Label>
-            <Select value={provider} onValueChange={setProvider}>
-              <SelectTrigger className="bg-white border-indigo-200"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="SAP S/4HANA">SAP S/4HANA</SelectItem>
-                <SelectItem value="Oracle ERP Cloud">Oracle ERP Cloud</SelectItem>
-                <SelectItem value="Microsoft Dynamics 365">Microsoft Dynamics 365</SelectItem>
-                <SelectItem value="Odoo Enterprise">Odoo Enterprise</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-3">
-            <Label className="text-xs font-bold uppercase text-indigo-900/60">Sync Schedule</Label>
-            <RadioGroup value={schedule} onValueChange={setSchedule} className="flex gap-4 mt-2">
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="Daily" id="daily" />
-                <Label htmlFor="daily" className="text-xs">Daily</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="Weekly" id="weekly" />
-                <Label htmlFor="weekly" className="text-xs">Weekly</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="Monthly" id="monthly" />
-                <Label htmlFor="monthly" className="text-xs">Monthly</Label>
-              </div>
-            </RadioGroup>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between p-4 bg-white/60 border border-indigo-100 rounded-xl">
-          <div className="flex items-center gap-3">
-            <div className={cn("p-2 rounded-lg", isSyncing ? "bg-indigo-100" : "bg-green-100")}>
-              <RefreshCw className={cn("h-5 w-5", isSyncing ? "text-indigo-600 animate-spin" : "text-green-600")} />
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-indigo-900">Status Integrasi Sehat</p>
-              <p className="text-[10px] text-indigo-700/60">Terakhir Sinkronisasi: {lastSync ? lastSync.toLocaleString('id-ID') : 'Never'}</p>
-            </div>
-          </div>
-          <Button 
-            variant="default" 
-            size="sm" 
-            className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200"
-            onClick={handleSync}
-            disabled={isSyncing}
-          >
-            {isSyncing ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Syncing...</> : "Sync Now"}
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+import { 
+  parseBalance, 
+  detectGLColumns, 
+  filterEmptyRows,
+  validateGLMapping,
+  calculateBenchmarkValue,
+  BenchmarkCategory,
+  getGroupMultiplier
+} from '@/lib/compliance-utils';
 
 export function ScopingPage() {
   const queryClient = useQueryClient();
-  const { data: materialityData, isLoading: matLoading } = useQuery({
-    queryKey: ['materiality'],
-    queryFn: () => api<{ items: Materiality[] }>('/api/materiality'),
+  const [selectedSimId, setSelectedSimId] = React.useState<string | null>(null);
+  const [isCreating, setIsCreating] = React.useState(false);
+
+  const { data: simulations, isLoading: simLoading } = useQuery({
+    queryKey: ['simulations'],
+    queryFn: () => api<{ items: MaterialitySimulation[] }>('/api/simulations'),
   });
 
-  const { data: scopingData, isLoading: scopeLoading } = useQuery({
-    queryKey: ['scoping'],
-    queryFn: () => api<{ items: Scoping[] }>('/api/scoping'),
-  });
+  const selectedSim = simulations?.items.find(s => s.id === selectedSimId);
 
-  const currentMateriality = materialityData?.items?.[0];
-  const currentScope = scopingData?.items?.[0];
-  const [localAccounts, setLocalAccounts] = React.useState<SignificantAccount[]>([]);
-  const [localAllocations, setLocalAllocations] = React.useState<EntityMateriality[]>([]);
-  const [localInvestees, setLocalInvestees] = React.useState<InvesteeMateriality[]>([]);
-  
-  // GL Data state for auto-populate
-  const [glData, setGlData] = React.useState<GLRow[]>([]);
-  const [autoPopulateEnabled, setIsAutoPopulateEnabled] = React.useState(true);
-  const [isOMManual, setIsOMManual] = React.useState(false);
-  const [manualOMValue, setManualOMValue] = React.useState<number | null>(null);
-  const [benchmarkBreakdown, setBenchmarkBreakdown] = React.useState<Record<string, number> | null>(null);
-  const [dataQuality, setDataQuality] = React.useState<{ score: number; level: string; hasFSLI: boolean; message: string } | null>(null);
-  
-  const mockRole = localStorage.getItem('mockRole') || 'Line 1';
-  // DEMO MODE: All lines can access Line 2 features
-  // const isLine2 = mockRole === 'Line 2';
-  const isLine2 = true; // DEMO MODE
-
-  const { register, control, watch, setValue, reset, handleSubmit } = useForm<MaterialityForm>({
-    resolver: zodResolver(materialitySchema),
-    defaultValues: {
-      benchmark: "Pre-Tax Income",
-      benchmarkValue: 0,
-      percentage: 5,
-      haircut: 25,
-      locationCount: 1,
+  const createSimMutation = useMutation({
+    mutationFn: (data: Partial<MaterialitySimulation>) => api('/api/simulations', { method: 'POST', body: JSON.stringify(data) }),
+    onSuccess: (newSim) => {
+      queryClient.invalidateQueries({ queryKey: ['simulations'] });
+      setSelectedSimId(newSim.id);
+      setIsCreating(false);
+      toast.success("Simulation created successfully");
     }
   });
 
-  React.useEffect(() => {
-    if (currentMateriality) {
-      reset({
-        benchmark: currentMateriality.benchmark,
-        benchmarkValue: (currentMateriality.overallMateriality / (currentMateriality.multiplier || 1)) / (currentMateriality.percentage / 100),
-        percentage: currentMateriality.percentage,
-        haircut: currentMateriality.haircut,
-        locationCount: currentMateriality.subsidiaryCount || 1,
-      });
-      if (currentMateriality.entityAllocations) setLocalAllocations(currentMateriality.entityAllocations);
-      if (currentMateriality.investeeAllocations) setLocalInvestees(currentMateriality.investeeAllocations);
-    }
-  }, [currentMateriality, reset]);
-
-  React.useEffect(() => {
-    if (currentScope?.significantAccounts) setLocalAccounts(currentScope.significantAccounts);
-  }, [currentScope]);
-
-  const formValues = watch();
-
-  // Auto-populate benchmark value from GL data
-  React.useEffect(() => {
-    if (autoPopulateEnabled && glData.length > 0) {
-      const benchmark = formValues.benchmark as BenchmarkCategory;
-      const value = calculateBenchmarkValue(glData, benchmark);
-      if (value > 0) {
-        setValue('benchmarkValue', value);
-      }
-
-      // Calculate breakdown for all categories
-      const breakdown = getBenchmarkBreakdown(glData);
-      setBenchmarkBreakdown(breakdown);
-
-      // Calculate data quality
-      const quality = calculateDataQualityScore(glData);
-      setDataQuality(quality);
-    }
-  }, [autoPopulateEnabled, glData, formValues.benchmark, setValue]);
-
-  // Handle GL data import from GLDataIntake
-  const handleGLDataImported = React.useCallback((data: GLRow[], pm: number) => {
-    setGlData(data);
-    // Auto-enable populate when GL data is uploaded
-    setIsAutoPopulateEnabled(true);
-    toast.success(`GL data imported: ${data.length} accounts. Benchmark auto-populated.`);
-  }, []);
-
-  const saveMateriality = useMutation({
-    mutationFn: (data: Materiality) => api('/api/materiality', { method: 'POST', body: JSON.stringify(data) }),
+  const deleteSimMutation = useMutation({
+    mutationFn: (id: string) => api(`/api/simulations/${id}`, { method: 'DELETE' }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['materiality'] });
-      toast.success("Materiality settings saved successfully.");
-    },
-    onError: (err) => toast.error(`Failed to save: ${err.message}`),
+      queryClient.invalidateQueries({ queryKey: ['simulations'] });
+      toast.success("Simulation deleted");
+    }
   });
 
-  const baseOM = (formValues.benchmarkValue * formValues.percentage) / 100;
-  const multiplier = getGroupMultiplier(formValues.locationCount);
-  const calculatedOM = baseOM * multiplier;
-  
-  // Use manual OM if override enabled, otherwise use calculated
-  const overallMateriality = isOMManual && manualOMValue !== null ? manualOMValue : calculatedOM;
-  const performanceMateriality = overallMateriality * (1 - formValues.haircut / 100);
-
-  // Handle OM manual override toggle
-  const handleOMToggle = () => {
-    if (isOMManual) {
-      // Reset to calculated
-      setIsOMManual(false);
-      setManualOMValue(null);
-      toast.info('OM reset to calculated value');
-    } else {
-      // Enable manual override
-      setIsOMManual(true);
-      setManualOMValue(overallMateriality);
-      toast.info('OM manual override enabled');
-    }
-  };
-
-  const handleManualOMChange = (value: number) => {
-    setManualOMValue(value);
-  };
-
-  const onSaveMateriality = (data: MaterialityForm) => {
-    const payload: Materiality = {
-      id: currentMateriality?.id || crypto.randomUUID(),
-      year: new Date().getFullYear(),
-      overallMateriality,
-      performanceMateriality,
-      benchmark: data.benchmark,
-      percentage: data.percentage,
-      haircut: data.haircut,
-      isGroupConsolidation: data.locationCount > 1,
-      subsidiaryCount: data.locationCount,
-      multiplier: multiplier,
-      entityAllocations: localAllocations,
-      investeeAllocations: localInvestees,
-    };
-    saveMateriality.mutate(payload);
-  };
-
-  const formatCurrency = (val: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(val);
-
-  const totalGLBalance = glData.reduce((sum, row) => sum + row.balance, 0);
-  
-  // Dynamic calculation for significant accounts
-  const processedAccounts = localAccounts.map(acc => ({
-    ...acc,
-    isQuantitative: acc.balance >= performanceMateriality
-  }));
-
-  const significantBalance = processedAccounts
-    .filter(acc => acc.isQuantitative || (acc.qualitativeReasons && acc.qualitativeReasons.length > 0))
-    .reduce((sum, acc) => sum + acc.balance, 0);
-  
-  const coveragePercentage = totalGLBalance > 0 
-    ? (significantBalance / totalGLBalance) * 100 
-    : (processedAccounts.length > 0 ? (significantBalance > 0 ? 100 : 0) : 0);
-
-  const isCoverageAdequate = coveragePercentage >= 66.67;
+  if (selectedSim) {
+    return <ScopingEditor simulation={selectedSim} onBack={() => setSelectedSimId(null)} />;
+  }
 
   return (
     <AppLayout container>
       <div className="space-y-6">
-        <div className="flex justify-between items-start">
+        <div className="flex justify-between items-end">
           <div>
-            <h1 className="text-3xl font-bold">Scoping & Materiality</h1>
-            <p className="text-muted-foreground">Define materiality thresholds and scope significant accounts for ICOFR.</p>
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Materiality Simulations</h1>
+            <p className="text-muted-foreground text-sm">Manage and compare different scoping scenarios for the current fiscal year.</p>
           </div>
-          <Button onClick={handleSubmit(onSaveMateriality)} disabled={saveMateriality.isPending} className="gap-2">
-            {saveMateriality.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            Save Materiality Settings
+          <Button onClick={() => setIsCreating(true)} className="gap-2 shadow-lg shadow-primary/20">
+            <Plus className="h-4 w-4" /> New Simulation
           </Button>
         </div>
 
-        <Tabs defaultValue="materiality">
-          <TabsList>
-            <TabsTrigger value="materiality">Materiality</TabsTrigger>
-            <TabsTrigger value="scoping">Scoping</TabsTrigger>
-            <TabsTrigger value="investee">Investee Monitoring (FAQ 5)</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="materiality" className="space-y-6">
-            <Card>
-              <CardHeader><CardTitle>Materiality Calculation</CardTitle></CardHeader>
-              <CardContent>
-                <form className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label>Benchmark Basis</Label>
-                      <Controller control={control} name="benchmark" render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <SelectTrigger><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Pre-Tax Income">Pre-Tax Income</SelectItem>
-                            <SelectItem value="Revenue">Revenue</SelectItem>
-                            <SelectItem value="Assets">Total Assets</SelectItem>
-                            <SelectItem value="Equity">Total Equity</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      )} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Benchmark Value (IDR)</Label>
-                      <div className="flex gap-2">
-                        <Input type="number" {...register("benchmarkValue", { valueAsNumber: true })} className="flex-1" />
-                        {glData.length > 0 && (
-                          <Button
-                            type="button"
-                            variant={autoPopulateEnabled ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setIsAutoPopulateEnabled(!autoPopulateEnabled)}
-                            className="shrink-0"
-                          >
-                            {autoPopulateEnabled ? "Auto: ON" : "Auto: OFF"}
-                          </Button>
-                        )}
-                      </div>
-                      {glData.length > 0 && autoPopulateEnabled && (
-                        <p className="text-xs text-muted-foreground">
-                          Auto-populated from GL data ({glData.length} accounts)
-                        </p>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Significant Locations (Multiplier: {multiplier}x)</Label>
-                      <Input type="number" {...register("locationCount", { valueAsNumber: true })} />
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center"><Label>Haircut for PM (%)</Label><HaircutWizard onApply={(val) => setValue("haircut", val)} /></div>
-                      <Input type="number" {...register("haircut", { valueAsNumber: true })} />
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <Label>% OM (Overall Materiality)</Label>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger>
-                              <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
-                            </TooltipTrigger>
-                            <TooltipContent className="max-w-[300px]">
-                              <p className="text-xs">Referensi: <strong>SK-5/2024 Table 3</strong></p>
-                              <p className="text-xs mt-1">
-                                Judgment profesional: <strong>5%</strong> untuk profit-based benchmarks (Pre-Tax Income), 
-                                <strong>1%</strong> untuk asset/revenue-based benchmarks (Assets, Revenue).
-                              </p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
-                      <Input type="number" {...register("percentage", { valueAsNumber: true })} />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-muted/20 p-6 rounded-lg border-2 border-primary/10">
-                    <div>
-                      <div className="flex justify-between items-center">
-                        <h3 className="text-lg font-semibold text-muted-foreground">Overall Materiality (OM)</h3>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={handleOMToggle}
-                          className="h-6 text-xs"
-                        >
-                          {isOMManual ? (
-                            <span className="text-orange-600">✏️ Manual [Reset]</span>
-                          ) : (
-                            <span className="text-muted-foreground">🔒 Calculated</span>
-                          )}
-                        </Button>
-                      </div>
-                      {isOMManual ? (
-                        <Input
-                          type="number"
-                          value={manualOMValue || 0}
-                          onChange={(e) => handleManualOMChange(Number(e.target.value))}
-                          className="text-2xl font-bold text-primary mt-2"
-                        />
-                      ) : (
-                        <p className="text-3xl font-bold text-primary">{formatCurrency(overallMateriality)}</p>
-                      )}
-                      {isOMManual && (
-                        <p className="text-xs text-orange-600 mt-1">⚠️ Manual Override Active</p>
-                      )}
-                    </div>
-                    <div><h3 className="text-lg font-semibold text-muted-foreground">Performance Materiality (PM)</h3><p className="text-3xl font-bold text-primary">{formatCurrency(performanceMateriality)}</p></div>
-                  </div>
-
-                  {/* Benchmark Breakdown Display */}
-                  {benchmarkBreakdown && glData.length > 0 && (
-                    <Card className="border-blue-200 bg-blue-50/30">
-                      <CardHeader className="pb-3">
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <CardTitle className="text-blue-800 text-sm">Benchmark Breakdown (dari GL Data)</CardTitle>
-                            <CardDescription className="text-blue-600/80 text-xs">
-                              {dataQuality?.hasFSLI 
-                                ? `✅ High quality - FSLI code matching (${dataQuality.message})` 
-                                : `⚠️ Using account name matching - ${dataQuality?.message}`
-                              }
-                            </CardDescription>
-                          </div>
-                          {dataQuality && (
-                            <Badge className={dataQuality.level === 'High' ? 'bg-green-600' : dataQuality.level === 'Medium' ? 'bg-yellow-600' : 'bg-orange-600'}>
-                              {dataQuality.level} Confidence
-                            </Badge>
-                          )}
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                          {Object.entries(benchmarkBreakdown).map(([category, value]) => (
-                            <div 
-                              key={category} 
-                              className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                                formValues.benchmark === category 
-                                  ? 'border-primary bg-primary/5 shadow-md' 
-                                  : 'border-transparent bg-white hover:border-primary/30'
-                              }`}
-                              onClick={() => {
-                                setValue('benchmark', category as any);
-                                setIsAutoPopulateEnabled(true);
-                              }}
-                            >
-                              <p className="text-[10px] text-muted-foreground uppercase font-semibold">{category}</p>
-                              <p className="text-sm font-bold text-primary mt-1">{formatCurrency(value)}</p>
-                              {formValues.benchmark === category && (
-                                <p className="text-[9px] text-primary mt-1">✓ Selected</p>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                        <p className="text-[10px] text-muted-foreground mt-3 text-center">
-                          💡 Click on any benchmark category to select it
-                        </p>
-                      </CardContent>
-                    </Card>
-                  )}
-                  {formValues.locationCount > 1 && (
-                    <GroupAllocation baseOM={baseOM} multiplier={multiplier} haircut={formValues.haircut} allocations={localAllocations} onUpdate={setLocalAllocations} />
-                  )}
-                </form>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="scoping" className="space-y-6 pt-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card className="md:col-span-2">
-                <CardHeader>
+        {simLoading ? (
+          <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {simulations?.items.map(sim => (
+              <Card key={sim.id} className="hover:border-primary/50 transition-all cursor-pointer group hover:shadow-md border-slate-200" onClick={() => setSelectedSimId(sim.id)}>
+                <CardHeader className="pb-3">
                   <div className="flex justify-between items-start">
-                    <div className="space-y-1">
-                      <CardTitle>Significant Accounts Matrix</CardTitle>
-                      <CardDescription className="text-[10px] flex items-center gap-2">
-                        <Badge variant="outline" className="h-4 px-1 text-[9px]">{processedAccounts.filter(a => a.isQuantitative || (a.qualitativeReasons && a.qualitativeReasons.length > 0)).length} Significant</Badge>
-                        <span>from {processedAccounts.length} total accounts</span>
-                      </CardDescription>
-                    </div>
-                    <div className="flex gap-2">
-                      {isLine2 && (
-                        <GLUploadDialog
-                          pmThreshold={performanceMateriality}
-                          onUpload={(newAccs) => setLocalAccounts(prev => [...prev, ...newAccs])}
-                          onGLDataLoaded={handleGLDataImported}
-                        />
-                      )}
-                      <QualitativeScopingWizard onAdd={(acc) => setLocalAccounts(prev => [...prev, acc])} />
-                    </div>
+                    <Badge variant={sim.status === 'Approved' ? 'default' : sim.status === 'Submitted' ? 'secondary' : 'outline'}>
+                      {sim.status}
+                    </Badge>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-8 w-8 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={(e) => { e.stopPropagation(); deleteSimMutation.mutate(sim.id); }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
+                  <CardTitle className="text-lg mt-2 text-slate-800">{sim.name}</CardTitle>
+                  <CardDescription className="text-xs">Basis: {sim.basis} ({sim.omPercentage}%) | Multiplier: {getGroupMultiplier(sim.locationCount || 1)}x</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Account Name</TableHead>
-                        <TableHead className="text-right">Balance</TableHead>
-                        <TableHead>Reason</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead className="text-right">Action</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {processedAccounts.map((acc, i) => {
-                        const isSignificant = acc.isQuantitative || (acc.qualitativeReasons && acc.qualitativeReasons.length > 0);
-                        return (
-                          <TableRow key={i} className={cn(!isSignificant && "opacity-60 bg-muted/20")}>
-                            <TableCell className="font-medium">
-                              <div className="flex flex-col">
-                                <span>{acc.name}</span>
-                                {acc.fsliCode && <span className="text-[10px] font-mono text-muted-foreground uppercase">{acc.fsliCode}</span>}
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-right font-mono text-xs">{formatCurrency(acc.balance)}</TableCell>
-                            <TableCell className="text-xs text-muted-foreground">
-                              {acc.isQuantitative ? (
-                                <span className="font-bold text-blue-600 dark:text-blue-400">&gt; PM</span>
-                              ) : (
-                                acc.qualitativeReasons?.join(", ") || "None"
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant={isSignificant ? "default" : "secondary"}>
-                                {isSignificant ? "Significant" : "Insignificant"}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="text-right">
-                              {isSignificant && (
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Button 
-                                        variant="ghost" 
-                                        size="icon" 
-                                        className="h-8 w-8 text-primary hover:bg-primary/10"
-                                        onClick={() => window.location.href = `/rcm?fsliCode=${acc.fsliCode || acc.name}`}
-                                      >
-                                        <Workflow className="h-4 w-4" />
-                                      </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p className="text-xs">Lihat mitigasi proses bisnis (BPM)</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-              <Card className="bg-primary/5 border-primary/20 h-fit">
-                <CardHeader className="pb-2"><CardTitle className="text-sm font-bold uppercase">Cakupan Ruang Lingkup</CardTitle></CardHeader>
-                <CardContent>
-                  <div className="flex justify-between text-xs mb-1">
-                    <span>Account Coverage</span>
-                    <span className="font-bold">{coveragePercentage.toFixed(1)}%</span>
-                  </div>
-                  <Progress value={coveragePercentage} className="h-2" />
-                  <div className={cn(
-                    "pt-4 flex items-center gap-2 text-xs font-semibold",
-                    isCoverageAdequate ? "text-green-700" : "text-amber-700"
-                  )}>
-                    {isCoverageAdequate ? (
-                      <CheckCircle2 className="h-4 w-4" />
-                    ) : (
-                      <AlertTriangle className="h-4 w-4" />
-                    )}
-                    {isCoverageAdequate ? "Memenuhi Syarat 2/3 (Bab III 1.3)" : "Belum Memenuhi Syarat 2/3 (Bab III 1.3)"}
+                  <div className="flex justify-between items-center text-xs border-t border-slate-100 pt-3">
+                    <span className="text-muted-foreground">Created {new Date(sim.createdAt).toLocaleDateString()}</span>
+                    <span className="font-bold text-primary text-[13px]">PM: Rp {sim.pmValue?.toLocaleString('id-ID') || 0}</span>
                   </div>
                 </CardContent>
               </Card>
+            ))}
+            {simulations?.items.length === 0 && !isCreating && (
+              <div className="col-span-full border-2 border-dashed border-slate-200 rounded-xl py-20 text-center space-y-4 bg-slate-50/50">
+                <FileText className="h-12 w-12 text-muted-foreground mx-auto opacity-20" />
+                <p className="text-muted-foreground text-sm font-medium">No simulations found. Create your first scenario.</p>
+                <Button variant="outline" onClick={() => setIsCreating(true)}>Get Started</Button>
+              </div>
+            )}
+          </div>
+        )}
+
+        <Dialog open={isCreating} onOpenChange={setIsCreating}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Create New Simulation</DialogTitle>
+              <DialogDescription>Set initial parameters for your materiality scenario.</DialogDescription>
+            </DialogHeader>
+            <SimulationInitialForm onSubmit={(data) => createSimMutation.mutate(data)} isPending={createSimMutation.isPending} />
+          </DialogContent>
+        </Dialog>
+      </div>
+    </AppLayout>
+  );
+}
+
+function SimulationInitialForm({ onSubmit, isPending }: { onSubmit: (data: any) => void, isPending: boolean }) {
+  const [name, setName] = React.useState("");
+  const [basis, setBasis] = React.useState("PBT");
+  const [locations, setLocations] = React.useState(1);
+
+  const defaultOm = basis === 'Revenue' || basis === 'Assets' ? 1 : 5;
+
+  return (
+    <div className="space-y-4 py-4">
+      <div className="space-y-2">
+        <Label className="text-xs uppercase font-bold text-slate-500 tracking-wider">Simulation Name</Label>
+        <Input placeholder="e.g. FY2024 - Conservative PBT" value={name} onChange={e => setName(e.target.value)} />
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label className="text-xs uppercase font-bold text-slate-500 tracking-wider">Benchmark Basis</Label>
+          <Select value={basis} onValueChange={setBasis}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Revenue">Revenue (1%)</SelectItem>
+              <SelectItem value="PBT">Profit Before Tax (5%)</SelectItem>
+              <SelectItem value="Assets">Total Assets (1%)</SelectItem>
+              <SelectItem value="Equity">Total Equity (5%)</SelectItem>
+              <SelectItem value="Net Current Assets">Net Current Assets (5%)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label className="text-xs uppercase font-bold text-slate-500 tracking-wider">Significant Locations</Label>
+          <Input type="number" min={1} value={locations} onChange={e => setLocations(parseInt(e.target.value) || 1)} />
+        </div>
+      </div>
+      <div className="p-3 bg-blue-50 border border-blue-100 rounded-md">
+        <p className="text-[10px] text-blue-700 leading-relaxed italic">
+          Multiplier: <strong>{getGroupMultiplier(locations)}x</strong> (Tabel 25).
+          Default OM: <strong>{defaultOm}%</strong> (Tabel 3).
+        </p>
+      </div>
+      <Button className="w-full mt-2" disabled={!name || isPending} onClick={() => onSubmit({ name, basis, omPercentage: defaultOm, locationCount: locations })}>
+        {isPending ? "Creating..." : "Initialize Simulation"}
+      </Button>
+    </div>
+  );
+}
+
+function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulation, onBack: () => void }) {
+  const queryClient = useQueryClient();
+  const [simState, setSimState] = React.useState(simulation);
+  const [glData, setGlData] = React.useState<GLRow[]>([]);
+
+  const isLocked = simState.status === 'Approved' || simState.status === 'Submitted';
+
+  const { data: snapshot } = useQuery({
+    queryKey: ['gl-snapshot', simState.glSnapshotId],
+    queryFn: () => api<GLSnapshot>(`/api/gl-snapshots/${simState.glSnapshotId}`),
+    enabled: !!simState.glSnapshotId
+  });
+
+  React.useEffect(() => {
+    if (snapshot) setGlData(snapshot.rows);
+  }, [snapshot]);
+
+  // Re-calculate values based on actual GL data and Multiplier
+  const calculateValues = React.useMemo(() => {
+    if (glData.length === 0) return { omValue: 0, pmValue: 0, multiplier: 1, benchmarkValue: 0 };
+    
+    const basisMap: Record<string, BenchmarkCategory> = {
+      'Revenue': 'Revenue',
+      'PBT': 'Pre-Tax Income',
+      'Assets': 'Assets',
+      'Equity': 'Equity',
+      'Net Current Assets': 'Assets'
+    };
+
+    const benchmarkCategory = basisMap[simState.basis] || 'Revenue';
+    const benchmarkValue = calculateBenchmarkValue(glData, benchmarkCategory);
+    const multiplier = getGroupMultiplier(simState.locationCount || 1);
+    
+    const baseOM = (benchmarkValue * simState.omPercentage) / 100;
+    const omValue = baseOM * multiplier; // APPLY MULTIPLIER (Tabel 25)
+    const pmValue = omValue * (1 - simState.haircutPercentage / 100);
+    
+    return { omValue, pmValue, multiplier, benchmarkValue };
+  }, [glData, simState.basis, simState.omPercentage, simState.haircutPercentage, simState.locationCount]);
+
+  const { omValue, pmValue, multiplier, benchmarkValue } = calculateValues;
+
+  const updateSimMutation = useMutation({
+    mutationFn: (data: Partial<MaterialitySimulation>) => api(`/api/simulations/${simState.id}`, { method: 'PUT', body: JSON.stringify({ ...data, omValue, pmValue }) }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['simulations'] });
+      toast.success("Simulation updated");
+    }
+  });
+
+  const submitSimMutation = useMutation({
+    mutationFn: () => api(`/api/simulations/${simState.id}/submit`, { method: 'POST' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['simulations'] });
+      onBack();
+      toast.success("Simulation submitted to Komisaris");
+    }
+  });
+
+  const handleAssessmentChange = (noGL: string, ruleId: number, level: QualitativeLevel) => {
+    if (isLocked) return;
+    setSimState(prev => ({
+      ...prev,
+      assessmentData: {
+        ...prev.assessmentData,
+        [noGL]: {
+          ...(prev.assessmentData[noGL] || {}),
+          [ruleId]: level
+        }
+      }
+    }));
+  };
+
+  const handleBatchApply = (fsliCode: string, ruleId: number, level: QualitativeLevel) => {
+    if (isLocked) return;
+    const affectedGLs = glData.filter(row => row.fsliCode === fsliCode).map(row => row.noGL);
+    const newData = { ...simState.assessmentData };
+    affectedGLs.forEach(noGL => {
+      newData[noGL] = { ...(newData[noGL] || {}), [ruleId]: level };
+    });
+    setSimState(prev => ({ ...prev, assessmentData: newData }));
+    toast.info(`Applied ${level} to all accounts under FSLI ${fsliCode}`);
+  };
+
+  const onDrop = React.useCallback((acceptedFiles: File[]) => {
+    if (isLocked) return;
+    const file = acceptedFiles[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = async (e) => {
+      const bstr = e.target?.result;
+      let rawData: any[] = [];
+      let headers: string[] = [];
+
+      try {
+        if (file.name.endsWith('.csv')) {
+          const results = Papa.parse(bstr as string, { 
+            header: true, 
+            skipEmptyLines: false,
+            transformHeader: (h) => h.trim() 
+          });
+          rawData = results.data;
+          headers = results.meta.fields || [];
+        } else {
+          const workbook = XLSX.read(bstr, { type: 'binary' });
+          const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+          const json = XLSX.utils.sheet_to_json(worksheet);
+          rawData = json.map((row: any) => {
+            const trimmedRow: any = {};
+            Object.keys(row).forEach(key => trimmedRow[key.trim()] = row[key]);
+            return trimmedRow;
+          });
+          headers = rawData.length > 0 ? Object.keys(rawData[0]) : [];
+        }
+
+        const filteredRaw = filterEmptyRows(rawData);
+        const mapping = detectGLColumns(headers);
+        const validation = validateGLMapping(mapping);
+
+        if (!validation.valid) {
+          toast.error(`Missing required columns: ${validation.missing.join(', ')}`);
+          return;
+        }
+
+        const rows: GLRow[] = filteredRaw.map((r: any) => {
+          const parsedBal = parseBalance(r[mapping.balance]);
+          return {
+            ymd: String(r[mapping.date] || ''),
+            entityCode: String(r[mapping.entityCode] || ''),
+            noGL: String(r[mapping.accountCode] || ''),
+            glDesc: String(r[mapping.accountName] || ''),
+            currency: String(r[mapping.currency] || 'IDR'),
+            balance: parsedBal.value,
+            fsliCode: String(r[mapping.fsliCode] || '')
+          };
+        }).filter(r => r.noGL && r.glDesc);
+
+        if (rows.length === 0) {
+          toast.error("No valid GL rows found");
+          return;
+        }
+
+        const snap = await api<GLSnapshot>('/api/gl-snapshots', { 
+          method: 'POST', 
+          body: JSON.stringify({ filename: file.name, rows }) 
+        });
+        
+        setSimState(prev => {
+          const updated = { ...prev, glSnapshotId: snap.id };
+          updateSimMutation.mutate(updated);
+          return updated;
+        });
+        setGlData(rows);
+        toast.success(`Successfully processed ${rows.length} GL accounts`);
+      } catch (err) {
+        console.error("Parse error:", err);
+        toast.error("Failed to parse GL file.");
+      }
+    };
+
+    if (file.name.endsWith('.csv')) {
+      reader.readAsText(file);
+    } else {
+      reader.readAsBinaryString(file);
+    }
+  }, [updateSimMutation, isLocked]);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({ 
+    onDrop, 
+    disabled: isLocked,
+    accept: { 
+      'text/csv': ['.csv'], 
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
+      'application/vnd.ms-excel': ['.xls']
+    } 
+  });
+
+  return (
+    <AppLayout container>
+      <div className="space-y-6 pb-20">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={onBack}><ArrowLeft className="h-5 w-5" /></Button>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold">{simState.name}</h1>
+                <Badge variant={simState.status === 'Approved' ? 'default' : simState.status === 'Submitted' ? 'secondary' : 'outline'}>
+                  {simState.status}
+                </Badge>
+              </div>
+              <p className="text-sm text-muted-foreground">Year: {simState.year} | Basis: {simState.basis}</p>
             </div>
+          </div>
+          {!isLocked && (
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => updateSimMutation.mutate(simState)} disabled={updateSimMutation.isPending}>
+                <Save className="h-4 w-4 mr-2" /> Save Draft
+              </Button>
+              <Button onClick={() => submitSimMutation.mutate()} className="bg-indigo-600 hover:bg-indigo-700" disabled={submitSimMutation.isPending || !simState.glSnapshotId}>
+                <Send className="h-4 w-4 mr-2" /> Submit for Approval
+              </Button>
+            </div>
+          )}
+          {simState.status === 'Approved' && (
+            <div className="flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm font-semibold">
+              <ShieldCheck className="h-4 w-4" /> This baseline is officially approved and locked.
+            </div>
+          )}
+        </div>
 
-            {isLine2 && <ERPSyncCard />}
-          </TabsContent>
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="lg:col-span-1 space-y-6">
+            <Card className="border-slate-200 shadow-sm">
+              <CardHeader className="pb-3 border-b border-slate-50 bg-slate-50/50 rounded-t-xl">
+                <CardTitle className="text-xs uppercase font-bold text-slate-500 tracking-wider flex items-center gap-2">
+                  <Settings2 className="h-3.5 w-3.5" /> Scoping Parameters
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-5 pt-6">
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-bold uppercase text-slate-400">Significant Locations</Label>
+                  <Input 
+                    type="number" 
+                    min={1}
+                    disabled={isLocked}
+                    value={simState.locationCount} 
+                    onChange={e => setSimState(s => ({ ...s, locationCount: Number(e.target.value) }))} 
+                  />
+                  <p className="text-[9px] text-blue-600 italic">Multiplier: {multiplier}x (Table 25)</p>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-bold uppercase text-slate-400">% OM (Overall Materiality)</Label>
+                  <Input 
+                    type="number" 
+                    step={0.1}
+                    disabled={isLocked}
+                    value={simState.omPercentage} 
+                    onChange={e => setSimState(s => ({ ...s, omPercentage: Number(e.target.value) }))} 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-bold uppercase text-slate-400">% Haircut (PM)</Label>
+                  <Input 
+                    type="number" 
+                    disabled={isLocked}
+                    value={simState.haircutPercentage} 
+                    onChange={e => setSimState(s => ({ ...s, haircutPercentage: Number(e.target.value) }))} 
+                  />
+                </div>
+                <Separator />
+                <div className="space-y-3 bg-slate-50 p-4 rounded-lg border border-slate-100">
+                  <div className="space-y-1">
+                    <p className="text-[9px] text-slate-400 uppercase font-bold tracking-widest flex justify-between">
+                      {simState.basis} Value <Info className="h-2.5 w-2.5" />
+                    </p>
+                    <p className="text-sm font-mono font-bold text-slate-700 text-right">Rp {benchmarkValue.toLocaleString('id-ID')}</p>
+                  </div>
+                  <div className="space-y-1 pt-2 border-t border-slate-200">
+                    <p className="text-[9px] text-slate-400 uppercase font-bold tracking-widest">Overall Materiality</p>
+                    <p className="text-lg font-mono font-bold text-primary text-right">Rp {omValue.toLocaleString('id-ID')}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[9px] text-blue-400 uppercase font-bold tracking-widest">Performance Materiality</p>
+                    <p className="text-lg font-mono font-bold text-blue-600 text-right">Rp {pmValue.toLocaleString('id-ID')}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-          <TabsContent value="investee" className="space-y-6 pt-4">
-            <InvesteeMonitoring overallMateriality={overallMateriality} benchmarkValue={formValues.benchmarkValue || 0} haircut={formValues.haircut} investees={localInvestees} onUpdate={setLocalInvestees} />
-          </TabsContent>
-        </Tabs>
+            <Card className="bg-amber-50 border-amber-200 shadow-sm">
+              <CardHeader className="pb-2"><CardTitle className="text-[10px] uppercase font-bold text-amber-800 flex items-center gap-2"><Info className="h-3 w-3" /> Scoping Logic</CardTitle></CardHeader>
+              <CardContent className="text-[10px] text-amber-700 leading-relaxed space-y-2 italic">
+                <p>Akun ditandai <strong>IN SCOPE</strong> jika:</p>
+                <ol className="list-decimal list-inside space-y-1">
+                  <li>|Saldo| &gt;= PM (Kuan)</li>
+                  <li>Salah satu dari 8 rule kualitatif bernilai 'HIGH'</li>
+                </ol>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="lg:col-span-3 space-y-6">
+            {!simState.glSnapshotId ? (
+              <div {...getRootProps()} className={cn(
+                "border-2 border-dashed rounded-xl p-12 text-center transition-all cursor-pointer",
+                isDragActive ? "border-primary bg-primary/5 shadow-inner" : "border-slate-200 hover:border-primary/50 hover:bg-slate-50",
+                isLocked && "cursor-not-allowed opacity-50"
+              )}>
+                <input {...getInputProps()} />
+                <Upload className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-20" />
+                <h3 className="text-lg font-semibold text-slate-700">Upload General Ledger</h3>
+                <p className="text-sm text-muted-foreground max-w-xs mx-auto mb-4">Drop your .csv or .xlsx file here to populate the worksheet.</p>
+                <Badge variant="outline" className="text-[10px] uppercase font-bold tracking-tighter">Support: CSV, XLSX, XLS</Badge>
+              </div>
+            ) : (
+              <>
+                <ScopingHealthDashboard glData={glData} />
+                <GLDataGrid 
+                  data={glData} 
+                  assessmentData={simState.assessmentData} 
+                  omValue={omValue}
+                  pmValue={pmValue}
+                  onAssessmentChange={handleAssessmentChange}
+                  onApplyToFSLI={handleBatchApply}
+                  isReadOnly={isLocked}
+                />
+              </>
+            )}
+          </div>
+        </div>
       </div>
     </AppLayout>
   );

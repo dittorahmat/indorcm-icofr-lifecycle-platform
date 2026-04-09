@@ -23,6 +23,7 @@ export function MainHeader() {
     'Line 1': 'default',
     'Line 2': 'secondary',
     'Line 3': 'destructive',
+    'Komisaris': 'outline',
     'Admin': 'outline',
     'External Auditor': 'outline',
   } as const;
