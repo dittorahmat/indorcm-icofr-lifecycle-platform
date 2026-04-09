@@ -166,13 +166,12 @@ function SimulationInitialForm({ onSubmit, isPending }: { onSubmit: (data: any) 
           <Select value={basis} onValueChange={setBasis}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="Revenue">Revenue (1%)</SelectItem>
-              <SelectItem value="PBT">Profit Before Tax (5%)</SelectItem>
-              <SelectItem value="Assets">Total Assets (1%)</SelectItem>
-              <SelectItem value="Equity">Total Equity (5%)</SelectItem>
-              <SelectItem value="Net Current Assets">Net Current Assets (5%)</SelectItem>
-            </SelectContent>
-          </Select>
+              <SelectItem value="Revenue">Revenue</SelectItem>
+              <SelectItem value="PBT">Profit Before Tax</SelectItem>
+              <SelectItem value="Assets">Total Assets</SelectItem>
+              <SelectItem value="Equity">Total Equity</SelectItem>
+              <SelectItem value="Net Current Assets">Net Current Assets</SelectItem>
+            </SelectContent>          </Select>
         </div>
         <div className="space-y-2">
           <Label className="text-xs uppercase font-bold text-slate-500 tracking-wider">Significant Locations</Label>
@@ -320,19 +319,26 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
 
         const rows: GLRow[] = filteredRaw.map((r: any) => {
           const parsedBal = parseBalance(r[mapping.balance]);
+          const parsedFsliBal = parseBalance(r[mapping.fsliBalance]);
           return {
-            ymd: String(r[mapping.date] || ''),
+            ymd: String(r[mapping.period] || ''),
             entityCode: String(r[mapping.entityCode] || ''),
             noGL: String(r[mapping.accountCode] || ''),
             glDesc: String(r[mapping.accountName] || ''),
             currency: String(r[mapping.currency] || 'IDR'),
             balance: parsedBal.value,
-            fsliCode: String(r[mapping.fsliCode] || '')
+            fsliCode: String(r[mapping.fsliCode] || ''),
+            // New Fields
+            fsliName: String(r[mapping.fsliName] || ''),
+            kategori: String(r[mapping.kategori] || ''),
+            subKategori: String(r[mapping.subKategori] || ''),
+            fsliBalance: parsedFsliBal.value,
+            noUrut: parseInt(String(r[mapping.noUrut] || '0')) || 0
           };
         }).filter(r => r.noGL && r.glDesc);
 
         if (rows.length === 0) {
-          toast.error("No valid GL rows found");
+          toast.error("No valid GL rows found after parsing");
           return;
         }
 

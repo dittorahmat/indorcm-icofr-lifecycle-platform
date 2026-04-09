@@ -311,6 +311,12 @@ export const GL_COLUMN_MAPPING = {
   entityCode: ['Kode_Entity', 'EntityCode', 'Entity_Code', 'Kode_Cabang'],
   currency: ['Kode_Valuta', 'Currency', 'Valuta', 'Curr'],
   period: ['YMD', 'Date', 'Period', 'Tanggal'],
+  // New Mappings for SK-5/2024 Template
+  kategori: ['Kategori', 'Category'],
+  subKategori: ['Sub_Kategori', 'SubKategori', 'Sub-Category'],
+  fsliName: ['FSLI', 'FSLI_Name', 'FSLIName'],
+  fsliBalance: ['FSLI_Balance', 'FSLIBalance'],
+  noUrut: ['No_Urut', 'NoUrut', 'SortOrder'],
 } as const;
 
 export type GLField = keyof typeof GL_COLUMN_MAPPING;
@@ -402,6 +408,27 @@ export type BenchmarkCategory = keyof typeof BENCHMARK_MAPPING;
  * Calculate benchmark value from GL data based on selected category
  */
 export function calculateBenchmarkValue(glData: any[], benchmark: BenchmarkCategory): number {
+  // 1. Try exact mapping based on Sub_Kategori (High Accuracy)
+  const subKategoriMap: Record<BenchmarkCategory, string> = {
+    'Revenue': 'Pendapatan',
+    'Pre-Tax Income': 'Laba/Rugi Sebelum Pajak',
+    'Assets': 'Aset',
+    'Equity': 'Ekuitas'
+  };
+  
+  const targetSub = subKategoriMap[benchmark];
+  const matchingBySub = glData.filter(row => 
+    String(row.subKategori || '').trim().toLowerCase() === targetSub.toLowerCase()
+  );
+
+  if (matchingBySub.length > 0) {
+    return matchingBySub.reduce((sum, row) => {
+      const balance = typeof row.balance === 'number' ? row.balance : parseFloat(row.balance) || 0;
+      return sum + Math.abs(balance);
+    }, 0);
+  }
+
+  // 2. Fallback to existing logic (FSLI and Pattern Matching)
   const mapping = BENCHMARK_MAPPING[benchmark];
   
   const matching = glData.filter(row => {

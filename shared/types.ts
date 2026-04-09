@@ -31,6 +31,12 @@ export interface GLRow {
   currency: string;
   balance: number;
   fsliCode: string;
+  // New Fields from Template SK-5/2024
+  fsliName?: string;      // Dari kolom "FSLI"
+  kategori?: string;      // "Neraca" atau "Laba Rugi"
+  subKategori?: string;   // "Aset", "Pendapatan", dll
+  fsliBalance?: number;   // Verifikasi agregasi
+  noUrut?: number;        // Display order
 }
 
 export interface GLSnapshot {

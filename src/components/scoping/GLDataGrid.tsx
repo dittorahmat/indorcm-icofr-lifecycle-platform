@@ -48,48 +48,55 @@ export function GLDataGrid({
   onApplyToFSLI,
   isReadOnly = false 
 }: GLDataGridProps) {
-  const [grouping, setGrouping] = React.useState<GroupingState>(['fsliCode']);
+  const [grouping, setGrouping] = React.useState<GroupingState>(['fsliName']);
   const [expanded, setExpanded] = React.useState({});
 
   const columns = React.useMemo<ColumnDef<GLRow>[]>(
     () => [
       {
-        accessorKey: 'fsliCode',
+        accessorKey: 'noUrut',
+        header: '#',
+        cell: info => <span className="text-[9px] text-slate-400">{info.getValue<number>()}</span>,
+        size: 40,
+      },
+      {
+        accessorKey: 'fsliName',
         header: ({ column }) => (
           <div className="flex items-center gap-1">
-            <span>FSLI Code</span>
+            <span>FSLI</span>
             {column.getIsSorted() === 'asc' ? <SortAsc className="h-3 w-3" /> : column.getIsSorted() === 'desc' ? <SortDesc className="h-3 w-3" /> : null}
           </div>
         ),
         cell: ({ row, getValue }) => (
-          <div className="flex items-center gap-2 font-bold">
+          <div className="flex items-center gap-2 font-bold text-[11px] text-slate-700">
             {row.getCanExpand() && (
               <button onClick={row.getToggleExpandedHandler()} className="cursor-pointer">
-                {row.getIsExpanded() ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                {row.getIsExpanded() ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
               </button>
             )}
-            {getValue<string>()}
+            <span className="truncate max-w-[150px]">{getValue<string>()}</span>
           </div>
         ),
       },
       {
         accessorKey: 'noGL',
-        header: 'No GL',
-        cell: info => <span className="font-mono text-[10px]">{info.getValue<string>()}</span>,
+        header: 'Code',
+        cell: info => <span className="font-mono text-[9px]">{info.getValue<string>()}</span>,
+        size: 80,
       },
       {
         accessorKey: 'glDesc',
-        header: 'Account Description',
-        cell: info => <span className="text-xs truncate max-w-[200px]" title={info.getValue<string>()}>{info.getValue<string>()}</span>,
+        header: 'Description',
+        cell: info => <span className="text-[10px] truncate max-w-[180px]" title={info.getValue<string>()}>{info.getValue<string>()}</span>,
       },
       {
         accessorKey: 'balance',
-        header: () => <div className="text-right">Balance (IDR)</div>,
+        header: () => <div className="text-right">Balance</div>,
         cell: info => {
           const val = info.getValue<number>();
           return (
             <div className={cn(
-              "text-right font-mono text-xs",
+              "text-right font-mono text-[10px]",
               Math.abs(val) >= pmValue ? "text-blue-600 font-bold" : "text-slate-500"
             )}>
               {val.toLocaleString('id-ID')}
