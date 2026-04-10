@@ -11,15 +11,19 @@ import { Separator } from '@/components/ui/separator';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import type { 
-  MaterialitySimulation, GLRow, GLSnapshot, QualitativeLevel, UserRole, SimulationStatus 
+  MaterialitySimulation, GLRow, GLSnapshot, QualitativeLevel, UserRole, SimulationStatus, BenchmarkBasis 
 } from '@shared/types';
 import { Badge } from '@/components/ui/badge';
 import { 
-  Plus, Save, Loader2, Trash2, Upload, ArrowLeft, Send, History, ShieldCheck, Settings2, Info
+  Plus, Save, Loader2, Trash2, Upload, ArrowLeft, Send, History, ShieldCheck, Settings2, Info,
+  Database, LayoutGrid, FileSpreadsheet, AlertTriangle, CheckCircle2
 } from 'lucide-react';
 import { GLDataGrid } from '@/components/scoping/GLDataGrid';
 import { ScopingHealthDashboard } from '@/components/scoping/ScopingHealthDashboard';
 import { ApprovalHistoryTimeline } from '@/components/scoping/ApprovalHistoryTimeline';
+import { GLSourceTable } from '@/components/scoping/GLSourceTable';
+import { SimulationListTable } from '@/components/scoping/SimulationListTable';
+import { SetBenchmarkModal } from '@/components/scoping/SetBenchmarkModal';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { useDropzone } from 'react-dropzone';
@@ -38,7 +42,6 @@ import {
   filterEmptyRows,
   validateGLMapping,
   calculateBenchmarkValue,
-  BenchmarkCategory,
   getGroupMultiplier
 } from '@/lib/compliance-utils';
 
@@ -46,13 +49,19 @@ export function ScopingPage() {
   const queryClient = useQueryClient();
   const [selectedSimId, setSelectedSimId] = React.useState<string | null>(null);
   const [isCreating, setIsCreating] = React.useState(false);
+  const [benchmarkModalSnap, setBenchmarkModalSnap] = React.useState<GLSnapshot | null>(null);
 
   const { data: simulations, isLoading: simLoading } = useQuery({
     queryKey: ['simulations'],
     queryFn: () => api<{ items: MaterialitySimulation[] }>('/api/simulations'),
   });
 
-  const selectedSim = simulations?.items.find(s => s.id === selectedSimId);
+  const { data: snapshots, isLoading: snapsLoading } = useQuery({
+    queryKey: ['gl-snapshots'],
+    queryFn: () => api<{ items: GLSnapshot[] }>('/api/gl-snapshots'),
+  });
+
+  const activeSnapshot = snapshots?.items.find(s => s.isActive);
 
   const createSimMutation = useMutation({
     mutationFn: (data: Partial<MaterialitySimulation>) => api('/api/simulations', { method: 'POST', body: JSON.stringify(data) }),
@@ -72,200 +81,23 @@ export function ScopingPage() {
     }
   });
 
-  if (selectedSim) {
-    return <ScopingEditor simulation={selectedSim} onBack={() => setSelectedSimId(null)} />;
-  }
-
-  return (
-    <AppLayout container>
-      <div className="space-y-6">
-        <div className="flex justify-between items-end">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Materiality Simulations</h1>
-            <p className="text-muted-foreground text-sm">Manage and compare different scoping scenarios for the current fiscal year.</p>
-          </div>
-          <Button onClick={() => setIsCreating(true)} className="gap-2 shadow-lg shadow-primary/20">
-            <Plus className="h-4 w-4" /> New Simulation
-          </Button>
-        </div>
-
-        {simLoading ? (
-          <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {simulations?.items.map(sim => (
-              <Card key={sim.id} className="hover:border-primary/50 transition-all cursor-pointer group hover:shadow-md border-slate-200" onClick={() => setSelectedSimId(sim.id)}>
-                <CardHeader className="pb-3">
-                  <div className="flex justify-between items-start">
-                    <StatusBadge status={sim.status} />
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-8 w-8 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={(e) => { e.stopPropagation(); deleteSimMutation.mutate(sim.id); }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <CardTitle className="text-lg mt-2 text-slate-800">{sim.name}</CardTitle>
-                  <CardDescription className="text-xs">Basis: {sim.basis} ({sim.omPercentage}%) | Multiplier: {getGroupMultiplier(sim.locationCount || 1)}x</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex justify-between items-center text-xs border-t border-slate-100 pt-3">
-                    <span className="text-muted-foreground">Created {new Date(sim.createdAt).toLocaleDateString()}</span>
-                    <span className="font-bold text-primary text-[13px]">PM: Rp {sim.pmValue?.toLocaleString('id-ID') || 0}</span>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-            {simulations?.items.length === 0 && !isCreating && (
-              <div className="col-span-full border-2 border-dashed border-slate-200 rounded-xl py-20 text-center space-y-4 bg-slate-50/50">
-                <History className="h-12 w-12 text-muted-foreground mx-auto opacity-20" />
-                <p className="text-muted-foreground text-sm font-medium">No simulations found. Create your first scenario.</p>
-                <Button variant="outline" onClick={() => setIsCreating(true)}>Get Started</Button>
-              </div>
-            )}
-          </div>
-        )}
-
-        <Dialog open={isCreating} onOpenChange={setIsCreating}>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Create New Simulation</DialogTitle>
-              <DialogDescription>Set initial parameters for your materiality scenario.</DialogDescription>
-            </DialogHeader>
-            <SimulationInitialForm onSubmit={(data) => createSimMutation.mutate(data)} isPending={createSimMutation.isPending} />
-          </DialogContent>
-        </Dialog>
-      </div>
-    </AppLayout>
-  );
-}
-
-function StatusBadge({ status }: { status: SimulationStatus }) {
-  switch (status) {
-    case 'Approved': return <Badge className="bg-green-600">Approved</Badge>;
-    case 'Pending CFO': return <Badge variant="secondary" className="bg-amber-100 text-amber-700 border-amber-200">Review CFO</Badge>;
-    case 'Pending Komut': return <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-200">Review Komut</Badge>;
-    case 'Rejected': return <Badge variant="destructive">Rejected</Badge>;
-    default: return <Badge variant="outline">{status}</Badge>;
-  }
-}
-
-function SimulationInitialForm({ onSubmit, isPending }: { onSubmit: (data: any) => void, isPending: boolean }) {
-  const [name, setName] = React.useState("");
-  const [basis, setBasis] = React.useState("PBT");
-  const [locations, setLocations] = React.useState(1);
-
-  const defaultOm = basis === 'Revenue' || basis === 'Assets' ? 1 : 5;
-
-  return (
-    <div className="space-y-4 py-4">
-      <div className="space-y-2">
-        <Label className="text-xs uppercase font-bold text-slate-500 tracking-wider">Simulation Name</Label>
-        <Input placeholder="e.g. FY2024 - Conservative PBT" value={name} onChange={e => setName(e.target.value)} />
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label className="text-xs uppercase font-bold text-slate-500 tracking-wider">Benchmark Basis</Label>
-          <Select value={basis} onValueChange={setBasis}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Revenue">Revenue</SelectItem>
-              <SelectItem value="PBT">Profit Before Tax</SelectItem>
-              <SelectItem value="Assets">Total Assets</SelectItem>
-              <SelectItem value="Equity">Total Equity</SelectItem>
-              <SelectItem value="Net Current Assets">Net Current Assets</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label className="text-xs uppercase font-bold text-slate-500 tracking-wider">Significant Locations</Label>
-          <Input type="number" min={1} value={locations} onChange={e => setLocations(parseInt(e.target.value) || 1)} />
-        </div>
-      </div>
-      <div className="p-3 bg-blue-50 border border-blue-100 rounded-md">
-        <p className="text-[10px] text-blue-700 leading-relaxed italic">
-          Multiplier: <strong>{getGroupMultiplier(locations)}x</strong> (Tabel 25).
-          Default OM: <strong>{defaultOm}%</strong> (Tabel 3).
-        </p>
-      </div>
-      <Button className="w-full mt-2" disabled={!name || isPending} onClick={() => onSubmit({ name, basis, omPercentage: defaultOm, locationCount: locations })}>
-        {isPending ? "Creating..." : "Initialize Simulation"}
-      </Button>
-    </div>
-  );
-}
-
-function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulation, onBack: () => void }) {
-  const queryClient = useQueryClient();
-  const [simState, setSimState] = React.useState(simulation);
-  const [glData, setGlData] = React.useState<GLRow[]>([]);
-
-  const isLocked = simState.status === 'Approved' || simState.status === 'Pending CFO' || simState.status === 'Pending Komut';
-
-  const { data: snapshot } = useQuery({
-    queryKey: ['gl-snapshot', simState.glSnapshotId],
-    queryFn: () => api<GLSnapshot>(`/api/gl-snapshots/${simState.glSnapshotId}`),
-    enabled: !!simState.glSnapshotId
-  });
-
-  React.useEffect(() => {
-    if (snapshot) setGlData(snapshot.rows);
-  }, [snapshot]);
-
-  const calculateValues = React.useMemo(() => {
-    if (glData.length === 0) return { omValue: 0, pmValue: 0, multiplier: 1, benchmarkValue: 0 };
-    const basisMap: Record<string, BenchmarkCategory> = {
-      'Revenue': 'Revenue', 'PBT': 'Pre-Tax Income', 'Assets': 'Assets', 'Equity': 'Equity', 'Net Current Assets': 'Assets'
-    };
-    const benchmarkCategory = basisMap[simState.basis] || 'Revenue';
-    const benchmarkValue = calculateBenchmarkValue(glData, benchmarkCategory);
-    const multiplier = getGroupMultiplier(simState.locationCount || 1);
-    const baseOM = (benchmarkValue * simState.omPercentage) / 100;
-    const omValue = baseOM * multiplier;
-    const pmValue = omValue * (1 - simState.haircutPercentage / 100);
-    return { omValue, pmValue, multiplier, benchmarkValue };
-  }, [glData, simState.basis, simState.omPercentage, simState.haircutPercentage, simState.locationCount]);
-
-  const { omValue, pmValue, multiplier, benchmarkValue } = calculateValues;
-
-  const updateSimMutation = useMutation({
-    mutationFn: (data: Partial<MaterialitySimulation>) => api(`/api/simulations/${simState.id}`, { method: 'PUT', body: JSON.stringify({ ...data, omValue, pmValue }) }),
+  const setActiveMutation = useMutation({
+    mutationFn: (id: string) => api(`/api/gl-snapshots/${id}/set-active`, { method: 'POST' }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['simulations'] });
-      toast.success("Simulation draft saved");
+      queryClient.invalidateQueries({ queryKey: ['gl-snapshots'] });
+      toast.success("Source GL set as active");
     }
   });
 
-  const submitSimMutation = useMutation({
-    mutationFn: () => api(`/api/simulations/${simState.id}/submit`, { method: 'POST' }),
-    onSuccess: (updated) => {
-      queryClient.invalidateQueries({ queryKey: ['simulations'] });
-      setSimState(updated);
-      toast.success("Simulation submitted to CFO");
+  const deleteSnapMutation = useMutation({
+    mutationFn: (id: string) => api(`/api/gl-snapshots/${id}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['gl-snapshots'] });
+      toast.success("Snapshot deleted");
     }
   });
-
-  const handleAssessmentChange = (noGL: string, ruleId: number, level: QualitativeLevel) => {
-    if (isLocked) return;
-    setSimState(prev => ({
-      ...prev,
-      assessmentData: { ...prev.assessmentData, [noGL]: { ...(prev.assessmentData[noGL] || {}), [ruleId]: level } }
-    }));
-  };
-
-  const handleBatchApply = (fsliCode: string, ruleId: number, level: QualitativeLevel) => {
-    if (isLocked) return;
-    const affectedGLs = glData.filter(row => row.fsliCode === fsliCode).map(row => row.noGL);
-    const newData = { ...simState.assessmentData };
-    affectedGLs.forEach(noGL => { newData[noGL] = { ...(newData[noGL] || {}), [ruleId]: level }; });
-    setSimState(prev => ({ ...prev, assessmentData: newData }));
-    toast.info(`Applied ${level} to all accounts under FSLI ${fsliCode}`);
-  };
 
   const onDrop = React.useCallback((acceptedFiles: File[]) => {
-    if (isLocked) return;
     const file = acceptedFiles[0];
     if (!file) return;
     const reader = new FileReader();
@@ -305,30 +137,269 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
             fsliBalance: parsedFsliBal.value, noUrut: parseInt(String(r[mapping.noUrut] || '0')) || 0
           };
         }).filter(r => r.noGL && r.glDesc);
-        if (rows.length === 0) { toast.error("No valid GL rows found after parsing"); return; }
+        if (rows.length === 0) { toast.error("No valid GL rows found"); return; }
         const snap = await api<GLSnapshot>('/api/gl-snapshots', { method: 'POST', body: JSON.stringify({ filename: file.name, rows }) });
-        setSimState(prev => {
-          const updated = { ...prev, glSnapshotId: snap.id };
-          updateSimMutation.mutate(updated);
-          return updated;
-        });
-        setGlData(rows);
-        toast.success(`Successfully processed ${rows.length} GL accounts`);
+        queryClient.invalidateQueries({ queryKey: ['gl-snapshots'] });
+        setBenchmarkModalSnap(snap);
+        toast.success(`Uploaded ${rows.length} rows. Please set benchmark mapping.`);
       } catch (err) { console.error("Parse error:", err); toast.error("Failed to parse GL file."); }
     };
     if (file.name.endsWith('.csv')) reader.readAsText(file);
     else reader.readAsBinaryString(file);
-  }, [updateSimMutation, isLocked]);
+  }, [queryClient]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ 
-    onDrop, disabled: isLocked,
+    onDrop,
     accept: { 'text/csv': ['.csv'], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'], 'application/vnd.ms-excel': ['.xls'] } 
   });
+
+  if (selectedSimId) {
+    const sim = simulations?.items.find(s => s.id === selectedSimId);
+    if (sim) return <ScopingEditor simulation={sim} onBack={() => setSelectedSimId(null)} />;
+  }
+
+  return (
+    <AppLayout container>
+      <div className="space-y-6">
+        <div className="flex justify-between items-end">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Scoping Control Center</h1>
+            <div className="flex items-center gap-3 mt-1">
+              <p className="text-muted-foreground text-sm">Manage datasets and simulations.</p>
+              {activeSnapshot && (
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className={cn(
+                    "gap-1.5 font-bold transition-colors",
+                    activeSnapshot.status === 'Mapped' 
+                      ? "bg-green-50 text-green-700 border-green-200" 
+                      : "bg-amber-50 text-amber-700 border-amber-200 animate-pulse"
+                  )}>
+                    <CheckCircle2 className="h-3.5 w-3.5" /> 
+                    Active Source: {activeSnapshot.filename} ({activeSnapshot.status})
+                  </Badge>
+                  {activeSnapshot.status === 'Draft' && (
+                    <Button 
+                      variant="link" 
+                      size="sm" 
+                      className="h-6 text-amber-600 font-bold p-0 flex items-center gap-1 hover:text-amber-700 underline underline-offset-4"
+                      onClick={() => setBenchmarkModalSnap(activeSnapshot)}
+                    >
+                      <Settings2 className="h-3 w-3" /> Set Benchmark Mapping
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="flex flex-col items-end gap-1">
+            <div className="flex gap-2">
+              <div {...getRootProps()}>
+                <input {...getInputProps()} />
+                <Button variant="outline" className="gap-2 border-dashed border-2 hover:border-primary hover:bg-primary/5">
+                  <Upload className="h-4 w-4" /> Upload GL
+                </Button>
+              </div>
+              <Button 
+                onClick={() => setIsCreating(true)} 
+                className="gap-2 shadow-lg shadow-primary/20" 
+                disabled={!activeSnapshot || activeSnapshot.status !== 'Mapped'}
+              >
+                <Plus className="h-4 w-4" /> New Simulation
+              </Button>
+            </div>
+            {!activeSnapshot && <p className="text-[10px] text-muted-foreground italic">Upload a GL file to start</p>}
+            {activeSnapshot && activeSnapshot.status === 'Draft' && (
+              <p className="text-[10px] text-amber-600 font-medium italic flex items-center gap-1">
+                <AlertTriangle className="h-2.5 w-2.5" /> Set benchmark first to enable simulations
+              </p>
+            )}
+          </div>
+        </div>
+
+        <Tabs defaultValue="simulations" className="w-full">
+          <TabsList className="grid w-full max-w-[400px] grid-cols-2 mb-6">
+            <TabsTrigger value="simulations" className="gap-2">
+              <LayoutGrid className="h-4 w-4" /> Simulations
+            </TabsTrigger>
+            <TabsTrigger value="master-gl" className="gap-2">
+              <Database className="h-4 w-4" /> Master Data GL
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="simulations">
+            <SimulationListTable 
+              data={simulations?.items || []} 
+              onSelect={setSelectedSimId} 
+              onDelete={deleteSimMutation.mutate} 
+              isLoading={simLoading}
+            />
+          </TabsContent>
+
+          <TabsContent value="master-gl">
+            <div className="flex justify-end mb-4">
+              <Button 
+                variant="destructive" 
+                size="sm" 
+                className="gap-2 opacity-50 hover:opacity-100 transition-opacity"
+                onClick={() => {
+                  if (confirm("This will permanently delete ALL simulations and GL snapshots. Continue?")) {
+                    api('/api/dev/purge-scoping', { method: 'DELETE' }).then(() => {
+                      queryClient.invalidateQueries();
+                      toast.success("All data purged. Fresh start!");
+                    });
+                  }
+                }}
+              >
+                <Trash2 className="h-4 w-4" /> Reset Scoping Data
+              </Button>
+            </div>
+            <GLSourceTable 
+              data={snapshots?.items || []} 
+              onSetActive={setActiveMutation.mutate}
+              onSetBenchmark={setBenchmarkModalSnap}
+              onDelete={deleteSnapMutation.mutate}
+              isLoading={snapsLoading}
+            />
+          </TabsContent>
+        </Tabs>
+
+        <Dialog open={isCreating} onOpenChange={setIsCreating}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Create New Simulation</DialogTitle>
+              <DialogDescription>
+                Basis calculation will use <strong>{activeSnapshot?.filename}</strong>.
+              </DialogDescription>
+            </DialogHeader>
+            <SimulationInitialForm 
+              activeSnap={activeSnapshot || null}
+              onSubmit={(data) => createSimMutation.mutate({ ...data, glSnapshotId: activeSnapshot?.id })} 
+              isPending={createSimMutation.isPending} 
+            />
+          </DialogContent>
+        </Dialog>
+
+        <SetBenchmarkModal 
+          snapshot={benchmarkModalSnap} 
+          isOpen={!!benchmarkModalSnap} 
+          onOpenChange={(open) => !open && setBenchmarkModalSnap(null)} 
+        />
+      </div>
+    </AppLayout>
+  );
+}
+
+function SimulationInitialForm({ activeSnap, onSubmit, isPending }: { activeSnap: GLSnapshot | null, onSubmit: (data: any) => void, isPending: boolean }) {
+  const [name, setName] = React.useState("");
+  const [basis, setBasis] = React.useState<BenchmarkBasis>("PBT");
+  const [locations, setLocations] = React.useState(1);
+
+  const defaultOm = basis === 'Revenue' || basis === 'Assets' ? 1 : 5;
+
+  return (
+    <div className="space-y-4 py-4">
+      <div className="space-y-2">
+        <Label className="text-xs uppercase font-bold text-slate-500 tracking-wider">Simulation Name</Label>
+        <Input placeholder="e.g. FY2024 - Conservative PBT" value={name} onChange={e => setName(e.target.value)} />
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label className="text-xs uppercase font-bold text-slate-500 tracking-wider">Benchmark Basis</Label>
+          <Select value={basis} onValueChange={(v) => setBasis(v as BenchmarkBasis)}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Revenue">Revenue</SelectItem>
+              <SelectItem value="PBT">Profit Before Tax</SelectItem>
+              <SelectItem value="Assets">Total Assets</SelectItem>
+              <SelectItem value="Equity">Total Equity</SelectItem>
+              <SelectItem value="Net Current Assets">Net Current Assets</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label className="text-xs uppercase font-bold text-slate-500 tracking-wider">Significant Locations</Label>
+          <Input type="number" min={1} value={locations} onChange={e => setLocations(parseInt(e.target.value) || 1)} />
+        </div>
+      </div>
+      <div className="p-3 bg-blue-50 border border-blue-100 rounded-md">
+        <p className="text-[10px] text-blue-700 leading-relaxed italic">
+          Multiplier: <strong>{getGroupMultiplier(locations)}x</strong>.
+          Default OM: <strong>{defaultOm}%</strong>.
+        </p>
+      </div>
+      <Button className="w-full mt-2" disabled={!name || !activeSnap || isPending} onClick={() => onSubmit({ name, basis, omPercentage: defaultOm, locationCount: locations })}>
+        {isPending ? "Creating..." : "Initialize Simulation"}
+      </Button>
+    </div>
+  );
+}
+
+function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulation, onBack: () => void }) {
+  const queryClient = useQueryClient();
+  const [simState, setSimState] = React.useState(simulation);
+  const [glData, setGlData] = React.useState<GLRow[]>([]);
+
+  const isLocked = simState.status === 'Approved' || simState.status === 'Pending CFO' || simState.status === 'Pending Komut';
+
+  const { data: snapshot } = useQuery({
+    queryKey: ['gl-snapshot', simState.glSnapshotId],
+    queryFn: () => api<GLSnapshot>(`/api/gl-snapshots/${simState.glSnapshotId}`),
+    enabled: !!simState.glSnapshotId
+  });
+
+  React.useEffect(() => {
+    if (snapshot) setGlData(snapshot.rows);
+  }, [snapshot]);
+
+  const calculateValues = React.useMemo(() => {
+    if (glData.length === 0 || !snapshot) return { omValue: 0, pmValue: 0, multiplier: 1, benchmarkValue: 0 };
+    
+    const benchmarkValue = calculateBenchmarkValue(glData, simState.basis, snapshot.benchmarkMapping || {});
+    const multiplier = getGroupMultiplier(simState.locationCount || 1);
+    const baseOM = (benchmarkValue * simState.omPercentage) / 100;
+    const omValue = baseOM * multiplier;
+    const pmValue = omValue * (1 - simState.haircutPercentage / 100);
+    
+    return { omValue, pmValue, multiplier, benchmarkValue };
+  }, [glData, snapshot, simState.basis, simState.omPercentage, simState.haircutPercentage, simState.locationCount]);
+
+  const { omValue, pmValue, multiplier, benchmarkValue } = calculateValues;
+
+  const updateSimMutation = useMutation({
+    mutationFn: (data: Partial<MaterialitySimulation>) => api(`/api/simulations/${simState.id}`, { method: 'PUT', body: JSON.stringify({ ...data, omValue, pmValue }) }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['simulations'] });
+      toast.success("Simulation draft saved");
+    }
+  });
+
+  const submitSimMutation = useMutation({
+    mutationFn: () => api(`/api/simulations/${simState.id}/submit`, { method: 'POST' }),
+    onSuccess: (updated) => {
+      queryClient.invalidateQueries({ queryKey: ['simulations'] });
+      setSimState(updated);
+      toast.success("Simulation submitted to CFO");
+    }
+  });
+
+  const handleAssessmentChange = (fsliName: string, ruleId: number, level: QualitativeLevel) => {
+    if (isLocked) return;
+    setSimState(prev => ({
+      ...prev,
+      assessmentData: { 
+        ...prev.assessmentData, 
+        [fsliName]: { 
+          ...(prev.assessmentData[fsliName] || {}), 
+          [ruleId]: level 
+        } 
+      }
+    }));
+  };
 
   return (
     <AppLayout container>
       <div className="space-y-6 pb-20">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center text-slate-900 dark:text-white">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={onBack}><ArrowLeft className="h-5 w-5" /></Button>
             <div>
@@ -336,7 +407,10 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
                 <h1 className="text-2xl font-bold">{simState.name}</h1>
                 <StatusBadge status={simState.status} />
               </div>
-              <p className="text-sm text-muted-foreground">Year: {simState.year} | Basis: {simState.basis}</p>
+              <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                <FileSpreadsheet className="h-3.5 w-3.5 text-indigo-500" />
+                Source: {snapshot?.filename || 'Loading...'}
+              </p>
             </div>
           </div>
           {!isLocked && (
@@ -358,8 +432,8 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <div className="lg:col-span-1 space-y-6">
-            <Card className="border-slate-200 shadow-sm">
-              <CardHeader className="pb-3 border-b border-slate-50 bg-slate-50/50 rounded-t-xl">
+            <Card className="border-slate-200 shadow-sm overflow-hidden">
+              <CardHeader className="pb-3 border-b border-slate-50 bg-slate-50/50">
                 <CardTitle className="text-xs uppercase font-bold text-slate-500 tracking-wider flex items-center gap-2">
                   <Settings2 className="h-3.5 w-3.5" /> Scoping Parameters
                 </CardTitle>
@@ -368,7 +442,7 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
                 <div className="space-y-2">
                   <Label className="text-[10px] font-bold uppercase text-slate-400">Significant Locations</Label>
                   <Input type="number" min={1} disabled={isLocked} value={simState.locationCount} onChange={e => setSimState(s => ({ ...s, locationCount: Number(e.target.value) }))} />
-                  <p className="text-[9px] text-blue-600 italic">Multiplier: {multiplier}x (Table 25)</p>
+                  <p className="text-[9px] text-blue-600 italic">Multiplier: {multiplier}x</p>
                 </div>
                 <div className="space-y-2">
                   <Label className="text-[10px] font-bold uppercase text-slate-400">% OM (Overall Materiality)</Label>
@@ -399,62 +473,58 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
             <Card className="bg-amber-50 border-amber-200 shadow-sm">
               <CardHeader className="pb-2"><CardTitle className="text-[10px] uppercase font-bold text-amber-800 flex items-center gap-2"><Info className="h-3 w-3" /> Scoping Logic</CardTitle></CardHeader>
               <CardContent className="text-[10px] text-amber-700 leading-relaxed space-y-2 italic">
-                <p>Akun ditandai <strong>IN SCOPE</strong> jika:</p>
+                <p>Akun ditandai <strong>SIGNIFICANT</strong> jika:</p>
                 <ol className="list-decimal list-inside space-y-1">
-                  <li>|Saldo| &gt;= PM (Kuan)</li>
-                  <li>Salah satu dari 8 rule kualitatif bernilai 'HIGH'</li>
+                  <li>|Saldo| &gt;= PM (Quantitative)</li>
+                  <li>Salah satu pilar kualitatif di level FSLI bernilai 'HIGH'</li>
                 </ol>
               </CardContent>
             </Card>
           </div>
 
           <div className="lg:col-span-3 space-y-6">
-            {!simState.glSnapshotId ? (
-              <div {...getRootProps()} className={cn(
-                "border-2 border-dashed rounded-xl p-12 text-center transition-all cursor-pointer",
-                isDragActive ? "border-primary bg-primary/5 shadow-inner" : "border-slate-200 hover:border-primary/50 hover:bg-slate-50",
-                isLocked && "cursor-not-allowed opacity-50"
-              )}>
-                <input {...getInputProps()} />
-                <Upload className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-20" />
-                <h3 className="text-lg font-semibold text-slate-700">Upload General Ledger</h3>
-                <p className="text-sm text-muted-foreground max-w-xs mx-auto mb-4">Drop your .csv or .xlsx file here to populate the worksheet.</p>
-                <Badge variant="outline" className="text-[10px] uppercase font-bold tracking-tighter">Support: CSV, XLSX, XLS</Badge>
-              </div>
-            ) : (
-              <Tabs defaultValue="worksheet" className="w-full">
-                <TabsList className="grid w-full max-w-[400px] grid-cols-2 mb-4">
-                  <TabsTrigger value="worksheet">Scoping Worksheet</TabsTrigger>
-                  <TabsTrigger value="history" className="flex items-center gap-2">
-                    <History className="h-3 w-3" /> Approval History
-                    {simState.history?.length > 0 && <Badge variant="secondary" className="ml-1 h-4 px-1 text-[9px]">{simState.history.length}</Badge>}
-                  </TabsTrigger>
-                </TabsList>
-                <TabsContent value="worksheet" className="space-y-6">
-                  <ScopingHealthDashboard glData={glData} />
-                  <GLDataGrid 
-                    data={glData} assessmentData={simState.assessmentData} 
-                    omValue={omValue} pmValue={pmValue}
-                    onAssessmentChange={handleAssessmentChange} onApplyToFSLI={handleBatchApply}
-                    isReadOnly={isLocked}
-                  />
-                </TabsContent>
-                <TabsContent value="history">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg flex items-center gap-2"><History className="h-5 w-5" /> Activity Log & Feedback</CardTitle>
-                      <CardDescription>Track all actions and comments for this materiality baseline.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="pt-6">
-                      <ApprovalHistoryTimeline history={simState.history} />
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-              </Tabs>
-            )}
+            <Tabs defaultValue="worksheet" className="w-full">
+              <TabsList className="grid w-full max-w-[400px] grid-cols-2 mb-4">
+                <TabsTrigger value="worksheet">Scoping Worksheet</TabsTrigger>
+                <TabsTrigger value="history" className="flex items-center gap-2">
+                  <History className="h-3 w-3" /> Approval History
+                  {simState.history?.length > 0 && <Badge variant="secondary" className="ml-1 h-4 px-1 text-[9px]">{simState.history.length}</Badge>}
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="worksheet" className="space-y-6">
+                <ScopingHealthDashboard glData={glData} />
+                <GLDataGrid 
+                  data={glData} assessmentData={simState.assessmentData} 
+                  omValue={omValue} pmValue={pmValue}
+                  onAssessmentChange={handleAssessmentChange}
+                  isReadOnly={isLocked}
+                />
+              </TabsContent>
+              <TabsContent value="history">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2"><History className="h-5 w-5" /> Activity Log & Feedback</CardTitle>
+                    <CardDescription>Track all actions and comments for this materiality baseline.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-6">
+                    <ApprovalHistoryTimeline history={simState.history} />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
       </div>
     </AppLayout>
   );
+}
+
+function StatusBadge({ status }: { status: SimulationStatus }) {
+  switch (status) {
+    case 'Approved': return <Badge className="bg-green-600">Approved</Badge>;
+    case 'Pending CFO': return <Badge variant="secondary" className="bg-amber-100 text-amber-700 border-amber-200">Review CFO</Badge>;
+    case 'Pending Komut': return <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-200">Review Komut</Badge>;
+    case 'Rejected': return <Badge variant="destructive">Rejected</Badge>;
+    default: return <Badge variant="outline">{status}</Badge>;
+  }
 }

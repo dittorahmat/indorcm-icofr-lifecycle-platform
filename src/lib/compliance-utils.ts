@@ -1,4 +1,4 @@
-import { ControlFrequency, Control } from "@shared/types";
+import { ControlFrequency, Control, GLRow, BenchmarkBasis } from "@shared/types";
 
 /**
  * Logika Matrix Risiko 3x3 berdasarkan Tabel 12 (Hal 37)
@@ -371,101 +371,47 @@ export function filterEmptyRows(rows: any[]): any[] {
   });
 }
 
-/**
- * GL Account to Benchmark Category Mapping
- * Maps FSLI codes and account patterns to materiality benchmark categories
- */
-export const BENCHMARK_MAPPING = {
-  'Pre-Tax Income': {
-    fsliCodes: ['6480000', '6490000', '6510000'], // Laba/Rugi Sebelum Pajak, Laba Bersih
-    accountPatterns: ['laba', 'rugi', 'pendapatan', 'beban'],
-    glSection: '6', // P&L accounts
-    description: 'Net Income Before Tax'
-  },
-  'Revenue': {
-    fsliCodes: ['6010000'], // Pendapatan
-    accountPatterns: ['pendapatan', 'revenue', 'penjualan'],
-    glSection: '60',
-    description: 'Total Revenue'
-  },
-  'Assets': {
-    fsliCodes: ['1010100', '1010200', '1011000', '1020100', '1021400'], // Kas, Piutang, Persediaan, Aset
-    accountPatterns: ['kas', 'bank', 'piutang', 'persediaan', 'aset', 'tanah', 'bangunan', 'kendaraan'],
-    glSection: '1', // Balance Sheet assets
-    description: 'Total Assets'
-  },
-  'Equity': {
-    fsliCodes: ['3010100', '3010200', '3010300'], // Modal, Saldo Laba
-    accountPatterns: ['modal', 'ekuitas', 'saldo laba', 'laba ditahan'],
-    glSection: '3',
-    description: 'Total Equity'
-  }
-} as const;
-
-export type BenchmarkCategory = keyof typeof BENCHMARK_MAPPING;
+export type BenchmarkCategory = BenchmarkBasis;
 
 /**
- * Calculate benchmark value from GL data based on selected category
+ * Calculate benchmark value from GL data based on manual mapping
  */
-export function calculateBenchmarkValue(glData: any[], benchmark: BenchmarkCategory): number {
-  // 1. Try exact mapping based on Sub_Kategori (High Accuracy)
-  const subKategoriMap: Record<BenchmarkCategory, string> = {
-    'Revenue': 'Pendapatan',
-    'Pre-Tax Income': 'Laba/Rugi Sebelum Pajak',
-    'Assets': 'Aset',
-    'Equity': 'Ekuitas'
-  };
-  
-  const targetSub = subKategoriMap[benchmark];
-  const matchingBySub = glData.filter(row => 
-    String(row.subKategori || '').trim().toLowerCase() === targetSub.toLowerCase()
+export function calculateBenchmarkValue(
+  glData: GLRow[], 
+  basis: BenchmarkBasis, 
+  mapping: Record<string, BenchmarkBasis[]>
+): number {
+  if (!mapping || Object.keys(mapping).length === 0) return 0;
+
+  // Find all FSLI names that include the target basis in their mapping array
+  const matchingFsliNames = Object.entries(mapping)
+    .filter(([_, mappedBases]) => Array.isArray(mappedBases) && mappedBases.includes(basis))
+    .map(([fsliName, _]) => fsliName);
+
+  if (matchingFsliNames.length === 0) return 0;
+
+  // Filter GL rows that belong to those FSLIs
+  const matchingRows = glData.filter(row => 
+    row.fsliName && matchingFsliNames.includes(row.fsliName)
   );
 
-  if (matchingBySub.length > 0) {
-    return matchingBySub.reduce((sum, row) => {
-      const balance = typeof row.balance === 'number' ? row.balance : parseFloat(row.balance) || 0;
-      return sum + Math.abs(balance);
-    }, 0);
-  }
-
-  // 2. Fallback to existing logic (FSLI and Pattern Matching)
-  const mapping = BENCHMARK_MAPPING[benchmark];
-  
-  const matching = glData.filter(row => {
-    // Priority 1: FSLI code match
-    if (row.fsliCode && mapping.fsliCodes.includes(row.fsliCode)) {
-      return true;
-    }
-    
-    // Priority 2: Account name pattern match
-    if (row.accountName) {
-      const accountNameLower = row.accountName.toLowerCase();
-      if (mapping.accountPatterns.some(pattern => 
-        accountNameLower.includes(pattern.toLowerCase())
-      )) {
-        return true;
-      }
-    }
-    
-    return false;
-  });
-  
   // Sum absolute values for conservatism
-  return matching.reduce((sum, row) => {
-    const balance = typeof row.balance === 'number' ? row.balance : parseFloat(row.balance) || 0;
-    return sum + Math.abs(balance);
-  }, 0);
+  return matchingRows.reduce((sum, row) => sum + Math.abs(row.balance), 0);
 }
 
 /**
  * Get benchmark breakdown for all categories
  */
-export function getBenchmarkBreakdown(glData: any[]): Record<BenchmarkCategory, number> {
+export function getBenchmarkBreakdown(
+  glData: GLRow[], 
+  mapping: Record<string, BenchmarkBasis[]>
+): Record<BenchmarkBasis, number> {
   return {
-    'Pre-Tax Income': calculateBenchmarkValue(glData, 'Pre-Tax Income'),
-    'Revenue': calculateBenchmarkValue(glData, 'Revenue'),
-    'Assets': calculateBenchmarkValue(glData, 'Assets'),
-    'Equity': calculateBenchmarkValue(glData, 'Equity')
+    'Revenue': calculateBenchmarkValue(glData, 'Revenue', mapping),
+    'PBT': calculateBenchmarkValue(glData, 'PBT', mapping),
+    'Assets': calculateBenchmarkValue(glData, 'Assets', mapping),
+    'Equity': calculateBenchmarkValue(glData, 'Equity', mapping),
+    'Net Current Assets': calculateBenchmarkValue(glData, 'Net Current Assets', mapping)
   };
 }
 

@@ -175,7 +175,6 @@ export function ApprovalPage() {
                       omValue={selectedSim?.omValue || 0}
                       pmValue={selectedSim?.pmValue || 0}
                       onAssessmentChange={() => {}}
-                      onApplyToFSLI={() => {}}
                       isReadOnly={true}
                     />
                   ) : (

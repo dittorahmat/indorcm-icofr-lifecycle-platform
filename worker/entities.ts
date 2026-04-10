@@ -15,7 +15,9 @@ interface Auditable {
 export class GLSnapshotEntity extends IndexedEntity<GLSnapshot & Auditable> {
   static readonly entityName = "glsnapshot";
   static readonly indexName = "glsnapshots";
-  static readonly initialState: GLSnapshot & Auditable = { id: "", filename: "", uploadDate: 0, rows: [], auditTrail: [] };
+  static readonly initialState: GLSnapshot & Auditable = { 
+    id: "", filename: "", uploadDate: 0, rows: [], status: "Draft", isActive: false, benchmarkMapping: {}, auditTrail: [] 
+  };
   async getAuditTrail() { return (await this.getState()).auditTrail; }
 }
 
@@ -24,8 +26,8 @@ export class SimulationEntity extends IndexedEntity<MaterialitySimulation & Audi
   static readonly indexName = "simulations";
   static readonly initialState: MaterialitySimulation & Auditable = { 
     id: "", name: "", year: new Date().getFullYear(), status: "Draft", 
-    basis: "PBT", omPercentage: 5, haircutPercentage: 25, omValue: 0, pmValue: 0, 
-    glSnapshotId: "", assessmentData: {}, createdBy: "", createdAt: 0, auditTrail: [] 
+    basis: "PBT", omPercentage: 5, haircutPercentage: 25, locationCount: 1, omValue: 0, pmValue: 0, 
+    glSnapshotId: "", assessmentData: {}, createdBy: "", createdAt: 0, history: [], auditTrail: [] 
   };
   async getAuditTrail() { return (await this.getState()).auditTrail; }
 }

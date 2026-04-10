@@ -39,11 +39,16 @@ export interface GLRow {
   noUrut?: number;        // Display order
 }
 
+export type BenchmarkBasis = "Revenue" | "PBT" | "Assets" | "Equity" | "Net Current Assets";
+
 export interface GLSnapshot {
   id: string;
   filename: string;
   uploadDate: number;
   rows: GLRow[];
+  status: "Draft" | "Mapped";
+  isActive: boolean;
+  benchmarkMapping: Record<string, BenchmarkBasis[]>; // Key: FSLI Name, Value: Array of Benchmark Categories
 }
 
 export type SimulationStatus = "Draft" | "Pending CFO" | "Pending Komut" | "Approved" | "Rejected";
@@ -62,14 +67,14 @@ export interface MaterialitySimulation {
   name: string;
   year: number;
   status: SimulationStatus;
-  basis: "Revenue" | "PBT" | "Assets" | "Equity" | "Net Current Assets";
+  basis: BenchmarkBasis;
   omPercentage: number;
   haircutPercentage: number;
   locationCount: number; // New: Added for multiplier logic
   omValue: number;
   pmValue: number;
   glSnapshotId: string;
-  assessmentData: Record<string, Record<number, QualitativeLevel>>; // Key: No_GL, Sub-Key: ruleId (1-8)
+  assessmentData: Record<string, Record<number, QualitativeLevel>>; // Key: FSLI Name, Sub-Key: ruleId (1-8)
   approvedBy?: string;
   approvedDate?: number;
   createdBy: string;

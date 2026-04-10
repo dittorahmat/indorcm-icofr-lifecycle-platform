@@ -14,38 +14,33 @@ import { GLRow, QualitativeLevel } from '@shared/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronRight, Filter, SortAsc, SortDesc, Zap } from 'lucide-react';
+import { ChevronDown, ChevronRight, Filter, SortAsc, SortDesc } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface GLDataGridProps {
   data: GLRow[];
   assessmentData: Record<string, Record<number, QualitativeLevel>>;
-  omValue: number;
   pmValue: number;
-  onAssessmentChange: (noGL: string, ruleId: number, level: QualitativeLevel) => void;
-  onApplyToFSLI: (fsliCode: string, ruleId: number, level: QualitativeLevel) => void;
+  onAssessmentChange: (fsliName: string, ruleId: number, level: QualitativeLevel) => void;
   isReadOnly?: boolean;
 }
 
 const QUALITATIVE_RULES = [
-  { id: 1, label: "R1: Fraud/Error Risk" },
-  { id: 2, label: "R2: Transaction Volume" },
-  { id: 3, label: "R3: Complexity" },
-  { id: 4, label: "R4: Loss Exposure" },
-  { id: 5, label: "R5: Acct Complexity" },
-  { id: 6, label: "R6: Contingency" },
-  { id: 7, label: "R7: Related Party" },
-  { id: 8, label: "R8: Changes" },
+  { id: 1, label: "Kecurangan" },
+  { id: 2, label: "Volume" },
+  { id: 3, label: "Kompleksitas" },
+  { id: 4, label: "Karakteristik" },
+  { id: 5, label: "Kerumitan" },
+  { id: 6, label: "Kewajiban Kontingensi Signifikan" },
+  { id: 7, label: "Ada transaksi pihak berelasi" },
+  { id: 8, label: "Volalitas" },
 ];
 
 export function GLDataGrid({ 
   data, 
   assessmentData, 
-  omValue,
   pmValue, 
   onAssessmentChange, 
-  onApplyToFSLI,
   isReadOnly = false 
 }: GLDataGridProps) {
   const [grouping, setGrouping] = React.useState<GroupingState>(['fsliName']);
@@ -97,34 +92,12 @@ export function GLDataGrid({
           return (
             <div className={cn(
               "text-right font-mono text-[10px]",
-              Math.abs(val) >= pmValue ? "text-blue-600 font-bold" : "text-slate-500"
+              Math.abs(val) >= pmValue ? "text-red-600 font-bold" : "text-slate-500"
             )}>
               {val.toLocaleString('id-ID')}
             </div>
           );
         },
-      },
-      {
-        id: 'omFlag',
-        header: () => <div className="text-center bg-blue-50/50 -mx-2 py-1 text-[9px]">OM</div>,
-        cell: ({ row }) => {
-          const balance = row.getIsGrouped() 
-            ? row.getLeafRows().reduce((sum, r) => sum + Math.abs(r.original.balance), 0)
-            : Math.abs(row.original.balance);
-          const isY = balance >= omValue;
-          return <div className={cn("text-center font-bold text-[10px]", isY ? "text-blue-600" : "text-slate-300")}>{isY ? 'Y' : 'N'}</div>;
-        }
-      },
-      {
-        id: 'pmFlag',
-        header: () => <div className="text-center bg-blue-50/50 -mx-2 py-1 text-[9px]">PM</div>,
-        cell: ({ row }) => {
-          const balance = row.getIsGrouped() 
-            ? row.getLeafRows().reduce((sum, r) => sum + Math.abs(r.original.balance), 0)
-            : Math.abs(row.original.balance);
-          const isY = balance >= pmValue;
-          return <div className={cn("text-center font-bold text-[10px]", isY ? "text-indigo-600" : "text-slate-300")}>{isY ? 'Y' : 'N'}</div>;
-        }
       },
       {
         id: 'quantFlag',
@@ -133,10 +106,14 @@ export function GLDataGrid({
           const balance = row.getIsGrouped() 
             ? row.getLeafRows().reduce((sum, r) => sum + Math.abs(r.original.balance), 0)
             : Math.abs(row.original.balance);
-          const isY = balance >= pmValue;
+          const isSignificant = balance >= pmValue;
           return (
             <div className="text-center">
-              {isY ? <Badge className="bg-orange-500 h-4 px-1 text-[8px]">Y</Badge> : <span className="text-slate-300 text-[10px]">N</span>}
+              {isSignificant ? (
+                <Badge className="bg-red-600 h-4 px-1.5 text-[8px] uppercase tracking-tighter">Significant</Badge>
+              ) : (
+                <span className="text-slate-300 text-[9px] font-medium italic">Not Significant</span>
+              )}
             </div>
           );
         }
@@ -144,32 +121,21 @@ export function GLDataGrid({
       ...QUALITATIVE_RULES.map(rule => ({
         id: `rule-${rule.id}`,
         header: () => (
-          <div className="flex flex-col items-center gap-1 group">
-            <span className="text-[9px] uppercase tracking-tighter text-slate-400 group-hover:text-primary transition-colors">{rule.label.split(':')[0]}</span>
-            {!isReadOnly && (
-              <button 
-                title={`Apply value to all accounts in current view for ${rule.label}`}
-                className="opacity-0 group-hover:opacity-100 transition-opacity"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  // Logic for batch apply would go here or handled by parent
-                }}
-              >
-                <Zap className="h-2 w-2 text-amber-500" />
-              </button>
-            )}
+          <div className="text-[9px] uppercase tracking-tighter text-slate-400 text-center leading-tight max-w-[60px] mx-auto whitespace-normal">
+            {rule.label}
           </div>
         ),
         cell: ({ row }) => {
-          if (row.getIsGrouped()) return null;
-          const noGL = row.original.noGL;
-          const currentLevel = assessmentData[noGL]?.[rule.id] || "";
+          if (!row.getIsGrouped()) return <div className="text-center text-slate-200 text-[8px]">-</div>;
+          
+          const fsliName = row.getValue('fsliName') as string;
+          const currentLevel = assessmentData[fsliName]?.[rule.id] || "";
           
           return (
             <Select 
               disabled={isReadOnly}
               value={currentLevel} 
-              onValueChange={(val: QualitativeLevel) => onAssessmentChange(noGL, rule.id, val)}
+              onValueChange={(val: QualitativeLevel) => onAssessmentChange(fsliName, rule.id, val)}
             >
               <SelectTrigger className={cn(
                 "h-7 w-full text-[9px] px-1 border-none bg-transparent hover:bg-slate-100 transition-colors",
@@ -180,8 +146,8 @@ export function GLDataGrid({
                 <SelectValue placeholder="-" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Low" className="text-xs text-green-600">Low</SelectItem>
-                <SelectItem value="Medium" className="text-xs text-amber-600">Medium</SelectItem>
+                <SelectItem value="Low" className="text-xs text-green-600 font-medium">Low</SelectItem>
+                <SelectItem value="Medium" className="text-xs text-amber-600 font-medium">Medium</SelectItem>
                 <SelectItem value="High" className="text-xs text-red-600 font-bold">High</SelectItem>
               </SelectContent>
             </Select>
@@ -193,37 +159,31 @@ export function GLDataGrid({
         header: 'Scope',
         cell: ({ row }) => {
           const isGrouped = row.getIsGrouped();
-          const leaves = row.getLeafRows();
-          const anySignificant = leaves.some(lr => {
-            const assessments = assessmentData[lr.original.noGL] || {};
-            const isQuant = Math.abs(lr.original.balance) >= pmValue;
-            const isQual = Object.values(assessments).some(v => v === 'High');
-            return isQuant || isQual;
-          });
-
+          const fsliName = isGrouped ? row.getValue('fsliName') as string : row.original.fsliName || "";
+          
+          const assessments = assessmentData[fsliName] || {};
+          const isQualSignificant = Object.values(assessments).some(v => v === 'High');
+          
           if (isGrouped) {
-            return anySignificant ? <Badge className="bg-primary text-[9px]">IN SCOPE</Badge> : <Badge variant="outline" className="text-[9px] opacity-40">OUT</Badge>;
+            const leaves = row.getLeafRows();
+            const isKuanSignificant = leaves.some(lr => Math.abs(lr.original.balance) >= pmValue);
+            const isInScope = isKuanSignificant || isQualSignificant;
+            return isInScope ? <Badge className="bg-indigo-600 text-[9px] h-4 px-1.5 uppercase font-bold">IN SCOPE</Badge> : <Badge variant="outline" className="text-[9px] h-4 px-1.5 opacity-40">OUT</Badge>;
           }
           
-          const assessments = assessmentData[row.original.noGL] || {};
-          const isQuant = Math.abs(row.original.balance) >= pmValue;
-          const isQual = Object.values(assessments).some(v => v === 'High');
+          const isKuanSignificant = Math.abs(row.original.balance) >= pmValue;
           
-          if (isQuant || isQual) {
-            return (
-              <Badge className={cn(
-                "text-[9px] font-bold",
-                isQual ? "bg-red-600" : "bg-blue-600"
-              )}>
-                {isQual ? "IN (QUAL)" : "IN (QUAN)"}
-              </Badge>
-            );
+          if (isQualSignificant) {
+            return <Badge className="text-[9px] h-4 px-1.5 font-bold bg-red-600">IN (QUAL)</Badge>;
           }
-          return <Badge variant="outline" className="text-[9px] opacity-40 text-slate-400">OUT</Badge>;
+          if (isKuanSignificant) {
+            return <Badge className="text-[9px] h-4 px-1.5 font-bold bg-blue-600">IN (QUAN)</Badge>;
+          }
+          return <Badge variant="outline" className="text-[9px] h-4 px-1.5 opacity-40 text-slate-400">OUT</Badge>;
         }
       }
     ],
-    [omValue, pmValue, assessmentData, isReadOnly, onAssessmentChange]
+    [pmValue, assessmentData, isReadOnly, onAssessmentChange]
   );
 
   const table = useReactTable({
@@ -252,13 +212,13 @@ export function GLDataGrid({
                 {headerGroup.headers.map(header => (
                   <TableHead 
                     key={header.id} 
-                    className="border-r last:border-r-0 h-12 text-[10px] font-bold uppercase text-slate-500 whitespace-nowrap px-2"
+                    className="border-r last:border-r-0 h-16 text-[10px] font-bold uppercase text-slate-500 whitespace-nowrap px-2"
                     style={{ width: header.getSize() }}
                   >
                     {header.isPlaceholder ? null : (
                       <div 
                         className={cn(
-                          "flex flex-col gap-1",
+                          "flex flex-col gap-1 h-full justify-center",
                           header.column.getCanSort() && "cursor-pointer select-none"
                         )}
                         onClick={header.column.getToggleSortingHandler()}
@@ -268,7 +228,7 @@ export function GLDataGrid({
                           <div className="relative mt-1" onClick={e => e.stopPropagation()}>
                             <Filter className="absolute left-1.5 top-1.5 h-2.5 w-2.5 text-slate-300" />
                             <input 
-                              className="w-full pl-5 pr-1 py-1 text-[9px] border rounded bg-white font-normal"
+                              className="w-full pl-5 pr-1 py-1 text-[9px] font-normal"
                               placeholder="Search..."
                               onChange={e => header.column.setFilterValue(e.target.value)}
                             />
@@ -287,7 +247,7 @@ export function GLDataGrid({
                 key={row.id} 
                 className={cn(
                   "hover:bg-slate-50/50 transition-colors h-8",
-                  row.getIsGrouped() ? "bg-slate-50/80 font-semibold" : "border-b"
+                  row.getIsGrouped() ? "bg-slate-100/50 font-bold" : "border-b"
                 )}
               >
                 {row.getVisibleCells().map(cell => (
@@ -298,28 +258,9 @@ export function GLDataGrid({
                     {cell.getIsGrouped() ? (
                       <div className="flex items-center gap-2">
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        <span className="text-[10px] text-slate-400 font-normal">
-                          ({row.getLeafRows().length} accounts)
+                        <span className="text-[9px] text-slate-400 font-normal">
+                          ({row.getLeafRows().length})
                         </span>
-                        {!isReadOnly && (
-                          <div className="flex gap-1 ml-auto">
-                            {QUALITATIVE_RULES.map(rule => (
-                              <Button 
-                                key={rule.id}
-                                variant="ghost" 
-                                size="icon" 
-                                className="h-5 w-5 text-slate-300 hover:text-primary"
-                                title={`Batch apply ${rule.label.split(':')[0]} for this FSLI`}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onApplyToFSLI(row.getValue('fsliCode'), rule.id, "High");
-                                }}
-                              >
-                                <Zap className="h-2 w-2" />
-                              </Button>
-                            ))}
-                          </div>
-                        )}
                       </div>
                     ) : cell.getIsPlaceholder() ? null : (
                       flexRender(cell.column.columnDef.cell, cell.getContext())

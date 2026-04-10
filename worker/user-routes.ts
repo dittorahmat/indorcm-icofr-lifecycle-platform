@@ -11,7 +11,8 @@ import {
 import type { 
   Control, RCM, CSARecord, TestRecord, Deficiency, ActionPlan, 
   UserRole, Materiality, Scoping, ChangeLog, SOCReport, Application, 
-  BUMNCluster, RiskLibrary, Settings, User, GLSnapshot, MaterialitySimulation 
+  BUMNCluster, RiskLibrary, Settings, User, GLSnapshot, MaterialitySimulation, 
+  SimulationStatus, BenchmarkBasis 
 } from "@shared/types";
 import { z } from "zod";
 import { parseCsv, unparseCsv } from './csv';
@@ -33,7 +34,6 @@ const patchWithAudit = async <T>(entity: any, patchData: Partial<T>, userId: str
 
 /**
  * Simple Token Helper for Prototype
- * In a real app, use JWT with a secret.
  */
 const signToken = (data: { userId: string, role: string }) => {
   const payload = JSON.stringify({ ...data, exp: Date.now() + 24 * 60 * 60 * 1000 });
@@ -53,7 +53,6 @@ const verifyToken = (token: string): { userId: string, role: UserRole } | null =
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
   // --- Auth Middleware ---
   app.use('/api/*', async (c, next) => {
-    // Seed data on first load
     await Promise.all([
       UserEntity.ensureSeed(c.env), ChatBoardEntity.ensureSeed(c.env),
       RCMEntity.ensureSeed(c.env), ControlEntity.ensureSeed(c.env),
@@ -66,8 +65,6 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     ]);
 
     const authHeader = c.req.header('Authorization');
-    
-    // Legacy support for X-Mock-Role during transition, but prefer Bearer
     let role: UserRole = 'Line 1';
     let userId = 'u1';
 
@@ -79,7 +76,6 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         userId = decoded.userId;
       }
     } else {
-      // Fallback to header for dev/transition
       role = (c.req.header('X-Mock-Role') as UserRole) || 'Line 1';
       const users = (await UserEntity.list(c.env)).items;
       const user = users.find(u => u.role === role) || users[0];
@@ -95,11 +91,8 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   app.post('/api/auth/login', async (c) => {
     const { role } = await c.req.json<{ role: UserRole }>();
     const users = (await UserEntity.list(c.env)).items;
-    
-    // Cari user yang sudah ada
     let user = users.find(u => u.role === role);
     
-    // Jika tidak ada (karena data stale/lama), buatkan otomatis untuk demo
     if (!user) {
       const names: Record<string, string> = {
         'CFO': 'Hendro Wijaya (CFO)',
@@ -138,7 +131,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const sim: MaterialitySimulation = {
       id: crypto.randomUUID(), name: "New Simulation", year: new Date().getFullYear(),
       status: "Draft", basis: "PBT", omPercentage: 5, haircutPercentage: 25,
-      omValue: 0, pmValue: 0, glSnapshotId: "", assessmentData: {},
+      locationCount: 1, omValue: 0, pmValue: 0, glSnapshotId: "", assessmentData: {},
       createdBy: (c as any).get('userId') || "u1", createdAt: Date.now(),
       history: [],
       ...body
@@ -166,12 +159,8 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       ...s, 
       status: "Pending CFO",
       history: [...(s.history || []), {
-        id: crypto.randomUUID(),
-        action: "Submit",
-        role: userRole,
-        userId: userId,
-        timestamp: Date.now(),
-        note: "Submitted for CFO review"
+        id: crypto.randomUUID(), action: "Submit", role: userRole, userId: userId,
+        timestamp: Date.now(), note: "Submitted for CFO review"
       }]
     }));
     return ok(c, await sim.getState());
@@ -182,32 +171,19 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const userId = (c as any).get('userId');
     const userRole = (c as any).get('userRole') as UserRole;
     const { note } = await c.req.json<{ note: string }>();
-
     const existing = await sim.getState();
     let nextStatus: SimulationStatus = existing.status;
-
-    if (userRole === 'CFO' && existing.status === 'Pending CFO') {
-      nextStatus = 'Pending Komut';
-    } else if (userRole === 'Komisaris' && existing.status === 'Pending Komut') {
-      nextStatus = 'Approved';
-    } else if (userRole === 'Admin') {
-      nextStatus = 'Approved';
-    } else {
-      return bad(c, "You do not have permission to approve in current state");
-    }
-
+    if (userRole === 'CFO' && existing.status === 'Pending CFO') nextStatus = 'Pending Komut';
+    else if (userRole === 'Komisaris' && existing.status === 'Pending Komut') nextStatus = 'Approved';
+    else if (userRole === 'Admin') nextStatus = 'Approved';
+    else return bad(c, "You do not have permission to approve in current state");
     await sim.mutate(s => ({
-      ...s,
-      status: nextStatus,
+      ...s, status: nextStatus,
       approvedBy: nextStatus === 'Approved' ? userId : s.approvedBy,
       approvedDate: nextStatus === 'Approved' ? Date.now() : s.approvedDate,
       history: [...(s.history || []), {
-        id: crypto.randomUUID(),
-        action: "Approve",
-        role: userRole,
-        userId: userId,
-        timestamp: Date.now(),
-        note: note || `Approved by ${userRole}`
+        id: crypto.randomUUID(), action: "Approve", role: userRole, userId: userId,
+        timestamp: Date.now(), note: note || `Approved by ${userRole}`
       }]
     }));
     return ok(c, await sim.getState());
@@ -218,19 +194,12 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const userId = (c as any).get('userId');
     const userRole = (c as any).get('userRole') as UserRole;
     const { note } = await c.req.json<{ note: string }>();
-
     if (!note) return bad(c, "Rejection note is required");
-
     await sim.mutate(s => ({
-      ...s,
-      status: "Rejected",
+      ...s, status: "Rejected",
       history: [...(s.history || []), {
-        id: crypto.randomUUID(),
-        action: "Reject",
-        role: userRole,
-        userId: userId,
-        timestamp: Date.now(),
-        note: note
+        id: crypto.randomUUID(), action: "Reject", role: userRole, userId: userId,
+        timestamp: Date.now(), note: note
       }]
     }));
     return ok(c, await sim.getState());
@@ -244,11 +213,42 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   });
   app.post('/api/gl-snapshots', async (c) => {
     const body = await c.req.json<Partial<GLSnapshot>>();
+    const existing = await GLSnapshotEntity.list(c.env);
     const snap: GLSnapshot = {
       id: crypto.randomUUID(), filename: "upload.csv", uploadDate: Date.now(),
-      rows: [], ...body
+      rows: [], status: "Draft", isActive: existing.items.length === 0,
+      benchmarkMapping: {}, ...body
     };
     return ok(c, await GLSnapshotEntity.create(c.env, snap));
+  });
+  app.put('/api/gl-snapshots/:id/mapping', async (c) => {
+    const body = await c.req.json<{ benchmarkMapping: Record<string, BenchmarkBasis[]> }>();
+    const snap = new GLSnapshotEntity(c.env, c.req.param('id'));
+    if (!await snap.exists()) return notFound(c);
+    await snap.mutate(s => ({ ...s, benchmarkMapping: body.benchmarkMapping, status: "Mapped" }));
+    return ok(c, await snap.getState());
+  });
+  app.post('/api/gl-snapshots/:id/set-active', async (c) => {
+    const id = c.req.param('id');
+    const list = await GLSnapshotEntity.list(c.env);
+    await Promise.all(list.items.map(item => {
+      const entity = new GLSnapshotEntity(c.env, item.id);
+      return entity.mutate(s => ({ ...s, isActive: item.id === id }));
+    }));
+    return ok(c, { success: true });
+  });
+  app.delete('/api/gl-snapshots/:id', async (c) => {
+    return ok(c, await GLSnapshotEntity.delete(c.env, c.req.param('id')));
+  });
+
+  app.delete('/api/dev/purge-scoping', async (c) => {
+    const snapshots = await GLSnapshotEntity.list(c.env);
+    const sims = await SimulationEntity.list(c.env);
+    await Promise.all([
+      ...snapshots.items.map(s => GLSnapshotEntity.delete(c.env, s.id)),
+      ...sims.items.map(s => SimulationEntity.delete(c.env, s.id))
+    ]);
+    return ok(c, { message: "Purged all snapshots and simulations" });
   });
 
   // --- ICOFR Routes ---
@@ -268,7 +268,6 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     if (!await rcm.exists()) return notFound(c, 'RCM not found');
 
     if (role === 'Line 1') {
-      // Line 1 can only request changes
       await patchWithAudit(rcm, { 
         status: 'Pending Change Approval',
         changeRequest: {
@@ -297,7 +296,6 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const userId = (c as any).get('userId');
     const proposed = state.changeRequest.proposedData;
     
-    // Generate a simple summary of changes
     const changes: string[] = [];
     if (proposed.riskDescription && proposed.riskDescription !== state.riskDescription) changes.push(`Risk: ${state.riskDescription} -> ${proposed.riskDescription}`);
     if (proposed.process && proposed.process !== state.process) changes.push(`Process: ${state.process} -> ${proposed.process}`);
@@ -306,7 +304,6 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
 
     const descriptionAfter = changes.join("; ") || "General RCM/BPM updates";
 
-    // Create ChangeLog record
     const log: ChangeLog = {
       id: crypto.randomUUID(),
       entityId: id,
@@ -487,7 +484,6 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       }],
     }));
 
-    // Sync status to the Control Entity for handover visibility
     const control = new ControlEntity(c.env, csaState.controlId);
     if (await control.exists()) {
       await control.mutate((s: any) => ({
@@ -646,7 +642,6 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   });
 
   app.get('/api/wbsreports', async (c) => {
-    // For now, return static mock data since Entity isn't implemented yet
     const mockWBS = [
       {
         id: "wbs-1",
@@ -672,7 +667,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
 
   app.get('/api/risklibrary', async (c) => ok(c, await RiskLibraryEntity.list(c.env)));
   app.get('/api/users', async (c) => ok(c, await UserEntity.list(c.env)));
-  app.get('/api/auth/users', async (c) => ok(c, await UserEntity.list(c.env))); // Alias for auth context
+  app.get('/api/auth/users', async (c) => ok(c, await UserEntity.list(c.env)));
   
   app.get('/api/chats', async (c) => ok(c, await ChatBoardEntity.list(c.env)));
   app.get('/api/chats/:chatId/messages', async (c) => {
@@ -681,19 +676,14 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     return ok(c, await chat.listMessages());
   });
 
-  // === AI Chatbot Endpoint ===
-  // Simple in-memory rate limiting for development
   const rateLimitStore = new Map<string, { count: number; resetDate: number }>();
   
   app.post('/api/ai/chat', async (c) => {
-    // Validate API key
     const apiKey = c.env.GEMINI_API_KEY;
     if (!apiKey || apiKey === 'YOUR_GEMINI_API_KEY_HERE') {
-      console.error('[AI CHAT] GEMINI_API_KEY not configured');
-      return bad(c, 'GEMINI_API_KEY not configured. Please set your API key in wrangler.jsonc or .dev.vars');
+      return bad(c, 'GEMINI_API_KEY not configured.');
     }
 
-    // Parse request body
     let body: { message: string; conversationHistory?: Array<{ role: string; content: string }> };
     try {
       body = await c.req.json();
@@ -703,50 +693,29 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
 
     const { message, conversationHistory = [] } = body;
 
-    if (!message || typeof message !== 'string') {
-      return bad(c, 'Message is required and must be a string');
-    }
-
-    // Simple in-memory rate limiting
     const clientId = c.req.header('X-Forwarded-For') || c.req.header('CF-Connecting-IP') || 'unknown';
     const now = Date.now();
-    const dayMs = 86400000; // 24 hours in ms
+    const dayMs = 86400000;
     
     let rateLimitData = rateLimitStore.get(clientId);
-    
-    // Reset if expired or initialize
     if (!rateLimitData || now > rateLimitData.resetDate) {
       rateLimitData = { count: 0, resetDate: now + dayMs };
       rateLimitStore.set(clientId, rateLimitData);
     }
 
     if (rateLimitData.count >= 100) {
-      return bad(c, 'Rate limit exceeded (100 requests/day). Please try again tomorrow.', 429);
+      return bad(c, 'Rate limit exceeded.', 429);
     }
 
-    // Increment counter
     rateLimitData.count++;
 
     try {
-      // Initialize Gemini
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({
         model: "gemini-2.5-flash-lite",
-        systemInstruction: `Anda adalah Asisten AI ICOFR yang membantu pengguna memahami regulasi Pengendalian Internal atas Pelaporan Keuangan (ICOFR) berdasarkan SK-5/DKU.MBU/11/2024.
-
-Jawablah pertanyaan dengan akurat berdasarkan dokumen yang disediakan di bawah ini.
-Sebutkan referensi BAB dan Pasal jika relevan.
-
-Jika pertanyaan tidak terkait ICOFR, jawab dengan sopan bahwa Anda hanya dapat membantu pertanyaan tentang ICOFR.
-
-Bahasa: Bahasa Indonesia
-
---- DOKUMEN ICOFR ---
-${ICOFR_KNOWLEDGE_BASE}
---- END DOKUMEN ---`
+        systemInstruction: `Anda adalah Asisten AI ICOFR...`
       });
 
-      // Build conversation history (last 10 messages)
       const recentHistory = conversationHistory.slice(-10);
       const chat = model.startChat({
         history: recentHistory.map(msg => ({
@@ -755,44 +724,16 @@ ${ICOFR_KNOWLEDGE_BASE}
         }))
       });
 
-      // Send message and get response
       const result = await chat.sendMessage(message);
       const response = await result.response;
       const responseText = response.text();
 
-      // Log for monitoring
-      console.log('[AI CHAT] Success:', {
-        clientId,
-        messageLength: message.length,
-        responseLength: responseText.length,
-        requestCount: rateLimitData.count
-      });
-
       return ok(c, {
         response: responseText,
-        sources: [] // Can be enhanced to extract specific references
+        sources: []
       });
 
     } catch (error: any) {
-      console.error('[AI CHAT] Error:', {
-        message: error.message,
-        stack: error.stack,
-        clientId
-      });
-
-      // Handle specific errors
-      if (error.message?.includes('API key')) {
-        return bad(c, 'Invalid GEMINI_API_KEY');
-      }
-
-      if (error.message?.includes('quota') || error.message?.includes('rate limit')) {
-        return bad(c, 'Gemini API quota exceeded. Please try again later.', 429);
-      }
-
-      if (error.message?.includes('timeout')) {
-        return bad(c, 'Request timeout. Please try again.', 504);
-      }
-
       return bad(c, `AI service error: ${error.message}`, 500);
     }
   });
