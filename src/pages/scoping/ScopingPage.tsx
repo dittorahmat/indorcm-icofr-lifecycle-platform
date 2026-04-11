@@ -129,14 +129,20 @@ export function ScopingPage() {
           const parsedBal = parseBalance(r[mapping.balance]);
           const parsedFsliBal = parseBalance(r[mapping.fsliBalance]);
           return {
-            ymd: String(r[mapping.period] || ''), entityCode: String(r[mapping.entityCode] || ''),
-            noGL: String(r[mapping.accountCode] || ''), glDesc: String(r[mapping.accountName] || ''),
-            currency: String(r[mapping.currency] || 'IDR'), balance: parsedBal.value,
-            fsliCode: String(r[mapping.fsliCode] || ''), fsliName: String(r[mapping.fsliName] || ''),
-            kategori: String(r[mapping.kategori] || ''), subKategori: String(r[mapping.subKategori] || ''),
-            fsliBalance: parsedFsliBal.value, noUrut: parseInt(String(r[mapping.noUrut] || '0')) || 0
+            ymd: String(r[mapping.period] || ''), 
+            entityCode: String(r[mapping.entityCode] || ''),
+            noGL: String(r[mapping.accountCode] || ''), 
+            glDesc: String(r[mapping.accountName] || ''),
+            currency: String(r[mapping.currency] || 'IDR'), 
+            balance: parsedBal.success ? parsedBal.value : 0,
+            fsliCode: String(r[mapping.fsliCode] || ''), 
+            fsliName: String(r[mapping.fsliName] || ''),
+            kategori: String(r[mapping.kategori] || ''), 
+            subKategori: String(r[mapping.subKategori] || ''),
+            fsliBalance: parsedFsliBal.success ? parsedFsliBal.value : 0, 
+            noUrut: parseInt(String(r[mapping.noUrut] || '0')) || 0
           };
-        }).filter(r => r.noGL && r.glDesc);
+        }).filter(r => r.glDesc); // Only require description, allow empty No_GL for summary rows
         if (rows.length === 0) { toast.error("No valid GL rows found"); return; }
         const snap = await api<GLSnapshot>('/api/gl-snapshots', { method: 'POST', body: JSON.stringify({ filename: file.name, rows }) });
         queryClient.invalidateQueries({ queryKey: ['gl-snapshots'] });

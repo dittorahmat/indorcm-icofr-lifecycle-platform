@@ -6,13 +6,13 @@ import {
   DeficiencyEntity, ActionPlanEntity, CSAEntity, TestEntity,
   MaterialityEntity, ScopingEntity, ChangeLogEntity, SOCReportEntity,
   ApplicationEntity, RiskLibraryEntity, AggregateDeficiencyEntity, SettingsEntity,
-  GLSnapshotEntity, SimulationEntity
+  GLSnapshotEntity, SimulationEntity, BPMProcessEntity
 } from "./entities";
 import type { 
   Control, RCM, CSARecord, TestRecord, Deficiency, ActionPlan, 
   UserRole, Materiality, Scoping, ChangeLog, SOCReport, Application, 
   BUMNCluster, RiskLibrary, Settings, User, GLSnapshot, MaterialitySimulation, 
-  SimulationStatus, BenchmarkBasis 
+  SimulationStatus, BenchmarkBasis, BPMProcess 
 } from "@shared/types";
 import { z } from "zod";
 import { parseCsv, unparseCsv } from './csv';
@@ -82,8 +82,14 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       userId = user?.id || 'u1';
     }
 
-    (c as any).set('userRole', role);
+    // Normalized role for easier comparison
+    const normalizedRole = String(role || '').trim();
+
+    (c as any).set('userRole', normalizedRole);
     (c as any).set('userId', userId);
+    
+    console.log(`[API] ${c.req.method} ${c.req.url} | User: ${userId} | Role: ${normalizedRole}`);
+    
     await next();
   });
 
@@ -251,6 +257,69 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     return ok(c, { message: "Purged all snapshots and simulations" });
   });
 
+  app.get('/api/bpm-processes', async (c) => {
+    const noGL = c.req.query('noGL');
+    const all = await BPMProcessEntity.list(c.env);
+    if (noGL) {
+      return ok(c, { items: all.items.filter(p => p.noGL === noGL) });
+    }
+    return ok(c, all);
+  });
+
+  app.post('/api/bpm-processes', async (c) => {
+    const body = await c.req.json<Partial<BPMProcess>>();
+    const newProcess: BPMProcess = {
+      id: crypto.randomUUID(),
+      name: body.name || "New BPM Process",
+      noGL: body.noGL || "",
+      fsliName: body.fsliName || "",
+      createdBy: (c as any).get('userId'),
+      createdAt: Date.now()
+    };
+    return ok(c, await createWithAudit(BPMProcessEntity, c.env, newProcess, (c as any).get('userId')));
+  });
+
+  app.delete('/api/bpm-processes/:id', async (c) => {
+    return ok(c, await BPMProcessEntity.delete(c.env, c.req.param('id')));
+  });
+
+  // BPM Control Spreadsheet Update with Auto-Log (Lampiran 6)
+  app.put('/api/controls/:id/bpm-update', async (c) => {
+    const id = c.req.param('id');
+    const body = await c.req.json<Partial<Control>>();
+    const control = new ControlEntity(c.env, id);
+    if (!await control.exists()) return notFound(c, 'Control not found');
+    
+    const oldState = await control.getState();
+    const userId = (c as any).get('userId');
+
+    // Create Change Log entry for each changed field
+    const changes: string[] = [];
+    Object.keys(body).forEach(key => {
+      const field = key as keyof Control;
+      if (body[field] !== (oldState as any)[field]) {
+        changes.push(`${field}: ${(oldState as any)[field]} -> ${body[field]}`);
+      }
+    });
+
+    if (changes.length > 0) {
+      const log: ChangeLog = {
+        id: crypto.randomUUID(),
+        entityId: id,
+        entityType: "Control",
+        descriptionBefore: JSON.stringify(oldState),
+        descriptionAfter: JSON.stringify({ ...oldState, ...body }),
+        userId: userId,
+        timestamp: Date.now(),
+        effectiveDate: Date.now()
+      };
+      await createWithAudit(ChangeLogEntity, c.env, log, userId);
+    }
+
+    await patchWithAudit(control, body, userId);
+    return ok(c, await control.getState());
+  });
+
   // --- ICOFR Routes ---
   app.get('/api/rcm', async (c) => ok(c, await RCMEntity.list(c.env)));
   app.post('/api/rcm', async (c) => {
@@ -349,7 +418,8 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   });
 
   app.post('/api/rcm/:id/validate', async (c) => {
-    if ((c as any).get('userRole') !== 'Line 2') return bad(c, 'Access Denied');
+    const role = (c as any).get('userRole');
+    if (role !== 'Line 2' && role !== 'Admin') return bad(c, 'Access Denied');
     const id = c.req.param('id');
     const rcm = new RCMEntity(c.env, id);
     if (!await rcm.exists()) return notFound(c, 'RCM not found');
@@ -358,15 +428,35 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   });
 
   app.get('/api/controls', async (c) => ok(c, await ControlEntity.list(c.env)));
+  app.delete('/api/controls/:id', async (c) => {
+    const role = (c as any).get('userRole');
+    if (role !== 'Line 2' && role !== 'Admin') return bad(c, 'Access Denied');
+    return ok(c, await ControlEntity.delete(c.env, c.req.param('id')));
+  });
   app.post('/api/controls', async (c) => {
-    if ((c as any).get('userRole') !== 'Line 2') return bad(c, 'Access Denied');
+    const role = (c as any).get('userRole');
+    if (role !== 'Line 2' && role !== 'Admin') return bad(c, 'Access Denied: Only Line 2 or Admin can add controls.');
     const body = await c.req.json<Partial<Control>>();
-    if (!body.rcmId) return bad(c, 'rcmId is required');
+    
     const newControl: Control = { 
-      id: crypto.randomUUID(), code: "", name: "New Control", description: "", ownerId: "u1", 
-      type: "Preventive", nature: "Manual", frequency: "Monthly", assertions: [], ipos: [], 
-      cosoPrinciples: [], riskRating: "Low", isKeyControl: false, isFraudRisk: false, effectiveDate: Date.now(), 
-      fsliCodes: [], ...body, rcmId: body.rcmId 
+      id: crypto.randomUUID(), 
+      rcmId: body.rcmId || "unlinked",
+      code: body.code || "", 
+      name: body.name || "New Control", 
+      description: body.description || "", 
+      ownerId: body.ownerId || "u1", 
+      type: body.type || "Preventive", 
+      nature: body.nature || "Manual", 
+      frequency: body.frequency || "Monthly", 
+      assertions: body.assertions || [], 
+      ipos: body.ipos || [], 
+      cosoPrinciples: body.cosoPrinciples || [], 
+      riskRating: body.riskRating || "Low", 
+      isKeyControl: body.isKeyControl || false, 
+      isFraudRisk: body.isFraudRisk || false, 
+      effectiveDate: body.effectiveDate || Date.now(), 
+      fsliCodes: body.fsliCodes || [],
+      ...body 
     };
     return ok(c, await createWithAudit(ControlEntity, c.env, newControl, (c as any).get('userId')));
   });
@@ -389,7 +479,8 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
 
   app.get('/api/changelogs', async (c) => ok(c, await ChangeLogEntity.list(c.env)));
   app.put('/api/controls/:id', async (c) => {
-    if ((c as any).get('userRole') !== 'Line 2') return bad(c, 'Access Denied');
+    const role = (c as any).get('userRole');
+    if (role !== 'Line 2' && role !== 'Admin') return bad(c, 'Access Denied');
     const id = c.req.param('id');
     const body = await c.req.json<Partial<Control>>();
     const control = new ControlEntity(c.env, id);

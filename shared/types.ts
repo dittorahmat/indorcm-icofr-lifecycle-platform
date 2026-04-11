@@ -190,6 +190,18 @@ export interface Control {
   eucComplexity?: EUCComplexity; // New: (Tabel 14)
   ipeType?: IPEType; // New: (Tabel 20)
   fsliCodes?: string[]; // New: Linked FSLI codes from Scoping
+  
+  // BPM Spreadsheet Specific Fields (SK-5 Layout)
+  businessProcessLvl1?: string;
+  businessProcessLvl2?: string;
+  subProcess?: string;
+  location?: string;
+  isFraudRelated?: boolean;
+  reference?: string;
+  supportingDocs?: string;
+  applicationId?: string;
+  bpmProcessId?: string; // Link to the BPMProcess header list
+
   // MRC Specific Metadata - Tabel 21 (Hal 45 & 55)
   mrcMetadata?: {
     expectation: string; // Kewajaran ekspektasi
@@ -204,6 +216,15 @@ export interface Control {
     testOfOneEvidenceUrl?: string;
     comments?: string;
   };
+}
+
+export interface BPMProcess {
+  id: string;
+  name: string;
+  noGL: string; // Link to specific Account
+  fsliName: string;
+  createdBy: string;
+  createdAt: number;
 }
 
 export interface BPMNode {

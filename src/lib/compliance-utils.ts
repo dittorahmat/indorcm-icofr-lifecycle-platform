@@ -304,10 +304,10 @@ export function parseBalance(value: string | number): { success: boolean; value:
  * Priority order: first match wins
  */
 export const GL_COLUMN_MAPPING = {
-  accountCode: ['No_GL', 'Kode_GL', 'AccountCode', 'Account Code', 'Code', 'Kode_Entity'],
-  accountName: ['GL_Desc', 'GLDesc', 'AccountName', 'Account Name', 'Account', 'Description', 'GL_Desc'],
+  accountCode: ['No_GL', 'Kode_GL', 'AccountCode', 'Account Code', 'Code'],
+  accountName: ['GL_Desc', 'GLDesc', 'AccountName', 'Account Name', 'Account', 'Description'],
   balance: ['GL_Balance', 'GLBalance', 'Balance', 'Amount', 'EndingBalance', 'Saldo'],
-  fsliCode: ['Kode_FSLI', 'FSLICode', 'FSLI_Code', 'FSLI'],
+  fsliCode: ['Kode_FSLI', 'FSLICode', 'FSLI_Code'],
   entityCode: ['Kode_Entity', 'EntityCode', 'Entity_Code', 'Kode_Cabang'],
   currency: ['Kode_Valuta', 'Currency', 'Valuta', 'Curr'],
   period: ['YMD', 'Date', 'Period', 'Tanggal'],

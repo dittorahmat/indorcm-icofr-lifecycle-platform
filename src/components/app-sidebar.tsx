@@ -119,7 +119,12 @@ export function AppSidebar(): JSX.Element {
             )}
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/csa")}>
-                <Link to="/csa"><Workflow /> <span>Select BPM</span></Link>
+                <Link to="/csa"><Workflow /> <span>Control Self Assessment</span></Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={isActive("/bpm")}>
+                <Link to="/bpm"><ListChecks /> <span>BPM</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>

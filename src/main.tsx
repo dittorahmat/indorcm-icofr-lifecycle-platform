@@ -31,6 +31,7 @@ const ExternalAuditPortal = lazy(() => import('@/pages/audit/ExternalAuditPortal
 const WBSPage = lazy(() => import('@/pages/reports/WBSPage').then(module => ({ default: module.WBSPage })));
 const ChangeLogPage = lazy(() => import('@/pages/rcm/ChangeLogPage').then(module => ({ default: module.ChangeLogPage })));
 const SOCMonitoringPage = lazy(() => import('@/pages/rcm/SOCMonitoringPage').then(module => ({ default: module.SOCMonitoringPage })));
+const BPMPage = lazy(() => import('@/pages/bpm/BPMPage').then(module => ({ default: module.BPMPage })));
 
 enableMapSet();
 const queryClient = new QueryClient();
@@ -67,6 +68,7 @@ const router = createBrowserRouter([
           { path: "/rcm", element: <PageSuspense><RCMList /></PageSuspense> },
           { path: "/change-log", element: <PageSuspense><ChangeLogPage /></PageSuspense> },
           { path: "/soc-monitoring", element: <PageSuspense><SOCMonitoringPage /></PageSuspense> },
+          { path: "/bpm", element: <PageSuspense><BPMPage /></PageSuspense> },
           { path: "/csa", element: <PageSuspense><CSAWorkspace /></PageSuspense> },
           { path: "/testing", element: <PageSuspense><TestWorkbench /></PageSuspense> },
           { path: "/deficiencies", element: <PageSuspense><DeficiencyBoard /></PageSuspense> },

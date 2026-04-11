@@ -2,7 +2,8 @@ import { IndexedEntity } from "./core-utils";
 import type { 
   User, Chat, ChatMessage, RCM, Control, CSARecord, TestRecord, 
   Deficiency, ActionPlan, Materiality, Scoping, Application, 
-  RiskLibrary, AggregateDeficiency, GLSnapshot, MaterialitySimulation 
+  RiskLibrary, AggregateDeficiency, GLSnapshot, MaterialitySimulation,
+  BPMProcess
 } from "@shared/types";
 import { MOCK_USERS, MOCK_CHATS, MOCK_CHAT_MESSAGES, MOCK_RCM, MOCK_CONTROLS, MOCK_DEFICIENCIES, MOCK_ACTION_PLANS, MOCK_MATERIALITY, MOCK_SCOPING, MOCK_APPLICATIONS, MOCK_RISK_LIBRARY } from "@shared/mock-data";
 
@@ -28,6 +29,15 @@ export class SimulationEntity extends IndexedEntity<MaterialitySimulation & Audi
     id: "", name: "", year: new Date().getFullYear(), status: "Draft", 
     basis: "PBT", omPercentage: 5, haircutPercentage: 25, locationCount: 1, omValue: 0, pmValue: 0, 
     glSnapshotId: "", assessmentData: {}, createdBy: "", createdAt: 0, history: [], auditTrail: [] 
+  };
+  async getAuditTrail() { return (await this.getState()).auditTrail; }
+}
+
+export class BPMProcessEntity extends IndexedEntity<BPMProcess & Auditable> {
+  static readonly entityName = "bpmprocess";
+  static readonly indexName = "bpmprocesses";
+  static readonly initialState: BPMProcess & Auditable = { 
+    id: "", name: "", noGL: "", fsliName: "", createdBy: "", createdAt: 0, auditTrail: [] 
   };
   async getAuditTrail() { return (await this.getState()).auditTrail; }
 }
