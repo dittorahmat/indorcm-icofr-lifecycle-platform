@@ -8,11 +8,13 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { GLSnapshot, BenchmarkBasis } from '@shared/types';
+import { Badge } from '@/components/ui/badge';
+import { GLSnapshot } from '@shared/types';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
-import { Calculator, Save, AlertCircle } from 'lucide-react';
+import { Calculator, Save, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface SetBenchmarkModalProps {
   snapshot: GLSnapshot | null;
@@ -20,129 +22,140 @@ interface SetBenchmarkModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const BENCHMARK_BASES: BenchmarkBasis[] = ['Revenue', 'PBT', 'Assets', 'Equity', 'Net Current Assets'];
-
 export function SetBenchmarkModal({ snapshot, isOpen, onOpenChange }: SetBenchmarkModalProps) {
   const queryClient = useQueryClient();
-  const [mapping, setMapping] = React.useState<Record<string, BenchmarkBasis[]>>({});
+  const [selectedFsliNames, setSelectedFsliNames] = React.useState<string[]>([]);
 
   React.useEffect(() => {
     if (snapshot) {
-      setMapping(snapshot.benchmarkMapping || {});
+      setSelectedFsliNames(snapshot.benchmarkFsliNames || []);
     }
   }, [snapshot]);
 
-  const uniqueFsliNames = React.useMemo(() => {
+  const uniqueFsliData = React.useMemo(() => {
     if (!snapshot) return [];
-    const names = new Set<string>();
+    const fsliMap = new Map<string, number>();
     snapshot.rows.forEach(r => {
-      if (r.fsliName) names.add(r.fsliName);
+      if (r.fsliName) {
+        const current = fsliMap.get(r.fsliName) || 0;
+        fsliMap.set(r.fsliName, current + Math.abs(r.balance));
+      }
     });
-    return Array.from(names).sort();
+    return Array.from(fsliMap.entries())
+      .map(([name, total]) => ({ name, total }))
+      .sort((a, b) => a.name.localeCompare(b.name));
   }, [snapshot]);
 
   const mappingMutation = useMutation({
-    mutationFn: (newMapping: Record<string, BenchmarkBasis[]>) => 
+    mutationFn: (names: string[]) => 
       api(`/api/gl-snapshots/${snapshot?.id}/mapping`, {
         method: 'PUT',
-        body: JSON.stringify({ benchmarkMapping: newMapping })
+        body: JSON.stringify({ benchmarkFsliNames: names })
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gl-snapshots'] });
-      toast.success("Benchmark mapping saved successfully");
+      toast.success("Benchmark selection saved successfully");
       onOpenChange(false);
     }
   });
 
-  const handleMappingToggle = (fsliName: string, basis: BenchmarkBasis) => {
-    const currentBases = mapping[fsliName] || [];
-    const newBases = currentBases.includes(basis)
-      ? currentBases.filter(b => b !== basis)
-      : [...currentBases, basis];
-    
-    setMapping({
-      ...mapping,
-      [fsliName]: newBases
-    });
+  const handleToggle = (name: string) => {
+    setSelectedFsliNames(prev => 
+      prev.includes(name) 
+        ? prev.filter(n => n !== name) 
+        : [...prev, name]
+    );
   };
 
-  const calculateTotal = (basis: BenchmarkBasis) => {
-    if (!snapshot) return 0;
-    const fsliNames = Object.entries(mapping)
-      .filter(([_, bases]) => Array.isArray(bases) && bases.includes(basis))
-      .map(([name]) => name);
-    
-    return snapshot.rows
-      .filter(r => r.fsliName && fsliNames.includes(r.fsliName))
-      .reduce((sum, r) => sum + Math.abs(r.balance), 0);
-  };
+  const totalSelectedValue = uniqueFsliData
+    .filter(d => selectedFsliNames.includes(d.name))
+    .reduce((sum, d) => sum + d.total, 0);
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] md:max-w-6xl max-h-[90vh] flex flex-col">
+      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-xl">
-            <Calculator className="h-6 w-6 text-primary" />
-            Set Benchmark Basis Mapping
+          <DialogTitle className="flex items-center gap-2 text-xl font-bold">
+            <Calculator className="h-6 w-6 text-indigo-600" />
+            Set Benchmark Basis
           </DialogTitle>
           <DialogDescription>
-            Select one or more benchmark categories for each FSLI. Multiple selection allowed for multi-impact accounts.
+            Select which FSLI accounts should be available as materiality benchmark bases.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 py-4 flex-1 overflow-hidden">
-          <div className="lg:col-span-3 overflow-auto border rounded-xl shadow-inner bg-slate-50/30">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-4 flex-1 overflow-hidden">
+          <div className="md:col-span-2 overflow-auto border rounded-xl shadow-inner bg-slate-50/30">
             <Table>
-              <TableHeader className="sticky top-0 bg-white z-10 shadow-sm">
+              <TableHeader className="sticky top-0 bg-white z-10 shadow-sm border-b">
                 <TableRow>
-                  <TableHead className="w-[300px] bg-white">FSLI Name</TableHead>
-                  {BENCHMARK_BASES.map(basis => (
-                    <TableHead key={basis} className="text-center text-[10px] uppercase tracking-tighter">
-                      {basis}
-                    </TableHead>
-                  ))}
+                  <TableHead className="w-[50px] text-center">Select</TableHead>
+                  <TableHead>FSLI Name</TableHead>
+                  <TableHead className="text-right">Total Balance (|Saldo|)</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {uniqueFsliNames.map(name => (
-                  <TableRow key={name} className="hover:bg-slate-100/50 transition-colors">
-                    <TableCell className="text-xs font-bold text-slate-700">{name}</TableCell>
-                    {BENCHMARK_BASES.map(basis => (
-                      <TableCell key={basis} className="text-center">
-                        <Checkbox 
-                          checked={(mapping[name] || []).includes(basis)}
-                          onCheckedChange={() => handleMappingToggle(name, basis)}
-                          className="data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
-                        />
-                      </TableCell>
-                    ))}
+                {uniqueFsliData.map(item => (
+                  <TableRow 
+                    key={item.name} 
+                    className={cn(
+                      "hover:bg-slate-100/50 transition-colors cursor-pointer",
+                      selectedFsliNames.includes(item.name) && "bg-indigo-50/50"
+                    )}
+                    onClick={() => handleToggle(item.name)}
+                  >
+                    <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
+                      <Checkbox 
+                        checked={selectedFsliNames.includes(item.name)}
+                        onCheckedChange={() => handleToggle(item.name)}
+                        className="data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
+                      />
+                    </TableCell>
+                    <TableCell className="text-xs font-bold text-slate-700">{item.name}</TableCell>
+                    <TableCell className="text-right font-mono text-[11px] text-slate-500">
+                      Rp {item.total.toLocaleString('id-ID')}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           </div>
 
-          <div className="space-y-4">
-            <h4 className="text-sm font-bold uppercase tracking-wider text-slate-500">Summary Totals</h4>
-            <div className="grid grid-cols-1 gap-3">
-              {BENCHMARK_BASES.map(basis => {
-                const total = calculateTotal(basis);
-                return (
-                  <div key={basis} className="p-3 rounded-xl border bg-white shadow-sm flex flex-col gap-1">
-                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{basis}</p>
-                    <p className="text-sm font-mono font-bold text-indigo-600">
-                      Rp {total.toLocaleString('id-ID')}
-                    </p>
-                  </div>
-                );
-              })}
+          <div className="space-y-6">
+            <div className="p-4 rounded-xl bg-white border border-slate-200 shadow-sm space-y-4">
+              <h4 className="text-xs font-bold uppercase tracking-widest text-slate-400">Selection Summary</h4>
+              <div className="space-y-1">
+                <p className="text-[10px] text-slate-500 font-medium">Selected Benchmarks:</p>
+                <p className="text-2xl font-bold text-indigo-600">{selectedFsliNames.length}</p>
+              </div>
+              <Separator />
+              <div className="space-y-1">
+                <p className="text-[10px] text-slate-500 font-medium">Total Benchmark Value:</p>
+                <p className="text-lg font-mono font-bold text-slate-800">
+                  Rp {totalSelectedValue.toLocaleString('id-ID')}
+                </p>
+              </div>
             </div>
+
             <div className="p-4 rounded-xl bg-indigo-50 border border-indigo-100 flex gap-3 shadow-sm">
               <AlertCircle className="h-5 w-5 text-indigo-500 shrink-0" />
               <p className="text-[11px] text-indigo-700 leading-relaxed italic">
-                A single FSLI can contribute to multiple benchmarks. Calculations use absolute values (|Saldo|) for audit safety.
+                Only the selected FSLIs will appear in the "Basis" dropdown when creating a new simulation.
               </p>
             </div>
+
+            {selectedFsliNames.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Selected List:</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {selectedFsliNames.map(name => (
+                    <Badge key={name} variant="secondary" className="text-[9px] bg-indigo-100 text-indigo-700 border-indigo-200">
+                      {name}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -150,13 +163,15 @@ export function SetBenchmarkModal({ snapshot, isOpen, onOpenChange }: SetBenchma
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button 
             className="bg-indigo-600 hover:bg-indigo-700 gap-2 h-10 px-6 font-bold shadow-lg shadow-indigo-200"
-            onClick={() => mappingMutation.mutate(mapping)}
-            disabled={mappingMutation.isPending}
+            onClick={() => mappingMutation.mutate(selectedFsliNames)}
+            disabled={mappingMutation.isPending || selectedFsliNames.length === 0}
           >
-            <Save className="h-4 w-4" /> Save & Lock Mapping
+            <Save className="h-4 w-4" /> Save Selection & Enable Simulations
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
+
+const Separator = () => <div className="h-px bg-slate-100 w-full" />;

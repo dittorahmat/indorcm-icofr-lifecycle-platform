@@ -124,7 +124,7 @@ export function AppSidebar(): JSX.Element {
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/scoping")}>
-                <Link to="/scoping"><Settings2 /> <span>Config OM/PM</span></Link>
+                <Link to="/scoping"><Settings2 /> <span>Significant Account Identification</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             {(mockRole === 'Komisaris' || mockRole === 'CFO' || mockRole === 'Line 2' || mockRole === 'Admin') && (

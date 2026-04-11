@@ -217,15 +217,15 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const snap: GLSnapshot = {
       id: crypto.randomUUID(), filename: "upload.csv", uploadDate: Date.now(),
       rows: [], status: "Draft", isActive: existing.items.length === 0,
-      benchmarkMapping: {}, ...body
+      benchmarkFsliNames: [], ...body
     };
     return ok(c, await GLSnapshotEntity.create(c.env, snap));
   });
   app.put('/api/gl-snapshots/:id/mapping', async (c) => {
-    const body = await c.req.json<{ benchmarkMapping: Record<string, BenchmarkBasis[]> }>();
+    const body = await c.req.json<{ benchmarkFsliNames: string[] }>();
     const snap = new GLSnapshotEntity(c.env, c.req.param('id'));
     if (!await snap.exists()) return notFound(c);
-    await snap.mutate(s => ({ ...s, benchmarkMapping: body.benchmarkMapping, status: "Mapped" }));
+    await snap.mutate(s => ({ ...s, benchmarkFsliNames: body.benchmarkFsliNames, status: "Mapped" }));
     return ok(c, await snap.getState());
   });
   app.post('/api/gl-snapshots/:id/set-active', async (c) => {

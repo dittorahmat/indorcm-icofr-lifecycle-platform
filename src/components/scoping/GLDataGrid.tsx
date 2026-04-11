@@ -9,17 +9,22 @@ import {
   flexRender,
   ColumnDef,
   GroupingState,
+  VisibilityState,
+  SortingState,
 } from '@tanstack/react-table';
 import { GLRow, QualitativeLevel } from '@shared/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { ChevronDown, ChevronRight, Filter, SortAsc, SortDesc } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { ChevronDown, ChevronRight, Filter, SortAsc, SortDesc, FileSpreadsheet, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import * as XLSX from 'xlsx';
 
 interface GLDataGridProps {
   data: GLRow[];
   assessmentData: Record<string, Record<number, QualitativeLevel>>;
+  omValue: number;
   pmValue: number;
   onAssessmentChange: (fsliName: string, ruleId: number, level: QualitativeLevel) => void;
   isReadOnly?: boolean;
@@ -45,6 +50,10 @@ export function GLDataGrid({
 }: GLDataGridProps) {
   const [grouping, setGrouping] = React.useState<GroupingState>(['fsliName']);
   const [expanded, setExpanded] = React.useState({});
+  const [sorting, setSorting] = React.useState<SortingState>([{ id: 'noUrut', desc: false }]);
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({
+    noUrut: false
+  });
 
   const columns = React.useMemo<ColumnDef<GLRow>[]>(
     () => [
@@ -53,6 +62,12 @@ export function GLDataGrid({
         header: '#',
         cell: info => <span className="text-[9px] text-slate-400">{info.getValue<number>()}</span>,
         size: 40,
+      },
+      {
+        accessorKey: 'entityCode',
+        header: 'Entity Code',
+        cell: info => <span className="font-mono text-[10px]">{info.getValue<string>()}</span>,
+        size: 80,
       },
       {
         accessorKey: 'fsliName',
@@ -75,13 +90,13 @@ export function GLDataGrid({
       },
       {
         accessorKey: 'noGL',
-        header: 'Code',
-        cell: info => <span className="font-mono text-[9px]">{info.getValue<string>()}</span>,
-        size: 80,
+        header: 'Account Code',
+        cell: info => <span className="font-mono text-[9px] text-slate-500">{info.getValue<string>()}</span>,
+        size: 100,
       },
       {
         accessorKey: 'glDesc',
-        header: 'Description',
+        header: 'Account Description',
         cell: info => <span className="text-[10px] truncate max-w-[180px]" title={info.getValue<string>()}>{info.getValue<string>()}</span>,
       },
       {
@@ -101,7 +116,7 @@ export function GLDataGrid({
       },
       {
         id: 'quantFlag',
-        header: () => <div className="text-center bg-orange-50/50 -mx-2 py-1 text-[9px]">Kuan</div>,
+        header: () => <div className="text-center bg-orange-50/50 -mx-2 py-1 text-[9px]">Kuantitatif</div>,
         cell: ({ row }) => {
           const balance = row.getIsGrouped() 
             ? row.getLeafRows().reduce((sum, r) => sum + Math.abs(r.original.balance), 0)
@@ -168,16 +183,24 @@ export function GLDataGrid({
             const leaves = row.getLeafRows();
             const isKuanSignificant = leaves.some(lr => Math.abs(lr.original.balance) >= pmValue);
             const isInScope = isKuanSignificant || isQualSignificant;
-            return isInScope ? <Badge className="bg-indigo-600 text-[9px] h-4 px-1.5 uppercase font-bold">IN SCOPE</Badge> : <Badge variant="outline" className="text-[9px] h-4 px-1.5 opacity-40">OUT</Badge>;
+            return isInScope ? (
+              <Badge className="bg-indigo-600 text-[11px] h-6 px-3 uppercase font-extrabold shadow-sm border-2 border-indigo-200">
+                IN SCOPE
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="text-[9px] h-4 px-1.5 opacity-40">
+                OUT
+              </Badge>
+            );
           }
           
           const isKuanSignificant = Math.abs(row.original.balance) >= pmValue;
           
           if (isQualSignificant) {
-            return <Badge className="text-[9px] h-4 px-1.5 font-bold bg-red-600">IN (QUAL)</Badge>;
+            return <Badge className="text-[10px] h-5 px-2 font-bold bg-red-600">IN (QUAL)</Badge>;
           }
           if (isKuanSignificant) {
-            return <Badge className="text-[9px] h-4 px-1.5 font-bold bg-blue-600">IN (QUAN)</Badge>;
+            return <Badge className="text-[10px] h-5 px-2 font-bold bg-blue-600">IN (QUAN)</Badge>;
           }
           return <Badge variant="outline" className="text-[9px] h-4 px-1.5 opacity-40 text-slate-400">OUT</Badge>;
         }
@@ -192,9 +215,13 @@ export function GLDataGrid({
     state: {
       grouping,
       expanded,
+      columnVisibility,
+      sorting,
     },
     onGroupingChange: setGrouping,
     onExpandedChange: setExpanded,
+    onColumnVisibilityChange: setColumnVisibility,
+    onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -202,79 +229,142 @@ export function GLDataGrid({
     getExpandedRowModel: getExpandedRowModel(),
   });
 
+  const handleExportExcel = () => {
+    const rows = table.getRowModel().rows;
+    const exportData: any[] = [];
+
+    rows.forEach(row => {
+      // Header FSLI
+      if (row.getIsGrouped()) {
+        const fsliName = row.getValue('fsliName');
+        const balance = row.getLeafRows().reduce((sum, r) => sum + r.original.balance, 0);
+        
+        // Add a separator row for FSLI
+        exportData.push({
+          'Entity Code': '',
+          'FSLI': `[FSLI] ${fsliName}`,
+          'Account Code': '',
+          'Account Description': '',
+          'Balance': balance,
+          'Kuantitatif': Math.abs(balance) >= pmValue ? 'Significant' : 'Not Significant',
+          'Scope': 'IN SCOPE' // Summary scope
+        });
+
+        // Add accounts under this FSLI
+        row.getLeafRows().forEach(leaf => {
+          const isSignificant = Math.abs(leaf.original.balance) >= pmValue;
+          exportData.push({
+            'Entity Code': leaf.original.entityCode,
+            'FSLI': leaf.original.fsliName,
+            'Account Code': leaf.original.noGL,
+            'Account Description': leaf.original.glDesc,
+            'Balance': leaf.original.balance,
+            'Kuantitatif': isSignificant ? 'Significant' : 'Not Significant',
+            'Scope': isSignificant ? 'IN SCOPE' : 'OUT'
+          });
+        });
+      }
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Significant Accounts");
+    
+    // Save file
+    XLSX.writeFile(workbook, `Significant_Account_Identification_${new Date().toISOString().split('T')[0]}.xlsx`);
+    toast.success("Excel exported successfully");
+  };
+
   return (
-    <div className="rounded-md border bg-white shadow-sm overflow-hidden">
-      <div className="overflow-x-auto overflow-y-auto max-h-[600px]">
-        <Table className="relative">
-          <TableHeader className="bg-slate-50 sticky top-0 z-10 shadow-sm">
-            {table.getHeaderGroups().map(headerGroup => (
-              <TableRow key={headerGroup.id} className="hover:bg-transparent">
-                {headerGroup.headers.map(header => (
-                  <TableHead 
-                    key={header.id} 
-                    className="border-r last:border-r-0 h-16 text-[10px] font-bold uppercase text-slate-500 whitespace-nowrap px-2"
-                    style={{ width: header.getSize() }}
-                  >
-                    {header.isPlaceholder ? null : (
-                      <div 
-                        className={cn(
-                          "flex flex-col gap-1 h-full justify-center",
-                          header.column.getCanSort() && "cursor-pointer select-none"
-                        )}
-                        onClick={header.column.getToggleSortingHandler()}
-                      >
-                        {flexRender(header.column.columnDef.header, header.getContext())}
-                        {header.column.getCanFilter() ? (
-                          <div className="relative mt-1" onClick={e => e.stopPropagation()}>
-                            <Filter className="absolute left-1.5 top-1.5 h-2.5 w-2.5 text-slate-300" />
-                            <input 
-                              className="w-full pl-5 pr-1 py-1 text-[9px] font-normal"
-                              placeholder="Search..."
-                              onChange={e => header.column.setFilterValue(e.target.value)}
-                            />
-                          </div>
-                        ) : null}
-                      </div>
-                    )}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows.map(row => (
-              <TableRow 
-                key={row.id} 
-                className={cn(
-                  "hover:bg-slate-50/50 transition-colors h-8",
-                  row.getIsGrouped() ? "bg-slate-100/50 font-bold" : "border-b"
-                )}
-              >
-                {row.getVisibleCells().map(cell => (
-                  <TableCell 
-                    key={cell.id} 
-                    className="border-r last:border-r-0 py-0 px-2"
-                  >
-                    {cell.getIsGrouped() ? (
-                      <div className="flex items-center gap-2">
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        <span className="text-[9px] text-slate-400 font-normal">
-                          ({row.getLeafRows().length})
-                        </span>
-                      </div>
-                    ) : cell.getIsPlaceholder() ? null : (
-                      flexRender(cell.column.columnDef.cell, cell.getContext())
-                    )}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <div className="flex gap-2 items-center text-xs text-muted-foreground">
+          <Info className="h-3 w-3" />
+          <span>FSLI level assessment affects all child accounts.</span>
+        </div>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={handleExportExcel}
+          className="gap-2 text-green-700 hover:text-green-800 hover:bg-green-50 border-green-200"
+        >
+          <FileSpreadsheet className="h-4 w-4" /> Export as Excel
+        </Button>
       </div>
-      <div className="p-2 border-t bg-slate-50 text-[10px] text-slate-400 italic flex justify-between">
-        <span>Showing {table.getRowModel().rows.length} rows</span>
-        <span>Standard: SK-5/2024 Table 5 Compliance Engine</span>
+
+      <div className="rounded-md border bg-white shadow-sm overflow-hidden">
+        <div className="overflow-x-auto overflow-y-auto max-h-[600px]">
+          <Table className="relative">
+            <TableHeader className="bg-slate-50 sticky top-0 z-10 shadow-sm">
+              {table.getHeaderGroups().map(headerGroup => (
+                <TableRow key={headerGroup.id} className="hover:bg-transparent">
+                  {headerGroup.headers.map(header => (
+                    <TableHead 
+                      key={header.id} 
+                      className="border-r last:border-r-0 h-16 text-[10px] font-bold uppercase text-slate-500 whitespace-nowrap px-2"
+                      style={{ width: header.getSize() }}
+                    >
+                      {header.isPlaceholder ? null : (
+                        <div 
+                          className={cn(
+                            "flex flex-col gap-1 h-full justify-center",
+                            header.column.getCanSort() && "cursor-pointer select-none"
+                          )}
+                          onClick={header.column.getToggleSortingHandler()}
+                        >
+                          {flexRender(header.column.columnDef.header, header.getContext())}
+                          {header.column.getCanFilter() ? (
+                            <div className="relative mt-1" onClick={e => e.stopPropagation()}>
+                              <Filter className="absolute left-1.5 top-1.5 h-2.5 w-2.5 text-slate-300" />
+                              <input 
+                                className="w-full pl-5 pr-1 py-1 text-[9px] font-normal border rounded"
+                                placeholder="Search..."
+                                onChange={e => header.column.setFilterValue(e.target.value)}
+                              />
+                            </div>
+                          ) : null}
+                        </div>
+                      )}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows.map(row => (
+                <TableRow 
+                  key={row.id} 
+                  className={cn(
+                    "hover:bg-slate-50/50 transition-colors h-8",
+                    row.getIsGrouped() ? "bg-slate-100/50 font-bold" : "border-b"
+                  )}
+                >
+                  {row.getVisibleCells().map(cell => (
+                    <TableCell 
+                      key={cell.id} 
+                      className="border-r last:border-r-0 py-0 px-2"
+                    >
+                      {cell.getIsGrouped() ? (
+                        <div className="flex items-center gap-2">
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          <span className="text-[9px] text-slate-400 font-normal">
+                            ({row.getLeafRows().length})
+                          </span>
+                        </div>
+                      ) : cell.getIsPlaceholder() ? null : (
+                        flexRender(cell.column.columnDef.cell, cell.getContext())
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+        <div className="p-2 border-t bg-slate-50 text-[10px] text-slate-400 italic flex justify-between">
+          <span>Showing {table.getRowModel().rows.length} rows</span>
+          <span>Standard: SK-5/2024 Table 5 Compliance Engine</span>
+        </div>
       </div>
     </div>
   );

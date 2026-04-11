@@ -48,7 +48,7 @@ export interface GLSnapshot {
   rows: GLRow[];
   status: "Draft" | "Mapped";
   isActive: boolean;
-  benchmarkMapping: Record<string, BenchmarkBasis[]>; // Key: FSLI Name, Value: Array of Benchmark Categories
+  benchmarkFsliNames: string[]; // List of FSLI names marked as potential benchmarks
 }
 
 export type SimulationStatus = "Draft" | "Pending CFO" | "Pending Komut" | "Approved" | "Rejected";
@@ -67,7 +67,7 @@ export interface MaterialitySimulation {
   name: string;
   year: number;
   status: SimulationStatus;
-  basis: BenchmarkBasis;
+  basis: string; // FSLI name selected as basis
   omPercentage: number;
   haircutPercentage: number;
   locationCount: number; // New: Added for multiplier logic

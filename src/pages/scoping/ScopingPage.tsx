@@ -11,7 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import type { 
-  MaterialitySimulation, GLRow, GLSnapshot, QualitativeLevel, UserRole, SimulationStatus, BenchmarkBasis 
+  MaterialitySimulation, GLRow, GLSnapshot, QualitativeLevel, UserRole, SimulationStatus 
 } from '@shared/types';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -163,9 +163,9 @@ export function ScopingPage() {
       <div className="space-y-6">
         <div className="flex justify-between items-end">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Scoping Control Center</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Significant Account Identification</h1>
             <div className="flex items-center gap-3 mt-1">
-              <p className="text-muted-foreground text-sm">Manage datasets and simulations.</p>
+              <p className="text-muted-foreground text-sm">Identify significant accounts based on materiality and qualitative factors.</p>
               {activeSnapshot && (
                 <div className="flex items-center gap-2">
                   <Badge variant="outline" className={cn(
@@ -291,10 +291,16 @@ export function ScopingPage() {
 
 function SimulationInitialForm({ activeSnap, onSubmit, isPending }: { activeSnap: GLSnapshot | null, onSubmit: (data: any) => void, isPending: boolean }) {
   const [name, setName] = React.useState("");
-  const [basis, setBasis] = React.useState<BenchmarkBasis>("PBT");
+  const [basis, setBasis] = React.useState<string>("");
   const [locations, setLocations] = React.useState(1);
 
-  const defaultOm = basis === 'Revenue' || basis === 'Assets' ? 1 : 5;
+  React.useEffect(() => {
+    if (activeSnap?.benchmarkFsliNames?.length && !basis) {
+      setBasis(activeSnap.benchmarkFsliNames[0]);
+    }
+  }, [activeSnap, basis]);
+
+  const defaultOm = 5; // Default to 5% for FSLI based
 
   return (
     <div className="space-y-4 py-4">
@@ -305,16 +311,21 @@ function SimulationInitialForm({ activeSnap, onSubmit, isPending }: { activeSnap
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label className="text-xs uppercase font-bold text-slate-500 tracking-wider">Benchmark Basis</Label>
-          <Select value={basis} onValueChange={(v) => setBasis(v as BenchmarkBasis)}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Revenue">Revenue</SelectItem>
-              <SelectItem value="PBT">Profit Before Tax</SelectItem>
-              <SelectItem value="Assets">Total Assets</SelectItem>
-              <SelectItem value="Equity">Total Equity</SelectItem>
-              <SelectItem value="Net Current Assets">Net Current Assets</SelectItem>
-            </SelectContent>
-          </Select>
+          {activeSnap?.benchmarkFsliNames?.length ? (
+            <Select value={basis} onValueChange={setBasis}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {activeSnap.benchmarkFsliNames.map(fsli => (
+                  <SelectItem key={fsli} value={fsli}>{fsli}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <div className="p-2 border rounded-md bg-amber-50 text-[10px] text-amber-700 flex gap-1 items-start">
+              <AlertTriangle className="h-3 w-3 shrink-0" />
+              <span>No benchmarks defined in Master Data GL.</span>
+            </div>
+          )}
         </div>
         <div className="space-y-2">
           <Label className="text-xs uppercase font-bold text-slate-500 tracking-wider">Significant Locations</Label>
@@ -327,7 +338,7 @@ function SimulationInitialForm({ activeSnap, onSubmit, isPending }: { activeSnap
           Default OM: <strong>{defaultOm}%</strong>.
         </p>
       </div>
-      <Button className="w-full mt-2" disabled={!name || !activeSnap || isPending} onClick={() => onSubmit({ name, basis, omPercentage: defaultOm, locationCount: locations })}>
+      <Button className="w-full mt-2" disabled={!name || !basis || isPending} onClick={() => onSubmit({ name, basis, omPercentage: defaultOm, locationCount: locations })}>
         {isPending ? "Creating..." : "Initialize Simulation"}
       </Button>
     </div>
@@ -354,7 +365,7 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
   const calculateValues = React.useMemo(() => {
     if (glData.length === 0 || !snapshot) return { omValue: 0, pmValue: 0, multiplier: 1, benchmarkValue: 0 };
     
-    const benchmarkValue = calculateBenchmarkValue(glData, simState.basis, snapshot.benchmarkMapping || {});
+    const benchmarkValue = calculateBenchmarkValue(glData, simState.basis);
     const multiplier = getGroupMultiplier(simState.locationCount || 1);
     const baseOM = (benchmarkValue * simState.omPercentage) / 100;
     const omValue = baseOM * multiplier;
@@ -409,7 +420,7 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
               </div>
               <p className="text-xs text-muted-foreground flex items-center gap-1.5">
                 <FileSpreadsheet className="h-3.5 w-3.5 text-indigo-500" />
-                Source: {snapshot?.filename || 'Loading...'}
+                Source: {snapshot?.filename || 'Loading...'} | Basis: {simState.basis}
               </p>
             </div>
           </div>

@@ -371,48 +371,22 @@ export function filterEmptyRows(rows: any[]): any[] {
   });
 }
 
-export type BenchmarkCategory = BenchmarkBasis;
-
 /**
- * Calculate benchmark value from GL data based on manual mapping
+ * Calculate benchmark value from GL data based on selected FSLI basis
  */
 export function calculateBenchmarkValue(
   glData: GLRow[], 
-  basis: BenchmarkBasis, 
-  mapping: Record<string, BenchmarkBasis[]>
+  basis: string
 ): number {
-  if (!mapping || Object.keys(mapping).length === 0) return 0;
+  if (!basis) return 0;
 
-  // Find all FSLI names that include the target basis in their mapping array
-  const matchingFsliNames = Object.entries(mapping)
-    .filter(([_, mappedBases]) => Array.isArray(mappedBases) && mappedBases.includes(basis))
-    .map(([fsliName, _]) => fsliName);
-
-  if (matchingFsliNames.length === 0) return 0;
-
-  // Filter GL rows that belong to those FSLIs
+  // Filter GL rows that belong to the selected FSLI name
   const matchingRows = glData.filter(row => 
-    row.fsliName && matchingFsliNames.includes(row.fsliName)
+    row.fsliName === basis
   );
 
   // Sum absolute values for conservatism
   return matchingRows.reduce((sum, row) => sum + Math.abs(row.balance), 0);
-}
-
-/**
- * Get benchmark breakdown for all categories
- */
-export function getBenchmarkBreakdown(
-  glData: GLRow[], 
-  mapping: Record<string, BenchmarkBasis[]>
-): Record<BenchmarkBasis, number> {
-  return {
-    'Revenue': calculateBenchmarkValue(glData, 'Revenue', mapping),
-    'PBT': calculateBenchmarkValue(glData, 'PBT', mapping),
-    'Assets': calculateBenchmarkValue(glData, 'Assets', mapping),
-    'Equity': calculateBenchmarkValue(glData, 'Equity', mapping),
-    'Net Current Assets': calculateBenchmarkValue(glData, 'Net Current Assets', mapping)
-  };
 }
 
 /**
