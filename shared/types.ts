@@ -71,6 +71,14 @@ export interface MaterialitySimulation {
   omPercentage: number;
   haircutPercentage: number;
   locationCount: number; // New: Added for multiplier logic
+  locationThreshold: number; // New: Default 80%
+  locationResults?: {
+    entityCode: string;
+    balance: number;
+    contributionPercentage: number;
+    cumulativePercentage: number;
+    isSignificant: boolean;
+  }[];
   omValue: number;
   pmValue: number;
   glSnapshotId: string;

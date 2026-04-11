@@ -41,7 +41,7 @@ export function MainHeader() {
       "sticky top-0 z-40 w-full border-b transition-colors duration-300",
       isDark 
         ? "bg-[#022c22] border-emerald-900/50 text-emerald-50" 
-        : "bg-lime-500 border-lime-600 text-lime-950 shadow-md"
+        : "bg-[#417dc1] border-blue-700 text-white shadow-md"
     )}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
@@ -49,7 +49,7 @@ export function MainHeader() {
             <Link to="/dashboard" className="flex items-center gap-2 font-bold text-lg group">
               <Shield className={cn(
                 "h-7 w-7 transition-transform group-hover:scale-110",
-                isDark ? "text-emerald-400" : "text-lime-900"
+                isDark ? "text-emerald-400" : "text-white"
               )} />
               <span className="font-display tracking-tight">IndoRCM Pro</span>
             </Link>
@@ -59,15 +59,15 @@ export function MainHeader() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <div className="relative cursor-pointer hover:opacity-80 transition-opacity">
-                  <Avatar className="h-9 w-9 border-2 border-black/10">
+                  <Avatar className="h-9 w-9 border-2 border-white/20">
                     <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-                    <AvatarFallback className="bg-lime-700 text-white">CN</AvatarFallback>
+                    <AvatarFallback className="bg-blue-800 text-white">CN</AvatarFallback>
                   </Avatar>
                   <Badge 
                     variant={isDark ? "outline" : "secondary"} 
                     className={cn(
-                      "absolute -bottom-1 -right-2 text-[10px] px-1 h-4 min-w-[16px] justify-center border-lime-800",
-                      !isDark && "bg-white text-lime-700 hover:bg-white"
+                      "absolute -bottom-1 -right-2 text-[10px] px-1 h-4 min-w-[16px] justify-center border-blue-900",
+                      !isDark && "bg-white text-blue-700 hover:bg-white"
                     )}
                   >
                     {currentRole.split(' ').pop()?.substring(0, 1)}

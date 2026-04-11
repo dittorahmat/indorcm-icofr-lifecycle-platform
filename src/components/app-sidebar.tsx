@@ -107,35 +107,35 @@ export function AppSidebar(): JSX.Element {
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/dashboard")}>
-                <Link to="/dashboard"><LayoutDashboard /> <span>Dashboard</span></Link>
+                <Link to="/dashboard" className="font-bold"><LayoutDashboard /> <span>Dashboard</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             {mockRole === 'Line 2' && (
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={isActive("/import")}>
-                  <Link to="/import"><RefreshCw /> <span>Sync Financial Statement</span></Link>
+                  <Link to="/import" className="font-bold"><RefreshCw /> <span>Sync Financial Statement</span></Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             )}
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/csa")}>
-                <Link to="/csa"><Workflow /> <span>Control Self Assessment</span></Link>
+                <Link to="/csa" className="font-bold"><Workflow /> <span>Control Self Assessment</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/bpm")}>
-                <Link to="/bpm"><ListChecks /> <span>BPM</span></Link>
+                <Link to="/bpm" className="font-bold"><ListChecks /> <span>BPM</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/scoping")}>
-                <Link to="/scoping"><Settings2 /> <span>Significant Account Identification</span></Link>
+                <Link to="/scoping" className="font-bold"><Settings2 /> <span>Significant Account Identification</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             {(mockRole === 'Komisaris' || mockRole === 'CFO' || mockRole === 'Line 2' || mockRole === 'Admin') && (
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={isActive("/scoping/approval")}>
-                  <Link to="/scoping/approval" className="flex items-center justify-between w-full">
+                  <Link to="/scoping/approval" className="flex items-center justify-between w-full font-bold">
                     <div className="flex items-center gap-2">
                       <ShieldCheck /> <span>Materiality Approval</span>
                     </div>
@@ -148,111 +148,111 @@ export function AppSidebar(): JSX.Element {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="font-bold text-slate-900 uppercase text-[10px] tracking-widest">RCSA</SidebarGroupLabel>
+          <SidebarGroupLabel className="font-bold text-white uppercase text-[10px] tracking-widest opacity-80">RCSA</SidebarGroupLabel>
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/rcm")}>
-                <Link to="/rcm"><ListChecks /> <span>RCM List</span></Link>
+                <Link to="/rcm" className="font-bold"><ListChecks /> <span>RCM List</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/change-log")}>
-                <Link to="/change-log"><History /> <span>Change Log</span></Link>
+                <Link to="/change-log" className="font-bold"><History /> <span>Change Log</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/soc-monitoring")}>
-                <Link to="/soc-monitoring"><ShieldCheck /> <span>SOC Monitoring</span></Link>
+                <Link to="/soc-monitoring" className="font-bold"><ShieldCheck /> <span>SOC Monitoring</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/csa")}>
-                <Link to="/csa"><Search /> <span>Identifikasi Risiko</span></Link>
+                <Link to="/csa" className="font-bold"><Search /> <span>Identifikasi Risiko</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/csa")}>
-                <Link to="/csa"><ClipboardCheck /> <span>Self Assessment</span></Link>
+                <Link to="/csa" className="font-bold"><ClipboardCheck /> <span>Self Assessment</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="font-bold text-slate-900 uppercase text-[10px] tracking-widest">Deficiency & Remediasi</SidebarGroupLabel>
+          <SidebarGroupLabel className="font-bold text-white uppercase text-[10px] tracking-widest opacity-80">Deficiency & Remediasi</SidebarGroupLabel>
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/deficiencies")}>
-                <Link to="/deficiencies"><ShieldAlert /> <span>Deficiency & Remediasi</span></Link>
+                <Link to="/deficiencies" className="font-bold"><ShieldAlert /> <span>Deficiency & Remediasi</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="font-bold text-slate-900 uppercase text-[10px] tracking-widest">TOD/TOE</SidebarGroupLabel>
+          <SidebarGroupLabel className="font-bold text-white uppercase text-[10px] tracking-widest opacity-80">TOD/TOE</SidebarGroupLabel>
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/testing")}>
-                <Link to="/testing"><ShieldCheck /> <span>Test Operasi Design</span></Link>
+                <Link to="/testing" className="font-bold"><ShieldCheck /> <span>Test Operasi Design</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/testing")}>
-                <Link to="/testing"><ShieldAlert /> <span>Test Operasi Efektivitas</span></Link>
+                <Link to="/testing" className="font-bold"><ShieldAlert /> <span>Test Operasi Efektivitas</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="font-bold text-slate-900 uppercase text-[10px] tracking-widest">Report</SidebarGroupLabel>
+          <SidebarGroupLabel className="font-bold text-white uppercase text-[10px] tracking-widest opacity-80">Report</SidebarGroupLabel>
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/wbs-recap")}>
-                <Link to="/wbs-recap"><FileBarChart /> <span>WBS Recap</span></Link>
+                <Link to="/wbs-recap" className="font-bold"><FileBarChart /> <span>WBS Recap</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/reports")}>
-                <Link to="/reports"><FileText className="h-3 w-3 opacity-50" /> <span>Lampiran 11</span></Link>
+                <Link to="/reports" className="font-bold"><FileText className="h-3 w-3 opacity-50" /> <span>Lampiran 11</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="font-bold text-slate-900 uppercase text-[10px] tracking-widest">AI</SidebarGroupLabel>
+          <SidebarGroupLabel className="font-bold text-white uppercase text-[10px] tracking-widest opacity-80">AI</SidebarGroupLabel>
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/ai-hub")}>
-                <Link to="/ai-hub"><Search className="h-4 w-4" /> <span>Anomaly Check</span></Link>
+                <Link to="/ai-hub" className="font-bold"><Search className="h-4 w-4" /> <span>Anomaly Check</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/ai-hub")}>
-                <Link to="/ai-hub"><FileBarChart className="h-4 w-4" /> <span>Financial Journal Check</span></Link>
+                <Link to="/ai-hub" className="font-bold"><FileBarChart className="h-4 w-4" /> <span>Financial Journal Check</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/ai-hub")}>
-                <Link to="/ai-hub"><Bot className="h-4 w-4" /> <span>Predictive Story Life</span></Link>
+                <Link to="/ai-hub" className="font-bold"><Bot className="h-4 w-4" /> <span>Predictive Story Life</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/ai-hub")}>
-                <Link to="/ai-hub"><Cpu className="h-4 w-4" /> <span>Continuous Improvement</span></Link>
+                <Link to="/ai-hub" className="font-bold"><Cpu className="h-4 w-4" /> <span>Continuous Improvement</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
         
         <SidebarGroup>
-          <SidebarGroupLabel className="font-bold text-slate-900 uppercase text-[10px] tracking-widest">User</SidebarGroupLabel>
+          <SidebarGroupLabel className="font-bold text-white uppercase text-[10px] tracking-widest opacity-80">User</SidebarGroupLabel>
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/settings")}>
-                <Link to="/settings"><UserCog /> <span>User Admin</span></Link>
+                <Link to="/settings" className="font-bold"><UserCog /> <span>User Admin</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
