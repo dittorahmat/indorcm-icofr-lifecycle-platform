@@ -22,6 +22,8 @@ import {
   DialogTitle, DialogFooter 
 } from '@/components/ui/dialog';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
 
 export function BPMPage() {
   const queryClient = useQueryClient();
