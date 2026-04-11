@@ -17,9 +17,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronRight, Filter, SortAsc, SortDesc, FileSpreadsheet, Info } from 'lucide-react';
+import { ChevronDown, ChevronRight, Filter, SortAsc, SortDesc, FileSpreadsheet, Info, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import * as XLSX from 'xlsx';
+import { Link } from 'react-router-dom';
 
 interface GLDataGridProps {
   data: GLRow[];
@@ -97,7 +98,44 @@ export function GLDataGrid({
       {
         accessorKey: 'glDesc',
         header: 'Account Description',
-        cell: info => <span className="text-[10px] truncate max-w-[180px]" title={info.getValue<string>()}>{info.getValue<string>()}</span>,
+        cell: ({ row, getValue }) => {
+          const glDesc = getValue<string>();
+          if (row.getIsGrouped()) return <span className="text-[10px]">{glDesc}</span>;
+
+          const fsliName = row.original.fsliName || "";
+          const noGL = row.original.noGL || "";
+          const balance = Math.abs(row.original.balance);
+          
+          const assessments = assessmentData[fsliName] || {};
+          const isQualSignificant = Object.values(assessments).some(v => v === 'High');
+          const isKuanSignificant = balance >= pmValue;
+          const isInScope = isKuanSignificant || isQualSignificant;
+
+          if (isInScope) {
+            const params = new URLSearchParams({
+              fsli: fsliName,
+              noGL: noGL,
+              glDesc: glDesc
+            });
+            return (
+              <Link 
+                to={`/bpm?${params.toString()}`}
+                target="_blank"
+                className="text-[10px] text-blue-600 underline hover:text-blue-800 font-medium flex items-center gap-1 group truncate max-w-[180px]"
+                title={`Open BPM Workflow for ${glDesc}`}
+              >
+                {glDesc}
+                <ExternalLink className="h-2 w-2 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </Link>
+            );
+          }
+
+          return (
+            <span className="text-[10px] truncate max-w-[180px]" title={glDesc}>
+              {glDesc}
+            </span>
+          );
+        },
       },
       {
         accessorKey: 'balance',

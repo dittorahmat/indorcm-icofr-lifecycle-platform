@@ -21,16 +21,28 @@ import {
   Dialog, DialogContent, DialogDescription, DialogHeader, 
   DialogTitle, DialogFooter 
 } from '@/components/ui/dialog';
-import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 export function BPMPage() {
   const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
   const [selectedFsli, setSelectedFsli] = React.useState<string>("");
   const [selectedAccountKey, setSelectedAccountKey] = React.useState<string>("");
   const [selectedBpmId, setSelectedBpmId] = React.useState<string | null>(null);
   const [isCreatingBPM, setIsCreatingBPM] = React.useState(false);
   const [bpmName, setBpmName] = React.useState("");
+
+  // Handle Deep Linking from Scoping
+  React.useEffect(() => {
+    const fsli = searchParams.get('fsli');
+    const noGL = searchParams.get('noGL');
+    const glDesc = searchParams.get('glDesc');
+
+    if (fsli) setSelectedFsli(fsli);
+    if (noGL && glDesc) {
+      setSelectedAccountKey(`${noGL} ||| ${glDesc}`);
+    }
+  }, [searchParams]);
 
   // 1. Fetch Active Snapshot
   const { data: activeSnap, isLoading: snapLoading } = useQuery({
