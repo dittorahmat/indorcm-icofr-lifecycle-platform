@@ -6,7 +6,7 @@ import * as schema from "./db/schema";
 
 export const getAuth = (env: { DATABASE_URL: string; BETTER_AUTH_SECRET: string; BETTER_AUTH_URL?: string }) => {
     const db = getDb(env.DATABASE_URL);
-    
+
     return betterAuth({
         database: drizzleAdapter(db, {
             provider: "pg",
@@ -21,6 +21,10 @@ export const getAuth = (env: { DATABASE_URL: string; BETTER_AUTH_SECRET: string;
         }),
         secret: env.BETTER_AUTH_SECRET,
         baseURL: env.BETTER_AUTH_URL || "http://localhost:3000",
+        trustedOrigins: [
+            env.BETTER_AUTH_URL || "http://localhost:3000",
+            "https://icofr.tech1solusi.workers.dev"
+        ],
         emailAndPassword: {
             enabled: true,
         },
