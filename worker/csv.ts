@@ -9,8 +9,8 @@
  *
  * Small, dependency-free, and suitable for typical CSV import/export needs in Workers.
  */
-type ParseOptions = { header?: boolean; skipEmptyLines?: boolean };
-type UnparseOptions = { header?: boolean };
+type ParseOptions = { header?: boolean; skipEmptyLines?: boolean; delimiter?: string };
+type UnparseOptions = { header?: boolean; delimiter?: string };
 function isEmptyRow(row: string[]): boolean {
   return row.every((cell) => cell === '' || cell === null || cell === undefined);
 }
@@ -18,11 +18,11 @@ function isEmptyRow(row: string[]): boolean {
  * Parse a CSV string into an array of rows or objects (when header: true).
  *
  * @param csv - the CSV string
- * @param options - { header?: boolean, skipEmptyLines?: boolean }
+ * @param options - { header?: boolean, skipEmptyLines?: boolean, delimiter?: string }
  * @returns { data: T[] } - typed array; when header=true T is Record<string,string>
  */
 export function parseCsv<T = Record<string, string>>(csv: string, options: ParseOptions = {}): { data: T[] } {
-  const { header = true, skipEmptyLines = true } = options;
+  const { header = true, skipEmptyLines = true, delimiter = ',' } = options;
   if (csv === '') return { data: [] as unknown as T[] };
   // Normalize line endings to LF
   const input = csv.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
@@ -54,7 +54,7 @@ export function parseCsv<T = Record<string, string>>(csv: string, options: Parse
       if (ch === '"') {
         // Start of quoted field (may be quoted even in the middle of cell)
         inQuotes = true;
-      } else if (ch === ',') {
+      } else if (ch === delimiter) {
         // Field separator
         curRow.push(curField);
         curField = '';

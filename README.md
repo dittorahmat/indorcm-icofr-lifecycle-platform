@@ -1,12 +1,12 @@
-# IndoRCM Pro — ICOFR Lifecycle Platform
+# ISB Risk Pro — ICOFR Lifecycle Platform
 
-IndoRCM Pro is a production-grade web application that digitizes the ICOFR (Internal Control over Financial Reporting) lifecycle for BUMN (State-Owned Enterprises). It is explicitly designed to fulfill **Regulation SK-5/DKU.MBU/11/2024** by providing a standardized, transparent, and auditable platform covering the entire regulatory process.
+ISB Risk Pro is a production-grade web application that digitizes the ICOFR (Internal Control over Financial Reporting) lifecycle for BUMN (State-Owned Enterprises). It is explicitly designed to fulfill **Regulation SK-5/DKU.MBU/11/2024** by providing a standardized, transparent, and auditable platform covering the entire regulatory process.
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/dittorahmat/indorcm-icofr-lifecycle-platform)
 
 ## Overview
 
-IndoRCM Pro centralizes the 5-step ICOFR lifecycle required for BUMN compliance:
+ISB Risk Pro centralizes the 5-step ICOFR lifecycle required for BUMN compliance:
 1.  **Perancangan (Planning)**: Scoping significant accounts, building Risk Control Matrices (RCM), and mapping BPM.
 2.  **Implementasi (Implementation)**: Self-assessments by process owners (CSA) with Line 2 validation.
 3.  **Evaluasi (Evaluation)**: Independent testing (TOD/TOE) by internal audit with 6 mandatory attributes.
@@ -65,7 +65,7 @@ For detailed mock data documentation, see [`docs/MOCK-DATA-COAL-MINING.md`](docs
 
 ## AI Chatbot Assistant
 
-IndoRCM Pro includes an AI-powered chatbot assistant to help you understand ICOFR regulations.
+ISB Risk Pro includes an AI-powered chatbot assistant to help you understand ICOFR regulations.
 
 ### Features
 

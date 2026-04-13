@@ -32,18 +32,22 @@ const WBSPage = lazy(() => import('@/pages/reports/WBSPage').then(module => ({ d
 const ChangeLogPage = lazy(() => import('@/pages/rcm/ChangeLogPage').then(module => ({ default: module.ChangeLogPage })));
 const SOCMonitoringPage = lazy(() => import('@/pages/rcm/SOCMonitoringPage').then(module => ({ default: module.SOCMonitoringPage })));
 const BPMPage = lazy(() => import('@/pages/bpm/BPMPage').then(module => ({ default: module.BPMPage })));
+const UserManagementPage = lazy(() => import('@/pages/admin/UserManagementPage').then(module => ({ default: module.UserManagementPage })));
+
+import { authClient } from '@/lib/auth-client';
 
 enableMapSet();
 const queryClient = new QueryClient();
 
-// Check if user is authenticated
-const isAuthenticated = () => {
-  return !!localStorage.getItem('authToken');
-};
-
 // Protected Route Component
 const ProtectedRoute = () => {
-  return isAuthenticated() ? <Outlet /> : <Navigate to="/" replace />;
+  const { data: session, isPending } = authClient.useSession();
+
+  if (isPending) {
+    return <div className="h-screen w-full flex items-center justify-center"><Skeleton className="h-12 w-12 rounded-full" /></div>;
+  }
+
+  return session ? <Outlet /> : <Navigate to="/" replace />;
 };
 
 const router = createBrowserRouter([
@@ -77,6 +81,7 @@ const router = createBrowserRouter([
           { path: "/wbs-recap", element: <PageSuspense><WBSPage /></PageSuspense> },
           { path: "/audit-portal", element: <PageSuspense><ExternalAuditPortal /></PageSuspense> },
           { path: "/import", element: <PageSuspense><ImportPage /></PageSuspense> },
+          { path: "/admin/users", element: <PageSuspense><UserManagementPage /></PageSuspense> },
         ]
       },
     ]

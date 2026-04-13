@@ -1,15 +1,17 @@
 import { ApiResponse } from "../../shared/types"
+import { authClient } from "./auth-client";
 
 export async function api<T>(path: string, init?: RequestInit): Promise<T> {
-  const mockRole = localStorage.getItem('mockRole') || 'Line 1';
-  const token = localStorage.getItem('authToken');
+  const session = await authClient.getSession();
   
   const headers = {
     'Content-Type': 'application/json',
-    'X-Mock-Role': mockRole, // Legacy support
-    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
     ...init?.headers,
   };
+
+  // Note: authClient handles session headers automatically if using its own fetch, 
+  // but for our custom api function, we might need to rely on cookies or manual header injection.
+  // Better Auth client usually handles cookies.
 
   const res = await fetch(path, { ...init, headers });
   const json = (await res.json()) as ApiResponse<T>;

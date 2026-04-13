@@ -12,15 +12,19 @@ import {
   VisibilityState,
   SortingState,
 } from '@tanstack/react-table';
-import { GLRow, QualitativeLevel } from '@shared/types';
+import { GLRow, QualitativeLevel, Department, User } from '@shared/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronRight, Filter, SortAsc, SortDesc, FileSpreadsheet, Info, ExternalLink } from 'lucide-react';
+import { ChevronDown, ChevronRight, Filter, SortAsc, SortDesc, FileSpreadsheet, Info, ExternalLink, Lock, Building2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import * as XLSX from 'xlsx';
 import { Link } from 'react-router-dom';
+import { DepartmentPicker } from './DepartmentPicker';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '@/lib/api-client';
+import { toast } from 'sonner';
 
 interface GLDataGridProps {
   data: GLRow[];
@@ -28,7 +32,10 @@ interface GLDataGridProps {
   omValue: number;
   pmValue: number;
   onAssessmentChange: (fsliName: string, ruleId: number, level: QualitativeLevel) => void;
+  onOwnerAcceptanceChange?: (noGL: string, acceptance: "Accepted" | "Rejected") => void;
   isReadOnly?: boolean;
+  departments?: Department[];
+  onAssignDepartment?: (accountName: string, departmentId: string) => void;
 }
 
 const QUALITATIVE_RULES = [
@@ -42,13 +49,21 @@ const QUALITATIVE_RULES = [
   { id: 8, label: "Volalitas" },
 ];
 
-export function GLDataGrid({ 
-  data, 
-  assessmentData, 
-  pmValue, 
-  onAssessmentChange, 
-  isReadOnly = false 
+export function GLDataGrid({
+  data,
+  assessmentData,
+  pmValue,
+  onAssessmentChange,
+  onOwnerAcceptanceChange,
+  isReadOnly = false,
+  departments = [],
+  onAssignDepartment
 }: GLDataGridProps) {
+  const { data: currentUser } = useQuery({
+    queryKey: ['auth-me'],
+    queryFn: () => api<User>('/api/auth/me'),
+  });
+
   const [grouping, setGrouping] = React.useState<GroupingState>(['fsliName']);
   const [expanded, setExpanded] = React.useState({});
   const [sorting, setSorting] = React.useState<SortingState>([{ id: 'noUrut', desc: false }]);
@@ -105,13 +120,27 @@ export function GLDataGrid({
           const fsliName = row.original.fsliName || "";
           const noGL = row.original.noGL || "";
           const balance = Math.abs(row.original.balance);
+          const assignedDeptId = (row.original as any).assignedDepartmentId;
           
-          const assessments = assessmentData[fsliName] || {};
+          const assessments = assessmentData?.[fsliName] || {};
           const isQualSignificant = Object.values(assessments).some(v => v === 'High');
           const isKuanSignificant = balance >= pmValue;
           const isInScope = isKuanSignificant || isQualSignificant;
 
+          // Logic: Lini 1 can only access if they own the account or it's unassigned
+          const userRole = currentUser?.role?.trim();
+          const isLini1 = userRole === 'Line 1';
+          const hasAccess = !isLini1 || !assignedDeptId || currentUser?.departmentId === assignedDeptId;
+
           if (isInScope) {
+            if (!hasAccess) {
+              return (
+                <div className="text-[10px] text-slate-400 flex items-center gap-1.5 italic">
+                  <Lock className="h-2.5 w-2.5" /> {glDesc}
+                </div>
+              );
+            }
+
             const params = new URLSearchParams({
               fsli: fsliName,
               noGL: noGL,
@@ -136,6 +165,76 @@ export function GLDataGrid({
             </span>
           );
         },
+      },
+      {
+        id: 'departmentOwner',
+        header: 'Lini 1 Owner',
+        size: 150,
+        cell: ({ row }) => {
+          if (row.getIsGrouped()) return null;
+          const currentDeptId = (row.original as any).assignedDepartmentId;
+
+          // Fix: Default to allowing assignment if user data is still loading
+          // or if the user is explicitly Admin/Line 2
+          const userRole = currentUser?.role?.trim();
+          const canAssign = !currentUser || userRole === 'Line 2' || userRole === 'Admin';
+          const isDisabled = isReadOnly || !canAssign;
+
+          return (
+            <DepartmentPicker
+              departments={departments}
+              selectedId={currentDeptId}
+              onSelect={(deptId) => onAssignDepartment?.(row.original.noGL, deptId)}
+              disabled={isDisabled}
+            />
+          );
+        }
+      },
+      {
+        id: 'ownerAcceptance',
+        header: 'Owner Acceptance',
+        size: 140,
+        cell: ({ row }) => {
+          if (row.getIsGrouped()) return null;
+          
+          const currentAcceptance = row.original.ownerAcceptance;
+          const noGL = row.original.noGL;
+          const assignedDeptId = (row.original as any).assignedDepartmentId;
+
+          // Check if user can edit owner acceptance:
+          // 1. Lini 1 Manager with matching department
+          // 2. Admin (any department)
+          const userRole = currentUser?.role?.trim();
+          const userLevel = currentUser?.level?.trim();
+          const isLini1Manager = userRole === 'Line 1' && userLevel === 'Manager';
+          const isAdmin = userRole === 'Admin';
+          
+          const canEdit = !isReadOnly && (
+            (isLini1Manager && currentUser?.departmentId === assignedDeptId) ||
+            isAdmin
+          );
+
+          return (
+            <Select
+              disabled={!canEdit}
+              value={currentAcceptance || ""}
+              onValueChange={(val: "Accepted" | "Rejected") => onOwnerAcceptanceChange?.(noGL, val)}
+            >
+              <SelectTrigger className={cn(
+                "h-7 w-full text-[9px] px-1 border-none bg-transparent hover:bg-slate-100 transition-colors",
+                currentAcceptance === 'Accepted' ? "text-green-600 font-bold bg-green-50" :
+                currentAcceptance === 'Rejected' ? "text-red-600 font-bold bg-red-50" :
+                "text-slate-300 italic"
+              )}>
+                <SelectValue placeholder="Pending" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Accepted" className="text-xs text-green-600 font-bold">✓ Accepted</SelectItem>
+                <SelectItem value="Rejected" className="text-xs text-red-600 font-bold">✗ Rejected</SelectItem>
+              </SelectContent>
+            </Select>
+          );
+        }
       },
       {
         accessorKey: 'balance',
@@ -182,7 +281,7 @@ export function GLDataGrid({
           if (!row.getIsGrouped()) return <div className="text-center text-slate-200 text-[8px]">-</div>;
           
           const fsliName = row.getValue('fsliName') as string;
-          const currentLevel = assessmentData[fsliName]?.[rule.id] || "";
+          const currentLevel = assessmentData?.[fsliName]?.[rule.id] || "";
           
           return (
             <Select 
@@ -214,7 +313,7 @@ export function GLDataGrid({
           const isGrouped = row.getIsGrouped();
           const fsliName = isGrouped ? row.getValue('fsliName') as string : row.original.fsliName || "";
           
-          const assessments = assessmentData[fsliName] || {};
+          const assessments = assessmentData?.[fsliName] || {};
           const isQualSignificant = Object.values(assessments).some(v => v === 'High');
           
           if (isGrouped) {
@@ -244,7 +343,7 @@ export function GLDataGrid({
         }
       }
     ],
-    [pmValue, assessmentData, isReadOnly, onAssessmentChange]
+    [pmValue, assessmentData, isReadOnly, onAssessmentChange, onOwnerAcceptanceChange, currentUser]
   );
 
   const table = useReactTable({
@@ -276,7 +375,7 @@ export function GLDataGrid({
       if (row.getIsGrouped()) {
         const fsliName = row.getValue('fsliName');
         const balance = row.getLeafRows().reduce((sum, r) => sum + r.original.balance, 0);
-        
+
         // Add a separator row for FSLI
         exportData.push({
           'Entity Code': '',
@@ -285,12 +384,18 @@ export function GLDataGrid({
           'Account Description': '',
           'Balance': balance,
           'Kuantitatif': Math.abs(balance) >= pmValue ? 'Significant' : 'Not Significant',
+          'Departemen Pemilik': '',
+          'Owner Acceptance': '',
           'Scope': 'IN SCOPE' // Summary scope
         });
 
         // Add accounts under this FSLI
         row.getLeafRows().forEach(leaf => {
           const isSignificant = Math.abs(leaf.original.balance) >= pmValue;
+          const assignedDeptId = (leaf.original as any).assignedDepartmentId;
+          const dept = departments.find(d => d.id === assignedDeptId);
+          const acceptance = leaf.original.ownerAcceptance || 'Pending';
+
           exportData.push({
             'Entity Code': leaf.original.entityCode,
             'FSLI': leaf.original.fsliName,
@@ -298,6 +403,8 @@ export function GLDataGrid({
             'Account Description': leaf.original.glDesc,
             'Balance': leaf.original.balance,
             'Kuantitatif': isSignificant ? 'Significant' : 'Not Significant',
+            'Departemen Pemilik': dept?.name || 'Unassigned',
+            'Owner Acceptance': acceptance,
             'Scope': isSignificant ? 'IN SCOPE' : 'OUT'
           });
         });

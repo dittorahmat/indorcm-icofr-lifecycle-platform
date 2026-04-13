@@ -7,14 +7,18 @@ import { Badge } from '@/components/ui/badge';
 import { 
   FileText, Trash2, CheckCircle2, Circle, Settings2, PlayCircle, Loader2 
 } from 'lucide-react';
-import { GLSnapshot } from '@shared/types';
+import { GLSnapshot as SharedGLSnapshot } from '@shared/types';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 
+interface GLSnapshotExtended extends SharedGLSnapshot {
+  rowCount?: number;
+}
+
 interface GLSourceTableProps {
-  data: GLSnapshot[];
+  data: GLSnapshotExtended[];
   onSetActive: (id: string) => void;
-  onSetBenchmark: (snapshot: GLSnapshot) => void;
+  onSetBenchmark: (snapshot: SharedGLSnapshot) => void;
   onDelete: (id: string) => void;
   isLoading?: boolean;
 }
@@ -69,9 +73,11 @@ export function GLSourceTable({ data, onSetActive, onSetBenchmark, onDelete, isL
                 {snap.filename}
               </TableCell>
               <TableCell className="text-xs text-slate-500">
-                {format(snap.uploadDate, 'dd MMM yyyy, HH:mm')}
+                {snap.uploadDate ? format(new Date(snap.uploadDate), 'dd MMM yyyy, HH:mm') : 'Unknown'}
               </TableCell>
-              <TableCell className="text-xs">{snap.rows.length} rows</TableCell>
+              <TableCell className="text-xs">
+                {snap.rowCount ?? snap.rows?.length ?? 0} accounts
+              </TableCell>
               <TableCell>
                 <Badge variant={snap.status === 'Mapped' ? 'default' : 'outline'} className={cn(
                   snap.status === 'Mapped' ? "bg-indigo-600" : "text-slate-400"

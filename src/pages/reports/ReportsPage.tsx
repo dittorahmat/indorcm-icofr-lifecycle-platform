@@ -464,7 +464,7 @@ export function ReportsPage() {
               <div className="flex items-center gap-4">
                 <Shield className="h-16 w-12 text-primary" />
                 <div>
-                  <h1 className="text-2xl font-black uppercase tracking-tighter leading-none">IndoRCM Pro</h1>
+                  <h1 className="text-2xl font-black uppercase tracking-tighter leading-none">ISB Risk Pro</h1>
                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">ICOFR Lifecycle Management Platform</p>
                 </div>
               </div>
@@ -519,7 +519,7 @@ export function ReportsPage() {
                           </svg>
                           <QrCode className="h-8 w-8 text-primary absolute opacity-80" />
                        </div>
-                       <p className="text-[8px] font-bold text-slate-500 uppercase mt-2 tracking-tighter">Verified by IndoRCM Pro</p>
+                       <p className="text-[8px] font-bold text-slate-500 uppercase mt-2 tracking-tighter">Verified by ISB Risk Pro</p>
                        <p className="text-[7px] text-blue-600 font-mono mt-0.5 font-bold">VERIF-ID: {settings?.verificationHash}</p>
                      </>
                    ) : (
@@ -537,7 +537,7 @@ export function ReportsPage() {
            </div>
 
            <div className="absolute bottom-0 left-0 right-0 border-t pt-2 text-[8px] text-muted-foreground flex justify-between">
-              <span>Dicetak otomatis oleh IndoRCM Pro v1.0</span>
+              <span>Dicetak otomatis oleh ISB Risk Pro v2.0</span>
               <span>Hash Verifikasi: {settings?.verificationHash || 'NOT-SIGNED'}</span>
               <span>Timestamp: {new Date().toLocaleString()}</span>
            </div>

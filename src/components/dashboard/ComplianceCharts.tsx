@@ -22,7 +22,10 @@ export function ComplianceCharts({ rcmData, deficiencyBySeverity, isLoading }: C
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
             {isLoading ? <Skeleton className="h-full w-full" /> : (
-              <BarChart data={rcmData?.items.map((r: any) => ({ name: r.process, controls: r.controls.length }))}>
+              <BarChart data={(rcmData?.items || []).map((r: any) => ({ 
+                name: r.process, 
+                controls: Array.isArray(r.controls) ? r.controls.length : 0 
+              }))}>
                 <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
                 <Tooltip />
@@ -42,8 +45,8 @@ export function ComplianceCharts({ rcmData, deficiencyBySeverity, isLoading }: C
           <ResponsiveContainer width="100%" height={300}>
             {isLoading ? <Skeleton className="h-full w-full" /> : (
               <PieChart>
-                <Pie data={deficiencyBySeverity} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
-                  {deficiencyBySeverity.map((_entry: any, index: number) => (
+                <Pie data={deficiencyBySeverity || []} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
+                  {(deficiencyBySeverity || []).map((_entry: any, index: number) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>

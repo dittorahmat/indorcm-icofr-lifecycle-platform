@@ -7,22 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { motion } from 'framer-motion';
-import { api } from '@/lib/api-client';
+import { authClient } from '@/lib/auth-client';
 import { toast } from 'sonner';
-
-interface LoginCredentials {
-  email: string;
-  password: string;
-}
-
-interface LoginResponse {
-  token: string;
-  user: {
-    id: string;
-    name: string;
-    role: string;
-  };
-}
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -52,37 +38,48 @@ export function LoginPage() {
     setIsLoading(true);
 
     try {
-      const response = await api<LoginResponse>('/api/auth/login', {
-        method: 'POST',
-        body: JSON.stringify({
-          role: getRoleFromEmail(credentials.email),
-        }),
+      const { data, error: authError } = await authClient.signIn.email({
+        email: credentials.email,
+        password: credentials.password,
       });
 
-      // Simpan token dan user data
-      localStorage.setItem('authToken', response.token);
-      localStorage.setItem('mockRole', response.user.role);
-      localStorage.setItem('userId', response.user.id);
-
-      toast.success(`Login berhasil sebagai ${response.user.name}`);
-
-      // Smart Redirect based on role
-      if (response.user.role === 'CFO' || response.user.role === 'Komisaris') {
-        navigate('/scoping/approval');
-      } else {
-        navigate('/welcome');
+      if (authError) {
+        throw new Error(authError.message || 'Login failed');
       }
-    } catch (err) {
-      setError('Invalid credentials. Pastikan email dan password benar.');
+
+      toast.success(`Login berhasil`);
+
+      // Smart Redirect (better-auth session handles the data now)
+      navigate('/welcome');
+      
+    } catch (err: any) {
+      setError(err.message || 'Invalid credentials. Pastikan email dan password benar.');
       toast.error('Login gagal');
     } finally {
       setIsLoading(false);
     }
   };
 
+  const getDepartmentFromEmail = (email: string): string => {
+    const emailLower = email.toLowerCase();
+    if (emailLower.includes('.ops')) return 'dept-ops';
+    if (emailLower.includes('.fin')) return 'dept-fin';
+    if (emailLower.includes('.log')) return 'dept-log';
+    if (emailLower.includes('.it')) return 'dept-it';
+    if (emailLower.includes('.hr')) return 'dept-hr';
+    return ''; // Default
+  };
+
+  const getLevelFromEmail = (email: string): string => {
+    const emailLower = email.toLowerCase();
+    if (emailLower.includes('manager') || emailLower.includes('mgr')) return 'Manager';
+    if (emailLower.includes('staff')) return 'Staff';
+    return 'Staff'; // Default
+  };
+
   const getRoleFromEmail = (email: string): string => {
     const emailLower = email.toLowerCase();
-    if (emailLower.startsWith('line1@')) return 'Line 1';
+    if (emailLower.includes('staff') || emailLower.includes('manager') || emailLower.startsWith('line1@')) return 'Line 1';
     if (emailLower.startsWith('line2@')) return 'Line 2';
     if (emailLower.startsWith('line3@')) return 'Line 3';
     if (emailLower.startsWith('cfo@')) return 'CFO';
@@ -110,7 +107,7 @@ export function LoginPage() {
             <div className="flex justify-center mb-4">
               <Shield className="h-12 w-12 text-primary" />
             </div>
-            <CardTitle className="text-2xl font-display font-bold">IndoRCM Pro</CardTitle>
+            <CardTitle className="text-2xl font-display font-bold">ISB Risk Pro</CardTitle>
             <CardDescription>
               Enterprise ICOFR Lifecycle Platform
             </CardDescription>
@@ -169,17 +166,38 @@ export function LoginPage() {
           <CardFooter className="flex flex-col space-y-2">
             {/* Credential Helper */}
             <div className="text-xs text-muted-foreground text-center space-y-1">
-              <p className="font-medium">Demo Credentials:</p>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[10px]">
-                <span>line1@bumn.go.id → Line 1</span>
-                <span>line2@bumn.go.id → Line 2</span>
-                <span>line3@bumn.go.id → Line 3</span>
-                <span>cfo@bumn.go.id → CFO</span>
-                <span>komisaris@bumn.go.id → Komut</span>
-                <span>admin@bumn.go.id → Admin</span>
-                <span>external@bumn.go.id → Ext. Auditor</span>
+              <p className="font-medium text-[10px] uppercase tracking-wider text-slate-400">Demo Credentials (Lini 1):</p>
+              <div className="grid grid-cols-2 gap-2 text-[8px] bg-slate-50 p-2 rounded-lg border border-slate-100 max-h-[120px] overflow-y-auto text-left">
+                <div>
+                  <p className="font-bold text-slate-500 mb-0.5">Mining Ops (.ops)</p>
+                  <p>staff.ops@bumn.go.id</p>
+                  <p className="mb-1">manager.ops@bumn.go.id</p>
+                  
+                  <p className="font-bold text-slate-500 mb-0.5">Finance (.fin)</p>
+                  <p>staff.fin@bumn.go.id</p>
+                  <p className="mb-1">manager.fin@bumn.go.id</p>
+
+                  <p className="font-bold text-slate-500 mb-0.5">Logistics (.log)</p>
+                  <p>staff.log@bumn.go.id</p>
+                  <p>manager.log@bumn.go.id</p>
+                </div>
+                <div>
+                  <p className="font-bold text-slate-500 mb-0.5">IT (.it)</p>
+                  <p>staff.it@bumn.go.id</p>
+                  <p className="mb-1">manager.it@bumn.go.id</p>
+
+                  <p className="font-bold text-slate-500 mb-0.5">HR (.hr)</p>
+                  <p>staff.hr@bumn.go.id</p>
+                  <p className="mb-1">manager.hr@bumn.go.id</p>
+
+                  <p className="font-bold text-slate-500 mb-0.5 border-t pt-1">Core Access</p>
+                  <p>line2@bumn.go.id (L2)</p>
+                  <p>cfo@bumn.go.id (CFO)</p>
+                  <p>komisaris@bumn.go.id (Komut)</p>
+                  <p>admin@bumn.go.id (Admin)</p>
+                </div>
               </div>
-              <p className="pt-1">Password: <code className="bg-muted px-1 rounded">password</code></p>
+              <p className="pt-1 text-[10px]">Password: <code className="bg-muted px-1 rounded">password</code></p>
             </div>
           </CardFooter>
         </Card>

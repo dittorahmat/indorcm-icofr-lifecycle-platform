@@ -322,6 +322,6 @@ FINDINGS:
 
 ---
 
-**Presentasi ini dibuat untuk:**  
-PT IndoRCM ICOFR Lifecycle Platform  
+**Presentasi ini dibuat untuk:**
+PT ISB Risk ICOFR Lifecycle Platform
 © 2026 - Internal Use Only

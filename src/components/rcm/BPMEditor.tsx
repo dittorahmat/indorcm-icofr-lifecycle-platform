@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import ReactFlow, {
   addEdge,
   MiniMap,
@@ -9,15 +9,18 @@ import ReactFlow, {
   Connection,
   Position,
   NodeProps,
-  Handle
+  Handle,
+  ReactFlowProvider,
+  Panel
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { Button } from '@/components/ui/button';
 import { 
   FileText, Database, Activity, GitCommit, PlayCircle, StopCircle, 
-  Save, AlertTriangle, ShieldCheck, Info, X, RefreshCw, Link as LinkIcon, Workflow, Trash2 
+  Save, AlertTriangle, ShieldCheck, Info, X, RefreshCw, Link as LinkIcon, Workflow, Trash2, 
+  Search, PlusCircle, LayoutDashboard, ChevronRight, GripVertical
 } from 'lucide-react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -26,6 +29,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 import {
   Tooltip,
@@ -37,9 +42,6 @@ import {
 // --- Custom Nodes sesuai Legenda Lampiran 3 & 4 ---
 
 const NodeTooltip = ({ children, data, type }: { children: React.ReactNode, data: any, type: string }) => {
-  const isRisk = type === 'risk';
-  const isControl = type === 'control';
-  
   return (
     <TooltipProvider delayDuration={300}>
       <Tooltip>
@@ -103,7 +105,7 @@ const RiskNode = ({ data, selected, type }: NodeProps) => (
         selected ? "fill-red-700 stroke-primary stroke-[3px]" : "fill-red-600 stroke-red-900 stroke-[2px]"
       )} style={{ filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.1))' }}>
         <svg width="80" height="70" viewBox="0 0 80 70">
-          <path d="M20 0 L60 0 L80 35 L60 70 L20 70 L0 35 Z" />
+          <path d="M20 0 L60 0 L80 35 L60 70 L20 70 L0 35 Z" fill="currentColor" className={cn(selected ? "text-red-700" : "text-red-600")} />
           <foreignObject x="15" y="15" width="50" height="40">
             <div className="w-full h-full flex items-center justify-center">
               <AlertTriangle className="h-8 w-8 text-white drop-shadow-md" />
@@ -241,42 +243,48 @@ const nodeTypes = {
   archive: ArchiveNode,
 };
 
-const defaultNodes = [
+const initialNodes = [
   { id: '1', type: 'start', position: { x: 250, y: 0 }, data: { label: 'Mulai', type: 'start' } },
-  { id: '2', type: 'activity', position: { x: 225, y: 80 }, data: { label: 'Terima Invoice', role: 'Staff AP' } },
-  { id: '3', type: 'decision', position: { x: 240, y: 180 }, data: { label: 'Lengkap?' } },
-  { id: '4', type: 'end', position: { x: 250, y: 400 }, data: { label: 'Selesai', type: 'end' } },
-];
-
-const defaultEdges = [
-  { id: 'e1-2', source: '1', target: '2' },
-  { id: 'e2-3', source: '2', target: '3' },
 ];
 
 interface BPMEditorProps {
-  rcm: RCM;
-  controls: Control[];
+  diagramId: string;
+  subProcess: string;
 }
 
-export function BPMEditor({ rcm, controls }: BPMEditorProps) {
-  const [nodes, setNodes, onNodesChange] = useNodesState(rcm.bpmData?.nodes || defaultNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(rcm.bpmData?.edges || defaultEdges);
-  const [selectedNodeId, setSelectedNodeId] = React.useState<string | null>(null);
-  
-  // Navigation stack for Drilldown: [{ id: string, type: 'node' | 'risk' | 'control' | 'fsli' }]
-  const [navStack, setNavStack] = React.useState<{ id: string, type: 'node' | 'risk' | 'control' | 'fsli' }[]>([]);
-
+export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
   const queryClient = useQueryClient();
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [navStack, setNavStack] = useState<{ id: string, type: 'node' | 'risk' | 'control' | 'fsli' }[]>([]);
+  const [searchControl, setSearchControl] = useState("");
+
+  // 1. Fetch Diagram Data
+  const { data: diagram, isLoading: isDiagramLoading } = useQuery({
+    queryKey: ['bpm-diagrams', diagramId],
+    queryFn: () => api<any>(`/api/bpm-diagrams/${diagramId}`),
+  });
+
+  // 2. Fetch Master Data for Sidebar & Linking
+  const { data: controlsData } = useQuery({
+    queryKey: ['controls'],
+    queryFn: () => api<{ items: Control[] }>('/api/controls')
+  });
+
+  const { data: rcmData } = useQuery({
+    queryKey: ['rcm'],
+    queryFn: () => api<{ items: RCM[] }>('/api/rcm')
+  });
 
   useEffect(() => {
-    if (rcm.bpmData) {
-      setNodes(rcm.bpmData.nodes);
-      setEdges(rcm.bpmData.edges);
+    if (diagram) {
+      setNodes(diagram.nodes || initialNodes);
+      setEdges(diagram.edges || []);
     }
-  }, [rcm.bpmData, setNodes, setEdges]);
+  }, [diagram, setNodes, setEdges]);
 
   const selectedNode = useMemo(() => nodes.find(n => n.id === selectedNodeId), [nodes, selectedNodeId]);
-
   const currentNav = navStack[navStack.length - 1];
 
   const pushNav = (id: string, type: 'node' | 'risk' | 'control' | 'fsli') => {
@@ -296,485 +304,288 @@ export function BPMEditor({ rcm, controls }: BPMEditorProps) {
     }
   };
 
-  const DrilldownPanel = () => {
-    if (!currentNav) return null;
-
-    if (currentNav.type === 'node') {
-      const node = nodes.find(n => n.id === currentNav.id);
-      if (!node) return null;
-
-      return (
-        <div className="space-y-4">
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-slate-400 uppercase">Aktivitas BPM</label>
-            <p className="text-sm font-semibold text-slate-800">{node.data.label}</p>
-            {node.data.role && <p className="text-[10px] text-blue-600 font-bold uppercase">Role: {node.data.role}</p>}
-          </div>
-
-          <Separator />
-
-          <div className="space-y-2">
-            <label className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1">
-              <AlertTriangle className="h-3 w-3 text-red-500" /> Terkait Risiko (Drilldown)
-            </label>
-            <div className="space-y-1">
-              {/* For now, assuming 1 RCM maps to 1 Process Flow, so we show the RCM Risk */}
-              <Button 
-                variant="outline" 
-                className="w-full justify-start text-left h-auto py-2 px-3 border-red-100 bg-red-50/30 hover:bg-red-50"
-                onClick={() => pushNav(rcm.id, 'risk')}
-              >
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-[11px] font-bold text-red-700">RISK-{rcm.id.substring(0,4).toUpperCase()}</span>
-                  <span className="text-[10px] text-slate-600 line-clamp-2">{rcm.riskDescription}</span>
-                </div>
-              </Button>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    if (currentNav.type === 'risk') {
-      const riskControls = controls.filter(c => c.rcmId === rcm.id);
-      
-      return (
-        <div className="space-y-4">
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-red-400 uppercase">Detail Risiko</label>
-            <p className="text-sm font-semibold text-slate-800">{rcm.riskDescription}</p>
-          </div>
-
-          <Separator />
-
-          <div className="space-y-2">
-            <label className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1">
-              <ShieldCheck className="h-3 w-3 text-green-500" /> Mitigating Controls (Drilldown)
-            </label>
-            <div className="space-y-1">
-              {riskControls.length > 0 ? riskControls.map(ctrl => (
-                <Button 
-                  key={ctrl.id}
-                  variant="outline" 
-                  className="w-full justify-start text-left h-auto py-2 px-3 border-green-100 bg-green-50/30 hover:bg-green-50"
-                  onClick={() => pushNav(ctrl.id, 'control')}
-                >
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-[11px] font-bold text-green-700">{ctrl.code || 'NO-CODE'}</span>
-                    <span className="text-[10px] text-slate-600 line-clamp-1">{ctrl.name}</span>
-                  </div>
-                </Button>
-              )) : (
-                <p className="text-[10px] text-slate-400 italic italic">No controls linked in matrix yet.</p>
-              )}
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    if (currentNav.type === 'control') {
-      const ctrl = controls.find(c => c.id === currentNav.id);
-      if (!ctrl) return null;
-
-      return (
-        <div className="space-y-4">
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <Badge className="bg-green-600 font-mono text-[10px]">{ctrl.code || 'CTRL'}</Badge>
-              <Badge variant="outline" className="text-[9px] uppercase">{ctrl.type}</Badge>
-            </div>
-            <h4 className="text-sm font-bold text-slate-800 leading-tight">{ctrl.name}</h4>
-            <p className="text-xs text-slate-600 leading-relaxed">{ctrl.description}</p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            <div className="p-2 bg-slate-50 rounded border border-slate-100">
-              <p className="text-[8px] font-bold text-slate-400 uppercase">Nature</p>
-              <p className="text-[10px] font-medium text-slate-700">{ctrl.nature}</p>
-            </div>
-            <div className="p-2 bg-slate-50 rounded border border-slate-100">
-              <p className="text-[8px] font-bold text-slate-400 uppercase">Frequency</p>
-              <p className="text-[10px] font-medium text-slate-700">{ctrl.frequency}</p>
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <p className="text-[8px] font-bold text-slate-400 uppercase">Key Assertions</p>
-            <div className="flex flex-wrap gap-1">
-              {ctrl.assertions.map(a => <Badge key={a} variant="secondary" className="text-[8px] px-1 h-4">{a}</Badge>)}
-            </div>
-          </div>
-
-          <Separator />
-
-          <div className="space-y-2">
-            <label className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1">
-              <FileText className="h-3 w-3 text-blue-500" /> Affected FSLI (Account)
-            </label>
-            <div className="space-y-1">
-              {ctrl.fsliCodes && ctrl.fsliCodes.length > 0 ? ctrl.fsliCodes.map(code => (
-                <Button 
-                  key={code}
-                  variant="outline" 
-                  className="w-full justify-start text-left h-auto py-2 px-3 border-blue-100 bg-blue-50/30 hover:bg-blue-50"
-                  onClick={() => pushNav(code, 'fsli')}
-                >
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-[11px] font-bold text-blue-700">{code}</span>
-                    <span className="text-[10px] text-slate-600">Click to view account detail</span>
-                  </div>
-                </Button>
-              )) : (
-                <p className="text-[10px] text-slate-400 italic">No FSLI accounts linked yet.</p>
-              )}
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    if (currentNav.type === 'fsli') {
-      return (
-        <div className="space-y-4">
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-blue-400 uppercase">FSLI Detail</label>
-            <p className="text-sm font-semibold text-slate-800">Account Code: {currentNav.id}</p>
-          </div>
-          <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
-             <p className="text-[10px] text-blue-800 leading-relaxed italic">
-               Informasi saldo dan signifikansi diambil dari modul Scoping (Lampiran 5).
-             </p>
-          </div>
-          <Button variant="outline" size="sm" className="w-full text-[10px]" onClick={() => window.location.href = `/scoping?fsliCode=${currentNav.id}`}>
-             Go to Scoping Matrix
-          </Button>
-        </div>
-      );
-    }
-
-    return null;
+  // Drag & Drop Handlers
+  const onDragStart = (event: React.DragEvent, nodeType: string, data: any) => {
+    event.dataTransfer.setData('application/reactflow', nodeType);
+    event.dataTransfer.setData('application/payload', JSON.stringify(data));
+    event.dataTransfer.effectAllowed = 'move';
   };
 
-  // --- Metadata Sync Logic ---
-  const syncStatus = useMemo(() => {
-    const riskNodes = nodes.filter(n => n.type === 'risk');
-    const controlNodes = nodes.filter(n => n.type === 'control');
-    
-    const errors: string[] = [];
-    
-    // Check Risk Node Sync
-    if (riskNodes.length > 0) {
-      const riskNode = riskNodes[0]; // Assuming 1 Risk per RCM
-      if (riskNode.data.label !== rcm.riskDescription) {
-        errors.push("Risk label mismatch with RCM description");
-      }
-    } else {
-      errors.push("Missing Risk Node in BPM diagram");
-    }
-
-    // Check Controls Sync
-    const linkedControlIds = controlNodes.map(n => n.data.controlId).filter(Boolean);
-    const missingControls = rcm.controls.filter(id => !linkedControlIds.includes(id));
-    if (missingControls.length > 0) {
-      errors.push(`${missingControls.length} Controls defined in matrix are not linked in BPM`);
-    }
-
-    return { 
-      isSynced: errors.length === 0,
-      errors 
-    };
-  }, [nodes, rcm]);
-
-  const onConnect = useCallback((params: Connection) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
-
-  const onNodeClick = useCallback((_: React.MouseEvent, node: any) => {
-    resetNav(node.id);
+  const onDragOver = useCallback((event: React.DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
   }, []);
 
-  const onPaneClick = useCallback(() => {
-    resetNav(null);
-  }, []);
+  const onDrop = useCallback(
+    (event: React.DragEvent) => {
+      event.preventDefault();
+
+      const type = event.dataTransfer.getData('application/reactflow');
+      const payload = JSON.parse(event.dataTransfer.getData('application/payload') || '{}');
+
+      if (typeof type === 'undefined' || !type) return;
+
+      const position = { x: event.clientX - 400, y: event.clientY - 150 }; // Rough adjustment
+      const newNode = {
+        id: `${Date.now()}`,
+        type,
+        position,
+        data: { ...payload },
+      };
+
+      setNodes((nds) => nds.concat(newNode));
+    },
+    [setNodes]
+  );
 
   const saveMutation = useMutation({
-    mutationFn: (data: any) => api(`/api/rcm/${rcm.id}`, { 
+    mutationFn: (data: any) => api(`/api/bpm-diagrams/${diagramId}`, { 
       method: 'PUT', 
-      body: JSON.stringify({ bpmData: data }) 
+      body: JSON.stringify(data) 
     }),
     onSuccess: () => {
-      toast.success('BPM Diagram saved successfully');
-      queryClient.invalidateQueries({ queryKey: ['rcm'] });
-    },
-    onError: (error) => toast.error(`Failed to save diagram: ${error.message}`)
+      toast.success('BPM Diagram saved');
+      queryClient.invalidateQueries({ queryKey: ['bpm-diagrams'] });
+    }
   });
 
-  const handleSave = () => {
-    saveMutation.mutate({ nodes, edges });
-  };
+  const assignRcmToDiagramMutation = useMutation({
+    mutationFn: ({ rcmId, diagramId }: { rcmId: string, diagramId: string }) => 
+      api(`/api/rcm/${rcmId}`, { method: 'PUT', body: JSON.stringify({ diagramId }) }),
+    onSuccess: () => {
+      toast.success('Risk linked to this diagram');
+      queryClient.invalidateQueries({ queryKey: ['rcm'] });
+    }
+  });
 
-  const addNode = (type: string, label: string, extraData = {}) => {
-    const id = `${Date.now()}`;
-    const newNode = {
-      id,
-      type,
-      position: { x: 100, y: 100 },
-      data: { label, role: 'User', type, ...extraData },
-    };
-    setNodes((nds) => [...nds, newNode]);
-  };
+  const linkedRcms = useMemo(() => 
+    rcmData?.items.filter(r => r.diagramId === diagramId) || [], 
+    [rcmData, diagramId]
+  );
+
+  const filteredSidebarControls = useMemo(() => {
+    if (!controlsData?.items) return [];
+    return controlsData.items.filter(c => 
+      c.name.toLowerCase().includes(searchControl.toLowerCase()) || 
+      c.code?.toLowerCase().includes(searchControl.toLowerCase())
+    );
+  }, [controlsData, searchControl]);
 
   const updateNodeData = (id: string, partialData: any) => {
     setNodes(nds => nds.map(node => node.id === id ? { ...node, data: { ...node.data, ...partialData } } : node));
   };
 
-  const deleteNode = (id: string) => {
-    setNodes(nds => nds.filter(n => n.id !== id));
-    setEdges(eds => eds.filter(e => e.source !== id && e.target !== id));
-    setSelectedNodeId(null);
-    toast.info("Node and its connections removed");
-  };
-
-  const syncRiskNode = () => {
-    setNodes(nds => nds.map(n => n.type === 'risk' ? { ...n, data: { ...n.data, label: rcm.riskDescription } } : n));
-    toast.info("Risk label synced from Matrix");
-  };
+  if (isDiagramLoading) return <div className="h-full flex items-center justify-center"><RefreshCw className="animate-spin" /></div>;
 
   return (
-    <div className="flex h-[600px] border rounded-lg overflow-hidden bg-slate-50 relative">
-      {/* Sidebar Palette */}
-      <div className="w-52 bg-white border-r p-4 flex flex-col gap-3 z-20 shadow-sm">
-        <h3 className="text-xs font-bold uppercase text-muted-foreground mb-2 flex items-center gap-2">
-          <Workflow className="h-3.5 w-3.5" /> BPM Palette
-        </h3>
-        <Button variant="outline" size="sm" className="justify-start gap-2 h-9 text-[11px]" onClick={() => addNode('activity', 'Aktivitas Manual')}>
-          <Activity className="h-4 w-4" /> Activity
-        </Button>
-        <Button variant="outline" size="sm" className="justify-start gap-2 h-9 text-[11px]" onClick={() => addNode('decision', 'Keputusan?')}>
-          <GitCommit className="h-4 w-4 rotate-90" /> Decision
-        </Button>
-        <Button variant="outline" size="sm" className="justify-start gap-2 h-9 text-[11px]" onClick={() => addNode('document', 'Dokumen')}>
-          <FileText className="h-4 w-4" /> Document
-        </Button>
-        <Button variant="outline" size="sm" className="justify-start gap-2 h-9 text-[11px]" onClick={() => addNode('system', 'System Input')}>
-          <Database className="h-4 w-4" /> System
-        </Button>
-        <div className="border-t my-2" />
-        <h3 className="text-[10px] font-bold uppercase text-red-600 mb-1 flex items-center gap-2">
-          <AlertTriangle className="h-3 w-3" /> ICOFR Design
-        </h3>
-        <Button variant="outline" size="sm" className="justify-start gap-2 h-9 text-[11px] border-red-200 bg-red-50 text-red-700 hover:bg-red-100" onClick={() => addNode('risk', rcm.riskDescription)}>
-          <AlertTriangle className="h-4 w-4" /> Risk (Hexagon)
-        </Button>
-        <Button variant="outline" size="sm" className="justify-start gap-2 h-9 text-[11px] border-green-200 bg-green-50 text-green-700 hover:bg-green-100" onClick={() => addNode('control', 'Pilih Kontrol...')}>
-          <ShieldCheck className="h-4 w-4" /> Control Point
-        </Button>
-        <Button variant="outline" size="sm" className="justify-start gap-2 h-9 text-[11px]" onClick={() => addNode('archive', 'Arsip Dokumen')}>
-          <GitCommit className="h-4 w-4 rotate-180" /> Archive
-        </Button>
-        
-        {/* Sync Check Section */}
-        <div className="mt-auto border-t pt-4">
-          <div className="p-3 rounded-md bg-slate-50 border border-slate-200 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-[9px] font-bold uppercase text-slate-400 tracking-tighter">Sync Status</span>
-              {syncStatus.isSynced ? (
-                <Badge className="bg-green-500 h-4 text-[8px] uppercase px-1">Synced</Badge>
-              ) : (
-                <Badge variant="destructive" className="h-4 text-[8px] uppercase px-1">Out of Sync</Badge>
-              )}
-            </div>
-            {!syncStatus.isSynced && (
-              <div className="space-y-1">
-                {syncStatus.errors.map((err, i) => (
-                  <p key={i} className="text-[8px] text-red-600 leading-tight flex gap-1 items-start">
-                    <AlertTriangle className="h-2 w-2 flex-shrink-0 mt-0.5" /> {err}
-                  </p>
-                ))}
-                
-                {/* Unmapped Controls Details */}
-                {rcm.controls.filter(id => !nodes.filter(n => n.type === 'control').map(n => n.data.controlId).includes(id)).length > 0 && (
-                  <div className="pt-1 mt-1 border-t border-slate-200">
-                    <p className="text-[7px] font-bold text-slate-400 uppercase mb-1">Unmapped Controls:</p>
-                    <div className="flex flex-wrap gap-1">
-                      {rcm.controls
-                        .filter(id => !nodes.filter(n => n.type === 'control').map(n => n.data.controlId).includes(id))
-                        .map(id => {
-                          const ctrl = controls.find(c => c.id === id);
-                          return (
-                            <Badge key={id} variant="outline" className="text-[7px] h-3 px-1 border-amber-200 text-amber-700 bg-amber-50">
-                              {ctrl?.code || '??'}
-                            </Badge>
-                          );
-                        })
-                      }
-                    </div>
-                  </div>
-                )}
-
-                <Button variant="ghost" size="sm" className="w-full h-5 text-[8px] text-blue-600 p-0 mt-1" onClick={syncRiskNode}>
-                  <RefreshCw className="h-2 w-2 mr-1" /> Auto-sync Risk Label
-                </Button>
-              </div>
-            )}
+    <div className="flex h-full w-full bg-slate-50 overflow-hidden">
+      {/* Sidebar: Control & Library */}
+      <div className="w-80 bg-white border-r flex flex-col shadow-sm z-20">
+        <div className="p-4 border-b space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-black uppercase text-slate-500 flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-indigo-600" /> Controls Library
+            </h3>
+            <Badge variant="secondary" className="text-[10px] font-mono">{controlsData?.items.length || 0}</Badge>
+          </div>
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400" />
+            <Input 
+              placeholder="Search master controls..." 
+              className="pl-8 h-9 text-xs" 
+              value={searchControl}
+              onChange={e => setSearchControl(e.target.value)}
+            />
           </div>
         </div>
+
+        <ScrollArea className="flex-1 p-2">
+          <div className="space-y-2">
+            <p className="text-[9px] font-bold text-slate-400 uppercase px-2 mb-1">Drag to Alur</p>
+            {filteredSidebarControls.map(ctrl => (
+              <div 
+                key={ctrl.id}
+                draggable
+                onDragStart={(e) => onDragStart(e, 'control', { label: ctrl.name, code: ctrl.code, controlId: ctrl.id })}
+                className="group p-3 rounded-lg border bg-white hover:border-indigo-300 hover:shadow-md transition-all cursor-grab active:cursor-grabbing border-slate-100"
+              >
+                <div className="flex items-start gap-2">
+                  <GripVertical className="h-3 w-3 text-slate-300 mt-1" />
+                  <div className="flex-1 space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[9px] font-mono font-bold text-indigo-600">{ctrl.code || 'CTRL'}</span>
+                      <Badge className="h-3.5 text-[8px] px-1">{ctrl.nature}</Badge>
+                    </div>
+                    <p className="text-[11px] font-semibold text-slate-700 leading-tight group-hover:text-indigo-700 transition-colors">{ctrl.name}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <Separator className="my-4" />
+
+          <div className="space-y-3 p-2">
+            <h3 className="text-[10px] font-bold uppercase text-slate-500">Linked Risks (RCM)</h3>
+            {linkedRcms.map(r => (
+              <div key={r.id} className="p-2 rounded bg-indigo-50 border border-indigo-100 flex items-center justify-between">
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-bold text-indigo-700 line-clamp-1">{r.subProcess}</span>
+                  <span className="text-[9px] text-indigo-500 italic">Linked</span>
+                </div>
+                <Button variant="ghost" size="icon" className="h-6 w-6 text-indigo-400 hover:text-red-500">
+                  <X className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            ))}
+            
+            <div className="pt-2">
+              <label className="text-[9px] font-bold text-slate-400 uppercase mb-1 block">Link Existing Risk</label>
+              <Select onValueChange={(val) => assignRcmToDiagramMutation.mutate({ rcmId: val, diagramId })}>
+                <SelectTrigger className="h-8 text-[10px]">
+                  <SelectValue placeholder="Search RCM..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {rcmData?.items.filter(r => !r.diagramId).map(r => (
+                    <SelectItem key={r.id} value={r.id} className="text-xs">
+                      {r.process} - {r.subProcess}
+                    </SelectItem>
+                  ))}
+                  <SelectItem value="new" className="text-indigo-600 font-bold border-t">+ Create New Risk</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </ScrollArea>
       </div>
 
-      {/* Canvas */}
+      {/* Canvas Area */}
       <div className="flex-1 relative">
         <ReactFlow
           nodes={nodes}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          onNodeClick={onNodeClick}
-          onPaneClick={onPaneClick}
+          onConnect={(params) => setEdges((eds) => addEdge(params, eds))}
+          onNodeClick={(_, node) => resetNav(node.id)}
+          onPaneClick={() => resetNav(null)}
+          onDrop={onDrop}
+          onDragOver={onDragOver}
           nodeTypes={nodeTypes}
           fitView
         >
+          <Background gap={16} size={1} color="#cbd5e1" />
           <Controls />
           <MiniMap />
-          <Background gap={12} size={1} color="#e2e8f0" />
+          
+          <Panel position="top-right" className="flex gap-2 bg-white/80 backdrop-blur-sm p-1.5 rounded-lg border shadow-sm">
+            <Button 
+              size="sm" 
+              variant="default"
+              className="h-8 gap-2 bg-indigo-600 hover:bg-indigo-700" 
+              onClick={() => saveMutation.mutate({ nodes, edges, name: `Flow: ${subProcess}`, subProcess })}
+              disabled={saveMutation.isPending}
+            >
+              <Save className="h-3.5 w-3.5" /> Save Alur
+            </Button>
+          </Panel>
+
+          <Panel position="top-left" className="bg-white/80 backdrop-blur-sm p-2 rounded-lg border shadow-sm flex flex-col gap-2">
+             <div className="flex flex-col">
+               <span className="text-[10px] font-black text-slate-400 uppercase leading-none">Process Mapping</span>
+               <span className="text-xs font-bold text-slate-700">{subProcess}</span>
+             </div>
+             <div className="flex gap-1 pt-1">
+                <Button variant="outline" size="icon" className="h-7 w-7" title="Add Activity" onClick={() => {
+                  const id = `node_${Date.now()}`;
+                  setNodes(nds => [...nds, { id, type: 'activity', position: { x: 100, y: 100 }, data: { label: 'New Activity', role: 'Staff' } }]);
+                }}>
+                  <Activity className="h-3.5 w-3.5 text-slate-600" />
+                </Button>
+                <Button variant="outline" size="icon" className="h-7 w-7" title="Add Decision" onClick={() => {
+                  const id = `node_${Date.now()}`;
+                  setNodes(nds => [...nds, { id, type: 'decision', position: { x: 100, y: 100 }, data: { label: 'Decision?' } }]);
+                }}>
+                  <GitCommit className="h-3.5 w-3.5 text-slate-600 rotate-90" />
+                </Button>
+                <Button variant="outline" size="icon" className="h-7 w-7" title="Add Risk" onClick={() => {
+                  const id = `node_${Date.now()}`;
+                  setNodes(nds => [...nds, { id, type: 'risk', position: { x: 100, y: 100 }, data: { label: 'Risk Description' } }]);
+                }}>
+                  <AlertTriangle className="h-3.5 w-3.5 text-red-500" />
+                </Button>
+             </div>
+          </Panel>
         </ReactFlow>
-        
-        <div className="absolute top-4 right-4 z-10 flex gap-2">
-           <Button 
-             size="sm" 
-             className="gap-2 shadow-md" 
-             onClick={handleSave}
-             disabled={saveMutation.isPending}
-           >
-             {saveMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-             {saveMutation.isPending ? 'Saving...' : 'Save Diagram'}
-           </Button>
-        </div>
 
-        {/* Node Detail Sidebar */}
-        {selectedNode && (
-          <motion.div 
-            initial={{ x: 300 }} 
-            animate={{ x: 0 }} 
-            className="absolute top-0 right-0 bottom-0 w-72 bg-white border-l z-30 shadow-2xl p-5 flex flex-col gap-4 overflow-y-auto"
-          >
-            <div className="flex items-center justify-between border-b pb-3">
-              <div className="flex flex-col">
-                <div className="flex items-center gap-2">
-                  {navStack.length > 1 && (
-                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={popNav}>
-                      <Workflow className="h-3 w-3 rotate-180 text-blue-600" />
-                    </Button>
-                  )}
-                  <h4 className="font-bold text-xs uppercase text-slate-500">
-                    {currentNav?.type === 'node' ? 'Node Properties' : `${currentNav?.type} Details`}
-                  </h4>
+        {/* Node Detail Properties */}
+        <AnimatePresence>
+          {selectedNode && (
+            <motion.div 
+              initial={{ x: 300, opacity: 0 }} 
+              animate={{ x: 0, opacity: 1 }} 
+              exit={{ x: 300, opacity: 0 }}
+              className="absolute top-0 right-0 bottom-0 w-80 bg-white border-l z-30 shadow-2xl p-5 flex flex-col gap-4"
+            >
+              <div className="flex items-center justify-between border-b pb-3">
+                <div className="flex flex-col">
+                  <h4 className="font-bold text-xs uppercase text-slate-500">Properties</h4>
+                  <span className="text-[9px] text-slate-400 font-mono">ID: {selectedNode.id}</span>
                 </div>
-                <span className="text-[9px] text-slate-400 font-mono">ID: {currentNav?.id}</span>
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => resetNav(null)}><X className="h-4 w-4" /></Button>
               </div>
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => resetNav(null)}><X className="h-4 w-4" /></Button>
-            </div>
-            
-            <div className="space-y-4">
-              <DrilldownPanel />
 
-              {currentNav?.type === 'node' && (
-                <>
-                  <Separator className="my-2" />
-                  {/* Special Linking for Controls */}
-                  {selectedNode.type === 'control' ? (
-                    <div className="space-y-3">
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1">
-                          <LinkIcon className="h-2.5 w-2.5" /> Link to RCM Control
-                        </label>
-                        <Select 
-                          value={selectedNode.data.controlId} 
-                          onValueChange={(val) => {
-                            const ctrl = controls.find(c => c.id === val);
-                            updateNodeData(selectedNode.id, { 
-                              controlId: val, 
-                              label: ctrl?.name || "Unknown",
-                              code: ctrl?.code 
-                            });
-                          }}
-                        >
-                          <SelectTrigger className="h-9 text-xs">
-                            <SelectValue placeholder="Select control from matrix..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {controls.filter(c => c.rcmId === rcm.id).map(c => (
-                              <SelectItem key={c.id} value={c.id} className="text-xs">
-                                <span className="font-bold text-slate-400 mr-2">[{c.code}]</span> {c.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      {/* Ghost Control Warning */}
-                      {selectedNode.data.controlId && !controls.find(c => c.id === selectedNode.data.controlId) && (
-                        <div className="p-2 rounded bg-red-50 border border-red-200 flex gap-2 items-start">
-                          <AlertTriangle className="h-3 w-3 text-red-600 mt-0.5" />
-                          <p className="text-[9px] text-red-700 leading-tight font-bold uppercase">Ghost Control</p>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase">Edit Label</label>
-                      <textarea 
-                        className="w-full text-xs border rounded-md p-2 min-h-[80px] focus:ring-2 focus:ring-primary/20 outline-none"
-                        value={selectedNode.data.label}
-                        onChange={(e) => updateNodeData(selectedNode.id, { label: e.target.value })}
-                        disabled={selectedNode.type === 'risk'}
-                      />
-                    </div>
-                  )}
+              <div className="space-y-4 flex-1">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase">Label</label>
+                  <textarea 
+                    className="w-full text-xs border rounded-md p-2 min-h-[80px] focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                    value={selectedNode.data.label}
+                    onChange={(e) => updateNodeData(selectedNode.id, { label: e.target.value })}
+                  />
+                </div>
 
-                  {selectedNode.type === 'activity' && (
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase">Responsibility (Role)</label>
-                      <input 
-                        className="w-full text-xs border rounded-md p-2 focus:ring-2 focus:ring-primary/20 outline-none"
-                        value={selectedNode.data.role}
-                        onChange={(e) => updateNodeData(selectedNode.id, { role: e.target.value })}
-                      />
-                    </div>
-                  )}
-
-                  <div className="p-4 bg-slate-50 rounded-lg border border-slate-100 mt-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Info className="h-3.5 w-3.5 text-blue-500" />
-                      <span className="text-[10px] font-bold text-blue-700 uppercase">Compliance Tip</span>
-                    </div>
-                    <p className="text-[10px] text-slate-600 leading-relaxed italic">
-                      {selectedNode.type === 'risk' ? 
-                        "Risiko harus dihubungkan dengan minimal satu Titik Kontrol (Control Point) untuk memastikan mitigasi yang memadai (Bab III)." : 
-                        "Pastikan setiap aktivitas memiliki dokumen output jika menghasilkan bukti audit (Lampiran 8)."}
-                    </p>
+                {selectedNode.type === 'activity' && (
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase">Responsibility (Role)</label>
+                    <Input 
+                      className="h-8 text-xs"
+                      value={selectedNode.data.role}
+                      onChange={(e) => updateNodeData(selectedNode.id, { role: e.target.value })}
+                    />
                   </div>
+                )}
 
-                  <Separator className="my-2" />
-                  
-                  <Button 
-                    variant="destructive" 
-                    size="sm" 
-                    className="w-full gap-2 text-[10px] h-8 font-bold uppercase"
-                    onClick={() => deleteNode(selectedNode.id)}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" /> Delete Node
-                  </Button>
-                </>
-              )}
-            </div>
-          </motion.div>
-        )}
+                {selectedNode.type === 'control' && (
+                  <div className="p-3 rounded-lg bg-green-50 border border-green-100 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <ShieldCheck className="h-4 w-4 text-green-600" />
+                      <span className="text-[10px] font-bold text-green-700 uppercase">Linked Control</span>
+                    </div>
+                    <p className="text-[11px] font-medium text-green-800 leading-tight">{selectedNode.data.label}</p>
+                    <p className="text-[9px] text-green-600 font-mono">{selectedNode.data.code}</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="pt-4 border-t">
+                <Button 
+                  variant="destructive" 
+                  size="sm" 
+                  className="w-full gap-2 text-[10px] h-8 font-bold uppercase"
+                  onClick={() => {
+                    setNodes(nds => nds.filter(n => n.id !== selectedNode.id));
+                    setEdges(eds => eds.filter(e => e.source !== selectedNode.id && e.target !== selectedNode.id));
+                    setSelectedNodeId(null);
+                  }}
+                >
+                  <Trash2 className="h-3.5 w-3.5" /> Remove Node
+                </Button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
-  );
-}
-
-function Loader2({ className }: { className?: string }) {
-  return (
-    <svg className={cn("animate-spin", className)} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
   );
 }

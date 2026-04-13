@@ -15,6 +15,13 @@ export type InformationProcessingObjective = "Completeness" | "Accuracy" | "Vali
 export type DeficiencySeverity = "Control Deficiency" | "Significant Deficiency" | "Material Weakness";
 export type ActionPlanStatus = "Draft" | "In Review" | "In Progress" | "Resolved" | "Verified";
 export type UserRole = "Line 1" | "Line 2" | "Line 3" | "Admin" | "External Auditor" | "Komisaris" | "CFO";
+export type UserLevel = "Staff" | "Manager" | "Head" | "Director";
+
+export interface Department {
+  id: string;
+  name: string;
+  description?: string;
+}
 
 export type QualitativeLevel = "Low" | "Medium" | "High";
 
@@ -37,6 +44,8 @@ export interface GLRow {
   subKategori?: string;   // "Aset", "Pendapatan", dll
   fsliBalance?: number;   // Verifikasi agregasi
   noUrut?: number;        // Display order
+  assignedDepartmentId?: string; // Department assignment
+  ownerAcceptance?: "Accepted" | "Rejected"; // Owner acceptance status (null = Pending)
 }
 
 export type BenchmarkBasis = "Revenue" | "PBT" | "Assets" | "Equity" | "Net Current Assets";
@@ -52,6 +61,7 @@ export interface GLSnapshot {
 }
 
 export type SimulationStatus = "Draft" | "Pending CFO" | "Pending Komut" | "Approved" | "Rejected";
+export type BPMWorkflowStatus = "Draft" | "Pending Approval" | "Approved" | "Rejected";
 
 export interface ApprovalHistoryEntry {
   id: string;
@@ -143,6 +153,7 @@ export interface SignificantAccount {
   isQuantitative: boolean; // Over PM
   qualitativeReasons?: QualitativeScopingReason[];
   fsliCode?: string;
+  assignedDepartmentId?: string; // New: Assigned Lini 1 Department
   relatedProcessIds?: string[]; // New: IDs of RCM processes covering this account
 }
 
@@ -198,6 +209,8 @@ export interface Control {
   eucComplexity?: EUCComplexity; // New: (Tabel 14)
   ipeType?: IPEType; // New: (Tabel 20)
   fsliCodes?: string[]; // New: Linked FSLI codes from Scoping
+  departmentId?: string; // New: Assigned Lini 1 Department
+  bpmStatus?: BPMWorkflowStatus; // New: Workflow state (Draft, Pending, Approved)
   
   // BPM Spreadsheet Specific Fields (SK-5 Layout)
   businessProcessLvl1?: string;
@@ -459,6 +472,8 @@ export interface User {
   id: string;
   name: string;
   role?: UserRole;
+  departmentId?: string;
+  level?: UserLevel;
   processOwnershipHistory?: { processId: string; role: UserRole; endDate: number }[]; // For cooling-off validation
 }
 export interface Chat {

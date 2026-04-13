@@ -10,12 +10,13 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { 
   Plus, Search, Database, FileSpreadsheet, Loader2, Info, ChevronRight, 
-  Trash2, AlertTriangle, PlusCircle, CheckCircle2
+  Trash2, AlertTriangle, PlusCircle, CheckCircle2, Shield
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
-import { GLSnapshot, GLRow, BPMProcess, UserRole } from '@shared/types';
+import { GLSnapshot, GLRow, BPMProcess, UserRole, MaterialitySimulation, User } from '@shared/types';
 import { BPMWorksheet } from '@/components/bpm/BPMWorksheet';
+import { BPMModal } from '@/components/bpm/BPMModal';
 import { toast } from 'sonner';
 import { 
   Dialog, DialogContent, DialogDescription, DialogHeader, 
@@ -31,6 +32,7 @@ export function BPMPage() {
   const [selectedFsli, setSelectedFsli] = React.useState<string>("");
   const [selectedAccountKey, setSelectedAccountKey] = React.useState<string>("");
   const [selectedBpmId, setSelectedBpmId] = React.useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [isCreatingBPM, setIsCreatingBPM] = React.useState(false);
   const [bpmName, setBpmName] = React.useState("");
 
@@ -43,6 +45,8 @@ export function BPMPage() {
     if (fsli) setSelectedFsli(fsli);
     if (noGL && glDesc) {
       setSelectedAccountKey(`${noGL} ||| ${glDesc}`);
+      // If we have an account but no specific BPM ID, we might want to show the list first
+      // or if there's only one BPM, open it. For now, let's just set the account.
     }
   }, [searchParams]);
 
@@ -51,17 +55,67 @@ export function BPMPage() {
     queryKey: ['gl-snapshots-active'],
     queryFn: async () => {
       const list = await api<{ items: GLSnapshot[] }>('/api/gl-snapshots');
-      return list.items.find(s => s.isActive) || null;
+      const active = list.items.find(s => s.isActive);
+      if (!active) return null;
+      // Fetch full details including rows
+      return api<GLSnapshot>(`/api/gl-snapshots/${active.id}`);
     }
   });
 
-  // 2. Derive unique significant FSLIs
+  // 1b. Fetch Active Simulation for Account Assignments
+  const { data: activeSim } = useQuery({
+    queryKey: ['active-simulation'],
+    queryFn: async () => {
+      const list = await api<{ items: MaterialitySimulation[] }>('/api/simulations');
+      // Ambil yang paling baru diupdate
+      return [...list.items].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))[0] || null;
+    }
+  });
+
+  const { data: currentUser } = useQuery({
+    queryKey: ['auth-me'],
+    queryFn: () => api<User>('/api/auth/me'),
+  });
+
+  // 2. Derive unique significant FSLIs based on Scoping Criteria
   const significantFsliNames = React.useMemo(() => {
     if (!activeSnap) return [];
+    
+    // Jika belum ada simulasi, atau PM belum diset (> 0), tampilkan kosong agar user sadar harus scoping dulu
+    const pmValue = activeSim?.pmValue || 0;
+    if (!activeSim || pmValue <= 0) {
+      // Opsi: Tetap tampilkan semua FSLI JIKA user adalah Admin/L2 (untuk setup awal)
+      // Tapi untuk Lini 1, wajib kosong jika belum di-scoping
+      if (currentUser?.role === 'Line 1') return [];
+      
+      // Untuk Admin/L2, kita kasih lihat semua dulu kalau belum ada simulasi
+      const names = new Set<string>();
+      activeSnap.rows.forEach(r => { if (r.fsliName) names.add(r.fsliName); });
+      return Array.from(names).sort();
+    }
+    
+    const assessmentData = activeSim?.assessmentData || {};
     const names = new Set<string>();
-    activeSnap.rows.forEach(r => { if (r.fsliName) names.add(r.fsliName); });
+
+    // Ambil semua FSLI unik dari snapshot
+    const allFsliNames = Array.from(new Set(activeSnap.rows.map(r => r.fsliName))).filter(Boolean) as string[];
+
+    allFsliNames.forEach(fsliName => {
+      // 1. Cek Signifikansi Kualitatif (Apakah ada rating 'High'?)
+      const assessments = assessmentData[fsliName] || {};
+      const isQualSignificant = Object.values(assessments).some(v => v === 'High');
+
+      // 2. Cek Signifikansi Kuantitatif (Apakah ada akun >= PM?)
+      const fsliRows = activeSnap.rows.filter(r => r.fsliName === fsliName);
+      const isKuanSignificant = fsliRows.some(r => Math.abs(r.balance) >= pmValue);
+
+      if (isQualSignificant || isKuanSignificant) {
+        names.add(fsliName);
+      }
+    });
+
     return Array.from(names).sort();
-  }, [activeSnap]);
+  }, [activeSnap, activeSim, currentUser]);
 
   // 3. Filtered GL Numbers (Unique combination of noGL + glDesc)
   const glNumbers = React.useMemo(() => {
@@ -89,6 +143,31 @@ export function BPMPage() {
     const [noGL, glDesc] = selectedAccountKey.split(' ||| ');
     return activeSnap.rows.find(r => r.noGL === noGL && r.glDesc === glDesc);
   }, [selectedAccountKey, activeSnap]);
+
+  // --- Mode Galak: Authorization Logic ---
+  const { assignedDeptId, departmentName, hasAccess } = React.useMemo(() => {
+    if (!selectedGLRow || !activeSim || !currentUser) return { hasAccess: true };
+    
+    // Cari penugasan departemen untuk akun ini
+    const assignment = activeSim.significantAccounts?.find(sa => sa.fsliCode === selectedGLRow.noGL);
+    const deptId = assignment?.assignedDepartmentId;
+    
+    // Lini 2 dan Admin punya kunci master
+    if (currentUser.role === 'Line 2' || currentUser.role === 'Admin') {
+      return { 
+        assignedDeptId: deptId, 
+        departmentName: assignment?.name || "Unassigned", // Ini harusnya ambil dari list dept tapi kita buat simpel dulu
+        hasAccess: true 
+      };
+    }
+
+    // Lini 1 harus cocok departemennya
+    const match = currentUser.departmentId === deptId;
+    return { 
+      assignedDeptId: deptId, 
+      hasAccess: match 
+    };
+  }, [selectedGLRow, activeSim, currentUser]);
 
   // 4. Fetch BPM Processes for selected account
   const { data: bpmProcesses, isLoading: bpmLoading } = useQuery({
@@ -191,16 +270,32 @@ export function BPMPage() {
             <Info className="h-12 w-12 text-slate-300 mx-auto mb-4" />
             <p className="text-slate-500 font-medium">Select an FSLI and GL Account to begin mapping.</p>
           </div>
+        ) : !hasAccess ? (
+          <div className="py-20 text-center border-2 border-red-100 rounded-xl bg-red-50/30">
+            <AlertTriangle className="h-12 w-12 text-red-400 mx-auto mb-4" />
+            <h3 className="text-lg font-bold text-red-800">Akses Dibatasi</h3>
+            <p className="text-red-600/80 text-sm max-w-md mx-auto mt-2">
+              Akun ini ditugaskan kepada <strong>{departmentName || "Departemen Lain"}</strong>. 
+              Sebagai Lini 1, Anda hanya dapat mengelola proses bisnis untuk akun milik departemen Anda sendiri.
+            </p>
+          </div>
         ) : (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
-              <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                <PlusCircle className="h-5 w-5 text-indigo-600" />
-                Proses BPM untuk {selectedGLRow?.glDesc}
-              </h3>
-              <Button onClick={() => setIsCreatingBPM(true)} size="sm" className="gap-2">
-                <Plus className="h-4 w-4" /> Create BPM
-              </Button>
+              <div className="space-y-1">
+                <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                  <PlusCircle className="h-5 w-5 text-indigo-600" />
+                  Proses BPM untuk {selectedGLRow?.glDesc}
+                </h3>
+                <p className="text-[10px] text-indigo-600 font-bold uppercase tracking-widest flex items-center gap-1.5">
+                  <Shield className="h-3 w-3" /> Owner: {departmentName || "Finance & Accounting"}
+                </p>
+              </div>
+              {(currentUser?.role === 'Line 2' || currentUser?.role === 'Admin' || hasAccess) && (
+                <Button onClick={() => setIsCreatingBPM(true)} size="sm" className="gap-2">
+                  <Plus className="h-4 w-4" /> Create BPM
+                </Button>
+              )}
             </div>
 
             <div className="flex flex-wrap gap-3">
@@ -218,13 +313,16 @@ export function BPMPage() {
                         ? "bg-indigo-600 border-indigo-700 shadow-lg shadow-indigo-200" 
                         : "bg-white border-slate-200 hover:border-indigo-300 text-slate-600"
                     )}
-                    onClick={() => setSelectedBpmId(bpm.id)}
+                    onClick={() => {
+                      setSelectedBpmId(bpm.id);
+                      setIsModalOpen(true);
+                    }}
                   >
                     <span className="h-6 w-6 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-[10px] font-bold border border-slate-200">
                       {idx + 1}
                     </span>
                     <span className="font-bold tracking-tight">{bpm.name}</span>
-                    {selectedBpmId === bpm.id && <ChevronRight className="h-4 w-4" />}
+                    <ChevronRight className="h-4 w-4" />
                   </Button>
                   <Button
                     variant="ghost"
@@ -242,27 +340,18 @@ export function BPMPage() {
                 </div>
               ))}
             </div>
-
-            {selectedBpmId && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-4 pt-4 border-t border-slate-100"
-              >
-                <div className="flex justify-between items-center">
-                  <Badge className="bg-indigo-50 text-indigo-700 border-indigo-100 hover:bg-indigo-50 px-3 py-1 gap-2 uppercase tracking-widest font-extrabold text-[10px]">
-                    <FileSpreadsheet className="h-3.5 w-3.5" /> Spreadsheet Worksheet
-                  </Badge>
-                </div>
-                
-                <BPMWorksheet 
-                  bpmProcessId={selectedBpmId} 
-                  fsliName={selectedFsli}
-                  noGL={selectedGLRow?.noGL || ""}
-                />
-              </motion.div>
-            )}
           </div>
+        )}
+
+        {selectedGLRow && (
+          <BPMModal 
+            isOpen={isModalOpen}
+            onOpenChange={setIsModalOpen}
+            noGL={selectedGLRow.noGL}
+            glDesc={selectedGLRow.glDesc}
+            fsliName={selectedFsli}
+            bpmProcessId={selectedBpmId || undefined}
+          />
         )}
 
         <Dialog open={isCreatingBPM} onOpenChange={setIsCreatingBPM}>

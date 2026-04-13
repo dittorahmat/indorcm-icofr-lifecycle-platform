@@ -37,7 +37,7 @@ export function WelcomePage() {
           className="space-y-6"
         >
           <h1 className="text-4xl md:text-5xl font-display font-bold bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/70">
-            Selamat Datang di IndoRCM Pro
+            Selamat Datang di ISB Risk Pro
           </h1>
 
           <div className="space-y-2">

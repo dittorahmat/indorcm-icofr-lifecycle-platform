@@ -34,7 +34,6 @@ import {
   SidebarGroup,
   SidebarHeader,
   SidebarSeparator,
-  SidebarInput,
   SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuItem,
@@ -46,7 +45,9 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { MaterialitySimulation } from "@shared/types";
 
-function PendingApprovalBadge({ role }: { role: string | null }) {
+import { authClient } from "@/lib/auth-client";
+
+function PendingApprovalBadge({ role }: { role: string | null | undefined }) {
   const { data: simulations } = useQuery({
     queryKey: ['simulations-pending-badge'],
     queryFn: () => api<{ items: MaterialitySimulation[] }>('/api/simulations'),
@@ -73,7 +74,8 @@ function PendingApprovalBadge({ role }: { role: string | null }) {
 export function AppSidebar(): JSX.Element {
   const location = useLocation();
   const pathname = location.pathname;
-  const mockRole = localStorage.getItem('mockRole');
+  const { data: session } = authClient.useSession();
+  const userRole = (session?.user as any)?.role;
 
   const isActive = (path: string) => pathname === path || pathname.startsWith(path);
 
@@ -84,12 +86,11 @@ export function AppSidebar(): JSX.Element {
           <div className="h-6 w-6 rounded-md bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-xs">
             I
           </div>
-          <span className="text-sm font-medium">IndoRCM Pro</span>
+          <span className="text-sm font-medium">ISB Risk Pro</span>
         </div>
-        <SidebarInput placeholder="Search..." />
       </SidebarHeader>
       <SidebarContent>
-        {mockRole === 'External Auditor' && (
+        {userRole === 'External Auditor' && (
           <SidebarGroup>
             <SidebarGroupLabel className="text-blue-600 font-bold uppercase text-[10px]">External Assurance</SidebarGroupLabel>
             <SidebarMenu>
@@ -110,7 +111,7 @@ export function AppSidebar(): JSX.Element {
                 <Link to="/dashboard" className="font-bold"><LayoutDashboard /> <span>Dashboard</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
-            {mockRole === 'Line 2' && (
+            {userRole === 'Line 2' && (
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={isActive("/import")}>
                   <Link to="/import" className="font-bold"><RefreshCw /> <span>Sync Financial Statement</span></Link>
@@ -132,14 +133,14 @@ export function AppSidebar(): JSX.Element {
                 <Link to="/scoping" className="font-bold"><Settings2 /> <span>Significant Account Identification</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
-            {(mockRole === 'Komisaris' || mockRole === 'CFO' || mockRole === 'Line 2' || mockRole === 'Admin') && (
+            {(userRole === 'Komisaris' || userRole === 'CFO' || userRole === 'Line 2' || userRole === 'Admin') && (
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={isActive("/scoping/approval")}>
                   <Link to="/scoping/approval" className="flex items-center justify-between w-full font-bold">
                     <div className="flex items-center gap-2">
                       <ShieldCheck /> <span>Materiality Approval</span>
                     </div>
-                    <PendingApprovalBadge role={mockRole} />
+                    <PendingApprovalBadge role={userRole} />
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -150,11 +151,6 @@ export function AppSidebar(): JSX.Element {
         <SidebarGroup>
           <SidebarGroupLabel className="font-bold text-white uppercase text-[10px] tracking-widest opacity-80">RCSA</SidebarGroupLabel>
           <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/rcm")}>
-                <Link to="/rcm" className="font-bold"><ListChecks /> <span>RCM List</span></Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/change-log")}>
                 <Link to="/change-log" className="font-bold"><History /> <span>Change Log</span></Link>
@@ -258,9 +254,22 @@ export function AppSidebar(): JSX.Element {
           </SidebarMenu>
         </SidebarGroup>
 
+        {userRole === 'Admin' && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="font-bold text-amber-500 uppercase text-[10px] tracking-widest">Administration</SidebarGroupLabel>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={isActive("/admin/users")}>
+                  <Link to="/admin/users" className="font-bold text-amber-600"><UserCog /> <span>User Management</span></Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroup>
+        )}
+
       </SidebarContent>
       <SidebarFooter>
-        <div className="px-2 text-xs text-muted-foreground">© 2026 IndoRCM Pro</div>
+        <div className="px-2 text-xs text-muted-foreground">© 2026 ISB Risk Pro</div>
       </SidebarFooter>
     </Sidebar>
   );

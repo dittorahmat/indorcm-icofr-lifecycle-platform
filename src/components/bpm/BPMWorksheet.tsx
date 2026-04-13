@@ -20,7 +20,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
   Network, Plus, Trash2, Loader2, PlusCircle, CheckCircle2, XCircle,
-  Database, Info, FileSpreadsheet
+  Database, Info, FileSpreadsheet, Workflow as WorkflowIcon
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from '@/components/ui/label';
 import { useNavigate } from 'react-router-dom';
+import { BPMEditor } from '../rcm/BPMEditor';
 
 interface BPMWorksheetProps {
   bpmProcessId: string;
@@ -48,15 +49,32 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
   const navigate = useNavigate();
   const [isAddingApp, setIsAddingApp] = React.useState(false);
   const [newAppName, setNewAppName] = React.useState("");
+  
+  // BPM Editor Modal State
+  const [isBpmModalOpen, setIsBpmModalOpen] = React.useState(false);
+  const [selectedDiagramId, setSelectedDiagramId] = React.useState<string | null>(null);
+  const [currentSubProcess, setCurrentSubProcess] = React.useState("");
 
   // 1. Fetch Controls for this BPM Process
   const { data: controls, isLoading } = useQuery({
-    queryKey: ['bpm-controls', bpmProcessId],
+    queryKey: ['bpm-controls', noGL],
     queryFn: async () => {
       const all = await api<{ items: Control[] }>('/api/controls');
-      return all.items.filter(c => c.bpmProcessId === bpmProcessId);
+      return all.items.filter(c => c.fsliCodes?.includes(noGL));
     }
   });
+
+  const { data: diagrams } = useQuery({
+    queryKey: ['bpm-diagrams'],
+    queryFn: () => api<{ items: any[] }>('/api/bpm-diagrams')
+  });
+
+  const { data: currentUser } = useQuery({
+    queryKey: ['auth-me'],
+    queryFn: () => api<User>('/api/auth/me'),
+  });
+
+  const isReadOnly = currentUser?.role === 'Line 1' && currentUser?.level === 'Manager';
 
   // 2. Fetch Applications for dropdown
   const { data: apps } = useQuery({
@@ -78,13 +96,24 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
     }
   });
 
+  const createDiagramMutation = useMutation({
+    mutationFn: (subProcess: string) => api('/api/bpm-diagrams', {
+      method: 'POST',
+      body: JSON.stringify({ name: `Flow: ${subProcess}`, subProcess })
+    }),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['bpm-diagrams'] });
+      setSelectedDiagramId(data.id);
+      setIsBpmModalOpen(true);
+    }
+  });
+
   const createMutation = useMutation({
     mutationFn: () => api('/api/controls', {
       method: 'POST',
       body: JSON.stringify({ 
         bpmProcessId, 
         fsliCodes: [noGL],
-        rcmId: 'auto-gen',
         name: 'New Control Activity',
         businessProcessLvl1: fsliName,
         businessProcessLvl2: '',
@@ -157,8 +186,42 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
     {
       id: 'no',
       header: 'No',
-      cell: info => <span className="text-[10px] text-slate-400">{info.row.index + 1}</span>,
+      cell: info => <span className="text-[10px] text-slate-400 px-2">{info.row.index + 1}</span>,
       size: 40
+    },
+    {
+      id: 'workflow',
+      header: 'BPM Workflow',
+      cell: ({ row }) => {
+        const subProcess = row.original.subProcess;
+        const diagram = diagrams?.items.find(d => d.subProcess === subProcess);
+        
+        return (
+          <Button 
+            variant={diagram ? "default" : "outline"} 
+            size="sm" 
+            className={cn(
+              "h-7 text-[9px] gap-1.5 uppercase font-bold mx-2",
+              diagram ? "bg-indigo-600 hover:bg-indigo-700" : "text-slate-400 border-slate-200"
+            )}
+            onClick={() => {
+              if (diagram) {
+                setSelectedDiagramId(diagram.id);
+                setCurrentSubProcess(subProcess || "");
+                setIsBpmModalOpen(true);
+              } else if (subProcess) {
+                createDiagramMutation.mutate(subProcess);
+              } else {
+                toast.error("Please fill Sub-Process name first");
+              }
+            }}
+          >
+            <Network className="h-3 w-3" />
+            {diagram ? "View Flow" : "Create Flow"}
+          </Button>
+        );
+      },
+      size: 100
     },
     {
       accessorKey: 'businessProcessLvl1',
@@ -371,35 +434,6 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
           </SelectContent>
         </Select>
       )
-    },
-    {
-      id: 'workflow',
-      header: 'BPM Workflow',
-      cell: ({ row }) => {
-        const subProcess = row.original.subProcess;
-        const rcm = rcms?.items.find(r => r.subProcess === subProcess && r.bpmData);
-        return (
-          <Button 
-            variant={rcm ? "default" : "outline"} 
-            size="sm" 
-            className={cn(
-              "h-7 text-[9px] gap-1.5 uppercase font-bold mr-2",
-              rcm ? "bg-indigo-600 hover:bg-indigo-700" : "text-slate-400 border-slate-200"
-            )}
-            onClick={() => {
-              if (rcm) {
-                navigate(`/rcm?id=${rcm.id}`);
-              } else {
-                toast.info("Opening RCM Editor to create diagram...");
-                navigate(`/rcm`);
-              }
-            }}
-          >
-            <Network className="h-3 w-3" />
-            {rcm ? "View" : "Create"}
-          </Button>
-        );
-      }
     }
   ], [apps, rcms, navigate, deleteMutation, updateMutation]);
 
@@ -476,7 +510,7 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
           <DialogHeader>
             <DialogTitle>Add New Application</DialogTitle>
             <DialogDescription>
-              Add a new IT system to the master data directory.
+              Add a new IT system to the master data directory. This application will be available for all controls in the platform.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -499,6 +533,34 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
               Add Application
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal: BPM Workflow Editor */}
+      <Dialog open={isBpmModalOpen} onOpenChange={setIsBpmModalOpen}>
+        <DialogContent className="max-w-[95vw] w-[1400px] h-[90vh] flex flex-col p-0 overflow-hidden">
+          <DialogHeader className="p-6 pb-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <DialogTitle className="flex items-center gap-2 text-xl">
+                  <WorkflowIcon className="h-5 w-5 text-indigo-600" />
+                  BPM Workflow Editor: {currentSubProcess}
+                </DialogTitle>
+                <DialogDescription>
+                  Mapping business processes, risks (RCM), and internal controls visually.
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+          
+          <div className="flex-1 min-h-0 border-t">
+            {selectedDiagramId && (
+              <BPMEditor 
+                diagramId={selectedDiagramId} 
+                subProcess={currentSubProcess}
+              />
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </div>

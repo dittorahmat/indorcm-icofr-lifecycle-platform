@@ -11,12 +11,41 @@ import type { User, Chat, ChatMessage, RCM, Control, Deficiency, ActionPlan, Use
 // - Pricing: HBA (Harga Batubara Acuan)
 // ============================================================================
 
+// --- Departments ---
+export const MOCK_DEPARTMENTS: Department[] = [
+  { id: 'dept-fin', name: 'Finance & Accounting', description: 'Pengelolaan keuangan dan pelaporan akuntansi' },
+  { id: 'dept-ops', name: 'Mining Operations', description: 'Operasi penambangan dan ekstraksi' },
+  { id: 'dept-log', name: 'Logistics & Supply Chain', description: 'Manajemen rantai pasok dan pengapalan' },
+  { id: 'dept-it', name: 'Information Technology', description: 'Layanan infrastruktur dan aplikasi IT' },
+  { id: 'dept-hr', name: 'Human Resources', description: 'Pengelolaan SDM dan organisasi' },
+];
+
 // --- Users (Line 1/2/3, Admin, External Auditor) ---
 export const MOCK_USERS: User[] = [
-  { id: 'u1', name: 'Ahmad Fauzi (Process Owner - Mining)', role: 'Line 1' },
-  { id: 'u2', name: 'Siti Nurhaliza (ICOFR Manager)', role: 'Line 2' },
-  { id: 'u3', name: 'Budi Santoso (Internal Auditor)', role: 'Line 3' },
-  { id: 'u4', name: 'Diana Wijaya (Admin)', role: 'Admin' },
+  // Mining Operations
+  { id: 'u1', name: 'Ahmad Fauzi (Staff Ops)', role: 'Line 1', departmentId: 'dept-ops', level: 'Staff' },
+  { id: 'u1-mgr', name: 'Bambang Sudarsono (Manager Ops)', role: 'Line 1', departmentId: 'dept-ops', level: 'Manager' },
+  
+  // Finance
+  { id: 'u8', name: 'Rina (Staff Finance)', role: 'Line 1', departmentId: 'dept-fin', level: 'Staff' },
+  { id: 'u8-mgr', name: 'Setyawan (Manager Finance)', role: 'Line 1', departmentId: 'dept-fin', level: 'Manager' },
+  
+  // Logistics
+  { id: 'u9', name: 'Hadi (Staff Logistics)', role: 'Line 1', departmentId: 'dept-log', level: 'Staff' },
+  { id: 'u9-mgr', name: 'Yanto (Manager Logistics)', role: 'Line 1', departmentId: 'dept-log', level: 'Manager' },
+
+  // IT
+  { id: 'u10', name: 'Eko (Staff IT)', role: 'Line 1', departmentId: 'dept-it', level: 'Staff' },
+  { id: 'u10-mgr', name: 'Maya (Manager IT)', role: 'Line 1', departmentId: 'dept-it', level: 'Manager' },
+
+  // HR
+  { id: 'u11', name: 'Siska (Staff HR)', role: 'Line 1', departmentId: 'dept-hr', level: 'Staff' },
+  { id: 'u11-mgr', name: 'Budi (Manager HR)', role: 'Line 1', departmentId: 'dept-hr', level: 'Manager' },
+
+  // Lini 2, 3, etc
+  { id: 'u2', name: 'Siti Nurhaliza (ICOFR Manager)', role: 'Line 2', departmentId: 'dept-fin', level: 'Manager' },
+  { id: 'u3', name: 'Budi Santoso (Internal Auditor)', role: 'Line 3', departmentId: 'dept-hr', level: 'Staff' },
+  { id: 'u4', name: 'Diana Wijaya (Admin)', role: 'Admin', departmentId: 'dept-it', level: 'Manager' },
   { id: 'u5', name: 'Evan Tan (KAP Partner)', role: 'External Auditor' },
   { id: 'u6', name: 'Hendro Wijaya (CFO)', role: 'CFO' },
   { id: 'u7', name: 'Dodi Prasetyo (Komisaris Utama)', role: 'Komisaris' },

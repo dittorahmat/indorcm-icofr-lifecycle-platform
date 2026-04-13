@@ -11,12 +11,12 @@ import { Separator } from '@/components/ui/separator';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import type { 
-  MaterialitySimulation, GLRow, GLSnapshot, QualitativeLevel, UserRole, SimulationStatus 
+  MaterialitySimulation, GLRow, GLSnapshot, QualitativeLevel, UserRole, SimulationStatus, Department 
 } from '@shared/types';
 import { Badge } from '@/components/ui/badge';
 import { 
   Plus, Save, Loader2, Trash2, Upload, ArrowLeft, Send, History, ShieldCheck, Settings2, Info,
-  Database, LayoutGrid, FileSpreadsheet, AlertTriangle, CheckCircle2
+  Database, LayoutGrid, FileSpreadsheet, AlertTriangle, CheckCircle2, Building2
 } from 'lucide-react';
 import { GLDataGrid } from '@/components/scoping/GLDataGrid';
 import { ScopingHealthDashboard } from '@/components/scoping/ScopingHealthDashboard';
@@ -344,7 +344,7 @@ function SimulationInitialForm({ activeSnap, onSubmit, isPending }: { activeSnap
           Default OM: <strong>{defaultOm}%</strong>.
         </p>
       </div>
-      <Button className="w-full mt-2" disabled={!name || !basis || isPending} onClick={() => onSubmit({ name, basis, omPercentage: defaultOm, locationCount: locations })}>
+      <Button className="w-full mt-2" disabled={!name || !basis || isPending} onClick={() => onSubmit({ name, basis, omPercentage: defaultOm, haircutPercentage: 25, locationCount: locations })}>
         {isPending ? "Creating..." : "Initialize Simulation"}
       </Button>
     </div>
@@ -356,7 +356,30 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
   const [simState, setSimState] = React.useState(simulation);
   const [glData, setGlData] = React.useState<GLRow[]>([]);
 
+  // Fix 1: Sinkronkan state jika props berubah (setelah mutation success)
+  React.useEffect(() => {
+    setSimState(simulation);
+  }, [simulation]);
+
+  const { data: departments } = useQuery({
+    queryKey: ['departments'],
+    queryFn: () => api<{ items: Department[] }>('/api/departments'),
+  });
+
   const isLocked = simState.status === 'Approved' || simState.status === 'Pending CFO' || simState.status === 'Pending Komut';
+
+  // Fix 2: Gabungkan data penugasan dari simState ke glData
+  const mergedGlData = React.useMemo(() => {
+    return glData.map(row => {
+      // Cari penugasan berdasarkan noGL (Account Code) yang lebih akurat
+      const accounts = simState.significantAccounts || [];
+      const assignment = accounts.find(sa => sa.fsliCode === row.noGL);
+      return {
+        ...row,
+        assignedDepartmentId: assignment?.assignedDepartmentId
+      };
+    });
+  }, [glData, simState.significantAccounts]);
 
   const { data: snapshot } = useQuery({
     queryKey: ['gl-snapshot', simState.glSnapshotId],
@@ -382,6 +405,18 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
 
   const { omValue, pmValue, multiplier, benchmarkValue } = calculateValues;
 
+  const assignDeptMutation = useMutation({
+    mutationFn: (data: { accountName: string, departmentId: string }) => 
+      api('/api/scoping/assign-department', { 
+        method: 'POST', 
+        body: JSON.stringify({ scopingId: simState.id, ...data }) 
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['simulations'] });
+      toast.success("Department assigned successfully");
+    }
+  });
+
   const updateSimMutation = useMutation({
     mutationFn: (data: Partial<MaterialitySimulation>) => api(`/api/simulations/${simState.id}`, { method: 'PUT', body: JSON.stringify({ ...data, omValue, pmValue }) }),
     onSuccess: () => {
@@ -401,16 +436,37 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
 
   const handleAssessmentChange = (fsliName: string, ruleId: number, level: QualitativeLevel) => {
     if (isLocked) return;
-    setSimState(prev => ({
-      ...prev,
-      assessmentData: { 
-        ...prev.assessmentData, 
-        [fsliName]: { 
-          ...(prev.assessmentData[fsliName] || {}), 
-          [ruleId]: level 
-        } 
-      }
-    }));
+    setSimState(prev => {
+      const currentData = prev.assessmentData || {};
+      const fsliData = currentData[fsliName] || {};
+
+      return {
+        ...prev,
+        assessmentData: {
+          ...currentData,
+          [fsliName]: {
+            ...fsliData,
+            [ruleId]: level
+          }
+        }
+      };
+    });
+  };
+
+  const handleOwnerAcceptanceChange = async (noGL: string, acceptance: "Accepted" | "Rejected") => {
+    if (isLocked) return;
+    try {
+      await api(`/api/gl-rows/${noGL}/owner-acceptance`, {
+        method: 'PUT',
+        body: JSON.stringify({ ownerAcceptance: acceptance })
+      });
+      toast.success(`Owner acceptance updated to ${acceptance}`);
+      // Refresh GL data
+      queryClient.invalidateQueries({ queryKey: ['gl-snapshot', simState.glSnapshotId] });
+    } catch (error) {
+      toast.error("Failed to update owner acceptance");
+      console.error(error);
+    }
   };
 
   return (
@@ -458,16 +514,33 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
               <CardContent className="space-y-5 pt-6">
                 <div className="space-y-2">
                   <Label className="text-[10px] font-bold uppercase text-slate-400">Significant Locations</Label>
-                  <Input type="number" min={1} disabled={isLocked} value={simState.locationCount} onChange={e => setSimState(s => ({ ...s, locationCount: Number(e.target.value) }))} />
+                  <Input 
+                    type="number" 
+                    min={1} 
+                    disabled={isLocked} 
+                    value={simState.locationCount ?? 1} 
+                    onChange={e => setSimState(s => ({ ...s, locationCount: Number(e.target.value) }))} 
+                  />
                   <p className="text-[9px] text-blue-600 italic">Multiplier: {multiplier}x</p>
                 </div>
                 <div className="space-y-2">
                   <Label className="text-[10px] font-bold uppercase text-slate-400">% OM (Overall Materiality)</Label>
-                  <Input type="number" step={0.1} disabled={isLocked} value={simState.omPercentage} onChange={e => setSimState(s => ({ ...s, omPercentage: Number(e.target.value) }))} />
+                  <Input 
+                    type="number" 
+                    step={0.1} 
+                    disabled={isLocked} 
+                    value={simState.omPercentage ?? 0} 
+                    onChange={e => setSimState(s => ({ ...s, omPercentage: Number(e.target.value) }))} 
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-[10px] font-bold uppercase text-slate-400">% Haircut (PM)</Label>
-                  <Input type="number" disabled={isLocked} value={simState.haircutPercentage} onChange={e => setSimState(s => ({ ...s, haircutPercentage: Number(e.target.value) }))} />
+                  <Input 
+                    type="number" 
+                    disabled={isLocked} 
+                    value={simState.haircutPercentage ?? 0} 
+                    onChange={e => setSimState(s => ({ ...s, haircutPercentage: Number(e.target.value) }))} 
+                  />
                 </div>
                 <Separator />
                 <div className="space-y-3 bg-slate-50 p-4 rounded-lg border border-slate-100">
@@ -510,11 +583,16 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
               </TabsList>
               <TabsContent value="worksheet" className="space-y-6">
                 <ScopingHealthDashboard glData={glData} />
-                <GLDataGrid 
-                  data={glData} assessmentData={simState.assessmentData} 
-                  omValue={omValue} pmValue={pmValue}
+                <GLDataGrid
+                  data={mergedGlData}
+                  assessmentData={simState.assessmentData || {}}
+                  omValue={omValue}
+                  pmValue={pmValue}
                   onAssessmentChange={handleAssessmentChange}
+                  onOwnerAcceptanceChange={handleOwnerAcceptanceChange}
                   isReadOnly={isLocked}
+                  departments={departments?.items || []}
+                  onAssignDepartment={(accountName, departmentId) => assignDeptMutation.mutate({ accountName, departmentId })}
                 />
               </TabsContent>
               <TabsContent value="history">

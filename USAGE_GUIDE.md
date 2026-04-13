@@ -1,6 +1,6 @@
-# Panduan Penggunaan IndoRCM Pro — Platform Siklus ICOFR
+# Panduan Penggunaan ISB Risk Pro — Platform Siklus ICOFR
 
-Selamat datang di **IndoRCM Pro**, platform digital yang dirancang khusus untuk mengelola siklus *Internal Control over Financial Reporting* (ICOFR) sesuai dengan **Peraturan SK-5/DKU.MBU/11/2024**.
+Selamat datang di **ISB Risk Pro**, platform digital yang dirancang khusus untuk mengelola siklus *Internal Control over Financial Reporting* (ICOFR) sesuai dengan **Peraturan SK-5/DKU.MBU/11/2024**.
 
 ## Daftar Isi
 1. [Peran Pengguna (RBAC)](#peran-pengguna-rbac)
@@ -117,4 +117,4 @@ Pantau performa siklus ICOFR melalui menu **Dashboard**:
 *   **Cooling-Off Check:** Sistem secara otomatis memblokir Auditor (Lini 3) yang memiliki riwayat operasional dalam 12 bulan terakhir pada proses terkait (Bab II d.2).
 
 ---
-*Dokumen ini disusun untuk IndoRCM Pro v1.0 — © 2026 IndoRCM Pro Team.*
+*Dokumen ini disusun untuk ISB Risk Pro v2.0 — © 2026 ISB Risk Pro Team.*

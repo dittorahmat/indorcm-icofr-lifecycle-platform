@@ -10,10 +10,10 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { GLSnapshot } from '@shared/types';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
-import { Calculator, Save, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Calculator, Save, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface SetBenchmarkModalProps {
@@ -22,9 +22,16 @@ interface SetBenchmarkModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function SetBenchmarkModal({ snapshot, isOpen, onOpenChange }: SetBenchmarkModalProps) {
+export function SetBenchmarkModal({ snapshot: initialSnapshot, isOpen, onOpenChange }: SetBenchmarkModalProps) {
   const queryClient = useQueryClient();
   const [selectedFsliNames, setSelectedFsliNames] = React.useState<string[]>([]);
+
+  // Fetch full snapshot with rows
+  const { data: snapshot, isLoading } = useQuery({
+    queryKey: ['gl-snapshot-detail', initialSnapshot?.id],
+    queryFn: () => api<GLSnapshot>(`/api/gl-snapshots/${initialSnapshot?.id}`),
+    enabled: !!initialSnapshot?.id && isOpen
+  });
 
   React.useEffect(() => {
     if (snapshot) {
@@ -33,7 +40,7 @@ export function SetBenchmarkModal({ snapshot, isOpen, onOpenChange }: SetBenchma
   }, [snapshot]);
 
   const uniqueFsliData = React.useMemo(() => {
-    if (!snapshot) return [];
+    if (!snapshot || !snapshot.rows) return [];
     const fsliMap = new Map<string, number>();
     snapshot.rows.forEach(r => {
       if (r.fsliName) {
@@ -86,39 +93,46 @@ export function SetBenchmarkModal({ snapshot, isOpen, onOpenChange }: SetBenchma
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-4 flex-1 overflow-hidden">
           <div className="md:col-span-2 overflow-auto border rounded-xl shadow-inner bg-slate-50/30">
-            <Table>
-              <TableHeader className="sticky top-0 bg-white z-10 shadow-sm border-b">
-                <TableRow>
-                  <TableHead className="w-[50px] text-center">Select</TableHead>
-                  <TableHead>FSLI Name</TableHead>
-                  <TableHead className="text-right">Total Balance (|Saldo|)</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {uniqueFsliData.map(item => (
-                  <TableRow 
-                    key={item.name} 
-                    className={cn(
-                      "hover:bg-slate-100/50 transition-colors cursor-pointer",
-                      selectedFsliNames.includes(item.name) && "bg-indigo-50/50"
-                    )}
-                    onClick={() => handleToggle(item.name)}
-                  >
-                    <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
-                      <Checkbox 
-                        checked={selectedFsliNames.includes(item.name)}
-                        onCheckedChange={() => handleToggle(item.name)}
-                        className="data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
-                      />
-                    </TableCell>
-                    <TableCell className="text-xs font-bold text-slate-700">{item.name}</TableCell>
-                    <TableCell className="text-right font-mono text-[11px] text-slate-500">
-                      Rp {item.total.toLocaleString('id-ID')}
-                    </TableCell>
+            {isLoading ? (
+              <div className="h-full w-full flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+                <p className="text-sm font-medium">Memuat data GL...</p>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader className="sticky top-0 bg-white z-10 shadow-sm border-b">
+                  <TableRow>
+                    <TableHead className="w-[50px] text-center">Select</TableHead>
+                    <TableHead>FSLI Name</TableHead>
+                    <TableHead className="text-right">Total Balance (|Saldo|)</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {uniqueFsliData.map(item => (
+                    <TableRow 
+                      key={item.name} 
+                      className={cn(
+                        "hover:bg-slate-100/50 transition-colors cursor-pointer",
+                        selectedFsliNames.includes(item.name) && "bg-indigo-50/50"
+                      )}
+                      onClick={() => handleToggle(item.name)}
+                    >
+                      <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
+                        <Checkbox 
+                          checked={selectedFsliNames.includes(item.name)}
+                          onCheckedChange={() => handleToggle(item.name)}
+                          className="data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
+                        />
+                      </TableCell>
+                      <TableCell className="text-xs font-bold text-slate-700">{item.name}</TableCell>
+                      <TableCell className="text-right font-mono text-[11px] text-slate-500">
+                        Rp {item.total.toLocaleString('id-ID')}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </div>
 
           <div className="space-y-6">

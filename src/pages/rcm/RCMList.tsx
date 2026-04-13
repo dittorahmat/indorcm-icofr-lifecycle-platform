@@ -106,8 +106,8 @@ export function RCMList() {
 
     // Filter RCMs where at least one linked control covers the FSLI code
     return rcmData.items.filter(rcm => {
-      const rcmControls = controlsData?.items.filter(c => c.rcmId === rcm.id) || [];
-      return rcmControls.some(c => c.fsliCodes?.includes(fsliFilter)) || 
+      const rcmControls = (controlsData?.items || []).filter(c => c.rcmId === rcm.id);
+      return rcmControls.some(c => (c.fsliCodes || []).includes(fsliFilter)) || 
              rcm.process.toLowerCase().includes(fsliFilter.toLowerCase());
     });
   }, [rcmData, controlsData, fsliFilter]);

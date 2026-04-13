@@ -36,7 +36,7 @@ export function HomePage() {
                 Enterprise ICOFR Lifecycle Platform for BUMN
               </h1>
               <p className="mt-6 max-w-2xl mx-auto text-lg md:text-xl text-muted-foreground text-pretty">
-                IndoRCM Pro digitizes the internal control over financial reporting lifecycle—from planning and scoping to management assessment and audit reporting.
+                ISB Risk Pro digitizes the internal control over financial reporting lifecycle—from planning and scoping to management assessment and audit reporting.
               </p>
               <div className="mt-10 flex justify-center gap-4">
                 <Button size="lg" asChild className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-primary/40 transition-all duration-300 transform hover:-translate-y-0.5">
@@ -79,7 +79,7 @@ export function HomePage() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="grid gap-6 md:grid-cols-3 mb-24"
           >
-            <StatCard icon={<Zap className="h-5 w-5 text-muted-foreground" />} title="IndoRCM Control Coverage" value="98.7%" />
+            <StatCard icon={<Zap className="h-5 w-5 text-muted-foreground" />} title="ISB Risk Control Coverage" value="98.7%" />
             <StatCard icon={<CheckCircle className="h-5 w-5 text-muted-foreground" />} title="Controls Effective" value="95.2%" />
             <StatCard icon={<BarChart className="h-5 w-5 text-muted-foreground" />} title="Open Deficiencies" value="12" />
           </motion.div>

@@ -1,0 +1,123 @@
+import { neon } from '@neondatabase/serverless';
+import { drizzle } from 'drizzle-orm/neon-http';
+import * as schema from './schema';
+import { getAuth } from '../auth';
+import { MOCK_USERS, MOCK_DEPARTMENTS, MOCK_RCM, MOCK_CONTROLS } from '../../shared/mock-data';
+
+const getFriendlyEmail = (u: any): string => {
+    if (u.role === 'Line 2') return 'line2@bumn.go.id';
+    if (u.role === 'Line 3') return 'line3@bumn.go.id';
+    if (u.role === 'CFO') return 'cfo@bumn.go.id';
+    if (u.role === 'Komisaris') return 'komisaris@bumn.go.id';
+    if (u.role === 'Admin') return 'admin@bumn.go.id';
+    if (u.role === 'External Auditor') return 'external@bumn.go.id';
+
+    const deptSuffix = u.departmentId?.replace('dept-', '') || 'ops';
+    const levelPrefix = u.level?.toLowerCase() || 'staff';
+    return `${levelPrefix}.${deptSuffix}@bumn.go.id`;
+};
+
+const seed = async (databaseUrl: string, authSecret: string) => {
+    console.log("🌱 Re-seeding database with Real Auth (Better Auth)...");
+    const client = neon(databaseUrl);
+    const db = drizzle(client, { schema });
+    const auth = getAuth({ DATABASE_URL: databaseUrl, BETTER_AUTH_SECRET: authSecret });
+
+    console.log("🧹 Cleaning up old data...");
+    await db.delete(schema.member);
+    await db.delete(schema.session);
+    await db.delete(schema.account);
+    await db.delete(schema.verification);
+    await db.delete(schema.user);
+    await db.delete(schema.controls);
+    await db.delete(schema.rcms);
+    await db.delete(schema.departments);
+    await db.delete(schema.organization);
+
+    const orgId = "org-bumn-default";
+    await db.insert(schema.organization).values({
+        id: orgId,
+        name: "PT Batubara Nusantara Sejahtera",
+        slug: "pt-bns",
+        entityCode: "0101",
+        createdAt: new Date(),
+    });
+
+    for (const dept of MOCK_DEPARTMENTS) {
+        await db.insert(schema.departments).values({
+            ...dept,
+            organizationId: orgId,
+        });
+    }
+
+    for (const u of MOCK_USERS) {
+        const email = getFriendlyEmail(u);
+        
+        // Use Better Auth API to create user WITH password
+        const user = await auth.api.signUpEmail({
+            body: {
+                email,
+                password: "password",
+                name: u.name,
+            }
+        });
+
+        if (user) {
+            // Update additional fields that signUpEmail doesn't handle natively in body
+            await db.update(schema.user).set({
+                role: u.role,
+                level: u.level || "Staff",
+                departmentId: u.departmentId,
+            }).where(eq(schema.user.id, user.user.id));
+
+            // Add to Organization
+            await db.insert(schema.member).values({
+                id: crypto.randomUUID(),
+                organizationId: orgId,
+                userId: user.user.id,
+                role: u.role === 'Admin' ? 'admin' : 'member',
+                createdAt: new Date(),
+            });
+            
+            console.log(`👤 Seeded user with password: ${u.name} -> ${email}`);
+        }
+    }
+
+    // 4. Insert RCMs & Controls
+    for (const rcm of MOCK_RCM) {
+        await db.insert(schema.rcms).values({
+            id: rcm.id,
+            organizationId: orgId,
+            process: rcm.process,
+            subProcess: rcm.subProcess,
+            riskDescription: rcm.riskDescription,
+            status: rcm.status as any,
+        });
+    }
+
+    for (const ctrl of MOCK_CONTROLS) {
+        await db.insert(schema.controls).values({
+            id: ctrl.id,
+            organizationId: orgId,
+            rcmId: ctrl.rcmId,
+            code: ctrl.code,
+            name: ctrl.name,
+            description: ctrl.description,
+            ownerId: ctrl.ownerId,
+            type: ctrl.type,
+            nature: ctrl.nature,
+            frequency: ctrl.frequency,
+            bpmStatus: ctrl.bpmStatus || "Approved",
+        });
+    }
+
+    console.log("✨ Seeding complete with Real Auth!");
+};
+
+import { eq } from 'drizzle-orm';
+const url = process.env.DATABASE_URL;
+const secret = process.env.BETTER_AUTH_SECRET || "seed-secret-123";
+if (url) {
+    seed(url, secret).catch(console.error);
+}
+
