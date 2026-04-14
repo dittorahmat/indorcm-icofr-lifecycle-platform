@@ -30,7 +30,6 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 import {
   Tooltip,
@@ -38,6 +37,17 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 // --- Custom Nodes sesuai Legenda Lampiran 3 & 4 ---
 
@@ -80,20 +90,50 @@ const StartEndNode = ({ data, selected, type }: NodeProps) => (
   </NodeTooltip>
 );
 
-const ActivityNode = ({ data, selected, type }: NodeProps) => (
-  <NodeTooltip data={data} type={type}>
-    <div className={cn(
-      "px-4 py-3 shadow-md rounded-sm bg-white border-2 border-slate-800 min-w-[160px] text-center transition-all",
-      selected && "ring-4 ring-primary/20 border-primary shadow-lg scale-105"
-    )}>
-      <Handle type="target" position={Position.Top} className="w-2 h-2" />
-      <div className="font-bold text-[9px] mb-1.5 uppercase text-slate-500 border-b pb-1 flex items-center justify-center gap-1">
-        <Activity className="h-2.5 w-2.5" /> {data.role || "Role"}
+const ActivityNode = ({ data, selected, type }: NodeProps) => {
+  return (
+    <NodeTooltip data={data} type={type}>
+      <div className={cn(
+        "px-4 py-3 shadow-md rounded-sm bg-white border-2 border-slate-800 min-w-[160px] text-center transition-all relative",
+        selected && "ring-4 ring-primary/20 border-primary shadow-lg scale-105"
+      )}>
+        <Handle type="target" position={Position.Top} className="w-2 h-2" />
+        <div className="font-bold text-[9px] mb-1.5 uppercase text-slate-500 border-b pb-1 flex items-center justify-center gap-1">
+          <Activity className="h-2.5 w-2.5" /> {data.role || "Role"}
+        </div>
+        <div className="text-[12px] font-semibold text-slate-800 leading-tight">{data.label}</div>
+        <Handle type="source" position={Position.Bottom} className="w-2 h-2" />
       </div>
-      <div className="text-[12px] font-semibold text-slate-800 leading-tight">{data.label}</div>
-      <Handle type="source" position={Position.Bottom} className="w-2 h-2" />
+    </NodeTooltip>
+  );
+};
+
+const DockedRiskNode = ({ data, selected }: NodeProps) => (
+  <div className="relative group cursor-pointer">
+    <svg width="24" height="22" viewBox="0 0 80 70" className={cn(
+      "text-red-600 drop-shadow-sm transition-all",
+      selected ? "scale-125 text-red-700" : "hover:scale-110"
+    )}>
+      <path d="M20 0 L60 0 L80 35 L60 70 L20 70 L0 35 Z" fill="currentColor" />
+    </svg>
+    <div className="absolute -top-2 -right-2 bg-red-700 text-white text-[8px] font-black rounded-full w-4 h-4 flex items-center justify-center border border-white shadow-sm">
+      {data.riskIds?.length || 0}
     </div>
-  </NodeTooltip>
+  </div>
+);
+
+const DockedControlNode = ({ data, selected }: NodeProps) => (
+  <div className="relative group cursor-pointer">
+    <div className={cn(
+      "w-5 h-5 rounded-full bg-green-600 border-2 border-green-900 flex items-center justify-center shadow-sm transition-all",
+      selected ? "scale-125 bg-green-700 border-primary" : "hover:scale-110"
+    )}>
+      <ShieldCheck className="h-3 w-3 text-white" />
+    </div>
+    <div className="absolute -top-2 -right-2 bg-green-700 text-white text-[8px] font-black rounded-full w-4 h-4 flex items-center justify-center border border-white shadow-sm">
+      {data.controlIds?.length || 0}
+    </div>
+  </div>
 );
 
 const RiskNode = ({ data, selected, type }: NodeProps) => (
@@ -143,6 +183,72 @@ const ControlPointNode = ({ data, selected, type }: NodeProps) => (
       )}>
         {data.code ? `[${data.code}] ${data.label}` : data.label}
       </div>
+    </div>
+  </NodeTooltip>
+);
+
+const AutomatedActivityNode = ({ data, selected, type }: NodeProps) => {
+  return (
+    <NodeTooltip data={data} type={type}>
+      <div className={cn(
+        "px-4 py-3 shadow-md rounded-sm bg-blue-50 border-2 border-blue-800 min-w-[160px] text-center transition-all relative",
+        selected && "ring-4 ring-primary/20 border-primary shadow-lg scale-105"
+      )}>
+        <Handle type="target" position={Position.Top} className="w-2 h-2" />
+        <div className="font-bold text-[9px] mb-1.5 uppercase text-blue-600 border-b border-blue-200 pb-1 flex items-center justify-center gap-1">
+          <Database className="h-2.5 w-2.5" /> SYSTEM
+        </div>
+        <div className="text-[12px] font-semibold text-blue-900 leading-tight mb-2">{data.label}</div>
+        <div className="absolute bottom-1 left-2 right-1 h-0.5 bg-blue-800/30 rounded-full" />
+        <Handle type="source" position={Position.Bottom} className="w-2 h-2" />
+      </div>
+    </NodeTooltip>
+  );
+};
+
+const SystemOutputNode = ({ data, selected, type }: NodeProps) => (
+  <NodeTooltip data={data} type={type}>
+    <div className={cn("relative group transition-all", selected && "scale-105")}>
+      <Handle type="target" position={Position.Top} className="z-10" />
+      <div className={cn(
+        "w-32 h-12 flex items-center justify-center bg-white border-2 shadow-md transition-all",
+        selected ? "border-primary ring-4 ring-primary/20" : "border-slate-800"
+      )} style={{ transform: 'skew(-20deg)' }}>
+        <div style={{ transform: 'skew(20deg)' }} className="text-center text-[10px] font-bold uppercase text-slate-700 px-2">
+          {data.label}
+        </div>
+      </div>
+      <Handle type="source" position={Position.Bottom} className="z-10" />
+    </div>
+  </NodeTooltip>
+);
+
+const PhysicalDocumentNode = ({ data, selected, type }: NodeProps) => (
+  <NodeTooltip data={data} type={type}>
+    <div className={cn(
+      "px-4 py-2 shadow-md bg-white border-2 border-slate-800 min-w-[130px] text-center relative transition-all", 
+      selected && "ring-4 ring-primary/20 border-primary scale-105 shadow-lg"
+    )} style={{ borderRadius: "4px 4px 0 0" }}>
+      <Handle type="target" position={Position.Top} className="z-10" />
+      <div className="flex flex-col items-center gap-1.5 pb-2">
+        <FileText className="h-4 w-4 text-slate-500" />
+        <span className="text-[11px] font-bold uppercase tracking-tight text-slate-700">{data.label}</span>
+      </div>
+      <div className="absolute -bottom-1.5 left-0 right-0 h-3 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iMTAiIHZpZXdCb3g9IjAgMCA0MCAxMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMCA1IEMxMCAwIDMwIDAgNDAgNSBMNDAgMTAgTDAgMTAgWiIgZmlsbD0id2hpdGUiIHN0cm9rZT0iIzFmMjkzNyIgc3Ryb2tlLXdpZHRoPSIyIi8+PC9zdmc+')] bg-repeat-x" />
+      <Handle type="source" position={Position.Bottom} className="z-10" />
+    </div>
+  </NodeTooltip>
+);
+
+const ReferenceNode = ({ data, selected, type }: NodeProps) => (
+  <NodeTooltip data={data} type={type}>
+    <div className={cn(
+      "w-10 h-10 rounded-full border-2 bg-white flex items-center justify-center shadow-md transition-all",
+      selected ? "border-primary ring-4 ring-primary/20" : "border-slate-800"
+    )}>
+      <Handle type="target" position={Position.Top} className="z-10" />
+      <span className="text-[10px] font-black text-slate-700">{data.label}</span>
+      <Handle type="source" position={Position.Bottom} className="z-10" />
     </div>
   </NodeTooltip>
 );
@@ -235,12 +341,18 @@ const nodeTypes = {
   start: StartEndNode,
   end: StartEndNode,
   activity: ActivityNode,
+  'automated-activity': AutomatedActivityNode,
   decision: DecisionNode,
   document: DocumentNode,
+  'physical-document': PhysicalDocumentNode,
+  output: SystemOutputNode,
   system: SystemNode,
   risk: RiskNode,
   control: ControlPointNode,
   archive: ArchiveNode,
+  'docked-risk': DockedRiskNode,
+  'docked-control': DockedControlNode,
+  reference: ReferenceNode,
 };
 
 const initialNodes = [
@@ -257,8 +369,7 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
-  const [navStack, setNavStack] = useState<{ id: string, type: 'node' | 'risk' | 'control' | 'fsli' }[]>([]);
-  const [searchControl, setSearchControl] = useState("");
+  const [impactData, setImpactData] = useState<{ id: string, type: 'Risk' | 'Control', count: number, usage: any[] } | null>(null);
 
   // 1. Fetch Diagram Data
   const { data: diagram, isLoading: isDiagramLoading } = useQuery({
@@ -266,7 +377,7 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
     queryFn: () => api<any>(`/api/bpm-diagrams/${diagramId}`),
   });
 
-  // 2. Fetch Master Data for Sidebar & Linking
+  // 2. Fetch Master Data
   const { data: controlsData } = useQuery({
     queryKey: ['controls'],
     queryFn: () => api<{ items: Control[] }>('/api/controls')
@@ -277,6 +388,49 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
     queryFn: () => api<{ items: RCM[] }>('/api/rcm')
   });
 
+  const createRiskMutation = useMutation({
+    mutationFn: (description: string) => api<RCM>('/api/rcm', {
+      method: 'POST',
+      body: JSON.stringify({ riskDescription: description, subProcess })
+    }),
+    onSuccess: (newRisk) => {
+      queryClient.invalidateQueries({ queryKey: ['rcm'] });
+      if (selectedNodeId) linkRiskToActivity(selectedNodeId, newRisk.id);
+    }
+  });
+
+  const createControlMutation = useMutation({
+    mutationFn: (name: string) => api<Control>('/api/controls', {
+      method: 'POST',
+      body: JSON.stringify({ name, subProcess })
+    }),
+    onSuccess: (newControl) => {
+      queryClient.invalidateQueries({ queryKey: ['controls'] });
+      if (selectedNodeId) linkControlToActivity(selectedNodeId, newControl.id);
+    }
+  });
+
+  const deletePermanentlyMutation = useMutation({
+    mutationFn: async ({ id, type }: { id: string, type: 'Risk' | 'Control' }) => {
+      const endpoint = type === 'Risk' ? `/api/rcm/${id}` : `/api/controls/${id}`;
+      return api(endpoint, { method: 'DELETE' });
+    },
+    onSuccess: (_, { type }) => {
+      toast.success(`${type} deleted from entire system`);
+      queryClient.invalidateQueries({ queryKey: [type === 'Risk' ? 'rcm' : 'controls'] });
+      setImpactData(null);
+      setNodes(nds => nds.map(node => {
+        const newData = { ...node.data };
+        if (newData.riskIds) newData.riskIds = newData.riskIds.filter(rid => rid !== impactData?.id);
+        if (newData.controlIds) newData.controlIds = newData.controlIds.filter(cid => cid !== impactData?.id);
+        return { ...node, data: newData };
+      }));
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Failed to delete");
+    }
+  });
+
   useEffect(() => {
     if (diagram) {
       setNodes(diagram.nodes || initialNodes);
@@ -285,181 +439,135 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
   }, [diagram, setNodes, setEdges]);
 
   const selectedNode = useMemo(() => nodes.find(n => n.id === selectedNodeId), [nodes, selectedNodeId]);
-  const currentNav = navStack[navStack.length - 1];
-
-  const pushNav = (id: string, type: 'node' | 'risk' | 'control' | 'fsli') => {
-    setNavStack(prev => [...prev, { id, type }]);
-  };
-
-  const popNav = () => {
-    setNavStack(prev => prev.slice(0, -1));
-  };
 
   const resetNav = (nodeId: string | null) => {
     setSelectedNodeId(nodeId);
-    if (nodeId) {
-      setNavStack([{ id: nodeId, type: 'node' }]);
-    } else {
-      setNavStack([]);
-    }
   };
-
-  // Drag & Drop Handlers
-  const onDragStart = (event: React.DragEvent, nodeType: string, data: any) => {
-    event.dataTransfer.setData('application/reactflow', nodeType);
-    event.dataTransfer.setData('application/payload', JSON.stringify(data));
-    event.dataTransfer.effectAllowed = 'move';
-  };
-
-  const onDragOver = useCallback((event: React.DragEvent) => {
-    event.preventDefault();
-    event.dataTransfer.dropEffect = 'move';
-  }, []);
-
-  const onDrop = useCallback(
-    (event: React.DragEvent) => {
-      event.preventDefault();
-
-      const type = event.dataTransfer.getData('application/reactflow');
-      const payload = JSON.parse(event.dataTransfer.getData('application/payload') || '{}');
-
-      if (typeof type === 'undefined' || !type) return;
-
-      const position = { x: event.clientX - 400, y: event.clientY - 150 }; // Rough adjustment
-      const newNode = {
-        id: `${Date.now()}`,
-        type,
-        position,
-        data: { ...payload },
-      };
-
-      setNodes((nds) => nds.concat(newNode));
-    },
-    [setNodes]
-  );
 
   const saveMutation = useMutation({
-    mutationFn: (data: any) => api(`/api/bpm-diagrams/${diagramId}`, { 
-      method: 'PUT', 
-      body: JSON.stringify(data) 
-    }),
+    mutationFn: (data: any) => api(`/api/bpm-diagrams/${diagramId}`, { method: 'PUT', body: JSON.stringify(data) }),
     onSuccess: () => {
       toast.success('BPM Diagram saved');
       queryClient.invalidateQueries({ queryKey: ['bpm-diagrams'] });
     }
   });
 
-  const assignRcmToDiagramMutation = useMutation({
-    mutationFn: ({ rcmId, diagramId }: { rcmId: string, diagramId: string }) => 
-      api(`/api/rcm/${rcmId}`, { method: 'PUT', body: JSON.stringify({ diagramId }) }),
-    onSuccess: () => {
-      toast.success('Risk linked to this diagram');
-      queryClient.invalidateQueries({ queryKey: ['rcm'] });
-    }
-  });
-
-  const linkedRcms = useMemo(() => 
-    rcmData?.items.filter(r => r.diagramId === diagramId) || [], 
-    [rcmData, diagramId]
-  );
-
-  const filteredSidebarControls = useMemo(() => {
-    if (!controlsData?.items) return [];
-    return controlsData.items.filter(c => 
-      c.name.toLowerCase().includes(searchControl.toLowerCase()) || 
-      c.code?.toLowerCase().includes(searchControl.toLowerCase())
-    );
-  }, [controlsData, searchControl]);
-
   const updateNodeData = (id: string, partialData: any) => {
     setNodes(nds => nds.map(node => node.id === id ? { ...node, data: { ...node.data, ...partialData } } : node));
   };
 
-  if (isDiagramLoading) return <div className="h-full flex items-center justify-center"><RefreshCw className="animate-spin" /></div>;
+  const linkRiskToActivity = (nodeId: string, rcmId: string) => {
+    setNodes(nds => {
+      const parentNode = nds.find(n => n.id === nodeId);
+      if (!parentNode) return nds;
+      const riskIds = parentNode.data.riskIds || [];
+      if (riskIds.includes(rcmId)) return nds;
+
+      const newRiskIds = [...riskIds, rcmId];
+      const childId = `risk_${nodeId}`;
+      const childExists = nds.some(n => n.id === childId);
+
+      let nextNodes = nds.map(node => node.id === nodeId ? { ...node, data: { ...node.data, riskIds: newRiskIds } } : node);
+
+      if (!childExists) {
+        nextNodes.push({
+          id: childId,
+          type: 'docked-risk',
+          position: { x: 45, y: 65 },
+          parentId: nodeId,
+          extent: 'parent',
+          draggable: false,
+          data: { riskIds: newRiskIds, label: 'Risks' }
+        });
+      } else {
+        nextNodes = nextNodes.map(n => n.id === childId ? { ...n, data: { ...n.data, riskIds: newRiskIds } } : n);
+      }
+      return nextNodes;
+    });
+    toast.success("Risk linked to activity");
+  };
+
+  const unlinkRiskFromActivity = (nodeId: string, rcmId: string) => {
+    setNodes(nds => {
+      const parentNode = nds.find(n => n.id === nodeId);
+      if (!parentNode) return nds;
+      const newRiskIds = (parentNode.data.riskIds || []).filter(id => id !== rcmId);
+      const childId = `risk_${nodeId}`;
+      let nextNodes = nds.map(node => node.id === nodeId ? { ...node, data: { ...node.data, riskIds: newRiskIds } } : node);
+      if (newRiskIds.length === 0) {
+        nextNodes = nextNodes.filter(n => n.id !== childId);
+      } else {
+        nextNodes = nextNodes.map(n => n.id === childId ? { ...n, data: { ...n.data, riskIds: newRiskIds } } : n);
+      }
+      return nextNodes;
+    });
+    toast.info("Risk unlinked");
+  };
+
+  const linkControlToActivity = (nodeId: string, controlId: string) => {
+    setNodes(nds => {
+      const parentNode = nds.find(n => n.id === nodeId);
+      if (!parentNode) return nds;
+      const controlIds = parentNode.data.controlIds || [];
+      if (controlIds.includes(controlId)) return nds;
+
+      const newControlIds = [...controlIds, controlId];
+      const childId = `ctrl_${nodeId}`;
+      const childExists = nds.some(n => n.id === childId);
+
+      let nextNodes = nds.map(node => node.id === nodeId ? { ...node, data: { ...node.data, controlIds: newControlIds } } : node);
+
+      if (!childExists) {
+        nextNodes.push({
+          id: childId,
+          type: 'docked-control',
+          position: { x: 90, y: 65 },
+          parentId: nodeId,
+          extent: 'parent',
+          draggable: false,
+          data: { controlIds: newControlIds, label: 'Controls' }
+        });
+      } else {
+        nextNodes = nextNodes.map(n => n.id === childId ? { ...n, data: { ...n.data, controlIds: newControlIds } } : n);
+      }
+      return nextNodes;
+    });
+    toast.success("Control linked to activity");
+  };
+
+  const unlinkControlFromActivity = (nodeId: string, controlId: string) => {
+    setNodes(nds => {
+      const parentNode = nds.find(n => n.id === nodeId);
+      if (!parentNode) return nds;
+      const newControlIds = (parentNode.data.controlIds || []).filter(id => id !== controlId);
+      const childId = `ctrl_${nodeId}`;
+      let nextNodes = nds.map(node => node.id === nodeId ? { ...node, data: { ...node.data, controlIds: newControlIds } } : node);
+      if (newControlIds.length === 0) {
+        nextNodes = nextNodes.filter(n => n.id !== childId);
+      } else {
+        nextNodes = nextNodes.map(n => n.id === childId ? { ...n, data: { ...n.data, controlIds: newControlIds } } : n);
+      }
+      return nextNodes;
+    });
+    toast.info("Control unlinked");
+  };
+
+  const checkImpact = async (id: string, type: 'Risk' | 'Control') => {
+    try {
+      const res = await api<any>(`/api/bpm/usage-check/${id}?type=${type}`);
+      setImpactData({ id, type, ...res });
+    } catch (e) {
+      toast.error("Failed to check impact");
+    }
+  };
+
+  const linkedActivityRisks = selectedNode?.data.riskIds?.map(rid => rcmData?.items.find(r => r.id === rid)).filter(Boolean) || [];
+  const linkedActivityControls = selectedNode?.data.controlIds?.map(cid => controlsData?.items.find(c => c.id === cid)).filter(Boolean) || [];
+
+  if (isDiagramLoading) return <div className="h-full flex items-center justify-center"><RefreshCw className="animate-spin text-indigo-600" /></div>;
 
   return (
     <div className="flex h-full w-full bg-slate-50 overflow-hidden">
-      {/* Sidebar: Control & Library */}
-      <div className="w-80 bg-white border-r flex flex-col shadow-sm z-20">
-        <div className="p-4 border-b space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-black uppercase text-slate-500 flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-indigo-600" /> Controls Library
-            </h3>
-            <Badge variant="secondary" className="text-[10px] font-mono">{controlsData?.items.length || 0}</Badge>
-          </div>
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400" />
-            <Input 
-              placeholder="Search master controls..." 
-              className="pl-8 h-9 text-xs" 
-              value={searchControl}
-              onChange={e => setSearchControl(e.target.value)}
-            />
-          </div>
-        </div>
-
-        <ScrollArea className="flex-1 p-2">
-          <div className="space-y-2">
-            <p className="text-[9px] font-bold text-slate-400 uppercase px-2 mb-1">Drag to Alur</p>
-            {filteredSidebarControls.map(ctrl => (
-              <div 
-                key={ctrl.id}
-                draggable
-                onDragStart={(e) => onDragStart(e, 'control', { label: ctrl.name, code: ctrl.code, controlId: ctrl.id })}
-                className="group p-3 rounded-lg border bg-white hover:border-indigo-300 hover:shadow-md transition-all cursor-grab active:cursor-grabbing border-slate-100"
-              >
-                <div className="flex items-start gap-2">
-                  <GripVertical className="h-3 w-3 text-slate-300 mt-1" />
-                  <div className="flex-1 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[9px] font-mono font-bold text-indigo-600">{ctrl.code || 'CTRL'}</span>
-                      <Badge className="h-3.5 text-[8px] px-1">{ctrl.nature}</Badge>
-                    </div>
-                    <p className="text-[11px] font-semibold text-slate-700 leading-tight group-hover:text-indigo-700 transition-colors">{ctrl.name}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <Separator className="my-4" />
-
-          <div className="space-y-3 p-2">
-            <h3 className="text-[10px] font-bold uppercase text-slate-500">Linked Risks (RCM)</h3>
-            {linkedRcms.map(r => (
-              <div key={r.id} className="p-2 rounded bg-indigo-50 border border-indigo-100 flex items-center justify-between">
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-bold text-indigo-700 line-clamp-1">{r.subProcess}</span>
-                  <span className="text-[9px] text-indigo-500 italic">Linked</span>
-                </div>
-                <Button variant="ghost" size="icon" className="h-6 w-6 text-indigo-400 hover:text-red-500">
-                  <X className="h-3.5 w-3.5" />
-                </Button>
-              </div>
-            ))}
-            
-            <div className="pt-2">
-              <label className="text-[9px] font-bold text-slate-400 uppercase mb-1 block">Link Existing Risk</label>
-              <Select onValueChange={(val) => assignRcmToDiagramMutation.mutate({ rcmId: val, diagramId })}>
-                <SelectTrigger className="h-8 text-[10px]">
-                  <SelectValue placeholder="Search RCM..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {rcmData?.items.filter(r => !r.diagramId).map(r => (
-                    <SelectItem key={r.id} value={r.id} className="text-xs">
-                      {r.process} - {r.subProcess}
-                    </SelectItem>
-                  ))}
-                  <SelectItem value="new" className="text-indigo-600 font-bold border-t">+ Create New Risk</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </ScrollArea>
-      </div>
-
-      {/* Canvas Area */}
       <div className="flex-1 relative">
         <ReactFlow
           nodes={nodes}
@@ -469,38 +577,34 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
           onConnect={(params) => setEdges((eds) => addEdge(params, eds))}
           onNodeClick={(_, node) => resetNav(node.id)}
           onPaneClick={() => resetNav(null)}
-          onDrop={onDrop}
-          onDragOver={onDragOver}
           nodeTypes={nodeTypes}
           fitView
         >
           <Background gap={16} size={1} color="#cbd5e1" />
           <Controls />
           <MiniMap />
-          
-          <Panel position="top-right" className="flex gap-2 bg-white/80 backdrop-blur-sm p-1.5 rounded-lg border shadow-sm">
-            <Button 
-              size="sm" 
-              variant="default"
-              className="h-8 gap-2 bg-indigo-600 hover:bg-indigo-700" 
-              onClick={() => saveMutation.mutate({ nodes, edges, name: `Flow: ${subProcess}`, subProcess })}
-              disabled={saveMutation.isPending}
-            >
+          <Panel position="top-right" className="flex gap-2">
+            <Button size="sm" variant="default" className="h-8 gap-2 bg-indigo-600 hover:bg-indigo-700" onClick={() => saveMutation.mutate({ nodes, edges, name: `Flow: ${subProcess}`, subProcess })} disabled={saveMutation.isPending}>
               <Save className="h-3.5 w-3.5" /> Save Alur
             </Button>
           </Panel>
-
           <Panel position="top-left" className="bg-white/80 backdrop-blur-sm p-2 rounded-lg border shadow-sm flex flex-col gap-2">
              <div className="flex flex-col">
                <span className="text-[10px] font-black text-slate-400 uppercase leading-none">Process Mapping</span>
                <span className="text-xs font-bold text-slate-700">{subProcess}</span>
              </div>
-             <div className="flex gap-1 pt-1">
+             <div className="flex gap-1 pt-1 flex-wrap max-w-[180px]">
                 <Button variant="outline" size="icon" className="h-7 w-7" title="Add Activity" onClick={() => {
                   const id = `node_${Date.now()}`;
                   setNodes(nds => [...nds, { id, type: 'activity', position: { x: 100, y: 100 }, data: { label: 'New Activity', role: 'Staff' } }]);
                 }}>
                   <Activity className="h-3.5 w-3.5 text-slate-600" />
+                </Button>
+                <Button variant="outline" size="icon" className="h-7 w-7 bg-blue-50" title="Add Automated Activity" onClick={() => {
+                  const id = `node_${Date.now()}`;
+                  setNodes(nds => [...nds, { id, type: 'automated-activity', position: { x: 100, y: 100 }, data: { label: 'System Process' } }]);
+                }}>
+                  <Database className="h-3.5 w-3.5 text-blue-600" />
                 </Button>
                 <Button variant="outline" size="icon" className="h-7 w-7" title="Add Decision" onClick={() => {
                   const id = `node_${Date.now()}`;
@@ -508,25 +612,31 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
                 }}>
                   <GitCommit className="h-3.5 w-3.5 text-slate-600 rotate-90" />
                 </Button>
-                <Button variant="outline" size="icon" className="h-7 w-7" title="Add Risk" onClick={() => {
+                <Button variant="outline" size="icon" className="h-7 w-7" title="Add Output (System)" onClick={() => {
                   const id = `node_${Date.now()}`;
-                  setNodes(nds => [...nds, { id, type: 'risk', position: { x: 100, y: 100 }, data: { label: 'Risk Description' } }]);
+                  setNodes(nds => [...nds, { id, type: 'output', position: { x: 100, y: 100 }, data: { label: 'System Output' } }]);
                 }}>
-                  <AlertTriangle className="h-3.5 w-3.5 text-red-500" />
+                  <LayoutDashboard className="h-3.5 w-3.5 text-slate-600" />
+                </Button>
+                <Button variant="outline" size="icon" className="h-7 w-7" title="Add Physical Document" onClick={() => {
+                  const id = `node_${Date.now()}`;
+                  setNodes(nds => [...nds, { id, type: 'physical-document', position: { x: 100, y: 100 }, data: { label: 'Form Fisik' } }]);
+                }}>
+                  <FileText className="h-3.5 w-3.5 text-slate-600" />
+                </Button>
+                <Button variant="outline" size="icon" className="h-7 w-7" title="Add On-page Reference" onClick={() => {
+                  const id = `node_${Date.now()}`;
+                  setNodes(nds => [...nds, { id, type: 'reference', position: { x: 100, y: 100 }, data: { label: 'A' } }]);
+                }}>
+                  <LinkIcon className="h-3.5 w-3.5 text-slate-600" />
                 </Button>
              </div>
           </Panel>
         </ReactFlow>
 
-        {/* Node Detail Properties */}
         <AnimatePresence>
           {selectedNode && (
-            <motion.div 
-              initial={{ x: 300, opacity: 0 }} 
-              animate={{ x: 0, opacity: 1 }} 
-              exit={{ x: 300, opacity: 0 }}
-              className="absolute top-0 right-0 bottom-0 w-80 bg-white border-l z-30 shadow-2xl p-5 flex flex-col gap-4"
-            >
+            <motion.div initial={{ x: 300, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 300, opacity: 0 }} className="absolute top-0 right-0 bottom-0 w-80 bg-white border-l z-30 shadow-2xl p-5 flex flex-col gap-4">
               <div className="flex items-center justify-between border-b pb-3">
                 <div className="flex flex-col">
                   <h4 className="font-bold text-xs uppercase text-slate-500">Properties</h4>
@@ -538,53 +648,107 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
               <div className="space-y-4 flex-1">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-slate-400 uppercase">Label</label>
-                  <textarea 
-                    className="w-full text-xs border rounded-md p-2 min-h-[80px] focus:ring-2 focus:ring-indigo-500/20 outline-none"
-                    value={selectedNode.data.label}
-                    onChange={(e) => updateNodeData(selectedNode.id, { label: e.target.value })}
-                  />
+                  <textarea className="w-full text-xs border rounded-md p-2 min-h-[80px]" value={selectedNode.data.label} onChange={(e) => updateNodeData(selectedNode.id, { label: e.target.value })} />
                 </div>
 
                 {selectedNode.type === 'activity' && (
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase">Responsibility (Role)</label>
-                    <Input 
-                      className="h-8 text-xs"
-                      value={selectedNode.data.role}
-                      onChange={(e) => updateNodeData(selectedNode.id, { role: e.target.value })}
-                    />
-                  </div>
-                )}
-
-                {selectedNode.type === 'control' && (
-                  <div className="p-3 rounded-lg bg-green-50 border border-green-100 space-y-2">
-                    <div className="flex items-center gap-2">
-                      <ShieldCheck className="h-4 w-4 text-green-600" />
-                      <span className="text-[10px] font-bold text-green-700 uppercase">Linked Control</span>
+                  <>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase">Role</label>
+                      <Input className="h-8 text-xs" value={selectedNode.data.role} onChange={(e) => updateNodeData(selectedNode.id, { role: e.target.value })} />
                     </div>
-                    <p className="text-[11px] font-medium text-green-800 leading-tight">{selectedNode.data.label}</p>
-                    <p className="text-[9px] text-green-600 font-mono">{selectedNode.data.code}</p>
-                  </div>
+                    <Separator className="my-2" />
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <h5 className="text-[10px] font-black uppercase text-red-600 flex items-center gap-1.5">Risks ({linkedActivityRisks.length})</h5>
+                          <Select onValueChange={(val) => val === 'new' ? (createRiskMutation.mutate(prompt("Enter new risk:") || "")) : linkRiskToActivity(selectedNode.id, val)}>
+                            <SelectTrigger className="h-7 w-24 text-[9px] bg-red-50 border-red-100 text-red-700">Add</SelectTrigger>
+                            <SelectContent>
+                              {rcmData?.items.map(r => <SelectItem key={r.id} value={r.id} className="text-[10px]">{r.riskDescription}</SelectItem>)}
+                              <SelectItem value="new" className="text-red-600 font-bold border-t">+ Create New</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1.5">
+                          {linkedActivityRisks.map(risk => (
+                            <div key={risk.id} className="p-2 rounded border border-red-100 bg-red-50/30 group/item relative">
+                              <p className="text-[10px] font-medium text-red-900 leading-tight pr-8">{risk.riskDescription}</p>
+                              <div className="absolute top-1 right-1 flex gap-0.5 opacity-0 group-hover/item:opacity-100 transition-opacity">
+                                <Button variant="ghost" size="icon" className="h-5 w-5 text-red-300" onClick={() => unlinkRiskFromActivity(selectedNode.id, risk.id)}><X className="h-3 w-3" /></Button>
+                                <Button variant="ghost" size="icon" className="h-5 w-5 text-red-200" onClick={() => checkImpact(risk.id, 'Risk')}><Trash2 className="h-3 w-3" /></Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <h5 className="text-[10px] font-black uppercase text-green-600 flex items-center gap-1.5">Controls ({linkedActivityControls.length})</h5>
+                          <Select onValueChange={(val) => val === 'new' ? (createControlMutation.mutate(prompt("Enter new control:") || "")) : linkControlToActivity(selectedNode.id, val)}>
+                            <SelectTrigger className="h-7 w-24 text-[9px] bg-green-50 border-green-100 text-green-700">Add</SelectTrigger>
+                            <SelectContent>
+                              {controlsData?.items.map(c => <SelectItem key={c.id} value={c.id} className="text-[10px]">[{c.code}] {c.name}</SelectItem>)}
+                              <SelectItem value="new" className="text-green-600 font-bold border-t">+ Create New</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1.5">
+                          {linkedActivityControls.map(ctrl => (
+                            <div key={ctrl.id} className="p-2 rounded border border-green-100 bg-green-50/30 group/item relative">
+                              <div className="pr-8">
+                                <span className="text-[8px] font-mono font-bold text-green-600">{ctrl.code}</span>
+                                <p className="text-[10px] font-medium text-green-900 leading-tight">{ctrl.name}</p>
+                              </div>
+                              <div className="absolute top-1 right-1 flex gap-0.5 opacity-0 group-hover/item:opacity-100 transition-opacity">
+                                <Button variant="ghost" size="icon" className="h-5 w-5 text-green-300" onClick={() => unlinkControlFromActivity(selectedNode.id, ctrl.id)}><X className="h-3 w-3" /></Button>
+                                <Button variant="ghost" size="icon" className="h-5 w-5 text-green-200" onClick={() => checkImpact(ctrl.id, 'Control')}><Trash2 className="h-3 w-3" /></Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </>
                 )}
               </div>
 
               <div className="pt-4 border-t">
-                <Button 
-                  variant="destructive" 
-                  size="sm" 
-                  className="w-full gap-2 text-[10px] h-8 font-bold uppercase"
-                  onClick={() => {
-                    setNodes(nds => nds.filter(n => n.id !== selectedNode.id));
-                    setEdges(eds => eds.filter(e => e.source !== selectedNode.id && e.target !== selectedNode.id));
-                    setSelectedNodeId(null);
-                  }}
-                >
+                <Button variant="destructive" size="sm" className="w-full gap-2 text-[10px] h-8 font-bold uppercase" onClick={() => {
+                  setNodes(nds => nds.filter(n => n.id !== selectedNode.id));
+                  setEdges(eds => eds.filter(e => e.source !== selectedNode.id && e.target !== selectedNode.id));
+                  setSelectedNodeId(null);
+                }}>
                   <Trash2 className="h-3.5 w-3.5" /> Remove Node
                 </Button>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
+
+        <AlertDialog open={!!impactData} onOpenChange={(open) => !open && setImpactData(null)}>
+          <AlertDialogContent aria-describedby={undefined}>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-red-600">Delete {impactData?.type}?</AlertDialogTitle>
+              <AlertDialogDescription className="space-y-3">
+                <p>Used in <strong>{impactData?.count}</strong> places.</p>
+                {impactData?.usage && impactData.usage.length > 0 && (
+                  <div className="bg-slate-50 p-3 rounded-md border text-xs max-h-40 overflow-y-auto">
+                    {impactData.usage.map((u, i) => <div key={i} className="border-b last:border-0 py-1">{u.diagramName} (Node: {u.nodeLabel})</div>)}
+                  </div>
+                )}
+                <p className="text-red-700">This will remove it from ALL diagrams. Undone cannot.</p>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <Button variant="destructive" onClick={() => impactData && deletePermanentlyMutation.mutate({ id: impactData.id, type: impactData.type })} disabled={deletePermanentlyMutation.isPending}>
+                {deletePermanentlyMutation.isPending ? "Deleting..." : "Delete Permanently"}
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );

@@ -192,7 +192,8 @@ export function userRoutes(app: Hono<HonoEnv>) {
   });
 
   app.post('/api/rcm', async (c) => {
-    if (c.get('userRole') !== 'Line 2') return bad(c, 'Access Denied');
+    const role = c.get('userRole');
+    if (role !== 'Line 2' && role !== 'Admin') return bad(c, 'Access Denied');
     
     const db = getDb(c.env.DATABASE_URL);
     const orgId = c.get('organizationId');
@@ -260,6 +261,24 @@ export function userRoutes(app: Hono<HonoEnv>) {
       dataAfter: { ...existing[0], ...body },
     });
 
+    return ok(c, { success: true });
+  });
+
+  app.delete('/api/rcm/:id', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+    const id = c.req.param('id');
+
+    // 1. Check if used in any diagrams
+    const diagrams = await db.select().from(bpmDiagrams).where(eq(bpmDiagrams.organizationId, orgId));
+    for (const diag of diagrams) {
+      const nodes = (diag.nodes as any[]) || [];
+      if (nodes.some(n => n.data?.riskIds?.includes(id))) {
+        return bad(c, `Risk is in use in diagram: ${diag.name}. Unlink it first.`);
+      }
+    }
+
+    await db.delete(rcms).where(and(eq(rcms.id, id), eq(rcms.organizationId, orgId)));
     return ok(c, { success: true });
   });
 
@@ -940,5 +959,58 @@ export function userRoutes(app: Hono<HonoEnv>) {
   app.get('/api/wbsreports', async (c) => {
     // Integration with WBS (Lampiran 1 Principle 14 & 15)
     return ok(c, { items: [] });
+  });
+
+  // --- DEV TOOLS (Purge) ---
+
+  app.delete('/api/dev/purge-scoping', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+    
+    await db.delete(glRows).where(eq(glRows.organizationId, orgId));
+    await db.delete(glSnapshots).where(eq(glSnapshots.organizationId, orgId));
+    await db.delete(simulations).where(eq(simulations.organizationId, orgId));
+    
+    return ok(c, { success: true });
+  });
+
+  app.delete('/api/dev/purge-bpm', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+    
+    await db.delete(bpmDiagrams).where(eq(bpmDiagrams.organizationId, orgId));
+    await db.delete(rcms).where(eq(rcms.organizationId, orgId));
+    await db.delete(controls).where(eq(controls.organizationId, orgId));
+    
+    return ok(c, { success: true });
+  });
+
+  app.get('/api/bpm/usage-check/:id', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+    const id = c.req.param('id');
+    const type = c.req.query('type') as 'Risk' | 'Control';
+
+    // We need to scan all diagrams to see if any node contains this ID in its data.riskIds or data.controlIds
+    const diagrams = await db.select().from(bpmDiagrams).where(eq(bpmDiagrams.organizationId, orgId));
+    
+    const usage: { diagramId: string, diagramName: string, nodeId: string, nodeLabel: string }[] = [];
+
+    for (const diag of diagrams) {
+      const nodes = (diag.nodes as any[]) || [];
+      for (const node of nodes) {
+        if (type === 'Risk') {
+          if (node.data?.riskIds?.includes(id)) {
+            usage.push({ diagramId: diag.id, diagramName: diag.name, nodeId: node.id, nodeLabel: node.data.label });
+          }
+        } else {
+          if (node.data?.controlIds?.includes(id)) {
+            usage.push({ diagramId: diag.id, diagramName: diag.name, nodeId: node.id, nodeLabel: node.data.label });
+          }
+        }
+      }
+    }
+
+    return ok(c, { count: usage.length, usage });
   });
 }

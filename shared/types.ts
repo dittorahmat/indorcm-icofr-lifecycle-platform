@@ -250,13 +250,17 @@ export interface BPMProcess {
 
 export interface BPMNode {
   id: string;
-  type: "standard" | "risk" | "archive" | "start" | "end";
+  type: "start" | "end" | "activity" | "decision" | "document" | "system" | "risk" | "control" | "archive";
   position: { x: number; y: number };
+  parentId?: string; // For React Flow grouping/docking
+  extent?: 'parent'; // For React Flow docking
   data: {
     label: string;
     description?: string;
-    riskId?: string;
-    controlIds?: string[];
+    role?: string;
+    code?: string;
+    riskIds?: string[]; // Multiple RCM IDs linked to this activity
+    controlIds?: string[]; // Multiple Control IDs linked to this activity (via risks or direct)
   };
 }
 

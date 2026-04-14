@@ -3,21 +3,19 @@ import {
   useReactTable,
   getCoreRowModel,
   getFilteredRowModel,
-  getSortedRowModel,
   getGroupedRowModel,
   getExpandedRowModel,
   flexRender,
   ColumnDef,
   GroupingState,
   VisibilityState,
-  SortingState,
 } from '@tanstack/react-table';
 import { GLRow, QualitativeLevel, Department, User } from '@shared/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronRight, Filter, SortAsc, SortDesc, FileSpreadsheet, Info, ExternalLink, Lock, Building2 } from 'lucide-react';
+import { ChevronDown, ChevronRight, Filter, FileSpreadsheet, Info, ExternalLink, Lock, Building2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import * as XLSX from 'xlsx';
 import { Link } from 'react-router-dom';
@@ -64,9 +62,44 @@ export function GLDataGrid({
     queryFn: () => api<User>('/api/auth/me'),
   });
 
+  // Pre-sort data: group by fsliName, find min noUrut per group, then sort
+  const sortedData = React.useMemo(() => {
+    // Group by fsliName
+    const groups = new Map<string, GLRow[]>();
+    data.forEach(row => {
+      const fsliName = row.fsliName || '';
+      if (!groups.has(fsliName)) {
+        groups.set(fsliName, []);
+      }
+      groups.get(fsliName)!.push(row);
+    });
+
+    // Sort GL within each group by noUrut ascending
+    groups.forEach(rows => {
+      rows.sort((a, b) => a.noUrut - b.noUrut);
+    });
+
+    // Convert to array and sort groups by min noUrut, then by fsliName alphabetically
+    const sortedGroups = Array.from(groups.entries())
+      .map(([fsliName, rows]) => ({
+        fsliName,
+        minNoUrut: Math.min(...rows.map(r => r.noUrut)),
+        rows
+      }))
+      .sort((a, b) => {
+        if (a.minNoUrut !== b.minNoUrut) {
+          return a.minNoUrut - b.minNoUrut;
+        }
+        // If min noUrut is the same, sort by fsliName alphabetically
+        return a.fsliName.localeCompare(b.fsliName);
+      });
+
+    // Flatten back to single array
+    return sortedGroups.flatMap(g => g.rows);
+  }, [data]);
+
   const [grouping, setGrouping] = React.useState<GroupingState>(['fsliName']);
   const [expanded, setExpanded] = React.useState({});
-  const [sorting, setSorting] = React.useState<SortingState>([{ id: 'noUrut', desc: false }]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({
     noUrut: false
   });
@@ -87,12 +120,7 @@ export function GLDataGrid({
       },
       {
         accessorKey: 'fsliName',
-        header: ({ column }) => (
-          <div className="flex items-center gap-1">
-            <span>FSLI</span>
-            {column.getIsSorted() === 'asc' ? <SortAsc className="h-3 w-3" /> : column.getIsSorted() === 'desc' ? <SortDesc className="h-3 w-3" /> : null}
-          </div>
-        ),
+        header: 'FSLI',
         cell: ({ row, getValue }) => (
           <div className="flex items-center gap-2 font-bold text-[11px] text-slate-700">
             {row.getCanExpand() && (
@@ -309,37 +337,38 @@ export function GLDataGrid({
       {
         id: 'finalStatus',
         header: 'Scope',
+        size: 130,
         cell: ({ row }) => {
           const isGrouped = row.getIsGrouped();
           const fsliName = isGrouped ? row.getValue('fsliName') as string : row.original.fsliName || "";
-          
+
           const assessments = assessmentData?.[fsliName] || {};
           const isQualSignificant = Object.values(assessments).some(v => v === 'High');
-          
+
           if (isGrouped) {
             const leaves = row.getLeafRows();
             const isKuanSignificant = leaves.some(lr => Math.abs(lr.original.balance) >= pmValue);
             const isInScope = isKuanSignificant || isQualSignificant;
             return isInScope ? (
-              <Badge className="bg-indigo-600 text-[11px] h-6 px-3 uppercase font-extrabold shadow-sm border-2 border-indigo-200">
+              <Badge className="bg-indigo-600 text-[10px] h-5 px-3 uppercase font-extrabold shadow-sm border-2 border-indigo-200 whitespace-nowrap">
                 IN SCOPE
               </Badge>
             ) : (
-              <Badge variant="outline" className="text-[9px] h-4 px-1.5 opacity-40">
+              <Badge variant="outline" className="text-[9px] h-4 px-1.5 opacity-40 whitespace-nowrap">
                 OUT
               </Badge>
             );
           }
-          
+
           const isKuanSignificant = Math.abs(row.original.balance) >= pmValue;
-          
+
           if (isQualSignificant) {
-            return <Badge className="text-[10px] h-5 px-2 font-bold bg-red-600">IN (QUAL)</Badge>;
+            return <Badge className="text-[9px] h-5 px-2 font-bold bg-red-600 whitespace-nowrap">IN (QUAL)</Badge>;
           }
           if (isKuanSignificant) {
-            return <Badge className="text-[10px] h-5 px-2 font-bold bg-blue-600">IN (QUAN)</Badge>;
+            return <Badge className="text-[9px] h-5 px-2 font-bold bg-blue-600 whitespace-nowrap">IN (QUAN)</Badge>;
           }
-          return <Badge variant="outline" className="text-[9px] h-4 px-1.5 opacity-40 text-slate-400">OUT</Badge>;
+          return <Badge variant="outline" className="text-[9px] h-4 px-1.5 opacity-40 text-slate-400 whitespace-nowrap">OUT</Badge>;
         }
       }
     ],
@@ -347,21 +376,18 @@ export function GLDataGrid({
   );
 
   const table = useReactTable({
-    data,
+    data: sortedData,
     columns,
     state: {
       grouping,
       expanded,
       columnVisibility,
-      sorting,
     },
     onGroupingChange: setGrouping,
     onExpandedChange: setExpanded,
     onColumnVisibilityChange: setColumnVisibility,
-    onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    getSortedRowModel: getSortedRowModel(),
     getGroupedRowModel: getGroupedRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
   });
@@ -444,24 +470,18 @@ export function GLDataGrid({
               {table.getHeaderGroups().map(headerGroup => (
                 <TableRow key={headerGroup.id} className="hover:bg-transparent">
                   {headerGroup.headers.map(header => (
-                    <TableHead 
-                      key={header.id} 
+                    <TableHead
+                      key={header.id}
                       className="border-r last:border-r-0 h-16 text-[10px] font-bold uppercase text-slate-500 whitespace-nowrap px-2"
                       style={{ width: header.getSize() }}
                     >
                       {header.isPlaceholder ? null : (
-                        <div 
-                          className={cn(
-                            "flex flex-col gap-1 h-full justify-center",
-                            header.column.getCanSort() && "cursor-pointer select-none"
-                          )}
-                          onClick={header.column.getToggleSortingHandler()}
-                        >
+                        <div className="flex flex-col gap-1 h-full justify-center">
                           {flexRender(header.column.columnDef.header, header.getContext())}
                           {header.column.getCanFilter() ? (
                             <div className="relative mt-1" onClick={e => e.stopPropagation()}>
                               <Filter className="absolute left-1.5 top-1.5 h-2.5 w-2.5 text-slate-300" />
-                              <input 
+                              <input
                                 className="w-full pl-5 pr-1 py-1 text-[9px] font-normal border rounded"
                                 placeholder="Search..."
                                 onChange={e => header.column.setFilterValue(e.target.value)}
