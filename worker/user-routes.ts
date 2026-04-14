@@ -444,6 +444,48 @@ export function userRoutes(app: Hono<HonoEnv>) {
     return ok(c, updated[0]);
   });
 
+  app.post('/api/scoping/assign-department', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+    const body = await c.req.json<{ scopingId: string, accountName: string, departmentId: string }>();
+
+    // 1. Find the simulation to get the snapshot ID
+    const [sim] = await db.select()
+      .from(simulations)
+      .where(and(
+        eq(simulations.id, body.scopingId),
+        eq(simulations.organizationId, orgId)
+      ))
+      .limit(1);
+
+    if (!sim) return notFound(c, 'Simulation not found');
+    if (!sim.glSnapshotId) return bad(c, 'Simulation has no associated snapshot');
+
+    // 2. Update all rows with this account number in that snapshot
+    // Frontend sends noGL as accountName
+    await db.update(glRows)
+      .set({ assignedDepartmentId: body.departmentId })
+      .where(and(
+        eq(glRows.snapshotId, sim.glSnapshotId),
+        eq(glRows.noGL, body.accountName),
+        eq(glRows.organizationId, orgId)
+      ));
+
+    // 3. Log the action
+    await db.insert(auditLogs).values({
+      id: crypto.randomUUID(),
+      organizationId: orgId,
+      userId: c.get('userId'),
+      action: 'ASSIGN_DEPARTMENT',
+      entityType: 'GL_Account',
+      entityId: `${sim.glSnapshotId}:${body.accountName}`,
+      descriptionAfter: `Assigned department ${body.departmentId} to account ${body.accountName}`,
+      dataAfter: body
+    });
+
+    return ok(c, { success: true });
+  });
+
   app.delete('/api/simulations/:id', async (c) => {
     const db = getDb(c.env.DATABASE_URL);
     const id = c.req.param('id');

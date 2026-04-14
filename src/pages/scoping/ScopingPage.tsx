@@ -368,15 +368,16 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
 
   const isLocked = simState.status === 'Approved' || simState.status === 'Pending CFO' || simState.status === 'Pending Komut';
 
-  // Fix 2: Gabungkan data penugasan dari simState ke glData
+  // Fix 2: Gabungkan data penugasan dari snapshot (glRows) dan simState
   const mergedGlData = React.useMemo(() => {
     return glData.map(row => {
-      // Cari penugasan berdasarkan noGL (Account Code) yang lebih akurat
+      // Prioritaskan data dari snapshot (glRows) yang sekarang menjadi source of truth untuk assignment
+      // Fallback ke simState hanya jika ada data legacy di sana
       const accounts = simState.significantAccounts || [];
       const assignment = accounts.find(sa => sa.fsliCode === row.noGL);
       return {
         ...row,
-        assignedDepartmentId: assignment?.assignedDepartmentId
+        assignedDepartmentId: row.assignedDepartmentId || assignment?.assignedDepartmentId
       };
     });
   }, [glData, simState.significantAccounts]);
@@ -413,6 +414,7 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['simulations'] });
+      queryClient.invalidateQueries({ queryKey: ['gl-snapshot', simState.glSnapshotId] });
       toast.success("Department assigned successfully");
     }
   });

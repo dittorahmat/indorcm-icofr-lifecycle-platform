@@ -58,9 +58,15 @@ export const createApp = () => {
     }
 
     const auth = getAuth(c.env);
-    const session = await auth.api.getSession({
-      headers: c.req.raw.headers
-    });
+    let session;
+    try {
+      session = await auth.api.getSession({
+        headers: c.req.raw.headers
+      });
+    } catch (e: any) {
+      console.error('[AUTH ERROR] getSession failed:', e.message, e.stack);
+      return c.json({ success: false, error: 'Internal Auth Error', message: e.message }, 500);
+    }
 
     if (!session) {
       if (c.req.path === '/api/auth/me') return c.json({ success: false, error: 'Unauthorized' }, 401);
