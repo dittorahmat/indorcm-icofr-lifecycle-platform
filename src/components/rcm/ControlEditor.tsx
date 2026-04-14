@@ -41,15 +41,15 @@ interface QualitativeRiskWizardProps {
 
 function QualitativeRiskWizard({ onApply }: QualitativeRiskWizardProps) {
   const [factors, setFactors] = React.useState({
-    inherentRisk: false, // a) Risiko bawaan akun/asersi
-    volumeChanges: false, // b) Perubahan volume/sifat transaksi
-    errorHistory: false, // c) Riwayat error
-    elcWeakness: false, // d) Efektivitas ELC pemantau
-    complexity: false, // e) Karakteristik/frekuensi pengendalian
-    dependence: false, // f) Ketergantungan pada pengendalian lain
-    personnelIssue: false, // g) Kompetensi/perubahan personil
-    manualNature: false, // h) Bergantung pada kinerja individu (manual)
-    highJudgement: false, // i) Kompleksitas judgement pelaksanaan
+    inherentRisk: false, // a) Inherent risk of the account/assertion
+    volumeChanges: false, // b) Changes in transaction volume/nature
+    errorHistory: false, // c) History of errors
+    elcWeakness: false, // d) Effectiveness of monitoring ELC
+    complexity: false, // e) Control characteristics/frequency
+    dependence: false, // f) Reliance on other controls (ITGC/ELC)
+    personnelIssue: false, // g) Competency or personnel changes
+    manualNature: false, // h) Reliance on individual performance (manual)
+    highJudgement: false, // i) Complexity of judgement in execution
   });
 
   const count = Object.values(factors).filter(Boolean).length;
@@ -68,20 +68,20 @@ function QualitativeRiskWizard({ onApply }: QualitativeRiskWizardProps) {
           <DialogHeader>
             <DialogTitle>Qualitative Risk Assessment Wizard</DialogTitle>
             <DialogDescription>
-              Menentukan rating risiko kualitatif berdasarkan 9 kriteria mandatori Tabel 11 (Hal 27).
+              Determine qualitative risk rating based on 9 mandatory criteria from Table 11 (Page 27).
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2 py-4">
             {[
-              { id: 'inherentRisk', label: 'a) Risiko bawaan yang tinggi pada akun dan asersi terkait.' },
-              { id: 'volumeChanges', label: 'b) Terjadi perubahan signifikan dalam volume atau sifat transaksi.' },
-              { id: 'errorHistory', label: 'c) Terdapat riwayat error/salah saji pada pengendalian ini.' },
-              { id: 'elcWeakness', label: 'd) Pengendalian tingkat entitas (ELC) pemantau kurang efektif.' },
-              { id: 'complexity', label: 'e) Pengendalian memiliki karakteristik kompleks atau frekuensi rendah.' },
-              { id: 'dependence', label: 'f) Sangat bergantung pada efektivitas pengendalian lain (ITGC/ELC).' },
-              { id: 'personnelIssue', label: 'g) Terdapat isu kompetensi atau perubahan personil pelaksana.' },
-              { id: 'manualNature', label: 'h) Pengendalian bersifat manual (bergantung pada kinerja individu).' },
-              { id: 'highJudgement', label: 'i) Memerlukan judgement/pertimbangan profesional yang signifikan.' },
+              { id: 'inherentRisk', label: 'a) High inherent risk in the account and related assertions.' },
+              { id: 'volumeChanges', label: 'b) Significant changes in transaction volume or nature occurred.' },
+              { id: 'errorHistory', label: 'c) History of errors/misstatements found in this control.' },
+              { id: 'elcWeakness', label: 'd) Monitoring entity-level controls (ELC) are less effective.' },
+              { id: 'complexity', label: 'e) Control has complex characteristics or low frequency.' },
+              { id: 'dependence', label: 'f) Highly reliant on the effectiveness of other controls (ITGC/ELC).' },
+              { id: 'personnelIssue', label: 'g) Competency issues or changes in executing personnel.' },
+              { id: 'manualNature', label: 'h) Control is manual (reliant on individual performance).' },
+              { id: 'highJudgement', label: 'i) Requires significant professional judgement/estimation.' },
             ].map((item) => (
               <div key={item.id} className="flex items-start space-x-3 space-y-0 rounded-md border p-2 hover:bg-muted/50 transition-colors">
                 <Checkbox 
@@ -99,7 +99,7 @@ function QualitativeRiskWizard({ onApply }: QualitativeRiskWizardProps) {
                <div className="flex items-center gap-3">
                   <Info className={`h-5 w-5 ${suggestedRating === 'Low' ? 'text-green-600' : suggestedRating === 'Medium' ? 'text-amber-600' : 'text-red-600'}`} />
                   <div>
-                     <p className="text-[10px] uppercase font-bold text-muted-foreground">Rating Kualitatif Disarankan</p>
+                     <p className="text-[10px] uppercase font-bold text-muted-foreground">Suggested Qualitative Rating</p>
                      <p className="text-2xl font-black tracking-tight uppercase">{suggestedRating}</p>
                   </div>
                </div>
@@ -107,7 +107,7 @@ function QualitativeRiskWizard({ onApply }: QualitativeRiskWizardProps) {
             </div>
           </div>
           <DialogFooter>
-            <Button onClick={() => onApply(suggestedRating)} className="w-full">Terapkan Rating</Button>
+            <Button onClick={() => onApply(suggestedRating)} className="w-full">Apply Rating</Button>
           </DialogFooter>
         </motion.div>
       </DialogContent>

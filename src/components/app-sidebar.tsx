@@ -163,7 +163,7 @@ export function AppSidebar(): JSX.Element {
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/csa")}>
-                <Link to="/csa" className="font-bold"><Search /> <span>Identifikasi Risiko</span></Link>
+                <Link to="/csa" className="font-bold"><Search /> <span>Risk Identification</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
@@ -175,11 +175,11 @@ export function AppSidebar(): JSX.Element {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="font-bold text-white uppercase text-[10px] tracking-widest opacity-80">Deficiency & Remediasi</SidebarGroupLabel>
+          <SidebarGroupLabel className="font-bold text-white uppercase text-[10px] tracking-widest opacity-80">Deficiency & Remediation</SidebarGroupLabel>
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/deficiencies")}>
-                <Link to="/deficiencies" className="font-bold"><ShieldAlert /> <span>Deficiency & Remediasi</span></Link>
+                <Link to="/deficiencies" className="font-bold"><ShieldAlert /> <span>Deficiency & Remediation</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -190,12 +190,12 @@ export function AppSidebar(): JSX.Element {
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/testing")}>
-                <Link to="/testing" className="font-bold"><ShieldCheck /> <span>Test Operasi Design</span></Link>
+                <Link to="/testing" className="font-bold"><ShieldCheck /> <span>Test of Design</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/testing")}>
-                <Link to="/testing" className="font-bold"><ShieldAlert /> <span>Test Operasi Efektivitas</span></Link>
+                <Link to="/testing" className="font-bold"><ShieldAlert /> <span>Test of Operating Effectiveness</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -211,7 +211,7 @@ export function AppSidebar(): JSX.Element {
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/reports")}>
-                <Link to="/reports" className="font-bold"><FileText className="h-3 w-3 opacity-50" /> <span>Lampiran 11</span></Link>
+                <Link to="/reports" className="font-bold"><FileText className="h-3 w-3 opacity-50" /> <span>Appendix 11</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

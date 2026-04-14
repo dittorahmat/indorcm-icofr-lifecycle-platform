@@ -14,7 +14,7 @@ export type ControlFrequency = "Annual" | "Semi-Annual" | "Quarterly" | "Monthly
 export type InformationProcessingObjective = "Completeness" | "Accuracy" | "Validity" | "Restricted Access";
 export type DeficiencySeverity = "Control Deficiency" | "Significant Deficiency" | "Material Weakness";
 export type ActionPlanStatus = "Draft" | "In Review" | "In Progress" | "Resolved" | "Verified";
-export type UserRole = "Line 1" | "Line 2" | "Line 3" | "Admin" | "External Auditor" | "Komisaris" | "CFO";
+export type UserRole = "Line 1" | "Line 2" | "Line 3" | "Admin" | "External Auditor" | "Commissioner" | "CFO";
 export type UserLevel = "Staff" | "Manager" | "Head" | "Director";
 
 export interface Department {
@@ -40,7 +40,7 @@ export interface GLRow {
   fsliCode: string;
   // New Fields from Template SK-5/2024
   fsliName?: string;      // Dari kolom "FSLI"
-  kategori?: string;      // "Neraca" atau "Laba Rugi"
+  category?: string;      // "Neraca" atau "Laba Rugi"
   subKategori?: string;   // "Aset", "Pendapatan", dll
   fsliBalance?: number;   // Verifikasi agregasi
   noUrut?: number;        // Display order

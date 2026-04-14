@@ -83,7 +83,7 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
 
   async function onSubmit(values: z.infer<typeof testSchema>) {
     if (values.testType === 'TOE' && !values.homogeneityJustification) {
-      form.setError('homogeneityJustification', { type: 'manual', message: 'Justifikasi homogenitas wajib diisi untuk TOE (Bab V 1.3.a)' });
+      form.setError('homogeneityJustification', { type: 'manual', message: 'Homogeneity justification is required for TOE (Chapter V 1.3.a)' });
       return;
     }
 
@@ -106,7 +106,7 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
 
   const EvaluationAttributesSection = () => (
     <div className="p-4 bg-muted/20 border rounded-lg space-y-3">
-      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Atribut Evaluasi (Mandatori Tabel 21)</p>
+      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Evaluation Attributes (Mandatory Table 21)</p>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
         <FormField
           control={form.control}
@@ -114,7 +114,7 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
           render={({ field }) => (
             <FormItem className="flex flex-row items-start space-x-3 space-y-0">
               <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-              <FormLabel className="text-[11px] font-normal leading-none cursor-pointer">Pencapaian Objektif Kontrol</FormLabel>
+              <FormLabel className="text-[11px] font-normal leading-none cursor-pointer">Control Objective Achievement</FormLabel>
             </FormItem>
           )}
         />
@@ -124,7 +124,7 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
           render={({ field }) => (
             <FormItem className="flex flex-row items-start space-x-3 space-y-0">
               <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-              <FormLabel className="text-[11px] font-normal leading-none cursor-pointer">Ketepatan Waktu Pelaksanaan</FormLabel>
+              <FormLabel className="text-[11px] font-normal leading-none cursor-pointer">Timeliness of Execution</FormLabel>
             </FormItem>
           )}
         />
@@ -134,7 +134,7 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
           render={({ field }) => (
             <FormItem className="flex flex-row items-start space-x-3 space-y-0">
               <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-              <FormLabel className="text-[11px] font-normal leading-none cursor-pointer">Wewenang & Kompetensi Pelaksana</FormLabel>
+              <FormLabel className="text-[11px] font-normal leading-none cursor-pointer">Authority & Competence of Performer</FormLabel>
             </FormItem>
           )}
         />
@@ -144,7 +144,7 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
           render={({ field }) => (
             <FormItem className="flex flex-row items-start space-x-3 space-y-0">
               <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-              <FormLabel className="text-[11px] font-normal leading-none cursor-pointer">Keandalan Informasi (IPE/EUC)</FormLabel>
+              <FormLabel className="text-[11px] font-normal leading-none cursor-pointer">Information Reliability (IPE/EUC)</FormLabel>
             </FormItem>
           )}
         />
@@ -154,7 +154,7 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
           render={({ field }) => (
             <FormItem className="flex flex-row items-start space-x-3 space-y-0">
               <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-              <FormLabel className="text-[11px] font-normal leading-none cursor-pointer">Cakupan Periode Pengujian</FormLabel>
+              <FormLabel className="text-[11px] font-normal leading-none cursor-pointer">Testing Period Coverage</FormLabel>
             </FormItem>
           )}
         />
@@ -164,7 +164,7 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
           render={({ field }) => (
             <FormItem className="flex flex-row items-start space-x-3 space-y-0">
               <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-              <FormLabel className="text-[11px] font-normal leading-none cursor-pointer">Kecukupan Bukti Pendukung</FormLabel>
+              <FormLabel className="text-[11px] font-normal leading-none cursor-pointer">Sufficiency of Supporting Evidence</FormLabel>
             </FormItem>
           )}
         />
@@ -288,10 +288,10 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
                     
                     <div className="flex justify-end gap-2 mt-4">
                       <Button type="submit" disabled={isAuthenticating || mutation.isPending} onClick={() => { form.setValue('testType', 'TOD'); form.setValue('result', 'Ineffective'); }} variant="destructive" size="sm">
-                        {isAuthenticating ? <Loader2 className="h-4 w-4 animate-spin mr-1"/> : <UserCheck className="h-4 w-4 mr-1"/>} Not Effective (Tidak Efektif)
+                        {isAuthenticating ? <Loader2 className="h-4 w-4 animate-spin mr-1"/> : <UserCheck className="h-4 w-4 mr-1"/>} Not Effective
                       </Button>
                       <Button type="submit" disabled={isAuthenticating || mutation.isPending} onClick={() => { form.setValue('testType', 'TOD'); form.setValue('result', 'Effective'); }} className="bg-green-600 hover:bg-green-700" size="sm">
-                        {isAuthenticating ? <Loader2 className="h-4 w-4 animate-spin mr-1"/> : <UserCheck className="h-4 w-4 mr-1"/>} Effective (Efektif)
+                        {isAuthenticating ? <Loader2 className="h-4 w-4 animate-spin mr-1"/> : <UserCheck className="h-4 w-4 mr-1"/>} Effective
                       </Button>
                     </div>
                   </TabsContent>
@@ -326,12 +326,12 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
 
                         <FormField control={form.control} name="homogeneityJustification" render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Justifikasi Homogenitas (Wajib Bab V 1.3.a)</FormLabel>
+                            <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Homogeneity Justification (Mandatory Chapter V 1.3.a)</FormLabel>
                             <FormControl>
                               <Textarea 
                                 {...field} 
                                 className="h-16 text-xs" 
-                                placeholder="Jelaskan alasan populasi dianggap homogen (e.g. kesamaan sistem, personil, SOP)..." 
+                                placeholder="Explain why the population is considered homogeneous (e.g. same system, personnel, SOP)..." 
                               />
                             </FormControl>
                             <FormMessage />
@@ -352,10 +352,10 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
 
                     <div className="flex justify-end gap-2 mt-4">
                       <Button type="submit" disabled={isAuthenticating || mutation.isPending} onClick={() => { form.setValue('testType', 'TOE'); form.setValue('result', 'Ineffective'); }} variant="destructive" size="sm">
-                        {isAuthenticating ? <Loader2 className="h-4 w-4 animate-spin mr-1"/> : <UserCheck className="h-4 w-4 mr-1"/>} Not Effective (Tidak Efektif)
+                        {isAuthenticating ? <Loader2 className="h-4 w-4 animate-spin mr-1"/> : <UserCheck className="h-4 w-4 mr-1"/>} Not Effective
                       </Button>
                       <Button type="submit" disabled={isAuthenticating || mutation.isPending} onClick={() => { form.setValue('testType', 'TOE'); form.setValue('result', 'Effective'); }} className="bg-green-600 hover:bg-green-700" size="sm">
-                        {isAuthenticating ? <Loader2 className="h-4 w-4 animate-spin mr-1"/> : <UserCheck className="h-4 w-4 mr-1"/>} Effective (Efektif)
+                        {isAuthenticating ? <Loader2 className="h-4 w-4 animate-spin mr-1"/> : <UserCheck className="h-4 w-4 mr-1"/>} Effective
                       </Button>
                     </div>
                   </TabsContent>
@@ -540,9 +540,9 @@ export function TestWorkbench() {
                     {violation ? (
                       <div className="p-6 bg-amber-50 border border-amber-200 rounded-lg text-center">
                         <AlertTriangle className="h-8 w-8 text-amber-600 mx-auto mb-2" />
-                        <h4 className="font-bold text-amber-800">Akses Dibatasi (Bab II poin d.2)</h4>
+                        <h4 className="font-bold text-amber-800">Access Restricted (Chapter II point d.2)</h4>
                         <p className="text-xs text-amber-700 max-w-md mx-auto mt-1 leading-relaxed">
-                          Sesuai regulasi, Auditor Internal dilarang menguji aktivitas yang sebelumnya menjadi tanggung jawabnya (sebagai Lini 1 atau Lini 2) sebelum melewati periode pendinginan (cooling-off) minimal 12 bulan.
+                          In accordance with regulations, Internal Auditors are prohibited from testing activities that were previously their responsibility (as Line 1 or Line 2) before a cooling-off period of at least 12 months has passed.
                         </p>
                       </div>
                     ) : (

@@ -37,14 +37,14 @@ interface GLDataGridProps {
 }
 
 const QUALITATIVE_RULES = [
-  { id: 1, label: "Kecurangan" },
-  { id: 2, label: "Volume" },
-  { id: 3, label: "Kompleksitas" },
-  { id: 4, label: "Karakteristik" },
-  { id: 5, label: "Kerumitan" },
-  { id: 6, label: "Kewajiban Kontingensi Signifikan" },
-  { id: 7, label: "Ada transaksi pihak berelasi" },
-  { id: 8, label: "Volalitas" },
+  { id: 1, label: "Fraud Risk" },
+  { id: 2, label: "Transaction Volume" },
+  { id: 3, label: "Complexity" },
+  { id: 4, label: "Account Characteristics" },
+  { id: 5, label: "Estimation Complexity" },
+  { id: 6, label: "Significant Contingent Liabilities" },
+  { id: 7, label: "Related Party Transactions" },
+  { id: 8, label: "Volatility" },
 ];
 
 export function GLDataGrid({
@@ -281,7 +281,7 @@ export function GLDataGrid({
       },
       {
         id: 'quantFlag',
-        header: () => <div className="text-center bg-orange-50/50 -mx-2 py-1 text-[9px]">Kuantitatif</div>,
+        header: () => <div className="text-center bg-orange-50/50 -mx-2 py-1 text-[9px]">Quantitative</div>,
         cell: ({ row }) => {
           const balance = row.getIsGrouped() 
             ? row.getLeafRows().reduce((sum, r) => sum + Math.abs(r.original.balance), 0)
@@ -409,8 +409,8 @@ export function GLDataGrid({
           'Account Code': '',
           'Account Description': '',
           'Balance': balance,
-          'Kuantitatif': Math.abs(balance) >= pmValue ? 'Significant' : 'Not Significant',
-          'Departemen Pemilik': '',
+          'Quantitative': Math.abs(balance) >= pmValue ? 'Significant' : 'Not Significant',
+          'Department Owner': '',
           'Owner Acceptance': '',
           'Scope': 'IN SCOPE' // Summary scope
         });
@@ -428,8 +428,8 @@ export function GLDataGrid({
             'Account Code': leaf.original.noGL,
             'Account Description': leaf.original.glDesc,
             'Balance': leaf.original.balance,
-            'Kuantitatif': isSignificant ? 'Significant' : 'Not Significant',
-            'Departemen Pemilik': dept?.name || 'Unassigned',
+            'Quantitative': isSignificant ? 'Significant' : 'Not Significant',
+            'Department Owner': dept?.name || 'Unassigned',
             'Owner Acceptance': acceptance,
             'Scope': isSignificant ? 'IN SCOPE' : 'OUT'
           });

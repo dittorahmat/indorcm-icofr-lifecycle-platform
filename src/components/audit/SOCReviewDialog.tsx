@@ -40,7 +40,7 @@ export function SOCReviewDialog({ report, isOpen, onClose, onSave }: SOCReviewDi
             Review SOC Report: {report.vendorName}
           </DialogTitle>
           <DialogDescription>
-            Validasi rancangan dan operasi pengendalian yang dialihkan kepada Pihak Ketiga (Bab III.4.3).
+            Validation of control design and operations outsourced to Third Parties (Chapter III.4.3).
           </DialogDescription>
         </DialogHeader>
 
@@ -71,28 +71,28 @@ export function SOCReviewDialog({ report, isOpen, onClose, onSave }: SOCReviewDi
               <CheckItem 
                 id="scope" 
                 label="Scope Alignment" 
-                desc="Pengendalian yang diuji oleh SO sesuai dengan hasil identifikasi kebutuhan perusahaan."
+                desc="Controls tested by the SO align with the company's identified needs."
                 checked={evaluation.scopeAlignment}
                 onChecked={() => handleToggle('scopeAlignment')}
               />
               <CheckItem 
                 id="period" 
                 label="Period Alignment" 
-                desc="Periode waktu dalam SOC Report sesuai dengan periode cakupan ICOFR perusahaan."
+                desc="Time period in the SOC Report aligns with the company's ICOFR coverage period."
                 checked={evaluation.periodAlignment}
                 onChecked={() => handleToggle('periodAlignment')}
               />
               <CheckItem 
                 id="method" 
                 label="Methodology Alignment" 
-                desc="Metode pengujian auditor independen sejalan dengan standar internal perusahaan."
+                desc="Independent auditor's testing methods align with company internal standards."
                 checked={evaluation.methodologyAlignment}
                 onChecked={() => handleToggle('methodologyAlignment')}
               />
               <CheckItem 
                 id="ineffective" 
                 label="Ineffective Controls Found?" 
-                desc="Apakah terdapat temuan kontrol yang tidak efektif dalam laporan SOC tersebut?"
+                desc="Are there ineffective control findings within the SOC report?"
                 checked={evaluation.hasIneffectiveControls}
                 onChecked={() => handleToggle('hasIneffectiveControls')}
               />
@@ -101,7 +101,7 @@ export function SOCReviewDialog({ report, isOpen, onClose, onSave }: SOCReviewDi
                   <CheckItem 
                     id="comp" 
                     label="Compensating Controls Tested?" 
-                    desc="Sudahkah dilakukan pengujian atas compensating control internal untuk memitigasi temuan SO?"
+                    desc="Has internal compensating control testing been performed to mitigate SO findings?"
                     checked={evaluation.compensatingControlsTested}
                     onChecked={() => handleToggle('compensatingControlsTested')}
                   />
@@ -111,9 +111,9 @@ export function SOCReviewDialog({ report, isOpen, onClose, onSave }: SOCReviewDi
           </div>
 
           <div className="space-y-2">
-            <Label className="text-sm font-bold">Kesimpulan & Opini Auditor (Lini 2)</Label>
+            <Label className="text-sm font-bold">Conclusion & Auditor Opinion (Line 2)</Label>
             <Textarea 
-              placeholder="Masukkan ringkasan hasil reviu dan dampaknya terhadap asesmen manajemen..."
+              placeholder="Enter review summary and its impact on management assessment..."
               value={evaluation.auditorOpinion}
               onChange={(e) => setEvaluation(prev => ({ ...prev, auditorOpinion: e.target.value }))}
               className="min-h-[100px] text-sm"

@@ -140,8 +140,8 @@ export function ReportsPage() {
         <Tabs defaultValue="dashboard" className="no-print">
           <TabsList className="mb-4">
             <TabsTrigger value="dashboard">Overview</TabsTrigger>
-            <TabsTrigger value="management">Asesmen Manajemen</TabsTrigger>
-            <TabsTrigger value="audit">Laporan Hasil Pengujian</TabsTrigger>
+            <TabsTrigger value="management">Management Assessment</TabsTrigger>
+            <TabsTrigger value="audit">Test Results Report</TabsTrigger>
             <TabsTrigger value="appendices">Regulatory Appendices</TabsTrigger>
           </TabsList>
 
@@ -155,7 +155,7 @@ export function ReportsPage() {
                 <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Overall Effectiveness</CardTitle></CardHeader>
                 <CardContent>
                   <div className={cn("text-3xl font-bold", isEffective ? "text-green-600" : "text-red-600")}>
-                    {isEffective ? "EFEKTIF" : "TIDAK EFEKTIF"}
+                    {isEffective ? "EFFECTIVE" : "INEFFECTIVE"}
                   </div>
                 </CardContent>
               </Card>
@@ -233,44 +233,44 @@ export function ReportsPage() {
               </AnimatePresence>
               <CardHeader className="text-center border-b pb-8">
                 <div className="flex justify-center mb-4"><Shield className="h-12 w-12 text-primary" /></div>
-                <CardTitle className="text-2xl uppercase">Asesmen Manajemen atas Efektivitas Implementasi ICOFR</CardTitle>
-                <CardDescription>Lampiran 11 - SK-5/DKU.MBU/11/2024</CardDescription>
+                <CardTitle className="text-2xl uppercase">Management Assessment on ICOFR Implementation Effectiveness</CardTitle>
+                <CardDescription>Appendix 11 - SK-5/DKU.MBU/11/2024</CardDescription>
               </CardHeader>
               <CardContent className="space-y-8 py-8 px-10">
                 <div className="space-y-4 text-justify leading-relaxed">
-                  <p>Direksi {settings?.companyName} menyatakan bahwa:</p>
+                  <p>The Board of Directors of {settings?.companyName} states that:</p>
                   
                   {!isEffective ? (
                     <div className="p-4 bg-red-50 border border-red-200 rounded-md mb-6">
-                      <p className="font-bold text-red-800 underline mb-2 text-center uppercase">Kesimpulan: Tidak Efektif</p>
+                      <p className="font-bold text-red-800 underline mb-2 text-center uppercase">Conclusion: Ineffective</p>
                       <p className="text-sm text-red-700">
-                        Berdasarkan evaluasi yang dilakukan, manajemen menyimpulkan bahwa Perusahaan <strong>tidak mempertahankan</strong> pengendalian internal yang efektif atas pelaporan keuangan per tanggal laporan, sehubungan dengan ditemukannya kelemahan material (Material Weakness).
+                        Based on the evaluation performed, management concludes that the Company <strong>did not maintain</strong> effective internal control over financial reporting as of the report date, due to identified material weaknesses.
                       </p>
                     </div>
                   ) : (
                     <div className="p-4 bg-green-50 border border-green-200 rounded-md mb-6">
-                      <p className="font-bold text-green-800 underline mb-2 text-center uppercase">Kesimpulan: Efektif</p>
+                      <p className="font-bold text-green-800 underline mb-2 text-center uppercase">Conclusion: Effective</p>
                       <p className="text-sm text-green-700">
-                        Berdasarkan evaluasi yang dilakukan, manajemen menyimpulkan bahwa Perusahaan <strong>telah mempertahankan</strong>, dalam semua hal yang material, pengendalian internal yang efektif atas pelaporan keuangan per tanggal laporan.
+                        Based on the evaluation performed, management concludes that the Company <strong>has maintained</strong>, in all material respects, effective internal control over financial reporting as of the report date.
                       </p>
                     </div>
                   )}
 
                   <ol className="list-decimal pl-5 space-y-6 text-sm text-foreground/90">
-                    <li>Kami telah menelaah laporan keuangan {settings?.companyName} yang berakhir pada tanggal {new Date(settings?.signedOffDate || Date.now()).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}.</li>
-                    <li>Berdasarkan pengetahuan kami, laporan keuangan tidak memuat pernyataan yang tidak benar tentang fakta material atau tidak mencantumkan fakta material yang diperlukan untuk membuat pernyataan yang dibuat, mengingat keadaan di mana pernyataan tersebut dibuat, tidak menyesatkan.</li>
-                    <li>Berdasarkan pengetahuan kami, laporan keuangan, dan informasi keuangan lainnya yang termasuk dalam laporan keuangan, secara wajar menyajikan dalam semua hal yang material atas kondisi keuangan dan hasil operasi untuk periode tersebut.</li>
-                    <li>Kami telah mengimplementasikan pengendalian dan prosedur atas penyusunan laporan keuangan yang dianggap perlu untuk menyusun dan menyajikan secara wajar laporan keuangan (konsolidasi) dan bebas dari salah saji material.</li>
+                    <li>We have reviewed the financial statements of {settings?.companyName} ending on {new Date(settings?.signedOffDate || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}.</li>
+                    <li>To our knowledge, the financial statements do not contain any untrue statement of a material fact or omit to state a material fact necessary to make the statements made, in light of the circumstances under which such statements were made, not misleading.</li>
+                    <li>To our knowledge, the financial statements and other financial information included in the financial statements, fairly present in all material respects the financial condition and results of operations for the period presented.</li>
+                    <li>We have implemented controls and procedures for the preparation of financial statements deemed necessary to properly prepare and present the financial statements (consolidated) and free from material misstatement.</li>
                   </ol>
                 </div>
 
                 <div className="bg-muted/30 p-6 rounded-lg space-y-4">
                   <h3 className="font-bold border-b pb-2 flex items-center gap-2">
-                    <AlertTriangle className="h-4 w-4" /> Rincian Defisiensi & Rencana Remediasi
+                    <AlertTriangle className="h-4 w-4" /> Deficiency Details & Remediation Plan
                   </h3>
                   <Table className="text-xs">
                     <TableHeader>
-                      <TableRow><TableHead>Defisiensi</TableHead><TableHead>Severity</TableHead><TableHead>Rencana Remediasi</TableHead></TableRow>
+                      <TableRow><TableHead>Deficiency</TableHead><TableHead>Severity</TableHead><TableHead>Remediation Plan</TableHead></TableRow>
                     </TableHeader>
                     <TableBody>
                       {summaryData?.allDeficiencies.filter((d: any) => d.severity !== 'Control Deficiency').map((def: any) => (
@@ -281,7 +281,7 @@ export function ReportsPage() {
                         </TableRow>
                       ))}
                       {!summaryData?.allDeficiencies.some((d: any) => d.severity !== 'Control Deficiency') && (
-                        <TableRow><TableCell colSpan={3} className="text-center py-4 text-muted-foreground">Tidak ditemukan defisiensi signifikan atau kelemahan material.</TableCell></TableRow>
+                        <TableRow><TableCell colSpan={3} className="text-center py-4 text-muted-foreground">No significant deficiencies or material weaknesses found.</TableCell></TableRow>
                       )}
                     </TableBody>
                   </Table>
@@ -289,11 +289,11 @@ export function ReportsPage() {
 
                 <div className="grid grid-cols-2 gap-20 pt-12">
                   <div className="text-center space-y-24">
-                    <p className="font-semibold border-b pb-2">Direktur Keuangan (CFO)</p>
+                    <p className="font-semibold border-b pb-2">Chief Financial Officer (CFO)</p>
                     <p className="font-bold">{settings?.cfoName}</p>
                   </div>
                   <div className="text-center space-y-24">
-                    <p className="font-semibold border-b pb-2">Direktur Utama (CEO)</p>
+                    <p className="font-semibold border-b pb-2">Chief Executive Officer (CEO)</p>
                     <p className="font-bold">{settings?.ceoName}</p>
                   </div>
                 </div>
@@ -305,7 +305,7 @@ export function ReportsPage() {
             <div className="flex flex-wrap items-center justify-between gap-4 bg-muted/20 p-4 rounded-lg border border-dashed no-print">
               <div className="flex items-center gap-4">
                 <div className="space-y-1">
-                  <p className="text-[10px] font-bold uppercase text-muted-foreground">Tipe Pengujian</p>
+                  <p className="text-[10px] font-bold uppercase text-muted-foreground">Test Type</p>
                   <div className="flex gap-1">
                     {['ALL', 'TOD', 'TOE'].map(t => (
                       <Button 
@@ -345,8 +345,8 @@ export function ReportsPage() {
 
             <Card>
               <CardHeader className="pb-0">
-                <CardTitle className="text-lg">Laporan Hasil Pengujian (TOD & TOE)</CardTitle>
-                <CardDescription>Konsolidasi hasil pengujian rancangan dan efektivitas operasi kontrol.</CardDescription>
+                <CardTitle className="text-lg">Test Results Report (TOD & TOE)</CardTitle>
+                <CardDescription>Consolidated results of control design and operating effectiveness testing.</CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
                 <div className="rounded-md border overflow-x-auto">
@@ -354,12 +354,12 @@ export function ReportsPage() {
                     <TableHeader className="bg-muted/50">
                       <TableRow>
                         <TableHead className="w-[40px] text-[10px] uppercase font-bold text-center">No</TableHead>
-                        <TableHead className="w-[180px] text-[10px] uppercase font-bold">Process Context (Lmp 5)</TableHead>
+                        <TableHead className="w-[180px] text-[10px] uppercase font-bold">Process Context (Appx 5)</TableHead>
                         <TableHead className="w-[180px] text-[10px] uppercase font-bold">Control Reference</TableHead>
-                        <TableHead className="w-[120px] text-[10px] uppercase font-bold text-center">Asersi (Tabel 8)</TableHead>
+                        <TableHead className="w-[120px] text-[10px] uppercase font-bold text-center">Assertion (Table 8)</TableHead>
                         <TableHead className="w-[60px] text-[10px] uppercase font-bold text-center">Type</TableHead>
                         <TableHead className="w-[80px] text-[10px] uppercase font-bold text-center">Method</TableHead>
-                        <TableHead className="text-[10px] uppercase font-bold text-center">Kriteria Lmp 8 (xxvii-xxxii)</TableHead>
+                        <TableHead className="text-[10px] uppercase font-bold text-center">Appx 8 Criteria (xxvii-xxxii)</TableHead>
                         <TableHead className="w-[60px] text-[10px] uppercase font-bold text-center">Sample</TableHead>
                         <TableHead className="w-[90px] text-[10px] uppercase font-bold text-center">Result</TableHead>
                         <TableHead className="w-[200px] text-[10px] uppercase font-bold text-left">Walkthrough / Notes</TableHead>
@@ -469,40 +469,40 @@ export function ReportsPage() {
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-xs font-bold uppercase">Dokumen Rahasia Negara</p>
-                <p className="text-[10px]">Klasifikasi: INTERNAL</p>
-                <p className="text-[10px]">Lampiran 11 - SK-5/DKU.MBU/11/2024</p>
+                <p className="text-xs font-bold uppercase">Confidential State Document</p>
+                <p className="text-[10px]">Classification: INTERNAL</p>
+                <p className="text-[10px]">Appendix 11 - SK-5/DKU.MBU/11/2024</p>
               </div>
            </div>
 
            <div className="text-center space-y-2 mb-10">
-              <h2 className="text-xl font-bold uppercase underline">Asesmen Manajemen atas Efektivitas Implementasi ICOFR</h2>
+              <h2 className="text-xl font-bold uppercase underline">Management Assessment on ICOFR Implementation Effectiveness</h2>
               <p className="text-sm font-medium">{settings?.companyName}</p>
-              <p className="text-xs">Periode Laporan: {settings?.fiscalYear}</p>
+              <p className="text-xs">Report Period: {settings?.fiscalYear}</p>
            </div>
            
            <div className="space-y-6 text-sm text-justify leading-relaxed">
-              <p>Direksi {settings?.companyName} menyatakan bahwa:</p>
+              <p>The Board of Directors of {settings?.companyName} states that:</p>
               {!isEffective ? (
                 <div className="p-4 border-2 border-red-800 rounded-md bg-red-50/50 mb-6 text-center">
-                  <p className="font-bold text-red-900 underline mb-2">KESIMPULAN: TIDAK EFEKTIF</p>
-                  <p className="text-xs text-red-800">Sehubungan dengan ditemukannya kelemahan material (Material Weakness).</p>
+                  <p className="font-bold text-red-900 underline mb-2">CONCLUSION: INEFFECTIVE</p>
+                  <p className="text-xs text-red-800">Due to identified material weakness (Material Weakness).</p>
                 </div>
               ) : (
                 <div className="p-4 border-2 border-green-800 rounded-md bg-green-50/50 mb-6 text-center">
-                  <p className="font-bold text-green-900 underline mb-2">KESIMPULAN: EFEKTIF</p>
+                  <p className="font-bold text-green-900 underline mb-2">CONCLUSION: EFFECTIVE</p>
                 </div>
               )}
               <ol className="list-decimal pl-5 space-y-4">
-                <li>Kami telah menelaah laporan keuangan yang berakhir pada tanggal {new Date(settings?.signedOffDate || Date.now()).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}.</li>
-                <li>Laporan keuangan tidak memuat pernyataan yang tidak benar tentang fakta material...</li>
+                <li>We have reviewed the financial statements ending on {new Date(settings?.signedOffDate || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}.</li>
+                <li>The financial statements do not contain any untrue statement of a material fact or omit to state a material fact necessary to make the statements made, in light of the circumstances under which such statements were made, not misleading.</li>
               </ol>
            </div>
 
            <div className="pt-12">
               <div className="grid grid-cols-3 gap-10 items-end">
                 <div className="text-center space-y-20">
-                  <p className="font-semibold border-b">Direktur Keuangan (CFO)</p>
+                  <p className="font-semibold border-b">Chief Financial Officer (CFO)</p>
                   <p className="font-bold text-lg">{settings?.cfoName}</p>
                 </div>
                 
@@ -530,15 +530,15 @@ export function ReportsPage() {
                 </div>
 
                 <div className="text-center space-y-20">
-                  <p className="font-semibold border-b">Direktur Utama (CEO)</p>
+                  <p className="font-semibold border-b">Chief Executive Officer (CEO)</p>
                   <p className="font-bold text-lg">{settings?.ceoName}</p>
                 </div>
               </div>
            </div>
 
            <div className="absolute bottom-0 left-0 right-0 border-t pt-2 text-[8px] text-muted-foreground flex justify-between">
-              <span>Dicetak otomatis oleh ISB Risk Pro v2.0</span>
-              <span>Hash Verifikasi: {settings?.verificationHash || 'NOT-SIGNED'}</span>
+              <span>Automatically printed by ISB Risk Pro v2.0</span>
+              <span>Verification Hash: {settings?.verificationHash || 'NOT-SIGNED'}</span>
               <span>Timestamp: {new Date().toLocaleString()}</span>
            </div>
         </div>

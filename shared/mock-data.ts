@@ -48,7 +48,7 @@ export const MOCK_USERS: User[] = [
   { id: 'u4', name: 'Diana Wijaya (Admin)', role: 'Admin', departmentId: 'dept-it', level: 'Manager' },
   { id: 'u5', name: 'Evan Tan (KAP Partner)', role: 'External Auditor' },
   { id: 'u6', name: 'Hendro Wijaya (CFO)', role: 'CFO' },
-  { id: 'u7', name: 'Dodi Prasetyo (Komisaris Utama)', role: 'Komisaris' },
+  { id: 'u7', name: 'Dodi Prasetyo (Chairman)', role: 'Commissioner' },
 ];
 
 // --- Chat Data ---

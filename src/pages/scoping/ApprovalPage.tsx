@@ -78,7 +78,7 @@ export function ApprovalPage() {
   // Filter logic based on role
   const pendingSims = simulations?.items.filter(s => {
     if (userRole === 'CFO') return s.status === 'Pending CFO';
-    if (userRole === 'Komisaris') return s.status === 'Pending Komut';
+    if (userRole === 'Commissioner') return s.status === 'Pending Komut';
     if (userRole === 'Admin') return s.status === 'Pending CFO' || s.status === 'Pending Komut';
     return false;
   }) || [];
@@ -127,7 +127,7 @@ export function ApprovalPage() {
                       <Badge variant="secondary" className={cn(
                         sim.status === 'Pending CFO' ? "bg-amber-100 text-amber-700" : "bg-blue-100 text-blue-700"
                       )}>
-                        {sim.status === 'Pending CFO' ? 'Review CFO' : 'Review Komut'}
+                        {sim.status === 'Pending CFO' ? 'CFO Review' : 'Chairman Review'}
                       </Badge>
                     </TableCell>
                     <TableCell>{sim.basis}</TableCell>
@@ -218,7 +218,7 @@ export function ApprovalPage() {
                     disabled={approveMutation.isPending}
                     className="bg-green-600 hover:bg-green-700 gap-2"
                   >
-                    <UserCheck className="h-4 w-4" /> Approve {userRole === 'CFO' ? 'to Komut' : 'Baseline'}
+                    <UserCheck className="h-4 w-4" /> Approve {userRole === 'CFO' ? 'to Chairman' : 'Baseline'}
                   </Button>
                 </div>
               </DialogFooter>

@@ -107,7 +107,7 @@ export function SOCMonitoringPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Service Organization Control (SOC) Repository</CardTitle>
-                <CardDescription>Formal reviu atas laporan asurans pihak ketiga untuk memastikan integritas data pelaporan keuangan.</CardDescription>
+                <CardDescription>Formal review of third-party assurance reports to ensure financial reporting data integrity.</CardDescription>
               </CardHeader>
               <CardContent>
                 <Table>
@@ -144,13 +144,13 @@ export function SOCMonitoringPage() {
                             </Badge>
                           ) : (
                             <Badge variant="outline" className="text-[10px] gap-1 border-amber-200 text-amber-700 bg-amber-50">
-                              <AlertCircle className="h-3 w-3" /> Pending Reviu
+                              <AlertCircle className="h-3 w-3" /> Pending Review
                             </Badge>
                           )}
                         </TableCell>
                         <TableCell className="text-right">
                           <Button variant="ghost" size="sm" onClick={() => setSelectedReport(soc)} className="gap-2">
-                            <FileSearch className="h-4 w-4" /> Reviu
+                            <FileSearch className="h-4 w-4" /> Review
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -220,10 +220,10 @@ export function SOCMonitoringPage() {
             <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 flex items-start gap-3">
               <Info className="h-5 w-5 text-blue-600 mt-0.5" />
               <div className="space-y-1">
-                <p className="text-xs font-bold text-blue-800 uppercase">Tabel 1 Compliance: COBIT to ITGC Mapping</p>
+                <p className="text-xs font-bold text-blue-800 uppercase">Table 1 Compliance: COBIT to ITGC Mapping</p>
                 <p className="text-[11px] text-blue-700 leading-relaxed italic">
-                  Sesuai regulasi SK-5 Tabel 1, setiap kontrol TI (COBIT 2019) dipetakan secara otomatis ke 4 area utama ITGC: 
-                  Access to Program & Data, Program Change, Program Development, dan Computer Operations.
+                  In accordance with SK-5 Table 1 regulation, each IT control (COBIT 2019) is automatically mapped to 4 main ITGC areas: 
+                  Access to Program & Data, Program Change, Program Development, and Computer Operations.
                 </p>
               </div>
             </div>

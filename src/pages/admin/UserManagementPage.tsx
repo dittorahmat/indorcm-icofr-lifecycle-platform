@@ -112,30 +112,30 @@ export function UserManagementPage() {
     mutationFn: (newUser: any) => api("/api/users", { method: "POST", body: JSON.stringify(newUser) }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
-      toast.success("User baru berhasil ditambahkan");
+      toast.success("New user successfully added");
       setIsAddUserOpen(false);
     },
-    onError: (err: any) => toast.error(`Gagal: ${err.message}`)
+    onError: (err: any) => toast.error(`Failed: ${err.message}`)
   });
 
   const updateUserMutation = useMutation({
     mutationFn: ({ id, data }: { id: string, data: any }) => api(`/api/users/${id}`, { method: "PUT", body: JSON.stringify(data) }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
-      toast.success("User diperbarui");
+      toast.success("User updated");
       setEditingUser(null);
     },
-    onError: (err: any) => toast.error(`Gagal: ${err.message}`)
+    onError: (err: any) => toast.error(`Failed: ${err.message}`)
   });
 
   const deleteUserMutation = useMutation({
     mutationFn: (id: string) => api(`/api/users/${id}`, { method: "DELETE" }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
-      toast.success("User dihapus");
+      toast.success("User deleted");
       setDeletingUser(null);
     },
-    onError: (err: any) => toast.error(`Gagal: ${err.message}`)
+    onError: (err: any) => toast.error(`Failed: ${err.message}`)
   });
 
   // --- MUTATIONS: DEPARTMENTS ---
@@ -144,30 +144,30 @@ export function UserManagementPage() {
     mutationFn: (newDept: any) => api("/api/departments", { method: "POST", body: JSON.stringify(newDept) }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["departments"] });
-      toast.success("Departemen ditambahkan");
+      toast.success("Department added");
       setIsAddDeptOpen(false);
     },
-    onError: (err: any) => toast.error(`Gagal: ${err.message}`)
+    onError: (err: any) => toast.error(`Failed: ${err.message}`)
   });
 
   const updateDeptMutation = useMutation({
     mutationFn: ({ id, data }: { id: string, data: any }) => api(`/api/departments/${id}`, { method: "PUT", body: JSON.stringify(data) }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["departments"] });
-      toast.success("Departemen diperbarui");
+      toast.success("Department updated");
       setEditingDept(null);
     },
-    onError: (err: any) => toast.error(`Gagal: ${err.message}`)
+    onError: (err: any) => toast.error(`Failed: ${err.message}`)
   });
 
   const deleteDeptMutation = useMutation({
     mutationFn: (id: string) => api(`/api/departments/${id}`, { method: "DELETE" }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["departments"] });
-      toast.success("Departemen dihapus");
+      toast.success("Department deleted");
       setDeletingDept(null);
     },
-    onError: (err: any) => toast.error(`Gagal: ${err.message}`)
+    onError: (err: any) => toast.error(`Failed: ${err.message}`)
   });
 
   // --- HANDLERS ---
@@ -203,7 +203,7 @@ export function UserManagementPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Organization Admin</h1>
-          <p className="text-muted-foreground">Kelola personil dan struktur departemen BUMN.</p>
+          <p className="text-muted-foreground">Manage personnel and BUMN department structures.</p>
         </div>
       </div>
 
@@ -222,7 +222,7 @@ export function UserManagementPage() {
             <div className="relative w-full max-w-sm">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Cari nama user..."
+                placeholder="Search user name..."
                 className="pl-8"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -230,17 +230,17 @@ export function UserManagementPage() {
             </div>
             <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
               <DialogTrigger asChild>
-                <Button className="gap-2"><UserPlus className="h-4 w-4" /> Tambah User</Button>
+                <Button className="gap-2"><UserPlus className="h-4 w-4" /> Add User</Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
                 <form onSubmit={handleAddUser}>
                   <DialogHeader>
-                    <DialogTitle>Tambah User Baru</DialogTitle>
-                    <DialogDescription>Masukkan akun personil baru dan pilih departemen.</DialogDescription>
+                    <DialogTitle>Add New User</DialogTitle>
+                    <DialogDescription>Enter new personnel account and select department.</DialogDescription>
                   </DialogHeader>
                   <div className="grid gap-4 py-4">
-                    <div className="grid gap-2"><Label>Nama Lengkap</Label><Input name="name" required /></div>
-                    <div className="grid gap-2"><Label>Email BUMN</Label><Input name="email" type="email" required /></div>
+                    <div className="grid gap-2"><Label>Full Name</Label><Input name="name" required /></div>
+                    <div className="grid gap-2"><Label>BUMN Email</Label><Input name="email" type="email" required /></div>
                     <div className="grid gap-2"><Label>Password</Label><Input name="password" type="password" defaultValue="password123" required /></div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="grid gap-2"><Label>Role</Label>
@@ -251,7 +251,7 @@ export function UserManagementPage() {
                             <SelectItem value="Line 2">Line 2</SelectItem>
                             <SelectItem value="Line 3">Line 3</SelectItem>
                             <SelectItem value="CFO">CFO</SelectItem>
-                            <SelectItem value="Komisaris">Komisaris</SelectItem>
+                            <SelectItem value="Komisaris">Commissioner</SelectItem>
                             <SelectItem value="Admin">Admin</SelectItem>
                           </SelectContent>
                         </Select>
@@ -270,7 +270,7 @@ export function UserManagementPage() {
                     <div className="grid gap-2">
                       <Label>Department</Label>
                       <Select name="departmentId">
-                        <SelectTrigger><SelectValue placeholder="Pilih Departemen" /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder="Select Department" /></SelectTrigger>
                         <SelectContent>
                           {departments.map(d => (
                             <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
@@ -279,7 +279,7 @@ export function UserManagementPage() {
                       </Select>
                     </div>
                   </div>
-                  <DialogFooter><Button type="submit">Simpan</Button></DialogFooter>
+                  <DialogFooter><Button type="submit">Save</Button></DialogFooter>
                 </form>
               </DialogContent>
             </Dialog>
@@ -293,11 +293,11 @@ export function UserManagementPage() {
                     <TableHead>User</TableHead>
                     <TableHead>Role & Level</TableHead>
                     <TableHead>Department</TableHead>
-                    <TableHead className="text-right">Aksi</TableHead>
+                    <TableHead className="text-right">Action</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {isUsersLoading ? <TableRow><TableCell colSpan={4} className="text-center py-10">Memuat...</TableCell></TableRow> :
+                  {isUsersLoading ? <TableRow><TableCell colSpan={4} className="text-center py-10">Loading...</TableCell></TableRow> :
                     users.map((u) => (
                       <TableRow key={u.id}>
                         <TableCell>
@@ -319,7 +319,7 @@ export function UserManagementPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem onClick={() => setEditingUser(u)}><Edit className="h-4 w-4 mr-2" /> Edit</DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setDeletingUser(u)} className="text-red-600"><Trash2 className="h-4 w-4 mr-2" /> Hapus</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => setDeletingUser(u)} className="text-red-600"><Trash2 className="h-4 w-4 mr-2" /> Delete</DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </TableCell>
@@ -330,9 +330,9 @@ export function UserManagementPage() {
               </Table>
               {totalPages > 1 && (
                 <div className="flex items-center justify-end space-x-2 py-4">
-                  <Button variant="outline" size="sm" onClick={() => setPage(p => p - 1)} disabled={page === 1}>Sebelumnya</Button>
-                  <span className="text-sm">Hal {page} dari {totalPages}</span>
-                  <Button variant="outline" size="sm" onClick={() => setPage(p => p + 1)} disabled={page === totalPages}>Berikutnya</Button>
+                  <Button variant="outline" size="sm" onClick={() => setPage(p => p - 1)} disabled={page === 1}>Previous</Button>
+                  <span className="text-sm">Page {page} of {totalPages}</span>
+                  <Button variant="outline" size="sm" onClick={() => setPage(p => p + 1)} disabled={page === totalPages}>Next</Button>
                 </div>
               )}
             </CardContent>
@@ -343,23 +343,23 @@ export function UserManagementPage() {
           <div className="flex justify-end">
             <Dialog open={isAddDeptOpen} onOpenChange={setIsAddDeptOpen}>
               <DialogTrigger asChild>
-                <Button className="gap-2"><Plus className="h-4 w-4" /> Tambah Departemen</Button>
+                <Button className="gap-2"><Plus className="h-4 w-4" /> Add Department</Button>
               </DialogTrigger>
               <DialogContent>
                 <form onSubmit={handleAddDept}>
                   <DialogHeader>
-                    <DialogTitle>Tambah Departemen</DialogTitle>
-                    <DialogDescription>Contoh: Finance, Mining Operations, HR, dll.</DialogDescription>
+                    <DialogTitle>Add Department</DialogTitle>
+                    <DialogDescription>Example: Finance, Mining Operations, HR, etc.</DialogDescription>
                   </DialogHeader>
-                  <div className="py-4"><Label>Nama Departemen</Label><Input name="name" required /></div>
-                  <DialogFooter><Button type="submit">Simpan</Button></DialogFooter>
+                  <div className="py-4"><Label>Department Name</Label><Input name="name" required /></div>
+                  <DialogFooter><Button type="submit">Save</Button></DialogFooter>
                 </form>
               </DialogContent>
             </Dialog>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {isDeptsLoading ? <div className="col-span-3 text-center py-10">Memuat...</div> :
+            {isDeptsLoading ? <div className="col-span-3 text-center py-10">Loading...</div> :
               departments.map(d => (
                 <Card key={d.id}>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -393,7 +393,7 @@ export function UserManagementPage() {
             <form onSubmit={handleUpdateUser}>
               <DialogHeader><DialogTitle>Edit User: {editingUser.name}</DialogTitle></DialogHeader>
               <div className="grid gap-4 py-4">
-                <div className="grid gap-2"><Label>Nama Lengkap</Label><Input name="name" defaultValue={editingUser.name} required /></div>
+                <div className="grid gap-2"><Label>Full Name</Label><Input name="name" defaultValue={editingUser.name} required /></div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2"><Label>Role</Label>
                     <Select name="role" defaultValue={editingUser.role}>
@@ -403,7 +403,7 @@ export function UserManagementPage() {
                         <SelectItem value="Line 2">Line 2</SelectItem>
                         <SelectItem value="Line 3">Line 3</SelectItem>
                         <SelectItem value="CFO">CFO</SelectItem>
-                        <SelectItem value="Komisaris">Komisaris</SelectItem>
+                        <SelectItem value="Komisaris">Commissioner</SelectItem>
                         <SelectItem value="Admin">Admin</SelectItem>
                       </SelectContent>
                     </Select>
@@ -449,20 +449,20 @@ export function UserManagementPage() {
 
       <AlertDialog open={!!deletingUser} onOpenChange={(open) => !open && setDeletingUser(null)}>
         <AlertDialogContent>
-          <AlertDialogHeader><AlertDialogTitle>Hapus User?</AlertDialogTitle><AlertDialogDescription>Tindakan ini tidak dapat dibatalkan.</AlertDialogDescription></AlertDialogHeader>
+          <AlertDialogHeader><AlertDialogTitle>Delete User?</AlertDialogTitle><AlertDialogDescription>This action cannot be undone.</AlertDialogDescription></AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Batal</AlertDialogCancel>
-            <AlertDialogAction onClick={() => deletingUser && deleteUserMutation.mutate(deletingUser.id)} className="bg-red-600">Hapus</AlertDialogAction>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => deletingUser && deleteUserMutation.mutate(deletingUser.id)} className="bg-red-600">Delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
       <AlertDialog open={!!deletingDept} onOpenChange={(open) => !open && setDeletingDept(null)}>
         <AlertDialogContent>
-          <AlertDialogHeader><AlertDialogTitle>Hapus Departemen?</AlertDialogTitle><AlertDialogDescription>Hapus <b>{deletingDept?.name}</b>? Pastikan tidak ada user di dalamnya.</AlertDialogDescription></AlertDialogHeader>
+          <AlertDialogHeader><AlertDialogTitle>Delete Department?</AlertDialogTitle><AlertDialogDescription>Delete <b>{deletingDept?.name}</b>? Ensure there are no users in it.</AlertDialogDescription></AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Batal</AlertDialogCancel>
-            <AlertDialogAction onClick={() => deletingDept && deleteDeptMutation.mutate(deletingDept.id)} className="bg-red-600">Hapus</AlertDialogAction>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => deletingDept && deleteDeptMutation.mutate(deletingDept.id)} className="bg-red-600">Delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

@@ -23,7 +23,7 @@ export function ChangeLogPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold">Change Management Log</h1>
-            <p className="text-muted-foreground italic">Lampiran 6 - Ilustrasi Dokumentasi Log Perubahan Proses Bisnis dan Pengendalian.</p>
+            <p className="text-muted-foreground italic">Appendix 6 - Illustration of Documentation for Business Process and Control Change Log.</p>
           </div>
           <Badge variant="secondary" className="px-3 py-1 gap-2 border-primary/20 bg-primary/5">
             <History className="h-3 w-3" /> Audit-Ready

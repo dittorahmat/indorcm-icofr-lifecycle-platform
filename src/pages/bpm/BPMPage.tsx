@@ -251,7 +251,7 @@ export function BPMPage() {
               <div className="space-y-2">
                 <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Kategori</Label>
                 <div className="h-10 px-3 flex items-center border rounded-md bg-slate-100 text-xs text-slate-600 font-medium">
-                  {selectedGLRow?.kategori || "-"}
+                  {selectedGLRow?.category || "-"}
                 </div>
               </div>
 

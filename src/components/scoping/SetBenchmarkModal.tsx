@@ -96,7 +96,7 @@ export function SetBenchmarkModal({ snapshot: initialSnapshot, isOpen, onOpenCha
             {isLoading ? (
               <div className="h-full w-full flex flex-col items-center justify-center gap-2 text-muted-foreground">
                 <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
-                <p className="text-sm font-medium">Memuat data GL...</p>
+                <p className="text-sm font-medium">Loading GL data...</p>
               </div>
             ) : (
               <Table>

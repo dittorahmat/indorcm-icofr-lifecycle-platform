@@ -226,11 +226,15 @@ export function RCMList() {
         <Tabs defaultValue="matrix">
           <TabsList>
             <TabsTrigger value="matrix">RCM Matrix (TLC)</TabsTrigger>
-            <TabsTrigger value="elc">Indirect ELC (Tabel 17)</TabsTrigger>
-            <TabsTrigger value="logs">Log Perubahan (Appendix 6)</TabsTrigger>
-            <TabsTrigger value="soc">Third Party / SOC (Bab III 4.3)</TabsTrigger>
-            <TabsTrigger value="apps">Significant Apps (Bab III 1.5)</TabsTrigger>
-            <TabsTrigger value="wbs">WBS Indicators (Prinsip 14)</TabsTrigger>
+            <TabsTrigger value="elc">Indirect ELC (Table 17)</TabsTrigger>
+
+            <TabsTrigger value="logs">Change Log (Appendix 6)</TabsTrigger>
+            <TabsTrigger value="soc">Third Party / SOC (Chapter III 4.3)</TabsTrigger>
+
+            <TabsTrigger value="apps">Significant Apps (Chapter III 1.5)</TabsTrigger>
+
+            <TabsTrigger value="wbs">WBS Indicators (Principle 14)</TabsTrigger>
+
           </TabsList>
 
           <TabsContent value="matrix" className="space-y-6 pt-4">
@@ -282,21 +286,23 @@ export function RCMList() {
                               onClick={() => validateMutation.mutate(rcm.id)}
                               disabled={validateMutation.isPending}
                             >
-                              Validate Design (Lini 2)
+                              Validate Design (Line 2)
                             </Button>
                           )}
+
                           {/* DEMO MODE: All lines can review changes */}
                           {rcm.status === 'Pending Change Approval' && (
                             <div className="p-2 border rounded bg-amber-50 border-amber-200 mt-2 space-y-2 max-w-[250px]">
-                              <p className="text-[9px] font-bold text-amber-800 uppercase tracking-tighter">Proposed Changes by Lini 1</p>
+                              <p className="text-[9px] font-bold text-amber-800 uppercase tracking-tighter">Proposed Changes by Line 1</p>
                               <Button
                                 size="sm"
                                 className="h-7 text-[10px] w-full bg-amber-600 hover:bg-amber-700 gap-1 font-bold"
                                 onClick={() => { setSelectedRcm(rcm); setCompareOpen(true); }}
                               >
-                                <Eye className="h-3 w-3" /> Review Changes (Lampiran 6)
+                                <Eye className="h-3 w-3" /> Review Changes (Appendix 6)
                               </Button>
                             </div>
+
                           )}
                         </div>
                       </div>
@@ -446,7 +452,7 @@ export function RCMList() {
               Review Proposed RCM Changes
             </DialogTitle>
             <DialogDescription>
-              Bandingkan desain RCM saat ini dengan usulan perubahan dari Lini 1 sesuai Lampiran 6.
+              Compare current RCM design with proposed changes from Line 1 in accordance with Appendix 6.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
@@ -514,7 +520,7 @@ export function RCMList() {
           <DialogHeader>
             <DialogTitle>BPM Flow: {selectedRcm?.process}</DialogTitle>
             <DialogDescription>
-              Visualisasi Business Process Mapping sesuai standar Lampiran 3 (SK-5/2024).
+              Business Process Mapping visualization according to Appendix 3 (SK-5/2024) standard.
             </DialogDescription>
           </DialogHeader>
           <div className="flex-1 overflow-hidden">
@@ -568,7 +574,7 @@ export function RCMList() {
                 onChange={(e) => setNewRcmData(prev => ({ ...prev, riskDescription: e.target.value }))}
               />
               <p className="text-[10px] text-muted-foreground italic flex items-center gap-1">
-                <Info className="h-3 w-3" /> Tip: Penjelasan risiko harus mencakup asersi yang terancam (Completeness, Accuracy, etc).
+                <Info className="h-3 w-3" /> Tip: Risk description must include threatened assertions (Completeness, Accuracy, etc).
               </p>
             </div>
           </div>

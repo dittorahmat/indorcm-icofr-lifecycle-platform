@@ -565,10 +565,10 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
             <Card className="bg-amber-50 border-amber-200 shadow-sm">
               <CardHeader className="pb-2"><CardTitle className="text-[10px] uppercase font-bold text-amber-800 flex items-center gap-2"><Info className="h-3 w-3" /> Scoping Logic</CardTitle></CardHeader>
               <CardContent className="text-[10px] text-amber-700 leading-relaxed space-y-2 italic">
-                <p>Akun ditandai <strong>SIGNIFICANT</strong> jika:</p>
+                <p>An account is marked <strong>SIGNIFICANT</strong> if:</p>
                 <ol className="list-decimal list-inside space-y-1">
-                  <li>|Saldo| &gt;= PM (Quantitative)</li>
-                  <li>Salah satu pilar kualitatif di level FSLI bernilai 'HIGH'</li>
+                  <li>|Balance| &gt;= PM (Quantitative)</li>
+                  <li>At least one qualitative pillar at the FSLI level is 'HIGH'</li>
                 </ol>
               </CardContent>
             </Card>
@@ -619,8 +619,8 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
 function StatusBadge({ status }: { status: SimulationStatus }) {
   switch (status) {
     case 'Approved': return <Badge className="bg-green-600">Approved</Badge>;
-    case 'Pending CFO': return <Badge variant="secondary" className="bg-amber-100 text-amber-700 border-amber-200">Review CFO</Badge>;
-    case 'Pending Komut': return <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-200">Review Komut</Badge>;
+    case 'Pending CFO': return <Badge variant="secondary" className="bg-amber-100 text-amber-700 border-amber-200">CFO Review</Badge>;
+    case 'Pending Komut': return <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-200">Chairman Review</Badge>;
     case 'Rejected': return <Badge variant="destructive">Rejected</Badge>;
     default: return <Badge variant="outline">{status}</Badge>;
   }

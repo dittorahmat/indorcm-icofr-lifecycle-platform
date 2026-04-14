@@ -26,12 +26,12 @@ export function LoginPage() {
 
     // Validation
     if (!credentials.email || !credentials.password) {
-      setError('Email dan password wajib diisi');
+      setError('Email and password are required');
       return;
     }
 
     if (!validateEmail(credentials.email)) {
-      setError('Format email tidak valid');
+      setError('Invalid email format');
       return;
     }
 
@@ -47,14 +47,14 @@ export function LoginPage() {
         throw new Error(authError.message || 'Login failed');
       }
 
-      toast.success(`Login berhasil`);
+      toast.success(`Login successful`);
 
       // Smart Redirect (better-auth session handles the data now)
       navigate('/welcome');
       
     } catch (err: any) {
-      setError(err.message || 'Invalid credentials. Pastikan email dan password benar.');
-      toast.error('Login gagal');
+      setError(err.message || 'Invalid credentials. Please ensure your email and password are correct.');
+      toast.error('Login failed');
     } finally {
       setIsLoading(false);
     }
@@ -83,7 +83,7 @@ export function LoginPage() {
     if (emailLower.startsWith('line2@')) return 'Line 2';
     if (emailLower.startsWith('line3@')) return 'Line 3';
     if (emailLower.startsWith('cfo@')) return 'CFO';
-    if (emailLower.startsWith('komisaris@')) return 'Komisaris';
+    if (emailLower.startsWith('komisaris@')) return 'Commissioner';
     if (emailLower.startsWith('admin@')) return 'Admin';
     if (emailLower.startsWith('external@')) return 'External Auditor';
     return 'Line 1'; // Default
@@ -193,7 +193,7 @@ export function LoginPage() {
                   <p className="font-bold text-slate-500 mb-0.5 border-t pt-1">Core Access</p>
                   <p>line2@bumn.go.id (L2)</p>
                   <p>cfo@bumn.go.id (CFO)</p>
-                  <p>komisaris@bumn.go.id (Komut)</p>
+                  <p>komisaris@bumn.go.id (Commissioner)</p>
                   <p>admin@bumn.go.id (Admin)</p>
                 </div>
               </div>

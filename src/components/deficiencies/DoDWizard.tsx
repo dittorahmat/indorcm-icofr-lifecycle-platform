@@ -49,8 +49,8 @@ export function DoDWizard({ isOpen, setIsOpen, onComplete, isAggregate = false }
       else setStep('RESULT'); 
     } else if (step === 7) {
       if (val) {
-        toast.info("Loop Agregasi: Kembali ke Box 2 untuk mengevaluasi dampak gabungan.", {
-          description: "Sesuai mandat Box 7 pada Gambar 5 (Hal 73)."
+        toast.info("Aggregation Loop: Returning to Box 2 to evaluate combined impact.", {
+          description: "In accordance with Box 7 mandate in Figure 5 (Page 73)."
         });
         setStep(2); // Loop back to Box 2
       } else {
@@ -88,62 +88,62 @@ export function DoDWizard({ isOpen, setIsOpen, onComplete, isAggregate = false }
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <ShieldCheck className="h-5 w-5 text-primary" />
-            {isAggregate ? "Aggregate Deficiency Assessment (Lampiran 10)" : "Degree of Deficiency Wizard"}
+            {isAggregate ? "Aggregate Deficiency Assessment (Appendix 10)" : "Degree of Deficiency Wizard"}
           </DialogTitle>
           <DialogDescription>
             {isAggregate 
-              ? "Mengevaluasi dampak kolektif dari beberapa defisiensi terpilih."
-              : "Logika penentuan tingkat defisiensi berdasarkan Gambar 5 (SK-5/2024)."}
+              ? "Evaluate collective impact from multiple selected deficiencies."
+              : "Deficiency level determination logic based on Figure 5 (SK-5/2024)."}
           </DialogDescription>
         </DialogHeader>
 
         <div className="py-6 min-h-[200px] flex flex-col justify-center">
           {step === 1 && (
             <Question 
-              title="Box 1: Hubungan Asersi"
-              q="Apakah defisiensi berhubungan langsung dengan pencapaian satu atau lebih asersi atas laporan keuangan?"
+              title="Box 1: Assertion Relationship"
+              q="Is the deficiency directly related to the achievement of one or more financial statement assertions?"
               onAnswer={handleAnswer}
             />
           )}
           {step === 2 && (
             <Question 
-              title="Box 2: Likelihood (Kemungkinan)"
-              q="Apakah terdapat kemungkinan (likelihood) dari salah saji dihasilkan dari defisiensi (atau kombinasi defisiensi)?"
+              title="Box 2: Likelihood"
+              q="Is there a likelihood that a misstatement will result from the deficiency (or combination of deficiencies)?"
               onAnswer={handleAnswer}
             />
           )}
           {step === 3 && (
             <Question 
-              title="Box 3: Magnitude (Besaran)"
-              q="Apakah terdapat kemungkinan magnitude dari potensi salah saji (mempertimbangkan faktor material)?"
+              title="Box 3: Magnitude"
+              q="Is there a possibility that the magnitude of potential misstatement is material?"
               onAnswer={handleAnswer}
             />
           )}
           {step === 4 && (
             <Question 
-              title="Box 4: Penting/Perhatian"
-              q="Apakah defisiensi cukup penting untuk mendapat perhatian dari pihak yang bertanggung jawab atas pengawasan (Komite Audit/Direksi)?"
+              title="Box 4: Importance/Attention"
+              q="Is the deficiency important enough to merit attention from those responsible for oversight (Audit Committee/Board of Directors)?"
               onAnswer={handleAnswer}
             />
           )}
           {step === 5 && (
             <Question 
               title="Box 5: Compensating Control"
-              q="Apakah terdapat pengendalian yang dapat beroperasi secara efektif pada tingkat ketepatan yang cukup untuk mencegah/mendeteksi salah saji material?"
+              q="Are there controls that can operate effectively at a level of precision sufficient to prevent/detect material misstatements?"
               onAnswer={handleAnswer}
             />
           )}
           {step === 6 && (
             <Question 
               title="Box 6: Prudent Official"
-              q="Akankah individu yang berpengetahuan luas, kompeten dan objektif (prudent official) menyimpulkan defisiensi sebagai material weakness?"
+              q="Would a well-informed, competent, and objective individual (prudent official) conclude the deficiency is a material weakness?"
               onAnswer={handleAnswer}
             />
           )}
           {step === 7 && (
             <Question 
-              title="Box 7: Agregasi Akun Sejenis"
-              q="Apakah terdapat beberapa pengendalian defisiensi yang memengaruhi account balance atau disclosure dari laporan keuangan yang sama?"
+              title="Box 7: Similar Account Aggregation"
+              q="Are there multiple control deficiencies affecting the same financial statement account balance or disclosure?"
               onAnswer={handleAnswer}
             />
           )}
@@ -154,24 +154,24 @@ export function DoDWizard({ isOpen, setIsOpen, onComplete, isAggregate = false }
                 {result === "Material Weakness" ? <AlertCircle className="h-12 w-12 text-destructive" /> : <CheckCircle2 className="h-12 w-12 text-primary" />}
               </div>
               <div>
-                <h3 className="text-lg font-bold">Hasil Penilaian</h3>
+                <h3 className="text-lg font-bold">Assessment Result</h3>
                 <Badge className={`mt-2 text-lg px-4 py-1 ${result === 'Material Weakness' ? 'bg-red-600' : result === 'Significant Deficiency' ? 'bg-orange-500' : 'bg-blue-500'}`}>
                   {result}
                 </Badge>
               </div>
 
               <div className="text-left space-y-2 mt-4">
-                <label className="text-[10px] font-bold uppercase text-muted-foreground">Rationale / Justifikasi (Mandatori)</label>
+                <label className="text-[10px] font-bold uppercase text-muted-foreground">Rationale / Justification (Mandatory)</label>
                 <Textarea 
                   value={rationale}
                   onChange={(e) => setRationale(e.target.value)}
-                  placeholder="Jelaskan dasar pertimbangan penentuan severity ini..."
+                  placeholder="Explain the basis for determining this severity level..."
                   className="text-xs h-20"
                 />
               </div>
 
               <p className="text-sm text-muted-foreground italic">
-                {result === "Material Weakness" ? "Segera laporkan kepada Komite Audit dan buat rencana remediasi prioritas." : "Dokumentasikan temuan dan monitor rencana aksi."}
+                {result === "Material Weakness" ? "Immediately report to the Audit Committee and create a priority remediation plan." : "Document findings and monitor the action plan."}
               </p>
             </div>
           )}
@@ -201,8 +201,8 @@ function Question({ title, q, onAnswer }: { title: string, q: string, onAnswer: 
       </h3>
       <p className="text-base font-medium leading-relaxed">{q}</p>
       <div className="grid grid-cols-2 gap-4 pt-4">
-        <Button variant="outline" className="h-12 text-lg hover:bg-red-50 hover:text-red-700 hover:border-red-200" onClick={() => onAnswer(false)}>TIDAK</Button>
-        <Button variant="outline" className="h-12 text-lg hover:bg-green-50 hover:text-green-700 hover:border-green-200" onClick={() => onAnswer(true)}>YA</Button>
+        <Button variant="outline" className="h-12 text-lg hover:bg-red-50 hover:text-red-700 hover:border-red-200" onClick={() => onAnswer(false)}>NO</Button>
+        <Button variant="outline" className="h-12 text-lg hover:bg-green-50 hover:text-green-700 hover:border-green-200" onClick={() => onAnswer(true)}>YES</Button>
       </div>
     </div>
   );

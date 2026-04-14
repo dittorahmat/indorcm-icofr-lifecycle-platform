@@ -32,7 +32,7 @@ export function MainHeader() {
     localStorage.removeItem('authToken');
     localStorage.removeItem('mockRole');
     localStorage.removeItem('userId');
-    toast.success('Logout berhasil');
+    toast.success('Logout successful');
     navigate('/');
   };
 

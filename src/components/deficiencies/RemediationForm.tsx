@@ -11,12 +11,12 @@ import { ShieldCheck, Calendar } from 'lucide-react';
 import type { ActionPlan } from '@shared/types';
 
 const remediationSchema = z.object({
-  relatedFunction: z.string().min(1, 'Fungsi Terkait wajib diisi (Lampiran 6)'),
-  picName: z.string().min(1, 'Penanggung Jawab wajib diisi'),
-  planDescription: z.string().min(1, 'Deskripsi Rencana wajib diisi'),
-  activityDetail: z.string().min(1, 'Detail Aktivitas wajib diisi'),
+  relatedFunction: z.string().min(1, 'Related Function is required (Appendix 6)'),
+  picName: z.string().min(1, 'Person In Charge is required'),
+  planDescription: z.string().min(1, 'Plan Description is required'),
+  activityDetail: z.string().min(1, 'Activity Detail is required'),
   remediatedControlDescription: z.string().optional(),
-  targetDate: z.string().min(1, 'Target Tanggal wajib diisi'),
+  targetDate: z.string().min(1, 'Target Date is required'),
 });
 
 type RemediationFormValues = z.infer<typeof remediationSchema>;
@@ -78,10 +78,10 @@ export function RemediationForm({ isOpen, setIsOpen, actionPlan, onSubmit, isLoa
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <ShieldCheck className="h-5 w-5 text-blue-600" />
-            Remediation Plan (Lampiran 6)
+            Remediation Plan (Appendix 6)
           </DialogTitle>
           <DialogDescription>
-            Lengkapi detail rencana tindak lanjut sesuai standar SK-5/2024.
+            Complete follow-up plan details according to SK-5/2024 standards.
           </DialogDescription>
         </DialogHeader>
 
@@ -93,8 +93,8 @@ export function RemediationForm({ isOpen, setIsOpen, actionPlan, onSubmit, isLoa
                 name="relatedFunction"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-xs uppercase font-bold text-muted-foreground">Fungsi Terkait</FormLabel>
-                    <FormControl><Input placeholder="e.g. Divisi Akuntansi" {...field} className="h-8 text-xs" /></FormControl>
+                    <FormLabel className="text-xs uppercase font-bold text-muted-foreground">Related Function</FormLabel>
+                    <FormControl><Input placeholder="e.g. Accounting Division" {...field} className="h-8 text-xs" /></FormControl>
                     <FormMessage className="text-[10px]" />
                   </FormItem>
                 )}
@@ -104,8 +104,8 @@ export function RemediationForm({ isOpen, setIsOpen, actionPlan, onSubmit, isLoa
                 name="picName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-xs uppercase font-bold text-muted-foreground">Penanggung Jawab</FormLabel>
-                    <FormControl><Input placeholder="Nama Personel" {...field} className="h-8 text-xs" /></FormControl>
+                    <FormLabel className="text-xs uppercase font-bold text-muted-foreground">Person In Charge (PIC)</FormLabel>
+                    <FormControl><Input placeholder="Personnel Name" {...field} className="h-8 text-xs" /></FormControl>
                     <FormMessage className="text-[10px]" />
                   </FormItem>
                 )}
@@ -117,7 +117,7 @@ export function RemediationForm({ isOpen, setIsOpen, actionPlan, onSubmit, isLoa
               name="targetDate"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-xs uppercase font-bold text-muted-foreground">Target Tanggal Remediasi</FormLabel>
+                  <FormLabel className="text-xs uppercase font-bold text-muted-foreground">Target Remediation Date</FormLabel>
                   <FormControl>
                     <div className="relative">
                       <Input type="date" {...field} className="h-8 text-xs pr-8" />
@@ -134,8 +134,8 @@ export function RemediationForm({ isOpen, setIsOpen, actionPlan, onSubmit, isLoa
               name="planDescription"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-xs uppercase font-bold text-muted-foreground">Deskripsi Rencana</FormLabel>
-                  <FormControl><Textarea placeholder="Garis besar rencana perbaikan..." {...field} className="min-h-[60px] text-xs" /></FormControl>
+                  <FormLabel className="text-xs uppercase font-bold text-muted-foreground">Plan Description</FormLabel>
+                  <FormControl><Textarea placeholder="Outline of the improvement plan..." {...field} className="min-h-[60px] text-xs" /></FormControl>
                   <FormMessage className="text-[10px]" />
                 </FormItem>
               )}
@@ -146,8 +146,8 @@ export function RemediationForm({ isOpen, setIsOpen, actionPlan, onSubmit, isLoa
               name="activityDetail"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-xs uppercase font-bold text-muted-foreground">Detail Aktivitas</FormLabel>
-                  <FormControl><Textarea placeholder="Langkah-langkah detail pelaksanaan..." {...field} className="min-h-[80px] text-xs" /></FormControl>
+                  <FormLabel className="text-xs uppercase font-bold text-muted-foreground">Activity Details</FormLabel>
+                  <FormControl><Textarea placeholder="Detailed execution steps..." {...field} className="min-h-[80px] text-xs" /></FormControl>
                   <FormMessage className="text-[10px]" />
                 </FormItem>
               )}
@@ -158,8 +158,8 @@ export function RemediationForm({ isOpen, setIsOpen, actionPlan, onSubmit, isLoa
               name="remediatedControlDescription"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-xs uppercase font-bold text-muted-foreground">Deskripsi Kontrol Setelah Remediasi</FormLabel>
-                  <FormControl><Textarea placeholder="Bagaimana bentuk kontrol setelah diperbaiki? (Opsional)" {...field} className="min-h-[60px] text-xs" /></FormControl>
+                  <FormLabel className="text-xs uppercase font-bold text-muted-foreground">Remediated Control Description</FormLabel>
+                  <FormControl><Textarea placeholder="How will the control look after remediation? (Optional)" {...field} className="min-h-[60px] text-xs" /></FormControl>
                   <FormMessage className="text-[10px]" />
                 </FormItem>
               )}

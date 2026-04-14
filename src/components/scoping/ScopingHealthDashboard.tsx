@@ -109,7 +109,7 @@ export function ScopingHealthDashboard({ glData }: ScopingHealthDashboardProps) 
               <div className="flex items-center gap-1 font-bold text-amber-700 mb-1">
                 <AlertCircle className="h-3 w-3" /> GUIDANCE
               </div>
-              Penyimpangan dari garis merah (Standard) dapat menjadi indikasi manipulasi angka. Pertimbangkan memberi rating <strong>HIGH</strong> pada <strong>Rule 1</strong> jika selisih signifikan.
+              Deviations from the red line (Standard) may indicate numeric manipulation. Consider rating <strong>HIGH</strong> on <strong>Rule 1</strong> if significant variances are found.
             </div>
           </div>
         </CardContent>

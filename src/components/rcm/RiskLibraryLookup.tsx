@@ -60,7 +60,7 @@ export function RiskLibraryLookup({ onSelect }: RiskLibraryLookupProps) {
         <DialogHeader>
           <DialogTitle>Risk Library - BUMN Clusters</DialogTitle>
           <DialogDescription>
-            Pilih risiko standar berdasarkan klaster industri Anda (Referensi Lampiran 2).
+            Select standard risk based on your industry cluster (Reference Appendix 2).
           </DialogDescription>
         </DialogHeader>
 
