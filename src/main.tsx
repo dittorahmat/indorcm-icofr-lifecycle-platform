@@ -19,7 +19,6 @@ import { LoginPage } from '@/pages/LoginPage';
 const WelcomePage = lazy(() => import('@/pages/WelcomePage').then(module => ({ default: module.WelcomePage })));
 const Dashboard = lazy(() => import('@/pages/Dashboard').then(module => ({ default: module.Dashboard })));
 const RCMList = lazy(() => import('@/pages/rcm/RCMList').then(module => ({ default: module.RCMList })));
-const CSAWorkspace = lazy(() => import('@/pages/csa/CSAWorkspace').then(module => ({ default: module.CSAWorkspace })));
 const TestWorkbench = lazy(() => import('@/pages/testing/TestWorkbench').then(module => ({ default: module.TestWorkbench })));
 const DeficiencyBoard = lazy(() => import('@/pages/deficiencies/DeficiencyBoard').then(module => ({ default: module.DeficiencyBoard })));
 const ReportsPage = lazy(() => import('@/pages/reports/ReportsPage').then(module => ({ default: module.ReportsPage })));
@@ -73,7 +72,6 @@ const router = createBrowserRouter([
           { path: "/change-log", element: <PageSuspense><ChangeLogPage /></PageSuspense> },
           { path: "/soc-monitoring", element: <PageSuspense><SOCMonitoringPage /></PageSuspense> },
           { path: "/bpm", element: <PageSuspense><BPMPage /></PageSuspense> },
-          { path: "/csa", element: <PageSuspense><CSAWorkspace /></PageSuspense> },
           { path: "/testing", element: <PageSuspense><TestWorkbench /></PageSuspense> },
           { path: "/deficiencies", element: <PageSuspense><DeficiencyBoard /></PageSuspense> },
           { path: "/reports", element: <PageSuspense><ReportsPage /></PageSuspense> },

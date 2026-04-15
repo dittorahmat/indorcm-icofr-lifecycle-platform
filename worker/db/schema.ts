@@ -214,8 +214,37 @@ export const csaRecords = pgTable("csa_records", {
 	period: text("period").notNull(),
 	assessmentDate: timestamp("assessment_date").notNull(),
 	assessedBy: text("assessed_by").references(() => user.id),
-	result: text("result").notNull(), // Low, Medium, High
+	result: text("result").notNull(), // Effective, Ineffective, No Transaction
 	comments: text("comments"),
+
+	// New Regulatory Fields (SK-5/2024)
+	transReference: text("trans_reference"),
+	attrA: boolean("attr_a").default(false),
+	attrB: boolean("attr_b").default(false),
+	attrC: boolean("attr_c").default(false),
+	attrD: boolean("attr_d").default(false),
+
+	// Forensic Metadata (Retained)
+	gpsVerified: boolean("gps_verified").default(false),
+	latitude: doublePrecision("latitude"),
+	longitude: doublePrecision("longitude"),
+	timestampVerified: boolean("timestamp_verified").default(false),
+	capturedAt: timestamp("captured_at"),
+	hash: text("hash"),
+	biometricVerified: boolean("biometric_verified").default(false),
+
+	// ITAC Specific (Lampiran 7 Hal 91-92)
+	itacScenario: text("itac_scenario"),
+	itacMethod: text("itac_method"),
+	itacSampleInfo: text("itac_sample_info"),
+	itacExpectedResult: text("itac_expected_result"),
+	itacActualResult: text("itac_actual_result"),
+
+	// Line 2 Validation
+	line2Status: text("line2_status"), // Pending, Validated, Rejected
+	line2Comments: text("line2_comments"),
+	line2ValidatedBy: text("line2_validated_by").references(() => user.id),
+	line2ValidatedDate: timestamp("line2_validated_date"),
 });
 
 export const testRecords = pgTable("test_records", {

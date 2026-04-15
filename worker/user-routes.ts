@@ -996,18 +996,57 @@ export function userRoutes(app: Hono<HonoEnv>) {
     const body = await c.req.json<Partial<CSARecord>>();
     
     const id = crypto.randomUUID();
-    const newCsa = {
+    const newCsa: any = {
       id,
       organizationId: orgId,
       controlId: body.controlId!,
       period: body.period || "2024-Q1",
       assessmentDate: new Date(),
       assessedBy: userId,
-      result: body.result || "Low",
+      result: body.result || "Effective",
       comments: body.comments,
+
+      // New Regulatory Fields (SK-5/2024)
+      transReference: body.transReference,
+      attrA: body.attrA ?? false,
+      attrB: body.attrB ?? false,
+      attrC: body.attrC ?? false,
+      attrD: body.attrD ?? false,
+
+      // Forensic Metadata
+      gpsVerified: body.gpsVerified ?? false,
+      latitude: body.latitude,
+      longitude: body.longitude,
+      timestampVerified: body.timestampVerified ?? false,
+      capturedAt: body.capturedAt ? new Date(body.capturedAt) : null,
+      hash: body.hash,
+      biometricVerified: body.biometricVerified ?? false,
+
+      // ITAC Specific
+      itacScenario: body.itacScenario,
+      itacMethod: body.itacMethod,
+      itacSampleInfo: body.itacSampleInfo,
+      itacExpectedResult: body.itacExpectedResult,
+      itacActualResult: body.itacActualResult,
     };
 
     await db.insert(csaRecords).values(newCsa);
+
+    // Auto-Deficiency logic: If result is Ineffective, create a deficiency
+    if (newCsa.result === 'Ineffective') {
+        const deficiencyId = crypto.randomUUID();
+        await db.insert(deficiencies).values({
+            id: deficiencyId,
+            organizationId: orgId,
+            controlId: newCsa.controlId,
+            description: `CSA result for ${newCsa.period} is Ineffective. Comments: ${newCsa.comments || 'No comments provided.'}`,
+            severity: 'Control Deficiency',
+            identifiedDate: new Date(),
+            identifiedBy: userId,
+            status: 'Open'
+        });
+    }
+
     return ok(c, newCsa);
   });
 
@@ -1125,5 +1164,43 @@ export function userRoutes(app: Hono<HonoEnv>) {
       diagram: diag[0],
       nodeId: firstLink.nodeId
     });
+  });
+
+  app.get('/api/bpm-diagrams/by-gl/:noGL', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+    const noGL = c.req.param('noGL');
+
+    // 1. Find the BPM Process linked to this GL
+    const processes = await db.select().from(bpmProcesses)
+      .where(and(
+        eq(bpmProcesses.organizationId, orgId),
+        eq(bpmProcesses.noGL, noGL)
+      )).limit(1);
+
+    if (processes.length === 0) return notFound(c, 'No BPM process linked to this account');
+
+    const process = processes[0];
+
+    // 2. Find the diagram that matches this process name/subprocess
+    const diagrams = await db.select().from(bpmDiagrams)
+      .where(and(
+        eq(bpmDiagrams.organizationId, orgId),
+        eq(bpmDiagrams.subProcess, process.name)
+      )).limit(1);
+
+    if (diagrams.length === 0) {
+        // Fallback: try matching by name
+        const byName = await db.select().from(bpmDiagrams)
+            .where(and(
+                eq(bpmDiagrams.organizationId, orgId),
+                eq(bpmDiagrams.name, process.name)
+            )).limit(1);
+        
+        if (byName.length === 0) return notFound(c, 'Diagram not found for this process');
+        return ok(c, byName[0]);
+    }
+
+    return ok(c, diagrams[0]);
   });
 }

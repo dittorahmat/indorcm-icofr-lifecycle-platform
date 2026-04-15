@@ -119,11 +119,6 @@ export function AppSidebar(): JSX.Element {
               </SidebarMenuItem>
             )}
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/csa")}>
-                <Link to="/csa" className="font-bold"><Workflow /> <span>Control Self Assessment</span></Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/bpm")}>
                 <Link to="/bpm" className="font-bold"><ListChecks /> <span>BPM</span></Link>
               </SidebarMenuButton>
@@ -159,16 +154,6 @@ export function AppSidebar(): JSX.Element {
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/soc-monitoring")}>
                 <Link to="/soc-monitoring" className="font-bold"><ShieldCheck /> <span>SOC Monitoring</span></Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/csa")}>
-                <Link to="/csa" className="font-bold"><Search /> <span>Risk Identification</span></Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/csa")}>
-                <Link to="/csa" className="font-bold"><ClipboardCheck /> <span>Self Assessment</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

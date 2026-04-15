@@ -296,9 +296,26 @@ export interface CSARecord {
   period: string; // e.g., "2024-Q1"
   assessmentDate: number; // epoch millis
   assessedBy: string; // User ID
-  result: "High" | "Medium" | "Low";
+  result: "Effective" | "Ineffective" | "No Transaction";
   evidenceUrl?: string;
   comments: string;
+
+  // New Regulatory Fields (SK-5/2024)
+  transReference?: string;
+  attrA: boolean;
+  attrB: boolean;
+  attrC: boolean;
+  attrD: boolean;
+
+  // Forensic Metadata (Retained)
+  gpsVerified?: boolean;
+  latitude?: number;
+  longitude?: number;
+  timestampVerified?: boolean;
+  capturedAt?: number; // Store as epoch
+  hash?: string;
+  biometricVerified?: boolean;
+
   // ITAC Specific (Lampiran 7 Hal 91-92)
   itacScenario?: string;
   itacMethod?: string;

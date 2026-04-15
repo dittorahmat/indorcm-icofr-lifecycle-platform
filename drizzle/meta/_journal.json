@@ -15,6 +15,13 @@
       "when": 1776213941344,
       "tag": "0001_condemned_rachel_grey",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1776239964938,
+      "tag": "0002_update_csa_records_regulatory",
+      "breakpoints": true
     }
   ]
 }

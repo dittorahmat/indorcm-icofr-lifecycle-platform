@@ -10,10 +10,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
   FileSpreadsheet, Network, History, Printer, Send, 
-  CheckCircle2, XCircle, Loader2, Save, PlusCircle, Building2, UserCircle
+  CheckCircle2, XCircle, Loader2, Save, PlusCircle, Building2, UserCircle, ShieldCheck
 } from 'lucide-react';
 import { BPMWorksheet } from './BPMWorksheet';
 import { Lampiran6LogView } from './Lampiran6LogView';
+import { CSATabContent } from './CSATabContent';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { Control, User, BPMWorkflowStatus } from '@shared/types';
@@ -116,8 +117,8 @@ export function BPMModal({
                 <TabsTrigger value="worksheet" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-bold text-slate-500">
                   <FileSpreadsheet className="h-4 w-4" /> Worksheet (SK-5)
                 </TabsTrigger>
-                <TabsTrigger value="diagram" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-bold text-slate-500">
-                  <Network className="h-4 w-4" /> Diagram Alur
+                <TabsTrigger value="csa" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-bold text-slate-500">
+                  <ShieldCheck className="h-4 w-4" /> CSA (FR9)
                 </TabsTrigger>
                 <TabsTrigger value="logs" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-bold text-slate-500">
                   <History className="h-4 w-4" /> Log Perubahan (Lampiran 6)
@@ -164,11 +165,8 @@ export function BPMModal({
                 </div>
               </TabsContent>
 
-              <TabsContent value="diagram" className="m-0 h-full border rounded-xl bg-white overflow-hidden flex items-center justify-center italic text-slate-400">
-                <div className="flex flex-col items-center gap-2">
-                  <Network className="h-12 w-12 opacity-20" />
-                  <p>React Flow Visualization will be integrated here.</p>
-                </div>
+              <TabsContent value="csa" className="m-0 h-full overflow-hidden">
+                <CSATabContent noGL={noGL} controls={controls || []} />
               </TabsContent>
 
               <TabsContent value="logs" className="m-0">
