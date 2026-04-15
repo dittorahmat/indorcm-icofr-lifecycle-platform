@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import type { HonoEnv } from './index';
 import { ok, bad, notFound } from './lib/utils';
 import { getDb } from './db';
-import { rcms, auditLogs, controls, simulations, glSnapshots, glRows, user, deficiencies, actionPlans, departments, bpmProcesses, csaRecords, applications, member, account, session, bpmDiagrams } from './db/schema';
+import { rcms, auditLogs, controls, simulations, glSnapshots, glRows, user, deficiencies, actionPlans, departments, bpmProcesses, csaRecords, applications, member, account, session, bpmDiagrams, bpmNodeRcms, rcmControls } from './db/schema';
 import { eq, and, desc, sql, ilike } from 'drizzle-orm';
 import type { 
   Control, RCM, CSARecord, TestRecord, Deficiency, ActionPlan, 
@@ -269,15 +269,8 @@ export function userRoutes(app: Hono<HonoEnv>) {
     const orgId = c.get('organizationId');
     const id = c.req.param('id');
 
-    // 1. Check if used in any diagrams
-    const diagrams = await db.select().from(bpmDiagrams).where(eq(bpmDiagrams.organizationId, orgId));
-    for (const diag of diagrams) {
-      const nodes = (diag.nodes as any[]) || [];
-      if (nodes.some(n => n.data?.riskIds?.includes(id))) {
-        return bad(c, `Risk is in use in diagram: ${diag.name}. Unlink it first.`);
-      }
-    }
-
+    // We allow permanent deletion because the frontend shows a warning
+    // and the relational links will be deleted via ON DELETE CASCADE.
     await db.delete(rcms).where(and(eq(rcms.id, id), eq(rcms.organizationId, orgId)));
     return ok(c, { success: true });
   });
@@ -527,9 +520,45 @@ export function userRoutes(app: Hono<HonoEnv>) {
     const db = getDb(c.env.DATABASE_URL);
     const id = c.req.param('id');
     const orgId = c.get('organizationId');
-    const items = await db.select().from(bpmDiagrams).where(and(eq(bpmDiagrams.id, id), eq(bpmDiagrams.organizationId, orgId))).limit(1);
-    if (items.length === 0) return notFound(c);
-    return ok(c, items[0]);
+    const diags = await db.select().from(bpmDiagrams).where(and(eq(bpmDiagrams.id, id), eq(bpmDiagrams.organizationId, orgId))).limit(1);
+    if (diags.length === 0) return notFound(c);
+    
+    const diag = diags[0];
+    const nodes = diag.nodes || [];
+
+    // Hydrate Activity nodes with risks/controls from junction tables
+    const hydratedNodes = await Promise.all(nodes.map(async (node: any) => {
+      if (node.type === 'activity' || node.type === 'automated-activity') {
+        // Fetch risks linked to this node
+        const nodeRisks = await db.select().from(bpmNodeRcms).where(and(
+          eq(bpmNodeRcms.diagramId, id),
+          eq(bpmNodeRcms.nodeId, node.id)
+        ));
+
+        const risks = await Promise.all(nodeRisks.map(async (nr) => {
+          // Fetch controls linked to each risk
+          const riskControls = await db.select().from(rcmControls).where(eq(rcmControls.rcmId, nr.rcmId));
+          return {
+            rcmId: nr.rcmId,
+            controlIds: riskControls.map(rc => rc.controlId)
+          };
+        }));
+
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            risks
+          }
+        };
+      }
+      return node;
+    }));
+
+    return ok(c, {
+      ...diag,
+      nodes: hydratedNodes
+    });
   });
 
   app.post('/api/bpm-diagrams', async (c) => {
@@ -557,6 +586,8 @@ export function userRoutes(app: Hono<HonoEnv>) {
     const id = c.req.param('id');
     const orgId = c.get('organizationId');
     const body = await c.req.json<any>();
+
+    // 1. Update the diagram layout (JSON)
     await db.update(bpmDiagrams)
       .set({
         name: body.name,
@@ -565,6 +596,51 @@ export function userRoutes(app: Hono<HonoEnv>) {
         updatedAt: new Date(),
       })
       .where(and(eq(bpmDiagrams.id, id), eq(bpmDiagrams.organizationId, orgId)));
+
+    // 2. Sync Relational Tables (Transaction-like)
+    // First, clear existing links for this diagram
+    await db.delete(bpmNodeRcms).where(eq(bpmNodeRcms.diagramId, id));
+
+    // Extract links from nodes
+    const nodes = body.nodes || [];
+    for (const node of nodes) {
+      if ((node.type === 'activity' || node.type === 'automated-activity') && node.data?.risks) {
+        for (const riskEntry of node.data.risks) {
+          // riskEntry = { rcmId: string, controlIds: string[] }
+          
+          // Link Activity Node -> Risk
+          await db.insert(bpmNodeRcms).values({
+            id: crypto.randomUUID(),
+            organizationId: orgId,
+            diagramId: id,
+            nodeId: node.id,
+            rcmId: riskEntry.rcmId
+          });
+
+          // Link Risk -> Controls
+          if (riskEntry.controlIds && riskEntry.controlIds.length > 0) {
+            for (const ctrlId of riskEntry.controlIds) {
+              // Check if link already exists to avoid unique constraint violations
+              const existing = await db.select().from(rcmControls).where(and(
+                eq(rcmControls.rcmId, riskEntry.rcmId),
+                eq(rcmControls.controlId, ctrlId),
+                eq(rcmControls.organizationId, orgId)
+              ));
+              
+              if (existing.length === 0) {
+                await db.insert(rcmControls).values({
+                  id: crypto.randomUUID(),
+                  organizationId: orgId,
+                  rcmId: riskEntry.rcmId,
+                  controlId: ctrlId
+                });
+              }
+            }
+          }
+        }
+      }
+    }
+
     return ok(c, { success: true });
   });
 
@@ -1012,5 +1088,42 @@ export function userRoutes(app: Hono<HonoEnv>) {
     }
 
     return ok(c, { count: usage.length, usage });
+  });
+
+  app.get('/api/bpm-diagrams/by-control/:controlId', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+    const controlId = c.req.param('controlId');
+
+    // 1. Find the risk(s) linked to this control
+    const links = await db.select().from(rcmControls).where(and(
+      eq(rcmControls.controlId, controlId),
+      eq(rcmControls.organizationId, orgId)
+    ));
+
+    if (links.length === 0) return notFound(c, 'Control not linked to any risk');
+
+    // 2. Find the diagram node(s) linked to those risk(s)
+    const riskIds = links.map(l => l.rcmId);
+    const nodeLinks = await db.select().from(bpmNodeRcms).where(and(
+      sql`${bpmNodeRcms.rcmId} IN ${riskIds}`,
+      eq(bpmNodeRcms.organizationId, orgId)
+    ));
+
+    if (nodeLinks.length === 0) return notFound(c, 'Risk not linked to any diagram node');
+
+    // For now, return the first diagram found
+    const firstLink = nodeLinks[0];
+    const diag = await db.select().from(bpmDiagrams).where(and(
+      eq(bpmDiagrams.id, firstLink.diagramId),
+      eq(bpmDiagrams.organizationId, orgId)
+    )).limit(1);
+
+    if (diag.length === 0) return notFound(c, 'Diagram not found');
+
+    return ok(c, {
+      diagram: diag[0],
+      nodeId: firstLink.nodeId
+    });
   });
 }

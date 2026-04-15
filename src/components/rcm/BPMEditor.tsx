@@ -30,6 +30,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 import {
   Tooltip,
@@ -460,27 +461,28 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
     setNodes(nds => {
       const parentNode = nds.find(n => n.id === nodeId);
       if (!parentNode) return nds;
-      const riskIds = parentNode.data.riskIds || [];
-      if (riskIds.includes(rcmId)) return nds;
+      
+      const risks = parentNode.data.risks || [];
+      if (risks.some((r: any) => r.rcmId === rcmId)) return nds;
 
-      const newRiskIds = [...riskIds, rcmId];
+      const newRisks = [...risks, { rcmId, controlIds: [] }];
       const childId = `risk_${nodeId}`;
       const childExists = nds.some(n => n.id === childId);
 
-      let nextNodes = nds.map(node => node.id === nodeId ? { ...node, data: { ...node.data, riskIds: newRiskIds } } : node);
+      let nextNodes = nds.map(node => node.id === nodeId ? { ...node, data: { ...node.data, risks: newRisks } } : node);
 
       if (!childExists) {
         nextNodes.push({
           id: childId,
           type: 'docked-risk',
-          position: { x: 45, y: 65 },
+          position: { x: 45, y: -12 }, // Top-left
           parentId: nodeId,
           extent: 'parent',
           draggable: false,
-          data: { riskIds: newRiskIds, label: 'Risks' }
+          data: { riskIds: [rcmId], label: 'Risks' }
         });
       } else {
-        nextNodes = nextNodes.map(n => n.id === childId ? { ...n, data: { ...n.data, riskIds: newRiskIds } } : n);
+        nextNodes = nextNodes.map(n => n.id === childId ? { ...n, data: { ...n.data, riskIds: newRisks.map(r => r.rcmId) } } : n);
       }
       return nextNodes;
     });
@@ -491,63 +493,106 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
     setNodes(nds => {
       const parentNode = nds.find(n => n.id === nodeId);
       if (!parentNode) return nds;
-      const newRiskIds = (parentNode.data.riskIds || []).filter(id => id !== rcmId);
+      
+      const newRisks = (parentNode.data.risks || []).filter((r: any) => r.rcmId !== rcmId);
       const childId = `risk_${nodeId}`;
-      let nextNodes = nds.map(node => node.id === nodeId ? { ...node, data: { ...node.data, riskIds: newRiskIds } } : node);
-      if (newRiskIds.length === 0) {
+      let nextNodes = nds.map(node => node.id === nodeId ? { ...node, data: { ...node.data, risks: newRisks } } : node);
+      
+      if (newRisks.length === 0) {
         nextNodes = nextNodes.filter(n => n.id !== childId);
       } else {
-        nextNodes = nextNodes.map(n => n.id === childId ? { ...n, data: { ...n.data, riskIds: newRiskIds } } : n);
+        nextNodes = nextNodes.map(n => n.id === childId ? { ...n, data: { ...n.data, riskIds: newRisks.map(r => r.rcmId) } } : n);
       }
       return nextNodes;
     });
     toast.info("Risk unlinked");
   };
 
-  const linkControlToActivity = (nodeId: string, controlId: string) => {
+  const linkControlToRisk = (nodeId: string, rcmId: string, controlId: string) => {
+    setNodes(nds => nds.map(node => {
+      if (node.id === nodeId) {
+        const risks = node.data.risks || [];
+        const newRisks = risks.map((r: any) => {
+          if (r.rcmId === rcmId) {
+            const controlIds = r.controlIds || [];
+            if (controlIds.includes(controlId)) return r;
+            return { ...r, controlIds: [...controlIds, controlId] };
+          }
+          return r;
+        });
+
+        // Update visual badge
+        const allControlIds = newRisks.flatMap(r => r.controlIds);
+        const childId = `ctrl_${nodeId}`;
+        const childExists = nds.some(n => n.id === childId);
+
+        // We can't easily push a new node inside a map, so we'll handle the badge in the next turn if needed
+        // but for simple cases, React Flow state updates are fine.
+        return { ...node, data: { ...node.data, risks: newRisks, controlIds: allControlIds } };
+      }
+      return node;
+    }));
+
+    // Ensure visual badge exists
     setNodes(nds => {
       const parentNode = nds.find(n => n.id === nodeId);
       if (!parentNode) return nds;
-      const controlIds = parentNode.data.controlIds || [];
-      if (controlIds.includes(controlId)) return nds;
+      const allControlIds = (parentNode.data.risks || []).flatMap((r: any) => r.controlIds);
+      if (allControlIds.length === 0) return nds;
 
-      const newControlIds = [...controlIds, controlId];
       const childId = `ctrl_${nodeId}`;
       const childExists = nds.some(n => n.id === childId);
-
-      let nextNodes = nds.map(node => node.id === nodeId ? { ...node, data: { ...node.data, controlIds: newControlIds } } : node);
-
       if (!childExists) {
-        nextNodes.push({
+        return [...nds, {
           id: childId,
           type: 'docked-control',
-          position: { x: 90, y: 65 },
+          position: { x: 130, y: -12 }, // Top-right
           parentId: nodeId,
           extent: 'parent',
           draggable: false,
-          data: { controlIds: newControlIds, label: 'Controls' }
-        });
+          data: { controlIds: allControlIds, label: 'Controls' }
+        }];
       } else {
-        nextNodes = nextNodes.map(n => n.id === childId ? { ...n, data: { ...n.data, controlIds: newControlIds } } : n);
+        return nds.map(n => n.id === childId ? { ...n, data: { ...n.data, controlIds: allControlIds } } : n);
       }
-      return nextNodes;
     });
-    toast.success("Control linked to activity");
+
+    toast.success("Control linked to risk");
+  };
+
+  const linkControlToActivity = (nodeId: string, controlId: string) => {
+    // Legacy fallback, link to first risk if exists
+    const node = nodes.find(n => n.id === nodeId);
+    if (node?.data.risks?.length > 0) {
+      linkControlToRisk(nodeId, node.data.risks[0].rcmId, controlId);
+    } else {
+      toast.error("Please add a risk first before linking a control");
+    }
   };
 
   const unlinkControlFromActivity = (nodeId: string, controlId: string) => {
+    setNodes(nds => nds.map(node => {
+      if (node.id === nodeId) {
+        const newRisks = (node.data.risks || []).map((r: any) => ({
+          ...r,
+          controlIds: (r.controlIds || []).filter((cid: string) => cid !== controlId)
+        }));
+        const allControlIds = newRisks.flatMap(r => r.controlIds);
+        return { ...node, data: { ...node.data, risks: newRisks, controlIds: allControlIds } };
+      }
+      return node;
+    }));
+
+    // Update visual badge
     setNodes(nds => {
       const parentNode = nds.find(n => n.id === nodeId);
-      if (!parentNode) return nds;
-      const newControlIds = (parentNode.data.controlIds || []).filter(id => id !== controlId);
+      const allControlIds = (parentNode?.data.risks || []).flatMap((r: any) => r.controlIds) || [];
       const childId = `ctrl_${nodeId}`;
-      let nextNodes = nds.map(node => node.id === nodeId ? { ...node, data: { ...node.data, controlIds: newControlIds } } : node);
-      if (newControlIds.length === 0) {
-        nextNodes = nextNodes.filter(n => n.id !== childId);
+      if (allControlIds.length === 0) {
+        return nds.filter(n => n.id !== childId);
       } else {
-        nextNodes = nextNodes.map(n => n.id === childId ? { ...n, data: { ...n.data, controlIds: newControlIds } } : n);
+        return nds.map(n => n.id === childId ? { ...n, data: { ...n.data, controlIds: allControlIds } } : n);
       }
-      return nextNodes;
     });
     toast.info("Control unlinked");
   };
@@ -561,8 +606,13 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
     }
   };
 
-  const linkedActivityRisks = selectedNode?.data.riskIds?.map(rid => rcmData?.items.find(r => r.id === rid)).filter(Boolean) || [];
-  const linkedActivityControls = selectedNode?.data.controlIds?.map(cid => controlsData?.items.find(c => c.id === cid)).filter(Boolean) || [];
+  const linkedRisksWithData = useMemo(() => {
+    return selectedNode?.data.risks?.map((r: any) => ({
+      ...r,
+      rcm: rcmData?.items.find(item => item.id === r.rcmId),
+      controls: r.controlIds?.map((cid: string) => controlsData?.items.find(c => c.id === cid)).filter(Boolean) || []
+    })).filter((r: any) => r.rcm) || [];
+  }, [selectedNode, rcmData, controlsData]);
 
   if (isDiagramLoading) return <div className="h-full flex items-center justify-center"><RefreshCw className="animate-spin text-indigo-600" /></div>;
 
@@ -645,78 +695,96 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
                 <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => resetNav(null)}><X className="h-4 w-4" /></Button>
               </div>
 
-              <div className="space-y-4 flex-1">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase">Label</label>
-                  <textarea className="w-full text-xs border rounded-md p-2 min-h-[80px]" value={selectedNode.data.label} onChange={(e) => updateNodeData(selectedNode.id, { label: e.target.value })} />
+              <ScrollArea className="flex-1 -mx-5 px-5">
+                <div className="space-y-4 pb-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase">Label</label>
+                    <textarea className="w-full text-xs border rounded-md p-2 min-h-[80px]" value={selectedNode.data.label} onChange={(e) => updateNodeData(selectedNode.id, { label: e.target.value })} />
+                  </div>
+
+                  {selectedNode.type === 'activity' && (
+                    <>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase">Role</label>
+                        <Input className="h-8 text-xs" value={selectedNode.data.role} onChange={(e) => updateNodeData(selectedNode.id, { role: e.target.value })} />
+                      </div>
+                      <Separator className="my-2" />
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <h5 className="text-[10px] font-black uppercase text-red-600 flex items-center gap-1.5">Risks ({linkedRisksWithData.length})</h5>
+                            <Select onValueChange={(val) => val === 'new' ? (createRiskMutation.mutate(prompt("Enter new risk:") || "")) : linkRiskToActivity(selectedNode.id, val)}>
+                              <SelectTrigger className="h-7 w-24 text-[9px] bg-red-50 border-red-100 text-red-700">Add</SelectTrigger>
+                              <SelectContent>
+                                {rcmData?.items.map(r => <SelectItem key={r.id} value={r.id} className="text-[10px]">{r.riskDescription}</SelectItem>)}
+                                <SelectItem value="new" className="text-red-600 font-bold border-t">+ Create New</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-1.5">
+                            {linkedRisksWithData.map(riskEntry => (
+                              <div key={riskEntry.rcmId} className="p-2 rounded border border-red-100 bg-red-50/30 group/item relative space-y-2">
+                                <div className="flex items-start justify-between gap-2">
+                                  <p className="text-[10px] font-medium text-red-900 leading-tight pr-8">{riskEntry.rcm.riskDescription}</p>
+                                  <div className="absolute top-1 right-1 flex gap-0.5 opacity-0 group-hover/item:opacity-100 transition-opacity">
+                                    <Button variant="ghost" size="icon" className="h-5 w-5 text-red-300" onClick={() => unlinkRiskFromActivity(selectedNode.id, riskEntry.rcmId)}><X className="h-3 w-3" /></Button>
+                                    <Button variant="ghost" size="icon" className="h-5 w-5 text-red-200" onClick={() => checkImpact(riskEntry.rcmId, 'Risk')}><Trash2 className="h-3 w-3" /></Button>
+                                  </div>
+                                </div>
+
+                                {/* Controls for this specific risk */}
+                                <div className="pl-2 border-l-2 border-red-200 space-y-1.5">
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-[8px] font-bold text-slate-400 uppercase">Controls</span>
+                                    <Select onValueChange={(val) => val === 'new' ? (createControlMutation.mutate(prompt("Enter new control:") || "")) : linkControlToRisk(selectedNode.id, riskEntry.rcmId, val)}>
+                                      <SelectTrigger className="h-5 w-16 text-[8px] bg-white border-slate-200">Link</SelectTrigger>
+                                      <SelectContent>
+                                        {controlsData?.items.map(c => <SelectItem key={c.id} value={c.id} className="text-[10px]">[{c.code}] {c.name}</SelectItem>)}
+                                        <SelectItem value="new" className="text-green-600 font-bold border-t">+ Create New</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                  {riskEntry.controls.map((ctrl: any) => (
+                                    <div key={ctrl.id} className="flex items-center justify-between bg-white/50 p-1 rounded text-[9px] group/ctrl">
+                                      <span className="text-slate-600 line-clamp-1">[{ctrl.code}] {ctrl.name}</span>
+                                      <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        className="h-4 w-4 text-slate-300 hover:text-red-500 opacity-0 group-hover/ctrl:opacity-100"
+                                        onClick={() => {
+                                          setNodes(nds => nds.map(node => {
+                                            if (node.id === selectedNode.id) {
+                                              const newRisks = node.data.risks.map((r: any) => {
+                                                if (r.rcmId === riskEntry.rcmId) {
+                                                  return { ...r, controlIds: r.controlIds.filter((cid: string) => cid !== ctrl.id) };
+                                                }
+                                                return r;
+                                              });
+                                              return { ...node, data: { ...node.data, risks: newRisks } };
+                                            }
+                                            return node;
+                                          }));
+                                        }}
+                                      >
+                                        <X className="h-2 w-2" />
+                                      </Button>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
-
-                {selectedNode.type === 'activity' && (
-                  <>
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase">Role</label>
-                      <Input className="h-8 text-xs" value={selectedNode.data.role} onChange={(e) => updateNodeData(selectedNode.id, { role: e.target.value })} />
-                    </div>
-                    <Separator className="my-2" />
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <h5 className="text-[10px] font-black uppercase text-red-600 flex items-center gap-1.5">Risks ({linkedActivityRisks.length})</h5>
-                          <Select onValueChange={(val) => val === 'new' ? (createRiskMutation.mutate(prompt("Enter new risk:") || "")) : linkRiskToActivity(selectedNode.id, val)}>
-                            <SelectTrigger className="h-7 w-24 text-[9px] bg-red-50 border-red-100 text-red-700">Add</SelectTrigger>
-                            <SelectContent>
-                              {rcmData?.items.map(r => <SelectItem key={r.id} value={r.id} className="text-[10px]">{r.riskDescription}</SelectItem>)}
-                              <SelectItem value="new" className="text-red-600 font-bold border-t">+ Create New</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-1.5">
-                          {linkedActivityRisks.map(risk => (
-                            <div key={risk.id} className="p-2 rounded border border-red-100 bg-red-50/30 group/item relative">
-                              <p className="text-[10px] font-medium text-red-900 leading-tight pr-8">{risk.riskDescription}</p>
-                              <div className="absolute top-1 right-1 flex gap-0.5 opacity-0 group-hover/item:opacity-100 transition-opacity">
-                                <Button variant="ghost" size="icon" className="h-5 w-5 text-red-300" onClick={() => unlinkRiskFromActivity(selectedNode.id, risk.id)}><X className="h-3 w-3" /></Button>
-                                <Button variant="ghost" size="icon" className="h-5 w-5 text-red-200" onClick={() => checkImpact(risk.id, 'Risk')}><Trash2 className="h-3 w-3" /></Button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <h5 className="text-[10px] font-black uppercase text-green-600 flex items-center gap-1.5">Controls ({linkedActivityControls.length})</h5>
-                          <Select onValueChange={(val) => val === 'new' ? (createControlMutation.mutate(prompt("Enter new control:") || "")) : linkControlToActivity(selectedNode.id, val)}>
-                            <SelectTrigger className="h-7 w-24 text-[9px] bg-green-50 border-green-100 text-green-700">Add</SelectTrigger>
-                            <SelectContent>
-                              {controlsData?.items.map(c => <SelectItem key={c.id} value={c.id} className="text-[10px]">[{c.code}] {c.name}</SelectItem>)}
-                              <SelectItem value="new" className="text-green-600 font-bold border-t">+ Create New</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-1.5">
-                          {linkedActivityControls.map(ctrl => (
-                            <div key={ctrl.id} className="p-2 rounded border border-green-100 bg-green-50/30 group/item relative">
-                              <div className="pr-8">
-                                <span className="text-[8px] font-mono font-bold text-green-600">{ctrl.code}</span>
-                                <p className="text-[10px] font-medium text-green-900 leading-tight">{ctrl.name}</p>
-                              </div>
-                              <div className="absolute top-1 right-1 flex gap-0.5 opacity-0 group-hover/item:opacity-100 transition-opacity">
-                                <Button variant="ghost" size="icon" className="h-5 w-5 text-green-300" onClick={() => unlinkControlFromActivity(selectedNode.id, ctrl.id)}><X className="h-3 w-3" /></Button>
-                                <Button variant="ghost" size="icon" className="h-5 w-5 text-green-200" onClick={() => checkImpact(ctrl.id, 'Control')}><Trash2 className="h-3 w-3" /></Button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
+              </ScrollArea>
 
               <div className="pt-4 border-t">
                 <Button variant="destructive" size="sm" className="w-full gap-2 text-[10px] h-8 font-bold uppercase" onClick={() => {
-                  setNodes(nds => nds.filter(n => n.id !== selectedNode.id));
+                  // Delete the node AND its children (badges)
+                  setNodes(nds => nds.filter(n => n.id !== selectedNode.id && n.parentId !== selectedNode.id));
                   setEdges(eds => eds.filter(e => e.source !== selectedNode.id && e.target !== selectedNode.id));
                   setSelectedNodeId(null);
                 }}>
@@ -728,17 +796,19 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
         </AnimatePresence>
 
         <AlertDialog open={!!impactData} onOpenChange={(open) => !open && setImpactData(null)}>
-          <AlertDialogContent aria-describedby={undefined}>
+          <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle className="text-red-600">Delete {impactData?.type}?</AlertDialogTitle>
-              <AlertDialogDescription className="space-y-3">
-                <p>Used in <strong>{impactData?.count}</strong> places.</p>
-                {impactData?.usage && impactData.usage.length > 0 && (
-                  <div className="bg-slate-50 p-3 rounded-md border text-xs max-h-40 overflow-y-auto">
-                    {impactData.usage.map((u, i) => <div key={i} className="border-b last:border-0 py-1">{u.diagramName} (Node: {u.nodeLabel})</div>)}
-                  </div>
-                )}
-                <p className="text-red-700">This will remove it from ALL diagrams. Undone cannot.</p>
+              <AlertDialogDescription asChild>
+                <div className="text-sm text-muted-foreground space-y-3">
+                  <p>Used in <strong>{impactData?.count}</strong> places.</p>
+                  {impactData?.usage && impactData.usage.length > 0 && (
+                    <div className="bg-slate-50 p-3 rounded-md border text-xs max-h-40 overflow-y-auto">
+                      {impactData.usage.map((u, i) => <div key={i} className="border-b last:border-0 py-1">{u.diagramName} (Node: {u.nodeLabel})</div>)}
+                    </div>
+                  )}
+                  <p className="text-red-700 font-medium">This action will remove it from ALL diagrams and master data. This cannot be undone.</p>
+                </div>
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

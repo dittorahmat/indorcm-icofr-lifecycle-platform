@@ -152,6 +152,21 @@ export const bpmDiagrams = pgTable("bpm_diagrams", {
 	createdBy: text("created_by").references(() => user.id),
 });
 
+export const bpmNodeRcms = pgTable("bpm_node_rcms", {
+	id: text("id").primaryKey(),
+	organizationId: text("organizationId").notNull().references(() => organization.id),
+	diagramId: text("diagram_id").notNull().references(() => bpmDiagrams.id, { onDelete: 'cascade' }),
+	nodeId: text("node_id").notNull(), // The React Flow node ID
+	rcmId: text("rcm_id").notNull().references(() => rcms.id, { onDelete: 'cascade' })
+});
+
+export const rcmControls = pgTable("rcm_controls", {
+	id: text("id").primaryKey(),
+	organizationId: text("organizationId").notNull().references(() => organization.id),
+	rcmId: text("rcm_id").notNull().references(() => rcms.id, { onDelete: 'cascade' }),
+	controlId: text("control_id").notNull().references(() => controls.id, { onDelete: 'cascade' })
+});
+
 export const rcms = pgTable("rcms", {
 	id: text("id").primaryKey(),
 	organizationId: text("organizationId").notNull().references(() => organization.id),

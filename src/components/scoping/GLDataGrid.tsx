@@ -351,24 +351,22 @@ export function GLDataGrid({
             const isInScope = isKuanSignificant || isQualSignificant;
             return isInScope ? (
               <Badge className="bg-indigo-600 text-[10px] h-5 px-3 uppercase font-extrabold shadow-sm border-2 border-indigo-200 whitespace-nowrap">
-                IN SCOPE
+                In Scope
               </Badge>
             ) : (
               <Badge variant="outline" className="text-[9px] h-4 px-1.5 opacity-40 whitespace-nowrap">
-                OUT
+                Out Scope
               </Badge>
             );
           }
 
           const isKuanSignificant = Math.abs(row.original.balance) >= pmValue;
+          const isInScope = isQualSignificant || isKuanSignificant;
 
-          if (isQualSignificant) {
-            return <Badge className="text-[9px] h-5 px-2 font-bold bg-red-600 whitespace-nowrap">IN (QUAL)</Badge>;
+          if (isInScope) {
+            return <Badge className="text-[9px] h-5 px-2 font-bold bg-indigo-600 whitespace-nowrap uppercase">In Scope</Badge>;
           }
-          if (isKuanSignificant) {
-            return <Badge className="text-[9px] h-5 px-2 font-bold bg-blue-600 whitespace-nowrap">IN (QUAN)</Badge>;
-          }
-          return <Badge variant="outline" className="text-[9px] h-4 px-1.5 opacity-40 text-slate-400 whitespace-nowrap">OUT</Badge>;
+          return <Badge variant="outline" className="text-[9px] h-4 px-1.5 opacity-40 text-slate-400 whitespace-nowrap uppercase">Out Scope</Badge>;
         }
       }
     ],
@@ -412,12 +410,13 @@ export function GLDataGrid({
           'Quantitative': Math.abs(balance) >= pmValue ? 'Significant' : 'Not Significant',
           'Department Owner': '',
           'Owner Acceptance': '',
-          'Scope': 'IN SCOPE' // Summary scope
+          'Scope': 'In Scope' // Summary scope
         });
 
         // Add accounts under this FSLI
         row.getLeafRows().forEach(leaf => {
-          const isSignificant = Math.abs(leaf.original.balance) >= pmValue;
+          const isKuanSignificant = Math.abs(leaf.original.balance) >= pmValue;
+          const isInScope = isKuanSignificant || isQualSignificant;
           const assignedDeptId = (leaf.original as any).assignedDepartmentId;
           const dept = departments.find(d => d.id === assignedDeptId);
           const acceptance = leaf.original.ownerAcceptance || 'Pending';
@@ -428,10 +427,10 @@ export function GLDataGrid({
             'Account Code': leaf.original.noGL,
             'Account Description': leaf.original.glDesc,
             'Balance': leaf.original.balance,
-            'Quantitative': isSignificant ? 'Significant' : 'Not Significant',
+            'Quantitative': isKuanSignificant ? 'Significant' : 'Not Significant',
             'Department Owner': dept?.name || 'Unassigned',
             'Owner Acceptance': acceptance,
-            'Scope': isSignificant ? 'IN SCOPE' : 'OUT'
+            'Scope': isInScope ? 'In Scope' : 'Out Scope'
           });
         });
       }
