@@ -79,43 +79,26 @@ export function BPMPage() {
 
   // 2. Derive unique significant FSLIs based on Scoping Criteria
   const significantFsliNames = React.useMemo(() => {
-    if (!activeSnap) return [];
+    if (!activeSnap || !activeSim) return [];
     
-    // Jika belum ada simulasi, atau PM belum diset (> 0), tampilkan kosong agar user sadar harus scoping dulu
-    const pmValue = activeSim?.pmValue || 0;
-    if (!activeSim || pmValue <= 0) {
-      // Opsi: Tetap tampilkan semua FSLI JIKA user adalah Admin/L2 (untuk setup awal)
-      // Tapi untuk Lini 1, wajib kosong jika belum di-scoping
-      if (currentUser?.role === 'Line 1') return [];
-      
-      // Untuk Admin/L2, kita kasih lihat semua dulu kalau belum ada simulasi
-      const names = new Set<string>();
-      activeSnap.rows.forEach(r => { if (r.fsliName) names.add(r.fsliName); });
-      return Array.from(names).sort();
-    }
+    // We strictly use the significantAccounts list from the active simulation (scoping result)
+    const sigAccounts = activeSim.significantAccounts || [];
+    if (sigAccounts.length === 0) return [];
+
+    const sigFsliNames = new Set<string>();
     
-    const assessmentData = activeSim?.assessmentData || {};
-    const names = new Set<string>();
+    // Create a set of significant GL codes for fast lookup
+    const sigCodes = new Set(sigAccounts.map(sa => sa.fsliCode).filter(Boolean));
 
-    // Ambil semua FSLI unik dari snapshot
-    const allFsliNames = Array.from(new Set(activeSnap.rows.map(r => r.fsliName))).filter(Boolean) as string[];
-
-    allFsliNames.forEach(fsliName => {
-      // 1. Cek Signifikansi Kualitatif (Apakah ada rating 'High'?)
-      const assessments = assessmentData[fsliName] || {};
-      const isQualSignificant = Object.values(assessments).some(v => v === 'High');
-
-      // 2. Cek Signifikansi Kuantitatif (Apakah ada akun >= PM?)
-      const fsliRows = activeSnap.rows.filter(r => r.fsliName === fsliName);
-      const isKuanSignificant = fsliRows.some(r => Math.abs(r.balance) >= pmValue);
-
-      if (isQualSignificant || isKuanSignificant) {
-        names.add(fsliName);
+    // Map those codes back to FSLI names using the active snapshot
+    activeSnap.rows.forEach(row => {
+      if (row.fsliName && sigCodes.has(row.noGL)) {
+        sigFsliNames.add(row.fsliName);
       }
     });
 
-    return Array.from(names).sort();
-  }, [activeSnap, activeSim, currentUser]);
+    return Array.from(sigFsliNames).sort();
+  }, [activeSnap, activeSim]);
 
   // 3. Filtered GL Numbers (Unique combination of noGL + glDesc)
   const glNumbers = React.useMemo(() => {

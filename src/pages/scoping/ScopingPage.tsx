@@ -406,6 +406,21 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
 
   const { omValue, pmValue, multiplier, benchmarkValue } = calculateValues;
 
+  const significantAccounts = React.useMemo(() => {
+    return mergedGlData.filter(row => {
+      const assessments = simState.assessmentData?.[row.fsliName || ''] || {};
+      const isQualSignificant = Object.values(assessments).some(v => v === 'High');
+      const isKuanSignificant = Math.abs(row.balance) >= pmValue;
+      return isQualSignificant || isKuanSignificant;
+    }).map(row => ({
+      name: row.glDesc,
+      balance: row.balance,
+      isQuantitative: Math.abs(row.balance) >= pmValue,
+      fsliCode: row.noGL,
+      assignedDepartmentId: row.assignedDepartmentId
+    }));
+  }, [mergedGlData, simState.assessmentData, pmValue]);
+
   const assignDeptMutation = useMutation({
     mutationFn: (data: { accountName: string, departmentId: string }) => 
       api('/api/scoping/assign-department', { 
@@ -420,7 +435,11 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
   });
 
   const updateSimMutation = useMutation({
-    mutationFn: (data: Partial<MaterialitySimulation>) => api(`/api/simulations/${simState.id}`, { method: 'PUT', body: JSON.stringify({ ...data, omValue, pmValue }) }),
+    mutationFn: (data: Partial<MaterialitySimulation>) => 
+      api(`/api/simulations/${simState.id}`, { 
+        method: 'PUT', 
+        body: JSON.stringify({ ...data, omValue, pmValue, significantAccounts }) 
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['simulations'] });
       toast.success("Simulation draft saved");
@@ -428,7 +447,11 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
   });
 
   const submitSimMutation = useMutation({
-    mutationFn: () => api(`/api/simulations/${simState.id}/submit`, { method: 'POST' }),
+    mutationFn: () => 
+      api(`/api/simulations/${simState.id}/submit`, { 
+        method: 'POST',
+        body: JSON.stringify({ ...simState, omValue, pmValue, significantAccounts })
+      }),
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: ['simulations'] });
       setSimState(updated);

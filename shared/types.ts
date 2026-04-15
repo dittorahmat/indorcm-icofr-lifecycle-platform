@@ -92,6 +92,7 @@ export interface MaterialitySimulation {
   omValue: number;
   pmValue: number;
   glSnapshotId: string;
+  significantAccounts?: SignificantAccount[]; // Added for explicit scoping results
   assessmentData: Record<string, Record<number, QualitativeLevel>>; // Key: FSLI Name, Sub-Key: ruleId (1-8)
   approvedBy?: string;
   approvedDate?: number;

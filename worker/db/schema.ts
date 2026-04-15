@@ -134,6 +134,7 @@ export const simulations = pgTable("simulations", {
 	omPercentage: doublePrecision("om_percentage"),
 	haircutPercentage: doublePrecision("haircut_percentage"),
 	basis: text("basis"),
+	significantAccounts: jsonb("significant_accounts"), // Added to store identified accounts
 	assessmentData: jsonb("assessment_data"),
 	createdAt: timestamp("created_at").notNull(),
 	updatedAt: timestamp("updated_at"),

@@ -30,6 +30,16 @@ export function userRoutes(app: Hono<HonoEnv>) {
     });
   });
 
+  app.get('/api/dev/fix-db', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    try {
+      await db.execute(sql`ALTER TABLE simulations ADD COLUMN IF NOT EXISTS significant_accounts jsonb;`);
+      return ok(c, { message: "Database fixed! Column significant_accounts added." });
+    } catch (e: any) {
+      return ok(c, { error: e.message });
+    }
+  });
+
   // --- User Management Routes ---
 
   app.get('/api/users', async (c) => {
@@ -435,6 +445,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
         locationCount: body.locationCount,
         omValue: body.omValue,
         pmValue: body.pmValue,
+        significantAccounts: body.significantAccounts,
         assessmentData: body.assessmentData,
         updatedAt: new Date(),
       })
@@ -447,9 +458,16 @@ export function userRoutes(app: Hono<HonoEnv>) {
     const db = getDb(c.env.DATABASE_URL);
     const id = c.req.param('id');
     const orgId = c.get('organizationId');
+    const body = await c.req.json<Partial<MaterialitySimulation>>();
     
     await db.update(simulations)
-      .set({ status: 'Pending CFO', updatedAt: new Date() })
+      .set({ 
+        status: 'Pending CFO', 
+        updatedAt: new Date(),
+        omValue: body.omValue,
+        pmValue: body.pmValue,
+        significantAccounts: body.significantAccounts
+      })
       .where(and(eq(simulations.id, id), eq(simulations.organizationId, orgId)));
       
     const updated = await db.select().from(simulations).where(eq(simulations.id, id)).limit(1);
