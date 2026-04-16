@@ -1280,7 +1280,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
     try {
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({
-        model: "gemini-2.0-flash-lite",
+        model: "gemini-2.5-flash-lite",
         systemInstruction: `Anda adalah Asisten AI ICOFR yang membantu pengguna memahami regulasi Pengendalian Internal atas Pelaporan Keuangan (ICOFR) berdasarkan SK-5/DKU.MBU/11/2024.
 
 Jawablah pertanyaan dengan akurat berdasarkan dokumen yang disediakan di bawah ini.
