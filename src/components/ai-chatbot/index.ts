@@ -1,5 +1,5 @@
 export { AIFabButton } from './AIFabButton';
-export { AIChatModal } from './AIChatModal';
+export { AIChatDrawer } from './AIChatDrawer';
 export { ChatMessageList } from './ChatMessageList';
 export { ChatInput } from './ChatInput';
 export type { ChatMessage } from './ChatMessageList';

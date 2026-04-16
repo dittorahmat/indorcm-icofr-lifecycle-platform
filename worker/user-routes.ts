@@ -13,6 +13,7 @@ import type {
 import { z } from "zod";
 import { parseCsv, unparseCsv } from './csv';
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { ICOFR_KNOWLEDGE_BASE } from './knowledge-base';
 import { getAuth } from './auth';
 
 export function userRoutes(app: Hono<HonoEnv>) {
@@ -1236,5 +1237,84 @@ export function userRoutes(app: Hono<HonoEnv>) {
     }
 
     return ok(c, diagrams[0]);
+  });
+
+  // --- AI Chatbot Routes ---
+
+  const rateLimitStore = new Map<string, { count: number; resetDate: number }>();
+
+  app.post('/api/ai/chat', async (c) => {
+    const apiKey = c.env.GEMINI_API_KEY;
+    if (!apiKey || apiKey === 'YOUR_GEMINI_API_KEY_HERE') {
+      return bad(c, 'GEMINI_API_KEY not configured.');
+    }
+
+    let body: { message: string; conversationHistory?: Array<{ role: string; content: string }> };
+    try {
+      body = await c.req.json();
+    } catch (e) {
+      return bad(c, 'Invalid request body');
+    }
+
+    const { message, conversationHistory = [] } = body;
+
+    const clientId = c.req.header('X-Forwarded-For') || c.req.header('CF-Connecting-IP') || 'unknown';
+    const now = Date.now();
+    const dayMs = 86400000;
+
+    let rateLimitData = rateLimitStore.get(clientId);
+    if (!rateLimitData || now > rateLimitData.resetDate) {
+      rateLimitData = { count: 0, resetDate: now + dayMs };
+      rateLimitStore.set(clientId, rateLimitData);
+    }
+
+    if (rateLimitData.count >= 100) {
+      return bad(c, 'Rate limit exceeded.', 429);
+    }
+
+    rateLimitData.count++;
+
+    const context = (body as any).context;
+    const pageContext = context?.path ? `\nPengguna saat ini sedang melihat halaman: ${context.path}` : '';
+
+    try {
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({
+        model: "gemini-2.0-flash-lite",
+        systemInstruction: `Anda adalah Asisten AI ICOFR yang membantu pengguna memahami regulasi Pengendalian Internal atas Pelaporan Keuangan (ICOFR) berdasarkan SK-5/DKU.MBU/11/2024.
+
+Jawablah pertanyaan dengan akurat berdasarkan dokumen yang disediakan di bawah ini.
+Sebutkan referensi BAB dan Pasal jika relevan.
+${pageContext}
+
+Jika pertanyaan tidak terkait ICOFR, jawab dengan sopan bahwa Anda hanya dapat membantu pertanyaan tentang ICOFR.
+
+Bahasa: Bahasa Indonesia
+
+--- DOKUMEN ICOFR ---
+${ICOFR_KNOWLEDGE_BASE}
+--- END DOKUMEN ---`
+      });
+
+      const recentHistory = conversationHistory.slice(-10);
+      const chat = model.startChat({
+        history: recentHistory.map(msg => ({
+          role: msg.role === 'user' ? 'user' : 'model',
+          parts: [{ text: msg.content }]
+        }))
+      });
+
+      const result = await chat.sendMessage(message);
+      const response = await result.response;
+      const responseText = response.text();
+
+      return ok(c, {
+        response: responseText,
+        sources: []
+      });
+
+    } catch (error: any) {
+      return bad(c, `AI service error: ${error.message}`, 500);
+    }
   });
 }

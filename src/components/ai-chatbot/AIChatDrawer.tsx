@@ -1,19 +1,19 @@
 import React from 'react';
-import { X, Trash2, MessageSquare } from 'lucide-react';
+import { Trash2, MessageSquare, Bot } from 'lucide-react';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { ChatMessage, ChatMessageList } from './ChatMessageList';
 import { ChatInput } from './ChatInput';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
+import { useLocation } from 'react-router-dom';
 
-interface AIChatModalProps {
+interface AIChatDrawerProps {
   isOpen: boolean;
   onClose: () => void;
 }
@@ -30,10 +30,11 @@ interface ChatHistory {
   currentConversationId: string | null;
 }
 
-export function AIChatModal({ isOpen, onClose }: AIChatModalProps) {
+export function AIChatDrawer({ isOpen, onClose }: AIChatDrawerProps) {
   const [messages, setMessages] = React.useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
   const [conversationId, setConversationId] = React.useState<string | null>(null);
+  const location = useLocation();
 
   // Load chat history from localStorage on mount
   React.useEffect(() => {
@@ -127,6 +128,10 @@ export function AIChatModal({ isOpen, onClose }: AIChatModalProps) {
         body: JSON.stringify({
           message: content,
           conversationHistory,
+          context: {
+            path: location.pathname,
+            timestamp: new Date().toISOString()
+          }
         }),
       });
 
@@ -168,45 +173,54 @@ export function AIChatModal({ isOpen, onClose }: AIChatModalProps) {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => {
+    <Sheet open={isOpen} onOpenChange={(open) => {
       if (!open) onClose();
     }}>
-      <DialogContent className="sm:max-w-[600px] h-[70vh] flex flex-col p-0 gap-0" aria-describedby="chat-modal-description">
-        <DialogHeader className="px-6 py-4 border-b">
+      <SheetContent 
+        side="right" 
+        className="w-full sm:max-w-[500px] flex flex-col p-0 gap-0 border-l"
+      >
+        <SheetHeader className="px-6 py-4 border-b flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <MessageSquare className="h-5 w-5 text-primary" />
-              <DialogTitle>Asisten AI ICOFR</DialogTitle>
+              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                <Bot className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <SheetTitle className="text-left">Asisten AI ICOFR</SheetTitle>
+                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                  Berdasarkan SK-5/DKU.MBU/11/2024
+                </p>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleClearHistory}
-                disabled={messages.length === 0}
-                title="Hapus riwayat chat"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" onClick={onClose}>
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleClearHistory}
+              disabled={messages.length === 0}
+              title="Hapus riwayat chat"
+              className="h-8 w-8 text-muted-foreground hover:text-destructive"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
           </div>
-        </DialogHeader>
+        </SheetHeader>
         
-        <div id="chat-modal-description" className="sr-only">
-          Chat dengan AI asisten ICOFR untuk pertanyaan tentang SK-5/DKU.MBU/11/2024
+        <div className="flex-1 overflow-hidden flex flex-col relative">
+          <ChatMessageList messages={messages} isLoading={isLoading} />
         </div>
 
-        <ChatMessageList messages={messages} isLoading={isLoading} />
-
-        <ChatInput
-          onSend={handleSend}
-          disabled={isLoading}
-          placeholder="Tanyakan tentang SK-5/DKU.MBU/11/2024..."
-        />
-      </DialogContent>
-    </Dialog>
+        <div className="p-4 border-t bg-background">
+          <ChatInput
+            onSend={handleSend}
+            disabled={isLoading}
+            placeholder="Tanyakan tentang SK-5/DKU.MBU/11/2024..."
+          />
+          <p className="mt-2 text-[10px] text-center text-muted-foreground italic">
+            AI dapat memberikan informasi yang tidak akurat. Selalu verifikasi regulasi resmi.
+          </p>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }
