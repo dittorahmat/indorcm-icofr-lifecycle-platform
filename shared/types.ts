@@ -496,6 +496,7 @@ export interface User {
   role?: UserRole;
   departmentId?: string;
   level?: UserLevel;
+  language?: string;
   processOwnershipHistory?: { processId: string; role: UserRole; endDate: number }[]; // For cooling-off validation
 }
 export interface Chat {

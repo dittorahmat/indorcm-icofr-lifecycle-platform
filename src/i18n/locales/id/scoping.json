@@ -1,0 +1,26 @@
+{
+  "title": "Penentuan Akun Signifikan",
+  "description": "Tentukan akun signifikan berdasarkan materialitas dan faktor kualitatif.",
+  "activeSource": "Sumber Aktif",
+  "setBenchmark": "Atur Pemetaan Benchmark",
+  "simulation": {
+    "title": "Simulasi Materialitas",
+    "create": "Buat Simulasi",
+    "history": "Riwayat Persetujuan",
+    "createNew": "Buat Simulasi Baru",
+    "basisDescription": "Perhitungan basis akan menggunakan {{filename}}."
+  },
+  "form": {
+    "name": "Nama Simulasi",
+    "namePlaceholder": "misal: FY2024 - PBT Konservatif",
+    "benchmark": "Basis Benchmark",
+    "locations": "Lokasi Signifikan",
+    "initialize": "Inisialisasi Simulasi"
+  },
+  "table": {
+    "account": "Akun",
+    "balance": "Saldo",
+    "fsli": "FSLI",
+    "status": "Status"
+  }
+}

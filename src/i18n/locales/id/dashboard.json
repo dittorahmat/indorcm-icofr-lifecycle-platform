@@ -1,0 +1,23 @@
+{
+  "title": "Dashboard",
+  "description": "Ikhtisar kepatuhan dan status ICOFR.",
+  "kpis": {
+    "controlCoverage": "Cakupan Kontrol",
+    "openDeficiencies": "Defisiensi Terbuka",
+    "cosoCoverage": "Cakupan COSO",
+    "csaCompletion": "Penyelesaian CSA (KPI)",
+    "csaTarget": "Target: 100% per Kuartal",
+    "remediationVelocity": "Kecepatan Remediasi",
+    "remediationAvg": "Rata-rata waktu penyelesaian CD",
+    "line2Validation": "Tingkat Validasi Lini 2",
+    "line2Detail": "Penyelesaian Test of One",
+    "reportingReadiness": "Kesiapan Pelaporan",
+    "reportingStatus": "Status siklus saat ini"
+  },
+  "coso": {
+    "title": "Cakupan 17 Prinsip COSO",
+    "description": "Memastikan seluruh prinsip COSO wajib telah dipetakan ke kontrol (Lampiran 1).",
+    "covered": "Tercakup",
+    "zeroCoverage": "Tanpa Cakupan (Butuh Tindakan)"
+  }
+}

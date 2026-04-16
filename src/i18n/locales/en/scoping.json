@@ -1,0 +1,26 @@
+{
+  "title": "Significant Account Identification",
+  "description": "Identify significant accounts based on materiality and qualitative factors.",
+  "activeSource": "Active Source",
+  "setBenchmark": "Set Benchmark Mapping",
+  "simulation": {
+    "title": "Materiality Simulation",
+    "create": "Create Simulation",
+    "history": "Approval History",
+    "createNew": "Create New Simulation",
+    "basisDescription": "Basis calculation will use {{filename}}."
+  },
+  "form": {
+    "name": "Simulation Name",
+    "namePlaceholder": "e.g. FY2024 - Conservative PBT",
+    "benchmark": "Benchmark Basis",
+    "locations": "Significant Locations",
+    "initialize": "Initialize Simulation"
+  },
+  "table": {
+    "account": "Account",
+    "balance": "Balance",
+    "fsli": "FSLI",
+    "status": "Status"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "title": "Laporan & Ekspor",
+  "description": "Laporan ICOFR standar untuk kepatuhan {{companyName}}.",
+  "actions": {
+    "exportCsv": "Ekspor CSV",
+    "print": "Cetak Laporan",
+    "signAndLock": "Tanda Tangan & Kunci Laporan (CEO & CFO)"
+  },
+  "tabs": {
+    "overview": "Ikhtisar",
+    "management": "Asesmen Manajemen",
+    "audit": "Laporan Hasil Pengujian",
+    "appendices": "Lampiran Peraturan"
+  },
+  "assessment": {
+    "conclusionEffective": "Kesimpulan: Efektif",
+    "conclusionIneffective": "Kesimpulan: Tidak Efektif",
+    "directorsStatement": "Direksi {{companyName}} menyatakan bahwa:",
+    "signed": "TANDA TANGAN",
+    "awaitingSign": "Menunggu Tanda Tangan CEO/CFO",
+    "periodFinalized": "PERIODE DIFINALISASI & DITANDATANGANI"
+  }
+}

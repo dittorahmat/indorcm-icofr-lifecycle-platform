@@ -30,11 +30,27 @@ export function userRoutes(app: Hono<HonoEnv>) {
     });
   });
 
+  app.put('/api/auth/profile', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const userId = c.get('userId');
+    const body = await c.req.json<{ language: string }>();
+
+    if (!body.language) return bad(c, 'Language is required');
+
+    await db.update(user).set({
+      language: body.language,
+      updatedAt: new Date(),
+    }).where(eq(user.id, userId));
+
+    return ok(c, { success: true });
+  });
+
   app.get('/api/dev/fix-db', async (c) => {
     const db = getDb(c.env.DATABASE_URL);
     try {
       await db.execute(sql`ALTER TABLE simulations ADD COLUMN IF NOT EXISTS significant_accounts jsonb;`);
-      return ok(c, { message: "Database fixed! Column significant_accounts added." });
+      await db.execute(sql`ALTER TABLE "user" ADD COLUMN IF NOT EXISTS "language" text DEFAULT 'en';`);
+      return ok(c, { message: "Database fixed! Columns significant_accounts and language added." });
     } catch (e: any) {
       return ok(c, { error: e.message });
     }

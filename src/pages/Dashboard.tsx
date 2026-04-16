@@ -7,11 +7,13 @@ import { api } from '@/lib/api-client';
 import type { RCM, Deficiency, Control } from '@shared/types';
 import { CheckCircle, AlertTriangle, Clock, ShieldCheck, UserCheck, Zap } from 'lucide-react';
 import { AIFabButton, AIChatModal } from '@/components/ai-chatbot';
+import { useTranslation } from 'react-i18next';
 
 const ComplianceCharts = React.lazy(() => import('@/components/dashboard/ComplianceCharts').then(m => ({ default: m.ComplianceCharts })));
 
 export function Dashboard() {
   const [isChatOpen, setIsChatOpen] = React.useState(false);
+  const { t } = useTranslation('dashboard');
   const { data: rcmData, isLoading: rcmLoading } = useQuery({
     queryKey: ['rcm'],
     queryFn: () => api<{ items: RCM[] }>('/api/rcm'),
@@ -48,17 +50,17 @@ export function Dashboard() {
   const isLoading = rcmLoading || deficienciesLoading || controlsLoading;
 
   const kpiData = [
-    { title: 'Control Coverage', value: controlsData?.items.length || '0', icon: <CheckCircle className="h-6 w-6 text-green-500" /> },
-    { title: 'Open Deficiencies', value: deficienciesData?.items.filter(d => d.status === 'Open').length || '0', icon: <AlertTriangle className="h-6 w-6 text-orange-500" /> },
-    { title: 'COSO Coverage', value: `${((cosoCoverage.filter(c => c.count > 0).length / 17) * 100).toFixed(0)}%`, icon: <ShieldCheck className="h-6 w-6 text-blue-500" /> },
+    { title: t('kpis.controlCoverage'), value: controlsData?.items.length || '0', icon: <CheckCircle className="h-6 w-6 text-green-500" /> },
+    { title: t('kpis.openDeficiencies'), value: deficienciesData?.items.filter(d => d.status === 'Open').length || '0', icon: <AlertTriangle className="h-6 w-6 text-orange-500" /> },
+    { title: t('kpis.cosoCoverage'), value: `${((cosoCoverage.filter(c => c.count > 0).length / 17) * 100).toFixed(0)}%`, icon: <ShieldCheck className="h-6 w-6 text-blue-500" /> },
   ];
 
   return (
     <AppLayout container>
       <div className="space-y-8">
         <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">Overview of ICOFR compliance and status.</p>
+          <h1 className="text-3xl font-bold">{t('title')}</h1>
+          <p className="text-muted-foreground">{t('description')}</p>
         </div>
 
         <div className="grid gap-6 md:grid-cols-3">
@@ -79,45 +81,45 @@ export function Dashboard() {
           <Card className="border-blue-200 bg-blue-50/20">
             <CardHeader className="pb-2">
               <CardTitle className="text-[10px] font-bold uppercase text-blue-800 flex items-center gap-2">
-                <UserCheck className="h-3 w-3" /> CSA Completion (KPI)
+                <UserCheck className="h-3 w-3" /> {t('kpis.csaCompletion')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-blue-900">88.5%</div>
-              <p className="text-[10px] text-blue-700 italic">Target: 100% per Quarter</p>
+              <p className="text-[10px] text-blue-700 italic">{t('kpis.csaTarget')}</p>
             </CardContent>
           </Card>
           <Card className="border-orange-200 bg-orange-50/20">
             <CardHeader className="pb-2">
               <CardTitle className="text-[10px] font-bold uppercase text-orange-800 flex items-center gap-2">
-                <Zap className="h-3 w-3" /> Remediation Velocity
+                <Zap className="h-3 w-3" /> {t('kpis.remediationVelocity')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-orange-900">12 Days</div>
-              <p className="text-[10px] text-orange-700 italic">Avg time to resolve CD</p>
+              <p className="text-[10px] text-orange-700 italic">{t('kpis.remediationAvg')}</p>
             </CardContent>
           </Card>
           <Card className="border-green-200 bg-green-50/20">
             <CardHeader className="pb-2">
               <CardTitle className="text-[10px] font-bold uppercase text-green-800 flex items-center gap-2">
-                <ShieldCheck className="h-3 w-3" /> Line 2 Validation Rate
+                <ShieldCheck className="h-3 w-3" /> {t('kpis.line2Validation')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-900">94.2%</div>
-              <p className="text-[10px] text-green-700 italic">Test of One completion</p>
+              <p className="text-[10px] text-green-700 italic">{t('kpis.line2Detail')}</p>
             </CardContent>
           </Card>
           <Card className="border-slate-200 bg-slate-50/20">
             <CardHeader className="pb-2">
               <CardTitle className="text-[10px] font-bold uppercase text-slate-800 flex items-center gap-2">
-                <Clock className="h-3 w-3" /> Reporting Readiness
+                <Clock className="h-3 w-3" /> {t('kpis.reportingReadiness')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-slate-900">Ready</div>
-              <p className="text-[10px] text-slate-700 italic">Current cycle status</p>
+              <p className="text-[10px] text-slate-700 italic">{t('kpis.reportingStatus')}</p>
             </CardContent>
           </Card>
         </div>
@@ -132,8 +134,8 @@ export function Dashboard() {
 
         <Card className="md:col-span-2 lg:col-span-3">
           <CardHeader>
-            <CardTitle>17 COSO Principles Coverage</CardTitle>
-            <CardDescription>Ensuring all mandatory COSO principles are mapped to controls (Appendix 1).</CardDescription>
+            <CardTitle>{t('coso.title')}</CardTitle>
+            <CardDescription>{t('coso.description')}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-6 sm:grid-cols-9 lg:grid-cols-12 gap-2">
@@ -152,8 +154,8 @@ export function Dashboard() {
               )}
             </div>
             <div className="mt-4 flex gap-4 text-[10px] uppercase font-bold tracking-tight">
-              <div className="flex items-center gap-1.5"><div className="h-3 w-3 bg-green-100 border border-green-200 rounded" /> Covered</div>
-              <div className="flex items-center gap-1.5"><div className="h-3 w-3 bg-red-50 border border-red-100 rounded" /> Zero Coverage (Action Required)</div>
+              <div className="flex items-center gap-1.5"><div className="h-3 w-3 bg-green-100 border border-green-200 rounded" /> {t('coso.covered')}</div>
+              <div className="flex items-center gap-1.5"><div className="h-3 w-3 bg-red-50 border border-red-100 rounded" /> {t('coso.zeroCoverage')}</div>
             </div>
           </CardContent>
         </Card>

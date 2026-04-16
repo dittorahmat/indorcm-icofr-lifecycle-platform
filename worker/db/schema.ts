@@ -14,6 +14,7 @@ export const user = pgTable("user", {
 	role: text("role"), // Line 1, Line 2, etc.
 	level: text("level"), // Staff, Manager
 	departmentId: text("departmentId"),
+	language: text("language").default("en"),
 });
 
 export const session = pgTable("session", {

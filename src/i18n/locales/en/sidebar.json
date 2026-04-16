@@ -1,0 +1,32 @@
+{
+  "groups": {
+    "master": "MASTER",
+    "rcsa": "RCSA",
+    "deficiency": "Deficiency & Remediation",
+    "testing": "TOD/TOE",
+    "report": "Report",
+    "ai": "AI",
+    "user": "User",
+    "admin": "Administration"
+  },
+  "items": {
+    "dashboard": "Dashboard",
+    "sync": "Sync Financial Statement",
+    "bpm": "BPM",
+    "scoping": "Significant Account Identification",
+    "approval": "Materiality Approval",
+    "changelog": "Log Perubahan (Change Log)",
+    "soc": "SOC Monitoring",
+    "deficiencies": "Deficiency & Remediation",
+    "tod": "Test of Design (TOD)",
+    "toe": "Test of Operating Effectiveness (TOE)",
+    "wbs": "WBS Recap",
+    "app11": "Appendix 11 (Asesmen Manajemen)",
+    "anomaly": "Anomaly Check",
+    "journal": "Financial Journal Check",
+    "predictive": "Predictive Story Life",
+    "improvement": "Continuous Improvement",
+    "settings": "User Admin",
+    "adminUsers": "User Management"
+  }
+}

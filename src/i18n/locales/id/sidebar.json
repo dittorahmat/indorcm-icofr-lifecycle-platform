@@ -1,0 +1,32 @@
+{
+  "groups": {
+    "master": "MASTER",
+    "rcsa": "RCSA",
+    "deficiency": "Defisiensi & Remediasi",
+    "testing": "TOD/TOE",
+    "report": "Laporan",
+    "ai": "AI",
+    "user": "User",
+    "admin": "Administrasi"
+  },
+  "items": {
+    "dashboard": "Dashboard",
+    "sync": "Sinkronisasi Laporan Keuangan",
+    "bpm": "BPM",
+    "scoping": "Penentuan Akun Signifikan",
+    "approval": "Persetujuan Materialitas",
+    "changelog": "Log Perubahan",
+    "soc": "Pemantauan SOC",
+    "deficiencies": "Defisiensi & Remediasi",
+    "tod": "Test of Design (TOD)",
+    "toe": "Test of Operating Effectiveness (TOE)",
+    "wbs": "Rekap WBS",
+    "app11": "Lampiran 11 (Asesmen Manajemen)",
+    "anomaly": "Cek Anomali",
+    "journal": "Cek Jurnal Finansial",
+    "predictive": "Predictive Story Life",
+    "improvement": "Continuous Improvement",
+    "settings": "Admin User",
+    "adminUsers": "Manajemen User"
+  }
+}

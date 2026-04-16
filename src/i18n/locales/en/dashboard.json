@@ -1,0 +1,23 @@
+{
+  "title": "Dashboard",
+  "description": "Overview of ICOFR compliance and status.",
+  "kpis": {
+    "controlCoverage": "Control Coverage",
+    "openDeficiencies": "Open Deficiencies",
+    "cosoCoverage": "COSO Coverage",
+    "csaCompletion": "CSA Completion (KPI)",
+    "csaTarget": "Target: 100% per Quarter",
+    "remediationVelocity": "Remediation Velocity",
+    "remediationAvg": "Avg time to resolve CD",
+    "line2Validation": "Line 2 Validation Rate",
+    "line2Detail": "Test of One completion",
+    "reportingReadiness": "Reporting Readiness",
+    "reportingStatus": "Current cycle status"
+  },
+  "coso": {
+    "title": "17 COSO Principles Coverage",
+    "description": "Ensuring all mandatory COSO principles are mapped to controls (Appendix 1).",
+    "covered": "Covered",
+    "zeroCoverage": "Zero Coverage (Action Required)"
+  }
+}

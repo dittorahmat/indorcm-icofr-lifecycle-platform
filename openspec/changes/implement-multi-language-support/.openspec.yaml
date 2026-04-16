@@ -1,0 +1,4 @@
+name: implement-multi-language-support
+description: Introduce i18n infrastructure using react-i18next with support for English and Indonesia. Language preference will be saved in the user profile. Technical terminology from SK-5/2024 will be preserved in Indonesian.
+status: proposed
+schema: change

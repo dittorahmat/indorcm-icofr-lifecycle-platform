@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { PageSuspense } from '@/components/PageSuspense';
 import { RootLayout } from '@/components/layout/RootLayout';
 import '@/index.css';
+import './i18n/config';
 
 // Lazy load all pages for optimized bundle size
 const HomePage = lazy(() => import('@/pages/HomePage').then(module => ({ default: module.HomePage })));
@@ -92,7 +93,9 @@ createRoot(document.getElementById('root')!).render(
   // <StrictMode>
     <QueryClientProvider client={queryClient}>
       <ErrorBoundary>
-        <RouterProvider router={router} />
+        <Suspense fallback={<div className="h-screen w-full flex items-center justify-center"><Skeleton className="h-12 w-12 rounded-full" /></div>}>
+          <RouterProvider router={router} />
+        </Suspense>
         <Toaster richColors closeButton />
       </ErrorBoundary>
     </QueryClientProvider>

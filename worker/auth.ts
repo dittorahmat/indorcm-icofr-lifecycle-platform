@@ -36,6 +36,7 @@ export const getAuth = (env: { DATABASE_URL: string; BETTER_AUTH_SECRET: string;
                 role: { type: "string" },
                 level: { type: "string" },
                 departmentId: { type: "string" },
+                language: { type: "string" },
             }
         }
     });

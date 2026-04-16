@@ -1,0 +1,23 @@
+{
+  "title": "Reports & Exports",
+  "description": "Standardized ICOFR reports for {{companyName}} compliance.",
+  "actions": {
+    "exportCsv": "Export CSV",
+    "print": "Print Report",
+    "signAndLock": "Sign & Lock Report (CEO & CFO)"
+  },
+  "tabs": {
+    "overview": "Overview",
+    "management": "Management Assessment",
+    "audit": "Test Results Report",
+    "appendices": "Regulatory Appendices"
+  },
+  "assessment": {
+    "conclusionEffective": "Conclusion: Effective",
+    "conclusionIneffective": "Conclusion: Ineffective",
+    "directorsStatement": "The Board of Directors of {{companyName}} states that:",
+    "signed": "SIGNED",
+    "awaitingSign": "Awaiting CEO/CFO Sign-off",
+    "periodFinalized": "PERIOD FINALIZED & SIGNED"
+  }
+}

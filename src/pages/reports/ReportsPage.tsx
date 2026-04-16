@@ -19,8 +19,10 @@ import { RegulatoryAppendices } from '@/components/reports/RegulatoryAppendices'
 import { AIAnalyticsMockup } from '@/components/reports/AIAnalyticsMockup';
 import { RiskHeatmap } from '@/components/reports/RiskHeatmap';
 import { COSOHeatmap } from '@/components/reports/COSOHeatmap';
+import { useTranslation } from 'react-i18next';
 
 export function ReportsPage() {
+  const { t } = useTranslation('reports');
   const queryClient = useQueryClient();
   const [testTypeFilter, setTestTypeFilter] = React.useState<'ALL' | 'TOD' | 'TOE'>('ALL');
   const [testStatusFilter, setTestStatusFilter] = React.useState<'ALL' | 'Pass' | 'Fail'>('ALL');
@@ -128,21 +130,21 @@ export function ReportsPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between no-print">
           <div>
-            <h1 className="text-3xl font-bold">Reports & Exports</h1>
-            <p className="text-muted-foreground">Standardized ICOFR reports for {settings?.companyName} compliance.</p>
+            <h1 className="text-3xl font-bold">{t('title')}</h1>
+            <p className="text-muted-foreground">{t('description', { companyName: settings?.companyName })}</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={() => handleExport('csv')}><FileDown className="h-4 w-4 mr-2" /> Export CSV</Button>
-            <Button variant="secondary" onClick={() => window.print()}><Printer className="h-4 w-4 mr-2" /> Print Report</Button>
+            <Button variant="outline" onClick={() => handleExport('csv')}><FileDown className="h-4 w-4 mr-2" /> {t('actions.exportCsv')}</Button>
+            <Button variant="secondary" onClick={() => window.print()}><Printer className="h-4 w-4 mr-2" /> {t('actions.print')}</Button>
           </div>
         </div>
 
         <Tabs defaultValue="dashboard" className="no-print">
           <TabsList className="mb-4">
-            <TabsTrigger value="dashboard">Overview</TabsTrigger>
-            <TabsTrigger value="management">Management Assessment</TabsTrigger>
-            <TabsTrigger value="audit">Test Results Report</TabsTrigger>
-            <TabsTrigger value="appendices">Regulatory Appendices</TabsTrigger>
+            <TabsTrigger value="dashboard">{t('tabs.overview')}</TabsTrigger>
+            <TabsTrigger value="management">{t('tabs.management')}</TabsTrigger>
+            <TabsTrigger value="audit">{t('tabs.audit')}</TabsTrigger>
+            <TabsTrigger value="appendices">{t('tabs.appendices')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="dashboard" className="space-y-6 pt-4">
@@ -155,7 +157,7 @@ export function ReportsPage() {
                 <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Overall Effectiveness</CardTitle></CardHeader>
                 <CardContent>
                   <div className={cn("text-3xl font-bold", isEffective ? "text-green-600" : "text-red-600")}>
-                    {isEffective ? "EFFECTIVE" : "INEFFECTIVE"}
+                    {isEffective ? t('assessment.conclusionEffective').toUpperCase().replace('CONCLUSION: ', '') : t('assessment.conclusionIneffective').toUpperCase().replace('CONCLUSION: ', '')}
                   </div>
                 </CardContent>
               </Card>
@@ -215,11 +217,11 @@ export function ReportsPage() {
               {!isSigned ? (
                 <Button onClick={handleSignOff} variant="destructive" className="font-bold" disabled={signOffMutation.isPending}>
                   {signOffMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Lock className="h-4 w-4 mr-2" />}
-                  Sign & Lock Report (CEO & CFO)
+                  {t('actions.signAndLock')}
                 </Button>
               ) : (
                 <Badge className="bg-blue-600 text-white px-4 py-2 text-sm shadow-md gap-2">
-                  <CheckCircle2 className="h-4 w-4" /> PERIOD FINALIZED & SIGNED
+                  <CheckCircle2 className="h-4 w-4" /> {t('assessment.periodFinalized')}
                 </Badge>
               )}
             </div>
@@ -227,7 +229,7 @@ export function ReportsPage() {
               <AnimatePresence>
                 {isSigned && (
                   <motion.div initial={{ scale: 2, opacity: 0 }} animate={{ scale: 1, opacity: 0.15 }} className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-                    <div className="border-8 border-green-600 text-green-600 font-black text-9xl p-10 rotate-[-30deg] uppercase tracking-tighter">Signed</div>
+                    <div className="border-8 border-green-600 text-green-600 font-black text-9xl p-10 rotate-[-30deg] uppercase tracking-tighter">{t('assessment.signed')}</div>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -238,18 +240,18 @@ export function ReportsPage() {
               </CardHeader>
               <CardContent className="space-y-8 py-8 px-10">
                 <div className="space-y-4 text-justify leading-relaxed">
-                  <p>The Board of Directors of {settings?.companyName} states that:</p>
+                  <p>{t('assessment.directorsStatement', { companyName: settings?.companyName })}</p>
                   
                   {!isEffective ? (
                     <div className="p-4 bg-red-50 border border-red-200 rounded-md mb-6">
-                      <p className="font-bold text-red-800 underline mb-2 text-center uppercase">Conclusion: Ineffective</p>
+                      <p className="font-bold text-red-800 underline mb-2 text-center uppercase">{t('assessment.conclusionIneffective')}</p>
                       <p className="text-sm text-red-700">
                         Based on the evaluation performed, management concludes that the Company <strong>did not maintain</strong> effective internal control over financial reporting as of the report date, due to identified material weaknesses.
                       </p>
                     </div>
                   ) : (
                     <div className="p-4 bg-green-50 border border-green-200 rounded-md mb-6">
-                      <p className="font-bold text-green-800 underline mb-2 text-center uppercase">Conclusion: Effective</p>
+                      <p className="font-bold text-green-800 underline mb-2 text-center uppercase">{t('assessment.conclusionEffective')}</p>
                       <p className="text-sm text-green-700">
                         Based on the evaluation performed, management concludes that the Company <strong>has maintained</strong>, in all material respects, effective internal control over financial reporting as of the report date.
                       </p>

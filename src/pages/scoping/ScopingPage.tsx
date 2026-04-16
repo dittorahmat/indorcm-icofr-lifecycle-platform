@@ -44,8 +44,10 @@ import {
   calculateBenchmarkValue,
   getGroupMultiplier
 } from '@/lib/compliance-utils';
+import { useTranslation } from 'react-i18next';
 
 export function ScopingPage() {
+  const { t } = useTranslation('scoping');
   const queryClient = useQueryClient();
   const [selectedSimId, setSelectedSimId] = React.useState<string | null>(null);
   const [isCreating, setIsCreating] = React.useState(false);
@@ -169,9 +171,9 @@ export function ScopingPage() {
       <div className="space-y-6">
         <div className="flex justify-between items-end">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Significant Account Identification</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{t('title')}</h1>
             <div className="flex items-center gap-3 mt-1">
-              <p className="text-muted-foreground text-sm">Identify significant accounts based on materiality and qualitative factors.</p>
+              <p className="text-muted-foreground text-sm">{t('description')}</p>
               {activeSnapshot && (
                 <div className="flex items-center gap-2">
                   <Badge variant="outline" className={cn(
@@ -181,7 +183,7 @@ export function ScopingPage() {
                       : "bg-amber-50 text-amber-700 border-amber-200 animate-pulse"
                   )}>
                     <CheckCircle2 className="h-3.5 w-3.5" /> 
-                    Active Source: {activeSnapshot.filename} ({activeSnapshot.status})
+                    {t('activeSource')}: {activeSnapshot.filename} ({activeSnapshot.status})
                   </Badge>
                   {activeSnapshot.status === 'Draft' && (
                     <Button 
@@ -190,7 +192,7 @@ export function ScopingPage() {
                       className="h-6 text-amber-600 font-bold p-0 flex items-center gap-1 hover:text-amber-700 underline underline-offset-4"
                       onClick={() => setBenchmarkModalSnap(activeSnapshot)}
                     >
-                      <Settings2 className="h-3 w-3" /> Set Benchmark Mapping
+                      <Settings2 className="h-3 w-3" /> {t('setBenchmark')}
                     </Button>
                   )}
                 </div>
@@ -225,7 +227,7 @@ export function ScopingPage() {
         <Tabs defaultValue="simulations" className="w-full">
           <TabsList className="grid w-full max-w-[400px] grid-cols-2 mb-6">
             <TabsTrigger value="simulations" className="gap-2">
-              <LayoutGrid className="h-4 w-4" /> Simulations
+              <LayoutGrid className="h-4 w-4" /> {t('simulation.title')}
             </TabsTrigger>
             <TabsTrigger value="master-gl" className="gap-2">
               <Database className="h-4 w-4" /> Master Data GL
@@ -272,9 +274,9 @@ export function ScopingPage() {
         <Dialog open={isCreating} onOpenChange={setIsCreating}>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>Create New Simulation</DialogTitle>
+              <DialogTitle>{t('simulation.createNew')}</DialogTitle>
               <DialogDescription>
-                Basis calculation will use <strong>{activeSnapshot?.filename}</strong>.
+                {t('simulation.basisDescription', { filename: activeSnapshot?.filename })}
               </DialogDescription>
             </DialogHeader>
             <SimulationInitialForm 
@@ -296,6 +298,7 @@ export function ScopingPage() {
 }
 
 function SimulationInitialForm({ activeSnap, onSubmit, isPending }: { activeSnap: GLSnapshot | null, onSubmit: (data: any) => void, isPending: boolean }) {
+  const { t } = useTranslation('scoping');
   const [name, setName] = React.useState("");
   const [basis, setBasis] = React.useState<string>("");
   const [locations, setLocations] = React.useState(1);
@@ -311,12 +314,12 @@ function SimulationInitialForm({ activeSnap, onSubmit, isPending }: { activeSnap
   return (
     <div className="space-y-4 py-4">
       <div className="space-y-2">
-        <Label className="text-xs uppercase font-bold text-slate-500 tracking-wider">Simulation Name</Label>
-        <Input placeholder="e.g. FY2024 - Conservative PBT" value={name} onChange={e => setName(e.target.value)} />
+        <Label className="text-xs uppercase font-bold text-slate-500 tracking-wider">{t('form.name')}</Label>
+        <Input placeholder={t('form.namePlaceholder')} value={name} onChange={e => setName(e.target.value)} />
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label className="text-xs uppercase font-bold text-slate-500 tracking-wider">Benchmark Basis</Label>
+          <Label className="text-xs uppercase font-bold text-slate-500 tracking-wider">{t('form.benchmark')}</Label>
           {activeSnap?.benchmarkFsliNames?.length ? (
             <Select value={basis} onValueChange={setBasis}>
               <SelectTrigger><SelectValue /></SelectTrigger>
@@ -334,7 +337,7 @@ function SimulationInitialForm({ activeSnap, onSubmit, isPending }: { activeSnap
           )}
         </div>
         <div className="space-y-2">
-          <Label className="text-xs uppercase font-bold text-slate-500 tracking-wider">Significant Locations</Label>
+          <Label className="text-xs uppercase font-bold text-slate-500 tracking-wider">{t('form.locations')}</Label>
           <Input type="number" min={1} value={locations} onChange={e => setLocations(parseInt(e.target.value) || 1)} />
         </div>
       </div>
@@ -345,7 +348,7 @@ function SimulationInitialForm({ activeSnap, onSubmit, isPending }: { activeSnap
         </p>
       </div>
       <Button className="w-full mt-2" disabled={!name || !basis || isPending} onClick={() => onSubmit({ name, basis, omPercentage: defaultOm, haircutPercentage: 25, locationCount: locations })}>
-        {isPending ? "Creating..." : "Initialize Simulation"}
+        {isPending ? "Creating..." : t('form.initialize')}
       </Button>
     </div>
   );

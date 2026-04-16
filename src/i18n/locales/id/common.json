@@ -1,0 +1,27 @@
+{
+  "actions": {
+    "add": "Tambah",
+    "save": "Simpan",
+    "delete": "Hapus",
+    "edit": "Ubah",
+    "cancel": "Batal",
+    "search": "Cari",
+    "select": "Pilih",
+    "all": "Semua",
+    "submit": "Kirim"
+  },
+  "status": {
+    "draft": "Draft",
+    "pending": "Menunggu",
+    "approved": "Disetujui",
+    "rejected": "Ditolak",
+    "active": "Aktif",
+    "mapped": "Terpetakan"
+  },
+  "notifications": {
+    "success": "Sukses",
+    "error": "Gagal",
+    "warning": "Peringatan",
+    "info": "Informasi"
+  }
+}
