@@ -302,6 +302,22 @@ export const bpmProcesses = pgTable("bpm_processes", {
 	createdBy: text("created_by").references(() => user.id),
 });
 
+export const aggregateDeficiencies = pgTable("aggregate_deficiencies", {
+	id: text("id").primaryKey(),
+	organizationId: text("organizationId").notNull().references(() => organization.id),
+	name: text("name").notNull(),
+	year: integer("year").notNull(),
+	deficiencyIds: jsonb("deficiency_ids").$type<string[]>(),
+	affectedAccounts: jsonb("affected_accounts").$type<string[]>(),
+	affectedAssertions: jsonb("affected_assertions").$type<any[]>(),
+	combinedMagnitude: doublePrecision("combined_magnitude"),
+	aggregateLikelihood: text("aggregate_likelihood"),
+	finalSeverity: text("final_severity").notNull(),
+	conclusionRationale: text("conclusion_rationale"),
+	createdAt: timestamp("created_at").notNull(),
+	createdBy: text("created_by").references(() => user.id),
+});
+
 // --- AUDIT TABLES ---
 
 export const auditLogs = pgTable("audit_logs", {

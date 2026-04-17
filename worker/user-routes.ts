@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import type { HonoEnv } from './index';
 import { ok, bad, notFound } from './lib/utils';
 import { getDb } from './db';
-import { rcms, auditLogs, controls, simulations, glSnapshots, glRows, user, deficiencies, actionPlans, departments, bpmProcesses, csaRecords, applications, member, account, session, bpmDiagrams, bpmNodeRcms, rcmControls } from './db/schema';
+import { rcms, auditLogs, controls, simulations, glSnapshots, glRows, user, deficiencies, actionPlans, departments, bpmProcesses, csaRecords, applications, member, account, session, bpmDiagrams, bpmNodeRcms, rcmControls, organization, testRecords, aggregateDeficiencies } from './db/schema';
 import { eq, and, desc, sql, ilike } from 'drizzle-orm';
 import type { 
   Control, RCM, CSARecord, TestRecord, Deficiency, ActionPlan, 
@@ -44,6 +44,29 @@ export function userRoutes(app: Hono<HonoEnv>) {
     }).where(eq(user.id, userId));
 
     return ok(c, { success: true });
+  });
+
+  app.get('/api/settings', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+
+    const orgs = await db.select().from(organization).where(eq(organization.id, orgId)).limit(1);
+    if (orgs.length === 0) return notFound(c, 'Organization not found');
+
+    const org = orgs[0];
+    const meta = (org.metadata as any) || {};
+
+    const settings: Settings = {
+      companyName: org.name,
+      ceoName: meta.ceoName || "Direktur Utama",
+      cfoName: meta.cfoName || "Direktur Keuangan",
+      periodYear: meta.periodYear || new Date().getFullYear(),
+      isPeriodLocked: meta.isPeriodLocked || false,
+      verificationHash: meta.verificationHash,
+      signedOffDate: meta.signedOffDate,
+    };
+
+    return ok(c, settings);
   });
 
   app.get('/api/dev/fix-db', async (c) => {
@@ -209,6 +232,100 @@ export function userRoutes(app: Hono<HonoEnv>) {
     return ok(c, { items });
   });
 
+  app.get('/api/aggregatedeficiencies', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+    const items = await db.select().from(aggregateDeficiencies).where(eq(aggregateDeficiencies.organizationId, orgId));
+    return ok(c, { items });
+  });
+
+  app.post('/api/aggregatedeficiencies', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+    const userId = c.get('userId');
+    const body = await c.req.json<Partial<AggregateDeficiency>>();
+
+    const id = crypto.randomUUID();
+    const newAgg = {
+      id,
+      organizationId: orgId,
+      name: body.name || "New Aggregate Analysis",
+      year: body.year || new Date().getFullYear(),
+      deficiencyIds: body.deficiencyIds || [],
+      affectedAccounts: body.affectedAccounts || [],
+      affectedAssertions: body.affectedAssertions || [],
+      combinedMagnitude: body.combinedMagnitude || 0,
+      aggregateLikelihood: body.aggregateLikelihood || "Low",
+      finalSeverity: body.finalSeverity || "Control Deficiency",
+      conclusionRationale: body.conclusionRationale || "",
+      createdAt: new Date(),
+      createdBy: userId,
+    };
+
+    await db.insert(aggregateDeficiencies).values(newAgg);
+    return ok(c, newAgg);
+  });
+
+  app.post('/api/reports/sign-off', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+    const userId = c.get('userId');
+
+    const orgs = await db.select().from(organization).where(eq(organization.id, orgId)).limit(1);
+    if (orgs.length === 0) return notFound(c, 'Organization not found');
+
+    const org = orgs[0];
+    const meta = (org.metadata as any) || {};
+
+    const signOffDate = new Date().toISOString();
+    const verificationHash = crypto.randomUUID().replace(/-/g, '').substring(0, 12).toUpperCase();
+
+    const updatedMeta = {
+      ...meta,
+      isPeriodLocked: true,
+      signedOffDate: signOffDate,
+      verificationHash: verificationHash,
+      signedBy: userId
+    };
+
+    await db.update(organization).set({ metadata: updatedMeta }).where(eq(organization.id, orgId));
+
+    const settings: Settings = {
+      companyName: org.name,
+      ceoName: updatedMeta.ceoName || "Direktur Utama",
+      cfoName: updatedMeta.cfoName || "Direktur Keuangan",
+      periodYear: updatedMeta.periodYear || new Date().getFullYear(),
+      isPeriodLocked: true,
+      verificationHash: verificationHash,
+      signedOffDate: signOffDate,
+    };
+
+    return ok(c, settings);
+  });
+
+  app.post('/api/reports/export', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+    const { format } = await c.req.json<{ format: 'csv' | 'xlsx' }>();
+
+    const [allControls, allRcms, allDeficienciesRecords, allTests] = await Promise.all([
+      db.select().from(controls).where(eq(controls.organizationId, orgId)),
+      db.select().from(rcms).where(eq(rcms.organizationId, orgId)),
+      db.select().from(deficiencies).where(eq(deficiencies.organizationId, orgId)),
+      db.select().from(testRecords).where(eq(testRecords.organizationId, orgId))
+    ]);
+
+    // Return the combined data. The frontend will handle formatting into CSV or XLSX using 'xlsx' lib.
+    return ok(c, {
+      controls: allControls,
+      rcms: allRcms,
+      deficiencies: allDeficienciesRecords,
+      tests: allTests,
+      exportedAt: new Date().toISOString(),
+      format
+    });
+  });
+
   // --- ICOFR Routes (RCM Refactored) ---
   
   app.get('/api/rcm', async (c) => {
@@ -286,6 +403,41 @@ export function userRoutes(app: Hono<HonoEnv>) {
       descriptionAfter: "Updated RCM details",
       dataBefore: existing[0],
       dataAfter: { ...existing[0], ...body },
+    });
+
+    return ok(c, { success: true });
+  });
+
+  app.post('/api/rcm/:id/validate', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const id = c.req.param('id');
+    const orgId = c.get('organizationId');
+    const userId = c.get('userId');
+
+    await db.update(rcms).set({ status: 'Active' }).where(and(eq(rcms.id, id), eq(rcms.organizationId, orgId)));
+    
+    await db.insert(auditLogs).values({
+      id: crypto.randomUUID(), organizationId: orgId, userId,
+      action: 'VALIDATE', entityType: 'RCM', entityId: id,
+      descriptionAfter: "RCM Design Validated and Activated",
+    });
+
+    return ok(c, { success: true });
+  });
+
+  app.post('/api/rcm/:id/approve-change', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const id = c.req.param('id');
+    const orgId = c.get('organizationId');
+    const userId = c.get('userId');
+
+    await db.update(rcms).set({ status: 'Active' }).where(and(eq(rcms.id, id), eq(rcms.organizationId, orgId)));
+    
+    await db.insert(auditLogs).values({
+      id: crypto.randomUUID(), organizationId: orgId, userId,
+      action: 'APPROVE_CHANGE', entityType: 'RCM', entityId: id,
+      descriptionAfter: "RCM Change Approved",
+      isRegulatory: true, effectiveDate: new Date(), approvedBy: userId
     });
 
     return ok(c, { success: true });
@@ -996,22 +1148,37 @@ export function userRoutes(app: Hono<HonoEnv>) {
     const db = getDb(c.env.DATABASE_URL);
     const orgId = c.get('organizationId');
 
-    const [controlCount, rcmCount, deficiencySummary, openDeficiencies] = await Promise.all([
+    const [controlCount, rcmCount, allDeficiencyRecords] = await Promise.all([
       db.select({ count: sql<number>`count(*)` }).from(controls).where(eq(controls.organizationId, orgId)),
       db.select({ count: sql<number>`count(*)` }).from(rcms).where(eq(rcms.organizationId, orgId)),
-      db.select({ 
-        severity: auditLogs.entityType,
-        count: sql<number>`count(*)` 
-      }).from(auditLogs).where(and(eq(auditLogs.organizationId, orgId), eq(auditLogs.action, 'CREATE'))).groupBy(auditLogs.entityType),
-      db.select({ count: sql<number>`count(*)` }).from(deficiencies).where(and(eq(deficiencies.organizationId, orgId), eq(deficiencies.status, 'Open')))
+      db.select().from(deficiencies).where(eq(deficiencies.organizationId, orgId))
     ]);
+
+    const deficienciesBySeverity = [
+      { name: 'Control Deficiency', count: allDeficiencyRecords.filter(d => d.severity === 'Control Deficiency').length },
+      { name: 'Significant Deficiency', count: allDeficiencyRecords.filter(d => d.severity === 'Significant Deficiency').length },
+      { name: 'Material Weakness', count: allDeficiencyRecords.filter(d => d.severity === 'Material Weakness').length },
+    ];
+
+    const deficienciesByStatus = [
+      { name: 'Open', count: allDeficiencyRecords.filter(d => d.status === 'Open').length },
+      { name: 'Remediated', count: allDeficiencyRecords.filter(d => d.status === 'Remediated').length },
+      { name: 'Verified', count: allDeficiencyRecords.filter(d => d.status === 'Verified').length },
+      { name: 'Closed', count: allDeficiencyRecords.filter(d => d.status === 'Closed').length },
+    ];
+
+    const openCount = allDeficiencyRecords.filter(d => d.status === 'Open').length;
+    const hasMaterialWeakness = allDeficiencyRecords.some(d => d.severity === 'Material Weakness');
+    const effectiveness = hasMaterialWeakness ? 0 : 100; // Simplified logic for summary
 
     return ok(c, {
       totalControls: Number(controlCount[0]?.count || 0),
       totalRcm: Number(rcmCount[0]?.count || 0),
-      openDeficiencies: Number(openDeficiencies[0]?.count || 0),
-      effectiveness: 95.2, 
-      deficienciesBySeverity: deficiencySummary,
+      openDeficiencies: openCount,
+      effectiveness,
+      deficienciesBySeverity,
+      deficienciesByStatus,
+      allDeficiencies: allDeficiencyRecords
     });
   });
 

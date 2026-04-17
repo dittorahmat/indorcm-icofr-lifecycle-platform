@@ -78,34 +78,44 @@ export function ReportsPage() {
     try {
       const response = await fetch(`/api/reports/export`, {
         method: 'POST',
-        headers: { 'X-Mock-Role': localStorage.getItem('mockRole') || 'Line 2' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-Mock-Role': localStorage.getItem('mockRole') || 'Line 2' 
+        },
+        body: JSON.stringify({ format })
       });
       if (!response.ok) throw new Error('Export failed');
-      const json = await response.json();
+      const apiResponse = await response.json();
+      const data = apiResponse.data;
 
       if (format === 'csv') {
         const { unparse } = await import('papaparse');
-        const csv = unparse(json);
+        // For CSV, we'll just export the deficiencies as they are most critical
+        const csv = unparse(data.deficiencies || []);
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        saveAs(blob, 'icofr_report.csv');
+        saveAs(blob, `icofr_deficiencies_${new Date().toISOString().split('T')[0]}.csv`);
       } else {
         const XLSX = await import('xlsx');
-        const rows = Array.isArray(json) ? json : [json];
-        const ws = XLSX.utils.json_to_sheet(rows);
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Report');
+        
+        // Add multiple sheets
+        if (data.rcms) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data.rcms), 'RCM');
+        if (data.controls) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data.controls), 'Controls');
+        if (data.deficiencies) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data.deficiencies), 'Deficiencies');
+        if (data.tests) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data.tests), 'Test Results');
+
         const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
         const blob = new Blob([wbout], { type: 'application/octet-stream' });
-        saveAs(blob, 'icofr_report.xlsx');
+        saveAs(blob, `icofr_full_report_${new Date().toISOString().split('T')[0]}.xlsx`);
       }
       toast.success('Export successful!', { id: toastId });
-    } catch (error) {
-      toast.error('Export failed.', { id: toastId });
+    } catch (error: any) {
+      toast.error(`Export failed: ${error.message}`, { id: toastId });
     }
   };
 
   const isSigned = settings?.isPeriodLocked;
-  const mwCount = summaryData?.deficienciesBySeverity.find((d: any) => d.name === 'Material Weakness')?.count || 0;
+  const mwCount = summaryData?.deficienciesBySeverity?.find((d: any) => d.name === 'Material Weakness')?.count || 0;
   const isEffective = mwCount === 0;
 
   const isLoading = summaryLoading || settingsLoading;
@@ -131,7 +141,7 @@ export function ReportsPage() {
         <div className="flex items-center justify-between no-print">
           <div>
             <h1 className="text-3xl font-bold">{t('title')}</h1>
-            <p className="text-muted-foreground">{t('description', { companyName: settings?.companyName })}</p>
+            <p className="text-muted-foreground">{t('description', { companyName: settings?.companyName || 'IndoRCM' })}</p>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" onClick={() => handleExport('csv')}><FileDown className="h-4 w-4 mr-2" /> {t('actions.exportCsv')}</Button>
@@ -163,13 +173,13 @@ export function ReportsPage() {
               </Card>
               <Card>
                 <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Total Controls</CardTitle></CardHeader>
-                <CardContent><div className="text-3xl font-bold">{summaryData?.totalControls}</div></CardContent>
+                <CardContent><div className="text-3xl font-bold">{summaryData?.totalControls || 0}</div></CardContent>
               </Card>
               <Card>
                 <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Open Deficiencies</CardTitle></CardHeader>
                 <CardContent>
-                  <div className={cn("text-3xl font-bold", summaryData?.openDeficiencies > 0 ? "text-red-600" : "text-green-600")}>
-                    {summaryData?.openDeficiencies}
+                  <div className={cn("text-3xl font-bold", (summaryData?.openDeficiencies || 0) > 0 ? "text-red-600" : "text-green-600")}>
+                    {summaryData?.openDeficiencies || 0}
                   </div>
                 </CardContent>
               </Card>
@@ -183,30 +193,42 @@ export function ReportsPage() {
               <Card>
                 <CardHeader><CardTitle>Deficiencies by Severity</CardTitle></CardHeader>
                 <CardContent>
-                  <ResponsiveContainer width="100%" height={250}>
-                    <BarChart data={summaryData?.deficienciesBySeverity}>
-                      <XAxis dataKey="name" stroke="#888888" fontSize={10} />
-                      <YAxis stroke="#888888" fontSize={10} />
-                      <Tooltip />
-                      <Bar dataKey="count" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  {(summaryData?.deficienciesBySeverity?.length > 0) ? (
+                    <ResponsiveContainer width="100%" height={250}>
+                      <BarChart data={summaryData?.deficienciesBySeverity || []}>
+                        <XAxis dataKey="name" stroke="#888888" fontSize={10} />
+                        <YAxis stroke="#888888" fontSize={10} />
+                        <Tooltip />
+                        <Bar dataKey="count" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="h-[250px] flex items-center justify-center text-muted-foreground text-sm italic">
+                      No deficiency data available
+                    </div>
+                  )}
                 </CardContent>
               </Card>
               <Card>
                 <CardHeader><CardTitle>Deficiency Status</CardTitle></CardHeader>
                 <CardContent>
-                  <ResponsiveContainer width="100%" height={250}>
-                    <PieChart>
-                      <Pie data={summaryData?.deficienciesByStatus} dataKey="count" nameKey="name" cx="50%" cy="50%" outerRadius={60} label>
-                        {summaryData?.deficienciesByStatus.map((entry: any, index: number) => (
-                          <Cell key={`cell-${index}`} fill={entry.name === 'Open' ? '#F97316' : '#16A34A'} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
+                  {(summaryData?.deficienciesByStatus?.some((d: any) => d.count > 0)) ? (
+                    <ResponsiveContainer width="100%" height={250}>
+                      <PieChart>
+                        <Pie data={summaryData?.deficienciesByStatus || []} dataKey="count" nameKey="name" cx="50%" cy="50%" outerRadius={60} label>
+                          {(summaryData?.deficienciesByStatus || []).map((entry: any, index: number) => (
+                            <Cell key={`cell-${index}`} fill={entry.name === 'Open' ? '#F97316' : '#16A34A'} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="h-[250px] flex items-center justify-center text-muted-foreground text-sm italic">
+                      No deficiency status data available
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -240,7 +262,7 @@ export function ReportsPage() {
               </CardHeader>
               <CardContent className="space-y-8 py-8 px-10">
                 <div className="space-y-4 text-justify leading-relaxed">
-                  <p>{t('assessment.directorsStatement', { companyName: settings?.companyName })}</p>
+                  <p>{t('assessment.directorsStatement', { companyName: settings?.companyName || 'IndoRCM' })}</p>
                   
                   {!isEffective ? (
                     <div className="p-4 bg-red-50 border border-red-200 rounded-md mb-6">
@@ -259,7 +281,7 @@ export function ReportsPage() {
                   )}
 
                   <ol className="list-decimal pl-5 space-y-6 text-sm text-foreground/90">
-                    <li>We have reviewed the financial statements of {settings?.companyName} ending on {new Date(settings?.signedOffDate || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}.</li>
+                    <li>We have reviewed the financial statements of {settings?.companyName || 'IndoRCM'} ending on {new Date(settings?.signedOffDate || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}.</li>
                     <li>To our knowledge, the financial statements do not contain any untrue statement of a material fact or omit to state a material fact necessary to make the statements made, in light of the circumstances under which such statements were made, not misleading.</li>
                     <li>To our knowledge, the financial statements and other financial information included in the financial statements, fairly present in all material respects the financial condition and results of operations for the period presented.</li>
                     <li>We have implemented controls and procedures for the preparation of financial statements deemed necessary to properly prepare and present the financial statements (consolidated) and free from material misstatement.</li>
@@ -275,14 +297,14 @@ export function ReportsPage() {
                       <TableRow><TableHead>Deficiency</TableHead><TableHead>Severity</TableHead><TableHead>Remediation Plan</TableHead></TableRow>
                     </TableHeader>
                     <TableBody>
-                      {summaryData?.allDeficiencies.filter((d: any) => d.severity !== 'Control Deficiency').map((def: any) => (
+                      {(summaryData?.allDeficiencies || []).filter((d: any) => d.severity !== 'Control Deficiency').map((def: any) => (
                         <TableRow key={def.id}>
                           <TableCell className="font-medium">{def.description}</TableCell>
                           <TableCell><Badge variant="outline" className="text-[10px]">{def.severity}</Badge></TableCell>
                           <TableCell className="italic text-muted-foreground">Monitor progress via Deficiency Board</TableCell>
                         </TableRow>
                       ))}
-                      {!summaryData?.allDeficiencies.some((d: any) => d.severity !== 'Control Deficiency') && (
+                      {!(summaryData?.allDeficiencies || []).some((d: any) => d.severity !== 'Control Deficiency') && (
                         <TableRow><TableCell colSpan={3} className="text-center py-4 text-muted-foreground">No significant deficiencies or material weaknesses found.</TableCell></TableRow>
                       )}
                     </TableBody>
@@ -292,11 +314,11 @@ export function ReportsPage() {
                 <div className="grid grid-cols-2 gap-20 pt-12">
                   <div className="text-center space-y-24">
                     <p className="font-semibold border-b pb-2">Chief Financial Officer (CFO)</p>
-                    <p className="font-bold">{settings?.cfoName}</p>
+                    <p className="font-bold">{settings?.cfoName || 'Belum Ditunjuk'}</p>
                   </div>
                   <div className="text-center space-y-24">
                     <p className="font-semibold border-b pb-2">Chief Executive Officer (CEO)</p>
-                    <p className="font-bold">{settings?.ceoName}</p>
+                    <p className="font-bold">{settings?.ceoName || 'Belum Ditunjuk'}</p>
                   </div>
                 </div>
               </CardContent>
@@ -372,8 +394,8 @@ export function ReportsPage() {
                         .filter(t => testTypeFilter === 'ALL' || t.testType === testTypeFilter)
                         .filter(t => testStatusFilter === 'ALL' || t.result === testStatusFilter)
                         .map((test, index) => {
-                          const control = controlsData?.items.find(c => c.id === test.controlId);
-                          const rcm = rcmData?.items.find(r => r.id === control?.rcmId);
+                          const control = controlsData?.items?.find(c => c.id === test.controlId);
+                          const rcm = rcmData?.items?.find(r => r.id === control?.rcmId);
                           const attrCount = test.evaluationAttributes ? Object.values(test.evaluationAttributes).filter(Boolean).length : 0;
                           
                           return (
@@ -393,7 +415,7 @@ export function ReportsPage() {
                               </TableCell>
                               <TableCell className="text-center">
                                 <div className="flex flex-wrap justify-center gap-0.5">
-                                  {control?.assertions.map(a => (
+                                  {(control?.assertions || []).map(a => (
                                     <Badge key={a} variant="outline" className="text-[8px] h-3.5 px-1 bg-slate-50">{a.substring(0,1)}</Badge>
                                   ))}
                                 </div>
@@ -479,12 +501,12 @@ export function ReportsPage() {
 
            <div className="text-center space-y-2 mb-10">
               <h2 className="text-xl font-bold uppercase underline">Management Assessment on ICOFR Implementation Effectiveness</h2>
-              <p className="text-sm font-medium">{settings?.companyName}</p>
-              <p className="text-xs">Report Period: {settings?.fiscalYear}</p>
+              <p className="text-sm font-medium">{settings?.companyName || 'IndoRCM'}</p>
+              <p className="text-xs">Report Period: {settings?.periodYear || new Date().getFullYear()}</p>
            </div>
            
            <div className="space-y-6 text-sm text-justify leading-relaxed">
-              <p>The Board of Directors of {settings?.companyName} states that:</p>
+              <p>The Board of Directors of {settings?.companyName || 'IndoRCM'} states that:</p>
               {!isEffective ? (
                 <div className="p-4 border-2 border-red-800 rounded-md bg-red-50/50 mb-6 text-center">
                   <p className="font-bold text-red-900 underline mb-2">CONCLUSION: INEFFECTIVE</p>
@@ -505,7 +527,7 @@ export function ReportsPage() {
               <div className="grid grid-cols-3 gap-10 items-end">
                 <div className="text-center space-y-20">
                   <p className="font-semibold border-b">Chief Financial Officer (CFO)</p>
-                  <p className="font-bold text-lg">{settings?.cfoName}</p>
+                  <p className="font-bold text-lg">{settings?.cfoName || 'Belum Ditunjuk'}</p>
                 </div>
                 
                 {/* QR Code Verification Placeholder (Bab VII Requirement) */}
@@ -533,7 +555,7 @@ export function ReportsPage() {
 
                 <div className="text-center space-y-20">
                   <p className="font-semibold border-b">Chief Executive Officer (CEO)</p>
-                  <p className="font-bold text-lg">{settings?.ceoName}</p>
+                  <p className="font-bold text-lg">{settings?.ceoName || 'Belum Ditunjuk'}</p>
                 </div>
               </div>
            </div>
