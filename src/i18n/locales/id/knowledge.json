@@ -1,0 +1,42 @@
+{
+  "title": "Dokumen Terkait",
+  "description": "Pusat pengetahuan regulasi dan SOP ICOFR.",
+  "tabs": {
+    "internal": "Internal (SOP)",
+    "external": "External (Regulasi)"
+  },
+  "card": {
+    "internalTitle": "SOP Perusahaan",
+    "externalTitle": "Undang-Undang & Regulasi",
+    "internalDesc": "Dokumen prosedur internal yang di-mapping ke departemen terkait.",
+    "externalDesc": "Regulasi pemerintah, standar akuntansi, dan UU terkait BUMN.",
+    "searchPlaceholder": "Cari dokumen..."
+  },
+  "table": {
+    "title": "Judul Dokumen",
+    "category": "Kategori",
+    "uploadDate": "Tanggal Upload",
+    "actions": "Aksi",
+    "loading": "Memuat dokumen...",
+    "empty": "Belum ada dokumen di tab ini."
+  },
+  "upload": {
+    "button": "Tambah Dokumen",
+    "modalTitle": "Unggah Dokumen Baru",
+    "modalDesc": "Unggah file PDF dan atur metadata untuk pencarian AI yang lebih akurat.",
+    "labelFile": "File PDF",
+    "labelTitle": "Judul Dokumen",
+    "titlePlaceholder": "Contoh: SOP Kas Kecil",
+    "labelAccess": "Tipe Akses",
+    "labelCategory": "Kategori",
+    "labelDepts": "Pilih Departemen Terkait",
+    "submit": "Unggah Dokumen",
+    "success": "Dokumen berhasil diunggah",
+    "error": "Gagal unggah"
+  },
+  "delete": {
+    "confirm": "Apakah Anda yakin ingin menghapus dokumen ini?",
+    "success": "Dokumen berhasil dihapus",
+    "error": "Gagal menghapus"
+  }
+}

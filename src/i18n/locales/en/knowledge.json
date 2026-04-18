@@ -1,0 +1,42 @@
+{
+  "title": "Related Documents",
+  "description": "Regulatory and SOP knowledge hub for ICOFR.",
+  "tabs": {
+    "internal": "Internal (SOP)",
+    "external": "External (Regulation)"
+  },
+  "card": {
+    "internalTitle": "Company SOP",
+    "externalTitle": "Laws & Regulations",
+    "internalDesc": "Internal procedure documents mapped to relevant departments.",
+    "externalDesc": "Government regulations, accounting standards, and laws related to BUMN.",
+    "searchPlaceholder": "Search documents..."
+  },
+  "table": {
+    "title": "Document Title",
+    "category": "Category",
+    "uploadDate": "Upload Date",
+    "actions": "Actions",
+    "loading": "Loading documents...",
+    "empty": "No documents found in this tab."
+  },
+  "upload": {
+    "button": "Add Document",
+    "modalTitle": "Upload New Document",
+    "modalDesc": "Upload a PDF file and set metadata for more accurate AI search.",
+    "labelFile": "PDF File",
+    "labelTitle": "Document Title",
+    "titlePlaceholder": "e.g. Petty Cash SOP",
+    "labelAccess": "Access Type",
+    "labelCategory": "Category",
+    "labelDepts": "Select Related Departments",
+    "submit": "Upload Document",
+    "success": "Document uploaded successfully",
+    "error": "Upload failed"
+  },
+  "delete": {
+    "confirm": "Are you sure you want to delete this document?",
+    "success": "Document deleted successfully",
+    "error": "Failed to delete"
+  }
+}

@@ -17,6 +17,7 @@ import { toast } from 'sonner';
 import { api } from '@/lib/api-client';
 import { Loader2, Upload } from 'lucide-react';
 import type { Department } from '@shared/types';
+import { useTranslation } from 'react-i18next';
 
 interface UploadDocumentModalProps {
   isOpen: boolean;
@@ -24,6 +25,7 @@ interface UploadDocumentModalProps {
 }
 
 export function UploadDocumentModal({ isOpen, onClose }: UploadDocumentModalProps) {
+  const { t } = useTranslation(['knowledge', 'common']);
   const queryClient = useQueryClient();
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState('');
@@ -41,7 +43,7 @@ export function UploadDocumentModal({ isOpen, onClose }: UploadDocumentModalProp
       console.log('[FRONTEND] Starting upload mutation...');
       if (!file) {
         console.error('[FRONTEND] No file selected');
-        throw new Error('File is required');
+        throw new Error(t('upload.labelFile') + ' is required');
       }
 
       const formData = new FormData();
@@ -65,7 +67,7 @@ export function UploadDocumentModal({ isOpen, onClose }: UploadDocumentModalProp
       if (!res.ok) {
         const errorText = await res.text();
         console.error('[FRONTEND] Server responded with error:', errorText);
-        throw new Error(`Upload failed (${res.status}): ${errorText}`);
+        throw new Error(`${t('upload.error')} (${res.status}): ${errorText}`);
       }
 
       const data = await res.json();
@@ -74,13 +76,13 @@ export function UploadDocumentModal({ isOpen, onClose }: UploadDocumentModalProp
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['documents'] });
-      toast.success('Dokumen berhasil diunggah');
+      toast.success(t('upload.success'));
       onClose();
       reset();
     },
     onError: (e: any) => {
       console.error('[FRONTEND] Mutation error:', e);
-      toast.error(`Gagal unggah: ${e.message}`);
+      toast.error(`${t('upload.error')}: ${e.message}`);
     }
   });
 
@@ -96,15 +98,15 @@ export function UploadDocumentModal({ isOpen, onClose }: UploadDocumentModalProp
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Unggah Dokumen Baru</DialogTitle>
+          <DialogTitle>{t('upload.modalTitle')}</DialogTitle>
           <DialogDescription>
-            Unggah file PDF dan atur metadata untuk pencarian AI yang lebih akurat.
+            {t('upload.modalDesc')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
-            <Label htmlFor="file">File PDF</Label>
+            <Label htmlFor="file">{t('upload.labelFile')}</Label>
             <Input 
               id="file" 
               type="file" 
@@ -121,25 +123,25 @@ export function UploadDocumentModal({ isOpen, onClose }: UploadDocumentModalProp
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="title">Judul Dokumen</Label>
-            <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Contoh: SOP Kas Kecil" />
+            <Label htmlFor="title">{t('upload.labelTitle')}</Label>
+            <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t('upload.titlePlaceholder')} />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label>Tipe Akses</Label>
+              <Label>{t('upload.labelAccess')}</Label>
               <Select value={type} onValueChange={setType}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Internal">Internal (SOP)</SelectItem>
-                  <SelectItem value="External">External (Regulasi)</SelectItem>
+                  <SelectItem value="Internal">{t('tabs.internal')}</SelectItem>
+                  <SelectItem value="External">{t('tabs.external')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="grid gap-2">
-              <Label>Kategori</Label>
+              <Label>{t('upload.labelCategory')}</Label>
               <Select value={category} onValueChange={setCategory}>
                 <SelectTrigger>
                   <SelectValue />
@@ -156,7 +158,7 @@ export function UploadDocumentModal({ isOpen, onClose }: UploadDocumentModalProp
 
           {type === 'Internal' && (
             <div className="grid gap-2 border rounded-md p-4 bg-muted/20">
-              <Label className="mb-2 block">Pilih Departemen Terkait</Label>
+              <Label className="mb-2 block">{t('upload.labelDepts')}</Label>
               <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto pr-2">
                 {depts?.items.map((dept) => (
                   <div key={dept.id} className="flex items-center space-x-2">
@@ -177,10 +179,10 @@ export function UploadDocumentModal({ isOpen, onClose }: UploadDocumentModalProp
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={uploadMutation.isPending}>Batal</Button>
+          <Button variant="outline" onClick={onClose} disabled={uploadMutation.isPending}>{t('common:actions.cancel')}</Button>
           <Button onClick={() => uploadMutation.mutate()} disabled={!file || uploadMutation.isPending}>
             {uploadMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
-            Unggah Dokumen
+            {t('upload.submit')}
           </Button>
         </DialogFooter>
       </DialogContent>
