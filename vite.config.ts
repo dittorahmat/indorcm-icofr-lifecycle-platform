@@ -90,7 +90,16 @@ function watchDependenciesPlugin() {
 export default ({ mode }: { mode: string }) => {
   const env = loadEnv(mode, process.cwd());
   return defineConfig({
-    plugins: [react(), cloudflare(), watchDependenciesPlugin()],
+    plugins: [
+      react(), 
+      cloudflare({
+        // FIX: This enables connection to real R2/D1 during development
+        platformProxy: {
+          persist: false,
+        }
+      }), 
+      watchDependenciesPlugin()
+    ],
     build: {
       minify: true,
       sourcemap: true, // Use separate source maps for better production performance

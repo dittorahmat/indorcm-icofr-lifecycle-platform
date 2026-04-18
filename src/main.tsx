@@ -33,6 +33,7 @@ const ChangeLogPage = lazy(() => import('@/pages/rcm/ChangeLogPage').then(module
 const SOCMonitoringPage = lazy(() => import('@/pages/rcm/SOCMonitoringPage').then(module => ({ default: module.SOCMonitoringPage })));
 const BPMPage = lazy(() => import('@/pages/bpm/BPMPage').then(module => ({ default: module.BPMPage })));
 const UserManagementPage = lazy(() => import('@/pages/admin/UserManagementPage').then(module => ({ default: module.UserManagementPage })));
+const DocumentsPage = lazy(() => import('@/pages/knowledge/DocumentsPage').then(module => ({ default: module.DocumentsPage })));
 
 import { authClient } from '@/lib/auth-client';
 
@@ -81,6 +82,7 @@ const router = createBrowserRouter([
           { path: "/audit-portal", element: <PageSuspense><ExternalAuditPortal /></PageSuspense> },
           { path: "/import", element: <PageSuspense><ImportPage /></PageSuspense> },
           { path: "/admin/users", element: <PageSuspense><UserManagementPage /></PageSuspense> },
+          { path: "/documents", element: <PageSuspense><DocumentsPage /></PageSuspense> },
         ]
       },
     ]

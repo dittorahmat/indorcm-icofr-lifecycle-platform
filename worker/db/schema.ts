@@ -351,3 +351,38 @@ export const organizationRelations = relations(organization, ({ many }) => ({
 export const glSnapshotRelations = relations(glSnapshots, ({ many }) => ({
 	rows: many(glRows),
 }));
+
+// --- KNOWLEDGE BASE TABLES ---
+
+export const documents = pgTable("documents", {
+	id: text("id").primaryKey(),
+	organizationId: text("organization_id").references(() => organization.id),
+	title: text("title").notNull(),
+	type: text("type").notNull(), // Internal, External
+	category: text("category"), // SOP, Regulation, etc.
+	content: text("content"), // Extracted text
+	fileUrl: text("file_url"), // R2 path/URL
+	createdAt: timestamp("created_at").notNull().defaultNow(),
+	createdBy: text("created_by").references(() => user.id),
+});
+
+export const documentDepartments = pgTable("document_departments", {
+	id: text("id").primaryKey(),
+	organizationId: text("organization_id").references(() => organization.id),
+	documentId: text("document_id").notNull().references(() => documents.id, { onDelete: 'cascade' }),
+	departmentId: text("department_id").notNull().references(() => departments.id, { onDelete: 'cascade' }),
+});
+
+export const documentGls = pgTable("document_gls", {
+	id: text("id").primaryKey(),
+	organizationId: text("organization_id").references(() => organization.id),
+	documentId: text("document_id").notNull().references(() => documents.id, { onDelete: 'cascade' }),
+	glCode: text("gl_code").notNull(),
+});
+
+export const documentFslis = pgTable("document_fslis", {
+	id: text("id").primaryKey(),
+	organizationId: text("organization_id").references(() => organization.id),
+	documentId: text("document_id").notNull().references(() => documents.id, { onDelete: 'cascade' }),
+	fsliCode: text("fsli_code").notNull(),
+});

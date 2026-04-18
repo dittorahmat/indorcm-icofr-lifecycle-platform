@@ -15,6 +15,12 @@
 	"observability": {
 		"enabled": true
 	},
+    "r2_buckets": [
+        {
+            "binding": "DOCUMENTS_BUCKET",
+            "bucket_name": "icofr-documents"
+        }
+    ],
     "durable_objects": {
       "bindings": [
         {

@@ -24,6 +24,7 @@ export interface HonoEnv {
     BETTER_AUTH_SECRET: string;
     BETTER_AUTH_URL?: string;
     GEMINI_API_KEY: string;
+    DOCUMENTS_BUCKET: R2Bucket;
   };
   Variables: {
     userRole: UserRole;

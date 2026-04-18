@@ -244,6 +244,11 @@ export function AppSidebar(): JSX.Element {
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={isActive("/documents")}>
+                <Link to="/documents" className="font-bold"><FileText className="h-4 w-4" /> <span>{t('items.documents') || 'Dokumen Terkait'}</span></Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/ai-hub?tool=improvement")}>
                 <Link to="/ai-hub?tool=improvement" className="font-bold"><Cpu className="h-4 w-4" /> <span>{t('items.improvement')}</span></Link>
               </SidebarMenuButton>

@@ -2,7 +2,13 @@ import { Hono } from "hono";
 import type { HonoEnv } from './index';
 import { ok, bad, notFound } from './lib/utils';
 import { getDb } from './db';
-import { rcms, auditLogs, controls, simulations, glSnapshots, glRows, user, deficiencies, actionPlans, departments, bpmProcesses, csaRecords, applications, member, account, session, bpmDiagrams, bpmNodeRcms, rcmControls, organization, testRecords, aggregateDeficiencies } from './db/schema';
+import { 
+  rcms, auditLogs, controls, simulations, glSnapshots, glRows, user, 
+  deficiencies, actionPlans, departments, bpmProcesses, csaRecords, 
+  applications, member, account, session, bpmDiagrams, bpmNodeRcms, 
+  rcmControls, organization, testRecords, aggregateDeficiencies,
+  documents, documentDepartments, documentGls, documentFslis
+} from './db/schema';
 import { eq, and, desc, sql, ilike } from 'drizzle-orm';
 import type { 
   Control, RCM, CSARecord, TestRecord, Deficiency, ActionPlan, 
@@ -14,6 +20,8 @@ import { z } from "zod";
 import { parseCsv, unparseCsv } from './csv';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { ICOFR_KNOWLEDGE_BASE } from './knowledge-base';
+import { getDocumentProxy, extractText } from "unpdf";
+import * as pdfjs from "pdfjs-dist";
 import { getAuth } from './auth';
 
 export function userRoutes(app: Hono<HonoEnv>) {
@@ -1406,6 +1414,179 @@ export function userRoutes(app: Hono<HonoEnv>) {
     return ok(c, diagrams[0]);
   });
 
+  // --- Knowledge Base Document Routes ---
+
+  app.get('/api/documents', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+    const role = c.get('userRole');
+    const userDeptId = c.get('departmentId');
+
+    // Case 1: Line 1 - Strict isolation
+    if (role === 'Line 1') {
+      const docs = await db.execute(sql`
+        SELECT DISTINCT d.* 
+        FROM documents d
+        LEFT JOIN document_departments dd ON d.id = dd.document_id
+        WHERE d.organization_id = ${orgId}
+        AND (
+          d.type = 'External' 
+          OR (d.type = 'Internal' AND (dd.department_id = ${userDeptId}))
+        )
+        ORDER BY d.created_at DESC
+      `);
+      return ok(c, { items: docs.rows });
+    }
+
+    // Case 2: Admin, Line 2, Line 3 - Global View
+    // We remove the organizationId filter so everything is visible
+    console.log('[API] GET /api/documents - Admin/Lini2/3 Global Fetch');
+    const items = await db.select().from(documents)
+      .orderBy(desc(documents.createdAt));
+    
+    console.log(`[API] Found ${items.length} documents in total`);
+    if (items.length > 0) {
+      console.log('[API] Sample Item:', { id: items[0].id, type: items[0].type, org: items[0].organizationId });
+    }
+
+    return ok(c, { items });
+  });
+
+  app.post('/api/documents', async (c) => {
+    console.log('[API] Document Upload Started');
+    const role = c.get('userRole');
+    if (role !== 'Admin' && role !== 'Line 2') return bad(c, 'Access Denied');
+
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+    const userId = c.get('userId');
+    
+    try {
+      const formData = await c.req.formData();
+      const file = formData.get('file') as File;
+      if (!file) return bad(c, 'File is required');
+
+      const title = formData.get('title') as string;
+      const type = formData.get('type') as string;
+      const category = formData.get('category') as string;
+      const deptIds = JSON.parse(formData.get('departmentIds') as string || '[]');
+      const glCodes = JSON.parse(formData.get('glCodes') as string || '[]');
+      const fsliCodes = JSON.parse(formData.get('fsliCodes') as string || '[]');
+
+      // IMPORTANT: Read stream only ONCE.
+      const arrayBuffer = await file.arrayBuffer();
+      const uint8Array = new Uint8Array(arrayBuffer);
+
+      // Extract text using unpdf with robust font support
+      let extractedText = "";
+      try {
+        console.log('[API] Extracting text with CMaps support...');
+        // We use CDN for CMaps to keep worker bundle small but extraction accurate
+        const pdf = await getDocumentProxy(uint8Array, {
+          cMapUrl: "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/cmaps/",
+          cMapPacked: true,
+          standardFontDataUrl: "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/standard_fonts/",
+        });
+        
+        const result = await extractText(pdf, { mergePages: true });
+        extractedText = result.text || "";
+        console.log('[API] Text extracted successfully, length:', extractedText.length);
+      } catch (e: any) {
+        console.error('[API] PDF extraction failed:', e.message);
+        // Continue with empty text rather than failing upload
+      }
+
+      // Store in R2 (Using the buffer we already read)
+      const key = `docs/${orgId}/${crypto.randomUUID()}-${file.name}`;
+      console.log('[API] Saving to R2:', key);
+      await c.env.DOCUMENTS_BUCKET.put(key, arrayBuffer, {
+        httpMetadata: { contentType: file.type }
+      });
+
+      const docId = crypto.randomUUID();
+      const newDoc = {
+        id: docId,
+        organizationId: orgId,
+        title: title || file.name,
+        type,
+        category,
+        content: extractedText,
+        fileUrl: key,
+        createdBy: userId,
+        createdAt: new Date(),
+      };
+
+      await db.insert(documents).values(newDoc);
+
+      // Junctions
+      for (const dId of deptIds) {
+        await db.insert(documentDepartments).values({ id: crypto.randomUUID(), organizationId: orgId, documentId: docId, departmentId: dId });
+      }
+      for (const gCode of glCodes) {
+        await db.insert(documentGls).values({ id: crypto.randomUUID(), organizationId: orgId, documentId: docId, glCode: gCode });
+      }
+      for (const fCode of fsliCodes) {
+        await db.insert(documentFslis).values({ id: crypto.randomUUID(), organizationId: orgId, documentId: docId, fsliCode: fCode });
+      }
+
+      console.log('[API] Upload success:', docId);
+      return ok(c, { ...newDoc, success: true });
+
+    } catch (error: any) {
+      console.error('[API] Fatal Upload Error:', error);
+      return bad(c, `Upload failed: ${error.message}`, 500);
+    }
+  });
+
+  app.delete('/api/documents/:id', async (c) => {
+    const role = c.get('userRole');
+    if (role !== 'Admin' && role !== 'Line 2') return bad(c, 'Access Denied: Only Admin or Line 2 can delete documents');
+
+    const db = getDb(c.env.DATABASE_URL);
+    const id = c.req.param('id');
+    const orgId = c.get('organizationId');
+
+    const existing = await db.select().from(documents).where(and(eq(documents.id, id), eq(documents.organizationId, orgId))).limit(1);
+    if (existing.length === 0) return notFound(c);
+
+    // Delete from R2
+    if (existing[0].fileUrl) {
+      await c.env.DOCUMENTS_BUCKET.delete(existing[0].fileUrl);
+    }
+
+    // Delete from DB
+    await db.delete(documents).where(eq(documents.id, id));
+    
+    return ok(c, { success: true });
+  });
+
+  app.get('/api/documents/download/:id', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const id = c.req.param('id');
+    const orgId = c.get('organizationId');
+    const mode = c.req.query('mode');
+
+    const existing = await db.select().from(documents).where(and(eq(documents.id, id), eq(documents.organizationId, orgId))).limit(1);
+    if (existing.length === 0) return notFound(c);
+
+    if (!existing[0].fileUrl) return bad(c, 'File not found');
+
+    const object = await c.env.DOCUMENTS_BUCKET.get(existing[0].fileUrl);
+    if (!object) return notFound(c, 'File not found in storage');
+
+    const headers = new Headers();
+    object.writeHttpMetadata(headers);
+    headers.set('etag', object.httpEtag);
+    
+    if (mode === 'view') {
+      headers.set('Content-Disposition', 'inline');
+    } else {
+      headers.set('Content-Disposition', `attachment; filename="${existing[0].title}.pdf"`);
+    }
+
+    return new Response(object.body, { headers });
+  });
+
   // --- AI Chatbot Routes ---
 
   const rateLimitStore = new Map<string, { count: number; resetDate: number }>();
@@ -1444,23 +1625,60 @@ export function userRoutes(app: Hono<HonoEnv>) {
     const context = (body as any).context;
     const pageContext = context?.path ? `\nPengguna saat ini sedang melihat halaman: ${context.path}` : '';
 
+    const role = c.get('userRole');
+    const userDeptId = c.get('departmentId');
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+
+    // --- Dynamic Knowledge Retrieval ---
+    let relevantDocs: any[] = [];
+    try {
+      if (role === 'Line 1') {
+        const docsResult = await db.execute(sql`
+          SELECT DISTINCT d.content, d.title
+          FROM documents d
+          LEFT JOIN document_departments dd ON d.id = dd.document_id
+          WHERE d.organization_id = ${orgId}
+          AND (
+            d.type = 'External' 
+            OR (d.type = 'Internal' AND dd.department_id = ${userDeptId})
+          )
+        `);
+        relevantDocs = docsResult.rows;
+      } else {
+        relevantDocs = await db.select({ content: documents.content, title: documents.title })
+          .from(documents)
+          .where(eq(documents.organizationId, orgId));
+      }
+    } catch (e) {
+      console.error('Failed to fetch dynamic knowledge:', e);
+    }
+
+    const dynamicKnowledge = relevantDocs
+      .filter(d => d.content)
+      .map(d => `--- DOKUMEN: ${d.title} ---\n${d.content}\n`)
+      .join('\n\n');
+
+    // Use dynamic knowledge, fallback to hardcoded if empty (for transition)
+    const knowledgeBase = dynamicKnowledge || ICOFR_KNOWLEDGE_BASE;
+
     try {
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({
         model: "gemini-2.5-flash-lite",
-        systemInstruction: `Anda adalah Asisten AI ICOFR yang membantu pengguna memahami regulasi Pengendalian Internal atas Pelaporan Keuangan (ICOFR) berdasarkan SK-5/DKU.MBU/11/2024.
+        systemInstruction: `Anda adalah Asisten AI ICOFR yang membantu pengguna memahami regulasi Pengendalian Internal atas Pelaporan Keuangan (ICOFR) berdasarkan dokumen perusahaan dan regulasi pemerintah.
 
 Jawablah pertanyaan dengan akurat berdasarkan dokumen yang disediakan di bawah ini.
-Sebutkan referensi BAB dan Pasal jika relevan.
+Jika dokumen menyebutkan nomor pasal atau bab, sertakan dalam jawaban.
 ${pageContext}
 
-Jika pertanyaan tidak terkait ICOFR, jawab dengan sopan bahwa Anda hanya dapat membantu pertanyaan tentang ICOFR.
+Jika pertanyaan tidak terkait ICOFR atau dokumen yang disediakan, jawab dengan sopan bahwa Anda hanya dapat membantu pertanyaan terkait ICOFR sesuai dokumen yang Anda miliki.
 
 Bahasa: Bahasa Indonesia
 
---- DOKUMEN ICOFR ---
-${ICOFR_KNOWLEDGE_BASE}
---- END DOKUMEN ---`
+--- KNOWLEDGE BASE ---
+${knowledgeBase}
+--- END KNOWLEDGE BASE ---`
       });
 
       const recentHistory = conversationHistory.slice(-10);

@@ -36,6 +36,13 @@
       "when": 1776460285370,
       "tag": "0004_gifted_killraven",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1776462124572,
+      "tag": "0005_white_zodiak",
+      "breakpoints": true
     }
   ]
 }
