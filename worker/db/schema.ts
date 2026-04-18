@@ -386,3 +386,13 @@ export const documentFslis = pgTable("document_fslis", {
 	documentId: text("document_id").notNull().references(() => documents.id, { onDelete: 'cascade' }),
 	fsliCode: text("fsli_code").notNull(),
 });
+
+export const systemLicenses = pgTable("system_licenses", {
+	id: text("id").primaryKey(),
+	licenseKey: text("license_key").notNull(),
+	machineCode: text("machine_code").notNull(),
+	activatedAt: timestamp("activated_at").notNull(),
+	expiresAt: timestamp("expires_at").notNull(),
+	lastHeartbeat: timestamp("last_heartbeat").notNull(),
+	status: text("status").notNull(), // active, expired, tampered
+});

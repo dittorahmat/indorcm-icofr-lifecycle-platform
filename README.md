@@ -130,6 +130,66 @@ ISB Risk Pro includes an AI-powered chatbot assistant to help you understand ICO
 - Gemini API may be under high load
 - Consider upgrading to Gemini API paid tier for faster responses
 
+## On-Premise Deployment & Licensing
+
+ISB Risk Pro supports offline, on-premise deployment using Docker. For enterprise stability and hardware binding, follow the instructions below.
+
+### 1. Deployment via Docker Compose
+
+Create a `docker-compose.yml` file or use the provided one:
+
+```yaml
+services:
+  db:
+    image: postgres:15-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=your_secure_password
+  app:
+    build: .
+    ports:
+      - "3001:3001"
+    volumes:
+      - /etc/machine-id:/host_machine_id:ro
+    environment:
+      - DATABASE_URL=postgres://user:pass@db:5432/db
+      - LICENSE_PUBLIC_KEY=your_public_key_here
+    depends_on:
+      - db
+```
+
+### 2. System Activation
+
+Upon first boot, the application will enter **Activation Mode**:
+1. Open the application in your browser.
+2. You will see a **Machine ID** (e.g., `HOST-abcd-1234`).
+3. Copy this ID and send it to your vendor/administrator.
+4. Paste the provided **License Key** into the activation form.
+5. Once validated, the application will be fully unlocked.
+
+### 3. Subscription Management
+
+- **Warnings**: Starting 90 days before expiration, a notification banner will appear.
+- **Urgent Notice**: Starting 7 days before expiration, a persistent modal will appear upon login.
+- **Expiry**: Once expired, the system will lock and redirect all users to the activation page.
+
+---
+
+## Internal: License Generation (Vendor Only)
+
+If you are the application vendor, use the included utility to generate keys:
+
+1. **Generate Key Pair** (Once):
+   ```bash
+   bun run scripts/generate-license.ts gen-keys
+   ```
+2. **Sign a Client License**:
+   ```bash
+   bun run scripts/generate-license.ts sign
+   ```
+   Follow the prompts to enter the client's Machine ID and validity period.
+
 ## Development
 
 -   **Start Dev Server**: `bun dev` (Frontend: `http://localhost:3000`).

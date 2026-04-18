@@ -36,5 +36,8 @@
           "GlobalDurableObject"
         ]
       }
-    ]
+    ],
+    "vars": {
+      "SKIP_LICENSE": "true"
+    }
 }

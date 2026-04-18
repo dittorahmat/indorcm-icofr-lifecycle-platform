@@ -7,6 +7,7 @@ import { getDb } from './db';
 import * as schema from './db/schema';
 import { eq } from 'drizzle-orm';
 import type { UserRole } from '@shared/types';
+import { getMachineFingerprint, verifyLicense, checkLicenseStatus } from './lib/license';
 
 export interface ClientErrorReport {
   message: string;
@@ -25,6 +26,8 @@ export interface HonoEnv {
     BETTER_AUTH_URL?: string;
     GEMINI_API_KEY: string;
     DOCUMENTS_BUCKET: R2Bucket;
+    LICENSE_PUBLIC_KEY?: string;
+    SKIP_LICENSE?: string;
   };
   Variables: {
     userRole: UserRole;
@@ -32,6 +35,7 @@ export interface HonoEnv {
     organizationId: string;
     userLevel: string;
     departmentId: string;
+    licenseStatus?: string;
   };
 }
 
@@ -42,8 +46,67 @@ export const createApp = () => {
   app.use('/api/*', cors({ 
     origin: '*', 
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], 
-    allowHeaders: ['Content-Type', 'Authorization', 'X-Mock-Role'] 
+    allowHeaders: ['Content-Type', 'Authorization', 'X-Mock-Role', 'X-License-Key'] 
   }));
+
+  // License Guard Middleware
+  app.use('/api/*', async (c, next) => {
+    // 1. Explicit Bypass (for Cloudflare Demo)
+    if (c.env.SKIP_LICENSE === 'true') {
+      c.set('licenseStatus', 'bypassed');
+      return next();
+    }
+
+    // 2. Skip for public routes and license activation/status
+    const publicPaths = ['/api/health', '/api/license/activate', '/api/license/status', '/api/client-errors'];
+    if (publicPaths.includes(c.req.path) || (c.req.path.startsWith('/api/auth/') && c.req.path !== '/api/auth/me')) {
+      return next();
+    }
+
+    const db = getDb(c.env.DATABASE_URL);
+    
+    // Check if system_licenses table is initialized (optional safety check)
+    // In a real production app, migrations handle this, but we'll ensure we don't crash
+    let activeLicense;
+    try {
+      activeLicense = await db.select().from(schema.systemLicenses).limit(1);
+    } catch (e) {
+      console.warn('[LICENSE] system_licenses table not found or error accessing. Skipping guard.');
+      return next();
+    }
+
+    if (activeLicense.length === 0) {
+      return c.json({ success: false, error: 'LICENSE_REQUIRED', message: 'Application activation required.' }, 403);
+    }
+
+    const license = activeLicense[0];
+    const publicKey = c.env.LICENSE_PUBLIC_KEY || process.env.LICENSE_PUBLIC_KEY || '';
+    
+    const payload = await verifyLicense(license.licenseKey, publicKey);
+    if (!payload) {
+        return c.json({ success: false, error: 'LICENSE_INVALID', message: 'Invalid license signature.' }, 403);
+    }
+
+    const fingerprint = getMachineFingerprint();
+    const status = checkLicenseStatus(payload, fingerprint, license.lastHeartbeat);
+
+    if (status) {
+        // Update status in DB if it changed
+        if (license.status !== status) {
+            await db.update(schema.systemLicenses).set({ status }).where(eq(schema.systemLicenses.id, license.id));
+        }
+        return c.json({ success: false, error: status, message: `License issue: ${status}` }, 403);
+    }
+
+    // Update heartbeat and status
+    await db.update(schema.systemLicenses).set({ 
+        lastHeartbeat: new Date(),
+        status: 'active' 
+    }).where(eq(schema.systemLicenses.id, license.id));
+
+    c.set('licenseStatus', 'active');
+    await next();
+  });
 
   // Auth Middleware
   app.use('/api/*', async (c, next) => {

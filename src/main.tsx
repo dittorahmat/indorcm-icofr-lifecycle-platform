@@ -35,6 +35,8 @@ const BPMPage = lazy(() => import('@/pages/bpm/BPMPage').then(module => ({ defau
 const UserManagementPage = lazy(() => import('@/pages/admin/UserManagementPage').then(module => ({ default: module.UserManagementPage })));
 const DocumentsPage = lazy(() => import('@/pages/knowledge/DocumentsPage').then(module => ({ default: module.DocumentsPage })));
 
+import { ActivationPage } from '@/pages/ActivationPage';
+import { LicenseProvider, LicenseGuard } from '@/components/LicenseGuard';
 import { authClient } from '@/lib/auth-client';
 
 enableMapSet();
@@ -53,36 +55,45 @@ const ProtectedRoute = () => {
 
 const router = createBrowserRouter([
   {
-    path: "/",
-    element: <LoginPage />,
-  },
-  {
-    path: "/welcome",
-    element: <WelcomePage />,
-  },
-  {
-    element: <ProtectedRoute />,
+    element: <LicenseGuard />,
     children: [
       {
-        element: <RootLayout />,
-        errorElement: <RouteErrorBoundary />,
+        path: "/activate",
+        element: <ActivationPage />,
+      },
+      {
+        path: "/",
+        element: <LoginPage />,
+      },
+      {
+        path: "/welcome",
+        element: <WelcomePage />,
+      },
+      {
+        element: <ProtectedRoute />,
         children: [
-          { path: "/dashboard", element: <PageSuspense><Dashboard /></PageSuspense> },
-          { path: "/scoping", element: <PageSuspense><ScopingPage /></PageSuspense> },
-          { path: "/scoping/approval", element: <PageSuspense><ApprovalPage /></PageSuspense> },
-          { path: "/rcm", element: <PageSuspense><RCMList /></PageSuspense> },
-          { path: "/change-log", element: <PageSuspense><ChangeLogPage /></PageSuspense> },
-          { path: "/soc-monitoring", element: <PageSuspense><SOCMonitoringPage /></PageSuspense> },
-          { path: "/bpm", element: <PageSuspense><BPMPage /></PageSuspense> },
-          { path: "/testing", element: <PageSuspense><TestWorkbench /></PageSuspense> },
-          { path: "/deficiencies", element: <PageSuspense><DeficiencyBoard /></PageSuspense> },
-          { path: "/reports", element: <PageSuspense><ReportsPage /></PageSuspense> },
-          { path: "/ai-hub", element: <PageSuspense><AIHubPage /></PageSuspense> },
-          { path: "/wbs-recap", element: <PageSuspense><WBSPage /></PageSuspense> },
-          { path: "/audit-portal", element: <PageSuspense><ExternalAuditPortal /></PageSuspense> },
-          { path: "/import", element: <PageSuspense><ImportPage /></PageSuspense> },
-          { path: "/admin/users", element: <PageSuspense><UserManagementPage /></PageSuspense> },
-          { path: "/documents", element: <PageSuspense><DocumentsPage /></PageSuspense> },
+          {
+            element: <RootLayout />,
+            errorElement: <RouteErrorBoundary />,
+            children: [
+              { path: "/dashboard", element: <PageSuspense><Dashboard /></PageSuspense> },
+              { path: "/scoping", element: <PageSuspense><ScopingPage /></PageSuspense> },
+              { path: "/scoping/approval", element: <PageSuspense><ApprovalPage /></PageSuspense> },
+              { path: "/rcm", element: <PageSuspense><RCMList /></PageSuspense> },
+              { path: "/change-log", element: <PageSuspense><ChangeLogPage /></PageSuspense> },
+              { path: "/soc-monitoring", element: <PageSuspense><SOCMonitoringPage /></PageSuspense> },
+              { path: "/bpm", element: <PageSuspense><BPMPage /></PageSuspense> },
+              { path: "/testing", element: <PageSuspense><TestWorkbench /></PageSuspense> },
+              { path: "/deficiencies", element: <PageSuspense><DeficiencyBoard /></PageSuspense> },
+              { path: "/reports", element: <PageSuspense><ReportsPage /></PageSuspense> },
+              { path: "/ai-hub", element: <PageSuspense><AIHubPage /></PageSuspense> },
+              { path: "/wbs-recap", element: <PageSuspense><WBSPage /></PageSuspense> },
+              { path: "/audit-portal", element: <PageSuspense><ExternalAuditPortal /></PageSuspense> },
+              { path: "/import", element: <PageSuspense><ImportPage /></PageSuspense> },
+              { path: "/admin/users", element: <PageSuspense><UserManagementPage /></PageSuspense> },
+              { path: "/documents", element: <PageSuspense><DocumentsPage /></PageSuspense> },
+            ]
+          },
         ]
       },
     ]
@@ -91,15 +102,14 @@ const router = createBrowserRouter([
 ]);
 
 createRoot(document.getElementById('root')!).render(
-  // Remove StrictMode for demo to avoid double-mounting issues
-  // <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <ErrorBoundary>
-        <Suspense fallback={<div className="h-screen w-full flex items-center justify-center"><Skeleton className="h-12 w-12 rounded-full" /></div>}>
-          <RouterProvider router={router} />
-        </Suspense>
-        <Toaster richColors closeButton />
-      </ErrorBoundary>
+      <LicenseProvider>
+        <ErrorBoundary>
+          <Suspense fallback={<div className="h-screen w-full flex items-center justify-center"><Skeleton className="h-12 w-12 rounded-full" /></div>}>
+            <RouterProvider router={router} />
+          </Suspense>
+          <Toaster richColors closeButton />
+        </ErrorBoundary>
+      </LicenseProvider>
     </QueryClientProvider>
-  // </StrictMode>,
 );

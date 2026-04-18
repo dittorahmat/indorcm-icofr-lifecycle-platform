@@ -7,7 +7,8 @@ import {
   deficiencies, actionPlans, departments, bpmProcesses, csaRecords, 
   applications, member, account, session, bpmDiagrams, bpmNodeRcms, 
   rcmControls, organization, testRecords, aggregateDeficiencies,
-  documents, documentDepartments, documentGls, documentFslis
+  documents, documentDepartments, documentGls, documentFslis,
+  systemLicenses
 } from './db/schema';
 import { eq, and, desc, sql, ilike } from 'drizzle-orm';
 import type { 
@@ -23,8 +24,92 @@ import { ICOFR_KNOWLEDGE_BASE } from './knowledge-base';
 import { getDocumentProxy, extractText } from "unpdf";
 import * as pdfjs from "pdfjs-dist";
 import { getAuth } from './auth';
+import { getMachineFingerprint, verifyLicense, checkLicenseStatus } from './lib/license';
 
 export function userRoutes(app: Hono<HonoEnv>) {
+  // --- Licensing Routes ---
+
+  app.get('/api/license/status', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const activeLicense = await db.select().from(systemLicenses).limit(1);
+    const fingerprint = getMachineFingerprint();
+
+    if (activeLicense.length === 0) {
+      return ok(c, {
+        status: 'unactivated',
+        machineId: fingerprint,
+        daysRemaining: 0
+      });
+    }
+
+    const license = activeLicense[0];
+    const publicKey = c.env.LICENSE_PUBLIC_KEY || process.env.LICENSE_PUBLIC_KEY || '';
+    const payload = await verifyLicense(license.licenseKey, publicKey);
+
+    let daysRemaining = 0;
+    if (payload) {
+      const expiry = new Date(payload.expiryDate);
+      daysRemaining = Math.max(0, Math.ceil((expiry.getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
+    }
+
+    return ok(c, {
+      status: license.status,
+      machineId: fingerprint,
+      daysRemaining,
+      clientName: payload?.clientName,
+      expiryDate: payload?.expiryDate,
+      tier: payload?.tier
+    });
+  });
+
+  app.post('/api/license/activate', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const { licenseKey } = await c.req.json<{ licenseKey: string }>();
+
+    if (!licenseKey) return bad(c, 'License key is required');
+
+    const publicKey = c.env.LICENSE_PUBLIC_KEY || process.env.LICENSE_PUBLIC_KEY || '';
+    const payload = await verifyLicense(licenseKey, publicKey);
+
+    if (!payload) {
+      return bad(c, 'Invalid license key signature');
+    }
+
+    const fingerprint = getMachineFingerprint();
+    const status = checkLicenseStatus(payload, fingerprint);
+
+    if (status) {
+      return bad(c, `Activation failed: ${status}`);
+    }
+
+    // Upsert license
+    const existing = await db.select().from(systemLicenses).limit(1);
+    const now = new Date();
+    
+    if (existing.length > 0) {
+      await db.update(systemLicenses).set({
+        licenseKey,
+        machineCode: fingerprint,
+        activatedAt: now,
+        expiresAt: new Date(payload.expiryDate),
+        lastHeartbeat: now,
+        status: 'active'
+      }).where(eq(systemLicenses.id, existing[0].id));
+    } else {
+      await db.insert(systemLicenses).values({
+        id: crypto.randomUUID(),
+        licenseKey,
+        machineCode: fingerprint,
+        activatedAt: now,
+        expiresAt: new Date(payload.expiryDate),
+        lastHeartbeat: now,
+        status: 'active'
+      });
+    }
+
+    return ok(c, { success: true, message: 'License activated successfully' });
+  });
+
   app.get('/api/auth/me', async (c) => {
     const db = getDb(c.env.DATABASE_URL);
     const userId = c.get('userId');

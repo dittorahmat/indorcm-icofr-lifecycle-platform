@@ -43,6 +43,13 @@
       "when": 1776462124572,
       "tag": "0005_white_zodiak",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1776495145695,
+      "tag": "0006_tan_mattie_franklin",
+      "breakpoints": true
     }
   ]
 }

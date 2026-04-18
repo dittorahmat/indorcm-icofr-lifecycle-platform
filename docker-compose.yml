@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: indorcm-db
+    restart: always
+    environment:
+      POSTGRES_USER: indouser
+      POSTGRES_PASSWORD: indopassword
+      POSTGRES_DB: indorcm_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - indorcm-network
+
+  app:
+    build: .
+    container_name: indorcm-app
+    restart: always
+    ports:
+      - "3001:3001"
+    environment:
+      - DATABASE_URL=postgres://indouser:indopassword@db:5432/indorcm_db
+      - BETTER_AUTH_SECRET=generate_a_random_secret_here
+      - BETTER_AUTH_URL=http://localhost:3001
+      - LICENSE_PUBLIC_KEY=${LICENSE_PUBLIC_KEY:-}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+    volumes:
+      - /etc/machine-id:/host_machine_id:ro
+    depends_on:
+      - db
+    networks:
+      - indorcm-network
+
+networks:
+  indorcm-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
