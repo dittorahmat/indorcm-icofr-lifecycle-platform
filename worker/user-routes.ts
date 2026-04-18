@@ -30,6 +30,16 @@ export function userRoutes(app: Hono<HonoEnv>) {
   // --- Licensing Routes ---
 
   app.get('/api/license/status', async (c) => {
+    // 1. Check for bypass flag first
+    if (c.env.SKIP_LICENSE === 'true') {
+        return ok(c, {
+          status: 'active', // Report as active to frontend to satisfy guard
+          machineId: 'CLOUDFLARE-DEMO-BYPASS',
+          daysRemaining: 999,
+          clientName: 'Cloudflare Demo'
+        });
+    }
+
     const db = getDb(c.env.DATABASE_URL);
     const activeLicense = await db.select().from(systemLicenses).limit(1);
     const fingerprint = getMachineFingerprint();

@@ -4,15 +4,26 @@
  */
 
 import { input } from '@inquirer/prompts';
+import crypto from 'node:crypto';
 
 async function generateKeyPair() {
-  const { publicKey, privateKey } = await Bun.crypto.generateKeyPair("ed25519");
+  // Use standard node:crypto for maximum compatibility
+  const { publicKey, privateKey } = crypto.generateKeyPairSync('ed25519', {
+    publicKeyEncoding: { type: 'spki', format: 'pem' },
+    privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
+  });
   
+  // Convert PEM to a clean Base64 string for .env
+  const cleanPublic = publicKey.toString()
+    .replace(/-----BEGIN PUBLIC KEY-----|-----END PUBLIC KEY-----|\n|\r/g, '');
+  const cleanPrivate = privateKey.toString()
+    .replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\n|\r/g, '');
+
   console.log('\n--- NEW KEY PAIR GENERATED ---');
-  console.log('PUBLIC_KEY (Put this in .env):');
-  console.log(Buffer.from(publicKey).toString('base64'));
+  console.log('PUBLIC_KEY (Put this in .env or Cloudflare Vars):');
+  console.log(cleanPublic);
   console.log('\nPRIVATE_KEY (Keep this secret!):');
-  console.log(Buffer.from(privateKey).toString('base64'));
+  console.log(cleanPrivate);
   console.log('-------------------------------\n');
 }
 
@@ -36,15 +47,16 @@ async function signLicense() {
   const payloadStr = JSON.stringify(payload);
   const payloadBase64 = Buffer.from(payloadStr).toString('base64');
   
-  const privateKeyBuffer = Buffer.from(privateKeyBase64, 'base64');
+  // Format back to PEM for node:crypto
+  const privateKeyPem = `-----BEGIN PRIVATE KEY-----\n${privateKeyBase64}\n-----END PRIVATE KEY-----`;
   
-  const signature = await Bun.crypto.sign(
-    "ed25519",
-    privateKeyBuffer,
-    Buffer.from(payloadBase64)
+  const signature = crypto.sign(
+    null,
+    Buffer.from(payloadBase64),
+    crypto.createPrivateKey(privateKeyPem)
   );
 
-  const signatureBase64 = Buffer.from(signature).toString('base64');
+  const signatureBase64 = signature.toString('base64');
   const licenseKey = `${payloadBase64}.${signatureBase64}`;
 
   console.log('\n--- LICENSE GENERATED ---');
