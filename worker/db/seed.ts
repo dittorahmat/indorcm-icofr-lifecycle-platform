@@ -118,7 +118,8 @@ export const seedDatabase = async (databaseUrl: string, authSecret: string, skip
 import { eq } from 'drizzle-orm';
 const url = process.env.DATABASE_URL;
 const secret = process.env.BETTER_AUTH_SECRET || "seed-secret-123";
+const skipLicense = process.env.SKIP_LICENSE || "false";
 if (url) {
-    seed(url, secret).catch(console.error);
+    seedDatabase(url, secret, skipLicense).catch(console.error);
 }
 
