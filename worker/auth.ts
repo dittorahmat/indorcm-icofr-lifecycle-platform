@@ -3,8 +3,9 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { organization } from "better-auth/plugins";
 import { getDb } from "./db";
 import * as schema from "./db/schema";
+import crypto from "node:crypto";
 
-export const getAuth = (env: { DATABASE_URL: string; BETTER_AUTH_SECRET: string; BETTER_AUTH_URL?: string }) => {
+export const getAuth = (env: { DATABASE_URL: string; BETTER_AUTH_SECRET: string; BETTER_AUTH_URL?: string; SKIP_LICENSE?: string }) => {
     const db = getDb(env.DATABASE_URL);
 
     return betterAuth({
@@ -27,6 +28,23 @@ export const getAuth = (env: { DATABASE_URL: string; BETTER_AUTH_SECRET: string;
         ],
         emailAndPassword: {
             enabled: true,
+            // Optimization for Cloudflare Workers Free Tier (10ms CPU Limit)
+            // better-auth default scrypt is too heavy for 10ms.
+            // We use a custom hash only if SKIP_LICENSE is true (for demo/cloudflare)
+            password: env.SKIP_LICENSE === 'true' ? {
+                hash: async (password: string) => {
+                    // Fast PBKDF2 for demo environments
+                    const salt = crypto.randomBytes(16).toString('hex');
+                    const hash = crypto.pbkdf2Sync(password, salt, 100, 32, 'sha256').toString('hex');
+                    return `pbkdf2$100$${salt}$${hash}`;
+                },
+                verify: async ({ hash: storedHash, password }) => {
+                    if (!storedHash.startsWith('pbkdf2$')) return false;
+                    const [, iterations, salt, hash] = storedHash.split('$');
+                    const verifyHash = crypto.pbkdf2Sync(password, salt, parseInt(iterations), 32, 'sha256').toString('hex');
+                    return verifyHash === hash;
+                }
+            } : undefined
         },
         plugins: [
             organization() // Aktifkan fitur multi-company secara native
