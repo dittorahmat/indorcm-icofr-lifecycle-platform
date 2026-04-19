@@ -25,15 +25,41 @@ export const seedDatabase = async (databaseUrl: string, authSecret: string, skip
     const auth = getAuth({ DATABASE_URL: databaseUrl, BETTER_AUTH_SECRET: authSecret, SKIP_LICENSE: skipLicense });
 
     console.log("🧹 Cleaning up old data...");
+    // Urutan penghapusan sangat penting untuk menghindari Foreign Key Constraint Error
+    // 1. Tabel-tabel yang merujuk ke tabel lain (Level 3/Anak)
+    await db.delete(schema.documentFslis);
+    await db.delete(schema.documentGls);
+    await db.delete(schema.documentDepartments);
+    await db.delete(schema.bpmNodeRcms);
+    await db.delete(schema.rcmControls);
+    await db.delete(schema.auditLogs);
+    await db.delete(schema.testRecords);
+    await db.delete(schema.csaRecords);
+    await db.delete(schema.deficiencies);
+    await db.delete(schema.actionPlans);
+    await db.delete(schema.aggregateDeficiencies);
+    await db.delete(schema.glRows);
+    
+    // 2. Tabel-tabel level menengah (Level 2)
+    await db.delete(schema.documents);
+    await db.delete(schema.bpmDiagrams);
+    await db.delete(schema.bpmProcesses);
+    await db.delete(schema.simulations);
+    await db.delete(schema.glSnapshots);
+    await db.delete(schema.materiality);
     await db.delete(schema.member);
     await db.delete(schema.session);
     await db.delete(schema.account);
     await db.delete(schema.verification);
+    
+    // 3. Tabel utama (Level 1/Induk)
     await db.delete(schema.user);
     await db.delete(schema.controls);
     await db.delete(schema.rcms);
     await db.delete(schema.departments);
+    await db.delete(schema.applications);
     await db.delete(schema.organization);
+    await db.delete(schema.systemLicenses);
 
     const orgId = "org-bumn-default";
     await db.insert(schema.organization).values({
@@ -114,12 +140,4 @@ export const seedDatabase = async (databaseUrl: string, authSecret: string, skip
 
     console.log("✨ Seeding complete with Real Auth!");
 };
-
-import { eq } from 'drizzle-orm';
-const url = process.env.DATABASE_URL;
-const secret = process.env.BETTER_AUTH_SECRET || "seed-secret-123";
-const skipLicense = process.env.SKIP_LICENSE || "false";
-if (url) {
-    seedDatabase(url, secret, skipLicense).catch(console.error);
-}
 

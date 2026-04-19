@@ -116,8 +116,17 @@ export const createApp = () => {
       return next();
     }
 
-    // Public health check
-    if (c.req.path === '/api/health') {
+    // Public paths that don't require authentication
+    const publicPaths = [
+        '/api/health', 
+        '/api/license/activate', 
+        '/api/license/status', 
+        '/api/client-errors', 
+        '/api/dev/re-seed',
+        '/api/dev/fix-db'
+    ];
+    
+    if (publicPaths.includes(c.req.path)) {
       return next();
     }
 
