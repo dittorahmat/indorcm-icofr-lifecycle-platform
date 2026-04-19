@@ -126,11 +126,11 @@ export function BPMModal({
               </TabsList>
             </div>
 
-            <div className="flex-1 overflow-auto bg-slate-50/30 p-6">
-              <TabsContent value="worksheet" className="m-0 focus-visible:ring-0">
-                <div className="space-y-6">
+            <div className="flex-1 overflow-hidden bg-slate-50/30">
+              <TabsContent value="worksheet" className="m-0 focus-visible:ring-0 h-full flex flex-col p-6 overflow-hidden">
+                <div className="flex flex-col h-full space-y-6">
                   {/* Status Summary Bar */}
-                  <div className="flex gap-4 mb-4 overflow-x-auto pb-2">
+                  <div className="flex gap-4 shrink-0 overflow-x-auto pb-2">
                     {controls?.map(c => (
                       <div key={c.id} className="bg-white border rounded-lg p-3 min-w-[200px] shadow-sm flex flex-col gap-2">
                         <div className="flex justify-between items-center">
@@ -160,16 +160,18 @@ export function BPMModal({
                     ))}
                   </div>
 
-                  {/* Worksheet Core */}
-                  <BPMWorksheet noGL={noGL} fsliName={fsliName} bpmProcessId={bpmProcessId || ""} />
+                  {/* Worksheet Core - Now properly handling its own internal scroll */}
+                  <div className="flex-1 min-h-0">
+                    <BPMWorksheet noGL={noGL} fsliName={fsliName} bpmProcessId={bpmProcessId || ""} />
+                  </div>
                 </div>
               </TabsContent>
 
-              <TabsContent value="csa" className="m-0 h-full overflow-hidden">
+              <TabsContent value="csa" className="m-0 h-full overflow-hidden p-6">
                 <CSATabContent noGL={noGL} controls={controls || []} />
               </TabsContent>
 
-              <TabsContent value="logs" className="m-0">
+              <TabsContent value="logs" className="m-0 h-full overflow-auto p-6">
                 <Lampiran6LogView entityId={noGL} />
               </TabsContent>
             </div>

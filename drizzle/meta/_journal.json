@@ -50,6 +50,13 @@
       "when": 1776495145695,
       "tag": "0006_tan_mattie_franklin",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1776598316727,
+      "tag": "0007_public_captain_cross",
+      "breakpoints": true
     }
   ]
 }

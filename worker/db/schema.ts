@@ -207,6 +207,7 @@ export const controls = pgTable("controls", {
 	supportingDocs: text("supporting_docs"),
 	reference: text("reference"),
 	applicationId: text("application_id").references(() => applications.id),
+	bpmProcessId: text("bpm_process_id").references(() => bpmProcesses.id),
 });
 
 export const csaRecords = pgTable("csa_records", {

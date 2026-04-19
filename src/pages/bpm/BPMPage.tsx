@@ -10,14 +10,19 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { 
   Plus, Search, Database, FileSpreadsheet, Loader2, Info, ChevronRight, 
-  Trash2, AlertTriangle, PlusCircle, CheckCircle2, Shield
+  Trash2, AlertTriangle, PlusCircle, CheckCircle2, Shield, Edit2, ExternalLink,
+  Workflow as WorkflowIcon
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
-import { GLSnapshot, GLRow, BPMProcess, UserRole, MaterialitySimulation, User } from '@shared/types';
+import { GLSnapshot, GLRow, BPMProcess, UserRole, MaterialitySimulation, User, BPMDiagram } from '@shared/types';
 import { BPMWorksheet } from '@/components/bpm/BPMWorksheet';
 import { BPMModal } from '@/components/bpm/BPMModal';
+import { BPMEditor } from '@/components/rcm/BPMEditor';
 import { toast } from 'sonner';
+import { 
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
+} from '@/components/ui/table';
 import { 
   Dialog, DialogContent, DialogDescription, DialogHeader, 
   DialogTitle, DialogFooter 
@@ -33,8 +38,14 @@ export function BPMPage() {
   const [selectedAccountKey, setSelectedAccountKey] = React.useState<string>("");
   const [selectedBpmId, setSelectedBpmId] = React.useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [isWorkflowOpen, setIsWorkflowOpen] = React.useState(false);
+  const [selectedDiagramId, setSelectedDiagramId] = React.useState<string | null>(null);
+  const [currentSubProcess, setCurrentSubProcess] = React.useState("");
   const [isCreatingBPM, setIsCreatingBPM] = React.useState(false);
   const [bpmName, setBpmName] = React.useState("");
+  const [searchTerm, setSearchTerm] = React.useState("");
+
+  // ... (useEffects and useQueries are unchanged)
 
   // Handle Deep Linking from Scoping
   React.useEffect(() => {
@@ -75,6 +86,11 @@ export function BPMPage() {
   const { data: currentUser } = useQuery({
     queryKey: ['auth-me'],
     queryFn: () => api<User>('/api/auth/me'),
+  });
+
+  const { data: settings } = useQuery({
+    queryKey: ['settings'],
+    queryFn: () => api<Settings>('/api/settings'),
   });
 
   // 2. Derive unique significant FSLIs based on Scoping Criteria
@@ -162,7 +178,25 @@ export function BPMPage() {
     enabled: !!selectedAccountKey
   });
 
+  const { data: diagrams } = useQuery({
+    queryKey: ['bpm-diagrams'],
+    queryFn: () => api<{ items: BPMDiagram[] }>('/api/bpm-diagrams')
+  });
+
+  const createDiagramMutation = useMutation({
+    mutationFn: (subProcess: string) => api('/api/bpm-diagrams', {
+      method: 'POST',
+      body: JSON.stringify({ name: `Flow: ${subProcess}`, subProcess })
+    }),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['bpm-diagrams'] });
+      setSelectedDiagramId(data.id);
+      setIsWorkflowOpen(true);
+    }
+  });
+
   const createBPMMutation = useMutation({
+// ... (mutations unchanged)
     mutationFn: (data: Partial<BPMProcess>) => api('/api/bpm-processes', {
       method: 'POST',
       body: JSON.stringify(data)
@@ -183,6 +217,14 @@ export function BPMPage() {
       toast.success("BPM Process deleted");
     }
   });
+
+  // 5. Filtered BPM processes based on search term
+  const filteredBpmProcesses = React.useMemo(() => {
+    if (!bpmProcesses?.items) return [];
+    return bpmProcesses.items.filter(bpm => 
+      bpm.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [bpmProcesses, searchTerm]);
 
   return (
     <AppLayout container>
@@ -263,65 +305,130 @@ export function BPMPage() {
             </p>
           </div>
         ) : (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <div className="space-y-1">
-                <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                  <PlusCircle className="h-5 w-5 text-indigo-600" />
-                  Proses BPM untuk {selectedGLRow?.glDesc}
-                </h3>
-                <p className="text-[10px] text-indigo-600 font-bold uppercase tracking-widest flex items-center gap-1.5">
-                  <Shield className="h-3 w-3" /> Owner: {departmentName || "Finance & Accounting"}
-                </p>
+          <div className="space-y-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-100/50 p-4 rounded-lg border border-slate-200">
+              <div className="flex-1 w-full md:max-w-sm relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Input 
+                  placeholder="Cari Sub Proses..." 
+                  className="pl-9 bg-white border-slate-200"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
               </div>
-              {(currentUser?.role === 'Line 2' || currentUser?.role === 'Admin' || hasAccess) && (
-                <Button onClick={() => setIsCreatingBPM(true)} size="sm" className="gap-2">
-                  <Plus className="h-4 w-4" /> Create BPM
-                </Button>
-              )}
+              <div className="flex items-center gap-3 w-full md:w-auto">
+                <div className="hidden md:block text-right">
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Owner Unit</p>
+                  <p className="text-xs font-bold text-slate-600">{departmentName || "Finance & Accounting"}</p>
+                </div>
+                {(currentUser?.role === 'Line 2' || currentUser?.role === 'Admin' || hasAccess) && (
+                  <Button onClick={() => setIsCreatingBPM(true)} size="sm" className="gap-2 bg-indigo-600 hover:bg-indigo-700 shadow-sm">
+                    <Plus className="h-4 w-4" /> Create BPM
+                  </Button>
+                )}
+              </div>
             </div>
 
-            <div className="flex flex-wrap gap-3">
-              {bpmLoading ? (
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-              ) : bpmProcesses?.items.length === 0 ? (
-                <p className="text-xs text-slate-400 italic">No processes created yet. Click "Create BPM" to add one.</p>
-              ) : bpmProcesses?.items.map((bpm, idx) => (
-                <div key={bpm.id} className="relative group">
-                  <Button
-                    variant={selectedBpmId === bpm.id ? "default" : "outline"}
-                    className={cn(
-                      "h-12 px-6 rounded-xl border-2 flex items-center gap-3 transition-all pr-10",
-                      selectedBpmId === bpm.id 
-                        ? "bg-indigo-600 border-indigo-700 shadow-lg shadow-indigo-200" 
-                        : "bg-white border-slate-200 hover:border-indigo-300 text-slate-600"
-                    )}
-                    onClick={() => {
-                      setSelectedBpmId(bpm.id);
-                      setIsModalOpen(true);
-                    }}
-                  >
-                    <span className="h-6 w-6 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-[10px] font-bold border border-slate-200">
-                      {idx + 1}
-                    </span>
-                    <span className="font-bold tracking-tight">{bpm.name}</span>
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-slate-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (confirm(`Delete entire process "${bpm.name}" and all its worksheet rows?`)) {
-                        deleteBPMMutation.mutate(bpm.id);
-                      }
-                    }}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-              ))}
+            <div className="border rounded-xl bg-white shadow-sm overflow-hidden">
+              <Table>
+                <TableHeader className="bg-slate-50">
+                  <TableRow>
+                    <TableHead className="w-[80px] text-center">Action</TableHead>
+                    <TableHead className="font-bold">Sub Proses</TableHead>
+                    <TableHead className="font-bold">Perusahaan</TableHead>
+                    <TableHead className="font-bold">Lokasi</TableHead>
+                    <TableHead className="text-center font-bold">Risks</TableHead>
+                    <TableHead className="text-center font-bold">Controls</TableHead>
+                    <TableHead className="w-[50px]"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {bpmLoading ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="h-32 text-center">
+                        <Loader2 className="h-8 w-8 animate-spin text-indigo-500 mx-auto" />
+                        <p className="text-xs text-slate-400 mt-2">Memuat daftar BPM...</p>
+                      </TableCell>
+                    </TableRow>
+                  ) : filteredBpmProcesses.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="h-32 text-center">
+                        <Info className="h-8 w-8 text-slate-300 mx-auto mb-2" />
+                        <p className="text-sm text-slate-500 italic">
+                          {searchTerm ? `Tidak ditemukan sub proses dengan nama "${searchTerm}"` : 'Belum ada sub proses yang dibuat.'}
+                        </p>
+                      </TableCell>
+                    </TableRow>
+                  ) : filteredBpmProcesses.map((bpm) => (
+                    <TableRow key={bpm.id} className="group hover:bg-indigo-50/30 transition-colors">
+                      <TableCell className="text-center">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-100"
+                          onClick={() => {
+                            const diagram = diagrams?.items.find(d => d.subProcess === bpm.name);
+                            if (diagram) {
+                              setSelectedDiagramId(diagram.id);
+                              setCurrentSubProcess(bpm.name);
+                              setIsWorkflowOpen(true);
+                            } else {
+                              createDiagramMutation.mutate(bpm.name);
+                            }
+                          }}
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                      <TableCell>
+                        <div 
+                          className="flex flex-col cursor-pointer hover:bg-indigo-50/50 p-1 rounded transition-colors"
+                          onClick={() => {
+                            setSelectedBpmId(bpm.id);
+                            setIsModalOpen(true);
+                          }}
+                        >
+                          <span className="font-bold text-indigo-600 hover:underline">{bpm.name}</span>
+                          <span className="text-[10px] text-slate-400 uppercase tracking-tighter">BPM ID: {bpm.id.substring(0,8)}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-slate-600 font-medium text-xs">
+                        {settings?.companyName || "PT BUMN SEjahtera"}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="font-mono text-[10px] bg-slate-50">
+                          {selectedGLRow?.entityCode || "ENT-01"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge className="bg-orange-100 text-orange-700 hover:bg-orange-100 border-none font-bold">
+                          {bpm.riskCount || 0}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-none font-bold">
+                          {bpm.controlCount || 0}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-slate-300 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-all"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (confirm(`Hapus seluruh proses "${bpm.name}" beserta baris worksheet di dalamnya?`)) {
+                              deleteBPMMutation.mutate(bpm.id);
+                            }
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           </div>
         )}
@@ -336,6 +443,33 @@ export function BPMPage() {
             bpmProcessId={selectedBpmId || undefined}
           />
         )}
+
+        <Dialog open={isWorkflowOpen} onOpenChange={setIsWorkflowOpen}>
+          <DialogContent className="max-w-[95vw] w-[1400px] h-[90vh] flex flex-col p-0 overflow-hidden">
+            <DialogHeader className="p-6 pb-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <DialogTitle className="flex items-center gap-2 text-xl">
+                    <WorkflowIcon className="h-5 w-5 text-indigo-600" />
+                    BPM Workflow Editor: {currentSubProcess}
+                  </DialogTitle>
+                  <DialogDescription>
+                    Mapping business processes, risks (RCM), and internal controls visually.
+                  </DialogDescription>
+                </div>
+              </div>
+            </DialogHeader>
+            
+            <div className="flex-1 min-h-0 border-t">
+              {selectedDiagramId && (
+                <BPMEditor 
+                  diagramId={selectedDiagramId} 
+                  subProcess={currentSubProcess}
+                />
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
 
         <Dialog open={isCreatingBPM} onOpenChange={setIsCreatingBPM}>
           <DialogContent className="sm:max-w-[425px]">

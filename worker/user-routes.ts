@@ -618,6 +618,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
       supportingDocs: body.supportingDocs,
       reference: body.reference,
       applicationId: body.applicationId,
+      bpmProcessId: body.bpmProcessId,
     };
     await db.insert(controls).values(newControl);
     return ok(c, newControl);
@@ -968,16 +969,30 @@ export function userRoutes(app: Hono<HonoEnv>) {
     const orgId = c.get('organizationId');
     const noGL = c.req.query('noGL');
 
+    const query = db.select({
+      id: bpmProcesses.id,
+      organizationId: bpmProcesses.organizationId,
+      noGL: bpmProcesses.noGL,
+      fsliName: bpmProcesses.fsliName,
+      name: bpmProcesses.name,
+      createdAt: bpmProcesses.createdAt,
+      createdBy: bpmProcesses.createdBy,
+      controlCount: sql<number>`count(${controls.id})`,
+      riskCount: sql<number>`count(${controls.id}) FILTER (WHERE ${controls.isFraudRelated} = true)`
+    })
+    .from(bpmProcesses)
+    .leftJoin(controls, eq(bpmProcesses.id, controls.bpmProcessId))
+    .where(eq(bpmProcesses.organizationId, orgId));
+
     if (noGL) {
-      const items = await db.select().from(bpmProcesses)
-        .where(and(
-          eq(bpmProcesses.organizationId, orgId),
-          eq(bpmProcesses.noGL, noGL)
-        ));
+      const items = await query.where(and(
+        eq(bpmProcesses.organizationId, orgId),
+        eq(bpmProcesses.noGL, noGL)
+      )).groupBy(bpmProcesses.id);
       return ok(c, { items });
     }
 
-    const items = await db.select().from(bpmProcesses).where(eq(bpmProcesses.organizationId, orgId));
+    const items = await query.groupBy(bpmProcesses.id);
     return ok(c, { items });
   });
 

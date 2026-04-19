@@ -1,0 +1,2 @@
+ALTER TABLE "controls" ADD COLUMN "bpm_process_id" text;--> statement-breakpoint
+ALTER TABLE "controls" ADD CONSTRAINT "controls_bpm_process_id_bpm_processes_id_fk" FOREIGN KEY ("bpm_process_id") REFERENCES "public"."bpm_processes"("id") ON DELETE no action ON UPDATE no action;

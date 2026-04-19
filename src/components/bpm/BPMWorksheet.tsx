@@ -57,10 +57,11 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
 
   // 1. Fetch Controls for this BPM Process
   const { data: controls, isLoading } = useQuery({
-    queryKey: ['bpm-controls', noGL],
+    queryKey: ['bpm-controls', bpmProcessId],
     queryFn: async () => {
       const all = await api<{ items: Control[] }>('/api/controls');
-      return all.items.filter(c => c.fsliCodes?.includes(noGL));
+      // Filter by bpmProcessId, fallback to noGL if not set (for existing data)
+      return all.items.filter(c => c.bpmProcessId === bpmProcessId || (!c.bpmProcessId && c.fsliCodes?.includes(noGL)));
     }
   });
 
@@ -444,17 +445,39 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
   });
 
   return (
-    <div className="space-y-4">
-      <div className="rounded-xl border bg-white shadow-xl overflow-hidden">
-        <div className="overflow-x-auto max-w-full">
-          <Table className="min-w-[2500px] border-collapse">
-            <TableHeader className="bg-slate-100 border-b-2 sticky top-0 z-10 shadow-sm">
+    <div className="flex flex-col h-full space-y-4">
+      {/* Worksheet Header Actions */}
+      <div className="flex items-center justify-between bg-white p-3 rounded-lg border border-slate-200 shadow-sm shrink-0">
+        <div className="space-y-0.5">
+          <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+            <FileSpreadsheet className="h-4 w-4 text-indigo-600" />
+            Control Activity Matrix (RCM)
+          </h4>
+          <p className="text-[10px] text-slate-500 italic">Identifikasi risiko dan aktivitas pengendalian di tingkat transaksi.</p>
+        </div>
+        
+        <Button 
+          onClick={() => createMutation.mutate()} 
+          variant="default" 
+          size="sm"
+          className="bg-indigo-600 hover:bg-indigo-700 font-bold gap-2 shadow-md px-4 h-9"
+          disabled={createMutation.isPending}
+        >
+          {createMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlusCircle className="h-4 w-4" />}
+          Add New Row
+        </Button>
+      </div>
+
+      <div className="flex-1 min-h-0 rounded-xl border bg-white shadow-xl overflow-hidden flex flex-col">
+        <div className="overflow-auto flex-1 custom-scrollbar">
+          <Table className="min-w-[2500px] border-collapse relative">
+            <TableHeader className="bg-slate-100 border-b-2 sticky top-0 z-20 shadow-sm">
               {table.getHeaderGroups().map(headerGroup => (
                 <TableRow key={headerGroup.id} className="hover:bg-transparent">
                   {headerGroup.headers.map(header => (
                     <TableHead 
                       key={header.id}
-                      className="border-r last:border-r-0 h-14 text-[10px] font-extrabold uppercase text-slate-600 px-3 bg-slate-50/80 backdrop-blur-sm"
+                      className="border-r last:border-r-0 h-14 text-[10px] font-extrabold uppercase text-slate-600 px-3 bg-slate-50/90 backdrop-blur-sm"
                     >
                       {flexRender(header.column.columnDef.header, header.getContext())}
                     </TableHead>
@@ -474,8 +497,11 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
                 </TableRow>
               ) : table.getRowModel().rows.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={18} className="h-32 text-center text-slate-400 italic">
-                    No records found for this process. Click "Add New Row" below to begin mapping controls.
+                  <TableCell colSpan={18} className="h-32 text-center">
+                    <div className="flex flex-col items-center gap-2 py-8">
+                      <Info className="h-8 w-8 text-slate-300" />
+                      <p className="text-sm text-slate-400 italic">No records found for this process. Click "Add New Row" above to begin mapping.</p>
+                    </div>
                   </TableCell>
                 </TableRow>
               ) : (
@@ -492,16 +518,6 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
             </TableBody>
           </Table>
         </div>
-      </div>
-      
-      <div className="flex items-center gap-4">
-        <Button 
-          onClick={() => createMutation.mutate()} 
-          variant="outline" 
-          className="flex-1 border-dashed border-2 h-14 hover:bg-indigo-50 hover:border-indigo-200 text-indigo-600 font-bold gap-2 text-sm shadow-sm"
-        >
-          <PlusCircle className="h-5 w-5" /> Add New Row to Worksheet
-        </Button>
       </div>
 
       {/* Modal: Add Application */}

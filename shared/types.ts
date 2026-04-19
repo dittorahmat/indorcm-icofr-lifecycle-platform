@@ -247,6 +247,8 @@ export interface BPMProcess {
   fsliName: string;
   createdBy: string;
   createdAt: number;
+  riskCount?: number;
+  controlCount?: number;
 }
 
 export interface BPMNode {
