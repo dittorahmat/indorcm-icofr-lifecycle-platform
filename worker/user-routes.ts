@@ -25,6 +25,7 @@ import { getDocumentProxy, extractText } from "unpdf";
 import * as pdfjs from "pdfjs-dist";
 import { getAuth } from './auth';
 import { getMachineFingerprint, verifyLicense, checkLicenseStatus } from './lib/license';
+import { seedDatabase } from './db/seed';
 
 export function userRoutes(app: Hono<HonoEnv>) {
   // --- Licensing Routes ---
@@ -180,6 +181,24 @@ export function userRoutes(app: Hono<HonoEnv>) {
       return ok(c, { message: "Database fixed! Columns significant_accounts and language added." });
     } catch (e: any) {
       return ok(c, { error: e.message });
+    }
+  });
+
+  app.get('/api/dev/re-seed', async (c) => {
+    try {
+        await seedDatabase(c.env.DATABASE_URL, c.env.BETTER_AUTH_SECRET, c.env.SKIP_LICENSE);
+        return ok(c, { message: "Database re-seeded successfully with the correct hashing algorithm." });
+    } catch (e: any) {
+        return bad(c, `Seeding failed: ${e.message}`);
+    }
+  });
+
+  app.get('/api/dev/re-seed', async (c) => {
+    try {
+        await seedDatabase(c.env.DATABASE_URL, c.env.BETTER_AUTH_SECRET, c.env.SKIP_LICENSE);
+        return ok(c, { message: "Database re-seeded successfully with the correct hashing algorithm." });
+    } catch (e: any) {
+        return bad(c, `Seeding failed: ${e.message}`);
     }
   });
 

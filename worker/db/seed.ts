@@ -8,7 +8,7 @@ const getFriendlyEmail = (u: any): string => {
     if (u.role === 'Line 2') return 'line2@bumn.go.id';
     if (u.role === 'Line 3') return 'line3@bumn.go.id';
     if (u.role === 'CFO') return 'cfo@bumn.go.id';
-    if (u.role === 'Komisaris') return 'komisaris@bumn.go.id';
+    if (u.role === 'Commissioner' || u.role === 'Komisaris') return 'komisaris@bumn.go.id';
     if (u.role === 'Admin') return 'admin@bumn.go.id';
     if (u.role === 'External Auditor') return 'external@bumn.go.id';
 
@@ -17,11 +17,12 @@ const getFriendlyEmail = (u: any): string => {
     return `${levelPrefix}.${deptSuffix}@bumn.go.id`;
 };
 
-const seed = async (databaseUrl: string, authSecret: string) => {
-    console.log("🌱 Re-seeding database with Real Auth (Better Auth)...");
+export const seedDatabase = async (databaseUrl: string, authSecret: string, skipLicense: string = 'false') => {
+    console.log("🌱 Re-seeding database with Real Auth (Better Auth)... Skip License:", skipLicense);
     const client = neon(databaseUrl);
     const db = drizzle(client, { schema });
-    const auth = getAuth({ DATABASE_URL: databaseUrl, BETTER_AUTH_SECRET: authSecret });
+    // IMPORTANT: Pass SKIP_LICENSE to ensure same hashing algorithm as production runtime
+    const auth = getAuth({ DATABASE_URL: databaseUrl, BETTER_AUTH_SECRET: authSecret, SKIP_LICENSE: skipLicense });
 
     console.log("🧹 Cleaning up old data...");
     await db.delete(schema.member);
