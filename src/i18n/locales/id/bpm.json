@@ -1,0 +1,30 @@
+{
+  "title": "Alur Kerja BPM",
+  "description": "Petakan proses bisnis dan kontrol di tingkat transaksi.",
+  "searchPlaceholder": "Cari Sub Proses...",
+  "createButton": "Buat BPM",
+  "table": {
+    "action": "Aksi",
+    "subProcess": "Sub Proses",
+    "company": "Perusahaan",
+    "location": "Lokasi",
+    "risks": "Risiko",
+    "controls": "Kontrol"
+  },
+  "worksheet": {
+    "title": "Matriks Aktivitas Pengendalian (RCM)",
+    "description": "Identifikasi risiko dan aktivitas pengendalian di tingkat transaksi.",
+    "addRow": "Tambah Baris Baru",
+    "loading": "Memuat lembar kerja kontrol...",
+    "empty": "Data tidak ditemukan. Klik \"Tambah Baris Baru\" di atas untuk memulai pemetaan."
+  },
+  "modal": {
+    "title": "Pemetaan Proses Bisnis",
+    "owner": "Pemilik Departemen",
+    "tabs": {
+      "worksheet": "Lembar Kerja (SK-5)",
+      "csa": "CSA (FR9)",
+      "logs": "Log Perubahan (Lampiran 6)"
+    }
+  }
+}

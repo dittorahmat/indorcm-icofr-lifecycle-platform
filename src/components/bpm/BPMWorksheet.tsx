@@ -451,9 +451,9 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
         <div className="space-y-0.5">
           <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2">
             <FileSpreadsheet className="h-4 w-4 text-indigo-600" />
-            Control Activity Matrix (RCM)
+            {t('worksheet.title')}
           </h4>
-          <p className="text-[10px] text-slate-500 italic">Identifikasi risiko dan aktivitas pengendalian di tingkat transaksi.</p>
+          <p className="text-[10px] text-slate-500 italic">{t('worksheet.description')}</p>
         </div>
         
         <Button 
@@ -464,7 +464,7 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
           disabled={createMutation.isPending}
         >
           {createMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlusCircle className="h-4 w-4" />}
-          Add New Row
+          {t('worksheet.addRow')}
         </Button>
       </div>
 

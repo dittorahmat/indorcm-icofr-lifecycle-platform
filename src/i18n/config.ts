@@ -9,6 +9,7 @@ import scopingEn from './locales/en/scoping.json';
 import dashboardEn from './locales/en/dashboard.json';
 import reportsEn from './locales/en/reports.json';
 import knowledgeEn from './locales/en/knowledge.json';
+import bpmEn from './locales/en/bpm.json';
 
 import commonId from './locales/id/common.json';
 import sidebarId from './locales/id/sidebar.json';
@@ -16,6 +17,7 @@ import scopingId from './locales/id/scoping.json';
 import dashboardId from './locales/id/dashboard.json';
 import reportsId from './locales/id/reports.json';
 import knowledgeId from './locales/id/knowledge.json';
+import bpmId from './locales/id/bpm.json';
 
 i18n
   .use(LanguageDetector)
@@ -29,6 +31,7 @@ i18n
         dashboard: dashboardEn,
         reports: reportsEn,
         knowledge: knowledgeEn,
+        bpm: bpmEn,
       },
       id: {
         common: commonId,
@@ -37,10 +40,11 @@ i18n
         dashboard: dashboardId,
         reports: reportsId,
         knowledge: knowledgeId,
+        bpm: bpmId,
       },
     },
     fallbackLng: 'en',
-    ns: ['common', 'sidebar', 'scoping', 'dashboard', 'reports', 'knowledge'],
+    ns: ['common', 'sidebar', 'scoping', 'dashboard', 'reports', 'knowledge', 'bpm'],
     defaultNS: 'common',
     interpolation: {
       escapeValue: false, // react already safes from xss

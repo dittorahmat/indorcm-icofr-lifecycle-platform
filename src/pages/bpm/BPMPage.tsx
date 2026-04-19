@@ -32,6 +32,7 @@ import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 
 export function BPMPage() {
+  const { t } = useTranslation(['bpm', 'common']);
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const [selectedFsli, setSelectedFsli] = React.useState<string>("");
@@ -231,9 +232,9 @@ export function BPMPage() {
       <div className="space-y-6">
         <div className="flex justify-between items-end">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">BPM Workflow</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{t('title')}</h1>
             <p className="text-muted-foreground text-sm">
-              Map business processes and controls at the transaction level.
+              {t('description')}
             </p>
           </div>
         </div>
@@ -243,7 +244,7 @@ export function BPMPage() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
               <div className="space-y-2">
                 <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                  <Database className="h-3 w-3" /> 1. Select FSLI
+                  <Database className="h-3 w-3" /> 1. {t('scoping:activeSource')}
                 </Label>
                 <Select value={selectedFsli} onValueChange={(v) => { setSelectedFsli(v); setSelectedAccountKey(""); setSelectedBpmId(null); }}>
                   <SelectTrigger className="bg-white border-slate-200">
@@ -259,7 +260,7 @@ export function BPMPage() {
 
               <div className="space-y-2">
                 <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                  <Search className="h-3 w-3" /> 2. Select Nomor GL
+                  <Search className="h-3 w-3" /> 2. {t('scoping:form.name')}
                 </Label>
                 <Select value={selectedAccountKey} onValueChange={setSelectedAccountKey} disabled={!selectedFsli}>
                   <SelectTrigger className="bg-white border-slate-200">
@@ -310,7 +311,7 @@ export function BPMPage() {
               <div className="flex-1 w-full md:max-w-sm relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                 <Input 
-                  placeholder="Cari Sub Proses..." 
+                  placeholder={t('searchPlaceholder')} 
                   className="pl-9 bg-white border-slate-200"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -323,7 +324,7 @@ export function BPMPage() {
                 </div>
                 {(currentUser?.role === 'Line 2' || currentUser?.role === 'Admin' || hasAccess) && (
                   <Button onClick={() => setIsCreatingBPM(true)} size="sm" className="gap-2 bg-indigo-600 hover:bg-indigo-700 shadow-sm">
-                    <Plus className="h-4 w-4" /> Create BPM
+                    <Plus className="h-4 w-4" /> {t('createButton')}
                   </Button>
                 )}
               </div>
@@ -333,12 +334,12 @@ export function BPMPage() {
               <Table>
                 <TableHeader className="bg-slate-50">
                   <TableRow>
-                    <TableHead className="w-[80px] text-center">Action</TableHead>
-                    <TableHead className="font-bold">Sub Proses</TableHead>
-                    <TableHead className="font-bold">Perusahaan</TableHead>
-                    <TableHead className="font-bold">Lokasi</TableHead>
-                    <TableHead className="text-center font-bold">Risks</TableHead>
-                    <TableHead className="text-center font-bold">Controls</TableHead>
+                    <TableHead className="w-[80px] text-center">{t('table.action')}</TableHead>
+                    <TableHead className="font-bold">{t('table.subProcess')}</TableHead>
+                    <TableHead className="font-bold">{t('table.company')}</TableHead>
+                    <TableHead className="font-bold">{t('table.location')}</TableHead>
+                    <TableHead className="text-center font-bold">{t('table.risks')}</TableHead>
+                    <TableHead className="text-center font-bold">{t('table.controls')}</TableHead>
                     <TableHead className="w-[50px]"></TableHead>
                   </TableRow>
                 </TableHeader>

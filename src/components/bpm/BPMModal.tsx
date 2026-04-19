@@ -38,6 +38,7 @@ export function BPMModal({
   fsliName,
   bpmProcessId 
 }: BPMModalProps) {
+  const { t } = useTranslation(['bpm', 'common']);
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = React.useState("worksheet");
 
@@ -90,7 +91,7 @@ export function BPMModal({
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <DialogTitle className="text-xl font-bold text-slate-900">
-                  Business Process Mapping: {glDesc}
+                  {t('modal.title')}: {glDesc}
                 </DialogTitle>
                 <Badge variant="outline" className="bg-white font-mono text-indigo-600 border-indigo-100">
                   {noGL}
@@ -98,14 +99,14 @@ export function BPMModal({
               </div>
               <p className="text-sm text-muted-foreground flex items-center gap-2">
                 <Building2 className="h-3.5 w-3.5" /> {fsliName} | 
-                <UserCircle className="h-3.5 w-3.5" /> Department Owner: Finance & Accounting
+                <UserCircle className="h-3.5 w-3.5" /> {t('modal.owner')}: Finance & Accounting
               </p>
             </div>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" className="gap-2 text-indigo-600 border-indigo-200">
                 <Printer className="h-4 w-4" /> Print Lampiran 4
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)}>Close</Button>
+              <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)}>{t('common:actions.cancel')}</Button>
             </div>
           </div>
         </DialogHeader>
@@ -115,13 +116,13 @@ export function BPMModal({
             <div className="px-6 border-b bg-white">
               <TabsList className="h-12 bg-transparent gap-6 p-0">
                 <TabsTrigger value="worksheet" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-bold text-slate-500">
-                  <FileSpreadsheet className="h-4 w-4" /> Worksheet (SK-5)
+                  <FileSpreadsheet className="h-4 w-4" /> {t('modal.tabs.worksheet')}
                 </TabsTrigger>
                 <TabsTrigger value="csa" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-bold text-slate-500">
-                  <ShieldCheck className="h-4 w-4" /> CSA (FR9)
+                  <ShieldCheck className="h-4 w-4" /> {t('modal.tabs.csa')}
                 </TabsTrigger>
                 <TabsTrigger value="logs" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-bold text-slate-500">
-                  <History className="h-4 w-4" /> Log Perubahan (Lampiran 6)
+                  <History className="h-4 w-4" /> {t('modal.tabs.logs')}
                 </TabsTrigger>
               </TabsList>
             </div>
