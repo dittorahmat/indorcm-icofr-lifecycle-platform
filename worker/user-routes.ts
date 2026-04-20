@@ -185,18 +185,21 @@ export function userRoutes(app: Hono<HonoEnv>) {
   });
 
   app.get('/api/dev/re-seed', async (c) => {
+    const mode = c.req.query('mode') || 'full';
+    const isSyncOnly = mode === 'auth';
+    
     try {
-        await seedDatabase(c.env.DATABASE_URL, c.env.BETTER_AUTH_SECRET, c.env.SKIP_LICENSE);
-        return ok(c, { message: "Database re-seeded successfully with the correct hashing algorithm." });
-    } catch (e: any) {
-        return bad(c, `Seeding failed: ${e.message}`);
-    }
-  });
-
-  app.get('/api/dev/re-seed', async (c) => {
-    try {
-        await seedDatabase(c.env.DATABASE_URL, c.env.BETTER_AUTH_SECRET, c.env.SKIP_LICENSE);
-        return ok(c, { message: "Database re-seeded successfully with the correct hashing algorithm." });
+        await seedDatabase(
+            c.env.DATABASE_URL, 
+            c.env.BETTER_AUTH_SECRET, 
+            c.env.SKIP_LICENSE, 
+            isSyncOnly
+        );
+        return ok(c, { 
+            message: isSyncOnly 
+                ? "Auth data synchronized successfully. Business data (RCM/Controls) preserved." 
+                : "Database re-seeded successfully (Full Reset)." 
+        });
     } catch (e: any) {
         return bad(c, `Seeding failed: ${e.message}`);
     }

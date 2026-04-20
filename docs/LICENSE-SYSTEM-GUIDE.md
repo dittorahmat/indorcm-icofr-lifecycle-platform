@@ -104,4 +104,41 @@ Untuk kebutuhan demo di Cloudflare Workers, sistem lisensi bisa dilewati secara 
 3.  **Keamanan:** Pastikan variabel ini **TIDAK ADA** atau diset ke `false` di environment produksi VPS/Docker klien.
 
 ---
+
+## 🧪 Panduan Testing di Localhost
+Jika Anda ingin mencoba alur aktivasi lisensi secara penuh di komputer lokal (bukan mode bypass), ikuti urutan ini:
+
+### 1. Persiapan Kunci & Env
+1.  Jalankan `bun run scripts/generate-license.ts gen-keys`.
+2.  Buka file **`.dev.vars`**, masukkan:
+    ```bash
+    SKIP_LICENSE=false
+    LICENSE_PUBLIC_KEY=Isi_Public_Key_Anda
+    ```
+
+### 2. Jalankan Server & Re-Seed (Auth Sync)
+1.  Matikan dan nyalakan ulang `bun run dev`.
+2.  Buka browser ke: `http://localhost:3000/api/dev/re-seed?mode=auth`.
+3.  Tunggu pesan sukses.
+    *   **Penting:** Gunakan `?mode=auth` agar **hanya data user/password** yang diperbarui (disesuaikan dengan mode lisensi). Data bisnis seperti RCM, Kontrol, dan Diagram Anda akan tetap aman.
+
+### 3. Alur Aktivasi & Login
+1.  Buka `http://localhost:3000`, Anda akan otomatis diarahkan ke halaman **Activation Required**.
+2.  Copy **Machine ID** yang muncul di layar.
+3.  Di terminal, jalankan `bun run scripts/generate-license.ts sign`. Masukkan Machine ID tadi saat diminta.
+4.  Copy **LICENSE_KEY** yang dihasilkan, paste ke browser, lalu klik **Activate System**.
+5.  Setelah sukses, login dengan email `admin@bumn.go.id` dan password `password`.
+
+---
+
+## 🛠️ Developer Tools (Khusus Local/Demo)
+Aplikasi menyediakan endpoint rahasia untuk pengelolaan database cepat:
+
+*   **Auth Only Sync:** `GET /api/dev/re-seed?mode=auth`
+    *   Mengupdate password semua user demo agar sesuai dengan mode `SKIP_LICENSE` saat ini. 
+    *   **Direkomendasikan** saat ganti mode lisensi agar data bisnis tidak hilang.
+*   **Full Reset:** `GET /api/dev/re-seed?mode=full`
+    *   Menghapus **SELURUH** isi database (Wipe Out) dan mengisi ulang dari nol.
+
+---
 © 2026 IndoRCM Pro - Internal Documentation

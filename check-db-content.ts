@@ -1,37 +1,22 @@
-import { documents } from './worker/db/schema';
-import { getDb } from './worker/db/index';
-import { sql } from 'drizzle-orm';
+import { neon } from '@neondatabase/serverless';
+import { drizzle } from 'drizzle-orm/neon-http';
+import * as schema from './worker/db/schema';
+import { eq } from 'drizzle-orm';
 
-async function checkData() {
-    const url = process.env.DATABASE_URL;
-    if (!url) {
-        console.error("DATABASE_URL not found in environment");
-        return;
-    }
-    
-    const db = getDb(url);
-    try {
-        const res = await db.select({ 
-            id: documents.id, 
-            title: documents.title, 
-            contentLength: sql`length(${documents.content})` 
-        }).from(documents);
-        
-        console.log("--- DATABASE DOCUMENTS INFO ---");
-        console.table(res);
-        
-        if (res.length > 0) {
-            // Cek sample teksnya dikit
-            const sample = await db.select({ content: documents.content })
-                .from(documents)
-                .limit(1);
-            console.log("\n--- PREVIEW CONTENT (First 100 chars) ---");
-            console.log(sample[0]?.content?.substring(0, 100) || "EMPTY");
-        }
-    } catch (e: any) {
-        console.error("Error query:", e.message);
-    }
-    process.exit(0);
+const url = "postgres://indouser:indopassword@localhost:5432/indorcm_db"; // Asumsi localhost
+
+async function check() {
+    console.log("🔍 Checking Database Content...");
+    const client = neon(process.env.DATABASE_URL!);
+    const db = drizzle(client, { schema });
+
+    const users = await db.select().from(schema.user);
+    console.log(`\n👥 Users found: ${users.length}`);
+    users.forEach(u => console.log(` - ID: ${u.id}, Email: ${u.email}`));
+
+    const accounts = await db.select().from(schema.account);
+    console.log(`\n🔐 Accounts found: ${accounts.length}`);
+    accounts.forEach(a => console.log(` - UserID: ${a.userId}, AccountID: ${a.accountId}, Provider: ${a.providerId}`));
 }
 
-checkData();
+check().catch(console.error);

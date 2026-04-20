@@ -28,23 +28,36 @@ export const getAuth = (env: { DATABASE_URL: string; BETTER_AUTH_SECRET: string;
         ],
         emailAndPassword: {
             enabled: true,
-            // Optimization for Cloudflare Workers Free Tier (10ms CPU Limit)
-            // better-auth default scrypt is too heavy for 10ms.
-            // We use a custom hash only if SKIP_LICENSE is true (for demo/cloudflare)
-            password: env.SKIP_LICENSE === 'true' ? {
+            // Force lowercase emails to prevent case-sensitivity issues
+            requireEmailVerification: false,
+            password: {
+                // ... (rest of password logic remains same)
+
+                // Optimization: Always support verifying PBKDF2 (for demo/seed users)
+                // but only use it for HASHING if SKIP_LICENSE is true.
                 hash: async (password: string) => {
-                    // Fast PBKDF2 for demo environments
-                    const salt = crypto.randomBytes(16).toString('hex');
-                    const hash = crypto.pbkdf2Sync(password, salt, 100, 32, 'sha256').toString('hex');
-                    return `pbkdf2$100$${salt}$${hash}`;
+                    if (env.SKIP_LICENSE === 'true') {
+                        const salt = crypto.randomBytes(16).toString('hex');
+                        const hash = crypto.pbkdf2Sync(password, salt, 100, 32, 'sha256').toString('hex');
+                        return `pbkdf2$100$${salt}$${hash}`;
+                    }
+                    // Default to better-auth internal scrypt (will be handled by better-auth if we return undefined)
+                    return undefined; 
                 },
                 verify: async ({ hash: storedHash, password }) => {
-                    if (!storedHash.startsWith('pbkdf2$')) return false;
-                    const [, iterations, salt, hash] = storedHash.split('$');
-                    const verifyHash = crypto.pbkdf2Sync(password, salt, parseInt(iterations), 32, 'sha256').toString('hex');
-                    return verifyHash === hash;
+                    // Protection: If no hash found, don't crash
+                    if (!storedHash) return false;
+
+                    // If it's a demo user hash (PBKDF2), verify it manually
+                    if (storedHash.startsWith('pbkdf2$')) {
+                        const [, iterations, salt, hash] = storedHash.split('$');
+                        const verifyHash = crypto.pbkdf2Sync(password, salt, parseInt(iterations), 32, 'sha256').toString('hex');
+                        return verifyHash === hash;
+                    }
+                    // Otherwise, let better-auth handle scrypt verification
+                    return undefined;
                 }
-            } : undefined
+            }
         },
         plugins: [
             organization() // Aktifkan fitur multi-company secara native

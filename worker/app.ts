@@ -58,20 +58,36 @@ export const createApp = () => {
     }
 
     // 2. Skip for public routes and license activation/status
-    const publicPaths = ['/api/health', '/api/license/activate', '/api/license/status', '/api/client-errors'];
+    const publicPaths = [
+        '/api/health', 
+        '/api/license/activate', 
+        '/api/license/status', 
+        '/api/client-errors',
+        '/api/dev/re-seed',
+        '/api/dev/fix-db'
+    ];
+    
     if (publicPaths.includes(c.req.path) || (c.req.path.startsWith('/api/auth/') && c.req.path !== '/api/auth/me')) {
       return next();
+    }
+
+    if (!c.env.DATABASE_URL) {
+        console.error('[LICENSE] DATABASE_URL is missing in environment.');
+        return c.json({ success: false, error: 'CONFIG_ERROR', message: 'DATABASE_URL missing.' }, 500);
     }
 
     const db = getDb(c.env.DATABASE_URL);
     
     // Check if system_licenses table is initialized (optional safety check)
-    // In a real production app, migrations handle this, but we'll ensure we don't crash
     let activeLicense;
     try {
       activeLicense = await db.select().from(schema.systemLicenses).limit(1);
-    } catch (e) {
-      console.warn('[LICENSE] system_licenses table not found or error accessing. Skipping guard.');
+    } catch (e: any) {
+      if (e.message === 'DATABASE_URL_MISSING') {
+          return c.json({ success: false, error: 'DATABASE_URL_MISSING', message: 'DATABASE_URL is not set in .dev.vars' }, 500);
+      }
+      console.warn('[LICENSE] system_licenses table not found or error accessing DB. Check connection.');
+      // Don't block access if DB is not ready during dev/migration, unless strictly necessary
       return next();
     }
 
