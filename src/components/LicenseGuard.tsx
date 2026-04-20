@@ -16,9 +16,9 @@ export const LicenseGuard = () => {
     return <Navigate to="/activate" replace />;
   }
 
-  // If already active and on activation page, redirect to home
+  // If already active and on activation page, allow it (for renewal)
   if (license?.status === 'active' && location.pathname === '/activate') {
-    return <Navigate to="/" replace />;
+    return <Outlet />;
   }
 
   return <Outlet />;

@@ -9,8 +9,8 @@ export function RootLayout(): JSX.Element {
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
-      <LicenseBanner />
       <MainHeader />
+      <LicenseBanner />
       <div className="flex-1 relative">
         <Outlet />
       </div>

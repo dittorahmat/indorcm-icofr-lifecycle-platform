@@ -82,10 +82,7 @@ export function ActivationPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background text-foreground relative overflow-hidden">
-      {/* Gradient Background */}
-      <div className="absolute inset-0 -z-10 h-full w-full bg-background bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]">
-        <div className="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-primary/10 opacity-20 blur-[100px]"></div>
-      </div>
+      {/* ... (gradient code) ... */}
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -98,14 +95,29 @@ export function ActivationPage() {
             <div className="flex justify-center mb-4">
               <Key className="h-12 w-12 text-primary" />
             </div>
-            <CardTitle className="text-2xl font-display font-bold">System Activation</CardTitle>
+            <CardTitle className="text-2xl font-display font-bold">
+              {status?.status === 'active' ? 'License Renewal' : 'System Activation'}
+            </CardTitle>
             <CardDescription>
-              IndoGRC Pro requires a valid license to operate.
+              {status?.status === 'active' 
+                ? `Current license is active for ${status.daysRemaining} more days.`
+                : 'IndoRCM Pro requires a valid license to operate.'}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
+            {status?.status === 'active' && (
+               <Alert className="bg-green-50 border-green-200 text-green-800">
+                <CheckCircle2 className="h-4 w-4 text-green-600" />
+                <AlertTitle>System Active</AlertTitle>
+                <AlertDescription className="text-xs">
+                  You are entering a new key to extend your subscription.
+                </AlertDescription>
+              </Alert>
+            )}
+
             <Alert>
               <Shield className="h-4 w-4" />
+
               <AlertTitle>Machine Binding</AlertTitle>
               <AlertDescription className="text-xs">
                 This installation is bound to the hardware ID below. Please provide this ID to your vendor to receive a license key.

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { AlertCircle, Clock, X, ShieldAlert } from 'lucide-react';
-import { useLicense } from './LicenseGuard';
+import { useLicense } from '@/context/LicenseContext';
 import { Button } from './ui/button';
 import {
   Dialog,
@@ -36,17 +36,19 @@ export function LicenseBanner() {
   if (!isVisible) return null;
 
   return (
-    <div className="bg-amber-50 border-b border-amber-200 py-2 px-4 flex items-center justify-between animate-in slide-in-from-top duration-500">
-      <div className="flex items-center gap-2 text-amber-800 text-sm font-medium">
-        <Clock className="h-4 w-4" />
-        <span>License notice: {license?.daysRemaining} days remaining until expiration. Please renew soon.</span>
+    <div className="bg-amber-50 border-b border-amber-200 py-2.5 px-6 animate-in slide-in-from-top duration-500 shadow-sm">
+      <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <div className="flex items-center gap-3 text-amber-800 text-sm font-semibold">
+          <Clock className="h-4 w-4 text-amber-600" />
+          <span>License Notice: {license?.daysRemaining} days remaining until expiration. Please renew your subscription soon.</span>
+        </div>
+        <button 
+          onClick={handleDismiss}
+          className="p-1 rounded-full hover:bg-amber-100 text-amber-500 hover:text-amber-700 transition-all"
+        >
+          <X className="h-4 w-4" />
+        </button>
       </div>
-      <button 
-        onClick={handleDismiss}
-        className="text-amber-500 hover:text-amber-700 transition-colors"
-      >
-        <X className="h-4 w-4" />
-      </button>
     </div>
   );
 }
