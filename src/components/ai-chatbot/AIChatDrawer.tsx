@@ -188,9 +188,6 @@ export function AIChatDrawer({ isOpen, onClose }: AIChatDrawerProps) {
               </div>
               <div>
                 <SheetTitle className="text-left">Asisten AI ICOFR</SheetTitle>
-                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
-                  Berdasarkan SK-5/DKU.MBU/11/2024
-                </p>
               </div>
             </div>
             <Button
@@ -214,7 +211,7 @@ export function AIChatDrawer({ isOpen, onClose }: AIChatDrawerProps) {
           <ChatInput
             onSend={handleSend}
             disabled={isLoading}
-            placeholder="Tanyakan tentang SK-5/DKU.MBU/11/2024..."
+            placeholder="Tanyakan sesuatu tentang ICOFR..."
           />
           <p className="mt-2 text-[10px] text-center text-muted-foreground italic">
             AI dapat memberikan informasi yang tidak akurat. Selalu verifikasi regulasi resmi.

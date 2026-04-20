@@ -33,7 +33,7 @@ export function ChatMessageList({ messages, isLoading }: ChatMessageListProps) {
               Halo! Saya Asisten AI ICOFR.
             </p>
             <p className="text-sm mt-2">
-              Tanyakan saya tentang SK-5/DKU.MBU/11/2024
+              Tanyakan sesuatu tentang ICOFR
             </p>
           </div>
         ) : (
