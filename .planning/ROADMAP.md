@@ -1,4 +1,4 @@
-# Roadmap: IndoRCM Pro
+# Roadmap: IndoGRC Pro
 
 ## Phase 1: Foundation & Scoping (Weeks 1-2)
 - [x] Stabilize Scoping Matrix and Materiality calculation logic.

@@ -1,10 +1,10 @@
 ## Why
 
-The application currently carries the "IndoRCM Pro" brand name throughout the codebase, UI, and documentation. The business has decided to rebrand to "ISB Risk Pro" to better reflect the company's identity and market positioning. This change ensures consistent branding across all user-facing and internal artifacts.
+The application currently carries the "IndoGRC Pro" brand name throughout the codebase, UI, and documentation. The business has decided to rebrand to "IndoGRC Pro" to better reflect the company's identity and market positioning. This change ensures consistent branding across all user-facing and internal artifacts.
 
 ## What Changes
 
-- All user-visible references to "IndoRCM Pro" and "Indo RCM Pro" will be replaced with "ISB Risk Pro"
+- All user-visible references to "IndoGRC Pro" and "IndoGRC Pro" will be replaced with "IndoGRC Pro"
 - Application title, metadata, and document references will be updated
 - Internal constants, configuration, and code comments referencing the old name will be updated
 - Assets and branding files (if any) will be renamed or replaced

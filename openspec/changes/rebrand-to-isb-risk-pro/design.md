@@ -1,18 +1,18 @@
 ## Context
 
-The application is currently branded as "IndoRCM Pro" (also written "Indo RCM Pro") across the codebase. The name appears in:
+The application is currently branded as "IndoGRC Pro" (also written "IndoGRC Pro") across the codebase. The name appears in:
 
 1. **UI Components**: `MainHeader.tsx`, `app-sidebar.tsx`, `LoginPage.tsx`, `HomePage.tsx`, `WelcomePage.tsx`, `ReportsPage.tsx`, `RegulatoryAppendices.tsx`
 2. **Documentation**: `USAGE_GUIDE.md`, `docs/PRESENTASI-AI-USE-CASES.md`
 3. **BMad output artifacts**: `_bmad-output/prd/`, `_bmad-output/planning-artifacts/`, `_bmad-output/analysis/`
-4. **Reports**: Footer text "Verified by IndoRCM Pro" and "Dicetak otomatis oleh IndoRCM Pro v1.0"
+4. **Reports**: Footer text "Verified by IndoGRC Pro" and "Dicetak otomatis oleh IndoGRC Pro v1.0"
 
 The project directory itself is named `indorcm-icofr-lifecycle-platform` but renaming the directory is out of scope (it's a filesystem concern, not an application concern).
 
 ## Goals / Non-Goals
 
 **Goals:**
-- Replace all user-facing instances of "IndoRCM Pro" / "Indo RCM Pro" with "ISB Risk Pro"
+- Replace all user-facing instances of "IndoGRC Pro" / "IndoGRC Pro" with "IndoGRC Pro"
 - Replace code-level references (comments, constants, stat labels) that reference the old brand
 - Update documentation files that are actively maintained
 - Ensure zero visual regressions beyond the name change itself
@@ -62,7 +62,7 @@ The project directory itself is named `indorcm-icofr-lifecycle-platform` but ren
 1. Implement all string replacements in a single commit
 2. Run `vite build` to confirm no compile errors
 3. Visually verify key pages (Login, Home, Welcome, Reports)
-4. Commit with message: `chore: rebrand from IndoRCM Pro to ISB Risk Pro`
+4. Commit with message: `chore: rebrand from IndoGRC Pro to IndoGRC Pro`
 
 **Rollback**: Revert the single commit. No database or data changes involved.
 

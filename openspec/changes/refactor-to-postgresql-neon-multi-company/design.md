@@ -1,6 +1,6 @@
 ## Context
 
-Aplikasi IndoRCM Pro saat ini menggunakan arsitektur serverless di Cloudflare Workers dengan penyimpanan data menggunakan Durable Objects (DO). Sistem persistensi saat ini menggunakan pola `IndexedEntity` yang menyimpan seluruh state entitas sebagai satu dokumen JSON. Meskipun cepat untuk prototype, pola ini sulit untuk skalabilitas data besar (seperti ribuan baris GL) dan tidak mendukung query relasional (Join) yang krusial untuk pelaporan agregasi multi-company.
+Aplikasi IndoGRC Pro saat ini menggunakan arsitektur serverless di Cloudflare Workers dengan penyimpanan data menggunakan Durable Objects (DO). Sistem persistensi saat ini menggunakan pola `IndexedEntity` yang menyimpan seluruh state entitas sebagai satu dokumen JSON. Meskipun cepat untuk prototype, pola ini sulit untuk skalabilitas data besar (seperti ribuan baris GL) dan tidak mendukung query relasional (Join) yang krusial untuk pelaporan agregasi multi-company.
 
 ## Goals / Non-Goals
 

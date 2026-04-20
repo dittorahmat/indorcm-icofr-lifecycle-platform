@@ -107,7 +107,7 @@ export function LoginPage() {
             <div className="flex justify-center mb-4">
               <Shield className="h-12 w-12 text-primary" />
             </div>
-            <CardTitle className="text-2xl font-display font-bold">ISB Risk Pro</CardTitle>
+            <CardTitle className="text-2xl font-display font-bold">IndoGRC Pro</CardTitle>
             <CardDescription>
               Enterprise ICOFR Lifecycle Platform
             </CardDescription>

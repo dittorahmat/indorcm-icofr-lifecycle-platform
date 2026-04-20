@@ -490,7 +490,7 @@ function Lampiran11Report({ deficiencies, controls }: { deficiencies: Deficiency
            <div className="flex items-center gap-2">
               <ShieldCheck className="h-8 w-8 text-primary" />
               <div className="text-[10px] leading-tight">
-                 <p className="font-bold">ISB Risk Pro Compliance Engine</p>
+                 <p className="font-bold">IndoGRC Pro Compliance Engine</p>
                  <p>Verified against SK-5/DKU.MBU/11/2024</p>
               </div>
            </div>

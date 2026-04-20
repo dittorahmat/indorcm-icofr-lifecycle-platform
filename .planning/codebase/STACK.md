@@ -1,6 +1,6 @@
-# Technology Stack - IndoRCM Pro (ICOFR Lifecycle Platform)
+# Technology Stack - IndoGRC Pro (ICOFR Lifecycle Platform)
 
-Detailed breakdown of the technologies used in the IndoRCM Pro project.
+Detailed breakdown of the technologies used in the IndoGRC Pro project.
 
 ## Frontend
 - **Framework**: [React](https://react.dev/) (v18.3.1)

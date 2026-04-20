@@ -1,6 +1,6 @@
 ## Context
 
-IndoRCM Pro is a specialized platform for BUMN, often deployed in isolated (air-gapped) or on-premise environments. Currently, there is no mechanism to enforce subscription terms or prevent unauthorized distribution. The system must transition from a Cloudflare-first architecture to a Docker-hosted environment while maintaining strict offline licensing compliance.
+IndoGRC Pro is a specialized platform for BUMN, often deployed in isolated (air-gapped) or on-premise environments. Currently, there is no mechanism to enforce subscription terms or prevent unauthorized distribution. The system must transition from a Cloudflare-first architecture to a Docker-hosted environment while maintaining strict offline licensing compliance.
 
 ## Goals / Non-Goals
 

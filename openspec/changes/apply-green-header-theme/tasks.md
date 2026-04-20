@@ -2,7 +2,7 @@
 
 - [x] 1.1 Modify `<header>` class in `MainHeader.tsx` to use `bg-emerald-600` (light) and `bg-[#022c22]` (dark).
 - [x] 1.2 Update Logo (`Shield` icon) color to `text-white` or `text-emerald-50` for better visibility.
-- [x] 1.3 Update "IndoRCM Pro" title text color to `text-white` (light mode) and `text-emerald-50` (dark mode).
+- [x] 1.3 Update "IndoGRC Pro" title text color to `text-white` (light mode) and `text-emerald-50` (dark mode).
 
 ## 2. Navigation & Components Adjustments
 

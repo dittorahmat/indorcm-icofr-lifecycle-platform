@@ -1,6 +1,6 @@
 ## Context
 
-The current reporting system in IndoRCM Pro is incomplete, with several critical API endpoints missing or malfunctioning. This leads to frontend crashes in `ReportsPage.tsx` and 500 errors in other modules. The platform must adhere to SK-5/DKU.MBU/11/2024, which requires specific reporting capabilities, including management assessment signatures and multi-format exports.
+The current reporting system in IndoGRC Pro is incomplete, with several critical API endpoints missing or malfunctioning. This leads to frontend crashes in `ReportsPage.tsx` and 500 errors in other modules. The platform must adhere to SK-5/DKU.MBU/11/2024, which requires specific reporting capabilities, including management assessment signatures and multi-format exports.
 
 ## Goals / Non-Goals
 

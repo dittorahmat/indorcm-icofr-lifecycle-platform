@@ -2,7 +2,7 @@
 stepsCompleted: [1, 2, 3, 4]
 inputDocuments: ['2024peraturan tk eselon i005.pdf']
 session_topic: 'Implementasi Digital Siklus Hidup ICOFR Berdasarkan Regulasi SK-5/DKU.MBU/11/2024'
-session_goals: 'Membangun aplikasi IndoRCM Pro yang mencakup modul Scoping, RCM, CSA, Testing, Remediasi, dan Pelaporan sesuai standar BUMN.'
+session_goals: 'Membangun aplikasi IndoGRC Pro yang mencakup modul Scoping, RCM, CSA, Testing, Remediasi, dan Pelaporan sesuai standar BUMN.'
 selected_approach: 'ai-recommended'
 techniques_used: ['First Principles Thinking', 'SCAMPER Method', 'Reverse Brainstorming']
 ideas_generated: [112]
@@ -10,7 +10,7 @@ session_active: false
 workflow_completed: true
 ---
 
-# Brainstorming Session Results: IndoRCM Pro
+# Brainstorming Session Results: IndoGRC Pro
 
 **Facilitator:** BMad Master
 **Date:** 2026-01-24

@@ -1,4 +1,4 @@
-# Integrations - IndoRCM Pro (ICOFR Lifecycle Platform)
+# Integrations - IndoGRC Pro (ICOFR Lifecycle Platform)
 
 Overview of external APIs, libraries, and internal service connections.
 

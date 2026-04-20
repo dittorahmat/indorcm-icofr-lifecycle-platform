@@ -36,7 +36,7 @@ export function HomePage() {
                 Enterprise ICOFR Lifecycle Platform for BUMN
               </h1>
               <p className="mt-6 max-w-2xl mx-auto text-lg md:text-xl text-muted-foreground text-pretty">
-                ISB Risk Pro digitizes the internal control over financial reporting lifecycle—from planning and scoping to management assessment and audit reporting.
+                IndoGRC Pro digitizes the internal control over financial reporting lifecycle—from planning and scoping to management assessment and audit reporting.
               </p>
               <div className="mt-10 flex justify-center gap-4">
                 <Button size="lg" asChild className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-primary/40 transition-all duration-300 transform hover:-translate-y-0.5">

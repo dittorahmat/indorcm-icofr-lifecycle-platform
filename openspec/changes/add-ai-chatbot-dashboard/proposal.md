@@ -1,6 +1,6 @@
 ## Why
 
-Pengguna IndoRCM Pro sering membutuhkan bantuan untuk memahami regulasi ICOFR yang kompleks (SK-5/DKU.MBU/11/2024, 119 halaman). Chatbot AI akan memberikan akses cepat ke pengetahuan tentang ICOFR langsung dari dalam dashboard, meningkatkan produktivitas dan pemahaman pengguna terhadap regulasi.
+Pengguna IndoGRC Pro sering membutuhkan bantuan untuk memahami regulasi ICOFR yang kompleks (SK-5/DKU.MBU/11/2024, 119 halaman). Chatbot AI akan memberikan akses cepat ke pengetahuan tentang ICOFR langsung dari dalam dashboard, meningkatkan produktivitas dan pemahaman pengguna terhadap regulasi.
 
 ## What Changes
 

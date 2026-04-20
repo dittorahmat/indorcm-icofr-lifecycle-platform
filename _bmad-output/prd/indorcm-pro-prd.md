@@ -1,4 +1,4 @@
-# PRD: IndoRCM Pro - Platform Lifecycle ICOFR Terintegrasi
+# PRD: IndoGRC Pro - Platform Lifecycle ICOFR Terintegrasi
 
 **Status:** Draft v1.0  
 **Tanggal:** 2026-01-24  
@@ -8,7 +8,7 @@
 ---
 
 ## 1. Ringkasan Produk
-IndoRCM Pro adalah aplikasi web kelas produksi yang dirancang untuk mendigitalisasi seluruh siklus hidup *Internal Control over Financial Reporting* (ICOFR) bagi Badan Usaha Milik Negara (BUMN). Aplikasi ini berfokus pada penciptaan "Rantai Bukti" (Chain of Evidence) yang tidak terbantahkan, otomatisasi kalkulasi kepatuhan, dan integrasi antar Tiga Lini Pertahanan.
+IndoGRC Pro adalah aplikasi web kelas produksi yang dirancang untuk mendigitalisasi seluruh siklus hidup *Internal Control over Financial Reporting* (ICOFR) bagi Badan Usaha Milik Negara (BUMN). Aplikasi ini berfokus pada penciptaan "Rantai Bukti" (Chain of Evidence) yang tidak terbantahkan, otomatisasi kalkulasi kepatuhan, dan integrasi antar Tiga Lini Pertahanan.
 
 ## 2. Persona Pengguna
 1.  **Lini Pertama (Unit Bisnis/Control Owner):** Bertanggung jawab mengunggah bukti dan melakukan sertifikasi mandiri (CSA).
@@ -65,4 +65,4 @@ IndoRCM Pro adalah aplikasi web kelas produksi yang dirancang untuk mendigitalis
 | FAQ No. 5 (Equity Investee) | Equity Investee Risk Mirror (Module 1) |
 
 ---
-*Draf PRD ini diselesaikan oleh BMad Master sebagai langkah awal pengembangan IndoRCM Pro.*
+*Draf PRD ini diselesaikan oleh BMad Master sebagai langkah awal pengembangan IndoGRC Pro.*

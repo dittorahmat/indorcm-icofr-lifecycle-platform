@@ -1,4 +1,4 @@
-# Panduan Sistem Lisensi IndoRCM Pro
+# Panduan Sistem Lisensi IndoGRC Pro
 
 Dokumen ini menjelaskan cara penggunaan sistem lisensi offline menggunakan algoritma **Ed25519** (Asymmetric Signing) untuk tim internal (Vendor) dan klien.
 
@@ -141,4 +141,4 @@ Aplikasi menyediakan endpoint rahasia untuk pengelolaan database cepat:
     *   Menghapus **SELURUH** isi database (Wipe Out) dan mengisi ulang dari nol.
 
 ---
-© 2026 IndoRCM Pro - Internal Documentation
+© 2026 IndoGRC Pro - Internal Documentation

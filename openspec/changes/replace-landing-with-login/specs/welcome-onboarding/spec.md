@@ -6,7 +6,7 @@ Sistem SHALL menampilkan welcome screen setiap kali user berhasil login (setiap 
 
 **Content:**
 - Company name: "PT BUMN Sejahtera"
-- Welcome message: "Selamat Datang di IndoRCM Pro"
+- Welcome message: "Selamat Datang di IndoGRC Pro"
 - Tagline: "Enterprise ICOFR Lifecycle Platform for Compliance with SK-5/DKU.MBU/11/2024"
 - Get Started button
 

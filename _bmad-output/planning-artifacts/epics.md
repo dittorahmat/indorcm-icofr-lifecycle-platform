@@ -10,11 +10,11 @@ inputDocuments:
   - 2024peraturan tk eselon i005.pdf
 ---
 
-# IndoRCM Pro - Epic Breakdown
+# IndoGRC Pro - Epic Breakdown
 
 ## Overview
 
-This document provides the complete epic and story breakdown for IndoRCM Pro, decomposing the requirements from the PRD, UX Design if it exists, and Architecture requirements into implementable stories.
+This document provides the complete epic and story breakdown for IndoGRC Pro, decomposing the requirements from the PRD, UX Design if it exists, and Architecture requirements into implementable stories.
 
 ## Requirements Inventory
 

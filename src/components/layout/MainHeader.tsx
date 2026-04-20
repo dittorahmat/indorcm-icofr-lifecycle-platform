@@ -51,7 +51,7 @@ export function MainHeader() {
                 "h-7 w-7 transition-transform group-hover:scale-110",
                 isDark ? "text-emerald-400" : "text-white"
               )} />
-              <span className="font-display tracking-tight">ISB Risk Pro</span>
+              <span className="font-display tracking-tight">IndoGRC Pro</span>
             </Link>
           </div>
           <div className="flex items-center gap-4">

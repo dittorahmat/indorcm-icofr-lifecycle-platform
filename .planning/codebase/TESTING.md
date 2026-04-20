@@ -1,7 +1,7 @@
-# Testing Strategy - IndoRCM Pro
+# Testing Strategy - IndoGRC Pro
 
 ## Current Testing Landscape
-As of the current state, IndoRCM Pro does not utilize automated testing frameworks like Vitest or Playwright. Quality assurance is primarily managed through built-in compliance logic and a specialized manual testing UI.
+As of the current state, IndoGRC Pro does not utilize automated testing frameworks like Vitest or Playwright. Quality assurance is primarily managed through built-in compliance logic and a specialized manual testing UI.
 
 ### 1. Manual Quality Assurance: Test Workbench
 The primary tool for verifying control effectiveness is the **Test Workbench** (`src/pages/testing/TestWorkbench.tsx`). It provides:

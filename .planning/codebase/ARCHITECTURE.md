@@ -1,10 +1,10 @@
-# IndoRCM Pro Architecture
+# IndoGRC Pro Architecture
 
-This document describes the high-level architectural patterns and data flow of the IndoRCM-ICOFR-Lifecycle-Platform.
+This document describes the high-level architectural patterns and data flow of the IndoGRC-ICOFR-Lifecycle-Platform.
 
 ## High-Level Overview
 
-IndoRCM Pro is a cloud-native application built on a modern serverless stack. It leverages Cloudflare Workers for its backend and a React-based SPA for its frontend.
+IndoGRC Pro is a cloud-native application built on a modern serverless stack. It leverages Cloudflare Workers for its backend and a React-based SPA for its frontend.
 
 ### Core Stack
 - **Frontend**: React 18 (TypeScript), Vite, Tailwind CSS, Radix UI (shadcn/ui), TanStack Query, Zustand.

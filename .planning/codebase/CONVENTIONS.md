@@ -1,7 +1,7 @@
-# Coding Conventions - IndoRCM Pro
+# Coding Conventions - IndoGRC Pro
 
 ## Project Context
-IndoRCM Pro is a specialized platform for the ICOFR (Internal Control over Financial Reporting) lifecycle, specifically tailored for BUMN (State-Owned Enterprises). It strictly adheres to **Regulation SK-5/DKU.MBU/11/2024**.
+IndoGRC Pro is a specialized platform for the ICOFR (Internal Control over Financial Reporting) lifecycle, specifically tailored for BUMN (State-Owned Enterprises). It strictly adheres to **Regulation SK-5/DKU.MBU/11/2024**.
 
 ## Tech Stack
 - **Frontend:** React 18+ (Vite), TypeScript, Tailwind CSS, Shadcn/UI, Framer Motion.

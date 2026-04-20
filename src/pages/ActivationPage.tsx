@@ -100,7 +100,7 @@ export function ActivationPage() {
             </div>
             <CardTitle className="text-2xl font-display font-bold">System Activation</CardTitle>
             <CardDescription>
-              IndoRCM Pro requires a valid license to operate.
+              IndoGRC Pro requires a valid license to operate.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -165,7 +165,7 @@ export function ActivationPage() {
 
         {/* Footer */}
         <p className="text-center text-sm text-muted-foreground mt-6">
-          IndoRCM Pro &copy; 2026
+          IndoGRC Pro &copy; 2026
         </p>
       </motion.div>
     </div>

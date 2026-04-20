@@ -28,6 +28,7 @@ import {
   DialogTitle, DialogFooter 
 } from '@/components/ui/dialog';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 

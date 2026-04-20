@@ -2,7 +2,7 @@
 
 ## Context
 
-The IndoRCM Pro platform targets BUMN in Indonesia, but is currently localized only to English. We need to introduce an i18n system that allows switching to Indonesian while preserving specific technical terms from Regulation SK-5/2024.
+The IndoGRC Pro platform targets BUMN in Indonesia, but is currently localized only to English. We need to introduce an i18n system that allows switching to Indonesian while preserving specific technical terms from Regulation SK-5/2024.
 
 ## Technical Strategy
 

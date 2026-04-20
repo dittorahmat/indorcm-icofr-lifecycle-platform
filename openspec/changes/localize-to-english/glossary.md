@@ -1,6 +1,6 @@
 # Terminology Glossary: Indonesian to English
 
-This glossary maps Indonesian terms used in the IndoRCM Pro platform to their standardized English equivalents.
+This glossary maps Indonesian terms used in the IndoGRC Pro platform to their standardized English equivalents.
 
 ## General UI & Actions
 

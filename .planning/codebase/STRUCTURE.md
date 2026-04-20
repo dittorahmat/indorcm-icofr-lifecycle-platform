@@ -1,6 +1,6 @@
-# IndoRCM Pro Project Structure
+# IndoGRC Pro Project Structure
 
-This document provides a directory-by-directory breakdown and key file responsibilities for the IndoRCM-ICOFR-Lifecycle-Platform.
+This document provides a directory-by-directory breakdown and key file responsibilities for the IndoGRC-ICOFR-Lifecycle-Platform.
 
 ## Project Root
 

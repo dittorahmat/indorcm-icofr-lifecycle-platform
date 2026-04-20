@@ -1,5 +1,5 @@
 /**
- * IndoRCM Pro - License Generator Utility
+ * IndoGRC Pro - License Generator Utility
  * This script is for INTERNAL USE ONLY to generate license keys for clients.
  */
 

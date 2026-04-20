@@ -1,6 +1,6 @@
 ## Why
 
-Implement a secure, offline-first licensing system for IndoRCM Pro to protect intellectual property and manage subscriptions in on-premise BUMN environments. This ensures that the application is only used on authorized machines and within the agreed-upon subscription period, providing a sustainable business model for the platform.
+Implement a secure, offline-first licensing system for IndoGRC Pro to protect intellectual property and manage subscriptions in on-premise BUMN environments. This ensures that the application is only used on authorized machines and within the agreed-upon subscription period, providing a sustainable business model for the platform.
 
 ## What Changes
 

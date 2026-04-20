@@ -1,6 +1,6 @@
-# User Stories: IndoRCM Pro - Platform Lifecycle ICOFR
+# User Stories: IndoGRC Pro - Platform Lifecycle ICOFR
 
-**Proyek:** IndoRCM Pro  
+**Proyek:** IndoGRC Pro  
 **Referensi PRD:** _bmad-output/prd/indorcm-pro-prd.md  
 **Status:** Backlog Ready
 

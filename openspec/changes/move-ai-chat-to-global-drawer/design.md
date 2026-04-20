@@ -1,6 +1,6 @@
 ## Context
 
-Aplikasi IndoRCM Pro memiliki asisten AI yang membantu pengguna dengan regulasi ICOFR. Saat ini, fungsionalitas chat terikat pada komponen `Dashboard.tsx`. Hal ini membatasi kegunaan asisten saat pengguna sedang bekerja di modul lain. Selain itu, penggunaan modal tengah (`Dialog`) menutupi konten utama dan membatasi tinggi area chat.
+Aplikasi IndoGRC Pro memiliki asisten AI yang membantu pengguna dengan regulasi ICOFR. Saat ini, fungsionalitas chat terikat pada komponen `Dashboard.tsx`. Hal ini membatasi kegunaan asisten saat pengguna sedang bekerja di modul lain. Selain itu, penggunaan modal tengah (`Dialog`) menutupi konten utama dan membatasi tinggi area chat.
 
 ## Goals / Non-Goals
 

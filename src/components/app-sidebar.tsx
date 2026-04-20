@@ -107,7 +107,7 @@ export function AppSidebar(): JSX.Element {
             IS
           </div>
           <div className="flex flex-col gap-0.5 leading-none transition-opacity duration-200 group-data-[collapsible=icon]:opacity-0">
-            <span className="font-bold text-sm">ISB Risk Pro</span>
+            <span className="font-bold text-sm">IndoGRC Pro</span>
             <span className="text-[10px] text-muted-foreground uppercase tracking-wider">ICOFR Digital</span>
           </div>
         </div>
@@ -290,7 +290,7 @@ export function AppSidebar(): JSX.Element {
 
       </SidebarContent>
       <SidebarFooter>
-        <div className="px-2 text-xs text-muted-foreground">© 2026 ISB Risk Pro</div>
+        <div className="px-2 text-xs text-muted-foreground">© 2026 IndoGRC Pro</div>
       </SidebarFooter>
     </Sidebar>
   );

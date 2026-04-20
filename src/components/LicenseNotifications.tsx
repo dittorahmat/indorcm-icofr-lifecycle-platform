@@ -59,7 +59,7 @@ export function LicenseModal() {
             Urgent: License Expiring Soon
           </DialogTitle>
           <DialogDescription className="pt-2">
-            Your IndoRCM Pro license will expire in <span className="font-bold text-red-600">{license.daysRemaining} days</span>. 
+            Your IndoGRC Pro license will expire in <span className="font-bold text-red-600">{license.daysRemaining} days</span>. 
             After this period, the system will be locked and all access will be disabled.
           </DialogDescription>
         </DialogHeader>

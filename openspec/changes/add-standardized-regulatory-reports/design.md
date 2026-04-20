@@ -7,7 +7,7 @@ The user needs to see realistic mockup reports for a coal mining company (PT BAT
 **Goals:**
 - Add a "Regulatory Appendices" tab to the existing `ReportsPage`.
 - Implement responsive, sortable tables for each of the 7 report types.
-- Ensure styling matches the existing IndoRCM Pro design system.
+- Ensure styling matches the existing IndoGRC Pro design system.
 
 **Non-Goals:**
 - Real-time data integration for these mockups (static mockup data will be used initially).

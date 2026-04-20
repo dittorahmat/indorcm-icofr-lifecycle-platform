@@ -1,4 +1,4 @@
-# State: IndoRCM Pro
+# State: IndoGRC Pro
 
 ## Project Status: Substantially Complete
 ### Active Focus:

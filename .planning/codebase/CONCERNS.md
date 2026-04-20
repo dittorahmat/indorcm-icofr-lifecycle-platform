@@ -1,6 +1,6 @@
-# Technical Concerns & Edge Cases: IndoRCM Pro
+# Technical Concerns & Edge Cases: IndoGRC Pro
 
-This document outlines the identified technical debt, security risks, scalability bottlenecks, and potential issues within the IndoRCM Pro - ICOFR Lifecycle Platform codebase.
+This document outlines the identified technical debt, security risks, scalability bottlenecks, and potential issues within the IndoGRC Pro - ICOFR Lifecycle Platform codebase.
 
 ## 1. Security Risks
 
