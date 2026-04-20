@@ -370,7 +370,7 @@ export function GLDataGrid({
         }
       }
     ],
-    [pmValue, assessmentData, isReadOnly, onAssessmentChange, onOwnerAcceptanceChange, currentUser]
+    [pmValue, assessmentData, isReadOnly, onAssessmentChange, onOwnerAcceptanceChange, currentUser, departments, onAssignDepartment]
   );
 
   const table = useReactTable({
@@ -415,6 +415,8 @@ export function GLDataGrid({
 
         // Add accounts under this FSLI
         row.getLeafRows().forEach(leaf => {
+          const assessments = assessmentData[String(fsliName) || ''] || {};
+          const isQualSignificant = Object.values(assessments).some(v => v === 'High');
           const isKuanSignificant = Math.abs(leaf.original.balance) >= pmValue;
           const isInScope = isKuanSignificant || isQualSignificant;
           const assignedDeptId = (leaf.original as any).assignedDepartmentId;

@@ -23,5 +23,13 @@
     "error": "Error",
     "warning": "Warning",
     "info": "Information"
+  },
+  "icofr": {
+    "elc": "Entity Level Control (ELC)",
+    "tlc": "Transaction Level Control (TLC)",
+    "policyUmbrella": "Policy Umbrella",
+    "linkedTo": "Linked to",
+    "elcTab": "RCM ELC (Strategic)",
+    "tlcTab": "RCM TLC (Operational)"
   }
 }

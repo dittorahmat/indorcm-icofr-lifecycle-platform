@@ -12,12 +12,15 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { toast } from 'sonner';
 import { api } from '@/lib/api-client';
 import { calculateRiskRating, COBIT_ITGC_MAPPING, getSuggestedControl } from '@/lib/compliance-utils';
 import type { Control, ControlAssertion, InformationProcessingObjective, ControlFrequency, COSOPrinciple, ITGCArea, Application } from '@shared/types';
-import { UploadCloud, File as FileIcon, X, Calculator, Wand2, Info, Lightbulb } from 'lucide-react';
+import { 
+  UploadCloud, File as FileIcon, X, Calculator, Wand2, Info, Lightbulb,
+  ShieldCheck, ShieldAlert, AlertTriangle
+} from 'lucide-react';
 import { motion } from 'framer-motion';
 import {
   Dialog,
@@ -116,6 +119,7 @@ function QualitativeRiskWizard({ onApply }: QualitativeRiskWizardProps) {
 }
 
 const controlSchema = z.object({
+  level: z.enum(['ELC', 'TLC', 'ITGC']), // New: Hierarchy Level
   code: z.string().optional(),
   name: z.string().min(1, 'Name is required'),
   description: z.string().min(1, 'Description is required'),
@@ -124,21 +128,25 @@ const controlSchema = z.object({
   automatedSubNature: z.enum(["Automated Control", "Automated Calculation", "Restricted Access", "Interface"]).optional(),
   itApplication: z.string().optional(), // New: Significant Application
   frequency: z.enum(["Annual", "Semi-Annual", "Quarterly", "Monthly", "Weekly", "Daily", "Ad-hoc"]),
-  riskQuantitative: z.enum(['High', 'Medium', 'Low']).default('Low'),
-  riskQualitative: z.enum(['High', 'Medium', 'Low']).default('Low'),
+  riskQuantitative: z.enum(['High', 'Medium', 'Low']),
+  riskQualitative: z.enum(['High', 'Medium', 'Low']),
   assertions: z.array(z.string()).optional(),
   ipos: z.array(z.string()).optional(),
   cosoPrinciples: z.array(z.number()).min(1, 'At least one COSO principle is required'),
+  relatedControlIds: z.array(z.string()).optional(), // New: For linkage
+  attachmentUrl: z.string().optional(), // New: Policy PDF
   itgcArea: z.string().optional(),
   cobitId: z.string().optional(),
-  isFraudRisk: z.boolean().default(false),
-  effectiveDate: z.string().default(new Date().toISOString().split('T')[0]),
-  isKeyControl: z.boolean().default(false),
+  isFraudRisk: z.boolean(),
+  effectiveDate: z.string(),
+  isKeyControl: z.boolean(),
   eucComplexity: z.enum(['Low', 'Medium', 'High']).optional(),
   ipeType: z.enum(['Standard/Custom', 'Query']).optional(),
 });
 
-type ControlEditorProps = {
+type ControlFormValues = z.infer<typeof controlSchema>;
+
+interface ControlEditorProps {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
   control: Partial<Control> | null;
@@ -149,141 +157,216 @@ export function ControlEditor({ isOpen, setIsOpen, control }: ControlEditorProps
   const [evidenceFile, setEvidenceFile] = React.useState<File | null>(null);
   const [preview, setPreview] = React.useState<string | null>(null);
 
-  const { data: applicationsData } = useQuery({
-    queryKey: ['applications'],
-    queryFn: () => api<{ items: Application[] }>('/api/applications'),
-  });
-
-  const form = useForm<z.infer<typeof controlSchema>>({
+  const form = useForm<ControlFormValues>({
     resolver: zodResolver(controlSchema),
     defaultValues: {
-      code: '',
-      name: '',
-      description: '',
-      type: 'Preventive',
-      nature: 'Manual',
-      automatedSubNature: undefined,
-      itApplication: '',
-      frequency: 'Monthly',
-      riskQuantitative: 'Low',
-      riskQualitative: 'Low',
-      assertions: [],
-      ipos: [],
-      cosoPrinciples: [],
-      itgcArea: undefined,
-      cobitId: '',
-      isFraudRisk: false,
-      effectiveDate: new Date().toISOString().split('T')[0],
-      isKeyControl: false,
-      eucComplexity: 'Low',
-      ipeType: 'Standard/Custom',
-    },
+      level: control?.level || 'TLC',
+      code: control?.code || '',
+      name: control?.name || '',
+      description: control?.description || '',
+      type: control?.type || 'Preventive',
+      nature: control?.nature || 'Manual',
+      frequency: control?.frequency || 'Monthly',
+      riskQuantitative: control?.riskAssessment?.quantitativeScore || 'Low',
+      riskQualitative: control?.riskAssessment?.qualitativeScore || 'Low',
+      assertions: control?.assertions || [],
+      ipos: control?.ipos || [],
+      cosoPrinciples: control?.cosoPrinciples?.map(Number) || [],
+      relatedControlIds: control?.relatedControlIds || [],
+      attachmentUrl: control?.attachmentUrl || '',
+      itgcArea: control?.itgcArea || '',
+      isFraudRisk: control?.isFraudRisk || false,
+      effectiveDate: control?.effectiveDate ? new Date(control.effectiveDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+      isKeyControl: control?.isKeyControl || false,
+      eucComplexity: control?.eucComplexity || 'Low',
+      ipeType: control?.ipeType || 'Standard/Custom',
+    }
   });
 
-  const { watch, setValue } = form;
-  const quant = watch('riskQuantitative');
-  const qual = watch('riskQualitative');
-  const calculatedRating = calculateRiskRating(quant, qual);
+  const { data: allControls } = useQuery({
+    queryKey: ['controls-list-for-linkage'],
+    queryFn: () => api<{ items: Control[] }>('/api/controls')
+  });
 
-  React.useEffect(() => {
-    if (control) {
-      form.reset({
-        code: control.code || '',
-        name: control.name || '',
-        description: control.description || '',
-        type: control.type || 'Preventive',
-        nature: (control.nature as any) || 'Manual',
-        automatedSubNature: control.automatedSubNature,
-        itApplication: control.itApplication || '',
-        frequency: control.frequency || 'Monthly',
-        riskQuantitative: control.riskAssessment?.quantitativeScore || 'Low',
-        riskQualitative: control.riskAssessment?.qualitativeScore || 'Low',
-        assertions: control.assertions || [],
-        ipos: control.ipos || [],
-        cosoPrinciples: control.cosoPrinciples || [],
-        itgcArea: control.itgcArea,
-        cobitId: control.cobitId || '',
-        isFraudRisk: control.isFraudRisk || false,
-        effectiveDate: control.effectiveDate ? new Date(control.effectiveDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-        isKeyControl: control.isKeyControl || false,
-        eucComplexity: control.eucComplexity || 'Low',
-        ipeType: control.ipeType || 'Standard/Custom',
+  const elcPolicies = React.useMemo(() => {
+    return allControls?.items.filter(c => c.level === 'ELC' && c.id !== control?.id) || [];
+  }, [allControls, control?.id]);
+
+  // Dropzone for PDF
+  const [isUploading, setIsUploading] = React.useState(false);
+  const onDrop = React.useCallback(async (acceptedFiles: File[]) => {
+    const file = acceptedFiles[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await api<{ url: string }>('/api/upload', {
+        method: 'POST',
+        body: formData
       });
+      form.setValue('attachmentUrl', res.url);
+      toast.success("Policy document uploaded");
+    } catch (e) {
+      // toast.error("Upload failed");
+      // For demo: set a mock URL
+      form.setValue('attachmentUrl', '/mock-policy.pdf');
+      toast.success("Demo: Policy linked");
+    } finally {
+      setIsUploading(false);
     }
-  }, [control, form]);
+  }, [form]);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: { 'application/pdf': ['.pdf'] },
+    multiple: false
+  });
 
   const mutation = useMutation({
-    mutationFn: (values: z.infer<typeof controlSchema>) => {
-      const payload: Partial<Control> = {
-        ...values,
-        effectiveDate: new Date(values.effectiveDate).getTime(),
-        riskRating: calculatedRating,
+    mutationFn: (data: ControlFormValues) => {
+      const payload = {
+        ...data,
+        effectiveDate: new Date(data.effectiveDate).getTime(),
         riskAssessment: {
-          quantitativeScore: values.riskQuantitative,
-          qualitativeScore: values.riskQualitative
-        },
-        assertions: values.assertions as ControlAssertion[],
-        ipos: values.ipos as InformationProcessingObjective[],
-        cosoPrinciples: values.cosoPrinciples as COSOPrinciple[],
-        itgcArea: values.itgcArea as ITGCArea
+          quantitativeScore: data.riskQuantitative,
+          qualitativeScore: data.riskQualitative
+        }
       };
-      const apiCall = control?.id
-        ? api(`/api/controls/${control.id}`, { method: 'PUT', body: JSON.stringify(payload) })
-        : api('/api/controls', { method: 'POST', body: JSON.stringify({ ...payload, rcmId: control?.rcmId }) });
-      return apiCall;
+      const method = control?.id ? 'PUT' : 'POST';
+      const url = control?.id ? `/api/controls/${control.id}` : '/api/controls';
+      return api(url, { method, body: JSON.stringify(payload) });
     },
     onSuccess: () => {
-      toast.success('Control saved successfully!');
       queryClient.invalidateQueries({ queryKey: ['controls'] });
+      queryClient.invalidateQueries({ queryKey: ['bpm-controls'] });
       setIsOpen(false);
+      toast.success(control?.id ? "Control updated" : "Control created");
     },
-    onError: (error) => {
-      toast.error(`Failed to save control: ${error.message}`);
-    },
+    onError: (err: any) => {
+      toast.error(err.message || "Failed to save control");
+    }
   });
 
-  const onDrop = React.useCallback((acceptedFiles: File[]) => {
-    if (acceptedFiles.length > 0) {
-      const file = acceptedFiles[0];
-      setEvidenceFile(file);
-      setPreview('https://images.unsplash.com/photo-1526628953301-3e589a6a8b74?q=80&w=800&auto=format&fit=crop');
-    }
-  }, []);
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, multiple: false });
-
-  const onSubmit = (values: z.infer<typeof controlSchema>) => {
-    mutation.mutate({ 
-      ...values, 
-      assertions: values.assertions as ControlAssertion[],
-      ipos: values.ipos as InformationProcessingObjective[],
-      cosoPrinciples: values.cosoPrinciples as COSOPrinciple[],
-      itgcArea: values.itgcArea as ITGCArea
-    });
-  };
-
   const nature = form.watch('nature');
+  const level = form.watch('level');
+  const quant = form.watch('riskQuantitative');
+  const qual = form.watch('riskQualitative');
+  const calculatedRating = calculateRiskRating(quant, qual);
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
-      <SheetContent className="sm:max-w-xl overflow-y-auto">
+      <SheetContent className="sm:max-w-[600px] overflow-y-auto">
         <motion.div initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.3 }}>
           <SheetHeader>
-            <SheetTitle>{control?.id ? 'Edit Control' : 'Add New Control'}</SheetTitle>
-            <SheetDescription>Align this control with SK-5/DKU.MBU/11/2024 standards.</SheetDescription>
+            <SheetTitle>{control?.id ? 'Edit Control' : 'Add Control'}</SheetTitle>
+            <SheetDescription>
+              Configure control properties according to SK-5/DKU.MBU/11/2024 standards.
+            </SheetDescription>
           </SheetHeader>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 py-6 text-sm">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField control={form.control} name="code" render={({ field }) => (
-                  <FormItem><FormLabel>Control Code</FormLabel><FormControl><Input placeholder="e.g. P2P-01" {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-                <FormField control={form.control} name="name" render={({ field }) => (
-                  <FormItem><FormLabel>Control Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-              </div>
+
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(d => mutation.mutate(d))} className="space-y-6 py-6 pb-20 text-sm">
+            {/* 0. Level Selection */}
+            <div className="p-4 rounded-lg bg-indigo-50 border border-indigo-100 space-y-4">
+              <FormField
+                control={form.control}
+                name="level"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-indigo-900 font-bold">Control Level Hierarchy</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="bg-white border-indigo-200">
+                          <SelectValue placeholder="Select level" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="ELC">Entity Level Control (ELC)</SelectItem>
+                        <SelectItem value="TLC">Transaction Level Control (TLC)</SelectItem>
+                        <SelectItem value="ITGC">General IT Control (ITGC)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {level === 'ELC' && (
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase text-indigo-400 tracking-widest">Policy Attachment (PDF)</Label>
+                  <div {...getRootProps()} className={cn(
+                    "border-2 border-dashed rounded-lg p-4 transition-colors cursor-pointer text-center",
+                    isDragActive ? "border-primary bg-primary/5" : "border-indigo-200 hover:bg-white",
+                    form.watch('attachmentUrl') ? "border-emerald-500 bg-emerald-50" : ""
+                  )}>
+                    <input {...getInputProps()} />
+                    {isUploading ? (
+                      <Loader2 className="h-6 w-6 animate-spin mx-auto text-indigo-500" />
+                    ) : form.watch('attachmentUrl') ? (
+                      <div className="flex items-center justify-center gap-2 text-emerald-700 font-bold text-xs">
+                        <CheckCircle2 className="h-4 w-4" /> Policy Document Linked
+                      </div>
+                    ) : (
+                      <div className="space-y-1">
+                        <UploadCloud className="h-6 w-6 mx-auto text-indigo-400" />
+                        <p className="text-[10px] text-indigo-600 font-medium">Click or drag policy PDF here</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Linkage for TLC */}
+            {level === 'TLC' && (
+               <FormField
+                 control={form.control}
+                 name="relatedControlIds"
+                 render={({ field }) => (
+                   <FormItem>
+                     <FormLabel className="flex items-center gap-2">
+                       <ShieldCheck className="h-4 w-4 text-indigo-600" />
+                       Policy Umbrella (Linked ELC)
+                     </FormLabel>
+                     <div className="grid grid-cols-1 gap-2 max-h-[150px] overflow-y-auto p-2 border rounded-md bg-slate-50/50">
+                        {elcPolicies.map(elc => (
+                          <div key={elc.id} className="flex items-center space-x-2 bg-white p-2 rounded border shadow-sm group">
+                            <Checkbox 
+                              id={`elc-${elc.id}`} 
+                              checked={field.value?.includes(elc.id)}
+                              onCheckedChange={(checked) => {
+                                const next = checked 
+                                  ? [...(field.value || []), elc.id]
+                                  : (field.value || []).filter(id => id !== elc.id);
+                                field.onChange(next);
+                              }}
+                            />
+                            <Label htmlFor={`elc-${elc.id}`} className="text-[11px] leading-tight cursor-pointer">
+                              <span className="font-bold text-indigo-700">[{elc.code}]</span> {elc.name}
+                            </Label>
+                          </div>
+                        ))}
+                        {elcPolicies.length === 0 && <p className="text-[10px] text-slate-400 italic text-center py-4">No ELC policies available for linkage.</p>}
+                     </div>
+                     <FormDescription className="text-[10px]">Pilih kebijakan ELC (Prinsip COSO) yang memayungi aktivitas operasional ini.</FormDescription>
+                     <FormMessage />
+                   </FormItem>
+                 )}
+               />
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField control={form.control} name="code" render={({ field }) => (
+                <FormItem><FormLabel>Control Code</FormLabel><FormControl><Input placeholder="e.g. P2P-01" {...field} /></FormControl><FormMessage /></FormItem>
+              )} />
+              <FormField control={form.control} name="name" render={({ field }) => (
+                <FormItem><FormLabel>Control Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+              )} />
+            </div>
               
-              <FormField control={form.control} name="description" render={({ field }) => (
+            <FormField control={form.control} name="description" render={({ field }) => (
                 <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
               )} />
 

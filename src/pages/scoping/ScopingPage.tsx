@@ -66,7 +66,7 @@ export function ScopingPage() {
   const activeSnapshot = snapshots?.items.find(s => s.isActive);
 
   const createSimMutation = useMutation({
-    mutationFn: (data: Partial<MaterialitySimulation>) => api('/api/simulations', { method: 'POST', body: JSON.stringify(data) }),
+    mutationFn: (data: Partial<MaterialitySimulation>) => api<MaterialitySimulation>('/api/simulations', { method: 'POST', body: JSON.stringify(data) }),
     onSuccess: (newSim) => {
       queryClient.invalidateQueries({ queryKey: ['simulations'] });
       setSelectedSimId(newSim.id);
@@ -451,7 +451,7 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
 
   const submitSimMutation = useMutation({
     mutationFn: () => 
-      api(`/api/simulations/${simState.id}/submit`, { 
+      api<MaterialitySimulation>(`/api/simulations/${simState.id}/submit`, { 
         method: 'POST',
         body: JSON.stringify({ ...simState, omValue, pmValue, significantAccounts })
       }),

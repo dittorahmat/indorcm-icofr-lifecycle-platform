@@ -336,7 +336,7 @@ export function detectGLColumns(headers: string[]): Record<string, string> {
       if (mapping[field]) return;
       
       // Check if header matches any variation
-      const variations = GL_COLUMN_MAPPING[field];
+      const variations = GL_COLUMN_MAPPING[field] as readonly string[];
       if (variations.includes(trimmedHeader)) {
         mapping[field] = trimmedHeader;
       }

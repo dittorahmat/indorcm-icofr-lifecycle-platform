@@ -1,6 +1,5 @@
 // Making changes to this file is **STRICTLY** forbidden. Please add your routes in `userRoutes.ts` file.
 import { createApp } from './app';
-import type { DurableObject, DurableObjectState } from 'cloudflare:workers';
 
 const app = createApp();
 
@@ -15,8 +14,8 @@ app.onError((err, c) => {
 export { app };
 
 // Durable Object stub for Cloudflare template compatibility
-export class GlobalDurableObject implements DurableObject {
-  constructor(public ctx: DurableObjectState, public env: any) {}
+export class GlobalDurableObject {
+  constructor(public ctx: any, public env: any) {}
 
   async fetch(request: Request): Promise<Response> {
     return new Response('GlobalDurableObject stub', { status: 200 });

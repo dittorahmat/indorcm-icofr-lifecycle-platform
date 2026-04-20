@@ -115,8 +115,12 @@ export function getMachineFingerprint(): string {
               }
             }
             if (candidates.length > 0) return `MAC-${candidates.sort()[0]}`;
-        } catch (e) {}
+        } catch (e) {
+          // Fallback if network interfaces cannot be accessed
+        }
     }
-  } catch (error) {}
+  } catch (error) {
+    // General fingerprinting error fallback
+  }
   return 'CLOUDFLARE-EDGE-NODE';
 }

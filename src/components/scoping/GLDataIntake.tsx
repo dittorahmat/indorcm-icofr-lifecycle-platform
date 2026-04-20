@@ -70,7 +70,7 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
     console.log('[4] Validation result:', validation);
     if (!validation.valid) {
       toast.error(`Missing required columns: ${validation.missing.join(', ')}`, {
-        description: `Expected columns: ${validation.missing.map(m => Object.keys(GL_COLUMN_MAPPING).find(k => GL_COLUMN_MAPPING[k as keyof typeof GL_COLUMN_MAPPING].includes(m)) || m).join(', ')}`
+        description: `Expected columns: ${validation.missing.map(m => Object.keys(GL_COLUMN_MAPPING).find(k => (GL_COLUMN_MAPPING[k as keyof typeof GL_COLUMN_MAPPING] as unknown as string[]).includes(m)) || m).join(', ')}`
       });
       console.log('[4] ❌ VALIDATION FAILED - Returning early');
       return;

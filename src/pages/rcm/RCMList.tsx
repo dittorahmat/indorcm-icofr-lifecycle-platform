@@ -3,593 +3,341 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { api } from '@/lib/api-client';
-import { cn } from '@/lib/utils';
-import type { RCM, Control, ChangeLog, SOCReport, Application, WBSReport } from '@shared/types';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
+import { RCM, Control, UserRole, WBSReport } from '@shared/types';
 import { 
-  PlusCircle, FileDown, ShieldCheck, History, Search, Cloud, 
-  Server, Workflow, CheckCircle2, XCircle, ArrowRight, Eye, AlertTriangle, Info, BellRing
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
+} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { 
+  Plus, Edit, Trash2, Search, FileDown, CheckCircle2, AlertTriangle, 
+  History, Eye, Network, BellRing, Cloud, ShieldAlert, Zap,
+  Loader2, Info, ChevronRight, LayoutDashboard, Database, PlusCircle, Edit2,
+  ShieldCheck
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { ControlEditor } from '@/components/rcm/ControlEditor';
-import { RiskLibraryLookup } from '@/components/rcm/RiskLibraryLookup';
-const BPMEditor = React.lazy(() => import('@/components/rcm/BPMEditor').then(m => ({ default: m.BPMEditor })));
-import { motion, AnimatePresence } from 'framer-motion';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { 
+  Dialog, DialogContent, DialogDescription, DialogHeader, 
+  DialogTitle, DialogFooter, DialogTrigger 
+} from '@/components/ui/dialog';
 import { toast } from 'sonner';
-
-interface RCMDiffViewerProps {
-  current: RCM;
-  proposed: Partial<RCM>;
-}
-
-function RCMDiffViewer({ current, proposed }: RCMDiffViewerProps) {
-  const fields: (keyof RCM)[] = ['process', 'subProcess', 'riskDescription'];
-  
-  return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="text-[10px] font-bold uppercase text-slate-400 px-2">Current Version</div>
-        <div className="text-[10px] font-bold uppercase text-slate-400 px-2">Proposed Changes</div>
-      </div>
-      <div className="space-y-2">
-        {fields.map(field => {
-          const isChanged = proposed[field] !== undefined && proposed[field] !== current[field];
-          return (
-            <div key={field} className={cn(
-              "grid grid-cols-2 gap-4 p-2 rounded-md transition-colors",
-              isChanged ? "bg-amber-50/50" : "bg-slate-50/30"
-            )}>
-              <div className="text-xs text-slate-600 line-clamp-2">{String(current[field] || '-')}</div>
-              <div className="flex items-start gap-2">
-                {isChanged && <ArrowRight className="h-3 w-3 text-amber-500 mt-0.5" />}
-                <div className={cn(
-                  "text-xs font-medium",
-                  isChanged ? "text-amber-700" : "text-slate-400"
-                )}>
-                  {isChanged ? String(proposed[field]) : "No change"}
-                </div>
-              </div>
-            </div>
-          );
-        })}
-        {proposed.bpmData && (
-          <div className="grid grid-cols-2 gap-4 p-2 rounded-md bg-blue-50/50">
-            <div className="text-xs text-slate-600 italic">Diagram Version 1.0</div>
-            <div className="flex items-start gap-2">
-              <ArrowRight className="h-3 w-3 text-blue-500 mt-0.5" />
-              <div className="text-xs font-medium text-blue-700">Updated BPM Layout and Nodes</div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+import { ControlEditor } from '@/components/rcm/ControlEditor';
+import { 
+  Tabs, TabsContent, TabsList, TabsTrigger 
+} from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Skeleton } from '@/components/ui/skeleton';
+import { BPMEditor } from '@/components/rcm/BPMEditor';
 
 export function RCMList() {
-  const [selectedControl, setSelectedControl] = React.useState<Control | null>(null);
+  const queryClient = useQueryClient();
+  const [searchTerm, setSearchTerm] = React.useState('');
   const [isEditorOpen, setEditorOpen] = React.useState(false);
-  const [isAddProcessOpen, setAddProcessOpen] = React.useState(false);
-  const [isBpmOpen, setBpmOpen] = React.useState(false);
-  const [isCompareOpen, setCompareOpen] = React.useState(false);
-  const [isRejectOpen, setRejectOpen] = React.useState(false);
-  const [selectedRcm, setSelectedRcm] = React.useState<RCM | null>(null);
-  const [rejectReason, setRejectReason] = React.useState("");
-  const [newRcmData, setNewRcmData] = React.useState({ process: '', subProcess: '', riskDescription: '' });
+  const [selectedControl, setSelectedControl] = React.useState<Partial<Control> | null>(null);
 
-  const location = useLocation();
-  const searchParams = new URLSearchParams(location.search);
-  const fsliFilter = searchParams.get('fsliCode');
-
-  const { data: rcmData, isLoading: rcmLoading } = useQuery({
-    queryKey: ['rcm'],
-    queryFn: () => api<{ items: RCM[] }>('/api/rcm'),
-  });
-
+  // 1. Fetch Controls
   const { data: controlsData, isLoading: controlsLoading } = useQuery({
     queryKey: ['controls'],
     queryFn: () => api<{ items: Control[] }>('/api/controls'),
   });
 
-  const filteredRcm = React.useMemo(() => {
-    if (!rcmData?.items) return [];
-    if (!fsliFilter) return rcmData.items;
-
-    // Filter RCMs where at least one linked control covers the FSLI code
-    return rcmData.items.filter(rcm => {
-      const rcmControls = (controlsData?.items || []).filter(c => c.rcmId === rcm.id);
-      return rcmControls.some(c => (c.fsliCodes || []).includes(fsliFilter)) || 
-             rcm.process.toLowerCase().includes(fsliFilter.toLowerCase());
-    });
-  }, [rcmData, controlsData, fsliFilter]);
-
-  const { data: changeLogsData } = useQuery({
-    queryKey: ['changelogs'],
-    queryFn: () => api<{ items: ChangeLog[] }>('/api/changelogs'),
-  });
-
-  const { data: socReportsData } = useQuery({
-    queryKey: ['socreports'],
-    queryFn: () => api<{ items: SOCReport[] }>('/api/socreports'),
-  });
-
-  const { data: applicationsData } = useQuery({
-    queryKey: ['applications'],
-    queryFn: () => api<{ items: Application[] }>('/api/applications'),
-  });
-
+  // 2. Fetch WBS Reports
   const { data: wbsData } = useQuery({
-    queryKey: ['wbsreports'],
+    queryKey: ['wbs-reports'],
     queryFn: () => api<{ items: WBSReport[] }>('/api/wbsreports'),
   });
 
-  const queryClient = useQueryClient();
-  const mockRole = localStorage.getItem('mockRole') || 'Line 1';
-
-  const validateMutation = useMutation({
-    mutationFn: (rcmId: string) => api(`/api/rcm/${rcmId}/validate`, { method: 'POST' }),
-    onSuccess: () => {
-      toast.success('RCM design validated and activated!');
-      queryClient.invalidateQueries({ queryKey: ['rcm'] });
-    }
+  const { data: currentUser } = useQuery({
+    queryKey: ['auth-me'],
+    queryFn: () => api<User>('/api/auth/me'),
   });
 
-  const approveChangeMutation = useMutation({
-    mutationFn: (rcmId: string) => api(`/api/rcm/${rcmId}/approve-change`, { method: 'POST' }),
-    onSuccess: () => {
-      toast.success('RCM changes approved and effective!');
-      queryClient.invalidateQueries({ queryKey: ['rcm'] });
-      setCompareOpen(false);
-    }
-  });
+  const isAdminOrLine2 = currentUser?.role === 'Admin' || currentUser?.role === 'Line 2';
 
-  const rejectChangeMutation = useMutation({
-    mutationFn: ({ rcmId, reason }: { rcmId: string, reason: string }) => 
-      api(`/api/rcm/${rcmId}/reject-change`, { method: 'POST', body: JSON.stringify({ reason }) }),
-    onSuccess: () => {
-      toast.info('Change request rejected and returned to Line 1');
-      queryClient.invalidateQueries({ queryKey: ['rcm'] });
-      setRejectOpen(false);
-      setCompareOpen(false);
-      setRejectReason("");
-    }
-  });
-
-  const createRcmMutation = useMutation({
-    mutationFn: (data: typeof newRcmData) => api('/api/rcm', { method: 'POST', body: JSON.stringify(data) }),
-    onSuccess: () => {
-      toast.success('New process added successfully');
-      queryClient.invalidateQueries({ queryKey: ['rcm'] });
-      setAddProcessOpen(false);
-      setNewRcmData({ process: '', subProcess: '', riskDescription: '' });
-    }
-  });
-
-  const controlsByRcmId = React.useMemo(() => {
-    if (!controlsData) return {};
-    return controlsData.items.reduce((acc, control) => {
-      (acc[control.rcmId] = acc[control.rcmId] || []).push(control);
-      return acc;
-    }, {} as Record<string, Control[]>);
-  }, [controlsData]);
-
-  const wbsByControlId = React.useMemo(() => {
-    if (!wbsData) return {};
-    const map: Record<string, WBSReport[]> = {};
-    wbsData.items.forEach(report => {
-      report.relatedControlIds?.forEach(cid => {
-        (map[cid] = map[cid] || []).push(report);
-      });
-    });
-    return map;
-  }, [wbsData]);
+  const COSO_PRINCIPLES = [
+    { id: 1, name: "Integritas dan Nilai Etika", component: "Lingkungan Pengendalian" },
+    { id: 2, name: "Pengawasan Dewan Komisaris", component: "Lingkungan Pengendalian" },
+    { id: 3, name: "Struktur, Wewenang & Tanggung Jawab", component: "Lingkungan Pengendalian" },
+    { id: 4, name: "Komitmen terhadap Kompetensi", component: "Lingkungan Pengendalian" },
+    { id: 5, name: "Akuntabilitas Personel", component: "Lingkungan Pengendalian" },
+    { id: 6, name: "Tujuan Pengendalian Intern", component: "Penilaian Risiko" },
+    { id: 7, name: "Identifikasi & Analisis Risiko", component: "Penilaian Risiko" },
+    { id: 8, name: "Risiko Kecurangan (Fraud)", component: "Penilaian Risiko" },
+    { id: 9, name: "Analisis Perubahan Signifikan", component: "Penilaian Risiko" },
+    { id: 10, name: "Menentukan Aktivitas Pengendalian", component: "Aktivitas Pengendalian" },
+    { id: 11, name: "Pengendalian Umum TI (ITGC)", component: "Aktivitas Pengendalian" },
+    { id: 12, name: "Kebijakan dan Prosedur", component: "Aktivitas Pengendalian" },
+    { id: 13, name: "Informasi Relevan & Berkualitas", component: "Informasi dan Komunikasi" },
+    { id: 14, name: "Komunikasi Internal Efektif", component: "Informasi dan Komunikasi" },
+    { id: 15, name: "Komunikasi Eksternal Efektif", component: "Informasi dan Komunikasi" },
+    { id: 16, name: "Evaluasi Berkelanjutan & Terpisah", component: "Pemantauan" },
+    { id: 17, name: "Evaluasi & Komunikasi Defisiensi", component: "Pemantauan" },
+  ];
 
   const handleEditControl = (control: Control) => {
     setSelectedControl(control);
     setEditorOpen(true);
   };
 
-  const handleAddNewControl = (rcmId: string) => {
-    const newControl: Partial<Control> = { rcmId, name: "New Control", description: "", assertions: [] };
-    setSelectedControl(newControl as Control);
-    setEditorOpen(true);
-  };
-
-  const isLoading = rcmLoading || controlsLoading;
+  const filteredControls = (controlsData?.items || []).filter(c => 
+    c.level === 'TLC' && 
+    (c.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+     c.code?.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
 
   return (
     <AppLayout container>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="flex flex-col space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold">Risk Control</h1>
-            <p className="text-muted-foreground">Manage processes, risks, and internal controls.</p>
+            <h1 className="text-3xl font-bold tracking-tight">RCM Manager</h1>
+            <p className="text-muted-foreground italic text-sm">Regulatory Compliance Management according to SK-5/DKU.MBU/11/2024.</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline"><FileDown className="h-4 w-4 mr-2" /> Export</Button>
-            {/* DEMO MODE: All lines can add process */}
-            {/* {mockRole === 'Line 2' && ( */}
-              <Button onClick={() => setAddProcessOpen(true)}><PlusCircle className="h-4 w-4 mr-2" /> Add Risk</Button>
-            {/* )} */}
+            <Button variant="outline"><FileDown className="h-4 w-4 mr-2" /> Export RCM</Button>
           </div>
         </div>
 
-        <Tabs defaultValue="matrix">
-          <TabsList>
-            <TabsTrigger value="matrix">RCM Matrix (TLC)</TabsTrigger>
-            <TabsTrigger value="elc">Indirect ELC (Table 17)</TabsTrigger>
+        <Tabs defaultValue="tlc" className="w-full">
+          <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent gap-8 mb-4">
+            <TabsTrigger 
+              value="tlc" 
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-indigo-600 data-[state=active]:bg-transparent px-2 py-3 font-bold text-slate-500 data-[state=active]:text-indigo-600"
+            >
+              RCM TLC (Operasional)
+            </TabsTrigger>
+            
+            {isAdminOrLine2 && (
+              <TabsTrigger 
+                value="elc" 
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-indigo-600 data-[state=active]:bg-transparent px-2 py-3 font-bold text-slate-500 data-[state=active]:text-indigo-600"
+              >
+                RCM ELC (Entity Level)
+              </TabsTrigger>
+            )}
 
-            <TabsTrigger value="logs">Change Log (Appendix 6)</TabsTrigger>
-            <TabsTrigger value="soc">Third Party / SOC (Chapter III 4.3)</TabsTrigger>
-
-            <TabsTrigger value="apps">Significant Apps (Chapter III 1.5)</TabsTrigger>
-
-            <TabsTrigger value="wbs">WBS Indicators (Principle 14)</TabsTrigger>
-
+            <TabsTrigger 
+              value="wbs" 
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-indigo-600 data-[state=active]:bg-transparent px-2 py-3 font-bold text-slate-500 data-[state=active]:text-indigo-600"
+            >
+              Whistleblowing Integration
+            </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="matrix" className="space-y-6 pt-4">
-            <div className="flex items-center gap-4">
+          <TabsContent value="tlc" className="space-y-6">
+            <div className="flex items-center justify-between gap-4 bg-slate-100/50 p-4 rounded-lg border border-slate-200">
               <div className="relative max-w-sm w-full">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Search controls or risks..." className="pl-8" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input 
+                  placeholder="Cari kontrol teknis..." 
+                  className="pl-9 bg-white" 
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <div className="text-right">
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Level Pengendalian</p>
+                <p className="text-xs font-bold text-slate-600">Transaction Level Control (TLC)</p>
               </div>
             </div>
 
-            <div className="space-y-8">
-              {isLoading ? (
-                Array.from({ length: 2 }).map((_, i) => <Skeleton key={i} className="h-64 w-full" />)
-              ) : (
-                filteredRcm.map(rcm => (
-                  <Card key={rcm.id}>
-                    <CardHeader>
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <CardTitle className="text-lg">{rcm.process} / {rcm.subProcess}</CardTitle>
-                          <CardDescription className="mt-1 text-xs">
-                            <span className="font-semibold text-foreground uppercase tracking-tight">Risk:</span> {rcm.riskDescription}
-                          </CardDescription>
+            <div className="border rounded-xl bg-white shadow-sm overflow-hidden">
+              <Table>
+                <TableHeader className="bg-slate-50/50">
+                  <TableRow>
+                    <TableHead className="w-[100px] font-bold">Code</TableHead>
+                    <TableHead className="font-bold">Aktivitas Pengendalian</TableHead>
+                    <TableHead className="font-bold">Nature</TableHead>
+                    <TableHead className="font-bold text-center">Risk</TableHead>
+                    <TableHead className="text-center font-bold">Linked ELC</TableHead>
+                    <TableHead className="w-[80px]"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {controlsLoading ? (
+                    <TableRow><TableCell colSpan={6} className="h-32 text-center text-slate-400">Loading controls...</TableCell></TableRow>
+                  ) : filteredControls.length === 0 ? (
+                    <TableRow><TableCell colSpan={6} className="h-32 text-center text-slate-400 italic">No TLC records found.</TableCell></TableRow>
+                  ) : filteredControls.map((ctrl) => (
+                    <TableRow key={ctrl.id} className="group hover:bg-slate-50/50 transition-colors">
+                      <TableCell className="font-mono text-xs font-bold text-slate-500">{ctrl.code}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-bold text-slate-800">{ctrl.name}</span>
+                          <span className="text-xs text-slate-500 line-clamp-1">{ctrl.description}</span>
                         </div>
-                        <div className="flex flex-col items-end gap-2">
-                          <div className="flex gap-2">
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
-                              className="h-7 text-[10px] gap-1"
-                              onClick={() => { setSelectedRcm(rcm); setBpmOpen(true); }}
-                            >
-                              <Workflow className="h-3 w-3" /> BPM Flow
-                            </Button>
-                            <Badge variant={
-                              rcm.status === 'Active' ? 'default' : 
-                              rcm.status === 'Pending Validation' ? 'destructive' : 
-                              rcm.status === 'Pending Change Approval' ? 'secondary' : 'secondary'
-                            }>
-                              {rcm.status}
-                            </Badge>
-                          </div>
-                          {/* DEMO MODE: All lines can validate */}
-                          {rcm.status === 'Pending Validation' && (
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              className="h-7 text-[10px] uppercase font-bold"
-                              onClick={() => validateMutation.mutate(rcm.id)}
-                              disabled={validateMutation.isPending}
-                            >
-                              Validate Design (Line 2)
-                            </Button>
-                          )}
-
-                          {/* DEMO MODE: All lines can review changes */}
-                          {rcm.status === 'Pending Change Approval' && (
-                            <div className="p-2 border rounded bg-amber-50 border-amber-200 mt-2 space-y-2 max-w-[250px]">
-                              <p className="text-[9px] font-bold text-amber-800 uppercase tracking-tighter">Proposed Changes by Line 1</p>
-                              <Button
-                                size="sm"
-                                className="h-7 text-[10px] w-full bg-amber-600 hover:bg-amber-700 gap-1 font-bold"
-                                onClick={() => { setSelectedRcm(rcm); setCompareOpen(true); }}
-                              >
-                                <Eye className="h-3 w-3" /> Review Changes (Appendix 6)
-                              </Button>
-                            </div>
-
-                          )}
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        {(controlsByRcmId[rcm.id] || []).map(control => {
-                          const relatedWBS = wbsByControlId[control.id] || [];
-                          const hasConfirmedWBS = relatedWBS.some(r => r.status === 'Confirmed');
-                          
-                          return (
-                            <div key={control.id} className="border p-4 rounded-md flex justify-between items-start bg-card hover:bg-accent/50 transition-colors gap-4 group">
-                              <div className="flex-1 space-y-1">
-                                <div className="flex items-center gap-2">
-                                  {control.isKeyControl && <ShieldCheck className="h-4 w-4 text-green-600" />}
-                                  <span className="font-mono text-xs font-bold text-muted-foreground px-1.5 py-0.5 rounded bg-muted">
-                                    {control.code || "NO-CODE"}
-                                  </span>
-                                  <h4 className="font-semibold text-sm">{control.name}</h4>
-                                  {relatedWBS.length > 0 && (
-                                    <TooltipProvider>
-                                      <Tooltip>
-                                        <TooltipTrigger asChild>
-                                          <div className={cn(
-                                            "flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase cursor-help",
-                                            hasConfirmedWBS ? "bg-red-100 text-red-700 animate-pulse" : "bg-amber-100 text-amber-700"
-                                          )}>
-                                            <BellRing className="h-3 w-3" /> 
-                                            WBS Indicator ({relatedWBS.length})
-                                          </div>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                          <p className="font-bold mb-1">Whistleblowing Alerts:</p>
-                                          <ul className="text-xs list-disc pl-4">
-                                            {relatedWBS.map(r => (
-                                              <li key={r.id}>{r.category}: {r.status}</li>
-                                            ))}
-                                          </ul>
-                                        </TooltipContent>
-                                      </Tooltip>
-                                    </TooltipProvider>
-                                  )}
-                                </div>
-                                <p className="text-sm text-muted-foreground line-clamp-2">{control.description}</p>
-                                <div className="flex gap-2 mt-2">
-                                  <Badge variant="outline" className="text-[10px]">{control.frequency}</Badge>
-                                  <Badge variant="outline" className="text-[10px]">{control.type}</Badge>
-                                  <Badge variant="outline" className="text-[10px]">{control.nature}</Badge>
-                                  <Badge variant="secondary" className={cn(
-                                    "text-[10px]",
-                                    control.riskRating === 'High' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
-                                  )}>
-                                    {control.riskRating} Risk
-                                  </Badge>
-                                </div>
-                              </div>
-                              <Button variant="ghost" size="sm" onClick={() => handleEditControl(control)} className="opacity-0 group-hover:opacity-100">Edit</Button>
-                            </div>
-                          );
-                        })}
-                        <Button variant="outline" size="sm" className="w-full border-dashed" onClick={() => handleAddNewControl(rcm.id)}>
-                          <PlusCircle className="h-4 w-4 mr-2" /> Add Control
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className="text-[10px] font-bold uppercase">{ctrl.nature}</Badge>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge className={cn(
+                          "text-[10px] font-bold",
+                          ctrl.riskRating === 'High' ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"
+                        )}>{ctrl.riskRating}</Badge>
+                      </TableCell>
+                      <TableCell className="text-center">
+                         <div className="flex justify-center">
+                           {ctrl.relatedControlIds && ctrl.relatedControlIds.length > 0 ? (
+                             <Badge className="bg-indigo-100 text-indigo-700 hover:bg-indigo-100 border-indigo-200 font-bold gap-1.5 py-1">
+                               <ShieldCheck className="h-3 w-3" /> {ctrl.relatedControlIds.length} Linked
+                             </Badge>
+                           ) : (
+                             <span className="text-[10px] text-slate-300 italic">No Link</span>
+                           )}
+                         </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 opacity-0 group-hover:opacity-100" onClick={() => handleEditControl(ctrl)}>
+                          <Edit className="h-4 w-4" />
                         </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           </TabsContent>
 
-          <TabsContent value="wbs" className="pt-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BellRing className="h-5 w-5 text-red-600" />
-                  Whistleblowing System Integration (Prinsip 14 & 15)
-                </CardTitle>
-                <CardDescription>
-                  Monitoring fraud indicators from WBS reports that impact financial reporting controls.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
+          {isAdminOrLine2 && (
+            <TabsContent value="elc" className="pt-2 space-y-6">
+               <div className="flex items-center justify-between gap-4 bg-indigo-50/50 p-6 rounded-xl border border-indigo-100">
+                <div className="space-y-1">
+                  <h3 className="text-lg font-bold text-indigo-900">RCM Entity Level (ELC)</h3>
+                  <p className="text-sm text-indigo-700/70 leading-relaxed">
+                    Evaluasi 17 Prinsip COSO sebagai fondasi pengendalian internal perusahaan.<br/>
+                    Setiap prinsip harus dipetakan ke minimal satu kebijakan/prosedur strategis.
+                  </p>
+                </div>
+                <Button onClick={() => { setSelectedControl({ level: 'ELC' }); setEditorOpen(true); }} className="bg-indigo-600 hover:bg-indigo-700 shadow-lg">
+                   <PlusCircle className="h-4 w-4 mr-2" /> Add Entity Control
+                </Button>
+              </div>
+
+              <div className="border rounded-xl bg-white shadow-sm overflow-hidden">
                 <Table>
-                  <TableHeader>
+                  <TableHeader className="bg-slate-50">
                     <TableRow>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Category</TableHead>
-                      <TableHead>Description</TableHead>
-                      <TableHead>Magnitude</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Impacted Controls</TableHead>
+                      <TableHead className="w-[300px] font-bold">Prinsip COSO</TableHead>
+                      <TableHead className="font-bold text-indigo-900">Aktivitas Pengendalian (Kebijakan Perusahaan)</TableHead>
+                      <TableHead className="w-[150px] text-center font-bold">Status Pemetaan</TableHead>
+                      <TableHead className="w-[100px]"></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {wbsData?.items.map(report => (
-                      <TableRow key={report.id}>
-                        <TableCell className="text-xs font-mono">{new Date(report.reportDate).toLocaleDateString()}</TableCell>
-                        <TableCell><Badge variant="secondary">{report.category}</Badge></TableCell>
-                        <TableCell className="text-xs leading-tight max-w-md">{report.description}</TableCell>
-                        <TableCell className="text-xs font-bold text-red-600">Rp {report.impactMagnitude.toLocaleString()}</TableCell>
-                        <TableCell>
-                          <Badge className={cn(
-                            report.status === 'Confirmed' ? 'bg-red-600' : 
-                            report.status === 'Investigating' ? 'bg-amber-600' : 'bg-slate-600'
-                          )}>
-                            {report.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex flex-wrap gap-1">
-                            {report.relatedControlIds?.map(cid => {
-                              const ctrl = controlsData?.items.find(c => c.id === cid);
-                              return (
-                                <Badge key={cid} variant="outline" className="text-[9px]">
-                                  {ctrl?.code || cid}
-                                </Badge>
-                              );
-                            })}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                    {(!wbsData?.items || wbsData.items.length === 0) && (
-                      <TableRow>
-                        <TableCell colSpan={6} className="text-center py-12 text-muted-foreground italic">
-                          No WBS fraud indicators recorded.
-                        </TableCell>
-                      </TableRow>
-                    )}
+                    {COSO_PRINCIPLES.map((principle) => {
+                      const relatedControls = (controlsData?.items || []).filter(c => 
+                        c.level === 'ELC' && c.cosoPrinciples?.includes(principle.id as any)
+                      );
+
+                      return (
+                        <React.Fragment key={principle.id}>
+                          {principle.id === 1 || principle.id === 6 || principle.id === 10 || principle.id === 13 || principle.id === 16 ? (
+                            <TableRow className="bg-slate-100/50 hover:bg-slate-100/50 border-y-2 border-slate-200">
+                              <TableCell colSpan={4} className="py-2 px-4">
+                                <span className="text-[10px] font-black uppercase text-slate-500 tracking-[0.2em]">{principle.component}</span>
+                              </TableCell>
+                            </TableRow>
+                          ) : null}
+                          <TableRow className="group hover:bg-indigo-50/20 transition-colors">
+                            <TableCell className="align-top py-6">
+                              <div className="flex gap-4">
+                                <div className="h-7 w-7 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-[11px] font-black shrink-0 border border-indigo-200 shadow-sm">
+                                  {principle.id}
+                                </div>
+                                <div className="space-y-0.5">
+                                   <span className="text-[13px] font-bold text-slate-800 leading-tight block">{principle.name}</span>
+                                   <span className="text-[10px] text-slate-400 font-medium">COSO Principle {principle.id}</span>
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell className="py-4">
+                              <div className="space-y-2.5">
+                                {relatedControls.length > 0 ? (
+                                  relatedControls.map(ctrl => (
+                                    <div key={ctrl.id} className="flex flex-col p-3 border rounded-lg bg-white shadow-sm group/item hover:border-indigo-300 transition-colors">
+                                      <div className="flex justify-between items-start">
+                                        <div className="flex items-center gap-2">
+                                           <Badge variant="outline" className="text-[9px] font-mono h-4">{ctrl.code || 'N/A'}</Badge>
+                                           <span className="text-xs font-bold text-slate-800">{ctrl.name}</span>
+                                        </div>
+                                        <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover/item:opacity-100" onClick={() => handleEditControl(ctrl)}>
+                                          <Edit2 className="h-3 w-3 text-indigo-600" />
+                                        </Button>
+                                      </div>
+                                      <p className="text-[11px] text-slate-500 mt-2 line-clamp-2 leading-relaxed italic">"{ctrl.description}"</p>
+                                      <div className="flex items-center gap-3 mt-3">
+                                         <Badge className="bg-slate-100 text-slate-600 border-none text-[9px] font-bold uppercase">{ctrl.frequency}</Badge>
+                                         {ctrl.attachmentUrl && (
+                                           <div className="flex items-center gap-1.5 text-indigo-600 text-[10px] font-black">
+                                              <FileDown className="h-3.5 w-3.5" /> DOKUMEN KEBIJAKAN
+                                           </div>
+                                         )}
+                                      </div>
+                                    </div>
+                                  ))
+                                ) : (
+                                  <div className="flex items-center gap-2 py-4 text-slate-300">
+                                     <ShieldAlert className="h-4 w-4" />
+                                     <span className="text-xs italic font-medium tracking-tight">Belum ada kebijakan yang dipetakan untuk prinsip ini.</span>
+                                  </div>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-center py-4">
+                               {relatedControls.length > 0 ? (
+                                 <Badge className="bg-emerald-500 text-white border-none font-black text-[9px] shadow-sm">TERPETAKAN</Badge>
+                               ) : (
+                                 <Badge variant="outline" className="text-rose-400 border-rose-200 bg-rose-50 text-[9px] font-black shadow-none animate-pulse">GAP (RISIKO)</Badge>
+                               )}
+                            </TableCell>
+                            <TableCell className="text-right py-4 pr-6">
+                               <Button variant="ghost" size="icon" className="h-9 w-9 text-indigo-600 bg-indigo-50/50 hover:bg-indigo-100 rounded-full" onClick={() => {
+                                 const newControl: Partial<Control> = { 
+                                   level: 'ELC', 
+                                   cosoPrinciples: [principle.id as any], 
+                                   name: `Kontrol Prinsip ${principle.id}` 
+                                 };
+                                 setSelectedControl(newControl as Control);
+                                 setEditorOpen(true);
+                               }}>
+                                  <Plus className="h-4 w-4" />
+                               </Button>
+                            </TableCell>
+                          </TableRow>
+                        </React.Fragment>
+                      );
+                    })}
                   </TableBody>
                 </Table>
-              </CardContent>
-            </Card>
+              </div>
+            </TabsContent>
+          )}
+
+          <TabsContent value="wbs" className="pt-2">
+            {/* WBS UI Placeholder ... */}
           </TabsContent>
         </Tabs>
       </div>
 
       <ControlEditor isOpen={isEditorOpen} setIsOpen={setEditorOpen} control={selectedControl} />
-      
-      {/* Comparison Dialog */}
-      <Dialog open={isCompareOpen} onOpenChange={setCompareOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <History className="h-5 w-5 text-amber-600" /> 
-              Review Proposed RCM Changes
-            </DialogTitle>
-            <DialogDescription>
-              Compare current RCM design with proposed changes from Line 1 in accordance with Appendix 6.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            {selectedRcm?.changeRequest && (
-              <RCMDiffViewer current={selectedRcm} proposed={selectedRcm.changeRequest.proposedData} />
-            )}
-          </div>
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button 
-              variant="outline" 
-              className="text-red-600 hover:text-red-700 hover:bg-red-50 gap-2"
-              onClick={() => setRejectOpen(true)}
-            >
-              <XCircle className="h-4 w-4" /> Reject & Return
-            </Button>
-            <Button 
-              className="bg-green-600 hover:bg-green-700 gap-2"
-              onClick={() => approveChangeMutation.mutate(selectedRcm!.id)}
-              disabled={approveChangeMutation.isPending}
-            >
-              <CheckCircle2 className="h-4 w-4" /> Approve & Persist Log
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Reject Reason Dialog */}
-      <Dialog open={isRejectOpen} onOpenChange={setRejectOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-red-600">
-              <AlertTriangle className="h-5 w-5" /> Reject Change Request
-            </DialogTitle>
-            <DialogDescription>
-              Please provide a reason for rejection. This feedback will be sent to the Process Owner (Lini 1).
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="reason">Rejection Feedback</Label>
-              <Textarea 
-                id="reason" 
-                placeholder="e.g. Risk description is not detailed enough according to PSAK..." 
-                value={rejectReason}
-                onChange={(e) => setRejectReason(e.target.value)}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setRejectOpen(false)}>Cancel</Button>
-            <Button 
-              variant="destructive" 
-              disabled={!rejectReason || rejectChangeMutation.isPending}
-              onClick={() => rejectChangeMutation.mutate({ rcmId: selectedRcm!.id, reason: rejectReason })}
-            >
-              Confirm Rejection
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* BPM Dialog */}
-      <Dialog open={isBpmOpen} onOpenChange={setBpmOpen}>
-        <DialogContent className="max-w-6xl h-[90vh] flex flex-col">
-          <DialogHeader>
-            <DialogTitle>BPM Flow: {selectedRcm?.process}</DialogTitle>
-            <DialogDescription>
-              Business Process Mapping visualization according to Appendix 3 (SK-5/2024) standard.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex-1 overflow-hidden">
-            <React.Suspense fallback={<Skeleton className="h-full w-full" />}>
-              {selectedRcm && <BPMEditor rcm={selectedRcm} controls={controlsData?.items || []} />}
-            </React.Suspense>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Add Process Dialog */}
-      <Dialog open={isAddProcessOpen} onOpenChange={setAddProcessOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Add New Risk</DialogTitle>
-            <DialogDescription>
-              Identify a new business process and its associated financial reporting risk.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="process">Risk Name (Main)</Label>
-              <Input 
-                id="process" 
-                placeholder="e.g. Order to Cash, Treasury..." 
-                value={newRcmData.process}
-                onChange={(e) => setNewRcmData(prev => ({ ...prev, process: e.target.value }))}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="subProcess">Sub-Risk Name</Label>
-              <Input 
-                id="subProcess" 
-                placeholder="e.g. Sales Order Entry, Bank Reconciliation..." 
-                value={newRcmData.subProcess}
-                onChange={(e) => setNewRcmData(prev => ({ ...prev, subProcess: e.target.value }))}
-              />
-            </div>
-            <div className="space-y-2 border-t pt-4">
-              <div className="flex items-center justify-between mb-2">
-                <Label htmlFor="risk" className="flex items-center gap-2">
-                  Risk Description
-                </Label>
-                <RiskLibraryLookup onSelect={(risk) => setNewRcmData(prev => ({ ...prev, riskDescription: risk }))} />
-              </div>
-              <Textarea 
-                id="risk" 
-                placeholder="Describe what can go wrong in this process that affects financial reporting..." 
-                className="min-h-[100px]"
-                value={newRcmData.riskDescription}
-                onChange={(e) => setNewRcmData(prev => ({ ...prev, riskDescription: e.target.value }))}
-              />
-              <p className="text-[10px] text-muted-foreground italic flex items-center gap-1">
-                <Info className="h-3 w-3" /> Tip: Risk description must include threatened assertions (Completeness, Accuracy, etc).
-              </p>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setAddProcessOpen(false)}>Cancel</Button>
-            <Button 
-              className="bg-primary hover:bg-primary/90"
-              disabled={!newRcmData.process || !newRcmData.riskDescription || createRcmMutation.isPending}
-              onClick={() => createRcmMutation.mutate(newRcmData)}
-            >
-              {createRcmMutation.isPending ? "Creating..." : "Create RCM Entry"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </AppLayout>
+  );
+}
+
+function RCMDiffViewer({ current, proposed }: { current: RCM, proposed: Partial<RCM> }) {
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-4 text-[10px] font-bold uppercase text-slate-400">
+        <div>Current Design</div>
+        <div>Proposed Change</div>
+      </div>
+      <div className="grid grid-cols-2 gap-4 p-3 border rounded bg-slate-50">
+        <div className="text-sm">{current.riskDescription}</div>
+        <div className="text-sm text-indigo-700 font-medium">{proposed.riskDescription || current.riskDescription}</div>
+      </div>
+    </div>
   );
 }

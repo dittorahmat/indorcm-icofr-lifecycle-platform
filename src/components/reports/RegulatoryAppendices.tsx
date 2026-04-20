@@ -100,6 +100,25 @@ export function RegulatoryAppendices() {
   );
 }
 
+function CSADocReport() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Lampiran 7: Dokumentasi Control Self-Assessment (CSA)</CardTitle>
+        <CardDescription>Consolidated self-assessment records with forensic evidence trail.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="h-[400px] flex items-center justify-center border-2 border-dashed rounded-lg bg-muted/30">
+          <div className="text-center space-y-2">
+            <ClipboardCheck className="h-8 w-8 mx-auto text-muted-foreground" />
+            <p className="text-sm text-muted-foreground font-medium italic">Aggregating CSA logs from Line 1 submissions and Line 2 validations...</p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 function ReportCard({ title, description }: { title: string, description: string }) {
   return (
     <Card>
@@ -310,7 +329,7 @@ function FindingsReport({ deficiencies, controls }: { deficiencies: Deficiency[]
                   <TableRow key={item.id} className="text-xs">
                     <TableCell>
                       <p className="font-bold text-red-700">{item.id.substring(0,8).toUpperCase()}</p>
-                      <p className="font-medium">{item.title}</p>
+                      <p className="font-medium">{item.description.split('\n')[0]}</p>
                       <p className="text-[10px] text-slate-500 line-clamp-2">{item.description}</p>
                     </TableCell>
                     <TableCell>
@@ -318,11 +337,11 @@ function FindingsReport({ deficiencies, controls }: { deficiencies: Deficiency[]
                         {fsliDisplay}
                       </Badge>
                     </TableCell>
-                    <TableCell className="font-mono font-bold text-red-600 text-[10px]">Rp {item.magnitudeValue?.toLocaleString() || '0'}</TableCell>
+                    <TableCell className="font-mono font-bold text-red-600 text-[10px]">Rp {item.magnitude?.toLocaleString() || '0'}</TableCell>
                     <TableCell><Badge variant="outline" className="text-[9px] border-amber-200 text-amber-700 bg-amber-50">{item.severity}</Badge></TableCell>
                     <TableCell>
                       <div className="flex flex-col gap-1">
-                        <Badge className={cn(item.status === 'Resolved' ? "bg-green-600" : "bg-red-600")}>
+                        <Badge className={cn(item.status === 'Closed' || item.status === 'Remediated' ? "bg-green-600" : "bg-red-600")}>
                           {item.status}
                         </Badge>
                       </div>

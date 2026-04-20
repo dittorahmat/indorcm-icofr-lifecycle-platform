@@ -42,7 +42,7 @@ export const getAuth = (env: { DATABASE_URL: string; BETTER_AUTH_SECRET: string;
                         return `pbkdf2$100$${salt}$${hash}`;
                     }
                     // Default to better-auth internal scrypt (will be handled by better-auth if we return undefined)
-                    return undefined; 
+                    return undefined as any; 
                 },
                 verify: async ({ hash: storedHash, password }) => {
                     // Protection: If no hash found, don't crash
@@ -55,7 +55,7 @@ export const getAuth = (env: { DATABASE_URL: string; BETTER_AUTH_SECRET: string;
                         return verifyHash === hash;
                     }
                     // Otherwise, let better-auth handle scrypt verification
-                    return undefined;
+                    return undefined as any;
                 }
             }
         },

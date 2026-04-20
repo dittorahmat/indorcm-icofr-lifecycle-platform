@@ -7,8 +7,6 @@ import {
 import ReactFlow, { 
   Background, 
   Controls, 
-  useNodesState, 
-  useEdgesState,
   NodeProps,
   Handle,
   Position
@@ -18,10 +16,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { 
   RefreshCw, ShieldCheck, CheckCircle2, AlertTriangle, 
-  UploadCloud, File as FileIcon, X, UserCheck, Activity, Database, FileText, LayoutDashboard
+  UploadCloud, File as FileIcon, X, UserCheck, Activity, Database, FileText, LayoutDashboard,
+  Building2, UserCircle, Printer, History, ShieldCheck as ShieldCheckIcon, Send, XCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Control, CSARecord } from '@shared/types';
+import { Control, CSARecord, User } from '@shared/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -98,14 +97,16 @@ const csaSchema = z.object({
   result: z.enum(['Effective', 'Ineffective', 'No Transaction']),
   comments: z.string().min(5, "Comments must be at least 5 characters"),
   transReference: z.string().optional(),
-  attrA: z.boolean().default(false),
-  attrB: z.boolean().default(false),
-  attrC: z.boolean().default(false),
-  attrD: z.boolean().default(false),
+  attrA: z.boolean(),
+  attrB: z.boolean(),
+  attrC: z.boolean(),
+  attrD: z.boolean(),
   itacScenario: z.string().optional(),
   itacMethod: z.string().optional(),
   itacSampleInfo: z.string().optional(),
 });
+
+type CSAFormValues = z.infer<typeof csaSchema>;
 
 interface CSATabContentProps {
   noGL: string;
@@ -114,12 +115,21 @@ interface CSATabContentProps {
 
 export function CSATabContent({ noGL, controls }: CSATabContentProps) {
   const queryClient = useQueryClient();
-  const [selectedControlId, setSelectedControlId] = useState<string | null>(controls[0]?.id || null);
+  const [selectedControlId, setSelectedControlId] = useState<string | null>(null);
   const [evidenceFile, setEvidenceFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [evidenceMeta, setEvidenceMeta] = useState<EvidenceMetadata | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [nodes, setNodes] = useState<any[]>([]);
+  const [edges, setEdges] = useState<any[]>([]);
+
+  // Set initial selection only once
+  useEffect(() => {
+    if (!selectedControlId && controls.length > 0) {
+      setSelectedControlId(controls[0].id);
+    }
+  }, [controls, selectedControlId]);
 
   const selectedControl = useMemo(() => controls.find(c => c.id === selectedControlId), [controls, selectedControlId]);
 
@@ -130,7 +140,7 @@ export function CSATabContent({ noGL, controls }: CSATabContentProps) {
   });
 
   // Fetch existing CSA record if any
-  const { data: existingCsa, isLoading: isCsaLoading } = useQuery({
+  const { data: existingCsa } = useQuery({
     queryKey: ['csa-record', selectedControlId],
     queryFn: async () => {
       const res = await api<{ items: CSARecord[] }>(`/api/csa`);
@@ -139,17 +149,18 @@ export function CSATabContent({ noGL, controls }: CSATabContentProps) {
     enabled: !!selectedControlId
   });
 
-  const [nodes, setNodes] = useNodesState([]);
-  const [edges, setEdges] = useEdgesState([]);
-
   // Find which node contains the selected control
   const highlightedNodeId = useMemo(() => {
     if (!diagram || !selectedControlId) return null;
-    const nodes = diagram.nodes || [];
-    const node = nodes.find((n: any) => n.data?.controlIds?.includes(selectedControlId) || n.data?.risks?.some((r: any) => r.controlIds?.includes(selectedControlId)));
+    const nodesList = diagram.nodes || [];
+    const node = nodesList.find((n: any) => 
+      n.data?.controlIds?.includes(selectedControlId) || 
+      n.data?.risks?.some((r: any) => r.controlIds?.includes(selectedControlId))
+    );
     return node?.id || null;
   }, [diagram, selectedControlId]);
 
+  // Sync diagram data to React Flow state in effect to avoid render-time updates
   useEffect(() => {
     if (diagram) {
       const hydratedNodes = (diagram.nodes || []).map((n: any) => ({
@@ -163,9 +174,9 @@ export function CSATabContent({ noGL, controls }: CSATabContentProps) {
       setNodes(hydratedNodes);
       setEdges(diagram.edges || []);
     }
-  }, [diagram, highlightedNodeId, setNodes, setEdges]);
+  }, [diagram, highlightedNodeId]);
 
-  const form = useForm<z.infer<typeof csaSchema>>({
+  const form = useForm<CSAFormValues>({
     resolver: zodResolver(csaSchema),
     defaultValues: {
       result: 'Effective',
@@ -174,6 +185,10 @@ export function CSATabContent({ noGL, controls }: CSATabContentProps) {
       attrB: false,
       attrC: false,
       attrD: false,
+      transReference: '',
+      itacScenario: '',
+      itacMethod: '',
+      itacSampleInfo: '',
     }
   });
 
@@ -240,9 +255,11 @@ export function CSATabContent({ noGL, controls }: CSATabContentProps) {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, multiple: false });
 
-  async function onSubmit(values: z.infer<typeof csaSchema>) {
+  const onSubmit = useCallback(async (values: CSAFormValues) => {
+    // eslint-disable-next-line no-restricted-syntax
     setIsAuthenticating(true);
-    const verified = await promptBiometricAuth();
+    const verified = await promptBiometricAuth('authenticate');
+    // eslint-disable-next-line no-restricted-syntax
     setIsAuthenticating(false);
 
     if (!verified) {
@@ -262,7 +279,7 @@ export function CSATabContent({ noGL, controls }: CSATabContentProps) {
       hash: evidenceMeta?.hash,
       biometricVerified: true
     });
-  }
+  }, [selectedControlId, evidenceFile, evidenceMeta, mutation]);
 
   return (
     <div className="h-full flex flex-col bg-white rounded-xl border shadow-sm overflow-hidden">

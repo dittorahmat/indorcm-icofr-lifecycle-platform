@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
-import { GLSnapshot, GLRow, BPMProcess, UserRole, MaterialitySimulation, User, BPMDiagram } from '@shared/types';
+import { GLSnapshot, GLRow, BPMProcess, UserRole, MaterialitySimulation, User, BPMDiagram, Settings } from '@shared/types';
 import { BPMWorksheet } from '@/components/bpm/BPMWorksheet';
 import { BPMModal } from '@/components/bpm/BPMModal';
 import { BPMEditor } from '@/components/rcm/BPMEditor';
@@ -186,7 +186,7 @@ export function BPMPage() {
   });
 
   const createDiagramMutation = useMutation({
-    mutationFn: (subProcess: string) => api('/api/bpm-diagrams', {
+    mutationFn: (subProcess: string) => api<{ id: string }>('/api/bpm-diagrams', {
       method: 'POST',
       body: JSON.stringify({ name: `Flow: ${subProcess}`, subProcess })
     }),

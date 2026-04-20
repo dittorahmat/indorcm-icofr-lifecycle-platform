@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { AlertCircle, Clock, X, ShieldAlert } from 'lucide-react';
-import { useLicense } from './LicenseGuard';
+import { useLicense } from '@/context/LicenseContext';
 import { Button } from './ui/button';
 import {
   Dialog,

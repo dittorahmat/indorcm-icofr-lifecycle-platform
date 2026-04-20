@@ -35,19 +35,21 @@ const testSchema = z.object({
   sampleSize: z.number().optional(),
   homogeneityJustification: z.string().optional(),
   evaluationAttributes: z.object({
-    objectiveAchieved: z.boolean().default(true),
-    timingAccuracy: z.boolean().default(true),
-    authorityCompetence: z.boolean().default(true),
-    infoReliability: z.boolean().default(true),
-    periodCoverage: z.boolean().default(true),
-    evidenceAvailability: z.boolean().default(true),
+    objectiveAchieved: z.boolean(),
+    timingAccuracy: z.boolean(),
+    authorityCompetence: z.boolean(),
+    infoReliability: z.boolean(),
+    periodCoverage: z.boolean(),
+    evidenceAvailability: z.boolean(),
   })
 });
+
+type TestFormValues = z.infer<typeof testSchema>;
 
 function ControlTestCard({ control, openDeficiencyDate, history }: { control: Control, openDeficiencyDate?: number, history: TestRecord[] }) {
   const queryClient = useQueryClient();
   const [isAuthenticating, setIsAuthenticating] = React.useState(false);
-  const form = useForm<z.infer<typeof testSchema>>({
+  const form = useForm<TestFormValues>({
     resolver: zodResolver(testSchema),
     defaultValues: {
       method: "Inspection",
@@ -81,7 +83,7 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
     },
   });
 
-  async function onSubmit(values: z.infer<typeof testSchema>) {
+  async function onSubmit(values: TestFormValues) {
     if (values.testType === 'TOE' && !values.homogeneityJustification) {
       form.setError('homogeneityJustification', { type: 'manual', message: 'Homogeneity justification is required for TOE (Chapter V 1.3.a)' });
       return;
@@ -384,7 +386,7 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
                   <div className="flex items-center justify-between">
                     <span className="font-bold">{h.method}</span>
                     <Badge className={cn("gap-1 text-[9px]", getTestResultLabel(h.result).color)}>
-                      {h.result === 'Effective' || h.result === 'Pass' ? (
+                      {h.result === 'Effective' ? (
                         <CheckCircle2 className="h-2 w-2" />
                       ) : (
                         <XCircle className="h-2 w-2" />

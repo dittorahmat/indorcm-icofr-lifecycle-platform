@@ -57,17 +57,39 @@ const NodeTooltip = ({ children, data, type }: { children: React.ReactNode, data
     <TooltipProvider delayDuration={300}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div>{children}</div>
+          <div className="relative">{children}</div>
         </TooltipTrigger>
-        <TooltipContent side="right" className="max-w-[200px] p-2 bg-slate-900 border-slate-700">
-          <div className="space-y-1">
-            <p className="font-bold text-[10px] uppercase text-slate-400 border-b border-slate-700 pb-1 mb-1">
-              {type} Preview
-            </p>
-            <p className="text-[11px] font-medium leading-tight text-white">{data.label}</p>
-            {data.description && <p className="text-[10px] text-slate-400 line-clamp-2 italic">{data.description}</p>}
-            {data.role && <p className="text-[9px] text-blue-400 font-bold uppercase mt-1">Role: {data.role}</p>}
-            {data.code && <p className="text-[9px] text-green-400 font-mono">Code: {data.code}</p>}
+        <TooltipContent side="right" className="max-w-[250px] p-2 bg-slate-900 border-slate-700 shadow-2xl z-[100]">
+          <div className="space-y-1.5">
+            <div className="flex justify-between items-center border-b border-slate-700 pb-1 mb-1">
+              <p className="font-bold text-[10px] uppercase text-slate-400">
+                {type} Preview
+              </p>
+              {data.relatedElcNames && data.relatedElcNames.length > 0 && (
+                <ShieldCheck className="h-3 w-3 text-indigo-400" />
+              )}
+            </div>
+            <p className="text-[11px] font-bold leading-tight text-white">{data.label}</p>
+            {data.description && <p className="text-[10px] text-slate-400 line-clamp-3 italic leading-relaxed">{data.description}</p>}
+            
+            {data.relatedElcNames && data.relatedElcNames.length > 0 && (
+              <div className="mt-2 pt-2 border-t border-slate-700">
+                <p className="text-[9px] font-black text-indigo-400 uppercase tracking-wider mb-1">Payung Kebijakan (ELC):</p>
+                <ul className="space-y-0.5">
+                  {data.relatedElcNames.map((name: string, i: number) => (
+                    <li key={i} className="text-[9px] text-slate-300 flex items-start gap-1">
+                      <div className="h-1 w-1 rounded-full bg-indigo-500 mt-1 shrink-0" />
+                      {name}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <div className="flex flex-wrap gap-2 mt-2 pt-1">
+              {data.role && <p className="text-[9px] text-blue-400 font-bold uppercase">Role: {data.role}</p>}
+              {data.code && <p className="text-[9px] text-green-400 font-mono font-bold">Code: {data.code}</p>}
+            </div>
           </div>
         </TooltipContent>
       </Tooltip>
@@ -445,6 +467,14 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
     setSelectedNodeId(nodeId);
   };
 
+  const getEnrichedControlData = useCallback((ids: string[]) => {
+    const list = ids.map(id => controlsData?.items.find(c => c.id === id)).filter(Boolean) as Control[];
+    const hasLinkage = list.some(c => c.relatedControlIds && c.relatedControlIds.length > 0);
+    const relatedElcIds = Array.from(new Set(list.flatMap(c => c.relatedControlIds || [])));
+    const relatedElcNames = relatedElcIds.map(eid => controlsData?.items.find(c => c.id === eid)?.name).filter(Boolean);
+    return { hasLinkage, relatedElcNames, list };
+  }, [controlsData]);
+
   const saveMutation = useMutation({
     mutationFn: (data: any) => api(`/api/bpm-diagrams/${diagramId}`, { method: 'PUT', body: JSON.stringify(data) }),
     onSuccess: () => {
@@ -521,14 +551,19 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
           return r;
         });
 
-        // Update visual badge
         const allControlIds = newRisks.flatMap(r => r.controlIds);
-        const childId = `ctrl_${nodeId}`;
-        const childExists = nds.some(n => n.id === childId);
-
-        // We can't easily push a new node inside a map, so we'll handle the badge in the next turn if needed
-        // but for simple cases, React Flow state updates are fine.
-        return { ...node, data: { ...node.data, risks: newRisks, controlIds: allControlIds } };
+        const enriched = getEnrichedControlData(allControlIds);
+        
+        return { 
+          ...node, 
+          data: { 
+            ...node.data, 
+            risks: newRisks, 
+            controlIds: allControlIds,
+            hasLinkage: enriched.hasLinkage,
+            relatedElcNames: enriched.relatedElcNames
+          } 
+        };
       }
       return node;
     }));
@@ -540,8 +575,17 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
       const allControlIds = (parentNode.data.risks || []).flatMap((r: any) => r.controlIds);
       if (allControlIds.length === 0) return nds;
 
+      const enriched = getEnrichedControlData(allControlIds);
       const childId = `ctrl_${nodeId}`;
       const childExists = nds.some(n => n.id === childId);
+      
+      const badgeData = { 
+        controlIds: allControlIds, 
+        label: 'Controls',
+        hasLinkage: enriched.hasLinkage,
+        relatedElcNames: enriched.relatedElcNames
+      };
+
       if (!childExists) {
         return [...nds, {
           id: childId,
@@ -550,10 +594,10 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
           parentId: nodeId,
           extent: 'parent',
           draggable: false,
-          data: { controlIds: allControlIds, label: 'Controls' }
+          data: badgeData
         }];
       } else {
-        return nds.map(n => n.id === childId ? { ...n, data: { ...n.data, controlIds: allControlIds } } : n);
+        return nds.map(n => n.id === childId ? { ...n, data: badgeData } : n);
       }
     });
 
@@ -578,7 +622,18 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
           controlIds: (r.controlIds || []).filter((cid: string) => cid !== controlId)
         }));
         const allControlIds = newRisks.flatMap(r => r.controlIds);
-        return { ...node, data: { ...node.data, risks: newRisks, controlIds: allControlIds } };
+        const enriched = getEnrichedControlData(allControlIds);
+
+        return { 
+          ...node, 
+          data: { 
+            ...node.data, 
+            risks: newRisks, 
+            controlIds: allControlIds,
+            hasLinkage: enriched.hasLinkage,
+            relatedElcNames: enriched.relatedElcNames
+          } 
+        };
       }
       return node;
     }));
@@ -591,7 +646,16 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
       if (allControlIds.length === 0) {
         return nds.filter(n => n.id !== childId);
       } else {
-        return nds.map(n => n.id === childId ? { ...n, data: { ...n.data, controlIds: allControlIds } } : n);
+        const enriched = getEnrichedControlData(allControlIds);
+        return nds.map(n => n.id === childId ? { 
+          ...n, 
+          data: { 
+            ...n.data, 
+            controlIds: allControlIds,
+            hasLinkage: enriched.hasLinkage,
+            relatedElcNames: enriched.relatedElcNames
+          } 
+        } : n);
       }
     });
     toast.info("Control unlinked");

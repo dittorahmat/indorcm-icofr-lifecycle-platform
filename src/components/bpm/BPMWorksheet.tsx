@@ -7,7 +7,7 @@ import {
 } from '@tanstack/react-table';
 import { 
   Control, ControlAssertion, InformationProcessingObjective, 
-  ControlType, ControlNature, Application 
+  ControlType, ControlNature, Application, User
 } from '@shared/types';
 import { 
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
@@ -36,7 +36,11 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from '@/components/ui/label';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { BPMEditor } from '../rcm/BPMEditor';
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Check, Shield } from "lucide-react";
 
 interface BPMWorksheetProps {
   bpmProcessId: string;
@@ -45,6 +49,7 @@ interface BPMWorksheetProps {
 }
 
 export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [isAddingApp, setIsAddingApp] = React.useState(false);
@@ -64,6 +69,15 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
       return all.items.filter(c => c.bpmProcessId === bpmProcessId || (!c.bpmProcessId && c.fsliCodes?.includes(noGL)));
     }
   });
+
+  const { data: allControlsData } = useQuery({
+    queryKey: ['controls-all'],
+    queryFn: () => api<{ items: Control[] }>('/api/controls'),
+  });
+
+  const elcControls = React.useMemo(() => {
+    return allControlsData?.items.filter(c => c.level === 'ELC') || [];
+  }, [allControlsData]);
 
   const { data: diagrams } = useQuery({
     queryKey: ['bpm-diagrams'],
@@ -98,7 +112,7 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
   });
 
   const createDiagramMutation = useMutation({
-    mutationFn: (subProcess: string) => api('/api/bpm-diagrams', {
+    mutationFn: (subProcess: string) => api<{ id: string }>('/api/bpm-diagrams', {
       method: 'POST',
       body: JSON.stringify({ name: `Flow: ${subProcess}`, subProcess })
     }),
@@ -157,12 +171,12 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
 
   // Custom debounced update handler for auto-save
   const timerRef = React.useRef<NodeJS.Timeout | null>(null);
-  const debouncedUpdate = (id: string, field: string, value: any) => {
+  const debouncedUpdate = React.useCallback((id: string, field: string, value: any) => {
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
       updateMutation.mutate({ id, data: { [field]: value } });
     }, 500);
-  };
+  }, [updateMutation]);
 
   const columns = React.useMemo<ColumnDef<Control>[]>(() => [
     {
@@ -284,7 +298,7 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
       header: 'Risiko Fraud',
       cell: ({ row, getValue }) => (
         <Select 
-          value={getValue() ? 'Y' : 'T'} 
+          value={getValue<boolean>() ? 'Y' : 'T'} 
           onValueChange={(v) => updateMutation.mutate({ id: row.original.id, data: { isFraudRelated: v === 'Y' } })}
         >
           <SelectTrigger className="h-7 text-[10px] border-none bg-transparent">
@@ -320,6 +334,52 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
       )
     },
     {
+      accessorKey: 'relatedControlIds',
+      header: 'Payung Kebijakan (ELC)',
+      cell: ({ row, getValue }) => {
+        const selectedIds = getValue<string[]>() || [];
+        return (
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-8 w-full justify-start font-normal px-2 text-[10px] gap-2">
+                <Shield className={cn("h-3.5 w-3.5", selectedIds.length > 0 ? "text-indigo-600" : "text-slate-300")} />
+                {selectedIds.length > 0 ? `${selectedIds.length} Linked` : "Select ELC..."}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[300px] p-0" align="start">
+              <Command>
+                <CommandInput placeholder="Search ELC policies..." className="h-8 text-xs" />
+                <CommandList>
+                  <CommandEmpty>No ELC policies found.</CommandEmpty>
+                  <CommandGroup>
+                    {elcControls.map((elc) => (
+                      <CommandItem
+                        key={elc.id}
+                        onSelect={() => {
+                          const nextIds = selectedIds.includes(elc.id)
+                            ? selectedIds.filter(id => id !== elc.id)
+                            : [...selectedIds, elc.id];
+                          updateMutation.mutate({ id: row.original.id, data: { relatedControlIds: nextIds } });
+                        }}
+                        className="text-xs flex items-center justify-between"
+                      >
+                        <div className="flex flex-col">
+                          <span className="font-bold">{elc.code}</span>
+                          <span className="text-[10px] text-slate-500 line-clamp-1">{elc.name}</span>
+                        </div>
+                        {selectedIds.includes(elc.id) && <Check className="h-3 w-3 text-indigo-600" />}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+        );
+      },
+      size: 150
+    },
+    {
       accessorKey: 'supportingDocs',
       header: 'Dokumen Pendukung',
       cell: ({ row, getValue }) => (
@@ -335,7 +395,7 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
       header: 'Pengendalian Utama',
       cell: ({ row, getValue }) => (
         <Select 
-          value={getValue() ? 'Y' : 'T'} 
+          value={getValue<boolean>() ? 'Y' : 'T'} 
           onValueChange={(v) => updateMutation.mutate({ id: row.original.id, data: { isKeyControl: v === 'Y' } })}
         >
           <SelectTrigger className="h-7 text-[10px] border-none bg-transparent">
@@ -375,7 +435,7 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
       header: 'Tipe',
       cell: ({ row, getValue }) => (
         <Select 
-          value={getValue()} 
+          value={getValue<string>()} 
           onValueChange={(v: ControlType) => updateMutation.mutate({ id: row.original.id, data: { type: v } })}
         >
           <SelectTrigger className="h-7 text-[10px] border-none bg-transparent">
@@ -393,7 +453,7 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
       header: 'Sifat',
       cell: ({ row, getValue }) => (
         <Select 
-          value={getValue()} 
+          value={getValue<string>()} 
           onValueChange={(v: ControlNature) => updateMutation.mutate({ id: row.original.id, data: { nature: v } })}
         >
           <SelectTrigger className="h-7 text-[10px] border-none bg-transparent min-w-[80px]">
@@ -436,7 +496,7 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
         </Select>
       )
     }
-  ], [apps, rcms, navigate, deleteMutation, updateMutation]);
+  ], [apps?.items, diagrams?.items, createDiagramMutation, debouncedUpdate, updateMutation, deleteMutation, elcControls]);
 
   const table = useReactTable({
     data: controls || [],

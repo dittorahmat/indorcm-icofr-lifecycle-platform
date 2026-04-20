@@ -162,7 +162,7 @@ export const createApp = () => {
       return c.json({ success: false, error: 'Unauthorized' }, 401);
     }
 
-    let activeOrgId = session.session.activeOrganizationId;
+    let activeOrgId = (session.session as any).activeOrganizationId;
 
     // Fallback: If no active org in session, find the first one from DB
     if (!activeOrgId) {

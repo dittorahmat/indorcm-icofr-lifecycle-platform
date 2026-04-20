@@ -1,7 +1,8 @@
 import { Hono } from "hono";
-import type { HonoEnv } from './index';
+import type { HonoEnv } from './app';
 import { ok, bad, notFound } from './lib/utils';
 import { getDb } from './db';
+import * as schema from './db/schema';
 import { 
   rcms, auditLogs, controls, simulations, glSnapshots, glRows, user, 
   deficiencies, actionPlans, departments, bpmProcesses, csaRecords, 
@@ -15,7 +16,8 @@ import type {
   Control, RCM, CSARecord, TestRecord, Deficiency, ActionPlan, 
   UserRole, UserLevel, Materiality, Scoping, ChangeLog, SOCReport, Application, 
   BUMNCluster, RiskLibrary, Settings, User, GLSnapshot, MaterialitySimulation, 
-  SimulationStatus, BenchmarkBasis, BPMProcess, Department, BPMWorkflowStatus 
+  SimulationStatus, BenchmarkBasis, BPMProcess, Department, BPMWorkflowStatus,
+  AggregateDeficiency
 } from "@shared/types";
 import { z } from "zod";
 import { parseCsv, unparseCsv } from './csv';
@@ -161,13 +163,14 @@ export function userRoutes(app: Hono<HonoEnv>) {
     const meta = (org.metadata as any) || {};
 
     const settings: Settings = {
+      id: org.id,
       companyName: org.name,
       ceoName: meta.ceoName || "Direktur Utama",
       cfoName: meta.cfoName || "Direktur Keuangan",
-      periodYear: meta.periodYear || new Date().getFullYear(),
+      fiscalYear: meta.fiscalYear || meta.periodYear || new Date().getFullYear(),
       isPeriodLocked: meta.isPeriodLocked || false,
       verificationHash: meta.verificationHash,
-      signedOffDate: meta.signedOffDate,
+      signedOffDate: meta.signedOffDate ? (typeof meta.signedOffDate === 'string' ? new Date(meta.signedOffDate).getTime() : meta.signedOffDate) : undefined,
     };
 
     return ok(c, settings);
@@ -246,17 +249,21 @@ export function userRoutes(app: Hono<HonoEnv>) {
           email: body.email,
           password: body.password || "password123",
           name: body.name,
+          role: body.role || 'Line 1',
+          level: body.level || 'Staff',
+          departmentId: body.departmentId || '',
+          language: 'en'
         }
-      });
+      } as any);
 
       if (newUser) {
         await db.update(user).set({
           role: body.role || 'Line 1',
           level: body.level || 'Staff',
           departmentId: body.departmentId,
-        }).where(eq(user.id, newUser.user.id));
+        }).where(eq(user.id, (newUser as any).user.id));
 
-        return ok(c, newUser.user);
+        return ok(c, (newUser as any).user);
       }
     } catch (e: any) {
       return bad(c, e.message);
@@ -402,13 +409,14 @@ export function userRoutes(app: Hono<HonoEnv>) {
     const org = orgs[0];
     const meta = (org.metadata as any) || {};
 
-    const signOffDate = new Date().toISOString();
+    const signOffDate = new Date();
+    const signOffDateMillis = signOffDate.getTime();
     const verificationHash = crypto.randomUUID().replace(/-/g, '').substring(0, 12).toUpperCase();
 
     const updatedMeta = {
       ...meta,
       isPeriodLocked: true,
-      signedOffDate: signOffDate,
+      signedOffDate: signOffDate.toISOString(),
       verificationHash: verificationHash,
       signedBy: userId
     };
@@ -416,13 +424,14 @@ export function userRoutes(app: Hono<HonoEnv>) {
     await db.update(organization).set({ metadata: updatedMeta }).where(eq(organization.id, orgId));
 
     const settings: Settings = {
+      id: org.id,
       companyName: org.name,
       ceoName: updatedMeta.ceoName || "Direktur Utama",
       cfoName: updatedMeta.cfoName || "Direktur Keuangan",
-      periodYear: updatedMeta.periodYear || new Date().getFullYear(),
+      fiscalYear: updatedMeta.fiscalYear || updatedMeta.periodYear || new Date().getFullYear(),
       isPeriodLocked: true,
       verificationHash: verificationHash,
-      signedOffDate: signOffDate,
+      signedOffDate: signOffDateMillis,
     };
 
     return ok(c, settings);
@@ -616,7 +625,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
       location: body.location,
       isFraudRelated: body.isFraudRelated || false,
       isKeyControl: body.isKeyControl || false,
-      ipo: body.ipo || [],
+      ipos: body.ipos || [],
       assertions: body.assertions || [],
       supportingDocs: body.supportingDocs,
       reference: body.reference,
@@ -688,6 +697,44 @@ export function userRoutes(app: Hono<HonoEnv>) {
     });
 
     return ok(c, { success: true, status: nextStatus });
+  });
+
+  app.delete('/api/controls/:id', async (c) => {
+    const id = c.req.param('id');
+    const orgId = c.get('organizationId');
+    const role = c.get('userRole');
+    const db = getDb(c.env.DATABASE_URL);
+
+    const existing = await db.select().from(controls).where(and(eq(controls.id, id), eq(controls.organizationId, orgId)));
+    if (existing.length === 0) return notFound(c, 'Control not found');
+
+    const control = existing[0];
+
+    // DECISION 3: Strict Deletion for ELC
+    if (control.level === 'ELC') {
+      if (role !== 'Admin' && role !== 'Line 2') return bad(c, "Access Denied: Only Admin or Line 2 can delete ELC");
+
+      // Check if any other control links to this ELC ID in their relatedControlIds (jsonb)
+      // This is a simplified check for the explore phase, in production we might use specific postgres jsonb operators
+      const allControls = await db.select().from(controls).where(eq(controls.organizationId, orgId));
+      const isLinked = allControls.some((other: Control) => 
+        other.id !== id && 
+        other.relatedControlIds && 
+        Array.isArray(other.relatedControlIds) && 
+        other.relatedControlIds.includes(id)
+      );
+
+      if (isLinked) {
+        return bad(c, "Cannot delete ELC policy while it is still linked to active Transaction Level Controls.");
+      }
+    }
+
+    await db.delete(controls).where(eq(controls.id, id));
+    
+    // Also cleanup junction table rcmControls
+    await db.delete(rcmControls).where(eq(rcmControls.controlId, id));
+
+    return ok(c, { success: true });
   });
 
   // --- Simulations Refactored ---
@@ -848,12 +895,12 @@ export function userRoutes(app: Hono<HonoEnv>) {
           eq(bpmNodeRcms.nodeId, node.id)
         ));
 
-        const risks = await Promise.all(nodeRisks.map(async (nr) => {
+        const risks = await Promise.all(nodeRisks.map(async (nr: any) => {
           // Fetch controls linked to each risk
           const riskControls = await db.select().from(rcmControls).where(eq(rcmControls.rcmId, nr.rcmId));
           return {
             rcmId: nr.rcmId,
-            controlIds: riskControls.map(rc => rc.controlId)
+            controlIds: riskControls.map((rc: any) => rc.controlId)
           };
         }));
 
@@ -1295,20 +1342,20 @@ export function userRoutes(app: Hono<HonoEnv>) {
     ]);
 
     const deficienciesBySeverity = [
-      { name: 'Control Deficiency', count: allDeficiencyRecords.filter(d => d.severity === 'Control Deficiency').length },
-      { name: 'Significant Deficiency', count: allDeficiencyRecords.filter(d => d.severity === 'Significant Deficiency').length },
-      { name: 'Material Weakness', count: allDeficiencyRecords.filter(d => d.severity === 'Material Weakness').length },
+      { name: 'Control Deficiency', count: allDeficiencyRecords.filter((d: Deficiency) => d.severity === 'Control Deficiency').length },
+      { name: 'Significant Deficiency', count: allDeficiencyRecords.filter((d: Deficiency) => d.severity === 'Significant Deficiency').length },
+      { name: 'Material Weakness', count: allDeficiencyRecords.filter((d: Deficiency) => d.severity === 'Material Weakness').length },
     ];
 
     const deficienciesByStatus = [
-      { name: 'Open', count: allDeficiencyRecords.filter(d => d.status === 'Open').length },
-      { name: 'Remediated', count: allDeficiencyRecords.filter(d => d.status === 'Remediated').length },
-      { name: 'Verified', count: allDeficiencyRecords.filter(d => d.status === 'Verified').length },
-      { name: 'Closed', count: allDeficiencyRecords.filter(d => d.status === 'Closed').length },
+      { name: 'Open', count: allDeficiencyRecords.filter((d: Deficiency) => d.status === 'Open').length },
+      { name: 'Remediated', count: allDeficiencyRecords.filter((d: Deficiency) => d.status === 'Remediated').length },
+      { name: 'Verified', count: allDeficiencyRecords.filter((d: Deficiency) => d.status === 'Verified').length },
+      { name: 'Closed', count: allDeficiencyRecords.filter((d: Deficiency) => d.status === 'Closed').length },
     ];
 
-    const openCount = allDeficiencyRecords.filter(d => d.status === 'Open').length;
-    const hasMaterialWeakness = allDeficiencyRecords.some(d => d.severity === 'Material Weakness');
+    const openCount = allDeficiencyRecords.filter((d: Deficiency) => d.status === 'Open').length;
+    const hasMaterialWeakness = allDeficiencyRecords.some((d: Deficiency) => d.severity === 'Material Weakness');
     const effectiveness = hasMaterialWeakness ? 0 : 100; // Simplified logic for summary
 
     return ok(c, {
@@ -1485,7 +1532,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
     if (links.length === 0) return notFound(c, 'Control not linked to any risk');
 
     // 2. Find the diagram node(s) linked to those risk(s)
-    const riskIds = links.map(l => l.rcmId);
+    const riskIds = links.map((l: any) => l.rcmId);
     const nodeLinks = await db.select().from(bpmNodeRcms).where(and(
       sql`${bpmNodeRcms.rcmId} IN ${riskIds}`,
       eq(bpmNodeRcms.organizationId, orgId)

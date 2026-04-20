@@ -25,7 +25,7 @@ export function ReportsPage() {
   const { t } = useTranslation('reports');
   const queryClient = useQueryClient();
   const [testTypeFilter, setTestTypeFilter] = React.useState<'ALL' | 'TOD' | 'TOE'>('ALL');
-  const [testStatusFilter, setTestStatusFilter] = React.useState<'ALL' | 'Pass' | 'Fail'>('ALL');
+  const [testStatusFilter, setTestStatusFilter] = React.useState<'ALL' | 'Effective' | 'Ineffective'>('ALL');
   
   const { data: summaryData, isLoading: summaryLoading } = useQuery({
     queryKey: ['reportSummary'],
@@ -347,7 +347,7 @@ export function ReportsPage() {
                 <div className="space-y-1">
                   <p className="text-[10px] font-bold uppercase text-muted-foreground">Status</p>
                   <div className="flex gap-1">
-                    {['ALL', 'Pass', 'Fail'].map(s => (
+                    {['ALL', 'Effective', 'Ineffective'].map(s => (
                       <Button 
                         key={s} 
                         size="sm" 
@@ -355,7 +355,7 @@ export function ReportsPage() {
                         className="h-7 text-[10px]"
                         onClick={() => setTestStatusFilter(s as any)}
                       >
-                        {s}
+                        {s === 'ALL' ? 'ALL' : s === 'Effective' ? 'PASS' : 'FAIL'}
                       </Button>
                     ))}
                   </div>
@@ -451,9 +451,9 @@ export function ReportsPage() {
                               <TableCell className="text-center">
                                 <Badge className={cn(
                                   "text-[10px] uppercase font-bold",
-                                  test.result === 'Pass' ? "bg-green-100 text-green-700 hover:bg-green-100 border-green-200" : "bg-red-100 text-red-700 hover:bg-red-100 border-red-200"
+                                  test.result === 'Effective' ? "bg-green-100 text-green-700 hover:bg-green-100 border-green-200" : "bg-red-100 text-red-700 hover:bg-red-100 border-red-200"
                                 )} variant="outline">
-                                  {test.result === 'Pass' ? <><CheckCircle2 className="h-2 w-2 mr-1" /> PASS</> : <><XCircle className="h-2 w-2 mr-1" /> FAIL</>}
+                                  {test.result === 'Effective' ? <><CheckCircle2 className="h-2 w-2 mr-1" /> PASS</> : <><XCircle className="h-2 w-2 mr-1" /> FAIL</>}
                                 </Badge>
                               </TableCell>
                               <TableCell className="py-3 text-[10px] text-muted-foreground leading-relaxed">
@@ -502,7 +502,7 @@ export function ReportsPage() {
            <div className="text-center space-y-2 mb-10">
               <h2 className="text-xl font-bold uppercase underline">Management Assessment on ICOFR Implementation Effectiveness</h2>
               <p className="text-sm font-medium">{settings?.companyName || 'IndoRCM'}</p>
-              <p className="text-xs">Report Period: {settings?.periodYear || new Date().getFullYear()}</p>
+              <p className="text-xs">Report Period: {settings?.fiscalYear || new Date().getFullYear()}</p>
            </div>
            
            <div className="space-y-6 text-sm text-justify leading-relaxed">

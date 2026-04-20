@@ -36,7 +36,8 @@ const UserManagementPage = lazy(() => import('@/pages/admin/UserManagementPage')
 const DocumentsPage = lazy(() => import('@/pages/knowledge/DocumentsPage').then(module => ({ default: module.DocumentsPage })));
 
 import { ActivationPage } from '@/pages/ActivationPage';
-import { LicenseProvider, LicenseGuard } from '@/components/LicenseGuard';
+import { LicenseGuard } from '@/components/LicenseGuard';
+import { LicenseProvider } from '@/context/LicenseContext';
 import { authClient } from '@/lib/auth-client';
 
 enableMapSet();

@@ -189,6 +189,7 @@ export const controls = pgTable("controls", {
 	name: text("name").notNull(),
 	description: text("description"),
 	ownerId: text("owner_id"),
+	level: text("level").default("TLC"), // New: ELC, TLC, ITGC
 	type: text("type"), 
 	nature: text("nature"),
 	frequency: text("frequency"),
@@ -196,6 +197,8 @@ export const controls = pgTable("controls", {
 
 	// New Worksheet Fields
 	fsliCodes: jsonb("fsli_codes"),
+	relatedControlIds: jsonb("related_control_ids").$type<string[]>().default([]), // New: Many-to-Many Linkage
+	attachmentUrl: text("attachment_url"), // New: Policy Document URL
 	businessProcessLvl1: text("business_process_lvl1"),
 	businessProcessLvl2: text("business_process_lvl2"),
 	subProcess: text("sub_process"),

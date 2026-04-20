@@ -4,7 +4,7 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { api } from '@/lib/api-client';
-import type { Deficiency, ActionPlan, ActionPlanStatus, DeficiencySeverity } from '@shared/types';
+import type { Deficiency, ActionPlan, ActionPlanStatus, DeficiencySeverity, AggregateDeficiency } from '@shared/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent } from '@/components/ui/card';
 import { DeficiencyCard } from '@/components/deficiencies/DeficiencyCard';
@@ -15,6 +15,7 @@ import { DoDWizard } from '@/components/deficiencies/DoDWizard';
 import { RemediationForm } from '@/components/deficiencies/RemediationForm';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { isBeforeYearEnd } from '@/lib/compliance-utils';
 
 const KANBAN_COLUMNS: ActionPlanStatus[] = ["Draft", "In Review", "In Progress", "Resolved", "Verified"];
 

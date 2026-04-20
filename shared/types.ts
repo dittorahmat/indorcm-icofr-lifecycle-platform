@@ -6,12 +6,12 @@ export interface ApiResponse<T = unknown> {
 
 // --- ICOFR Domain Models ---
 
-export type ControlAssertion = "Completeness" | "Accuracy" | "Validity" | "Cut-off" | "Presentation" | "Existence";
+export type ControlAssertion = "Completeness" | "Accuracy" | "Validity" | "Cut-off" | "Presentation" | "Existence" | "Valuation" | "Occurrence" | "Classification";
 export type ControlType = "Preventive" | "Detective";
 export type ControlNature = "Manual" | "Automated" | "ITDM - IPE" | "ITDM - EUC" | "MRC";
 export type AutomatedSubNature = "Automated Control" | "Automated Calculation" | "Restricted Access" | "Interface";
 export type ControlFrequency = "Annual" | "Semi-Annual" | "Quarterly" | "Monthly" | "Weekly" | "Daily" | "Ad-hoc";
-export type InformationProcessingObjective = "Completeness" | "Accuracy" | "Validity" | "Restricted Access";
+export type InformationProcessingObjective = "Completeness" | "Accuracy" | "Validity" | "Restricted Access" | "Availability";
 export type DeficiencySeverity = "Control Deficiency" | "Significant Deficiency" | "Material Weakness";
 export type ActionPlanStatus = "Draft" | "In Review" | "In Progress" | "Resolved" | "Verified";
 export type UserRole = "Line 1" | "Line 2" | "Line 3" | "Admin" | "External Auditor" | "Commissioner" | "CFO";
@@ -179,7 +179,14 @@ export interface AggregateDeficiency {
   conclusionRationale: string;
   identifiedBy: string; // User ID
   identifiedDate: number;
+  remediationPlan?: string;
+  remediationStatus?: string;
+  targetDate?: number;
+  isBeforeYearEnd?: boolean;
+  description?: string; // Optional if needed
 }
+
+export type ControlLevel = "ELC" | "TLC" | "ITGC";
 
 export interface Control {
   id: string;
@@ -188,12 +195,15 @@ export interface Control {
   name: string;
   description: string;
   ownerId: string; // User ID
+  level: ControlLevel; // New: SK-5 Requirement
   type: ControlType;
   nature: ControlNature;
   frequency: ControlFrequency;
   assertions: ControlAssertion[];
   ipos: InformationProcessingObjective[];
   cosoPrinciples: COSOPrinciple[];
+  relatedControlIds: string[]; // New: For linkage (Many-to-Many)
+  attachmentUrl?: string; // New: For policy documents
   itgcArea?: ITGCArea;
   cobitId?: string; // New: For ITGC controls (Tabel 1)
   isFraudRisk: boolean; // New: (Tabel 18)
@@ -491,10 +501,26 @@ export interface Materiality {
   entityAllocations?: EntityMateriality[];
   investeeAllocations?: InvesteeMateriality[]; // FAQ No. 5
 }
-// --- Original Demo Types (can be removed later if not needed) ---
+export interface BPMDiagram {
+  id: string;
+  name: string;
+  subProcess: string;
+  nodes: BPMNode[];
+  edges: BPMEdge[];
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface LoginCredentials {
+  email: string;
+  password?: string;
+  mockRole?: UserRole;
+}
+
 export interface User {
   id: string;
   name: string;
+  email?: string;
   role?: UserRole;
   departmentId?: string;
   level?: UserLevel;

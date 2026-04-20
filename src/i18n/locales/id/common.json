@@ -23,5 +23,13 @@
     "error": "Gagal",
     "warning": "Peringatan",
     "info": "Informasi"
+  },
+  "icofr": {
+    "elc": "Entity Level Control (ELC)",
+    "tlc": "Transaction Level Control (TLC)",
+    "policyUmbrella": "Payung Kebijakan",
+    "linkedTo": "Terhubung ke",
+    "elcTab": "RCM ELC (Strategis)",
+    "tlcTab": "RCM TLC (Operasional)"
   }
 }

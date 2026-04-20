@@ -57,6 +57,13 @@
       "when": 1776598316727,
       "tag": "0007_public_captain_cross",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1776689033374,
+      "tag": "0008_lean_hobgoblin",
+      "breakpoints": true
     }
   ]
 }

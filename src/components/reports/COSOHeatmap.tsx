@@ -6,7 +6,7 @@ import { ShieldCheck, AlertTriangle } from 'lucide-react';
 import type { COSOPrinciple } from '@shared/types';
 
 // Standard 17 COSO Principles mapping
-export const COSO_PRINCIPLES: Record<COSOPrinciple, { component: string, description: string }> = {
+const COSO_PRINCIPLES: Record<COSOPrinciple, { component: string, description: string }> = {
   1: { component: 'Control Environment', description: 'Demonstrates commitment to integrity and ethical values' },
   2: { component: 'Control Environment', description: 'Exercises oversight responsibility' },
   3: { component: 'Control Environment', description: 'Establishes structure, authority, and responsibility' },

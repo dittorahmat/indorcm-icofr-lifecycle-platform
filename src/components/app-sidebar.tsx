@@ -90,7 +90,7 @@ export function AppSidebar(): JSX.Element {
     }
     // We only want to sync when the user ID changes (e.g. login)
     // to avoid overriding manual language switches before the session refreshes
-  }, [session?.user?.id]);
+  }, [session?.user?.id, i18n, session?.user]);
 
   const isActive = (path: string) => pathname === path || pathname.startsWith(path);
 
@@ -169,6 +169,11 @@ export function AppSidebar(): JSX.Element {
         <SidebarGroup>
           <SidebarGroupLabel className="font-bold text-white uppercase text-[10px] tracking-widest opacity-80">{t('groups.rcsa')}</SidebarGroupLabel>
           <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={isActive("/rcm")}>
+                <Link to="/rcm" className="font-bold"><ShieldCheck /> <span>RCM Manager</span></Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/change-log")}>
                 <Link to="/change-log" className="font-bold"><History /> <span>{t('items.changelog')}</span></Link>

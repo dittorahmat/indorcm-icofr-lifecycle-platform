@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { motion } from 'framer-motion';
 import { authClient } from '@/lib/auth-client';
 import { toast } from 'sonner';
+import { LoginCredentials } from '@shared/types';
 
 export function LoginPage() {
   const navigate = useNavigate();
