@@ -289,6 +289,12 @@ export const deficiencies = pgTable("deficiencies", {
 	identifiedDate: timestamp("identified_date"),
 	identifiedBy: text("identified_by"),
 	status: text("status").notNull(), // Open, Closed
+	rootCause: text("root_cause"),
+	magnitude: doublePrecision("magnitude"),
+	exposureValue: doublePrecision("exposure_value"), // Nilai Eksposur Defisiensi
+	likelihood: text("likelihood"),
+	assertions: jsonb("assertions").$type<string[]>(), // Assertions mapping (Lampiran 10)
+	preAssessment: jsonb("pre_assessment"), // Step 0 Indicators
 });
 
 export const actionPlans = pgTable("action_plans", {
@@ -299,6 +305,15 @@ export const actionPlans = pgTable("action_plans", {
 	ownerId: text("owner_id"),
 	dueDate: timestamp("due_date"),
 	status: text("status").notNull(),
+	relatedFunction: text("related_function"),
+	picName: text("pic_name"),
+	planDescription: text("plan_description"),
+	activityDetail: text("activity_detail"),
+	remediatedControlDescription: text("remediated_control_description"),
+	targetDate: timestamp("target_date"),
+	actualCompletionDate: timestamp("actual_completion_date"),
+	isApprovedByLine2: boolean("is_approved_by_line2").default(false),
+	isBeforeYearEnd: boolean("is_before_year_end").default(false),
 });
 
 export const applications = pgTable("applications", {

@@ -396,10 +396,19 @@ export interface Deficiency {
   // SK-5 Requirement: Compensating Controls (Bab VII 1.1.e)
   compensatingControlIds?: string[]; 
   rootCause?: string;
-  magnitude?: number; // Value exposed to risk
+  magnitude?: number; // Value exposed to risk (deprecated or for manual calc)
+  exposureValue?: number; // Nilai Eksposur Defisiensi (Lampiran 10)
   likelihood?: "Low" | "Medium" | "High";
   remediationEvidence?: string;
   correctiveActionTaken?: string;
+  // Step 0 Indicators (SK-5 1.1.c)
+  preAssessment?: {
+    seniorManagementFraud: boolean;
+    materialFraudImpact: boolean;
+    restatement: boolean;
+    auditorIdentifiedMisstatement: boolean;
+    ineffectiveAuditCommittee: boolean;
+  };
 }
 
 export interface ActionPlan {

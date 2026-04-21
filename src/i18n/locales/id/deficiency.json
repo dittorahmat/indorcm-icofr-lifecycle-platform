@@ -1,0 +1,38 @@
+{
+  "title": "Papan Defisiensi",
+  "description": "Pantau remediasi dan nilai tingkat keparahan menggunakan model Degree of Deficiency (DoD).",
+  "form": {
+    "title": "Rencana Aksi Remediasi",
+    "description": "Formulir perencanaan dan pemantauan remediasi kontrol sesuai SK-5/2024.",
+    "fields": {
+      "relatedFunction": "Fungsi Terkait",
+      "picName": "Penanggung Jawab (PIC)",
+      "planDescription": "Deskripsi Rencana",
+      "activityDetail": "Detail Aktivitas",
+      "targetDate": "Target Tanggal Penyelesaian",
+      "actualCompletion": "Tanggal Penyelesaian Aktual",
+      "approvedByL2": "Disetujui Lini 2",
+      "remediatedControlDescription": "Deskripsi Kontrol Setelah Remediasi"
+    },
+    "placeholders": {
+      "relatedFunction": "misal: Keuangan, Operasional IT",
+      "picName": "Masukkan nama lengkap PIC",
+      "planDescription": "Ringkasan pendekatan perbaikan...",
+      "activityDetail": "Tahapan aktivitas perbaikan secara detail...",
+      "remediatedControlDescription": "Bagaimana bentuk kontrol setelah diperbaiki?"
+    }
+  },
+  "status": {
+    "draft": "Draft",
+    "review": "Dalam Review",
+    "progress": "Dalam Proses",
+    "resolved": "Selesai (Lini 1)",
+    "verified": "Terverifikasi (Lini 2)"
+  },
+  "dod": {
+    "title": "Tingkat Defisiensi (DoD)",
+    "rootCause": "Akar Masalah",
+    "magnitude": "Magnitudo Risiko",
+    "likelihood": "Probabilitas"
+  }
+}

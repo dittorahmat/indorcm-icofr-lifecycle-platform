@@ -484,7 +484,7 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
         </Select>
       )
     }
-  ], [apps?.items, diagrams?.items, createDiagramMutation, debouncedUpdate, updateMutation, deleteMutation, elcControls]);
+  ], [apps?.items, diagrams?.items, createDiagramMutation, debouncedUpdate, updateMutation, deleteMutation, elcControls, t]);
 
   const table = useReactTable({
     data: controls || [],

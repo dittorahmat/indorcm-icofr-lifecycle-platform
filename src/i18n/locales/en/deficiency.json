@@ -1,0 +1,38 @@
+{
+  "title": "Deficiency Board",
+  "description": "Track remediation and assess severity using the Degree of Deficiency (DoD) model.",
+  "form": {
+    "title": "Remediation Action Plan",
+    "description": "Form for planning and tracking control remediation as per SK-5/2024.",
+    "fields": {
+      "relatedFunction": "Related Function",
+      "picName": "Person In Charge (PIC)",
+      "planDescription": "Plan Description",
+      "activityDetail": "Activity Detail",
+      "targetDate": "Target Completion Date",
+      "actualCompletion": "Actual Completion Date",
+      "approvedByL2": "Approved by Line 2",
+      "remediatedControlDescription": "Remediated Control Description"
+    },
+    "placeholders": {
+      "relatedFunction": "e.g. Finance, IT Operation",
+      "picName": "Enter full name of PIC",
+      "planDescription": "Summary of remediation approach...",
+      "activityDetail": "Step-by-step remediation activities...",
+      "remediatedControlDescription": "How will the control look after remediation?"
+    }
+  },
+  "status": {
+    "draft": "Draft",
+    "review": "In Review",
+    "progress": "In Progress",
+    "resolved": "Resolved (Lini 1)",
+    "verified": "Verified (Lini 2)"
+  },
+  "dod": {
+    "title": "Degree of Deficiency (DoD)",
+    "rootCause": "Root Cause",
+    "magnitude": "Magnitude of Risk",
+    "likelihood": "Likelihood"
+  }
+}

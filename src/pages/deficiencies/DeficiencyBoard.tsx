@@ -4,7 +4,7 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { api } from '@/lib/api-client';
-import type { Deficiency, ActionPlan, ActionPlanStatus, DeficiencySeverity, AggregateDeficiency } from '@shared/types';
+import type { Deficiency, ActionPlan, ActionPlanStatus, DeficiencySeverity, AggregateDeficiency, MaterialitySimulation } from '@shared/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent } from '@/components/ui/card';
 import { DeficiencyCard } from '@/components/deficiencies/DeficiencyCard';
@@ -16,6 +16,8 @@ import { RemediationForm } from '@/components/deficiencies/RemediationForm';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { isBeforeYearEnd } from '@/lib/compliance-utils';
+
+import { useTranslation } from 'react-i18next';
 
 const KANBAN_COLUMNS: ActionPlanStatus[] = ["Draft", "In Review", "In Progress", "Resolved", "Verified"];
 
@@ -42,12 +44,24 @@ function KanbanColumn({
   role: string,
   onStatusChange: (apId: string, newStatus: ActionPlanStatus) => void
 }) {
+  const { t } = useTranslation('deficiency');
   const plansInColumn = actionPlans.filter(ap => ap.status === status);
+
+  const getColumnTitle = (s: ActionPlanStatus) => {
+    switch (s) {
+      case 'Draft': return t('status.draft');
+      case 'In Review': return t('status.review');
+      case 'In Progress': return t('status.progress');
+      case 'Resolved': return t('status.resolved');
+      case 'Verified': return t('status.verified');
+      default: return s;
+    }
+  };
 
   return (
     <div className="w-72 md:w-80 flex-shrink-0">
       <div className="flex items-center justify-between mb-4 px-2">
-        <h2 className="font-semibold text-lg">{status}</h2>
+        <h2 className="font-semibold text-lg">{getColumnTitle(status)}</h2>
         <span className="text-sm font-medium bg-muted text-muted-foreground rounded-full px-2 py-0.5">{plansInColumn.length}</span>
       </div>
       <SortableContext id={status} items={plansInColumn.map(ap => ap.id)} strategy={verticalListSortingStrategy}>
@@ -151,6 +165,15 @@ export function DeficiencyBoard() {
     queryFn: () => api<{ items: ActionPlan[] }>('/api/actionplans'),
   });
 
+  const { data: simulationsData } = useQuery({
+    queryKey: ['simulations'],
+    queryFn: () => api<{ items: MaterialitySimulation[] }>('/api/simulations'),
+  });
+
+  const activeSimulation = simulationsData?.items.find(s => s.status === 'Approved') || 
+                           simulationsData?.items[0]; // Fallback
+  const pmValue = activeSimulation?.pmValue;
+
   const [actionPlans, setActionPlans] = React.useState<ActionPlan[]>([]);
 
   React.useEffect(() => {
@@ -166,32 +189,15 @@ export function DeficiencyBoard() {
 
   const planMutation = useMutation({
     mutationFn: async (payload: Partial<ActionPlan> & { id: string; deficiencyId: string }) => {
-      // 1. Update Action Plan
-      const currentPlan = actionPlans.find(p => p.id === payload.id);
-      const updatedStatus = payload.status || currentPlan?.status;
-      const compDate = updatedStatus === 'Resolved' || updatedStatus === 'Verified' ? Date.now() : payload.completionDate;
-      
-      const updateBody = {
-        ...payload,
-        completionDate: compDate,
-        actualCompletionDate: compDate,
-        isApprovedByLine2: updatedStatus === 'In Progress' ? true : payload.isApprovedByLine2,
-        isBeforeYearEnd: compDate ? isBeforeYearEnd(compDate, 2024) : payload.isBeforeYearEnd, // Hardcoded 2024 for now
-      };
-
-      await api(`/api/actionplans/${payload.id}`, { method: 'PUT', body: JSON.stringify(updateBody) });
-
-      // 2. Sync Deficiency Status based on Action Plan (SK-5 Requirement)
-      if (updatedStatus) {
-        let defStatus: Deficiency['status'] = 'Open';
-        if (updatedStatus === 'Resolved') defStatus = 'Remediated';
-        if (updatedStatus === 'Verified') defStatus = 'Verified';
-        
-        await api(`/api/deficiencies/${payload.deficiencyId}`, { method: 'PUT', body: JSON.stringify({ status: defStatus }) });
-      }
+      // The backend handles status synchronization, actualCompletionDate, 
+      // and isBeforeYearEnd logic. We just send the intended update.
+      await api(`/api/actionplans/${payload.id}`, { 
+        method: 'PUT', 
+        body: JSON.stringify(payload) 
+      });
     },
     onSuccess: () => {
-      toast.success("Action plan updated and synchronized.");
+      toast.success("Action plan updated.");
       queryClient.invalidateQueries({ queryKey: ['actionplans'] });
       queryClient.invalidateQueries({ queryKey: ['deficiencies'] });
       setRemediationOpen(false);
@@ -227,18 +233,25 @@ export function DeficiencyBoard() {
     setWizardOpen(true);
   };
 
-  const handleWizardComplete = (severity: DeficiencySeverity, rationale?: string) => {
+  const handleWizardComplete = (severity: DeficiencySeverity, rationale?: string, metadata?: any) => {
     if (isAggregateMode) {
       const selectedData = deficienciesData?.items.filter(d => selectedDeficiencies.includes(d.id)) || [];
       aggregateMutation.mutate({
         deficiencyIds: selectedDeficiencies,
         finalSeverity: severity,
         conclusionRationale: rationale || "Evaluasi agregasi akun sejenis (Box 7 loop-back).",
-        combinedMagnitude: selectedData.reduce((sum, d) => sum + (d.magnitude || 0), 0),
+        combinedMagnitude: metadata?.exposureValue || selectedData.reduce((sum, d) => sum + (d.magnitude || 0), 0),
         affectedAccounts: [...new Set(selectedData.map(d => d.controlId))], // Simplified mapping
+        affectedAssertions: metadata?.assertions,
       });
     } else if (activeDeficiencyId) {
-      severityMutation.mutate({ id: activeDeficiencyId, severity });
+      severityMutation.mutate({ 
+        id: activeDeficiencyId, 
+        severity, 
+        // @ts-expect-error - passing extra metadata for the API
+        rationale, 
+        ...metadata 
+      });
     }
   };
 
@@ -389,6 +402,7 @@ export function DeficiencyBoard() {
         setIsOpen={setWizardOpen} 
         onComplete={handleWizardComplete} 
         isAggregate={isAggregateMode}
+        performanceMateriality={pmValue}
       />
 
       <RemediationForm

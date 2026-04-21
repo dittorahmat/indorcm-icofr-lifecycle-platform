@@ -85,6 +85,20 @@
       "when": 1776756552163,
       "tag": "0011_adorable_the_call",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1776766550693,
+      "tag": "0012_update_remediation_regulatory_fields",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1776767577879,
+      "tag": "0013_cold_scourge",
+      "breakpoints": true
     }
   ]
 }

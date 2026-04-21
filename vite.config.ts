@@ -94,7 +94,7 @@ export default ({ mode }: { mode: string }) => {
       react(), 
       cloudflare({
         // FIX: This enables connection to real R2/D1 during development
-        // @ts-ignore
+        // @ts-expect-error - cloudflare vite plugin types might be outdated
         platformProxy: {
           persist: false,
         }

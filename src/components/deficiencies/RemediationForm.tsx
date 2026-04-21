@@ -2,6 +2,7 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -11,7 +12,7 @@ import { ShieldCheck, Calendar } from 'lucide-react';
 import type { ActionPlan } from '@shared/types';
 
 const remediationSchema = z.object({
-  relatedFunction: z.string().min(1, 'Related Function is required (Appendix 6)'),
+  relatedFunction: z.string().min(1, 'Related Function is required'),
   picName: z.string().min(1, 'Person In Charge is required'),
   planDescription: z.string().min(1, 'Plan Description is required'),
   activityDetail: z.string().min(1, 'Activity Detail is required'),
@@ -30,6 +31,8 @@ interface RemediationFormProps {
 }
 
 export function RemediationForm({ isOpen, setIsOpen, actionPlan, onSubmit, isLoading }: RemediationFormProps) {
+  const { t } = useTranslation('deficiency');
+
   const form = useForm<RemediationFormValues>({
     resolver: zodResolver(remediationSchema),
     defaultValues: {
@@ -45,12 +48,12 @@ export function RemediationForm({ isOpen, setIsOpen, actionPlan, onSubmit, isLoa
   React.useEffect(() => {
     if (actionPlan) {
       form.reset({
-        relatedFunction: actionPlan.relatedFunction,
-        picName: actionPlan.picName,
-        planDescription: actionPlan.planDescription,
-        activityDetail: actionPlan.activityDetail,
-        remediatedControlDescription: actionPlan.remediatedControlDescription,
-        targetDate: new Date(actionPlan.targetDate).toISOString().split('T')[0],
+        relatedFunction: actionPlan.relatedFunction || "",
+        picName: actionPlan.picName || "",
+        planDescription: actionPlan.planDescription || "",
+        activityDetail: actionPlan.activityDetail || "",
+        remediatedControlDescription: actionPlan.remediatedControlDescription || "",
+        targetDate: actionPlan.targetDate ? new Date(actionPlan.targetDate).toISOString().split('T')[0] : "",
       });
     }
   }, [actionPlan, form]);
@@ -66,7 +69,7 @@ export function RemediationForm({ isOpen, setIsOpen, actionPlan, onSubmit, isLoa
       activityDetail: values.activityDetail,
       remediatedControlDescription: values.remediatedControlDescription,
       targetDate: new Date(values.targetDate).getTime(),
-      dueDate: new Date(values.targetDate).getTime(), // Sync due date with target date for now
+      dueDate: new Date(values.targetDate).getTime(),
     };
 
     onSubmit(updatedPlan);
@@ -78,10 +81,10 @@ export function RemediationForm({ isOpen, setIsOpen, actionPlan, onSubmit, isLoa
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <ShieldCheck className="h-5 w-5 text-blue-600" />
-            Remediation Plan (Appendix 6)
+            {t('form.title')}
           </DialogTitle>
           <DialogDescription>
-            Complete follow-up plan details according to SK-5/2024 standards.
+            {t('form.description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -93,8 +96,8 @@ export function RemediationForm({ isOpen, setIsOpen, actionPlan, onSubmit, isLoa
                 name="relatedFunction"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-xs uppercase font-bold text-muted-foreground">Related Function</FormLabel>
-                    <FormControl><Input placeholder="e.g. Accounting Division" {...field} className="h-8 text-xs" /></FormControl>
+                    <FormLabel className="text-xs uppercase font-bold text-muted-foreground">{t('form.fields.relatedFunction')}</FormLabel>
+                    <FormControl><Input placeholder={t('form.placeholders.relatedFunction')} {...field} className="h-8 text-xs" /></FormControl>
                     <FormMessage className="text-[10px]" />
                   </FormItem>
                 )}
@@ -104,8 +107,8 @@ export function RemediationForm({ isOpen, setIsOpen, actionPlan, onSubmit, isLoa
                 name="picName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-xs uppercase font-bold text-muted-foreground">Person In Charge (PIC)</FormLabel>
-                    <FormControl><Input placeholder="Personnel Name" {...field} className="h-8 text-xs" /></FormControl>
+                    <FormLabel className="text-xs uppercase font-bold text-muted-foreground">{t('form.fields.picName')}</FormLabel>
+                    <FormControl><Input placeholder={t('form.placeholders.picName')} {...field} className="h-8 text-xs" /></FormControl>
                     <FormMessage className="text-[10px]" />
                   </FormItem>
                 )}
@@ -117,7 +120,7 @@ export function RemediationForm({ isOpen, setIsOpen, actionPlan, onSubmit, isLoa
               name="targetDate"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-xs uppercase font-bold text-muted-foreground">Target Remediation Date</FormLabel>
+                  <FormLabel className="text-xs uppercase font-bold text-muted-foreground">{t('form.fields.targetDate')}</FormLabel>
                   <FormControl>
                     <div className="relative">
                       <Input type="date" {...field} className="h-8 text-xs pr-8" />
@@ -134,8 +137,8 @@ export function RemediationForm({ isOpen, setIsOpen, actionPlan, onSubmit, isLoa
               name="planDescription"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-xs uppercase font-bold text-muted-foreground">Plan Description</FormLabel>
-                  <FormControl><Textarea placeholder="Outline of the improvement plan..." {...field} className="min-h-[60px] text-xs" /></FormControl>
+                  <FormLabel className="text-xs uppercase font-bold text-muted-foreground">{t('form.fields.planDescription')}</FormLabel>
+                  <FormControl><Textarea placeholder={t('form.placeholders.planDescription')} {...field} className="min-h-[60px] text-xs" /></FormControl>
                   <FormMessage className="text-[10px]" />
                 </FormItem>
               )}
@@ -146,8 +149,8 @@ export function RemediationForm({ isOpen, setIsOpen, actionPlan, onSubmit, isLoa
               name="activityDetail"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-xs uppercase font-bold text-muted-foreground">Activity Details</FormLabel>
-                  <FormControl><Textarea placeholder="Detailed execution steps..." {...field} className="min-h-[80px] text-xs" /></FormControl>
+                  <FormLabel className="text-xs uppercase font-bold text-muted-foreground">{t('form.fields.activityDetail')}</FormLabel>
+                  <FormControl><Textarea placeholder={t('form.placeholders.activityDetail')} {...field} className="min-h-[80px] text-xs" /></FormControl>
                   <FormMessage className="text-[10px]" />
                 </FormItem>
               )}
@@ -158,8 +161,8 @@ export function RemediationForm({ isOpen, setIsOpen, actionPlan, onSubmit, isLoa
               name="remediatedControlDescription"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-xs uppercase font-bold text-muted-foreground">Remediated Control Description</FormLabel>
-                  <FormControl><Textarea placeholder="How will the control look after remediation? (Optional)" {...field} className="min-h-[60px] text-xs" /></FormControl>
+                  <FormLabel className="text-xs uppercase font-bold text-muted-foreground">{t('form.fields.remediatedControlDescription')}</FormLabel>
+                  <FormControl><Textarea placeholder={t('form.placeholders.remediatedControlDescription')} {...field} className="min-h-[60px] text-xs" /></FormControl>
                   <FormMessage className="text-[10px]" />
                 </FormItem>
               )}
