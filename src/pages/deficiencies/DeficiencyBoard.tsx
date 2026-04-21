@@ -84,7 +84,7 @@ function KanbanColumn({
                 </div>
                 
                 <div className="flex gap-2 mt-2 px-1">
-                  {status === "Draft" && (
+                  {(status === "Draft" || role === 'Admin') && (
                     <Button 
                       size="sm" 
                       variant="outline" 
@@ -334,6 +334,19 @@ export function DeficiencyBoard() {
             <p className="text-muted-foreground">Track remediation and assess severity using the Degree of Deficiency (DoD) model.</p>
           </div>
           <div className="flex gap-2">
+            <div className="flex bg-muted p-1 rounded-md mr-4">
+              {['Line 1', 'Line 2', 'Admin'].map(r => (
+                <Button 
+                  key={r}
+                  variant={mockRole === r ? "default" : "ghost"} 
+                  size="sm" 
+                  className="h-7 text-[10px] px-2"
+                  onClick={() => handleRoleChange(r)}
+                >
+                  {r}
+                </Button>
+              ))}
+            </div>
             {!isAggregateMode ? (
               <Button variant="outline" size="sm" onClick={() => setAggregateMode(true)} className="gap-2">
                 <Layers className="h-4 w-4" /> Aggregate Analysis (Lampiran 10)

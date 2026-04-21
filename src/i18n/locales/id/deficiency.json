@@ -34,5 +34,78 @@
     "rootCause": "Akar Masalah",
     "magnitude": "Magnitudo Risiko",
     "likelihood": "Probabilitas"
+  },
+  "wizard": {
+    "title": "Asesmen Tingkat Defisiensi (DoD)",
+    "description": "Evaluasi tingkat keparahan defisiensi sesuai Gambar 5 (Hal 73) dari Peraturan SK-5/2024.",
+    "aggregateTitle": "Asesmen DoD Agregasi",
+    "aggregateDescription": "Evaluasi dampak gabungan dari beberapa defisiensi terpilih sesuai mandat Box 7.",
+    "common": {
+      "yes": "Ya",
+      "no": "Tidak",
+      "reset": "Reset Wizard",
+      "preliminaryStep": "Asesmen Awal",
+      "boxProgress": "Langkah: Box {{step}}"
+    },
+    "step0": {
+      "title": "Indikator Kelemahan Material Otomatis",
+      "description": "Kondisi tertentu secara otomatis disimpulkan sebagai Kelemahan Material (MW) tanpa memandang dampak kuantitatif.",
+      "seniorManagementFraud": "Kecurangan oleh manajemen senior (tanpa memandang materialitas)",
+      "materialFraudImpact": "Kecurangan yang mengakibatkan salah saji keuangan material",
+      "restatement": "Penyajian kembali laporan keuangan yang telah diterbitkan sebelumnya untuk mencerminkan koreksi salah saji material",
+      "auditorIdentified": "Salah saji material yang diidentifikasi oleh auditor eksternal yang tidak dicegah atau dideteksi oleh pengendalian internal",
+      "auditCommittee": "Pengawasan pelaporan keuangan dan pengendalian internal yang tidak efektif oleh Komite Audit",
+      "continueButton": "Lanjut ke Alur Flowchart",
+      "finalizeButton": "Simpulkan sebagai MW"
+    },
+    "box1": {
+      "title": "Box 1: Magnitudo vs Probabilitas",
+      "question": "Apakah ada kemungkinan yang masuk akal bahwa defisiensi pengendalian dapat mengakibatkan salah saji yang lebih dari tidak konsekuensial?"
+    },
+    "box2": {
+      "title": "Box 2: Keparahan vs Materialitas",
+      "question": "Apakah besarnya potensi salah saji lebih dari signifikan?"
+    },
+    "box3": {
+      "title": "Box 3: Potensi Salah Saji Material",
+      "question": "Apakah ada kemungkinan yang masuk akal bahwa salah saji tersebut bisa menjadi material?",
+      "exposureLabel": "Estimasi Nilai Eksposur (IDR)",
+      "exposurePlaceholder": "misal: 500000000",
+      "thresholdLabel": "Performance Materiality (PM)",
+      "materialWarning": "Perhatian: Eksposur berada di ATAS ambang batas PM."
+    },
+    "box4": {
+      "title": "Box 4: Pengendalian Kompensasi",
+      "question": "Apakah ada pengendalian kompensasi efektif lainnya yang akan mencegah atau mendeteksi potensi salah saji?"
+    },
+    "box5": {
+      "title": "Box 5: Kesimpulan Defisiensi Signifikan",
+      "question": "Apakah manajemen menyimpulkan bahwa defisiensi ini merupakan Defisiensi Signifikan (SD)?"
+    },
+    "box6": {
+      "title": "Box 6: Kesimpulan Kelemahan Material",
+      "question": "Apakah manajemen menyimpulkan bahwa defisiensi ini merupakan Kelemahan Material (MW)?"
+    },
+    "box7": {
+      "title": "Box 7: Loop Agregasi",
+      "question": "Apakah perlu menggabungkan defisiensi ini dengan yang lain untuk mengevaluasi dampak gabungan?"
+    },
+    "result": {
+      "title": "Kesimpulan Asesmen",
+      "autoRationale": "Kelemahan Material otomatis karena adanya indikator risiko tinggi (Fraud/Restatement/Pengawasan Audit).",
+      "flowchartRationale": "Tingkat keparahan ditentukan berdasarkan evaluasi sistematis flowchart Gambar 5 terhadap magnitudo, probabilitas, dan kontrol kompensasi.",
+      "quantComparison": "Analisis Kuantitatif vs Materialitas",
+      "exposureValue": "Nilai Eksposur",
+      "pmThreshold": "Ambang Batas PM",
+      "conclusion": "Kesimpulan",
+      "material": "MATERIAL",
+      "immaterial": "Immaterial",
+      "assertionsLabel": "Asersi Keuangan yang Terdampak",
+      "rationaleLabel": "Rasional Manajemen (Wajib)",
+      "rationalePlaceholder": "Jelaskan alasan penentuan kesimpulan tingkat keparahan ini...",
+      "mwNote": "Kelemahan Material wajib dilaporkan ke Komite Audit dan Dewan Komisaris (Tabel 24).",
+      "cdNote": "Defisiensi Pengendalian memerlukan pemantauan remediasi oleh Process Owner.",
+      "applyButton": "Terapkan Asesmen"
+    }
   }
 }
