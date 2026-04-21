@@ -115,7 +115,7 @@ export function AppSidebar(): JSX.Element {
       <SidebarContent>
         {userRole === 'External Auditor' && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-blue-600 font-bold uppercase text-[10px]">{t('groups.master')}</SidebarGroupLabel>
+            <SidebarGroupLabel className="font-bold text-white uppercase text-[10px] tracking-widest opacity-80">{t('groups.master')}</SidebarGroupLabel>
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={isActive("/audit-portal")}>
@@ -127,7 +127,7 @@ export function AppSidebar(): JSX.Element {
         )}
 
         <SidebarGroup>
-          <SidebarGroupLabel className="font-bold text-slate-900 uppercase text-[10px] tracking-widest">{t('groups.master')}</SidebarGroupLabel>
+          <SidebarGroupLabel className="font-bold text-white uppercase text-[10px] tracking-widest opacity-80">{t('groups.master')}</SidebarGroupLabel>
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/dashboard")}>
