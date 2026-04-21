@@ -97,7 +97,7 @@ export function BPMModal({
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[95vw] w-full h-[90vh] flex flex-col p-0 overflow-hidden">
-        <DialogHeader className="p-6 border-b bg-slate-50/50">
+        <DialogHeader className="p-6 border-b bg-slate-50/50 shrink-0">
           <div className="flex justify-between items-start">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
@@ -122,9 +122,9 @@ export function BPMModal({
           </div>
         </DialogHeader>
 
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-            <div className="px-6 border-b bg-white">
+        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
+            <div className="px-6 border-b bg-white shrink-0">
               <TabsList className="h-12 bg-transparent gap-6 p-0">
                 <TabsTrigger value="worksheet" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-bold text-slate-500">
                   <FileSpreadsheet className="h-4 w-4" /> {t('modal.tabs.worksheet')}
@@ -138,8 +138,8 @@ export function BPMModal({
               </TabsList>
             </div>
 
-            <div className="flex-1 overflow-hidden bg-slate-50/30">
-              <TabsContent value="worksheet" className="m-0 focus-visible:ring-0 h-full p-0 overflow-hidden">
+            <div className="flex-1 min-h-0 bg-slate-50/30 overflow-hidden">
+              <TabsContent value="worksheet" className="m-0 focus-visible:ring-0 h-full overflow-hidden">
                 <BPMWorksheet 
                   noGL={noGL} 
                   fsliName={fsliName} 
@@ -147,7 +147,7 @@ export function BPMModal({
                 />
               </TabsContent>
 
-              <TabsContent value="csa" className="m-0 h-full overflow-hidden p-6">
+              <TabsContent value="csa" className="m-0 h-full overflow-auto p-6">
                 <CSATabContent noGL={noGL} controls={controls || []} />
               </TabsContent>
 

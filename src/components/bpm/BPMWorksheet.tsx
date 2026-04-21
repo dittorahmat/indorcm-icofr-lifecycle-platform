@@ -38,7 +38,6 @@ import { Label } from '@/components/ui/label';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { BPMEditor } from '../rcm/BPMEditor';
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 
@@ -60,7 +59,7 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
   const [selectedDiagramId, setSelectedDiagramId] = React.useState<string | null>(null);
   const [currentSubProcess, setCurrentSubProcess] = React.useState("");
 
-  // 1. Fetch Controls (BACK TO INDEPENDENT FETCHING LIKE COMMIT 60750b5)
+  // 1. Fetch Controls
   const { data: controls, isLoading } = useQuery({
     queryKey: ['bpm-controls', noGL, bpmProcessId],
     queryFn: async () => {
@@ -166,7 +165,6 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
     }
   });
 
-  // Custom debounced update handler for auto-save
   const timerRef = React.useRef<NodeJS.Timeout | null>(null);
   const debouncedUpdate = React.useCallback((id: string, field: string, value: any) => {
     if (timerRef.current) clearTimeout(timerRef.current);
@@ -507,9 +505,8 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
   });
 
   return (
-    <div className="flex flex-col h-full p-6 space-y-4 overflow-hidden">
-      {/* Worksheet Header Actions */}
-      <div className="flex items-center justify-between bg-white p-3 rounded-lg border border-slate-200 shadow-sm shrink-0">
+    <div className="flex flex-col h-full min-h-0">
+      <div className="flex items-center justify-between bg-white p-4 border-b shrink-0">
         <div className="space-y-0.5">
           <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2">
             <FileSpreadsheet className="h-4 w-4 text-indigo-600" />
@@ -530,65 +527,62 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
         </Button>
       </div>
 
-      <div className="flex-1 min-h-0 rounded-xl border bg-white shadow-xl overflow-hidden flex flex-col">
-        <div className="overflow-auto flex-1 custom-scrollbar">
-          <Table className="min-w-[2500px] border-collapse relative">
-            <TableHeader className="bg-slate-100 border-b-2 sticky top-0 z-20 shadow-sm">
-              {table.getHeaderGroups().map(headerGroup => (
-                <TableRow key={headerGroup.id} className="hover:bg-transparent">
-                  {headerGroup.headers.map(header => (
-                    <TableHead 
-                      key={header.id}
-                      className="border-r last:border-r-0 h-14 text-[10px] font-extrabold uppercase text-slate-600 px-3 bg-slate-50/90 backdrop-blur-sm"
-                    >
-                      {flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
+      <div className="flex-1 min-h-0 overflow-auto bg-white">
+        <Table className="min-w-[2500px] border-separate border-spacing-0">
+          <TableHeader className="bg-slate-100 sticky top-0 z-20">
+            {table.getHeaderGroups().map(headerGroup => (
+              <TableRow key={headerGroup.id} className="hover:bg-transparent">
+                {headerGroup.headers.map(header => (
+                  <TableHead 
+                    key={header.id}
+                    className="border-b border-r h-12 text-[10px] font-extrabold uppercase text-slate-600 px-3 bg-slate-50 shadow-[0_1px_0_0_rgba(0,0,0,0.05)]"
+                  >
+                    {flexRender(header.column.columnDef.header, header.getContext())}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={20} className="h-32 text-center border-b">
+                  <div className="flex flex-col items-center gap-2">
+                    <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+                    <p className="text-xs text-slate-400 animate-pulse font-medium">Loading...</p>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={20} className="h-32 text-center border-b">
+                  <div className="flex flex-col items-center gap-2 py-8">
+                    <Info className="h-8 w-8 text-slate-300" />
+                    <p className="text-sm text-slate-400 italic">No records found. Click add row above.</p>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : (
+              table.getRowModel().rows.map(row => (
+                <TableRow key={row.id} className="hover:bg-indigo-50/30 transition-colors h-12 group border-b">
+                  {row.getVisibleCells().map(cell => (
+                    <TableCell key={cell.id} className="border-r p-1 overflow-hidden relative border-b">
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
                   ))}
                 </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={18} className="h-32 text-center">
-                    <div className="flex flex-col items-center gap-2">
-                      <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
-                      <p className="text-xs text-slate-400 animate-pulse font-medium">{t('worksheet.loading')}</p>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ) : table.getRowModel().rows.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={18} className="h-32 text-center">
-                    <div className="flex flex-col items-center gap-2 py-8">
-                      <Info className="h-8 w-8 text-slate-300" />
-                      <p className="text-sm text-slate-400 italic">{t('worksheet.empty')}</p>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ) : (
-                table.getRowModel().rows.map(row => (
-                  <TableRow key={row.id} className="hover:bg-indigo-50/30 transition-colors h-12 group border-b">
-                    {row.getVisibleCells().map(cell => (
-                      <TableCell key={cell.id} className="border-r last:border-r-0 p-1 overflow-hidden relative">
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
+              ))
+            )}
+          </TableBody>
+        </Table>
       </div>
 
-      {/* Modal: Add Application */}
       <Dialog open={isAddingApp} onOpenChange={setIsAddingApp}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Add New Application</DialogTitle>
             <DialogDescription>
-              Add a new IT system to the master data directory. This application will be available for all controls in the platform.
+              Add a new IT system to the master data directory.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -596,7 +590,7 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
               <Label htmlFor="app-name">Application Name</Label>
               <Input 
                 id="app-name"
-                placeholder="e.g. Oracle ERP, Core Banking System" 
+                placeholder="e.g. Oracle ERP" 
                 value={newAppName} 
                 onChange={e => setNewAppName(e.target.value)} 
               />
@@ -614,23 +608,14 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
         </DialogContent>
       </Dialog>
 
-      {/* Modal: BPM Workflow Editor */}
       <Dialog open={isBpmModalOpen} onOpenChange={setIsBpmModalOpen}>
         <DialogContent className="max-w-[95vw] w-[1400px] h-[90vh] flex flex-col p-0 overflow-hidden">
-          <DialogHeader className="p-6 pb-2">
-            <div className="flex items-center justify-between">
-              <div>
-                <DialogTitle className="flex items-center gap-2 text-xl">
-                  <WorkflowIcon className="h-5 w-5 text-indigo-600" />
-                  BPM Workflow Editor: {currentSubProcess}
-                </DialogTitle>
-                <DialogDescription>
-                  Mapping business processes, risks (RCM), and internal controls visually.
-                </DialogDescription>
-              </div>
-            </div>
+          <DialogHeader className="p-6 pb-2 shrink-0">
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <WorkflowIcon className="h-5 w-5 text-indigo-600" />
+              BPM Workflow Editor: {currentSubProcess}
+            </DialogTitle>
           </DialogHeader>
-          
           <div className="flex-1 min-h-0 border-t">
             {selectedDiagramId && (
               <BPMEditor 
