@@ -17,7 +17,7 @@ import './i18n/config';
 const HomePage = lazy(() => import('@/pages/HomePage').then(module => ({ default: module.HomePage })));
 // Don't lazy load LoginPage - critical route for auth flow (prevents logout errors)
 import { LoginPage } from '@/pages/LoginPage';
-const WelcomePage = lazy(() => import('@/pages/WelcomePage').then(module => ({ default: module.WelcomePage })));
+import { WelcomePage } from '@/pages/WelcomePage';
 const Dashboard = lazy(() => import('@/pages/Dashboard').then(module => ({ default: module.Dashboard })));
 const RCMList = lazy(() => import('@/pages/rcm/RCMList').then(module => ({ default: module.RCMList })));
 const TestWorkbench = lazy(() => import('@/pages/testing/TestWorkbench').then(module => ({ default: module.TestWorkbench })));

@@ -312,7 +312,8 @@ export const MOCK_CONTROLS: Control[] = [
     isKeyControl: true,
     effectiveDate: Date.now() - 31536000000,
     isFraudRisk: false,
-    itApplication: 'SAP S/4HANA'
+    itApplication: 'SAP S/4HANA',
+    fsliCodes: ['10008-000318']
   },
   {
     id: 'ctrl-rev-02',
@@ -332,7 +333,8 @@ export const MOCK_CONTROLS: Control[] = [
     riskRating: 'Medium',
     isKeyControl: true,
     effectiveDate: Date.now() - 31536000000,
-    isFraudRisk: false
+    isFraudRisk: false,
+    fsliCodes: ['10008-000318']
   },
   {
     id: 'ctrl-rev-03',
@@ -353,7 +355,8 @@ export const MOCK_CONTROLS: Control[] = [
     isKeyControl: true,
     effectiveDate: Date.now() - 31536000000,
     isFraudRisk: false,
-    itApplication: 'Weighbridge System'
+    itApplication: 'Weighbridge System',
+    fsliCodes: ['10008-000318']
   },
   {
     id: 'ctrl-rev-04',

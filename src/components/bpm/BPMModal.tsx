@@ -49,10 +49,20 @@ export function BPMModal({
   });
 
   const { data: controls, isLoading } = useQuery({
-    queryKey: ['bpm-controls', noGL],
+    queryKey: ['bpm-controls', noGL, bpmProcessId],
     queryFn: async () => {
+      console.log('[BPMModal] Fetching controls for GL:', noGL, 'BPM Process:', bpmProcessId);
       const all = await api<{ items: Control[] }>('/api/controls');
-      return all.items.filter(c => c.fsliCodes?.includes(noGL));
+      
+      // Filter logic: match by bpmProcessId OR fsliCodes
+      const filtered = all.items.filter(c => {
+        const matchesBpm = bpmProcessId && c.bpmProcessId === bpmProcessId;
+        const matchesFsli = c.fsliCodes?.includes(noGL);
+        return matchesBpm || matchesFsli;
+      });
+      
+      console.log('[BPMModal] Filtered controls count:', filtered.length);
+      return filtered;
     },
     enabled: isOpen
   });
@@ -129,44 +139,12 @@ export function BPMModal({
             </div>
 
             <div className="flex-1 overflow-hidden bg-slate-50/30">
-              <TabsContent value="worksheet" className="m-0 focus-visible:ring-0 h-full flex flex-col p-6 overflow-hidden">
-                <div className="flex flex-col h-full space-y-6">
-                  {/* Status Summary Bar */}
-                  <div className="flex gap-4 shrink-0 overflow-x-auto pb-2">
-                    {controls?.map(c => (
-                      <div key={c.id} className="bg-white border rounded-lg p-3 min-w-[200px] shadow-sm flex flex-col gap-2">
-                        <div className="flex justify-between items-center">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{c.code || 'New Control'}</span>
-                          <StatusBadge status={c.bpmStatus || 'Draft'} />
-                        </div>
-                        <p className="text-xs font-semibold truncate text-slate-700">{c.name}</p>
-                        
-                        <div className="flex gap-1.5 mt-1 border-t pt-2">
-                          {isLini1Staff && c.bpmStatus === 'Draft' && (
-                            <Button size="sm" variant="default" className="h-7 text-[10px] bg-indigo-600 w-full gap-1" onClick={() => submitMutation.mutate(c.id)}>
-                              <Send className="h-3 w-3" /> Submit
-                            </Button>
-                          )}
-                          {isLini1Manager && c.bpmStatus === 'Pending Approval' && (
-                            <>
-                              <Button size="sm" variant="default" className="h-7 text-[10px] bg-green-600 flex-1 gap-1" onClick={() => approveMutation.mutate(c.id)}>
-                                <CheckCircle2 className="h-3 w-3" /> Appr
-                              </Button>
-                              <Button size="sm" variant="destructive" className="h-7 text-[10px] flex-1 gap-1" onClick={() => rejectMutation.mutate(c.id)}>
-                                <XCircle className="h-3 w-3" /> Rej
-                              </Button>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Worksheet Core - Now properly handling its own internal scroll */}
-                  <div className="flex-1 min-h-0">
-                    <BPMWorksheet noGL={noGL} fsliName={fsliName} bpmProcessId={bpmProcessId || ""} />
-                  </div>
-                </div>
+              <TabsContent value="worksheet" className="m-0 focus-visible:ring-0 h-full p-0 overflow-hidden">
+                <BPMWorksheet 
+                  noGL={noGL} 
+                  fsliName={fsliName} 
+                  bpmProcessId={bpmProcessId || ""} 
+                />
               </TabsContent>
 
               <TabsContent value="csa" className="m-0 h-full overflow-hidden p-6">

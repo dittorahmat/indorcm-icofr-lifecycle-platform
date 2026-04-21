@@ -20,7 +20,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
   Network, Plus, Trash2, Loader2, PlusCircle, CheckCircle2, XCircle,
-  Database, Info, FileSpreadsheet, Workflow as WorkflowIcon
+  Database, Info, FileSpreadsheet, Workflow as WorkflowIcon, Shield, Check
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
@@ -38,9 +38,9 @@ import { Label } from '@/components/ui/label';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { BPMEditor } from '../rcm/BPMEditor';
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Check, Shield } from "lucide-react";
 
 interface BPMWorksheetProps {
   bpmProcessId: string;
@@ -49,7 +49,7 @@ interface BPMWorksheetProps {
 }
 
 export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('bpm');
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [isAddingApp, setIsAddingApp] = React.useState(false);
@@ -60,13 +60,15 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
   const [selectedDiagramId, setSelectedDiagramId] = React.useState<string | null>(null);
   const [currentSubProcess, setCurrentSubProcess] = React.useState("");
 
-  // 1. Fetch Controls for this BPM Process
+  // 1. Fetch Controls (BACK TO INDEPENDENT FETCHING LIKE COMMIT 60750b5)
   const { data: controls, isLoading } = useQuery({
-    queryKey: ['bpm-controls', bpmProcessId],
+    queryKey: ['bpm-controls', noGL, bpmProcessId],
     queryFn: async () => {
       const all = await api<{ items: Control[] }>('/api/controls');
-      // Filter by bpmProcessId, fallback to noGL if not set (for existing data)
-      return all.items.filter(c => c.bpmProcessId === bpmProcessId || (!c.bpmProcessId && c.fsliCodes?.includes(noGL)));
+      return all.items.filter(c => 
+        (bpmProcessId && c.bpmProcessId === bpmProcessId) || 
+        (!c.bpmProcessId && c.fsliCodes?.includes(noGL))
+      );
     }
   });
 
@@ -89,17 +91,10 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
     queryFn: () => api<User>('/api/auth/me'),
   });
 
-  const isReadOnly = currentUser?.role === 'Line 1' && currentUser?.level === 'Manager';
-
   // 2. Fetch Applications for dropdown
   const { data: apps } = useQuery({
     queryKey: ['applications'],
     queryFn: () => api<{ items: Application[] }>('/api/applications')
-  });
-
-  const { data: rcms } = useQuery({
-    queryKey: ['rcm-list'],
-    queryFn: () => api<{ items: any[] }>('/api/rcm')
   });
 
   // 3. Mutations
@@ -131,8 +126,8 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
         fsliCodes: [noGL],
         name: 'New Control Activity',
         businessProcessLvl1: fsliName,
-        subProcess: '',
-        location: '',
+        subProcess: 'New Sub Process',
+        location: '-',
         isFraudRelated: false,
         isKeyControl: false,
         ipo: [],
@@ -143,7 +138,10 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bpm-controls'] });
-      toast.success("New row added");
+      toast.success("New row added to worksheet");
+    },
+    onError: (err: any) => {
+      toast.error(`Failed to add row: ${err.message}`);
     }
   });
 
@@ -242,7 +240,8 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
       header: 'Informasi Proses Bisnis (Lvl 1)',
       cell: ({ row, getValue }) => (
         <Input 
-          className="h-8 text-xs border-transparent focus:border-indigo-300 bg-transparent px-1 min-w-[150px]"
+          className="h-8 text-xs border-slate-200 focus:border-indigo-300 bg-white px-2 min-w-[150px]"
+          placeholder="Isi Lvl 1..."
           defaultValue={getValue<string>()}
           onBlur={(e) => debouncedUpdate(row.original.id, 'businessProcessLvl1', e.target.value)}
         />
@@ -253,7 +252,8 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
       header: 'Informasi Proses Bisnis (Lvl 2)',
       cell: ({ row, getValue }) => (
         <Input 
-          className="h-8 text-xs border-transparent focus:border-indigo-300 bg-transparent px-1 min-w-[150px]"
+          className="h-8 text-xs border-slate-200 focus:border-indigo-300 bg-white px-2 min-w-[150px]"
+          placeholder="Isi Lvl 2..."
           defaultValue={getValue<string>()}
           onBlur={(e) => debouncedUpdate(row.original.id, 'businessProcessLvl2', e.target.value)}
         />
@@ -264,7 +264,8 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
       header: 'Informasi Sub-Proses Bisnis',
       cell: ({ row, getValue }) => (
         <Input 
-          className="h-8 text-xs border-transparent focus:border-indigo-300 bg-transparent px-1 font-bold min-w-[180px]"
+          className="h-8 text-xs border-slate-200 focus:border-indigo-300 bg-white px-2 font-bold min-w-[180px]"
+          placeholder="Nama Sub-Proses..."
           defaultValue={getValue<string>()}
           onBlur={(e) => debouncedUpdate(row.original.id, 'subProcess', e.target.value)}
         />
@@ -275,7 +276,8 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
       header: 'Lokasi',
       cell: ({ row, getValue }) => (
         <Input 
-          className="h-8 text-xs border-transparent focus:border-indigo-300 bg-transparent px-1 min-w-[100px]"
+          className="h-8 text-xs border-slate-200 focus:border-indigo-300 bg-white px-2 min-w-[100px]"
+          placeholder="Lokasi..."
           defaultValue={getValue<string>()}
           onBlur={(e) => debouncedUpdate(row.original.id, 'location', e.target.value)}
         />
@@ -286,7 +288,8 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
       header: 'Proses Bisnis (Aktivitas)',
       cell: ({ row, getValue }) => (
         <textarea 
-          className="w-full min-h-[60px] text-xs border-none focus:ring-1 focus:ring-indigo-300 bg-transparent p-1 resize-none min-w-[250px]"
+          className="w-full min-h-[60px] text-xs border border-slate-200 focus:ring-1 focus:ring-indigo-300 bg-white p-2 resize-none min-w-[250px] rounded-md"
+          placeholder="Deskripsikan aktivitas..."
           defaultValue={getValue<string>()}
           onBlur={(e) => debouncedUpdate(row.original.id, 'description', e.target.value)}
         />
@@ -300,7 +303,7 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
           value={getValue<boolean>() ? 'Y' : 'T'} 
           onValueChange={(v) => updateMutation.mutate({ id: row.original.id, data: { isFraudRelated: v === 'Y' } })}
         >
-          <SelectTrigger className="h-7 text-[10px] border-none bg-transparent">
+          <SelectTrigger className="h-7 text-[10px] border-slate-200 bg-white">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -315,7 +318,7 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
       header: 'Referensi',
       cell: ({ row, getValue }) => (
         <Input 
-          className="h-8 text-xs border-transparent focus:border-indigo-300 bg-transparent px-1 min-w-[120px]"
+          className="h-8 text-xs border-slate-200 focus:border-indigo-300 bg-white px-2 min-w-[120px]"
           defaultValue={getValue<string>()}
           onBlur={(e) => debouncedUpdate(row.original.id, 'reference', e.target.value)}
         />
@@ -326,7 +329,7 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
       header: 'Nama Aktivitas Pengendalian',
       cell: ({ row, getValue }) => (
         <Input 
-          className="h-8 text-xs border-transparent focus:border-indigo-300 bg-transparent px-1 font-medium text-indigo-700 min-w-[200px]"
+          className="h-8 text-xs border-slate-200 focus:border-indigo-300 bg-white px-2 font-medium text-indigo-700 min-w-[200px]"
           defaultValue={getValue<string>()}
           onBlur={(e) => debouncedUpdate(row.original.id, 'name', e.target.value)}
         />
@@ -340,7 +343,7 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
         return (
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 w-full justify-start font-normal px-2 text-[10px] gap-2">
+              <Button variant="outline" size="sm" className="h-8 w-full justify-start font-normal px-2 text-[10px] gap-2 border-slate-200 bg-white">
                 <Shield className={cn("h-3.5 w-3.5", selectedIds.length > 0 ? "text-indigo-600" : "text-slate-300")} />
                 {selectedIds.length > 0 ? `${selectedIds.length} Linked` : "Select ELC..."}
               </Button>
@@ -383,7 +386,7 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
       header: 'Dokumen Pendukung',
       cell: ({ row, getValue }) => (
         <Input 
-          className="h-8 text-xs border-transparent focus:border-indigo-300 bg-transparent px-1 min-w-[150px]"
+          className="h-8 text-xs border-slate-200 focus:border-indigo-300 bg-white px-2 min-w-[150px]"
           defaultValue={getValue<string>()}
           onBlur={(e) => debouncedUpdate(row.original.id, 'supportingDocs', e.target.value)}
         />
@@ -397,7 +400,7 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
           value={getValue<boolean>() ? 'Y' : 'T'} 
           onValueChange={(v) => updateMutation.mutate({ id: row.original.id, data: { isKeyControl: v === 'Y' } })}
         >
-          <SelectTrigger className="h-7 text-[10px] border-none bg-transparent">
+          <SelectTrigger className="h-7 text-[10px] border-slate-200 bg-white">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -412,7 +415,7 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
       header: 'IPO',
       cell: ({ row, getValue }) => (
         <Input 
-          className="h-8 text-xs border-transparent focus:border-indigo-300 bg-transparent px-1 min-w-[100px]"
+          className="h-8 text-xs border-slate-200 focus:border-indigo-300 bg-white px-2 min-w-[100px]"
           defaultValue={(getValue<string[]>() || []).join(', ')}
           onBlur={(e) => debouncedUpdate(row.original.id, 'ipo', e.target.value.split(',').map(s => s.trim()))}
         />
@@ -423,7 +426,7 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
       header: 'Asersi',
       cell: ({ row, getValue }) => (
         <Input 
-          className="h-8 text-xs border-transparent focus:border-indigo-300 bg-transparent px-1 min-w-[100px]"
+          className="h-8 text-xs border-slate-200 focus:border-indigo-300 bg-white px-2 min-w-[100px]"
           defaultValue={(getValue<string[]>() || []).join(', ')}
           onBlur={(e) => debouncedUpdate(row.original.id, 'assertions', e.target.value.split(',').map(s => s.trim()))}
         />
@@ -437,7 +440,7 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
           value={getValue<string>()} 
           onValueChange={(v: ControlType) => updateMutation.mutate({ id: row.original.id, data: { type: v } })}
         >
-          <SelectTrigger className="h-7 text-[10px] border-none bg-transparent">
+          <SelectTrigger className="h-7 text-[10px] border-slate-200 bg-white">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -455,7 +458,7 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
           value={getValue<string>()} 
           onValueChange={(v: ControlNature) => updateMutation.mutate({ id: row.original.id, data: { nature: v } })}
         >
-          <SelectTrigger className="h-7 text-[10px] border-none bg-transparent min-w-[80px]">
+          <SelectTrigger className="h-7 text-[10px] border-slate-200 bg-white min-w-[80px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -482,7 +485,7 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
             }
           }}
         >
-          <SelectTrigger className="h-7 text-[10px] border-none bg-transparent min-w-[120px]">
+          <SelectTrigger className="h-7 text-[10px] border-slate-200 bg-white min-w-[120px]">
             <SelectValue placeholder="Pilih..." />
           </SelectTrigger>
           <SelectContent>
@@ -504,13 +507,13 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
   });
 
   return (
-    <div className="flex flex-col h-full space-y-4">
+    <div className="flex flex-col h-full p-6 space-y-4 overflow-hidden">
       {/* Worksheet Header Actions */}
       <div className="flex items-center justify-between bg-white p-3 rounded-lg border border-slate-200 shadow-sm shrink-0">
         <div className="space-y-0.5">
           <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2">
             <FileSpreadsheet className="h-4 w-4 text-indigo-600" />
-            {t('worksheet.title')}
+            {t('worksheet.title')} - {fsliName} ({noGL})
           </h4>
           <p className="text-[10px] text-slate-500 italic">{t('worksheet.description')}</p>
         </div>
@@ -550,7 +553,7 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
                   <TableCell colSpan={18} className="h-32 text-center">
                     <div className="flex flex-col items-center gap-2">
                       <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
-                      <p className="text-xs text-slate-400 animate-pulse font-medium">Loading control worksheet...</p>
+                      <p className="text-xs text-slate-400 animate-pulse font-medium">{t('worksheet.loading')}</p>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -559,7 +562,7 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
                   <TableCell colSpan={18} className="h-32 text-center">
                     <div className="flex flex-col items-center gap-2 py-8">
                       <Info className="h-8 w-8 text-slate-300" />
-                      <p className="text-sm text-slate-400 italic">No records found for this process. Click "Add New Row" above to begin mapping.</p>
+                      <p className="text-sm text-slate-400 italic">{t('worksheet.empty')}</p>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -567,7 +570,7 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
                 table.getRowModel().rows.map(row => (
                   <TableRow key={row.id} className="hover:bg-indigo-50/30 transition-colors h-12 group border-b">
                     {row.getVisibleCells().map(cell => (
-                      <TableCell key={cell.id} className="border-r last:border-r-0 p-0 overflow-hidden relative">
+                      <TableCell key={cell.id} className="border-r last:border-r-0 p-1 overflow-hidden relative">
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </TableCell>
                     ))}

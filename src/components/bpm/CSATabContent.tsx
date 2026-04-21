@@ -236,6 +236,18 @@ export function CSATabContent({ noGL, controls }: CSATabContentProps) {
 
   const isReadOnly = !!activeCsaId;
 
+  if (!controls || controls.length === 0) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center bg-slate-50 border rounded-xl border-dashed p-12 text-center">
+        <ShieldCheck className="h-12 w-12 text-slate-300 mb-4" />
+        <h3 className="text-lg font-bold text-slate-900">No Controls Found</h3>
+        <p className="text-sm text-muted-foreground max-w-xs mt-2">
+          This sub-process doesn't have any controls mapped yet. Please add controls in the Worksheet tab first.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="h-full flex flex-col bg-white rounded-xl border shadow-sm overflow-hidden">
       <ResizablePanelGroup direction="horizontal" className="flex-1">

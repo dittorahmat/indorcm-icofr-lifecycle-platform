@@ -599,7 +599,8 @@ export function userRoutes(app: Hono<HonoEnv>) {
 
   app.post('/api/controls', async (c) => {
     const role = c.get('userRole');
-    if (role !== 'Line 2' && role !== 'Admin') return bad(c, 'Access Denied');
+    const userLevel = c.get('userLevel');
+    if (role !== 'Line 2' && role !== 'Admin' && role !== 'Line 1') return bad(c, 'Access Denied');
     const db = getDb(c.env.DATABASE_URL);
     const orgId = c.get('organizationId');
     const userId = c.get('userId');
@@ -616,7 +617,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
       type: body.type || "Preventive",
       nature: body.nature || "Manual",
       frequency: body.frequency || "Monthly",
-      bpmStatus: "Approved",
+      bpmStatus: (role === 'Line 1' && userLevel === 'Staff') ? 'Draft' : 'Approved',
       // New worksheet fields
       fsliCodes: body.fsliCodes || [],
       businessProcessLvl1: body.businessProcessLvl1,
@@ -650,6 +651,47 @@ export function userRoutes(app: Hono<HonoEnv>) {
       descriptionAfter: "Updated & Approved via Workflow",
       isRegulatory: true, effectiveDate: new Date(), approvedBy: userId
     });
+    return ok(c, { success: true });
+  });
+
+  app.post('/api/controls/:id/submit-for-approval', async (c) => {
+    const id = c.req.param('id');
+    const orgId = c.get('organizationId');
+    const userId = c.get('userId');
+    const db = getDb(c.env.DATABASE_URL);
+    
+    await db.update(controls).set({ bpmStatus: 'Pending Approval' }).where(and(eq(controls.id, id), eq(controls.organizationId, orgId)));
+    
+    await db.insert(auditLogs).values({
+      id: crypto.randomUUID(), organizationId: orgId, userId,
+      action: 'UPDATE', entityType: 'Control', entityId: id,
+      descriptionAfter: "Submitted for approval",
+      isRegulatory: true, effectiveDate: new Date()
+    });
+    
+    return ok(c, { success: true });
+  });
+
+  app.post('/api/controls/:id/reject', async (c) => {
+    const id = c.req.param('id');
+    const orgId = c.get('organizationId');
+    const userId = c.get('userId');
+    const userLevel = c.get('userLevel');
+    const db = getDb(c.env.DATABASE_URL);
+    
+    if (userLevel !== 'Manager' && c.get('userRole') !== 'Admin') return bad(c, "Only Managers can reject changes");
+    
+    const { note } = await c.req.json<{ note?: string }>();
+    
+    await db.update(controls).set({ bpmStatus: 'Rejected' }).where(and(eq(controls.id, id), eq(controls.organizationId, orgId)));
+    
+    await db.insert(auditLogs).values({
+      id: crypto.randomUUID(), organizationId: orgId, userId,
+      action: 'UPDATE', entityType: 'Control', entityId: id,
+      descriptionAfter: `Rejected changes. Note: ${note || 'No note provided'}`,
+      isRegulatory: true, effectiveDate: new Date()
+    });
+    
     return ok(c, { success: true });
   });
 

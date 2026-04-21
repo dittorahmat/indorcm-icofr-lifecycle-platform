@@ -14,7 +14,7 @@
   "worksheet": {
     "title": "Matriks Aktivitas Pengendalian (RCM)",
     "description": "Identifikasi risiko dan aktivitas pengendalian di tingkat transaksi.",
-    "addRow": "Tambah Baris Baru",
+    "addRow": "Tambah Baris di Worksheet",
     "loading": "Memuat lembar kerja kontrol...",
     "empty": "Data tidak ditemukan. Klik \"Tambah Baris Baru\" di atas untuk memulai pemetaan."
   },
