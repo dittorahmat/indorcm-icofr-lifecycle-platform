@@ -35,7 +35,7 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
   const [detectedMapping, setDetectedMapping] = useState<Record<string, string> | null>(null);
   const [emptyRowCount, setEmptyRowCount] = useState(0);
 
-  const processData = (rawRows: any[], headers?: string[]) => {
+  const processData = useCallback((rawRows: any[], headers?: string[]) => {
     console.log('========== [GL DEBUG] START PROCESSING ==========');
     console.log('[1] Raw rows received:', rawRows.length);
     console.log('[1] Headers:', headers);
@@ -154,8 +154,8 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
 
     setData(glRows);
     onDataImported(glRows, pmThreshold);
-    toast.success(`Successfully processed ${glRows.length} GL accounts from ${fileName || 'uploaded file'}`);
-  };
+    toast.success(`Successfully processed ${glRows.length} GL accounts`);
+  }, [pmThreshold, onDataImported]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
@@ -202,7 +202,7 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
       };
       reader.readAsBinaryString(file);
     }
-  }, [pmThreshold, onDataImported]);
+  }, [processData]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,

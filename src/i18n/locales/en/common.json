@@ -8,7 +8,9 @@
     "search": "Search",
     "select": "Select",
     "all": "All",
-    "submit": "Submit"
+    "submit": "Submit",
+    "addSample": "Add Sample",
+    "printPdf": "Print PDF"
   },
   "status": {
     "draft": "Draft",

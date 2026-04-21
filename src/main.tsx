@@ -39,20 +39,10 @@ import { ActivationPage } from '@/pages/ActivationPage';
 import { LicenseGuard } from '@/components/LicenseGuard';
 import { LicenseProvider } from '@/context/LicenseContext';
 import { authClient } from '@/lib/auth-client';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
 
 enableMapSet();
 const queryClient = new QueryClient();
-
-// Protected Route Component
-const ProtectedRoute = () => {
-  const { data: session, isPending } = authClient.useSession();
-
-  if (isPending) {
-    return <div className="h-screen w-full flex items-center justify-center"><Skeleton className="h-12 w-12 rounded-full" /></div>;
-  }
-
-  return session ? <Outlet /> : <Navigate to="/" replace />;
-};
 
 const router = createBrowserRouter([
   {

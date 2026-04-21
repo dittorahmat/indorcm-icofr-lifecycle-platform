@@ -302,6 +302,22 @@ export interface RCM {
   };
 }
 
+export interface CSATestSample {
+  id: string;
+  sampleRef: string;
+  attributeResults: {
+    A: boolean;
+    B: boolean;
+    C: boolean;
+    D: boolean;
+  };
+  itacResults?: {
+    expectedResult: string;
+    actualResult: string;
+    isMatch: boolean;
+  };
+}
+
 export interface CSARecord {
   id:string;
   controlId: string;
@@ -311,13 +327,13 @@ export interface CSARecord {
   result: "Effective" | "Ineffective" | "No Transaction";
   evidenceUrl?: string;
   comments: string;
+  samples: CSATestSample[]; // Dynamic sampling
 
-  // New Regulatory Fields (SK-5/2024)
-  transReference?: string;
-  attrA: boolean;
-  attrB: boolean;
-  attrC: boolean;
-  attrD: boolean;
+  // Summary Regulatory Fields (SK-5/2024) - Aggregated from samples
+  attrA?: boolean;
+  attrB?: boolean;
+  attrC?: boolean;
+  attrD?: boolean;
 
   // Forensic Metadata (Retained)
   gpsVerified?: boolean;
@@ -332,8 +348,7 @@ export interface CSARecord {
   itacScenario?: string;
   itacMethod?: string;
   itacSampleInfo?: string;
-  itacExpectedResult?: string;
-  itacActualResult?: string;
+
   // Line 2 Validation
   line2Status?: "Pending" | "Validated" | "Rejected";
   line2Comments?: string;

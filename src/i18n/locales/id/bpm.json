@@ -26,5 +26,30 @@
       "csa": "CSA",
       "logs": "Log Perubahan (Lampiran 6)"
     }
+  },
+  "csa": {
+    "history": "Riwayat Asesmen",
+    "newButton": "Asesmen Baru",
+    "backToList": "Kembali ke Riwayat",
+    "section1": "I. Informasi Umum",
+    "section2": "II. Prosedur",
+    "section3": "III. Pengujian Sampel",
+    "section4": "IV. Kesimpulan & Sign-off",
+    "attributes": {
+      "A": "Tujuan Kontrol Tercapai?",
+      "B": "Konsisten dengan Kebijakan?",
+      "C": "Personel Berwenang?",
+      "D": "Bukti Mencukupi?"
+    },
+    "itac": {
+      "scenario": "Skenario ITAC",
+      "method": "Metode Pengujian"
+    },
+    "form": {
+      "period": "Periode Asesmen",
+      "result": "Kesimpulan Akhir",
+      "comments": "Komentar Manajemen",
+      "signOff": "Verifikasi & Sign-off Digital"
+    }
   }
 }

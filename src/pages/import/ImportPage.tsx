@@ -127,7 +127,7 @@ export function ImportPage() {
               <h1 className="text-3xl font-bold text-foreground">Bulk Import RCM</h1>
               <p className="text-muted-foreground">Upload a CSV file to bulk-create processes, risks, and controls.</p>
               {/* DEMO MODE: Removed access warning */}
-              {!isAuthorized && false && (
+              {!isAuthorized && (
                 <Card className="mt-4 bg-destructive/5 border-destructive/20">
                   <CardContent className="p-4 flex items-center gap-3">
                     <AlertTriangle className="h-6 w-6 text-destructive" />

@@ -222,8 +222,7 @@ export const csaRecords = pgTable("csa_records", {
 	result: text("result").notNull(), // Effective, Ineffective, No Transaction
 	comments: text("comments"),
 
-	// New Regulatory Fields (SK-5/2024)
-	transReference: text("trans_reference"),
+	// Summary Regulatory Fields (SK-5/2024) - Aggregated from samples
 	attrA: boolean("attr_a").default(false),
 	attrB: boolean("attr_b").default(false),
 	attrC: boolean("attr_c").default(false),
@@ -242,14 +241,26 @@ export const csaRecords = pgTable("csa_records", {
 	itacScenario: text("itac_scenario"),
 	itacMethod: text("itac_method"),
 	itacSampleInfo: text("itac_sample_info"),
-	itacExpectedResult: text("itac_expected_result"),
-	itacActualResult: text("itac_actual_result"),
 
 	// Line 2 Validation
 	line2Status: text("line2_status"), // Pending, Validated, Rejected
 	line2Comments: text("line2_comments"),
 	line2ValidatedBy: text("line2_validated_by").references(() => user.id),
 	line2ValidatedDate: timestamp("line2_validated_date"),
+});
+
+export const csaSamples = pgTable("csa_samples", {
+	id: text("id").primaryKey(),
+	organizationId: text("organizationId").notNull().references(() => organization.id),
+	csaRecordId: text("csa_record_id").notNull().references(() => csaRecords.id, { onDelete: 'cascade' }),
+	sampleRef: text("sample_ref"),
+	attrA: boolean("attr_a").default(false),
+	attrB: boolean("attr_b").default(false),
+	attrC: boolean("attr_c").default(false),
+	attrD: boolean("attr_d").default(false),
+	itacExpectedResult: text("itac_expected_result"),
+	itacActualResult: text("itac_actual_result"),
+	itacMatch: boolean("itac_match").default(false),
 });
 
 export const testRecords = pgTable("test_records", {
@@ -353,6 +364,16 @@ export const organizationRelations = relations(organization, ({ many }) => ({
 
 export const glSnapshotRelations = relations(glSnapshots, ({ many }) => ({
 	rows: many(glRows),
+}));
+
+export const csaRecordRelations = relations(csaRecords, ({ many, one }) => ({
+	samples: many(csaSamples),
+	control: one(controls, { fields: [csaRecords.controlId], references: [controls.id] }),
+	assessedByUser: one(user, { fields: [csaRecords.assessedBy], references: [user.id] }),
+}));
+
+export const csaSampleRelations = relations(csaSamples, ({ one }) => ({
+	csaRecord: one(csaRecords, { fields: [csaSamples.csaRecordId], references: [csaRecords.id] }),
 }));
 
 // --- KNOWLEDGE BASE TABLES ---

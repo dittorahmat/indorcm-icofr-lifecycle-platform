@@ -7,12 +7,13 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import { LicenseStatus } from '@/context/LicenseContext';
 
 export function ActivationPage() {
   const [licenseKey, setLicenseKey] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isFetchingStatus, setIsFetchingStatus] = useState(true);
-  const [status, setStatus] = useState<{ machineId: string; status: string } | null>(null);
+  const [status, setStatus] = useState<LicenseStatus | null>(null);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {

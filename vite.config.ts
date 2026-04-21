@@ -94,6 +94,7 @@ export default ({ mode }: { mode: string }) => {
       react(), 
       cloudflare({
         // FIX: This enables connection to real R2/D1 during development
+        // @ts-ignore
         platformProxy: {
           persist: false,
         }

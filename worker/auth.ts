@@ -29,28 +29,21 @@ export const getAuth = (env: { DATABASE_URL: string; BETTER_AUTH_SECRET: string;
         emailAndPassword: {
             enabled: true,
             password: {
-                // Logic Hashing Pintar
+                // Logic Hashing PBKDF2 (Compatible with Cloudflare)
                 hash: async (password: string) => {
-                    // Jika mode demo (SKIP_LICENSE=true), gunakan PBKDF2 agar cepat di Cloudflare
-                    if (env.SKIP_LICENSE === 'true') {
-                        const salt = crypto.randomBytes(16).toString('hex');
-                        const hash = crypto.pbkdf2Sync(password, salt, 100, 32, 'sha256').toString('hex');
-                        return `pbkdf2$100$${salt}$${hash}`;
-                    }
-                    // Jika mode produksi, biarkan Better Auth pakai Scrypt (default)
-                    return undefined; 
+                    const salt = crypto.randomBytes(16).toString('hex');
+                    const hash = crypto.pbkdf2Sync(password, salt, 100, 32, 'sha256').toString('hex');
+                    return `pbkdf2$100$${salt}$${hash}`;
                 },
                 verify: async ({ hash: storedHash, password }) => {
                     if (!storedHash) return false;
 
-                    // Dukungan "Hybrid": Jika password diawali pbkdf2$, gunakan logika manual kita
                     if (storedHash.startsWith('pbkdf2$')) {
                         const [, iterations, salt, hash] = storedHash.split('$');
                         const verifyHash = crypto.pbkdf2Sync(password, salt, parseInt(iterations), 32, 'sha256').toString('hex');
                         return verifyHash === hash;
                     }
-                    // Jika tidak, biarkan Better Auth verifikasi pakai Scrypt
-                    return undefined;
+                    return false;
                 }
             }
         },

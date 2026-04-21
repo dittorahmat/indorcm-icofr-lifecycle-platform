@@ -19,8 +19,9 @@ import { calculateRiskRating, COBIT_ITGC_MAPPING, getSuggestedControl } from '@/
 import type { Control, ControlAssertion, InformationProcessingObjective, ControlFrequency, COSOPrinciple, ITGCArea, Application } from '@shared/types';
 import { 
   UploadCloud, File as FileIcon, X, Calculator, Wand2, Info, Lightbulb,
-  ShieldCheck, ShieldAlert, AlertTriangle
+  ShieldCheck, ShieldAlert, AlertTriangle, Loader2, CheckCircle2
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import {
   Dialog,
@@ -156,6 +157,11 @@ export function ControlEditor({ isOpen, setIsOpen, control }: ControlEditorProps
   const queryClient = useQueryClient();
   const [evidenceFile, setEvidenceFile] = React.useState<File | null>(null);
   const [preview, setPreview] = React.useState<string | null>(null);
+
+  const { data: applicationsData } = useQuery({
+    queryKey: ['applications'],
+    queryFn: () => api<{ items: Application[] }>('/api/applications')
+  });
 
   const form = useForm<ControlFormValues>({
     resolver: zodResolver(controlSchema),
@@ -552,7 +558,7 @@ export function ControlEditor({ isOpen, setIsOpen, control }: ControlEditorProps
                   <FormItem>
                     <div className="flex justify-between items-center mb-1">
                       <FormLabel className="text-[10px] uppercase">Kualitatif (Table 11)</FormLabel>
-                      <QualitativeRiskWizard onApply={(val) => setValue("riskQualitative", val)} />
+                      <QualitativeRiskWizard onApply={(val) => form.setValue("riskQualitative", val)} />
                     </div>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger></FormControl>

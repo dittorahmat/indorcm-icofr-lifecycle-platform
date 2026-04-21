@@ -23,7 +23,6 @@ import type { Control, TestRecord, Deficiency, User } from '@shared/types';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { AlertTriangle, Info, Clock, CheckCircle2, XCircle, History, ListFilter, UserCheck, Loader2 } from 'lucide-react';
-import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { promptBiometricAuth } from '@/lib/forensic-utils';
 
@@ -45,6 +44,74 @@ const testSchema = z.object({
 });
 
 type TestFormValues = z.infer<typeof testSchema>;
+
+const EvaluationAttributesSection = ({ form }: { form: any }) => (
+  <div className="p-4 bg-muted/20 border rounded-lg space-y-3">
+    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Evaluation Attributes (Mandatory Table 21)</p>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
+      <FormField
+        control={form.control}
+        name="evaluationAttributes.objectiveAchieved"
+        render={({ field }) => (
+          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+            <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+            <FormLabel className="text-[11px] font-normal leading-none cursor-pointer">Control Objective Achievement</FormLabel>
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={form.control}
+        name="evaluationAttributes.timingAccuracy"
+        render={({ field }) => (
+          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+            <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+            <FormLabel className="text-[11px] font-normal leading-none cursor-pointer">Timeliness of Execution</FormLabel>
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={form.control}
+        name="evaluationAttributes.authorityCompetence"
+        render={({ field }) => (
+          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+            <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+            <FormLabel className="text-[11px] font-normal leading-none cursor-pointer">Authority & Competence of Performer</FormLabel>
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={form.control}
+        name="evaluationAttributes.infoReliability"
+        render={({ field }) => (
+          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+            <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+            <FormLabel className="text-[11px] font-normal leading-none cursor-pointer">Information Reliability (IPE/EUC)</FormLabel>
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={form.control}
+        name="evaluationAttributes.periodCoverage"
+        render={({ field }) => (
+          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+            <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+            <FormLabel className="text-[11px] font-normal leading-none cursor-pointer">Testing Period Coverage</FormLabel>
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={form.control}
+        name="evaluationAttributes.evidenceAvailability"
+        render={({ field }) => (
+          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+            <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+            <FormLabel className="text-[11px] font-normal leading-none cursor-pointer">Sufficiency of Supporting Evidence</FormLabel>
+          </FormItem>
+        )}
+      />
+    </div>
+  </div>
+);
 
 function ControlTestCard({ control, openDeficiencyDate, history }: { control: Control, openDeficiencyDate?: number, history: TestRecord[] }) {
   const queryClient = useQueryClient();
@@ -83,7 +150,7 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
     },
   });
 
-  async function onSubmit(values: TestFormValues) {
+  const onSubmit = async (values: TestFormValues) => {
     if (values.testType === 'TOE' && !values.homogeneityJustification) {
       form.setError('homogeneityJustification', { type: 'manual', message: 'Homogeneity justification is required for TOE (Chapter V 1.3.a)' });
       return;
@@ -105,74 +172,6 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
       ...values,
     });
   }
-
-  const EvaluationAttributesSection = () => (
-    <div className="p-4 bg-muted/20 border rounded-lg space-y-3">
-      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Evaluation Attributes (Mandatory Table 21)</p>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
-        <FormField
-          control={form.control}
-          name="evaluationAttributes.objectiveAchieved"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-              <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-              <FormLabel className="text-[11px] font-normal leading-none cursor-pointer">Control Objective Achievement</FormLabel>
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="evaluationAttributes.timingAccuracy"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-              <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-              <FormLabel className="text-[11px] font-normal leading-none cursor-pointer">Timeliness of Execution</FormLabel>
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="evaluationAttributes.authorityCompetence"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-              <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-              <FormLabel className="text-[11px] font-normal leading-none cursor-pointer">Authority & Competence of Performer</FormLabel>
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="evaluationAttributes.infoReliability"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-              <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-              <FormLabel className="text-[11px] font-normal leading-none cursor-pointer">Information Reliability (IPE/EUC)</FormLabel>
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="evaluationAttributes.periodCoverage"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-              <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-              <FormLabel className="text-[11px] font-normal leading-none cursor-pointer">Testing Period Coverage</FormLabel>
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="evaluationAttributes.evidenceAvailability"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-              <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-              <FormLabel className="text-[11px] font-normal leading-none cursor-pointer">Sufficiency of Supporting Evidence</FormLabel>
-            </FormItem>
-          )}
-        />
-      </div>
-    </div>
-  );
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -282,7 +281,7 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
                       )} />
                     </div>
                     
-                    <EvaluationAttributesSection />
+                    <EvaluationAttributesSection form={form} />
                     
                     <FormField control={form.control} name="comments" render={({ field }) => (
                       <FormItem><FormLabel className="text-xs">TOD Comments</FormLabel><FormControl><Textarea placeholder="Enter TOD results and walkthrough notes..." {...field} className="min-h-[100px] text-xs" /></FormControl><FormMessage /></FormItem>
@@ -346,7 +345,7 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
                       )} />
                     </div>
 
-                    <EvaluationAttributesSection />
+                    <EvaluationAttributesSection form={form} />
 
                     <FormField control={form.control} name="comments" render={({ field }) => (
                       <FormItem><FormLabel className="text-xs">TOE Comments</FormLabel><FormControl><Textarea placeholder="Enter TOE results, sample details, and deviations..." {...field} className="min-h-[100px] text-xs" /></FormControl><FormMessage /></FormItem>
@@ -460,23 +459,6 @@ export function TestWorkbench() {
       h.endDate > oneYearAgo
     );
   };
-
-  // DEMO MODE: Removed access restriction - All lines can access
-  // if (mockRole !== 'Line 3') {
-  //   return (
-  //     <AppLayout container>
-  //       <div className="flex items-center justify-center h-[calc(100vh-200px)]">
-  //         <Card className="max-w-md">
-  //           <CardContent className="p-8 text-center flex flex-col items-center gap-4">
-  //             <AlertTriangle className="h-12 w-12 text-destructive" />
-  //             <h2 className="text-2xl font-bold">Access Denied</h2>
-  //             <p className="text-muted-foreground">This workbench is only available to Internal Audit (Line 3).</p>
-  //           </CardContent>
-  //         </Card>
-  //       </div>
-  //     </AppLayout>
-  //   );
-  // }
 
   const isLoading = controlsLoading || deficienciesLoading || testsLoading;
 

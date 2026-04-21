@@ -26,5 +26,30 @@
       "csa": "CSA",
       "logs": "Change Logs (Appx 6)"
     }
+  },
+  "csa": {
+    "history": "Assessment History",
+    "newButton": "New Assessment",
+    "backToList": "Back to History",
+    "section1": "I. General Information",
+    "section2": "II. Procedure",
+    "section3": "III. Sample Testing",
+    "section4": "IV. Conclusion & Sign-off",
+    "attributes": {
+      "A": "Control Objective Achieved?",
+      "B": "Consistent with Policy?",
+      "C": "Authorized Personnel?",
+      "D": "Sufficient Evidence?"
+    },
+    "itac": {
+      "scenario": "ITAC Scenario",
+      "method": "Test Method"
+    },
+    "form": {
+      "period": "Assessment Period",
+      "result": "Final Conclusion",
+      "comments": "Management Comments",
+      "signOff": "Verify & Digital Sign-off"
+    }
   }
 }

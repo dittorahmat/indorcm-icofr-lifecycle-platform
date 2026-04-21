@@ -8,7 +8,9 @@
     "search": "Cari",
     "select": "Pilih",
     "all": "Semua",
-    "submit": "Kirim"
+    "submit": "Kirim",
+    "addSample": "Tambah Sampel",
+    "printPdf": "Cetak PDF"
   },
   "status": {
     "draft": "Draft",

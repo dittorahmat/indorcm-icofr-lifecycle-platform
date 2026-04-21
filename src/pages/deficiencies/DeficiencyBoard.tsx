@@ -272,7 +272,7 @@ export function DeficiencyBoard() {
         });
       }
     }
-  }, [actionPlans, findContainer, planMutation]);
+  }, [actionPlans, planMutation]);
 
   const isLoading = deficienciesLoading || actionPlansLoading;
   const mockRole = localStorage.getItem('mockRole') || 'Line 1';

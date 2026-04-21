@@ -573,7 +573,7 @@ export function ReportsPage() {
           .no-print { display: none !important; }
           body { background: white !important; padding: 2cm !important; }
           .AppLayout_content { padding: 0 !important; }
-          .print\:block { display: block !important; }
+          .print\\:block { display: block !important; }
           @page { size: A4; margin: 0; }
         }
       `}</style>

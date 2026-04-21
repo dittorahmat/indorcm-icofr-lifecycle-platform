@@ -5,7 +5,7 @@ import { getDb } from './db';
 import * as schema from './db/schema';
 import { 
   rcms, auditLogs, controls, simulations, glSnapshots, glRows, user, 
-  deficiencies, actionPlans, departments, bpmProcesses, csaRecords, 
+  deficiencies, actionPlans, departments, bpmProcesses, csaRecords, csaSamples, 
   applications, member, account, session, bpmDiagrams, bpmNodeRcms, 
   rcmControls, organization, testRecords, aggregateDeficiencies,
   documents, documentDepartments, documentGls, documentFslis,
@@ -620,7 +620,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
       // New worksheet fields
       fsliCodes: body.fsliCodes || [],
       businessProcessLvl1: body.businessProcessLvl1,
-      businessProcessLvl2: body.businessProcessLvl2,
+      // businessProcessLvl2: body.businessProcessLvl2, // Removed: doesn't exist on type
       subProcess: body.subProcess,
       location: body.location,
       isFraudRelated: body.isFraudRelated || false,
@@ -1369,13 +1369,50 @@ export function userRoutes(app: Hono<HonoEnv>) {
     });
   });
 
-  // --- CSA & Testing Refactored (Basic) ---
+  // --- CSA & Testing Refactored (Smart CSA) ---
 
   app.get('/api/csa', async (c) => {
     const db = getDb(c.env.DATABASE_URL);
     const orgId = c.get('organizationId');
-    const items = await db.select().from(csaRecords).where(eq(csaRecords.organizationId, orgId));
+    const controlId = c.req.query('controlId');
+
+    let query = db.select().from(csaRecords).where(eq(csaRecords.organizationId, orgId));
+    
+    if (controlId) {
+      query = db.select().from(csaRecords).where(and(
+        eq(csaRecords.organizationId, orgId),
+        eq(csaRecords.controlId, controlId)
+      ));
+    }
+
+    const items = await query.orderBy(desc(csaRecords.assessmentDate));
     return ok(c, { items });
+  });
+
+  app.get('/api/csa/:id', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const id = c.req.param('id');
+    const orgId = c.get('organizationId');
+
+    const records = await db.select().from(csaRecords).where(and(
+      eq(csaRecords.id, id),
+      eq(csaRecords.organizationId, orgId)
+    )).limit(1);
+
+    if (records.length === 0) return notFound(c, 'CSA Record not found');
+
+    const record = records[0];
+    const samplesData = await db.select().from(csaSamples).where(eq(csaSamples.csaRecordId, id));
+
+    return ok(c, {
+      ...record,
+      samples: samplesData.map((s: any) => ({
+        id: s.id,
+        sampleRef: s.sampleRef,
+        attributeResults: { A: s.attrA, B: s.attrB, C: s.attrC, D: s.attrD },
+        itacResults: { expectedResult: s.itacExpectedResult, actualResult: s.itacActualResult, isMatch: s.itacMatch }
+      }))
+    });
   });
 
   app.post('/api/csa', async (c) => {
@@ -1385,18 +1422,19 @@ export function userRoutes(app: Hono<HonoEnv>) {
     const body = await c.req.json<Partial<CSARecord>>();
     
     const id = crypto.randomUUID();
-    const newCsa: any = {
+    const assessmentDate = new Date();
+
+    const newCsa = {
       id,
       organizationId: orgId,
       controlId: body.controlId!,
       period: body.period || "2024-Q1",
-      assessmentDate: new Date(),
+      assessmentDate,
       assessedBy: userId,
       result: body.result || "Effective",
       comments: body.comments,
 
-      // New Regulatory Fields (SK-5/2024)
-      transReference: body.transReference,
+      // Summary Regulatory Fields (Calculated from samples on frontend usually, but stored here)
       attrA: body.attrA ?? false,
       attrB: body.attrB ?? false,
       attrC: body.attrC ?? false,
@@ -1411,32 +1449,174 @@ export function userRoutes(app: Hono<HonoEnv>) {
       hash: body.hash,
       biometricVerified: body.biometricVerified ?? false,
 
-      // ITAC Specific
+      // ITAC Metadata
       itacScenario: body.itacScenario,
       itacMethod: body.itacMethod,
       itacSampleInfo: body.itacSampleInfo,
-      itacExpectedResult: body.itacExpectedResult,
-      itacActualResult: body.itacActualResult,
     };
 
+    // 1. Insert Record
     await db.insert(csaRecords).values(newCsa);
 
-    // Auto-Deficiency logic: If result is Ineffective, create a deficiency
+    // 2. Insert Samples
+    if (body.samples && Array.isArray(body.samples)) {
+      for (const sample of body.samples) {
+        await db.insert(csaSamples).values({
+          id: crypto.randomUUID(),
+          organizationId: orgId,
+          csaRecordId: id,
+          sampleRef: sample.sampleRef,
+          attrA: sample.attributeResults?.A ?? false,
+          attrB: sample.attributeResults?.B ?? false,
+          attrC: sample.attributeResults?.C ?? false,
+          attrD: sample.attributeResults?.D ?? false,
+          itacExpectedResult: sample.itacResults?.expectedResult,
+          itacActualResult: sample.itacResults?.actualResult,
+          itacMatch: sample.itacResults?.isMatch ?? false,
+        });
+      }
+    }
+
+    // 3. Auto-Deficiency logic
     if (newCsa.result === 'Ineffective') {
-        const deficiencyId = crypto.randomUUID();
         await db.insert(deficiencies).values({
-            id: deficiencyId,
+            id: crypto.randomUUID(),
             organizationId: orgId,
             controlId: newCsa.controlId,
             description: `CSA result for ${newCsa.period} is Ineffective. Comments: ${newCsa.comments || 'No comments provided.'}`,
             severity: 'Control Deficiency',
-            identifiedDate: new Date(),
+            identifiedDate: assessmentDate,
             identifiedBy: userId,
             status: 'Open'
         });
     }
 
+    // 4. Audit Log
+    await db.insert(auditLogs).values({
+      id: crypto.randomUUID(),
+      organizationId: orgId,
+      userId: userId,
+      action: 'SIGN_OFF_CSA',
+      entityType: 'Control',
+      entityId: newCsa.controlId,
+      descriptionAfter: `Completed CSA for ${newCsa.period} with result: ${newCsa.result}`,
+      dataAfter: { csaId: id, ...newCsa },
+      isRegulatory: true,
+      effectiveDate: assessmentDate,
+      approvedBy: userId
+    });
+
     return ok(c, newCsa);
+  });
+
+  app.get('/api/csa/:id/export-pdf', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const id = c.req.param('id');
+    const orgId = c.get('organizationId');
+
+    const records = await db.select().from(csaRecords).where(and(
+      eq(csaRecords.id, id),
+      eq(csaRecords.organizationId, orgId)
+    )).limit(1);
+
+    if (records.length === 0) return notFound(c, 'CSA Record not found');
+    const record = records[0];
+    
+    const controlRes = await db.select().from(controls).where(eq(controls.id, record.controlId)).limit(1);
+    const control = controlRes[0];
+    const samplesData = await db.select().from(csaSamples).where(eq(csaSamples.csaRecordId, id));
+
+    try {
+        const { jsPDF } = await import('jspdf');
+        const doc = new jsPDF();
+        
+        // Header
+        doc.setFontSize(16);
+        doc.text('CONTROL SELF-ASSESSMENT (CSA)', 105, 20, { align: 'center' });
+        doc.setFontSize(10);
+        doc.text('Regulasi BUMN SK-5/DKU.MBU/11/2024 - Lampiran 7', 105, 27, { align: 'center' });
+        
+        doc.line(10, 35, 200, 35);
+        
+        // Section I: General Info
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text('I. INFORMASI UMUM', 10, 45);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        doc.text(`Key Control No: ${control?.code || 'N/A'}`, 15, 52);
+        doc.text(`Nama Aktivitas: ${control?.name || 'N/A'}`, 15, 58);
+        doc.text(`Periode Pengujian: ${record.period}`, 15, 64);
+        doc.text(`Tanggal Asesmen: ${record.assessmentDate.toLocaleDateString()}`, 15, 70);
+        doc.text(`Kesimpulan: ${record.result}`, 15, 76);
+
+        // Section II: Procedure (Placeholder based on PDF)
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text('II. PROSEDUR PENGUJIAN', 10, 88);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Metode: Atribut Sampling / Zero Tolerance Approach', 15, 95);
+        
+        // Section III: Testing Table
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text('III. HASIL PENGUJIAN SAMPEL', 10, 110);
+        
+        // Table Header
+        let y = 118;
+        doc.setFontSize(9);
+        doc.rect(10, y-5, 190, 8);
+        doc.text('No', 12, y);
+        doc.text('Referensi Sampel', 25, y);
+        doc.text('Attr A', 90, y);
+        doc.text('Attr B', 110, y);
+        doc.text('Attr C', 130, y);
+        doc.text('Attr D', 150, y);
+        doc.text('ITAC Result', 170, y);
+        
+        y += 10;
+        samplesData.forEach((s: any, i: number) => {
+            if (y > 270) {
+                doc.addPage();
+                y = 20;
+            }
+            doc.text(`${i + 1}`, 12, y);
+            doc.text(`${s.sampleRef || '-'}`, 25, y);
+            doc.text(`${s.attrA ? 'Pass' : 'Fail'}`, 90, y);
+            doc.text(`${s.attrB ? 'Pass' : 'Fail'}`, 110, y);
+            doc.text(`${s.attrC ? 'Pass' : 'Fail'}`, 130, y);
+            doc.text(`${s.attrD ? 'Pass' : 'Fail'}`, 150, y);
+            doc.text(`${s.itacMatch ? 'Match' : (s.itacActualResult ? 'Mismatch' : '-')}`, 170, y);
+            y += 8;
+        });
+
+        // Section IV: Sign-off
+        if (y > 240) { doc.addPage(); y = 20; }
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text('IV. KESIMPULAN & SIGN-OFF', 10, y + 10);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Komentar: ${record.comments || 'Tidak ada komentar.'}`, 15, y + 18, { maxWidth: 180 });
+        
+        y += 40;
+        doc.text('Disertifikasi Oleh (Lini Pertama):', 150, y, { align: 'center' });
+        doc.setFontSize(8);
+        doc.text('(Digitally Signed via IndoGRC Pro)', 150, y + 5, { align: 'center' });
+        doc.text(`Hash: ${record.hash || 'N/A'}`, 150, y + 10, { align: 'center' });
+
+        const pdfOutput = doc.output('arraybuffer');
+        return new Response(pdfOutput, {
+            headers: {
+                'Content-Type': 'application/pdf',
+                'Content-Disposition': `attachment; filename="CSA_${control?.code}_${record.period}.pdf"`
+            }
+        });
+    } catch (err: any) {
+        console.error('PDF Gen Error:', err);
+        return bad(c, `Failed to generate PDF: ${err.message}`);
+    }
   });
 
   app.get('/api/tests', async (c) => {
