@@ -610,7 +610,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
       id,
       organizationId: orgId,
       rcmId: body.rcmId,
-      code: body.code || "CTRL-NEW",
+      code: body.code || "CTRL-TBD",
       name: body.name || "New Control",
       description: body.description,
       ownerId: body.ownerId || userId,
@@ -620,8 +620,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
       bpmStatus: (role === 'Line 1' && userLevel === 'Staff') ? 'Draft' : 'Approved',
       // New worksheet fields
       fsliCodes: body.fsliCodes || [],
-      businessProcessLvl1: body.businessProcessLvl1,
-      // businessProcessLvl2: body.businessProcessLvl2, // Removed: doesn't exist on type
+      businessProcess: body.businessProcess,
       subProcess: body.subProcess,
       location: body.location,
       isFraudRelated: body.isFraudRelated || false,
@@ -1448,6 +1447,8 @@ export function userRoutes(app: Hono<HonoEnv>) {
 
     return ok(c, {
       ...record,
+      samplingMethodology: record.samplingMethodology,
+      documentList: record.documentList,
       samples: samplesData.map((s: any) => ({
         id: s.id,
         sampleRef: s.sampleRef,
@@ -1475,8 +1476,10 @@ export function userRoutes(app: Hono<HonoEnv>) {
       assessedBy: userId,
       result: body.result || "Effective",
       comments: body.comments,
+      samplingMethodology: body.samplingMethodology,
+      documentList: body.documentList,
 
-      // Summary Regulatory Fields (Calculated from samples on frontend usually, but stored here)
+      // Summary Regulatory Fields
       attrA: body.attrA ?? false,
       attrB: body.attrB ?? false,
       attrC: body.attrC ?? false,
@@ -1590,32 +1593,57 @@ export function userRoutes(app: Hono<HonoEnv>) {
         doc.text(`Nama Aktivitas: ${control?.name || 'N/A'}`, 15, 58);
         doc.text(`Periode Pengujian: ${record.period}`, 15, 64);
         doc.text(`Tanggal Asesmen: ${record.assessmentDate.toLocaleDateString()}`, 15, 70);
-        doc.text(`Kesimpulan: ${record.result}`, 15, 76);
+        
+        // Personnel Table
+        y = 78;
+        doc.setFont('helvetica', 'bold');
+        doc.text('Kontak Informasi Pelaksana Pengendalian:', 15, y);
+        y += 5;
+        doc.rect(15, y, 180, 15);
+        doc.line(15, y + 7, 195, y + 7);
+        doc.line(105, y, 105, y + 15);
+        doc.setFontSize(9);
+        doc.text('Nama', 20, y + 5);
+        doc.text('Posisi', 110, y + 5);
+        doc.setFont('helvetica', 'normal');
+        doc.text(record.assessedBy || 'N/A', 20, y + 12);
+        doc.text('Control Owner / Lini 1', 110, y + 12);
 
-        // Section II: Procedure (Placeholder based on PDF)
+        // Section II: Procedure
+        y = 105;
         doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
-        doc.text('II. PROSEDUR PENGUJIAN', 10, 88);
+        doc.text('II. PROSEDUR PENGUJIAN', 10, y);
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
-        doc.text('Metode: Atribut Sampling / Zero Tolerance Approach', 15, 95);
+        doc.text(`Penentuan & Pengambilan Sampel: ${record.samplingMethodology || '-'}`, 15, y + 8, { maxWidth: 180 });
+        doc.text(`Daftar Dokumen: ${record.documentList || '-'}`, 15, y + 15, { maxWidth: 180 });
         
+        y += 25;
+        doc.setFont('helvetica', 'bold');
+        doc.text('Atribut Pengujian:', 15, y);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.text('A: Tujuan Kontrol Tercapai? | B: Konsisten dengan Kebijakan? | C: Personel Berwenang? | D: Bukti Mencukupi?', 15, y + 5);
+
         // Section III: Testing Table
+        y += 15;
         doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
-        doc.text('III. HASIL PENGUJIAN SAMPEL', 10, 110);
+        doc.text('III. HASIL PENGUJIAN SAMPEL', 10, y);
         
         // Table Header
-        let y = 118;
-        doc.setFontSize(9);
-        doc.rect(10, y-5, 190, 8);
+        y += 8;
+        doc.setFontSize(8);
+        doc.rect(10, y-5, 190, 8, 'S');
         doc.text('No', 12, y);
-        doc.text('Referensi Sampel', 25, y);
-        doc.text('Attr A', 90, y);
-        doc.text('Attr B', 110, y);
-        doc.text('Attr C', 130, y);
-        doc.text('Attr D', 150, y);
-        doc.text('ITAC Result', 170, y);
+        doc.text('Referensi Sampel', 22, y);
+        doc.text('A', 85, y);
+        doc.text('B', 95, y);
+        doc.text('C', 105, y);
+        doc.text('D', 115, y);
+        doc.text('Defisiensi', 125, y);
+        doc.text('Keterangan / ITAC Result', 145, y);
         
         y += 10;
         samplesData.forEach((s: any, i: number) => {
@@ -1623,13 +1651,17 @@ export function userRoutes(app: Hono<HonoEnv>) {
                 doc.addPage();
                 y = 20;
             }
+            const hasDeficiency = !(s.attrA && s.attrB && s.attrC && s.attrD);
             doc.text(`${i + 1}`, 12, y);
-            doc.text(`${s.sampleRef || '-'}`, 25, y);
-            doc.text(`${s.attrA ? 'Pass' : 'Fail'}`, 90, y);
-            doc.text(`${s.attrB ? 'Pass' : 'Fail'}`, 110, y);
-            doc.text(`${s.attrC ? 'Pass' : 'Fail'}`, 130, y);
-            doc.text(`${s.attrD ? 'Pass' : 'Fail'}`, 150, y);
-            doc.text(`${s.itacMatch ? 'Match' : (s.itacActualResult ? 'Mismatch' : '-')}`, 170, y);
+            doc.text(`${s.sampleRef || '-'}`, 22, y, { maxWidth: 60 });
+            doc.text(`${s.attrA ? 'Y' : 'T'}`, 85, y);
+            doc.text(`${s.attrB ? 'Y' : 'T'}`, 95, y);
+            doc.text(`${s.attrC ? 'Y' : 'T'}`, 105, y);
+            doc.text(`${s.attrD ? 'Y' : 'T'}`, 115, y);
+            doc.text(`${hasDeficiency ? 'Ya' : 'Tidak'}`, 125, y);
+            
+            let remark = s.itacMatch ? 'ITAC: Match' : (s.itacActualResult ? `ITAC: ${s.itacActualResult}` : '-');
+            doc.text(remark, 145, y, { maxWidth: 50 });
             y += 8;
         });
 

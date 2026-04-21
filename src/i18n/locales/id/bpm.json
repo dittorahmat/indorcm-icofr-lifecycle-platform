@@ -16,7 +16,13 @@
     "description": "Identifikasi risiko dan aktivitas pengendalian di tingkat transaksi.",
     "addRow": "Tambah Baris di Worksheet",
     "loading": "Memuat lembar kerja kontrol...",
-    "empty": "Data tidak ditemukan. Klik \"Tambah Baris Baru\" di atas untuk memulai pemetaan."
+    "empty": "Data tidak ditemukan. Klik \"Tambah Baris Baru\" di atas untuk memulai pemetaan.",
+    "columns": {
+      "businessProcess": "Informasi Proses Bisnis",
+      "subProcess": "Informasi Sub-Proses Bisnis",
+      "controlName": "Nama Aktivitas Pengendalian",
+      "location": "Lokasi"
+    }
   },
   "modal": {
     "title": "Pemetaan Proses Bisnis",

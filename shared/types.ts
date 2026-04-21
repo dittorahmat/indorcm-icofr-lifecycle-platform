@@ -224,7 +224,7 @@ export interface Control {
   bpmStatus?: BPMWorkflowStatus; // New: Workflow state (Draft, Pending, Approved)
   
   // BPM Spreadsheet Specific Fields (SK-5 Layout)
-  businessProcessLvl1?: string;
+  businessProcess?: string;
   subProcess?: string;
   location?: string;
   isFraudRelated?: boolean;
@@ -328,6 +328,10 @@ export interface CSARecord {
   evidenceUrl?: string;
   comments: string;
   samples: CSATestSample[]; // Dynamic sampling
+
+  // Section II: Prosedur (Lampiran 7)
+  samplingMethodology?: string;
+  documentList?: string;
 
   // Summary Regulatory Fields (SK-5/2024) - Aggregated from samples
   attrA?: boolean;

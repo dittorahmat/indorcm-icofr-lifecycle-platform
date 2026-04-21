@@ -199,7 +199,7 @@ export const controls = pgTable("controls", {
 	fsliCodes: jsonb("fsli_codes"),
 	relatedControlIds: jsonb("related_control_ids").$type<string[]>().default([]), // New: Many-to-Many Linkage
 	attachmentUrl: text("attachment_url"), // New: Policy Document URL
-	businessProcessLvl1: text("business_process_lvl1"),
+	businessProcess: text("business_process"),
 	subProcess: text("sub_process"),
 	location: text("location"),
 	isFraudRelated: boolean("is_fraud_related").default(false),
@@ -221,6 +221,10 @@ export const csaRecords = pgTable("csa_records", {
 	assessedBy: text("assessed_by").references(() => user.id),
 	result: text("result").notNull(), // Effective, Ineffective, No Transaction
 	comments: text("comments"),
+
+	// Section II: Prosedur (Lampiran 7)
+	samplingMethodology: text("sampling_methodology"),
+	documentList: text("document_list"),
 
 	// Summary Regulatory Fields (SK-5/2024) - Aggregated from samples
 	attrA: boolean("attr_a").default(false),
@@ -272,7 +276,7 @@ export const testRecords = pgTable("test_records", {
 	period: text("period").notNull(),
 	testDate: timestamp("test_date").notNull(),
 	testedBy: text("tested_by").references(() => user.id),
-	result: text("result").notNull(), // Pass, Fail
+	result: text("result").notNull(), // Effective, Ineffective (SK-5); Pass, Fail (Legacy)
 	evaluationAttributes: jsonb("evaluation_attributes"),
 });
 

@@ -16,6 +16,7 @@ import {
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { GLSnapshot, GLRow, BPMProcess, UserRole, MaterialitySimulation, User, BPMDiagram, Settings } from '@shared/types';
+import { MOCK_DEPARTMENTS } from '@shared/mock-data';
 import { BPMWorksheet } from '@/components/bpm/BPMWorksheet';
 import { BPMModal } from '@/components/bpm/BPMModal';
 import { BPMEditor } from '@/components/rcm/BPMEditor';
@@ -97,26 +98,23 @@ export function BPMPage() {
 
   // 2. Derive unique significant FSLIs based on Scoping Criteria
   const significantFsliNames = React.useMemo(() => {
-    if (!activeSnap || !activeSim) return [];
+    const names = new Set<string>();
     
-    // We strictly use the significantAccounts list from the active simulation (scoping result)
-    const sigAccounts = activeSim.significantAccounts || [];
-    if (sigAccounts.length === 0) return [];
+    // Add from active simulation
+    if (activeSim && activeSim.significantAccounts) {
+      activeSim.significantAccounts.forEach(sa => {
+        if (sa.name) names.add(sa.name);
+      });
+    }
 
-    const sigFsliNames = new Set<string>();
-    
-    // Create a set of significant GL codes for fast lookup
-    const sigCodes = new Set(sigAccounts.map(sa => sa.fsliCode).filter(Boolean));
+    // ALWAYS include the FSLI from URL if it exists, so it doesn't disappear from the dropdown
+    const urlFsli = searchParams.get('fsli');
+    if (urlFsli) {
+      names.add(urlFsli);
+    }
 
-    // Map those codes back to FSLI names using the active snapshot
-    activeSnap.rows.forEach(row => {
-      if (row.fsliName && sigCodes.has(row.noGL)) {
-        sigFsliNames.add(row.fsliName);
-      }
-    });
-
-    return Array.from(sigFsliNames).sort();
-  }, [activeSnap, activeSim]);
+    return Array.from(names).sort();
+  }, [activeSim, searchParams]);
 
   // 3. Filtered GL Numbers (Unique combination of noGL + glDesc)
   const glNumbers = React.useMemo(() => {
@@ -147,17 +145,20 @@ export function BPMPage() {
 
   // --- Mode Galak: Authorization Logic ---
   const { assignedDeptId, departmentName, hasAccess } = React.useMemo(() => {
-    if (!selectedGLRow || !activeSim || !currentUser) return { hasAccess: true };
+    if (!selectedGLRow || !activeSim || !currentUser) return { hasAccess: true, departmentName: "Finance & Accounting" };
     
-    // Cari penugasan departemen untuk akun ini
-    const assignment = activeSim.significantAccounts?.find(sa => sa.fsliCode === selectedGLRow.noGL);
+    // Cari penugasan departemen untuk akun ini (Cek berdasarkan FSLI Name atau FSLI Code)
+    const assignment = activeSim.significantAccounts?.find(sa => 
+      sa.name === selectedGLRow.fsliName || (sa.fsliCode && sa.fsliCode === selectedGLRow.fsliCode)
+    );
     const deptId = assignment?.assignedDepartmentId;
+    const deptName = MOCK_DEPARTMENTS.find(d => d.id === deptId)?.name || "Unassigned";
     
     // Lini 2 dan Admin punya kunci master
     if (currentUser.role === 'Line 2' || currentUser.role === 'Admin') {
       return { 
         assignedDeptId: deptId, 
-        departmentName: assignment?.name || "Unassigned", // Ini harusnya ambil dari list dept tapi kita buat simpel dulu
+        departmentName: deptName,
         hasAccess: true 
       };
     }
@@ -166,6 +167,7 @@ export function BPMPage() {
     const match = currentUser.departmentId === deptId;
     return { 
       assignedDeptId: deptId, 
+      departmentName: deptName,
       hasAccess: match 
     };
   }, [selectedGLRow, activeSim, currentUser]);
@@ -261,7 +263,7 @@ export function BPMPage() {
 
               <div className="space-y-2">
                 <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                  <Search className="h-3 w-3" /> 2. {t('scoping:form.name')}
+                  <Search className="h-3 w-3" /> 2. {t('common:glAccount', 'GL Account')}
                 </Label>
                 <Select value={selectedAccountKey} onValueChange={setSelectedAccountKey} disabled={!selectedFsli}>
                   <SelectTrigger className="bg-white border-slate-200">

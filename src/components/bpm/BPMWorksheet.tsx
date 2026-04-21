@@ -124,7 +124,7 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
         bpmProcessId, 
         fsliCodes: [noGL],
         name: 'New Control Activity',
-        businessProcessLvl1: fsliName,
+        businessProcess: fsliName,
         subProcess: 'New Sub Process',
         location: '-',
         isFraudRelated: false,
@@ -234,32 +234,20 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
       size: 100
     },
     {
-      accessorKey: 'businessProcessLvl1',
-      header: 'Informasi Proses Bisnis (Lvl 1)',
+      accessorKey: 'businessProcess',
+      header: t('worksheet.columns.businessProcess'),
       cell: ({ row, getValue }) => (
         <Input 
           className="h-8 text-xs border-slate-200 focus:border-indigo-300 bg-white px-2 min-w-[150px]"
-          placeholder="Isi Lvl 1..."
+          placeholder="Isi Proses..."
           defaultValue={getValue<string>()}
-          onBlur={(e) => debouncedUpdate(row.original.id, 'businessProcessLvl1', e.target.value)}
-        />
-      )
-    },
-    {
-      accessorKey: 'businessProcessLvl2',
-      header: 'Informasi Proses Bisnis (Lvl 2)',
-      cell: ({ row, getValue }) => (
-        <Input 
-          className="h-8 text-xs border-slate-200 focus:border-indigo-300 bg-white px-2 min-w-[150px]"
-          placeholder="Isi Lvl 2..."
-          defaultValue={getValue<string>()}
-          onBlur={(e) => debouncedUpdate(row.original.id, 'businessProcessLvl2', e.target.value)}
+          onBlur={(e) => debouncedUpdate(row.original.id, 'businessProcess', e.target.value)}
         />
       )
     },
     {
       accessorKey: 'subProcess',
-      header: 'Informasi Sub-Proses Bisnis',
+      header: t('worksheet.columns.subProcess'),
       cell: ({ row, getValue }) => (
         <Input 
           className="h-8 text-xs border-slate-200 focus:border-indigo-300 bg-white px-2 font-bold min-w-[180px]"
@@ -270,8 +258,19 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
       )
     },
     {
+      accessorKey: 'name',
+      header: t('worksheet.columns.controlName'),
+      cell: ({ row, getValue }) => (
+        <Input 
+          className="h-8 text-xs border-slate-200 focus:border-indigo-300 bg-white px-2 font-medium text-indigo-700 min-w-[200px]"
+          defaultValue={getValue<string>()}
+          onBlur={(e) => debouncedUpdate(row.original.id, 'name', e.target.value)}
+        />
+      )
+    },
+    {
       accessorKey: 'location',
-      header: 'Lokasi',
+      header: t('worksheet.columns.location'),
       cell: ({ row, getValue }) => (
         <Input 
           className="h-8 text-xs border-slate-200 focus:border-indigo-300 bg-white px-2 min-w-[100px]"
@@ -319,17 +318,6 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
           className="h-8 text-xs border-slate-200 focus:border-indigo-300 bg-white px-2 min-w-[120px]"
           defaultValue={getValue<string>()}
           onBlur={(e) => debouncedUpdate(row.original.id, 'reference', e.target.value)}
-        />
-      )
-    },
-    {
-      accessorKey: 'name',
-      header: 'Nama Aktivitas Pengendalian',
-      cell: ({ row, getValue }) => (
-        <Input 
-          className="h-8 text-xs border-slate-200 focus:border-indigo-300 bg-white px-2 font-medium text-indigo-700 min-w-[200px]"
-          defaultValue={getValue<string>()}
-          onBlur={(e) => debouncedUpdate(row.original.id, 'name', e.target.value)}
         />
       )
     },

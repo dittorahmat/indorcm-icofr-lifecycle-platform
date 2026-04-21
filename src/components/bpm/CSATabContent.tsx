@@ -89,6 +89,8 @@ const csaFormSchema = z.object({
   period: z.string().min(1, "Period is required"),
   result: z.enum(['Effective', 'Ineffective', 'No Transaction']),
   comments: z.string().min(5, "Comments must be at least 5 characters"),
+  samplingMethodology: z.string().min(1, "Methodology is required"),
+  documentList: z.string().min(1, "Document list is required"),
   samples: z.array(z.object({
     sampleRef: z.string().min(1, "Ref required"),
     attributeResults: z.object({
@@ -182,6 +184,8 @@ export function CSATabContent({ noGL, controls }: CSATabContentProps) {
       period: '2024-Q1',
       result: 'Effective',
       comments: '',
+      samplingMethodology: 'Attribute Sampling / Zero Tolerance Approach',
+      documentList: '',
       samples: [{ sampleRef: '', attributeResults: { A: true, B: true, C: true, D: true } }]
     }
   });
@@ -198,6 +202,8 @@ export function CSATabContent({ noGL, controls }: CSATabContentProps) {
         period: activeCsa.period,
         result: activeCsa.result,
         comments: activeCsa.comments || '',
+        samplingMethodology: activeCsa.samplingMethodology || 'Attribute Sampling / Zero Tolerance Approach',
+        documentList: activeCsa.documentList || '',
         samples: activeCsa.samples || [],
         itacScenario: activeCsa.itacScenario,
         itacMethod: activeCsa.itacMethod,
@@ -353,7 +359,7 @@ export function CSATabContent({ noGL, controls }: CSATabContentProps) {
                 <div className="animate-in fade-in slide-in-from-right-4 duration-300">
                   <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                      {/* Section I & II: Metadata */}
+                      {/* Section I: Metadata */}
                       <div className="grid grid-cols-3 gap-6 p-5 bg-slate-50 rounded-xl border border-slate-100 shadow-inner">
                         <FormField control={form.control} name="period" render={({ field }) => (
                           <FormItem><FormLabel className="text-[10px] font-black uppercase text-slate-400">{t('csa.form.period')}</FormLabel><FormControl><Input {...field} disabled={isReadOnly} className="h-9 font-bold text-xs" /></FormControl></FormItem>
@@ -372,6 +378,27 @@ export function CSATabContent({ noGL, controls }: CSATabContentProps) {
                                   ))}
                                 </RadioGroup>
                               </FormControl>
+                            </FormItem>
+                          )} />
+                        </div>
+                      </div>
+
+                      {/* Section II: Procedure */}
+                      <div className="space-y-4 p-5 bg-slate-50 rounded-xl border border-slate-100">
+                        <h4 className="text-[10px] font-black uppercase text-slate-400">II. Prosedur Pengujian</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormField control={form.control} name="samplingMethodology" render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-[11px] font-bold">Penentuan & Pengambilan Sampel</FormLabel>
+                              <FormControl><Textarea {...field} disabled={isReadOnly} className="h-20 text-xs bg-white" placeholder="Jelaskan metode pemilihan sampel..." /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                          <FormField control={form.control} name="documentList" render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-[11px] font-bold">Daftar Dokumen Bukti</FormLabel>
+                              <FormControl><Textarea {...field} disabled={isReadOnly} className="h-20 text-xs bg-white" placeholder="Contoh: Invoice, Voucher, Rekening Koran..." /></FormControl>
+                              <FormMessage />
                             </FormItem>
                           )} />
                         </div>

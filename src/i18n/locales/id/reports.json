@@ -19,5 +19,9 @@
     "signed": "TANDA TANGAN",
     "awaitingSign": "Menunggu Tanda Tangan CEO/CFO",
     "periodFinalized": "PERIODE DIFINALISASI & DITANDATANGANI"
+  },
+  "testing": {
+    "effective": "Efektif",
+    "ineffective": "Tidak Efektif"
   }
 }

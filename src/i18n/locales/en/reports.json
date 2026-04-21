@@ -19,5 +19,9 @@
     "signed": "SIGNED",
     "awaitingSign": "Awaiting CEO/CFO Sign-off",
     "periodFinalized": "PERIOD FINALIZED & SIGNED"
+  },
+  "testing": {
+    "effective": "Effective",
+    "ineffective": "Ineffective"
   }
 }
