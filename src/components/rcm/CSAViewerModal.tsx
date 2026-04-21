@@ -6,7 +6,8 @@ import ReactFlow, {
   useEdgesState,
   NodeProps,
   Handle,
-  Position
+  Position,
+  MarkerType
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { useQuery } from '@tanstack/react-query';
@@ -88,7 +89,10 @@ export function CSAViewerModal({ isOpen, onClose, controlId }: CSAViewerModalPro
         }
       }));
       setNodes(hydratedNodes);
-      setEdges(impact.diagram.edges || []);
+      setEdges((impact.diagram.edges || []).map((edge: any) => ({
+        ...edge,
+        markerEnd: { type: MarkerType.ArrowClosed }
+      })));
     }
   }, [impact, setNodes, setEdges]);
 

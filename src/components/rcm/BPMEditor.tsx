@@ -11,7 +11,8 @@ import ReactFlow, {
   NodeProps,
   Handle,
   ReactFlowProvider,
-  Panel
+  Panel,
+  MarkerType
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { Button } from '@/components/ui/button';
@@ -394,6 +395,18 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [impactData, setImpactData] = useState<{ id: string, type: 'Risk' | 'Control', count: number, usage: any[] } | null>(null);
 
+  const onNodesDelete = useCallback((deleted: any[]) => {
+    if (deleted.length > 0) {
+      toast.info(`Deleted ${deleted.length} node(s)`);
+    }
+  }, []);
+
+  const onEdgesDelete = useCallback((deleted: any[]) => {
+    if (deleted.length > 0) {
+      toast.info(`Deleted ${deleted.length} connection(s)`);
+    }
+  }, []);
+
   // 1. Fetch Diagram Data
   const { data: diagram, isLoading: isDiagramLoading } = useQuery({
     queryKey: ['bpm-diagrams', diagramId],
@@ -457,7 +470,10 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
   useEffect(() => {
     if (diagram) {
       setNodes(diagram.nodes || initialNodes);
-      setEdges(diagram.edges || []);
+      setEdges((diagram.edges || []).map((edge: any) => ({
+        ...edge,
+        markerEnd: { type: MarkerType.ArrowClosed }
+      })));
     }
   }, [diagram, setNodes, setEdges]);
 
@@ -688,7 +704,13 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
-          onConnect={(params) => setEdges((eds) => addEdge(params, eds))}
+          onNodesDelete={onNodesDelete}
+          onEdgesDelete={onEdgesDelete}
+          deleteKeyCode={["Delete", "Backspace"]}
+          onConnect={(params) => setEdges((eds) => addEdge({ 
+            ...params, 
+            markerEnd: { type: MarkerType.ArrowClosed } 
+          }, eds))}
           onNodeClick={(_, node) => resetNav(node.id)}
           onPaneClick={() => resetNav(null)}
           nodeTypes={nodeTypes}

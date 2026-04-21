@@ -355,6 +355,7 @@ function SimulationInitialForm({ activeSnap, onSubmit, isPending }: { activeSnap
 }
 
 function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulation, onBack: () => void }) {
+  const { t } = useTranslation('scoping');
   const queryClient = useQueryClient();
   const [simState, setSimState] = React.useState(simulation);
   const [glData, setGlData] = React.useState<GLRow[]>([]);
