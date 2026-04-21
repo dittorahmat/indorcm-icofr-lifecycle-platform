@@ -200,7 +200,6 @@ export const controls = pgTable("controls", {
 	relatedControlIds: jsonb("related_control_ids").$type<string[]>().default([]), // New: Many-to-Many Linkage
 	attachmentUrl: text("attachment_url"), // New: Policy Document URL
 	businessProcessLvl1: text("business_process_lvl1"),
-	businessProcessLvl2: text("business_process_lvl2"),
 	subProcess: text("sub_process"),
 	location: text("location"),
 	isFraudRelated: boolean("is_fraud_related").default(false),

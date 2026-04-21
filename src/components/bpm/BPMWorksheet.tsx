@@ -131,7 +131,6 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
         fsliCodes: [noGL],
         name: 'New Control Activity',
         businessProcessLvl1: fsliName,
-        businessProcessLvl2: '',
         subProcess: '',
         location: '',
         isFraudRelated: false,

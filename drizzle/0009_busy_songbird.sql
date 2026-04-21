@@ -1,0 +1,1 @@
+ALTER TABLE "controls" DROP COLUMN "business_process_lvl2";

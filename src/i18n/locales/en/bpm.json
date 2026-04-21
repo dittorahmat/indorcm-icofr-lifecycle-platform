@@ -22,9 +22,9 @@
     "title": "Business Process Mapping",
     "owner": "Department Owner",
     "tabs": {
-      "worksheet": "Worksheet (SK-5)",
-      "csa": "CSA (FR9)",
-      "logs": "Change Log (Appendix 6)"
+      "worksheet": "List of Sub Process",
+      "csa": "CSA",
+      "logs": "Change Logs (Appx 6)"
     }
   }
 }

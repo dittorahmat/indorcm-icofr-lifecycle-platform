@@ -13,98 +13,80 @@ const getFriendlyEmail = (u: any): string => {
     if (u.role === 'Commissioner' || u.role === 'Komisaris') return 'komisaris@bumn.go.id';
     if (u.role === 'Admin') return 'admin@bumn.go.id';
     if (u.role === 'External Auditor') return 'external@bumn.go.id';
-
     const deptSuffix = u.departmentId?.replace('dept-', '') || 'ops';
     const levelPrefix = u.level?.toLowerCase() || 'staff';
-    return `${levelPrefix}.${deptSuffix}@bumn.go.id`;
+    return `${levelPrefix}.${deptSuffix}@bumn.go.id`.toLowerCase();
 };
 
 export const seedDatabase = async (databaseUrl: string, authSecret: string, skipLicense: string = 'false', syncOnly: boolean = false) => {
-    console.log(`🌱 Seeding database. Mode: ${syncOnly ? 'AUTH-SYNC' : 'FULL'}. Skip License: ${skipLicense}`);
+    console.log(`🌱 Seeding... Mode: ${syncOnly ? 'AUTH-SYNC' : 'FULL'}`);
     const client = neon(databaseUrl);
     const db = drizzle(client, { schema });
     
+    const orgId = "org-bumn-default";
+
     if (!syncOnly) {
-        console.log("🧹 Cleaning up all data (FULL WIPE)...");
-        await db.delete(schema.documentFslis);
-        await db.delete(schema.documentGls);
-        await db.delete(schema.documentDepartments);
-        await db.delete(schema.bpmNodeRcms);
-        await db.delete(schema.rcmControls);
-        await db.delete(schema.auditLogs);
-        await db.delete(schema.testRecords);
-        await db.delete(schema.csaRecords);
-        await db.delete(schema.deficiencies);
-        await db.delete(schema.actionPlans);
-        await db.delete(schema.aggregateDeficiencies);
-        await db.delete(schema.glRows);
-        await db.delete(schema.documents);
-        await db.delete(schema.bpmDiagrams);
-        await db.delete(schema.bpmProcesses);
-        await db.delete(schema.simulations);
-        await db.delete(schema.glSnapshots);
-        await db.delete(schema.materiality);
-        await db.delete(schema.member);
-        await db.delete(schema.session);
-        await db.delete(schema.account);
-        await db.delete(schema.user);
-        await db.delete(schema.controls);
-        await db.delete(schema.rcms);
-        await db.delete(schema.departments);
-        await db.delete(schema.applications);
-        await db.delete(schema.organization);
-        await db.delete(schema.systemLicenses);
+        console.log("🧹 FULL WIPE starting...");
+        // Delete in order to avoid FK errors
+        const tables = [
+            schema.documentFslis, schema.documentGls, schema.documentDepartments,
+            schema.bpmNodeRcms, schema.rcmControls, schema.auditLogs,
+            schema.testRecords, schema.csaRecords, schema.deficiencies,
+            schema.actionPlans, schema.aggregateDeficiencies, schema.glRows,
+            schema.documents, schema.bpmDiagrams, schema.bpmProcesses,
+            schema.simulations, schema.glSnapshots, schema.materiality,
+            schema.member, schema.session, schema.account, schema.user,
+            schema.controls, schema.rcms, schema.departments,
+            schema.applications, schema.organization, schema.systemLicenses
+        ];
+        for (const table of tables) { await db.delete(table); }
 
-        console.log("🏗️ Creating organization...");
         await db.insert(schema.organization).values({
-            id: "org-bumn-default",
-            name: "PT Batubara Nusantara Sejahtera",
-            slug: "pt-bns",
-            entityCode: "0101",
-            createdAt: new Date(),
+            id: orgId, name: "PT Batubara Nusantara Sejahtera", slug: "pt-bns", entityCode: "0101", createdAt: new Date(),
         });
-
         for (const dept of MOCK_DEPARTMENTS) {
-            await db.insert(schema.departments).values({ ...dept, organizationId: "org-bumn-default" });
+            await db.insert(schema.departments).values({ ...dept, organizationId: orgId });
         }
     }
 
-    console.log("🔐 Synchronizing Demo Users...");
+    console.log("🔐 Syncing Credentials (Non-Destructive)...");
     
+    // Hash password "password" (PBKDF2)
     const salt = crypto.randomBytes(16).toString('hex');
     const hash = crypto.pbkdf2Sync('password', salt, 100, 32, 'sha256').toString('hex');
     const passwordHash = `pbkdf2$100$${salt}$${hash}`;
 
     for (const u of MOCK_USERS) {
-        const email = getFriendlyEmail(u).toLowerCase();
+        const email = getFriendlyEmail(u);
         
-        // 1. Get or Create User
+        // 1. Get existing user OR create a new one (WITHOUT deleting)
         const existing = await db.select().from(schema.user).where(eq(schema.user.email, email)).limit(1);
         let userId: string;
 
-        if (existing.length === 0) {
+        if (existing.length > 0) {
+            userId = existing[0].id;
+            // Update profile
+            await db.update(schema.user).set({
+                name: u.name, role: u.role, level: u.level || "Staff", departmentId: u.departmentId, updatedAt: new Date()
+            }).where(eq(schema.user.id, userId));
+        } else {
             userId = crypto.randomUUID();
             await db.insert(schema.user).values({
                 id: userId, email, name: u.name, emailVerified: true,
                 role: u.role, level: u.level || "Staff", departmentId: u.departmentId,
-                createdAt: new Date(), updatedAt: new Date(),
+                createdAt: new Date(), updatedAt: new Date()
             });
-        } else {
-            userId = existing[0].id;
-            await db.update(schema.user).set({
-                name: u.name, role: u.role, level: u.level || "Staff", departmentId: u.departmentId,
-                updatedAt: new Date(),
-            }).where(eq(schema.user.id, userId));
         }
 
-        // 2. FORCE RE-CREATE ACCOUNT (To ensure Better Auth sees it)
-        // IMPORTANT: providerId MUST be 'credential' for email/password login in Better Auth
+        // 2. Surgical update to ACCOUNT table (Password)
+        // We delete only the account row for this user, then insert a fresh one.
+        // This is safe because usually nothing points to the 'account' ID itself.
         await db.delete(schema.account).where(eq(schema.account.userId, userId));
         await db.insert(schema.account).values({
             id: crypto.randomUUID(),
             userId: userId,
-            accountId: email, // This is usually the email for credential provider
-            providerId: 'credential', 
+            accountId: email,
+            providerId: 'credential',
             password: passwordHash,
             createdAt: new Date(),
             updatedAt: new Date(),
@@ -114,16 +96,13 @@ export const seedDatabase = async (databaseUrl: string, authSecret: string, skip
         await db.delete(schema.session).where(eq(schema.session.userId, userId));
 
         // 4. Ensure Organization Member
-        const existingMember = await db.select().from(schema.member)
-            .where(and(eq(schema.member.userId, userId), eq(schema.member.organizationId, "org-bumn-default"))).limit(1);
+        const memberCheck = await db.select().from(schema.member)
+            .where(and(eq(schema.member.userId, userId), eq(schema.member.organizationId, orgId))).limit(1);
         
-        if (existingMember.length === 0) {
+        if (memberCheck.length === 0) {
             await db.insert(schema.member).values({
-                id: crypto.randomUUID(),
-                organizationId: "org-bumn-default",
-                userId: userId,
-                role: u.role === 'Admin' ? 'admin' : 'member',
-                createdAt: new Date(),
+                id: crypto.randomUUID(), organizationId: orgId, userId: userId,
+                role: u.role === 'Admin' ? 'admin' : 'member', createdAt: new Date()
             });
         }
         
@@ -134,13 +113,13 @@ export const seedDatabase = async (databaseUrl: string, authSecret: string, skip
         console.log("📦 Filling Business Data...");
         for (const rcm of MOCK_RCM) {
             await db.insert(schema.rcms).values({
-                id: rcm.id, organizationId: "org-bumn-default", process: rcm.process,
+                id: rcm.id, organizationId: orgId, process: rcm.process,
                 subProcess: rcm.subProcess, riskDescription: rcm.riskDescription, status: rcm.status as any,
             });
         }
         for (const ctrl of MOCK_CONTROLS) {
             await db.insert(schema.controls).values({
-                id: ctrl.id, organizationId: "org-bumn-default", rcmId: ctrl.rcmId,
+                id: ctrl.id, organizationId: orgId, rcmId: ctrl.rcmId,
                 code: ctrl.code, name: ctrl.name, description: ctrl.description,
                 ownerId: ctrl.ownerId, type: ctrl.type, nature: ctrl.nature,
                 frequency: ctrl.frequency, bpmStatus: ctrl.bpmStatus || "Approved",

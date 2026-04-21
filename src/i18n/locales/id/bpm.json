@@ -22,8 +22,8 @@
     "title": "Pemetaan Proses Bisnis",
     "owner": "Pemilik Departemen",
     "tabs": {
-      "worksheet": "Lembar Kerja (SK-5)",
-      "csa": "CSA (FR9)",
+      "worksheet": "List of Sub Process",
+      "csa": "CSA",
       "logs": "Log Perubahan (Lampiran 6)"
     }
   }

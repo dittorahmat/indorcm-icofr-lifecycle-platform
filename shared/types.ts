@@ -225,7 +225,6 @@ export interface Control {
   
   // BPM Spreadsheet Specific Fields (SK-5 Layout)
   businessProcessLvl1?: string;
-  businessProcessLvl2?: string;
   subProcess?: string;
   location?: string;
   isFraudRelated?: boolean;

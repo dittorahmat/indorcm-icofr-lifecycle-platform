@@ -28,39 +28,34 @@ export const getAuth = (env: { DATABASE_URL: string; BETTER_AUTH_SECRET: string;
         ],
         emailAndPassword: {
             enabled: true,
-            // Force lowercase emails to prevent case-sensitivity issues
-            requireEmailVerification: false,
             password: {
-                // ... (rest of password logic remains same)
-
-                // Optimization: Always support verifying PBKDF2 (for demo/seed users)
-                // but only use it for HASHING if SKIP_LICENSE is true.
+                // Logic Hashing Pintar
                 hash: async (password: string) => {
+                    // Jika mode demo (SKIP_LICENSE=true), gunakan PBKDF2 agar cepat di Cloudflare
                     if (env.SKIP_LICENSE === 'true') {
                         const salt = crypto.randomBytes(16).toString('hex');
                         const hash = crypto.pbkdf2Sync(password, salt, 100, 32, 'sha256').toString('hex');
                         return `pbkdf2$100$${salt}$${hash}`;
                     }
-                    // Default to better-auth internal scrypt (will be handled by better-auth if we return undefined)
-                    return undefined as any; 
+                    // Jika mode produksi, biarkan Better Auth pakai Scrypt (default)
+                    return undefined; 
                 },
                 verify: async ({ hash: storedHash, password }) => {
-                    // Protection: If no hash found, don't crash
                     if (!storedHash) return false;
 
-                    // If it's a demo user hash (PBKDF2), verify it manually
+                    // Dukungan "Hybrid": Jika password diawali pbkdf2$, gunakan logika manual kita
                     if (storedHash.startsWith('pbkdf2$')) {
                         const [, iterations, salt, hash] = storedHash.split('$');
                         const verifyHash = crypto.pbkdf2Sync(password, salt, parseInt(iterations), 32, 'sha256').toString('hex');
                         return verifyHash === hash;
                     }
-                    // Otherwise, let better-auth handle scrypt verification
-                    return undefined as any;
+                    // Jika tidak, biarkan Better Auth verifikasi pakai Scrypt
+                    return undefined;
                 }
             }
         },
         plugins: [
-            organization() // Aktifkan fitur multi-company secara native
+            organization()
         ],
         user: {
             additionalFields: {
