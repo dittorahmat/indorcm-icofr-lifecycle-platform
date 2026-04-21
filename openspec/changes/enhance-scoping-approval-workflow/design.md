@@ -39,7 +39,19 @@ export interface MaterialitySimulation {
 }
 ```
 
-## 2. API Transition Logic (`worker/user-routes.ts`)
+## 2. Database Schema (`worker/db/schema.ts`)
+
+Tabel `simulations` harus diperbarui untuk menyimpan data history secara fisik:
+```typescript
+export const simulations = pgTable("simulations", {
+  // ... existing columns
+  status: text("status").notNull(), // Draft, Pending CFO, Pending Komut, Approved, Rejected
+  history: jsonb("history").$type<ApprovalHistoryEntry[]>().default([]), // New column
+  // ... 
+});
+```
+
+## 3. API Transition Logic (`worker/user-routes.ts`)
 
 Setiap transisi status akan melakukan `.mutate()` pada entity dan menambahkan entry ke array `history`.
 
@@ -70,7 +82,38 @@ Setiap transisi status akan melakukan `.mutate()` pada entity dan menambahkan en
 -   Lakukan query `useQuery(['simulations-pending-count'])` untuk menghitung sim yang butuh tindakan user saat ini.
 -   Tampilkan angka di samping menu "Materiality Approval" jika count > 0.
 
-## 4. Visualisasi Alur Kerja (Jira Style)
+## 4. Localization Design (`scoping.json`)
+
+Tambahkan namespace `approval` dan perbarui `status` untuk mendukung alur bertingkat:
+
+```json
+{
+  "status": {
+    "draft": "Draft",
+    "pendingCfo": "Pending CFO Review",
+    "pendingKomut": "Pending Chairman Review",
+    "approved": "Approved (Baseline)",
+    "rejected": "Rejected / Needs Revision"
+  },
+  "approval": {
+    "title": "Materiality Approval",
+    "description": "Review and approve materiality baselines as {{role}}.",
+    "queueTitle": "Approval Queue",
+    "queueDesc": "Simulations waiting for your review.",
+    "dialogTitle": "Review Materiality Baseline: {{name}}",
+    "dialogDesc": "Review the quantitative and qualitative assessment before giving approval.",
+    "tabWorksheet": "Worksheet Data",
+    "tabHistory": "Activity Log",
+    "notesLabel": "Review Notes & Feedback",
+    "notesPlaceholder": "Enter your feedback or notes for the Line 2 team...",
+    "rejectBtn": "Reject & Return",
+    "approveToKomutBtn": "Approve to Chairman",
+    "approveFinalBtn": "Approve Baseline"
+  }
+}
+```
+
+## 5. Visualisasi Alur Kerja (Jira Style)
 
 ```
 [ Lini 2 ] --(Submit)--> [ Pending CFO ] --(Approve)--> [ Pending Komut ] --(Approve)--> [ Approved ]

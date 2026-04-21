@@ -137,6 +137,7 @@ export const simulations = pgTable("simulations", {
 	basis: text("basis"),
 	significantAccounts: jsonb("significant_accounts"), // Added to store identified accounts
 	assessmentData: jsonb("assessment_data"),
+	history: jsonb("history").$type<any[]>().default([]),
 	createdAt: timestamp("created_at").notNull(),
 	updatedAt: timestamp("updated_at"),
 	createdBy: text("created_by").references(() => user.id),

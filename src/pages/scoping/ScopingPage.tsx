@@ -603,9 +603,9 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
           <div className="lg:col-span-3 space-y-6">
             <Tabs defaultValue="worksheet" className="w-full">
               <TabsList className="grid w-full max-w-[400px] grid-cols-2 mb-4">
-                <TabsTrigger value="worksheet">Scoping Worksheet</TabsTrigger>
+                <TabsTrigger value="worksheet">{t('approval.tabWorksheet')}</TabsTrigger>
                 <TabsTrigger value="history" className="flex items-center gap-2">
-                  <History className="h-3 w-3" /> Approval History
+                  <History className="h-3 w-3" /> {t('approval.tabHistory')}
                   {simState.history?.length > 0 && <Badge variant="secondary" className="ml-1 h-4 px-1 text-[9px]">{simState.history.length}</Badge>}
                 </TabsTrigger>
               </TabsList>
@@ -626,7 +626,7 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
               <TabsContent value="history">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2"><History className="h-5 w-5" /> Activity Log & Feedback</CardTitle>
+                    <CardTitle className="text-lg flex items-center gap-2"><History className="h-5 w-5" /> {t('approval.tabHistory')} & Feedback</CardTitle>
                     <CardDescription>Track all actions and comments for this materiality baseline.</CardDescription>
                   </CardHeader>
                   <CardContent className="pt-6">
@@ -643,11 +643,12 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
 }
 
 function StatusBadge({ status }: { status: SimulationStatus }) {
+  const { t } = useTranslation('scoping');
   switch (status) {
-    case 'Approved': return <Badge className="bg-green-600">Approved</Badge>;
-    case 'Pending CFO': return <Badge variant="secondary" className="bg-amber-100 text-amber-700 border-amber-200">CFO Review</Badge>;
-    case 'Pending Komut': return <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-200">Chairman Review</Badge>;
-    case 'Rejected': return <Badge variant="destructive">Rejected</Badge>;
-    default: return <Badge variant="outline">{status}</Badge>;
+    case 'Approved': return <Badge className="bg-green-600">{t('status.approved')}</Badge>;
+    case 'Pending CFO': return <Badge variant="secondary" className="bg-amber-100 text-amber-700 border-amber-200">{t('status.pendingCfo')}</Badge>;
+    case 'Pending Komut': return <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-200">{t('status.pendingKomut')}</Badge>;
+    case 'Rejected': return <Badge variant="destructive">{t('status.rejected')}</Badge>;
+    default: return <Badge variant="outline">{t('status.draft')}</Badge>;
   }
 }

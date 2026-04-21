@@ -996,20 +996,113 @@ export function userRoutes(app: Hono<HonoEnv>) {
     const db = getDb(c.env.DATABASE_URL);
     const id = c.req.param('id');
     const orgId = c.get('organizationId');
+    const userId = c.get('userId');
+    const userRole = c.get('userRole');
     const body = await c.req.json<Partial<MaterialitySimulation>>();
     
+    const [existing] = await db.select().from(simulations).where(and(eq(simulations.id, id), eq(simulations.organizationId, orgId))).limit(1);
+    if (!existing) return notFound(c, 'Simulation not found');
+
+    const history = (existing.history as any[]) || [];
+    const newHistoryEntry = {
+      id: crypto.randomUUID(),
+      action: "Submit",
+      role: userRole,
+      userId: userId,
+      timestamp: Date.now(),
+      note: body.history?.[0]?.note || "Submitted for approval"
+    };
+
     await db.update(simulations)
       .set({ 
         status: 'Pending CFO', 
         updatedAt: new Date(),
         omValue: body.omValue,
         pmValue: body.pmValue,
-        significantAccounts: body.significantAccounts
+        significantAccounts: body.significantAccounts,
+        history: [...history, newHistoryEntry]
       })
       .where(and(eq(simulations.id, id), eq(simulations.organizationId, orgId)));
       
     const updated = await db.select().from(simulations).where(eq(simulations.id, id)).limit(1);
     return ok(c, updated[0]);
+  });
+
+  app.post('/api/simulations/:id/approve', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const id = c.req.param('id');
+    const orgId = c.get('organizationId');
+    const userId = c.get('userId');
+    const userRole = c.get('userRole');
+    const body = await c.req.json<{ note: string }>();
+
+    const [sim] = await db.select().from(simulations).where(and(eq(simulations.id, id), eq(simulations.organizationId, orgId))).limit(1);
+    if (!sim) return notFound(c, 'Simulation not found');
+
+    let nextStatus: SimulationStatus = sim.status as SimulationStatus;
+    if (userRole === 'CFO' && sim.status === 'Pending CFO') {
+      nextStatus = 'Pending Komut';
+    } else if (userRole === 'Commissioner' && sim.status === 'Pending Komut') {
+      nextStatus = 'Approved';
+    } else if (userRole === 'Admin') {
+      // Admin can skip or force move
+      nextStatus = sim.status === 'Pending CFO' ? 'Pending Komut' : 'Approved';
+    }
+
+    const history = (sim.history as any[]) || [];
+    const newHistoryEntry = {
+      id: crypto.randomUUID(),
+      action: "Approve",
+      role: userRole,
+      userId: userId,
+      timestamp: Date.now(),
+      note: body.note || "Approved"
+    };
+
+    await db.update(simulations)
+      .set({
+        status: nextStatus,
+        history: [...history, newHistoryEntry],
+        updatedAt: new Date(),
+        ...(nextStatus === 'Approved' ? { approvedBy: userId, approvedDate: new Date().getTime() } : {})
+      })
+      .where(and(eq(simulations.id, id), eq(simulations.organizationId, orgId)));
+
+    return ok(c, { success: true });
+  });
+
+  app.post('/api/simulations/:id/reject', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const id = c.req.param('id');
+    const orgId = c.get('organizationId');
+    const userId = c.get('userId');
+    const userRole = c.get('userRole');
+    const body = await c.req.json<{ note: string }>();
+
+    if (!body.note) return bad(c, 'Note is required for rejection');
+
+    const [sim] = await db.select().from(simulations).where(and(eq(simulations.id, id), eq(simulations.organizationId, orgId))).limit(1);
+    if (!sim) return notFound(c, 'Simulation not found');
+
+    const history = (sim.history as any[]) || [];
+    const newHistoryEntry = {
+      id: crypto.randomUUID(),
+      action: "Reject",
+      role: userRole,
+      userId: userId,
+      timestamp: Date.now(),
+      note: body.note
+    };
+
+    await db.update(simulations)
+      .set({
+        status: 'Rejected',
+        history: [...history, newHistoryEntry],
+        updatedAt: new Date()
+      })
+      .where(and(eq(simulations.id, id), eq(simulations.organizationId, orgId)));
+
+    return ok(c, { success: true });
   });
 
   app.post('/api/scoping/assign-department', async (c) => {

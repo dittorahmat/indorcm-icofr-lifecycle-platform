@@ -3,6 +3,13 @@
   "description": "Identify significant accounts based on materiality and qualitative factors.",
   "activeSource": "Active Source",
   "setBenchmark": "Set Benchmark Mapping",
+  "status": {
+    "draft": "Draft",
+    "pendingCfo": "Pending CFO Review",
+    "pendingKomut": "Pending Chairman Review",
+    "approved": "Approved (Baseline)",
+    "rejected": "Rejected / Needs Revision"
+  },
   "simulation": {
     "title": "Materiality Simulation",
     "create": "Create Simulation",
@@ -10,12 +17,20 @@
     "createNew": "Create New Simulation",
     "basisDescription": "Basis calculation will use {{filename}}."
   },
-  "form": {
-    "name": "Simulation Name",
-    "namePlaceholder": "e.g. FY2024 - Conservative PBT",
-    "benchmark": "Benchmark Basis",
-    "locations": "Significant Locations",
-    "initialize": "Initialize Simulation"
+  "approval": {
+    "title": "Materiality Approval",
+    "description": "Review and approve materiality baselines as {{role}}.",
+    "queueTitle": "Approval Queue",
+    "queueDesc": "Simulations waiting for your review.",
+    "dialogTitle": "Review Materiality Baseline: {{name}}",
+    "dialogDesc": "Review the quantitative and qualitative assessment before giving approval.",
+    "tabWorksheet": "Worksheet Data",
+    "tabHistory": "Activity Log",
+    "notesLabel": "Review Notes & Feedback",
+    "notesPlaceholder": "Enter your feedback or notes for the Line 2 team...",
+    "rejectBtn": "Reject & Return",
+    "approveToKomutBtn": "Approve to Chairman",
+    "approveFinalBtn": "Approve Baseline"
   },
   "table": {
     "account": "Account",

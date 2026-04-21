@@ -3,6 +3,13 @@
   "description": "Tentukan akun signifikan berdasarkan materialitas dan faktor kualitatif.",
   "activeSource": "Sumber Aktif",
   "setBenchmark": "Atur Pemetaan Benchmark",
+  "status": {
+    "draft": "Draft",
+    "pendingCfo": "Menunggu Review CFO",
+    "pendingKomut": "Menunggu Review Komut",
+    "approved": "Disetujui (Baseline)",
+    "rejected": "Ditolak / Butuh Revisi"
+  },
   "simulation": {
     "title": "Simulasi Materialitas",
     "create": "Buat Simulasi",
@@ -10,12 +17,20 @@
     "createNew": "Buat Simulasi Baru",
     "basisDescription": "Perhitungan basis akan menggunakan {{filename}}."
   },
-  "form": {
-    "name": "Nama Simulasi",
-    "namePlaceholder": "misal: FY2024 - PBT Konservatif",
-    "benchmark": "Basis Benchmark",
-    "locations": "Lokasi Signifikan",
-    "initialize": "Inisialisasi Simulasi"
+  "approval": {
+    "title": "Persetujuan Materialitas",
+    "description": "Tinjau dan setujui basis materialitas sebagai {{role}}.",
+    "queueTitle": "Antrian Persetujuan",
+    "queueDesc": "Simulasi yang menunggu tinjauan Anda.",
+    "dialogTitle": "Tinjau Basis Materialitas: {{name}}",
+    "dialogDesc": "Tinjau asesmen kuantitatif dan kualitatif sebelum memberikan persetujuan.",
+    "tabWorksheet": "Data Lembar Kerja",
+    "tabHistory": "Log Aktivitas",
+    "notesLabel": "Catatan Review & Umpan Balik",
+    "notesPlaceholder": "Masukkan umpan balik atau catatan Anda untuk tim Lini 2...",
+    "rejectBtn": "Tolak & Kembalikan",
+    "approveToKomutBtn": "Setujui ke Komut",
+    "approveFinalBtn": "Setujui Baseline"
   },
   "table": {
     "account": "Akun",

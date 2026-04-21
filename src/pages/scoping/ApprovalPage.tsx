@@ -23,7 +23,10 @@ import { GLDataGrid } from '@/components/scoping/GLDataGrid';
 import { ApprovalHistoryTimeline } from '@/components/scoping/ApprovalHistoryTimeline';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
+import { useTranslation } from 'react-i18next';
+
 export function ApprovalPage() {
+  const { t } = useTranslation('scoping');
   const queryClient = useQueryClient();
   const [selectedSim, setSelectedSim] = React.useState<MaterialitySimulation | null>(null);
   const [isReviewOpen, setIsReviewOpen] = React.useState(false);
@@ -88,8 +91,8 @@ export function ApprovalPage() {
       <div className="space-y-6">
         <div className="flex justify-between items-end">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Materiality Approval</h1>
-            <p className="text-muted-foreground">Review and approve materiality baselines as {userRole}.</p>
+            <h1 className="text-3xl font-bold tracking-tight">{t('approval.title')}</h1>
+            <p className="text-muted-foreground">{t('approval.description', { role: userRole })}</p>
           </div>
           <Badge variant="outline" className="h-6 px-3 bg-amber-50 text-amber-700 border-amber-200 gap-1.5">
             <Loader2 className="h-3 w-3 animate-spin" /> {pendingSims.length} Pending Actions
@@ -98,8 +101,8 @@ export function ApprovalPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Approval Queue</CardTitle>
-            <CardDescription>Simulations waiting for your review.</CardDescription>
+            <CardTitle>{t('approval.queueTitle')}</CardTitle>
+            <CardDescription>{t('approval.queueDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
@@ -127,7 +130,7 @@ export function ApprovalPage() {
                       <Badge variant="secondary" className={cn(
                         sim.status === 'Pending CFO' ? "bg-amber-100 text-amber-700" : "bg-blue-100 text-blue-700"
                       )}>
-                        {sim.status === 'Pending CFO' ? 'CFO Review' : 'Chairman Review'}
+                        {sim.status === 'Pending CFO' ? t('status.pendingCfo') : t('status.pendingKomut')}
                       </Badge>
                     </TableCell>
                     <TableCell>{sim.basis}</TableCell>
@@ -153,18 +156,18 @@ export function ApprovalPage() {
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <ShieldCheck className="h-5 w-5 text-indigo-600" />
-                Review Materiality Baseline: {selectedSim?.name}
+                {t('approval.dialogTitle', { name: selectedSim?.name })}
               </DialogTitle>
               <DialogDescription>
-                Review the quantitative and qualitative assessment before giving approval.
+                {t('approval.dialogDesc')}
               </DialogDescription>
             </DialogHeader>
 
             <div className="flex-1 overflow-auto py-4">
               <Tabs defaultValue="worksheet" className="w-full">
                 <TabsList className="grid w-full max-w-[400px] grid-cols-2 mb-4">
-                  <TabsTrigger value="worksheet">Worksheet Data</TabsTrigger>
-                  <TabsTrigger value="history">Activity Log</TabsTrigger>
+                  <TabsTrigger value="worksheet">{t('approval.tabWorksheet')}</TabsTrigger>
+                  <TabsTrigger value="history">{t('approval.tabHistory')}</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="worksheet" className="space-y-4">
@@ -191,11 +194,11 @@ export function ApprovalPage() {
             <div className="space-y-4 border-t pt-4">
               <div className="space-y-2">
                 <Label htmlFor="note" className="flex items-center gap-2">
-                  <MessageSquare className="h-4 w-4" /> Review Notes & Feedback
+                  <MessageSquare className="h-4 w-4" /> {t('approval.notesLabel')}
                 </Label>
                 <Textarea 
                   id="note" 
-                  placeholder="Enter your feedback or notes for the Line 2 team..." 
+                  placeholder={t('approval.notesPlaceholder')}
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   className="min-h-[100px]"
@@ -211,14 +214,14 @@ export function ApprovalPage() {
                     disabled={rejectMutation.isPending || !note}
                     className="gap-2"
                   >
-                    <XCircle className="h-4 w-4" /> Reject & Return
+                    <XCircle className="h-4 w-4" /> {t('approval.rejectBtn')}
                   </Button>
                   <Button 
                     onClick={() => approveMutation.mutate(selectedSim!.id)}
                     disabled={approveMutation.isPending}
                     className="bg-green-600 hover:bg-green-700 gap-2"
                   >
-                    <UserCheck className="h-4 w-4" /> Approve {userRole === 'CFO' ? 'to Chairman' : 'Baseline'}
+                    <UserCheck className="h-4 w-4" /> {userRole === 'CFO' ? t('approval.approveToKomutBtn') : t('approval.approveFinalBtn')}
                   </Button>
                 </div>
               </DialogFooter>

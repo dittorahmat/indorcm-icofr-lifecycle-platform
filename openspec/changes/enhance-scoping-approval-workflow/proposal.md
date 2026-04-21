@@ -18,6 +18,7 @@ Berdasarkan SK-5/2024 Tabel 2, penentuan ruang lingkup ICOFR melibatkan banyak p
 
 ### 2. UI/UX Updates
 -   **Sidebar Notifikasi:** Tampilkan *unread badge* (angka) di menu "Materiality Approval" untuk role CFO dan Komisaris.
+-   **Multi-language Support:** Lokalisasi seluruh status persetujuan baru dan label pada portal approval ke dalam Bahasa Indonesia dan Inggris.
 -   **Simulation Editor (ScopingPage):** 
     - Ubah tombol "Submit for Approval" menjadi "Submit to CFO".
     - Tambahkan komponen `ApprovalHistoryTimeline` di bawah halaman untuk menampilkan riwayat komentar (mirip Jira activity tab).
@@ -25,8 +26,9 @@ Berdasarkan SK-5/2024 Tabel 2, penentuan ruang lingkup ICOFR melibatkan banyak p
     - Sesuaikan query untuk menampilkan data yang relevan sesuai role yang login (CFO melihat "Pending CFO", Komut melihat "Pending Komut").
     - Form *Approve/Reject* yang mewajibkan pengisian catatan (notes).
 
-### 3. API Logic (`worker/user-routes.ts`)
--   Perbarui endpoint transisi status (`/submit`, `/approve`, `/reject`) untuk mendukung alur bertingkat dan menyisipkan catatan ke dalam array `history`.
+### 3. API & Database Logic (`worker/user-routes.ts` & `schema.ts`)
+-   **Schema Update:** Tambahkan kolom `history` (JSONB) pada tabel `simulations` untuk menyimpan log aktivitas secara permanen.
+-   **Endpoint Refactor:** Perbarui endpoint transisi status (`/submit`, `/approve`, `/reject`) untuk mendukung alur bertingkat dan menyisipkan catatan ke dalam array `history`.
 
 ## Compliance Alignment
 -   **SK-5/2024 Tabel 2:** Memastikan persetujuan CFO (Lini Pertama) sebelum disahkan oleh pengawas (Komisaris).
