@@ -91,7 +91,16 @@ export function CSAViewerModal({ isOpen, onClose, controlId }: CSAViewerModalPro
       setNodes(hydratedNodes);
       setEdges((impact.diagram.edges || []).map((edge: any) => ({
         ...edge,
-        markerEnd: { type: MarkerType.ArrowClosed }
+        markerEnd: { 
+          type: MarkerType.ArrowClosed,
+          width: 20,
+          height: 20,
+          color: '#1e293b'
+        },
+        style: {
+          strokeWidth: 2,
+          stroke: '#1e293b'
+        }
       })));
     }
   }, [impact, setNodes, setEdges]);

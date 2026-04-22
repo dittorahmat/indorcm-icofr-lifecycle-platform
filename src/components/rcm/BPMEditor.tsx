@@ -518,7 +518,16 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
       setNodes(diagram.nodes || initialNodes);
       setEdges((diagram.edges || []).map((edge: any) => ({
         ...edge,
-        markerEnd: { type: MarkerType.ArrowClosed }
+        markerEnd: { 
+          type: MarkerType.ArrowClosed,
+          width: 20,
+          height: 20,
+          color: '#1e293b'
+        },
+        style: {
+          strokeWidth: 2,
+          stroke: '#1e293b'
+        }
       })));
     }
   }, [diagram, setNodes, setEdges]);
@@ -1108,7 +1117,16 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
           deleteKeyCode={["Delete", "Backspace"]}
           onConnect={(params) => setEdges((eds) => addEdge({ 
             ...params, 
-            markerEnd: { type: MarkerType.ArrowClosed } 
+            markerEnd: { 
+              type: MarkerType.ArrowClosed,
+              width: 20,
+              height: 20,
+              color: '#1e293b'
+            },
+            style: {
+              strokeWidth: 2,
+              stroke: '#1e293b'
+            }
           }, eds))}
           onNodeClick={(_, node) => resetNav(node.id)}
           onPaneClick={() => resetNav(null)}
