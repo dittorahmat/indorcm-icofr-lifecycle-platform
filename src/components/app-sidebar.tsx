@@ -82,15 +82,13 @@ export function AppSidebar(): JSX.Element {
   const { data: session } = authClient.useSession();
   const userRole = (session?.user as any)?.role;
 
-  // Sync i18n with user profile language on load
+  // Sync i18n with user profile language on load (only when user changes)
   useEffect(() => {
     const userLang = (session?.user as any)?.language;
     if (userLang && i18n.language !== userLang) {
       i18n.changeLanguage(userLang);
     }
-    // We only want to sync when the user ID changes (e.g. login)
-    // to avoid overriding manual language switches before the session refreshes
-  }, [session?.user?.id, i18n, session?.user]);
+  }, [session?.user?.id]); // Only sync when user identity changes, not on every session update
 
   const isActive = (path: string) => pathname === path || pathname.startsWith(path);
 

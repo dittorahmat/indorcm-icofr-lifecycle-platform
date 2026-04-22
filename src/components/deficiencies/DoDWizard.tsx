@@ -54,34 +54,41 @@ export function DoDWizard({ isOpen, setIsOpen, onComplete, isAggregate = false, 
     const newAnswers = { ...answers, [step as number]: val };
     setStepAnswers(newAnswers);
 
-    // Logic based on Gambar 5 (Degree of Deficiency)
+    // Official Logic based on Gambar 5 (SK-5/2024 Page 73)
     if (step === 1) {
-      if (val) setStep(2); // Yes -> Box 2
-      else setStep(4); // No -> Box 4
+      // Box a
+      if (val) setStep(2); // Yes -> Box b
+      else setStep(4); // No -> Box d
     } else if (step === 2) {
-      if (val) setStep(3); // Yes -> Box 3
-      else setStep(4); // No -> Box 4
+      // Box b
+      if (val) setStep(3); // Yes -> Box c
+      else setStep(4); // No -> Box d
     } else if (step === 3) {
-      if (val) setStep(5); // Yes -> Box 5
-      else setStep(4); // No -> Box 4
+      // Box c
+      if (val) setStep(5); // Yes -> Box e
+      else setStep(4); // No -> Box d
     } else if (step === 5) {
-      if (val) setStep(4); // Yes -> Box 4
-      else setStep(6); // No -> Box 6
+      // Box e
+      if (val) setStep(4); // Yes -> Box d
+      else setStep('RESULT'); // No -> TERMINAL: Material Weakness
     } else if (step === 4) {
-      if (val) setStep(6); // Yes -> Box 6
+      // Box d
+      if (val) setStep(6); // Yes -> Box f
       else {
-        if (isAggregate) setStep(7); // Check for aggregation loop in aggregate mode
-        else setStep('RESULT'); 
+        if (isAggregate) setStep(7); // Go to Box g
+        else setStep('RESULT'); // TERMINAL: Control Deficiency
       }
     } else if (step === 6) {
-      if (isAggregate) setStep(7);
-      else setStep('RESULT'); 
+      // Box f
+      if (isAggregate) setStep(7); // Go to Box g
+      else setStep('RESULT'); // TERMINAL: MW or SD
     } else if (step === 7) {
+      // Box g
       if (val) {
-        toast.info("Aggregation Loop: Returning to Box 2 to evaluate combined impact.", {
-          description: "In accordance with Box 7 mandate in Figure 5 (Page 73)."
+        toast.info("Aggregation Loop: Returning to Box b to evaluate combined impact.", {
+          description: "In accordance with Box g mandate in Figure 5 (Page 73)."
         });
-        setStep(2); // Loop back to Box 2
+        setStep(2); // Loop back to Box b
       } else {
         setStep('RESULT');
       }
@@ -94,10 +101,19 @@ export function DoDWizard({ isOpen, setIsOpen, onComplete, isAggregate = false, 
     // Step 0: Automatic MW Indicators
     if (isAutomaticMW) return "Material Weakness";
 
-    // Final Decision Logic
-    if (answers[4] === false && !answers[7]) return "Control Deficiency";
-    if (answers[6] === true || answers[7] === true) return "Material Weakness";
-    return "Significant Deficiency";
+    // Regulatory Terminal Logic (Gambar 5)
+    
+    // Box e: "No" -> Direct Terminal to Material Weakness
+    if (answers[5] === false) return "Material Weakness";
+
+    // Box d: "No" -> Terminal to Control Deficiency
+    if (answers[4] === false) return "Control Deficiency";
+
+    // Box f: "Yes" -> Material Weakness, "No" -> Significant Deficiency
+    if (answers[6] === true) return "Material Weakness";
+    if (answers[6] === false) return "Significant Deficiency";
+
+    return null;
   };
 
   const result = getResult();
@@ -363,12 +379,18 @@ export function DoDWizard({ isOpen, setIsOpen, onComplete, isAggregate = false, 
 
         <DialogFooter>
           {step === 'RESULT' ? (
-            <Button onClick={handleFinish} disabled={!rationale || selectedAssertions.length === 0} className="w-full">{t('wizard.result.applyButton')}</Button>
+            <div className="w-full space-y-2">
+              <Button onClick={handleFinish} disabled={!rationale || selectedAssertions.length === 0} className="w-full">{t('wizard.result.applyButton')}</Button>
+              <p className="text-[9px] text-center text-muted-foreground uppercase font-bold tracking-tight">Ref: Gambar 5 SK-5/DKU.MBU/11/2024 (Hal. 73)</p>
+            </div>
           ) : (
             <div className="w-full flex justify-between items-center">
-               <span className="text-[10px] text-muted-foreground uppercase font-bold">
-                 {step === 0 ? t('wizard.common.preliminaryStep') : t('wizard.common.boxProgress', { step })}
-               </span>
+               <div className="flex flex-col">
+                 <span className="text-[10px] text-muted-foreground uppercase font-bold">
+                   {step === 0 ? t('wizard.common.preliminaryStep') : t('wizard.common.boxProgress', { step: String.fromCharCode(96 + (step as number)) })}
+                 </span>
+                 <span className="text-[9px] text-muted-foreground/60 font-medium">Ref: Gambar 5 SK-5/2024</span>
+               </div>
                <Button variant="ghost" size="sm" onClick={reset}>{t('wizard.common.reset')}</Button>
             </div>
           )}

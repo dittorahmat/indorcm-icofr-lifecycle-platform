@@ -51,7 +51,7 @@ export function RCMList() {
 
   const { data: currentUser } = useQuery({
     queryKey: ['auth-me'],
-    queryFn: () => api<User>('/api/auth/me'),
+    queryFn: () => api<User>('/api/user/me'),
   });
 
   const isAdminOrLine2 = currentUser?.role === 'Admin' || currentUser?.role === 'Line 2';

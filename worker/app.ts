@@ -67,7 +67,7 @@ export const createApp = () => {
         '/api/dev/fix-db'
     ];
     
-    if (publicPaths.includes(c.req.path) || (c.req.path.startsWith('/api/auth/') && c.req.path !== '/api/auth/me')) {
+    if (publicPaths.includes(c.req.path) || (c.req.path.startsWith('/api/auth/') && c.req.path !== '/api/user/me')) {
       return next();
     }
 
@@ -128,7 +128,7 @@ export const createApp = () => {
   app.use('/api/*', async (c, next) => {
     // Skip middleware for public auth routes (signIn, signUp, etc.)
     // But NOT for /api/auth/me which we want to be protected by our session logic
-    if (c.req.path.startsWith('/api/auth/') && c.req.path !== '/api/auth/me') {
+    if (c.req.path.startsWith('/api/auth/') && c.req.path !== '/api/user/me') {
       return next();
     }
 
@@ -198,7 +198,7 @@ export const createApp = () => {
   userRoutes(app);
 
   // Better Auth Route Handler as fallback for all other /api/auth/*
-  app.on(['POST', 'GET'], '/api/auth/*', async (c) => {
+  app.all('/api/auth/*', async (c) => {
     const auth = getAuth(c.env);
     return auth.handler(c.req.raw);
   });

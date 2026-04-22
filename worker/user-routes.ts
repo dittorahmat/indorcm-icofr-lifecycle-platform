@@ -123,7 +123,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
     return ok(c, { success: true, message: 'License activated successfully' });
   });
 
-  app.get('/api/auth/me', async (c) => {
+  app.get('/api/user/me', async (c) => {
     const db = getDb(c.env.DATABASE_URL);
     const userId = c.get('userId');
     const orgId = c.get('organizationId');
@@ -137,7 +137,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
     });
   });
 
-  app.put('/api/auth/profile', async (c) => {
+  app.put('/api/user/profile', async (c) => {
     const db = getDb(c.env.DATABASE_URL);
     const userId = c.get('userId');
     const body = await c.req.json<{ language: string }>();

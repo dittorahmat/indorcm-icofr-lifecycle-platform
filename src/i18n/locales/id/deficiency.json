@@ -49,49 +49,54 @@
     },
     "step0": {
       "title": "Indikator Kelemahan Material Otomatis",
-      "description": "Kondisi tertentu secara otomatis disimpulkan sebagai Kelemahan Material (MW) tanpa memandang dampak kuantitatif.",
-      "seniorManagementFraud": "Kecurangan oleh manajemen senior (tanpa memandang materialitas)",
-      "materialFraudImpact": "Kecurangan yang mengakibatkan salah saji keuangan material",
-      "restatement": "Penyajian kembali laporan keuangan yang telah diterbitkan sebelumnya untuk mencerminkan koreksi salah saji material",
-      "auditorIdentified": "Salah saji material yang diidentifikasi oleh auditor eksternal yang tidak dicegah atau dideteksi oleh pengendalian internal",
-      "auditCommittee": "Pengawasan pelaporan keuangan dan pengendalian internal yang tidak efektif oleh Komite Audit",
-      "continueButton": "Lanjut ke Alur Flowchart",
-      "finalizeButton": "Simpulkan sebagai MW"
+      "description": "Indikator yang digunakan dalam menentukan Kelemahan Material (Material Weakness) sesuai Bab VII Poin 1.1.c.",
+      "seniorManagementFraud": "Adanya indikasi tindakan fraud yang melibatkan manajemen senior, baik itu material atau tidak.",
+      "materialFraudImpact": "Adanya indikasi tindakan fraud yang berdampak material pada laporan keuangan.",
+      "restatement": "Terdapat pernyataan kembali (restatement) atas laporan keuangan sebelumnya untuk mencerminkan pembetulan atas kesalahan yang material.",
+      "auditorIdentified": "Terdapat salah saji material pada laporan keuangan saat ini di mana kesalahan tersebut tidak diidentifikasi oleh penerapan ICOFR oleh perusahaan.",
+      "auditCommittee": "Terdapat ketidakefektifan pengawasan yang dilakukan Komite Audit perusahaan atas laporan keuangan perusahaan dan penerapan ICOFR.",
+      "continueButton": "Lanjut ke Alur Flowchart (Gambar 5)",
+      "finalizeButton": "Simpulkan sebagai Kelemahan Material (MW)"
     },
     "box1": {
-      "title": "Box 1: Magnitudo vs Probabilitas",
-      "question": "Apakah ada kemungkinan yang masuk akal bahwa defisiensi pengendalian dapat mengakibatkan salah saji yang lebih dari tidak konsekuensial?"
+      "title": "Box a",
+      "question": "a. apakah defisiensi berhubungan langsung dengan pencapaian satu atau lebih asersi atas laporan keuangan?"
     },
     "box2": {
-      "title": "Box 2: Keparahan vs Materialitas",
-      "question": "Apakah besarnya potensi salah saji lebih dari signifikan?"
+      "title": "Box b",
+      "question": "b. Apakah terdapat kemungkinan (likelihood) dari salah saji dihasilkan dari defisiensi (atau kombinasi defisiensi)? [AS2201.64-65]"
     },
     "box3": {
-      "title": "Box 3: Potensi Salah Saji Material",
-      "question": "Apakah ada kemungkinan yang masuk akal bahwa salah saji tersebut bisa menjadi material?",
+      "title": "Box c",
+      "question": "c. Apakah terdapat kemungkinan magnitude dari potensi salah saji (dengan mempertimbangkan faktor-faktor material untuk laporan keuangan)? [AS2201.66-67]",
       "exposureLabel": "Estimasi Nilai Eksposur (IDR)",
       "exposurePlaceholder": "misal: 500000000",
       "thresholdLabel": "Performance Materiality (PM)",
       "materialWarning": "Perhatian: Eksposur berada di ATAS ambang batas PM."
     },
     "box4": {
-      "title": "Box 4: Pengendalian Kompensasi",
-      "question": "Apakah ada pengendalian kompensasi efektif lainnya yang akan mencegah atau mendeteksi potensi salah saji?"
+      "title": "Box d",
+      "question": "d. Apakah defisiensi (atau kombinasi defisiensi) cukup penting untuk mendapat perhatian dari yang bertanggung jawab atas pengawasan laporan keuangan perusahaan? [AS2201 A11]"
     },
     "box5": {
-      "title": "Box 5: Kesimpulan Defisiensi Signifikan",
-      "question": "Apakah manajemen menyimpulkan bahwa defisiensi ini merupakan Defisiensi Signifikan (SD)?"
+      "title": "Box e",
+      "question": "e. Apakah terdapat pengendalian yang dapat beroperasi secara efektif pada tingkat ketepatan yang cukup untuk mencegah atau mendeteksi salah saji material laporan keuangan? [AS2201.68]"
     },
     "box6": {
-      "title": "Box 6: Kesimpulan Kelemahan Material",
-      "question": "Apakah manajemen menyimpulkan bahwa defisiensi ini merupakan Kelemahan Material (MW)?"
+      "title": "Box f",
+      "question": "f. Akankah individu yang berpengetahuan luas, kompeten dan objektif (prudent official) menyimpulkan defisiensi (atau kombinasi defisiensi) sebagai material weakness? [AS2201.18, 70]"
     },
     "box7": {
-      "title": "Box 7: Loop Agregasi",
-      "question": "Apakah perlu menggabungkan defisiensi ini dengan yang lain untuk mengevaluasi dampak gabungan?"
+      "title": "Box g",
+      "question": "g. Apakah terdapat beberapa pengendalian defisiensi dan/atau defisiensi signifikan yang mempengaruhi account balance atau disclosure dari laporan keuangan yang sama? [AS 2201.65]"
     },
     "result": {
       "title": "Kesimpulan Asesmen",
+      "levels": {
+        "cd": "Defisiensi Pengendalian",
+        "sd": "Defisiensi Signifikan",
+        "mw": "Kelemahan Material"
+      },
       "autoRationale": "Kelemahan Material otomatis karena adanya indikator risiko tinggi (Fraud/Restatement/Pengawasan Audit).",
       "flowchartRationale": "Tingkat keparahan ditentukan berdasarkan evaluasi sistematis flowchart Gambar 5 terhadap magnitudo, probabilitas, dan kontrol kompensasi.",
       "quantComparison": "Analisis Kuantitatif vs Materialitas",

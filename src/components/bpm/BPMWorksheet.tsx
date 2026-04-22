@@ -87,7 +87,7 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
 
   const { data: currentUser } = useQuery({
     queryKey: ['auth-me'],
-    queryFn: () => api<User>('/api/auth/me'),
+    queryFn: () => api<User>('/api/user/me'),
   });
 
   // 2. Fetch Applications for dropdown

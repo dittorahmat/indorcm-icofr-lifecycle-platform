@@ -34,7 +34,7 @@ export function ApprovalPage() {
 
   const { data: me } = useQuery({
     queryKey: ['me'],
-    queryFn: () => api<{ role: UserRole }>('/api/auth/me'),
+    queryFn: () => api<{ role: UserRole }>('/api/user/me'),
   });
 
   const userRole = me?.role;

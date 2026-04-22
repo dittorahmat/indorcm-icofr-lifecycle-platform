@@ -59,7 +59,7 @@ export function GLDataGrid({
 }: GLDataGridProps) {
   const { data: currentUser } = useQuery({
     queryKey: ['auth-me'],
-    queryFn: () => api<User>('/api/auth/me'),
+    queryFn: () => api<User>('/api/user/me'),
   });
 
   // Pre-sort data: group by fsliName, find min noUrut per group, then sort

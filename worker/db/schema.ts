@@ -296,6 +296,7 @@ export const deficiencies = pgTable("deficiencies", {
 	likelihood: text("likelihood"),
 	assertions: jsonb("assertions").$type<string[]>(), // Assertions mapping (Lampiran 10)
 	preAssessment: jsonb("pre_assessment"), // Step 0 Indicators
+	flowchartPath: jsonb("flowchart_path").$type<Record<number, boolean>>(), // Path taken in Gambar 5
 });
 
 export const actionPlans = pgTable("action_plans", {

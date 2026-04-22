@@ -37,7 +37,7 @@
   },
   "wizard": {
     "title": "Degree of Deficiency (DoD) Assessment",
-    "description": "Evaluate deficiency severity following Figure 5 (Page 73) of Regulation SK-5/2024.",
+    "description": "Evaluate deficiency severity based on materiality indicators and regulatory logic flow.",
     "aggregateTitle": "Aggregate DoD Assessment",
     "aggregateDescription": "Evaluate combined impact of selected deficiencies as per Box 7 mandate.",
     "common": {
@@ -49,49 +49,54 @@
     },
     "step0": {
       "title": "Automatic Material Weakness Indicators",
-      "description": "Certain conditions automatically conclude as Material Weakness (MW) regardless of quantitative impact.",
-      "seniorManagementFraud": "Fraud by senior management (regardless of materiality)",
-      "materialFraudImpact": "Fraud resulting in material financial misstatement",
-      "restatement": "Restatement of previously issued financial statements to reflect the correction of a material misstatement",
-      "auditorIdentified": "Material misstatement identified by external auditors that was not prevented or detected by internal control",
-      "auditCommittee": "Ineffective oversight of financial reporting and internal control by the Audit Committee",
-      "continueButton": "Proceed to Flowchart",
-      "finalizeButton": "Conclude as MW"
+      "description": "Evaluate based on Material Weakness indicators as per Chapter VII Point 1.1.c (Page 62).",
+      "seniorManagementFraud": "Indication of fraud involving senior management, whether material or not.",
+      "materialFraudImpact": "Indication of fraud that results in a material misstatement to the financial statements.",
+      "restatement": "Restatement of previously issued financial statements to reflect the correction of a material misstatement.",
+      "auditorIdentified": "Material misstatement identified by external auditors that was not prevented or detected by internal control.",
+      "auditCommittee": "Ineffective oversight by the Audit Committee over financial reporting and internal control.",
+      "continueButton": "Proceed to Flowchart (Figure 5)",
+      "finalizeButton": "Conclude as Material Weakness (MW)"
     },
     "box1": {
-      "title": "Box 1: Magnitude vs. Likelihood",
-      "question": "Is there a reasonable possibility that the control deficiency could result in a misstatement that is more than inconsequential?"
+      "title": "Box a",
+      "question": "a. does the control deficiency relate directly to the achievement of one or more financial statement assertions?"
     },
     "box2": {
-      "title": "Box 2: Severity vs. Materiality",
-      "question": "Is the magnitude of the potential misstatement more than significant?"
+      "title": "Box b",
+      "question": "b. Is there a reasonable possibility (likelihood) that a misstatement could result from the deficiency (or combination of deficiencies)? [AS2201.64-65]"
     },
     "box3": {
-      "title": "Box 3: Material Misstatement Potential",
-      "question": "Is there a reasonable possibility that the misstatement could be material?",
+      "title": "Box c",
+      "question": "c. Is there a reasonable possibility that the magnitude of the potential misstatement (considering material factors for financial statements) could be material? [AS2201.66-67]",
       "exposureLabel": "Estimated Exposure Value (IDR)",
       "exposurePlaceholder": "e.g. 500000000",
       "thresholdLabel": "Performance Materiality (PM)",
       "materialWarning": "Attention: Exposure is ABOVE PM threshold."
     },
     "box4": {
-      "title": "Box 4: Compensating Controls",
-      "question": "Are there other effective compensating controls that would prevent or detect the potential misstatement?"
+      "title": "Box d",
+      "question": "d. Is the deficiency (or combination of deficiencies) important enough to merit the attention of those responsible for oversight of the company's financial reporting? [AS2201 A11]"
     },
     "box5": {
-      "title": "Box 5: Significant Deficiency Conclusion",
-      "question": "Does management conclude that this deficiency represents a Significant Deficiency (SD)?"
+      "title": "Box e",
+      "question": "e. Are there other effective compensating controls that would operate at a level of precision that would prevent or detect a material misstatement on a timely basis? [AS2201.68]"
     },
     "box6": {
-      "title": "Box 6: Material Weakness Conclusion",
-      "question": "Does management conclude that this deficiency represents a Material Weakness (MW)?"
+      "title": "Box f",
+      "question": "f. Would a prudent official conclude that the deficiency (or combination of deficiencies) is a material weakness? [AS2201.18, 70]"
     },
     "box7": {
-      "title": "Box 7: Aggregation Loop",
-      "question": "Is it necessary to aggregate this deficiency with others to evaluate combined impact?"
+      "title": "Box g",
+      "question": "g. Are there multiple control deficiencies and/or significant deficiencies that affect the same account balance or disclosure? [AS 2201.65]"
     },
     "result": {
       "title": "Assessment Conclusion",
+      "levels": {
+        "cd": "Control Deficiency",
+        "sd": "Significant Deficiency",
+        "mw": "Material Weakness"
+      },
       "autoRationale": "Automatic Material Weakness due to identified high-risk indicators (Fraud/Restatement/Audit Oversight).",
       "flowchartRationale": "Severity determined based on systematic Figure 5 flowchart evaluation of magnitude, likelihood, and compensating controls.",
       "quantComparison": "Quantitative Analysis vs Materiality",

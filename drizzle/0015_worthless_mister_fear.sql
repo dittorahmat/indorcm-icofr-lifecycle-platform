@@ -1,0 +1,1 @@
+ALTER TABLE "deficiencies" ADD COLUMN "flowchart_path" jsonb;
