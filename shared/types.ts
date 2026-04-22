@@ -124,13 +124,6 @@ export interface Application {
   criticality: "High" | "Medium" | "Low";
 }
 
-export interface RiskLibrary {
-  id: string;
-  cluster: BUMNCluster;
-  riskDescription: string;
-  suggestedAssertions: ControlAssertion[];
-}
-
 // New types from SK-5/DKU.MBU/11/2024
 export type COSOPrinciple = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17;
 export type ITGCArea = "Access to Program and Data" | "Program Development" | "Program Changes" | "Computer Operations";
@@ -296,6 +289,8 @@ export interface RCM {
   process: string;
   subProcess: string;
   riskDescription: string;
+  isFraudRelated: boolean;
+  riskRating: QualitativeLevel;
   status: "Draft" | "Pending Validation" | "Active" | "Archived" | "Pending Change Approval"; // Added Pending Change Approval
   controls: string[]; // Array of Control IDs
   bpmData?: {

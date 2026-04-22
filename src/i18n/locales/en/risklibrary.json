@@ -18,7 +18,15 @@
     "assertions_label": "Suggested Assertions",
     "assertions_desc": "Assertions typically impacted by this risk.",
     "save_button": "Save to Library",
-    "update_button": "Update Entry"
+    "update_button": "Update Entry",
+    "fraud_label": "Fraud Indicator",
+    "rating_label": "Risk Rating",
+    "key_control_label": "Key Control",
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High",
+    "yes": "Yes",
+    "no": "No"
   },
   "lookup": {
     "trigger": "Lookup Library (Appx 2)",

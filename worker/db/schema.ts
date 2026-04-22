@@ -177,6 +177,8 @@ export const rcms = pgTable("rcms", {
 	process: text("process").notNull(),
 	subProcess: text("sub_process").notNull(),
 	riskDescription: text("risk_description").notNull(),
+	isFraudRelated: boolean("is_fraud_related").default(false),
+	riskRating: text("risk_rating"), // Low, Medium, High
 	status: text("status").notNull(), // Draft, Active, Pending Change Approval
 	diagramId: text("diagram_id").references(() => bpmDiagrams.id),
 	auditTrail: jsonb("audit_trail"), // Legacy support
@@ -340,16 +342,6 @@ export const bpmProcesses = pgTable("bpm_processes", {
 	name: text("name").notNull(),
 	createdAt: timestamp("created_at").notNull(),
 	createdBy: text("created_by").references(() => user.id),
-});
-
-export const riskLibrary = pgTable("risk_library", {
-	id: text("id").primaryKey(),
-	organizationId: text("organizationId").notNull().references(() => organization.id),
-	cluster: text("cluster").notNull(), // BUMNCluster
-	riskDescription: text("risk_description").notNull(),
-	suggestedAssertions: jsonb("suggested_assertions").$type<string[]>().default([]),
-	createdAt: timestamp("created_at").notNull().defaultNow(),
-	updatedAt: timestamp("updated_at"),
 });
 
 export const aggregateDeficiencies = pgTable("aggregate_deficiencies", {

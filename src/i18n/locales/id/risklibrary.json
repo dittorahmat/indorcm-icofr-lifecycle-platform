@@ -18,7 +18,15 @@
     "assertions_label": "Asersi yang Disarankan",
     "assertions_desc": "Asersi yang biasanya berdampak pada risiko ini.",
     "save_button": "Simpan ke Library",
-    "update_button": "Perbarui Entri"
+    "update_button": "Perbarui Entri",
+    "fraud_label": "Indikator Fraud",
+    "rating_label": "Rating Risiko",
+    "key_control_label": "Pengendalian Utama",
+    "low": "Rendah",
+    "medium": "Sedang",
+    "high": "Tinggi",
+    "yes": "Ya",
+    "no": "Tidak"
   },
   "lookup": {
     "trigger": "Lihat Library (Lamp. 2)",

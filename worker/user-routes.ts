@@ -627,90 +627,9 @@ export function userRoutes(app: Hono<HonoEnv>) {
     return ok(c, { items });
   });
 
-  // --- Risk Library Routes ---
-
-  app.get('/api/risklibrary', async (c) => {
-    const db = getDb(c.env.DATABASE_URL);
-    const orgId = c.get('organizationId');
-    const cluster = c.req.query('cluster');
-    
-    let query = db.select().from(riskLibrary).where(eq(riskLibrary.organizationId, orgId));
-    
-    if (cluster && cluster !== 'All') {
-      query = db.select().from(riskLibrary).where(
-        and(
-          eq(riskLibrary.organizationId, orgId),
-          eq(riskLibrary.cluster, cluster)
-        )
-      );
-    }
-    
-    const items = await query;
-    return ok(c, { items });
-  });
-
-  app.post('/api/risklibrary', async (c) => {
-    const role = c.get('userRole');
-    if (role !== 'Line 2' && role !== 'Admin') return bad(c, 'Access Denied');
-    
-    const db = getDb(c.env.DATABASE_URL);
-    const orgId = c.get('organizationId');
-    const body = await c.req.json<Partial<RiskLibrary>>();
-    
-    if (!body.riskDescription || !body.cluster) {
-      return bad(c, 'Missing required fields: riskDescription, cluster');
-    }
-
-    const id = crypto.randomUUID();
-    const newItem = {
-      id,
-      organizationId: orgId,
-      cluster: body.cluster,
-      riskDescription: body.riskDescription,
-      suggestedAssertions: body.suggestedAssertions || [],
-      createdAt: new Date(),
-    };
-
-    await db.insert(riskLibrary).values(newItem);
-    return ok(c, newItem);
-  });
-
-  app.put('/api/risklibrary/:id', async (c) => {
-    const role = c.get('userRole');
-    if (role !== 'Line 2' && role !== 'Admin') return bad(c, 'Access Denied');
-    
-    const id = c.req.param('id');
-    const db = getDb(c.env.DATABASE_URL);
-    const orgId = c.get('organizationId');
-    const body = await c.req.json<Partial<RiskLibrary>>();
-    
-    await db.update(riskLibrary)
-      .set({
-        cluster: body.cluster,
-        riskDescription: body.riskDescription,
-        suggestedAssertions: body.suggestedAssertions,
-        updatedAt: new Date(),
-      })
-      .where(and(eq(riskLibrary.id, id), eq(riskLibrary.organizationId, orgId)));
-      
-    return ok(c, { success: true });
-  });
-
-  app.delete('/api/risklibrary/:id', async (c) => {
-    const role = c.get('userRole');
-    if (role !== 'Line 2' && role !== 'Admin') return bad(c, 'Access Denied');
-    
-    const id = c.req.param('id');
-    const db = getDb(c.env.DATABASE_URL);
-    const orgId = c.get('organizationId');
-    
-    await db.delete(riskLibrary).where(and(eq(riskLibrary.id, id), eq(riskLibrary.organizationId, orgId)));
-    return ok(c, { success: true });
-  });
-
   app.post('/api/rcm', async (c) => {
     const role = c.get('userRole');
-    if (role !== 'Line 2' && role !== 'Admin') return bad(c, 'Access Denied');
+    if (role !== 'Line 2' && role !== 'Admin' && role !== 'Line 1') return bad(c, 'Access Denied');
     
     const db = getDb(c.env.DATABASE_URL);
     const orgId = c.get('organizationId');
@@ -721,10 +640,11 @@ export function userRoutes(app: Hono<HonoEnv>) {
     const newItem = {
       id,
       organizationId: orgId,
-      riskLibraryId: body.riskLibraryId,
       process: body.process || "New Process",
       subProcess: body.subProcess || "New Sub-Process",
       riskDescription: body.riskDescription || "New Risk",
+      isFraudRelated: body.isFraudRelated ?? false,
+      riskRating: body.riskRating || "Medium",
       status: "Draft",
     };
 
@@ -762,9 +682,17 @@ export function userRoutes(app: Hono<HonoEnv>) {
       return ok(c, { message: "Change request submitted" });
     }
 
-    if (role !== 'Line 2') return bad(c, 'Access Denied');
+    if (role !== 'Line 2' && role !== 'Admin') return bad(c, 'Access Denied');
 
-    await db.update(rcms).set(body).where(eq(rcms.id, id));
+    const updateData: any = {};
+    if (body.riskDescription !== undefined) updateData.riskDescription = body.riskDescription;
+    if (body.isFraudRelated !== undefined) updateData.isFraudRelated = body.isFraudRelated;
+    if (body.riskRating !== undefined) updateData.riskRating = body.riskRating;
+    if (body.status !== undefined) updateData.status = body.status;
+
+    if (Object.keys(updateData).length > 0) {
+      await db.update(rcms).set(updateData).where(eq(rcms.id, id));
+    }
 
     // Audit Log
     await db.insert(auditLogs).values({
