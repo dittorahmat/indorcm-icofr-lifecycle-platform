@@ -21,7 +21,8 @@ export const getAuth = (env: { DATABASE_URL: string; BETTER_AUTH_SECRET: string;
             }
         }),
         secret: env.BETTER_AUTH_SECRET,
-        baseURL: (env.BETTER_AUTH_URL || "http://localhost:3000") + "/api/auth",
+        baseURL: env.BETTER_AUTH_URL || "http://localhost:3000",
+        basePath: "/api/auth",
         trustedOrigins: [
             env.BETTER_AUTH_URL || "http://localhost:3000",
             "https://icofr.tech1solusi.workers.dev"
@@ -60,7 +61,7 @@ export const getAuth = (env: { DATABASE_URL: string; BETTER_AUTH_SECRET: string;
         },
         advanced: {
             ipAddress: {
-                ipAddressHeaders: ["cf-connecting-ip", "x-forwarded-for"],
+                ipAddressHeaders: ["cf-connecting-ip", "x-real-ip", "x-forwarded-for"],
             },
             trustedProxyHeaders: true,
         }
