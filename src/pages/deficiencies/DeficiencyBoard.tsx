@@ -209,8 +209,15 @@ export function DeficiencyBoard() {
   });
 
   const severityMutation = useMutation({
-    mutationFn: ({ id, severity }: { id: string; severity: DeficiencySeverity }) => 
-      api(`/api/deficiencies/${id}`, { method: 'PUT', body: JSON.stringify({ severity }) }),
+    mutationFn: (payload: { 
+      id: string; 
+      severity: DeficiencySeverity; 
+      rationale?: string; 
+      exposureValue?: number;
+      assertions?: string[];
+      flowchartPath?: Record<number, boolean>;
+    }) => 
+      api(`/api/deficiencies/${payload.id}`, { method: 'PUT', body: JSON.stringify(payload) }),
     onSuccess: () => {
       toast.success("Deficiency severity updated based on DoD assessment.");
       queryClient.invalidateQueries({ queryKey: ['deficiencies'] });

@@ -37,6 +37,19 @@
     "history": "Riwayat Asesmen",
     "newButton": "Asesmen Baru",
     "backToList": "Kembali ke Riwayat",
+    "bpmGate": {
+      "title": "Validasi Proses BPM",
+      "question": "Apakah terdapat perubahan pada prosedur operasional, sistem IT, atau struktur organisasi pada periode ini untuk proses di atas?",
+      "noChange": "Tidak, proses masih sama.",
+      "hasChange": "Ya, ada perubahan.",
+      "lockedNote": "Form CSA terkunci. Silahkan perbarui Log Perubahan terlebih dahulu.",
+      "continueBtn": "Lanjut ke Form CSA"
+    },
+    "validation": {
+      "minSamples": "Sesuai SK BUMN, kontrol {{freq}} wajib menggunakan minimal {{min}} sampel di kuartal berjalan.",
+      "zeroTolerance": "Zero tolerance: Satu kegagalan atribut mewajibkan hasil Tidak Efektif.",
+      "effectiveDisabled": "Pilihan Efektif dinonaktifkan karena satu atau lebih sampel gagal pengujian."
+    },
     "section1": "I. Informasi Umum",
     "section2": "II. Prosedur",
     "section3": "III. Pengujian Sampel",

@@ -9,6 +9,11 @@ Perubahan ini diperlukan untuk mendigitalisasi proses "self-certification" terse
 - **BPM Worksheet Enhancement**: Mengubah Tab CSA di `BPMWorksheet.tsx` dari form tunggal menjadi tampilan tabel riwayat CSA (List View).
 - **Dynamic CSA Records**: Implementasi entitas `CSARecord` baru yang mendukung relasi 1-ke-banyak dengan `CSASample`.
 - **Smart Lampiran 7 Form**: Form input dinamis yang berubah tampilan sesuai sifat kontrol (Manual/ITDM vs ITAC/Automated) sesuai standar Lampiran 7.
+- **BPM Gate Confirmation**: Tahap validasi awal sebelum mengisi form CSA untuk mengonfirmasi apakah ada perubahan proses bisnis (SOP/Struktur) di periode berjalan.
+- **Dynamic Attribute Questions**: Label Atribut A, B, C, D bersifat dinamis ditarik dari data Master Kontrol (bukan label generik).
+- **Validation Engine**:
+    - **Frequency-based Min Sampling**: Validasi otomatis jumlah sampel minimal berdasarkan frekuensi kontrol (Tahunan, Bulanan, dst) merujuk pada Tabel 22 Regulasi SK-5.
+    - **Zero Tolerance Locking**: Mengunci opsi "Efektif" jika terdapat satu saja sampel yang gagal (Attr = False).
 - **Dynamic Sampling**: User dapat menambah/menghapus baris sampel pengujian secara fleksibel di dalam form CSA.
 - **PDF Generation**: Fitur cetak dokumen CSA dengan format yang identik dengan Lampiran 7 PDF regulasi.
 - **I18n Integration**: Penambahan kunci lokalisasi baru di `src/i18n/locales/` (en/id) untuk semua komponen CSA.

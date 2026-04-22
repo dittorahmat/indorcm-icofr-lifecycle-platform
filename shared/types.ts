@@ -233,6 +233,14 @@ export interface Control {
   applicationId?: string;
   bpmProcessId?: string; // Link to the BPMProcess header list
 
+  // New Smart CSA Fields
+  attributeQuestions?: {
+    A: string;
+    B: string;
+    C: string;
+    D: string;
+  };
+
   // MRC Specific Metadata - Tabel 21 (Hal 45 & 55)
   mrcMetadata?: {
     expectation: string; // Kewajaran ekspektasi
@@ -328,6 +336,9 @@ export interface CSARecord {
   evidenceUrl?: string;
   comments: string;
   samples: CSATestSample[]; // Dynamic sampling
+
+  // New Smart CSA Gate
+  isBpmConfirmed?: boolean;
 
   // Section II: Prosedur (Lampiran 7)
   samplingMethodology?: string;

@@ -23,8 +23,8 @@
 - **Decision 2: Mapping Teks i18n**
   - **Rationale**: Memisahkan teks pertanyaan regulasi ke dalam namespace `deficiency` di file JSON `id` dan `en`. Menggunakan kunci `wizard.box1.question`, `wizard.box2.question`, dst. sesuai urutan Gambar 5.
 
-- **Decision 3: Penyimpanan Metadata di Database**
-  - **Rationale**: Menambahkan field `flowchart_path` atau memperluas `pre_assessment` (jsonb) pada tabel `deficiencies` untuk menyimpan urutan jawaban User. Ini penting agar auditor tahu *bagaimana* sebuah defisiensi diklasifikasikan sebagai MW/SD/CD.
+- **Decision 4: Penghapusan Step 0 (Pre-assessment)**
+  - **Rationale**: Berdasarkan feedback user, indikator otomatis dari Halaman 62 Bab VII (Step 0) dirasa mengganggu alur kerja. Fokus wizard dialihkan 100% hanya pada alur logika Gambar 5 agar lebih ringkas dan sesuai dengan preferensi operasional user.
 
 ## Risks / Trade-offs
 

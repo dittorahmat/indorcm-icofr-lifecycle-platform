@@ -37,6 +37,19 @@
     "history": "Assessment History",
     "newButton": "New Assessment",
     "backToList": "Back to History",
+    "bpmGate": {
+      "title": "BPM Process Validation",
+      "question": "Is there any change in operational procedures, IT systems, or organizational structure in this period for the process above?",
+      "noChange": "No, process is still the same.",
+      "hasChange": "Yes, there are changes.",
+      "lockedNote": "CSA Form is locked. Please update the Change Log first.",
+      "continueBtn": "Proceed to CSA Form"
+    },
+    "validation": {
+      "minSamples": "According to BUMN SK-5, {{freq}} control requires at least {{min}} samples in current period.",
+      "zeroTolerance": "Zero tolerance: One failed attribute requires an Ineffective result.",
+      "effectiveDisabled": "Effective option is disabled because one or more samples failed testing."
+    },
     "section1": "I. General Information",
     "section2": "II. Procedure",
     "section3": "III. Sample Testing",

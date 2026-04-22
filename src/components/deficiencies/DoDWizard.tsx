@@ -22,33 +22,11 @@ interface DoDWizardProps {
 
 export function DoDWizard({ isOpen, setIsOpen, onComplete, isAggregate = false, performanceMateriality }: DoDWizardProps) {
   const { t } = useTranslation('deficiency');
-  const [step, setStep] = React.useState<DoDStep>(0);
+  const [step, setStep] = React.useState<DoDStep>(1);
   const [answers, setStepAnswers] = React.useState<Record<number, boolean>>({});
-  const [preAssessment, setPreAssessment] = React.useState({
-    seniorManagementFraud: false,
-    materialFraudImpact: false,
-    restatement: false,
-    auditorIdentifiedMisstatement: false,
-    ineffectiveAuditCommittee: false,
-  });
   const [exposureValue, setExposureValue] = React.useState<string>("");
   const [selectedAssertions, setSelectedAssertions] = React.useState<string[]>([]);
   const [rationale, setRationale] = React.useState("");
-
-  const isAutomaticMW = Object.values(preAssessment).some(v => v);
-
-  const handlePreAssessmentToggle = (key: keyof typeof preAssessment) => {
-    setPreAssessment(prev => ({ ...prev, [key]: !prev[key] }));
-  };
-
-  const handlePreAssessmentNext = () => {
-    if (isAutomaticMW) {
-      setStep('RESULT');
-      setRationale(t('wizard.result.autoRationale'));
-    } else {
-      setStep(1);
-    }
-  };
 
   const handleAnswer = (val: boolean) => {
     const newAnswers = { ...answers, [step as number]: val };
@@ -98,9 +76,6 @@ export function DoDWizard({ isOpen, setIsOpen, onComplete, isAggregate = false, 
   const getResult = () => {
     if (step !== 'RESULT') return null;
     
-    // Step 0: Automatic MW Indicators
-    if (isAutomaticMW) return "Material Weakness";
-
     // Regulatory Terminal Logic (Gambar 5)
     
     // Box e: "No" -> Direct Terminal to Material Weakness
@@ -121,15 +96,8 @@ export function DoDWizard({ isOpen, setIsOpen, onComplete, isAggregate = false, 
   const isMaterialByPM = performanceMateriality && exposureValue && parseFloat(exposureValue) >= performanceMateriality;
 
   const reset = () => {
-    setStep(0);
+    setStep(1);
     setStepAnswers({});
-    setPreAssessment({
-      seniorManagementFraud: false,
-      materialFraudImpact: false,
-      restatement: false,
-      auditorIdentifiedMisstatement: false,
-      ineffectiveAuditCommittee: false,
-    });
     setExposureValue("");
     setSelectedAssertions([]);
     setRationale("");
@@ -137,9 +105,9 @@ export function DoDWizard({ isOpen, setIsOpen, onComplete, isAggregate = false, 
 
   const handleFinish = () => {
     if (result) onComplete(result as any, rationale, { 
-      preAssessment, 
       exposureValue: exposureValue ? parseFloat(exposureValue) : undefined,
-      assertions: selectedAssertions 
+      assertions: selectedAssertions,
+      flowchartPath: answers
     });
     setIsOpen(false);
     reset();
@@ -160,18 +128,14 @@ export function DoDWizard({ isOpen, setIsOpen, onComplete, isAggregate = false, 
   React.useEffect(() => {
     if (step === 'RESULT' && !rationale) {
       let autoRationale = "";
-      if (isAutomaticMW) {
-        autoRationale = t('wizard.result.autoRationale');
-      } else {
-        if (exposureValue && performanceMateriality) {
-          const exp = parseFloat(exposureValue);
-          autoRationale = `Exposure value (${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(exp)}) is ${exp >= performanceMateriality ? 'ABOVE' : 'BELOW'} Performance Materiality threshold (${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(performanceMateriality)}). `;
-        }
-        autoRationale += t('wizard.result.flowchartRationale');
+      if (exposureValue && performanceMateriality) {
+        const exp = parseFloat(exposureValue);
+        autoRationale = `Exposure value (${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(exp)}) is ${exp >= performanceMateriality ? 'ABOVE' : 'BELOW'} Performance Materiality threshold (${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(performanceMateriality)}). `;
       }
+      autoRationale += t('wizard.result.flowchartRationale');
       setRationale(autoRationale);
     }
-  }, [step, isAutomaticMW, exposureValue, performanceMateriality, rationale, t]);
+  }, [step, exposureValue, performanceMateriality, rationale, t]);
 
   return (
     <Dialog open={isOpen} onOpenChange={(o) => { if(!o) reset(); setIsOpen(o); }}>
@@ -189,46 +153,6 @@ export function DoDWizard({ isOpen, setIsOpen, onComplete, isAggregate = false, 
         </DialogHeader>
 
         <div className="py-6 min-h-[200px] flex flex-col justify-center">
-          {step === 0 && (
-            <div className="space-y-4 animate-in fade-in duration-300">
-              <h3 className="font-bold text-sm text-primary uppercase tracking-wider flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4" />
-                {t('wizard.step0.title')}
-              </h3>
-              <p className="text-xs text-muted-foreground italic mb-4">
-                {t('wizard.step0.description')}
-              </p>
-              
-              <div className="space-y-3">
-                <div className="flex items-start space-x-2">
-                  <Checkbox id="sm-fraud" checked={preAssessment.seniorManagementFraud} onCheckedChange={() => handlePreAssessmentToggle('seniorManagementFraud')} />
-                  <Label htmlFor="sm-fraud" className="text-xs leading-tight cursor-pointer">{t('wizard.step0.seniorManagementFraud')}</Label>
-                </div>
-                <div className="flex items-start space-x-2">
-                  <Checkbox id="material-fraud" checked={preAssessment.materialFraudImpact} onCheckedChange={() => handlePreAssessmentToggle('materialFraudImpact')} />
-                  <Label htmlFor="material-fraud" className="text-xs leading-tight cursor-pointer">{t('wizard.step0.materialFraudImpact')}</Label>
-                </div>
-                <div className="flex items-start space-x-2">
-                  <Checkbox id="restatement" checked={preAssessment.restatement} onCheckedChange={() => handlePreAssessmentToggle('restatement')} />
-                  <Label htmlFor="restatement" className="text-xs leading-tight cursor-pointer">{t('wizard.step0.restatement')}</Label>
-                </div>
-                <div className="flex items-start space-x-2">
-                  <Checkbox id="auditor-identified" checked={preAssessment.auditorIdentifiedMisstatement} onCheckedChange={() => handlePreAssessmentToggle('auditorIdentifiedMisstatement')} />
-                  <Label htmlFor="auditor-identified" className="text-xs leading-tight cursor-pointer">{t('wizard.step0.auditorIdentified')}</Label>
-                </div>
-                <div className="flex items-start space-x-2">
-                  <Checkbox id="audit-comm" checked={preAssessment.ineffectiveAuditCommittee} onCheckedChange={() => handlePreAssessmentToggle('ineffectiveAuditCommittee')} />
-                  <Label htmlFor="audit-comm" className="text-xs leading-tight cursor-pointer">{t('wizard.step0.auditCommittee')}</Label>
-                </div>
-              </div>
-
-              <Button className="w-full mt-4" onClick={handlePreAssessmentNext}>
-                {isAutomaticMW ? t('wizard.step0.finalizeButton') : t('wizard.step0.continueButton')}
-                <ChevronRight className="ml-2 h-4 w-4" />
-              </Button>
-            </div>
-          )}
-
           {step === 1 && (
             <Question 
               title={t('wizard.box1.title')}
@@ -387,7 +311,7 @@ export function DoDWizard({ isOpen, setIsOpen, onComplete, isAggregate = false, 
             <div className="w-full flex justify-between items-center">
                <div className="flex flex-col">
                  <span className="text-[10px] text-muted-foreground uppercase font-bold">
-                   {step === 0 ? t('wizard.common.preliminaryStep') : t('wizard.common.boxProgress', { step: String.fromCharCode(96 + (step as number)) })}
+                   {t('wizard.common.boxProgress', { step: String.fromCharCode(96 + (step as number)) })}
                  </span>
                  <span className="text-[9px] text-muted-foreground/60 font-medium">Ref: Gambar 5 SK-5/2024</span>
                </div>

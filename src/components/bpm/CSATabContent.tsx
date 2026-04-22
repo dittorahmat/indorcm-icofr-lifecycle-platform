@@ -84,6 +84,17 @@ const nodeTypes = {
   control: ({ data }: NodeProps) => <div className="w-8 h-8 rounded-full bg-green-600 flex items-center justify-center text-white"><ShieldCheck className="h-4 w-4" /></div>,
 };
 
+// --- Frequency to Min Samples Mapping (Table 22 SK-5) ---
+const FREQUENCY_MIN_SAMPLES: Record<string, number> = {
+  'Annual': 1,
+  'Semi-Annual': 1,
+  'Quarterly': 2,
+  'Monthly': 2,
+  'Weekly': 5,
+  'Daily': 15,
+  'Ad-hoc': 1 // Typically 1 or based on occurrence
+};
+
 // --- Form Validation ---
 const csaFormSchema = z.object({
   period: z.string().min(1, "Period is required"),
@@ -91,6 +102,7 @@ const csaFormSchema = z.object({
   comments: z.string().min(5, "Comments must be at least 5 characters"),
   samplingMethodology: z.string().min(1, "Methodology is required"),
   documentList: z.string().min(1, "Document list is required"),
+  isBpmConfirmed: z.boolean().refine(val => val === true, "BPM confirmation is required"),
   samples: z.array(z.object({
     sampleRef: z.string().min(1, "Ref required"),
     attributeResults: z.object({
@@ -122,7 +134,7 @@ export function CSATabContent({ noGL, controls }: CSATabContentProps) {
   const queryClient = useQueryClient();
   
   const [selectedControlId, setSelectedControlId] = useState<string | null>(null);
-  const [view, setView] = useState<'list' | 'form'>('list');
+  const [view, setView] = useState<'list' | 'gate' | 'form'>('list');
   const [activeCsaId, setActiveCsaId] = useState<string | null>(null);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
@@ -150,7 +162,7 @@ export function CSATabContent({ noGL, controls }: CSATabContentProps) {
   const { data: activeCsa, isLoading: isDetailLoading } = useQuery({
     queryKey: ['csa-detail', activeCsaId],
     queryFn: () => api<CSARecord>(`/api/csa/${activeCsaId}`),
-    enabled: !!activeCsaId && view === 'form'
+    enabled: !!activeCsaId && (view === 'form' || view === 'gate')
   });
 
   // Highlight logic for diagram
@@ -186,6 +198,7 @@ export function CSATabContent({ noGL, controls }: CSATabContentProps) {
       comments: '',
       samplingMethodology: 'Attribute Sampling / Zero Tolerance Approach',
       documentList: '',
+      isBpmConfirmed: false,
       samples: [{ sampleRef: '', attributeResults: { A: true, B: true, C: true, D: true } }]
     }
   });
@@ -204,6 +217,7 @@ export function CSATabContent({ noGL, controls }: CSATabContentProps) {
         comments: activeCsa.comments || '',
         samplingMethodology: activeCsa.samplingMethodology || 'Attribute Sampling / Zero Tolerance Approach',
         documentList: activeCsa.documentList || '',
+        isBpmConfirmed: activeCsa.isBpmConfirmed || false,
         samples: activeCsa.samples || [],
         itacScenario: activeCsa.itacScenario,
         itacMethod: activeCsa.itacMethod,
@@ -213,6 +227,13 @@ export function CSATabContent({ noGL, controls }: CSATabContentProps) {
   }, [activeCsa, form]);
 
   const onSubmit = async (values: CSAFormValues) => {
+    // Validation: Minimum Samples
+    const minRequired = FREQUENCY_MIN_SAMPLES[selectedControl?.frequency || 'Annual'] || 1;
+    if (values.samples.length < minRequired) {
+      toast.error(t('csa.validation.minSamples', { freq: selectedControl?.frequency, min: minRequired }));
+      return;
+    }
+
     setIsAuthenticating(true);
     const verified = await promptBiometricAuth('authenticate');
     setIsAuthenticating(false);
@@ -241,6 +262,27 @@ export function CSATabContent({ noGL, controls }: CSATabContentProps) {
   };
 
   const isReadOnly = !!activeCsaId;
+
+  // Dynamic Attr Labels from Control or Defaults
+  const attrLabels = {
+    A: selectedControl?.attributeQuestions?.A || t('csa.attributes.A'),
+    B: selectedControl?.attributeQuestions?.B || t('csa.attributes.B'),
+    C: selectedControl?.attributeQuestions?.C || t('csa.attributes.C'),
+    D: selectedControl?.attributeQuestions?.D || t('csa.attributes.D'),
+  };
+
+  // Hard-Lock logic for "Effective" result
+  const anySampleFailed = form.watch('samples').some(s => 
+    !s.attributeResults.A || !s.attributeResults.B || !s.attributeResults.C || !s.attributeResults.D || 
+    (s.itacResults && !s.itacResults.isMatch)
+  );
+
+  useEffect(() => {
+    if (anySampleFailed && form.getValues('result') === 'Effective') {
+      form.setValue('result', 'Ineffective');
+      toast.warning(t('csa.validation.zeroTolerance'));
+    }
+  }, [anySampleFailed, form, t]);
 
   if (!controls || controls.length === 0) {
     return (
@@ -280,7 +322,7 @@ export function CSATabContent({ noGL, controls }: CSATabContentProps) {
             <div className="p-4 border-b bg-slate-50/50 flex flex-col gap-3">
               <div className="flex justify-between items-center">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Control Point Selection</p>
-                {view === 'form' && (
+                {view !== 'list' && (
                   <Button variant="ghost" size="sm" onClick={() => { setView('list'); setActiveCsaId(null); form.reset(); }} className="h-7 text-[10px] font-bold gap-1">
                     <ChevronLeft className="h-3 w-3" /> {t('csa.backToList')}
                   </Button>
@@ -292,7 +334,7 @@ export function CSATabContent({ noGL, controls }: CSATabContentProps) {
                     key={c.id}
                     variant={selectedControlId === c.id ? "default" : "outline"}
                     size="sm"
-                    disabled={view === 'form'}
+                    disabled={view !== 'list'}
                     className={cn("h-7 text-[9px] font-black uppercase whitespace-nowrap", selectedControlId === c.id ? "bg-indigo-600" : "bg-white")}
                     onClick={() => setSelectedControlId(c.id)}
                   >
@@ -311,7 +353,7 @@ export function CSATabContent({ noGL, controls }: CSATabContentProps) {
                       <h3 className="text-xl font-black text-slate-900 tracking-tight">{selectedControl?.name}</h3>
                       <p className="text-xs text-muted-foreground mt-1 max-w-md italic">{selectedControl?.description}</p>
                     </div>
-                    <Button onClick={() => setView('form')} className="bg-indigo-600 hover:bg-indigo-700 font-bold text-xs gap-2">
+                    <Button onClick={() => setView('gate')} className="bg-indigo-600 hover:bg-indigo-700 font-bold text-xs gap-2">
                       <Plus className="h-4 w-4" /> {t('csa.newButton')}
                     </Button>
                   </div>
@@ -355,6 +397,66 @@ export function CSATabContent({ noGL, controls }: CSATabContentProps) {
                     </Table>
                   </div>
                 </div>
+              ) : view === 'gate' ? (
+                <div className="max-w-xl mx-auto space-y-8 py-12 animate-in zoom-in-95 duration-300">
+                   <div className="text-center space-y-4">
+                     <div className="mx-auto w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-600 border-2 border-indigo-100">
+                        <ShieldCheck className="h-8 w-8" />
+                     </div>
+                     <h2 className="text-2xl font-black text-slate-900">{t('csa.bpmGate.title')}</h2>
+                     <p className="text-sm text-muted-foreground">{t('csa.bpmGate.question')}</p>
+                   </div>
+
+                   <Form {...form}>
+                     <div className="space-y-6">
+                        <FormField control={form.control} name="isBpmConfirmed" render={({ field }) => (
+                          <div className="space-y-4">
+                             <div 
+                               onClick={() => field.onChange(true)}
+                               className={cn(
+                                 "p-6 rounded-2xl border-2 transition-all cursor-pointer flex items-center gap-4",
+                                 field.value === true ? "bg-green-50 border-green-500 shadow-md" : "bg-white border-slate-100 hover:border-slate-200"
+                               )}
+                             >
+                                <div className={cn("w-6 h-6 rounded-full border-2 flex items-center justify-center", field.value === true ? "border-green-600 bg-green-600" : "border-slate-300")}>
+                                   {field.value === true && <CheckCircle2 className="h-4 w-4 text-white" />}
+                                </div>
+                                <div className="flex-1">
+                                   <p className="text-sm font-bold text-slate-900">{t('csa.bpmGate.noChange')}</p>
+                                   <p className="text-xs text-muted-foreground mt-0.5">SOP dan alur kerja masih sesuai dengan diagram di samping.</p>
+                                </div>
+                             </div>
+
+                             <div 
+                               onClick={() => field.onChange(false)}
+                               className={cn(
+                                 "p-6 rounded-2xl border-2 transition-all cursor-pointer flex items-center gap-4",
+                                 field.value === false ? "bg-red-50 border-red-500 shadow-md" : "bg-white border-slate-100 hover:border-slate-200 opacity-50"
+                               )}
+                             >
+                                <div className={cn("w-6 h-6 rounded-full border-2 flex items-center justify-center", field.value === false ? "border-red-600 bg-red-600" : "border-slate-300")}>
+                                   {field.value === false && <XCircle className="h-4 w-4 text-white" />}
+                                </div>
+                                <div className="flex-1">
+                                   <p className="text-sm font-bold text-slate-900">{t('csa.bpmGate.hasChange')}</p>
+                                   <p className="text-xs text-muted-foreground mt-0.5">{t('csa.bpmGate.lockedNote')}</p>
+                                </div>
+                             </div>
+                          </div>
+                        )} />
+
+                        <div className="flex justify-center pt-4">
+                           <Button 
+                             disabled={form.watch('isBpmConfirmed') !== true}
+                             onClick={() => setView('form')}
+                             className="bg-indigo-600 hover:bg-indigo-700 font-bold px-12 h-11"
+                           >
+                             {t('csa.bpmGate.continueBtn')}
+                           </Button>
+                        </div>
+                     </div>
+                   </Form>
+                </div>
               ) : (
                 <div className="animate-in fade-in slide-in-from-right-4 duration-300">
                   <Form {...form}>
@@ -369,15 +471,20 @@ export function CSATabContent({ noGL, controls }: CSATabContentProps) {
                             <FormItem className="space-y-1">
                               <FormLabel className="text-[10px] font-black uppercase text-slate-400">{t('csa.form.result')} (SK-5)</FormLabel>
                               <FormControl>
-                                <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex gap-4" disabled={isReadOnly}>
+                                <RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4" disabled={isReadOnly}>
                                   {['Effective', 'Ineffective', 'No Transaction'].map(res => (
                                     <FormItem key={res} className="flex items-center space-x-2 space-y-0">
-                                      <FormControl><RadioGroupItem value={res} /></FormControl>
-                                      <FormLabel className={cn("text-xs font-bold cursor-pointer", res === 'Effective' ? "text-green-700" : res === 'Ineffective' ? "text-red-700" : "text-slate-500")}>{res}</FormLabel>
+                                      <FormControl><RadioGroupItem value={res} disabled={res === 'Effective' && anySampleFailed} /></FormControl>
+                                      <FormLabel className={cn(
+                                        "text-xs font-bold cursor-pointer", 
+                                        res === 'Effective' ? "text-green-700" : res === 'Ineffective' ? "text-red-700" : "text-slate-500",
+                                        res === 'Effective' && anySampleFailed && "opacity-30 cursor-not-allowed"
+                                      )}>{res}</FormLabel>
                                     </FormItem>
                                   ))}
                                 </RadioGroup>
                               </FormControl>
+                              {anySampleFailed && <p className="text-[9px] text-red-500 font-bold italic">{t('csa.validation.effectiveDisabled')}</p>}
                             </FormItem>
                           )} />
                         </div>
@@ -423,9 +530,12 @@ export function CSATabContent({ noGL, controls }: CSATabContentProps) {
                              <Database className="h-3.5 w-3.5" /> {t('csa.section3')} (Zero Tolerance)
                            </h4>
                            {!isReadOnly && (
-                             <Button type="button" variant="outline" size="sm" onClick={() => append({ sampleRef: '', attributeResults: { A: true, B: true, C: true, D: true } })} className="h-7 text-[10px] font-bold">
-                               <Plus className="h-3 w-3 mr-1" /> {t('common:actions.addSample')}
-                             </Button>
+                             <div className="flex items-center gap-3">
+                               <p className="text-[10px] font-bold text-slate-400">Min. Samples for {selectedControl?.frequency}: {FREQUENCY_MIN_SAMPLES[selectedControl?.frequency || 'Annual'] || 1}</p>
+                               <Button type="button" variant="outline" size="sm" onClick={() => append({ sampleRef: '', attributeResults: { A: true, B: true, C: true, D: true } })} className="h-7 text-[10px] font-bold">
+                                 <Plus className="h-3 w-3 mr-1" /> {t('common:actions.addSample')}
+                               </Button>
+                             </div>
                            )}
                         </div>
                         
@@ -434,7 +544,7 @@ export function CSATabContent({ noGL, controls }: CSATabContentProps) {
                             <TableHeader className="bg-slate-50">
                               <TableRow>
                                 <TableHead className="w-10 text-[9px] font-bold">#</TableHead>
-                                <TableHead className="text-[9px] font-bold">Reference (Voucher/Doc)</TableHead>
+                                <TableHead className="text-[9px] font-bold min-w-[120px]">Reference (Voucher/Doc)</TableHead>
                                 {selectedControl?.nature === 'Automated' ? (
                                   <>
                                     <TableHead className="text-[9px] font-bold text-center">Expected</TableHead>
@@ -443,10 +553,14 @@ export function CSATabContent({ noGL, controls }: CSATabContentProps) {
                                   </>
                                 ) : (
                                   <>
-                                    <TableHead className="text-[9px] font-bold text-center">Attr A</TableHead>
-                                    <TableHead className="text-[9px] font-bold text-center">Attr B</TableHead>
-                                    <TableHead className="text-[9px] font-bold text-center">Attr C</TableHead>
-                                    <TableHead className="text-[9px] font-bold text-center">Attr D</TableHead>
+                                    {['A', 'B', 'C', 'D'].map(key => (
+                                      <TableHead key={key} className="text-[9px] font-bold text-center group relative cursor-help">
+                                        Attr {key}
+                                        <div className="hidden group-hover:block absolute bottom-full left-1/2 -translate-x-1/2 w-48 p-2 bg-slate-800 text-white rounded text-[8px] leading-tight shadow-xl z-50 mb-1">
+                                          {attrLabels[key as 'A'|'B'|'C'|'D']}
+                                        </div>
+                                      </TableHead>
+                                    ))}
                                   </>
                                 )}
                                 {!isReadOnly && <TableHead className="w-10"></TableHead>}
@@ -458,7 +572,7 @@ export function CSATabContent({ noGL, controls }: CSATabContentProps) {
                                   <TableCell className="text-xs font-bold text-slate-400">{index + 1}</TableCell>
                                   <TableCell>
                                     <FormField control={form.control} name={`samples.${index}.sampleRef`} render={({ field }) => (
-                                      <FormControl><Input {...field} disabled={isReadOnly} className="h-8 text-xs border-none bg-transparent focus-visible:ring-0 shadow-none p-0" placeholder="INV-2024-..." /></FormControl>
+                                      <FormControl><Input {...field} disabled={isReadOnly} className="h-8 text-xs border-none bg-transparent focus-visible:ring-0 shadow-none p-0" placeholder="Ref no..." /></FormControl>
                                     )} />
                                   </TableCell>
                                   
@@ -479,10 +593,7 @@ export function CSATabContent({ noGL, controls }: CSATabContentProps) {
                                           <FormControl>
                                             <Checkbox 
                                               checked={field.value} 
-                                              onCheckedChange={(val) => {
-                                                field.onChange(val);
-                                                if (val === false) form.setValue('result', 'Ineffective');
-                                              }} 
+                                              onCheckedChange={field.onChange} 
                                               disabled={isReadOnly} 
                                             />
                                           </FormControl>
@@ -496,14 +607,7 @@ export function CSATabContent({ noGL, controls }: CSATabContentProps) {
                                           <FormControl>
                                             <Checkbox 
                                               checked={field.value} 
-                                              onCheckedChange={(val) => {
-                                                field.onChange(val);
-                                                // Zero Tolerance Logic: If any false, suggest Ineffective
-                                                if (val === false) {
-                                                  form.setValue('result', 'Ineffective');
-                                                  toast.warning("Zero tolerance: One failed attribute suggested as Ineffective result.");
-                                                }
-                                              }} 
+                                              onCheckedChange={field.onChange} 
                                               disabled={isReadOnly} 
                                             />
                                           </FormControl>
@@ -527,7 +631,7 @@ export function CSATabContent({ noGL, controls }: CSATabContentProps) {
                       <FormField control={form.control} name="comments" render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-[10px] font-black uppercase text-slate-400">{t('csa.form.comments')}</FormLabel>
-                          <FormControl><Textarea {...field} disabled={isReadOnly} className="min-h-[100px] text-xs" placeholder="Describe remediation plan if ineffective..." /></FormControl>
+                          <FormControl><Textarea {...field} disabled={isReadOnly} className="min-h-[100px] text-xs" placeholder="Wajib diisi jika status TIDAK EFEKTIF..." /></FormControl>
                           <FormMessage />
                         </FormItem>
                       )} />

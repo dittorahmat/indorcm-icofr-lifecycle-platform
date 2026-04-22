@@ -21,4 +21,9 @@
 
 - [x] 4.1 Update UI text in `DoDWizard.tsx` to use the new i18n keys for Box questions.
 - [x] 4.2 Add "Box Reference" label in the footer (e.g., "Ref: Gambar 5 SK-5/2024") for regulatory compliance.
-- [x] 4.3 Verify the entire flow manually to ensure no dead ends or incorrect transitions.
+## 5. Cleanup & Optimization (User Feedback)
+
+- [x] 5.1 Remove Step 0 (Automatic MW Indicators) logic and UI from `DoDWizard.tsx`.
+- [x] 5.2 Set initial `step` state to 1 (Box a).
+- [x] 5.3 Cleanup unused `preAssessment` state and `handlePreAssessmentNext` function.
+

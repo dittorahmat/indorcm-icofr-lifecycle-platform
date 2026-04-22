@@ -30,9 +30,17 @@ Komponen form akan menggunakan `react-hook-form` dengan `useFieldArray` untuk me
 Menggunakan engine di worker/server untuk menghasilkan PDF.
 *Rationale:* Memastikan format margin, logo, dan font konsisten di semua perangkat, berbeda dengan `window.print()` yang bergantung pada driver printer user.
 
-### 4. Zero Tolerance Validation
-Sistem akan secara otomatis memberikan *suggestion* status "Ineffective" jika terdapat minimal satu baris sampel yang memiliki `attributeResult` = `false`.
-*Rationale:* Sesuai dengan FAQ No. 10 regulasi (zero tolerance approach).
+### 4. Zero Tolerance & Frequency Validation
+Sistem akan secara otomatis memberikan *suggestion* status "Ineffective" jika terdapat minimal satu baris sampel yang memiliki `attributeResult` = `false`. Selain itu, tombol Submit akan di-lock jika jumlah sampel yang diinput kurang dari batas minimum frekuensi kontrol (Tabel 22).
+*Rationale:* Sesuai dengan FAQ No. 10 regulasi (zero tolerance approach) dan mandat minimum sampling.
+
+### 5. BPM Gate (Process Consistency)
+Sebelum masuk ke form CSA, user wajib melewati layar konfirmasi "BPM Consistency".
+*Rationale:* Sesuai Bab IV Poin 1 SK-5, memastikan bahwa user tidak melakukan self-assessment di atas proses bisnis yang sudah usang atau berubah.
+
+### 6. Dynamic Attribute Questions
+Teks header pada tabel pengujian ditarik dari `control.attributeQuestions`. Jika kosong, sistem menggunakan "Smart Defaults" berdasarkan `control.nature`.
+*Rationale:* Memberikan konteks yang relevan bagi user sesuai dengan SOP spesifik kontrol tersebut.
 
 ## Risks / Trade-offs
 

@@ -356,7 +356,13 @@ export const MOCK_CONTROLS: Control[] = [
     effectiveDate: Date.now() - 31536000000,
     isFraudRisk: false,
     itApplication: 'Weighbridge System',
-    fsliCodes: ['10008-000318']
+    fsliCodes: ['10008-000318'],
+    attributeQuestions: {
+      A: "Apakah Berita Acara (BA) ditandatangani lengkap oleh Kepala Gudang dan Manajer Keuangan?",
+      B: "Apakah hasil perhitungan fisik (drone survey) direkonsiliasi dengan saldo ERP?",
+      C: "Jika terdapat selisih, apakah jurnal penyesuaian sudah diotorisasi oleh KTT?",
+      D: "Apakah dokumen pendukung (survey report) sudah dilampirkan secara lengkap?"
+    }
   },
   {
     id: 'ctrl-rev-04',

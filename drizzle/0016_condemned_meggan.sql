@@ -1,0 +1,1 @@
+ALTER TABLE "deficiencies" DROP COLUMN "pre_assessment";

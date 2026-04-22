@@ -211,6 +211,7 @@ export const controls = pgTable("controls", {
 	reference: text("reference"),
 	applicationId: text("application_id").references(() => applications.id),
 	bpmProcessId: text("bpm_process_id").references(() => bpmProcesses.id),
+	attributeQuestions: jsonb("attribute_questions"),
 });
 
 export const csaRecords = pgTable("csa_records", {
@@ -222,6 +223,7 @@ export const csaRecords = pgTable("csa_records", {
 	assessedBy: text("assessed_by").references(() => user.id),
 	result: text("result").notNull(), // Effective, Ineffective, No Transaction
 	comments: text("comments"),
+	isBpmConfirmed: boolean("is_bpm_confirmed").default(false),
 
 	// Section II: Prosedur (Lampiran 7)
 	samplingMethodology: text("sampling_methodology"),
@@ -295,7 +297,6 @@ export const deficiencies = pgTable("deficiencies", {
 	exposureValue: doublePrecision("exposure_value"), // Nilai Eksposur Defisiensi
 	likelihood: text("likelihood"),
 	assertions: jsonb("assertions").$type<string[]>(), // Assertions mapping (Lampiran 10)
-	preAssessment: jsonb("pre_assessment"), // Step 0 Indicators
 	flowchartPath: jsonb("flowchart_path").$type<Record<number, boolean>>(), // Path taken in Gambar 5
 });
 

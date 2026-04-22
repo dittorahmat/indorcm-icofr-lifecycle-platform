@@ -531,6 +531,9 @@ export function userRoutes(app: Hono<HonoEnv>) {
       rootCause: body.rootCause,
       magnitude: body.magnitude,
       likelihood: body.likelihood,
+      exposureValue: body.exposureValue,
+      assertions: body.assertions,
+      flowchartPath: body.flowchartPath,
     };
 
     await db.update(deficiencies).set(updateData).where(eq(deficiencies.id, id));
@@ -1724,6 +1727,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
       assessedBy: userId,
       result: body.result || "Effective",
       comments: body.comments,
+      isBpmConfirmed: body.isBpmConfirmed ?? false,
       samplingMethodology: body.samplingMethodology,
       documentList: body.documentList,
 
@@ -1841,9 +1845,10 @@ export function userRoutes(app: Hono<HonoEnv>) {
         doc.text(`Nama Aktivitas: ${control?.name || 'N/A'}`, 15, 58);
         doc.text(`Periode Pengujian: ${record.period}`, 15, 64);
         doc.text(`Tanggal Asesmen: ${record.assessmentDate.toLocaleDateString()}`, 15, 70);
+        doc.text(`Konfirmasi BPM: ${record.isBpmConfirmed ? 'Ya (Sesuai)' : 'Tidak (Perlu Update)'}`, 15, 76);
         
         // Personnel Table
-        y = 78;
+        let y = 84;
         doc.setFont('helvetica', 'bold');
         doc.text('Kontak Informasi Pelaksana Pengendalian:', 15, y);
         y += 5;
@@ -1872,10 +1877,19 @@ export function userRoutes(app: Hono<HonoEnv>) {
         doc.text('Atribut Pengujian:', 15, y);
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(8);
-        doc.text('A: Tujuan Kontrol Tercapai? | B: Konsisten dengan Kebijakan? | C: Personel Berwenang? | D: Bukti Mencukupi?', 15, y + 5);
+        
+        const labels = control?.attributeQuestions || {
+          A: "Tujuan Kontrol Tercapai?",
+          B: "Konsisten dengan Kebijakan?",
+          C: "Personel Berwenang?",
+          D: "Bukti Mencukupi?"
+        };
+        
+        doc.text(`A: ${labels.A} | B: ${labels.B}`, 15, y + 5);
+        doc.text(`C: ${labels.C} | D: ${labels.D}`, 15, y + 10);
 
         // Section III: Testing Table
-        y += 15;
+        y += 20;
         doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
         doc.text('III. HASIL PENGUJIAN SAMPEL', 10, y);

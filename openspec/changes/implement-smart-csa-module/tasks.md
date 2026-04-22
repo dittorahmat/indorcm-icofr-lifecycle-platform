@@ -15,14 +15,15 @@
 ## 3. Frontend: Components & Logic
 
 - [x] 3.1 Create `CSAListTable` component to show historical CSA records in `CSATabContent.tsx`.
-- [x] 3.2 Create `Lampiran7Form` component with `react-hook-form` and `useFieldArray`.
-- [x] 3.3 Implement Smart UI logic to toggle between Manual (Attributes A-D) and ITAC columns.
-- [x] 3.4 Implement "Zero Tolerance" validation logic (A/B/C/D failure -> Ineffective suggestion).
-- [x] 3.5 Integrate `sonner` toasts for success/error notifications.
+- [/] 3.2 Create `Lampiran7Form` component with `react-hook-form` and `useFieldArray` (Needs update for dynamic questions).
+- [ ] 3.6 Implement **BPM Gate Confirmation** modal/step before CSA form access.
+- [ ] 3.7 Implement **Frequency Validation Engine** based on Table 22 (Min samples check).
+- [ ] 3.8 Implement **Hard-Lock UI Logic**: Disable "Effective" conclusion if any sample fails.
+- [ ] 3.9 Implement **Dynamic Attr Labels**: Pull labels from `control.attributeQuestions`.
 
 ## 4. I18n & Localization
 
-- [x] 4.1 Update `src/i18n/locales/en/bpm.json` and `id/bpm.json` with CSA-specific keys (headers, labels, messages).
+- [/] 4.1 Update `src/i18n/locales/en/bpm.json` and `id/bpm.json` with CSA-specific keys (headers, labels, messages) - (Updated for Smart Logic).
 - [x] 4.2 Update `common.json` for general action buttons (Add Sample, Print PDF).
 
 ## 5. Verification & Testing
