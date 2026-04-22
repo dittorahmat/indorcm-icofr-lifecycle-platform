@@ -503,10 +503,11 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
   };
 
   const getEnrichedControlData = useCallback((ids: string[]) => {
-    const list = ids.map(id => controlsData?.items.find(c => c.id === id)).filter(Boolean) as Control[];
+    const items = controlsData?.items || [];
+    const list = ids.map(id => items.find(c => c.id === id)).filter(Boolean) as Control[];
     const hasLinkage = list.some(c => c.relatedControlIds && c.relatedControlIds.length > 0);
     const relatedElcIds = Array.from(new Set(list.flatMap(c => c.relatedControlIds || [])));
-    const relatedElcNames = relatedElcIds.map(eid => controlsData?.items.find(c => c.id === eid)?.name).filter(Boolean);
+    const relatedElcNames = relatedElcIds.map(eid => items.find(c => c.id === eid)?.name).filter(Boolean);
     return { hasLinkage, relatedElcNames, list };
   }, [controlsData]);
 
@@ -534,22 +535,32 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
       const childId = `risk_${nodeId}`;
       const childExists = nds.some(n => n.id === childId);
 
-      let nextNodes = nds.map(node => node.id === nodeId ? { ...node, data: { ...node.data, risks: newRisks } } : node);
+      const riskIds = newRisks.map(r => r.rcmId);
+      
+      // Update the parent node data AND the child node in one pass
+      const updatedNodes = nds.map(node => {
+        if (node.id === nodeId) {
+          return { ...node, data: { ...node.data, risks: newRisks } };
+        }
+        if (node.id === childId) {
+          return { ...node, data: { ...node.data, riskIds } };
+        }
+        return node;
+      });
 
       if (!childExists) {
-        nextNodes.push({
+        updatedNodes.push({
           id: childId,
           type: 'docked-risk',
           position: { x: 45, y: -12 }, // Top-left
           parentId: nodeId,
           extent: 'parent',
           draggable: false,
-          data: { riskIds: [rcmId], label: 'Risks' }
+          data: { riskIds, label: 'Risks' }
         });
-      } else {
-        nextNodes = nextNodes.map(n => n.id === childId ? { ...n, data: { ...n.data, riskIds: newRisks.map(r => r.rcmId) } } : n);
       }
-      return nextNodes;
+      
+      return updatedNodes;
     });
     toast.success("Risk linked to activity");
   };
@@ -561,56 +572,42 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
       
       const newRisks = (parentNode.data.risks || []).filter((r: any) => r.rcmId !== rcmId);
       const childId = `risk_${nodeId}`;
-      let nextNodes = nds.map(node => node.id === nodeId ? { ...node, data: { ...node.data, risks: newRisks } } : node);
-      
+      const riskIds = newRisks.map(r => r.rcmId);
+
       if (newRisks.length === 0) {
-        nextNodes = nextNodes.filter(n => n.id !== childId);
+        return nds
+          .filter(n => n.id !== childId)
+          .map(node => node.id === nodeId ? { ...node, data: { ...node.data, risks: newRisks } } : node);
       } else {
-        nextNodes = nextNodes.map(n => n.id === childId ? { ...n, data: { ...n.data, riskIds: newRisks.map(r => r.rcmId) } } : n);
+        return nds.map(node => {
+          if (node.id === nodeId) return { ...node, data: { ...node.data, risks: newRisks } };
+          if (node.id === childId) return { ...node, data: { ...node.data, riskIds } };
+          return node;
+        });
       }
-      return nextNodes;
     });
     toast.info("Risk unlinked");
   };
 
   const linkControlToRisk = (nodeId: string, rcmId: string, controlId: string) => {
-    setNodes(nds => nds.map(node => {
-      if (node.id === nodeId) {
-        const risks = node.data.risks || [];
-        const newRisks = risks.map((r: any) => {
-          if (r.rcmId === rcmId) {
-            const controlIds = r.controlIds || [];
-            if (controlIds.includes(controlId)) return r;
-            return { ...r, controlIds: [...controlIds, controlId] };
-          }
-          return r;
-        });
-
-        const allControlIds = newRisks.flatMap(r => r.controlIds);
-        const enriched = getEnrichedControlData(allControlIds);
-        
-        return { 
-          ...node, 
-          data: { 
-            ...node.data, 
-            risks: newRisks, 
-            controlIds: allControlIds,
-            hasLinkage: enriched.hasLinkage,
-            relatedElcNames: enriched.relatedElcNames
-          } 
-        };
-      }
-      return node;
-    }));
-
-    // Ensure visual badge exists
     setNodes(nds => {
       const parentNode = nds.find(n => n.id === nodeId);
       if (!parentNode) return nds;
-      const allControlIds = (parentNode.data.risks || []).flatMap((r: any) => r.controlIds);
-      if (allControlIds.length === 0) return nds;
 
+      // 1. Calculate new data for parent
+      const risks = parentNode.data.risks || [];
+      const newRisks = risks.map((r: any) => {
+        if (r.rcmId === rcmId) {
+          const controlIds = r.controlIds || [];
+          if (controlIds.includes(controlId)) return r;
+          return { ...r, controlIds: [...controlIds, controlId] };
+        }
+        return r;
+      });
+
+      const allControlIds = newRisks.flatMap(r => r.controlIds);
       const enriched = getEnrichedControlData(allControlIds);
+      
       const childId = `ctrl_${nodeId}`;
       const childExists = nds.some(n => n.id === childId);
       
@@ -621,8 +618,29 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
         relatedElcNames: enriched.relatedElcNames
       };
 
-      if (!childExists) {
-        return [...nds, {
+      // 2. Update existing nodes (parent and badge if exists)
+      const updatedNodes = nds.map(node => {
+        if (node.id === nodeId) {
+          return { 
+            ...node, 
+            data: { 
+              ...node.data, 
+              risks: newRisks, 
+              controlIds: allControlIds,
+              hasLinkage: enriched.hasLinkage,
+              relatedElcNames: enriched.relatedElcNames
+            } 
+          };
+        }
+        if (node.id === childId) {
+          return { ...node, data: badgeData };
+        }
+        return node;
+      });
+
+      // 3. Add badge if it doesn't exist and we have controls
+      if (!childExists && allControlIds.length > 0) {
+        updatedNodes.push({
           id: childId,
           type: 'docked-control',
           position: { x: 130, y: -12 }, // Top-right
@@ -630,10 +648,10 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
           extent: 'parent',
           draggable: false,
           data: badgeData
-        }];
-      } else {
-        return nds.map(n => n.id === childId ? { ...n, data: badgeData } : n);
+        });
       }
+
+      return updatedNodes;
     });
 
     toast.success("Control linked to risk");
@@ -650,47 +668,57 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
   };
 
   const unlinkControlFromActivity = (nodeId: string, controlId: string) => {
-    setNodes(nds => nds.map(node => {
-      if (node.id === nodeId) {
-        const newRisks = (node.data.risks || []).map((r: any) => ({
-          ...r,
-          controlIds: (r.controlIds || []).filter((cid: string) => cid !== controlId)
-        }));
-        const allControlIds = newRisks.flatMap(r => r.controlIds);
-        const enriched = getEnrichedControlData(allControlIds);
-
-        return { 
-          ...node, 
-          data: { 
-            ...node.data, 
-            risks: newRisks, 
-            controlIds: allControlIds,
-            hasLinkage: enriched.hasLinkage,
-            relatedElcNames: enriched.relatedElcNames
-          } 
-        };
-      }
-      return node;
-    }));
-
-    // Update visual badge
     setNodes(nds => {
       const parentNode = nds.find(n => n.id === nodeId);
-      const allControlIds = (parentNode?.data.risks || []).flatMap((r: any) => r.controlIds) || [];
+      if (!parentNode) return nds;
+
+      const newRisks = (parentNode.data.risks || []).map((r: any) => ({
+        ...r,
+        controlIds: (r.controlIds || []).filter((cid: string) => cid !== controlId)
+      }));
+      const allControlIds = newRisks.flatMap(r => r.controlIds);
+      const enriched = getEnrichedControlData(allControlIds);
       const childId = `ctrl_${nodeId}`;
+
+      const badgeData = { 
+        controlIds: allControlIds, 
+        label: 'Controls',
+        hasLinkage: enriched.hasLinkage,
+        relatedElcNames: enriched.relatedElcNames
+      };
+
       if (allControlIds.length === 0) {
-        return nds.filter(n => n.id !== childId);
+        return nds
+          .filter(n => n.id !== childId)
+          .map(node => node.id === nodeId ? { 
+            ...node, 
+            data: { 
+              ...node.data, 
+              risks: newRisks, 
+              controlIds: allControlIds,
+              hasLinkage: enriched.hasLinkage,
+              relatedElcNames: enriched.relatedElcNames
+            } 
+          } : node);
       } else {
-        const enriched = getEnrichedControlData(allControlIds);
-        return nds.map(n => n.id === childId ? { 
-          ...n, 
-          data: { 
-            ...n.data, 
-            controlIds: allControlIds,
-            hasLinkage: enriched.hasLinkage,
-            relatedElcNames: enriched.relatedElcNames
-          } 
-        } : n);
+        return nds.map(node => {
+          if (node.id === nodeId) {
+            return { 
+              ...node, 
+              data: { 
+                ...node.data, 
+                risks: newRisks, 
+                controlIds: allControlIds,
+                hasLinkage: enriched.hasLinkage,
+                relatedElcNames: enriched.relatedElcNames
+              } 
+            };
+          }
+          if (node.id === childId) {
+            return { ...node, data: badgeData };
+          }
+          return node;
+        });
       }
     });
     toast.info("Control unlinked");
