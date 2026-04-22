@@ -19,9 +19,10 @@ import { Input } from '@/components/ui/input';
 
 interface RiskLibraryLookupProps {
   onSelect: (riskDescription: string, assertions: ControlAssertion[]) => void;
+  trigger?: React.ReactNode;
 }
 
-export function RiskLibraryLookup({ onSelect }: RiskLibraryLookupProps) {
+export function RiskLibraryLookup({ onSelect, trigger }: RiskLibraryLookupProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const [selectedCluster, setSelectedCluster] = React.useState<BUMNCluster | "All">("All");
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -51,10 +52,12 @@ export function RiskLibraryLookup({ onSelect }: RiskLibraryLookupProps) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
-          <BookOpen className="h-4 w-4" />
-          Lookup Risk Library (Lampiran 2)
-        </Button>
+        {trigger || (
+          <Button variant="outline" size="sm" className="gap-2">
+            <BookOpen className="h-4 w-4" />
+            Lookup Risk Library (Lampiran 2)
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="max-w-3xl h-[80vh] flex flex-col">
         <DialogHeader>

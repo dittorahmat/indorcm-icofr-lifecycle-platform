@@ -1,0 +1,1 @@
+ALTER TABLE "rcms" ADD COLUMN "risk_library_id" text;

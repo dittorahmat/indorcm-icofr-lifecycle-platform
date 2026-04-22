@@ -1,0 +1,39 @@
+{
+  "title": "Risk Library",
+  "description": "Standardized ICOFR Risks according to BUMN Clusters (Appendix 2).",
+  "add_button": "Add Standardized Risk",
+  "edit_button": "Edit Standardized Risk",
+  "search_placeholder": "Search risk description...",
+  "filter_all": "All Clusters",
+  "entries_count": "ENTRIES",
+  "table": {
+    "cluster": "Cluster",
+    "description": "Risk Description",
+    "assertions": "Suggested Assertions"
+  },
+  "form": {
+    "cluster_label": "Industry Cluster",
+    "cluster_placeholder": "Select cluster",
+    "description_label": "Risk Description",
+    "assertions_label": "Suggested Assertions",
+    "assertions_desc": "Assertions typically impacted by this risk.",
+    "save_button": "Save to Library",
+    "update_button": "Update Entry"
+  },
+  "lookup": {
+    "trigger": "Lookup Library (Appx 2)",
+    "dialog_title": "Risk Library Lookup",
+    "dialog_desc": "Search and select a standardized risk from the BUMN industry clusters.",
+    "select_btn": "Select Risk",
+    "applied_toast": "Standardized risk description and assertions applied"
+  },
+  "messages": {
+    "loading": "Loading library...",
+    "empty": "No standardized risks found for this criteria.",
+    "confirm_delete": "Delete this standardized risk?",
+    "success_add": "Risk added to library",
+    "success_update": "Risk updated",
+    "success_delete": "Risk deleted from library",
+    "error_save": "Failed to save risk"
+  }
+}

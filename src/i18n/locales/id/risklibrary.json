@@ -1,0 +1,39 @@
+{
+  "title": "Perpustakaan Risiko",
+  "description": "Risiko ICOFR Terstandarisasi sesuai dengan Klaster BUMN (Lampiran 2).",
+  "add_button": "Tambah Risiko Standar",
+  "edit_button": "Ubah Risiko Standar",
+  "search_placeholder": "Cari deskripsi risiko...",
+  "filter_all": "Semua Klaster",
+  "entries_count": "ENTRI",
+  "table": {
+    "cluster": "Klaster",
+    "description": "Deskripsi Risiko",
+    "assertions": "Asersi yang Disarankan"
+  },
+  "form": {
+    "cluster_label": "Klaster Industri",
+    "cluster_placeholder": "Pilih klaster",
+    "description_label": "Deskripsi Risiko",
+    "assertions_label": "Asersi yang Disarankan",
+    "assertions_desc": "Asersi yang biasanya berdampak pada risiko ini.",
+    "save_button": "Simpan ke Library",
+    "update_button": "Perbarui Entri"
+  },
+  "lookup": {
+    "trigger": "Lihat Library (Lamp. 2)",
+    "dialog_title": "Pencarian Library Risiko",
+    "dialog_desc": "Cari dan pilih risiko terstandarisasi dari klaster industri BUMN.",
+    "select_btn": "Pilih Risiko",
+    "applied_toast": "Deskripsi risiko standar dan asersi telah diterapkan"
+  },
+  "messages": {
+    "loading": "Memuat library...",
+    "empty": "Tidak ada risiko standar yang ditemukan untuk kriteria ini.",
+    "confirm_delete": "Hapus risiko standar ini?",
+    "success_add": "Risiko ditambahkan ke library",
+    "success_update": "Risiko diperbarui",
+    "success_delete": "Risiko dihapus dari library",
+    "error_save": "Gagal menyimpan risiko"
+  }
+}

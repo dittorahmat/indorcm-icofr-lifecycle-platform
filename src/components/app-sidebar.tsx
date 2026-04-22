@@ -3,6 +3,7 @@ import {
   LayoutDashboard, 
   Target, 
   ShieldCheck, 
+  BookOpen,
   CheckSquare, 
   Microscope, 
   AlertTriangle, 
@@ -170,6 +171,11 @@ export function AppSidebar(): JSX.Element {
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/rcm")}>
                 <Link to="/rcm" className="font-bold"><ShieldCheck /> <span>RCM Manager</span></Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={isActive("/rcm/risk-library")}>
+                <Link to="/rcm/risk-library" className="font-bold"><BookOpen /> <span>{t('items.riskLibrary')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>

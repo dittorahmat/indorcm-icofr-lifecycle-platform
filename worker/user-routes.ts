@@ -9,7 +9,7 @@ import {
   applications, member, account, session, bpmDiagrams, bpmNodeRcms, 
   rcmControls, organization, testRecords, aggregateDeficiencies,
   documents, documentDepartments, documentGls, documentFslis,
-  systemLicenses
+  systemLicenses, riskLibrary
 } from './db/schema';
 import { eq, and, desc, sql, ilike } from 'drizzle-orm';
 import type { 
@@ -627,6 +627,87 @@ export function userRoutes(app: Hono<HonoEnv>) {
     return ok(c, { items });
   });
 
+  // --- Risk Library Routes ---
+
+  app.get('/api/risklibrary', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+    const cluster = c.req.query('cluster');
+    
+    let query = db.select().from(riskLibrary).where(eq(riskLibrary.organizationId, orgId));
+    
+    if (cluster && cluster !== 'All') {
+      query = db.select().from(riskLibrary).where(
+        and(
+          eq(riskLibrary.organizationId, orgId),
+          eq(riskLibrary.cluster, cluster)
+        )
+      );
+    }
+    
+    const items = await query;
+    return ok(c, { items });
+  });
+
+  app.post('/api/risklibrary', async (c) => {
+    const role = c.get('userRole');
+    if (role !== 'Line 2' && role !== 'Admin') return bad(c, 'Access Denied');
+    
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+    const body = await c.req.json<Partial<RiskLibrary>>();
+    
+    if (!body.riskDescription || !body.cluster) {
+      return bad(c, 'Missing required fields: riskDescription, cluster');
+    }
+
+    const id = crypto.randomUUID();
+    const newItem = {
+      id,
+      organizationId: orgId,
+      cluster: body.cluster,
+      riskDescription: body.riskDescription,
+      suggestedAssertions: body.suggestedAssertions || [],
+      createdAt: new Date(),
+    };
+
+    await db.insert(riskLibrary).values(newItem);
+    return ok(c, newItem);
+  });
+
+  app.put('/api/risklibrary/:id', async (c) => {
+    const role = c.get('userRole');
+    if (role !== 'Line 2' && role !== 'Admin') return bad(c, 'Access Denied');
+    
+    const id = c.req.param('id');
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+    const body = await c.req.json<Partial<RiskLibrary>>();
+    
+    await db.update(riskLibrary)
+      .set({
+        cluster: body.cluster,
+        riskDescription: body.riskDescription,
+        suggestedAssertions: body.suggestedAssertions,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(riskLibrary.id, id), eq(riskLibrary.organizationId, orgId)));
+      
+    return ok(c, { success: true });
+  });
+
+  app.delete('/api/risklibrary/:id', async (c) => {
+    const role = c.get('userRole');
+    if (role !== 'Line 2' && role !== 'Admin') return bad(c, 'Access Denied');
+    
+    const id = c.req.param('id');
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+    
+    await db.delete(riskLibrary).where(and(eq(riskLibrary.id, id), eq(riskLibrary.organizationId, orgId)));
+    return ok(c, { success: true });
+  });
+
   app.post('/api/rcm', async (c) => {
     const role = c.get('userRole');
     if (role !== 'Line 2' && role !== 'Admin') return bad(c, 'Access Denied');
@@ -637,16 +718,17 @@ export function userRoutes(app: Hono<HonoEnv>) {
     const body = await c.req.json<Partial<RCM>>();
     
     const id = crypto.randomUUID();
-    const newRcm = {
+    const newItem = {
       id,
       organizationId: orgId,
+      riskLibraryId: body.riskLibraryId,
       process: body.process || "New Process",
       subProcess: body.subProcess || "New Sub-Process",
       riskDescription: body.riskDescription || "New Risk",
       status: "Draft",
     };
 
-    await db.insert(rcms).values(newRcm);
+    await db.insert(rcms).values(newItem);
 
     // System Audit Log
     await db.insert(auditLogs).values({
@@ -656,11 +738,11 @@ export function userRoutes(app: Hono<HonoEnv>) {
       action: 'CREATE',
       entityType: 'RCM',
       entityId: id,
-      descriptionAfter: `Created RCM: ${newRcm.process}`,
-      dataAfter: newRcm,
+      descriptionAfter: `Created RCM: ${newItem.process}`,
+      dataAfter: newItem,
     });
 
-    return ok(c, newRcm);
+    return ok(c, newItem);
   });
 
   app.put('/api/rcm/:id', async (c) => {

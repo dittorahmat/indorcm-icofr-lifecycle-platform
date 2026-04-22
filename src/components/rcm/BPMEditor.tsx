@@ -34,6 +34,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
+import { RiskLibraryLookup } from './RiskLibraryLookup';
 
 import {
   Tooltip,
@@ -391,11 +392,16 @@ interface BPMEditorProps {
 }
 
 export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
+  const { t } = useTranslation(['risklibrary', 'common', 'bpm']);
   const queryClient = useQueryClient();
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [impactData, setImpactData] = useState<{ id: string, type: 'Risk' | 'Control', count: number, usage: any[] } | null>(null);
+
+  // Search states for selection lists
+  const [riskSearch, setRiskSearch] = useState("");
+  const [controlSearch, setControlSearch] = useState("");
 
   const onNodesDelete = useCallback((deleted: any[]) => {
     if (deleted.length > 0) {
@@ -846,16 +852,35 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
                             <h5 className="text-[10px] font-black uppercase text-red-600 flex items-center gap-1.5">Risks ({linkedRisksWithData.length})</h5>
-                            <Select onValueChange={(val) => val === 'new' ? (createRiskMutation.mutate(prompt("Enter new risk:") || "")) : linkRiskToActivity(selectedNode.id, val)}>
-                              <SelectTrigger className="h-7 w-24 text-[9px] bg-red-50 border-red-100 text-red-700">Add</SelectTrigger>
-                              <SelectContent>
-                                {rcmData?.items.map(r => <SelectItem key={r.id} value={r.id} className="text-[10px]">{r.riskDescription}</SelectItem>)}
-                                <SelectItem value="new" className="text-red-600 font-bold border-t">+ Create New</SelectItem>
-                              </SelectContent>
-                            </Select>
+                            <RiskLibraryLookup 
+                              onSelect={(risk, assertions) => {
+                                // Instead of prompt, we use the standardized library
+                                createRiskMutation.mutate(risk);
+                              }}
+                              trigger={
+                                <Button variant="outline" size="sm" className="h-7 text-[9px] bg-red-50 border-red-100 text-red-700 gap-1">
+                                  <PlusCircle className="h-3 w-3" /> Add Standardized
+                                </Button>
+                              }
+                            />
                           </div>
+
+                          {linkedRisksWithData.length > 5 && (
+                            <div className="relative">
+                              <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400" />
+                              <Input 
+                                placeholder="Search linked risks..." 
+                                className="h-7 text-[10px] pl-7" 
+                                value={riskSearch}
+                                onChange={(e) => setRiskSearch(e.target.value)}
+                              />
+                            </div>
+                          )}
+
                           <div className="space-y-1.5">
-                            {linkedRisksWithData.map(riskEntry => (
+                            {linkedRisksWithData
+                              .filter(r => r.rcm.riskDescription.toLowerCase().includes(riskSearch.toLowerCase()))
+                              .map(riskEntry => (
                               <div key={riskEntry.rcmId} className="p-2 rounded border border-red-100 bg-red-50/30 group/item relative space-y-2">
                                 <div className="flex items-start justify-between gap-2">
                                   <p className="text-[10px] font-medium text-red-900 leading-tight pr-8">{riskEntry.rcm.riskDescription}</p>
@@ -869,11 +894,24 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
                                 <div className="pl-2 border-l-2 border-red-200 space-y-1.5">
                                   <div className="flex items-center justify-between">
                                     <span className="text-[8px] font-bold text-slate-400 uppercase">Controls</span>
-                                    <Select onValueChange={(val) => val === 'new' ? (createControlMutation.mutate(prompt("Enter new control:") || "")) : linkControlToRisk(selectedNode.id, riskEntry.rcmId, val)}>
-                                      <SelectTrigger className="h-5 w-16 text-[8px] bg-white border-slate-200">Link</SelectTrigger>
+                                    <Select onValueChange={(val) => linkControlToRisk(selectedNode.id, riskEntry.rcmId, val)}>
+                                      <SelectTrigger className="h-5 w-24 text-[8px] bg-white border-slate-200">Link Master</SelectTrigger>
                                       <SelectContent>
-                                        {controlsData?.items.map(c => <SelectItem key={c.id} value={c.id} className="text-[10px]">[{c.code}] {c.name}</SelectItem>)}
-                                        <SelectItem value="new" className="text-green-600 font-bold border-t">+ Create New</SelectItem>
+                                        <div className="p-2 border-b">
+                                           <Input 
+                                             placeholder="Search master data..." 
+                                             className="h-6 text-[8px]" 
+                                             value={controlSearch}
+                                             onChange={(e) => setControlSearch(e.target.value)}
+                                             onKeyDown={(e) => e.stopPropagation()}
+                                           />
+                                        </div>
+                                        <div className="max-h-[200px] overflow-y-auto">
+                                          {controlsData?.items
+                                            .filter(c => c.name.toLowerCase().includes(controlSearch.toLowerCase()) || c.code?.toLowerCase().includes(controlSearch.toLowerCase()))
+                                            .map(c => <SelectItem key={c.id} value={c.id} className="text-[10px]">[{c.code}] {c.name}</SelectItem>)}
+                                          {controlsData?.items.length === 0 && <p className="text-[10px] p-2 text-center text-slate-400 italic">No controls found.</p>}
+                                        </div>
                                       </SelectContent>
                                     </Select>
                                   </div>
