@@ -11,6 +11,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { ShieldCheck, Calendar } from 'lucide-react';
 import type { ActionPlan } from '@shared/types';
 
+import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
+import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
+
 const remediationSchema = z.object({
   relatedFunction: z.string().min(1, 'Related Function is required'),
   picName: z.string().min(1, 'Person In Charge is required'),
@@ -44,6 +47,10 @@ export function RemediationForm({ isOpen, setIsOpen, actionPlan, onSubmit, isLoa
       targetDate: actionPlan?.targetDate ? new Date(actionPlan.targetDate).toISOString().split('T')[0] : "",
     },
   });
+
+  // Track unsaved changes
+  const isDirty = form.formState.isDirty;
+  const blocker = useUnsavedChanges(isOpen && isDirty);
 
   React.useEffect(() => {
     if (actionPlan) {
@@ -176,6 +183,7 @@ export function RemediationForm({ isOpen, setIsOpen, actionPlan, onSubmit, isLoa
             </DialogFooter>
           </form>
         </Form>
+        <UnsavedChangesDialog blocker={blocker} />
       </DialogContent>
     </Dialog>
   );

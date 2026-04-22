@@ -33,5 +33,11 @@
     "linkedTo": "Terhubung ke",
     "elcTab": "RCM ELC (Strategis)",
     "tlcTab": "RCM TLC (Operasional)"
+  },
+  "unsavedChanges": {
+    "title": "Perubahan Belum Disimpan",
+    "description": "Anda memiliki perubahan yang belum disimpan. Perubahan akan hilang jika Anda meninggalkan halaman ini. Apakah Anda yakin?",
+    "stay": "Tetap di Halaman",
+    "discard": "Buang Perubahan"
   }
 }

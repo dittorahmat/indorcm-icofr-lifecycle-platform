@@ -45,11 +45,17 @@ import {
   getGroupMultiplier
 } from '@/lib/compliance-utils';
 import { useTranslation } from 'react-i18next';
+import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
+import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 
 export function ScopingPage() {
   const { t } = useTranslation('scoping');
   const queryClient = useQueryClient();
-  const [selectedSimId, setSelectedSimId] = React.useState<string | null>(null);
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedSimId = searchParams.get('id');
+  
   const [isCreating, setIsCreating] = React.useState(false);
   const [benchmarkModalSnap, setBenchmarkModalSnap] = React.useState<GLSnapshot | null>(null);
 
@@ -69,7 +75,7 @@ export function ScopingPage() {
     mutationFn: (data: Partial<MaterialitySimulation>) => api<MaterialitySimulation>('/api/simulations', { method: 'POST', body: JSON.stringify(data) }),
     onSuccess: (newSim) => {
       queryClient.invalidateQueries({ queryKey: ['simulations'] });
-      setSelectedSimId(newSim.id);
+      setSearchParams({ id: newSim.id });
       setIsCreating(false);
       toast.success("Simulation created successfully");
     }
@@ -163,7 +169,7 @@ export function ScopingPage() {
 
   if (selectedSimId) {
     const sim = simulations?.items.find(s => s.id === selectedSimId);
-    if (sim) return <ScopingEditor simulation={sim} onBack={() => setSelectedSimId(null)} />;
+    if (sim) return <ScopingEditor simulation={sim} onBack={() => navigate('/scoping')} />;
   }
 
   return (
@@ -237,7 +243,7 @@ export function ScopingPage() {
           <TabsContent value="simulations">
             <SimulationListTable 
               data={simulations?.items || []} 
-              onSelect={setSelectedSimId} 
+              onSelect={(id) => setSearchParams({ id })} 
               onDelete={deleteSimMutation.mutate} 
               isLoading={simLoading}
             />
@@ -359,6 +365,28 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
   const queryClient = useQueryClient();
   const [simState, setSimState] = React.useState(simulation);
   const [glData, setGlData] = React.useState<GLRow[]>([]);
+
+  // Track if changes have been made but not saved
+  const isDirty = React.useMemo(() => {
+    // Compare essential fields to determine if state is dirty
+    // We stringify for a deep comparison of assessmentData and parameters
+    return JSON.stringify({
+      assessmentData: simState.assessmentData,
+      locationCount: simState.locationCount,
+      omPercentage: simState.omPercentage,
+      haircutPercentage: simState.haircutPercentage,
+      basis: simState.basis
+    }) !== JSON.stringify({
+      assessmentData: simulation.assessmentData,
+      locationCount: simulation.locationCount,
+      omPercentage: simulation.omPercentage,
+      haircutPercentage: simulation.haircutPercentage,
+      basis: simulation.basis
+    });
+  }, [simState, simulation]);
+
+  // Hook up the unsaved changes protection
+  const blocker = useUnsavedChanges(isDirty);
 
   // Fix 1: Sinkronkan state jika props berubah (setelah mutation success)
   React.useEffect(() => {
@@ -639,6 +667,7 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
           </div>
         </div>
       </div>
+      <UnsavedChangesDialog blocker={blocker} />
     </AppLayout>
   );
 }

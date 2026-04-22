@@ -1962,6 +1962,32 @@ export function userRoutes(app: Hono<HonoEnv>) {
     return ok(c, { items });
   });
 
+  app.post('/api/tests', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+    const userId = c.get('userId');
+    const body = await c.req.json();
+
+    const newRecord = {
+        id: crypto.randomUUID(),
+        organizationId: orgId,
+        controlId: body.controlId,
+        testType: body.testType,
+        method: body.method,
+        period: body.period,
+        testDate: new Date(),
+        testedBy: userId,
+        result: body.result,
+        comments: body.comments,
+        sampleSize: body.sampleSize,
+        homogeneityJustification: body.homogeneityJustification,
+        evaluationAttributes: body.evaluationAttributes,
+    };
+
+    await db.insert(testRecords).values(newRecord);
+    return ok(c, newRecord);
+  });
+
   // --- Legacy/Support Routes ---
 
   app.get('/api/changelogs', async (c) => {

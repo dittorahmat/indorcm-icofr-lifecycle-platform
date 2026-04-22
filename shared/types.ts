@@ -384,6 +384,7 @@ export interface TestRecord {
   deviations?: number;
   evidenceUrl?: string;
   comments: string;
+  homogeneityJustification?: string;
   // SK-5 Table 21 / Lampiran 8 Attributes
   evaluationAttributes?: {
     objectiveAchieved: boolean; // Pencapaian Objektif

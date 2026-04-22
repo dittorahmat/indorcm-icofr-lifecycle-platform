@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -45,9 +46,9 @@ const testSchema = z.object({
 
 type TestFormValues = z.infer<typeof testSchema>;
 
-const EvaluationAttributesSection = ({ form }: { form: any }) => (
+const EvaluationAttributesSection = ({ form, t }: { form: any, t: any }) => (
   <div className="p-4 bg-muted/20 border rounded-lg space-y-3">
-    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Evaluation Attributes (Mandatory Table 21)</p>
+    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{t('attributes.title')}</p>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
       <FormField
         control={form.control}
@@ -55,7 +56,7 @@ const EvaluationAttributesSection = ({ form }: { form: any }) => (
         render={({ field }) => (
           <FormItem className="flex flex-row items-start space-x-3 space-y-0">
             <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-            <FormLabel className="text-[11px] font-normal leading-none cursor-pointer">Control Objective Achievement</FormLabel>
+            <FormLabel className="text-[11px] font-normal leading-none cursor-pointer">{t('attributes.objectiveAchieved')}</FormLabel>
           </FormItem>
         )}
       />
@@ -65,7 +66,7 @@ const EvaluationAttributesSection = ({ form }: { form: any }) => (
         render={({ field }) => (
           <FormItem className="flex flex-row items-start space-x-3 space-y-0">
             <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-            <FormLabel className="text-[11px] font-normal leading-none cursor-pointer">Timeliness of Execution</FormLabel>
+            <FormLabel className="text-[11px] font-normal leading-none cursor-pointer">{t('attributes.timingAccuracy')}</FormLabel>
           </FormItem>
         )}
       />
@@ -75,7 +76,7 @@ const EvaluationAttributesSection = ({ form }: { form: any }) => (
         render={({ field }) => (
           <FormItem className="flex flex-row items-start space-x-3 space-y-0">
             <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-            <FormLabel className="text-[11px] font-normal leading-none cursor-pointer">Authority & Competence of Performer</FormLabel>
+            <FormLabel className="text-[11px] font-normal leading-none cursor-pointer">{t('attributes.authorityCompetence')}</FormLabel>
           </FormItem>
         )}
       />
@@ -85,7 +86,7 @@ const EvaluationAttributesSection = ({ form }: { form: any }) => (
         render={({ field }) => (
           <FormItem className="flex flex-row items-start space-x-3 space-y-0">
             <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-            <FormLabel className="text-[11px] font-normal leading-none cursor-pointer">Information Reliability (IPE/EUC)</FormLabel>
+            <FormLabel className="text-[11px] font-normal leading-none cursor-pointer">{t('attributes.infoReliability')}</FormLabel>
           </FormItem>
         )}
       />
@@ -95,7 +96,7 @@ const EvaluationAttributesSection = ({ form }: { form: any }) => (
         render={({ field }) => (
           <FormItem className="flex flex-row items-start space-x-3 space-y-0">
             <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-            <FormLabel className="text-[11px] font-normal leading-none cursor-pointer">Testing Period Coverage</FormLabel>
+            <FormLabel className="text-[11px] font-normal leading-none cursor-pointer">{t('attributes.periodCoverage')}</FormLabel>
           </FormItem>
         )}
       />
@@ -105,7 +106,7 @@ const EvaluationAttributesSection = ({ form }: { form: any }) => (
         render={({ field }) => (
           <FormItem className="flex flex-row items-start space-x-3 space-y-0">
             <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-            <FormLabel className="text-[11px] font-normal leading-none cursor-pointer">Sufficiency of Supporting Evidence</FormLabel>
+            <FormLabel className="text-[11px] font-normal leading-none cursor-pointer">{t('attributes.evidenceAvailability')}</FormLabel>
           </FormItem>
         )}
       />
@@ -114,6 +115,7 @@ const EvaluationAttributesSection = ({ form }: { form: any }) => (
 );
 
 function ControlTestCard({ control, openDeficiencyDate, history }: { control: Control, openDeficiencyDate?: number, history: TestRecord[] }) {
+  const { t } = useTranslation('testing');
   const queryClient = useQueryClient();
   const [isAuthenticating, setIsAuthenticating] = React.useState(false);
   const form = useForm<TestFormValues>({
@@ -138,7 +140,7 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
   const mutation = useMutation({
     mutationFn: (data: Omit<TestRecord, 'id' | 'testDate' | 'testedBy'>) => api('/api/tests', { method: 'POST', body: JSON.stringify(data) }),
     onSuccess: (data: TestRecord) => {
-      toast.success(`${data.testType} for ${control.name} submitted.`);
+      toast.success(t('validation.submitSuccess', { type: data.testType, name: control.name }));
       queryClient.invalidateQueries({ queryKey: ['tests'] });
       if (data.result === 'Ineffective') {
         queryClient.invalidateQueries({ queryKey: ['deficiencies'] });
@@ -146,13 +148,13 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
       form.reset();
     },
     onError: (error) => {
-      toast.error(`Submission failed: ${error.message}`);
+      toast.error(t('validation.submitError', { error: error.message }));
     },
   });
 
   const onSubmit = async (values: TestFormValues) => {
     if (values.testType === 'TOE' && !values.homogeneityJustification) {
-      form.setError('homogeneityJustification', { type: 'manual', message: 'Homogeneity justification is required for TOE (Chapter V 1.3.a)' });
+      form.setError('homogeneityJustification', { type: 'manual', message: t('validation.homogeneityRequired') });
       return;
     }
 
@@ -161,10 +163,10 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
     setIsAuthenticating(false);
 
     if (!verified) {
-      toast.error("Biometric authentication failed. Cannot submit test.");
+      toast.error(t('validation.authFailed'));
       return;
     }
-    toast.success("Biometric identity verified (FR9).");
+    toast.success(t('validation.authSuccess'));
 
     mutation.mutate({
       controlId: control.id,
@@ -191,7 +193,7 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
                     control.riskRating === 'High' ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'
                   )}
                 >
-                  {control.riskRating} RISK
+                  {control.riskRating === 'High' ? t('badges.highRisk') : t('badges.lowRisk')}
                 </Badge>
             </div>
           </div>
@@ -218,7 +220,7 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
                   "text-xs font-bold uppercase tracking-tight",
                   remediationStatus.isReady ? 'text-green-800' : 'text-amber-800'
                 )}>
-                  Remediation Testing Readiness (Table 23)
+                  {t('badges.remediationReadiness')}
                 </p>
                 <p className={cn("text-sm", remediationStatus.isReady ? 'text-green-700' : 'text-amber-700')}>
                   {remediationStatus.message}
@@ -229,8 +231,8 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
 
           <Tabs defaultValue="tod" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="tod">Test of Design (TOD)</TabsTrigger>
-              <TabsTrigger value="toe">Test of Effectiveness (TOE)</TabsTrigger>
+              <TabsTrigger value="tod">{t('tabs.tod')}</TabsTrigger>
+              <TabsTrigger value="toe">{t('tabs.toe')}</TabsTrigger>
             </TabsList>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -238,61 +240,61 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
                   <TabsContent value="tod" className="pt-6 space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-4">
-                        <h3 className="font-semibold text-sm">Design Checklist</h3>
+                        <h3 className="font-semibold text-sm">{t('tod.checklist')}</h3>
                         <div className="space-y-2">
-                          <div className="flex items-center space-x-2"><Checkbox id={`tod1-${control.id}`} /><Label htmlFor={`tod1-${control.id}`} className="text-xs">Is the control designed to prevent/detect the risk?</Label></div>
-                          <div className="flex items-center space-x-2"><Checkbox id={`tod2-${control.id}`} /><Label htmlFor={`tod2-${control.id}`} className="text-xs">Is there a clear segregation of duties?</Label></div>
+                          <div className="flex items-center space-x-2"><Checkbox id={`tod1-${control.id}`} /><Label htmlFor={`tod1-${control.id}`} className="text-xs">{t('tod.q1')}</Label></div>
+                          <div className="flex items-center space-x-2"><Checkbox id={`tod2-${control.id}`} /><Label htmlFor={`tod2-${control.id}`} className="text-xs">{t('tod.q2')}</Label></div>
                         </div>
 
                         {control.nature === "ITDM - IPE" && (
                           <div className="p-3 bg-orange-50 border border-orange-100 rounded-md space-y-2">
-                            <p className="text-[10px] font-bold text-orange-800 uppercase">Table 15 & 20: IPE Verifications ({control.ipeType})</p>
-                            <div className="flex items-center space-x-2"><Checkbox id={`ipe1-${control.id}`} /><Label htmlFor={`ipe1-${control.id}`} className="text-[10px]">Verify report parameters & filters match design</Label></div>
+                            <p className="text-[10px] font-bold text-orange-800 uppercase">{t('tod.ipeTitle')} ({control.ipeType})</p>
+                            <div className="flex items-center space-x-2"><Checkbox id={`ipe1-${control.id}`} /><Label htmlFor={`ipe1-${control.id}`} className="text-[10px]">{t('tod.ipeP1')}</Label></div>
                             {control.ipeType === "Query" && (
                               <>
-                                <div className="flex items-center space-x-2"><Checkbox id={`ipeq-${control.id}`} /><Label htmlFor={`ipeq-${control.id}`} className="text-[10px] text-red-700 font-semibold">Technical Reperformance of SQL Logic (Query Validation)</Label></div>
-                                <div className="flex items-center space-x-2"><Checkbox id={`ipet-${control.id}`} /><Label htmlFor={`ipet-${control.id}`} className="text-[10px]">Compare total rows/values with source data (Completeness)</Label></div>
+                                <div className="flex items-center space-x-2"><Checkbox id={`ipeq-${control.id}`} /><Label htmlFor={`ipeq-${control.id}`} className="text-[10px] text-red-700 font-semibold">{t('tod.ipeP2')}</Label></div>
+                                <div className="flex items-center space-x-2"><Checkbox id={`ipet-${control.id}`} /><Label htmlFor={`ipet-${control.id}`} className="text-[10px]">{t('tod.ipeP3')}</Label></div>
                               </>
                             )}
-                            <div className="flex items-center space-x-2"><Checkbox id={`ipe2-${control.id}`} /><Label htmlFor={`ipe2-${control.id}`} className="text-[10px]">Ensure source ITGCs are effective</Label></div>
+                            <div className="flex items-center space-x-2"><Checkbox id={`ipe2-${control.id}`} /><Label htmlFor={`ipe2-${control.id}`} className="text-[10px]">{t('tod.ipeP4')}</Label></div>
                           </div>
                         )}
 
                         {control.nature === "ITDM - EUC" && (
                           <div className="p-3 bg-purple-50 border border-purple-100 rounded-md space-y-2">
-                            <p className="text-[10px] font-bold text-purple-800 uppercase">Table 14: EUC Controls ({control.eucComplexity} Complexity)</p>
-                            <div className="flex items-center space-x-2"><Checkbox id={`euc1-${control.id}`} /><Label htmlFor={`euc1-${control.id}`} className="text-[10px]">Data Integrity (Formula cells locked)</Label></div>
-                            <div className="flex items-center space-x-2"><Checkbox id={`eucav-${control.id}`} /><Label htmlFor={`eucav-${control.id}`} className="text-[10px]">Availability (Periodic backup & restore test)</Label></div>
+                            <p className="text-[10px] font-bold text-purple-800 uppercase">{t('tod.eucTitle')} ({control.eucComplexity} Complexity)</p>
+                            <div className="flex items-center space-x-2"><Checkbox id={`euc1-${control.id}`} /><Label htmlFor={`euc1-${control.id}`} className="text-[10px]">{t('tod.eucP1')}</Label></div>
+                            <div className="flex items-center space-x-2"><Checkbox id={`eucav-${control.id}`} /><Label htmlFor={`eucav-${control.id}`} className="text-[10px]">{t('tod.eucP2')}</Label></div>
                             {(control.eucComplexity === "Medium" || control.eucComplexity === "High") && (
                               <>
-                                <div className="flex items-center space-x-2"><Checkbox id={`eucv-${control.id}`} /><Label htmlFor={`eucv-${control.id}`} className="text-[10px]">Version Control (Current template used)</Label></div>
-                                <div className="flex items-center space-x-2"><Checkbox id={`euca-${control.id}`} /><Label htmlFor={`euca-${control.id}`} className="text-[10px]">Access Control Validation (Password protected)</Label></div>
+                                <div className="flex items-center space-x-2"><Checkbox id={`eucv-${control.id}`} /><Label htmlFor={`eucv-${control.id}`} className="text-[10px]">{t('tod.eucP3')}</Label></div>
+                                <div className="flex items-center space-x-2"><Checkbox id={`euca-${control.id}`} /><Label htmlFor={`euca-${control.id}`} className="text-[10px]">{t('tod.eucP4')}</Label></div>
                               </>
                             )}
                             {control.eucComplexity === "High" && (
-                              <div className="flex items-center space-x-2"><Checkbox id={`eucch-${control.id}`} /><Label htmlFor={`eucch-${control.id}`} className="text-[10px]">Change Control Documentation Review</Label></div>
+                              <div className="flex items-center space-x-2"><Checkbox id={`eucch-${control.id}`} /><Label htmlFor={`eucch-${control.id}`} className="text-[10px]">{t('tod.eucP5')}</Label></div>
                             )}
                           </div>
                         )}
                       </div>
                       
                       <FormField control={form.control} name="method" render={({ field }) => (
-                        <FormItem><FormLabel className="text-xs">Testing Method</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Inquiry">Inquiry</SelectItem><SelectItem value="Observation">Observation</SelectItem><SelectItem value="Inspection">Inspection</SelectItem><SelectItem value="Reperformance">Reperformance</SelectItem></SelectContent></Select></FormItem>
+                        <FormItem><FormLabel className="text-xs">{t('actions.method')}</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Inquiry">Inquiry</SelectItem><SelectItem value="Observation">Observation</SelectItem><SelectItem value="Inspection">Inspection</SelectItem><SelectItem value="Reperformance">Reperformance</SelectItem></SelectContent></Select></FormItem>
                       )} />
                     </div>
                     
-                    <EvaluationAttributesSection form={form} />
+                    <EvaluationAttributesSection form={form} t={t} />
                     
                     <FormField control={form.control} name="comments" render={({ field }) => (
-                      <FormItem><FormLabel className="text-xs">TOD Comments</FormLabel><FormControl><Textarea placeholder="Enter TOD results and walkthrough notes..." {...field} className="min-h-[100px] text-xs" /></FormControl><FormMessage /></FormItem>
+                      <FormItem><FormLabel className="text-xs">{t('tod.comments')}</FormLabel><FormControl><Textarea placeholder={t('tod.placeholder')} {...field} className="min-h-[100px] text-xs" /></FormControl><FormMessage /></FormItem>
                     )} />
                     
                     <div className="flex justify-end gap-2 mt-4">
                       <Button type="submit" disabled={isAuthenticating || mutation.isPending} onClick={() => { form.setValue('testType', 'TOD'); form.setValue('result', 'Ineffective'); }} variant="destructive" size="sm">
-                        {isAuthenticating ? <Loader2 className="h-4 w-4 animate-spin mr-1"/> : <UserCheck className="h-4 w-4 mr-1"/>} Not Effective
+                        {isAuthenticating ? <Loader2 className="h-4 w-4 animate-spin mr-1"/> : <UserCheck className="h-4 w-4 mr-1"/>} {t('actions.ineffective')}
                       </Button>
                       <Button type="submit" disabled={isAuthenticating || mutation.isPending} onClick={() => { form.setValue('testType', 'TOD'); form.setValue('result', 'Effective'); }} className="bg-green-600 hover:bg-green-700" size="sm">
-                        {isAuthenticating ? <Loader2 className="h-4 w-4 animate-spin mr-1"/> : <UserCheck className="h-4 w-4 mr-1"/>} Effective
+                        {isAuthenticating ? <Loader2 className="h-4 w-4 animate-spin mr-1"/> : <UserCheck className="h-4 w-4 mr-1"/>} {t('actions.effective')}
                       </Button>
                     </div>
                   </TabsContent>
@@ -300,24 +302,24 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
                   <TabsContent value="toe" className="pt-6 space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-4">
-                        <h3 className="font-semibold text-sm">Sampling Details</h3>
+                        <h3 className="font-semibold text-sm">{t('toe.sampling')}</h3>
                         
                         <div className="p-3 bg-blue-50 border border-blue-100 rounded-md flex items-start gap-3">
                           <Info className="h-4 w-4 text-blue-600 mt-0.5" />
                           <div className="space-y-1">
-                            <p className="text-[10px] font-bold text-blue-800 uppercase leading-none">SK-5 Table 22 Suggestion</p>
-                            <p className="text-xs text-blue-700">Required Sample: <span className="font-bold">{suggestion.label}</span></p>
+                            <p className="text-[10px] font-bold text-blue-800 uppercase leading-none">{t('toe.suggestion')}</p>
+                            <p className="text-xs text-blue-700">{t('toe.requiredSample')}: <span className="font-bold">{suggestion.label}</span></p>
                           </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-2">
-                          <div className="space-y-1"><Label htmlFor={`pop-${control.id}`} className="text-[10px] uppercase font-bold text-muted-foreground">Population</Label><Input id={`pop-${control.id}`} type="number" defaultValue="250" className="h-8 text-xs" /></div>
+                          <div className="space-y-1"><Label htmlFor={`pop-${control.id}`} className="text-[10px] uppercase font-bold text-muted-foreground">{t('toe.population')}</Label><Input id={`pop-${control.id}`} type="number" defaultValue="250" className="h-8 text-xs" /></div>
                           <FormField control={form.control} name="sampleSize" render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground flex justify-between">
-                                Sample Size
+                                {t('toe.sampleSize')}
                                 {field.value !== undefined && field.value < suggestion.min && (
-                                  <span className="text-[8px] text-amber-600 font-black animate-pulse">! BELOW MIN</span>
+                                  <span className="text-[8px] text-amber-600 font-black animate-pulse">! {t('toe.belowMin')}</span>
                                 )}
                               </FormLabel>
                               <FormControl><Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10))} className={cn("h-8 text-xs", field.value !== undefined && field.value < suggestion.min && "border-amber-500 bg-amber-50")} /></FormControl>
@@ -327,12 +329,12 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
 
                         <FormField control={form.control} name="homogeneityJustification" render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">Homogeneity Justification (Mandatory Chapter V 1.3.a)</FormLabel>
+                            <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">{t('toe.homogeneity')}</FormLabel>
                             <FormControl>
                               <Textarea 
                                 {...field} 
                                 className="h-16 text-xs" 
-                                placeholder="Explain why the population is considered homogeneous (e.g. same system, personnel, SOP)..." 
+                                placeholder={t('toe.homogeneityPlaceholder')}
                               />
                             </FormControl>
                             <FormMessage />
@@ -341,22 +343,22 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
                       </div>
 
                       <FormField control={form.control} name="method" render={({ field }) => (
-                        <FormItem><FormLabel className="text-xs">Testing Method</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Inquiry">Inquiry</SelectItem><SelectItem value="Observation">Observation</SelectItem><SelectItem value="Inspection">Inspection</SelectItem><SelectItem value="Reperformance">Reperformance</SelectItem></SelectContent></Select></FormItem>
+                        <FormItem><FormLabel className="text-xs">{t('actions.method')}</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Inquiry">Inquiry</SelectItem><SelectItem value="Observation">Observation</SelectItem><SelectItem value="Inspection">Inspection</SelectItem><SelectItem value="Reperformance">Reperformance</SelectItem></SelectContent></Select></FormItem>
                       )} />
                     </div>
 
-                    <EvaluationAttributesSection form={form} />
+                    <EvaluationAttributesSection form={form} t={t} />
 
                     <FormField control={form.control} name="comments" render={({ field }) => (
-                      <FormItem><FormLabel className="text-xs">TOE Comments</FormLabel><FormControl><Textarea placeholder="Enter TOE results, sample details, and deviations..." {...field} className="min-h-[100px] text-xs" /></FormControl><FormMessage /></FormItem>
+                      <FormItem><FormLabel className="text-xs">{t('toe.comments')}</FormLabel><FormControl><Textarea placeholder={t('toe.placeholder')} {...field} className="min-h-[100px] text-xs" /></FormControl><FormMessage /></FormItem>
                     )} />
 
                     <div className="flex justify-end gap-2 mt-4">
                       <Button type="submit" disabled={isAuthenticating || mutation.isPending} onClick={() => { form.setValue('testType', 'TOE'); form.setValue('result', 'Ineffective'); }} variant="destructive" size="sm">
-                        {isAuthenticating ? <Loader2 className="h-4 w-4 animate-spin mr-1"/> : <UserCheck className="h-4 w-4 mr-1"/>} Not Effective
+                        {isAuthenticating ? <Loader2 className="h-4 w-4 animate-spin mr-1"/> : <UserCheck className="h-4 w-4 mr-1"/>} {t('actions.ineffective')}
                       </Button>
                       <Button type="submit" disabled={isAuthenticating || mutation.isPending} onClick={() => { form.setValue('testType', 'TOE'); form.setValue('result', 'Effective'); }} className="bg-green-600 hover:bg-green-700" size="sm">
-                        {isAuthenticating ? <Loader2 className="h-4 w-4 animate-spin mr-1"/> : <UserCheck className="h-4 w-4 mr-1"/>} Effective
+                        {isAuthenticating ? <Loader2 className="h-4 w-4 animate-spin mr-1"/> : <UserCheck className="h-4 w-4 mr-1"/>} {t('actions.effective')}
                       </Button>
                     </div>
                   </TabsContent>
@@ -370,7 +372,7 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
       <Card className="h-fit">
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-bold flex items-center gap-2">
-            <History className="h-4 w-4" /> Testing History
+            <History className="h-4 w-4" /> {t('history.title')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -411,7 +413,7 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
               ))
             ) : (
               <div className="text-center py-8 text-muted-foreground italic text-xs">
-                No previous tests recorded.
+                {t('history.empty')}
               </div>
             )}
           </div>
@@ -422,6 +424,7 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
 }
 
 export function TestWorkbench() {
+  const { t } = useTranslation('testing');
   const [showOnlyValidated, setShowOnlyValidated] = React.useState(true);
 
   const { data: controlsData, isLoading: controlsLoading } = useQuery({
@@ -441,7 +444,7 @@ export function TestWorkbench() {
 
   const { data: userData } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => api<User>('/api/users/me'),
+    queryFn: () => api<User>('/api/user/me'),
   });
 
   const mockRole = localStorage.getItem('mockRole') || 'Line 1';
@@ -472,8 +475,8 @@ export function TestWorkbench() {
       <div className="max-w-6xl mx-auto">
         <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Testing Workbench</h1>
-            <p className="text-muted-foreground">Perform TOD and TOE for in-scope controls according to Regulation SK-5.</p>
+            <h1 className="text-3xl font-bold mb-2">{t('title')}</h1>
+            <p className="text-muted-foreground">{t('description')}</p>
           </div>
           <div className="flex items-center gap-2 bg-muted/30 p-2 rounded-lg border">
             <Switch 
@@ -482,7 +485,7 @@ export function TestWorkbench() {
               onCheckedChange={setShowOnlyValidated} 
             />
             <Label htmlFor="validated-filter" className="text-xs font-bold cursor-pointer flex items-center gap-2">
-              <UserCheck className="h-3.5 w-3.5 text-green-600" /> Ready for Testing (L2 Validated)
+              <UserCheck className="h-3.5 w-3.5 text-green-600" /> {t('filterReady')}
             </Label>
           </div>
         </div>
@@ -507,15 +510,15 @@ export function TestWorkbench() {
                   )}>
                     <div className="flex items-center gap-3 text-left">
                       <span className="font-semibold">{control.name}</span>
-                      {latestOpenDeficiency && <Badge variant="destructive" className="text-[8px] h-4">OPEN DEFICIENCY</Badge>}
+                      {latestOpenDeficiency && <Badge variant="destructive" className="text-[8px] h-4">{t('badges.openDeficiency')}</Badge>}
                       {violation && (
                         <Badge variant="outline" className="text-[8px] h-4 border-amber-500 text-amber-700 bg-amber-50 gap-1">
-                          <AlertTriangle className="h-2 w-2" /> COOLING-OFF VIOLATION (BAB II)
+                          <AlertTriangle className="h-2 w-2" /> {t('coolingOff.violation')}
                         </Badge>
                       )}
                       {controlHistory.length > 0 && (
                         <Badge variant="secondary" className="text-[8px] h-4 gap-1">
-                          <History className="h-2 w-2" /> {controlHistory.length} TESTS
+                          <History className="h-2 w-2" /> {controlHistory.length} {t('badges.tests')}
                         </Badge>
                       )}
                     </div>
@@ -524,9 +527,9 @@ export function TestWorkbench() {
                     {violation ? (
                       <div className="p-6 bg-amber-50 border border-amber-200 rounded-lg text-center">
                         <AlertTriangle className="h-8 w-8 text-amber-600 mx-auto mb-2" />
-                        <h4 className="font-bold text-amber-800">Access Restricted (Chapter II point d.2)</h4>
+                        <h4 className="font-bold text-amber-800">{t('coolingOff.restricted')}</h4>
                         <p className="text-xs text-amber-700 max-w-md mx-auto mt-1 leading-relaxed">
-                          In accordance with regulations, Internal Auditors are prohibited from testing activities that were previously their responsibility (as Line 1 or Line 2) before a cooling-off period of at least 12 months has passed.
+                          {t('coolingOff.prohibited')}
                         </p>
                       </div>
                     ) : (
@@ -543,9 +546,9 @@ export function TestWorkbench() {
           ) : (
             <div className="text-center py-20 bg-muted/10 rounded-xl border-2 border-dashed">
               <ListFilter className="h-12 w-12 text-muted-foreground/40 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-muted-foreground">No controls match the current filter.</h3>
+              <h3 className="text-lg font-semibold text-muted-foreground">{t('noControls')}</h3>
               <p className="text-sm text-muted-foreground/60 max-w-xs mx-auto mt-1">
-                Toggle "Ready for Testing" or check if any controls have been validated by Line 2.
+                {t('noControlsDetail')}
               </p>
             </div>
           )}

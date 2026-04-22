@@ -50,14 +50,31 @@ interface BPMWorksheetProps {
 export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps) {
   const { t } = useTranslation('bpm');
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedDiagramId = searchParams.get('diagramId');
+  const isBpmModalOpen = !!selectedDiagramId;
+  const currentSubProcess = searchParams.get('subProcess') || "";
+  
   const [isAddingApp, setIsAddingApp] = React.useState(false);
   const [newAppName, setNewAppName] = React.useState("");
-  
-  // BPM Editor Modal State
-  const [isBpmModalOpen, setIsBpmModalOpen] = React.useState(false);
-  const [selectedDiagramId, setSelectedDiagramId] = React.useState<string | null>(null);
-  const [currentSubProcess, setCurrentSubProcess] = React.useState("");
+
+  const handleOpenDiagram = (diagramId: string, subProcess: string) => {
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev);
+      next.set('diagramId', diagramId);
+      next.set('subProcess', subProcess);
+      return next;
+    });
+  };
+
+  const handleCloseDiagram = () => {
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev);
+      next.delete('diagramId');
+      next.delete('subProcess');
+      return next;
+    });
+  };
 
   // 1. Fetch Controls
   const { data: controls, isLoading } = useQuery({
@@ -216,9 +233,7 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
             )}
             onClick={() => {
               if (diagram) {
-                setSelectedDiagramId(diagram.id);
-                setCurrentSubProcess(subProcess || "");
-                setIsBpmModalOpen(true);
+                handleOpenDiagram(diagram.id, subProcess || "");
               } else if (subProcess) {
                 createDiagramMutation.mutate(subProcess);
               } else {
@@ -596,7 +611,7 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
         </DialogContent>
       </Dialog>
 
-      <Dialog open={isBpmModalOpen} onOpenChange={setIsBpmModalOpen}>
+      <Dialog open={isBpmModalOpen} onOpenChange={(open) => !open && handleCloseDiagram()}>
         <DialogContent className="max-w-[95vw] w-[1400px] h-[90vh] flex flex-col p-0 overflow-hidden">
           <DialogHeader className="p-6 pb-2 shrink-0">
             <DialogTitle className="flex items-center gap-2 text-xl">

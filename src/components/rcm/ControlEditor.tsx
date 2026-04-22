@@ -33,6 +33,10 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 
+import { useTranslation } from 'react-i18next';
+import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
+import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
+
 const ALL_ASSERTIONS: ControlAssertion[] = ["Completeness", "Accuracy", "Validity", "Cut-off", "Presentation", "Existence"];
 const ALL_IPOS: InformationProcessingObjective[] = ["Completeness", "Accuracy", "Validity", "Restricted Access"];
 const ALL_FREQUENCIES: ControlFrequency[] = ["Annual", "Semi-Annual", "Quarterly", "Monthly", "Weekly", "Daily", "Ad-hoc"];
@@ -229,6 +233,10 @@ export function ControlEditor({ isOpen, setIsOpen, control }: ControlEditorProps
     accept: { 'application/pdf': ['.pdf'] },
     multiple: false
   });
+
+  // Track unsaved changes in the form
+  const isDirty = form.formState.isDirty;
+  const blocker = useUnsavedChanges(isOpen && isDirty);
 
   const mutation = useMutation({
     mutationFn: (data: ControlFormValues) => {
@@ -676,6 +684,7 @@ export function ControlEditor({ isOpen, setIsOpen, control }: ControlEditorProps
             </form>
           </Form>
         </motion.div>
+        <UnsavedChangesDialog blocker={blocker} />
       </SheetContent>
     </Sheet>
   );

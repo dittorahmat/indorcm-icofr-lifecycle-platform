@@ -33,5 +33,11 @@
     "linkedTo": "Linked to",
     "elcTab": "RCM ELC (Strategic)",
     "tlcTab": "RCM TLC (Operational)"
+  },
+  "unsavedChanges": {
+    "title": "Unsaved Changes",
+    "description": "You have unsaved changes that will be lost if you leave this page. Are you sure you want to continue?",
+    "stay": "Stay on Page",
+    "discard": "Discard Changes"
   }
 }

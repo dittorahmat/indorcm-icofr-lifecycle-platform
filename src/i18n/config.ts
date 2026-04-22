@@ -11,6 +11,7 @@ import reportsEn from './locales/en/reports.json';
 import knowledgeEn from './locales/en/knowledge.json';
 import bpmEn from './locales/en/bpm.json';
 import deficiencyEn from './locales/en/deficiency.json';
+import testingEn from './locales/en/testing.json';
 
 import commonId from './locales/id/common.json';
 import sidebarId from './locales/id/sidebar.json';
@@ -20,6 +21,7 @@ import reportsId from './locales/id/reports.json';
 import knowledgeId from './locales/id/knowledge.json';
 import bpmId from './locales/id/bpm.json';
 import deficiencyId from './locales/id/deficiency.json';
+import testingId from './locales/id/testing.json';
 
 i18n
   .use(LanguageDetector)
@@ -35,6 +37,7 @@ i18n
         knowledge: knowledgeEn,
         bpm: bpmEn,
         deficiency: deficiencyEn,
+        testing: testingEn,
       },
       id: {
         common: commonId,
@@ -45,10 +48,11 @@ i18n
         knowledge: knowledgeId,
         bpm: bpmId,
         deficiency: deficiencyId,
+        testing: testingId,
       },
     },
     fallbackLng: 'en',
-    ns: ['common', 'sidebar', 'scoping', 'dashboard', 'reports', 'knowledge', 'bpm', 'deficiency'],
+    ns: ['common', 'sidebar', 'scoping', 'dashboard', 'reports', 'knowledge', 'bpm', 'deficiency', 'testing'],
     defaultNS: 'common',
     interpolation: {
       escapeValue: false, // react already safes from xss

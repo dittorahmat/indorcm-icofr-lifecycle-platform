@@ -32,6 +32,8 @@ import { Separator } from '@/components/ui/separator';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
+import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 
 import {
   Tooltip,
@@ -412,6 +414,23 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
     queryKey: ['bpm-diagrams', diagramId],
     queryFn: () => api<any>(`/api/bpm-diagrams/${diagramId}`),
   });
+
+  // Track if diagram has been modified
+  const isDirty = useMemo(() => {
+    if (!diagram) return false;
+    
+    // We compare coordinates and data. Note: markerEnd is added in useEffect, so we ignore it in comparison
+    const currentNodes = JSON.stringify(nodes.map(n => ({ id: n.id, position: n.position, data: n.data })));
+    const originalNodes = JSON.stringify((diagram.nodes || initialNodes).map((n: any) => ({ id: n.id, position: n.position, data: n.data })));
+    
+    const currentEdges = JSON.stringify(edges.map(e => ({ id: e.id, source: e.source, target: e.target })));
+    const originalEdges = JSON.stringify((diagram.edges || []).map((e: any) => ({ id: e.id, source: e.source, target: e.target })));
+    
+    return currentNodes !== originalNodes || currentEdges !== originalEdges;
+  }, [nodes, edges, diagram]);
+
+  // Hook up unsaved changes protection
+  const blocker = useUnsavedChanges(isDirty);
 
   // 2. Fetch Master Data
   const { data: controlsData } = useQuery({
@@ -906,6 +925,7 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
           </AlertDialogContent>
         </AlertDialog>
       </div>
+      <UnsavedChangesDialog blocker={blocker} />
     </div>
   );
 }

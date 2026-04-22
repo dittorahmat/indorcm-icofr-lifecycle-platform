@@ -1,0 +1,80 @@
+{
+  "title": "Testing Workbench",
+  "description": "Perform TOD and TOE for in-scope controls according to Regulation SK-5.",
+  "filterReady": "Ready for Testing (L2 Validated)",
+  "noControls": "No controls match the current filter.",
+  "noControlsDetail": "Toggle \"Ready for Testing\" or check if any controls have been validated by Line 2.",
+  "tabs": {
+    "tod": "Test of Design (TOD)",
+    "toe": "Test of Effectiveness (TOE)"
+  },
+  "tod": {
+    "checklist": "Design Checklist",
+    "q1": "Is the control designed to prevent/detect the risk?",
+    "q2": "Is there a clear segregation of duties?",
+    "ipeTitle": "Table 15 & 20: IPE Verifications",
+    "ipeP1": "Verify report parameters & filters match design",
+    "ipeP2": "Technical Reperformance of SQL Logic (Query Validation)",
+    "ipeP3": "Compare total rows/values with source data (Completeness)",
+    "ipeP4": "Ensure source ITGCs are effective",
+    "eucTitle": "Table 14: EUC Controls",
+    "eucP1": "Data Integrity (Formula cells locked)",
+    "eucP2": "Availability (Periodic backup & restore test)",
+    "eucP3": "Version Control (Current template used)",
+    "eucP4": "Access Control Validation (Password protected)",
+    "eucP5": "Change Control Documentation Review",
+    "comments": "TOD Comments",
+    "placeholder": "Enter TOD results and walkthrough notes..."
+  },
+  "toe": {
+    "sampling": "Sampling Details",
+    "suggestion": "SK-5 Table 22 Suggestion",
+    "requiredSample": "Required Sample",
+    "population": "Population",
+    "sampleSize": "Sample Size",
+    "belowMin": "BELOW MIN",
+    "homogeneity": "Homogeneity Justification (Mandatory Chapter V 1.3.a)",
+    "homogeneityPlaceholder": "Explain why the population is considered homogeneous (e.g. same system, personnel, SOP)...",
+    "comments": "TOE Comments",
+    "placeholder": "Enter TOE results, sample details, and deviations..."
+  },
+  "attributes": {
+    "title": "Evaluation Attributes (Mandatory Table 21)",
+    "objectiveAchieved": "Control Objective Achievement",
+    "timingAccuracy": "Timeliness of Execution",
+    "authorityCompetence": "Authority & Competence of Performer",
+    "infoReliability": "Information Reliability (IPE/EUC)",
+    "periodCoverage": "Testing Period Coverage",
+    "evidenceAvailability": "Sufficiency of Supporting Evidence"
+  },
+  "actions": {
+    "method": "Testing Method",
+    "effective": "Effective",
+    "ineffective": "Not Effective",
+    "submitting": "Submitting..."
+  },
+  "history": {
+    "title": "Testing History",
+    "empty": "No previous tests recorded.",
+    "period": "Period"
+  },
+  "validation": {
+    "homogeneityRequired": "Homogeneity justification is required for TOE (Chapter V 1.3.a)",
+    "authFailed": "Biometric authentication failed. Cannot submit test.",
+    "authSuccess": "Biometric identity verified (FR9).",
+    "submitSuccess": "{{type}} for {{name}} submitted.",
+    "submitError": "Submission failed: {{error}}"
+  },
+  "coolingOff": {
+    "violation": "COOLING-OFF VIOLATION (BAB II)",
+    "restricted": "Access Restricted (Chapter II point d.2)",
+    "prohibited": "In accordance with regulations, Internal Auditors are prohibited from testing activities that were previously their responsibility (as Line 1 or Line 2) before a cooling-off period of at least 12 months has passed."
+  },
+  "badges": {
+    "highRisk": "HIGH RISK",
+    "lowRisk": "LOW RISK",
+    "openDeficiency": "OPEN DEFICIENCY",
+    "tests": "TESTS",
+    "remediationReadiness": "Remediation Testing Readiness (Table 23)"
+  }
+}

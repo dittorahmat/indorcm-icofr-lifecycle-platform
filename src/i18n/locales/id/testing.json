@@ -1,0 +1,80 @@
+{
+  "title": "Workbench Pengujian",
+  "description": "Lakukan TOD dan TOE untuk kontrol yang masuk dalam ruang lingkup sesuai dengan Peraturan SK-5.",
+  "filterReady": "Siap untuk Pengujian (L2 Tervalidasi)",
+  "noControls": "Tidak ada kontrol yang cocok dengan filter saat ini.",
+  "noControlsDetail": "Alihkan \"Siap untuk Pengujian\" atau periksa apakah ada kontrol yang telah divalidasi oleh Lini 2.",
+  "tabs": {
+    "tod": "Uji Desain (TOD)",
+    "toe": "Uji Efektivitas Operasional (TOE)"
+  },
+  "tod": {
+    "checklist": "Daftar Periksa Desain",
+    "q1": "Apakah kontrol dirancang untuk mencegah/mendeteksi risiko?",
+    "q2": "Apakah ada pemisahan tugas yang jelas?",
+    "ipeTitle": "Tabel 15 & 20: Verifikasi IPE",
+    "ipeP1": "Verifikasi parameter & filter laporan sesuai dengan desain",
+    "ipeP2": "Reperformansi Teknis Logika SQL (Validasi Query)",
+    "ipeP3": "Bandingkan total baris/nilai dengan data sumber (Kelengkapan)",
+    "ipeP4": "Pastikan ITGC sumber efektif",
+    "eucTitle": "Tabel 14: Kontrol EUC",
+    "eucP1": "Integritas Data (Sel rumus dikunci)",
+    "eucP2": "Ketersediaan (Uji cadangan & pemulihan berkala)",
+    "eucP3": "Kontrol Versi (Template saat ini digunakan)",
+    "eucP4": "Validasi Kontrol Akses (Dilindungi kata sandi)",
+    "eucP5": "Tinjauan Dokumentasi Kontrol Perubahan",
+    "comments": "Komentar TOD",
+    "placeholder": "Masukkan hasil TOD dan catatan walkthrough..."
+  },
+  "toe": {
+    "sampling": "Detail Pengambilan Sampel",
+    "suggestion": "Saran Tabel 22 SK-5",
+    "requiredSample": "Sampel yang Dibutuhkan",
+    "population": "Populasi",
+    "sampleSize": "Ukuran Sampel",
+    "belowMin": "DI BAWAH MIN",
+    "homogeneity": "Justifikasi Homogenitas (Mandatori Bab V 1.3.a)",
+    "homogeneityPlaceholder": "Jelaskan mengapa populasi dianggap homogen (misalnya sistem, personel, SOP yang sama)...",
+    "comments": "Komentar TOE",
+    "placeholder": "Masukkan hasil TOE, detail sampel, dan deviasi..."
+  },
+  "attributes": {
+    "title": "Atribut Evaluasi (Mandatori Tabel 21)",
+    "objectiveAchieved": "Pencapaian Objektif Kontrol",
+    "timingAccuracy": "Ketepatan Waktu Eksekusi",
+    "authorityCompetence": "Wewenang & Kompetensi Pelaksana",
+    "infoReliability": "Keandalan Informasi (IPE/EUC)",
+    "periodCoverage": "Cakupan Periode Pengujian",
+    "evidenceAvailability": "Kecukupan Bukti Pendukung"
+  },
+  "actions": {
+    "method": "Metode Pengujian",
+    "effective": "Efektif",
+    "ineffective": "Tidak Efektif",
+    "submitting": "Mengirim..."
+  },
+  "history": {
+    "title": "Riwayat Pengujian",
+    "empty": "Belum ada pengujian yang tercatat.",
+    "period": "Periode"
+  },
+  "validation": {
+    "homogeneityRequired": "Justifikasi homogenitas diperlukan untuk TOE (Bab V 1.3.a)",
+    "authFailed": "Autentikasi biometrik gagal. Tidak dapat mengirim pengujian.",
+    "authSuccess": "Identitas biometrik terverifikasi (FR9).",
+    "submitSuccess": "{{type}} untuk {{name}} telah dikirim.",
+    "submitError": "Pengiriman gagal: {{error}}"
+  },
+  "coolingOff": {
+    "violation": "PELANGGARAN COOLING-OFF (BAB II)",
+    "restricted": "Akses Dibatasi (Bab II poin d.2)",
+    "prohibited": "Sesuai regulasi, Auditor Internal dilarang melakukan aktivitas pengujian yang sebelumnya menjadi tanggung jawab mereka (sebagai Lini 1 atau Lini 2) sebelum masa tenggang (cooling-off) minimal 12 bulan berlalu."
+  },
+  "badges": {
+    "highRisk": "RISIKO TINGGI",
+    "lowRisk": "RISIKO RENDAH",
+    "openDeficiency": "DEFISIENSI TERBUKA",
+    "tests": "PENGUJIAN",
+    "remediationReadiness": "Kesiapan Pengujian Remediasi (Tabel 23)"
+  }
+}

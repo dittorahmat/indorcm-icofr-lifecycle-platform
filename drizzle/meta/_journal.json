@@ -127,6 +127,13 @@
       "when": 1776830443093,
       "tag": "0017_outgoing_shooting_star",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1776836378698,
+      "tag": "0018_wet_butterfly",
+      "breakpoints": true
     }
   ]
 }

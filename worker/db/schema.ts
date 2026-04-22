@@ -280,6 +280,9 @@ export const testRecords = pgTable("test_records", {
 	testDate: timestamp("test_date").notNull(),
 	testedBy: text("tested_by").references(() => user.id),
 	result: text("result").notNull(), // Effective, Ineffective (SK-5); Pass, Fail (Legacy)
+	comments: text("comments"),
+	sampleSize: integer("sample_size"),
+	homogeneityJustification: text("homogeneity_justification"),
 	evaluationAttributes: jsonb("evaluation_attributes"),
 });
 
