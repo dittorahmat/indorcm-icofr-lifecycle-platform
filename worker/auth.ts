@@ -57,6 +57,12 @@ export const getAuth = (env: { DATABASE_URL: string; BETTER_AUTH_SECRET: string;
                 departmentId: { type: "string" },
                 language: { type: "string" },
             }
+        },
+        advanced: {
+            ipAddress: {
+                ipAddressHeaders: ["cf-connecting-ip", "x-forwarded-for"],
+            },
+            trustedProxyHeaders: true,
         }
     });
 };
