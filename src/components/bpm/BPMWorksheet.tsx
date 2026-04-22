@@ -35,7 +35,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from '@/components/ui/label';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { BPMEditor } from '../rcm/BPMEditor';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";

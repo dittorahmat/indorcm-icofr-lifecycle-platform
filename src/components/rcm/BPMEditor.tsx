@@ -34,6 +34,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
+import { useTranslation } from 'react-i18next';
 import { RiskLibraryLookup } from './RiskLibraryLookup';
 
 import {
