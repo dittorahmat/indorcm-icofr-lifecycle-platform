@@ -11,11 +11,11 @@ import { Badge } from '@/components/ui/badge';
 import { 
   Plus, Search, Database, FileSpreadsheet, Loader2, Info, ChevronRight, 
   Trash2, AlertTriangle, PlusCircle, CheckCircle2, Shield, Edit2, ExternalLink,
-  Workflow as WorkflowIcon
+  Workflow as WorkflowIcon, Save
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
-import { GLSnapshot, GLRow, BPMProcess, UserRole, MaterialitySimulation, User, BPMDiagram, Settings } from '@shared/types';
+import { GLSnapshot, GLRow, BPMProcess, UserRole, MaterialitySimulation, User, BPMDiagram, Settings, AccountAssertion } from '@shared/types';
 import { MOCK_DEPARTMENTS } from '@shared/mock-data';
 import { BPMWorksheet } from '@/components/bpm/BPMWorksheet';
 import { BPMModal } from '@/components/bpm/BPMModal';
@@ -25,16 +25,21 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
 } from '@/components/ui/table';
 import { 
+  Tooltip, TooltipContent, TooltipProvider, TooltipTrigger 
+} from '@/components/ui/tooltip';
+import { 
   Dialog, DialogContent, DialogDescription, DialogHeader, 
   DialogTitle, DialogFooter 
 } from '@/components/ui/dialog';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
+import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 
 export function BPMPage() {
-  const { t } = useTranslation(['bpm', 'common']);
+  const { t } = useTranslation(['bpm', 'common', 'rcm']);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -51,6 +56,8 @@ export function BPMPage() {
   const [isCreatingBPM, setIsCreatingBPM] = React.useState(false);
   const [bpmName, setBpmName] = React.useState("");
   const [searchTerm, setSearchTerm] = React.useState("");
+
+  const [localAssertion, setLocalAssertion] = React.useState<Partial<AccountAssertion>>({});
 
   const handleOpenDiagram = (diagramId: string, subProcess: string) => {
     setSearchParams(prev => {
@@ -111,6 +118,59 @@ export function BPMPage() {
     queryKey: ['settings'],
     queryFn: () => api<Settings>('/api/settings'),
   });
+
+  // Fetch Account Assertions
+  const { data: accountAssertion, isLoading: assertionLoading } = useQuery({
+    queryKey: ['account-assertions', selectedFsli, selectedAccountKey],
+    queryFn: async () => {
+      if (!selectedFsli || !selectedAccountKey) return null;
+      const noGL = selectedAccountKey.split(' ||| ')[0];
+      const res = await api<AccountAssertion>(`/api/account-assertions?fsliName=${selectedFsli}&noGL=${noGL}`);
+      setLocalAssertion(res || { assertionE: 'N', assertionC: 'N', assertionA: 'N', assertionCo: 'N', assertionRo: 'N', assertionVa: 'N', assertionPd: 'N' });
+      return res;
+    },
+    enabled: !!selectedFsli && !!selectedAccountKey
+  });
+
+  const updateAssertionMutation = useMutation({
+    mutationFn: (data: Partial<AccountAssertion>) => api('/api/account-assertions', {
+      method: 'POST',
+      body: JSON.stringify({
+        fsliName: selectedFsli,
+        noGL: selectedAccountKey.split(' ||| ')[0],
+        ...data
+      })
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['account-assertions'] });
+      toast.success("Account assertions updated");
+    }
+  });
+
+  const isAssertionDirty = React.useMemo(() => {
+    if (!accountAssertion) {
+      return Object.values(localAssertion).some(v => v === 'Y');
+    }
+    return (
+      localAssertion.assertionE !== (accountAssertion.assertionE || 'N') ||
+      localAssertion.assertionC !== (accountAssertion.assertionC || 'N') ||
+      localAssertion.assertionA !== (accountAssertion.assertionA || 'N') ||
+      localAssertion.assertionCo !== (accountAssertion.assertionCo || 'N') ||
+      localAssertion.assertionRo !== (accountAssertion.assertionRo || 'N') ||
+      localAssertion.assertionVa !== (accountAssertion.assertionVa || 'N') ||
+      localAssertion.assertionPd !== (accountAssertion.assertionPd || 'N')
+    );
+  }, [localAssertion, accountAssertion]);
+
+  const blocker = useUnsavedChanges(isAssertionDirty);
+
+  const handleAssertionChange = (field: keyof AccountAssertion, value: string) => {
+    setLocalAssertion(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSaveAssertions = () => {
+    updateAssertionMutation.mutate(localAssertion);
+  };
 
   // 2. Derive unique significant FSLIs based on Scoping Criteria
   const significantFsliNames = React.useMemo(() => {
@@ -286,7 +346,209 @@ export function BPMPage() {
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-6">
+            {/* Financial Assertion Table */}
+            <Card className="border-slate-200 shadow-sm overflow-hidden">
+              <CardHeader className="bg-indigo-50/50 py-3 px-4 border-b">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Shield className="h-4 w-4 text-indigo-600" />
+                    <CardTitle className="text-sm font-bold uppercase tracking-wide text-indigo-900">{t('assertions.title')}</CardTitle>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {isAssertionDirty && (
+                      <Button size="sm" onClick={handleSaveAssertions} disabled={updateAssertionMutation.isPending} className="h-7 px-3 text-[10px] gap-1.5 bg-indigo-600 hover:bg-indigo-700">
+                        {updateAssertionMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
+                        {t('common:actions.save')}
+                      </Button>
+                    )}
+                    <Badge variant="secondary" className="bg-indigo-100 text-indigo-700 font-bold text-[10px]">{t('assertions.subtitle')}</Badge>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                <TooltipProvider>
+                  <Table>
+                    <TableHeader className="bg-slate-50/50">
+                      <TableRow className="divide-x divide-slate-100">
+                        <TableHead className="text-center w-[120px]">
+                          <Tooltip>
+                            <TooltipTrigger className="cursor-help flex items-center justify-center gap-1 mx-auto">
+                              <span className="font-bold text-[10px] uppercase">{t('assertions.tooltip.eo.label')}</span>
+                              <Info className="h-3 w-3 text-slate-400" />
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="max-w-xs">
+                              <p className="text-xs"><strong>{t('assertions.tooltip.eo.label')}</strong></p>
+                              <p className="text-[10px] mt-1">{t('assertions.tooltip.eo.desc')}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TableHead>
+                        <TableHead className="text-center w-[120px]">
+                          <Tooltip>
+                            <TooltipTrigger className="cursor-help flex items-center justify-center gap-1 mx-auto">
+                              <span className="font-bold text-[10px] uppercase">{t('assertions.tooltip.c.label')}</span>
+                              <Info className="h-3 w-3 text-slate-400" />
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="max-w-xs">
+                              <p className="text-xs"><strong>{t('assertions.tooltip.c.label')}</strong></p>
+                              <p className="text-[10px] mt-1">{t('assertions.tooltip.c.desc')}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TableHead>
+                        <TableHead className="text-center w-[120px]">
+                          <Tooltip>
+                            <TooltipTrigger className="cursor-help flex items-center justify-center gap-1 mx-auto">
+                              <span className="font-bold text-[10px] uppercase">{t('assertions.tooltip.a.label')}</span>
+                              <Info className="h-3 w-3 text-slate-400" />
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="max-w-xs">
+                              <p className="text-xs"><strong>{t('assertions.tooltip.a.label')}</strong></p>
+                              <p className="text-[10px] mt-1">{t('assertions.tooltip.a.desc')}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TableHead>
+                        <TableHead className="text-center w-[120px]">
+                          <Tooltip>
+                            <TooltipTrigger className="cursor-help flex items-center justify-center gap-1 mx-auto">
+                              <span className="font-bold text-[10px] uppercase">{t('assertions.tooltip.co.label')}</span>
+                              <Info className="h-3 w-3 text-slate-400" />
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="max-w-xs">
+                              <p className="text-xs"><strong>{t('assertions.tooltip.co.label')}</strong></p>
+                              <p className="text-[10px] mt-1">{t('assertions.tooltip.co.desc')}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TableHead>
+                        <TableHead className="text-center w-[120px]">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger className="cursor-help flex items-center justify-center gap-1 mx-auto">
+                                <span className="font-bold text-[10px] uppercase">{t('assertions.tooltip.ro.label')}</span>
+                                <Info className="h-3 w-3 text-slate-400" />
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="max-w-xs">
+                                <p className="text-xs"><strong>{t('assertions.tooltip.ro.label')}</strong></p>
+                                <p className="text-[10px] mt-1">{t('assertions.tooltip.ro.desc')}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </TableHead>
+                        <TableHead className="text-center w-[120px]">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger className="cursor-help flex items-center justify-center gap-1 mx-auto">
+                                <span className="font-bold text-[10px] uppercase">{t('assertions.tooltip.va.label')}</span>
+                                <Info className="h-3 w-3 text-slate-400" />
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="max-w-xs">
+                                <p className="text-xs"><strong>{t('assertions.tooltip.va.label')}</strong></p>
+                                <p className="text-[10px] mt-1">{t('assertions.tooltip.va.desc')}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </TableHead>
+                        <TableHead className="text-center w-[120px]">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger className="cursor-help flex items-center justify-center gap-1 mx-auto">
+                                <span className="font-bold text-[10px] uppercase">{t('assertions.tooltip.pd.label')}</span>
+                                <Info className="h-3 w-3 text-slate-400" />
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="max-w-xs">
+                                <p className="text-xs"><strong>{t('assertions.tooltip.pd.label')}</strong></p>
+                                <p className="text-[10px] mt-1">{t('assertions.tooltip.pd.desc')}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <TableRow className="divide-x divide-slate-100">
+                        <TableCell className="p-0">
+                          <Select value={localAssertion.assertionE || "N"} onValueChange={(v) => handleAssertionChange('assertionE', v)} disabled={assertionLoading}>
+                            <SelectTrigger className="h-10 border-none rounded-none focus:ring-0 text-xs shadow-none text-center font-bold">
+                              <SelectValue placeholder="-" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Y">{t('common:yes')}</SelectItem>
+                              <SelectItem value="N">{t('common:no')}</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell className="p-0">
+                          <Select value={localAssertion.assertionC || "N"} onValueChange={(v) => handleAssertionChange('assertionC', v)} disabled={assertionLoading}>
+                            <SelectTrigger className="h-10 border-none rounded-none focus:ring-0 text-xs shadow-none text-center font-bold">
+                              <SelectValue placeholder="-" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Y">{t('common:yes')}</SelectItem>
+                              <SelectItem value="N">{t('common:no')}</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell className="p-0">
+                          <Select value={localAssertion.assertionA || "N"} onValueChange={(v) => handleAssertionChange('assertionA', v)} disabled={assertionLoading}>
+                            <SelectTrigger className="h-10 border-none rounded-none focus:ring-0 text-xs shadow-none text-center font-bold">
+                              <SelectValue placeholder="-" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Y">{t('common:yes')}</SelectItem>
+                              <SelectItem value="N">{t('common:no')}</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell className="p-0">
+                          <Select value={localAssertion.assertionCo || "N"} onValueChange={(v) => handleAssertionChange('assertionCo', v)} disabled={assertionLoading}>
+                            <SelectTrigger className="h-10 border-none rounded-none focus:ring-0 text-xs shadow-none text-center font-bold">
+                              <SelectValue placeholder="-" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Y">{t('common:yes')}</SelectItem>
+                              <SelectItem value="N">{t('common:no')}</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell className="p-0">
+                          <Select value={localAssertion.assertionRo || "N"} onValueChange={(v) => handleAssertionChange('assertionRo', v)} disabled={assertionLoading}>
+                            <SelectTrigger className="h-10 border-none rounded-none focus:ring-0 text-xs shadow-none text-center font-bold">
+                              <SelectValue placeholder="-" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Y">{t('common:yes')}</SelectItem>
+                              <SelectItem value="N">{t('common:no')}</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell className="p-0">
+                          <Select value={localAssertion.assertionVa || "N"} onValueChange={(v) => handleAssertionChange('assertionVa', v)} disabled={assertionLoading}>
+                            <SelectTrigger className="h-10 border-none rounded-none focus:ring-0 text-xs shadow-none text-center font-bold">
+                              <SelectValue placeholder="-" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Y">{t('common:yes')}</SelectItem>
+                              <SelectItem value="N">{t('common:no')}</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell className="p-0">
+                          <Select value={localAssertion.assertionPd || "N"} onValueChange={(v) => handleAssertionChange('assertionPd', v)} disabled={assertionLoading}>
+                            <SelectTrigger className="h-10 border-none rounded-none focus:ring-0 text-xs shadow-none text-center font-bold">
+                              <SelectValue placeholder="-" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Y">{t('common:yes')}</SelectItem>
+                              <SelectItem value="N">{t('common:no')}</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </TooltipProvider>
+              </CardContent>
+            </Card>
+
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-100/50 p-4 rounded-lg border border-slate-200">
               <div className="flex-1 w-full md:max-w-sm relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -419,6 +681,7 @@ export function BPMPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        <UnsavedChangesDialog blocker={blocker} />
       </div>
     </AppLayout>
   );

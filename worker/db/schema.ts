@@ -372,6 +372,24 @@ export const bpmProcesses = pgTable("bpm_processes", {
 	createdBy: text("created_by").references(() => user.id),
 });
 
+export const accountAssertions = pgTable("account_assertions", {
+	id: text("id").primaryKey(),
+	organizationId: text("organizationId").notNull().references(() => organization.id),
+	fsliName: text("fsli_name").notNull(),
+	noGL: text("no_gl").notNull(),
+	
+	assertionE: text("assertion_e"), // Y / N
+	assertionC: text("assertion_c"),
+	assertionA: text("assertion_a"),
+	assertionCo: text("assertion_co"),
+	assertionRo: text("assertion_ro"),
+	assertionVa: text("assertion_va"),
+	assertionPd: text("assertion_pd"),
+
+	updatedAt: timestamp("updated_at"),
+	updatedBy: text("updated_by").references(() => user.id),
+});
+
 export const aggregateDeficiencies = pgTable("aggregate_deficiencies", {
 	id: text("id").primaryKey(),
 	organizationId: text("organizationId").notNull().references(() => organization.id),

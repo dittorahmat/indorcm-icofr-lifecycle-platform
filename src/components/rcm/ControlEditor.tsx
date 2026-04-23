@@ -36,7 +36,6 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
-import { RiskLibraryLookup } from './RiskLibraryLookup';
 
 const ALL_ASSERTIONS: ControlAssertion[] = ["Completeness", "Accuracy", "Validity", "Cut-off", "Presentation", "Existence"];
 const ALL_IPOS: InformationProcessingObjective[] = ["Completeness", "Accuracy", "Validity", "Restricted Access"];
@@ -384,23 +383,7 @@ export function ControlEditor({ isOpen, setIsOpen, control }: ControlEditorProps
               
             <FormField control={form.control} name="description" render={({ field }) => (
                 <FormItem>
-                  <div className="flex justify-between items-center mb-1">
-                    <FormLabel>Description</FormLabel>
-                    <RiskLibraryLookup 
-                      onSelect={(risk, assertions) => {
-                        field.onChange(risk);
-                        if (assertions && assertions.length > 0) {
-                          form.setValue('assertions', assertions);
-                        }
-                        toast.success(t('risklibrary:lookup.applied_toast'));
-                      }}
-                      trigger={
-                        <Button type="button" variant="ghost" size="sm" className="h-6 text-[9px] gap-1 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50">
-                          <BookOpen className="h-3 w-3" /> {t('risklibrary:lookup.trigger')}
-                        </Button>
-                      }
-                    />
-                  </div>
+                  <FormLabel>Description</FormLabel>
                   <FormControl><Textarea {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>

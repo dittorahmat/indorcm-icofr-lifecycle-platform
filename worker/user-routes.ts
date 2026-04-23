@@ -9,7 +9,7 @@ import {
   applications, member, account, session, bpmDiagrams, bpmNodeRcms, 
   rcmControls, organization, testRecords, aggregateDeficiencies,
   documents, documentDepartments, documentGls, documentFslis,
-  systemLicenses, riskLibrary
+  systemLicenses, riskLibrary, accountAssertions
 } from './db/schema';
 import { eq, and, desc, sql, ilike } from 'drizzle-orm';
 import type { 
@@ -17,7 +17,7 @@ import type {
   UserRole, UserLevel, Materiality, Scoping, ChangeLog, SOCReport, Application, 
   BUMNCluster, RiskLibrary, Settings, User, GLSnapshot, MaterialitySimulation, 
   SimulationStatus, BenchmarkBasis, BPMProcess, Department, BPMWorkflowStatus,
-  AggregateDeficiency
+  AggregateDeficiency, AccountAssertion
 } from "@shared/types";
 import { z } from "zod";
 import { parseCsv, unparseCsv } from './csv';
@@ -792,6 +792,15 @@ export function userRoutes(app: Hono<HonoEnv>) {
       assertionVa: rcmControls.assertionVa,
       assertionRo: rcmControls.assertionRo,
       assertionPd: rcmControls.assertionPd,
+      // Defaults from BPM Level Assertions
+      defE: accountAssertions.assertionE,
+      defC: accountAssertions.assertionC,
+      defA: accountAssertions.assertionA,
+      defCo: accountAssertions.assertionCo,
+      defRo: accountAssertions.assertionRo,
+      defVa: accountAssertions.assertionVa,
+      defPd: accountAssertions.assertionPd,
+
       controlType: rcmControls.controlType,
       controlNature: rcmControls.controlNature,
       automatedType: rcmControls.automatedType,
@@ -810,11 +819,23 @@ export function userRoutes(app: Hono<HonoEnv>) {
     .innerJoin(bpmNodeRcms, eq(rcms.id, bpmNodeRcms.rcmId))
     .innerJoin(bpmDiagrams, eq(bpmNodeRcms.diagramId, bpmDiagrams.id))
     .innerJoin(bpmProcesses, eq(bpmDiagrams.subProcess, bpmProcesses.name))
+    .leftJoin(accountAssertions, and(
+      eq(bpmProcesses.fsliName, accountAssertions.fsliName),
+      eq(bpmProcesses.noGL, accountAssertions.noGL),
+      eq(bpmProcesses.organizationId, accountAssertions.organizationId)
+    ))
     .where(eq(rcmControls.organizationId, orgId));
 
     return ok(c, { 
       items: results.map(r => ({
         ...r,
+        assertionE: r.assertionE || r.defE,
+        assertionC: r.assertionC || r.defC,
+        assertionA: r.assertionA || r.defA,
+        assertionCo: r.assertionCo || r.defCo,
+        assertionRo: r.assertionRo || r.defRo,
+        assertionVa: r.assertionVa || r.defVa,
+        assertionPd: r.assertionPd || r.defPd,
         companyName: org?.name || "N/A",
         locationCode: org?.entityCode || "N/A"
       }))
@@ -1514,6 +1535,77 @@ export function userRoutes(app: Hono<HonoEnv>) {
 
     await db.delete(bpmProcesses).where(and(eq(bpmProcesses.id, id), eq(bpmProcesses.organizationId, orgId)));
     return ok(c, { success: true });
+  });
+
+  // --- Account Assertion Routes ---
+
+  app.get('/api/account-assertions', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+    const fsliName = c.req.query('fsliName');
+    const noGL = c.req.query('noGL');
+
+    if (!fsliName || !noGL) return bad(c, 'Missing fsliName or noGL');
+
+    const result = await db.select()
+      .from(accountAssertions)
+      .where(and(
+        eq(accountAssertions.organizationId, orgId),
+        eq(accountAssertions.fsliName, fsliName),
+        eq(accountAssertions.noGL, noGL)
+      ))
+      .then(rows => rows[0]);
+
+    return ok(c, result || null);
+  });
+
+  app.post('/api/account-assertions', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+    const userId = c.get('userId');
+    const body = await c.req.json<Partial<AccountAssertion>>();
+
+    if (!body.fsliName || !body.noGL) return bad(c, 'Missing fsliName or noGL');
+
+    // Find existing
+    const existing = await db.select()
+      .from(accountAssertions)
+      .where(and(
+        eq(accountAssertions.organizationId, orgId),
+        eq(accountAssertions.fsliName, body.fsliName),
+        eq(accountAssertions.noGL, body.noGL)
+      ))
+      .then(rows => rows[0]);
+
+    if (existing) {
+      await db.update(accountAssertions)
+        .set({
+          ...body,
+          updatedAt: new Date(),
+          updatedBy: userId
+        })
+        .where(eq(accountAssertions.id, existing.id));
+      return ok(c, { success: true, id: existing.id });
+    } else {
+      const id = crypto.randomUUID();
+      await db.insert(accountAssertions)
+        .values({
+          id,
+          organizationId: orgId,
+          fsliName: body.fsliName,
+          noGL: body.noGL,
+          assertionE: body.assertionE || 'N',
+          assertionC: body.assertionC || 'N',
+          assertionA: body.assertionA || 'N',
+          assertionCo: body.assertionCo || 'N',
+          assertionRo: body.assertionRo || 'N',
+          assertionVa: body.assertionVa || 'N',
+          assertionPd: body.assertionPd || 'N',
+          updatedAt: new Date(),
+          updatedBy: userId
+        } as any);
+      return ok(c, { success: true, id });
+    }
   });
 
   // --- Applications Routes ---

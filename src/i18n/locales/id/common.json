@@ -26,6 +26,8 @@
     "warning": "Peringatan",
     "info": "Informasi"
   },
+  "yes": "Ya",
+  "no": "Tidak",
   "icofr": {
     "elc": "Entity Level Control (ELC)",
     "tlc": "Transaction Level Control (TLC)",

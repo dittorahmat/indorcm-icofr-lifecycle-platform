@@ -553,6 +553,21 @@ export interface InvesteeMateriality {
   allocatedPM: number;
 }
 
+export interface AccountAssertion {
+  id: string;
+  fsliName: string;
+  noGL: string;
+  assertionE?: string; // "Y" / "N"
+  assertionC?: string;
+  assertionA?: string;
+  assertionCo?: string;
+  assertionRo?: string;
+  assertionVa?: string;
+  assertionPd?: string;
+  updatedAt?: number;
+  updatedBy?: string;
+}
+
 export interface Materiality {
   id: string;
   year: number;

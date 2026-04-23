@@ -58,14 +58,14 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
   const [isAddingApp, setIsAddingApp] = React.useState(false);
   const [newAppName, setNewAppName] = React.useState("");
 
-  const handleOpenDiagram = (diagramId: string, subProcess: string) => {
+  const handleOpenDiagram = React.useCallback((diagramId: string, subProcess: string) => {
     setSearchParams(prev => {
       const next = new URLSearchParams(prev);
       next.set('diagramId', diagramId);
       next.set('subProcess', subProcess);
       return next;
     });
-  };
+  }, [setSearchParams]);
 
   const handleCloseDiagram = () => {
     setSearchParams(prev => {
@@ -499,7 +499,7 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
         </Select>
       )
     }
-  ], [apps?.items, diagrams?.items, createDiagramMutation, debouncedUpdate, updateMutation, deleteMutation, elcControls, t]);
+  ], [apps?.items, diagrams?.items, handleOpenDiagram, createDiagramMutation, debouncedUpdate, updateMutation, deleteMutation, elcControls, t]);
 
   const table = useReactTable({
     data: controls || [],

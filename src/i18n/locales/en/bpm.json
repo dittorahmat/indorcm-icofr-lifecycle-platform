@@ -3,6 +3,40 @@
   "description": "Map business processes and controls at the transaction level.",
   "searchPlaceholder": "Search Sub Process...",
   "createButton": "Create BPM",
+  "assertions": {
+    "title": "Financial Assertions (Source of Truth)",
+    "subtitle": "TABLE 8 REGULATION SK-5",
+    "tooltip": {
+      "eo": {
+        "label": "Existence / Occurrence",
+        "desc": "Existence: ensuring all assets, liabilities, and equity listed in the statement of financial position actually exist. Occurrence: ensuring all transactions presented in the statement of profit or loss and other comprehensive income actually occurred."
+      },
+      "c": {
+        "label": "Completeness",
+        "desc": "Ensuring all transactions and accounts that should be presented in the financial statements are available and recorded in full."
+      },
+      "a": {
+        "label": "Accuracy",
+        "desc": "Ensuring amounts and other data related to recorded transactions and events have been recorded appropriately, and related disclosures have been measured and described appropriately."
+      },
+      "co": {
+        "label": "Cut-Off",
+        "desc": "Ensuring transactions and events have been recorded in the correct accounting period."
+      },
+      "ro": {
+        "label": "Rights & Obligation",
+        "desc": "Rights: ensuring the company has rights to an asset at a certain time. Obligation: ensuring the company has obligations that are the responsibility of the company at a certain time."
+      },
+      "va": {
+        "label": "Valuation & Allocation",
+        "desc": "Valuation: ensuring assets, liabilities, and equity are valued appropriately in accordance with generally accepted accounting principles. Allocation: ensuring balances have been appropriately allocated between the statement of financial position and the statement of profit or loss and other comprehensive income."
+      },
+      "pd": {
+        "label": "Presentation & Disclosure",
+        "desc": "Presentation: ensuring the classification of transactions and accounts is appropriately reflected in the financial statements. Disclosure: ensuring disclosures in the notes to the financial statements are adequate so that the financial statements are not misleading."
+      }
+    }
+  },
   "table": {
     "action": "Action",
     "subProcess": "Sub Process",
