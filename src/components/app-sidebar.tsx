@@ -166,21 +166,21 @@ export function AppSidebar(): JSX.Element {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="font-bold text-white uppercase text-[10px] tracking-widest opacity-80">{t('groups.rcsa')}</SidebarGroupLabel>
+          <SidebarGroupLabel className="font-bold text-white uppercase text-[10px] tracking-widest opacity-80">RCM Matrix</SidebarGroupLabel>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/rcm")}>
-                <Link to="/rcm" className="font-bold"><ShieldCheck /> <span>RCM Manager</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/rcm/tlc")}>
+                <Link to="/rcm/tlc" className="font-bold"><ShieldCheck className="text-emerald-500" /> <span>RCM TLC Matrix</span></Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={isActive("/rcm/elc")}>
+                <Link to="/rcm/elc" className="font-bold"><ShieldCheck className="text-indigo-500" /> <span>RCM ELC Matrix</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/change-log")}>
                 <Link to="/change-log" className="font-bold"><History /> <span>{t('items.changelog')}</span></Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/soc-monitoring")}>
-                <Link to="/soc-monitoring" className="font-bold"><ShieldCheck /> <span>{t('items.soc')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

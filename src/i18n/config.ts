@@ -13,6 +13,7 @@ import bpmEn from './locales/en/bpm.json';
 import deficiencyEn from './locales/en/deficiency.json';
 import testingEn from './locales/en/testing.json';
 import riskLibraryEn from './locales/en/risklibrary.json';
+import rcmEn from './locales/en/rcm.json';
 
 import commonId from './locales/id/common.json';
 import sidebarId from './locales/id/sidebar.json';
@@ -24,6 +25,7 @@ import bpmId from './locales/id/bpm.json';
 import deficiencyId from './locales/id/deficiency.json';
 import testingId from './locales/id/testing.json';
 import riskLibraryId from './locales/id/risklibrary.json';
+import rcmId from './locales/id/rcm.json';
 
 i18n
   .use(LanguageDetector)
@@ -41,6 +43,7 @@ i18n
         deficiency: deficiencyEn,
         testing: testingEn,
         risklibrary: riskLibraryEn,
+        rcm: rcmEn,
       },
       id: {
         common: commonId,
@@ -53,10 +56,11 @@ i18n
         deficiency: deficiencyId,
         testing: testingId,
         risklibrary: riskLibraryId,
+        rcm: rcmId,
       },
     },
     fallbackLng: 'en',
-    ns: ['common', 'sidebar', 'scoping', 'dashboard', 'reports', 'knowledge', 'bpm', 'deficiency', 'testing', 'risklibrary'],
+    ns: ['common', 'sidebar', 'scoping', 'dashboard', 'reports', 'knowledge', 'bpm', 'deficiency', 'testing', 'risklibrary', 'rcm'],
     defaultNS: 'common',
     interpolation: {
       escapeValue: false, // react already safes from xss

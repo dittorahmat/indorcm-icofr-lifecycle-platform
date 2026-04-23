@@ -756,6 +756,105 @@ export function userRoutes(app: Hono<HonoEnv>) {
     return ok(c, { success: true });
   });
 
+  app.get('/api/rcm-matrix/tlc', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+
+    // Get Organization info for Company and Location
+    const org = await db.select().from(organization).where(eq(organization.id, orgId)).then(rows => rows[0]);
+
+    // Hierarchical Join: 
+    // bpmProcesses -> bpmDiagrams -> bpmNodeRcms -> rcms -> rcm_controls -> controls
+    const results = await db.select({
+      mappingId: rcmControls.id,
+      processName: bpmProcesses.name,
+      fsliName: bpmProcesses.fsliName,
+      noGL: bpmProcesses.noGL,
+      subProcessName: bpmDiagrams.name,
+      riskDescription: rcms.riskDescription,
+      isFraudRelated: rcms.isFraudRelated,
+      riskRating: rcms.riskRating,
+      controlCode: controls.code,
+      controlName: controls.name,
+      // Metadata from junction table
+      ipoC: rcmControls.ipoC,
+      ipoA: rcmControls.ipoA,
+      ipoV: rcmControls.ipoV,
+      ipoRa: rcmControls.ipoRa,
+      assertionE: rcmControls.assertionE,
+      assertionC: rcmControls.assertionC,
+      assertionA: rcmControls.assertionA,
+      assertionCo: rcmControls.assertionCo,
+      assertionVa: rcmControls.assertionVa,
+      assertionRo: rcmControls.assertionRo,
+      assertionPd: rcmControls.assertionPd,
+      controlType: rcmControls.controlType,
+      controlNature: rcmControls.controlNature,
+      frequency: rcmControls.frequency,
+      isKeyControl: rcmControls.isKeyControl,
+      supportingDocs: rcmControls.supportingDocs,
+      executingFunction: rcmControls.executingFunction,
+      executorRole: rcmControls.executorRole,
+      affectedFsliItem: rcmControls.affectedFsliItem,
+      effectivePeriod: rcmControls.effectivePeriod,
+    })
+    .from(rcmControls)
+    .innerJoin(rcms, eq(rcmControls.rcmId, rcms.id))
+    .innerJoin(controls, eq(rcmControls.controlId, controls.id))
+    .innerJoin(bpmNodeRcms, eq(rcms.id, bpmNodeRcms.rcmId))
+    .innerJoin(bpmDiagrams, eq(bpmNodeRcms.diagramId, bpmDiagrams.id))
+    .innerJoin(bpmProcesses, eq(bpmDiagrams.subProcess, bpmProcesses.name))
+    .where(eq(rcmControls.organizationId, orgId));
+
+    return ok(c, { 
+      items: results.map(r => ({
+        ...r,
+        companyName: org?.name || "N/A",
+        locationCode: org?.entityCode || "N/A"
+      }))
+    });
+  });
+
+  app.post('/api/rcm-matrix/tlc/batch-update', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+    const { items } = await c.req.json<{ items: Partial<RCMControlMapping>[] }>();
+
+    if (!items || !Array.isArray(items)) return bad(c, 'Invalid items array');
+
+    for (const item of items) {
+      if (!item.id) continue;
+      
+      // Upsert/Update only the metadata fields
+      await db.update(rcmControls)
+        .set({
+          ipoC: item.ipoC,
+          ipoA: item.ipoA,
+          ipoV: item.ipoV,
+          ipoRa: item.ipoRa,
+          assertionE: item.assertionE,
+          assertionC: item.assertionC,
+          assertionA: item.assertionA,
+          assertionCo: item.assertionCo,
+          assertionVa: item.assertionVa,
+          assertionRo: item.assertionRo,
+          assertionPd: item.assertionPd,
+          controlType: item.controlType,
+          controlNature: item.controlNature,
+          frequency: item.frequency,
+          isKeyControl: item.isKeyControl,
+          supportingDocs: item.supportingDocs,
+          executingFunction: item.executingFunction,
+          executorRole: item.executorRole,
+          affectedFsliItem: item.affectedFsliItem,
+          effectivePeriod: item.effectivePeriod,
+        })
+        .where(and(eq(rcmControls.id, item.id), eq(rcmControls.organizationId, orgId)));
+    }
+
+    return ok(c, { success: true });
+  });
+
   // --- Controls Refactored ---
 
   app.get('/api/controls', async (c) => {
@@ -1260,17 +1359,18 @@ export function userRoutes(app: Hono<HonoEnv>) {
       .where(and(eq(bpmDiagrams.id, id), eq(bpmDiagrams.organizationId, orgId)));
 
     // 2. Sync Relational Tables (Transaction-like)
-    // First, clear existing links for this diagram
+    // First, clear existing node-specific links (Activity -> Risk)
     await db.delete(bpmNodeRcms).where(eq(bpmNodeRcms.diagramId, id));
 
-    // Extract links from nodes
     const nodes = body.nodes || [];
+    const edges = body.edges || [];
+    const activeRiskControlPairs = new Set<string>(); // "rcmId:controlId"
+
+    // A. Collect from Docked Risks (Inside activity nodes)
     for (const node of nodes) {
       if ((node.type === 'activity' || node.type === 'automated-activity') && node.data?.risks) {
         for (const riskEntry of node.data.risks) {
-          // riskEntry = { rcmId: string, controlIds: string[] }
-          
-          // Link Activity Node -> Risk
+          // Link Activity Node -> Risk (Diagram specific)
           await db.insert(bpmNodeRcms).values({
             id: crypto.randomUUID(),
             organizationId: orgId,
@@ -1279,27 +1379,42 @@ export function userRoutes(app: Hono<HonoEnv>) {
             rcmId: riskEntry.rcmId
           });
 
-          // Link Risk -> Controls
-          if (riskEntry.controlIds && riskEntry.controlIds.length > 0) {
-            for (const ctrlId of riskEntry.controlIds) {
-              // Check if link already exists to avoid unique constraint violations
-              const existing = await db.select().from(rcmControls).where(and(
-                eq(rcmControls.rcmId, riskEntry.rcmId),
-                eq(rcmControls.controlId, ctrlId),
-                eq(rcmControls.organizationId, orgId)
-              ));
-              
-              if (existing.length === 0) {
-                await db.insert(rcmControls).values({
-                  id: crypto.randomUUID(),
-                  organizationId: orgId,
-                  rcmId: riskEntry.rcmId,
-                  controlId: ctrlId
-                });
-              }
-            }
+          // Collect Risk -> Controls
+          if (riskEntry.controlIds) {
+            riskEntry.controlIds.forEach((ctrlId: string) => activeRiskControlPairs.add(`${riskEntry.rcmId}:${ctrlId}`));
           }
         }
+      }
+    }
+
+    // B. Collect from Standalone Nodes via Edges (Risk node -> Control node)
+    for (const edge of edges) {
+      const sourceNode = nodes.find((n: any) => n.id === edge.source);
+      const targetNode = nodes.find((n: any) => n.id === edge.target);
+
+      if (sourceNode?.type === 'risk' && targetNode?.type === 'control') {
+        const rcmId = sourceNode.data?.rcmId;
+        const ctrlId = targetNode.data?.controlId;
+        if (rcmId && ctrlId) activeRiskControlPairs.add(`${rcmId}:${ctrlId}`);
+      }
+    }
+
+    // C. Upsert active pairs into rcm_controls (Preserve metadata)
+    for (const pair of activeRiskControlPairs) {
+      const [rcmId, ctrlId] = pair.split(':');
+      const existing = await db.select().from(rcmControls).where(and(
+        eq(rcmControls.rcmId, rcmId),
+        eq(rcmControls.controlId, ctrlId),
+        eq(rcmControls.organizationId, orgId)
+      )).limit(1);
+
+      if (existing.length === 0) {
+        await db.insert(rcmControls).values({
+          id: crypto.randomUUID(),
+          organizationId: orgId,
+          rcmId,
+          controlId: ctrlId
+        });
       }
     }
 

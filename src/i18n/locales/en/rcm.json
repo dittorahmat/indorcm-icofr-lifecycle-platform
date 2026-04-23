@@ -1,0 +1,24 @@
+{
+  "matrix": {
+    "title_tlc": "RCM TLC Matrix",
+    "title_elc": "RCM ELC Matrix",
+    "process_info": "Business Process Information",
+    "sub_process": "Sub-Process Information",
+    "company": "Operating Entity",
+    "location": "Location",
+    "risk_description": "Control Activity Risk",
+    "fraud_related": "Fraud Related",
+    "risk_rating": "Risk Assessment",
+    "control_ref": "Control Ref",
+    "control_name": "Control Activity Name",
+    "ipo": "IPO (Information Processing Objective)",
+    "assertions": "Financial Statement Assertions",
+    "type": "Control Type",
+    "nature": "Nature",
+    "frequency": "Frequency",
+    "key_control": "Key Control",
+    "supporting_docs": "Supporting Documents",
+    "effective_period": "Effective Period",
+    "save_success": "Matrix data saved successfully"
+  }
+}

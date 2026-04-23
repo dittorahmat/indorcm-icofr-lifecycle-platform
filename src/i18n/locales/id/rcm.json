@@ -1,0 +1,24 @@
+{
+  "matrix": {
+    "title_tlc": "Matriks RCM TLC",
+    "title_elc": "Matriks RCM ELC",
+    "process_info": "Informasi Proses Bisnis",
+    "sub_process": "Sub Proses Bisnis",
+    "company": "Perusahaan Pelaksana",
+    "location": "Lokasi",
+    "risk_description": "Risiko Aktivitas Pengendalian",
+    "fraud_related": "Terkait Fraud",
+    "risk_rating": "Penilaian Risiko",
+    "control_ref": "Ref Kontrol",
+    "control_name": "Nama Aktivitas Pengendalian",
+    "ipo": "IPO (Information Processing Objective)",
+    "assertions": "Asersi Laporan Keuangan",
+    "type": "Tipe Pengendalian",
+    "nature": "Nature",
+    "frequency": "Frekuensi",
+    "key_control": "Pengendalian Utama",
+    "supporting_docs": "Dokumen Pendukung",
+    "effective_period": "Periode Efektif",
+    "save_success": "Data matriks berhasil disimpan"
+  }
+}

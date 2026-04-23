@@ -20,6 +20,8 @@ import { LoginPage } from '@/pages/LoginPage';
 import { WelcomePage } from '@/pages/WelcomePage';
 const Dashboard = lazy(() => import('@/pages/Dashboard').then(module => ({ default: module.Dashboard })));
 const RCMList = lazy(() => import('@/pages/rcm/RCMList').then(module => ({ default: module.RCMList })));
+const RCMTLCPage = lazy(() => import('@/pages/rcm/RCMTLCPage').then(module => ({ default: module.RCMTLCPage })));
+const RCMELCPage = lazy(() => import('@/pages/rcm/RCMELCPage').then(module => ({ default: module.RCMELCPage })));
 const TestWorkbench = lazy(() => import('@/pages/testing/TestWorkbench').then(module => ({ default: module.TestWorkbench })));
 const DeficiencyBoard = lazy(() => import('@/pages/deficiencies/DeficiencyBoard').then(module => ({ default: module.DeficiencyBoard })));
 const ReportsPage = lazy(() => import('@/pages/reports/ReportsPage').then(module => ({ default: module.ReportsPage })));
@@ -30,7 +32,6 @@ const ApprovalPage = lazy(() => import('@/pages/scoping/ApprovalPage').then(modu
 const ExternalAuditPortal = lazy(() => import('@/pages/audit/ExternalAuditPortal').then(module => ({ default: module.ExternalAuditPortal })));
 const WBSPage = lazy(() => import('@/pages/reports/WBSPage').then(module => ({ default: module.WBSPage })));
 const ChangeLogPage = lazy(() => import('@/pages/rcm/ChangeLogPage').then(module => ({ default: module.ChangeLogPage })));
-const RiskLibraryPage = lazy(() => import('@/pages/rcm/RiskLibraryPage').then(module => ({ default: module.RiskLibraryPage })));
 const SOCMonitoringPage = lazy(() => import('@/pages/rcm/SOCMonitoringPage').then(module => ({ default: module.SOCMonitoringPage })));
 const BPMPage = lazy(() => import('@/pages/bpm/BPMPage').then(module => ({ default: module.BPMPage })));
 const UserManagementPage = lazy(() => import('@/pages/admin/UserManagementPage').then(module => ({ default: module.UserManagementPage })));
@@ -72,7 +73,8 @@ const router = createBrowserRouter([
               { path: "/scoping", element: <PageSuspense><ScopingPage /></PageSuspense> },
               { path: "/scoping/approval", element: <PageSuspense><ApprovalPage /></PageSuspense> },
               { path: "/rcm", element: <PageSuspense><RCMList /></PageSuspense> },
-              { path: "/rcm/risk-library", element: <PageSuspense><RiskLibraryPage /></PageSuspense> },
+              { path: "/rcm/tlc", element: <PageSuspense><RCMTLCPage /></PageSuspense> },
+              { path: "/rcm/elc", element: <PageSuspense><RCMELCPage /></PageSuspense> },
               { path: "/change-log", element: <PageSuspense><ChangeLogPage /></PageSuspense> },
               { path: "/soc-monitoring", element: <PageSuspense><SOCMonitoringPage /></PageSuspense> },
               { path: "/bpm", element: <PageSuspense><BPMPage /></PageSuspense> },

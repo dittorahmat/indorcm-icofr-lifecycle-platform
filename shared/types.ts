@@ -284,9 +284,39 @@ export interface BPMEdge {
   label?: string;
 }
 
+export interface RCMControlMapping {
+  id: string;
+  rcmId: string;
+  controlId: string;
+  organizationId: string;
+
+  // Regulatory Metadata (Lampiran 5 b)
+  ipoC?: string;
+  ipoA?: string;
+  ipoV?: string;
+  ipoRa?: string;
+  assertionE?: string;
+  assertionC?: string;
+  assertionA?: string;
+  assertionCo?: string;
+  assertionVa?: string;
+  assertionRo?: string;
+  assertionPd?: string;
+  controlType?: string; // Preventif / Detektif
+  controlNature?: string; // Manual / Otomatis / ITDM / MRC
+  frequency?: string;
+  isKeyControl: boolean;
+  supportingDocs?: string;
+  executingFunction?: string;
+  executorRole?: string;
+  affectedFsliItem?: string;
+  effectivePeriod?: string;
+}
+
 export interface RCM {
   id: string;
   process: string;
+  // ... rest of RCM interface remains the same
   subProcess: string;
   riskDescription: string;
   isFraudRelated: boolean;

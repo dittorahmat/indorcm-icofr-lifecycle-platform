@@ -167,7 +167,29 @@ export const rcmControls = pgTable("rcm_controls", {
 	id: text("id").primaryKey(),
 	organizationId: text("organizationId").notNull().references(() => organization.id),
 	rcmId: text("rcm_id").notNull().references(() => rcms.id, { onDelete: 'cascade' }),
-	controlId: text("control_id").notNull().references(() => controls.id, { onDelete: 'cascade' })
+	controlId: text("control_id").notNull().references(() => controls.id, { onDelete: 'cascade' }),
+	
+	// Regulatory Metadata (Lampiran 5 b)
+	ipoC: text("ipo_c"),
+	ipoA: text("ipo_a"),
+	ipoV: text("ipo_v"),
+	ipoRa: text("ipo_ra"),
+	assertionE: text("assertion_e"),
+	assertionC: text("assertion_c"),
+	assertionA: text("assertion_a"),
+	assertionCo: text("assertion_co"),
+	assertionVa: text("assertion_va"),
+	assertionRo: text("assertion_ro"),
+	assertionPd: text("assertion_pd"),
+	controlType: text("control_type"), // Preventif / Detektif
+	controlNature: text("control_nature"), // Manual / Otomatis / ITDM / MRC
+	frequency: text("frequency"),
+	isKeyControl: boolean("is_key_control").default(false),
+	supportingDocs: text("supporting_docs"),
+	executingFunction: text("executing_function"),
+	executorRole: text("executor_role"),
+	affectedFsliItem: text("affected_fsli_item"),
+	effectivePeriod: text("effective_period"),
 });
 
 export const rcms = pgTable("rcms", {
