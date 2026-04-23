@@ -287,8 +287,10 @@ export interface BPMEdge {
 export interface RCMControlMapping {
   id: string;
   rcmId: string;
-  controlId: string;
-  organizationId: string;
+  controlName?: string;
+  controlDescription?: string; // Column xi
+  supportingDocs?: string; // Column xii
+  isKeyControl: boolean; // Column xiii
 
   // Regulatory Metadata (Lampiran 5 b)
   ipoC?: string;
@@ -302,15 +304,16 @@ export interface RCMControlMapping {
   assertionVa?: string;
   assertionRo?: string;
   assertionPd?: string;
-  controlType?: string; // Preventif / Detektif
-  controlNature?: string; // Manual / Otomatis / ITDM / MRC
-  frequency?: string;
-  isKeyControl: boolean;
-  supportingDocs?: string;
-  executingFunction?: string;
-  executorRole?: string;
-  affectedFsliItem?: string;
-  effectivePeriod?: string;
+  
+  controlType?: string; // Column xxv: Preventif / Detektif
+  controlNature?: string; // Column xxvi: Manual, Otomatis, ITDM - EUC, ITDM - IPE, MRC
+  automatedType?: string; // Column xxvii: Automated Control, Automated Calculation, Restricted Access, Interface
+  frequency?: string; // Column xxviii
+  supportingApp?: string; // Column xxix
+  executingFunction?: string; // Column xxx
+  executorRole?: string; // Column xxxi
+  affectedFsliItem?: string; // Column xxxii
+  effectivePeriod?: string; // Column xxxiii
 }
 
 export interface RCM {

@@ -169,6 +169,11 @@ export const rcmControls = pgTable("rcm_controls", {
 	rcmId: text("rcm_id").notNull().references(() => rcms.id, { onDelete: 'cascade' }),
 	controlId: text("control_id").notNull().references(() => controls.id, { onDelete: 'cascade' }),
 	
+	controlName: text("control_name"), // Column x: display name
+	controlDescription: text("control_description"), // Column xi
+	supportingDocs: text("supporting_docs"), // Column xii
+	isKeyControl: boolean("is_key_control").default(false), // Column xiii
+	
 	// Regulatory Metadata (Lampiran 5 b)
 	ipoC: text("ipo_c"),
 	ipoA: text("ipo_a"),
@@ -181,15 +186,16 @@ export const rcmControls = pgTable("rcm_controls", {
 	assertionVa: text("assertion_va"),
 	assertionRo: text("assertion_ro"),
 	assertionPd: text("assertion_pd"),
-	controlType: text("control_type"), // Preventif / Detektif
-	controlNature: text("control_nature"), // Manual / Otomatis / ITDM / MRC
-	frequency: text("frequency"),
-	isKeyControl: boolean("is_key_control").default(false),
-	supportingDocs: text("supporting_docs"),
-	executingFunction: text("executing_function"),
-	executorRole: text("executor_role"),
-	affectedFsliItem: text("affected_fsli_item"),
-	effectivePeriod: text("effective_period"),
+	
+	controlType: text("control_type"), // Column xxv: Preventif / Detektif
+	controlNature: text("control_nature"), // Column xxvi: Manual, Otomatis, ITDM - EUC, ITDM - IPE, MRC
+	automatedType: text("automated_type"), // Column xxvii: Automated Control, etc.
+	frequency: text("frequency"), // Column xxviii
+	supportingApp: text("supporting_app"), // Column xxix
+	executingFunction: text("executing_function"), // Column xxx
+	executorRole: text("executor_role"), // Column xxxi
+	affectedFsliItem: text("affected_fsli_item"), // Column xxxii
+	effectivePeriod: text("effective_period"), // Column xxxiii
 });
 
 export const rcms = pgTable("rcms", {

@@ -15,6 +15,8 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
+import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
+import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 
 const COSO_PRINCIPLES = [
   { id: 1, name: "Integritas dan Nilai Etika", component: "Lingkungan Pengendalian" },
@@ -45,6 +47,10 @@ export function RCMELCPage() {
     queryKey: ['controls-elc'],
     queryFn: () => api<{ items: Control[] }>('/api/controls'),
   });
+
+  // isDirty check: if localMeta has any keys, it's dirty
+  const isDirty = React.useMemo(() => Object.keys(localMeta).length > 0, [localMeta]);
+  const blocker = useUnsavedChanges(isDirty);
 
   const elcControls = (controlsData?.items || []).filter(c => c.level === 'ELC');
 
@@ -155,6 +161,7 @@ export function RCMELCPage() {
           </Table>
         </div>
       </div>
+      <UnsavedChangesDialog blocker={blocker} />
     </AppLayout>
   );
 }

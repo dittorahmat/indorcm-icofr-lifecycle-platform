@@ -774,8 +774,12 @@ export function userRoutes(app: Hono<HonoEnv>) {
       riskDescription: rcms.riskDescription,
       isFraudRelated: rcms.isFraudRelated,
       riskRating: rcms.riskRating,
-      controlCode: controls.code,
-      controlName: controls.name,
+      controlCode: controls.code, // Fundamental reference
+      baseControlName: controls.name,
+      baseControlDescription: controls.description,
+      // Metadata from junction table
+      mappedControlName: rcmControls.controlName,
+      mappedControlDescription: rcmControls.controlDescription,
       // Metadata from junction table
       ipoC: rcmControls.ipoC,
       ipoA: rcmControls.ipoA,
@@ -790,9 +794,11 @@ export function userRoutes(app: Hono<HonoEnv>) {
       assertionPd: rcmControls.assertionPd,
       controlType: rcmControls.controlType,
       controlNature: rcmControls.controlNature,
+      automatedType: rcmControls.automatedType,
       frequency: rcmControls.frequency,
       isKeyControl: rcmControls.isKeyControl,
       supportingDocs: rcmControls.supportingDocs,
+      supportingApp: rcmControls.supportingApp,
       executingFunction: rcmControls.executingFunction,
       executorRole: rcmControls.executorRole,
       affectedFsliItem: rcmControls.affectedFsliItem,
@@ -828,6 +834,8 @@ export function userRoutes(app: Hono<HonoEnv>) {
       // Upsert/Update only the metadata fields
       await db.update(rcmControls)
         .set({
+          controlName: item.controlName,
+          controlDescription: item.controlDescription,
           ipoC: item.ipoC,
           ipoA: item.ipoA,
           ipoV: item.ipoV,
@@ -841,9 +849,11 @@ export function userRoutes(app: Hono<HonoEnv>) {
           assertionPd: item.assertionPd,
           controlType: item.controlType,
           controlNature: item.controlNature,
+          automatedType: item.automatedType,
           frequency: item.frequency,
           isKeyControl: item.isKeyControl,
           supportingDocs: item.supportingDocs,
+          supportingApp: item.supportingApp,
           executingFunction: item.executingFunction,
           executorRole: item.executorRole,
           affectedFsliItem: item.affectedFsliItem,
