@@ -23,6 +23,16 @@ export interface Department {
   description?: string;
 }
 
+export interface Organization {
+  id: string;
+  name: string;
+  slug?: string;
+  logo?: string;
+  createdAt: number;
+  metadata?: any;
+  entityCode?: string;
+}
+
 export type QualitativeLevel = "Low" | "Medium" | "High";
 
 export interface QualitativeEntry {

@@ -3,6 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface ELCFormProps {
   data: any;
@@ -10,7 +16,7 @@ interface ELCFormProps {
 }
 
 export function ELCForm({ data, onChange }: ELCFormProps) {
-  const { t } = useTranslation(['bpm', 'common']);
+  const { t } = useTranslation(['rcm', 'bpm', 'common']);
 
   const cosoPrinciples = [
     { id: 1, label: 'P1', desc: 'Integritas & Nilai Etika' },
@@ -45,44 +51,53 @@ export function ELCForm({ data, onChange }: ELCFormProps) {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col gap-1 mb-2">
-        <h4 className="text-[10px] font-black uppercase text-indigo-900 tracking-wider">Pemetaan 17 Prinsip COSO (Lampiran 1)</h4>
-        <p className="text-[9px] text-slate-500 italic">Tentukan prinsip COSO mana yang dipayungi oleh kontrol entitas ini.</p>
-      </div>
-
-      <div className="border rounded-lg bg-white shadow-sm overflow-hidden">
-        <div className="bg-slate-50 border-b px-3 py-1.5 flex justify-between items-center">
-          <span className="text-[9px] font-bold text-slate-400 uppercase">Prinsip COSO</span>
-          <span className="text-[9px] font-bold text-slate-400 uppercase">Relevan?</span>
+    <TooltipProvider>
+      <div className="space-y-4">
+        <div className="flex flex-col gap-1 mb-2">
+          <h4 className="text-[10px] font-black uppercase text-indigo-900 tracking-wider">Pemetaan 17 Prinsip COSO (Lampiran 1)</h4>
+          <p className="text-[9px] text-slate-500 italic">Tentukan prinsip COSO mana yang dipayungi oleh kontrol entitas ini.</p>
         </div>
-        <ScrollArea className="h-[250px]">
-          <div className="divide-y">
-            {cosoPrinciples.map((p) => (
-              <div key={p.id} className="px-3 py-2 flex items-center justify-between hover:bg-slate-50/50 transition-colors">
-                <div className="flex items-center gap-3">
-                  <Badge variant="outline" className="font-mono text-[9px] h-5 w-8 flex justify-center bg-indigo-50 border-indigo-100 text-indigo-700">
-                    {p.label}
-                  </Badge>
-                  <span className="text-[10px] font-medium text-slate-700">{p.desc}</span>
-                </div>
-                <Select 
-                  value={currentMapping.includes(p.id) ? 'Y' : 'N'} 
-                  onValueChange={(v) => handleToggle(p.id, v)}
-                >
-                  <SelectTrigger className="h-7 text-[9px] w-16 bg-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Y">Y</SelectItem>
-                    <SelectItem value="N">N</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            ))}
+
+        <div className="border rounded-lg bg-white shadow-sm overflow-hidden">
+          <div className="bg-slate-50 border-b px-3 py-1.5 flex justify-between items-center">
+            <span className="text-[9px] font-bold text-slate-400 uppercase">Prinsip COSO</span>
+            <span className="text-[9px] font-bold text-slate-400 uppercase">Relevan?</span>
           </div>
-        </ScrollArea>
+          <ScrollArea className="h-[250px]">
+            <div className="divide-y">
+              {cosoPrinciples.map((p) => (
+                <div key={p.id} className="px-3 py-2 flex items-center justify-between hover:bg-slate-50/50 transition-colors group/row">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center gap-3 cursor-help">
+                        <Badge variant="outline" className="font-mono text-[9px] h-5 w-8 flex justify-center bg-indigo-50 border-indigo-100 text-indigo-700">
+                          {p.label}
+                        </Badge>
+                        <span className="text-[10px] font-medium text-slate-700 underline decoration-dotted decoration-slate-300 underline-offset-2">{p.desc}</span>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="max-w-[250px] bg-slate-900 text-white p-3">
+                       <p className="text-[10px] leading-relaxed">{t(`matrix.coso_tooltips.p${p.id}`)}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <Select 
+                    value={currentMapping.includes(p.id) ? 'Y' : 'N'} 
+                    onValueChange={(v) => handleToggle(p.id, v)}
+                  >
+                    <SelectTrigger className="h-7 text-[9px] w-16 bg-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Y">Y</SelectItem>
+                      <SelectItem value="N">N</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+        </div>
       </div>
-    </div>
+    </TooltipProvider>
   );
 }

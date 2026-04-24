@@ -891,7 +891,14 @@ export function userRoutes(app: Hono<HonoEnv>) {
   app.get('/api/controls', async (c) => {
     const db = getDb(c.env.DATABASE_URL);
     const orgId = c.get('organizationId');
-    const items = await db.select().from(controls).where(eq(controls.organizationId, orgId));
+    const level = c.req.query('level');
+
+    let conditions = eq(controls.organizationId, orgId);
+    if (level) {
+      conditions = and(conditions, eq(controls.level, level as any));
+    }
+
+    const items = await db.select().from(controls).where(conditions);
     return ok(c, { items });
   });
 
@@ -2333,7 +2340,17 @@ export function userRoutes(app: Hono<HonoEnv>) {
   app.get('/api/changelogs', async (c) => {
     const db = getDb(c.env.DATABASE_URL);
     const orgId = c.get('organizationId');
-    const items = await db.select().from(auditLogs).where(and(eq(auditLogs.organizationId, orgId), eq(auditLogs.isRegulatory, true)));
+    const entityId = c.req.query('entityId');
+
+    let conditions = and(eq(auditLogs.organizationId, orgId), eq(auditLogs.isRegulatory, true));
+    if (entityId) {
+      conditions = and(conditions, eq(auditLogs.entityId, entityId));
+    }
+
+    const items = await db.select().from(auditLogs)
+      .where(conditions)
+      .orderBy(desc(auditLogs.timestamp));
+
     return ok(c, { items });
   });
 

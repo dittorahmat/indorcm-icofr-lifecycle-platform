@@ -3,16 +3,19 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '
 import { Node } from 'reactflow';
 import { useTranslation } from 'react-i18next';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
-import { X, ShieldAlert, ShieldCheck, Database, AlertCircle, Trash2, PlusCircle, AlertTriangle, RefreshCw } from 'lucide-react';
+import { X, ShieldAlert, ShieldCheck, Database, Trash2, PlusCircle, AlertTriangle, RefreshCw, History, Layout } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import type { QualitativeLevel, ControlLevel } from '@shared/types';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '@/lib/api-client';
+import { format } from 'date-fns';
+import type { QualitativeLevel, ControlLevel, ChangeLog } from '@shared/types';
 
 import { TLCForm } from './TLCForm';
 import { ELCForm } from './ELCForm';
@@ -27,6 +30,40 @@ interface RegulatoryPropertySheetProps {
   onSave: () => void;
   isSaving?: boolean;
   isDirty?: boolean;
+}
+
+function EntityHistoryList({ entityId }: { entityId: string }) {
+  const { data, isLoading } = useQuery({
+    queryKey: ['changelogs', entityId],
+    queryFn: () => api<{ items: ChangeLog[] }>(`/api/changelogs?entityId=${entityId}`),
+    enabled: !!entityId
+  });
+
+  if (isLoading) return <div className="p-8 text-center"><RefreshCw className="h-4 w-4 animate-spin mx-auto text-slate-300" /></div>;
+  if (!data?.items?.length) return <div className="p-12 text-center text-slate-400 italic text-xs border-2 border-dashed rounded-xl">Belum ada riwayat perubahan regulasi untuk entitas ini.</div>;
+
+  return (
+    <div className="space-y-3 p-1">
+      {data.items.map((log) => (
+        <div key={log.id} className="border rounded-xl p-3 bg-white shadow-sm text-[10px] space-y-2 border-slate-100">
+           <div className="flex justify-between items-center">
+              <span className="font-black text-indigo-600 uppercase tracking-tight">{log.userId.split('@')[0]}</span>
+              <span className="text-slate-400 font-medium">{format(log.timestamp, 'dd MMM yyyy HH:mm')}</span>
+           </div>
+           <div className="text-slate-600 leading-relaxed bg-slate-50 p-2 rounded-lg border border-slate-100/50">
+             <div className="flex items-center gap-2 mb-1">
+                <Badge variant="outline" className="text-[8px] h-4 bg-white uppercase">{log.entityType}</Badge>
+                <span className="text-slate-400">Changed mapping/metadata:</span>
+             </div>
+             <p className="font-medium text-slate-800 italic">"{log.descriptionAfter}"</p>
+             {log.descriptionBefore && (
+               <p className="text-[9px] text-slate-400 mt-1 line-through decoration-red-200">Before: {log.descriptionBefore}</p>
+             )}
+           </div>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export function RegulatoryPropertySheet({
@@ -147,187 +184,222 @@ export function RegulatoryPropertySheet({
           </div>
         </SheetHeader>
 
-        <ScrollArea className="flex-1">
-          <div className="p-6 space-y-10 pb-20">
-            {/* 1. Visual Info */}
-            <section className="bg-slate-50/50 p-4 rounded-xl border border-slate-100">
-               <Label className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-3 block">Visual Diagram Info</Label>
-               <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-[9px] font-bold text-slate-500 uppercase">Label</Label>
-                    <Input value={selectedNode.data.label} onChange={(e) => onUpdateNodeData(selectedNode.id, { label: e.target.value })} className="h-8 text-xs bg-white" />
-                  </div>
-                  {isActivity && (
+        <Tabs defaultValue="properties" className="flex-1 flex flex-col overflow-hidden">
+          <div className="px-6 border-b bg-white">
+            <TabsList className="bg-transparent h-12 gap-6">
+              <TabsTrigger value="properties" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2">
+                <Layout className="h-4 w-4" /> Properties
+              </TabsTrigger>
+              <TabsTrigger value="history" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2">
+                <History className="h-4 w-4" /> Change Log (Lampiran 6)
+              </TabsTrigger>
+            </TabsList>
+          </div>
+
+          <ScrollArea className="flex-1">
+            <TabsContent value="properties" className="m-0 p-6 space-y-10 pb-20 focus-visible:outline-none">
+              {/* 1. Visual Info */}
+              <section className="bg-slate-50/50 p-4 rounded-xl border border-slate-100">
+                <Label className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-3 block">Visual Diagram Info</Label>
+                <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label className="text-[9px] font-bold text-slate-500 uppercase">Pelaksana (Role)</Label>
-                      <Input value={selectedNode.data.role || ''} onChange={(e) => onUpdateNodeData(selectedNode.id, { role: e.target.value })} className="h-8 text-xs bg-white" />
+                      <Label className="text-[9px] font-bold text-slate-500 uppercase">Label</Label>
+                      <Input value={selectedNode.data.label} onChange={(e) => onUpdateNodeData(selectedNode.id, { label: e.target.value })} className="h-8 text-xs bg-white" />
+                    </div>
+                    {isActivity && (
+                      <div className="space-y-2">
+                        <Label className="text-[9px] font-bold text-slate-500 uppercase">Pelaksana (Role)</Label>
+                        <Input value={selectedNode.data.role || ''} onChange={(e) => onUpdateNodeData(selectedNode.id, { role: e.target.value })} className="h-8 text-xs bg-white" />
+                      </div>
+                    )}
+                </div>
+              </section>
+
+              {isActivity && (
+                <div className="space-y-16">
+                  {groupedRisks.length === 0 && (
+                    <div className="text-center py-12 border-2 border-dashed rounded-2xl bg-slate-50">
+                      <AlertTriangle className="h-8 w-8 text-amber-400 mx-auto mb-3" />
+                      <p className="text-sm text-slate-500 italic mb-4">Belum ada identifikasi Risiko & Kontrol.</p>
+                      <Button onClick={addNewRisk} className="bg-indigo-600 hover:bg-indigo-700">
+                        <PlusCircle className="h-4 w-4 mr-2" /> Mulai Identifikasi
+                      </Button>
                     </div>
                   )}
-               </div>
-            </section>
 
-            {isActivity && (
-              <div className="space-y-16">
-                {groupedRisks.length === 0 && (
-                  <div className="text-center py-12 border-2 border-dashed rounded-2xl bg-slate-50">
-                    <AlertTriangle className="h-8 w-8 text-amber-400 mx-auto mb-3" />
-                    <p className="text-sm text-slate-500 italic mb-4">Belum ada identifikasi Risiko & Kontrol.</p>
-                    <Button onClick={addNewRisk} className="bg-indigo-600 hover:bg-indigo-700">
-                      <PlusCircle className="h-4 w-4 mr-2" /> Mulai Identifikasi
-                    </Button>
-                  </div>
-                )}
-
-                {groupedRisks.map((group, gIdx) => (
-                  <div key={group.risk.riskId} className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-                    {/* RISK HEADER CARD */}
-                    <div className="bg-red-50/30 border-2 border-red-100 rounded-2xl overflow-hidden shadow-sm shadow-red-50">
-                      <div className="bg-red-600 px-4 py-2 flex justify-between items-center text-white">
-                        <div className="flex items-center gap-2">
-                          <AlertTriangle className="h-4 w-4" />
-                          <h3 className="text-xs font-black uppercase tracking-widest">Risiko #{gIdx + 1}</h3>
-                        </div>
-                        <Badge className="bg-red-800 text-[9px] font-mono border-none">{group.risk.riskId}</Badge>
-                      </div>
-                      
-                      <div className="p-5 space-y-4">
-                        <div className="space-y-2">
-                          <Label className="text-[10px] font-black uppercase text-red-900/50">Deskripsi Risiko Aktivitas</Label>
-                          <Textarea 
-                            value={group.risk.riskDescription || ''} 
-                            onChange={(e) => updateAllPairsForRisk(group.risk.riskId, 'riskDescription', e.target.value)}
-                            className="min-h-[80px] text-sm border-red-200 bg-white focus-visible:ring-red-500"
-                            placeholder="Apa yang bisa salah?"
-                          />
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase text-red-900/50">Terkait Fraud?</Label>
-                            <Select value={group.risk.isFraudRelated ? 'Yes' : 'No'} onValueChange={(v) => updateAllPairsForRisk(group.risk.riskId, 'isFraudRelated', v === 'Yes')}>
-                              <SelectTrigger className="h-9 text-sm bg-white border-red-200"><SelectValue /></SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="Yes">{t('common:yes')}</SelectItem>
-                                <SelectItem value="No">{t('common:no')}</SelectItem>
-                              </SelectContent>
-                            </Select>
+                  {groupedRisks.map((group, gIdx) => (
+                    <div key={group.risk.riskId} className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+                      {/* RISK HEADER CARD */}
+                      <div className="bg-red-50/30 border-2 border-red-100 rounded-2xl overflow-hidden shadow-sm shadow-red-50">
+                        <div className="bg-red-600 px-4 py-2 flex justify-between items-center text-white">
+                          <div className="flex items-center gap-2">
+                            <AlertTriangle className="h-4 w-4" />
+                            <h3 className="text-xs font-black uppercase tracking-widest">Risiko #{gIdx + 1}</h3>
                           </div>
-                          <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase text-red-900/50">Risk Rating</Label>
-                            <Select value={group.risk.riskRating || 'Low'} onValueChange={(v: QualitativeLevel) => updateAllPairsForRisk(group.risk.riskId, 'riskRating', v)}>
-                              <SelectTrigger className="h-9 text-sm bg-white border-red-200"><SelectValue /></SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="Low">Low</SelectItem>
-                                <SelectItem value="Medium">Medium</SelectItem>
-                                <SelectItem value="High">High</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
+                          <Badge className="bg-red-800 text-[9px] font-mono border-none">{group.risk.riskId}</Badge>
                         </div>
                         
-                        <div className="pt-2 flex justify-end">
-                           <Button variant="outline" size="sm" className="h-7 text-[9px] font-bold border-red-200 text-red-700 hover:bg-red-50 gap-1.5" onClick={() => addControlToRisk(group.risk.riskId)}>
-                             <PlusCircle className="h-3 w-3" /> Tambah Kontrol untuk Risiko Ini
-                           </Button>
+                        <div className="p-5 space-y-4">
+                          <div className="space-y-2">
+                            <Label className="text-[10px] font-black uppercase text-red-900/50">Deskripsi Risiko Aktivitas</Label>
+                            <Textarea 
+                              value={group.risk.riskDescription || ''} 
+                              onChange={(e) => updateAllPairsForRisk(group.risk.riskId, 'riskDescription', e.target.value)}
+                              className="min-h-[80px] text-sm border-red-200 bg-white focus-visible:ring-red-500"
+                              placeholder="Apa yang bisa salah?"
+                            />
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label className="text-[10px] font-black uppercase text-red-900/50">Terkait Fraud?</Label>
+                              <Select value={group.risk.isFraudRelated ? 'Yes' : 'No'} onValueChange={(v) => updateAllPairsForRisk(group.risk.riskId, 'isFraudRelated', v === 'Yes')}>
+                                <SelectTrigger className="h-9 text-sm bg-white border-red-200"><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="Yes">{t('common:yes')}</SelectItem>
+                                  <SelectItem value="No">{t('common:no')}</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2">
+                              <Label className="text-[10px] font-black uppercase text-red-900/50">Risk Rating</Label>
+                              <Select value={group.risk.riskRating || 'Low'} onValueChange={(v: QualitativeLevel) => updateAllPairsForRisk(group.risk.riskId, 'riskRating', v)}>
+                                <SelectTrigger className="h-9 text-sm bg-white border-red-200"><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="Low">Low</SelectItem>
+                                  <SelectItem value="Medium">Medium</SelectItem>
+                                  <SelectItem value="High">High</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                          
+                          <div className="pt-2 flex justify-end">
+                            <Button variant="outline" size="sm" className="h-7 text-[9px] font-bold border-red-200 text-red-700 hover:bg-red-50 gap-1.5" onClick={() => addControlToRisk(group.risk.riskId)}>
+                              <PlusCircle className="h-3 w-3" /> Tambah Kontrol untuk Risiko Ini
+                            </Button>
+                          </div>
                         </div>
                       </div>
+
+                      {/* CONTROLS LIST (Nested) */}
+                      <div className="ml-8 space-y-6 relative border-l-2 border-dashed border-slate-200 pl-8">
+                        {group.controls.map((ctrl, cIdx) => (
+                          <div key={ctrl.data.controlId} className="bg-white border rounded-xl shadow-sm overflow-hidden group/ctrl relative">
+                              {/* Connector Line */}
+                              <div className="absolute -left-8 top-1/2 w-8 h-px bg-dashed border-t-2 border-dashed border-slate-200" />
+                              
+                              <div className="bg-slate-50 px-4 py-1.5 flex justify-between items-center border-b">
+                                <div className="flex items-center gap-2">
+                                    <ShieldCheck className="h-3.5 w-3.5 text-green-600" />
+                                    <span className="text-[10px] font-black uppercase text-slate-500 tracking-tight">Kontrol #{cIdx + 1}</span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <Badge variant="outline" className="font-mono text-[9px] h-5 border-slate-200 text-slate-400">{ctrl.data.controlId}</Badge>
+                                    <Button variant="ghost" size="icon" className="h-6 w-6 text-slate-300 hover:text-rose-600" onClick={() => removePair(ctrl.index)}>
+                                      <X className="h-3 w-3" />
+                                    </Button>
+                                </div>
+                              </div>
+
+                              <div className="p-4 space-y-4">
+                                <div className="space-y-1.5">
+                                  <Label className="text-[9px] font-bold uppercase text-slate-400">Deskripsi Prosedur Kontrol</Label>
+                                  <Textarea 
+                                    value={ctrl.data.controlDescription || ''} 
+                                    onChange={(e) => updateSpecificControl(ctrl.index, 'controlDescription', e.target.value)}
+                                    className="min-h-[60px] text-xs bg-slate-50/30"
+                                    placeholder="Apa tindakan mitigasinya?"
+                                  />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                  <div className="space-y-1">
+                                    <Label className="text-[9px] font-bold uppercase text-slate-400">Key Control?</Label>
+                                    <Select value={ctrl.data.isKeyControl ? 'Yes' : 'No'} onValueChange={(v) => updateSpecificControl(ctrl.index, 'isKeyControl', v === 'Yes')}>
+                                        <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="Yes">Yes</SelectItem>
+                                          <SelectItem value="No">No</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                  </div>
+                                  <div className="space-y-1">
+                                    <Label className="text-[9px] font-bold uppercase text-slate-400">Klasifikasi</Label>
+                                    <Select value={ctrl.data.classification || 'TLC'} onValueChange={(v: ControlLevel) => updateSpecificControl(ctrl.index, 'classification', v)}>
+                                        <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="TLC">TLC</SelectItem>
+                                          <SelectItem value="ELC">ELC</SelectItem>
+                                          <SelectItem value="ITGC">ITGC</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                  </div>
+                                </div>
+
+                                {/* Dynamic Compliance Form */}
+                                <div className="mt-4 pt-4 border-t border-slate-100">
+                                    {(!ctrl.data.classification || ctrl.data.classification === 'TLC') && (
+                                      <TLCForm data={ctrl.data} onChange={(f, v) => updateSpecificControl(ctrl.index, f, v)} />
+                                    )}
+                                    {ctrl.data.classification === 'ELC' && (
+                                      <ELCForm data={ctrl.data} onChange={(f, v) => updateSpecificControl(ctrl.index, f, v)} />
+                                    )}
+                                    {ctrl.data.classification === 'ITGC' && (
+                                      <ITGCForm data={ctrl.data} onChange={(f, v) => updateSpecificControl(ctrl.index, f, v)} />
+                                    )}
+                                </div>
+                              </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
+                  ))}
 
-                    {/* CONTROLS LIST (Nested) */}
-                    <div className="ml-8 space-y-6 relative border-l-2 border-dashed border-slate-200 pl-8">
-                       {group.controls.map((ctrl, cIdx) => (
-                         <div key={ctrl.data.controlId} className="bg-white border rounded-xl shadow-sm overflow-hidden group/ctrl relative">
-                            {/* Connector Line */}
-                            <div className="absolute -left-8 top-1/2 w-8 h-px bg-dashed border-t-2 border-dashed border-slate-200" />
-                            
-                            <div className="bg-slate-50 px-4 py-1.5 flex justify-between items-center border-b">
-                               <div className="flex items-center gap-2">
-                                  <ShieldCheck className="h-3.5 w-3.5 text-green-600" />
-                                  <span className="text-[10px] font-black uppercase text-slate-500 tracking-tight">Kontrol #{cIdx + 1}</span>
-                               </div>
-                               <div className="flex items-center gap-3">
-                                  <Badge variant="outline" className="font-mono text-[9px] h-5 border-slate-200 text-slate-400">{ctrl.data.controlId}</Badge>
-                                  <Button variant="ghost" size="icon" className="h-6 w-6 text-slate-300 hover:text-rose-600" onClick={() => removePair(ctrl.index)}>
-                                    <X className="h-3 w-3" />
-                                  </Button>
-                               </div>
-                            </div>
-
-                            <div className="p-4 space-y-4">
-                               <div className="space-y-1.5">
-                                 <Label className="text-[9px] font-bold uppercase text-slate-400">Deskripsi Prosedur Kontrol</Label>
-                                 <Textarea 
-                                   value={ctrl.data.controlDescription || ''} 
-                                   onChange={(e) => updateSpecificControl(ctrl.index, 'controlDescription', e.target.value)}
-                                   className="min-h-[60px] text-xs bg-slate-50/30"
-                                   placeholder="Apa tindakan mitigasinya?"
-                                 />
-                               </div>
-
-                               <div className="grid grid-cols-2 gap-3">
-                                 <div className="space-y-1">
-                                   <Label className="text-[9px] font-bold uppercase text-slate-400">Key Control?</Label>
-                                   <Select value={ctrl.data.isKeyControl ? 'Yes' : 'No'} onValueChange={(v) => updateSpecificControl(ctrl.index, 'isKeyControl', v === 'Yes')}>
-                                      <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
-                                      <SelectContent>
-                                        <SelectItem value="Yes">Yes</SelectItem>
-                                        <SelectItem value="No">No</SelectItem>
-                                      </SelectContent>
-                                   </Select>
-                                 </div>
-                                 <div className="space-y-1">
-                                   <Label className="text-[9px] font-bold uppercase text-slate-400">Klasifikasi</Label>
-                                   <Select value={ctrl.data.classification || 'TLC'} onValueChange={(v: ControlLevel) => updateSpecificControl(ctrl.index, 'classification', v)}>
-                                      <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
-                                      <SelectContent>
-                                        <SelectItem value="TLC">TLC</SelectItem>
-                                        <SelectItem value="ELC">ELC</SelectItem>
-                                        <SelectItem value="ITGC">ITGC</SelectItem>
-                                      </SelectContent>
-                                   </Select>
-                                 </div>
-                               </div>
-
-                               {/* Dynamic Compliance Form */}
-                               <div className="mt-4 pt-4 border-t border-slate-100">
-                                  {(!ctrl.data.classification || ctrl.data.classification === 'TLC') && (
-                                    <TLCForm data={ctrl.data} onChange={(f, v) => updateSpecificControl(ctrl.index, f, v)} />
-                                  )}
-                                  {ctrl.data.classification === 'ELC' && (
-                                    <ELCForm data={ctrl.data} onChange={(f, v) => updateSpecificControl(ctrl.index, f, v)} />
-                                  )}
-                                  {ctrl.data.classification === 'ITGC' && (
-                                    <ITGCForm data={ctrl.data} onChange={(f, v) => updateSpecificControl(ctrl.index, f, v)} />
-                                  )}
-                               </div>
-                            </div>
-                         </div>
-                       ))}
-                    </div>
-                  </div>
-                ))}
-
-                <Button variant="outline" className="w-full h-14 border-dashed border-2 bg-indigo-50/30 hover:bg-indigo-50 hover:border-indigo-300 text-indigo-600 gap-2 font-black uppercase tracking-widest text-xs" onClick={addNewRisk}>
-                  <PlusCircle className="h-5 w-5" /> Identifikasi Risiko Baru
-                </Button>
-
-                <div className="pt-12 border-t">
-                  <Button 
-                    variant="destructive" 
-                    size="sm" 
-                    className="w-full gap-2 text-[10px] h-10 font-black uppercase tracking-widest shadow-lg shadow-red-100" 
-                    onClick={() => onDeleteNode(selectedNode.id)}
-                  >
-                    <Trash2 className="h-4 w-4" /> Remove Node & ALL Linked Data
+                  <Button variant="outline" className="w-full h-14 border-dashed border-2 bg-indigo-50/30 hover:bg-indigo-50 hover:border-indigo-300 text-indigo-600 gap-2 font-black uppercase tracking-widest text-xs" onClick={addNewRisk}>
+                    <PlusCircle className="h-5 w-5" /> Identifikasi Risiko Baru
                   </Button>
-                  <p className="text-[9px] text-center text-slate-400 mt-4 italic">
-                    Tindakan ini akan menghapus node dari diagram dan seluruh relasi RCM-nya di database.
-                  </p>
+
+                  <div className="pt-12 border-t">
+                    <Button 
+                      variant="destructive" 
+                      size="sm" 
+                      className="w-full gap-2 text-[10px] h-10 font-black uppercase tracking-widest shadow-lg shadow-red-100" 
+                      onClick={() => onDeleteNode(selectedNode.id)}
+                    >
+                      <Trash2 className="h-4 w-4" /> Remove Node & ALL Linked Data
+                    </Button>
+                    <p className="text-[9px] text-center text-slate-400 mt-4 italic">
+                      Tindakan ini akan menghapus node dari diagram dan seluruh relasi RCM-nya di database.
+                    </p>
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
-        </ScrollArea>
+              )}
+            </TabsContent>
+
+            <TabsContent value="history" className="m-0 p-6 focus-visible:outline-none">
+               <div className="space-y-4">
+                  <div className="flex flex-col gap-1 mb-6">
+                    <h4 className="text-xs font-black uppercase text-slate-700 tracking-wider flex items-center gap-2">
+                      <History className="h-3 w-3" /> Audit Trail (Lampiran 6)
+                    </h4>
+                    <p className="text-[10px] text-slate-500 italic">Riwayat perubahan regulasi untuk seluruh risiko/kontrol pada node ini.</p>
+                  </div>
+                  
+                  {/* Show history for each control in pairs */}
+                  {Array.from(new Set(pairs.map((p: any) => p.controlId))).map((cId: any) => (
+                    <div key={cId} className="space-y-3">
+                       <div className="flex items-center gap-2">
+                          <div className="h-1.5 w-1.5 rounded-full bg-indigo-400" />
+                          <span className="text-[10px] font-bold text-slate-500 font-mono">Entity: {cId}</span>
+                       </div>
+                       <EntityHistoryList entityId={cId} />
+                    </div>
+                  ))}
+               </div>
+            </TabsContent>
+          </ScrollArea>
+        </Tabs>
 
         {/* STICKY FOOTER */}
         <div className="p-4 border-t bg-slate-50 flex items-center justify-between shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">

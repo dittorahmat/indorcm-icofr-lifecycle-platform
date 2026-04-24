@@ -1,64 +1,70 @@
 import React from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { api } from '@/lib/api-client';
-import { Control } from '@shared/types';
+import { Control, Organization } from '@shared/types';
 import { 
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
-  Save, Loader2, ShieldCheck, Database, Filter, Info
+  Save, Check, Building2, Loader2, RefreshCw
 } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { toast } from 'sonner';
+import { 
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
+} from '@/components/ui/select';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 
-const COSO_PRINCIPLES = [
-  { id: 1, name: "Integritas dan Nilai Etika", component: "Lingkungan Pengendalian" },
-  { id: 2, name: "Pengawasan Dewan Komisaris", component: "Lingkungan Pengendalian" },
-  { id: 3, name: "Struktur, Wewenang & Tanggung Jawab", component: "Lingkungan Pengendalian" },
-  { id: 4, name: "Komitmen terhadap Kompetensi", component: "Lingkungan Pengendalian" },
-  { id: 5, name: "Akuntabilitas Personel", component: "Lingkungan Pengendalian" },
-  { id: 6, name: "Tujuan Pengendalian Intern", component: "Penilaian Risiko" },
-  { id: 7, name: "Identifikasi & Analisis Risiko", component: "Penilaian Risiko" },
-  { id: 8, name: "Risiko Kecurangan (Fraud)", component: "Penilaian Risiko" },
-  { id: 9, name: "Analisis Perubahan Signifikan", component: "Penilaian Risiko" },
-  { id: 10, name: "Menentukan Aktivitas Pengendalian", component: "Aktivitas Pengendalian" },
-  { id: 11, name: "Pengendalian Umum TI (ITGC)", component: "Aktivitas Pengendalian" },
-  { id: 12, name: "Kebijakan dan Prosedur", component: "Aktivitas Pengendalian" },
-  { id: 13, name: "Informasi Relevan & Berkualitas", component: "Informasi dan Komunikasi" },
-  { id: 14, name: "Komunikasi Internal Efektif", component: "Informasi dan Komunikasi" },
-  { id: 15, name: "Komunikasi Eksternal Efektif", component: "Informasi dan Komunikasi" },
-  { id: 16, name: "Evaluasi Berkelanjutan & Terpisah", component: "Pemantauan" },
-  { id: 17, name: "Evaluasi & Komunikasi Defisiensi", component: "Pemantauan" },
-];
+const COSO_PRINCIPLES = Array.from({ length: 17 }, (_, i) => i + 1);
 
 export function RCMELCPage() {
   const { t } = useTranslation(['rcm', 'common']);
   const queryClient = useQueryClient();
-  const [localMeta, setLocalMeta] = React.useState<Record<number, any>>({});
+  const [selectedOrgId, setSelectedOrgId] = React.useState<string>('all');
+  const [localMeta, setLocalMeta] = React.useState<Record<string, any>>({}); 
 
-  const { data: controlsData, isLoading } = useQuery({
+  // BACK TO BASICS: Use the single-table endpoint that is proven to be fast
+  const { data: controlsData, isLoading: isLoadingControls, isFetching } = useQuery({
     queryKey: ['controls-elc'],
-    queryFn: () => api<{ items: Control[] }>('/api/controls'),
+    queryFn: () => api<{ items: Control[] }>(`/api/controls?level=ELC`),
+    staleTime: 30000,
   });
 
-  // isDirty check: if localMeta has any keys, it's dirty
+  const { data: orgsData, isLoading: isLoadingOrgs } = useQuery({
+    queryKey: ['organizations-list'],
+    queryFn: () => api<{ organizations: Organization[] }>('/api/auth/organization/list'),
+    staleTime: 300000,
+  });
+
   const isDirty = React.useMemo(() => Object.keys(localMeta).length > 0, [localMeta]);
   const blocker = useUnsavedChanges(isDirty);
 
-  const elcControls = (controlsData?.items || []).filter(c => c.level === 'ELC');
-
-  const handleInputChange = (principleId: number, field: string, value: any) => {
-    setLocalMeta(prev => ({
-      ...prev,
-      [principleId]: { ...(prev[principleId] || {}), [field]: value }
+  // Map organization names locally (Bulletproof loading)
+  const elcItems = React.useMemo(() => {
+    const items = controlsData?.items || [];
+    const orgs = orgsData?.organizations || [];
+    
+    const mapped = items.map(item => ({
+      ...item,
+      companyName: orgs.find(o => o.id === item.organizationId)?.name || 'N/A'
     }));
+
+    if (selectedOrgId === 'all') return mapped;
+    return mapped.filter(item => item.organizationId === selectedOrgId);
+  }, [controlsData?.items, orgsData?.organizations, selectedOrgId]);
+
+  const handleRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: ['controls-elc'] });
   };
 
   return (
@@ -66,99 +72,127 @@ export function RCMELCPage() {
       <div className="flex flex-col space-y-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">RCM ELC Matrix</h1>
+            <h1 className="text-3xl font-bold tracking-tight">{t('matrix.title_elc')}</h1>
             <p className="text-muted-foreground italic text-sm">Entity Level Control Matrix (17 COSO Principles) according to SK-5 Lampiran 5 a.</p>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline"><Filter className="h-4 w-4 mr-2" /> Filter</Button>
-            <Button className="bg-indigo-600 hover:bg-indigo-700 shadow-lg">
-              <Save className="h-4 w-4 mr-2" /> Save Matrix
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 bg-white border rounded-lg px-3 py-1.5 shadow-sm">
+               <Building2 className="h-4 w-4 text-slate-400" />
+               {isLoadingOrgs ? (
+                 <Loader2 className="h-3 w-3 animate-spin text-slate-400" />
+               ) : (
+                 <Select value={selectedOrgId} onValueChange={setSelectedOrgId}>
+                    <SelectTrigger className="w-[200px] border-none focus:ring-0 h-7 text-xs font-bold">
+                      <SelectValue placeholder={t('matrix.filter_subsidiary')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">{t('matrix.filter_all')}</SelectItem>
+                      {orgsData?.organizations.map(org => (
+                        <SelectItem key={org.id} value={org.id}>{org.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                 </Select>
+               )}
+            </div>
+            <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isFetching}>
+               {isFetching ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" /> : <RefreshCw className="h-3.5 w-3.5 mr-2" />}
+               Refresh
+            </Button>
+            <Button className="bg-indigo-600 hover:bg-indigo-700 shadow-lg" disabled={!isDirty}>
+              <Save className="h-4 w-4 mr-2" /> {t('common:save')}
             </Button>
           </div>
         </div>
 
-        <div className="border rounded-xl bg-white shadow-sm overflow-x-auto relative">
-          <Table className="min-w-[1500px]">
-            <TableHeader className="bg-slate-50/80 sticky top-0 z-20">
-              <TableRow className="divide-x border-b">
-                <TableHead className="w-[80px] font-black uppercase text-[10px] text-center sticky left-0 z-30 bg-slate-50">No</TableHead>
-                <TableHead className="w-[300px] font-black uppercase text-[10px] sticky left-[80px] z-30 bg-slate-50">Prinsip COSO</TableHead>
-                <TableHead className="w-[400px] font-black uppercase text-[10px] text-indigo-900 bg-indigo-50/30">Aktivitas Pengendalian (Kebijakan)</TableHead>
-                <TableHead className="w-[120px] font-black uppercase text-[10px] text-center">Frekuensi</TableHead>
-                <TableHead className="w-[150px] font-black uppercase text-[10px]">Pelaksana</TableHead>
-                <TableHead className="w-[200px] font-black uppercase text-[10px]">Dokumen Pendukung</TableHead>
-                <TableHead className="w-[100px] font-black uppercase text-[10px] text-center">Status</TableHead>
-                <TableHead className="w-[150px] font-black uppercase text-[10px]">Periode Efektif</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
-                <TableRow><TableCell colSpan={8} className="h-64 text-center">Loading ELC data...</TableCell></TableRow>
-              ) : COSO_PRINCIPLES.map((principle, idx) => {
-                const relatedControls = elcControls.filter(c => c.cosoPrinciples?.includes(principle.id as any));
-                const isFirstOfComponent = idx === 0 || principle.component !== COSO_PRINCIPLES[idx-1].component;
-
-                return (
-                  <React.Fragment key={principle.id}>
-                    {isFirstOfComponent && (
-                      <TableRow className="bg-slate-100/50 hover:bg-slate-100/50 border-y-2 border-slate-200">
-                        <TableCell colSpan={8} className="py-2 px-4">
-                          <span className="text-[10px] font-black uppercase text-slate-500 tracking-[0.2em]">{principle.component}</span>
-                        </TableCell>
-                      </TableRow>
-                    )}
-                    <TableRow className="group hover:bg-indigo-50/10 transition-colors divide-x divide-slate-100">
-                      <TableCell className="text-center font-black text-slate-400 text-xs sticky left-0 z-10 bg-white">
-                        {principle.id}
-                      </TableCell>
-                      <TableCell className="align-top py-4 sticky left-[80px] z-10 bg-white">
-                        <div className="flex flex-col">
-                          <span className="text-sm font-bold text-slate-800">{principle.name}</span>
-                          <span className="text-[10px] text-slate-400 font-medium">COSO Principle {principle.id}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="p-0">
-                         <div className="flex flex-col divide-y divide-slate-100 min-h-[60px]">
-                            {relatedControls.length > 0 ? relatedControls.map(ctrl => (
-                              <div key={ctrl.id} className="p-3 hover:bg-indigo-50/30 transition-colors group/ctrl">
-                                 <div className="flex items-center gap-2">
-                                    <Badge variant="outline" className="text-[9px] font-mono h-4">{ctrl.code || 'N/A'}</Badge>
-                                    <span className="text-xs font-bold text-slate-700">{ctrl.name}</span>
-                                 </div>
-                                 <p className="text-[10px] text-slate-500 mt-1 line-clamp-1 italic">"{ctrl.description}"</p>
-                              </div>
-                            )) : (
-                              <div className="flex items-center gap-2 p-4 text-slate-300 italic text-xs">
-                                 <Info className="h-3 w-3" /> Belum ada kebijakan yang dipetakan.
-                              </div>
+        <div className="border rounded-xl bg-white shadow-sm overflow-x-auto relative min-h-[400px]">
+          <TooltipProvider>
+            <Table className="min-w-[1800px]">
+              <TableHeader className="bg-slate-50/80 sticky top-0 z-20">
+                <TableRow className="divide-x border-b">
+                  <TableHead className="w-[120px] font-black uppercase text-[10px] sticky left-0 z-30 bg-slate-50 border-r-2">{t('matrix.control_ref')}</TableHead>
+                  <TableHead className="w-[350px] font-black uppercase text-[10px] sticky left-[120px] z-30 bg-slate-50 border-r-2">{t('matrix.control_description')}</TableHead>
+                  <TableHead className="w-[100px] font-black uppercase text-[10px] text-center">{t('matrix.frequency')}</TableHead>
+                  <TableHead className="w-[150px] font-black uppercase text-[10px]">{t('matrix.supporting_docs')}</TableHead>
+                  <TableHead className="w-[150px] font-black uppercase text-[10px]">{t('matrix.executing_function')}</TableHead>
+                  <TableHead className="w-[150px] font-black uppercase text-[10px]">{t('matrix.executor_role')}</TableHead>
+                  <TableHead className="w-[100px] font-black uppercase text-[10px] text-center">{t('matrix.effective_period')}</TableHead>
+                  
+                  {COSO_PRINCIPLES.map(p => (
+                    <TableHead key={p} className="w-[50px] p-0 font-black text-center group">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="cursor-help py-4 h-full flex items-center justify-center hover:bg-indigo-50 transition-colors">
+                            <span className="text-[11px] text-indigo-600">{p}</span>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-[250px] bg-indigo-900 text-white p-3 shadow-xl">
+                          <p className="text-xs font-bold mb-1">Prinsip {p}</p>
+                          <p className="text-[10px] leading-relaxed opacity-90">{t(`matrix.coso_tooltips.p${p}`)}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TableHead>
+                  ))}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoadingControls ? (
+                  <TableRow><TableCell colSpan={24} className="h-64 text-center">
+                    <div className="flex flex-col items-center gap-2">
+                       <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+                       <span className="text-sm font-medium text-slate-500">Loading ELC data...</span>
+                    </div>
+                  </TableCell></TableRow>
+                ) : elcItems.length === 0 ? (
+                  <TableRow><TableCell colSpan={24} className="h-64 text-center text-slate-400 italic">Belum ada data Entity Level Control (ELC) untuk entitas ini.</TableCell></TableRow>
+                ) : elcItems.map((ctrl) => (
+                  <TableRow key={ctrl.id} className="group hover:bg-slate-50/50 transition-colors divide-x divide-slate-100 border-b">
+                    <TableCell className="font-mono text-[10px] font-bold text-slate-500 sticky left-0 z-10 bg-white border-r-2">
+                      {ctrl.code}
+                    </TableCell>
+                    <TableCell className="align-top py-4 sticky left-[120px] z-10 bg-white border-r-2 max-w-[350px]">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-xs font-bold text-slate-800 leading-tight">{ctrl.name}</span>
+                        <p className="text-[10px] text-slate-500 italic line-clamp-2">{ctrl.description}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center text-[10px] font-medium text-slate-600">
+                      {ctrl.frequency || '-'}
+                    </TableCell>
+                    <TableCell className="text-[10px] text-slate-500 max-w-[150px] truncate">
+                      {ctrl.supportingDocs || '-'}
+                    </TableCell>
+                    <TableCell className="text-[10px] text-slate-500">
+                      {(ctrl as any).companyName || '-'}
+                    </TableCell>
+                    <TableCell className="text-[10px] text-slate-500">
+                      {ctrl.executorRole || 'Control Owner'}
+                    </TableCell>
+                    <TableCell className="text-center text-[10px] font-bold text-indigo-600">
+                      {ctrl.effectiveDate ? new Date(ctrl.effectiveDate).getFullYear() : '-'}
+                    </TableCell>
+                    
+                    {COSO_PRINCIPLES.map(p => {
+                      const isMapped = ctrl.cosoPrinciples?.includes(p as any);
+                      return (
+                        <TableCell key={p} className={cn(
+                          "text-center p-0",
+                          isMapped ? "bg-emerald-50/30" : ""
+                        )}>
+                          <div className="flex items-center justify-center h-full min-h-[45px]">
+                            {isMapped ? (
+                              <Check className="h-4 w-4 text-emerald-600 stroke-[3px]" />
+                            ) : (
+                              <span className="text-slate-100">—</span>
                             )}
-                         </div>
-                      </TableCell>
-                      <TableCell className="p-0">
-                         <Input className="h-full border-none focus-visible:ring-0 text-center text-xs" placeholder="Tahunan/Ad-hoc" />
-                      </TableCell>
-                      <TableCell className="p-0">
-                         <Input className="h-full border-none focus-visible:ring-0 text-xs px-3" placeholder="Jabatan/Fungsi..." />
-                      </TableCell>
-                      <TableCell className="p-0">
-                         <Input className="h-full border-none focus-visible:ring-0 text-xs px-3" placeholder="URL/File Ref..." />
-                      </TableCell>
-                      <TableCell className="text-center align-middle">
-                         {relatedControls.length > 0 ? (
-                           <Badge className="bg-emerald-500 text-white border-none font-black text-[9px] shadow-sm">TERPETAKAN</Badge>
-                         ) : (
-                           <Badge variant="outline" className="text-rose-400 border-rose-200 bg-rose-50 text-[9px] font-black">GAP</Badge>
-                         )}
-                      </TableCell>
-                      <TableCell className="p-0">
-                         <Input className="h-full border-none focus-visible:ring-0 text-xs px-3" placeholder="Contoh: 2024" />
-                      </TableCell>
-                    </TableRow>
-                  </React.Fragment>
-                );
-              })}
-            </TableBody>
-          </Table>
+                          </div>
+                        </TableCell>
+                      );
+                    })}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TooltipProvider>
         </div>
       </div>
       <UnsavedChangesDialog blocker={blocker} />
