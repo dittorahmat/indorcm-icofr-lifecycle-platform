@@ -196,6 +196,11 @@ export const rcmControls = pgTable("rcm_controls", {
 	executorRole: text("executor_role"), // Column xxxi
 	affectedFsliItem: text("affected_fsli_item"), // Column xxxii
 	effectivePeriod: text("effective_period"), // Column xxxiii
+
+	// ELC & ITGC Regulatory Metadata
+	cosoPrinciples: jsonb("coso_principles"), // Array of numbers 1-17
+	itgcDomain: text("itgc_domain"), // Access, Changes, Development, Operations
+	itgcAssertions: jsonb("itgc_assertions"), // JSON mapping for IT assertions
 });
 
 export const rcms = pgTable("rcms", {

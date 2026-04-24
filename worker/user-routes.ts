@@ -1318,29 +1318,46 @@ export function userRoutes(app: Hono<HonoEnv>) {
     const diag = diags[0];
     const nodes = diag.nodes || [];
 
-    // Hydrate Activity nodes with risks/controls from junction tables
+    // Hydrate Activity nodes with ALL linked risks/controls
     const hydratedNodes = await Promise.all(nodes.map(async (node: any) => {
       if (node.type === 'activity' || node.type === 'automated-activity') {
-        // Fetch risks linked to this node
-        const nodeRisks = await db.select().from(bpmNodeRcms).where(and(
+        // Fetch all risk-control mappings for this node
+        // Join: bpm_node_rcms -> rcms -> rcm_controls (junction)
+        const mappings = await db.select({
+          risk: rcms,
+          map: rcmControls
+        })
+        .from(bpmNodeRcms)
+        .innerJoin(rcms, eq(bpmNodeRcms.rcmId, rcms.id))
+        .leftJoin(rcmControls, eq(rcms.id, rcmControls.rcmId))
+        .where(and(
           eq(bpmNodeRcms.diagramId, id),
           eq(bpmNodeRcms.nodeId, node.id)
         ));
 
-        const risks = await Promise.all(nodeRisks.map(async (nr: any) => {
-          // Fetch controls linked to each risk
-          const riskControls = await db.select().from(rcmControls).where(eq(rcmControls.rcmId, nr.rcmId));
-          return {
-            rcmId: nr.rcmId,
-            controlIds: riskControls.map((rc: any) => rc.controlId)
-          };
+        const regulatoryPairs = mappings.map(m => ({
+          riskId: m.risk.id,
+          riskDescription: m.risk.riskDescription,
+          isFraudRelated: m.risk.isFraudRelated,
+          riskRating: m.risk.riskRating,
+          controlId: m.map?.controlId || 'C-TBD',
+          controlDescription: m.map?.controlDescription || '',
+          isKeyControl: m.map?.isKeyControl || false,
+          classification: m.map?.controlType || 'TLC',
+          ipoC: m.map?.ipoC,
+          ipoA: m.map?.ipoA,
+          ipoV: m.map?.ipoV,
+          ipoRa: m.map?.ipoRa,
+          cosoPrinciples: m.map?.cosoPrinciples,
+          itgcDomain: m.map?.itgcDomain,
+          itgcAssertions: m.map?.itgcAssertions,
         }));
 
         return {
           ...node,
           data: {
             ...node.data,
-            risks
+            regulatoryPairs // New array format to support legacy 1-to-N
           }
         };
       }
@@ -1395,11 +1412,107 @@ export function userRoutes(app: Hono<HonoEnv>) {
 
     const nodes = body.nodes || [];
     const edges = body.edges || [];
-    const activeRiskControlPairs = new Set<string>(); // "rcmId:controlId"
 
-    // A. Collect from Docked Risks (Inside activity nodes)
     for (const node of nodes) {
-      if ((node.type === 'activity' || node.type === 'automated-activity') && node.data?.risks) {
+      // NEW LOGIC: Handle regulatoryPairs (Array) for multiple mappings per node
+      const nodePairs = node.data?.regulatoryPairs || 
+                       (node.data?.regulatoryData ? [node.data.regulatoryData] : []);
+
+      if ((node.type === 'activity' || node.type === 'automated-activity') && nodePairs.length > 0) {
+        for (const reg of nodePairs) {
+          const riskId = reg.riskId;
+          const ctrlId = reg.controlId;
+
+          if (riskId && ctrlId) {
+            // A. Upsert Risk
+            const existingRisk = await db.select().from(rcms).where(and(eq(rcms.id, riskId), eq(rcms.organizationId, orgId))).limit(1);
+            if (existingRisk.length === 0) {
+              await db.insert(rcms).values({
+                id: riskId,
+                organizationId: orgId,
+                process: body.name || "Default Process",
+                subProcess: body.subProcess || "Default Sub Process",
+                riskDescription: reg.riskDescription || "Draft Risk",
+                isFraudRelated: reg.isFraudRelated || false,
+                riskRating: reg.riskRating || "Low",
+                status: "Draft",
+                diagramId: id
+              });
+            } else {
+              await db.update(rcms).set({
+                riskDescription: reg.riskDescription,
+                isFraudRelated: reg.isFraudRelated,
+                riskRating: reg.riskRating,
+              }).where(eq(rcms.id, riskId));
+            }
+
+            // B. Upsert Control
+            const existingCtrl = await db.select().from(controls).where(and(eq(controls.id, ctrlId), eq(controls.organizationId, orgId))).limit(1);
+            if (existingCtrl.length === 0) {
+              await db.insert(controls).values({
+                id: ctrlId,
+                organizationId: orgId,
+                code: ctrlId,
+                name: node.data.label || "Draft Control",
+                rcmId: riskId,
+                level: reg.classification || 'TLC',
+                cosoPrinciples: reg.cosoPrinciples || [],
+              });
+            } else {
+              await db.update(controls).set({
+                name: node.data.label,
+                level: reg.classification || 'TLC',
+                cosoPrinciples: reg.cosoPrinciples || [],
+              }).where(eq(controls.id, ctrlId));
+            }
+
+            // C. Upsert Mapping (rcm_controls)
+            const existingMap = await db.select().from(rcmControls).where(and(
+              eq(rcmControls.rcmId, riskId),
+              eq(rcmControls.controlId, ctrlId),
+              eq(rcmControls.organizationId, orgId)
+            )).limit(1);
+
+            const mapValues = {
+              controlName: node.data.label,
+              controlDescription: reg.controlDescription,
+              isKeyControl: reg.isKeyControl,
+              ipoC: reg.ipoC,
+              ipoA: reg.ipoA,
+              ipoV: reg.ipoV,
+              ipoRa: reg.ipoRa,
+              cosoPrinciples: reg.cosoPrinciples,
+              itgcDomain: reg.itgcDomain,
+              itgcAssertions: reg.itgcAssertions,
+              controlType: reg.classification === 'ELC' ? 'ELC' : 'TLC',
+            };
+
+            if (existingMap.length === 0) {
+              await db.insert(rcmControls).values({
+                id: crypto.randomUUID(),
+                organizationId: orgId,
+                rcmId: riskId,
+                controlId: ctrlId,
+                ...mapValues
+              });
+            } else {
+              await db.update(rcmControls).set(mapValues).where(eq(rcmControls.id, existingMap[0].id));
+            }
+
+            // D. Link Node to Risk (Multiple entries allowed here)
+            await db.insert(bpmNodeRcms).values({
+              id: crypto.randomUUID(),
+              organizationId: orgId,
+              diagramId: id,
+              nodeId: node.id,
+              rcmId: riskId
+            });
+          }
+        }
+      }
+
+      // LEGACY/COMPATIBILITY LOGIC: Collect from Docked Risks (Only if no pairs/data)
+      if ((node.type === 'activity' || node.type === 'automated-activity') && node.data?.risks && !node.data?.regulatoryPairs && !node.data?.regulatoryData) {
         for (const riskEntry of node.data.risks) {
           // Link Activity Node -> Risk (Diagram specific)
           await db.insert(bpmNodeRcms).values({

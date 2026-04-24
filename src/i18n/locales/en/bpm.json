@@ -37,6 +37,28 @@
       }
     }
   },
+  "ipo": {
+    "title": "Information Processing Objective (IPO)",
+    "description": "Map information processing objectives for this transaction-level control.",
+    "tooltip": {
+      "c": {
+        "label": "Completeness",
+        "desc": "Ensuring all transactions/events that occurred have been recorded."
+      },
+      "a": {
+        "label": "Accuracy",
+        "desc": "Transactions/events are recorded with the correct values, accounts and periods. This also includes the accuracy of data entered into the system used in transaction processing."
+      },
+      "v": {
+        "label": "Validity",
+        "desc": "Only authorized transactions/events are truly recorded."
+      },
+      "ra": {
+        "label": "Restricted Access",
+        "desc": "Data is protected to prevent unauthorized changes and access to confidential data and company assets can only be accessed by authorized persons."
+      }
+    }
+  },
   "table": {
     "action": "Action",
     "subProcess": "Sub Process",

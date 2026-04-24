@@ -37,6 +37,28 @@
       }
     }
   },
+  "ipo": {
+    "title": "Information Processing Objective (IPO)",
+    "description": "Petakan tujuan pemrosesan informasi untuk kontrol tingkat transaksi ini.",
+    "tooltip": {
+      "c": {
+        "label": "Completeness",
+        "desc": "Seluruh transaksi yang terjadi telah tercatat."
+      },
+      "a": {
+        "label": "Accuracy",
+        "desc": "Transaksi-transaksi dicatat dengan nilai, akun dan periode yang tepat. Dalam hal ini juga termasuk ketepatan atas data-data yang dimasukkan ke dalam sistem yang digunakan dalam pemrosesan transaksi."
+      },
+      "v": {
+        "label": "Validity",
+        "desc": "Hanya transaksi yang terotorisasi yang benar-benar tercatat."
+      },
+      "ra": {
+        "label": "Restricted Access",
+        "desc": "Data diproteksi untuk mencegah perubahan yang tidak terotorisasi dan akses ke data konfidensial dan aset perusahaan hanya dapat diakses oleh orang yang diotorisasi."
+      }
+    }
+  },
   "table": {
     "action": "Aksi",
     "subProcess": "Sub Proses",

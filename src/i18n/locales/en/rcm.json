@@ -23,6 +23,17 @@
     "executor_role": "Control Executor (xxxi)",
     "affected_fsli_item": "Affected Financial Item (xxxii)",
     "effective_period": "Effective Period (xxxiii)",
-    "save_success": "Matrix data saved successfully"
+    "save_success": "Matrix data saved successfully",
+    "properties": {
+      "risk_id": "Risk ID",
+      "control_id": "Control ID",
+      "fraud_related_q": "Related to Fraud?",
+      "risk_rating_label": "Risk Rating",
+      "key_control_q": "Key Control?",
+      "classification_label": "Control Classification",
+      "ipo_section": "Information Processing Objective (IPO)",
+      "coso_section": "COSO 17 Principles Mapping",
+      "itgc_section": "ITGC Domain & Assertions"
+    }
   }
 }

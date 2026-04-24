@@ -38,6 +38,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 import { useTranslation } from 'react-i18next';
+import { RegulatoryPropertySheet } from './properties/RegulatoryPropertySheet';
 
 import {
   Popover,
@@ -420,6 +421,46 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
   const [riskSearch, setRiskSearch] = useState("");
   const [controlSearch, setControlSearch] = useState("");
 
+  const generateUniqueId = useCallback((prefix: 'R' | 'C', existingNodes: any[]) => {
+    // Collect all existing IDs of this prefix from regulatoryData
+    const ids = existingNodes
+      .map(n => prefix === 'R' ? n.data.regulatoryData?.riskId : n.data.regulatoryData?.controlId)
+      .filter(id => id && id.startsWith(`${prefix}-`))
+      .map(id => parseInt(id.split('-')[1]));
+    
+    const maxId = ids.length > 0 ? Math.max(...ids) : 0;
+    return `${prefix}-${String(maxId + 1).padStart(3, '0')}`;
+  }, []);
+
+  const createActivityNode = useCallback((type: 'activity' | 'automated-activity') => {
+    const id = `node_${Date.now()}`;
+    setNodes(nds => {
+      const riskId = generateUniqueId('R', nds);
+      const controlId = generateUniqueId('C', nds);
+      
+      const newNode = {
+        id,
+        type,
+        position: { x: 100, y: 100 },
+        data: {
+          label: type === 'activity' ? 'New Activity' : 'System Process',
+          role: type === 'activity' ? 'Staff' : '',
+          regulatoryData: {
+            riskId,
+            controlId,
+            riskDescription: '',
+            controlDescription: '',
+            isFraudRelated: false,
+            riskRating: 'Low',
+            isKeyControl: false,
+            classification: 'TLC'
+          }
+        }
+      };
+      return [...nds, newNode];
+    });
+  }, [generateUniqueId, setNodes]);
+
   const onNodesDelete = useCallback((deleted: any[]) => {
     if (deleted.length > 0) {
       toast.info(`Deleted ${deleted.length} node(s)`);
@@ -464,32 +505,6 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
   const { data: rcmData } = useQuery({
     queryKey: ['rcm'],
     queryFn: () => api<{ items: RCM[] }>('/api/rcm')
-  });
-
-  const createRiskMutation = useMutation({
-    mutationFn: (payload: Partial<RCM>) => api<RCM>('/api/rcm', {
-      method: 'POST',
-      body: JSON.stringify({ ...payload, subProcess })
-    }),
-    onSuccess: (newRisk) => {
-      queryClient.invalidateQueries({ queryKey: ['rcm'] });
-      if (selectedNodeId) linkRiskToActivity(selectedNodeId, newRisk.id);
-      toast.success("Risk created and linked");
-    }
-  });
-
-  const createControlMutation = useMutation({
-    mutationFn: (payload: Partial<Control>) => api<Control>('/api/controls', {
-      method: 'POST',
-      body: JSON.stringify({ ...payload, subProcess })
-    }),
-    onSuccess: (newControl, vars) => {
-      queryClient.invalidateQueries({ queryKey: ['controls'] });
-      if (selectedNodeId && (vars as any).parentRcmId) {
-        linkControlToRisk(selectedNodeId, (vars as any).parentRcmId, newControl.id);
-      }
-      toast.success("Control created and linked");
-    }
   });
 
   const deletePermanentlyMutation = useMutation({
@@ -555,9 +570,70 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
     }
   });
 
-  const updateNodeData = (id: string, partialData: any) => {
-    setNodes(nds => nds.map(node => node.id === id ? { ...node, data: { ...node.data, ...partialData } } : node));
-  };
+  const updateNodeData = useCallback((nodeId: string, partialData: any) => {
+    setNodes(nds => {
+      // 1. Update the target node data
+      const updatedNodes = nds.map(node => 
+        node.id === nodeId ? { ...node, data: { ...node.data, ...partialData } } : node
+      );
+
+      const targetNode = updatedNodes.find(n => n.id === nodeId);
+      if (!targetNode || !(targetNode.type === 'activity' || targetNode.type === 'automated-activity')) {
+        return updatedNodes;
+      }
+
+      // 2. Extract unique IDs for badges
+      const pairs = targetNode.data.regulatoryPairs || 
+                    (targetNode.data.regulatoryData ? [targetNode.data.regulatoryData] : []);
+      
+      const riskIds = Array.from(new Set(pairs.map((p: any) => p.riskId).filter(Boolean)));
+      const controlIds = Array.from(new Set(pairs.map((p: any) => p.controlId).filter(Boolean)));
+
+      // 3. Sync Docked Nodes (Badges)
+      const riskBadgeId = `risk_${nodeId}`;
+      const ctrlBadgeId = `ctrl_${nodeId}`;
+      
+      let finalNodes = [...updatedNodes];
+
+      // Sync Risk Badge
+      if (riskIds.length > 0) {
+        const existingRiskIdx = finalNodes.findIndex(n => n.id === riskBadgeId);
+        if (existingRiskIdx > -1) {
+          finalNodes[existingRiskIdx] = { 
+            ...finalNodes[existingRiskIdx], 
+            data: { ...finalNodes[existingRiskIdx].data, riskIds } 
+          };
+        } else {
+          finalNodes.push({
+            id: riskBadgeId, type: 'docked-risk', parentId: nodeId, extent: 'parent', draggable: false,
+            position: { x: 45, y: -12 }, data: { riskIds, label: 'Risks' }
+          });
+        }
+      } else {
+        finalNodes = finalNodes.filter(n => n.id !== riskBadgeId);
+      }
+
+      // Sync Control Badge
+      if (controlIds.length > 0) {
+        const existingCtrlIdx = finalNodes.findIndex(n => n.id === ctrlBadgeId);
+        if (existingCtrlIdx > -1) {
+          finalNodes[existingCtrlIdx] = { 
+            ...finalNodes[existingCtrlIdx], 
+            data: { ...finalNodes[existingCtrlIdx].data, controlIds } 
+          };
+        } else {
+          finalNodes.push({
+            id: ctrlBadgeId, type: 'docked-control', parentId: nodeId, extent: 'parent', draggable: false,
+            position: { x: 130, y: -12 }, data: { controlIds, label: 'Controls' }
+          });
+        }
+      } else {
+        finalNodes = finalNodes.filter(n => n.id !== ctrlBadgeId);
+      }
+
+      return finalNodes;
+    });
+  }, [setNodes]);
 
   const linkRiskToActivity = (nodeId: string, rcmId: string) => {
     setNodes(nds => {
@@ -776,333 +852,16 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
     });
   }, [selectedNode, rcmData, controlsData]);
 
-  // --- Sub-components for Search, Create & Management ---
-
-  const RiskItem = ({ riskEntry }: { riskEntry: any }) => {
-    const [isEditing, setIsEditing] = useState(false);
-    const [desc, setDesc] = useState(riskEntry.rcm.riskDescription);
-    const [fraud, setFraud] = useState(riskEntry.rcm.isFraudRelated);
-    const [rating, setRating] = useState<QualitativeLevel>(riskEntry.rcm.riskRating || "Medium");
-
-    const handleSave = () => {
-      updateRiskMutation.mutate({ 
-        id: riskEntry.rcmId, 
-        data: { riskDescription: desc, isFraudRelated: fraud, riskRating: rating } 
-      }, { onSuccess: () => setIsEditing(false) });
-    };
-
-    return (
-      <div className="p-2 rounded border border-red-100 bg-red-50/30 group/item relative space-y-2">
-        {isEditing ? (
-          <div className="space-y-2 p-1 bg-white rounded border border-red-200 shadow-sm">
-            <Textarea className="text-[10px] min-h-[60px] p-1" value={desc} onChange={(e) => setDesc(e.target.value)} />
-            <div className="flex items-center justify-between px-1">
-               <span className="text-[8px] font-bold uppercase text-slate-400">Fraud?</span>
-               <Switch checked={fraud} onCheckedChange={setFraud} />
-            </div>
-            <div className="flex items-center gap-2">
-              <Select value={rating} onValueChange={(val: any) => setRating(val)}>
-                <SelectTrigger className="h-6 text-[9px] flex-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Low">Low</SelectItem>
-                  <SelectItem value="Medium">Medium</SelectItem>
-                  <SelectItem value="High">High</SelectItem>
-                </SelectContent>
-              </Select>
-              <div className="flex gap-1">
-                <Button size="icon" className="h-6 w-6 bg-green-600" onClick={handleSave}><Check className="h-3 w-3" /></Button>
-                <Button size="icon" variant="outline" className="h-6 w-6" onClick={() => setIsEditing(false)}><X className="h-3 w-3" /></Button>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex flex-col pr-12 min-w-0">
-              <p className="text-[10px] font-medium text-red-900 leading-tight line-clamp-3">{riskEntry.rcm.riskDescription}</p>
-              <div className="flex gap-1 mt-1">
-                <Badge variant="outline" className="text-[7px] h-3.5 uppercase px-1 py-0 border-red-200 text-red-600">{riskEntry.rcm.riskRating}</Badge>
-                {riskEntry.rcm.isFraudRelated && <Badge variant="outline" className="text-[7px] h-3.5 uppercase px-1 py-0 border-orange-200 text-orange-600 font-black">FRAUD</Badge>}
-              </div>
-            </div>
-            <div className="absolute top-1 right-1 flex gap-0.5 opacity-0 group-hover/item:opacity-100 transition-opacity bg-red-50/80 rounded pl-1">
-              <Button variant="ghost" size="icon" className="h-5 w-5 text-slate-400 hover:text-blue-600" onClick={() => setIsEditing(true)}><ChevronRight className="h-3 w-3 rotate-180" /></Button>
-              <Button variant="ghost" size="icon" className="h-5 w-5 text-red-300 hover:text-red-600" onClick={() => unlinkRiskFromActivity(selectedNode.id!, riskEntry.rcmId)}><X className="h-3 w-3" /></Button>
-              <Button variant="ghost" size="icon" className="h-5 w-5 text-red-200 hover:text-red-800" onClick={() => checkImpact(riskEntry.rcmId, 'Risk')}><Trash2 className="h-3 w-3" /></Button>
-            </div>
-          </div>
-        )}
-
-        {/* Controls for this specific risk */}
-        <div className="pl-2 border-l-2 border-red-200 space-y-1.5">
-          <div className="flex items-center justify-between">
-            <span className="text-[8px] font-bold text-slate-400 uppercase">Controls</span>
-            <ControlSearchOrCreate rcmId={riskEntry.rcmId} />
-          </div>
-          {riskEntry.controls.map((ctrl: any) => (
-             <ControlItem key={ctrl.id} ctrl={ctrl} rcmId={riskEntry.rcmId} />
-          ))}
-        </div>
-      </div>
-    );
-  };
-
-  const ControlItem = ({ ctrl, rcmId }: { ctrl: any, rcmId: string }) => {
-    const [isEditing, setIsEditing] = useState(false);
-    const [name, setName] = useState(ctrl.name);
-    const [isKey, setIsKey] = useState(ctrl.isKeyControl);
-
-    const handleSave = () => {
-      updateControlMutation.mutate({ 
-        id: ctrl.id, 
-        data: { name, isKeyControl: isKey } 
-      }, { onSuccess: () => setIsEditing(false) });
-    };
-
-    return (
-      <div className="flex flex-col bg-white/50 p-1 rounded text-[9px] group/ctrl relative overflow-hidden">
-        {isEditing ? (
-          <div className="space-y-1">
-            <Input className="h-6 text-[8px] p-1" value={name} onChange={(e) => setName(e.target.value)} />
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1">
-                <span className="text-[7px] uppercase font-bold text-slate-400">Key?</span>
-                <Switch className="scale-75 origin-left" checked={isKey} onCheckedChange={setIsKey} />
-              </div>
-              <div className="flex gap-0.5">
-                <Button size="icon" className="h-5 w-5 bg-green-600" onClick={handleSave}><Check className="h-2.5 w-2.5" /></Button>
-                <Button size="icon" variant="outline" className="h-5 w-5" onClick={() => setIsEditing(false)}><X className="h-2.5 w-2.5" /></Button>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="flex items-center justify-between min-w-0">
-            <div className="flex items-center gap-1 min-w-0 flex-1">
-              <span className={cn("text-slate-600 line-clamp-1", ctrl.isKeyControl && "font-black text-green-700")}>
-                [{ctrl.code}] {ctrl.name}
-              </span>
-              {ctrl.isKeyControl && <div className="h-1 w-1 rounded-full bg-green-500 shrink-0" />}
-            </div>
-            <div className="flex items-center gap-0.5 opacity-0 group-hover/ctrl:opacity-100 transition-opacity bg-white/90 pl-1">
-              <Button variant="ghost" size="icon" className="h-4 w-4 text-slate-400" title="Edit" onClick={() => setIsEditing(true)}><ChevronRight className="h-2.5 w-2.5 rotate-180" /></Button>
-              <Button variant="ghost" size="icon" className="h-4 w-4 text-slate-300" title="Unlink" onClick={() => unlinkControlFromRisk(selectedNode.id!, rcmId, ctrl.id)}><X className="h-2.5 w-2.5" /></Button>
-              <Button variant="ghost" size="icon" className="h-4 w-4 text-red-200" title="Delete System-wide" onClick={() => checkImpact(ctrl.id, 'Control')}><Trash2 className="h-2.5 w-2.5" /></Button>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  const RiskSearchOrCreate = () => {
-    const [open, setOpen] = useState(false);
-    const [searchValue, setSearchValue] = useState("");
-    const [isCreating, setIsCreating] = useState(false);
+  const isNodeDirty = useMemo(() => {
+    if (!selectedNodeId || !diagram) return false;
+    const current = nodes.find(n => n.id === selectedNodeId);
+    // Find the same node in the original diagram data
+    const original = diagram.nodes?.find((n: any) => n.id === selectedNodeId);
+    if (!original) return true; // It's a new node
     
-    // New risk form state
-    const [riskDescription, setRiskDescription] = useState("");
-    const [isFraud, setIsFraud] = useState(false);
-    const [rating, setRating] = useState<QualitativeLevel>("Medium");
-
-    const handleCreate = () => {
-      if (!riskDescription) return;
-      createRiskMutation.mutate({
-        riskDescription,
-        isFraudRelated: isFraud,
-        riskRating: rating,
-        process: subProcess
-      }, {
-        onSuccess: () => {
-          setIsCreating(false);
-          setRiskDescription("");
-          setOpen(false);
-        }
-      });
-    };
-
-    return (
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button variant="outline" size="sm" className="h-7 text-[9px] bg-red-50 border-red-100 text-red-700 gap-1">
-            <PlusCircle className="h-3 w-3" /> {t('risklibrary:lookup.trigger')}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-80 p-0" side="left">
-          {isCreating ? (
-            <div className="p-4 space-y-4">
-              <div className="flex items-center justify-between">
-                <h4 className="font-bold text-xs uppercase text-slate-500">Buat Risiko Baru</h4>
-                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsCreating(false)}><X className="h-3 w-3" /></Button>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase text-slate-400">{t('risklibrary:form.description_label')}</Label>
-                <Textarea className="text-xs min-h-[80px]" value={riskDescription} onChange={(e) => setRiskDescription(e.target.value)} />
-              </div>
-              <div className="flex items-center justify-between">
-                <Label className="text-[10px] font-bold uppercase text-slate-400">{t('risklibrary:form.fraud_label')}</Label>
-                <Switch checked={isFraud} onCheckedChange={setIsFraud} />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase text-slate-400">{t('risklibrary:form.rating_label')}</Label>
-                <Select value={rating} onValueChange={(val: any) => setRating(val)}>
-                  <SelectTrigger className="h-8 text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Low">{t('risklibrary:form.low')}</SelectItem>
-                    <SelectItem value="Medium">{t('risklibrary:form.medium')}</SelectItem>
-                    <SelectItem value="High">{t('risklibrary:form.high')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button className="w-full h-8 text-xs bg-red-600 hover:bg-red-700" onClick={handleCreate} disabled={createRiskMutation.isPending}>
-                {createRiskMutation.isPending ? "Saving..." : "Simpan Risiko"}
-              </Button>
-            </div>
-          ) : (
-            <Command>
-              <CommandInput placeholder="Cari risiko..." value={searchValue} onValueChange={setSearchValue} />
-              <CommandList>
-                <CommandEmpty>
-                  <div className="p-4 text-center">
-                    <p className="text-xs text-muted-foreground mb-2">Risiko tidak ditemukan.</p>
-                    <Button size="sm" variant="outline" className="h-7 text-[10px] gap-1" onClick={() => {
-                      setRiskDescription(searchValue);
-                      setIsCreating(true);
-                    }}>
-                      <PlusCircle className="h-3 w-3" /> Buat Baru: "{searchValue}"
-                    </Button>
-                  </div>
-                </CommandEmpty>
-                <CommandGroup heading="Daftar Risiko">
-                  {rcmData?.items.map((risk) => (
-                    <CommandItem
-                      key={risk.id}
-                      value={risk.riskDescription}
-                      onSelect={() => {
-                        if (selectedNodeId) linkRiskToActivity(selectedNodeId, risk.id);
-                        setOpen(false);
-                      }}
-                      className="text-xs"
-                    >
-                      <Check className={cn("mr-2 h-3 w-3", linkedRisksWithData.some(lr => lr.rcmId === risk.id) ? "opacity-100" : "opacity-0")} />
-                      <div className="flex flex-col">
-                        <span className="line-clamp-1">{risk.riskDescription}</span>
-                        <span className="text-[8px] opacity-50 uppercase">{risk.riskRating} | {risk.isFraudRelated ? "Fraud" : "Normal"}</span>
-                      </div>
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </CommandList>
-            </Command>
-          )}
-        </PopoverContent>
-      </Popover>
-    );
-  };
-
-  const ControlSearchOrCreate = ({ rcmId }: { rcmId: string }) => {
-    const [open, setOpen] = useState(false);
-    const [searchValue, setSearchValue] = useState("");
-    const [isCreating, setIsCreating] = useState(false);
-
-    // New control form state
-    const [ctrlName, setCtrlName] = useState("");
-    const [ctrlDesc, setCtrlDescription] = useState("");
-    const [isKey, setIsKey] = useState(false);
-
-    const handleCreate = () => {
-      if (!ctrlName) return;
-      createControlMutation.mutate({
-        name: ctrlName,
-        description: ctrlDesc,
-        isKeyControl: isKey,
-        rcmId, // Linkage
-        parentRcmId: rcmId // For mutation logic
-      } as any, {
-        onSuccess: () => {
-          setIsCreating(false);
-          setCtrlName("");
-          setCtrlDescription("");
-          setOpen(false);
-        }
-      });
-    };
-
-    return (
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button variant="outline" size="sm" className="h-5 px-2 text-[8px] bg-white border-slate-200 gap-1">
-            <PlusCircle className="h-2.5 w-2.5" /> Link / Create
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-80 p-0" side="left">
-          {isCreating ? (
-            <div className="p-4 space-y-4">
-              <div className="flex items-center justify-between">
-                <h4 className="font-bold text-xs uppercase text-slate-500">Buat Kontrol Baru</h4>
-                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsCreating(false)}><X className="h-3 w-3" /></Button>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase text-slate-400">Nama Kontrol</Label>
-                <Input className="h-8 text-xs" value={ctrlName} onChange={(e) => setCtrlName(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase text-slate-400">Deskripsi</Label>
-                <Textarea className="text-xs min-h-[60px]" value={ctrlDesc} onChange={(e) => setCtrlDescription(e.target.value)} />
-              </div>
-              <div className="flex items-center justify-between">
-                <Label className="text-[10px] font-bold uppercase text-slate-400">Pengendalian Utama?</Label>
-                <Switch checked={isKey} onCheckedChange={setIsKey} />
-              </div>
-              <Button className="w-full h-8 text-xs bg-green-600 hover:bg-green-700" onClick={handleCreate} disabled={createControlMutation.isPending}>
-                {createControlMutation.isPending ? "Saving..." : "Simpan Kontrol"}
-              </Button>
-            </div>
-          ) : (
-            <Command>
-              <CommandInput placeholder="Cari kontrol..." value={searchValue} onValueChange={setSearchValue} />
-              <CommandList>
-                <CommandEmpty>
-                   <div className="p-4 text-center">
-                    <p className="text-xs text-muted-foreground mb-2">Kontrol tidak ditemukan.</p>
-                    <Button size="sm" variant="outline" className="h-7 text-[10px] gap-1" onClick={() => {
-                      setCtrlName(searchValue);
-                      setIsCreating(true);
-                    }}>
-                      <PlusCircle className="h-3 w-3" /> Buat Baru: "{searchValue}"
-                    </Button>
-                  </div>
-                </CommandEmpty>
-                <CommandGroup heading="Daftar Kontrol">
-                  {controlsData?.items.map((ctrl) => (
-                    <CommandItem
-                      key={ctrl.id}
-                      value={`${ctrl.code} ${ctrl.name}`}
-                      onSelect={() => {
-                        if (selectedNodeId) linkControlToRisk(selectedNodeId, rcmId, ctrl.id);
-                        setOpen(false);
-                      }}
-                      className="text-xs"
-                    >
-                       <Check className={cn("mr-2 h-3 w-3", linkedRisksWithData.some(lr => lr.rcmId === rcmId && lr.controlIds.includes(ctrl.id)) ? "opacity-100" : "opacity-0")} />
-                       <div className="flex flex-col">
-                        <span>[{ctrl.code}] {ctrl.name}</span>
-                        <span className="text-[8px] opacity-50 uppercase">{ctrl.isKeyControl ? "Key Control" : "Supporting"}</span>
-                      </div>
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </CommandList>
-            </Command>
-          )}
-        </PopoverContent>
-      </Popover>
-    );
-  };
-
-  if (isDiagramLoading) return <div className="h-full flex items-center justify-center"><RefreshCw className="animate-spin text-indigo-600" /></div>;
+    // Compare essential data (label, role, and the new regulatoryPairs)
+    return JSON.stringify(current.data) !== JSON.stringify(original.data);
+  }, [nodes, selectedNodeId, diagram]);
 
   return (
     <div className="flex h-full w-full bg-slate-50 overflow-hidden">
@@ -1147,16 +906,10 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
                <span className="text-xs font-bold text-slate-700">{subProcess}</span>
              </div>
              <div className="flex gap-1 pt-1 flex-wrap max-w-[180px]">
-                <Button variant="outline" size="icon" className="h-7 w-7" title="Add Activity" onClick={() => {
-                  const id = `node_${Date.now()}`;
-                  setNodes(nds => [...nds, { id, type: 'activity', position: { x: 100, y: 100 }, data: { label: 'New Activity', role: 'Staff' } }]);
-                }}>
+                <Button variant="outline" size="icon" className="h-7 w-7" title="Add Activity" onClick={() => createActivityNode('activity')}>
                   <Activity className="h-3.5 w-3.5 text-slate-600" />
                 </Button>
-                <Button variant="outline" size="icon" className="h-7 w-7 bg-blue-50" title="Add Automated Activity" onClick={() => {
-                  const id = `node_${Date.now()}`;
-                  setNodes(nds => [...nds, { id, type: 'automated-activity', position: { x: 100, y: 100 }, data: { label: 'System Process' } }]);
-                }}>
+                <Button variant="outline" size="icon" className="h-7 w-7 bg-blue-50" title="Add Automated Activity" onClick={() => createActivityNode('automated-activity')}>
                   <Database className="h-3.5 w-3.5 text-blue-600" />
                 </Button>
                 <Button variant="outline" size="icon" className="h-7 w-7" title="Add Decision" onClick={() => {
@@ -1187,77 +940,20 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
           </Panel>
         </ReactFlow>
 
-        <AnimatePresence>
-          {selectedNode && (
-            <motion.div initial={{ x: 300, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 300, opacity: 0 }} className="absolute top-0 right-0 bottom-0 w-80 bg-white border-l z-30 shadow-2xl p-5 flex flex-col gap-4">
-              <div className="flex items-center justify-between border-b pb-3">
-                <div className="flex flex-col">
-                  <h4 className="font-bold text-xs uppercase text-slate-500">Properties</h4>
-                  <span className="text-[9px] text-slate-400 font-mono">ID: {selectedNode.id}</span>
-                </div>
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => resetNav(null)}><X className="h-4 w-4" /></Button>
-              </div>
-
-              <ScrollArea className="flex-1 -mx-5 px-5">
-                <div className="space-y-4 pb-4">
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase">Label</label>
-                    <textarea className="w-full text-xs border rounded-md p-2 min-h-[80px]" value={selectedNode.data.label} onChange={(e) => updateNodeData(selectedNode.id, { label: e.target.value })} />
-                  </div>
-
-                  {selectedNode.type === 'activity' && (
-                    <>
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase">Role</label>
-                        <Input className="h-8 text-xs" value={selectedNode.data.role} onChange={(e) => updateNodeData(selectedNode.id, { role: e.target.value })} />
-                      </div>
-                      <Separator className="my-2" />
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <h5 className="text-[10px] font-black uppercase text-red-600 flex items-center gap-1.5">Risks ({linkedRisksWithData.length})</h5>
-                            <RiskSearchOrCreate />
-                          </div>
-
-                          {linkedRisksWithData.length > 5 && (
-                            <div className="relative">
-                              <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400" />
-                              <input 
-                                placeholder="Search linked risks..." 
-                                className="h-7 text-[10px] pl-7 w-full border rounded-md" 
-                                value={riskSearch}
-                                onChange={(e) => setRiskSearch(e.target.value)}
-                              />
-                            </div>
-                          )}
-
-                          <div className="space-y-1.5">
-                            {linkedRisksWithData
-                              .filter(r => r.rcm.riskDescription.toLowerCase().includes(riskSearch.toLowerCase()))
-                              .map(riskEntry => (
-                                <RiskItem key={riskEntry.rcmId} riskEntry={riskEntry} />
-                              ))}
-                          </div>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </ScrollArea>
-
-              <div className="pt-4 border-t">
-                <Button variant="destructive" size="sm" className="w-full gap-2 text-[10px] h-8 font-bold uppercase" onClick={() => {
-                  // Delete the node AND its children (badges)
-                  setNodes(nds => nds.filter(n => n.id !== selectedNode.id && n.parentId !== selectedNode.id));
-                  setEdges(eds => eds.filter(e => e.source !== selectedNode.id && e.target !== selectedNode.id));
-                  setSelectedNodeId(null);
-                }}>
-                  <Trash2 className="h-3.5 w-3.5" /> Remove Node
-                </Button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <RegulatoryPropertySheet
+          selectedNode={selectedNode}
+          isOpen={!!selectedNode}
+          onClose={() => resetNav(null)}
+          onUpdateNodeData={updateNodeData}
+          onDeleteNode={(id) => {
+            setNodes(nds => nds.filter(n => n.id !== id && n.parentId !== id));
+            setEdges(eds => eds.filter(e => e.source !== id && e.target !== id));
+            setSelectedNodeId(null);
+          }}
+          onSave={() => saveMutation.mutate({ nodes, edges, name: `Flow: ${subProcess}`, subProcess })}
+          isSaving={saveMutation.isPending}
+          isDirty={isNodeDirty}
+        />
 
         <AlertDialog open={!!impactData} onOpenChange={(open) => !open && setImpactData(null)}>
           <AlertDialogContent>

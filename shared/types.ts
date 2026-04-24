@@ -198,6 +198,7 @@ export interface Control {
   relatedControlIds: string[]; // New: For linkage (Many-to-Many)
   attachmentUrl?: string; // New: For policy documents
   itgcArea?: ITGCArea;
+  itgcAssertions?: Record<string, 'Y' | 'N'>; // New: Dummy IT assertions mapping
   cobitId?: string; // New: For ITGC controls (Tabel 1)
   isFraudRisk: boolean; // New: (Tabel 18)
   effectiveDate: number; // New: epoch millis (Tabel 18)
@@ -314,6 +315,11 @@ export interface RCMControlMapping {
   executorRole?: string; // Column xxxi
   affectedFsliItem?: string; // Column xxxii
   effectivePeriod?: string; // Column xxxiii
+
+  // ELC & ITGC Regulatory Metadata
+  cosoPrinciples?: number[]; // Array of numbers 1-17
+  itgcDomain?: string; // Access, Changes, Development, Operations
+  itgcAssertions?: Record<string, 'Y' | 'N'>; // JSON mapping for IT assertions
 }
 
 export interface RCM {
