@@ -79,8 +79,12 @@ export function RegulatoryPropertySheet({
   const { t } = useTranslation(['bpm', 'rcm', 'common']);
 
   const isActivity = selectedNode?.type === 'activity' || selectedNode?.type === 'automated-activity';
-  const pairs = selectedNode?.data?.regulatoryPairs || 
-                (selectedNode?.data?.regulatoryData ? [selectedNode?.data?.regulatoryData] : []);
+  
+  // SUPPORT MULTIPLE PAIRS: Convert single legacy object or hydrated array
+  const pairs = useMemo(() => {
+    return selectedNode?.data?.regulatoryPairs || 
+           (selectedNode?.data?.regulatoryData ? [selectedNode?.data?.regulatoryData] : []);
+  }, [selectedNode?.data?.regulatoryPairs, selectedNode?.data?.regulatoryData]);
 
   // --- Grouping Logic: Risk -> Multiple Controls ---
   const groupedRisks = useMemo(() => {

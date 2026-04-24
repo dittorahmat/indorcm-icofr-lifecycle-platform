@@ -1,39 +1,25 @@
 # Design: Regulatory Property Panel & Unique Mapping
 
 ## Architecture
-Kita akan memisahkan logika panel properti dari `BPMEditor.tsx` menjadi komponen mandiri `RegulatoryPropertyPanel.tsx`.
 
 ### 1. Component Structure
-- **Container**: `Sheet` (shadcn/ui) untuk area kerja yang lebih luas.
-- **State Management**: Data akan dikelola oleh `useNodesState` di React Flow, namun akan disinkronkan ke database via `useMutation` setiap kali ada perubahan signifikan (autosave/snapshot).
+- **RegulatoryPropertySheet.tsx**: Komponen utama menggunakan `Sheet` (shadcn/ui) dengan sistem `Tabs`:
+    - **Properties Tab**: Menampilkan `TLCForm`, `ELCForm`, atau `ITGCForm` berdasarkan pilihan klasifikasi.
+    - **History Tab**: Melakukan lazy-loading `EntityHistoryList` yang mengambil data `/api/changelogs?entityId={id}`.
+- **Matrix Architecture**:
+    - **TLC (Transactional)**: Orientasi baris-per-risiko-kontrol dengan grid input langsung.
+    - **ELC (Entity Level)**: Orientasi horizontal (Lampiran 5 a). Menggunakan `sticky` columns untuk referensi kontrol agar navigasi 17 kolom COSO tetap nyaman.
 
-### 2. ID Generation Logic (Requirement 3)
-```typescript
-const generateUniqueId = (prefix: 'R' | 'C', existingNodes: Node[]) => {
-  const count = existingNodes.filter(n => n.data.code?.startsWith(prefix)).length + 1;
-  return `${prefix}-${String(count).padStart(3, '0')}`;
-}
-```
-Setiap node `activity` akan memiliki object `regulatoryData` di dalam `node.data`.
+### 2. Data & Performance Strategy
+- **Filtered Common Endpoints**: Diputuskan menggunakan endpoint tunggal dengan query parameter (e.g., `/api/controls?level=ELC`) daripada specialized endpoints dengan database joins.
+- **Frontend Enrichment**: Nama perusahaan/subsidiary dipetakan di sisi client menggunakan data `organizations` dari cache (TanStack Query) untuk menjamin kecepatan load instan (< 100ms).
+- **Localization Mapping**: Deskripsi prinsip COSO disimpan di `rcm.json` kunci `coso_tooltips` untuk memudahkan integrasi tooltip di berbagai komponen UI.
 
-### 3. Dynamic Form Logic
-Panel akan menggunakan state `classification` (TLC | ELC | ITGC) untuk merender sub-form:
-- **TLCView**: Merender `IPOTable` dengan tooltips.
-- **ELCView**: Merender grid `COSOPmapping` (17 principles).
-- **ITGCView**: Merender `ITGCDomainSelector` dan `ITGCAssertionDummy`.
+### 3. Double-Layer Safety Mechanism (UnSavedChanges)
+- **Internal Guard**: Hook `useUnsavedChanges` memantau state `isDirty`. Jika user mencoba navigasi internal (SPA) tanpa menyimpan, dialog konfirmasi akan muncul.
+- **External Guard**: Event listener `beforeunload` menangkap aksi tutup tab atau refresh browser.
 
 ### 4. Database Mapping
-Data yang diinput di panel akan langsung disimpan ke tabel:
-- `rcms`: Untuk deskripsi risiko, rating, dan status fraud.
-- `controls`: Untuk deskripsi kontrol, status key control, dan asersi.
-- `rcm_control_mapping`: Untuk menyimpan relasi unik antara keduanya untuk node spesifik tersebut.
-
-### 5. Double-Layer Safety Mechanism
-Untuk mencegah kehilangan data pada alur BPM yang kompleks:
-- **Layer 1 (Internal):** Menggunakan hook `useUnsavedChanges` yang memanfaatkan React Router `useBlocker` (atau sejenisnya) untuk menampilkan dialog konfirmasi kustom jika `isDirty` bernilai `true`.
-- **Layer 2 (External):** Menambahkan event listener `beforeunload` pada `window` untuk menangkap aksi tutup tab, refresh, atau tombol *back* browser.
-
-### 6. Localization Strategy
-Semua teks teknis dan tooltip akan dipindahkan ke file JSON:
-- Tooltip IPO (Completeness, Accuracy, etc.) akan diletakkan di `bpm.json` seksi `assertions.tooltip`.
-- Label-label baru pada panel properti akan menggunakan namespace `rcm` atau `bpm`.
+- `controls`: Menyimpan metadata utama termasuk `coso_principles` (jsonb array) dan `level`.
+- `rcm_controls`: Junction table yang menyimpan metadata spesifik untuk relasi risiko-kontrol tertentu (one-to-one mapping per node).
+- `audit_logs`: Mencatat snapshot perubahan data dengan flag `isRegulatory: true` untuk keperluan Lampiran 6.
