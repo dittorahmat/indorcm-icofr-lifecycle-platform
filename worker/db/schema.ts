@@ -379,6 +379,8 @@ export const bpmProcesses = pgTable("bpm_processes", {
 	noGL: text("no_gl").notNull(),
 	fsliName: text("fsli_name"),
 	name: text("name").notNull(),
+	riskCount: integer("risk_count").default(0),
+	controlCount: integer("control_count").default(0),
 	createdAt: timestamp("created_at").notNull(),
 	createdBy: text("created_by").references(() => user.id),
 });

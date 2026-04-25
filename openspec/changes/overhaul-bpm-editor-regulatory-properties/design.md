@@ -1,25 +1,37 @@
-# Design: Regulatory Property Panel & Unique Mapping
+# Design: Hierarchical Regulatory Panel & Auto-Cleanup
 
 ## Architecture
+Pemisahan logika panel properti menjadi `RegulatoryPropertySheet.tsx` yang mendukung pengelompokan data dinamis.
 
-### 1. Component Structure
-- **RegulatoryPropertySheet.tsx**: Komponen utama menggunakan `Sheet` (shadcn/ui) dengan sistem `Tabs`:
-    - **Properties Tab**: Menampilkan `TLCForm`, `ELCForm`, atau `ITGCForm` berdasarkan pilihan klasifikasi.
-    - **History Tab**: Melakukan lazy-loading `EntityHistoryList` yang mengambil data `/api/changelogs?entityId={id}`.
-- **Matrix Architecture**:
-    - **TLC (Transactional)**: Orientasi baris-per-risiko-kontrol dengan grid input langsung.
-    - **ELC (Entity Level)**: Orientasi horizontal (Lampiran 5 a). Menggunakan `sticky` columns untuk referensi kontrol agar navigasi 17 kolom COSO tetap nyaman.
+### 1. Data Structure (`regulatoryPairs`)
+Alih-alih objek tunggal, node aktivitas sekarang menyimpan array of objects:
+```typescript
+data: {
+  regulatoryPairs: Array<{
+    riskId: string;
+    controlId: string;
+    // ... metadata compliance
+  }>
+}
+```
+UI melakukan grouping berdasarkan `riskId` secara real-time menggunakan `useMemo`.
 
-### 2. Data & Performance Strategy
-- **Filtered Common Endpoints**: Diputuskan menggunakan endpoint tunggal dengan query parameter (e.g., `/api/controls?level=ELC`) daripada specialized endpoints dengan database joins.
-- **Frontend Enrichment**: Nama perusahaan/subsidiary dipetakan di sisi client menggunakan data `organizations` dari cache (TanStack Query) untuk menjamin kecepatan load instan (< 100ms).
-- **Localization Mapping**: Deskripsi prinsip COSO disimpan di `rcm.json` kunci `coso_tooltips` untuk memudahkan integrasi tooltip di berbagai komponen UI.
+### 2. Backend Auto-Cleanup (Integritas Data)
+Backend `PUT /api/bpm-diagrams/:id` bertanggung jawab atas kebersihan database:
+- **Tracking**: Backend membandingkan ID Risiko/Kontrol di DB dengan yang ada di visual diagram.
+- **Hard Delete**: Record `rcms` dan `controls` yang sudah tidak ada di diagram (tapi masih tertaut ke ID diagram tersebut) akan dihapus secara fisik untuk mencegah data yatim.
 
-### 3. Double-Layer Safety Mechanism (UnSavedChanges)
-- **Internal Guard**: Hook `useUnsavedChanges` memantau state `isDirty`. Jika user mencoba navigasi internal (SPA) tanpa menyimpan, dialog konfirmasi akan muncul.
-- **External Guard**: Event listener `beforeunload` menangkap aksi tutup tab atau refresh browser.
+### 3. Synchronization & Status
+- **isNodeDirty Logic**: Menghitung perbedaan antara `current.data` dan `diagram.original.data`.
+- **Dynamic Footer**: Menampilkan status "Synced" (Hijau) vs "Pending Sync" (Kuning) berdasarkan flag `isDirty`.
+- **Save Trigger**: Tombol di dalam Sheet memicu `saveMutation` diagram utama, yang kemudian melakukan *refetch* untuk mereset status `isDirty`.
 
-### 4. Database Mapping
-- `controls`: Menyimpan metadata utama termasuk `coso_principles` (jsonb array) dan `level`.
-- `rcm_controls`: Junction table yang menyimpan metadata spesifik untuk relasi risiko-kontrol tertentu (one-to-one mapping per node).
-- `audit_logs`: Mencatat snapshot perubahan data dengan flag `isRegulatory: true` untuk keperluan Lampiran 6.
+### 4. Visual Hirarki
+- **Risk Card (Red)**: Header utama untuk informasi risiko.
+- **Control Card (White)**: Item nested (indented) dengan garis penghubung putus-putus.
+- **Action Buttons**: Tersedia tombol hapus spesifik di tiap level (Hapus Kontrol vs Hapus 1 Grup Risiko).
+
+### 5. Double-Layer Safety
+- **Internal**: `useBlocker` untuk navigasi antar halaman.
+- **Sheet Guard**: `window.confirm` saat mencoba menutup popup jika ada data `isDirty`.
+- **Localized Warnings**: Seluruh pesan peringatan ditarik dari sistem i18n (`rcm.json`).

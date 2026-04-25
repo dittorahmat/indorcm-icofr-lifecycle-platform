@@ -1,6 +1,7 @@
 {
   "title": "BPM Workflow",
   "description": "Map business processes and controls at the transaction level.",
+  "fsliLabel": "FSLI",
   "searchPlaceholder": "Search Sub Process...",
   "createButton": "Create BPM",
   "assertions": {

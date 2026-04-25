@@ -1,6 +1,7 @@
 {
   "title": "Alur Kerja BPM",
   "description": "Petakan proses bisnis dan kontrol di tingkat transaksi.",
+  "fsliLabel": "FSLI",
   "searchPlaceholder": "Cari Sub Proses...",
   "createButton": "Buat BPM",
   "assertions": {

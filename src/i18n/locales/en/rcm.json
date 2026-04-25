@@ -54,7 +54,13 @@
       "classification_label": "Control Classification",
       "ipo_section": "Information Processing Objective (IPO)",
       "coso_section": "COSO 17 Principles Mapping",
-      "itgc_section": "ITGC Domain & Assertions"
+      "itgc_section": "ITGC Domain & Assertions",
+      "warnings": {
+        "unsaved_changes": "There are changes that haven't been synced to Matrix. Close this popup anyway?",
+        "delete_risk_confirm": "WARNING: Deleting this risk will remove ALL control data under it. This data will be PERMANENTLY deleted from the RCM database when you click 'Save & Sync'. Continue?",
+        "delete_control_confirm": "Delete this Risk-Control mapping row? Data related to this row will be permanently lost from the TLC Matrix after synchronization.",
+        "hard_delete_notice": "ATTENTION: Clicking save will PERMANENTLY delete Risk/Control data that you have removed from this popup in the database."
+      }
     },
     "itgc": {
       "title": "RCM ITGC Matrix",

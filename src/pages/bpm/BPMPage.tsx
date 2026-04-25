@@ -284,7 +284,7 @@ export function BPMPage() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
               <div className="space-y-2">
                 <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                  <Database className="h-3 w-3" /> 1. {t('scoping:activeSource')}
+                  <Database className="h-3 w-3" /> 1. {t('bpm:fsliLabel')}
                 </Label>
                 <Select value={selectedFsli} onValueChange={(v) => { setSelectedFsli(v); setSelectedAccountKey(""); setSelectedBpmId(null); }}>
                   <SelectTrigger className="bg-white border-slate-200">

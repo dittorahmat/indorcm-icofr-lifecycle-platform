@@ -1,22 +1,36 @@
-# Spec: Regulatory Property Panel & Matrix
+# Spec: Hierarchical Regulatory Property Panel
 
-## 1. Risk & Control Identity
-- **Enforced Uniqueness**: Setiap node Activity hanya boleh memiliki satu pasangan Risiko-Kontrol yang didefinisikan secara unik.
-- **Auto-ID**: Prefiks `R-` untuk Risiko dan `C-` untuk Kontrol diikuti angka urut otomatis.
+## 1. Data Object (`regulatoryPairs`)
+| Field | Type | Description |
+|-------|------|-------------|
+| `riskId` | `string` | Auto-gen ID (R-XXX) |
+| `riskDescription` | `text` | Narasi risiko aktivitas |
+| `isFraudRelated` | `boolean` | Indikator fraud |
+| `riskRating` | `enum` | Low / Medium / High |
+| `controlId` | `string` | Auto-gen ID (C-XXX) |
+| `controlDescription`| `text` | Narasi prosedur kontrol |
+| `classification` | `enum` | TLC / ELC / ITGC |
 
-## 2. ELC Compliance (Lampiran 5 a & Lampiran 1)
-- **Matrix Layout**: Matriks ELC wajib menampilkan Kontrol sebagai Baris dan 17 Prinsip COSO sebagai Kolom.
-- **Principles Mapping**: Disimpan sebagai array numerik `[1, 2, 8, 14...]`.
-- **Glossary Tooltips**: Setiap header kolom prinsip (1-17) wajib menampilkan tooltip deskripsi lengkap dari Lampiran 1.
+## 2. TLC Fields (IPO Table)
+- **C (Completeness)**: Seluruh transaksi tercatat.
+- **A (Accuracy)**: Nilai, akun, periode tepat.
+- **V (Validity)**: Hanya transaksi sah/terotorisasi.
+- **RA (Restricted Access)**: Akses data/sistem terbatas.
 
-## 3. TLC Compliance (Tabel IPO)
-- **Fields**: `ipoC` (Completeness), `ipoA` (Accuracy), `ipoV` (Validity), `ipoRa` (Restricted Access).
-- **Tooltips**: Menjelaskan makna teknis masing-masing kriteria IPO untuk memandu user Lini 1.
+## 3. ITGC Fields (Lampiran 5.c)
+- **Domain**: Access, Changes, Development, Operations.
+- **IT Assertions**: Confidentiality, Integrity, Availability, Completeness, Authenticity.
 
-## 4. Multi-Subsidiary View
-- **Filter**: Halaman Matriks (TLC & ELC) wajib menyediakan filter "Anak Perusahaan".
-- **Holding View**: User level Holding/Admin dapat melihat data gabungan atau per subsidiary.
+## 4. ELC Fields (Lampiran 5.a)
+- **COSO Principles**: Mapping ke 17 prinsip (Multi-select/Grid).
 
-## 5. Audit Trail (Lampiran 6)
-- **On-Demand History**: Menampilkan list perubahan (Timestamp, User, Old Value -> New Value).
-- **Contextual Access**: History harus dapat diakses langsung dari Property Sheet saat mengedit entitas tersebut.
+## 5. Localized Warnings (Audit Compliance)
+Semua konfirmasi penghapusan wajib melalui `window.confirm` dengan teks dari `rcm.json`:
+- `delete_risk_confirm`: Peringatan penghapusan grup risiko & kontrol.
+- `delete_control_confirm`: Peringatan penghapusan baris kontrol tunggal.
+- `hard_delete_notice`: Peringatan konsekuensi permanen di database.
+
+## 6. Target Mapping & Persistence
+- **PUT Diagram**: Melakukan sinkronisasi ke tabel `rcms`, `controls`, `rcm_controls`, dan `bpm_node_rcms`.
+- **RCM TLC Page**: Otomatis mem-populate kolom xiv s.d. xxiv berdasarkan array `regulatoryPairs`.
+- **Change Log**: Mencatat `descriptionBefore` vs `descriptionAfter` untuk setiap mutasi data di panel.

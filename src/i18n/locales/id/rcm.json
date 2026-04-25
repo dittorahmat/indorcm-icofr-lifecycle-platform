@@ -54,7 +54,13 @@
       "classification_label": "Klasifikasi Kontrol",
       "ipo_section": "Information Processing Objective (IPO)",
       "coso_section": "Pemetaan 17 Prinsip COSO",
-      "itgc_section": "Domain & Asersi ITGC"
+      "itgc_section": "Domain & Asersi ITGC",
+      "warnings": {
+        "unsaved_changes": "Terdapat perubahan yang belum disinkronkan ke Matrix. Tetap tutup popup ini?",
+        "delete_risk_confirm": "PERINGATAN: Menghapus risiko ini akan menghapus SELURUH data kontrol di bawahnya. Data ini akan terhapus secara PERMANEN dari database RCM saat Anda menekan tombol 'Save & Sync'. Lanjutkan?",
+        "delete_control_confirm": "Hapus baris mapping Risiko-Kontrol ini? Data terkait baris ini akan hilang dari Matrix TLC secara permanen setelah sinkronisasi.",
+        "hard_delete_notice": "PERHATIAN: Menekan tombol simpan akan menghapus data Risiko/Kontrol yang sudah Anda buang dari popup ini secara PERMANEN di database."
+      }
     },
     "itgc": {
       "title": "Matriks RCM ITGC",

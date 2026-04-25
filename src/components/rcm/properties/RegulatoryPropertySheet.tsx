@@ -4,7 +4,7 @@ import { Node } from 'reactflow';
 import { useTranslation } from 'react-i18next';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { X, ShieldAlert, ShieldCheck, Database, Trash2, PlusCircle, AlertTriangle, RefreshCw, History, Layout } from 'lucide-react';
+import { X, ShieldAlert, ShieldCheck, Database, Trash2, PlusCircle, AlertTriangle, RefreshCw, History, Layout, AlertCircle } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -104,7 +104,7 @@ export function RegulatoryPropertySheet({
 
   const handleClose = () => {
     if (isDirty) {
-      if (window.confirm("Terdapat perubahan yang belum disinkronkan ke Matrix. Tetap tutup popup ini?")) {
+      if (window.confirm(t('rcm:matrix.properties.warnings.unsaved_changes'))) {
         onClose();
       }
     } else {
@@ -165,6 +165,22 @@ export function RegulatoryPropertySheet({
       regulatoryPairs: nextPairs, 
       regulatoryData: nextPairs[0] || null 
     });
+  };
+
+  const removeRisk = (riskId: string) => {
+    if (window.confirm(t('rcm:matrix.properties.warnings.delete_risk_confirm'))) {
+      const nextPairs = pairs.filter((p: any) => p.riskId !== riskId);
+      onUpdateNodeData(selectedNode.id, { 
+        regulatoryPairs: nextPairs, 
+        regulatoryData: nextPairs[0] || null 
+      });
+    }
+  };
+
+  const removeSpecificPair = (index: number) => {
+    if (window.confirm(t('rcm:matrix.properties.warnings.delete_control_confirm'))) {
+      removePair(index);
+    }
   };
 
   return (
@@ -240,9 +256,13 @@ export function RegulatoryPropertySheet({
                             <AlertTriangle className="h-4 w-4" />
                             <h3 className="text-xs font-black uppercase tracking-widest">Risiko #{gIdx + 1}</h3>
                           </div>
-                          <Badge className="bg-red-800 text-[9px] font-mono border-none">{group.risk.riskId}</Badge>
+                          <div className="flex items-center gap-3">
+                            <Badge className="bg-red-800 text-[9px] font-mono border-none">{group.risk.riskId}</Badge>
+                            <Button variant="ghost" size="icon" className="h-6 w-6 text-red-200 hover:text-white hover:bg-red-700" onClick={() => removeRisk(group.risk.riskId)}>
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
                         </div>
-                        
                         <div className="p-5 space-y-4">
                           <div className="space-y-2">
                             <Label className="text-[10px] font-black uppercase text-red-900/50">Deskripsi Risiko Aktivitas</Label>
@@ -300,7 +320,7 @@ export function RegulatoryPropertySheet({
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <Badge variant="outline" className="font-mono text-[9px] h-5 border-slate-200 text-slate-400">{ctrl.data.controlId}</Badge>
-                                    <Button variant="ghost" size="icon" className="h-6 w-6 text-slate-300 hover:text-rose-600" onClick={() => removePair(ctrl.index)}>
+                                    <Button variant="ghost" size="icon" className="h-6 w-6 text-slate-300 hover:text-rose-600" onClick={() => removeSpecificPair(ctrl.index)}>
                                       <X className="h-3 w-3" />
                                     </Button>
                                 </div>
@@ -406,19 +426,28 @@ export function RegulatoryPropertySheet({
         </Tabs>
 
         {/* STICKY FOOTER */}
-        <div className="p-4 border-t bg-slate-50 flex items-center justify-between shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
-           <div className="flex flex-col">
-              <span className="text-[10px] font-black uppercase text-slate-400 leading-none">Status</span>
-              <span className={cn("text-[11px] font-bold flex items-center gap-1.5 mt-1", isDirty ? "text-amber-600" : "text-emerald-600")}>
-                 <div className={cn("h-2 w-2 rounded-full", isDirty ? "bg-amber-400 animate-pulse" : "bg-emerald-500")} />
-                 {isDirty ? 'Pending Sync' : 'Synced to Matrix'}
-              </span>
+        <div className="p-4 border-t bg-slate-50 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
+           <div className="flex items-center justify-between mb-3">
+              <div className="flex flex-col">
+                  <span className="text-[10px] font-black uppercase text-slate-400 leading-none">Status</span>
+                  <span className={cn("text-[11px] font-bold flex items-center gap-1.5 mt-1", isDirty ? "text-amber-600" : "text-emerald-600")}>
+                    <div className={cn("h-2 w-2 rounded-full", isDirty ? "bg-amber-400 animate-pulse" : "bg-emerald-500")} />
+                    {isDirty ? 'Pending Sync' : 'Synced to Matrix'}
+                  </span>
+              </div>
+              <div className="flex items-start gap-2 bg-rose-50 border border-rose-100 p-2 rounded-lg max-w-[400px]">
+                 <AlertCircle className="h-3 w-3 text-rose-500 shrink-0 mt-0.5" />
+                 <p className="text-[9px] text-rose-700 leading-tight italic">
+                    {t('rcm:matrix.properties.warnings.hard_delete_notice')}
+                 </p>
+              </div>
            </div>
+           
            <Button 
              onClick={onSave} 
              disabled={isSaving || !isDirty}
              className={cn(
-               "text-white font-black uppercase tracking-widest text-[10px] px-8 h-10 gap-2 shadow-lg transition-all",
+               "w-full text-white font-black uppercase tracking-widest text-[10px] h-10 gap-2 shadow-lg transition-all",
                isDirty ? "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-100" : "bg-slate-300 shadow-none cursor-not-allowed"
              )}
            >

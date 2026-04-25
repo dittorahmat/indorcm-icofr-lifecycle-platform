@@ -11,7 +11,7 @@ import {
   documents, documentDepartments, documentGls, documentFslis,
   systemLicenses, riskLibrary, accountAssertions
 } from './db/schema';
-import { eq, and, desc, sql, ilike } from 'drizzle-orm';
+import { eq, and, desc, sql, ilike, inArray } from 'drizzle-orm';
 import type { 
   Control, RCM, CSARecord, TestRecord, Deficiency, ActionPlan, 
   UserRole, UserLevel, Materiality, Scoping, ChangeLog, SOCReport, Application, 
@@ -1505,6 +1505,11 @@ export function userRoutes(app: Hono<HonoEnv>) {
 
     const nodes = body.nodes || [];
     const edges = body.edges || [];
+    const activeRiskControlPairs = new Set<string>(); // "rcmId:controlId"
+    
+    // TRACKING FOR HARD DELETE (AUTO-CLEANUP)
+    const activeRiskIdsInDiagram = new Set<string>();
+    const activeControlIdsInDiagram = new Set<string>();
 
     for (const node of nodes) {
       // NEW LOGIC: Handle regulatoryPairs (Array) for multiple mappings per node
@@ -1513,6 +1518,9 @@ export function userRoutes(app: Hono<HonoEnv>) {
 
       if ((node.type === 'activity' || node.type === 'automated-activity') && nodePairs.length > 0) {
         for (const reg of nodePairs) {
+          if (reg.riskId) activeRiskIdsInDiagram.add(reg.riskId);
+          if (reg.controlId) activeControlIdsInDiagram.add(reg.controlId);
+          
           const riskId = reg.riskId;
           const ctrlId = reg.controlId;
 
@@ -1655,6 +1663,72 @@ export function userRoutes(app: Hono<HonoEnv>) {
       }
     }
 
+    // --- AUTO-CLEANUP (Hard Delete Orphans) ---
+    
+    // 1. Delete mappings (rcm_controls) that are no longer linked to this diagram's active pairs
+    // We target mappings that belong to this diagram's risks but are not in the active set
+    const risksOfThisDiagram = await db.select({ id: rcms.id }).from(rcms).where(eq(rcms.diagramId, id));
+    const riskIdsOfThisDiagram = risksOfThisDiagram.map(r => r.id);
+    
+    if (riskIdsOfThisDiagram.length > 0) {
+      await db.execute(sql`
+        DELETE FROM rcm_controls 
+        WHERE "organizationId" = ${orgId}
+        AND rcm_id IN ${riskIdsOfThisDiagram}
+        AND id NOT IN (
+          SELECT rc.id FROM rcm_controls rc
+          INNER JOIN bpm_node_rcms bnr ON rc.rcm_id = bnr.rcm_id
+          WHERE bnr.diagram_id = ${id}
+        )
+      `);
+    }
+
+    // 2. Delete Controls that are no longer linked to ANY mapping
+    await db.execute(sql`
+      DELETE FROM controls 
+      WHERE "organizationId" = ${orgId} 
+      AND id LIKE 'C-%' 
+      AND id NOT IN (SELECT control_id FROM rcm_controls WHERE "organizationId" = ${orgId})
+    `);
+
+    // 3. Delete Risks that are no longer in the visual nodes
+    for (const drId of riskIdsOfThisDiagram) {
+       if (!activeRiskIdsInDiagram.has(drId) && drId.startsWith('R-')) {
+          await db.delete(rcms).where(and(eq(rcms.id, drId), eq(rcms.organizationId, orgId)));
+       }
+    }
+
+    // 3. Recalculate Risk & Control Counts for the Process
+    const risks = await db.select({ id: bpmNodeRcms.rcmId })
+      .from(bpmNodeRcms)
+      .where(eq(bpmNodeRcms.diagramId, id))
+      .groupBy(bpmNodeRcms.rcmId);
+    
+    const riskCount = risks.length;
+    const uniqueRiskIds = risks.map(r => r.id);
+    
+    let controlCount = 0;
+    if (uniqueRiskIds.length > 0) {
+      const ctrls = await db.select({ id: rcmControls.controlId })
+        .from(rcmControls)
+        .where(and(
+          inArray(rcmControls.rcmId, uniqueRiskIds),
+          eq(rcmControls.organizationId, orgId)
+        ))
+        .groupBy(rcmControls.controlId);
+      controlCount = ctrls.length;
+    }
+
+    const diagResult = await db.select().from(bpmDiagrams).where(eq(bpmDiagrams.id, id)).limit(1);
+    if (diagResult.length > 0 && diagResult[0].subProcess) {
+      await db.update(bpmProcesses)
+        .set({ riskCount, controlCount })
+        .where(and(
+          eq(bpmProcesses.organizationId, orgId),
+          eq(bpmProcesses.name, diagResult[0].subProcess)
+        ));
+    }
+
     return ok(c, { success: true });
   });
 
@@ -1681,22 +1755,21 @@ export function userRoutes(app: Hono<HonoEnv>) {
       name: bpmProcesses.name,
       createdAt: bpmProcesses.createdAt,
       createdBy: bpmProcesses.createdBy,
-      controlCount: sql<number>`count(${controls.id})`,
-      riskCount: sql<number>`count(${controls.id}) FILTER (WHERE ${controls.isFraudRelated} = true)`
+      controlCount: bpmProcesses.controlCount,
+      riskCount: bpmProcesses.riskCount
     })
     .from(bpmProcesses)
-    .leftJoin(controls, eq(bpmProcesses.id, controls.bpmProcessId))
     .where(eq(bpmProcesses.organizationId, orgId));
 
     if (noGL) {
       const items = await query.where(and(
         eq(bpmProcesses.organizationId, orgId),
         eq(bpmProcesses.noGL, noGL)
-      )).groupBy(bpmProcesses.id);
+      ));
       return ok(c, { items });
     }
 
-    const items = await query.groupBy(bpmProcesses.id);
+    const items = await query;
     return ok(c, { items });
   });
 

@@ -267,7 +267,7 @@ export interface BPMProcess {
   noGL: string; // Link to specific Account
   fsliName: string;
   createdBy: string;
-  createdAt: number;
+  createdAt: string;
   riskCount?: number;
   controlCount?: number;
 }
