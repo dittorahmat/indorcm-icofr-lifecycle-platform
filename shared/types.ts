@@ -328,8 +328,9 @@ export interface RCMControlMapping {
 
   // ELC & ITGC Regulatory Metadata
   cosoPrinciples?: number[]; // Array of numbers 1-17
-  itgcDomain?: string; // Access, Changes, Development, Operations
+  itgcDomain?: ITGCArea; // Access, Changes, Development, Operations
   itgcAssertions?: Record<string, 'Y' | 'N'>; // JSON mapping for IT assertions
+  automatedControlType?: AutomatedSubNature; // Column xxvii: Automated Control, Automated Calculation, Restricted Access, Interface
 }
 
 export interface RCM {

@@ -886,6 +886,92 @@ export function userRoutes(app: Hono<HonoEnv>) {
     return ok(c, { success: true });
   });
 
+  app.get('/api/rcm-matrix/itgc', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+
+    const org = await db.select().from(organization).where(eq(organization.id, orgId)).then(rows => rows[0]);
+
+    const results = await db.select({
+      mappingId: rcmControls.id,
+      processName: bpmProcesses.name,
+      fsliName: bpmProcesses.fsliName,
+      noGL: bpmProcesses.noGL,
+      subProcessName: bpmDiagrams.name,
+      riskDescription: rcms.riskDescription,
+      isFraudRelated: rcms.isFraudRelated,
+      riskRating: rcms.riskRating,
+      controlCode: controls.code,
+      baseControlName: controls.name,
+      baseControlDescription: controls.description,
+      mappedControlName: rcmControls.controlName,
+      mappedControlDescription: rcmControls.controlDescription,
+      itgcDomain: rcmControls.itgcDomain,
+      controlType: rcmControls.controlType,
+      controlNature: rcmControls.controlNature,
+      automatedType: rcmControls.automatedControlType,
+      frequency: rcmControls.frequency,
+      isKeyControl: rcmControls.isKeyControl,
+      supportingDocs: rcmControls.supportingDocs,
+      supportingApp: rcmControls.supportingApp,
+      executingFunction: rcmControls.executingFunction,
+      executorRole: rcmControls.executorRole,
+      affectedFsliItem: rcmControls.affectedFsliItem,
+      effectivePeriod: rcmControls.effectivePeriod,
+    })
+    .from(rcmControls)
+    .innerJoin(rcms, eq(rcmControls.rcmId, rcms.id))
+    .innerJoin(controls, eq(rcmControls.controlId, controls.id))
+    .innerJoin(bpmNodeRcms, eq(rcms.id, bpmNodeRcms.rcmId))
+    .innerJoin(bpmDiagrams, eq(bpmNodeRcms.diagramId, bpmDiagrams.id))
+    .innerJoin(bpmProcesses, eq(bpmDiagrams.subProcess, bpmProcesses.name))
+    .where(and(
+      eq(rcmControls.organizationId, orgId),
+      eq(controls.level, 'ITGC')
+    ));
+
+    return ok(c, { 
+      items: results.map(r => ({
+        ...r,
+        companyName: org?.name || "N/A",
+        locationCode: org?.entityCode || "N/A"
+      }))
+    });
+  });
+
+  app.post('/api/rcm-matrix/itgc/batch-update', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+    const { items } = await c.req.json<{ items: Partial<RCMControlMapping>[] }>();
+
+    if (!items || !Array.isArray(items)) return bad(c, 'Invalid items array');
+
+    for (const item of items) {
+      if (!item.id) continue;
+      
+      await db.update(rcmControls)
+        .set({
+          controlName: item.controlName,
+          controlDescription: item.controlDescription,
+          itgcDomain: item.itgcDomain,
+          controlType: item.controlType,
+          controlNature: item.controlNature,
+          automatedType: item.automatedType,
+          frequency: item.frequency,
+          isKeyControl: item.isKeyControl,
+          supportingDocs: item.supportingDocs,
+          supportingApp: item.supportingApp,
+          executingFunction: item.executingFunction,
+          executorRole: item.executorRole,
+          affectedFsliItem: item.affectedFsliItem,
+          effectivePeriod: item.effectivePeriod,
+        })
+        .where(and(eq(rcmControls.id, item.id), eq(rcmControls.organizationId, orgId)));
+    }
+
+    return ok(c, { success: true });
+  });
+
   // --- Controls Refactored ---
 
   app.get('/api/controls', async (c) => {

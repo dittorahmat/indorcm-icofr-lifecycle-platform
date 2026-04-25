@@ -55,6 +55,15 @@
       "ipo_section": "Information Processing Objective (IPO)",
       "coso_section": "Pemetaan 17 Prinsip COSO",
       "itgc_section": "Domain & Asersi ITGC"
+    },
+    "itgc": {
+      "title": "Matriks RCM ITGC",
+      "domains": {
+        "access": "Pengendalian terhadap penyediaan hak akses ke lingkungan TI (aplikasi, basis data, sistem operasi, jaringan dan alat) hanya kepada pengguna yang berwenang.",
+        "development": "Pengendalian untuk memastikan bahwa setiap pengembangan/akuisisi sistem/aplikasi telah melalui setidaknya proses permintaan, pengembangan/akuisisi, pengujian, dan implementasi yang telah disetujui pihak berwenang.",
+        "changes": "Pengendalian untuk memastikan bahwa setiap perubahan terhadap sistem/aplikasi, data dan komponen infrastruktur terkait telah melalui setidaknya proses permintaan, pengujian dan implementasi yang telah disetujui pihak berwenang.",
+        "operations": "Pengendalian untuk memastikan bahwa sistem/aplikasi memproses data secara lengkap dan akurat, serta memastikan bahwa insiden dan masalah yang teridentifikasi telah diselesaikan secara lengkap dan akurat."
+      }
     }
   }
 }

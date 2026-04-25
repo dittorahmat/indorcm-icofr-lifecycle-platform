@@ -124,6 +124,9 @@ export function RCMList() {
                 RCM ELC (Entity Level)
               </TabsTrigger>
             )}
+            <TabsTrigger value="itgc" className="rounded-none border-b-2 border-transparent data-[state=active]:border-indigo-600 data-[state=active]:bg-transparent px-2 py-3 font-bold text-slate-500 data-[state=active]:text-indigo-600">
+              RCM ITGC (General TI)
+            </TabsTrigger>
             <TabsTrigger value="wbs" className="rounded-none border-b-2 border-transparent data-[state=active]:border-indigo-600 data-[state=active]:bg-transparent px-2 py-3 font-bold text-slate-500 data-[state=active]:text-indigo-600">
               Whistleblowing Integration
             </TabsTrigger>
@@ -135,10 +138,9 @@ export function RCMList() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input placeholder="Cari kontrol teknis..." className="pl-9 bg-white" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
               </div>
-              <div className="text-right">
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Level Pengendalian</p>
-                <p className="text-xs font-bold text-slate-600">Transaction Level Control (TLC)</p>
-              </div>
+              <Button size="sm" onClick={() => navigate('/rcm/tlc')} className="bg-white text-indigo-600 border-indigo-200 hover:bg-indigo-50">
+                 <LayoutDashboard className="h-4 w-4 mr-2" /> Buka Matriks Horizontal
+              </Button>
             </div>
 
             <div className="border rounded-xl bg-white shadow-sm overflow-hidden">
@@ -178,6 +180,60 @@ export function RCMList() {
                           ) : <span className="text-[10px] text-slate-300 italic">No Link</span>}
                         </div>
                       </TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 opacity-0 group-hover:opacity-100" onClick={() => handleEditControl(ctrl)}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="itgc" className="space-y-6">
+            <div className="flex items-center justify-between gap-4 bg-indigo-50/50 p-4 rounded-lg border border-indigo-100">
+              <div className="relative max-w-sm w-full">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input placeholder="Cari kontrol TI..." className="pl-9 bg-white" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+              </div>
+              <Button size="sm" onClick={() => navigate('/rcm/itgc')} className="bg-white text-indigo-600 border-indigo-200 hover:bg-indigo-50 shadow-sm font-bold">
+                 <LayoutDashboard className="h-4 w-4 mr-2" /> Buka Matriks ITGC (Lampiran 5.c)
+              </Button>
+            </div>
+
+            <div className="border rounded-xl bg-white shadow-sm overflow-hidden">
+              <Table>
+                <TableHeader className="bg-slate-50/50">
+                  <TableRow>
+                    <TableHead className="w-[120px] font-bold">Domain</TableHead>
+                    <TableHead className="w-[100px] font-bold">Code</TableHead>
+                    <TableHead className="font-bold">Aktivitas Pengendalian TI</TableHead>
+                    <TableHead className="w-[150px] font-bold text-center">Tipe Otomatis</TableHead>
+                    <TableHead className="w-[150px] font-bold">Aplikasi</TableHead>
+                    <TableHead className="w-[80px]"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {controlsLoading ? (
+                    <TableRow><TableCell colSpan={6} className="h-32 text-center text-slate-400">Loading controls...</TableCell></TableRow>
+                  ) : (controlsData?.items || []).filter(c => c.level === 'ITGC' && (c.name.toLowerCase().includes(searchTerm.toLowerCase()) || c.code?.toLowerCase().includes(searchTerm.toLowerCase()))).length === 0 ? (
+                    <TableRow><TableCell colSpan={6} className="h-32 text-center text-slate-400 italic">No ITGC records found.</TableCell></TableRow>
+                  ) : (controlsData?.items || []).filter(c => c.level === 'ITGC' && (c.name.toLowerCase().includes(searchTerm.toLowerCase()) || c.code?.toLowerCase().includes(searchTerm.toLowerCase()))).map((ctrl) => (
+                    <TableRow key={ctrl.id} className="group hover:bg-indigo-50/10 transition-colors">
+                      <TableCell><Badge variant="outline" className="text-[10px] font-bold text-indigo-600 border-indigo-200 bg-indigo-50">{ctrl.itgcDomain || 'Unassigned'}</Badge></TableCell>
+                      <TableCell className="font-mono text-xs font-bold text-slate-500">{ctrl.code}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-bold text-slate-800">{ctrl.name}</span>
+                          <span className="text-xs text-slate-500 line-clamp-1">{ctrl.description}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge className="bg-slate-100 text-slate-600 border-none text-[9px] font-bold uppercase">{ctrl.automatedControlType || '-'}</Badge>
+                      </TableCell>
+                      <TableCell className="text-sm font-medium text-slate-600">{ctrl.supportingApp || '-'}</TableCell>
                       <TableCell className="text-right">
                         <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 opacity-0 group-hover:opacity-100" onClick={() => handleEditControl(ctrl)}>
                           <Edit className="h-4 w-4" />

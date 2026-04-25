@@ -189,7 +189,6 @@ export const rcmControls = pgTable("rcm_controls", {
 	
 	controlType: text("control_type"), // Column xxv: Preventif / Detektif
 	controlNature: text("control_nature"), // Column xxvi: Manual, Otomatis, ITDM - EUC, ITDM - IPE, MRC
-	automatedType: text("automated_type"), // Column xxvii: Automated Control, etc.
 	frequency: text("frequency"), // Column xxviii
 	supportingApp: text("supporting_app"), // Column xxix
 	executingFunction: text("executing_function"), // Column xxx
@@ -201,6 +200,7 @@ export const rcmControls = pgTable("rcm_controls", {
 	cosoPrinciples: jsonb("coso_principles"), // Array of numbers 1-17
 	itgcDomain: text("itgc_domain"), // Access, Changes, Development, Operations
 	itgcAssertions: jsonb("itgc_assertions"), // JSON mapping for IT assertions
+	automatedControlType: text("automated_control_type"), // Column xxvii
 });
 
 export const rcms = pgTable("rcms", {
@@ -248,6 +248,12 @@ export const controls = pgTable("controls", {
 	applicationId: text("application_id").references(() => applications.id),
 	bpmProcessId: text("bpm_process_id").references(() => bpmProcesses.id),
 	attributeQuestions: jsonb("attribute_questions"),
+	
+	// ITGC Specific Columns
+	itgcDomain: text("itgc_domain"),
+	itgcAssertions: jsonb("itgc_assertions"),
+	automatedControlType: text("automated_control_type"),
+	supportingApp: text("supporting_app"),
 });
 
 export const csaRecords = pgTable("csa_records", {

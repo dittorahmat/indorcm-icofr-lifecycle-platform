@@ -1,0 +1,1 @@
+ALTER TABLE "rcm_controls" DROP COLUMN "automated_type";

@@ -178,6 +178,11 @@ export function AppSidebar(): JSX.Element {
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={isActive("/rcm/itgc")}>
+                <Link to="/rcm/itgc" className="font-bold"><ShieldCheck className="text-blue-500" /> <span>RCM ITGC Matrix</span></Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/change-log")}>
                 <Link to="/change-log" className="font-bold"><History /> <span>{t('items.changelog')}</span></Link>
               </SidebarMenuButton>

@@ -22,6 +22,7 @@ const Dashboard = lazy(() => import('@/pages/Dashboard').then(module => ({ defau
 const RCMList = lazy(() => import('@/pages/rcm/RCMList').then(module => ({ default: module.RCMList })));
 const RCMTLCPage = lazy(() => import('@/pages/rcm/RCMTLCPage').then(module => ({ default: module.RCMTLCPage })));
 const RCMELCPage = lazy(() => import('@/pages/rcm/RCMELCPage').then(module => ({ default: module.RCMELCPage })));
+const RCMITGCPage = lazy(() => import('@/pages/rcm/RCMITGCPage').then(module => ({ default: module.RCMITGCPage })));
 const TestWorkbench = lazy(() => import('@/pages/testing/TestWorkbench').then(module => ({ default: module.TestWorkbench })));
 const DeficiencyBoard = lazy(() => import('@/pages/deficiencies/DeficiencyBoard').then(module => ({ default: module.DeficiencyBoard })));
 const ReportsPage = lazy(() => import('@/pages/reports/ReportsPage').then(module => ({ default: module.ReportsPage })));
@@ -75,6 +76,7 @@ const router = createBrowserRouter([
               { path: "/rcm", element: <PageSuspense><RCMList /></PageSuspense> },
               { path: "/rcm/tlc", element: <PageSuspense><RCMTLCPage /></PageSuspense> },
               { path: "/rcm/elc", element: <PageSuspense><RCMELCPage /></PageSuspense> },
+              { path: "/rcm/itgc", element: <PageSuspense><RCMITGCPage /></PageSuspense> },
               { path: "/change-log", element: <PageSuspense><ChangeLogPage /></PageSuspense> },
               { path: "/soc-monitoring", element: <PageSuspense><SOCMonitoringPage /></PageSuspense> },
               { path: "/bpm", element: <PageSuspense><BPMPage /></PageSuspense> },

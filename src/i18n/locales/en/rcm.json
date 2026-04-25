@@ -55,6 +55,15 @@
       "ipo_section": "Information Processing Objective (IPO)",
       "coso_section": "COSO 17 Principles Mapping",
       "itgc_section": "ITGC Domain & Assertions"
+    },
+    "itgc": {
+      "title": "RCM ITGC Matrix",
+      "domains": {
+        "access": "Control over the provision of access rights to the IT environment (applications, databases, operating systems, networks, and tools) only to authorized users.",
+        "development": "Control to ensure that every system/application development/acquisition has at least gone through a request, development/acquisition, testing, and implementation process approved by all authorized parties.",
+        "changes": "Control to ensure that every change to systems/applications, data, and related infrastructure components has at least gone through a request, testing, and implementation process approved by all authorized parties.",
+        "operations": "Control to ensure that systems/applications process data completely and accurately, and ensure that identified incidents and problems are resolved completely and accurately."
+      }
     }
   }
 }
