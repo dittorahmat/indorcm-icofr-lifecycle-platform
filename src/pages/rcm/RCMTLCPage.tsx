@@ -232,7 +232,7 @@ export function RCMTLCPage() {
                   const isFirstOfRisk = idx === 0 || item.riskDescription !== filteredItems[idx-1].riskDescription;
 
                   return (
-                    <TableRow key={item.mappingId} className="group hover:bg-indigo-50/5 transition-colors divide-x divide-slate-100">
+                    <TableRow key={`${item.mappingId}-${idx}`} className="group hover:bg-indigo-50/5 transition-colors divide-x divide-slate-100">
                       <TableCell className="text-center text-[10px] font-black text-slate-400 sticky left-0 z-30 bg-white border-r-2 border-slate-200">
                          {idx + 1}
                       </TableCell>

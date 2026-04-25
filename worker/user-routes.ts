@@ -803,7 +803,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
 
       controlType: rcmControls.controlType,
       controlNature: rcmControls.controlNature,
-      automatedType: rcmControls.automatedType,
+      automatedType: rcmControls.automatedControlType,
       frequency: rcmControls.frequency,
       isKeyControl: rcmControls.isKeyControl,
       supportingDocs: rcmControls.supportingDocs,
@@ -824,7 +824,10 @@ export function userRoutes(app: Hono<HonoEnv>) {
       eq(bpmProcesses.noGL, accountAssertions.noGL),
       eq(bpmProcesses.organizationId, accountAssertions.organizationId)
     ))
-    .where(eq(rcmControls.organizationId, orgId));
+    .where(and(
+      eq(rcmControls.organizationId, orgId),
+      eq(controls.level, 'TLC')
+    ));
 
     return ok(c, { 
       items: results.map(r => ({
@@ -870,7 +873,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
           assertionPd: item.assertionPd,
           controlType: item.controlType,
           controlNature: item.controlNature,
-          automatedType: item.automatedType,
+          automatedControlType: item.automatedType,
           frequency: item.frequency,
           isKeyControl: item.isKeyControl,
           supportingDocs: item.supportingDocs,
@@ -956,7 +959,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
           itgcDomain: item.itgcDomain,
           controlType: item.controlType,
           controlNature: item.controlNature,
-          automatedType: item.automatedType,
+          automatedControlType: item.automatedType,
           frequency: item.frequency,
           isKeyControl: item.isKeyControl,
           supportingDocs: item.supportingDocs,
@@ -1512,6 +1515,8 @@ export function userRoutes(app: Hono<HonoEnv>) {
     const activeControlIdsInDiagram = new Set<string>();
 
     for (const node of nodes) {
+      const insertedRiskIdsForNode = new Set<string>();
+
       // NEW LOGIC: Handle regulatoryPairs (Array) for multiple mappings per node
       const nodePairs = node.data?.regulatoryPairs || 
                        (node.data?.regulatoryData ? [node.data.regulatoryData] : []);
@@ -1525,7 +1530,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
           const ctrlId = reg.controlId;
 
           if (riskId && ctrlId) {
-            // A. Upsert Risk
+            // ... (upsert logic unchanged)
             const existingRisk = await db.select().from(rcms).where(and(eq(rcms.id, riskId), eq(rcms.organizationId, orgId))).limit(1);
             if (existingRisk.length === 0) {
               await db.insert(rcms).values({
@@ -1600,14 +1605,17 @@ export function userRoutes(app: Hono<HonoEnv>) {
               await db.update(rcmControls).set(mapValues).where(eq(rcmControls.id, existingMap[0].id));
             }
 
-            // D. Link Node to Risk (Multiple entries allowed here)
-            await db.insert(bpmNodeRcms).values({
-              id: crypto.randomUUID(),
-              organizationId: orgId,
-              diagramId: id,
-              nodeId: node.id,
-              rcmId: riskId
-            });
+            // D. Link Node to Risk (Multiple entries allowed here, but keep unique per node)
+            if (!insertedRiskIdsForNode.has(riskId)) {
+              await db.insert(bpmNodeRcms).values({
+                id: crypto.randomUUID(),
+                organizationId: orgId,
+                diagramId: id,
+                nodeId: node.id,
+                rcmId: riskId
+              });
+              insertedRiskIdsForNode.add(riskId);
+            }
           }
         }
       }
@@ -1616,13 +1624,16 @@ export function userRoutes(app: Hono<HonoEnv>) {
       if ((node.type === 'activity' || node.type === 'automated-activity') && node.data?.risks && !node.data?.regulatoryPairs && !node.data?.regulatoryData) {
         for (const riskEntry of node.data.risks) {
           // Link Activity Node -> Risk (Diagram specific)
-          await db.insert(bpmNodeRcms).values({
-            id: crypto.randomUUID(),
-            organizationId: orgId,
-            diagramId: id,
-            nodeId: node.id,
-            rcmId: riskEntry.rcmId
-          });
+          if (!insertedRiskIdsForNode.has(riskEntry.rcmId)) {
+            await db.insert(bpmNodeRcms).values({
+              id: crypto.randomUUID(),
+              organizationId: orgId,
+              diagramId: id,
+              nodeId: node.id,
+              rcmId: riskEntry.rcmId
+            });
+            insertedRiskIdsForNode.add(riskEntry.rcmId);
+          }
 
           // Collect Risk -> Controls
           if (riskEntry.controlIds) {
@@ -1683,13 +1694,23 @@ export function userRoutes(app: Hono<HonoEnv>) {
       `);
     }
 
-    // 2. Delete Controls that are no longer linked to ANY mapping
-    await db.execute(sql`
-      DELETE FROM controls 
+    // 2. Delete Controls that are no longer linked to ANY mapping (including cleanup of dependent records)
+    const orphansResult = await db.execute(sql`
+      SELECT id FROM controls 
       WHERE "organizationId" = ${orgId} 
-      AND id LIKE 'C-%' 
       AND id NOT IN (SELECT control_id FROM rcm_controls WHERE "organizationId" = ${orgId})
     `);
+    const orphanIds = (orphansResult.rows || orphansResult).map((r: any) => r.id);
+
+    if (orphanIds.length > 0) {
+      const ids = orphanIds.map(id => sql`${id}`);
+      await db.execute(sql`DELETE FROM csa_samples WHERE csa_record_id IN (SELECT id FROM csa_records WHERE control_id IN (${sql.join(ids, sql`, `)}))`);
+      await db.execute(sql`DELETE FROM action_plans WHERE deficiency_id IN (SELECT id FROM deficiencies WHERE control_id IN (${sql.join(ids, sql`, `)}))`);
+      await db.execute(sql`DELETE FROM deficiencies WHERE control_id IN (${sql.join(ids, sql`, `)})`);
+      await db.execute(sql`DELETE FROM csa_records WHERE control_id IN (${sql.join(ids, sql`, `)})`);
+      await db.execute(sql`DELETE FROM test_records WHERE control_id IN (${sql.join(ids, sql`, `)})`);
+      await db.execute(sql`DELETE FROM controls WHERE id IN (${sql.join(ids, sql`, `)})`);
+    }
 
     // 3. Delete Risks that are no longer in the visual nodes
     for (const drId of riskIdsOfThisDiagram) {
