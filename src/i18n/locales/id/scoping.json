@@ -17,6 +17,14 @@
     "createNew": "Buat Simulasi Baru",
     "basisDescription": "Perhitungan basis akan menggunakan {{filename}}."
   },
+  "form": {
+    "name": "Nama Simulasi",
+    "namePlaceholder": "misal: Scoping Final 2024",
+    "year": "Tahun Fiskal",
+    "benchmark": "Basis Benchmark",
+    "locations": "Jumlah Lokasi",
+    "initialize": "Inisialisasi Materialitas"
+  },
   "approval": {
     "title": "Persetujuan Materialitas",
     "description": "Tinjau dan setujui basis materialitas sebagai {{role}}.",

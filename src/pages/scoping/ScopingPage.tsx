@@ -36,6 +36,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { 
   parseBalance, 
   detectGLColumns, 
@@ -55,13 +65,25 @@ export function ScopingPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedSimId = searchParams.get('id');
+  const [filterYear, setFilterYear] = React.useState<string>("2025"); // Default to 2025
   
+  const currentYear = new Date().getFullYear();
+  const dynamicYears = React.useMemo(() => {
+    const years = [];
+    const startYear = 2024; // Baseline awal sistem
+    const endYear = currentYear + 1; // Beri buffer 1 tahun ke depan
+    for (let y = startYear; y <= endYear; y++) {
+      years.push(y.toString());
+    }
+    return years;
+  }, [currentYear]);
+
   const [isCreating, setIsCreating] = React.useState(false);
   const [benchmarkModalSnap, setBenchmarkModalSnap] = React.useState<GLSnapshot | null>(null);
 
   const { data: simulations, isLoading: simLoading } = useQuery({
-    queryKey: ['simulations'],
-    queryFn: () => api<{ items: MaterialitySimulation[] }>('/api/simulations'),
+    queryKey: ['simulations', filterYear],
+    queryFn: () => api<{ items: MaterialitySimulation[] }>(`/api/simulations?year=${filterYear}`),
   });
 
   const { data: snapshots, isLoading: snapsLoading } = useQuery({
@@ -207,6 +229,16 @@ export function ScopingPage() {
           </div>
           <div className="flex flex-col items-end gap-1">
             <div className="flex gap-2">
+              <Select value={filterYear} onValueChange={setFilterYear}>
+                <SelectTrigger className="w-[100px] bg-white">
+                  <SelectValue placeholder="Year" />
+                </SelectTrigger>
+                <SelectContent>
+                  {dynamicYears.map(y => (
+                    <SelectItem key={y} value={y}>{y}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <div {...getRootProps()}>
                 <input {...getInputProps()} />
                 <Button variant="outline" className="gap-2 border-dashed border-2 hover:border-primary hover:bg-primary/5">
@@ -288,7 +320,8 @@ export function ScopingPage() {
             <SimulationInitialForm 
               activeSnap={activeSnapshot || null}
               onSubmit={(data) => createSimMutation.mutate({ ...data, glSnapshotId: activeSnapshot?.id })} 
-              isPending={createSimMutation.isPending} 
+              isPending={createSimMutation.isPending}
+              yearOptions={dynamicYears}
             />
           </DialogContent>
         </Dialog>
@@ -303,9 +336,10 @@ export function ScopingPage() {
   );
 }
 
-function SimulationInitialForm({ activeSnap, onSubmit, isPending }: { activeSnap: GLSnapshot | null, onSubmit: (data: any) => void, isPending: boolean }) {
+function SimulationInitialForm({ activeSnap, onSubmit, isPending, yearOptions }: { activeSnap: GLSnapshot | null, onSubmit: (data: any) => void, isPending: boolean, yearOptions: string[] }) {
   const { t } = useTranslation('scoping');
   const [name, setName] = React.useState("");
+  const [year, setYear] = React.useState<string>(new Date().getFullYear().toString());
   const [basis, setBasis] = React.useState<string>("");
   const [locations, setLocations] = React.useState(1);
 
@@ -319,9 +353,22 @@ function SimulationInitialForm({ activeSnap, onSubmit, isPending }: { activeSnap
 
   return (
     <div className="space-y-4 py-4">
-      <div className="space-y-2">
-        <Label className="text-xs uppercase font-bold text-slate-500 tracking-wider">{t('form.name')}</Label>
-        <Input placeholder={t('form.namePlaceholder')} value={name} onChange={e => setName(e.target.value)} />
+      <div className="grid grid-cols-3 gap-4">
+        <div className="col-span-2 space-y-2">
+          <Label className="text-xs uppercase font-bold text-slate-500 tracking-wider">{t('form.name')}</Label>
+          <Input placeholder={t('form.namePlaceholder')} value={name} onChange={e => setName(e.target.value)} />
+        </div>
+        <div className="space-y-2">
+          <Label className="text-xs uppercase font-bold text-slate-500 tracking-wider">{t('form.year')}</Label>
+          <Select value={year} onValueChange={setYear}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {yearOptions.map(y => (
+                <SelectItem key={y} value={y}>{y}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
@@ -353,7 +400,7 @@ function SimulationInitialForm({ activeSnap, onSubmit, isPending }: { activeSnap
           Default OM: <strong>{defaultOm}%</strong>.
         </p>
       </div>
-      <Button className="w-full mt-2" disabled={!name || !basis || isPending} onClick={() => onSubmit({ name, basis, omPercentage: defaultOm, haircutPercentage: 25, locationCount: locations })}>
+      <Button className="w-full mt-2" disabled={!name || !basis || !year || isPending} onClick={() => onSubmit({ name, year: parseInt(year), basis, omPercentage: defaultOm, haircutPercentage: 25, locationCount: locations })}>
         {isPending ? "Creating..." : t('form.initialize')}
       </Button>
     </div>
@@ -528,6 +575,29 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
 
   return (
     <AppLayout container>
+      {/* Unsaved Changes Confirmation */}
+      <AlertDialog open={blocker.state === "blocked"}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Unsaved Changes</AlertDialogTitle>
+            <AlertDialogDescription>
+              You have unsaved changes in your scoping assessment. If you leave now, these changes will be lost.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => blocker.reset?.()}>
+              Stay & Save
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              className="bg-destructive hover:bg-destructive/90"
+              onClick={() => blocker.proceed?.()}
+            >
+              Leave Anyway
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <div className="space-y-6 pb-20">
         <div className="flex justify-between items-center text-slate-900 dark:text-white">
           <div className="flex items-center gap-4">

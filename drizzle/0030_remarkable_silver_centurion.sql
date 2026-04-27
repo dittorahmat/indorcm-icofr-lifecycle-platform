@@ -1,0 +1,1 @@
+ALTER TABLE "rcm_controls" ADD COLUMN "year" integer;

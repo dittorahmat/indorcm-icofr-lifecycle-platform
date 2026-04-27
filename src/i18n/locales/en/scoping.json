@@ -17,6 +17,14 @@
     "createNew": "Create New Simulation",
     "basisDescription": "Basis calculation will use {{filename}}."
   },
+  "form": {
+    "name": "Simulation Name",
+    "namePlaceholder": "e.g., Final Scoping 2024",
+    "year": "Fiscal Year",
+    "benchmark": "Benchmark Basis",
+    "locations": "Number of Locations",
+    "initialize": "Initialize Materiality"
+  },
   "approval": {
     "title": "Materiality Approval",
     "description": "Review and approve materiality baselines as {{role}}.",

@@ -194,20 +194,20 @@ export function RCMITGCPage() {
                       <TableCell className="text-center text-[10px] font-black text-slate-400 sticky left-0 z-30 bg-white border-r-2 border-slate-200">
                          {idx + 1}
                       </TableCell>
-                      <TableCell className={cn("align-top font-bold text-slate-800 text-[11px] sticky left-[60px] z-30 bg-white border-r-2 border-slate-200", !isFirstOfProcess && "text-transparent border-none")}>
+                      <TableCell className={cn("align-top font-bold text-slate-800 text-[10px] sticky left-[60px] z-30 bg-white border-r-2 border-slate-200", !isFirstOfProcess && "text-transparent border-none")}>
                         <div className="flex flex-col gap-0.5 pr-2">
-                          <span className="uppercase tracking-tighter text-indigo-600 text-[9px] font-black">{item.fsliName}</span>
+                          <span className="uppercase tracking-tighter text-indigo-600 text-[10px] font-black">{item.fsliName}</span>
                           <span className="line-clamp-2 leading-tight">{item.noGL} - {item.processName}</span>
                         </div>
                       </TableCell>
-                      <TableCell className={cn("align-top font-bold text-slate-600 text-[11px] sticky left-[340px] z-30 bg-white border-r-2 border-slate-200", !isFirstOfSub && "text-transparent border-none")}>
+                      <TableCell className={cn("align-top font-bold text-slate-600 text-[10px] sticky left-[340px] z-30 bg-white border-r-2 border-slate-200", !isFirstOfSub && "text-transparent border-none")}>
                         {item.subProcessName}
                       </TableCell>
                       
-                      <TableCell className="align-top text-xs text-slate-600 px-3 pt-4">{item.companyName}</TableCell>
-                      <TableCell className="align-top text-xs text-slate-600 font-mono px-3 pt-4 text-center bg-slate-50/30">{item.locationCode}</TableCell>
+                      <TableCell className="align-top text-[10px] text-slate-600 px-3 pt-4">{item.companyName}</TableCell>
+                      <TableCell className="align-top text-[10px] text-slate-600 font-mono px-3 pt-4 text-center bg-slate-50/30">{item.locationCode}</TableCell>
                       
-                      <TableCell className={cn("align-top text-[11px] text-slate-700 px-3 pt-4 leading-relaxed", !isFirstOfRisk && "opacity-30")}>
+                      <TableCell className={cn("align-top text-[10px] text-slate-700 px-3 pt-4 leading-relaxed", !isFirstOfRisk && "opacity-30")}>
                         {item.riskDescription}
                       </TableCell>
 
@@ -216,21 +216,21 @@ export function RCMITGCPage() {
                       </TableCell>
                       <TableCell className="p-0">
                          <Input 
-                           className="h-full border-none focus-visible:ring-0 text-[11px] px-3 font-bold text-slate-800" 
+                           className="h-full border-none focus-visible:ring-0 text-[10px] px-3 font-bold text-slate-800" 
                            value={item.mappedControlName || item.baseControlName || ''} 
                            onChange={e => handleInputChange(item.mappingId, 'mappedControlName', e.target.value)} 
                          />
                       </TableCell>
                       <TableCell className="p-0">
                          <Input 
-                           className="h-full border-none focus-visible:ring-0 text-[11px] px-3 text-slate-600 italic" 
+                           className="h-full border-none focus-visible:ring-0 text-[10px] px-3 text-slate-600 italic" 
                            value={item.mappedControlDescription || item.baseControlDescription || ''} 
                            onChange={e => handleInputChange(item.mappingId, 'mappedControlDescription', e.target.value)} 
                          />
                       </TableCell>
 
                       <TableCell className="p-0 bg-slate-50/30">
-                         <Input className="h-full border-none focus-visible:ring-0 text-[11px] px-3" value={item.supportingDocs || ''} onChange={e => handleInputChange(item.mappingId, 'supportingDocs', e.target.value)} placeholder="Link..." />
+                         <Input className="h-full border-none focus-visible:ring-0 text-[10px] px-3" value={item.supportingDocs || ''} onChange={e => handleInputChange(item.mappingId, 'supportingDocs', e.target.value)} placeholder="Link..." />
                       </TableCell>
                       <TableCell className="text-center align-top pt-4 px-3">
                          <input type="checkbox" className="h-4 w-4 rounded border-slate-300 text-indigo-600 cursor-pointer" checked={item.isKeyControl} onChange={e => handleInputChange(item.mappingId, 'isKeyControl', e.target.checked)} />
@@ -238,13 +238,13 @@ export function RCMITGCPage() {
 
                       <TableCell className="p-0">
                          <Select value={item.controlType || ''} onValueChange={val => handleInputChange(item.mappingId, 'controlType', val)}>
-                           <SelectTrigger className="h-full border-none rounded-none focus:ring-0 text-xs shadow-none px-3"><SelectValue placeholder="..." /></SelectTrigger>
+                           <SelectTrigger className="h-full border-none rounded-none focus:ring-0 text-[10px] shadow-none px-3"><SelectValue placeholder="..." /></SelectTrigger>
                            <SelectContent><SelectItem value="Preventif">Preventif</SelectItem><SelectItem value="Detektif">Detektif</SelectItem></SelectContent>
                          </Select>
                       </TableCell>
                       <TableCell className="p-0">
                          <Select value={item.controlNature || ''} onValueChange={val => handleInputChange(item.mappingId, 'controlNature', val)}>
-                           <SelectTrigger className="h-full border-none rounded-none focus:ring-0 text-xs shadow-none px-3"><SelectValue placeholder="..." /></SelectTrigger>
+                           <SelectTrigger className="h-full border-none rounded-none focus:ring-0 text-[10px] shadow-none px-3"><SelectValue placeholder="..." /></SelectTrigger>
                            <SelectContent>
                               <SelectItem value="Manual">Manual</SelectItem>
                               <SelectItem value="Otomatis">Otomatis</SelectItem>
@@ -256,7 +256,7 @@ export function RCMITGCPage() {
                       </TableCell>
                       <TableCell className="p-0 bg-indigo-50/30">
                          <Select value={item.automatedType || ''} onValueChange={val => handleInputChange(item.mappingId, 'automatedType', val)} disabled={item.controlNature !== 'Otomatis' && !item.controlNature?.includes('ITDM')}>
-                           <SelectTrigger className="h-full border-none rounded-none focus:ring-0 text-xs font-bold text-indigo-700 shadow-none px-3 italic"><SelectValue placeholder="..." /></SelectTrigger>
+                           <SelectTrigger className="h-full border-none rounded-none focus:ring-0 text-[10px] font-bold text-indigo-700 shadow-none px-3 italic"><SelectValue placeholder="..." /></SelectTrigger>
                            <SelectContent>
                               <SelectItem value="Automated Control">Automated Control</SelectItem>
                               <SelectItem value="Automated Calculation">Automated Calculation</SelectItem>
@@ -266,19 +266,19 @@ export function RCMITGCPage() {
                          </Select>
                       </TableCell>
                       <TableCell className="p-0">
-                         <Input className="h-full border-none focus-visible:ring-0 text-xs px-3" value={item.frequency || ''} onChange={e => handleInputChange(item.mappingId, 'frequency', e.target.value)} placeholder="..." />
+                         <Input className="h-full border-none focus-visible:ring-0 text-[10px] px-3" value={item.frequency || ''} onChange={e => handleInputChange(item.mappingId, 'frequency', e.target.value)} placeholder="..." />
                       </TableCell>
                       <TableCell className="p-0 bg-indigo-50/30">
-                         <Input className="h-full border-none focus-visible:ring-0 text-xs px-3 font-bold text-indigo-700" value={item.supportingApp || ''} onChange={e => handleInputChange(item.mappingId, 'supportingApp', e.target.value)} placeholder="..." />
+                         <Input className="h-full border-none focus-visible:ring-0 text-[10px] px-3 font-bold text-indigo-700" value={item.supportingApp || ''} onChange={e => handleInputChange(item.mappingId, 'supportingApp', e.target.value)} placeholder="..." />
                       </TableCell>
                       <TableCell className="p-0">
-                         <Input className="h-full border-none focus-visible:ring-0 text-xs px-3" value={item.executingFunction || ''} onChange={e => handleInputChange(item.mappingId, 'executingFunction', e.target.value)} placeholder="..." />
+                         <Input className="h-full border-none focus-visible:ring-0 text-[10px] px-3" value={item.executingFunction || ''} onChange={e => handleInputChange(item.mappingId, 'executingFunction', e.target.value)} placeholder="..." />
                       </TableCell>
                       <TableCell className="p-0 bg-slate-50/30">
-                         <Input className="h-full border-none focus-visible:ring-0 text-xs px-3" value={item.executorRole || ''} onChange={e => handleInputChange(item.mappingId, 'executorRole', e.target.value)} placeholder="..." />
+                         <Input className="h-full border-none focus-visible:ring-0 text-[10px] px-3" value={item.executorRole || ''} onChange={e => handleInputChange(item.mappingId, 'executorRole', e.target.value)} placeholder="..." />
                       </TableCell>
                       <TableCell className="p-0 bg-slate-50/30">
-                         <Input className="h-full border-none focus-visible:ring-0 text-xs px-3 text-center" value={item.effectivePeriod || ''} onChange={e => handleInputChange(item.mappingId, 'effectivePeriod', e.target.value)} />
+                         <Input className="h-full border-none focus-visible:ring-0 text-[10px] px-3 text-center" value={item.effectivePeriod || ''} onChange={e => handleInputChange(item.mappingId, 'effectivePeriod', e.target.value)} />
                       </TableCell>
                     </TableRow>
                   );

@@ -48,6 +48,18 @@ export function BPMPage() {
   const [selectedAccountKey, setSelectedAccountKey] = React.useState<string>("");
   const [selectedBpmId, setSelectedBpmId] = React.useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [viewYear, setViewYear] = React.useState<string>(searchParams.get('year') || "2025");
+
+  const currentYear = new Date().getFullYear();
+  const dynamicYears = React.useMemo(() => {
+    const years = [];
+    const startYear = 2024;
+    const endYear = currentYear + 1;
+    for (let y = startYear; y <= endYear; y++) {
+      years.push(y.toString());
+    }
+    return years;
+  }, [currentYear]);
 
   const selectedDiagramId = searchParams.get('diagramId');
   const isBpmEditorOpen = !!selectedDiagramId;
@@ -64,6 +76,7 @@ export function BPMPage() {
       const next = new URLSearchParams(prev);
       next.set('diagramId', diagramId);
       next.set('subProcess', subProcess);
+      next.set('year', viewYear);
       return next;
     });
   };
@@ -77,16 +90,36 @@ export function BPMPage() {
     });
   };
 
+  // Sync viewYear with search params
+  React.useEffect(() => {
+    const yearParam = searchParams.get('year');
+    if (yearParam && yearParam !== viewYear) {
+      setViewYear(yearParam);
+    }
+  }, [searchParams]);
+
+  // Update URL when viewYear changes
+  const handleYearChange = (year: string) => {
+    setViewYear(year);
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev);
+      next.set('year', year);
+      return next;
+    });
+  };
+
   // Handle Deep Linking from Scoping
   React.useEffect(() => {
     const fsli = searchParams.get('fsli');
     const noGL = searchParams.get('noGL');
     const glDesc = searchParams.get('glDesc');
+    const year = searchParams.get('year');
 
     if (fsli) setSelectedFsli(fsli);
     if (noGL && glDesc) {
       setSelectedAccountKey(`${noGL} ||| ${glDesc}`);
     }
+    if (year) setViewYear(year);
   }, [searchParams]);
 
   // 1. Fetch Active Snapshot
@@ -100,11 +133,11 @@ export function BPMPage() {
     }
   });
 
-  // 1b. Fetch Active Simulation for Account Assignments
+  // 1b. Fetch Active Simulation for Account Assignments - Filtered by viewYear
   const { data: activeSim } = useQuery({
-    queryKey: ['active-simulation'],
+    queryKey: ['active-simulation', viewYear],
     queryFn: async () => {
-      const list = await api<{ items: MaterialitySimulation[] }>('/api/simulations');
+      const list = await api<{ items: MaterialitySimulation[] }>(`/api/simulations?year=${viewYear}`);
       return [...list.items].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))[0] || null;
     }
   });
@@ -230,14 +263,18 @@ export function BPMPage() {
   });
 
   const { data: diagrams } = useQuery({
-    queryKey: ['bpm-diagrams'],
-    queryFn: () => api<{ items: BPMDiagram[] }>('/api/bpm-diagrams')
+    queryKey: ['bpm-diagrams', viewYear],
+    queryFn: () => api<{ items: BPMDiagram[] }>(`/api/bpm-diagrams?year=${viewYear}`)
   });
 
   const createDiagramMutation = useMutation({
     mutationFn: (subProcess: string) => api<{ id: string }>('/api/bpm-diagrams', {
       method: 'POST',
-      body: JSON.stringify({ name: `Flow: ${subProcess}`, subProcess })
+      body: JSON.stringify({ 
+        name: `Flow: ${subProcess}`, 
+        subProcess,
+        year: parseInt(viewYear)
+      })
     }),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['bpm-diagrams'] });
@@ -274,8 +311,27 @@ export function BPMPage() {
       <div className="space-y-6">
         <div className="flex justify-between items-end">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{t('title')}</h1>
+            <div className="flex items-center gap-3 mb-1">
+              <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{t('title')}</h1>
+              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 gap-1.5 py-1 px-3">
+                <Shield className="h-3 w-3" />
+                Fiscal Year: {viewYear}
+              </Badge>
+            </div>
             <p className="text-muted-foreground text-sm">{t('description')}</p>
+          </div>
+          <div className="flex flex-col items-end gap-2">
+            <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Compliance Cycle</Label>
+            <Select value={viewYear} onValueChange={handleYearChange}>
+              <SelectTrigger className="w-[120px] bg-white border-slate-200">
+                <SelectValue placeholder="Year" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="2024">2024 Cycle</SelectItem>
+                <SelectItem value="2025">2025 Cycle</SelectItem>
+                <SelectItem value="2026">2026 Cycle</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 

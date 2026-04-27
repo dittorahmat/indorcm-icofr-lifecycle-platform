@@ -623,7 +623,14 @@ export function userRoutes(app: Hono<HonoEnv>) {
   app.get('/api/rcm', async (c) => {
     const db = getDb(c.env.DATABASE_URL);
     const orgId = c.get('organizationId');
-    const items = await db.select().from(rcms).where(eq(rcms.organizationId, orgId));
+    const year = c.req.query('year');
+
+    let conditions = eq(rcms.organizationId, orgId);
+    if (year) {
+      conditions = and(conditions, eq(rcms.year, parseInt(year)));
+    }
+
+    const items = await db.select().from(rcms).where(conditions);
     return ok(c, { items });
   });
 
@@ -1177,7 +1184,14 @@ export function userRoutes(app: Hono<HonoEnv>) {
   app.get('/api/simulations', async (c) => {
     const db = getDb(c.env.DATABASE_URL);
     const orgId = c.get('organizationId');
-    const items = await db.select().from(simulations).where(eq(simulations.organizationId, orgId));
+    const year = c.req.query('year');
+    
+    let conditions = eq(simulations.organizationId, orgId);
+    if (year) {
+      conditions = and(conditions, eq(simulations.year, parseInt(year)));
+    }
+
+    const items = await db.select().from(simulations).where(conditions);
     return ok(c, { items });
   });
 
@@ -1186,11 +1200,122 @@ export function userRoutes(app: Hono<HonoEnv>) {
     const orgId = c.get('organizationId');
     const userId = c.get('userId');
     const body = await c.req.json<Partial<MaterialitySimulation>>();
+    
+    const targetYear = body.year || new Date().getFullYear();
+    const prevYear = targetYear - 1;
+
+    // --- Carry Forward Logic ---
+    // 1. Check if target year already has compliance data
+    const existingBpm = await db.select({ id: bpmDiagrams.id })
+      .from(bpmDiagrams)
+      .where(and(eq(bpmDiagrams.organizationId, orgId), eq(bpmDiagrams.year, targetYear)))
+      .limit(1);
+
+    if (existingBpm.length === 0) {
+      // 2. Check if previous year has data to clone
+      const sourceBpms = await db.select().from(bpmDiagrams)
+        .where(and(eq(bpmDiagrams.organizationId, orgId), eq(bpmDiagrams.year, prevYear)));
+
+      if (sourceBpms.length > 0) {
+        console.log(`[CARRY_FORWARD] Cloning data from ${prevYear} to ${targetYear} for Org: ${orgId}`);
+        
+        await db.transaction(async (tx) => {
+          const diagramMap = new Map<string, string>();
+          const rcmMap = new Map<string, string>();
+          const controlMap = new Map<string, string>();
+
+          // Clone BPM Diagrams
+          for (const source of sourceBpms) {
+            const newId = crypto.randomUUID();
+            diagramMap.set(source.id, newId);
+            await tx.insert(bpmDiagrams).values({
+              ...source,
+              id: newId,
+              year: targetYear,
+              createdAt: new Date(),
+              createdBy: userId,
+              updatedAt: new Date()
+            });
+          }
+
+          // Clone RCMs
+          const sourceRcms = await tx.select().from(rcms)
+            .where(and(eq(rcms.organizationId, orgId), eq(rcms.year, prevYear)));
+          
+          for (const source of sourceRcms) {
+            const newId = crypto.randomUUID();
+            rcmMap.set(source.id, newId);
+            await tx.insert(rcms).values({
+              ...source,
+              id: newId,
+              year: targetYear,
+              status: "Draft", // Reset to draft
+              diagramId: source.diagramId ? diagramMap.get(source.diagramId) : null,
+              auditTrail: []
+            });
+          }
+
+          // Clone Controls
+          const sourceControls = await tx.select().from(controls)
+            .where(and(eq(controls.organizationId, orgId), eq(controls.year, prevYear)));
+          
+          for (const source of sourceControls) {
+            const newId = crypto.randomUUID();
+            controlMap.set(source.id, newId);
+            await tx.insert(controls).values({
+              ...source,
+              id: newId,
+              year: targetYear,
+              rcmId: source.rcmId ? rcmMap.get(source.rcmId) : null,
+              bpmStatus: "Draft"
+            });
+          }
+
+          // Clone RCM-Control Mappings
+          const sourceMappings = await tx.select().from(rcmControls)
+            .where(eq(rcmControls.organizationId, orgId));
+          
+          for (const source of sourceMappings) {
+            const newRcmId = rcmMap.get(source.rcmId);
+            const newControlId = controlMap.get(source.controlId);
+            
+            if (newRcmId && newControlId) {
+              await tx.insert(rcmControls).values({
+                ...source,
+                id: crypto.randomUUID(),
+                rcmId: newRcmId,
+                controlId: newControlId,
+                year: targetYear // Add year here
+              });
+            }
+          }
+
+          // Clone BPM-Node-RCM Mappings
+          const sourceNodeRcms = await tx.select().from(bpmNodeRcms)
+            .where(eq(bpmNodeRcms.organizationId, orgId));
+          
+          for (const source of sourceNodeRcms) {
+            const newDiagramId = diagramMap.get(source.diagramId);
+            const newRcmId = rcmMap.get(source.rcmId);
+            
+            if (newDiagramId && newRcmId) {
+              await tx.insert(bpmNodeRcms).values({
+                ...source,
+                id: crypto.randomUUID(),
+                diagramId: newDiagramId,
+                rcmId: newRcmId
+              });
+            }
+          }
+        });
+      }
+    }
+
     const id = crypto.randomUUID();
     const newSim = {
       id, organizationId: orgId,
       name: body.name || "New Simulation",
-      year: body.year || new Date().getFullYear(),
+      year: targetYear,
       status: "Draft" as any,
       omValue: body.omValue || 0,
       pmValue: body.pmValue || 0,
@@ -1400,7 +1525,14 @@ export function userRoutes(app: Hono<HonoEnv>) {
   app.get('/api/bpm-diagrams', async (c) => {
     const db = getDb(c.env.DATABASE_URL);
     const orgId = c.get('organizationId');
-    const items = await db.select().from(bpmDiagrams).where(eq(bpmDiagrams.organizationId, orgId));
+    const year = c.req.query('year');
+
+    let conditions = eq(bpmDiagrams.organizationId, orgId);
+    if (year) {
+      conditions = and(conditions, eq(bpmDiagrams.year, parseInt(year)));
+    }
+
+    const items = await db.select().from(bpmDiagrams).where(conditions);
     return ok(c, { items });
   });
 
@@ -1559,14 +1691,14 @@ export function userRoutes(app: Hono<HonoEnv>) {
                 id: ctrlId,
                 organizationId: orgId,
                 code: ctrlId,
-                name: node.data.label || "Draft Control",
+                name: reg.controlDescription || node.data.label || "Draft Control",
                 rcmId: riskId,
                 level: reg.classification || 'TLC',
                 cosoPrinciples: reg.cosoPrinciples || [],
               });
             } else {
               await db.update(controls).set({
-                name: node.data.label,
+                name: reg.controlDescription || node.data.label,
                 level: reg.classification || 'TLC',
                 cosoPrinciples: reg.cosoPrinciples || [],
               }).where(eq(controls.id, ctrlId));
@@ -1580,7 +1712,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
             )).limit(1);
 
             const mapValues = {
-              controlName: node.data.label,
+              controlName: reg.controlDescription || node.data.label,
               controlDescription: reg.controlDescription,
               isKeyControl: reg.isKeyControl,
               ipoC: reg.ipoC,

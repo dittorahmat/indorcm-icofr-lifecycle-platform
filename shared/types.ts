@@ -194,6 +194,7 @@ export type ControlLevel = "ELC" | "TLC" | "ITGC";
 export interface Control {
   id: string;
   rcmId: string;
+  year?: number;
   code: string; // e.g., "CTRL-001"
   name: string;
   description: string;
@@ -336,6 +337,7 @@ export interface RCMControlMapping {
 export interface RCM {
   id: string;
   process: string;
+  year?: number;
   // ... rest of RCM interface remains the same
   subProcess: string;
   riskDescription: string;
@@ -603,6 +605,7 @@ export interface Materiality {
 export interface BPMDiagram {
   id: string;
   name: string;
+  year?: number;
   subProcess: string;
   nodes: BPMNode[];
   edges: BPMEdge[];

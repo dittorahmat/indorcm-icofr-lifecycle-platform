@@ -147,6 +147,7 @@ export const bpmDiagrams = pgTable("bpm_diagrams", {
 	id: text("id").primaryKey(),
 	organizationId: text("organizationId").notNull().references(() => organization.id),
 	name: text("name").notNull(),
+	year: integer("year"),
 	subProcess: text("sub_process"),
 	nodes: jsonb("nodes").$type<any[]>(),
 	edges: jsonb("edges").$type<any[]>(),
@@ -168,7 +169,7 @@ export const rcmControls = pgTable("rcm_controls", {
 	organizationId: text("organizationId").notNull().references(() => organization.id),
 	rcmId: text("rcm_id").notNull().references(() => rcms.id, { onDelete: 'cascade' }),
 	controlId: text("control_id").notNull().references(() => controls.id, { onDelete: 'cascade' }),
-	
+	year: integer("year"),
 	controlName: text("control_name"), // Column x: display name
 	controlDescription: text("control_description"), // Column xi
 	supportingDocs: text("supporting_docs"), // Column xii
@@ -206,6 +207,7 @@ export const rcmControls = pgTable("rcm_controls", {
 export const rcms = pgTable("rcms", {
 	id: text("id").primaryKey(),
 	organizationId: text("organizationId").notNull().references(() => organization.id),
+	year: integer("year"),
 	riskLibraryId: text("risk_library_id"), // Reference to standardized risk library
 	process: text("process").notNull(),
 	subProcess: text("sub_process").notNull(),
@@ -220,6 +222,7 @@ export const rcms = pgTable("rcms", {
 export const controls = pgTable("controls", {
 	id: text("id").primaryKey(),
 	organizationId: text("organizationId").notNull().references(() => organization.id),
+	year: integer("year"),
 	rcmId: text("rcm_id").references(() => rcms.id),
 	departmentId: text("department_id").references(() => departments.id),
 	code: text("code").notNull(),

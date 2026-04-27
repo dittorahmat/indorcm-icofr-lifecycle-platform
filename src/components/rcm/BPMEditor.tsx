@@ -479,9 +479,16 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
     queryFn: () => api<any>(`/api/bpm-diagrams/${diagramId}`),
   });
 
+  const currentYear = new Date().getFullYear();
+  const isLocked = React.useMemo(() => {
+    if (!diagram) return false;
+    // Lock if year is before current year
+    return diagram.year && diagram.year < currentYear;
+  }, [diagram, currentYear]);
+
   // Track if diagram has been modified
   const isDirty = useMemo(() => {
-    if (!diagram) return false;
+    if (!diagram || isLocked) return false;
     
     // We compare coordinates and data. Note: markerEnd is added in useEffect, so we ignore it in comparison
     const currentNodes = JSON.stringify(nodes.map(n => ({ id: n.id, position: n.position, data: n.data })));
@@ -869,12 +876,15 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
         <ReactFlow
           nodes={nodes}
           edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onNodesDelete={onNodesDelete}
-          onEdgesDelete={onEdgesDelete}
-          deleteKeyCode={["Delete", "Backspace"]}
-          onConnect={(params) => setEdges((eds) => addEdge({ 
+          onNodesChange={isLocked ? undefined : onNodesChange}
+          onEdgesChange={isLocked ? undefined : onEdgesChange}
+          onNodesDelete={isLocked ? undefined : onNodesDelete}
+          onEdgesDelete={isLocked ? undefined : onEdgesDelete}
+          deleteKeyCode={isLocked ? null : ["Delete", "Backspace"]}
+          nodesDraggable={!isLocked}
+          nodesConnectable={!isLocked}
+          elementsSelectable={true}
+          onConnect={isLocked ? undefined : (params) => setEdges((eds) => addEdge({ 
             ...params, 
             markerEnd: { 
               type: MarkerType.ArrowClosed,
@@ -896,7 +906,19 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
           <Controls />
           <MiniMap />
           <Panel position="top-right" className="flex gap-2">
-            <Button size="sm" variant="default" className="h-8 gap-2 bg-indigo-600 hover:bg-indigo-700" onClick={() => saveMutation.mutate({ nodes, edges, name: `Flow: ${subProcess}`, subProcess })} disabled={saveMutation.isPending}>
+            {isLocked && (
+              <Badge variant="outline" className="h-8 bg-amber-50 text-amber-700 border-amber-200 gap-1.5 px-3">
+                <ShieldCheck className="h-3.5 w-3.5" />
+                LOCKED (Audit Baseline {diagram?.year})
+              </Badge>
+            )}
+            <Button 
+              size="sm" 
+              variant="default" 
+              className="h-8 gap-2 bg-indigo-600 hover:bg-indigo-700" 
+              onClick={() => saveMutation.mutate({ nodes, edges, name: `Flow: ${subProcess}`, subProcess })} 
+              disabled={saveMutation.isPending || isLocked}
+            >
               <Save className="h-3.5 w-3.5" /> Save Alur
             </Button>
           </Panel>
@@ -905,38 +927,40 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
                <span className="text-[10px] font-black text-slate-400 uppercase leading-none">Process Mapping</span>
                <span className="text-xs font-bold text-slate-700">{subProcess}</span>
              </div>
-             <div className="flex gap-1 pt-1 flex-wrap max-w-[180px]">
-                <Button variant="outline" size="icon" className="h-7 w-7" title="Add Activity" onClick={() => createActivityNode('activity')}>
-                  <Activity className="h-3.5 w-3.5 text-slate-600" />
-                </Button>
-                <Button variant="outline" size="icon" className="h-7 w-7 bg-blue-50" title="Add Automated Activity" onClick={() => createActivityNode('automated-activity')}>
-                  <Database className="h-3.5 w-3.5 text-blue-600" />
-                </Button>
-                <Button variant="outline" size="icon" className="h-7 w-7" title="Add Decision" onClick={() => {
-                  const id = `node_${Date.now()}`;
-                  setNodes(nds => [...nds, { id, type: 'decision', position: { x: 100, y: 100 }, data: { label: 'Decision?' } }]);
-                }}>
-                  <GitCommit className="h-3.5 w-3.5 text-slate-600 rotate-90" />
-                </Button>
-                <Button variant="outline" size="icon" className="h-7 w-7" title="Add Output (System)" onClick={() => {
-                  const id = `node_${Date.now()}`;
-                  setNodes(nds => [...nds, { id, type: 'output', position: { x: 100, y: 100 }, data: { label: 'System Output' } }]);
-                }}>
-                  <LayoutDashboard className="h-3.5 w-3.5 text-slate-600" />
-                </Button>
-                <Button variant="outline" size="icon" className="h-7 w-7" title="Add Physical Document" onClick={() => {
-                  const id = `node_${Date.now()}`;
-                  setNodes(nds => [...nds, { id, type: 'physical-document', position: { x: 100, y: 100 }, data: { label: 'Form Fisik' } }]);
-                }}>
-                  <FileText className="h-3.5 w-3.5 text-slate-600" />
-                </Button>
-                <Button variant="outline" size="icon" className="h-7 w-7" title="Add On-page Reference" onClick={() => {
-                  const id = `node_${Date.now()}`;
-                  setNodes(nds => [...nds, { id, type: 'reference', position: { x: 100, y: 100 }, data: { label: 'A' } }]);
-                }}>
-                  <LinkIcon className="h-3.5 w-3.5 text-slate-600" />
-                </Button>
-             </div>
+             {!isLocked && (
+               <div className="flex gap-1 pt-1 flex-wrap max-w-[180px]">
+                  <Button variant="outline" size="icon" className="h-7 w-7" title="Add Activity" onClick={() => createActivityNode('activity')}>
+                    <Activity className="h-3.5 w-3.5 text-slate-600" />
+                  </Button>
+                  <Button variant="outline" size="icon" className="h-7 w-7 bg-blue-50" title="Add Automated Activity" onClick={() => createActivityNode('automated-activity')}>
+                    <Database className="h-3.5 w-3.5 text-blue-600" />
+                  </Button>
+                  <Button variant="outline" size="icon" className="h-7 w-7" title="Add Decision" onClick={() => {
+                    const id = `node_${Date.now()}`;
+                    setNodes(nds => [...nds, { id, type: 'decision', position: { x: 100, y: 100 }, data: { label: 'Decision?' } }]);
+                  }}>
+                    <GitCommit className="h-3.5 w-3.5 text-slate-600 rotate-90" />
+                  </Button>
+                  <Button variant="outline" size="icon" className="h-7 w-7" title="Add Output (System)" onClick={() => {
+                    const id = `node_${Date.now()}`;
+                    setNodes(nds => [...nds, { id, type: 'output', position: { x: 100, y: 100 }, data: { label: 'System Output' } }]);
+                  }}>
+                    <LayoutDashboard className="h-3.5 w-3.5 text-slate-600" />
+                  </Button>
+                  <Button variant="outline" size="icon" className="h-7 w-7" title="Add Physical Document" onClick={() => {
+                    const id = `node_${Date.now()}`;
+                    setNodes(nds => [...nds, { id, type: 'physical-document', position: { x: 100, y: 100 }, data: { label: 'Form Fisik' } }]);
+                  }}>
+                    <FileText className="h-3.5 w-3.5 text-slate-600" />
+                  </Button>
+                  <Button variant="outline" size="icon" className="h-7 w-7" title="Add On-page Reference" onClick={() => {
+                    const id = `node_${Date.now()}`;
+                    setNodes(nds => [...nds, { id, type: 'reference', position: { x: 100, y: 100 }, data: { label: 'A' } }]);
+                  }}>
+                    <LinkIcon className="h-3.5 w-3.5 text-slate-600" />
+                  </Button>
+               </div>
+             )}
           </Panel>
         </ReactFlow>
 
