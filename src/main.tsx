@@ -79,6 +79,7 @@ const router = createBrowserRouter([
               { path: "/rcm/itgc", element: <PageSuspense><RCMITGCPage /></PageSuspense> },
               { path: "/change-log", element: <PageSuspense><ChangeLogPage /></PageSuspense> },
               { path: "/soc-monitoring", element: <PageSuspense><SOCMonitoringPage /></PageSuspense> },
+              { path: "/applications", element: <PageSuspense><SOCMonitoringPage /></PageSuspense> },
               { path: "/bpm", element: <PageSuspense><BPMPage /></PageSuspense> },
               { path: "/testing", element: <PageSuspense><TestWorkbench /></PageSuspense> },
               { path: "/deficiencies", element: <PageSuspense><DeficiencyBoard /></PageSuspense> },

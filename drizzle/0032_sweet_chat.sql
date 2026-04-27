@@ -1,0 +1,2 @@
+ALTER TABLE "rcm_controls" ADD COLUMN "application_id" text;--> statement-breakpoint
+ALTER TABLE "rcm_controls" ADD CONSTRAINT "rcm_controls_application_id_applications_id_fk" FOREIGN KEY ("application_id") REFERENCES "public"."applications"("id") ON DELETE no action ON UPDATE no action;

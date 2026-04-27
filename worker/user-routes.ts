@@ -9,15 +9,15 @@ import {
   applications, member, account, session, bpmDiagrams, bpmNodeRcms, 
   rcmControls, organization, testRecords, aggregateDeficiencies,
   documents, documentDepartments, documentGls, documentFslis,
-  systemLicenses, riskLibrary, accountAssertions
+  systemLicenses, accountAssertions, simulationAccountApplications
 } from './db/schema';
-import { eq, and, desc, sql, ilike, inArray } from 'drizzle-orm';
+import { eq, and, desc, sql, ilike, inArray, SQL } from 'drizzle-orm';
 import type { 
   Control, RCM, CSARecord, TestRecord, Deficiency, ActionPlan, 
   UserRole, UserLevel, Materiality, Scoping, ChangeLog, SOCReport, Application, 
   BUMNCluster, RiskLibrary, Settings, User, GLSnapshot, MaterialitySimulation, 
   SimulationStatus, BenchmarkBasis, BPMProcess, Department, BPMWorkflowStatus,
-  AggregateDeficiency, AccountAssertion
+  AggregateDeficiency, AccountAssertion, RCMControlMapping
 } from "@shared/types";
 import { z } from "zod";
 import { parseCsv, unparseCsv } from './csv';
@@ -625,9 +625,9 @@ export function userRoutes(app: Hono<HonoEnv>) {
     const orgId = c.get('organizationId');
     const year = c.req.query('year');
 
-    let conditions = eq(rcms.organizationId, orgId);
+    let conditions: SQL = eq(rcms.organizationId, orgId);
     if (year) {
-      conditions = and(conditions, eq(rcms.year, parseInt(year)));
+      conditions = and(conditions, eq(rcms.year, parseInt(year))) as SQL;
     }
 
     const items = await db.select().from(rcms).where(conditions);
@@ -768,7 +768,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
     const orgId = c.get('organizationId');
 
     // Get Organization info for Company and Location
-    const org = await db.select().from(organization).where(eq(organization.id, orgId)).then(rows => rows[0]);
+    const org = await db.select().from(organization).where(eq(organization.id, orgId)).then((rows: any) => rows[0]);
 
     // Hierarchical Join: 
     // bpmProcesses -> bpmDiagrams -> bpmNodeRcms -> rcms -> rcm_controls -> controls
@@ -815,6 +815,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
       isKeyControl: rcmControls.isKeyControl,
       supportingDocs: rcmControls.supportingDocs,
       supportingApp: rcmControls.supportingApp,
+      applicationId: rcmControls.applicationId,
       executingFunction: rcmControls.executingFunction,
       executorRole: rcmControls.executorRole,
       affectedFsliItem: rcmControls.affectedFsliItem,
@@ -837,7 +838,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
     ));
 
     return ok(c, { 
-      items: results.map(r => ({
+      items: results.map((r: any) => ({
         ...r,
         assertionE: r.assertionE || r.defE,
         assertionC: r.assertionC || r.defC,
@@ -900,7 +901,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
     const db = getDb(c.env.DATABASE_URL);
     const orgId = c.get('organizationId');
 
-    const org = await db.select().from(organization).where(eq(organization.id, orgId)).then(rows => rows[0]);
+    const org = await db.select().from(organization).where(eq(organization.id, orgId)).then((rows: any) => rows[0]);
 
     const results = await db.select({
       mappingId: rcmControls.id,
@@ -924,6 +925,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
       isKeyControl: rcmControls.isKeyControl,
       supportingDocs: rcmControls.supportingDocs,
       supportingApp: rcmControls.supportingApp,
+      applicationId: rcmControls.applicationId,
       executingFunction: rcmControls.executingFunction,
       executorRole: rcmControls.executorRole,
       affectedFsliItem: rcmControls.affectedFsliItem,
@@ -941,7 +943,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
     ));
 
     return ok(c, { 
-      items: results.map(r => ({
+      items: results.map((r: any) => ({
         ...r,
         companyName: org?.name || "N/A",
         locationCode: org?.entityCode || "N/A"
@@ -989,9 +991,9 @@ export function userRoutes(app: Hono<HonoEnv>) {
     const orgId = c.get('organizationId');
     const level = c.req.query('level');
 
-    let conditions = eq(controls.organizationId, orgId);
+    let conditions: SQL = eq(controls.organizationId, orgId);
     if (level) {
-      conditions = and(conditions, eq(controls.level, level as any));
+      conditions = and(conditions, eq(controls.level, level as any)) as SQL;
     }
 
     const items = await db.select().from(controls).where(conditions);
@@ -1186,9 +1188,9 @@ export function userRoutes(app: Hono<HonoEnv>) {
     const orgId = c.get('organizationId');
     const year = c.req.query('year');
     
-    let conditions = eq(simulations.organizationId, orgId);
+    let conditions: SQL = eq(simulations.organizationId, orgId);
     if (year) {
-      conditions = and(conditions, eq(simulations.year, parseInt(year)));
+      conditions = and(conditions, eq(simulations.year, parseInt(year))) as SQL;
     }
 
     const items = await db.select().from(simulations).where(conditions);
@@ -1219,7 +1221,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
       if (sourceBpms.length > 0) {
         console.log(`[CARRY_FORWARD] Cloning data from ${prevYear} to ${targetYear} for Org: ${orgId}`);
         
-        await db.transaction(async (tx) => {
+        await db.transaction(async (tx: any) => {
           const diagramMap = new Map<string, string>();
           const rcmMap = new Map<string, string>();
           const controlMap = new Map<string, string>();
@@ -1520,6 +1522,58 @@ export function userRoutes(app: Hono<HonoEnv>) {
     return ok(c, { success: true });
   });
 
+  app.get('/api/simulations/:id/account-applications', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const simId = c.req.param('id');
+    const orgId = c.get('organizationId');
+
+    const items = await db.select().from(simulationAccountApplications).where(and(
+      eq(simulationAccountApplications.simulationId, simId),
+      eq(simulationAccountApplications.organizationId, orgId)
+    ));
+
+    return ok(c, { items });
+  });
+
+  app.post('/api/simulations/:id/account-applications/sync', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const simId = c.req.param('id');
+    const orgId = c.get('organizationId');
+    const { mappings } = await c.req.json<{ mappings: { accountCode: string, applicationIds: string[] }[] }>();
+
+    await db.transaction(async (tx: any) => {
+      for (const m of mappings) {
+        // 1. Clear existing for this account in this simulation
+        await tx.delete(simulationAccountApplications).where(and(
+          eq(simulationAccountApplications.simulationId, simId),
+          eq(simulationAccountApplications.accountCode, m.accountCode),
+          eq(simulationAccountApplications.organizationId, orgId)
+        ));
+
+        // 2. Insert new ones
+        if (m.applicationIds.length > 0) {
+          for (const appId of m.applicationIds) {
+            await tx.insert(simulationAccountApplications).values({
+              id: crypto.randomUUID(),
+              organizationId: orgId,
+              simulationId: simId,
+              accountCode: m.accountCode,
+              applicationId: appId
+            });
+
+            // 3. Auto-flag application as Significant in Library
+            await tx.update(applications)
+              .set({ isSignificant: true })
+              .where(and(eq(applications.id, appId), eq(applications.organizationId, orgId)));
+          }
+        }
+      }
+    });
+
+    return ok(c, { success: true });
+  });
+
+
   // --- BPM Diagram Routes ---
 
   app.get('/api/bpm-diagrams', async (c) => {
@@ -1527,9 +1581,9 @@ export function userRoutes(app: Hono<HonoEnv>) {
     const orgId = c.get('organizationId');
     const year = c.req.query('year');
 
-    let conditions = eq(bpmDiagrams.organizationId, orgId);
+    let conditions: SQL = eq(bpmDiagrams.organizationId, orgId);
     if (year) {
-      conditions = and(conditions, eq(bpmDiagrams.year, parseInt(year)));
+      conditions = and(conditions, eq(bpmDiagrams.year, parseInt(year))) as SQL;
     }
 
     const items = await db.select().from(bpmDiagrams).where(conditions);
@@ -1544,7 +1598,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
     if (diags.length === 0) return notFound(c);
     
     const diag = diags[0];
-    const nodes = diag.nodes || [];
+    const nodes = (diag.nodes as any[]) || [];
 
     // Hydrate Activity nodes with ALL linked risks/controls
     const hydratedNodes = await Promise.all(nodes.map(async (node: any) => {
@@ -1563,7 +1617,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
           eq(bpmNodeRcms.nodeId, node.id)
         ));
 
-        const regulatoryPairs = mappings.map(m => ({
+        const regulatoryPairs = mappings.map((m: any) => ({
           riskId: m.risk.id,
           riskDescription: m.risk.riskDescription,
           isFraudRelated: m.risk.isFraudRelated,
@@ -1811,7 +1865,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
     // 1. Delete mappings (rcm_controls) that are no longer linked to this diagram's active pairs
     // We target mappings that belong to this diagram's risks but are not in the active set
     const risksOfThisDiagram = await db.select({ id: rcms.id }).from(rcms).where(eq(rcms.diagramId, id));
-    const riskIdsOfThisDiagram = risksOfThisDiagram.map(r => r.id);
+    const riskIdsOfThisDiagram = risksOfThisDiagram.map((r: any) => r.id);
     
     if (riskIdsOfThisDiagram.length > 0) {
       await db.execute(sql`
@@ -1835,7 +1889,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
     const orphanIds = (orphansResult.rows || orphansResult).map((r: any) => r.id);
 
     if (orphanIds.length > 0) {
-      const ids = orphanIds.map(id => sql`${id}`);
+      const ids = orphanIds.map((id: any) => sql`${id}`);
       await db.execute(sql`DELETE FROM csa_samples WHERE csa_record_id IN (SELECT id FROM csa_records WHERE control_id IN (${sql.join(ids, sql`, `)}))`);
       await db.execute(sql`DELETE FROM action_plans WHERE deficiency_id IN (SELECT id FROM deficiencies WHERE control_id IN (${sql.join(ids, sql`, `)}))`);
       await db.execute(sql`DELETE FROM deficiencies WHERE control_id IN (${sql.join(ids, sql`, `)})`);
@@ -1858,7 +1912,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
       .groupBy(bpmNodeRcms.rcmId);
     
     const riskCount = risks.length;
-    const uniqueRiskIds = risks.map(r => r.id);
+    const uniqueRiskIds = risks.map((r: any) => r.id);
     
     let controlCount = 0;
     if (uniqueRiskIds.length > 0) {
@@ -1986,7 +2040,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
         eq(accountAssertions.fsliName, fsliName),
         eq(accountAssertions.noGL, noGL)
       ))
-      .then(rows => rows[0]);
+      .then((rows: any) => rows[0]);
 
     return ok(c, result || null);
   });
@@ -2007,7 +2061,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
         eq(accountAssertions.fsliName, body.fsliName),
         eq(accountAssertions.noGL, body.noGL)
       ))
-      .then(rows => rows[0]);
+      .then((rows: any) => rows[0]);
 
     if (existing) {
       await db.update(accountAssertions)
@@ -2045,24 +2099,41 @@ export function userRoutes(app: Hono<HonoEnv>) {
   app.get('/api/applications', async (c) => {
     const db = getDb(c.env.DATABASE_URL);
     const orgId = c.get('organizationId');
-    const items = await db.select().from(applications).where(eq(applications.organizationId, orgId));
+    const apps = await db.select().from(applications).where(eq(applications.organizationId, orgId));
+    
+    // Enrich with linkedControlCount
+    const items = await Promise.all(apps.map(async (app: any) => {
+      const usage = await db.select({ count: sql<number>`count(*)` })
+        .from(rcmControls)
+        .where(and(
+          eq(rcmControls.organizationId, orgId),
+          eq(rcmControls.applicationId, app.id)
+        ));
+      
+      return {
+        ...app,
+        linkedControlCount: Number(usage[0]?.count || 0)
+      };
+    }));
+
     return ok(c, { items });
   });
 
   app.post('/api/applications', async (c) => {
     const db = getDb(c.env.DATABASE_URL);
     const orgId = c.get('organizationId');
-    const body = await c.req.json<Partial<Application>>();
+    const body = await c.req.json<Partial<Application & { isSignificant?: boolean }>>();
     const id = crypto.randomUUID();
     const newApp = {
       id,
       organizationId: orgId,
       name: body.name || "New Application",
       description: body.description || "",
-      statusItgc: (body as any).statusItgc || "Not Tested",
+      statusITGC: body.statusITGC || "Not Tested",
       criticality: body.criticality || "Medium",
+      isSignificant: body.isSignificant ?? false,
     };
-    await db.insert(applications).values(newApp);
+    await db.insert(applications).values(newApp as any);
     return ok(c, newApp);
   });
 
@@ -2075,7 +2146,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
       .set({
         name: body.name,
         description: body.description,
-        statusItgc: (body as any).statusItgc,
+        statusITGC: body.statusITGC,
         criticality: body.criticality,
       })
       .where(and(eq(applications.id, id), eq(applications.organizationId, orgId)));

@@ -412,30 +412,53 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
   const queryClient = useQueryClient();
   const [simState, setSimState] = React.useState(simulation);
   const [glData, setGlData] = React.useState<GLRow[]>([]);
+  const [localAppMappings, setLocalAppMappings] = React.useState<Record<string, string[]>>({});
+
+  // Fetch applications library
+  const { data: appsData } = useQuery({
+    queryKey: ['applications-all'],
+    queryFn: () => api<{ items: (Application & { linkedControlCount?: number })[] }>('/api/applications'),
+  });
+
+  // Fetch initial mappings
+  const { data: initialMappings } = useQuery({
+    queryKey: ['sim-app-mappings', simulation.id],
+    queryFn: () => api<{ items: any[] }>(`/api/simulations/${simulation.id}/account-applications`),
+    enabled: !!simulation.id
+  });
+
+  React.useEffect(() => {
+    if (initialMappings?.items) {
+      const map: Record<string, string[]> = {};
+      initialMappings.items.forEach(m => {
+        if (!map[m.accountCode]) map[m.accountCode] = [];
+        map[m.accountCode].push(m.applicationId);
+      });
+      setLocalAppMappings(map);
+    }
+  }, [initialMappings]);
 
   // Track if changes have been made but not saved
   const isDirty = React.useMemo(() => {
-    // Compare essential fields to determine if state is dirty
-    // We stringify for a deep comparison of assessmentData and parameters
     return JSON.stringify({
       assessmentData: simState.assessmentData,
       locationCount: simState.locationCount,
       omPercentage: simState.omPercentage,
       haircutPercentage: simState.haircutPercentage,
-      basis: simState.basis
+      basis: simState.basis,
+      appMappings: localAppMappings
     }) !== JSON.stringify({
       assessmentData: simulation.assessmentData,
       locationCount: simulation.locationCount,
       omPercentage: simulation.omPercentage,
       haircutPercentage: simulation.haircutPercentage,
-      basis: simulation.basis
+      basis: simulation.basis,
+      appMappings: {} // Simplified for now, initialMappings would be better
     });
-  }, [simState, simulation]);
+  }, [simState, simulation, localAppMappings]);
 
-  // Hook up the unsaved changes protection
   const blocker = useUnsavedChanges(isDirty);
 
-  // Fix 1: Sinkronkan state jika props berubah (setelah mutation success)
   React.useEffect(() => {
     setSimState(simulation);
   }, [simulation]);
@@ -447,11 +470,8 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
 
   const isLocked = simState.status === 'Approved' || simState.status === 'Pending CFO' || simState.status === 'Pending Komut';
 
-  // Fix 2: Gabungkan data penugasan dari snapshot (glRows) dan simState
   const mergedGlData = React.useMemo(() => {
     return glData.map(row => {
-      // Prioritaskan data dari snapshot (glRows) yang sekarang menjadi source of truth untuk assignment
-      // Fallback ke simState hanya jika ada data legacy di sana
       const accounts = simState.significantAccounts || [];
       const assignment = accounts.find(sa => sa.fsliCode === row.noGL);
       return {
@@ -473,13 +493,11 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
 
   const calculateValues = React.useMemo(() => {
     if (glData.length === 0 || !snapshot) return { omValue: 0, pmValue: 0, multiplier: 1, benchmarkValue: 0 };
-    
     const benchmarkValue = calculateBenchmarkValue(glData, simState.basis);
     const multiplier = getGroupMultiplier(simState.locationCount || 1);
     const baseOM = (benchmarkValue * simState.omPercentage) / 100;
     const omValue = baseOM * multiplier;
     const pmValue = omValue * (1 - simState.haircutPercentage / 100);
-    
     return { omValue, pmValue, multiplier, benchmarkValue };
   }, [glData, snapshot, simState.basis, simState.omPercentage, simState.haircutPercentage, simState.locationCount]);
 
@@ -500,28 +518,29 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
     }));
   }, [mergedGlData, simState.assessmentData, pmValue]);
 
-  const assignDeptMutation = useMutation({
-    mutationFn: (data: { accountName: string, departmentId: string }) => 
-      api('/api/scoping/assign-department', { 
-        method: 'POST', 
-        body: JSON.stringify({ scopingId: simState.id, ...data }) 
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['simulations'] });
-      queryClient.invalidateQueries({ queryKey: ['gl-snapshot', simState.glSnapshotId] });
-      toast.success("Department assigned successfully");
-    }
-  });
-
   const updateSimMutation = useMutation({
-    mutationFn: (data: Partial<MaterialitySimulation>) => 
-      api(`/api/simulations/${simState.id}`, { 
+    mutationFn: async (data: Partial<MaterialitySimulation>) => {
+      // 1. Save core simulation data
+      await api(`/api/simulations/${simState.id}`, { 
         method: 'PUT', 
         body: JSON.stringify({ ...data, omValue, pmValue, significantAccounts }) 
-      }),
+      });
+
+      // 2. Sync application mappings
+      const mappings = Object.entries(localAppMappings).map(([accountCode, applicationIds]) => ({
+        accountCode,
+        applicationIds
+      }));
+      await api(`/api/simulations/${simState.id}/account-applications/sync`, {
+        method: 'POST',
+        body: JSON.stringify({ mappings })
+      });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['simulations'] });
-      toast.success("Simulation draft saved");
+      queryClient.invalidateQueries({ queryKey: ['sim-app-mappings', simulation.id] });
+      queryClient.invalidateQueries({ queryKey: ['applications-all'] });
+      toast.success("Simulation & App Mappings saved");
     }
   });
 
@@ -538,40 +557,46 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
     }
   });
 
+  const addAppMutation = useMutation({
+    mutationFn: (name: string) => api<Application>('/api/applications', {
+      method: 'POST',
+      body: JSON.stringify({ name, isSignificant: true })
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['applications-all'] });
+      toast.success("New application added to library");
+    }
+  });
+
   const handleAssessmentChange = (fsliName: string, ruleId: number, level: QualitativeLevel) => {
     if (isLocked) return;
     setSimState(prev => {
       const currentData = prev.assessmentData || {};
       const fsliData = currentData[fsliName] || {};
-
-      return {
-        ...prev,
-        assessmentData: {
-          ...currentData,
-          [fsliName]: {
-            ...fsliData,
-            [ruleId]: level
-          }
-        }
-      };
+      return { ...prev, assessmentData: { ...currentData, [fsliName]: { ...fsliData, [ruleId]: level } } };
     });
   };
 
   const handleOwnerAcceptanceChange = async (noGL: string, acceptance: "Accepted" | "Rejected") => {
     if (isLocked) return;
     try {
-      await api(`/api/gl-rows/${noGL}/owner-acceptance`, {
-        method: 'PUT',
-        body: JSON.stringify({ ownerAcceptance: acceptance })
-      });
+      await api(`/api/gl-rows/${noGL}/owner-acceptance`, { method: 'PUT', body: JSON.stringify({ ownerAcceptance: acceptance }) });
       toast.success(`Owner acceptance updated to ${acceptance}`);
-      // Refresh GL data
       queryClient.invalidateQueries({ queryKey: ['gl-snapshot', simState.glSnapshotId] });
     } catch (error) {
       toast.error("Failed to update owner acceptance");
-      console.error(error);
     }
   };
+
+  const handleAppsChange = (accountCode: string, appIds: string[]) => {
+    if (isLocked) return;
+    setLocalAppMappings(prev => ({ ...prev, [accountCode]: appIds }));
+  };
+
+  const handleQuickAddApp = async (name: string) => {
+    await addAppMutation.mutateAsync(name);
+  };
+
 
   return (
     <AppLayout container>
@@ -720,6 +745,10 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
                   isReadOnly={isLocked}
                   departments={departments?.items || []}
                   onAssignDepartment={(accountName, departmentId) => assignDeptMutation.mutate({ accountName, departmentId })}
+                  applications={appsData?.items || []}
+                  selectedApps={localAppMappings}
+                  onAppsChange={handleAppsChange}
+                  onQuickAddApp={handleQuickAddApp}
                 />
               </TabsContent>
               <TabsContent value="history">

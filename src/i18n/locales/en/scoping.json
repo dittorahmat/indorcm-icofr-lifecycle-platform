@@ -44,6 +44,8 @@
     "account": "Account",
     "balance": "Balance",
     "fsli": "FSLI",
-    "status": "Status"
+    "status": "Status",
+    "significantApp": "Significant Application",
+    "addAppOnTheFly": "Add New Application"
   }
 }

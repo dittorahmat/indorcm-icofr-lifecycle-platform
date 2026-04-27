@@ -36,7 +36,7 @@ export const seedDatabase = async (databaseUrl: string, authSecret: string, skip
         await db.insert(schema.departments).values({ ...dept, organizationId: orgId })
             .onConflictDoUpdate({
                 target: schema.departments.id,
-                set: { name: dept.name, description: dept.description }
+                set: { name: dept.name }
             });
     }
 

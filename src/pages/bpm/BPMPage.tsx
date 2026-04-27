@@ -96,7 +96,7 @@ export function BPMPage() {
     if (yearParam && yearParam !== viewYear) {
       setViewYear(yearParam);
     }
-  }, [searchParams]);
+  }, [searchParams, viewYear]);
 
   // Update URL when viewYear changes
   const handleYearChange = (year: string) => {

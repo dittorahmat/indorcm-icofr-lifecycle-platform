@@ -218,6 +218,20 @@
       "when": 1777159163900,
       "tag": "0030_remarkable_silver_centurion",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1777267950799,
+      "tag": "0031_parched_obadiah_stane",
+      "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1777275403571,
+      "tag": "0032_sweet_chat",
+      "breakpoints": true
     }
   ]
 }

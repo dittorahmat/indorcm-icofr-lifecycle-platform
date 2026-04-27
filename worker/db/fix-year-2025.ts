@@ -1,9 +1,8 @@
 import { drizzle } from 'drizzle-orm/neon-http';
 import { neon } from '@neondatabase/serverless';
 import { bpmDiagrams, rcms, controls, rcmControls, simulations } from './schema';
-import * as dotenv from 'dotenv';
 
-const databaseUrl = process.env.DATABASE_URL;
+const databaseUrl = (process.env as any).DATABASE_URL;
 
 if (!databaseUrl) {
   console.error("DATABASE_URL is not set");

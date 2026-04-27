@@ -44,6 +44,8 @@
     "account": "Akun",
     "balance": "Saldo",
     "fsli": "FSLI",
-    "status": "Status"
+    "status": "Status",
+    "significantApp": "Aplikasi Signifikan",
+    "addAppOnTheFly": "Tambah Aplikasi Baru"
   }
 }

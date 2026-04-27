@@ -132,6 +132,15 @@ export interface Application {
   statusITGC: "Effective" | "Ineffective" | "Not Tested";
   lastITGCTestDate?: number;
   criticality: "High" | "Medium" | "Low";
+  isSignificant?: boolean; // New: Flag from Scoping
+  linkedControlCount?: number; // New: Cross-check with RCM
+}
+
+export interface RiskLibrary {
+  id: string;
+  cluster: BUMNCluster;
+  description: string;
+  suggestedAssertions: ControlAssertion[];
 }
 
 // New types from SK-5/DKU.MBU/11/2024
@@ -460,6 +469,8 @@ export interface Deficiency {
   likelihood?: "Low" | "Medium" | "High";
   remediationEvidence?: string;
   correctiveActionTaken?: string;
+  assertions?: string[];
+  flowchartPath?: Record<number, boolean>;
   // Step 0 Indicators (SK-5 1.1.c)
   preAssessment?: {
     seniorManagementFraud: boolean;

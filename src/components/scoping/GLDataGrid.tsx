@@ -10,12 +10,12 @@ import {
   GroupingState,
   VisibilityState,
 } from '@tanstack/react-table';
-import { GLRow, QualitativeLevel, Department, User } from '@shared/types';
+import { GLRow, QualitativeLevel, Department, User, Application } from '@shared/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronRight, Filter, FileSpreadsheet, Info, ExternalLink, Lock, Building2 } from 'lucide-react';
+import { ChevronDown, ChevronRight, Filter, FileSpreadsheet, Info, ExternalLink, Lock, Building2, Monitor } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import * as XLSX from 'xlsx';
 import { Link } from 'react-router-dom';
@@ -23,6 +23,8 @@ import { DepartmentPicker } from './DepartmentPicker';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
+import { MultiSelect, Option } from '@/components/ui/multi-select';
+import { useTranslation } from 'react-i18next';
 
 interface GLDataGridProps {
   data: GLRow[];
@@ -34,6 +36,12 @@ interface GLDataGridProps {
   isReadOnly?: boolean;
   departments?: Department[];
   onAssignDepartment?: (accountName: string, departmentId: string) => void;
+  
+  // New props for applications
+  applications?: (Application & { linkedControlCount?: number })[];
+  selectedApps: Record<string, string[]>; // accountCode -> appIds
+  onAppsChange: (accountCode: string, appIds: string[]) => void;
+  onQuickAddApp: (name: string) => Promise<void>;
 }
 
 const QUALITATIVE_RULES = [
@@ -55,8 +63,14 @@ export function GLDataGrid({
   onOwnerAcceptanceChange,
   isReadOnly = false,
   departments = [],
-  onAssignDepartment
+  onAssignDepartment,
+  applications = [],
+  selectedApps = {},
+  onAppsChange,
+  onQuickAddApp
 }: GLDataGridProps) {
+  const { t } = useTranslation('scoping');
+  
   const { data: currentUser } = useQuery({
     queryKey: ['auth-me'],
     queryFn: () => api<User>('/api/user/me'),
@@ -368,9 +382,47 @@ export function GLDataGrid({
           }
           return <Badge variant="outline" className="text-[9px] h-4 px-1.5 opacity-40 text-slate-400 whitespace-nowrap uppercase">Out Scope</Badge>;
         }
+      },
+      {
+        id: 'significantApp',
+        header: t('table.significantApp'),
+        size: 320,
+        cell: ({ row }) => {
+          if (row.getIsGrouped()) return null;
+          const noGL = row.original.noGL || "";
+          const fsliName = row.original.fsliName || "";
+          
+          const assessments = assessmentData?.[fsliName] || {};
+          const isQualSignificant = Object.values(assessments).some(v => v === 'High');
+          const isKuanSignificant = Math.abs(row.original.balance) >= pmValue;
+          const isInScope = isKuanSignificant || isQualSignificant;
+
+          if (!isInScope) return null;
+
+          const currentSelected = selectedApps[noGL] || [];
+          const options: Option[] = (applications || []).map(app => ({
+            label: app.name,
+            value: app.id,
+            isWarning: (app.linkedControlCount || 0) === 0
+          }));
+
+          return (
+            <div className="py-1 px-1">
+              <MultiSelect
+                placeholder={t('table.selectApp', 'Select application...')}
+                options={options}
+                selected={currentSelected}
+                onChange={(ids) => onAppsChange(noGL, ids)}
+                onCreateNew={onQuickAddApp}
+                disabled={isReadOnly}
+                className="min-h-7 py-1 text-[10px]"
+              />
+            </div>
+          );
+        }
       }
     ],
-    [pmValue, assessmentData, isReadOnly, onAssessmentChange, onOwnerAcceptanceChange, currentUser, departments, onAssignDepartment]
+    [t, pmValue, assessmentData, isReadOnly, onAssessmentChange, onOwnerAcceptanceChange, currentUser, departments, onAssignDepartment, applications, selectedApps, onAppsChange, onQuickAddApp]
   );
 
   const table = useReactTable({

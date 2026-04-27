@@ -54,6 +54,11 @@ export function RCMITGCPage() {
     },
   });
 
+  const { data: appsData } = useQuery({
+    queryKey: ['applications-list'],
+    queryFn: () => api<{ items: any[] }>('/api/applications'),
+  });
+
   const isDirty = React.useMemo(() => {
     if (!matrixData?.items || localItems.length === 0) return false;
     return JSON.stringify(localItems) !== JSON.stringify(matrixData.items);
@@ -269,7 +274,18 @@ export function RCMITGCPage() {
                          <Input className="h-full border-none focus-visible:ring-0 text-[10px] px-3" value={item.frequency || ''} onChange={e => handleInputChange(item.mappingId, 'frequency', e.target.value)} placeholder="..." />
                       </TableCell>
                       <TableCell className="p-0 bg-indigo-50/30">
-                         <Input className="h-full border-none focus-visible:ring-0 text-[10px] px-3 font-bold text-indigo-700" value={item.supportingApp || ''} onChange={e => handleInputChange(item.mappingId, 'supportingApp', e.target.value)} placeholder="..." />
+                         <Select value={item.supportingApp || ''} onValueChange={val => handleInputChange(item.mappingId, 'supportingApp', val)}>
+                           <SelectTrigger className="h-full border-none rounded-none focus:ring-0 text-[10px] shadow-none px-3 font-bold text-indigo-700">
+                             <SelectValue placeholder="..." />
+                           </SelectTrigger>
+                           <SelectContent>
+                             {(appsData?.items || []).map(app => (
+                               <SelectItem key={app.id} value={app.name} className="text-xs">
+                                 {app.name}
+                               </SelectItem>
+                             ))}
+                           </SelectContent>
+                         </Select>
                       </TableCell>
                       <TableCell className="p-0">
                          <Input className="h-full border-none focus-visible:ring-0 text-[10px] px-3" value={item.executingFunction || ''} onChange={e => handleInputChange(item.mappingId, 'executingFunction', e.target.value)} placeholder="..." />

@@ -55,6 +55,8 @@ export const MOCK_RCM: RCM[] = [
     process: 'Revenue & Receivables',
     subProcess: 'Coal Sales Contract',
     riskDescription: 'Risiko penjualan batubara tanpa kontrak yang sah atau dengan syarat kredit yang tidak layak, mengakibatkan piutang tak tertagih.',
+    isFraudRelated: false,
+    riskRating: 'Medium',
     status: 'Active',
     controls: ['ctrl-rev-01', 'ctrl-rev-02'],
     bpmData: {
@@ -84,6 +86,8 @@ export const MOCK_RCM: RCM[] = [
     process: 'Revenue & Receivables',
     subProcess: 'Weighbridge & Quality Measurement',
     riskDescription: 'Risiko ketidakakuratan pengukuran volume dan kualitas batubara (GAR, NAR, Total Moisture, Ash) mengakibatkan kesalahan pengakuan pendapatan.',
+    isFraudRelated: false,
+    riskRating: 'Medium',
     status: 'Active',
     controls: ['ctrl-rev-03', 'ctrl-rev-04', 'ctrl-rev-05'],
     bpmData: {
@@ -117,6 +121,8 @@ export const MOCK_RCM: RCM[] = [
     process: 'Revenue & Receivables',
     subProcess: 'Revenue Recognition - HBA Pricing',
     riskDescription: 'Risiko kesalahan perhitungan harga jual batubara berdasarkan HBA (Harga Batubara Acuan) dengan adjustment kualitas, mengakibatkan kesalahan pengakuan pendapatan.',
+    isFraudRelated: false,
+    riskRating: 'Medium',
     status: 'Active',
     controls: ['ctrl-rev-06', 'ctrl-rev-07'],
     bpmData: {
@@ -148,6 +154,8 @@ export const MOCK_RCM: RCM[] = [
     process: 'Production & Inventory',
     subProcess: 'Coal Extraction',
     riskDescription: 'Risiko ketidakakuratan pencatatan volume produksi batubara (ROM - Run of Mine) mengakibatkan salah saji persediaan dan harga pokok penjualan.',
+    isFraudRelated: false,
+    riskRating: 'Medium',
     status: 'Active',
     controls: ['ctrl-prod-01', 'ctrl-prod-02'],
     bpmData: {
@@ -175,6 +183,8 @@ export const MOCK_RCM: RCM[] = [
     process: 'Production & Inventory',
     subProcess: 'Stockpile Management',
     riskDescription: 'Risiko perbedaan signifikan antara catatan stockpile dengan hasil survey (drone/manual) mengakibatkan salah saji persediaan batubara.',
+    isFraudRelated: false,
+    riskRating: 'Medium',
     status: 'Active',
     controls: ['ctrl-prod-03', 'ctrl-prod-04'],
     bpmData: {
@@ -202,6 +212,8 @@ export const MOCK_RCM: RCM[] = [
     process: 'Procure to Pay',
     subProcess: 'Mining Contractor Services',
     riskDescription: 'Risiko pembayaran kepada kontraktor tambang tanpa verifikasi pekerjaan yang memadai, mengakibatkan pembayaran berlebih atau fiktif.',
+    isFraudRelated: false,
+    riskRating: 'Medium',
     status: 'Active',
     controls: ['ctrl-proc-01', 'ctrl-proc-02', 'ctrl-proc-03'],
     bpmData: {
@@ -233,6 +245,8 @@ export const MOCK_RCM: RCM[] = [
     process: 'Fixed Assets & Capex',
     subProcess: 'Mine Development Capitalization',
     riskDescription: 'Risiko salah klasifikasi antara biaya kapital (capex) dan biaya operasional (opex) untuk overburden removal costs dan mine development, mengakibatkan salah saji aset dan beban.',
+    isFraudRelated: false,
+    riskRating: 'Medium',
     status: 'Active',
     controls: ['ctrl-fa-01', 'ctrl-fa-02'],
     bpmData: {
@@ -262,6 +276,8 @@ export const MOCK_RCM: RCM[] = [
     process: 'Reclamation & Environmental',
     subProcess: 'ARO Provision Calculation',
     riskDescription: 'Risiko kesalahan pengakuan kewajiban pemulihan lingkungan (Asset Retirement Obligation - AARO) yang tidak sesuai PSAK, mengakibatkan salah saji liabilitas dan beban.',
+    isFraudRelated: false,
+    riskRating: 'Medium',
     status: 'Active',
     controls: ['ctrl-env-01', 'ctrl-env-02'],
     bpmData: {
@@ -813,5 +829,5 @@ export const MOCK_MATERIALITY: Materiality[] = [];
 export const MOCK_SCOPING: Scoping[] = [];
 export const MOCK_APPLICATIONS: Application[] = [];
 export const MOCK_RISK_LIBRARY: RiskLibrary[] = [
-  { id: 'risk-coal-01', cluster: 'Industri Mineral dan Batubara', riskDescription: 'Risk 1', suggestedAssertions: ['Accuracy', 'Valuation', 'Completeness'] },
+  { id: 'risk-coal-01', cluster: 'Industri Mineral dan Batubara', description: 'Risk 1', suggestedAssertions: ['Accuracy', 'Valuation', 'Completeness'] },
 ];

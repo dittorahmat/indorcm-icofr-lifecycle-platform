@@ -498,7 +498,7 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
     const originalEdges = JSON.stringify((diagram.edges || []).map((e: any) => ({ id: e.id, source: e.source, target: e.target })));
     
     return currentNodes !== originalNodes || currentEdges !== originalEdges;
-  }, [nodes, edges, diagram]);
+  }, [nodes, edges, diagram, isLocked]);
 
   // Hook up unsaved changes protection
   const blocker = useUnsavedChanges(isDirty);

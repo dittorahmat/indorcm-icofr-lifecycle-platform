@@ -149,6 +149,11 @@ export function AppSidebar(): JSX.Element {
                 <Link to="/scoping" className="font-bold"><Settings2 /> <span>{t('items.scoping')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={isActive("/applications")}>
+                <Link to="/applications" className="font-bold"><Cpu className="text-indigo-500" /> <span>{t('items.applications') || 'Inventory Aplikasi'}</span></Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
             {(userRole === 'Komisaris' || userRole === 'CFO' || userRole === 'Line 2' || userRole === 'Admin') && (
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={isActive("/scoping/approval")}>

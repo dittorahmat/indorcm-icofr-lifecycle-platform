@@ -191,7 +191,8 @@ export const rcmControls = pgTable("rcm_controls", {
 	controlType: text("control_type"), // Column xxv: Preventif / Detektif
 	controlNature: text("control_nature"), // Column xxvi: Manual, Otomatis, ITDM - EUC, ITDM - IPE, MRC
 	frequency: text("frequency"), // Column xxviii
-	supportingApp: text("supporting_app"), // Column xxix
+	supportingApp: text("supporting_app"), // Column xxix (Legacy Text)
+	applicationId: text("application_id").references(() => applications.id), // New ID-based Link
 	executingFunction: text("executing_function"), // Column xxx
 	executorRole: text("executor_role"), // Column xxxi
 	affectedFsliItem: text("affected_fsli_item"), // Column xxxii
@@ -372,8 +373,9 @@ export const applications = pgTable("applications", {
 	organizationId: text("organizationId").notNull().references(() => organization.id),
 	name: text("name").notNull(),
 	description: text("description"),
-	statusItgc: text("status_itgc"),
+	statusITGC: text("status_itgc"),
 	criticality: text("criticality"),
+	isSignificant: boolean("is_significant").default(false),
 });
 
 export const bpmProcesses = pgTable("bpm_processes", {
@@ -441,6 +443,14 @@ export const auditLogs = pgTable("audit_logs", {
 	approvedBy: text("approved_by"),
 });
 
+export const simulationAccountApplications = pgTable("simulation_account_applications", {
+	id: text("id").primaryKey(),
+	organizationId: text("organizationId").notNull().references(() => organization.id),
+	simulationId: text("simulation_id").notNull().references(() => simulations.id, { onDelete: 'cascade' }),
+	accountCode: text("account_code").notNull(), // Menyimpan noGL
+	applicationId: text("application_id").notNull().references(() => applications.id, { onDelete: 'cascade' }),
+});
+
 // --- RELATIONS ---
 
 export const userRelations = relations(user, ({ many }) => ({
@@ -454,6 +464,11 @@ export const organizationRelations = relations(organization, ({ many }) => ({
 
 export const glSnapshotRelations = relations(glSnapshots, ({ many }) => ({
 	rows: many(glRows),
+}));
+
+export const simulationAccountApplicationsRelations = relations(simulationAccountApplications, ({ one }) => ({
+	simulation: one(simulations, { fields: [simulationAccountApplications.simulationId], references: [simulations.id] }),
+	application: one(applications, { fields: [simulationAccountApplications.applicationId], references: [applications.id] }),
 }));
 
 export const csaRecordRelations = relations(csaRecords, ({ many, one }) => ({
