@@ -714,7 +714,7 @@ export function BPMPage() {
               <DialogDescription>Mapping business processes, risks, and controls visually.</DialogDescription>
             </DialogHeader>
             <div className="flex-1 min-h-0 border-t">
-              {selectedDiagramId && <BPMEditor diagramId={selectedDiagramId} subProcess={currentSubProcess} />}
+              {selectedDiagramId && <BPMEditor diagramId={selectedDiagramId} subProcess={currentSubProcess} workingYear={viewYear} />}
             </div>
           </DialogContent>
         </Dialog>

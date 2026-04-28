@@ -232,6 +232,13 @@
       "when": 1777275403571,
       "tag": "0032_sweet_chat",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1777348730469,
+      "tag": "0033_shallow_kid_colt",
+      "breakpoints": true
     }
   ]
 }

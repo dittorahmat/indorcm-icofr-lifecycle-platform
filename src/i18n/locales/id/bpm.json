@@ -127,5 +127,25 @@
       "comments": "Komentar Manajemen",
       "signOff": "Verifikasi & Sign-off Digital"
     }
+  },
+  "editor": {
+    "nodes": {
+      "start": "Mulai",
+      "activity": "Aktivitas Baru",
+      "automated": "Proses Sistem",
+      "decision": "Keputusan?",
+      "output": "Output Sistem",
+      "physical": "Form Fisik",
+      "reference": "Referensi"
+    },
+    "roles": {
+      "default": "Staf"
+    },
+    "actions": {
+      "save": "Simpan Alur",
+      "saving": "Menyimpan...",
+      "locked": "TERKUNCI",
+      "auditBaseline": "Baseline Audit"
+    }
   }
 }

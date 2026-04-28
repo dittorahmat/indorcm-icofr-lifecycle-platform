@@ -1658,11 +1658,15 @@ export function userRoutes(app: Hono<HonoEnv>) {
     const userId = c.get('userId');
     const body = await c.req.json<any>();
     const id = crypto.randomUUID();
+    
+    const yearValue = body.year ? parseInt(body.year.toString()) : null;
+
     const newDiagram = {
       id,
       organizationId: orgId,
       name: body.name || "New Diagram",
       subProcess: body.subProcess,
+      year: yearValue,
       nodes: body.nodes || [],
       edges: body.edges || [],
       createdAt: new Date(),
@@ -1678,10 +1682,14 @@ export function userRoutes(app: Hono<HonoEnv>) {
     const orgId = c.get('organizationId');
     const body = await c.req.json<any>();
 
+    const yearValue = body.year ? parseInt(body.year.toString()) : undefined;
+
     // 1. Update the diagram layout (JSON)
     await db.update(bpmDiagrams)
       .set({
         name: body.name,
+        year: yearValue,
+        subProcess: body.subProcess,
         nodes: body.nodes,
         edges: body.edges,
         updatedAt: new Date(),

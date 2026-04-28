@@ -25,7 +25,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import type { RCM, Control, QualitativeLevel } from '@shared/types';
+import type { RCM, Control, QualitativeLevel, Settings } from '@shared/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -401,16 +401,23 @@ const nodeTypes = {
 };
 
 const initialNodes = [
-  { id: '1', type: 'start', position: { x: 250, y: 0 }, data: { label: 'Mulai', type: 'start' } },
+  { id: '1', type: 'start', position: { x: 250, y: 0 }, data: { label: 'Start', type: 'start' } },
 ];
 
 interface BPMEditorProps {
   diagramId: string;
   subProcess: string;
+  workingYear: string;
 }
 
-export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
+export function BPMEditor({ diagramId, subProcess, workingYear }: BPMEditorProps) {
   const { t } = useTranslation(['risklibrary', 'common', 'bpm']);
+
+  // Update initial label if it's the very first node
+  const localizedInitialNodes = useMemo(() => [
+    { ...initialNodes[0], data: { ...initialNodes[0].data, label: t('bpm:editor.nodes.start') } }
+  ], [t]);
+
   const queryClient = useQueryClient();
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -443,8 +450,8 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
         type,
         position: { x: 100, y: 100 },
         data: {
-          label: type === 'activity' ? 'New Activity' : 'System Process',
-          role: type === 'activity' ? 'Staff' : '',
+          label: type === 'activity' ? t('bpm:editor.nodes.activity') : t('bpm:editor.nodes.automated'),
+          role: type === 'activity' ? t('bpm:editor.roles.default') : '',
           regulatoryData: {
             riskId,
             controlId,
@@ -459,7 +466,7 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
       };
       return [...nds, newNode];
     });
-  }, [generateUniqueId, setNodes]);
+  }, [generateUniqueId, setNodes, t]);
 
   const onNodesDelete = useCallback((deleted: any[]) => {
     if (deleted.length > 0) {
@@ -479,12 +486,17 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
     queryFn: () => api<any>(`/api/bpm-diagrams/${diagramId}`),
   });
 
-  const currentYear = new Date().getFullYear();
+  const { data: settings } = useQuery({
+    queryKey: ['settings'],
+    queryFn: () => api<Settings>('/api/settings')
+  });
+
   const isLocked = React.useMemo(() => {
-    if (!diagram) return false;
-    // Lock if year is before current year
-    return diagram.year && diagram.year < currentYear;
-  }, [diagram, currentYear]);
+    if (!diagram || !workingYear) return false;
+    // Lock if diagram year is strictly before workingYear OR global period is locked
+    const diagramYear = diagram.year || parseInt(workingYear);
+    return diagramYear < parseInt(workingYear) || settings?.isPeriodLocked === true;
+  }, [diagram, workingYear, settings?.isPeriodLocked]);
 
   // Track if diagram has been modified
   const isDirty = useMemo(() => {
@@ -492,13 +504,13 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
     
     // We compare coordinates and data. Note: markerEnd is added in useEffect, so we ignore it in comparison
     const currentNodes = JSON.stringify(nodes.map(n => ({ id: n.id, position: n.position, data: n.data })));
-    const originalNodes = JSON.stringify((diagram.nodes || initialNodes).map((n: any) => ({ id: n.id, position: n.position, data: n.data })));
+    const originalNodes = JSON.stringify((diagram.nodes || localizedInitialNodes).map((n: any) => ({ id: n.id, position: n.position, data: n.data })));
     
     const currentEdges = JSON.stringify(edges.map(e => ({ id: e.id, source: e.source, target: e.target })));
     const originalEdges = JSON.stringify((diagram.edges || []).map((e: any) => ({ id: e.id, source: e.source, target: e.target })));
     
     return currentNodes !== originalNodes || currentEdges !== originalEdges;
-  }, [nodes, edges, diagram, isLocked]);
+  }, [nodes, edges, diagram, isLocked, localizedInitialNodes]);
 
   // Hook up unsaved changes protection
   const blocker = useUnsavedChanges(isDirty);
@@ -537,7 +549,7 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
 
   useEffect(() => {
     if (diagram) {
-      setNodes(diagram.nodes || initialNodes);
+      setNodes(diagram.nodes?.length > 0 ? diagram.nodes : localizedInitialNodes);
       setEdges((diagram.edges || []).map((edge: any) => ({
         ...edge,
         markerEnd: { 
@@ -552,7 +564,7 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
         }
       })));
     }
-  }, [diagram, setNodes, setEdges]);
+  }, [diagram, setNodes, setEdges, localizedInitialNodes]);
 
   const selectedNode = useMemo(() => nodes.find(n => n.id === selectedNodeId), [nodes, selectedNodeId]);
 
@@ -572,7 +584,7 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
   const saveMutation = useMutation({
     mutationFn: (data: any) => api(`/api/bpm-diagrams/${diagramId}`, { method: 'PUT', body: JSON.stringify(data) }),
     onSuccess: () => {
-      toast.success('BPM Diagram saved');
+      toast.success(t('common:notifications.success'));
       queryClient.invalidateQueries({ queryKey: ['bpm-diagrams'] });
     }
   });
@@ -808,14 +820,14 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
         });
       }
     });
-    toast.info("Control unlinked from risk");
+    toast.info("Control unlinked from error");
   };
 
   const updateRiskMutation = useMutation({
     mutationFn: ({ id, data }: { id: string, data: Partial<RCM> }) => api(`/api/rcm/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rcm'] });
-      toast.success("Risk updated");
+      toast.success(t('risklibrary:messages.success_update'));
     }
   });
 
@@ -823,7 +835,7 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
     mutationFn: ({ id, data }: { id: string, data: Partial<Control> }) => api(`/api/controls/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['controls'] });
-      toast.success("Control updated");
+      toast.success(t('risklibrary:messages.success_update'));
     }
   });
 
@@ -832,7 +844,7 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
       const res = await api<any>(`/api/bpm/usage-check/${id}?type=${type}`);
       setImpactData({ id, type, ...res });
     } catch (e) {
-      toast.error("Failed to check impact");
+      toast.error(t('common:notifications.error'));
     }
   };
 
@@ -909,51 +921,58 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
             {isLocked && (
               <Badge variant="outline" className="h-8 bg-amber-50 text-amber-700 border-amber-200 gap-1.5 px-3">
                 <ShieldCheck className="h-3.5 w-3.5" />
-                LOCKED (Audit Baseline {diagram?.year})
+                {t('bpm:editor.actions.locked')} ({t('bpm:editor.actions.auditBaseline')} {diagram?.year || workingYear})
               </Badge>
             )}
             <Button 
               size="sm" 
               variant="default" 
               className="h-8 gap-2 bg-indigo-600 hover:bg-indigo-700" 
-              onClick={() => saveMutation.mutate({ nodes, edges, name: `Flow: ${subProcess}`, subProcess })} 
+              onClick={() => saveMutation.mutate({ 
+                nodes, 
+                edges, 
+                name: `Flow: ${subProcess}`, 
+                subProcess, 
+                year: diagram?.year || parseInt(workingYear) 
+              })} 
               disabled={saveMutation.isPending || isLocked}
             >
-              <Save className="h-3.5 w-3.5" /> Save Alur
+              {saveMutation.isPending ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+              {saveMutation.isPending ? t('bpm:editor.actions.saving') : t('bpm:editor.actions.save')}
             </Button>
           </Panel>
           <Panel position="top-left" className="bg-white/80 backdrop-blur-sm p-2 rounded-lg border shadow-sm flex flex-col gap-2">
              <div className="flex flex-col">
-               <span className="text-[10px] font-black text-slate-400 uppercase leading-none">Process Mapping</span>
+               <span className="text-[10px] font-black text-slate-400 uppercase leading-none">{t('bpm:modal.title')}</span>
                <span className="text-xs font-bold text-slate-700">{subProcess}</span>
              </div>
              {!isLocked && (
                <div className="flex gap-1 pt-1 flex-wrap max-w-[180px]">
-                  <Button variant="outline" size="icon" className="h-7 w-7" title="Add Activity" onClick={() => createActivityNode('activity')}>
+                  <Button variant="outline" size="icon" className="h-7 w-7" title={t('bpm:editor.nodes.activity')} onClick={() => createActivityNode('activity')}>
                     <Activity className="h-3.5 w-3.5 text-slate-600" />
                   </Button>
-                  <Button variant="outline" size="icon" className="h-7 w-7 bg-blue-50" title="Add Automated Activity" onClick={() => createActivityNode('automated-activity')}>
+                  <Button variant="outline" size="icon" className="h-7 w-7 bg-blue-50" title={t('bpm:editor.nodes.automated')} onClick={() => createActivityNode('automated-activity')}>
                     <Database className="h-3.5 w-3.5 text-blue-600" />
                   </Button>
-                  <Button variant="outline" size="icon" className="h-7 w-7" title="Add Decision" onClick={() => {
+                  <Button variant="outline" size="icon" className="h-7 w-7" title={t('bpm:editor.nodes.decision')} onClick={() => {
                     const id = `node_${Date.now()}`;
-                    setNodes(nds => [...nds, { id, type: 'decision', position: { x: 100, y: 100 }, data: { label: 'Decision?' } }]);
+                    setNodes(nds => [...nds, { id, type: 'decision', position: { x: 100, y: 100 }, data: { label: t('bpm:editor.nodes.decision') } }]);
                   }}>
                     <GitCommit className="h-3.5 w-3.5 text-slate-600 rotate-90" />
                   </Button>
-                  <Button variant="outline" size="icon" className="h-7 w-7" title="Add Output (System)" onClick={() => {
+                  <Button variant="outline" size="icon" className="h-7 w-7" title={t('bpm:editor.nodes.output')} onClick={() => {
                     const id = `node_${Date.now()}`;
-                    setNodes(nds => [...nds, { id, type: 'output', position: { x: 100, y: 100 }, data: { label: 'System Output' } }]);
+                    setNodes(nds => [...nds, { id, type: 'output', position: { x: 100, y: 100 }, data: { label: t('bpm:editor.nodes.output') } }]);
                   }}>
                     <LayoutDashboard className="h-3.5 w-3.5 text-slate-600" />
                   </Button>
-                  <Button variant="outline" size="icon" className="h-7 w-7" title="Add Physical Document" onClick={() => {
+                  <Button variant="outline" size="icon" className="h-7 w-7" title={t('bpm:editor.nodes.physical')} onClick={() => {
                     const id = `node_${Date.now()}`;
-                    setNodes(nds => [...nds, { id, type: 'physical-document', position: { x: 100, y: 100 }, data: { label: 'Form Fisik' } }]);
+                    setNodes(nds => [...nds, { id, type: 'physical-document', position: { x: 100, y: 100 }, data: { label: t('bpm:editor.nodes.physical') } }]);
                   }}>
                     <FileText className="h-3.5 w-3.5 text-slate-600" />
                   </Button>
-                  <Button variant="outline" size="icon" className="h-7 w-7" title="Add On-page Reference" onClick={() => {
+                  <Button variant="outline" size="icon" className="h-7 w-7" title={t('bpm:editor.nodes.reference')} onClick={() => {
                     const id = `node_${Date.now()}`;
                     setNodes(nds => [...nds, { id, type: 'reference', position: { x: 100, y: 100 }, data: { label: 'A' } }]);
                   }}>
@@ -974,7 +993,13 @@ export function BPMEditor({ diagramId, subProcess }: BPMEditorProps) {
             setEdges(eds => eds.filter(e => e.source !== id && e.target !== id));
             setSelectedNodeId(null);
           }}
-          onSave={() => saveMutation.mutate({ nodes, edges, name: `Flow: ${subProcess}`, subProcess })}
+          onSave={() => saveMutation.mutate({ 
+            nodes, 
+            edges, 
+            name: `Flow: ${subProcess}`, 
+            subProcess, 
+            year: diagram?.year || parseInt(workingYear) 
+          })}
           isSaving={saveMutation.isPending}
           isDirty={isNodeDirty}
         />

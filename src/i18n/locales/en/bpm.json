@@ -127,5 +127,25 @@
       "comments": "Management Comments",
       "signOff": "Verify & Digital Sign-off"
     }
+  },
+  "editor": {
+    "nodes": {
+      "start": "Start",
+      "activity": "New Activity",
+      "automated": "System Process",
+      "decision": "Decision?",
+      "output": "System Output",
+      "physical": "Physical Form",
+      "reference": "Reference"
+    },
+    "roles": {
+      "default": "Staff"
+    },
+    "actions": {
+      "save": "Save Flow",
+      "saving": "Saving...",
+      "locked": "LOCKED",
+      "auditBaseline": "Audit Baseline"
+    }
   }
 }
