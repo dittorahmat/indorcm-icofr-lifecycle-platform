@@ -9,6 +9,15 @@ import { eq } from 'drizzle-orm';
 import type { UserRole } from '@shared/types';
 import { getMachineFingerprint, verifyLicense, checkLicenseStatus } from './lib/license';
 
+// --- LICENSE CACHE (In-Memory) ---
+let cachedLicenseStatus: {
+    status: string | null;
+    timestamp: number;
+    licenseKey: string; // Simpan key untuk deteksi perubahan
+} | null = null;
+
+const LICENSE_CACHE_TTL = 60 * 60 * 1000; // 1 Jam
+
 export interface ClientErrorReport {
   message: string;
   url: string;
@@ -77,8 +86,9 @@ export const createApp = () => {
     }
 
     const db = getDb(c.env.DATABASE_URL);
-    
-    // Check if system_licenses table is initialized (optional safety check)
+    const now = Date.now();
+
+    // 3. Get License from DB (Fast Read)
     let activeLicense;
     try {
       activeLicense = await db.select().from(schema.systemLicenses).limit(1);
@@ -87,7 +97,6 @@ export const createApp = () => {
           return c.json({ success: false, error: 'DATABASE_URL_MISSING', message: 'DATABASE_URL is not set in .dev.vars' }, 500);
       }
       console.warn('[LICENSE] system_licenses table not found or error accessing DB. Check connection.');
-      // Don't block access if DB is not ready during dev/migration, unless strictly necessary
       return next();
     }
 
@@ -96,15 +105,34 @@ export const createApp = () => {
     }
 
     const license = activeLicense[0];
-    const publicKey = c.env.LICENSE_PUBLIC_KEY || process.env.LICENSE_PUBLIC_KEY || '';
+
+    // 4. Check Cache (with Key Change Detection)
+    const isKeySame = cachedLicenseStatus?.licenseKey === license.licenseKey;
+    const isCacheValid = cachedLicenseStatus && (now - cachedLicenseStatus.timestamp < LICENSE_CACHE_TTL);
+
+    if (isKeySame && isCacheValid) {
+      if (cachedLicenseStatus.status) {
+        return c.json({ success: false, error: cachedLicenseStatus.status, message: `License issue: ${cachedLicenseStatus.status} (cached)` }, 403);
+      }
+      c.set('licenseStatus', 'active');
+      return next();
+    }
     
+    // 5. Cache Miss, Expired, or Key Changed -> Heavy Cryptographic Verification
+    const publicKey = c.env.LICENSE_PUBLIC_KEY || process.env.LICENSE_PUBLIC_KEY || '';
     const payload = await verifyLicense(license.licenseKey, publicKey);
+    
     if (!payload) {
-        return c.json({ success: false, error: 'LICENSE_INVALID', message: 'Invalid license signature.' }, 403);
+        const err = 'LICENSE_INVALID';
+        cachedLicenseStatus = { status: err, timestamp: now, licenseKey: license.licenseKey };
+        return c.json({ success: false, error: err, message: 'Invalid license signature.' }, 403);
     }
 
     const fingerprint = getMachineFingerprint();
     const status = checkLicenseStatus(payload, fingerprint, license.lastHeartbeat);
+
+    // 6. Update Cache
+    cachedLicenseStatus = { status, timestamp: now, licenseKey: license.licenseKey };
 
     if (status) {
         // Update status in DB if it changed
@@ -115,12 +143,11 @@ export const createApp = () => {
     }
 
     // --- HEARTBEAT THROTTLING (1 JAM) ---
-    const lastUpdate = new Date(license.lastHeartbeat).getTime();
-    const now = new Date().getTime();
+    const lastUpdateTs = new Date(license.lastHeartbeat).getTime();
     const ONE_HOUR = 60 * 60 * 1000;
 
     // Hanya tulis ke database jika sudah lewat 1 jam
-    if (now - lastUpdate > ONE_HOUR) {
+    if (now - lastUpdateTs > ONE_HOUR) {
         await db.update(schema.systemLicenses).set({ 
             lastHeartbeat: new Date(),
             status: 'active' 

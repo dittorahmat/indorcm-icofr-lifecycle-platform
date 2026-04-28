@@ -9,7 +9,8 @@ import {
   applications, member, account, session, bpmDiagrams, bpmNodeRcms, 
   rcmControls, organization, testRecords, aggregateDeficiencies,
   documents, documentDepartments, documentGls, documentFslis,
-  systemLicenses, accountAssertions, simulationAccountApplications
+  systemLicenses, accountAssertions, simulationAccountApplications,
+  vendors, socReports, socEvaluations
 } from './db/schema';
 import { eq, and, desc, sql, ilike, inArray, SQL } from 'drizzle-orm';
 import type { 
