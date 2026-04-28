@@ -1,7 +1,7 @@
 import * as React from "react";
 import { X, Check, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Command, CommandGroup, CommandItem, CommandList, CommandInput } from "@/components/ui/command";
+import { Command, CommandGroup, CommandItem, CommandList, CommandInput, CommandEmpty, CommandSeparator } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
@@ -106,6 +106,7 @@ export function MultiSelect({
             onValueChange={setCommandInputValue}
           />
           <CommandList>
+            <CommandEmpty>No results found.</CommandEmpty>
             <CommandGroup className="max-h-64 overflow-auto">
               {options.map((option) => (
                 <CommandItem
@@ -127,21 +128,28 @@ export function MultiSelect({
                   </span>
                 </CommandItem>
               ))}
-              
-              {inputValue && !options.some(o => o.label.toLowerCase() === inputValue.toLowerCase()) && onCreateNew && (
-                <CommandItem
-                  onSelect={() => {
+            </CommandGroup>
+
+            {inputValue && !options.some(o => o.label.toLowerCase() === inputValue.toLowerCase()) && onCreateNew && (
+              <>
+                <CommandSeparator />
+                <div 
+                  className="flex cursor-pointer items-center gap-2 px-3 py-2.5 text-sm text-indigo-600 font-bold hover:bg-indigo-50 transition-colors"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                  onClick={() => {
                     onCreateNew(inputValue);
                     setCommandInputValue("");
                     setOpen(false);
                   }}
-                  className="text-primary font-bold gap-2"
                 >
                   <Plus className="h-4 w-4" />
                   Add "{inputValue}"
-                </CommandItem>
-              )}
-            </CommandGroup>
+                </div>
+              </>
+            )}
           </CommandList>
         </Command>
       </PopoverContent>

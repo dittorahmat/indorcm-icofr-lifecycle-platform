@@ -451,36 +451,6 @@ export const simulationAccountApplications = pgTable("simulation_account_applica
 	applicationId: text("application_id").notNull().references(() => applications.id, { onDelete: 'cascade' }),
 });
 
-// --- RELATIONS ---
-
-export const userRelations = relations(user, ({ many }) => ({
-	members: many(member),
-}));
-
-export const organizationRelations = relations(organization, ({ many }) => ({
-	members: many(member),
-	glSnapshots: many(glSnapshots),
-}));
-
-export const glSnapshotRelations = relations(glSnapshots, ({ many }) => ({
-	rows: many(glRows),
-}));
-
-export const simulationAccountApplicationsRelations = relations(simulationAccountApplications, ({ one }) => ({
-	simulation: one(simulations, { fields: [simulationAccountApplications.simulationId], references: [simulations.id] }),
-	application: one(applications, { fields: [simulationAccountApplications.applicationId], references: [applications.id] }),
-}));
-
-export const csaRecordRelations = relations(csaRecords, ({ many, one }) => ({
-	samples: many(csaSamples),
-	control: one(controls, { fields: [csaRecords.controlId], references: [controls.id] }),
-	assessedByUser: one(user, { fields: [csaRecords.assessedBy], references: [user.id] }),
-}));
-
-export const csaSampleRelations = relations(csaSamples, ({ one }) => ({
-	csaRecord: one(csaRecords, { fields: [csaSamples.csaRecordId], references: [csaRecords.id] }),
-}));
-
 // --- KNOWLEDGE BASE TABLES ---
 
 export const documents = pgTable("documents", {
@@ -525,3 +495,87 @@ export const systemLicenses = pgTable("system_licenses", {
 	lastHeartbeat: timestamp("last_heartbeat").notNull(),
 	status: text("status").notNull(), // active, expired, tampered
 });
+
+export const vendors = pgTable("vendors", {
+	id: text("id").primaryKey(),
+	organizationId: text("organization_id").notNull().references(() => organization.id),
+	name: text("name").notNull(),
+	serviceType: text("service_type"),
+	contactPerson: text("contact_person"),
+	createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const socReports = pgTable("soc_reports", {
+	id: text("id").primaryKey(),
+	organizationId: text("organization_id").notNull().references(() => organization.id),
+	vendorId: text("vendor_id").notNull().references(() => vendors.id, { onDelete: 'cascade' }),
+	reportType: text("report_type").notNull(), // SOC 1 Tipe 2, etc.
+	periodStart: timestamp("period_start").notNull(),
+	periodEnd: timestamp("period_end").notNull(),
+	fileUrl: text("file_url"),
+	status: text("status").notNull(), // Valid, Expired
+	createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const socEvaluations = pgTable("soc_evaluations", {
+	id: text("id").primaryKey(),
+	organizationId: text("organization_id").notNull().references(() => organization.id),
+	socReportId: text("soc_report_id").notNull().references(() => socReports.id, { onDelete: 'cascade' }),
+	
+	// Mandatory 7 Criteria (Lampiran 3.2.c.5 Hal 40)
+	attrA: boolean("attr_a").default(false),
+	attrB: boolean("attr_b").default(false),
+	attrC: boolean("attr_c").default(false),
+	attrD: boolean("attr_d").default(false),
+	attrE: boolean("attr_e").default(false),
+	attrF: boolean("attr_f").default(false),
+	attrG: boolean("attr_g").default(false),
+	
+	auditorOpinion: text("auditor_opinion"),
+	evaluatedBy: text("evaluated_by").references(() => user.id),
+	evaluatedAt: timestamp("evaluated_at").notNull().defaultNow(),
+});
+
+// --- RELATIONS ---
+
+export const userRelations = relations(user, ({ many }) => ({
+	members: many(member),
+}));
+
+export const organizationRelations = relations(organization, ({ many }) => ({
+	members: many(member),
+	glSnapshots: many(glSnapshots),
+}));
+
+export const glSnapshotRelations = relations(glSnapshots, ({ many }) => ({
+	rows: many(glRows),
+}));
+
+export const simulationAccountApplicationsRelations = relations(simulationAccountApplications, ({ one }) => ({
+	simulation: one(simulations, { fields: [simulationAccountApplications.simulationId], references: [simulations.id] }),
+	application: one(applications, { fields: [simulationAccountApplications.applicationId], references: [applications.id] }),
+}));
+
+export const csaRecordRelations = relations(csaRecords, ({ many, one }) => ({
+	samples: many(csaSamples),
+	control: one(controls, { fields: [csaRecords.controlId], references: [controls.id] }),
+	assessedByUser: one(user, { fields: [csaRecords.assessedBy], references: [user.id] }),
+}));
+
+export const csaSampleRelations = relations(csaSamples, ({ one }) => ({
+	csaRecord: one(csaRecords, { fields: [csaSamples.csaRecordId], references: [csaRecords.id] }),
+}));
+
+export const vendorRelations = relations(vendors, ({ many }) => ({
+	reports: many(socReports),
+}));
+
+export const socReportRelations = relations(socReports, ({ one, many }) => ({
+	vendor: one(vendors, { fields: [socReports.vendorId], references: [vendors.id] }),
+	evaluations: many(socEvaluations),
+}));
+
+export const socEvaluationRelations = relations(socEvaluations, ({ one }) => ({
+	report: one(socReports, { fields: [socEvaluations.socReportId], references: [socReports.id] }),
+	evaluator: one(user, { fields: [socEvaluations.evaluatedBy], references: [user.id] }),
+}));

@@ -529,26 +529,43 @@ export interface ChangeLog {
   approvedBy?: string;
 }
 
-// SK-5 Requirement: Bab III.4.3 - Evaluasi SOC Report
-export interface SOCReportEvaluation {
-  scopeAlignment: boolean;
-  periodAlignment: boolean;
-  methodologyAlignment: boolean;
-  hasIneffectiveControls: boolean;
-  compensatingControlsTested: boolean;
-  auditorOpinion: string;
+export interface Vendor {
+  id: string;
+  organizationId: string;
+  name: string;
+  serviceType?: string;
+  contactPerson?: string;
+  createdAt: number;
+}
+
+export interface SOCEvaluation {
+  id: string;
+  organizationId: string;
+  socReportId: string;
+  attrA: boolean;
+  attrB: boolean;
+  attrC: boolean;
+  attrD: boolean;
+  attrE: boolean;
+  attrF: boolean;
+  attrG: boolean;
+  auditorOpinion?: string;
+  evaluatedBy: string;
+  evaluatedAt: number;
 }
 
 export interface SOCReport {
   id: string;
-  vendorName: string;
-  reportType: "SOC 1 Type 2" | "SOC 2 Type 2" | "Other";
+  organizationId: string;
+  vendorId: string;
+  vendorName?: string; // Join helper
+  reportType: string;
   periodStart: number;
   periodEnd: number;
-  issuer: string;
-  status: "Valid" | "Expired" | "Pending Review";
-  lastValidatedDate: number;
-  evaluation?: SOCReportEvaluation;
+  fileUrl?: string;
+  status: "Valid" | "Expired";
+  createdAt: number;
+  evaluation?: SOCEvaluation;
 }
 
 // SK-5 Requirement: Whistleblowing System Integration (Lampiran 1 Prinsip 14 & 15)

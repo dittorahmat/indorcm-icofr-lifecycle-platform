@@ -593,8 +593,18 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
     setLocalAppMappings(prev => ({ ...prev, [accountCode]: appIds }));
   };
 
-  const handleQuickAddApp = async (name: string) => {
-    await addAppMutation.mutateAsync(name);
+  const handleQuickAddApp = async (name: string, accountCode: string) => {
+    try {
+      const newApp = await addAppMutation.mutateAsync(name);
+      if (newApp?.id) {
+        setLocalAppMappings(prev => ({
+          ...prev,
+          [accountCode]: [...(prev[accountCode] || []), newApp.id]
+        }));
+      }
+    } catch (error) {
+      console.error("Failed to quick add app:", error);
+    }
   };
 
 

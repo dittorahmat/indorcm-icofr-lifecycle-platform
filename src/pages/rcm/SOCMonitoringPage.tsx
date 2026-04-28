@@ -1,174 +1,83 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Network, ExternalLink, ShieldCheck, AlertCircle, FileSearch, Plus, Info } from 'lucide-react';
+import { Network, ShieldCheck, AlertCircle, FileSearch, Plus, Info, Globe } from 'lucide-react';
 import { api } from '@/lib/api-client';
 import { COBIT_ITGC_MAPPING } from '@/lib/compliance-utils';
-import type { SOCReport, Application } from '@shared/types';
+import type { SOCReport, Application, Vendor } from '@shared/types';
 import { SOCReviewDialog } from '@/components/audit/SOCReviewDialog';
 import { AddApplicationDialog } from '@/components/rcm/AddApplicationDialog';
+import { AddVendorDialog } from '@/components/audit/AddVendorDialog';
+import { AddSOCReportDialog } from '@/components/audit/AddSOCReportDialog';
+import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 import { toast } from 'sonner';
 
-const mockSOCs: SOCReport[] = [
-  {
-    id: "SOC-001",
-    vendorName: "Cloud Hosting Corp",
-    reportType: "SOC 1 Type 2",
-    periodStart: Date.now() - 365 * 24 * 60 * 60 * 1000,
-    periodEnd: Date.now() - 5 * 24 * 60 * 60 * 1000,
-    issuer: "Audit Global LLP",
-    status: "Valid",
-    lastValidatedDate: Date.now() - 10 * 24 * 60 * 60 * 1000,
-    evaluation: {
-      scopeAlignment: true,
-      periodAlignment: true,
-      methodologyAlignment: true,
-      hasIneffectiveControls: false,
-      compensatingControlsTested: true,
-      auditorOpinion: "All key controls are aligned with internal ICOFR requirements."
-    }
-  },
-  {
-    id: "SOC-002",
-    vendorName: "Payroll Pro Services",
-    reportType: "SOC 1 Type 2",
-    periodStart: Date.now() - 400 * 24 * 60 * 60 * 1000,
-    periodEnd: Date.now() - 200 * 24 * 60 * 60 * 1000,
-    issuer: "Local Auditor Co",
-    status: "Expired",
-    lastValidatedDate: Date.now() - 180 * 24 * 60 * 60 * 1000
-  }
-];
-
 export function SOCMonitoringPage() {
+  const { t } = useTranslation(['sidebar', 'rcm', 'scoping', 'common']);
   const [selectedReport, setSelectedReport] = React.useState<SOCReport | null>(null);
-  const [isAddModalOpen, setIsAddModalOpen] = React.useState(false);
+  const [isAddAppModalOpen, setIsAddAppModalOpen] = React.useState(false);
+  const [isAddVendorModalOpen, setIsAddVendorModalOpen] = React.useState(false);
+  const [isAddSOCModalOpen, setIsAddSOCModalOpen] = React.useState(false);
 
-  const { data: appsData } = useQuery({
+  // Protected state if any modal is open (simple example)
+  useUnsavedChanges(isAddAppModalOpen || isAddVendorModalOpen || isAddSOCModalOpen || !!selectedReport);
+
+  const { data: appsData, isLoading: isLoadingApps } = useQuery({
     queryKey: ['applications'],
     queryFn: () => api<{ items: Application[] }>('/api/applications'),
   });
 
-  const handleRequestReports = () => {
-    toast.info("Requesting latest SOC reports...", {
-      description: "Automated emails have been sent to 2 vendors."
-    });
-  };
+  const { data: socData, isLoading: isLoadingSOC } = useQuery({
+    queryKey: ['soc-reports'],
+    queryFn: () => api<SOCReport[]>('/api/soc-reports'),
+  });
+
+  const { data: vendors } = useQuery({
+    queryKey: ['vendors'],
+    queryFn: () => api<Vendor[]>('/api/vendors'),
+  });
+
+  const validReportsCount = socData?.filter(s => s.status === 'Valid').length || 0;
+  const expiredReportsCount = socData?.filter(s => s.status === 'Expired').length || 0;
 
   return (
     <AppLayout container>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">IT Monitoring & Assets</h1>
-            <p className="text-muted-foreground text-sm font-medium">Evaluation of 3rd Parties and Significant Applications (Bab III.1.5 & 4.3).</p>
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+              {t('items.applications', { ns: 'sidebar' })} & IT Assets
+            </h1>
+            <p className="text-muted-foreground text-sm font-medium">
+              Evaluation of 3rd Parties and Significant Applications (Bab III.1.5 & 4.3).
+            </p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" className="gap-2 bg-white" onClick={handleRequestReports}>
-              <ExternalLink className="h-4 w-4" /> Request Reports
+            <Button variant="outline" className="gap-2 bg-white" onClick={() => setIsAddVendorModalOpen(true)}>
+              <Globe className="h-4 w-4" /> Add Vendor
             </Button>
-            <Button className="gap-2 bg-indigo-600 hover:bg-indigo-700 shadow-lg" onClick={() => setIsAddModalOpen(true)}>
+            <Button variant="outline" className="gap-2 bg-white" onClick={() => setIsAddSOCModalOpen(true)}>
+              <ShieldCheck className="h-4 w-4" /> Register SOC
+            </Button>
+            <Button className="gap-2 bg-indigo-600 hover:bg-indigo-700 shadow-lg" onClick={() => setIsAddAppModalOpen(true)}>
               <Plus className="h-4 w-4" /> Add Application
             </Button>
           </div>
         </div>
 
-        <Tabs defaultValue="soc">
+        <Tabs defaultValue="apps">
           <TabsList className="grid w-full grid-cols-2 max-w-[400px]">
-            <TabsTrigger value="soc">SOC Monitoring</TabsTrigger>
             <TabsTrigger value="apps">Significant Applications</TabsTrigger>
+            <TabsTrigger value="soc">SOC Monitoring</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="soc" className="space-y-6 pt-4">
-            <div className="grid gap-6 md:grid-cols-3">
-               <Card className="bg-green-50 border-green-200 shadow-sm">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-xs font-bold uppercase text-green-800 flex items-center gap-2">
-                      <ShieldCheck className="h-4 w-4" /> Valid Reports
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent><div className="text-2xl font-bold text-green-900">1</div></CardContent>
-               </Card>
-               <Card className="bg-red-50 border-red-200 shadow-sm">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-xs font-bold uppercase text-red-800 flex items-center gap-2">
-                      <AlertCircle className="h-4 w-4" /> Expired / Missing
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent><div className="text-2xl font-bold text-red-900">1</div></CardContent>
-               </Card>
-               <Card className="bg-blue-50 border-blue-200 shadow-sm">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-xs font-bold uppercase text-blue-800 flex items-center gap-2">
-                      <Network className="h-4 w-4" /> Total Vendors
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent><div className="text-2xl font-bold text-blue-900">2</div></CardContent>
-               </Card>
-            </div>
-
-            <Card className="shadow-sm">
-              <CardHeader>
-                <CardTitle>Service Organization Control (SOC) Repository</CardTitle>
-                <CardDescription>Formal review of third-party assurance reports to ensure financial reporting data integrity.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Vendor Name</TableHead>
-                      <TableHead>Report Type</TableHead>
-                      <TableHead>Coverage Period</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Evaluation</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {mockSOCs.map((soc) => (
-                      <TableRow key={soc.id} className="hover:bg-slate-50/50 transition-colors">
-                        <TableCell className="font-semibold text-slate-800">{soc.vendorName}</TableCell>
-                        <TableCell className="text-xs">{soc.reportType}</TableCell>
-                        <TableCell className="text-xs whitespace-nowrap">
-                          {new Date(soc.periodStart).toLocaleDateString()} - {new Date(soc.periodEnd).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell>
-                          <Badge className={
-                            soc.status === 'Valid' ? "bg-green-100 text-green-700 hover:bg-green-100" :
-                            "bg-red-100 text-red-700 hover:bg-red-100"
-                          }>
-                            {soc.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {soc.evaluation ? (
-                            <Badge variant="outline" className="text-[10px] gap-1 border-green-200 text-green-700 bg-green-50">
-                              <ShieldCheck className="h-3 w-3" /> Reviewed
-                            </Badge>
-                          ) : (
-                            <Badge variant="outline" className="text-[10px] gap-1 border-amber-200 text-amber-700 bg-amber-50">
-                              <AlertCircle className="h-3 w-3" /> Pending Review
-                            </Badge>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button variant="ghost" size="sm" onClick={() => setSelectedReport(soc)} className="gap-2 text-indigo-600 hover:bg-indigo-50">
-                            <FileSearch className="h-4 w-4" /> Review
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
+          {/* TAB 1: APPLICATIONS (FIRST) */}
           <TabsContent value="apps" className="space-y-6 pt-4">
             <Card className="shadow-sm">
               <CardHeader>
@@ -182,12 +91,14 @@ export function SOCMonitoringPage() {
                       <TableHead>Application Name</TableHead>
                       <TableHead>Criticality</TableHead>
                       <TableHead>ITGC Status</TableHead>
-                      <TableHead>COBIT Focus</TableHead>
+                      <TableHead>Linked Controls</TableHead>
                       <TableHead>ITGC Areas (Tabel 1 Mapping)</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {!appsData?.items.length ? (
+                    {isLoadingApps ? (
+                      <TableRow><TableCell colSpan={5} className="h-24 text-center">Loading...</TableCell></TableRow>
+                    ) : !appsData?.items.length ? (
                       <TableRow>
                         <TableCell colSpan={5} className="h-32 text-center text-slate-400 italic">
                           No applications found. Click "Add Application" to start.
@@ -199,7 +110,12 @@ export function SOCMonitoringPage() {
                       
                       return (
                         <TableRow key={app.id} className="hover:bg-slate-50/50 transition-colors">
-                          <TableCell className="font-semibold text-slate-800">{app.name}</TableCell>
+                          <TableCell className="font-semibold text-slate-800">
+                            {app.name}
+                            {app.isSignificant && (
+                              <Badge variant="outline" className="ml-2 text-[8px] bg-indigo-50 text-indigo-600 border-indigo-200">SIGNIFICANT</Badge>
+                            )}
+                          </TableCell>
                           <TableCell>
                             <Badge variant={app.criticality === 'High' ? 'destructive' : 'default'} className="text-[10px]">
                               {app.criticality}
@@ -213,7 +129,11 @@ export function SOCMonitoringPage() {
                               {app.statusITGC || 'Not Tested'}
                             </Badge>
                           </TableCell>
-                          <TableCell className="font-mono text-xs font-bold text-slate-500">{cobitId}</TableCell>
+                          <TableCell>
+                            <span className={`font-bold ${app.linkedControlCount === 0 ? 'text-destructive' : 'text-slate-600'}`}>
+                              {app.linkedControlCount || 0}
+                            </span>
+                          </TableCell>
                           <TableCell>
                             <div className="flex gap-1 flex-wrap">
                               {mappedAreas.map(area => (
@@ -242,6 +162,100 @@ export function SOCMonitoringPage() {
               </div>
             </div>
           </TabsContent>
+
+          {/* TAB 2: SOC MONITORING */}
+          <TabsContent value="soc" className="space-y-6 pt-4">
+            <div className="grid gap-6 md:grid-cols-3">
+               <Card className="bg-green-50 border-green-200 shadow-sm">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-xs font-bold uppercase text-green-800 flex items-center gap-2">
+                      <ShieldCheck className="h-4 w-4" /> Valid Reports
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent><div className="text-2xl font-bold text-green-900">{validReportsCount}</div></CardContent>
+               </Card>
+               <Card className="bg-red-50 border-red-200 shadow-sm">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-xs font-bold uppercase text-red-800 flex items-center gap-2">
+                      <AlertCircle className="h-4 w-4" /> Expired / Missing
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent><div className="text-2xl font-bold text-red-900">{expiredReportsCount}</div></CardContent>
+               </Card>
+               <Card className="bg-blue-50 border-blue-200 shadow-sm">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-xs font-bold uppercase text-blue-800 flex items-center gap-2">
+                      <Network className="h-4 w-4" /> Total Vendors
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent><div className="text-2xl font-bold text-blue-900">{vendors?.length || 0}</div></CardContent>
+               </Card>
+            </div>
+
+            <Card className="shadow-sm">
+              <CardHeader>
+                <CardTitle>Service Organization Control (SOC) Repository</CardTitle>
+                <CardDescription>Formal review of third-party assurance reports to ensure financial reporting data integrity.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Vendor Name</TableHead>
+                      <TableHead>Report Type</TableHead>
+                      <TableHead>Coverage Period</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Evaluation</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {isLoadingSOC ? (
+                      <TableRow><TableCell colSpan={6} className="h-24 text-center">Loading SOC data...</TableCell></TableRow>
+                    ) : !socData?.length ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="h-32 text-center text-slate-400 italic">
+                          No SOC reports found. Register a vendor and report to begin.
+                        </TableCell>
+                      </TableRow>
+                    ) : socData.map((soc) => (
+                      <TableRow key={soc.id} className="hover:bg-slate-50/50 transition-colors">
+                        <TableCell className="font-semibold text-slate-800">{soc.vendorName}</TableCell>
+                        <TableCell className="text-xs">{soc.reportType}</TableCell>
+                        <TableCell className="text-xs whitespace-nowrap">
+                          {new Date(soc.periodStart).toLocaleDateString()} - {new Date(soc.periodEnd).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={
+                            soc.status === 'Valid' ? "bg-green-100 text-green-700 hover:bg-green-100" :
+                            "bg-red-100 text-red-700 hover:bg-red-100"
+                          }>
+                            {soc.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {soc.evaluation?.id ? (
+                            <Badge variant="outline" className="text-[10px] gap-1 border-green-200 text-green-700 bg-green-50">
+                              <ShieldCheck className="h-3 w-3" /> Reviewed
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-[10px] gap-1 border-amber-200 text-amber-700 bg-amber-50">
+                              <AlertCircle className="h-3 w-3" /> Pending Review
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button variant="ghost" size="sm" onClick={() => setSelectedReport(soc)} className="gap-2 text-indigo-600 hover:bg-indigo-50">
+                            <FileSearch className="h-4 w-4" /> Review
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
 
         {selectedReport && (
@@ -249,16 +263,25 @@ export function SOCMonitoringPage() {
             report={selectedReport}
             isOpen={!!selectedReport}
             onClose={() => setSelectedReport(null)}
-            onSave={(evalData) => {
-              toast.success('Evaluation saved successfully for ' + selectedReport.vendorName);
+            onSave={() => {
               setSelectedReport(null);
             }}
           />
         )}
 
         <AddApplicationDialog 
-          isOpen={isAddModalOpen}
-          onOpenChange={setIsAddModalOpen}
+          isOpen={isAddAppModalOpen}
+          onOpenChange={setIsAddAppModalOpen}
+        />
+
+        <AddVendorDialog 
+          isOpen={isAddVendorModalOpen}
+          onOpenChange={setIsAddVendorModalOpen}
+        />
+
+        <AddSOCReportDialog 
+          isOpen={isAddSOCModalOpen}
+          onOpenChange={setIsAddSOCModalOpen}
         />
       </div>
     </AppLayout>

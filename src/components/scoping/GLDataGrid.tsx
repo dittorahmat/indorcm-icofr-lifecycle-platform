@@ -413,7 +413,7 @@ export function GLDataGrid({
                 options={options}
                 selected={currentSelected}
                 onChange={(ids) => onAppsChange(noGL, ids)}
-                onCreateNew={onQuickAddApp}
+                onCreateNew={(name) => onQuickAddApp(name, noGL)}
                 disabled={isReadOnly}
                 className="min-h-7 py-1 text-[10px]"
               />

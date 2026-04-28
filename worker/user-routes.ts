@@ -2161,6 +2161,121 @@ export function userRoutes(app: Hono<HonoEnv>) {
     return ok(c, { success: true });
   });
 
+  // --- Vendors & SOC Reports Routes ---
+
+  app.get('/api/vendors', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+    const items = await db.select().from(vendors).where(eq(vendors.organizationId, orgId));
+    return ok(c, items);
+  });
+
+  app.post('/api/vendors', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+    const body = await c.req.json();
+    const id = crypto.randomUUID();
+    
+    await db.insert(vendors).values({
+      id,
+      organizationId: orgId,
+      name: body.name,
+      serviceType: body.serviceType,
+      contactPerson: body.contactPerson,
+    } as any);
+
+    return ok(c, { id });
+  });
+
+  app.get('/api/soc-reports', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+    
+    const items = await db.select({
+      id: socReports.id,
+      vendorId: socReports.vendorId,
+      vendorName: vendors.name,
+      reportType: socReports.reportType,
+      periodStart: socReports.periodStart,
+      periodEnd: socReports.periodEnd,
+      fileUrl: socReports.fileUrl,
+      status: socReports.status,
+      evaluation: {
+        id: socEvaluations.id,
+        attrA: socEvaluations.attrA,
+        attrB: socEvaluations.attrB,
+        attrC: socEvaluations.attrC,
+        attrD: socEvaluations.attrD,
+        attrE: socEvaluations.attrE,
+        attrF: socEvaluations.attrF,
+        attrG: socEvaluations.attrG,
+        auditorOpinion: socEvaluations.auditorOpinion,
+      }
+    })
+    .from(socReports)
+    .innerJoin(vendors, eq(socReports.vendorId, vendors.id))
+    .leftJoin(socEvaluations, eq(socReports.id, socEvaluations.socReportId))
+    .where(eq(socReports.organizationId, orgId));
+
+    const now = new Date();
+    const processed = items.map((item: any) => ({
+      ...item,
+      status: new Date(item.periodEnd) < now ? 'Expired' : item.status
+    }));
+
+    return ok(c, processed);
+  });
+
+  app.post('/api/soc-reports', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+    const body = await c.req.json();
+    const id = crypto.randomUUID();
+    
+    await db.insert(socReports).values({
+      id,
+      organizationId: orgId,
+      vendorId: body.vendorId,
+      reportType: body.reportType,
+      periodStart: new Date(body.periodStart),
+      periodEnd: new Date(body.periodEnd),
+      fileUrl: body.fileUrl,
+      status: new Date(body.periodEnd) < new Date() ? 'Expired' : 'Valid',
+    } as any);
+
+    return ok(c, { id });
+  });
+
+  app.post('/api/soc-reports/:id/evaluate', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+    const userId = c.get('userId');
+    const reportId = c.req.param('id');
+    const body = await c.req.json();
+
+    const existing = await db.select().from(socEvaluations).where(eq(socEvaluations.socReportId, reportId)).limit(1);
+
+    if (existing.length > 0) {
+      await db.update(socEvaluations)
+        .set({
+          ...body,
+          evaluatedBy: userId,
+          evaluatedAt: new Date(),
+        })
+        .where(eq(socEvaluations.id, existing[0].id));
+    } else {
+      await db.insert(socEvaluations).values({
+        id: crypto.randomUUID(),
+        organizationId: orgId,
+        socReportId: reportId,
+        ...body,
+        evaluatedBy: userId,
+      } as any);
+    }
+
+    return ok(c, { success: true });
+  });
+
   // --- GL Snapshots Refactored ---
 
   app.get('/api/gl-snapshots', async (c) => {
