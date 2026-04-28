@@ -29,9 +29,13 @@ The system SHALL block access to all API endpoints (except licensing endpoints) 
 - **WHEN** a user attempts to access any protected API and the current date > license expiry date
 - **THEN** the system SHALL return a 403 Forbidden error with the code `LICENSE_EXPIRED`
 
-### Requirement: Time-Travel Detection
-The system SHALL maintain a `last_heartbeat` timestamp in the database and block access if the current system time is earlier than the last heartbeat.
+### Requirement: Time-Travel Detection (Throttled)
+The system SHALL maintain a `last_heartbeat` timestamp in the database. To optimize performance, the system SHALL only update this timestamp in the database once every **60 minutes**, while still performing local verification against the last known value on every request.
 
 #### Scenario: System clock moved backward
 - **WHEN** a request is made and the current system time is < `last_heartbeat` - 5 minutes
-- **THEN** the system SHALL set the license status to `tampered` and block all further requests until a fresh license is provided or the clock is corrected
+- **THEN** the system SHALL set the license status to `tampered` and block all further requests.
+
+#### Scenario: Heartbeat update skipped (within 1 hour)
+- **WHEN** a request is made and (current time - last_heartbeat) < 60 minutes
+- **THEN** the system SHALL proceed with validation but SHALL NOT write an update to the database.

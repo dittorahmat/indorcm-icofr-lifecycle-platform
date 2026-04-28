@@ -114,11 +114,19 @@ export const createApp = () => {
         return c.json({ success: false, error: status, message: `License issue: ${status}` }, 403);
     }
 
-    // Update heartbeat and status
-    await db.update(schema.systemLicenses).set({ 
-        lastHeartbeat: new Date(),
-        status: 'active' 
-    }).where(eq(schema.systemLicenses.id, license.id));
+    // --- HEARTBEAT THROTTLING (1 JAM) ---
+    const lastUpdate = new Date(license.lastHeartbeat).getTime();
+    const now = new Date().getTime();
+    const ONE_HOUR = 60 * 60 * 1000;
+
+    // Hanya tulis ke database jika sudah lewat 1 jam
+    if (now - lastUpdate > ONE_HOUR) {
+        await db.update(schema.systemLicenses).set({ 
+            lastHeartbeat: new Date(),
+            status: 'active' 
+        }).where(eq(schema.systemLicenses.id, license.id));
+        console.log('[LICENSE] Heartbeat updated in database.');
+    }
 
     c.set('licenseStatus', 'active');
     await next();

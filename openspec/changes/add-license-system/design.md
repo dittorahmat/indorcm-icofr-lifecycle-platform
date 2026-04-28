@@ -19,9 +19,9 @@ IndoGRC Pro is a specialized platform for BUMN, often deployed in isolated (air-
 ## Decisions
 
 ### 1. Cryptographic Scheme (Ed25519)
-**Decision:** Use Ed25519 digital signatures for license verification.
-**Rationale:** Ed25519 provides high security with short keys and signatures. It is supported natively by modern runtimes (Bun/Node) and avoids the complexity of RSA.
-**Alternatives:** AES (Symmetric) was rejected because it requires the secret key to be stored in the app, making it trivial to crack.
+**Decision:** Use Ed25519 digital signatures with **WebCrypto API** for license verification.
+**Rationale:** WebCrypto is the native standard for Cloudflare and modern browsers, ensuring the verification logic is identical between localhost simulation and production.
+**Alternatives:** `node:crypto` was initially considered but proved inconsistent in the Cloudflare simulation environment.
 
 ### 2. Machine Fingerprinting (Host machine-id)
 **Decision:** Use the host's `/etc/machine-id` (or `/var/lib/dbus/machine-id`) by mounting it as a read-only volume in Docker.
@@ -32,9 +32,9 @@ IndoGRC Pro is a specialized platform for BUMN, often deployed in isolated (air-
 **Decision:** Implement a global Hono middleware (`licenseGuard`) that executes before authentication.
 **Rationale:** This ensures that even the login process is blocked if the license is invalid, preventing any unauthorized access to the application logic.
 
-### 4. Time-Travel Detection (Heartbeat Logic)
-**Decision:** Update a `last_heartbeat` timestamp in the `system_licenses` table on every valid API request.
-**Rationale:** If the current system time is ever significantly earlier than the `last_heartbeat`, it indicates the system clock was moved backward to bypass expiry. The system will enter a `tampered` state.
+### 4. Time-Travel Detection (Throttled Heartbeat)
+**Decision:** Update a `last_heartbeat` timestamp in the `system_licenses` table only once every **1 hour**.
+**Rationale:** Continuous DB updates for every request are resource-intensive. Throttling reduces DB load while maintaining high security (maximum 1 hour of potential bypass).
 
 ## Risks / Trade-offs
 

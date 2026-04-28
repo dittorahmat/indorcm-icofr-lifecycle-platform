@@ -10,7 +10,9 @@ Implement a secure, offline-first licensing system for IndoGRC Pro to protect in
   - 90 days before: Non-intrusive banner.
   - 7 days before: Persistent modal notification.
 - **Hard Lock enforcement:** **BREAKING** Prevents all user logins if the license has expired or is invalid for the current machine.
-- **Time-Travel Protection:** Integrated logic to detect and block manual system clock manipulation aimed at bypassing license expiry.
+- **Time-Travel Protection:** Integrated logic to detect and block manual system clock manipulation.
+- **Cloudflare Demo Bypass:** Added an environment-based toggle (`SKIP_LICENSE`) to allow seamless demonstration in serverless environments.
+- **Hybrid Auth Support:** Integrated dual-hashing (PBKDF2 & Scrypt) to ensure demo users can login in both restricted and full environments without conflict.
 
 ## Capabilities
 
