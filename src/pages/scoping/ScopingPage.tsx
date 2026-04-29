@@ -736,15 +736,17 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
 
           <div className="lg:col-span-3 space-y-6">
             <Tabs defaultValue="worksheet" className="w-full">
-              <TabsList className="grid w-full max-w-[400px] grid-cols-2 mb-4">
+              <TabsList className="grid w-full max-w-[550px] grid-cols-3 mb-4">
                 <TabsTrigger value="worksheet">{t('approval.tabWorksheet')}</TabsTrigger>
                 <TabsTrigger value="history" className="flex items-center gap-2">
                   <History className="h-3 w-3" /> {t('approval.tabHistory')}
                   {simState.history?.length > 0 && <Badge variant="secondary" className="ml-1 h-4 px-1 text-[9px]">{simState.history.length}</Badge>}
                 </TabsTrigger>
+                <TabsTrigger value="integrity" className="flex items-center gap-2">
+                  <ShieldCheck className="h-3 w-3" /> {t('approval.tabIntegrity')}
+                </TabsTrigger>
               </TabsList>
               <TabsContent value="worksheet" className="space-y-6">
-                <ScopingHealthDashboard glData={glData} />
                 <GLDataGrid
                   data={mergedGlData}
                   assessmentData={simState.assessmentData || {}}
@@ -771,6 +773,9 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
                     <ApprovalHistoryTimeline history={simState.history} />
                   </CardContent>
                 </Card>
+              </TabsContent>
+              <TabsContent value="integrity" className="space-y-6">
+                <ScopingHealthDashboard glData={glData} />
               </TabsContent>
             </Tabs>
           </div>
