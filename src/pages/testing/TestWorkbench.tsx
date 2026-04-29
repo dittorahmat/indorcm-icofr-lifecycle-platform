@@ -26,6 +26,17 @@ import { motion } from 'framer-motion';
 import { AlertTriangle, Info, Clock, CheckCircle2, XCircle, History, ListFilter, UserCheck, Loader2 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { promptBiometricAuth } from '@/lib/forensic-utils';
+import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const testSchema = z.object({
   testType: z.enum(['TOD', 'TOE']),
@@ -41,7 +52,17 @@ const testSchema = z.object({
     infoReliability: z.boolean(),
     periodCoverage: z.boolean(),
     evidenceAvailability: z.boolean(),
-  })
+  }),
+}).superRefine((data, ctx) => {
+  if (data.testType === 'TOE') {
+    if (data.sampleSize === undefined || data.sampleSize === null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Sample size is required for TOE",
+        path: ["sampleSize"],
+      });
+    }
+  }
 });
 
 type TestFormValues = z.infer<typeof testSchema>;
@@ -137,6 +158,9 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
   const suggestion = getSuggestedSampleRange(control.frequency, control.riskRating, control.nature);
   const remediationStatus = openDeficiencyDate ? isReadyForRemediationTest(control.frequency, openDeficiencyDate) : null;
 
+  // Unsaved Changes Guard
+  const blocker = useUnsavedChanges(form.formState.isDirty);
+
   const mutation = useMutation({
     mutationFn: (data: Omit<TestRecord, 'id' | 'testDate' | 'testedBy'>) => api('/api/tests', { method: 'POST', body: JSON.stringify(data) }),
     onSuccess: (data: TestRecord) => {
@@ -153,8 +177,12 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
   });
 
   const onSubmit = async (values: TestFormValues) => {
-    if (values.testType === 'TOE' && !values.homogeneityJustification) {
-      form.setError('homogeneityJustification', { type: 'manual', message: t('validation.homogeneityRequired') });
+    // Regulatory Enforcer (Tabel 22)
+    if (values.testType === 'TOE' && values.sampleSize! < suggestion.min && !values.homogeneityJustification) {
+      form.setError('homogeneityJustification', { 
+        type: 'manual', 
+        message: t('validation.belowMinJustificationRequired') 
+      });
       return;
     }
 
@@ -304,11 +332,34 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
                       <div className="space-y-4">
                         <h3 className="font-semibold text-sm">{t('toe.sampling')}</h3>
                         
-                        <div className="p-3 bg-blue-50 border border-blue-100 rounded-md flex items-start gap-3">
-                          <Info className="h-4 w-4 text-blue-600 mt-0.5" />
+                        <div className={cn(
+                          "p-3 rounded-md flex items-start gap-3 border transition-colors",
+                          form.watch('sampleSize') !== undefined && form.watch('sampleSize') < suggestion.min 
+                            ? "bg-red-50 border-red-100" 
+                            : "bg-blue-50 border-blue-100"
+                        )}>
+                          {form.watch('sampleSize') !== undefined && form.watch('sampleSize') < suggestion.min ? (
+                             <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5" />
+                          ) : (
+                             <Info className="h-4 w-4 text-blue-600 mt-0.5" />
+                          )}
                           <div className="space-y-1">
-                            <p className="text-[10px] font-bold text-blue-800 uppercase leading-none">{t('toe.suggestion')}</p>
-                            <p className="text-xs text-blue-700">{t('toe.requiredSample')}: <span className="font-bold">{suggestion.label}</span></p>
+                            <p className={cn(
+                              "text-[10px] font-bold uppercase leading-none",
+                              form.watch('sampleSize') !== undefined && form.watch('sampleSize') < suggestion.min ? "text-red-800" : "text-blue-800"
+                            )}>
+                              {form.watch('sampleSize') !== undefined && form.watch('sampleSize') < suggestion.min 
+                                ? t('validation.samplingViolation') 
+                                : t('toe.suggestion')}
+                            </p>
+                            <p className={cn(
+                              "text-xs",
+                              form.watch('sampleSize') !== undefined && form.watch('sampleSize') < suggestion.min ? "text-red-700" : "text-blue-700"
+                            )}>
+                              {form.watch('sampleSize') !== undefined && form.watch('sampleSize') < suggestion.min 
+                                ? t('validation.samplingWarning', { min: suggestion.min }) 
+                                : `${t('toe.requiredSample')}: ${suggestion.label}`}
+                            </p>
                           </div>
                         </div>
 
@@ -319,25 +370,34 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
                               <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground flex justify-between">
                                 {t('toe.sampleSize')}
                                 {field.value !== undefined && field.value < suggestion.min && (
-                                  <span className="text-[8px] text-amber-600 font-black animate-pulse">! {t('toe.belowMin')}</span>
+                                  <Badge variant="destructive" className="text-[8px] h-3 px-1 animate-pulse">
+                                    {t('toe.belowMin')}
+                                  </Badge>
                                 )}
                               </FormLabel>
-                              <FormControl><Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10))} className={cn("h-8 text-xs", field.value !== undefined && field.value < suggestion.min && "border-amber-500 bg-amber-50")} /></FormControl>
+                              <FormControl><Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10))} className={cn("h-8 text-xs", field.value !== undefined && field.value < suggestion.min && "border-red-500 bg-red-50")} /></FormControl>
+                              <FormMessage className="text-[10px]" />
                             </FormItem>
                           )} />
                         </div>
 
                         <FormField control={form.control} name="homogeneityJustification" render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground">{t('toe.homogeneity')}</FormLabel>
+                            <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1">
+                              {t('toe.homogeneity')}
+                              {form.watch('sampleSize') < suggestion.min && <span className="text-red-500 font-bold">*</span>}
+                            </FormLabel>
                             <FormControl>
                               <Textarea 
                                 {...field} 
-                                className="h-16 text-xs" 
+                                className={cn(
+                                  "h-16 text-xs",
+                                  form.watch('sampleSize') < suggestion.min && !field.value && "border-red-300 ring-red-100"
+                                )} 
                                 placeholder={t('toe.homogeneityPlaceholder')}
                               />
                             </FormControl>
-                            <FormMessage />
+                            <FormMessage className="text-[10px]" />
                           </FormItem>
                         )} />
                       </div>
@@ -419,6 +479,21 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
           </div>
         </CardContent>
       </Card>
+
+      <AlertDialog open={blocker.state === "blocked"}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Unsaved Changes</AlertDialogTitle>
+            <AlertDialogDescription>
+              You have unsaved testing documentation. Are you sure you want to leave this page? Your progress will be lost.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => blocker.reset()}>Stay</AlertDialogCancel>
+            <AlertDialogAction onClick={() => blocker.proceed()}>Leave</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

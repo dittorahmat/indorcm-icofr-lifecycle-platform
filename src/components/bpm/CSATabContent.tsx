@@ -37,6 +37,8 @@ import { useDropzone } from 'react-dropzone';
 import { analyzeEvidenceMetadata, promptBiometricAuth, EvidenceMetadata } from '@/lib/forensic-utils';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
+import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 // --- Simplified Read-only Nodes ---
@@ -125,18 +127,56 @@ const csaFormSchema = z.object({
 type CSAFormValues = z.infer<typeof csaFormSchema>;
 
 interface CSATabContentProps {
-  noGL: string;
-  controls: Control[];
+  noGL?: string;
+  controls?: Control[];
+  standalone?: boolean;
 }
 
-export function CSATabContent({ noGL, controls }: CSATabContentProps) {
+export function CSATabContent({ noGL: propNoGL, controls: propControls, standalone = false }: CSATabContentProps) {
   const { t } = useTranslation(['bpm', 'common']);
   const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
   
-  const [selectedControlId, setSelectedControlId] = useState<string | null>(null);
+  // Resolve noGL from props or searchParams
+  const noGL = propNoGL || searchParams.get('noGL') || "";
+
+  const [selectedControlId, setSelectedControlId] = useState<string | null>(searchParams.get('controlId'));
   const [view, setView] = useState<'list' | 'gate' | 'form'>('list');
   const [activeCsaId, setActiveCsaId] = useState<string | null>(null);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [controlSearchTerm, setControlSearchTerm] = useState("");
+
+  const form = useForm<CSAFormValues>({
+    resolver: zodResolver(csaFormSchema),
+    defaultValues: {
+      period: '2024-Q1',
+      result: 'Effective',
+      comments: '',
+      samplingMethodology: 'Attribute Sampling / Zero Tolerance Approach',
+      documentList: '',
+      isBpmConfirmed: false,
+      samples: [{ sampleRef: '', attributeResults: { A: true, B: true, C: true, D: true } }]
+    }
+  });
+
+  // Track unsaved changes in the form
+  const isDirty = form.formState.isDirty && view === 'form' && !activeCsaId;
+  useUnsavedChanges(isDirty);
+
+  // Queries for standalone mode
+  const { data: standaloneControls, isLoading: isControlsLoading } = useQuery({
+    queryKey: ['bpm-controls', noGL],
+    queryFn: async () => {
+      const all = await api<{ items: Control[] }>('/api/controls');
+      if (noGL) {
+        return all.items.filter(c => c.fsliCodes?.includes(noGL) || c.bpmProcessId);
+      }
+      return all.items;
+    },
+    enabled: !propControls && (!!noGL || standalone)
+  });
+
+  const controls = propControls || standaloneControls || [];
 
   // Initial Control Selection
   useEffect(() => {
@@ -147,10 +187,20 @@ export function CSATabContent({ noGL, controls }: CSATabContentProps) {
 
   const selectedControl = useMemo(() => controls.find(c => c.id === selectedControlId), [controls, selectedControlId]);
 
-  // Queries
+  // Filtered controls for standalone view
+  const filteredControls = useMemo(() => {
+    if (!controlSearchTerm) return controls;
+    return controls.filter(c => 
+      c.code.toLowerCase().includes(controlSearchTerm.toLowerCase()) || 
+      c.name.toLowerCase().includes(controlSearchTerm.toLowerCase()) ||
+      c.subProcess?.toLowerCase().includes(controlSearchTerm.toLowerCase())
+    );
+  }, [controls, controlSearchTerm]);
+
   const { data: diagram, isLoading: isDiagLoading } = useQuery({
     queryKey: ['bpm-diagrams', 'by-gl', noGL],
     queryFn: () => api<any>(`/api/bpm-diagrams/by-gl/${noGL}`),
+    enabled: !!noGL
   });
 
   const { data: csaList, isLoading: isListLoading } = useQuery({
@@ -187,19 +237,6 @@ export function CSATabContent({ noGL, controls }: CSATabContentProps) {
       toast.success("CSA Sign-off successful");
       queryClient.invalidateQueries({ queryKey: ['csa-list'] });
       setView('list');
-    }
-  });
-
-  const form = useForm<CSAFormValues>({
-    resolver: zodResolver(csaFormSchema),
-    defaultValues: {
-      period: '2024-Q1',
-      result: 'Effective',
-      comments: '',
-      samplingMethodology: 'Attribute Sampling / Zero Tolerance Approach',
-      documentList: '',
-      isBpmConfirmed: false,
-      samples: [{ sampleRef: '', attributeResults: { A: true, B: true, C: true, D: true } }]
     }
   });
 

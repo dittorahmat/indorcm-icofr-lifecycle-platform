@@ -145,6 +145,11 @@ export function AppSidebar(): JSX.Element {
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={isActive("/csa")}>
+                <Link to="/csa" className="font-bold"><ClipboardCheck /> <span>Control Self Assessment</span></Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/scoping")}>
                 <Link to="/scoping" className="font-bold"><Settings2 /> <span>{t('items.scoping')}</span></Link>
               </SidebarMenuButton>

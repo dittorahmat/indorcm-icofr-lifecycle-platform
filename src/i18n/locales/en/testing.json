@@ -62,9 +62,12 @@
     "homogeneityRequired": "Homogeneity justification is required for TOE (Chapter V 1.3.a)",
     "authFailed": "Biometric authentication failed. Cannot submit test.",
     "authSuccess": "Biometric identity verified (FR9).",
-    "submitSuccess": "{{type}} for {{name}} submitted.",
-    "submitError": "Submission failed: {{error}}"
-  },
+    "submitSuccess": "{{type}} for {{name}} has been submitted.",
+    "submitError": "Submission failed: {{error}}",
+    "belowMinJustificationRequired": "Mandatory justification is required as the sample size is below Table 22 reference.",
+    "samplingViolation": "TABLE 22 VIOLATION (SK-5)",
+    "samplingWarning": "Sample size is below Table 22 minimum standard (min: {{min}}). You must provide a deviation justification."
+    },
   "coolingOff": {
     "violation": "COOLING-OFF VIOLATION (BAB II)",
     "restricted": "Access Restricted (Chapter II point d.2)",

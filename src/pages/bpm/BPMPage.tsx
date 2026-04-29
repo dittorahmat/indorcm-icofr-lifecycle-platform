@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { 
   Plus, Search, Database, FileSpreadsheet, Loader2, Info, ChevronRight, 
   Trash2, AlertTriangle, PlusCircle, CheckCircle2, Shield, Edit2, ExternalLink,
-  Workflow as WorkflowIcon, Save
+  Workflow as WorkflowIcon, Save, ShieldCheck
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
@@ -19,6 +19,7 @@ import { GLSnapshot, GLRow, BPMProcess, UserRole, MaterialitySimulation, User, B
 import { MOCK_DEPARTMENTS } from '@shared/mock-data';
 import { BPMWorksheet } from '@/components/bpm/BPMWorksheet';
 import { BPMModal } from '@/components/bpm/BPMModal';
+import { CSAModal } from '@/components/bpm/CSAModal';
 import { BPMEditor } from '@/components/rcm/BPMEditor';
 import { toast } from 'sonner';
 import { 
@@ -36,7 +37,6 @@ import { useTranslation } from 'react-i18next';
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
 
 export function BPMPage() {
   const { t } = useTranslation(['bpm', 'common', 'rcm']);
@@ -48,6 +48,8 @@ export function BPMPage() {
   const [selectedAccountKey, setSelectedAccountKey] = React.useState<string>("");
   const [selectedBpmId, setSelectedBpmId] = React.useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [isCsaModalOpen, setIsCsaModalOpen] = React.useState(false);
+  const [selectedBpmName, setSelectedBpmName] = React.useState("");
   const [viewYear, setViewYear] = React.useState<string>(searchParams.get('year') || "2025");
 
   const currentYear = new Date().getFullYear();
@@ -659,22 +661,65 @@ export function BPMPage() {
                   ) : filteredBpmProcesses.map((bpm) => (
                     <TableRow key={bpm.id} className="group hover:bg-indigo-50/30 transition-colors">
                       <TableCell className="text-center">
-                        <Button
-                          variant="ghost" size="icon" className="h-8 w-8 text-indigo-600 hover:bg-indigo-100"
-                          onClick={() => {
-                            const diagram = diagrams?.items.find(d => d.subProcess === bpm.name);
-                            if (diagram) handleOpenDiagram(diagram.id, bpm.name);
-                            else createDiagramMutation.mutate(bpm.name);
-                          }}
-                        >
-                          <Edit2 className="h-4 w-4" />
-                        </Button>
+                        <div className="flex items-center justify-center gap-1">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost" size="icon" className="h-8 w-8 text-indigo-600 hover:bg-indigo-100"
+                                  onClick={() => {
+                                    const diagram = diagrams?.items.find(d => d.subProcess === bpm.name);
+                                    if (diagram) handleOpenDiagram(diagram.id, bpm.name);
+                                    else createDiagramMutation.mutate(bpm.name);
+                                  }}
+                                >
+                                  <Edit2 className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Open Visual Workflow Editor</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost" size="icon" className="h-8 w-8 text-emerald-600 hover:bg-emerald-100"
+                                  onClick={() => {
+                                    setSelectedBpmId(bpm.id);
+                                    setIsModalOpen(true);
+                                  }}
+                                >
+                                  <FileSpreadsheet className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Open RCM Worksheet (Spreadsheet)</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
                       </TableCell>
                       <TableCell>
-                        <div className="flex flex-col cursor-pointer p-1 rounded" onClick={() => { setSelectedBpmId(bpm.id); setIsModalOpen(true); }}>
-                          <span className="font-bold text-indigo-600 hover:underline">{bpm.name}</span>
-                          <span className="text-[10px] text-slate-400 uppercase tracking-tighter">BPM ID: {bpm.id.substring(0,8)}</span>
-                        </div>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div 
+                                className="flex flex-col cursor-pointer p-1 rounded group/name" 
+                                onClick={() => { 
+                                  setSelectedBpmId(bpm.id); 
+                                  setSelectedBpmName(bpm.name);
+                                  setIsCsaModalOpen(true); 
+                                }}
+                              >
+                                <span className="font-bold text-indigo-600 hover:underline flex items-center gap-1.5">
+                                  {bpm.name}
+                                  <ShieldCheck className="h-3 w-3 opacity-0 group-hover/name:opacity-100 transition-opacity" />
+                                </span>
+                                <span className="text-[10px] text-slate-400 uppercase tracking-tighter">BPM ID: {bpm.id.substring(0,8)}</span>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent>Run Control Self Assessment (CSA)</TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       </TableCell>
                       <TableCell className="text-slate-600 font-medium text-xs">{settings?.companyName || "PT BUMN SEjahtera"}</TableCell>
                       <TableCell><Badge variant="outline" className="font-mono text-[10px] bg-slate-50">{selectedGLRow?.entityCode || "ENT-01"}</Badge></TableCell>
@@ -738,6 +783,15 @@ export function BPMPage() {
           </DialogContent>
         </Dialog>
         <UnsavedChangesDialog blocker={blocker} />
+
+        {selectedGLRow && (
+          <CSAModal
+            isOpen={isCsaModalOpen}
+            onOpenChange={setIsCsaModalOpen}
+            noGL={selectedGLRow.noGL}
+            subProcessName={selectedBpmName}
+          />
+        )}
       </div>
     </AppLayout>
   );

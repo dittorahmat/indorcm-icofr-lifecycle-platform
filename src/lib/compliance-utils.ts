@@ -41,25 +41,29 @@ export function getSuggestedSampleRange(
     return { min: 1, max: 1, label: "1 (Test of One)" };
   }
 
+  const isHigh = riskRating === "High";
+
   switch (frequency) {
     case "Annual":
-      return { min: 1, max: 1, label: "1 (Tahunan)" };
+      return { min: 1, max: 1, label: "1" };
     case "Semi-Annual":
-      return riskRating === "High" ? { min: 2, max: 2, label: "2 (High Risk)" } : { min: 1, max: 1, label: "1 (Low Risk)" };
+      // SK-5 doesn't explicitly list Semi-Annual in Table 22, mapping to Quarterly or higher based on conservatism
+      return isHigh ? { min: 2, max: 3, label: "2 - 3" } : { min: 1, max: 2, label: "1 - 2" };
     case "Quarterly":
-      return riskRating === "High" ? { min: 3, max: 3, label: "3 (High Risk)" } : { min: 2, max: 2, label: "2 (Low Risk)" };
+      // Table 22: Kuartalan (4 population) -> 2 sampai 3 samples
+      return isHigh ? { min: 3, max: 3, label: "3" } : { min: 2, max: 2, label: "2" };
     case "Monthly":
-      // Tabel 22: Monthly (2-5 samples)
-      return riskRating === "High" ? { min: 5, max: 5, label: "5 (High Risk)" } : { min: 2, max: 3, label: "2-3 (Low Risk)" };
+      // Table 22: Bulanan (12 population) -> 2 sampai 5 samples
+      return isHigh ? { min: 5, max: 5, label: "5" } : { min: 2, max: 3, label: "2 - 3" };
     case "Weekly":
-      // Tabel 22: Weekly (5-15 samples)
-      return riskRating === "High" ? { min: 15, max: 15, label: "15 (High Risk)" } : { min: 5, max: 8, label: "5-8 (Low Risk)" };
+      // Table 22: Mingguan (52 population) -> 5 sampai 15 samples
+      return isHigh ? { min: 15, max: 15, label: "15" } : { min: 5, max: 8, label: "5 - 8" };
     case "Daily":
-      // Tabel 22: Daily (15-40 samples)
-      return riskRating === "High" ? { min: 40, max: 40, label: "40 (High Risk)" } : { min: 15, max: 20, label: "15-20 (Low Risk)" };
+      // Table 22: Harian (250 population) -> 15 sampai 40 samples
+      return isHigh ? { min: 40, max: 40, label: "40" } : { min: 15, max: 20, label: "15 - 20" };
     case "Ad-hoc":
-      // Tabel 22: Multiple times per day (30-60 samples)
-      return riskRating === "High" ? { min: 60, max: 60, label: "60 (High Risk)" } : { min: 30, max: 45, label: "30-45 (Low Risk)" };
+      // Table 22: Lebih dari sekali dalam satu hari (>250 population) -> 30 sampai 60 samples
+      return isHigh ? { min: 60, max: 60, label: "60" } : { min: 30, max: 45, label: "30 - 45" };
     default:
       return { min: 1, max: 1, label: "1" };
   }

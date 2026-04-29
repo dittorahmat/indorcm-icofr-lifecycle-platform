@@ -252,10 +252,13 @@ export const controls = pgTable("controls", {
 	applicationId: text("application_id").references(() => applications.id),
 	bpmProcessId: text("bpm_process_id").references(() => bpmProcesses.id),
 	attributeQuestions: jsonb("attribute_questions"),
-	
+
+	// CSA Standalone Metadata
+	csaStatus: text("csa_status").default("Not Assessed"), // Not Assessed, Effective, Ineffective
+	lastCsaDate: timestamp("last_csa_date"),
+
 	// ITGC Specific Columns
-	itgcDomain: text("itgc_domain"),
-	itgcAssertions: jsonb("itgc_assertions"),
+	itgcDomain: text("itgc_domain"),	itgcAssertions: jsonb("itgc_assertions"),
 	automatedControlType: text("automated_control_type"),
 	supportingApp: text("supporting_app"),
 });

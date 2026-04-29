@@ -247,6 +247,10 @@ export interface Control {
   applicationId?: string;
   bpmProcessId?: string; // Link to the BPMProcess header list
 
+  // New Smart CSA Metadata
+  csaStatus?: "Not Assessed" | "Effective" | "Ineffective";
+  lastCsaDate?: number; // epoch millis
+
   // New Smart CSA Fields
   attributeQuestions?: {
     A: string;

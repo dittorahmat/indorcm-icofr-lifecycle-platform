@@ -63,7 +63,10 @@
     "authFailed": "Autentikasi biometrik gagal. Tidak dapat mengirim pengujian.",
     "authSuccess": "Identitas biometrik terverifikasi (FR9).",
     "submitSuccess": "{{type}} untuk {{name}} telah dikirim.",
-    "submitError": "Pengiriman gagal: {{error}}"
+    "submitError": "Pengiriman gagal: {{error}}",
+    "belowMinJustificationRequired": "Justifikasi mandatori diperlukan karena jumlah sampel di bawah rujukan Tabel 22.",
+    "samplingViolation": "PELANGGARAN TABEL 22 (SK-5)",
+    "samplingWarning": "Jumlah sampel di bawah standar minimum Tabel 22 (min: {{min}}). Anda wajib mengisi alasan deviasi."
   },
   "coolingOff": {
     "violation": "PELANGGARAN COOLING-OFF (BAB II)",
