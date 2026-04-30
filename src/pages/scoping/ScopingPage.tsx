@@ -413,6 +413,7 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
   const [simState, setSimState] = React.useState(simulation);
   const [glData, setGlData] = React.useState<GLRow[]>([]);
   const [localAppMappings, setLocalAppMappings] = React.useState<Record<string, string[]>>({});
+  const [localDeptMappings, setLocalDeptMappings] = React.useState<Record<string, string[]>>({});
 
   // Fetch applications library
   const { data: appsData } = useQuery({
@@ -438,24 +439,46 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
     }
   }, [initialMappings]);
 
+  // Initialize department mappings from simulation data
+  React.useEffect(() => {
+    if (simulation.significantAccounts) {
+      const map: Record<string, string[]> = {};
+      simulation.significantAccounts.forEach(sa => {
+        if (sa.fsliCode && sa.assignedDepartmentIds) {
+          map[sa.fsliCode] = sa.assignedDepartmentIds;
+        }
+      });
+      setLocalDeptMappings(map);
+    }
+  }, [simulation]);
+
   // Track if changes have been made but not saved
   const isDirty = React.useMemo(() => {
+    const initialDeptMappings: Record<string, string[]> = {};
+    simulation.significantAccounts?.forEach(sa => {
+      if (sa.fsliCode && sa.assignedDepartmentIds) {
+        initialDeptMappings[sa.fsliCode] = sa.assignedDepartmentIds;
+      }
+    });
+
     return JSON.stringify({
       assessmentData: simState.assessmentData,
       locationCount: simState.locationCount,
       omPercentage: simState.omPercentage,
       haircutPercentage: simState.haircutPercentage,
       basis: simState.basis,
-      appMappings: localAppMappings
+      appMappings: localAppMappings,
+      deptMappings: localDeptMappings
     }) !== JSON.stringify({
       assessmentData: simulation.assessmentData,
       locationCount: simulation.locationCount,
       omPercentage: simulation.omPercentage,
       haircutPercentage: simulation.haircutPercentage,
       basis: simulation.basis,
-      appMappings: {} // Simplified for now, initialMappings would be better
+      appMappings: {}, // Simplified for now
+      deptMappings: initialDeptMappings
     });
-  }, [simState, simulation, localAppMappings]);
+  }, [simState, simulation, localAppMappings, localDeptMappings]);
 
   const blocker = useUnsavedChanges(isDirty);
 
@@ -472,14 +495,12 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
 
   const mergedGlData = React.useMemo(() => {
     return glData.map(row => {
-      const accounts = simState.significantAccounts || [];
-      const assignment = accounts.find(sa => sa.fsliCode === row.noGL);
       return {
         ...row,
-        assignedDepartmentId: row.assignedDepartmentId || assignment?.assignedDepartmentId
+        assignedDepartmentIds: localDeptMappings[row.noGL] || []
       };
     });
-  }, [glData, simState.significantAccounts]);
+  }, [glData, localDeptMappings]);
 
   const { data: snapshot } = useQuery({
     queryKey: ['gl-snapshot', simState.glSnapshotId],
@@ -514,13 +535,13 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
       balance: row.balance,
       isQuantitative: Math.abs(row.balance) >= pmValue,
       fsliCode: row.noGL,
-      assignedDepartmentId: row.assignedDepartmentId
+      assignedDepartmentIds: localDeptMappings[row.noGL] || []
     }));
-  }, [mergedGlData, simState.assessmentData, pmValue]);
+  }, [mergedGlData, simState.assessmentData, pmValue, localDeptMappings]);
 
   const updateSimMutation = useMutation({
     mutationFn: async (data: Partial<MaterialitySimulation>) => {
-      // 1. Save core simulation data
+      // 1. Save core simulation data (including significantAccounts with department IDs)
       await api(`/api/simulations/${simState.id}`, { 
         method: 'PUT', 
         body: JSON.stringify({ ...data, omValue, pmValue, significantAccounts }) 
@@ -535,12 +556,24 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
         method: 'POST',
         body: JSON.stringify({ mappings })
       });
+
+      // 3. Sync department mappings to gl_rows for access control
+      // This is crucial because BPM access depends on gl_rows table
+      const deptMappingsToSync = Object.entries(localDeptMappings).map(([noGL, departmentIds]) => ({
+        noGL,
+        departmentIds
+      }));
+      await api(`/api/simulations/${simState.id}/account-departments/sync`, {
+        method: 'POST',
+        body: JSON.stringify({ mappings: deptMappingsToSync })
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['simulations'] });
       queryClient.invalidateQueries({ queryKey: ['sim-app-mappings', simulation.id] });
+      queryClient.invalidateQueries({ queryKey: ['gl-snapshot', simState.glSnapshotId] });
       queryClient.invalidateQueries({ queryKey: ['applications-all'] });
-      toast.success("Simulation & App Mappings saved");
+      toast.success("Simulation, App & Owner Mappings saved");
     }
   });
 
@@ -588,10 +621,21 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
     }
   };
 
-  const handleAppsChange = (accountCode: string, appIds: string[]) => {
+  const [isPendingUpdate, startTransition] = React.useTransition();
+
+  const handleAssignDepartments = React.useCallback((accountName: string, departmentIds: string[]) => {
     if (isLocked) return;
-    setLocalAppMappings(prev => ({ ...prev, [accountCode]: appIds }));
-  };
+    startTransition(() => {
+      setLocalDeptMappings(prev => ({ ...prev, [accountName]: departmentIds }));
+    });
+  }, [isLocked]);
+
+  const handleAppsChange = React.useCallback((accountCode: string, appIds: string[]) => {
+    if (isLocked) return;
+    startTransition(() => {
+      setLocalAppMappings(prev => ({ ...prev, [accountCode]: appIds }));
+    });
+  }, [isLocked]);
 
   const handleQuickAddApp = async (name: string, accountCode: string) => {
     try {
@@ -756,7 +800,7 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
                   onOwnerAcceptanceChange={handleOwnerAcceptanceChange}
                   isReadOnly={isLocked}
                   departments={departments?.items || []}
-                  onAssignDepartment={(accountName, departmentId) => assignDeptMutation.mutate({ accountName, departmentId })}
+                  onAssignDepartments={handleAssignDepartments}
                   applications={appsData?.items || []}
                   selectedApps={localAppMappings}
                   onAppsChange={handleAppsChange}

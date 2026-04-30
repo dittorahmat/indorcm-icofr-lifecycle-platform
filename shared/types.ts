@@ -54,7 +54,7 @@ export interface GLRow {
   subKategori?: string;   // "Aset", "Pendapatan", dll
   fsliBalance?: number;   // Verifikasi agregasi
   noUrut?: number;        // Display order
-  assignedDepartmentId?: string; // Department assignment
+  assignedDepartmentIds?: string[]; // Department assignments
   ownerAcceptance?: "Accepted" | "Rejected"; // Owner acceptance status (null = Pending)
 }
 
@@ -167,7 +167,7 @@ export interface SignificantAccount {
   isQuantitative: boolean; // Over PM
   qualitativeReasons?: QualitativeScopingReason[];
   fsliCode?: string;
-  assignedDepartmentId?: string; // New: Assigned Lini 1 Department
+  assignedDepartmentIds?: string[]; // New: Assigned Lini 1 Departments
   relatedProcessIds?: string[]; // New: IDs of RCM processes covering this account
 }
 
@@ -289,17 +289,25 @@ export interface BPMProcess {
 
 export interface BPMNode {
   id: string;
-  type: "start" | "end" | "activity" | "decision" | "document" | "system" | "risk" | "control" | "archive";
+  type: "start" | "end" | "activity" | "automated-activity" | "decision" | "document" | "system" | "risk" | "control" | "archive" | "swimlane" | "docked-risk" | "docked-control" | "reference" | "manual-input" | "external-process" | "off-page-ref" | "data-media";
   position: { x: number; y: number };
   parentId?: string; // For React Flow grouping/docking
   extent?: 'parent'; // For React Flow docking
+  width?: number; // For resizable nodes like swimlanes
+  height?: number;
   data: {
     label: string;
     description?: string;
     role?: string;
     code?: string;
-    riskIds?: string[]; // Multiple RCM IDs linked to this activity
-    controlIds?: string[]; // Multiple Control IDs linked to this activity (via risks or direct)
+    department?: string; // For Swimlane labels
+    function?: string;   // For Swimlane labels
+    riskIds?: string[]; // Multiple RCM IDs linked to this node
+    controlIds?: string[]; // Multiple Control IDs linked to this node
+    regulatoryData?: any; // Legacy/Single pair support
+    regulatoryPairs?: any[]; // For universal mapping (multiple Risk-Control pairs)
+    hasLinkage?: boolean;
+    relatedElcNames?: string[];
   };
 }
 
@@ -509,6 +517,7 @@ export interface ActionPlan {
 export interface Settings {
   id: string;
   companyName: string;
+  logoUrl?: string; // Standard company logo for diagrams and reports
   ceoName: string;
   cfoName: string;
   fiscalYear: number;

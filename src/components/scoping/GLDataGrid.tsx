@@ -35,13 +35,13 @@ interface GLDataGridProps {
   onOwnerAcceptanceChange?: (noGL: string, acceptance: "Accepted" | "Rejected") => void;
   isReadOnly?: boolean;
   departments?: Department[];
-  onAssignDepartment?: (accountName: string, departmentId: string) => void;
+  onAssignDepartments?: (accountName: string, departmentIds: string[]) => void;
   
   // New props for applications
   applications?: (Application & { linkedControlCount?: number })[];
-  selectedApps: Record<string, string[]>; // accountCode -> appIds
-  onAppsChange: (accountCode: string, appIds: string[]) => void;
-  onQuickAddApp: (name: string) => Promise<void>;
+  selectedApps?: Record<string, string[]>; // accountCode -> appIds
+  onAppsChange?: (accountCode: string, appIds: string[]) => void;
+  onQuickAddApp?: (name: string) => Promise<void>;
 }
 
 const QUALITATIVE_RULES = [
@@ -55,7 +55,7 @@ const QUALITATIVE_RULES = [
   { id: 8, label: "Volatility" },
 ];
 
-export function GLDataGrid({
+export const GLDataGrid = React.memo(function GLDataGrid({
   data,
   assessmentData,
   pmValue,
@@ -63,7 +63,7 @@ export function GLDataGrid({
   onOwnerAcceptanceChange,
   isReadOnly = false,
   departments = [],
-  onAssignDepartment,
+  onAssignDepartments,
   applications = [],
   selectedApps = {},
   onAppsChange,
@@ -118,6 +118,11 @@ export function GLDataGrid({
     noUrut: false
   });
 
+  const deptOptions: Option[] = React.useMemo(() => 
+    departments.map(d => ({ label: d.name, value: d.id })),
+    [departments]
+  );
+
   const columns = React.useMemo<ColumnDef<GLRow>[]>(
     () => [
       {
@@ -162,7 +167,7 @@ export function GLDataGrid({
           const fsliName = row.original.fsliName || "";
           const noGL = row.original.noGL || "";
           const balance = Math.abs(row.original.balance);
-          const assignedDeptId = (row.original as any).assignedDepartmentId;
+          const assignedDeptIds = row.original.assignedDepartmentIds || [];
           
           const assessments = assessmentData?.[fsliName] || {};
           const isQualSignificant = Object.values(assessments).some(v => v === 'High');
@@ -172,7 +177,7 @@ export function GLDataGrid({
           // Logic: Lini 1 can only access if they own the account or it's unassigned
           const userRole = currentUser?.role?.trim();
           const isLini1 = userRole === 'Line 1';
-          const hasAccess = !isLini1 || !assignedDeptId || currentUser?.departmentId === assignedDeptId;
+          const hasAccess = !isLini1 || assignedDeptIds.length === 0 || assignedDeptIds.includes(currentUser?.departmentId || "");
 
           if (isInScope) {
             if (!hasAccess) {
@@ -211,10 +216,10 @@ export function GLDataGrid({
       {
         id: 'departmentOwner',
         header: 'Lini 1 Owner',
-        size: 150,
+        size: 200,
         cell: ({ row }) => {
           if (row.getIsGrouped()) return null;
-          const currentDeptId = (row.original as any).assignedDepartmentId;
+          const currentDeptIds = row.original.assignedDepartmentIds || [];
 
           // Fix: Default to allowing assignment if user data is still loading
           // or if the user is explicitly Admin/Line 2
@@ -223,12 +228,16 @@ export function GLDataGrid({
           const isDisabled = isReadOnly || !canAssign;
 
           return (
-            <DepartmentPicker
-              departments={departments}
-              selectedId={currentDeptId}
-              onSelect={(deptId) => onAssignDepartment?.(row.original.noGL, deptId)}
-              disabled={isDisabled}
-            />
+            <div className="py-1">
+              <MultiSelect
+                options={deptOptions}
+                selected={currentDeptIds}
+                onChange={(ids) => onAssignDepartments?.(row.original.noGL, ids)}
+                placeholder={t('table.assignDept', 'Assign Dept...')}
+                disabled={isDisabled}
+                className="min-h-7 py-1 text-[10px]"
+              />
+            </div>
           );
         }
       },
@@ -241,7 +250,7 @@ export function GLDataGrid({
           
           const currentAcceptance = row.original.ownerAcceptance;
           const noGL = row.original.noGL;
-          const assignedDeptId = (row.original as any).assignedDepartmentId;
+          const assignedDeptIds = row.original.assignedDepartmentIds || [];
 
           // Check if user can edit owner acceptance:
           // 1. Lini 1 Manager with matching department
@@ -252,7 +261,7 @@ export function GLDataGrid({
           const isAdmin = userRole === 'Admin';
           
           const canEdit = !isReadOnly && (
-            (isLini1Manager && currentUser?.departmentId === assignedDeptId) ||
+            (isLini1Manager && assignedDeptIds.includes(currentUser?.departmentId || "")) ||
             isAdmin
           );
 
@@ -422,7 +431,7 @@ export function GLDataGrid({
         }
       }
     ],
-    [t, pmValue, assessmentData, isReadOnly, onAssessmentChange, onOwnerAcceptanceChange, currentUser, departments, onAssignDepartment, applications, selectedApps, onAppsChange, onQuickAddApp]
+    [t, pmValue, assessmentData, isReadOnly, onAssessmentChange, onOwnerAcceptanceChange, currentUser, departments, onAssignDepartments, applications, selectedApps, onAppsChange, onQuickAddApp]
   );
 
   const table = useReactTable({
@@ -440,6 +449,8 @@ export function GLDataGrid({
     getFilteredRowModel: getFilteredRowModel(),
     getGroupedRowModel: getGroupedRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
+    autoResetExpanded: false, // CRITICAL: Prevent collapse on update
+    getRowId: (row) => row.noGL || `row-${row.noUrut}`, // Stable IDs
   });
 
   const handleExportExcel = () => {
@@ -471,8 +482,8 @@ export function GLDataGrid({
           const isQualSignificant = Object.values(assessments).some(v => v === 'High');
           const isKuanSignificant = Math.abs(leaf.original.balance) >= pmValue;
           const isInScope = isKuanSignificant || isQualSignificant;
-          const assignedDeptId = (leaf.original as any).assignedDepartmentId;
-          const dept = departments.find(d => d.id === assignedDeptId);
+          const assignedDeptIds = leaf.original.assignedDepartmentIds || [];
+          const depts = assignedDeptIds.map(id => departments.find(d => d.id === id)?.name).filter(Boolean).join(", ");
           const acceptance = leaf.original.ownerAcceptance || 'Pending';
 
           exportData.push({
@@ -482,7 +493,7 @@ export function GLDataGrid({
             'Account Description': leaf.original.glDesc,
             'Balance': leaf.original.balance,
             'Quantitative': isKuanSignificant ? 'Significant' : 'Not Significant',
-            'Department Owner': dept?.name || 'Unassigned',
+            'Department Owner': depts || 'Unassigned',
             'Owner Acceptance': acceptance,
             'Scope': isInScope ? 'In Scope' : 'Out Scope'
           });
@@ -586,4 +597,4 @@ export function GLDataGrid({
       </div>
     </div>
   );
-}
+});

@@ -1524,6 +1524,33 @@ export function userRoutes(app: Hono<HonoEnv>) {
     return ok(c, { success: true });
   });
 
+  app.post('/api/simulations/:id/account-departments/sync', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const simId = c.req.param('id');
+    const orgId = c.get('organizationId');
+    const { mappings } = await c.req.json<{ mappings: { noGL: string, departmentIds: string[] }[] }>();
+
+    const sim = await db.query.simulations.findFirst({
+      where: and(eq(simulations.id, simId), eq(simulations.organizationId, orgId))
+    });
+
+    if (!sim) return error(c, "Simulation not found", 404);
+
+    await db.transaction(async (tx: any) => {
+      for (const m of mappings) {
+        await tx.update(glRows)
+          .set({ assignedDepartmentIds: m.departmentIds })
+          .where(and(
+            eq(glRows.glSnapshotId, sim.glSnapshotId),
+            eq(glRows.noGL, m.noGL),
+            eq(glRows.organizationId, orgId)
+          ));
+      }
+    });
+
+    return ok(c, { success: true });
+  });
+
   app.get('/api/simulations/:id/account-applications', async (c) => {
     const db = getDb(c.env.DATABASE_URL);
     const simId = c.req.param('id');

@@ -59,47 +59,51 @@ export function MultiSelect({
           role="combobox"
           aria-expanded={open}
           className={cn(
-            "flex min-h-9 w-full flex-wrap gap-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background cursor-pointer",
+            "flex min-h-9 w-full flex-wrap gap-1.5 rounded-md border border-input bg-background px-3 py-1.5 text-sm ring-offset-background cursor-pointer items-center",
             disabled && "opacity-50 cursor-not-allowed",
             className
           )}
-          onClick={() => !disabled && setOpen(!open)}
         >
           {selectedLabels.length > 0 ? (
-            selectedLabels.map((item) => (
-              <Badge
-                key={item.value}
-                variant="secondary"
-                className={cn(
-                    "flex items-center gap-1 px-1 py-0 h-5",
-                    item.isWarning && "text-destructive border-destructive/30 bg-destructive/5 font-bold"
-                )}
-              >
-                {item.label}
-                <button
-                  className="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      handleUnselect(item.value);
-                    }
-                  }}
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                  }}
-                  onClick={() => handleUnselect(item.value)}
+            <div className="flex flex-wrap gap-1.5">
+              {selectedLabels.map((item) => (
+                <Badge
+                  key={item.value}
+                  variant="secondary"
+                  className={cn(
+                      "flex items-center gap-1 px-2 py-0.5 h-auto min-h-6 leading-none",
+                      item.isWarning && "text-destructive border-destructive/30 bg-destructive/5 font-bold"
+                  )}
                 >
-                  <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
-                </button>
-              </Badge>
-            ))
+                  <span className="truncate max-w-[120px]">{item.label}</span>
+                  <button
+                    className="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleUnselect(item.value);
+                      }
+                    }}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        handleUnselect(item.value);
+                    }}
+                  >
+                    <X className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
+                  </button>
+                </Badge>
+              ))}
+            </div>
           ) : (
             <span className="text-muted-foreground">{placeholder}</span>
           )}
         </div>
       </PopoverTrigger>
-      <PopoverContent className="w-[280px] p-0" align="start">
-        <Command>
+      <PopoverContent className="w-[300px] p-0" align="start">
+        <Command manualFiltering={false}>
           <CommandInput 
             placeholder="Search..." 
             value={inputValue}
@@ -111,9 +115,12 @@ export function MultiSelect({
               {options.map((option) => (
                 <CommandItem
                   key={option.value}
+                  onPointerDown={(e) => {
+                    // Prevent focus loss from the input
+                    e.preventDefault();
+                  }}
                   onSelect={() => {
                     handleSelect(option.value);
-                    setCommandInputValue("");
                   }}
                   className="flex items-center gap-2"
                 >
@@ -123,7 +130,7 @@ export function MultiSelect({
                   )}>
                     {selected.includes(option.value) && <Check className="h-3 w-3" />}
                   </div>
-                  <span className={cn(option.isWarning && "text-destructive font-medium")}>
+                  <span className={cn("text-xs", option.isWarning && "text-destructive font-medium")}>
                     {option.label}
                   </span>
                 </CommandItem>

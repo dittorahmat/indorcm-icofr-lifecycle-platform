@@ -107,7 +107,7 @@ export const glRows = pgTable("gl_rows", {
 	fsliName: text("fsli_name"),
 	category: text("category"),
 	subKategori: text("sub_kategori"),
-	assignedDepartmentId: text("assigned_department_id").references(() => departments.id),
+	assignedDepartmentIds: jsonb("assigned_department_ids").$type<string[]>().default([]),
 	ownerAcceptance: ownerAcceptanceEnum("owner_acceptance"), // Accepted, Rejected, or null (Pending)
 });
 
@@ -151,6 +151,7 @@ export const bpmDiagrams = pgTable("bpm_diagrams", {
 	subProcess: text("sub_process"),
 	nodes: jsonb("nodes").$type<any[]>(),
 	edges: jsonb("edges").$type<any[]>(),
+    metadata: jsonb("metadata"), // For Header/Footer settings, logo configuration, etc.
 	createdAt: timestamp("created_at").notNull(),
 	updatedAt: timestamp("updated_at"),
 	createdBy: text("created_by").references(() => user.id),
