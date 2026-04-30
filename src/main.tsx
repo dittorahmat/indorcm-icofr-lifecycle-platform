@@ -37,6 +37,7 @@ const SOCMonitoringPage = lazy(() => import('@/pages/rcm/SOCMonitoringPage').the
 const BPMPage = lazy(() => import('@/pages/bpm/BPMPage').then(module => ({ default: module.BPMPage })));
 const CSAPage = lazy(() => import('@/pages/csa/CSAPage').then(module => ({ default: module.CSAPage })));
 const UserManagementPage = lazy(() => import('@/pages/admin/UserManagementPage').then(module => ({ default: module.UserManagementPage })));
+const SettingsPage = lazy(() => import('@/pages/admin/SettingsPage').then(module => ({ default: module.SettingsPage })));
 const DocumentsPage = lazy(() => import('@/pages/knowledge/DocumentsPage').then(module => ({ default: module.DocumentsPage })));
 
 import { ActivationPage } from '@/pages/ActivationPage';
@@ -91,6 +92,7 @@ const router = createBrowserRouter([
               { path: "/wbs-recap", element: <PageSuspense><WBSPage /></PageSuspense> },
               { path: "/audit-portal", element: <PageSuspense><ExternalAuditPortal /></PageSuspense> },
               { path: "/import", element: <PageSuspense><ImportPage /></PageSuspense> },
+              { path: "/settings", element: <PageSuspense><SettingsPage /></PageSuspense> },
               { path: "/admin/users", element: <PageSuspense><UserManagementPage /></PageSuspense> },
               { path: "/documents", element: <PageSuspense><DocumentsPage /></PageSuspense> },
             ]

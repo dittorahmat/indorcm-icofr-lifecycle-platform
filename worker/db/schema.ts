@@ -1,4 +1,4 @@
-import { pgTable, text, integer, timestamp, boolean, doublePrecision, jsonb, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, text, integer, timestamp, boolean, doublePrecision, jsonb, pgEnum, index } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 // --- BETTER AUTH TABLES ---
@@ -141,6 +141,10 @@ export const simulations = pgTable("simulations", {
 	createdAt: timestamp("created_at").notNull(),
 	updatedAt: timestamp("updated_at"),
 	createdBy: text("created_by").references(() => user.id),
+}, (table) => {
+	return {
+		yearStatusIdx: index("year_status_idx").on(table.year, table.status, table.createdAt),
+	};
 });
 
 export const bpmDiagrams = pgTable("bpm_diagrams", {

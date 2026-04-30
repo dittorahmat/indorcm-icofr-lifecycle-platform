@@ -267,6 +267,13 @@
       "when": 1777528958194,
       "tag": "0037_loud_gwen_stacy",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1777533854030,
+      "tag": "0038_huge_vivisector",
+      "breakpoints": true
     }
   ]
 }

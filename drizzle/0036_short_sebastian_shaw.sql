@@ -1,0 +1,1 @@
+ALTER TABLE "bpm_diagrams" ADD COLUMN "metadata" jsonb;

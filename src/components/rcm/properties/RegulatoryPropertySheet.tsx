@@ -76,23 +76,28 @@ export function RegulatoryPropertySheet({
   isSaving = false,
   isDirty = false
 }: RegulatoryPropertySheetProps) {
-  const { t } = useTranslation(['bpm', 'rcm', 'common']);
+  const { t } = useTranslation(['bpm', 'rcm', 'common', 'risklibrary']);
 
-  const isActivity = selectedNode?.type === 'activity' || selectedNode?.type === 'automated-activity';
-  
+  const canHaveRcm = useMemo(() => {
+    if (!selectedNode) return false;
+    const skipTypes = ['start', 'end', 'reference', 'swimlane'];
+    return !skipTypes.includes(selectedNode.type);
+  }, [selectedNode]);
+
   // SUPPORT MULTIPLE PAIRS: Convert single legacy object or hydrated array
   const pairs = useMemo(() => {
     return selectedNode?.data?.regulatoryPairs || 
            (selectedNode?.data?.regulatoryData ? [selectedNode?.data?.regulatoryData] : []);
   }, [selectedNode?.data?.regulatoryPairs, selectedNode?.data?.regulatoryData]);
 
-  // --- Grouping Logic: Risk -> Multiple Controls ---
+  // --- Grouping Logic ---
   const groupedRisks = useMemo(() => {
     if (!selectedNode) return [];
     const groups: Record<string, { risk: any, controls: { data: any, index: number }[] }> = {};
     
     pairs.forEach((p: any, index: number) => {
-      const rId = p.riskId || 'R-UNKNOWN';
+      // Use temporary internal ID for grouping if riskId is not yet assigned
+      const rId = p.riskId || p._tempRiskId || 'R-PENDING';
       if (!groups[rId]) {
         groups[rId] = { risk: p, controls: [] };
       }
@@ -115,25 +120,44 @@ export function RegulatoryPropertySheet({
   if (!selectedNode) return null;
 
   // --- Update Handlers ---
-  const updateAllPairsForRisk = (riskId: string, field: string, value: any) => {
-    const nextPairs = pairs.map((p: any) => 
-      p.riskId === riskId ? { ...p, [field]: value } : p
-    );
-    onUpdateNodeData(selectedNode.id, { regulatoryPairs: nextPairs, regulatoryData: nextPairs[0] });
+  const updateAllPairsForRisk = (riskKey: string, field: string, value: any) => {
+    const nextPairs = pairs.map((p: any) => {
+      const match = (p.riskId === riskKey) || (p._tempRiskId === riskKey);
+      if (!match) return p;
+
+      const updated = { ...p, [field]: value };
+      
+      // SMART ID ASSIGNMENT: If this was a pending risk and user entered description
+      if (!updated.riskId && field === 'riskDescription' && value.trim().length > 0) {
+        updated.riskId = `R-${Date.now()}`;
+        // delete updated._tempRiskId; // Keep it for grouping continuity until re-render
+      }
+      
+      return updated;
+    });
+    onUpdateNodeData(selectedNode.id, { regulatoryPairs: nextPairs });
   };
 
   const updateSpecificControl = (pairIndex: number, field: string, value: any) => {
     const nextPairs = [...pairs];
-    nextPairs[pairIndex] = { ...nextPairs[pairIndex], [field]: value };
-    onUpdateNodeData(selectedNode.id, { regulatoryPairs: nextPairs, regulatoryData: nextPairs[0] });
+    const updated = { ...nextPairs[pairIndex], [field]: value };
+
+    // SMART ID ASSIGNMENT for Control
+    if (!updated.controlId && field === 'controlDescription' && value.trim().length > 0) {
+        updated.controlId = `C-${Date.now()}`;
+    }
+
+    nextPairs[pairIndex] = updated;
+    onUpdateNodeData(selectedNode.id, { regulatoryPairs: nextPairs });
   };
 
   const addNewRisk = () => {
-    const rId = `R-${Date.now()}`;
-    const cId = `C-${Date.now()}`;
+    const tempId = `temp_${Date.now()}`;
     const nextPairs = [...pairs, {
-      riskId: rId,
-      controlId: cId,
+      _tempRiskId: tempId,
+      _tempControlId: `c_${tempId}`,
+      riskId: null,
+      controlId: null,
       riskDescription: '',
       controlDescription: '',
       isFraudRelated: false,
@@ -144,14 +168,14 @@ export function RegulatoryPropertySheet({
     onUpdateNodeData(selectedNode.id, { regulatoryPairs: nextPairs });
   };
 
-  const addControlToRisk = (riskId: string) => {
-    const template = pairs.find((p: any) => p.riskId === riskId);
+  const addControlToRisk = (riskKey: string) => {
+    const template = pairs.find((p: any) => (p.riskId === riskKey || p._tempRiskId === riskKey));
     const nextPairs = [...pairs, {
       ...template,
-      controlId: `C-${Date.now()}`,
+      controlId: null,
+      _tempControlId: `c_${Date.now()}`,
       controlDescription: '',
       isKeyControl: false,
-      // Reset compliance metadata for new control
       ipoC: 'N', ipoA: 'N', ipoV: 'N', ipoRa: 'N',
       cosoPrinciples: [],
       itgcAssertions: {}
@@ -161,19 +185,13 @@ export function RegulatoryPropertySheet({
 
   const removePair = (index: number) => {
     const nextPairs = pairs.filter((_: any, i: number) => i !== index);
-    onUpdateNodeData(selectedNode.id, { 
-      regulatoryPairs: nextPairs, 
-      regulatoryData: nextPairs[0] || null 
-    });
+    onUpdateNodeData(selectedNode.id, { regulatoryPairs: nextPairs });
   };
 
-  const removeRisk = (riskId: string) => {
+  const removeRisk = (riskKey: string) => {
     if (window.confirm(t('rcm:matrix.properties.warnings.delete_risk_confirm'))) {
-      const nextPairs = pairs.filter((p: any) => p.riskId !== riskId);
-      onUpdateNodeData(selectedNode.id, { 
-        regulatoryPairs: nextPairs, 
-        regulatoryData: nextPairs[0] || null 
-      });
+      const nextPairs = pairs.filter((p: any) => (p.riskId !== riskKey && p._tempRiskId !== riskKey));
+      onUpdateNodeData(selectedNode.id, { regulatoryPairs: nextPairs });
     }
   };
 
@@ -190,7 +208,7 @@ export function RegulatoryPropertySheet({
           <div className="flex items-center justify-between">
             <div className="flex flex-col gap-1">
               <SheetTitle className="flex items-center gap-2 text-xl">
-                {isActivity ? <ShieldAlert className="h-5 w-5 text-indigo-600" /> : <Database className="h-5 w-5" />}
+                {canHaveRcm ? <ShieldAlert className="h-5 w-5 text-indigo-600" /> : <Database className="h-5 w-5" />}
                 {selectedNode.data.label}
               </SheetTitle>
               <SheetDescription className="font-mono text-[10px] flex gap-2">
@@ -226,7 +244,7 @@ export function RegulatoryPropertySheet({
                       <Label className="text-[9px] font-bold text-slate-500 uppercase">Label</Label>
                       <Input value={selectedNode.data.label} onChange={(e) => onUpdateNodeData(selectedNode.id, { label: e.target.value })} className="h-8 text-xs bg-white" />
                     </div>
-                    {isActivity && (
+                    {canHaveRcm && (
                       <div className="space-y-2">
                         <Label className="text-[9px] font-bold text-slate-500 uppercase">Pelaksana (Role)</Label>
                         <Input value={selectedNode.data.role || ''} onChange={(e) => onUpdateNodeData(selectedNode.id, { role: e.target.value })} className="h-8 text-xs bg-white" />
@@ -235,7 +253,7 @@ export function RegulatoryPropertySheet({
                 </div>
               </section>
 
-              {isActivity && (
+              {canHaveRcm && (
                 <div className="space-y-16">
                   {groupedRisks.length === 0 && (
                     <div className="text-center py-12 border-2 border-dashed rounded-2xl bg-slate-50">
@@ -248,7 +266,7 @@ export function RegulatoryPropertySheet({
                   )}
 
                   {groupedRisks.map((group, gIdx) => (
-                    <div key={group.risk.riskId} className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+                    <div key={group.risk.riskId || group.risk._tempRiskId} className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
                       {/* RISK HEADER CARD */}
                       <div className="bg-red-50/30 border-2 border-red-100 rounded-2xl overflow-hidden shadow-sm shadow-red-50">
                         <div className="bg-red-600 px-4 py-2 flex justify-between items-center text-white">
@@ -257,8 +275,8 @@ export function RegulatoryPropertySheet({
                             <h3 className="text-xs font-black uppercase tracking-widest">Risiko #{gIdx + 1}</h3>
                           </div>
                           <div className="flex items-center gap-3">
-                            <Badge className="bg-red-800 text-[9px] font-mono border-none">{group.risk.riskId}</Badge>
-                            <Button variant="ghost" size="icon" className="h-6 w-6 text-red-200 hover:text-white hover:bg-red-700" onClick={() => removeRisk(group.risk.riskId)}>
+                            <Badge className="bg-red-800 text-[9px] font-mono border-none">{group.risk.riskId || 'PENDING ID'}</Badge>
+                            <Button variant="ghost" size="icon" className="h-6 w-6 text-red-200 hover:text-white hover:bg-red-700" onClick={() => removeRisk(group.risk.riskId || group.risk._tempRiskId)}>
                               <Trash2 className="h-3 w-3" />
                             </Button>
                           </div>
@@ -268,7 +286,7 @@ export function RegulatoryPropertySheet({
                             <Label className="text-[10px] font-black uppercase text-red-900/50">Deskripsi Risiko Aktivitas</Label>
                             <Textarea 
                               value={group.risk.riskDescription || ''} 
-                              onChange={(e) => updateAllPairsForRisk(group.risk.riskId, 'riskDescription', e.target.value)}
+                              onChange={(e) => updateAllPairsForRisk(group.risk.riskId || group.risk._tempRiskId, 'riskDescription', e.target.value)}
                               className="min-h-[80px] text-sm border-red-200 bg-white focus-visible:ring-red-500"
                               placeholder="Apa yang bisa salah?"
                             />
@@ -277,7 +295,7 @@ export function RegulatoryPropertySheet({
                           <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                               <Label className="text-[10px] font-black uppercase text-red-900/50">Terkait Fraud?</Label>
-                              <Select value={group.risk.isFraudRelated ? 'Yes' : 'No'} onValueChange={(v) => updateAllPairsForRisk(group.risk.riskId, 'isFraudRelated', v === 'Yes')}>
+                              <Select value={group.risk.isFraudRelated ? 'Yes' : 'No'} onValueChange={(v) => updateAllPairsForRisk(group.risk.riskId || group.risk._tempRiskId, 'isFraudRelated', v === 'Yes')}>
                                 <SelectTrigger className="h-9 text-sm bg-white border-red-200"><SelectValue /></SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="Yes">{t('common:yes')}</SelectItem>
@@ -287,7 +305,7 @@ export function RegulatoryPropertySheet({
                             </div>
                             <div className="space-y-2">
                               <Label className="text-[10px] font-black uppercase text-red-900/50">Risk Rating</Label>
-                              <Select value={group.risk.riskRating || 'Low'} onValueChange={(v: QualitativeLevel) => updateAllPairsForRisk(group.risk.riskId, 'riskRating', v)}>
+                              <Select value={group.risk.riskRating || 'Low'} onValueChange={(v: QualitativeLevel) => updateAllPairsForRisk(group.risk.riskId || group.risk._tempRiskId, 'riskRating', v)}>
                                 <SelectTrigger className="h-9 text-sm bg-white border-red-200"><SelectValue /></SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="Low">Low</SelectItem>
@@ -299,7 +317,7 @@ export function RegulatoryPropertySheet({
                           </div>
                           
                           <div className="pt-2 flex justify-end">
-                            <Button variant="outline" size="sm" className="h-7 text-[9px] font-bold border-red-200 text-red-700 hover:bg-red-50 gap-1.5" onClick={() => addControlToRisk(group.risk.riskId)}>
+                            <Button variant="outline" size="sm" className="h-7 text-[9px] font-bold border-red-200 text-red-700 hover:bg-red-50 gap-1.5" onClick={() => addControlToRisk(group.risk.riskId || group.risk._tempRiskId)}>
                               <PlusCircle className="h-3 w-3" /> Tambah Kontrol untuk Risiko Ini
                             </Button>
                           </div>
@@ -309,7 +327,7 @@ export function RegulatoryPropertySheet({
                       {/* CONTROLS LIST (Nested) */}
                       <div className="ml-8 space-y-6 relative border-l-2 border-dashed border-slate-200 pl-8">
                         {group.controls.map((ctrl, cIdx) => (
-                          <div key={ctrl.data.controlId} className="bg-white border rounded-xl shadow-sm overflow-hidden group/ctrl relative">
+                          <div key={ctrl.data.controlId || ctrl.data._tempControlId} className="bg-white border rounded-xl shadow-sm overflow-hidden group/ctrl relative">
                               {/* Connector Line */}
                               <div className="absolute -left-8 top-1/2 w-8 h-px bg-dashed border-t-2 border-dashed border-slate-200" />
                               
@@ -319,7 +337,7 @@ export function RegulatoryPropertySheet({
                                     <span className="text-[10px] font-black uppercase text-slate-500 tracking-tight">Kontrol #{cIdx + 1}</span>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <Badge variant="outline" className="font-mono text-[9px] h-5 border-slate-200 text-slate-400">{ctrl.data.controlId}</Badge>
+                                    <Badge variant="outline" className="font-mono text-[9px] h-5 border-slate-200 text-slate-400">{ctrl.data.controlId || 'PENDING'}</Badge>
                                     <Button variant="ghost" size="icon" className="h-6 w-6 text-slate-300 hover:text-rose-600" onClick={() => removeSpecificPair(ctrl.index)}>
                                       <X className="h-3 w-3" />
                                     </Button>
@@ -383,22 +401,24 @@ export function RegulatoryPropertySheet({
                   <Button variant="outline" className="w-full h-14 border-dashed border-2 bg-indigo-50/30 hover:bg-indigo-50 hover:border-indigo-300 text-indigo-600 gap-2 font-black uppercase tracking-widest text-xs" onClick={addNewRisk}>
                     <PlusCircle className="h-5 w-5" /> Identifikasi Risiko Baru
                   </Button>
-
-                  <div className="pt-12 border-t">
-                    <Button 
-                      variant="destructive" 
-                      size="sm" 
-                      className="w-full gap-2 text-[10px] h-10 font-black uppercase tracking-widest shadow-lg shadow-red-100" 
-                      onClick={() => onDeleteNode(selectedNode.id)}
-                    >
-                      <Trash2 className="h-4 w-4" /> Remove Node & ALL Linked Data
-                    </Button>
-                    <p className="text-[9px] text-center text-slate-400 mt-4 italic">
-                      Tindakan ini akan menghapus node dari diagram dan seluruh relasi RCM-nya di database.
-                    </p>
-                  </div>
                 </div>
               )}
+
+              <div className="pt-12 border-t">
+                <Button 
+                  variant="destructive" 
+                  size="sm" 
+                  className="w-full gap-2 text-[10px] h-10 font-black uppercase tracking-widest shadow-lg shadow-red-100" 
+                  onClick={() => onDeleteNode(selectedNode.id)}
+                >
+                  <Trash2 className="h-4 w-4" /> Remove Node {canHaveRcm ? '& ALL Linked Data' : ''}
+                </Button>
+                <p className="text-[9px] text-center text-slate-400 mt-4 italic">
+                  {selectedNode.type === 'swimlane' 
+                    ? "Menghapus Swimlane tidak akan menghapus node di dalamnya, namun akan melepas pengelompokannya."
+                    : "Tindakan ini akan menghapus node dari diagram dan seluruh relasi RCM-nya di database (jika ada)."}
+                </p>
+              </div>
             </TabsContent>
 
             <TabsContent value="history" className="m-0 p-6 focus-visible:outline-none">

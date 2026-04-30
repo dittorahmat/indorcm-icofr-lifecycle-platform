@@ -1,6 +1,16 @@
 {
   "title": "BPM Workflow",
   "description": "Map business processes and controls at the transaction level.",
+  "baseline": {
+    "status": "Official Baseline",
+    "description": "Using approved scoping results for {{year}} fiscal year.",
+    "empty": "No approved scoping baseline found for {{year}}. Please contact Admin/Line 2 to approve a scoping simulation."
+  },
+  "unsavedChanges": {
+    "title": "Unsaved Assertions",
+    "description": "You have unsaved changes in the financial assertions table. Switching accounts or leaving now will discard these changes.",
+    "confirm": "Discard & Continue"
+  },
   "fsliLabel": "FSLI",
   "searchPlaceholder": "Search Sub Process...",
   "createButton": "Create BPM",
@@ -136,7 +146,17 @@
       "decision": "Decision?",
       "output": "System Output",
       "physical": "Physical Form",
-      "reference": "Reference"
+      "reference": "Reference",
+      "swimlane": "Swimlane / Division",
+      "manualInput": "Manual Input",
+      "externalProcess": "External Process",
+      "offPageRef": "Off-page Reference",
+      "dataMedia": "Data Media (Cylinder)"
+    },
+    "swimlane": {
+      "department": "Department",
+      "function": "Fungsi / Function",
+      "add": "Add Swimlane"
     },
     "roles": {
       "default": "Staff"
