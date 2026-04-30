@@ -135,12 +135,15 @@ export function BPMPage() {
     }
   });
 
-  // 1b. Fetch Active Simulation for Account Assignments - Filtered by viewYear
+  // 1b. Fetch Active Simulation for Account Assignments - Filtered by viewYear & Status Approved
   const { data: activeSim } = useQuery({
     queryKey: ['active-simulation', viewYear],
     queryFn: async () => {
       const list = await api<{ items: MaterialitySimulation[] }>(`/api/simulations?year=${viewYear}`);
-      return [...list.items].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))[0] || null;
+      // Filter ONLY Approved and get the latest by createdAt as the official baseline
+      return [...list.items]
+        .filter(s => s.status === 'Approved')
+        .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))[0] || null;
     }
   });
 
@@ -207,16 +210,27 @@ export function BPMPage() {
     updateAssertionMutation.mutate(localAssertion);
   };
 
-  // 2. Derive unique significant FSLIs based on Scoping Criteria
+  // 2. Derive unique significant FSLIs based on Scoping Criteria with Auto-Healing
   const significantFsliNames = React.useMemo(() => {
     const names = new Set<string>();
     if (activeSim && activeSim.significantAccounts) {
-      activeSim.significantAccounts.forEach(sa => { if (sa.name) names.add(sa.name); });
+      activeSim.significantAccounts.forEach(sa => { 
+        if (sa.name) {
+          // AUTO-HEALING: If sa.name is actually a GL Description (found in snapshot rows),
+          // reconcile it back to the true FSLI Name.
+          const glMatch = activeSnap?.rows.find(r => r.glDesc === sa.name || r.noGL === sa.fsliCode);
+          if (glMatch && glMatch.fsliName) {
+            names.add(glMatch.fsliName);
+          } else {
+            names.add(sa.name);
+          }
+        }
+      });
     }
     const urlFsli = searchParams.get('fsli');
     if (urlFsli) names.add(urlFsli);
     return Array.from(names).sort();
-  }, [activeSim, searchParams]);
+  }, [activeSim, activeSnap, searchParams]);
 
   // 3. Filtered GL Numbers (Unique combination of noGL + glDesc)
   const glNumbers = React.useMemo(() => {
@@ -344,7 +358,17 @@ export function BPMPage() {
                 <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
                   <Database className="h-3 w-3" /> 1. {t('bpm:fsliLabel')}
                 </Label>
-                <Select value={selectedFsli} onValueChange={(v) => { setSelectedFsli(v); setSelectedAccountKey(""); setSelectedBpmId(null); }}>
+                <Select 
+                  value={selectedFsli} 
+                  onValueChange={(v) => { 
+                    if (isAssertionDirty && !window.confirm(t('bpm:unsavedChanges.description'))) {
+                      return;
+                    }
+                    setSelectedFsli(v); 
+                    setSelectedAccountKey(""); 
+                    setSelectedBpmId(null); 
+                  }}
+                >
                   <SelectTrigger className="bg-white border-slate-200">
                     <SelectValue placeholder="Choose FSLI..." />
                   </SelectTrigger>
@@ -360,7 +384,16 @@ export function BPMPage() {
                 <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
                   <Search className="h-3 w-3" /> 2. {t('common:glAccount', 'GL Account')}
                 </Label>
-                <Select value={selectedAccountKey} onValueChange={setSelectedAccountKey} disabled={!selectedFsli}>
+                <Select 
+                  value={selectedAccountKey} 
+                  onValueChange={(v) => {
+                    if (isAssertionDirty && !window.confirm(t('bpm:unsavedChanges.description'))) {
+                      return;
+                    }
+                    setSelectedAccountKey(v);
+                  }} 
+                  disabled={!selectedFsli}
+                >
                   <SelectTrigger className="bg-white border-slate-200">
                     <SelectValue placeholder="Choose GL Account..." />
                   </SelectTrigger>
@@ -389,7 +422,25 @@ export function BPMPage() {
           </CardContent>
         </Card>
 
-        {!selectedAccountKey ? (
+        {activeSim && activeSim.status === 'Approved' ? (
+          <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 flex items-center gap-3">
+            <ShieldCheck className="h-5 w-5 text-emerald-600" />
+            <div>
+              <p className="text-xs font-bold text-emerald-900">{t('bpm:baseline.status')}</p>
+              <p className="text-[10px] text-emerald-700">{t('bpm:baseline.description', { year: viewYear })}</p>
+            </div>
+          </div>
+        ) : !snapLoading && (
+          <div className="py-20 text-center border-2 border-dashed rounded-xl bg-orange-50/30 border-orange-100">
+            <ShieldAlert className="h-12 w-12 text-orange-400 mx-auto mb-4" />
+            <h3 className="text-lg font-bold text-orange-800">{t('bpm:baseline.status')} Not Found</h3>
+            <p className="text-orange-600/80 text-sm max-w-md mx-auto mt-2">
+              {t('bpm:baseline.empty', { year: viewYear })}
+            </p>
+          </div>
+        )}
+
+        {!activeSim ? null : !selectedAccountKey ? (
           <div className="py-20 text-center border-2 border-dashed rounded-xl bg-slate-50/30">
             <Info className="h-12 w-12 text-slate-300 mx-auto mb-4" />
             <p className="text-slate-500 font-medium">Select an FSLI and GL Account to begin mapping.</p>

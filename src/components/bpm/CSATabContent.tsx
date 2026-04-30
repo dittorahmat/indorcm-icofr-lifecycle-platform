@@ -176,7 +176,7 @@ export function CSATabContent({ noGL: propNoGL, controls: propControls, standalo
     enabled: !propControls && (!!noGL || standalone)
   });
 
-  const controls = propControls || standaloneControls || [];
+  const controls = useMemo(() => propControls || standaloneControls || [], [propControls, standaloneControls]);
 
   // Initial Control Selection
   useEffect(() => {

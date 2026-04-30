@@ -1,0 +1,1 @@
+CREATE INDEX "year_status_idx" ON "simulations" USING btree ("year","status","created_at");

@@ -1,0 +1,1 @@
+ALTER TABLE "applications" ADD COLUMN "itgc_areas" jsonb DEFAULT '[]'::jsonb;

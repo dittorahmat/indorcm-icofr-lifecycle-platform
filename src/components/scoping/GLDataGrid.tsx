@@ -431,7 +431,7 @@ export const GLDataGrid = React.memo(function GLDataGrid({
         }
       }
     ],
-    [t, pmValue, assessmentData, isReadOnly, onAssessmentChange, onOwnerAcceptanceChange, currentUser, departments, onAssignDepartments, applications, selectedApps, onAppsChange, onQuickAddApp]
+    [t, pmValue, assessmentData, isReadOnly, onAssessmentChange, onOwnerAcceptanceChange, currentUser, onAssignDepartments, applications, selectedApps, onAppsChange, onQuickAddApp, deptOptions]
   );
 
   const table = useReactTable({

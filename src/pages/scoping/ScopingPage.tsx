@@ -531,10 +531,10 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
       const isKuanSignificant = Math.abs(row.balance) >= pmValue;
       return isQualSignificant || isKuanSignificant;
     }).map(row => ({
-      name: row.glDesc,
+      name: row.fsliName || "Unmapped FSLI",
       balance: row.balance,
       isQuantitative: Math.abs(row.balance) >= pmValue,
-      fsliCode: row.noGL,
+      fsliCode: row.fsliCode || row.noGL, // Prefer FSLI code, fallback to noGL for unique ID
       assignedDepartmentIds: localDeptMappings[row.noGL] || []
     }));
   }, [mergedGlData, simState.assessmentData, pmValue, localDeptMappings]);
