@@ -1,5 +1,5 @@
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,9 +7,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Network, ShieldCheck, AlertCircle, FileSearch, Plus, Info, Globe } from 'lucide-react';
+import { Network, ShieldCheck, AlertCircle, FileSearch, Plus, Info, Globe, Edit, Trash2 } from 'lucide-react';
 import { api } from '@/lib/api-client';
-import { COBIT_ITGC_MAPPING } from '@/lib/compliance-utils';
 import type { SOCReport, Application, Vendor } from '@shared/types';
 import { SOCReviewDialog } from '@/components/audit/SOCReviewDialog';
 import { AddApplicationDialog } from '@/components/rcm/AddApplicationDialog';
@@ -18,19 +17,37 @@ import { AddSOCReportDialog } from '@/components/audit/AddSOCReportDialog';
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 import { toast } from 'sonner';
 
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
 export function SOCMonitoringPage() {
   const { t } = useTranslation(['sidebar', 'rcm', 'scoping', 'common']);
+  const queryClient = useQueryClient();
   const [selectedReport, setSelectedReport] = React.useState<SOCReport | null>(null);
+  const [editingApp, setEditingApp] = React.useState<Application | null>(null);
   const [isAddAppModalOpen, setIsAddAppModalOpen] = React.useState(false);
   const [isAddVendorModalOpen, setIsAddVendorModalOpen] = React.useState(false);
   const [isAddSOCModalOpen, setIsAddSOCModalOpen] = React.useState(false);
 
-  // Protected state if any modal is open (simple example)
-  useUnsavedChanges(isAddAppModalOpen || isAddVendorModalOpen || isAddSOCModalOpen || !!selectedReport);
+  // Protected state if any modal is open
+  useUnsavedChanges(isAddAppModalOpen || isAddVendorModalOpen || isAddSOCModalOpen || !!selectedReport || !!editingApp);
 
   const { data: appsData, isLoading: isLoadingApps } = useQuery({
     queryKey: ['applications'],
     queryFn: () => api<{ items: Application[] }>('/api/applications'),
+  });
+
+  const deleteAppMutation = useMutation({
+    mutationFn: (id: string) => 
+      api(`/api/applications/${id}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['applications'] });
+      toast.success("Application removed from library");
+    }
   });
 
   const { data: socData, isLoading: isLoadingSOC } = useQuery({
@@ -77,7 +94,7 @@ export function SOCMonitoringPage() {
             <TabsTrigger value="soc">SOC Monitoring</TabsTrigger>
           </TabsList>
 
-          {/* TAB 1: APPLICATIONS (FIRST) */}
+          {/* TAB 1: APPLICATIONS */}
           <TabsContent value="apps" className="space-y-6 pt-4">
             <Card className="shadow-sm">
               <CardHeader>
@@ -92,21 +109,21 @@ export function SOCMonitoringPage() {
                       <TableHead>Criticality</TableHead>
                       <TableHead>ITGC Status</TableHead>
                       <TableHead>Linked Controls</TableHead>
-                      <TableHead>ITGC Areas (Tabel 1 Mapping)</TableHead>
+                      <TableHead>ITGC Areas (Table 1 Mapping)</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {isLoadingApps ? (
-                      <TableRow><TableCell colSpan={5} className="h-24 text-center">Loading...</TableCell></TableRow>
+                      <TableRow><TableCell colSpan={6} className="h-24 text-center">Loading...</TableCell></TableRow>
                     ) : !appsData?.items.length ? (
                       <TableRow>
-                        <TableCell colSpan={5} className="h-32 text-center text-slate-400 italic">
+                        <TableCell colSpan={6} className="h-32 text-center text-slate-400 italic">
                           No applications found. Click "Add Application" to start.
                         </TableCell>
                       </TableRow>
                     ) : appsData.items.map((app) => {
-                      const cobitId = "BAI06"; 
-                      const mappedAreas = COBIT_ITGC_MAPPING[cobitId] || [];
+                      const mappedAreas = app.itgcAreas || [];
                       
                       return (
                         <TableRow key={app.id} className="hover:bg-slate-50/50 transition-colors">
@@ -135,12 +152,41 @@ export function SOCMonitoringPage() {
                             </span>
                           </TableCell>
                           <TableCell>
-                            <div className="flex gap-1 flex-wrap">
-                              {mappedAreas.map(area => (
-                                <Badge key={area} variant="outline" className="text-[8px] bg-blue-50 text-blue-700 border-blue-200 uppercase font-black">
-                                  {area}
-                                </Badge>
-                              ))}
+                            <TooltipProvider>
+                              <div className="flex gap-1 flex-wrap">
+                                {mappedAreas.map(area => (
+                                  <Tooltip key={area}>
+                                    <TooltipTrigger asChild>
+                                      <Badge variant="outline" className="text-[8px] bg-blue-50 text-blue-700 border-blue-200 uppercase font-black cursor-help">
+                                        {area.split(' ').map(word => word[0]).join('')}
+                                      </Badge>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p className="text-xs">{area}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                ))}
+                                {mappedAreas.length === 0 && <span className="text-[10px] text-slate-400 italic">No mapping</span>}
+                              </div>
+                            </TooltipProvider>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-1">
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-indigo-600" onClick={() => setEditingApp(app)}>
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-8 w-8 text-slate-400 hover:text-destructive" 
+                                onClick={() => {
+                                  if (confirm("Remove application from library?")) {
+                                    deleteAppMutation.mutate(app.id);
+                                  }
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
                             </div>
                           </TableCell>
                         </TableRow>
@@ -270,8 +316,16 @@ export function SOCMonitoringPage() {
         )}
 
         <AddApplicationDialog 
-          isOpen={isAddAppModalOpen}
-          onOpenChange={setIsAddAppModalOpen}
+          isOpen={isAddAppModalOpen || !!editingApp}
+          onOpenChange={(open) => {
+            if (!open) {
+              setIsAddAppModalOpen(false);
+              setEditingApp(null);
+            } else {
+              setIsAddAppModalOpen(true);
+            }
+          }}
+          initialData={editingApp}
         />
 
         <AddVendorDialog 

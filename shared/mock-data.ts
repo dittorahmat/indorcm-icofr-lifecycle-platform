@@ -827,7 +827,49 @@ export const MOCK_DEFICIENCIES: Deficiency[] = [
 export const MOCK_ACTION_PLANS: ActionPlan[] = [];
 export const MOCK_MATERIALITY: Materiality[] = [];
 export const MOCK_SCOPING: Scoping[] = [];
-export const MOCK_APPLICATIONS: Application[] = [];
+export const MOCK_APPLICATIONS: Application[] = [
+  {
+    id: 'app-001',
+    name: 'SAP S/4HANA',
+    version: '2022',
+    description: 'Enterprise Resource Planning for finance and procurement',
+    statusITGC: 'Effective',
+    criticality: 'High',
+    isSignificant: true,
+    linkedControlCount: 12,
+    itgcAreas: ['Access to Program and Data', 'Program Changes', 'Computer Operations']
+  },
+  {
+    id: 'app-002',
+    name: 'Weighbridge System',
+    description: 'Coal volume measurement system at site',
+    statusITGC: 'Effective',
+    criticality: 'High',
+    isSignificant: true,
+    linkedControlCount: 5,
+    itgcAreas: ['Access to Program and Data', 'Program Changes']
+  },
+  {
+    id: 'app-003',
+    name: 'QC Lab System',
+    description: 'Laboratory information system for coal quality analysis',
+    statusITGC: 'Not Tested',
+    criticality: 'Medium',
+    isSignificant: true,
+    linkedControlCount: 3,
+    itgcAreas: ['Access to Program and Data']
+  },
+  {
+    id: 'app-004',
+    name: 'SCADA Production',
+    description: 'Real-time mining production monitoring',
+    statusITGC: 'Ineffective',
+    criticality: 'Medium',
+    isSignificant: false,
+    linkedControlCount: 0,
+    itgcAreas: ['Computer Operations']
+  }
+];
 export const MOCK_RISK_LIBRARY: RiskLibrary[] = [
   { id: 'risk-coal-01', cluster: 'Industri Mineral dan Batubara', description: 'Risk 1', suggestedAssertions: ['Accuracy', 'Valuation', 'Completeness'] },
 ];

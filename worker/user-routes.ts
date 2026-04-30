@@ -182,7 +182,8 @@ export function userRoutes(app: Hono<HonoEnv>) {
     try {
       await db.execute(sql`ALTER TABLE simulations ADD COLUMN IF NOT EXISTS significant_accounts jsonb;`);
       await db.execute(sql`ALTER TABLE "user" ADD COLUMN IF NOT EXISTS "language" text DEFAULT 'en';`);
-      return ok(c, { message: "Database fixed! Columns significant_accounts and language added." });
+      await db.execute(sql`ALTER TABLE applications ADD COLUMN IF NOT EXISTS itgc_areas jsonb DEFAULT '[]';`);
+      return ok(c, { message: "Database fixed! Columns significant_accounts, language, and itgc_areas added." });
     } catch (e: any) {
       return ok(c, { error: e.message });
     }
@@ -2141,9 +2142,27 @@ export function userRoutes(app: Hono<HonoEnv>) {
       statusITGC: body.statusITGC || "Not Tested",
       criticality: body.criticality || "Medium",
       isSignificant: body.isSignificant ?? false,
+      itgcAreas: body.itgcAreas || [],
     };
     await db.insert(applications).values(newApp as any);
     return ok(c, newApp);
+  });
+
+  app.patch('/api/applications/:id', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const id = c.req.param('id');
+    const orgId = c.get('organizationId');
+    const body = await c.req.json<Partial<Application>>();
+    await db.update(applications)
+      .set({
+        name: body.name,
+        description: body.description,
+        statusITGC: body.statusITGC,
+        criticality: body.criticality,
+        itgcAreas: body.itgcAreas,
+      })
+      .where(and(eq(applications.id, id), eq(applications.organizationId, orgId)));
+    return ok(c, { success: true });
   });
 
   app.put('/api/applications/:id', async (c) => {
@@ -2157,6 +2176,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
         description: body.description,
         statusITGC: body.statusITGC,
         criticality: body.criticality,
+        itgcAreas: body.itgcAreas,
       })
       .where(and(eq(applications.id, id), eq(applications.organizationId, orgId)));
     return ok(c, { success: true });

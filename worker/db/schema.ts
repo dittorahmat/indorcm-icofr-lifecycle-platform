@@ -379,6 +379,7 @@ export const applications = pgTable("applications", {
 	statusITGC: text("status_itgc"),
 	criticality: text("criticality"),
 	isSignificant: boolean("is_significant").default(false),
+	itgcAreas: jsonb("itgc_areas").$type<string[]>().default([]),
 });
 
 export const bpmProcesses = pgTable("bpm_processes", {

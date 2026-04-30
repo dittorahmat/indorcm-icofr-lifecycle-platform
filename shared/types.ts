@@ -134,6 +134,7 @@ export interface Application {
   criticality: "High" | "Medium" | "Low";
   isSignificant?: boolean; // New: Flag from Scoping
   linkedControlCount?: number; // New: Cross-check with RCM
+  itgcAreas?: ITGCArea[]; // New: Manual mapping (Program Dev, Changes, Ops, Access)
 }
 
 export interface RiskLibrary {

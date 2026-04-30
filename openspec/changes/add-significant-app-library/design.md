@@ -21,6 +21,8 @@ Menghubungkan akun finansial dengan sistem IT saat ini bersifat manual dan rawan
 - **Logika Validasi Visual**: API `/api/applications` akan mengembalikan field `linkedControlCount`. Jika nilai ini `0` untuk aplikasi yang dipilih di Scoping, maka UI akan merendernya dengan warna merah (`text-destructive`) untuk memperingatkan auditor bahwa kontrol untuk aplikasi tersebut belum didokumentasikan di RCM.
 - **Sinkronisasi RCM (ID-Based)**: Kolom `supportingApp` di Matriks TLC dan ITGC akan diubah menjadi `applicationId` (Foreign Key). Input UI akan menggunakan `Select` komponen dengan `app.id` sebagai value. Data legacy berbasis teks akan tetap dipertahankan di kolom lama untuk referensi, namun link fungsional akan menggunakan ID.
 - **Relational Integrity**: Menambahkan kolom `applicationId` pada tabel `rcm_controls` yang mereferensikan tabel `applications`.
+- **Manajemen CRUD Terpusat**: Fitur Add, Edit, dan Delete aplikasi diintegrasikan dalam halaman Inventory Aplikasi. Penghapusan aplikasi menyertakan konfirmasi untuk mencegah hilangnya referensi kontrol secara tidak sengaja.
+- **Manual ITGC Mapping Contextual**: Pemetaan manual ke 4 area ITGC (Access, Changes, Dev, Ops) dilakukan di dalam dialog Create/Edit aplikasi alih-alih di tabel utama. Hal ini untuk memastikan perubahan dilakukan secara sengaja dan didampingi informasi lengkap (label teks penuh di dialog, inisial dengan tooltip di tabel).
 
 ## Risks / Trade-offs
 
