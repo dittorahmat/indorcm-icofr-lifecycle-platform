@@ -1,0 +1,21 @@
+{
+  "tabs": {
+    "worksheet": "Worksheet",
+    "sampling": "Transaction Detail",
+    "csa": "CSA Assessment",
+    "rcm": "RCM Matrix",
+    "logs": "Change Log"
+  },
+  "sampling": {
+    "title": "Transaction Sampling",
+    "description": "Select Journal/GL rows to be tested in this CSA.",
+    "apply": "Add as CSA Samples",
+    "selected": "Selected Transactions"
+  },
+  "assessment": {
+    "multiControl": "Multi-Control CSA Table",
+    "zeroTolerance": "Zero Tolerance: Any failure results in Ineffective status.",
+    "evidenceCount": "Verification Points",
+    "submit": "Submit & Sign-off (Manager)"
+  }
+}

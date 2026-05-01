@@ -41,7 +41,7 @@ interface GLDataGridProps {
   applications?: (Application & { linkedControlCount?: number })[];
   selectedApps?: Record<string, string[]>; // accountCode -> appIds
   onAppsChange?: (accountCode: string, appIds: string[]) => void;
-  onQuickAddApp?: (name: string) => Promise<void>;
+  onQuickAddApp?: (name: string, accountCode: string) => Promise<void>;
 }
 
 const QUALITATIVE_RULES = [

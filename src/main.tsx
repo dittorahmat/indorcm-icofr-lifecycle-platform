@@ -36,6 +36,7 @@ const ChangeLogPage = lazy(() => import('@/pages/rcm/ChangeLogPage').then(module
 const SOCMonitoringPage = lazy(() => import('@/pages/rcm/SOCMonitoringPage').then(module => ({ default: module.SOCMonitoringPage })));
 const BPMPage = lazy(() => import('@/pages/bpm/BPMPage').then(module => ({ default: module.BPMPage })));
 const CSAPage = lazy(() => import('@/pages/csa/CSAPage').then(module => ({ default: module.CSAPage })));
+const TodoListPage = lazy(() => import('@/pages/csa/TodoListPage').then(module => ({ default: module.TodoListPage })));
 const UserManagementPage = lazy(() => import('@/pages/admin/UserManagementPage').then(module => ({ default: module.UserManagementPage })));
 const SettingsPage = lazy(() => import('@/pages/admin/SettingsPage').then(module => ({ default: module.SettingsPage })));
 const DocumentsPage = lazy(() => import('@/pages/knowledge/DocumentsPage').then(module => ({ default: module.DocumentsPage })));
@@ -84,6 +85,7 @@ const router = createBrowserRouter([
               { path: "/soc-monitoring", element: <PageSuspense><SOCMonitoringPage /></PageSuspense> },
               { path: "/applications", element: <PageSuspense><SOCMonitoringPage /></PageSuspense> },
               { path: "/bpm", element: <PageSuspense><BPMPage /></PageSuspense> },
+              { path: "/todo", element: <PageSuspense><TodoListPage /></PageSuspense> },
               { path: "/csa", element: <PageSuspense><CSAPage /></PageSuspense> },
               { path: "/testing", element: <PageSuspense><TestWorkbench /></PageSuspense> },
               { path: "/deficiencies", element: <PageSuspense><DeficiencyBoard /></PageSuspense> },

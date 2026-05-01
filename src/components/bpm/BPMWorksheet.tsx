@@ -45,9 +45,10 @@ interface BPMWorksheetProps {
   bpmProcessId: string;
   fsliName: string;
   noGL: string;
+  workingYear: string;
 }
 
-export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps) {
+export function BPMWorksheet({ bpmProcessId, fsliName, noGL, workingYear }: BPMWorksheetProps) {
   const { t } = useTranslation('bpm');
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -127,10 +128,9 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
       method: 'POST',
       body: JSON.stringify({ name: `Flow: ${subProcess}`, subProcess })
     }),
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['bpm-diagrams'] });
-      setSelectedDiagramId(data.id);
-      setIsBpmModalOpen(true);
+      handleOpenDiagram(data.id, variables);
     }
   });
 
@@ -215,6 +215,19 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
       header: 'No',
       cell: info => <span className="text-[10px] text-slate-400 px-2">{info.row.index + 1}</span>,
       size: 40
+    },
+    {
+      accessorKey: 'bpmCode',
+      header: 'No. BPM',
+      cell: ({ row, getValue }) => (
+        <Input 
+          className="h-8 text-[10px] border-slate-200 focus:border-indigo-300 bg-white px-2 font-mono uppercase w-[100px]"
+          placeholder="BPM-001"
+          defaultValue={getValue<string>()}
+          onBlur={(e) => debouncedUpdate(row.original.id, 'bpmCode', e.target.value)}
+        />
+      ),
+      size: 110
     },
     {
       id: 'workflow',
@@ -624,6 +637,7 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL }: BPMWorksheetProps
               <BPMEditor 
                 diagramId={selectedDiagramId} 
                 subProcess={currentSubProcess}
+                workingYear={workingYear}
               />
             )}
           </div>

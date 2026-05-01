@@ -222,7 +222,7 @@ export function RCMList() {
                     <TableRow><TableCell colSpan={6} className="h-32 text-center text-slate-400 italic">No ITGC records found.</TableCell></TableRow>
                   ) : (controlsData?.items || []).filter(c => c.level === 'ITGC' && (c.name.toLowerCase().includes(searchTerm.toLowerCase()) || c.code?.toLowerCase().includes(searchTerm.toLowerCase()))).map((ctrl) => (
                     <TableRow key={ctrl.id} className="group hover:bg-indigo-50/10 transition-colors">
-                      <TableCell><Badge variant="outline" className="text-[10px] font-bold text-indigo-600 border-indigo-200 bg-indigo-50">{ctrl.itgcDomain || 'Unassigned'}</Badge></TableCell>
+                      <TableCell><Badge variant="outline" className="text-[10px] font-bold text-indigo-600 border-indigo-200 bg-indigo-50">{ctrl.itgcArea || 'Unassigned'}</Badge></TableCell>
                       <TableCell className="font-mono text-xs font-bold text-slate-500">{ctrl.code}</TableCell>
                       <TableCell>
                         <div className="flex flex-col">
@@ -231,9 +231,9 @@ export function RCMList() {
                         </div>
                       </TableCell>
                       <TableCell className="text-center">
-                        <Badge className="bg-slate-100 text-slate-600 border-none text-[9px] font-bold uppercase">{ctrl.automatedControlType || '-'}</Badge>
+                        <Badge className="bg-slate-100 text-slate-600 border-none text-[9px] font-bold uppercase">{ctrl.automatedSubNature || '-'}</Badge>
                       </TableCell>
-                      <TableCell className="text-sm font-medium text-slate-600">{ctrl.supportingApp || '-'}</TableCell>
+                      <TableCell className="text-sm font-medium text-slate-600">{ctrl.itApplication || '-'}</TableCell>
                       <TableCell className="text-right">
                         <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 opacity-0 group-hover:opacity-100" onClick={() => handleEditControl(ctrl)}>
                           <Edit className="h-4 w-4" />

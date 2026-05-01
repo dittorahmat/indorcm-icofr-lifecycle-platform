@@ -11,7 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import type { 
-  MaterialitySimulation, GLRow, GLSnapshot, QualitativeLevel, UserRole, SimulationStatus, Department 
+  MaterialitySimulation, GLRow, GLSnapshot, QualitativeLevel, UserRole, SimulationStatus, Department, Application 
 } from '@shared/types';
 import { Badge } from '@/components/ui/badge';
 import { 

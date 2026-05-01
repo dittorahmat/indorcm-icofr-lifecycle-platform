@@ -452,9 +452,9 @@ export function ReportsPage() {
                               <TableCell className="text-center">
                                 <Badge className={cn(
                                   "text-[10px] uppercase font-bold",
-                                  (test.result === 'Effective' || test.result === 'Pass') ? "bg-green-100 text-green-700 hover:bg-green-100 border-green-200" : "bg-red-100 text-red-700 hover:bg-red-100 border-red-200"
+                                  test.result === 'Effective' ? "bg-green-100 text-green-700 hover:bg-green-100 border-green-200" : "bg-red-100 text-red-700 hover:bg-red-100 border-red-200"
                                 )} variant="outline">
-                                  {(test.result === 'Effective' || test.result === 'Pass') ? <><CheckCircle2 className="h-2 w-2 mr-1" /> {t('reports:testing.effective').toUpperCase()}</> : <><XCircle className="h-2 w-2 mr-1" /> {t('reports:testing.ineffective').toUpperCase()}</>}
+                                  {test.result === 'Effective' ? <><CheckCircle2 className="h-2 w-2 mr-1" /> {t('reports:testing.effective').toUpperCase()}</> : <><XCircle className="h-2 w-2 mr-1" /> {t('reports:testing.ineffective').toUpperCase()}</>}
                                 </Badge>
                               </TableCell>
                               <TableCell className="py-3 text-[10px] text-muted-foreground leading-relaxed">

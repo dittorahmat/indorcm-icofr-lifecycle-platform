@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { 
   Plus, Search, Database, FileSpreadsheet, Loader2, Info, ChevronRight, 
   Trash2, AlertTriangle, PlusCircle, CheckCircle2, Shield, Edit2, ExternalLink,
-  Workflow as WorkflowIcon, Save, ShieldCheck
+  Workflow as WorkflowIcon, Save, ShieldCheck, ShieldAlert
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
@@ -256,16 +256,20 @@ export function BPMPage() {
   }, [selectedAccountKey, activeSnap]);
 
   // Authorization Logic
-  const { assignedDeptId, departmentName, hasAccess } = React.useMemo(() => {
+  const { assignedDeptIds, departmentName, hasAccess } = React.useMemo(() => {
     if (!selectedGLRow || !activeSim || !currentUser) return { hasAccess: true, departmentName: "Finance & Accounting" };
     const assignment = activeSim.significantAccounts?.find(sa => 
       sa.name === selectedGLRow.fsliName || (sa.fsliCode && sa.fsliCode === selectedGLRow.fsliCode)
     );
-    const deptId = assignment?.assignedDepartmentId;
-    const deptName = MOCK_DEPARTMENTS.find(d => d.id === deptId)?.name || "Unassigned";
-    if (currentUser.role === 'Line 2' || currentUser.role === 'Admin') return { assignedDeptId: deptId, departmentName: deptName, hasAccess: true };
-    const match = currentUser.departmentId === deptId;
-    return { assignedDeptId: deptId, departmentName: deptName, hasAccess: match };
+    const deptIds = assignment?.assignedDepartmentIds || [];
+    const deptName = deptIds.length > 0 
+      ? deptIds.map(id => MOCK_DEPARTMENTS.find(d => d.id === id)?.name).filter(Boolean).join(", ")
+      : "Unassigned";
+    
+    if (currentUser.role === 'Line 2' || currentUser.role === 'Admin') return { assignedDeptIds: deptIds, departmentName: deptName, hasAccess: true };
+    
+    const match = !!currentUser.departmentId && deptIds.includes(currentUser.departmentId);
+    return { assignedDeptIds: deptIds, departmentName: deptName, hasAccess: match };
   }, [selectedGLRow, activeSim, currentUser]);
 
   // 4. Fetch BPM Processes for selected account
@@ -758,7 +762,7 @@ export function BPMPage() {
                                 onClick={() => { 
                                   setSelectedBpmId(bpm.id); 
                                   setSelectedBpmName(bpm.name);
-                                  setIsCsaModalOpen(true); 
+                                  setIsModalOpen(true); // Open the Hub instead of CSAModal
                                 }}
                               >
                                 <span className="font-bold text-indigo-600 hover:underline flex items-center gap-1.5">
@@ -768,7 +772,7 @@ export function BPMPage() {
                                 <span className="text-[10px] text-slate-400 uppercase tracking-tighter">BPM ID: {bpm.id.substring(0,8)}</span>
                               </div>
                             </TooltipTrigger>
-                            <TooltipContent>Run Control Self Assessment (CSA)</TooltipContent>
+                            <TooltipContent>Open Execution Hub (CSA, Sampling, RCM)</TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
                       </TableCell>
@@ -797,6 +801,7 @@ export function BPMPage() {
             glDesc={selectedGLRow.glDesc}
             fsliName={selectedFsli}
             bpmProcessId={selectedBpmId || undefined}
+            year={viewYear}
           />
         )}
 

@@ -255,11 +255,15 @@ export function DeficiencyBoard() {
       severityMutation.mutate({ 
         id: activeDeficiencyId, 
         severity, 
-        // @ts-expect-error - passing extra metadata for the API
         rationale, 
         ...metadata 
       });
     }
+  };
+
+  const handleRoleChange = (role: string) => {
+    localStorage.setItem('mockRole', role);
+    window.location.reload();
   };
 
   const findContainer = useCallback((id: string) => {

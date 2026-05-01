@@ -9,18 +9,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
-  FileSpreadsheet, Network, History, Printer, Send, 
-  CheckCircle2, XCircle, Loader2, Save, PlusCircle, Building2, UserCircle, ShieldCheck
+  FileSpreadsheet, Network, History, Printer, XCircle, 
+  Database, ListChecks, ShieldCheck, FileText
 } from 'lucide-react';
 import { BPMWorksheet } from './BPMWorksheet';
 import { Lampiran6LogView } from './Lampiran6LogView';
 import { CSATabContent } from './CSATabContent';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { TransactionSamplingTab } from './TransactionSamplingTab';
+import { RCMELCPage } from '@/pages/rcm/RCMELCPage';
+import { RCMTLCPage } from '@/pages/rcm/RCMTLCPage';
+import { RCMITGCPage } from '@/pages/rcm/RCMITGCPage';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
-import { Control, User, BPMWorkflowStatus } from '@shared/types';
-import { toast } from 'sonner';
+import { Control, User, GLRow } from '@shared/types';
 import { useTranslation } from 'react-i18next';
-import { cn } from '@/lib/utils';
 
 interface BPMModalProps {
   isOpen: boolean;
@@ -29,6 +31,7 @@ interface BPMModalProps {
   glDesc: string;
   fsliName: string;
   bpmProcessId?: string;
+  year: string;
 }
 
 export function BPMModal({ 
@@ -37,121 +40,137 @@ export function BPMModal({
   noGL, 
   glDesc, 
   fsliName,
-  bpmProcessId 
+  bpmProcessId,
+  year
 }: BPMModalProps) {
   const { t } = useTranslation(['bpm', 'common']);
-  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = React.useState("worksheet");
+  const [selectedSamples, setSelectedSamples] = React.useState<GLRow[]>([]);
 
   const { data: currentUser } = useQuery({
     queryKey: ['auth-me'],
     queryFn: () => api<User>('/api/user/me'),
   });
 
-  const { data: controls, isLoading } = useQuery({
+  const { data: controls } = useQuery({
     queryKey: ['bpm-controls', noGL, bpmProcessId],
     queryFn: async () => {
-      console.log('[BPMModal] Fetching controls for GL:', noGL, 'BPM Process:', bpmProcessId);
       const all = await api<{ items: Control[] }>('/api/controls');
-      
-      // Filter logic: match by bpmProcessId OR fsliCodes
-      const filtered = all.items.filter(c => {
-        const matchesBpm = bpmProcessId && c.bpmProcessId === bpmProcessId;
-        const matchesFsli = c.fsliCodes?.includes(noGL);
-        return matchesBpm || matchesFsli;
-      });
-      
-      console.log('[BPMModal] Filtered controls count:', filtered.length);
-      return filtered;
+      return all.items.filter(c => 
+        (bpmProcessId && c.bpmProcessId === bpmProcessId) || 
+        (!c.bpmProcessId && c.fsliCodes?.includes(noGL))
+      );
     },
     enabled: isOpen
   });
 
-  const submitMutation = useMutation({
-    mutationFn: (id: string) => api(`/api/controls/${id}/submit-for-approval`, { method: 'POST' }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bpm-controls'] });
-      toast.success("Submitted for approval");
-    }
-  });
-
-  const approveMutation = useMutation({
-    mutationFn: (id: string) => api(`/api/controls/${id}/approve`, { method: 'POST' }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bpm-controls'] });
-      toast.success("Approved and logged to Lampiran 6");
-    }
-  });
-
-  const rejectMutation = useMutation({
-    mutationFn: (id: string) => api(`/api/controls/${id}/reject`, { method: 'POST', body: JSON.stringify({ note: "Rejected by Manager" }) }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bpm-controls'] });
-      toast.error("Control changes rejected");
-    }
-  });
-
-  const isLini1Manager = currentUser?.role === 'Line 1' && currentUser?.level === 'Manager';
-  const isLini1Staff = currentUser?.role === 'Line 1' && currentUser?.level === 'Staff';
-
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] w-full h-[90vh] flex flex-col p-0 overflow-hidden">
-        <DialogHeader className="p-6 border-b bg-slate-50/50 shrink-0">
-          <div className="flex justify-between items-start">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <DialogTitle className="text-xl font-bold text-slate-900">
-                  {t('modal.title')}: {glDesc}
-                </DialogTitle>
-                <Badge variant="outline" className="bg-white font-mono text-indigo-600 border-indigo-100">
-                  {noGL}
-                </Badge>
+      <DialogContent className="max-w-[98vw] w-[1600px] h-[95vh] flex flex-col p-0 overflow-hidden border-none shadow-2xl">
+        <DialogHeader className="p-4 border-b bg-indigo-900 text-white shrink-0">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <div className="bg-white/20 p-2 rounded-lg">
+                <Network className="h-5 w-5" />
               </div>
-              <p className="text-sm text-muted-foreground flex items-center gap-2">
-                <Building2 className="h-3.5 w-3.5" /> {fsliName} | 
-                <UserCircle className="h-3.5 w-3.5" /> {t('modal.owner')}: Finance & Accounting
-              </p>
+              <div>
+                <DialogTitle className="text-lg font-black tracking-tight">
+                  Execution Hub: {glDesc}
+                </DialogTitle>
+                <div className="flex items-center gap-2 mt-0.5 opacity-80">
+                  <Badge className="bg-white/20 text-white border-none font-mono text-[10px]">
+                    BPM-REF: {noGL}
+                  </Badge>
+                  <span className="text-[10px] uppercase font-bold tracking-widest">{fsliName}</span>
+                </div>
+              </div>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" className="gap-2 text-indigo-600 border-indigo-200">
-                <Printer className="h-4 w-4" /> Print Lampiran 4
+              <Button variant="outline" size="sm" className="h-8 text-[10px] font-bold bg-white/10 border-white/20 hover:bg-white/20 text-white">
+                <Printer className="h-3.5 w-3.5 mr-1.5" /> Export Appendix 11
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)}>{t('common:actions.cancel')}</Button>
+              <Button variant="ghost" size="icon" onClick={() => onOpenChange(false)} className="text-white hover:bg-white/10">
+                <XCircle className="h-5 w-5" />
+              </Button>
             </div>
           </div>
         </DialogHeader>
 
-        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+        <div className="flex-1 flex flex-col min-h-0 overflow-hidden bg-slate-50">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
-            <div className="px-6 border-b bg-white shrink-0">
-              <TabsList className="h-12 bg-transparent gap-6 p-0">
-                <TabsTrigger value="worksheet" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-bold text-slate-500">
-                  <FileSpreadsheet className="h-4 w-4" /> {t('modal.tabs.worksheet')}
+            <div className="px-6 border-b bg-white shrink-0 shadow-sm z-10">
+              <TabsList className="h-14 bg-transparent gap-8 p-0">
+                <TabsTrigger value="worksheet" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-[11px] uppercase text-slate-500 tracking-wider">
+                  <FileSpreadsheet className="h-4 w-4" /> Worksheet
                 </TabsTrigger>
-                <TabsTrigger value="csa" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-bold text-slate-500">
-                  <ShieldCheck className="h-4 w-4" /> {t('modal.tabs.csa')}
+                <TabsTrigger value="sampling" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-[11px] uppercase text-slate-500 tracking-wider">
+                  <Database className="h-4 w-4" /> Detail Transaksi
                 </TabsTrigger>
-                <TabsTrigger value="logs" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-bold text-slate-500">
-                  <History className="h-4 w-4" /> {t('modal.tabs.logs')}
+                <TabsTrigger value="csa" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-[11px] uppercase text-slate-500 tracking-wider">
+                  <ShieldCheck className="h-4 w-4" /> CSA Assessment
+                </TabsTrigger>
+                <TabsTrigger value="rcm" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-[11px] uppercase text-slate-500 tracking-wider">
+                  <ListChecks className="h-4 w-4" /> RCM Matrix (5a,b,c)
+                </TabsTrigger>
+                <TabsTrigger value="logs" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-[11px] uppercase text-slate-500 tracking-wider">
+                  <History className="h-4 w-4" /> Log Perubahan
                 </TabsTrigger>
               </TabsList>
             </div>
 
-            <div className="flex-1 min-h-0 bg-slate-50/30 overflow-hidden">
+            <div className="flex-1 min-h-0 overflow-hidden">
               <TabsContent value="worksheet" className="m-0 focus-visible:ring-0 h-full overflow-hidden">
                 <BPMWorksheet 
                   noGL={noGL} 
                   fsliName={fsliName} 
                   bpmProcessId={bpmProcessId || ""} 
+                  workingYear={year}
                 />
               </TabsContent>
 
-              <TabsContent value="csa" className="m-0 h-full overflow-auto p-6">
-                <CSATabContent noGL={noGL} controls={controls || []} />
+              <TabsContent value="sampling" className="m-0 focus-visible:ring-0 h-full overflow-hidden">
+                <TransactionSamplingTab 
+                  noGL={noGL} 
+                  onSamplesSelected={(samples) => {
+                    setSelectedSamples(samples);
+                    setActiveTab("csa");
+                  }} 
+                />
               </TabsContent>
 
-              <TabsContent value="logs" className="m-0 h-full overflow-auto p-6">
+              <TabsContent value="csa" className="m-0 focus-visible:ring-0 h-full overflow-hidden">
+                <CSATabContent 
+                  noGL={noGL} 
+                  controls={controls || []} 
+                  initialSamples={selectedSamples}
+                  bpmProcessId={bpmProcessId}
+                />
+              </TabsContent>
+
+              <TabsContent value="rcm" className="m-0 focus-visible:ring-0 h-full overflow-auto p-4">
+                <div className="space-y-8 max-w-full">
+                   <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+                      <div className="bg-indigo-50 p-3 border-b font-bold text-indigo-900 text-xs uppercase tracking-widest flex items-center gap-2">
+                        <FileText className="h-4 w-4" /> Lampiran 5.b - TLC Matrix
+                      </div>
+                      <RCMTLCPage embedded={true} filterBpmId={bpmProcessId} />
+                   </div>
+                   <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+                      <div className="bg-slate-50 p-3 border-b font-bold text-slate-900 text-xs uppercase tracking-widest flex items-center gap-2">
+                        <FileText className="h-4 w-4" /> Lampiran 5.a - ELC Matrix
+                      </div>
+                      <RCMELCPage embedded={true} />
+                   </div>
+                   <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+                      <div className="bg-blue-50 p-3 border-b font-bold text-blue-900 text-xs uppercase tracking-widest flex items-center gap-2">
+                        <FileText className="h-4 w-4" /> Lampiran 5.c - ITGC Matrix
+                      </div>
+                      <RCMITGCPage embedded={true} filterBpmId={bpmProcessId} />
+                   </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="logs" className="m-0 focus-visible:ring-0 h-full overflow-auto p-6">
                 <Lampiran6LogView entityId={noGL} />
               </TabsContent>
             </div>
@@ -160,13 +179,4 @@ export function BPMModal({
       </DialogContent>
     </Dialog>
   );
-}
-
-function StatusBadge({ status }: { status: BPMWorkflowStatus }) {
-  switch (status) {
-    case 'Approved': return <Badge className="bg-green-600 h-5 text-[9px]">Approved</Badge>;
-    case 'Pending Approval': return <Badge variant="secondary" className="bg-amber-100 text-amber-700 border-amber-200 h-5 text-[9px]">Pending</Badge>;
-    case 'Rejected': return <Badge variant="destructive" className="h-5 text-[9px]">Rejected</Badge>;
-    default: return <Badge variant="outline" className="h-5 text-[9px]">{status}</Badge>;
-  }
 }

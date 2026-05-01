@@ -271,13 +271,15 @@ export const controls = pgTable("controls", {
 export const csaRecords = pgTable("csa_records", {
 	id: text("id").primaryKey(),
 	organizationId: text("organizationId").notNull().references(() => organization.id),
-	controlId: text("control_id").notNull().references(() => controls.id),
+	controlId: text("control_id").references(() => controls.id), // Optional for aggregate CSA
+	bpmProcessId: text("bpm_process_id").references(() => bpmProcesses.id), // New: Link to sub-process
 	period: text("period").notNull(),
 	assessmentDate: timestamp("assessment_date").notNull(),
 	assessedBy: text("assessed_by").references(() => user.id),
 	result: text("result").notNull(), // Effective, Ineffective, No Transaction
 	comments: text("comments"),
 	isBpmConfirmed: boolean("is_bpm_confirmed").default(false),
+
 
 	// Section II: Prosedur (Lampiran 7)
 	samplingMethodology: text("sampling_methodology"),
@@ -314,14 +316,22 @@ export const csaSamples = pgTable("csa_samples", {
 	id: text("id").primaryKey(),
 	organizationId: text("organizationId").notNull().references(() => organization.id),
 	csaRecordId: text("csa_record_id").notNull().references(() => csaRecords.id, { onDelete: 'cascade' }),
+	glRowId: text("gl_row_id").references(() => glRows.id), // Link to original transaction
 	sampleRef: text("sample_ref"),
+	
+	// Refactored Multi-Control Results
+	// Format: { [controlId: string]: { implemented: boolean, evidenceUrl?: string } }
+	controlResults: jsonb("control_results"), 
+
+	itacExpectedResult: text("itac_expected_result"),
+	itacActualResult: text("itac_actual_result"),
+	itacMatch: boolean("itac_match").default(false),
+	
+	// Legacy fields (Retained for migration compatibility)
 	attrA: boolean("attr_a").default(false),
 	attrB: boolean("attr_b").default(false),
 	attrC: boolean("attr_c").default(false),
 	attrD: boolean("attr_d").default(false),
-	itacExpectedResult: text("itac_expected_result"),
-	itacActualResult: text("itac_actual_result"),
-	itacMatch: boolean("itac_match").default(false),
 });
 
 export const testRecords = pgTable("test_records", {
@@ -391,6 +401,7 @@ export const bpmProcesses = pgTable("bpm_processes", {
 	id: text("id").primaryKey(),
 	organizationId: text("organizationId").notNull().references(() => organization.id),
 	noGL: text("no_gl").notNull(),
+	bpmCode: text("bpm_code"), // Free-text human readable ID (e.g. BPM-FIN-01)
 	fsliName: text("fsli_name"),
 	name: text("name").notNull(),
 	riskCount: integer("risk_count").default(0),
@@ -545,6 +556,18 @@ export const socEvaluations = pgTable("soc_evaluations", {
 	evaluatedAt: timestamp("evaluated_at").notNull().defaultNow(),
 });
 
+export const csaSchedules = pgTable("csa_schedules", {
+	id: text("id").primaryKey(),
+	organizationId: text("organization_id").notNull().references(() => organization.id),
+	bpmProcessId: text("bpm_process_id").notNull().references(() => bpmProcesses.id, { onDelete: 'cascade' }),
+	plannedDate: timestamp("planned_date").notNull(),
+	type: text("type").notNull(), // CSA, TOD, TOE
+	status: text("status").notNull().default("Not Started"), // Not Started, In Progress, Completed
+	assignedTo: text("assigned_to").references(() => user.id),
+	recurringFrequency: text("recurring_frequency"), // Monthly, Quarterly, etc.
+	createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 // --- RELATIONS ---
 
 export const userRelations = relations(user, ({ many }) => ({
@@ -558,6 +581,15 @@ export const organizationRelations = relations(organization, ({ many }) => ({
 
 export const glSnapshotRelations = relations(glSnapshots, ({ many }) => ({
 	rows: many(glRows),
+}));
+
+export const bpmProcessRelations = relations(bpmProcesses, ({ many }) => ({
+	schedules: many(csaSchedules),
+}));
+
+export const csaScheduleRelations = relations(csaSchedules, ({ one }) => ({
+	bpmProcess: one(bpmProcesses, { fields: [csaSchedules.bpmProcessId], references: [bpmProcesses.id] }),
+	assignee: one(user, { fields: [csaSchedules.assignedTo], references: [user.id] }),
 }));
 
 export const simulationAccountApplicationsRelations = relations(simulationAccountApplications, ({ one }) => ({

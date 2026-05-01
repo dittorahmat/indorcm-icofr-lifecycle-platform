@@ -110,7 +110,7 @@ export const createApp = () => {
     const isKeySame = cachedLicenseStatus?.licenseKey === license.licenseKey;
     const isCacheValid = cachedLicenseStatus && (now - cachedLicenseStatus.timestamp < LICENSE_CACHE_TTL);
 
-    if (isKeySame && isCacheValid) {
+    if (isKeySame && isCacheValid && cachedLicenseStatus) {
       if (cachedLicenseStatus.status) {
         return c.json({ success: false, error: cachedLicenseStatus.status, message: `License issue: ${cachedLicenseStatus.status} (cached)` }, 403);
       }

@@ -10,7 +10,7 @@ import {
   rcmControls, organization, testRecords, aggregateDeficiencies,
   documents, documentDepartments, documentGls, documentFslis,
   systemLicenses, accountAssertions, simulationAccountApplications,
-  vendors, socReports, socEvaluations
+  vendors, socReports, socEvaluations, csaSchedules
 } from './db/schema';
 import { eq, and, desc, sql, ilike, inArray, SQL } from 'drizzle-orm';
 import type { 
@@ -768,13 +768,13 @@ export function userRoutes(app: Hono<HonoEnv>) {
   app.get('/api/rcm-matrix/tlc', async (c) => {
     const db = getDb(c.env.DATABASE_URL);
     const orgId = c.get('organizationId');
+    const bpmProcessId = c.req.query('bpmProcessId');
 
     // Get Organization info for Company and Location
     const org = await db.select().from(organization).where(eq(organization.id, orgId)).then((rows: any) => rows[0]);
 
-    // Hierarchical Join: 
-    // bpmProcesses -> bpmDiagrams -> bpmNodeRcms -> rcms -> rcm_controls -> controls
-    const results = await db.select({
+    // Base query for TLC controls
+    let query = db.select({
       mappingId: rcmControls.id,
       processName: bpmProcesses.name,
       fsliName: bpmProcesses.fsliName,
@@ -783,13 +783,11 @@ export function userRoutes(app: Hono<HonoEnv>) {
       riskDescription: rcms.riskDescription,
       isFraudRelated: rcms.isFraudRelated,
       riskRating: rcms.riskRating,
-      controlCode: controls.code, // Fundamental reference
+      controlCode: controls.code,
       baseControlName: controls.name,
       baseControlDescription: controls.description,
-      // Metadata from junction table
       mappedControlName: rcmControls.controlName,
       mappedControlDescription: rcmControls.controlDescription,
-      // Metadata from junction table
       ipoC: rcmControls.ipoC,
       ipoA: rcmControls.ipoA,
       ipoV: rcmControls.ipoV,
@@ -801,7 +799,6 @@ export function userRoutes(app: Hono<HonoEnv>) {
       assertionVa: rcmControls.assertionVa,
       assertionRo: rcmControls.assertionRo,
       assertionPd: rcmControls.assertionPd,
-      // Defaults from BPM Level Assertions
       defE: accountAssertions.assertionE,
       defC: accountAssertions.assertionC,
       defA: accountAssertions.assertionA,
@@ -809,7 +806,6 @@ export function userRoutes(app: Hono<HonoEnv>) {
       defRo: accountAssertions.assertionRo,
       defVa: accountAssertions.assertionVa,
       defPd: accountAssertions.assertionPd,
-
       controlType: rcmControls.controlType,
       controlNature: rcmControls.controlNature,
       automatedType: rcmControls.automatedControlType,
@@ -833,11 +829,19 @@ export function userRoutes(app: Hono<HonoEnv>) {
       eq(bpmProcesses.fsliName, accountAssertions.fsliName),
       eq(bpmProcesses.noGL, accountAssertions.noGL),
       eq(bpmProcesses.organizationId, accountAssertions.organizationId)
-    ))
-    .where(and(
+    ));
+
+    // Apply strict filtering
+    let finalConditions = and(
       eq(rcmControls.organizationId, orgId),
       eq(controls.level, 'TLC')
-    ));
+    );
+
+    if (bpmProcessId && bpmProcessId !== 'undefined') {
+      finalConditions = and(finalConditions, eq(bpmProcesses.id, bpmProcessId)) as any;
+    }
+
+    const results = await query.where(finalConditions);
 
     return ok(c, { 
       items: results.map((r: any) => ({
@@ -902,12 +906,23 @@ export function userRoutes(app: Hono<HonoEnv>) {
   app.get('/api/rcm-matrix/itgc', async (c) => {
     const db = getDb(c.env.DATABASE_URL);
     const orgId = c.get('organizationId');
+    const bpmProcessId = c.req.query('bpmProcessId');
 
     const org = await db.select().from(organization).where(eq(organization.id, orgId)).then((rows: any) => rows[0]);
+
+    let conditions = and(
+      eq(rcmControls.organizationId, orgId),
+      eq(controls.level, 'ITGC')
+    );
+
+    if (bpmProcessId) {
+      conditions = and(conditions, eq(bpmProcesses.id, bpmProcessId)) as any;
+    }
 
     const results = await db.select({
       mappingId: rcmControls.id,
       processName: bpmProcesses.name,
+      bpmCode: bpmProcesses.bpmCode, // New
       fsliName: bpmProcesses.fsliName,
       noGL: bpmProcesses.noGL,
       subProcessName: bpmDiagrams.name,
@@ -939,10 +954,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
     .innerJoin(bpmNodeRcms, eq(rcms.id, bpmNodeRcms.rcmId))
     .innerJoin(bpmDiagrams, eq(bpmNodeRcms.diagramId, bpmDiagrams.id))
     .innerJoin(bpmProcesses, eq(bpmDiagrams.subProcess, bpmProcesses.name))
-    .where(and(
-      eq(rcmControls.organizationId, orgId),
-      eq(controls.level, 'ITGC')
-    ));
+    .where(conditions);
 
     return ok(c, { 
       items: results.map((r: any) => ({
@@ -1534,14 +1546,14 @@ export function userRoutes(app: Hono<HonoEnv>) {
       where: and(eq(simulations.id, simId), eq(simulations.organizationId, orgId))
     });
 
-    if (!sim) return error(c, "Simulation not found", 404);
+    if (!sim) return bad(c, "Simulation not found", 404);
 
     await db.transaction(async (tx: any) => {
       for (const m of mappings) {
         await tx.update(glRows)
           .set({ assignedDepartmentIds: m.departmentIds })
           .where(and(
-            eq(glRows.glSnapshotId, sim.glSnapshotId),
+            eq(glRows.snapshotId, sim.glSnapshotId),
             eq(glRows.noGL, m.noGL),
             eq(glRows.organizationId, orgId)
           ));
@@ -2488,6 +2500,43 @@ export function userRoutes(app: Hono<HonoEnv>) {
     return ok(c, { success: true });
   });
 
+  app.get('/api/gl-rows', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+    const noGL = c.req.query('noGL');
+
+    // 1. Get active snapshot
+    const [activeSnapshot] = await db
+      .select({ id: glSnapshots.id })
+      .from(glSnapshots)
+      .where(and(
+        eq(glSnapshots.organizationId, orgId),
+        eq(glSnapshots.isActive, true)
+      ))
+      .limit(1);
+
+    if (!activeSnapshot) {
+      return ok(c, { items: [] });
+    }
+
+    // 2. Query rows
+    let query = db.select().from(glRows).where(and(
+      eq(glRows.snapshotId, activeSnapshot.id),
+      eq(glRows.organizationId, orgId)
+    ));
+
+    if (noGL) {
+      query = db.select().from(glRows).where(and(
+        eq(glRows.snapshotId, activeSnapshot.id),
+        eq(glRows.organizationId, orgId),
+        eq(glRows.noGL, noGL)
+      ));
+    }
+
+    const items = await query.limit(500); // Limit for performance
+    return ok(c, { items });
+  });
+
   // Update owner acceptance for a GL account
   app.put('/api/gl-rows/:noGL/owner-acceptance', async (c) => {
     const db = getDb(c.env.DATABASE_URL);
@@ -2562,19 +2611,96 @@ export function userRoutes(app: Hono<HonoEnv>) {
     });
   });
 
+  // --- CSA Schedules (Todo List) ---
+
+  app.get('/api/csa/schedules', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+    const items = await db.select().from(csaSchedules).where(eq(csaSchedules.organizationId, orgId));
+    return ok(c, { items });
+  });
+
+  app.post('/api/csa/schedules', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+    const body = await c.req.json();
+    
+    const startDate = new Date(body.plannedDate);
+    const schedulesToInsert = [];
+    const frequency = body.recurringFrequency;
+
+    // Generate up to 12 instances or 1 year of schedules
+    const iterations = frequency ? (frequency === 'Annual' ? 2 : 12) : 1;
+
+    for (let i = 0; i < iterations; i++) {
+      let plannedDate = new Date(startDate);
+      if (frequency === 'Monthly') {
+        plannedDate.setMonth(startDate.getMonth() + i);
+      } else if (frequency === 'Quarterly') {
+        plannedDate.setMonth(startDate.getMonth() + (i * 3));
+      } else if (frequency === 'Semi-Annual') {
+        plannedDate.setMonth(startDate.getMonth() + (i * 6));
+      } else if (frequency === 'Annual') {
+        plannedDate.setFullYear(startDate.getFullYear() + i);
+      }
+
+      schedulesToInsert.push({
+        id: crypto.randomUUID(),
+        organizationId: orgId,
+        bpmProcessId: body.bpmProcessId,
+        plannedDate,
+        type: body.type || 'CSA',
+        assignedTo: body.assignedTo,
+        recurringFrequency: frequency,
+        status: 'Not Started'
+      });
+      
+      if (!frequency) break;
+    }
+
+    await db.insert(csaSchedules).values(schedulesToInsert);
+
+    return ok(c, { count: schedulesToInsert.length });
+  });
+
+  app.patch('/api/csa/schedules/:id', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const id = c.req.param('id');
+    const body = await c.req.json();
+
+    await db.update(csaSchedules)
+      .set({ ...body, plannedDate: body.plannedDate ? new Date(body.plannedDate) : undefined })
+      .where(eq(csaSchedules.id, id));
+
+    return ok(c, { success: true });
+  });
+
+  app.delete('/api/csa/schedules/:id', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const id = c.req.param('id');
+    await db.delete(csaSchedules).where(eq(csaSchedules.id, id));
+    return ok(c, { success: true });
+  });
+
   // --- CSA & Testing Refactored (Smart CSA) ---
 
   app.get('/api/csa', async (c) => {
     const db = getDb(c.env.DATABASE_URL);
     const orgId = c.get('organizationId');
     const controlId = c.req.query('controlId');
+    const bpmProcessId = c.req.query('bpmProcessId');
 
     let query = db.select().from(csaRecords).where(eq(csaRecords.organizationId, orgId));
-    
+
     if (controlId) {
       query = db.select().from(csaRecords).where(and(
         eq(csaRecords.organizationId, orgId),
         eq(csaRecords.controlId, controlId)
+      ));
+    } else if (bpmProcessId) {
+      query = db.select().from(csaRecords).where(and(
+        eq(csaRecords.organizationId, orgId),
+        eq(csaRecords.bpmProcessId, bpmProcessId)
       ));
     }
 
@@ -2599,12 +2725,11 @@ export function userRoutes(app: Hono<HonoEnv>) {
 
     return ok(c, {
       ...record,
-      samplingMethodology: record.samplingMethodology,
-      documentList: record.documentList,
       samples: samplesData.map((s: any) => ({
         id: s.id,
         sampleRef: s.sampleRef,
-        attributeResults: { A: s.attrA, B: s.attrB, C: s.attrC, D: s.attrD },
+        glRowId: s.glRowId,
+        controlResults: s.controlResults, // New format
         itacResults: { expectedResult: s.itacExpectedResult, actualResult: s.itacActualResult, isMatch: s.itacMatch }
       }))
     });
@@ -2614,15 +2739,16 @@ export function userRoutes(app: Hono<HonoEnv>) {
     const db = getDb(c.env.DATABASE_URL);
     const orgId = c.get('organizationId');
     const userId = c.get('userId');
-    const body = await c.req.json<Partial<CSARecord>>();
-    
+    const body = await c.req.json();
+
     const id = crypto.randomUUID();
     const assessmentDate = new Date();
 
     const newCsa = {
       id,
       organizationId: orgId,
-      controlId: body.controlId!,
+      controlId: body.controlId, // Optional
+      bpmProcessId: body.bpmProcessId, // New
       period: body.period || "2024-Q1",
       assessmentDate,
       assessedBy: userId,
@@ -2632,12 +2758,6 @@ export function userRoutes(app: Hono<HonoEnv>) {
       samplingMethodology: body.samplingMethodology,
       documentList: body.documentList,
 
-      // Summary Regulatory Fields
-      attrA: body.attrA ?? false,
-      attrB: body.attrB ?? false,
-      attrC: body.attrC ?? false,
-      attrD: body.attrD ?? false,
-
       // Forensic Metadata
       gpsVerified: body.gpsVerified ?? false,
       latitude: body.latitude,
@@ -2646,35 +2766,27 @@ export function userRoutes(app: Hono<HonoEnv>) {
       capturedAt: body.capturedAt ? new Date(body.capturedAt) : null,
       hash: body.hash,
       biometricVerified: body.biometricVerified ?? false,
-
-      // ITAC Metadata
-      itacScenario: body.itacScenario,
-      itacMethod: body.itacMethod,
-      itacSampleInfo: body.itacSampleInfo,
     };
 
     // 1. Insert Record
     await db.insert(csaRecords).values(newCsa);
 
-    // 2. Insert Samples
+    // 2. Insert Samples in new format
     if (body.samples && Array.isArray(body.samples)) {
       for (const sample of body.samples) {
         await db.insert(csaSamples).values({
           id: crypto.randomUUID(),
           organizationId: orgId,
           csaRecordId: id,
+          glRowId: sample.glRowId,
           sampleRef: sample.sampleRef,
-          attrA: sample.attributeResults?.A ?? false,
-          attrB: sample.attributeResults?.B ?? false,
-          attrC: sample.attributeResults?.C ?? false,
-          attrD: sample.attributeResults?.D ?? false,
-          itacExpectedResult: sample.itacResults?.expectedResult,
-          itacActualResult: sample.itacResults?.actualResult,
-          itacMatch: sample.itacResults?.isMatch ?? false,
+          controlResults: sample.controlResults, // Multi-control JSONB
+          itacExpectedResult: sample.itacExpectedResult,
+          itacActualResult: sample.itacActualResult,
+          itacMatch: sample.itacMatch
         });
       }
     }
-
     // 3. Auto-Deficiency logic
     if (newCsa.result === 'Ineffective') {
         await db.insert(deficiencies).values({

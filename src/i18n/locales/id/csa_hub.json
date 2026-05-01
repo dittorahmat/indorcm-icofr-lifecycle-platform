@@ -1,0 +1,21 @@
+{
+  "tabs": {
+    "worksheet": "Lembar Kerja",
+    "sampling": "Detail Transaksi",
+    "csa": "Asesmen CSA",
+    "rcm": "Matriks RCM",
+    "logs": "Log Perubahan"
+  },
+  "sampling": {
+    "title": "Pemilihan Sampel Transaksi",
+    "description": "Pilih baris data Journal/GL untuk diuji dalam CSA.",
+    "apply": "Jadikan Sampel CSA",
+    "selected": "Transaksi Terpilih"
+  },
+  "assessment": {
+    "multiControl": "Tabel CSA Multi-Kontrol",
+    "zeroTolerance": "Zero Tolerance: Satu kegagalan mengakibatkan status Ineffective.",
+    "evidenceCount": "Poin Verifikasi",
+    "submit": "Submit & Sign-off (Manager)"
+  }
+}

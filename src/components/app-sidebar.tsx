@@ -27,6 +27,8 @@ import {
   Settings2,
   RefreshCw,
   FileBarChart,
+  Calendar as CalendarIcon,
+  ListTodo,
   LogOut
 } from "lucide-react";
 import {
@@ -145,8 +147,13 @@ export function AppSidebar(): JSX.Element {
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={isActive("/todo")}>
+                <Link to="/todo" className="font-bold"><CalendarIcon /> <span>To-do List</span></Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/csa")}>
-                <Link to="/csa" className="font-bold"><ClipboardCheck /> <span>Control Self Assessment</span></Link>
+                <Link to="/csa" className="font-bold"><History /> <span>CSA Reports</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>

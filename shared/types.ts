@@ -247,6 +247,8 @@ export interface Control {
   supportingDocs?: string;
   applicationId?: string;
   bpmProcessId?: string; // Link to the BPMProcess header list
+  organizationId?: string; // Target organization
+  executorRole?: string; // Role of the control executor
 
   // New Smart CSA Metadata
   csaStatus?: "Not Assessed" | "Effective" | "Ineffective";
@@ -379,10 +381,29 @@ export interface RCM {
   };
 }
 
+export interface CSASchedule {
+  id: string;
+  organizationId: string;
+  bpmProcessId: string;
+  plannedDate: number; // epoch millis
+  type: "CSA" | "TOD" | "TOE";
+  status: "Not Started" | "In Progress" | "Completed" | "Overdue";
+  assignedTo?: string; // User ID
+  recurringFrequency?: "Monthly" | "Quarterly" | "Semi-Annual" | "Annual";
+  createdAt: number;
+}
+
 export interface CSATestSample {
   id: string;
   sampleRef: string;
-  attributeResults: {
+  glRowId?: string; // Link to original transaction row
+  
+  // New: Per-control results for this sample
+  // Format: { [controlId: string]: { implemented: boolean, evidenceUrl?: string } }
+  controlResults?: Record<string, { implemented: boolean; evidenceUrl?: string }>;
+
+  // Legacy (Keep for compatibility)
+  attributeResults?: {
     A: boolean;
     B: boolean;
     C: boolean;
@@ -397,7 +418,9 @@ export interface CSATestSample {
 
 export interface CSARecord {
   id:string;
-  controlId: string;
+  organizationId: string;
+  controlId?: string; // Optional if assessing at Sub-Process level
+  bpmProcessId?: string; // New: Primary link for aggregate CSA
   period: string; // e.g., "2024-Q1"
   assessmentDate: number; // epoch millis
   assessedBy: string; // User ID
