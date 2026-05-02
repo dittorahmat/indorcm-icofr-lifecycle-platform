@@ -1,14 +1,41 @@
 import React from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Calendar } from '@/components/ui/calendar';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
-import { CSASchedule, BPMProcess } from '@shared/types';
-import { Calendar as CalendarIcon, ListTodo, Clock, CheckCircle2, AlertCircle, Plus, Trash2, Edit } from 'lucide-react';
-import { format } from 'date-fns';
+import { CSASchedule, BPMProcess, ActionPlan, User } from '@shared/types';
+import { 
+  Plus, 
+  ChevronLeft, 
+  ChevronRight, 
+  Search, 
+  Printer, 
+  Share2, 
+  RefreshCcw,
+  Bell,
+  AlertCircle,
+  CheckCircle2,
+  Clock,
+  MoreHorizontal,
+  ChevronDown
+} from 'lucide-react';
+import { 
+  format, 
+  addMonths, 
+  subMonths, 
+  startOfMonth, 
+  endOfMonth, 
+  startOfWeek, 
+  endOfWeek, 
+  eachDayOfInterval, 
+  isSameMonth, 
+  isSameDay, 
+  isToday,
+  isPast
+} from 'date-fns';
+import { id as idLocale, enUS } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 
@@ -21,12 +48,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { BPMModal } from '@/components/bpm/BPMModal';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 
 export function TodoListPage() {
-  const { t } = useTranslation(['csa', 'common']);
+  const { t } = useTranslation(['csa', 'common', 'rcm', 'csa_hub']);
   const queryClient = useQueryClient();
-  const [date, setDate] = React.useState<Date | undefined>(new Date());
+  const [currentDate, setCurrentDate] = React.useState(new Date());
+  const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(new Date());
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const [isRescheduleOpen, setIsRescheduleOpen] = React.useState(false);
+  const [selectedEvent, setSelectedEvent] = React.useState<any>(null);
   
   // Execution Hub Modal State
   const [isHubOpen, setIsHubOpen] = React.useState(false);
@@ -36,32 +69,35 @@ export function TodoListPage() {
     bpmProcessId: '',
     type: 'CSA',
     plannedDate: format(new Date(), 'yyyy-MM-dd'),
-    recurringFrequency: 'Monthly'
+    recurringFrequency: 'Monthly',
+    reminderConfig: { value: 30, unit: 'minute' }
   });
 
-  const { data: schedules, isLoading } = useQuery({
+  const [rescheduleData, setRescheduleData] = React.useState({
+    newDate: '',
+    justification: ''
+  });
+
+  const [isDirty, setIsDirty] = React.useState(false);
+  const [isRescheduleDirty, setIsRescheduleDirty] = React.useState(false);
+  
+  useUnsavedChanges(isDirty && isDialogOpen);
+  useUnsavedChanges(isRescheduleDirty && isRescheduleOpen);
+
+  const { data: schedules } = useQuery({
     queryKey: ['csa-schedules'],
     queryFn: () => api<{ items: CSASchedule[] }>('/api/csa/schedules'),
+  });
+
+  const { data: remediations } = useQuery({
+    queryKey: ['action-plans-all'],
+    queryFn: () => api<{ items: ActionPlan[] }>('/api/remediations'),
   });
 
   const { data: processes } = useQuery({
     queryKey: ['bpm-processes-all'],
     queryFn: () => api<{ items: BPMProcess[] }>('/api/bpm-processes'),
   });
-
-  const deleteScheduleMutation = useMutation({
-    mutationFn: (id: string) => api(`/api/csa/schedules/${id}`, { method: 'DELETE' }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['csa-schedules'] });
-      toast.success("Jadwal dihapus");
-    }
-  });
-
-  const handleDelete = (id: string, name: string) => {
-    if (confirm(`Hapus jadwal untuk "${name}"?`)) {
-      deleteScheduleMutation.mutate(id);
-    }
-  };
 
   const handleOpenHub = (processId: string) => {
     const process = processes?.items.find(p => p.id === processId);
@@ -80,8 +116,9 @@ export function TodoListPage() {
     mutationFn: (data: any) => api('/api/csa/schedules', { method: 'POST', body: JSON.stringify(data) }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['csa-schedules'] });
-      toast.success("Jadwal berhasil dibuat");
+      toast.success(t('rcm:matrix.save_success'));
       setIsDialogOpen(false);
+      setIsDirty(false);
     }
   });
 
@@ -93,203 +130,396 @@ export function TodoListPage() {
     createScheduleMutation.mutate(formData);
   };
 
-  const selectedDateSchedules = React.useMemo(() => {
-    if (!schedules?.items || !date) return [];
-    return schedules.items.filter(s => {
-      const pDate = new Date(s.plannedDate);
-      return pDate.getDate() === date.getDate() &&
-             pDate.getMonth() === date.getMonth() &&
-             pDate.getFullYear() === date.getFullYear();
-    });
-  }, [schedules, date]);
+  const updateFormData = (updates: Partial<typeof formData>) => {
+    setFormData(prev => ({ ...prev, ...updates }));
+    setIsDirty(true);
+  };
+
+  const calendarDays = React.useMemo(() => {
+    const start = startOfWeek(startOfMonth(currentDate));
+    const end = endOfWeek(endOfMonth(currentDate));
+    return eachDayOfInterval({ start, end });
+  }, [currentDate]);
+
+  const getEventsForDay = (day: Date) => {
+    const events: any[] = [];
+    
+    // Add CSA/TOD/TOE Schedules
+    if (schedules?.items) {
+      schedules.items.forEach(s => {
+        if (isSameDay(new Date(s.plannedDate), day)) {
+          events.push({ ...s, eventType: 'SCHEDULE' });
+        }
+      });
+    }
+
+    // Add Remediation Activities
+    if (remediations?.items) {
+      remediations.items.forEach(r => {
+        if (r.targetDate && isSameDay(new Date(r.targetDate), day)) {
+          events.push({ ...r, eventType: 'REMEDIATION' });
+        }
+      });
+    }
+
+    return events;
+  };
+
+  const monthlyTaskSummary = React.useMemo(() => {
+    return calendarDays
+      .filter(day => isSameMonth(day, currentDate))
+      .map(day => ({ day, events: getEventsForDay(day) }))
+      .filter(item => item.events.length > 0);
+  }, [calendarDays, currentDate, schedules, remediations]);
 
   return (
-    <AppLayout container>
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900">To-do List & Calendar</h1>
-            <p className="text-muted-foreground text-sm">Manage CSA schedules and remediation deadlines.</p>
+    <AppLayout contentClassName="bg-slate-50/50">
+      <div className="flex flex-col h-[calc(100vh-4rem)] border border-slate-200 bg-white rounded-xl shadow-sm overflow-hidden m-4">
+        {/* Outlook-style Toolbar */}
+        <div className="flex items-center justify-between px-4 py-2 border-b bg-white">
+          <div className="flex items-center gap-4">
+            <Dialog open={isDialogOpen} onOpenChange={(open) => {
+              if (!open && isDirty) {
+                if (confirm(t('common:unsavedChanges.description'))) {
+                  setIsDialogOpen(false);
+                  setIsDirty(false);
+                }
+                return;
+              }
+              setIsDialogOpen(open);
+            }}>
+              <DialogTrigger asChild>
+                <Button className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2 shadow-sm">
+                  <Plus className="h-4 w-4" /> {t('csa_hub:scheduling.newEvent')} <ChevronDown className="h-3 w-3 ml-1" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                  <DialogTitle>{t('csa_hub:scheduling.title')}</DialogTitle>
+                  <DialogDescription>{t('csa_hub:scheduling.description')}</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label>{t('csa_hub:scheduling.activityType')}</Label>
+                    <Select value={formData.type} onValueChange={(v) => updateFormData({ type: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="CSA">{t('csa_hub:scheduling.types.csa')}</SelectItem>
+                        <SelectItem value="TOD">{t('csa_hub:scheduling.types.tod')}</SelectItem>
+                        <SelectItem value="TOE">{t('csa_hub:scheduling.types.toe')}</SelectItem>
+                        <SelectItem value="SCOPING">{t('csa_hub:scheduling.types.scoping')}</SelectItem>
+                        <SelectItem value="RCM">{t('csa_hub:scheduling.types.rcm')}</SelectItem>
+                        <SelectItem value="SOC">{t('csa_hub:scheduling.types.soc')}</SelectItem>
+                        <SelectItem value="INVESTEE">{t('csa_hub:scheduling.types.investee')}</SelectItem>
+                        <SelectItem value="SIGNOFF">{t('csa_hub:scheduling.types.signoff')}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  {['CSA', 'TOD', 'TOE', 'RCM'].includes(formData.type) && (
+                    <div className="space-y-2">
+                      <Label>{t('csa_hub:scheduling.subProcess')}</Label>
+                      <Select value={formData.bpmProcessId} onValueChange={(v) => updateFormData({ bpmProcessId: v })}>
+                        <SelectTrigger><SelectValue placeholder={t('common:actions.select')} /></SelectTrigger>
+                        <SelectContent>
+                          {processes?.items.map(p => (
+                            <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>{t('csa_hub:scheduling.targetDate')}</Label>
+                      <input 
+                        type="date" 
+                        className="w-full h-10 px-3 border rounded-md text-sm focus:ring-2 focus:ring-indigo-500" 
+                        value={formData.plannedDate} 
+                        onChange={e => updateFormData({ plannedDate: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t('csa_hub:scheduling.frequency')}</Label>
+                      <Select value={formData.recurringFrequency} onValueChange={(v) => updateFormData({ recurringFrequency: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Monthly">{t('common:actions.all')}</SelectItem> 
+                          {/* Wait, monthly, quarterly etc need translation too */}
+                          <SelectItem value="Monthly">Monthly</SelectItem>
+                          <SelectItem value="Quarterly">Quarterly</SelectItem>
+                          <SelectItem value="Semi-Annual">Semi-Annual</SelectItem>
+                          <SelectItem value="Annual">Annual</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-slate-50 rounded-lg border border-slate-100 space-y-3">
+                    <div className="flex items-center gap-2 text-indigo-700">
+                      <Bell className="h-4 w-4" />
+                      <span className="text-xs font-bold uppercase">{t('csa_hub:scheduling.setReminder')}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <input 
+                        type="number" 
+                        className="w-20 h-9 px-2 border rounded-md text-sm"
+                        value={formData.reminderConfig.value}
+                        onChange={e => updateFormData({ reminderConfig: { ...formData.reminderConfig, value: parseInt(e.target.value) } })}
+                      />
+                      <Select 
+                        value={formData.reminderConfig.unit} 
+                        onValueChange={(v: any) => updateFormData({ reminderConfig: { ...formData.reminderConfig, unit: v } })}
+                      >
+                        <SelectTrigger className="h-9 w-[120px]"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="minute">{t('csa_hub:scheduling.units.minute')}</SelectItem>
+                          <SelectItem value="hour">{t('csa_hub:scheduling.units.hour')}</SelectItem>
+                          <SelectItem value="day">{t('csa_hub:scheduling.units.day')}</SelectItem>
+                          <SelectItem value="month">{t('csa_hub:scheduling.units.month')}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <span className="text-xs text-slate-500 font-medium">{t('csa_hub:scheduling.beforeDeadline')}</span>
+                    </div>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsDialogOpen(false)}>{t('common:actions.cancel')}</Button>
+                  <Button onClick={handleCreate} disabled={createScheduleMutation.isPending} className="bg-indigo-600 shadow-lg shadow-indigo-200">{t('csa_hub:scheduling.save')}</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            {/* Reschedule Dialog */}
+            <Dialog open={isRescheduleOpen} onOpenChange={(open) => {
+              if (!open && isRescheduleDirty) {
+                if (confirm(t('common:unsavedChanges.description'))) {
+                  setIsRescheduleOpen(false);
+                  setIsRescheduleDirty(false);
+                }
+                return;
+              }
+              setIsRescheduleOpen(open);
+            }}>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>{t('csa_hub:scheduling.reschedule.title')}</DialogTitle>
+                  <DialogDescription>{t('csa_hub:scheduling.reschedule.description')}</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label>{t('csa_hub:scheduling.reschedule.newDate')}</Label>
+                    <input 
+                      type="date" 
+                      className="w-full h-10 px-3 border rounded-md text-sm focus:ring-2 focus:ring-indigo-500" 
+                      value={rescheduleData.newDate} 
+                      onChange={e => {
+                        setRescheduleData(prev => ({ ...prev, newDate: e.target.value }));
+                        setIsRescheduleDirty(true);
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{t('csa_hub:scheduling.reschedule.justification')} <span className="text-red-500">*</span></Label>
+                    <textarea 
+                      className="w-full min-h-[100px] p-3 border rounded-md text-sm focus:ring-2 focus:ring-indigo-500"
+                      placeholder={t('csa_hub:scheduling.reschedule.placeholder')}
+                      value={rescheduleData.justification}
+                      onChange={e => {
+                        setRescheduleData(prev => ({ ...prev, justification: e.target.value }));
+                        setIsRescheduleDirty(true);
+                      }}
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsRescheduleOpen(false)}>{t('common:actions.cancel')}</Button>
+                  <Button 
+                    disabled={!rescheduleData.justification.trim() || !rescheduleData.newDate} 
+                    className="bg-indigo-600"
+                    onClick={() => {
+                      toast.success(t('rcm:matrix.save_success'));
+                      setIsRescheduleOpen(false);
+                      setIsRescheduleDirty(false);
+                    }}
+                  >
+                    {t('csa_hub:scheduling.reschedule.save')}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            
+            <div className="flex items-center gap-1">
+              <Tabs defaultValue="month" className="hidden md:block">
+                <TabsList className="bg-slate-100/50 p-1">
+                  <TabsTrigger value="day" className="text-xs px-4">{t('common:calendar.day')}</TabsTrigger>
+                  <TabsTrigger value="week" className="text-xs px-4">{t('common:calendar.week')}</TabsTrigger>
+                  <TabsTrigger value="month" className="text-xs px-4">{t('common:calendar.month')}</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
           </div>
-          
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-indigo-600 hover:bg-indigo-700">
-                <Plus className="h-4 w-4 mr-2" /> Set Jadwal Baru
+
+          <div className="flex items-center gap-2">
+            <div className="flex items-center border rounded-md p-0.5 bg-slate-50">
+              <Button variant="ghost" size="icon" className="h-7 w-7 rounded-sm" onClick={() => setCurrentDate(subMonths(currentDate, 1))}>
+                <ChevronLeft className="h-4 w-4" />
               </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>Set Jadwal Pengujian</DialogTitle>
-                <DialogDescription>Tentukan rencana CSA atau Test untuk sub-proses bisnis.</DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label>Sub-Proses Bisnis</Label>
-                  <Select value={formData.bpmProcessId} onValueChange={(v) => setFormData(prev => ({ ...prev, bpmProcessId: v }))}>
-                    <SelectTrigger><SelectValue placeholder="Pilih Sub-Proses" /></SelectTrigger>
-                    <SelectContent>
-                      {processes?.items.map(p => (
-                        <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Tipe Pengujian</Label>
-                    <Select value={formData.type} onValueChange={(v) => setFormData(prev => ({ ...prev, type: v }))}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="CSA">CSA (Self-Asessment)</SelectItem>
-                        <SelectItem value="TOD">TOD (Design)</SelectItem>
-                        <SelectItem value="TOE">TOE (Operating)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Frekuensi</Label>
-                    <Select value={formData.recurringFrequency} onValueChange={(v) => setFormData(prev => ({ ...prev, recurringFrequency: v }))}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Monthly">Bulanan</SelectItem>
-                        <SelectItem value="Quarterly">Triwulanan</SelectItem>
-                        <SelectItem value="Semi-Annual">Semesteran</SelectItem>
-                        <SelectItem value="Annual">Tahunan</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Tanggal Mulai</Label>
-                  <input 
-                    type="date" 
-                    className="w-full h-10 px-3 border rounded-md" 
-                    value={formData.plannedDate} 
-                    onChange={e => setFormData(prev => ({ ...prev, plannedDate: e.target.value }))}
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Batal</Button>
-                <Button onClick={handleCreate} disabled={createScheduleMutation.isPending} className="bg-indigo-600">Simpan Jadwal</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+              <Button variant="ghost" size="sm" className="h-7 px-3 text-xs font-semibold" onClick={() => setCurrentDate(new Date())}>
+                {t('common:calendar.today')}
+              </Button>
+              <Button variant="ghost" size="icon" className="h-7 w-7 rounded-sm" onClick={() => setCurrentDate(addMonths(currentDate, 1))}>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+            <h2 className="text-sm font-bold text-slate-700 ml-2">
+              {format(currentDate, 'MMMM yyyy')}
+            </h2>
+            <div className="h-4 w-[1px] bg-slate-200 mx-1" />
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500"><Search className="h-4 w-4" /></Button>
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500"><Printer className="h-4 w-4" /></Button>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="md:col-span-1 border-slate-200 shadow-sm">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-bold flex items-center gap-2">
-                <CalendarIcon className="h-4 w-4 text-indigo-600" />
-                Compliance Calendar
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+        <div className="flex flex-1 overflow-hidden">
+          {/* Calendar Sidebar */}
+          <div className="w-64 border-r bg-slate-50/30 flex flex-col overflow-hidden">
+            <div className="p-4 border-b">
               <Calendar
                 mode="single"
-                selected={date}
-                onSelect={setDate}
-                className="rounded-md border border-slate-100"
-                modifiers={{
-                  scheduled: (date) => {
-                    return !!schedules?.items.some(s => {
-                      const pDate = new Date(s.plannedDate);
-                      return pDate.getDate() === date.getDate() &&
-                             pDate.getMonth() === date.getMonth() &&
-                             pDate.getFullYear() === date.getFullYear();
-                    });
-                  }
-                }}
-                modifiersStyles={{
-                  scheduled: { fontWeight: 'bold', textDecoration: 'underline', color: '#4f46e5' }
+                selected={selectedDate}
+                onSelect={setSelectedDate}
+                month={currentDate}
+                onMonthChange={setCurrentDate}
+                className="rounded-md border-none p-0 w-full"
+                classNames={{
+                   month_caption: "hidden",
+                   nav: "hidden",
+                   day: "h-8 w-8 p-0 font-normal aria-selected:opacity-100",
+                   today: "bg-indigo-100 text-indigo-900 font-bold",
+                   selected: "bg-indigo-600 text-white hover:bg-indigo-600 hover:text-white"
                 }}
               />
-            </CardContent>
-          </Card>
+            </div>
 
-          <Card className="md:col-span-2 border-slate-200 shadow-sm overflow-hidden">
-            <CardHeader className="bg-slate-50/50 border-b py-4">
-              <div className="flex justify-between items-center">
-                <div>
-                  <CardTitle className="text-lg font-bold flex items-center gap-2">
-                    <ListTodo className="h-5 w-5 text-indigo-600" />
-                    Tasks for {date ? format(date, 'PPP') : 'Select a date'}
-                  </CardTitle>
-                  <CardDescription>Scheduled assessments and follow-ups.</CardDescription>
-                </div>
-                <Badge variant="outline" className="bg-white">
-                  {selectedDateSchedules.length} Items
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="p-0">
-              {selectedDateSchedules.length === 0 ? (
-                <div className="py-20 text-center text-slate-400 italic">
-                  <Clock className="h-12 w-12 mx-auto mb-3 opacity-20" />
-                  No tasks scheduled for this date.
-                </div>
-              ) : (
+            <div className="flex-1 flex flex-col overflow-hidden">
+              <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-4 py-3 bg-white border-b">
+                {t('common:calendar.todoTitle')}
+              </h3>
+              <ScrollArea className="flex-1">
                 <div className="divide-y divide-slate-100">
-                  {selectedDateSchedules.map(schedule => {
-                    const process = processes?.items.find(p => p.id === schedule.bpmProcessId);
-                    return (
-                      <div key={schedule.id} className="p-4 hover:bg-slate-50 transition-colors flex justify-between items-start group">
+                  {monthlyTaskSummary.length === 0 ? (
+                    <div className="p-8 text-center text-slate-400 text-xs italic">
+                      {t('common:calendar.noTasks')}
+                    </div>
+                  ) : (
+                    monthlyTaskSummary.map(({ day, events }) => (
+                      <div key={day.toISOString()} className="p-3 bg-white hover:bg-slate-50 transition-colors">
+                        <p className="text-[10px] font-bold text-indigo-600 mb-1">{format(day, 'EEEE, d MMM')}</p>
                         <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-slate-900">{process?.name || 'Unknown Process'}</span>
-                            <Badge className={cn(
-                              "text-[10px] uppercase font-black px-1.5 py-0",
-                              schedule.type === 'CSA' ? "bg-blue-100 text-blue-700" :
-                              schedule.type === 'TOE' ? "bg-purple-100 text-indigo-700" : "bg-orange-100 text-orange-700"
-                            )}>
-                              {schedule.type}
-                            </Badge>
-                          </div>
-                          <p className="text-xs text-slate-500">Sub-proses ID: {schedule.bpmProcessId.substring(0,8)}</p>
-                        </div>
-                        <div className="flex flex-col items-end gap-2">
-                           <div className="flex items-center gap-1 mb-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                             <Button variant="ghost" size="icon" className="h-6 w-6 text-slate-300 hover:text-indigo-600">
-                                <Edit className="h-3.5 w-3.5" />
-                             </Button>
-                             <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                className="h-6 w-6 text-slate-300 hover:text-red-600"
-                                onClick={() => handleDelete(schedule.id, process?.name || 'Proses')}
-                                disabled={deleteScheduleMutation.isPending}
-                             >
-                                <Trash2 className="h-3.5 w-3.5" />
-                             </Button>
-                          </div>
-                          <Badge variant="secondary" className={cn(
-                            "text-[10px] font-bold",
-                            schedule.status === 'Completed' ? "bg-emerald-50 text-emerald-700 border-emerald-200" :
-                            schedule.status === 'In Progress' ? "bg-amber-50 text-amber-700 border-amber-200" :
-                            "bg-slate-100 text-slate-600"
-                          )}>
-                            {schedule.status === 'Completed' ? <CheckCircle2 className="h-3 w-3 mr-1 inline" /> : 
-                             schedule.status === 'Overdue' ? <AlertCircle className="h-3 w-3 mr-1 inline" /> : null}
-                            {schedule.status}
-                          </Badge>
-                          <Button 
-                            size="sm" 
-                            variant="outline" 
-                            className="h-7 text-[10px] border-indigo-200 text-indigo-600 hover:bg-indigo-50 font-bold shadow-sm"
-                            onClick={() => handleOpenHub(schedule.bpmProcessId)}
-                          >
-                            Buka Execution Hub
-                          </Button>
+                          {events.map((e: any) => (
+                            <div key={e.id} className="text-[11px] text-slate-600 truncate flex items-center gap-1.5">
+                              <div className={cn(
+                                "w-1.5 h-1.5 rounded-full",
+                                e.eventType === 'REMEDIATION' ? "bg-amber-500" : "bg-indigo-500"
+                              )} />
+                              {e.description || processes?.items.find(p => p.id === e.bpmProcessId)?.name || t('common:status.active')}
+                            </div>
+                          ))}
                         </div>
                       </div>
-                    );
-                  })}
+                    ))
+                  )}
                 </div>
-              )}
-            </CardContent>
-          </Card>
+              </ScrollArea>
+            </div>
+          </div>
+
+          {/* Monthly Grid */}
+          <div className="flex-1 flex flex-col bg-slate-50 overflow-hidden">
+            {/* Grid Header */}
+            <div className="grid grid-cols-7 border-b bg-white shadow-sm">
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                <div key={day} className="py-2 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                  {day}
+                </div>
+              ))}
+            </div>
+
+            {/* Grid Body */}
+            <div className="flex-1 overflow-y-auto scrollbar-hide">
+              <div className="grid grid-cols-7 auto-rows-fr min-h-full">
+                {calendarDays.map((day, idx) => {
+                  const dayEvents = getEventsForDay(day);
+                  const isCurrentMonth = isSameMonth(day, currentDate);
+                  
+                  return (
+                    <div 
+                      key={idx} 
+                      className={cn(
+                        "min-h-[140px] border-r border-b p-1 transition-colors hover:bg-slate-100/50 group bg-white",
+                        !isCurrentMonth && "bg-slate-50/50 text-slate-300"
+                      )}
+                      onClick={() => setSelectedDate(day)}
+                    >
+                      <div className="flex justify-start mb-1 px-1">
+                        <span className={cn(
+                          "text-[11px] font-bold w-6 h-6 flex items-center justify-center rounded-full transition-colors",
+                          isToday(day) ? "bg-indigo-600 text-white" : "text-slate-500",
+                          !isCurrentMonth && "opacity-30"
+                        )}>
+                          {format(day, 'd')}
+                        </span>
+                      </div>
+                      
+                      <div className="space-y-1">
+                        {dayEvents.slice(0, 3).map(event => {
+                          const isOverdue = event.status !== 'Completed' && isPast(new Date(event.plannedDate || event.targetDate));
+                          const isCompleted = event.status === 'Completed';
+                          const process = processes?.items.find(p => p.id === event.bpmProcessId);
+                          
+                          return (
+                            <div 
+                              key={event.id}
+                              className={cn(
+                                "text-[10px] leading-tight p-1 px-1.5 rounded-sm border shadow-xs flex items-center justify-between group/pill cursor-pointer transition-all",
+                                isCompleted ? "bg-emerald-50 border-emerald-200 text-emerald-800" :
+                                isOverdue ? "bg-red-50 border-red-200 text-red-800" :
+                                "bg-indigo-50 border-indigo-200 text-indigo-800 hover:bg-indigo-100",
+                                event.eventType === 'REMEDIATION' && event.severity === 'Material Weakness' && "border-l-4 border-l-slate-900 shadow-md",
+                                event.eventType === 'REMEDIATION' && event.severity === 'Significant Deficiency' && "border-l-4 border-l-orange-500 shadow-sm"
+                              )}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenHub(event.bpmProcessId || event.controlId);
+                              }}
+                            >
+                              <div className="flex items-center gap-1 overflow-hidden">
+                                {event.eventType === 'REMEDIATION' && (
+                                  event.severity === 'Material Weakness' ? 
+                                    <AlertCircle className="h-2 w-2 text-red-600" /> : 
+                                    <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />
+                                )}
+                                <span className="truncate font-medium">{process?.name || event.description || 'Activity'}</span>
+                                {event.reminderConfig && <Bell className="h-2 w-2 text-indigo-500 opacity-70 flex-shrink-0" />}
+                              </div>
+                            </div>
+                          );
+                        })}
+                        {dayEvents.length > 3 && (
+                          <div className="text-[9px] font-bold text-slate-400 px-1.5 py-0.5">
+                            +{dayEvents.length - 3} more
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
         </div>
 
         {selectedHubProcess && (

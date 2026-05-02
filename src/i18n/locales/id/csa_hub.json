@@ -6,6 +6,53 @@
     "rcm": "Matriks RCM",
     "logs": "Log Perubahan"
   },
+  "scheduling": {
+    "title": "Penjadwalan Aktivitas ICOFR",
+    "description": "Tentukan rencana kerja sesuai Juknis SK-5/2024.",
+    "newEvent": "Event Baru",
+    "activityType": "Jenis Aktivitas",
+    "subProcess": "Sub-Proses Bisnis",
+    "targetDate": "Tanggal Target",
+    "frequency": "Frekuensi",
+    "setReminder": "Atur Pengingat",
+    "beforeDeadline": "Sebelum Batas Waktu",
+    "save": "Simpan Jadwal",
+    "reschedule": {
+      "title": "Jadwal Ulang Aktivitas",
+      "description": "Sesuai Lampiran 6 SK-5/2024, perubahan jadwal wajib menyertakan alasan.",
+      "newDate": "Tanggal Baru",
+      "justification": "Alasan Perubahan Jadwal",
+      "placeholder": "Jelaskan alasan penjadwalan ulang...",
+      "save": "Simpan Perubahan"
+    },
+    "types": {
+      "csa": "CSA (Control Self-Assessment)",
+      "tod": "TOD (Test of Design)",
+      "toe": "TOE (Test of Operating Effectiveness)",
+      "scoping": "Review Ruang Lingkup (Semesteran)",
+      "rcm": "Pemutakhiran RCM & BPM",
+      "soc": "Evaluasi Laporan SOC",
+      "investee": "Monitoring Investee",
+      "signoff": "Annual Sign-off"
+    },
+    "units": {
+      "minute": "Menit",
+      "hour": "Jam",
+      "day": "Hari",
+      "month": "Bulan"
+    },
+    "severity": {
+      "cd": "Control Deficiency (CD)",
+      "sd": "Significant Deficiency (SD)",
+      "mw": "Material Weakness (MW)"
+    }
+  },
+  "notifications": {
+    "title": "Notifikasi",
+    "markAllRead": "Tandai semua dibaca",
+    "empty": "Belum ada notifikasi baru",
+    "viewAll": "Lihat semua aktivitas"
+  },
   "sampling": {
     "title": "Pemilihan Sampel Transaksi",
     "description": "Pilih baris data Journal/GL untuk diuji dalam CSA.",

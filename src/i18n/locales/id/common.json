@@ -36,6 +36,22 @@
     "elcTab": "RCM ELC (Strategis)",
     "tlcTab": "RCM TLC (Operasional)"
   },
+  "calendar": {
+    "today": "Hari Ini",
+    "day": "Hari",
+    "week": "Minggu",
+    "month": "Bulan",
+    "workWeek": "Minggu Kerja",
+    "more": "lagi",
+    "noTasks": "Tidak ada tugas bulan ini.",
+    "todoTitle": "Todo List Bulan Ini",
+    "frequencies": {
+      "monthly": "Bulanan",
+      "quarterly": "Triwulanan",
+      "semiAnnual": "Semesteran",
+      "annual": "Tahunan"
+    }
+  },
   "unsavedChanges": {
     "title": "Perubahan Belum Disimpan",
     "description": "Anda memiliki perubahan yang belum disimpan. Perubahan akan hilang jika Anda meninggalkan halaman ini. Apakah Anda yakin?",

@@ -66,7 +66,7 @@ export const organization = pgTable("organization", {
 
 export const member = pgTable("member", {
 	id: text("id").primaryKey(),
-	organizationId: text("organizationId").notNull().references(() => organization.id),
+	organizationId: text("organization_id").notNull().references(() => organization.id),
 	userId: text("userId").notNull().references(() => user.id),
 	role: text("role").notNull(),
 	createdAt: timestamp("createdAt").notNull(),
@@ -76,13 +76,13 @@ export const member = pgTable("member", {
 
 export const departments = pgTable("departments", {
 	id: text("id").primaryKey(),
-	organizationId: text("organizationId").notNull().references(() => organization.id),
+	organizationId: text("organization_id").notNull().references(() => organization.id),
 	name: text("name").notNull(),
 });
 
 export const glSnapshots = pgTable("gl_snapshots", {
 	id: text("id").primaryKey(),
-	organizationId: text("organizationId").notNull().references(() => organization.id),
+	organizationId: text("organization_id").notNull().references(() => organization.id),
 	filename: text("filename").notNull(),
 	uploadDate: timestamp("uploadDate").notNull(),
 	status: text("status").notNull(), // Draft, Mapped
@@ -96,7 +96,7 @@ export const ownerAcceptanceEnum = pgEnum("owner_acceptance", ["Accepted", "Reje
 export const glRows = pgTable("gl_rows", {
 	id: text("id").primaryKey(),
 	snapshotId: text("snapshot_id").notNull().references(() => glSnapshots.id),
-	organizationId: text("organizationId").notNull().references(() => organization.id),
+	organizationId: text("organization_id").notNull().references(() => organization.id),
 	ymd: text("ymd"),
 	entityCode: text("entity_code"),
 	noGL: text("no_gl"),
@@ -113,7 +113,7 @@ export const glRows = pgTable("gl_rows", {
 
 export const materiality = pgTable("materiality", {
 	id: text("id").primaryKey(),
-	organizationId: text("organizationId").notNull().references(() => organization.id),
+	organizationId: text("organization_id").notNull().references(() => organization.id),
 	year: integer("year").notNull(),
 	overallMateriality: doublePrecision("overall_materiality"),
 	performanceMateriality: doublePrecision("performance_materiality"),
@@ -124,7 +124,7 @@ export const materiality = pgTable("materiality", {
 
 export const simulations = pgTable("simulations", {
 	id: text("id").primaryKey(),
-	organizationId: text("organizationId").notNull().references(() => organization.id),
+	organizationId: text("organization_id").notNull().references(() => organization.id),
 	name: text("name").notNull(),
 	year: integer("year").notNull(),
 	status: text("status").notNull(), // Draft, Approved, Rejected
@@ -149,7 +149,7 @@ export const simulations = pgTable("simulations", {
 
 export const bpmDiagrams = pgTable("bpm_diagrams", {
 	id: text("id").primaryKey(),
-	organizationId: text("organizationId").notNull().references(() => organization.id),
+	organizationId: text("organization_id").notNull().references(() => organization.id),
 	name: text("name").notNull(),
 	year: integer("year"),
 	subProcess: text("sub_process"),
@@ -163,7 +163,7 @@ export const bpmDiagrams = pgTable("bpm_diagrams", {
 
 export const bpmNodeRcms = pgTable("bpm_node_rcms", {
 	id: text("id").primaryKey(),
-	organizationId: text("organizationId").notNull().references(() => organization.id),
+	organizationId: text("organization_id").notNull().references(() => organization.id),
 	diagramId: text("diagram_id").notNull().references(() => bpmDiagrams.id, { onDelete: 'cascade' }),
 	nodeId: text("node_id").notNull(), // The React Flow node ID
 	rcmId: text("rcm_id").notNull().references(() => rcms.id, { onDelete: 'cascade' })
@@ -171,7 +171,7 @@ export const bpmNodeRcms = pgTable("bpm_node_rcms", {
 
 export const rcmControls = pgTable("rcm_controls", {
 	id: text("id").primaryKey(),
-	organizationId: text("organizationId").notNull().references(() => organization.id),
+	organizationId: text("organization_id").notNull().references(() => organization.id),
 	rcmId: text("rcm_id").notNull().references(() => rcms.id, { onDelete: 'cascade' }),
 	controlId: text("control_id").notNull().references(() => controls.id, { onDelete: 'cascade' }),
 	year: integer("year"),
@@ -212,7 +212,7 @@ export const rcmControls = pgTable("rcm_controls", {
 
 export const rcms = pgTable("rcms", {
 	id: text("id").primaryKey(),
-	organizationId: text("organizationId").notNull().references(() => organization.id),
+	organizationId: text("organization_id").notNull().references(() => organization.id),
 	year: integer("year"),
 	riskLibraryId: text("risk_library_id"), // Reference to standardized risk library
 	process: text("process").notNull(),
@@ -227,7 +227,7 @@ export const rcms = pgTable("rcms", {
 
 export const controls = pgTable("controls", {
 	id: text("id").primaryKey(),
-	organizationId: text("organizationId").notNull().references(() => organization.id),
+	organizationId: text("organization_id").notNull().references(() => organization.id),
 	year: integer("year"),
 	rcmId: text("rcm_id").references(() => rcms.id),
 	departmentId: text("department_id").references(() => departments.id),
@@ -270,7 +270,7 @@ export const controls = pgTable("controls", {
 
 export const csaRecords = pgTable("csa_records", {
 	id: text("id").primaryKey(),
-	organizationId: text("organizationId").notNull().references(() => organization.id),
+	organizationId: text("organization_id").notNull().references(() => organization.id),
 	controlId: text("control_id").references(() => controls.id), // Optional for aggregate CSA
 	bpmProcessId: text("bpm_process_id").references(() => bpmProcesses.id), // New: Link to sub-process
 	period: text("period").notNull(),
@@ -314,7 +314,7 @@ export const csaRecords = pgTable("csa_records", {
 
 export const csaSamples = pgTable("csa_samples", {
 	id: text("id").primaryKey(),
-	organizationId: text("organizationId").notNull().references(() => organization.id),
+	organizationId: text("organization_id").notNull().references(() => organization.id),
 	csaRecordId: text("csa_record_id").notNull().references(() => csaRecords.id, { onDelete: 'cascade' }),
 	glRowId: text("gl_row_id").references(() => glRows.id), // Link to original transaction
 	sampleRef: text("sample_ref"),
@@ -336,7 +336,7 @@ export const csaSamples = pgTable("csa_samples", {
 
 export const testRecords = pgTable("test_records", {
 	id: text("id").primaryKey(),
-	organizationId: text("organizationId").notNull().references(() => organization.id),
+	organizationId: text("organization_id").notNull().references(() => organization.id),
 	controlId: text("control_id").notNull().references(() => controls.id),
 	testType: text("test_type").notNull(), // TOD, TOE
 	method: text("method"),
@@ -352,7 +352,7 @@ export const testRecords = pgTable("test_records", {
 
 export const deficiencies = pgTable("deficiencies", {
 	id: text("id").primaryKey(),
-	organizationId: text("organizationId").notNull().references(() => organization.id),
+	organizationId: text("organization_id").notNull().references(() => organization.id),
 	controlId: text("control_id").references(() => controls.id),
 	description: text("description").notNull(),
 	severity: text("severity").notNull(), // Control Deficiency, Significant, Material Weakness
@@ -369,7 +369,7 @@ export const deficiencies = pgTable("deficiencies", {
 
 export const actionPlans = pgTable("action_plans", {
 	id: text("id").primaryKey(),
-	organizationId: text("organizationId").notNull().references(() => organization.id),
+	organizationId: text("organization_id").notNull().references(() => organization.id),
 	deficiencyId: text("deficiency_id").references(() => deficiencies.id),
 	description: text("description").notNull(),
 	ownerId: text("owner_id"),
@@ -384,11 +384,23 @@ export const actionPlans = pgTable("action_plans", {
 	actualCompletionDate: timestamp("actual_completion_date"),
 	isApprovedByLine2: boolean("is_approved_by_line2").default(false),
 	isBeforeYearEnd: boolean("is_before_year_end").default(false),
+	severity: text("severity"), // CD, SD, MW
+	rescheduleReason: text("reschedule_reason"),
+});
+
+export const notifications = pgTable("notifications", {
+	id: text("id").primaryKey(),
+	organizationId: text("organization_id").notNull().references(() => organization.id),
+	userId: text("user_id").notNull().references(() => user.id),
+	message: text("message").notNull(),
+	link: text("link"),
+	readStatus: boolean("read_status").default(false),
+	createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const applications = pgTable("applications", {
 	id: text("id").primaryKey(),
-	organizationId: text("organizationId").notNull().references(() => organization.id),
+	organizationId: text("organization_id").notNull().references(() => organization.id),
 	name: text("name").notNull(),
 	description: text("description"),
 	statusITGC: text("status_itgc"),
@@ -399,7 +411,7 @@ export const applications = pgTable("applications", {
 
 export const bpmProcesses = pgTable("bpm_processes", {
 	id: text("id").primaryKey(),
-	organizationId: text("organizationId").notNull().references(() => organization.id),
+	organizationId: text("organization_id").notNull().references(() => organization.id),
 	noGL: text("no_gl").notNull(),
 	bpmCode: text("bpm_code"), // Free-text human readable ID (e.g. BPM-FIN-01)
 	fsliName: text("fsli_name"),
@@ -412,7 +424,7 @@ export const bpmProcesses = pgTable("bpm_processes", {
 
 export const accountAssertions = pgTable("account_assertions", {
 	id: text("id").primaryKey(),
-	organizationId: text("organizationId").notNull().references(() => organization.id),
+	organizationId: text("organization_id").notNull().references(() => organization.id),
 	fsliName: text("fsli_name").notNull(),
 	noGL: text("no_gl").notNull(),
 	
@@ -430,7 +442,7 @@ export const accountAssertions = pgTable("account_assertions", {
 
 export const aggregateDeficiencies = pgTable("aggregate_deficiencies", {
 	id: text("id").primaryKey(),
-	organizationId: text("organizationId").notNull().references(() => organization.id),
+	organizationId: text("organization_id").notNull().references(() => organization.id),
 	name: text("name").notNull(),
 	year: integer("year").notNull(),
 	deficiencyIds: jsonb("deficiency_ids").$type<string[]>(),
@@ -465,7 +477,7 @@ export const auditLogs = pgTable("audit_logs", {
 
 export const simulationAccountApplications = pgTable("simulation_account_applications", {
 	id: text("id").primaryKey(),
-	organizationId: text("organizationId").notNull().references(() => organization.id),
+	organizationId: text("organization_id").notNull().references(() => organization.id),
 	simulationId: text("simulation_id").notNull().references(() => simulations.id, { onDelete: 'cascade' }),
 	accountCode: text("account_code").notNull(), // Menyimpan noGL
 	applicationId: text("application_id").notNull().references(() => applications.id, { onDelete: 'cascade' }),
@@ -565,8 +577,10 @@ export const csaSchedules = pgTable("csa_schedules", {
 	status: text("status").notNull().default("Not Started"), // Not Started, In Progress, Completed
 	assignedTo: text("assigned_to").references(() => user.id),
 	recurringFrequency: text("recurring_frequency"), // Monthly, Quarterly, etc.
+	reminderConfig: jsonb("reminder_config"), // { value: number, unit: 'minute' | 'hour' | 'day' | 'month' }
 	createdAt: timestamp("created_at").notNull().defaultNow(),
 });
+
 
 // --- RELATIONS ---
 

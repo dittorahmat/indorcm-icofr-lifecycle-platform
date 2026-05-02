@@ -36,6 +36,22 @@
     "elcTab": "RCM ELC (Strategic)",
     "tlcTab": "RCM TLC (Operational)"
   },
+  "calendar": {
+    "today": "Today",
+    "day": "Day",
+    "week": "Week",
+    "month": "Month",
+    "workWeek": "Work Week",
+    "more": "more",
+    "noTasks": "No tasks this month.",
+    "todoTitle": "Monthly Todo List",
+    "frequencies": {
+      "monthly": "Monthly",
+      "quarterly": "Quarterly",
+      "semiAnnual": "Semi-Annual",
+      "annual": "Annual"
+    }
+  },
   "unsavedChanges": {
     "title": "Unsaved Changes",
     "description": "You have unsaved changes that will be lost if you leave this page. Are you sure you want to continue?",

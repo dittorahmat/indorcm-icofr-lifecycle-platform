@@ -6,6 +6,53 @@
     "rcm": "RCM Matrix",
     "logs": "Change Log"
   },
+  "scheduling": {
+    "title": "ICOFR Activity Scheduling",
+    "description": "Set work plans according to Juknis SK-5/2024.",
+    "newEvent": "New Event",
+    "activityType": "Activity Type",
+    "subProcess": "Business Sub-Process",
+    "targetDate": "Target Date",
+    "frequency": "Frequency",
+    "setReminder": "Set Reminder",
+    "beforeDeadline": "Before Deadline",
+    "save": "Save Schedule",
+    "reschedule": {
+      "title": "Reschedule Activity",
+      "description": "According to Appendix 6 SK-5/2024, rescheduling requires a justification.",
+      "newDate": "New Date",
+      "justification": "Rescheduling Reason",
+      "placeholder": "Explain the reason for rescheduling...",
+      "save": "Save Changes"
+    },
+    "types": {
+      "csa": "CSA (Control Self-Assessment)",
+      "tod": "TOD (Test of Design)",
+      "toe": "TOE (Test of Operating Effectiveness)",
+      "scoping": "Review Scoping (Semi-Annual)",
+      "rcm": "RCM & BPM Update",
+      "soc": "SOC Report Evaluation",
+      "investee": "Investee Monitoring",
+      "signoff": "Annual Sign-off"
+    },
+    "units": {
+      "minute": "Minute(s)",
+      "hour": "Hour(s)",
+      "day": "Day(s)",
+      "month": "Month(s)"
+    },
+    "severity": {
+      "cd": "Control Deficiency",
+      "sd": "Significant Deficiency",
+      "mw": "Material Weakness"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all as read",
+    "empty": "No new notifications",
+    "viewAll": "View all activities"
+  },
   "sampling": {
     "title": "Transaction Sampling",
     "description": "Select Journal/GL rows to be tested in this CSA.",
