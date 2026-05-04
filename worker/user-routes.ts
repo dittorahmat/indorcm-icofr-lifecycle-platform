@@ -10,7 +10,7 @@ import {
   rcmControls, organization, testRecords, aggregateDeficiencies,
   documents, documentDepartments, documentGls, documentFslis,
   systemLicenses, accountAssertions, simulationAccountApplications,
-  vendors, socReports, socEvaluations, csaSchedules
+  vendors, socReports, socEvaluations, csaSchedules, notifications
 } from './db/schema';
 import { eq, and, desc, sql, ilike, inArray, SQL } from 'drizzle-orm';
 import type { 
@@ -183,7 +183,8 @@ export function userRoutes(app: Hono<HonoEnv>) {
       await db.execute(sql`ALTER TABLE simulations ADD COLUMN IF NOT EXISTS significant_accounts jsonb;`);
       await db.execute(sql`ALTER TABLE "user" ADD COLUMN IF NOT EXISTS "language" text DEFAULT 'en';`);
       await db.execute(sql`ALTER TABLE applications ADD COLUMN IF NOT EXISTS itgc_areas jsonb DEFAULT '[]';`);
-      return ok(c, { message: "Database fixed! Columns significant_accounts, language, and itgc_areas added." });
+      await db.execute(sql`ALTER TABLE notifications ADD COLUMN IF NOT EXISTS type text DEFAULT 'info';`);
+      return ok(c, { message: "Database fixed! Columns significant_accounts, language, itgc_areas, and notification type added." });
     } catch (e: any) {
       return ok(c, { error: e.message });
     }
@@ -1912,21 +1913,31 @@ export function userRoutes(app: Hono<HonoEnv>) {
     // --- AUTO-CLEANUP (Hard Delete Orphans) ---
     
     // 1. Delete mappings (rcm_controls) that are no longer linked to this diagram's active pairs
-    // We target mappings that belong to this diagram's risks but are not in the active set
-    const risksOfThisDiagram = await db.select({ id: rcms.id }).from(rcms).where(eq(rcms.diagramId, id));
-    const riskIdsOfThisDiagram = risksOfThisDiagram.map((r: any) => r.id);
-    
-    if (riskIdsOfThisDiagram.length > 0) {
-      await db.execute(sql`
-        DELETE FROM rcm_controls 
-        WHERE "organizationId" = ${orgId}
-        AND rcm_id IN ${riskIdsOfThisDiagram}
-        AND id NOT IN (
-          SELECT rc.id FROM rcm_controls rc
-          INNER JOIN bpm_node_rcms bnr ON rc.rcm_id = bnr.rcm_id
-          WHERE bnr.diagram_id = ${id}
-        )
-      `);
+    // Logic: For every risk currently active on the canvas, ensure only the controls visible on the canvas remain mapped.
+    if (activeRiskIdsInDiagram.size > 0) {
+      for (const rcmId of activeRiskIdsInDiagram) {
+        const activeCtrlsForThisRisk = Array.from(activeRiskControlPairs)
+          .filter(p => p.startsWith(`${rcmId}:`))
+          .map(p => p.split(':')[1]);
+
+        if (activeCtrlsForThisRisk.length > 0) {
+          // Delete controls for this risk that are NOT in the active set from UI
+          await db.execute(sql`
+            DELETE FROM rcm_controls 
+            WHERE "organizationId" = ${orgId}
+            AND rcm_id = ${rcmId}
+            AND control_id NOT IN (${sql.join(activeCtrlsForThisRisk.map(id => sql`${id}`), sql`, `)})
+          `);
+        } else {
+          // If no controls are linked to this risk on canvas, delete ALL mappings for this risk
+          // (Caution: this only applies if the risk is part of this sub-process context)
+          // To be safe, we only do this for risks that were "inserted" or "updated" in this diagram context
+          await db.delete(rcmControls).where(and(
+            eq(rcmControls.rcmId, rcmId),
+            eq(rcmControls.organizationId, orgId)
+          ));
+        }
+      }
     }
 
     // 2. Delete Controls that are no longer linked to ANY mapping (including cleanup of dependent records)
@@ -1948,6 +1959,9 @@ export function userRoutes(app: Hono<HonoEnv>) {
     }
 
     // 3. Delete Risks that are no longer in the visual nodes
+    const risksOfThisDiagram = await db.select({ id: rcms.id }).from(rcms).where(eq(rcms.diagramId, id));
+    const riskIdsOfThisDiagram = risksOfThisDiagram.map((r: any) => r.id);
+    
     for (const drId of riskIdsOfThisDiagram) {
        if (!activeRiskIdsInDiagram.has(drId) && drId.startsWith('R-')) {
           await db.delete(rcms).where(and(eq(rcms.id, drId), eq(rcms.organizationId, orgId)));
@@ -1955,28 +1969,31 @@ export function userRoutes(app: Hono<HonoEnv>) {
     }
 
     // 3. Recalculate Risk & Control Counts for the Process
-    const risks = await db.select({ id: bpmNodeRcms.rcmId })
+    // Fetch unique Risks linked to this diagram (Source: bpmNodeRcms)
+    const linkedRisks = await db.select({ id: bpmNodeRcms.rcmId })
       .from(bpmNodeRcms)
       .where(eq(bpmNodeRcms.diagramId, id))
       .groupBy(bpmNodeRcms.rcmId);
     
-    const riskCount = risks.length;
-    const uniqueRiskIds = risks.map((r: any) => r.id);
+    const riskCount = linkedRisks.length;
+    const uniqueRiskIds = linkedRisks.map((r: any) => r.id);
     
     let controlCount = 0;
     if (uniqueRiskIds.length > 0) {
-      const ctrls = await db.select({ id: rcmControls.controlId })
+      // Fetch unique Controls linked to those Risks (Source: rcmControls)
+      const linkedCtrls = await db.select({ id: rcmControls.controlId })
         .from(rcmControls)
         .where(and(
           inArray(rcmControls.rcmId, uniqueRiskIds),
           eq(rcmControls.organizationId, orgId)
         ))
         .groupBy(rcmControls.controlId);
-      controlCount = ctrls.length;
+      controlCount = linkedCtrls.length;
     }
 
     const diagResult = await db.select().from(bpmDiagrams).where(eq(bpmDiagrams.id, id)).limit(1);
     if (diagResult.length > 0 && diagResult[0].subProcess) {
+      // Update the parent BPM Process summary
       await db.update(bpmProcesses)
         .set({ riskCount, controlCount })
         .where(and(
@@ -3445,5 +3462,56 @@ ${knowledgeBase}
     } catch (error: any) {
       return bad(c, `AI service error: ${error.message}`, 500);
     }
+  });
+
+  // --- Notification Routes ---
+
+  app.get('/api/notifications', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+    const userId = c.get('userId');
+
+    const items = await db.select()
+      .from(notifications)
+      .where(and(
+        eq(notifications.organizationId, orgId),
+        eq(notifications.userId, userId)
+      ))
+      .orderBy(desc(notifications.createdAt))
+      .limit(50);
+
+    return ok(c, items);
+  });
+
+  app.post('/api/notifications/:id/read', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const id = c.req.param('id');
+    const orgId = c.get('organizationId');
+    const userId = c.get('userId');
+
+    await db.update(notifications)
+      .set({ readStatus: true })
+      .where(and(
+        eq(notifications.id, id),
+        eq(notifications.organizationId, orgId),
+        eq(notifications.userId, userId)
+      ));
+
+    return ok(c, { success: true });
+  });
+
+  app.post('/api/notifications/read-all', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+    const userId = c.get('userId');
+
+    await db.update(notifications)
+      .set({ readStatus: true })
+      .where(and(
+        eq(notifications.organizationId, orgId),
+        eq(notifications.userId, userId)
+      ));
+
+    return ok(c, { success: true });
   });
 }

@@ -394,6 +394,7 @@ export const notifications = pgTable("notifications", {
 	userId: text("user_id").notNull().references(() => user.id),
 	message: text("message").notNull(),
 	link: text("link"),
+	type: text("type").$type<'info' | 'warning' | 'error' | 'success'>().default('info'),
 	readStatus: boolean("read_status").default(false),
 	createdAt: timestamp("created_at").notNull().defaultNow(),
 });

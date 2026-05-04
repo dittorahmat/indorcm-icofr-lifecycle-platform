@@ -16,6 +16,7 @@ serve({
       BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
       BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
       GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+      SKIP_LICENSE: process.env.SKIP_LICENSE,
     };
     
     return app.fetch(request, env);
