@@ -12,6 +12,7 @@ import {
   FileText,
   Briefcase,
   History,
+  Bell,
   Megaphone,
   Network,
   UploadCloud,
@@ -159,6 +160,11 @@ export function AppSidebar(): JSX.Element {
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/csa")}>
                 <Link to="/csa" className="font-bold"><History /> <span>CSA Reports</span></Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={isActive("/notifications")}>
+                <Link to="/notifications" className="font-bold"><Bell /> <span>{t('items.notifications') || 'Notifikasi'}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>

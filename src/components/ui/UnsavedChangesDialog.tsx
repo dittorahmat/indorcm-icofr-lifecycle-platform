@@ -20,11 +20,9 @@ interface UnsavedChangesDialogProps {
  * Integrates with React Router's blocker state.
  */
 export function UnsavedChangesDialog({ blocker }: UnsavedChangesDialogProps) {
-  // We use i18n if available, otherwise fallback to English
-  // The project uses react-i18next as seen in ScopingPage.tsx
-  const { t } = useTranslation();
+  const { t } = useTranslation('common');
 
-  if (blocker.state !== "blocked") return null;
+  if (!blocker || blocker.state !== "blocked") return null;
 
   return (
     <AlertDialog open={blocker.state === "blocked"}>

@@ -33,7 +33,8 @@
       "rcm": "Pemutakhiran RCM & BPM",
       "soc": "Evaluasi Laporan SOC",
       "investee": "Monitoring Investee",
-      "signoff": "Annual Sign-off"
+      "signoff": "Annual Sign-off",
+      "remediation": "Remediasi (Action Plan)"
     },
     "units": {
       "minute": "Menit",
@@ -49,10 +50,12 @@
   },
   "notifications": {
     "title": "Notifikasi",
+    "description": "Kelola peringatan kepatuhan dan log aktivitas sistem Anda.",
     "markAllRead": "Tandai semua dibaca",
     "clearAll": "Bersihkan semua",
     "delete": "Hapus",
     "empty": "Belum ada notifikasi baru",
+    "emptyDetail": "Semua sudah beres! Notifikasi baru akan muncul di sini.",
     "viewAll": "Lihat semua aktivitas"
   },
   "sampling": {

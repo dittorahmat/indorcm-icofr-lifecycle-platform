@@ -17,7 +17,7 @@ import { api } from '@/lib/api-client';
 import { 
   RefreshCw, ShieldCheck, CheckCircle2, AlertTriangle, 
   X, UserCheck, Activity, Database, FileText, LayoutDashboard,
-  Printer, ChevronLeft, Eye
+  Printer, ChevronLeft, Eye, UploadCloud, Check
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Control, CSARecord, CSATestSample, User, GLRow } from '@shared/types';
@@ -37,6 +37,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
+import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -120,7 +121,11 @@ const csaFormSchema = z.object({
     glRowId: z.string().optional(),
     controlResults: z.record(z.string(), z.object({
       implemented: z.boolean(),
-      evidenceUrl: z.string().optional()
+      evidenceUrl: z.string().optional(),
+      comment: z.string().optional(),
+      riskId: z.string().optional(),
+      riskName: z.string().optional(),
+      controlName: z.string().optional()
     }))
   })).min(1, "At least one sample is required"),
 });
@@ -132,24 +137,74 @@ interface CSATabContentProps {
   controls?: Control[];
   initialSamples?: GLRow[];
   bpmProcessId?: string;
+  subProcessName?: string;
   standalone?: boolean;
 }
 
 export function CSATabContent({ 
   noGL: propNoGL, 
-  controls = [], 
+  controls: propControls = [], 
   initialSamples = [],
   bpmProcessId,
+  subProcessName,
   standalone = false 
 }: CSATabContentProps) {
-  const { t } = useTranslation(['bpm', 'common']);
+  const { t } = useTranslation(['bpm', 'common', 'csa_hub']);
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [activeUploadRow, setActiveUploadRow] = useState<{ sIdx: number, cId: string } | null>(null);
   
   const noGL = propNoGL || searchParams.get('noGL') || "";
   const [view, setView] = useState<'list' | 'form'>('list');
   const [activeCsaId, setActiveCsaId] = useState<string | null>(null);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
+
+  const { data: diagram } = useQuery({
+    queryKey: ['bpm-diagrams', 'by-gl', noGL],
+    queryFn: () => api<any>(`/api/bpm-diagrams/by-gl/${noGL}`),
+    enabled: !!noGL
+  });
+
+  // Dynamically extract risks and controls from diagram nodes (Source of Truth)
+  const bpmRiskControlPairs = useMemo(() => {
+    if (!diagram?.nodes) return [];
+    const pairs: { riskId: string; riskName: string; controlId: string; controlName: string; code: string }[] = [];
+    
+    diagram.nodes.forEach((node: any) => {
+      const nodePairs = node.data?.regulatoryPairs || 
+                       (node.data?.regulatoryData ? [node.data.regulatoryData] : []);
+      
+      if ((node.type === 'activity' || node.type === 'automated-activity') && nodePairs.length > 0) {
+        nodePairs.forEach((reg: any) => {
+          if (reg.riskId && reg.controlId) {
+            pairs.push({
+              riskId: reg.riskId,
+              riskName: reg.riskDescription || "N/A",
+              controlId: reg.controlId,
+              controlName: reg.controlDescription || node.data.label || "N/A",
+              code: reg.controlId
+            });
+          }
+        });
+      }
+    });
+    return pairs;
+  }, [diagram]);
+
+  // Use BPM pairs if available, otherwise fallback to prop controls (for legacy support)
+  const activeControls = useMemo(() => {
+    if (bpmRiskControlPairs.length > 0) {
+      // Deduplicate controls by ID
+      const seen = new Set();
+      return bpmRiskControlPairs.filter(p => {
+        const isNew = !seen.has(p.controlId);
+        seen.add(p.controlId);
+        return isNew;
+      }).map(p => ({ id: p.controlId, name: p.controlName, code: p.code, description: p.riskName }));
+    }
+    return propControls;
+  }, [bpmRiskControlPairs, propControls]);
 
   const form = useForm<CSAFormValues>({
     resolver: zodResolver(csaFormSchema),
@@ -171,29 +226,42 @@ export function CSATabContent({
 
   // Track unsaved changes
   const isDirty = form.formState.isDirty && view === 'form' && !activeCsaId;
-  useUnsavedChanges(isDirty);
+  const blocker = useUnsavedChanges(isDirty);
 
   // Auto-populate samples when initialSamples change
   useEffect(() => {
     if (initialSamples.length > 0 && view !== 'form') {
-      const newSamples = initialSamples.map(s => ({
-        sampleRef: s.glDesc,
-        glRowId: (s as any).id,
-        controlResults: controls.reduce((acc, ctrl) => {
-          acc[ctrl.id] = { implemented: true };
-          return acc;
-        }, {} as Record<string, { implemented: boolean }>)
-      }));
-      replaceSamples(newSamples);
-      setView('form'); // Skip gate
-    }
-  }, [initialSamples, controls, replaceSamples, view]);
+      const newSamples = initialSamples.map(s => {
+        const controlResults: Record<string, any> = {};
+        
+        // Use default-fail logic: implemented = false
+        if (bpmRiskControlPairs.length > 0) {
+          bpmRiskControlPairs.forEach(pair => {
+            controlResults[pair.controlId] = {
+              implemented: false,
+              riskId: pair.riskId,
+              riskName: pair.riskName,
+              controlName: pair.controlName,
+              evidenceUrl: '',
+              comment: ''
+            };
+          });
+        } else {
+          activeControls.forEach(ctrl => {
+            controlResults[ctrl.id] = { implemented: false };
+          });
+        }
 
-  const { data: diagram } = useQuery({
-    queryKey: ['bpm-diagrams', 'by-gl', noGL],
-    queryFn: () => api<any>(`/api/bpm-diagrams/by-gl/${noGL}`),
-    enabled: !!noGL
-  });
+        return {
+          sampleRef: s.glDesc,
+          glRowId: (s as any).id,
+          controlResults
+        };
+      });
+      replaceSamples(newSamples);
+      setView('form');
+    }
+  }, [initialSamples, bpmRiskControlPairs, activeControls, replaceSamples, view]);
 
   const { data: csaList, isLoading: isListLoading } = useQuery({
     queryKey: ['csa-list', bpmProcessId],
@@ -216,6 +284,31 @@ export function CSATabContent({
     }
   });
 
+  const uploadMutation = useMutation({
+    mutationFn: async ({ sIdx, cId, file }: { sIdx: number; cId: string; file: File }) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      return api<{ url: string }>('/api/upload', { method: 'POST', body: formData });
+    },
+    onSuccess: (data, variables) => {
+      form.setValue(`samples.${variables.sIdx}.controlResults.${variables.cId}.evidenceUrl`, data.url, { shouldDirty: true });
+      toast.success("Bukti berhasil diunggah");
+      setActiveUploadRow(null);
+    }
+  });
+
+  const handleFileUploadTrigger = (sIdx: number, cId: string) => {
+    setActiveUploadRow({ sIdx, cId });
+    fileInputRef.current?.click();
+  };
+
+  const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && activeUploadRow) {
+      uploadMutation.mutate({ ...activeUploadRow, file });
+    }
+  };
+
   useEffect(() => {
     if (activeCsa) {
       form.reset({
@@ -225,17 +318,35 @@ export function CSATabContent({
         samplingMethodology: (activeCsa as any).samplingMethodology || '',
         documentList: (activeCsa as any).documentList || '',
         isBpmConfirmed: true,
-        samples: activeCsa.samples.map(s => ({
-          sampleRef: s.sampleRef,
-          glRowId: s.glRowId,
-          controlResults: s.controlResults || {}
-        }))
+        samples: activeCsa.samples.map(s => {
+          // SHIM: Transform legacy boolean results to new object format
+          const transformedResults: Record<string, any> = {};
+          if (s.controlResults) {
+            Object.entries(s.controlResults).forEach(([id, val]) => {
+              transformedResults[id] = typeof val === 'boolean' ? { implemented: val } : val;
+            });
+          }
+          return {
+            sampleRef: s.sampleRef,
+            glRowId: s.glRowId,
+            controlResults: transformedResults
+          };
+        })
       });
     }
   }, [activeCsa, form]);
 
   const onSubmit = async (values: CSAFormValues) => {
-    // Validation: Aggregate Zero Tolerance Result Proposal
+    // Validation: Aggregate Zero Tolerance & Mandatory Evidence
+    const flatResults = values.samples.flatMap(s => Object.values(s.controlResults));
+    const anySampleFailed = flatResults.some(r => !r.implemented);
+    const anyMissingEvidence = flatResults.some(r => r.implemented && !r.evidenceUrl);
+
+    if (anyMissingEvidence && values.result === 'Effective') {
+      toast.error("Setiap kontrol yang 'Pass' wajib melampirkan bukti (evidence) sebelum sign-off.");
+      return;
+    }
+
     const realResult = anySampleFailed ? 'Ineffective' : values.result;
     if (anySampleFailed && values.result === 'Effective') {
        toast.error("Tidak dapat sign-off sebagai Effective karena terdapat kontrol yang gagal.");
@@ -261,21 +372,41 @@ export function CSATabContent({
 
   const isReadOnly = !!activeCsaId;
 
-  // Hard-Lock logic for "Effective" result
-  const anySampleFailed = form.watch('samples').some(s => 
-    Object.values(s.controlResults).some(r => !r.implemented)
-  );
+  // Watch form samples for detailed table
+  const watchSamples = form.watch('samples');
+  const allPoints = useMemo(() => {
+    return watchSamples.flatMap((s, sIdx) => 
+      Object.entries(s.controlResults).map(([cId, res]) => ({
+        sIdx,
+        cId,
+        sampleRef: s.sampleRef,
+        glRowId: s.glRowId,
+        ...res
+      }))
+    );
+  }, [watchSamples]);
+
+  const anyPointFailed = allPoints.some(p => !p.implemented);
 
   useEffect(() => {
-    if (anySampleFailed && form.getValues('result') === 'Effective') {
+    if (anyPointFailed && form.getValues('result') === 'Effective') {
       form.setValue('result', 'Ineffective');
       toast.warning("Zero Tolerance: Status diset ke Ineffective karena ada kontrol yang gagal.");
     }
-  }, [anySampleFailed, form]);
+  }, [anyPointFailed, form]);
 
   return (
     <div className="h-full flex flex-col bg-white overflow-hidden">
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        onChange={onFileChange} 
+        className="hidden" 
+        accept=".pdf,.png,.jpg,.jpeg,.xlsx" 
+      />
+
       <ResizablePanelGroup direction="horizontal" className="flex-1">
+        {/* Left Panel: Diagram */}
         <ResizablePanel defaultSize={30} minSize={20}>
           <div className="h-full relative bg-slate-50 border-r overflow-hidden">
             {diagram ? (
@@ -289,6 +420,7 @@ export function CSATabContent({
 
         <ResizableHandle withHandle />
 
+        {/* Right Panel: Assessment Tables */}
         <ResizablePanel defaultSize={70}>
           <div className="h-full flex flex-col overflow-hidden">
             <div className="flex-1 overflow-y-auto bg-white p-6 relative">
@@ -334,21 +466,22 @@ export function CSATabContent({
                 </div>
               ) : (
                 <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-12">
+                    {/* Header & Meta Fields */}
                     <div className="space-y-4">
                       <div className="grid grid-cols-3 gap-6 p-5 bg-slate-50 rounded-xl border border-slate-100 shadow-inner">
-                        <FormField control={form.control} name="period" render={({ field }) => (
-                          <FormItem><FormLabel className="text-[10px] font-black uppercase text-slate-400">Periode</FormLabel><FormControl><Input {...field} disabled={isReadOnly} className="h-9 font-bold text-xs" /></FormControl></FormItem>
+                        <FormField control={form.control} name="period" render={({ field: f }) => (
+                          <FormItem><FormLabel className="text-[10px] font-black uppercase text-slate-400">Periode</FormLabel><FormControl><Input {...f} disabled={isReadOnly} className="h-9 font-bold text-xs" /></FormControl></FormItem>
                         )} />
                         <div className="col-span-2">
-                          <FormField control={form.control} name="result" render={({ field }) => (
+                          <FormField control={form.control} name="result" render={({ field: f }) => (
                             <FormItem className="space-y-1">
                               <FormLabel className="text-[10px] font-black uppercase text-slate-400">Hasil Akhir (SK-5)</FormLabel>
                               <FormControl>
-                                <RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4" disabled={isReadOnly}>
+                                <RadioGroup onValueChange={f.onChange} value={f.value} className="flex gap-4" disabled={isReadOnly}>
                                   {['Effective', 'Ineffective', 'No Transaction'].map(res => (
                                     <div key={res} className="flex items-center space-x-2">
-                                      <RadioGroupItem value={res} id={res} disabled={res === 'Effective' && anySampleFailed} />
+                                      <RadioGroupItem value={res} id={res} disabled={res === 'Effective' && anyPointFailed} />
                                       <label htmlFor={res} className={cn("text-xs font-bold", res === 'Effective' ? "text-green-700" : "text-red-700")}>{res}</label>
                                     </div>
                                   ))}
@@ -359,10 +492,10 @@ export function CSATabContent({
                         </div>
                       </div>
 
-                      <FormField control={form.control} name="isBpmConfirmed" render={({ field }) => (
+                      <FormField control={form.control} name="isBpmConfirmed" render={({ field: f }) => (
                         <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4 bg-indigo-50 border border-indigo-100 rounded-lg">
                           <FormControl>
-                            <Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={isReadOnly} />
+                            <Checkbox checked={f.value} onCheckedChange={f.onChange} disabled={isReadOnly} />
                           </FormControl>
                           <div className="space-y-1 leading-none">
                             <FormLabel className="text-xs font-bold text-indigo-900 cursor-pointer">
@@ -376,10 +509,16 @@ export function CSATabContent({
                       )} />
                     </div>
 
+                    {/* TABLE 1: SUMMARY MATRIX */}
                     <div className="space-y-4">
-                      <h4 className="text-xs font-black uppercase text-slate-700 flex items-center gap-2">
-                        <Database className="h-3.5 w-3.5" /> CSA Table (Multi-Control)
-                      </h4>
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-xs font-black uppercase text-slate-700 flex items-center gap-2">
+                          <LayoutDashboard className="h-3.5 w-3.5" /> 1. Summary Status Matrix
+                        </h4>
+                        <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-100 text-[10px] font-bold">
+                          Quick Pass/Fail Toggle
+                        </Badge>
+                      </div>
                       <div className="border rounded-xl overflow-x-auto shadow-sm">
                         <Table>
                           <TableHeader className="bg-slate-50">
@@ -387,7 +526,7 @@ export function CSATabContent({
                               <TableHead className="w-10 text-[9px] font-bold">#</TableHead>
                               <TableHead className="text-[9px] font-bold min-w-[200px]">Sample Reference</TableHead>
                               <TooltipProvider>
-                                {controls.map(ctrl => (
+                                {activeControls.map(ctrl => (
                                   <TableHead key={ctrl.id} className="text-[9px] font-black text-center uppercase tracking-tighter w-24">
                                     <Tooltip>
                                       <TooltipTrigger className="w-full h-full cursor-help">{ctrl.code}</TooltipTrigger>
@@ -399,7 +538,6 @@ export function CSATabContent({
                                   </TableHead>
                                 ))}
                               </TooltipProvider>
-                              <TableHead className="text-[9px] font-bold w-24 text-center">Evidence</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
@@ -410,63 +548,166 @@ export function CSATabContent({
                                   <div className="font-bold text-slate-900">{field.sampleRef}</div>
                                   <div className="text-[9px] text-slate-400">ID: {field.glRowId?.substring(0,8)}</div>
                                 </TableCell>
-                                {controls.map(ctrl => (
+                                {activeControls.map(ctrl => (
                                   <TableCell key={ctrl.id} className="text-center p-0">
-                                    <FormField control={form.control} name={`samples.${sIdx}.controlResults.${ctrl.id}.implemented`} render={({ field }) => (
+                                    <FormField control={form.control} name={`samples.${sIdx}.controlResults.${ctrl.id}.implemented`} render={({ field: f }) => (
                                       <div className="flex items-center justify-center h-full min-h-[40px]">
                                         <Checkbox 
-                                          checked={field.value} 
-                                          onCheckedChange={field.onChange} 
+                                          checked={f.value} 
+                                          onCheckedChange={f.onChange} 
                                           disabled={isReadOnly} 
-                                          className={cn("h-5 w-5", field.value ? "text-green-600" : "text-red-600")}
+                                          className={cn("h-5 w-5", f.value ? "text-green-600 border-green-600" : "text-slate-300")}
                                         />
                                       </div>
                                     )} />
                                   </TableCell>
                                 ))}
-                                <TableCell className="text-center py-1">
-                                   <Button variant="outline" size="icon" className="h-7 w-7"><FileText className="h-3.5 w-3.5 text-slate-400" /></Button>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </div>
+
+                    {/* TABLE 2: GRANULAR EVIDENCE */}
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-xs font-black uppercase text-slate-700 flex items-center gap-2">
+                          <Database className="h-3.5 w-3.5" /> 2. Detailed Verification & Evidence
+                        </h4>
+                        <div className="flex gap-2">
+                           <Badge className="bg-emerald-600 text-[9px] font-black uppercase tracking-wider">{allPoints.filter(p => p.implemented).length} Passed</Badge>
+                           <Badge className="bg-red-600 text-[9px] font-black uppercase tracking-wider">{allPoints.filter(p => !p.implemented).length} Deficiency</Badge>
+                        </div>
+                      </div>
+                      
+                      <div className="border rounded-xl overflow-hidden shadow-md">
+                        <Table>
+                          <TableHeader className="bg-slate-900 text-white">
+                            <TableRow className="divide-x divide-white/10 hover:bg-transparent">
+                              <TableHead className="text-[10px] font-black text-white py-4 px-4 min-w-[200px]">Transaction Detail</TableHead>
+                              <TableHead className="text-[10px] font-black text-white">Risk Name</TableHead>
+                              <TableHead className="text-[10px] font-black text-white">Control Name</TableHead>
+                              <TableHead className="text-[10px] font-black text-white text-center w-32">Evidence</TableHead>
+                              <TableHead className="text-[10px] font-black text-white min-w-[200px]">Keterangan</TableHead>
+                              <TableHead className="text-[10px] font-black text-white text-center w-24">Pass?</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {allPoints.map((point, pIdx) => (
+                              <TableRow key={`${point.glRowId}-${point.cId}`} className={cn(
+                                "divide-x border-b transition-colors",
+                                point.implemented ? "bg-white" : "bg-red-50/50"
+                              )}>
+                                <TableCell className="py-3 px-4">
+                                  <div className="font-bold text-xs text-slate-900">{point.sampleRef}</div>
+                                  <code className="text-[9px] text-slate-400">ID: {point.glRowId?.substring(0,8)}</code>
+                                </TableCell>
+                                <TableCell className="text-[11px] font-medium text-slate-600 italic">
+                                  {point.riskName}
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex flex-col gap-0.5">
+                                    <span className="font-bold text-xs text-slate-800">{point.controlName}</span>
+                                    <Badge variant="outline" className="w-fit text-[9px] h-4 font-mono">{point.cId}</Badge>
+                                  </div>
+                                </TableCell>
+                                <TableCell className="text-center">
+                                   <div className="flex flex-col items-center gap-1">
+                                      <Button 
+                                        type="button"
+                                        variant={point.evidenceUrl ? "default" : "outline"} 
+                                        size="icon" 
+                                        className={cn("h-8 w-8 rounded-lg", point.evidenceUrl ? "bg-indigo-600" : "border-slate-200")}
+                                        onClick={() => !isReadOnly && handleFileUploadTrigger(point.sIdx, point.cId)}
+                                      >
+                                        {uploadMutation.isPending && activeUploadRow?.sIdx === point.sIdx && activeUploadRow?.cId === point.cId ? (
+                                          <RefreshCw className="h-4 w-4 animate-spin" />
+                                        ) : point.evidenceUrl ? (
+                                          <Check className="h-4 w-4" />
+                                        ) : (
+                                          <UploadCloud className="h-4 w-4" />
+                                        )}
+                                      </Button>
+                                      {point.evidenceUrl && <span className="text-[8px] text-emerald-600 font-bold uppercase">Attached</span>}
+                                   </div>
+                                </TableCell>
+                                <TableCell>
+                                  <FormField control={form.control} name={`samples.${point.sIdx}.controlResults.${point.cId}.comment`} render={({ field: f }) => (
+                                    <Input 
+                                      {...f} 
+                                      disabled={isReadOnly} 
+                                      className="h-8 text-xs border-transparent hover:border-slate-200 focus:border-indigo-400 bg-transparent transition-all"
+                                      placeholder="Tambahkan catatan..."
+                                    />
+                                  )} />
+                                </TableCell>
+                                <TableCell className="text-center">
+                                  <FormField control={form.control} name={`samples.${point.sIdx}.controlResults.${point.cId}.implemented`} render={({ field: f }) => (
+                                    <div className="flex items-center justify-center">
+                                      <Checkbox 
+                                        checked={f.value} 
+                                        onCheckedChange={f.onChange} 
+                                        disabled={isReadOnly} 
+                                        className={cn("h-6 w-6", f.value ? "text-green-600 border-green-600" : "text-red-400 border-red-200")}
+                                      />
+                                    </div>
+                                  )} />
                                 </TableCell>
                               </TableRow>
                             ))}
                           </TableBody>
                         </Table>
                       </div>
-                      <div className="flex justify-between items-center bg-slate-100 p-3 rounded-lg border border-slate-200">
-                         <div className="flex gap-4">
-                           <div className="text-center">
-                             <p className="text-[9px] font-black uppercase text-slate-400">Controls</p>
-                             <p className="text-sm font-black text-slate-700">{controls.length}</p>
+
+                      {/* STATS SUMMARY CARD */}
+                      <div className="flex justify-between items-center bg-slate-100 p-5 rounded-xl border border-slate-200 shadow-inner">
+                         <div className="flex gap-10">
+                           <div className="text-center border-r pr-10 border-slate-300">
+                             <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Verification Points</p>
+                             <p className="text-2xl font-black text-slate-700">{allPoints.length}</p>
                            </div>
                            <div className="text-center">
-                             <p className="text-[9px] font-black uppercase text-slate-400">Samples</p>
-                             <p className="text-sm font-black text-slate-700">{fields.length}</p>
+                             <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Progress</p>
+                             <p className="text-2xl font-black text-indigo-600">
+                                {allPoints.filter(p => p.implemented || p.comment || p.evidenceUrl).length} / {allPoints.length}
+                             </p>
                            </div>
                          </div>
                          <div className="text-right">
-                           <p className="text-[9px] font-black uppercase text-slate-400 tracking-wider">Poin Verifikasi / Evidence</p>
-                           <p className="text-lg font-black text-indigo-600">{(controls.length * fields.length)} Bukti</p>
+                           <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Status Dokumentasi</p>
+                           {(() => {
+                             const anyPassWithoutEvidence = allPoints.some(p => p.implemented && !p.evidenceUrl);
+                             const nothingDone = allPoints.every(p => !p.implemented && !p.evidenceUrl && !p.comment);
+                             
+                             if (nothingDone) return <p className="text-xl font-black uppercase italic text-slate-400">Belum Dimulai</p>;
+                             if (anyPassWithoutEvidence) return <p className="text-xl font-black uppercase italic text-rose-500 animate-pulse">Butuh Evidence</p>;
+                             return <p className="text-xl font-black uppercase italic text-emerald-600">Siap Sign-off</p>;
+                           })()}
                          </div>
                       </div>
                     </div>
 
-                    <FormField control={form.control} name="comments" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-[10px] font-black uppercase text-slate-400">Catatan / Temuan</FormLabel>
-                        <FormControl><Textarea {...field} disabled={isReadOnly} className="min-h-[100px] text-xs" placeholder="Wajib diisi jika status INEFFECTIVE..." /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
+                    {/* COMMENTS & FOOTER */}
+                    <div className="pt-8 border-t space-y-6">
+                        <FormField control={form.control} name="comments" render={({ field: f }) => (
+                          <FormItem>
+                            <FormLabel className="text-[10px] font-black uppercase text-slate-400">Management Rationale / Catatan Temuan</FormLabel>
+                            <FormControl><Textarea {...f} disabled={isReadOnly} className="min-h-[120px] text-sm shadow-sm" placeholder="Wajib diisi jika status INEFFECTIVE..." /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
 
-                    {!isReadOnly && (
-                      <div className="flex justify-end gap-3 pt-4 border-t">
-                        <Button variant="outline" onClick={() => setView('list')}>Batal</Button>
-                        <Button disabled={createMutation.isPending || isAuthenticating} type="submit" className="bg-indigo-600 hover:bg-indigo-700 font-bold px-8 h-10 gap-2 shadow-lg">
-                           {isAuthenticating ? <RefreshCw className="h-4 w-4 animate-spin" /> : <UserCheck className="h-4 w-4" />}
-                           Submit & Sign-off (Manager)
-                        </Button>
-                      </div>
-                    )}
+                        {!isReadOnly && (
+                          <div className="flex justify-end gap-3">
+                            <Button variant="outline" onClick={() => setView('list')} className="px-8 font-bold">Batal</Button>
+                            <Button disabled={createMutation.isPending || isAuthenticating} type="submit" className="bg-indigo-600 hover:bg-indigo-700 font-black px-12 h-12 gap-2 shadow-xl shadow-indigo-100 uppercase tracking-widest">
+                               {isAuthenticating ? <RefreshCw className="h-5 w-5 animate-spin" /> : <UserCheck className="h-5 w-5" />}
+                               Submit & Sign-off
+                            </Button>
+                          </div>
+                        )}
+                    </div>
                   </form>
                 </Form>
               )}
@@ -474,6 +715,7 @@ export function CSATabContent({
           </div>
         </ResizablePanel>
       </ResizablePanelGroup>
+      <UnsavedChangesDialog blocker={blocker} />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useBlocker } from 'react-router-dom';
 
 /**
@@ -14,8 +14,6 @@ export function useUnsavedChanges(isDirty: boolean) {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (isDirty) {
         e.preventDefault();
-        // Standard behavior for modern browsers is to ignore custom messages
-        // but this returnValue is required to trigger the prompt.
         e.returnValue = ''; 
       }
     };
@@ -25,13 +23,17 @@ export function useUnsavedChanges(isDirty: boolean) {
   }, [isDirty]);
 
   // 2. Internal navigation guard (Sidebar, Links, Programmatic navigation)
-  const blocker = useBlocker(
-    ({ currentLocation, nextLocation }) =>
+  // Memoize the blocker function to prevent React Router state issues
+  const blockerCallback = useCallback(
+    ({ currentLocation, nextLocation }: any) =>
       isDirty && (
         currentLocation.pathname !== nextLocation.pathname || 
         currentLocation.search !== nextLocation.search
-      )
+      ),
+    [isDirty]
   );
+
+  const blocker = useBlocker(blockerCallback);
 
   return blocker;
 }

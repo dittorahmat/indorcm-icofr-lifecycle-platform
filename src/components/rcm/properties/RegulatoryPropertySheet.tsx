@@ -129,8 +129,7 @@ export function RegulatoryPropertySheet({
       
       // SMART ID ASSIGNMENT: If this was a pending risk and user entered description
       if (!updated.riskId && field === 'riskDescription' && value.trim().length > 0) {
-        updated.riskId = `R-${Date.now()}`;
-        // delete updated._tempRiskId; // Keep it for grouping continuity until re-render
+        updated.riskId = `R-${crypto.randomUUID().substring(0, 8)}`;
       }
       
       return updated;
@@ -144,7 +143,7 @@ export function RegulatoryPropertySheet({
 
     // SMART ID ASSIGNMENT for Control
     if (!updated.controlId && field === 'controlDescription' && value.trim().length > 0) {
-        updated.controlId = `C-${Date.now()}`;
+        updated.controlId = `C-${crypto.randomUUID().substring(0, 8)}`;
     }
 
     nextPairs[pairIndex] = updated;
@@ -152,7 +151,7 @@ export function RegulatoryPropertySheet({
   };
 
   const addNewRisk = () => {
-    const tempId = `temp_${Date.now()}`;
+    const tempId = crypto.randomUUID();
     const nextPairs = [...pairs, {
       _tempRiskId: tempId,
       _tempControlId: `c_${tempId}`,
@@ -163,7 +162,8 @@ export function RegulatoryPropertySheet({
       isFraudRelated: false,
       riskRating: 'Low',
       isKeyControl: false,
-      classification: 'TLC'
+      classification: 'TLC',
+      ipoC: 'N', ipoA: 'N', ipoV: 'N', ipoRa: 'N'
     }];
     onUpdateNodeData(selectedNode.id, { regulatoryPairs: nextPairs });
   };
@@ -173,7 +173,7 @@ export function RegulatoryPropertySheet({
     const nextPairs = [...pairs, {
       ...template,
       controlId: null,
-      _tempControlId: `c_${Date.now()}`,
+      _tempControlId: `c_${crypto.randomUUID()}`,
       controlDescription: '',
       isKeyControl: false,
       ipoC: 'N', ipoA: 'N', ipoV: 'N', ipoRa: 'N',

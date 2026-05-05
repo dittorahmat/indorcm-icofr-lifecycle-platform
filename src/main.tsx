@@ -40,6 +40,7 @@ const TodoListPage = lazy(() => import('@/pages/csa/TodoListPage').then(module =
 const UserManagementPage = lazy(() => import('@/pages/admin/UserManagementPage').then(module => ({ default: module.UserManagementPage })));
 const SettingsPage = lazy(() => import('@/pages/admin/SettingsPage').then(module => ({ default: module.SettingsPage })));
 const DocumentsPage = lazy(() => import('@/pages/knowledge/DocumentsPage').then(module => ({ default: module.DocumentsPage })));
+const NotificationsPage = lazy(() => import('@/pages/notifications/NotificationsPage').then(module => ({ default: module.NotificationsPage })));
 
 import { ActivationPage } from '@/pages/ActivationPage';
 import { LicenseGuard } from '@/components/LicenseGuard';
@@ -97,6 +98,7 @@ const router = createBrowserRouter([
               { path: "/settings", element: <PageSuspense><SettingsPage /></PageSuspense> },
               { path: "/admin/users", element: <PageSuspense><UserManagementPage /></PageSuspense> },
               { path: "/documents", element: <PageSuspense><DocumentsPage /></PageSuspense> },
+              { path: "/notifications", element: <PageSuspense><NotificationsPage /></PageSuspense> },
             ]
           },
         ]

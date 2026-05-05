@@ -53,6 +53,7 @@ import { BPMModal } from '@/components/bpm/BPMModal';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
+import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 
 export function TodoListPage() {
   const { t } = useTranslation(['csa', 'common', 'rcm', 'csa_hub']);
@@ -67,13 +68,12 @@ export function TodoListPage() {
   
   // Execution Hub Modal State
   const [isHubOpen, setIsHubOpen] = React.useState(false);
-  const [selectedHubProcess, setSelectedHubHubProcess] = React.useState<{ id: string, name: string, noGL: string, fsliName: string } | null>(null);
+  const [selectedHubProcess, setSelectedHubProcess] = React.useState<{ id: string, name: string, noGL: string, fsliName: string } | null>(null);
 
   const [formData, setFormData] = React.useState({
     bpmProcessId: '',
     type: 'CSA',
     plannedDate: format(new Date(), 'yyyy-MM-dd'),
-    recurringFrequency: 'Monthly',
     reminderConfig: { value: 30, unit: 'minute' }
   });
 
@@ -85,8 +85,7 @@ export function TodoListPage() {
   const [isDirty, setIsDirty] = React.useState(false);
   const [isRescheduleDirty, setIsRescheduleDirty] = React.useState(false);
   
-  useUnsavedChanges(isDirty && isDialogOpen);
-  useUnsavedChanges(isRescheduleDirty && isRescheduleOpen);
+  const blocker = useUnsavedChanges((isDirty && isDialogOpen) || (isRescheduleDirty && isRescheduleOpen));
 
   const { data: schedules } = useQuery({
     queryKey: ['csa-schedules'],
@@ -128,7 +127,7 @@ export function TodoListPage() {
   const handleOpenHub = (processId: string) => {
     const process = processes?.items.find(p => p.id === processId);
     if (process) {
-      setSelectedHubHubProcess({
+      setSelectedHubProcess({
         id: process.id,
         name: process.name,
         noGL: process.noGL,
@@ -149,7 +148,7 @@ export function TodoListPage() {
   });
 
   const handleCreate = () => {
-    const needsProcess = ['CSA', 'TOD', 'TOE', 'RCM'].includes(formData.type);
+    const needsProcess = ['CSA', 'TOD', 'TOE', 'RCM', 'REMEDIATION'].includes(formData.type);
     if ((needsProcess && !formData.bpmProcessId) || !formData.plannedDate) {
       toast.error("Mohon lengkapi data (Tanggal & Sub-Proses)");
       return;
@@ -169,7 +168,6 @@ export function TodoListPage() {
       bpmProcessId: event.bpmProcessId || '',
       type: event.type,
       plannedDate: format(new Date(event.plannedDate), 'yyyy-MM-dd'),
-      recurringFrequency: event.recurringFrequency || 'Monthly',
       reminderConfig: event.reminderConfig || { value: 30, unit: 'minute' }
     });
     setIsDialogOpen(true);
@@ -189,7 +187,6 @@ export function TodoListPage() {
       bpmProcessId: '',
       type: 'CSA',
       plannedDate: format(new Date(), 'yyyy-MM-dd'),
-      recurringFrequency: 'Monthly',
       reminderConfig: { value: 30, unit: 'minute' }
     });
     setIsDirty(false);
@@ -277,6 +274,7 @@ export function TodoListPage() {
                         <SelectItem value="CSA">{t('csa_hub:scheduling.types.csa')}</SelectItem>
                         <SelectItem value="TOD">{t('csa_hub:scheduling.types.tod')}</SelectItem>
                         <SelectItem value="TOE">{t('csa_hub:scheduling.types.toe')}</SelectItem>
+                        <SelectItem value="REMEDIATION">{t('csa_hub:scheduling.types.remediation')}</SelectItem>
                         <SelectItem value="SCOPING">{t('csa_hub:scheduling.types.scoping')}</SelectItem>
                         <SelectItem value="RCM">{t('csa_hub:scheduling.types.rcm')}</SelectItem>
                         <SelectItem value="SOC">{t('csa_hub:scheduling.types.soc')}</SelectItem>
@@ -286,7 +284,7 @@ export function TodoListPage() {
                     </Select>
                   </div>
                   
-                  {['CSA', 'TOD', 'TOE', 'RCM'].includes(formData.type) && (
+                  {['CSA', 'TOD', 'TOE', 'RCM', 'REMEDIATION'].includes(formData.type) && (
                     <div className="space-y-2">
                       <Label>{t('csa_hub:scheduling.subProcess')}</Label>
                       <Select value={formData.bpmProcessId} onValueChange={(v) => updateFormData({ bpmProcessId: v })}>
@@ -300,30 +298,14 @@ export function TodoListPage() {
                     </div>
                   )}
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>{t('csa_hub:scheduling.targetDate')}</Label>
-                      <input 
-                        type="date" 
-                        className="w-full h-10 px-3 border rounded-md text-sm focus:ring-2 focus:ring-indigo-500" 
-                        value={formData.plannedDate} 
-                        onChange={e => updateFormData({ plannedDate: e.target.value })}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>{t('csa_hub:scheduling.frequency')}</Label>
-                      <Select value={formData.recurringFrequency} onValueChange={(v) => updateFormData({ recurringFrequency: v })}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Monthly">{t('common:actions.all')}</SelectItem> 
-                          {/* Wait, monthly, quarterly etc need translation too */}
-                          <SelectItem value="Monthly">Monthly</SelectItem>
-                          <SelectItem value="Quarterly">Quarterly</SelectItem>
-                          <SelectItem value="Semi-Annual">Semi-Annual</SelectItem>
-                          <SelectItem value="Annual">Annual</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                  <div className="space-y-2">
+                    <Label>{t('csa_hub:scheduling.targetDate')}</Label>
+                    <input 
+                      type="date" 
+                      className="w-full h-10 px-3 border rounded-md text-sm focus:ring-2 focus:ring-indigo-500" 
+                      value={formData.plannedDate} 
+                      onChange={e => updateFormData({ plannedDate: e.target.value })}
+                    />
                   </div>
 
                   <div className="p-4 bg-slate-50 rounded-lg border border-slate-100 space-y-3">
@@ -712,6 +694,7 @@ export function TodoListPage() {
             year={format(new Date(), 'yyyy')}
           />
         )}
+        <UnsavedChangesDialog blocker={blocker} />
       </div>
     </AppLayout>
   );

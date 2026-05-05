@@ -1746,10 +1746,11 @@ export function userRoutes(app: Hono<HonoEnv>) {
 
     // 2. Sync Relational Tables (Transaction-like)
     // Find matching BPM Process to get the ID and noGL for cross-linking
+    // Enhanced: Use case-insensitive matching and TRIM for robustness
     const matchedProcesses = await db.select().from(bpmProcesses)
       .where(and(
         eq(bpmProcesses.organizationId, orgId),
-        eq(bpmProcesses.name, body.subProcess)
+        sql`TRIM(LOWER(${bpmProcesses.name})) = TRIM(LOWER(${body.subProcess}))`
       )).limit(1);
     
     const bpmProcessId = matchedProcesses.length > 0 ? matchedProcesses[0].id : null;
@@ -1782,6 +1783,8 @@ export function userRoutes(app: Hono<HonoEnv>) {
           const ctrlId = reg.controlId;
 
           if (riskId && ctrlId) {
+            activeRiskControlPairs.add(`${riskId}:${ctrlId}`);
+            
             // ... (upsert logic unchanged)
             const existingRisk = await db.select().from(rcms).where(and(eq(rcms.id, riskId), eq(rcms.organizationId, orgId))).limit(1);
             if (existingRisk.length === 0) {
@@ -1934,10 +1937,9 @@ export function userRoutes(app: Hono<HonoEnv>) {
       }
     }
 
-    // --- AUTO-CLEANUP (Hard Delete Orphans) ---
+    // --- AUTO-CLEANUP (Surgical Delete) ---
     
     // 1. Delete mappings (rcm_controls) that are no longer linked to this diagram's active pairs
-    // Logic: For every risk currently active on the canvas, ensure only the controls visible on the canvas remain mapped.
     if (activeRiskIdsInDiagram.size > 0) {
       for (const rcmId of activeRiskIdsInDiagram) {
         const activeCtrlsForThisRisk = Array.from(activeRiskControlPairs)
@@ -1947,15 +1949,13 @@ export function userRoutes(app: Hono<HonoEnv>) {
         if (activeCtrlsForThisRisk.length > 0) {
           // Delete controls for this risk that are NOT in the active set from UI
           await db.execute(sql`
-            DELETE FROM rcm_controls 
-            WHERE "organizationId" = ${orgId}
+            DELETE FROM rcm_controls
+            WHERE organization_id = ${orgId}
             AND rcm_id = ${rcmId}
             AND control_id NOT IN (${sql.join(activeCtrlsForThisRisk.map(id => sql`${id}`), sql`, `)})
           `);
         } else {
-          // If no controls are linked to this risk on canvas, delete ALL mappings for this risk
-          // (Caution: this only applies if the risk is part of this sub-process context)
-          // To be safe, we only do this for risks that were "inserted" or "updated" in this diagram context
+          // If no controls are linked to this risk in the editor, delete ALL mappings for this specific risk
           await db.delete(rcmControls).where(and(
             eq(rcmControls.rcmId, rcmId),
             eq(rcmControls.organizationId, orgId)
@@ -1964,22 +1964,34 @@ export function userRoutes(app: Hono<HonoEnv>) {
       }
     }
 
-    // 2. Delete Controls that are no longer linked to ANY mapping (including cleanup of dependent records)
-    const orphansResult = await db.execute(sql`
-      SELECT id FROM controls 
-      WHERE "organizationId" = ${orgId} 
-      AND id NOT IN (SELECT control_id FROM rcm_controls WHERE "organizationId" = ${orgId})
-    `);
-    const orphanIds = (orphansResult.rows || orphansResult).map((r: any) => r.id);
+    // 2. Surgical Orphan Control Cleanup
+    // Logic: Only delete a control if it is an orphan (no rcm_controls mapping) 
+    // AND it was one of the controls explicitly touched/deleted in THIS diagram save session.
+    // This prevents nuking controls belonging to other diagrams or master data.
+    if (activeControlIdsInDiagram.size > 0) {
+      // Find orphans among the controls that were part of this diagram's risks
+      const orphanCheckResult = await db.execute(sql`
+        SELECT id FROM controls 
+        WHERE organization_id = ${orgId} 
+        AND id IN (${sql.join(Array.from(activeControlIdsInDiagram).map(id => sql`${id}`), sql`, `)})
+        AND NOT EXISTS (
+          SELECT 1 FROM rcm_controls 
+          WHERE rcm_controls.control_id = controls.id 
+          AND rcm_controls.organization_id = ${orgId}
+        )
+      `);
 
-    if (orphanIds.length > 0) {
-      const ids = orphanIds.map((id: any) => sql`${id}`);
-      await db.execute(sql`DELETE FROM csa_samples WHERE csa_record_id IN (SELECT id FROM csa_records WHERE control_id IN (${sql.join(ids, sql`, `)}))`);
-      await db.execute(sql`DELETE FROM action_plans WHERE deficiency_id IN (SELECT id FROM deficiencies WHERE control_id IN (${sql.join(ids, sql`, `)}))`);
-      await db.execute(sql`DELETE FROM deficiencies WHERE control_id IN (${sql.join(ids, sql`, `)})`);
-      await db.execute(sql`DELETE FROM csa_records WHERE control_id IN (${sql.join(ids, sql`, `)})`);
-      await db.execute(sql`DELETE FROM test_records WHERE control_id IN (${sql.join(ids, sql`, `)})`);
-      await db.execute(sql`DELETE FROM controls WHERE id IN (${sql.join(ids, sql`, `)})`);
+      const orphanIds = (orphanCheckResult.rows || orphanCheckResult).map((r: any) => r.id);
+
+      if (orphanIds.length > 0) {
+        const ids = orphanIds.map((id: any) => sql`${id}`);
+        // Cascade delete dependencies
+        await db.execute(sql`DELETE FROM csa_samples WHERE csa_record_id IN (SELECT id FROM csa_records WHERE control_id IN (${sql.join(ids, sql`, `)}))`);
+        await db.execute(sql`DELETE FROM deficiencies WHERE control_id IN (${sql.join(ids, sql`, `)})`);
+        await db.execute(sql`DELETE FROM csa_records WHERE control_id IN (${sql.join(ids, sql`, `)})`);
+        await db.execute(sql`DELETE FROM test_records WHERE control_id IN (${sql.join(ids, sql`, `)})`);
+        await db.execute(sql`DELETE FROM controls WHERE id IN (${sql.join(ids, sql`, `)})`);
+      }
     }
 
     // 3. Delete Risks that are no longer in the visual nodes
@@ -2931,7 +2943,20 @@ export function userRoutes(app: Hono<HonoEnv>) {
       biometricVerified: body.biometricVerified ?? false,
     };
 
-    // 1. Insert Record
+    // 1. Validation: Enforce Granular Evidence for Effective results
+    if (body.result === 'Effective' && body.samples) {
+      for (const sample of body.samples) {
+        if (sample.controlResults) {
+          const results = Object.values(sample.controlResults) as any[];
+          const missingEvidence = results.some(r => r.implemented && !r.evidenceUrl);
+          if (missingEvidence) {
+            return bad(c, "Setiap poin verifikasi yang 'Pass' wajib melampirkan bukti (evidence) sebelum sign-off.");
+          }
+        }
+      }
+    }
+
+    // 2. Insert Record
     await db.insert(csaRecords).values(newCsa);
 
     // 2. Insert Samples in new format

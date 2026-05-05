@@ -419,8 +419,14 @@ export interface CSATestSample {
   glRowId?: string; // Link to original transaction row
   
   // New: Per-control results for this sample
-  // Format: { [controlId: string]: { implemented: boolean, evidenceUrl?: string } }
-  controlResults?: Record<string, { implemented: boolean; evidenceUrl?: string }>;
+  controlResults?: Record<string, { 
+    implemented: boolean; 
+    evidenceUrl?: string; 
+    comment?: string;
+    riskId: string;
+    riskName: string;
+    controlName: string;
+  }>;
 
   // Legacy (Keep for compatibility)
   attributeResults?: {

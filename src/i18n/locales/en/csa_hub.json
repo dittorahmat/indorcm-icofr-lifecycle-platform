@@ -33,7 +33,8 @@
       "rcm": "RCM & BPM Update",
       "soc": "SOC Report Evaluation",
       "investee": "Investee Monitoring",
-      "signoff": "Annual Sign-off"
+      "signoff": "Annual Sign-off",
+      "remediation": "Remediation (Action Plan)"
     },
     "units": {
       "minute": "Minute(s)",
@@ -49,10 +50,12 @@
   },
   "notifications": {
     "title": "Notifications",
+    "description": "Manage your compliance alerts and system activity logs.",
     "markAllRead": "Mark all as read",
     "clearAll": "Clear all",
     "delete": "Delete",
     "empty": "No new notifications",
+    "emptyDetail": "You're all caught up! New alerts will appear here.",
     "viewAll": "View all activities"
   },
   "sampling": {

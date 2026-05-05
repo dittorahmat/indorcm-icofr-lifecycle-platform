@@ -107,8 +107,19 @@ export default ({ mode }: { mode: string }) => {
       rollupOptions: {
         output: {
           sourcemapExcludeSources: true, // Don't include original source in source maps to keep them smaller
+          manualChunks: {
+            'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+            'vendor-recharts': ['recharts'],
+            'vendor-framer': ['framer-motion'],
+            'vendor-lucide': ['lucide-react'],
+            'vendor-tanstack': ['@tanstack/react-query', '@tanstack/react-table'],
+            'vendor-utils': ['date-fns', 'uuid', 'clsx', 'tailwind-merge'],
+            'vendor-ui': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-select', '@radix-ui/react-tabs'],
+            'vendor-xlsx': ['xlsx'],
+          }
         },
       },
+      chunkSizeWarningLimit: 1000, // Increase limit slightly as we have complex dependencies
     },
     customLogger: env.VITE_LOGGER_TYPE === 'json' ? customLogger : undefined,
     // Enable source maps in development too

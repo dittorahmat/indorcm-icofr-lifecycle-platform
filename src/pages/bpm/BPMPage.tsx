@@ -163,12 +163,23 @@ export function BPMPage() {
     queryFn: async () => {
       if (!selectedFsli || !selectedAccountKey) return null;
       const noGL = selectedAccountKey.split(' ||| ')[0];
-      const res = await api<AccountAssertion>(`/api/account-assertions?fsliName=${selectedFsli}&noGL=${noGL}`);
-      setLocalAssertion(res || { assertionE: 'N', assertionC: 'N', assertionA: 'N', assertionCo: 'N', assertionRo: 'N', assertionVa: 'N', assertionPd: 'N' });
-      return res;
+      return api<AccountAssertion>(`/api/account-assertions?fsliName=${selectedFsli}&noGL=${noGL}`);
     },
     enabled: !!selectedFsli && !!selectedAccountKey
   });
+
+  // Sync local assertion state when data is loaded
+  React.useEffect(() => {
+    if (accountAssertion) {
+      setLocalAssertion(accountAssertion);
+    } else if (selectedAccountKey) {
+      setLocalAssertion({ 
+        assertionE: 'N', assertionC: 'N', assertionA: 'N', 
+        assertionCo: 'N', assertionRo: 'N', assertionVa: 'N', 
+        assertionPd: 'N' 
+      });
+    }
+  }, [accountAssertion, selectedAccountKey]);
 
   const updateAssertionMutation = useMutation({
     mutationFn: (data: Partial<AccountAssertion>) => api('/api/account-assertions', {
@@ -847,6 +858,7 @@ export function BPMPage() {
             onOpenChange={setIsCsaModalOpen}
             noGL={selectedGLRow.noGL}
             subProcessName={selectedBpmName}
+            bpmProcessId={selectedBpmId || undefined}
           />
         )}
       </div>

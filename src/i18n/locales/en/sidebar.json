@@ -14,6 +14,8 @@
     "sync": "Sync Financial Statement",
     "bpm": "BPM",
     "scoping": "Significant Account Identification",
+    "csa": "CSA Reports",
+    "notifications": "Notifications",
     "applications": "Application Inventory",
     "approval": "Materiality Approval",
     "documents": "Related Documents",

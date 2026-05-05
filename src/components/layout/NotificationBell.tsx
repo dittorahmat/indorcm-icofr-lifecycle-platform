@@ -17,6 +17,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { id, enUS } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
 
 interface Notification {
   id: string;
@@ -29,6 +30,7 @@ interface Notification {
 export function NotificationBell() {
   const { t, i18n } = useTranslation(['csa_hub', 'common']);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const locale = i18n.language === 'id' ? id : enUS;
 
   const { data: notifications = [] } = useQuery({
@@ -160,7 +162,11 @@ export function NotificationBell() {
         </ScrollArea>
         <DropdownMenuSeparator className="m-0" />
         <div className="p-2">
-          <Button variant="ghost" className="w-full h-8 text-[10px] font-bold text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 uppercase tracking-widest">
+          <Button 
+            variant="ghost" 
+            className="w-full h-8 text-[10px] font-bold text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 uppercase tracking-widest"
+            onClick={() => navigate('/notifications')}
+          >
             {t('notifications.viewAll')}
           </Button>
         </div>

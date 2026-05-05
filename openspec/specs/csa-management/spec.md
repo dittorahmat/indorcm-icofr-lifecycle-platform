@@ -14,3 +14,19 @@ The system SHALL display CSA schedules in a full-width monthly grid.
 - **WHEN** a CSA schedule status is 'Completed'
 - **THEN** it SHALL be displayed with a Green background in the calendar grid
 
+### Requirement: Enforce Granular Verification
+The system SHALL ensure that a CSA assessment can only be marked as 'Effective' if all granular verification points (Transaction x Control) have been verified and documented.
+
+#### Scenario: Validation during sign-off
+- **WHEN** the user attempts to sign-off a CSA as Effective
+- **THEN** the system SHALL check if every verification point has attached evidence and an 'Implemented' status
+- **AND** it SHALL block the sign-off if any point is missing documentation or has failed the test
+
+### Requirement: Case-Insensitive Control Filtering
+The system SHALL retrieve and display controls in the CSA Assessment and Worksheet tabs regardless of text casing in the Sub-Process name.
+
+#### Scenario: Searching for controls by name
+- **WHEN** the system filters controls for a specific Sub-Process (e.g., "Penerimaan setoran tunai")
+- **THEN** it SHALL include controls associated with names like "Penerimaan Setoran Tunai" or "PENERIMAAN SETORAN TUNAI"
+- **AND** it SHALL prioritize matching by `bpmProcessId` if available, using the name match as a robust fallback
+

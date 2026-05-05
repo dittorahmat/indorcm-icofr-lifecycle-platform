@@ -83,11 +83,21 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
     queryKey: ['bpm-controls', noGL, bpmProcessId, subProcessName],
     queryFn: async () => {
       const all = await api<{ items: Control[] }>('/api/controls');
-      return all.items.filter(c => 
-        (bpmProcessId && c.bpmProcessId === bpmProcessId) || 
-        (subProcessName && c.subProcess === subProcessName) ||
-        (!c.bpmProcessId && c.fsliCodes?.includes(noGL))
-      );
+      return all.items.filter(c => {
+        const cSub = (c.subProcess || "").toLowerCase().trim();
+        const targetSub = (subProcessName || "").toLowerCase().trim();
+
+        // Match 1: Hard ID link (Primary)
+        if (bpmProcessId && c.bpmProcessId === bpmProcessId) return true;
+        
+        // Match 2: Name link (Reliable Fallback)
+        if (targetSub && cSub === targetSub) return true;
+        
+        // Match 3: Orphan link (Fallback for data missing process metadata but linked to GL)
+        if (!c.bpmProcessId && !cSub && c.fsliCodes?.includes(noGL)) return true;
+        
+        return false;
+      });
     }
   });
 
@@ -144,11 +154,11 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
         fsliCodes: [noGL],
         name: 'New Control Activity',
         businessProcess: fsliName,
-        subProcess: 'New Sub Process',
+        subProcess: subProcessName || 'New Sub Process',
         location: '-',
         isFraudRelated: false,
         isKeyControl: false,
-        ipo: [],
+        ipos: [],
         assertions: [],
         type: 'Preventive',
         nature: 'Manual'
@@ -427,13 +437,13 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
       )
     },
     {
-      accessorKey: 'ipo',
+      accessorKey: 'ipos',
       header: 'IPO',
       cell: ({ row, getValue }) => (
         <Input 
           className="h-8 text-xs border-slate-200 focus:border-indigo-300 bg-white px-2 min-w-[100px]"
           defaultValue={(getValue<string[]>() || []).join(', ')}
-          onBlur={(e) => debouncedUpdate(row.original.id, 'ipo', e.target.value.split(',').map(s => s.trim()))}
+          onBlur={(e) => debouncedUpdate(row.original.id, 'ipos', e.target.value.split(',').map(s => s.trim()))}
         />
       )
     },
@@ -524,13 +534,13 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      <div className="flex items-center justify-between bg-white p-4 border-b shrink-0">
+      <div className="flex items-center justify-between bg-indigo-50/50 p-4 border-b shrink-0">
         <div className="space-y-0.5">
           <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2">
             <FileSpreadsheet className="h-4 w-4 text-indigo-600" />
-            {t('worksheet.title')} - {subProcessName || fsliName} ({noGL})
+            Control Activity Matrix (RCM) - {subProcessName || fsliName} ({noGL})
           </h4>
-          <p className="text-[10px] text-slate-500 italic">{t('worksheet.description')}</p>
+          <p className="text-[10px] text-slate-500 italic">Identify risks and control activities at the transaction level.</p>
         </div>
         
         <Button 

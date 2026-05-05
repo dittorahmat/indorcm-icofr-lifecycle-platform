@@ -10,7 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
   FileSpreadsheet, Network, History, Printer, XCircle, 
-  Database, ListChecks, ShieldCheck, FileText, Workflow as WorkflowIcon
+  Database, ListChecks, ShieldCheck, FileText, Workflow as WorkflowIcon,
+  LayoutDashboard, Activity
 } from 'lucide-react';
 import { BPMWorksheet } from './BPMWorksheet';
 import { Lampiran6LogView } from './Lampiran6LogView';
@@ -24,6 +25,7 @@ import { api } from '@/lib/api-client';
 import { Control, User, TransactionDetail } from '@shared/types';
 import { useTranslation } from 'react-i18next';
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
+import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 
 interface BPMModalProps {
   isOpen: boolean;
@@ -51,7 +53,7 @@ export function BPMModal({
   const [selectedSamples, setSelectedSamples] = React.useState<TransactionDetail[]>([]);
 
   // Safety guard for modal closing
-  useUnsavedChanges(isOpen && selectedSamples.length > 0 && activeTab === 'sampling');
+  const blocker = useUnsavedChanges(isOpen && selectedSamples.length > 0 && activeTab === 'sampling');
 
   const { data: currentUser } = useQuery({
     queryKey: ['auth-me'],
@@ -62,11 +64,21 @@ export function BPMModal({
     queryKey: ['bpm-controls', noGL, bpmProcessId, subProcessName],
     queryFn: async () => {
       const all = await api<{ items: Control[] }>('/api/controls');
-      return all.items.filter(c => 
-        (bpmProcessId && c.bpmProcessId === bpmProcessId) || 
-        (subProcessName && c.subProcess === subProcessName) ||
-        (!c.bpmProcessId && c.fsliCodes?.includes(noGL))
-      );
+      return all.items.filter(c => {
+        const cSub = (c.subProcess || "").toLowerCase().trim();
+        const targetSub = (subProcessName || "").toLowerCase().trim();
+
+        // Match 1: Hard ID link (Primary)
+        if (bpmProcessId && c.bpmProcessId === bpmProcessId) return true;
+        
+        // Match 2: Name link (Reliable Fallback)
+        if (targetSub && cSub === targetSub) return true;
+        
+        // Match 3: Orphan link (Fallback for data missing process metadata but linked to GL)
+        if (!c.bpmProcessId && !cSub && c.fsliCodes?.includes(noGL)) return true;
+        
+        return false;
+      });
     },
     enabled: isOpen
   });
@@ -81,19 +93,20 @@ export function BPMModal({
                 <Network className="h-5 w-5" />
               </div>
               <div>
-                <DialogTitle className="text-lg font-black tracking-tight">
-                  Execution Hub: {glDesc}
+                <DialogTitle className="text-xl font-black tracking-tight flex items-center gap-2">
+                  <span className="text-yellow-400">Execution Hub:</span>
+                  {subProcessName || glDesc}
                 </DialogTitle>
                 <div className="flex items-center gap-2 mt-0.5 opacity-80">
                   <Badge className="bg-white/20 text-white border-none font-mono text-[10px]">
                     BPM-REF: {noGL}
                   </Badge>
                   <span className="text-[10px] uppercase font-bold tracking-widest">{fsliName}</span>
-                  {subProcessName && (
+                  {subProcessName && glDesc && (
                     <>
                       <div className="h-3 w-[1px] bg-white/30 mx-1" />
-                      <span className="text-[10px] uppercase font-black text-yellow-400 tracking-tight flex items-center gap-1">
-                        <WorkflowIcon className="h-3 w-3" /> {subProcessName}
+                      <span className="text-[10px] uppercase font-medium text-indigo-200 tracking-tight italic">
+                        Account: {glDesc}
                       </span>
                     </>
                   )}
@@ -160,6 +173,7 @@ export function BPMModal({
                   controls={controls || []} 
                   initialSamples={selectedSamples}
                   bpmProcessId={bpmProcessId}
+                  subProcessName={subProcessName}
                 />
               </TabsContent>
 
@@ -192,6 +206,7 @@ export function BPMModal({
             </div>
           </Tabs>
         </div>
+        <UnsavedChangesDialog blocker={blocker} />
       </DialogContent>
     </Dialog>
   );

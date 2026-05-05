@@ -27,16 +27,7 @@ import { AlertTriangle, Info, Clock, CheckCircle2, XCircle, History, ListFilter,
 import { Switch } from '@/components/ui/switch';
 import { promptBiometricAuth } from '@/lib/forensic-utils';
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 
 const testSchema = z.object({
   testType: z.enum(['TOD', 'TOE']),
@@ -480,20 +471,7 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
         </CardContent>
       </Card>
 
-      <AlertDialog open={blocker.state === "blocked"}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Unsaved Changes</AlertDialogTitle>
-            <AlertDialogDescription>
-              You have unsaved testing documentation. Are you sure you want to leave this page? Your progress will be lost.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => blocker.reset()}>Stay</AlertDialogCancel>
-            <AlertDialogAction onClick={() => blocker.proceed()}>Leave</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <UnsavedChangesDialog blocker={blocker} />
     </div>
   );
 }
