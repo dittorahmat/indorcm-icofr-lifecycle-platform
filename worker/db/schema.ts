@@ -111,6 +111,32 @@ export const glRows = pgTable("gl_rows", {
 	ownerAcceptance: ownerAcceptanceEnum("owner_acceptance"), // Accepted, Rejected, or null (Pending)
 });
 
+export const transactionDetails = pgTable("transaction_details", {
+	id: text("id").primaryKey(),
+	organizationId: text("organization_id").notNull().references(() => organization.id),
+	noGL: text("no_gl").notNull(),
+	refNo: text("ref_no"),
+	transDate: timestamp("trans_date"),
+	description: text("description"),
+	currency: text("currency"),
+	dcFlag: text("dc_flag"), // D / C
+	amount: doublePrecision("amount"),
+}, (table) => {
+	return {
+		noGLIdx: index("trans_no_gl_idx").on(table.noGL),
+	};
+});
+
+export const transactionUploads = pgTable("transaction_uploads", {
+	id: text("id").primaryKey(),
+	organizationId: text("organization_id").notNull().references(() => organization.id),
+	uploadedBy: text("uploaded_by").notNull().references(() => user.id),
+	noGL: text("no_gl").notNull(),
+	filename: text("filename"),
+	rowCount: integer("row_count").default(0),
+	createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const materiality = pgTable("materiality", {
 	id: text("id").primaryKey(),
 	organizationId: text("organization_id").notNull().references(() => organization.id),
@@ -572,9 +598,9 @@ export const socEvaluations = pgTable("soc_evaluations", {
 export const csaSchedules = pgTable("csa_schedules", {
 	id: text("id").primaryKey(),
 	organizationId: text("organization_id").notNull().references(() => organization.id),
-	bpmProcessId: text("bpm_process_id").notNull().references(() => bpmProcesses.id, { onDelete: 'cascade' }),
+	bpmProcessId: text("bpm_process_id").references(() => bpmProcesses.id, { onDelete: 'cascade' }),
 	plannedDate: timestamp("planned_date").notNull(),
-	type: text("type").notNull(), // CSA, TOD, TOE
+	type: text("type").notNull(), // CSA, TOD, TOE, SCOPING, etc.
 	status: text("status").notNull().default("Not Started"), // Not Started, In Progress, Completed
 	assignedTo: text("assigned_to").references(() => user.id),
 	recurringFrequency: text("recurring_frequency"), // Monthly, Quarterly, etc.

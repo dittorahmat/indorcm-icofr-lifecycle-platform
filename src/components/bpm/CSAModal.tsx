@@ -9,21 +9,39 @@ import {
 import { ShieldCheck, Workflow as WorkflowIcon } from 'lucide-react';
 import { CSATabContent } from './CSATabContent';
 import { useTranslation } from 'react-i18next';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '@/lib/api-client';
+import { Control } from '@shared/types';
 
 interface CSAModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   noGL: string;
   subProcessName: string;
+  bpmProcessId?: string;
 }
 
 export function CSAModal({ 
   isOpen, 
   onOpenChange, 
   noGL, 
-  subProcessName
+  subProcessName,
+  bpmProcessId
 }: CSAModalProps) {
   const { t } = useTranslation(['bpm', 'common']);
+
+  // Fetch controls for this process/GL
+  const { data: controls } = useQuery({
+    queryKey: ['bpm-controls', noGL, bpmProcessId],
+    queryFn: async () => {
+      const all = await api<{ items: Control[] }>('/api/controls');
+      return all.items.filter(c => 
+        (bpmProcessId && c.bpmProcessId === bpmProcessId) || 
+        (!c.bpmProcessId && c.fsliCodes?.includes(noGL))
+      );
+    },
+    enabled: isOpen
+  });
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -45,7 +63,12 @@ export function CSAModal({
         </DialogHeader>
 
         <div className="flex-1 min-h-0 overflow-hidden">
-          <CSATabContent noGL={noGL} standalone={true} />
+          <CSATabContent 
+            noGL={noGL} 
+            controls={controls || []}
+            bpmProcessId={bpmProcessId}
+            standalone={true} 
+          />
         </div>
       </DialogContent>
     </Dialog>

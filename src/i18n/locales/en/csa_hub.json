@@ -50,6 +50,8 @@
   "notifications": {
     "title": "Notifications",
     "markAllRead": "Mark all as read",
+    "clearAll": "Clear all",
+    "delete": "Delete",
     "empty": "No new notifications",
     "viewAll": "View all activities"
   },
@@ -64,5 +66,10 @@
     "zeroTolerance": "Zero Tolerance: Any failure results in Ineffective status.",
     "evidenceCount": "Verification Points",
     "submit": "Submit & Sign-off (Manager)"
+  },
+  "upload": {
+    "instruction": "Per SK-5 Chapter IV, attach transaction details (ERP snippet) to support audit sampling.",
+    "button": "Upload Transactions",
+    "modalTitle": "Transaction Detail Management"
   }
 }

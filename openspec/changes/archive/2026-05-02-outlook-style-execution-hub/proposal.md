@@ -6,6 +6,7 @@ The current Todo List UI is a basic split-view that lacks the functionality and 
 
 - **Layout Refactoring**: Pivot `TodoListPage.tsx` from a split-view to a full-width monthly grid with a functional toolbar and sidebar.
 - **Enhanced Scheduling**: Add support for scheduling all mandatory ICOFR rituals including Review Scoping, RCM Updates, SOC Report Evaluations, and Investee Monitoring.
+- **Activity Lifecycle Management**: Implement Edit and Delete capabilities for existing calendar items to allow correction of data entry errors and plan adjustments.
 - **Configurable Reminders**: Implement a notification trigger system allowing reminders at configurable intervals (minutes, hours, days, months).
 - **Severity Integration**: Link Remediasi activities with their severity (MW, SD, CD) using distinct visual accents (borders/icons).
 - **Data Integrity**: Integrate the `UnSavedChanges` guard to prevent data loss in scheduling and reminder forms.
@@ -17,6 +18,7 @@ The current Todo List UI is a basic split-view that lacks the functionality and 
 ### New Capabilities
 - `compliance-notification-system`: Ability to trigger, store, and display notifications for compliance deadlines and reminders.
 - `icofr-ritual-scheduling`: Comprehensive scheduling capability for all mandatory activities as per Juknis SK-5/2024.
+- `activity-lifecycle-management`: Full CRUD support for activities, enabling modification and deletion of compliance events with proper authorization.
 
 ### Modified Capabilities
 - `csa-management`: Requirements modified to support configurable reminders and grid-based visual status.
@@ -24,7 +26,7 @@ The current Todo List UI is a basic split-view that lacks the functionality and 
 
 ## Impact
 
-- `src/pages/csa/TodoListPage.tsx`: Major UI refactor.
+- `src/pages/csa/TodoListPage.tsx`: Major UI refactor including activity CRUD UIs.
 - `src/components/layout/AppLayout.tsx`: Integration of the Notification Bell.
 - `worker/db/schema.ts`: Database migration for `notifications`, `reminders`, and `action_plans` enhancements.
 - `src/i18n/locales/`: Addition of localization keys for new UI elements and severity levels.

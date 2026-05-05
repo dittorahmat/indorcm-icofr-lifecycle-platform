@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 import { UserRole } from '@shared/types';
 import { toast } from 'sonner';
 import { useTheme } from '@/hooks/use-theme';
+import { NotificationBell } from './NotificationBell';
 
 export function MainHeader() {
   const currentRole = (localStorage.getItem('mockRole') as UserRole) || 'Line 1';
@@ -55,6 +56,7 @@ export function MainHeader() {
             </Link>
           </div>
           <div className="flex items-center gap-4">
+            <NotificationBell />
             <ThemeToggle className="relative top-0 right-0 text-inherit hover:bg-black/5" />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

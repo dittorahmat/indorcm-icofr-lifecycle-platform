@@ -26,14 +26,23 @@
 - [x] 4.3 Add rescheduling popup with mandatory "Justification" field
 - [x] 4.4 Integrate `useUnsavedChanges` guard into all scheduling forms
 
-## 5. Visual Styling & Localization
+## 5. Activity Management (CRUD)
 
-- [x] 5.1 Apply status-based backgrounds (Green/Red/Blue) to calendar events
-- [x] 5.2 Apply severity-based border accents and icons to Remediasi activities
-- [x] 5.3 Add new localization keys to `src/i18n/locales/` for time units and severity levels
+- [x] 5.1 Implement `ActivityDetailPopover` to show event summary on click
+- [ ] 5.2 Integrate `ActivityDetailPopover` into Sidebar Todo List items
+- [x] 5.3 Add "Edit" functionality to modify existing schedules (Update API)
+- [x] 5.4 Add "Delete" functionality with confirmation dialog (Delete API)
+- [ ] 5.5 Ensure proper audit log entry for every modification/deletion
 
-## 6. Testing & Validation
+## 6. Visual Styling & Localization
 
-- [x] 6.1 Verify grid cell overflow management (more than 3 events)
-- [x] 6.2 Verify notification triggering for approaching deadlines
-- [x] 6.3 Verify UnSavedChanges warning during form abandonment
+- [x] 6.1 Apply status-based backgrounds (Green/Red/Blue) to calendar events
+- [x] 6.2 Apply severity-based border accents and icons to Remediasi activities
+- [x] 6.3 Add new localization keys to `src/i18n/locales/` for time units and severity levels
+
+## 7. Testing & Validation
+
+- [x] 7.1 Verify grid cell overflow management (more than 3 events)
+- [x] 7.2 Verify notification triggering for approaching deadlines
+- [x] 7.3 Verify UnSavedChanges warning during form abandonment
+- [ ] 7.4 Verify that deleting an activity correctly removes it from the calendar and DB

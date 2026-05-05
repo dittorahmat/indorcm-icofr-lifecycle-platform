@@ -19,7 +19,8 @@ import {
   CheckCircle2,
   Clock,
   MoreHorizontal,
-  ChevronDown
+  ChevronDown,
+  Trash2
 } from 'lucide-react';
 import { 
   format, 
@@ -43,6 +44,7 @@ import {
   Dialog, DialogContent, DialogDescription, DialogHeader, 
   DialogTitle, DialogFooter, DialogTrigger 
 } from '@/components/ui/dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
@@ -60,6 +62,8 @@ export function TodoListPage() {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [isRescheduleOpen, setIsRescheduleOpen] = React.useState(false);
   const [selectedEvent, setSelectedEvent] = React.useState<any>(null);
+  const [isEditMode, setIsEditMode] = React.useState(false);
+  const [editingId, setEditingId] = React.useState<string | null>(null);
   
   // Execution Hub Modal State
   const [isHubOpen, setIsHubOpen] = React.useState(false);
@@ -91,12 +95,34 @@ export function TodoListPage() {
 
   const { data: remediations } = useQuery({
     queryKey: ['action-plans-all'],
-    queryFn: () => api<{ items: ActionPlan[] }>('/api/remediations'),
+    queryFn: () => api<{ items: ActionPlan[] }>('/api/actionplans'),
   });
 
   const { data: processes } = useQuery({
     queryKey: ['bpm-processes-all'],
     queryFn: () => api<{ items: BPMProcess[] }>('/api/bpm-processes'),
+  });
+
+  const deleteScheduleMutation = useMutation({
+    mutationFn: (id: string) => api(`/api/csa/schedules/${id}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['csa-schedules'] });
+      toast.success(t('common:notifications.success'));
+    }
+  });
+
+  const updateScheduleMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string, data: any }) => api(`/api/csa/schedules/${id}`, { 
+      method: 'PATCH', 
+      body: JSON.stringify(data) 
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['csa-schedules'] });
+      toast.success(t('rcm:matrix.save_success'));
+      setIsDialogOpen(false);
+      setIsEditMode(false);
+      setIsDirty(false);
+    }
   });
 
   const handleOpenHub = (processId: string) => {
@@ -123,11 +149,50 @@ export function TodoListPage() {
   });
 
   const handleCreate = () => {
-    if (!formData.bpmProcessId || !formData.plannedDate) {
-      toast.error("Mohon lengkapi data");
+    const needsProcess = ['CSA', 'TOD', 'TOE', 'RCM'].includes(formData.type);
+    if ((needsProcess && !formData.bpmProcessId) || !formData.plannedDate) {
+      toast.error("Mohon lengkapi data (Tanggal & Sub-Proses)");
       return;
     }
-    createScheduleMutation.mutate(formData);
+    
+    if (isEditMode && editingId) {
+      updateScheduleMutation.mutate({ id: editingId, data: formData });
+    } else {
+      createScheduleMutation.mutate(formData);
+    }
+  };
+
+  const handleEditClick = (event: any) => {
+    setEditingId(event.id);
+    setIsEditMode(true);
+    setFormData({
+      bpmProcessId: event.bpmProcessId || '',
+      type: event.type,
+      plannedDate: format(new Date(event.plannedDate), 'yyyy-MM-dd'),
+      recurringFrequency: event.recurringFrequency || 'Monthly',
+      reminderConfig: event.reminderConfig || { value: 30, unit: 'minute' }
+    });
+    setIsDialogOpen(true);
+    setIsDirty(false);
+  };
+
+  const handleDeleteClick = (id: string) => {
+    if (confirm("Hapus jadwal ini secara permanen?")) {
+      deleteScheduleMutation.mutate(id);
+    }
+  };
+
+  const resetForm = () => {
+    setIsEditMode(false);
+    setEditingId(null);
+    setFormData({
+      bpmProcessId: '',
+      type: 'CSA',
+      plannedDate: format(new Date(), 'yyyy-MM-dd'),
+      recurringFrequency: 'Monthly',
+      reminderConfig: { value: 30, unit: 'minute' }
+    });
+    setIsDirty(false);
   };
 
   const updateFormData = (updates: Partial<typeof formData>) => {
@@ -141,7 +206,7 @@ export function TodoListPage() {
     return eachDayOfInterval({ start, end });
   }, [currentDate]);
 
-  const getEventsForDay = (day: Date) => {
+  const getEventsForDay = React.useCallback((day: Date) => {
     const events: any[] = [];
     
     // Add CSA/TOD/TOE Schedules
@@ -163,14 +228,14 @@ export function TodoListPage() {
     }
 
     return events;
-  };
+  }, [schedules, remediations]);
 
   const monthlyTaskSummary = React.useMemo(() => {
     return calendarDays
       .filter(day => isSameMonth(day, currentDate))
       .map(day => ({ day, events: getEventsForDay(day) }))
       .filter(item => item.events.length > 0);
-  }, [calendarDays, currentDate, schedules, remediations]);
+  }, [calendarDays, currentDate, getEventsForDay]);
 
   return (
     <AppLayout contentClassName="bg-slate-50/50">
@@ -179,17 +244,22 @@ export function TodoListPage() {
         <div className="flex items-center justify-between px-4 py-2 border-b bg-white">
           <div className="flex items-center gap-4">
             <Dialog open={isDialogOpen} onOpenChange={(open) => {
-              if (!open && isDirty) {
-                if (confirm(t('common:unsavedChanges.description'))) {
+              if (!open) {
+                if (isDirty) {
+                  if (confirm(t('common:unsavedChanges.description'))) {
+                    setIsDialogOpen(false);
+                    resetForm();
+                  }
+                } else {
                   setIsDialogOpen(false);
-                  setIsDirty(false);
+                  resetForm();
                 }
                 return;
               }
               setIsDialogOpen(open);
             }}>
               <DialogTrigger asChild>
-                <Button className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2 shadow-sm">
+                <Button className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2 shadow-sm" onClick={resetForm}>
                   <Plus className="h-4 w-4" /> {t('csa_hub:scheduling.newEvent')} <ChevronDown className="h-3 w-3 ml-1" />
                 </Button>
               </DialogTrigger>
@@ -416,18 +486,80 @@ export function TodoListPage() {
                     </div>
                   ) : (
                     monthlyTaskSummary.map(({ day, events }) => (
-                      <div key={day.toISOString()} className="p-3 bg-white hover:bg-slate-50 transition-colors">
-                        <p className="text-[10px] font-bold text-indigo-600 mb-1">{format(day, 'EEEE, d MMM')}</p>
-                        <div className="space-y-1">
-                          {events.map((e: any) => (
-                            <div key={e.id} className="text-[11px] text-slate-600 truncate flex items-center gap-1.5">
-                              <div className={cn(
-                                "w-1.5 h-1.5 rounded-full",
-                                e.eventType === 'REMEDIATION' ? "bg-amber-500" : "bg-indigo-500"
-                              )} />
-                              {e.description || processes?.items.find(p => p.id === e.bpmProcessId)?.name || t('common:status.active')}
-                            </div>
-                          ))}
+                      <div key={day.toISOString()} className="p-3 bg-white border-b last:border-b-0">
+                        <p className="text-[10px] font-bold text-indigo-600 mb-2">{format(day, 'EEEE, d MMM')}</p>
+                        <div className="space-y-1.5">
+                          {events.map((e: any) => {
+                            const isOverdue = e.status !== 'Completed' && isPast(new Date(e.plannedDate || e.targetDate));
+                            const isCompleted = e.status === 'Completed';
+                            const process = processes?.items.find(p => p.id === e.bpmProcessId);
+
+                            return (
+                              <Popover key={e.id}>
+                                <PopoverTrigger asChild>
+                                  <div className="text-[11px] text-slate-600 truncate flex items-center justify-between gap-1.5 p-1.5 rounded-md hover:bg-slate-50 cursor-pointer transition-colors border border-transparent hover:border-slate-100 group/item">
+                                    <div className="flex items-center gap-2 overflow-hidden">
+                                      <div className={cn(
+                                        "w-2 h-2 rounded-full shrink-0",
+                                        e.eventType === 'REMEDIATION' ? "bg-amber-500" : "bg-indigo-500"
+                                      )} />
+                                      <span className="truncate font-medium">
+                                        {e.description || process?.name || t('common:status.active')}
+                                      </span>
+                                    </div>
+                                    <ChevronRight className="h-3 w-3 text-slate-300 opacity-0 group-hover/item:opacity-100 transition-opacity" />
+                                  </div>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-64 p-0" align="start" side="right" sideOffset={10}>
+                                  <div className="p-3 border-b bg-slate-50/50">
+                                    <div className="flex justify-between items-start mb-1">
+                                      <Badge variant="outline" className="text-[9px] uppercase font-bold bg-white">{e.type || 'REMEDIATION'}</Badge>
+                                      <Badge className={cn(
+                                        "text-[9px] font-mono",
+                                        isCompleted ? "bg-emerald-600" : isOverdue ? "bg-red-600" : "bg-indigo-600"
+                                      )}>{e.status || 'Pending'}</Badge>
+                                    </div>
+                                    <h4 className="text-xs font-black text-slate-800 leading-snug">
+                                      {process?.name || e.description || 'Activity Detail'}
+                                    </h4>
+                                    <p className="text-[10px] text-slate-500 font-medium mt-1 flex items-center gap-1">
+                                      <Clock className="h-3 w-3" /> {format(new Date(e.plannedDate || e.targetDate), 'EEEE, d MMMM yyyy')}
+                                    </p>
+                                  </div>
+                                  <div className="p-2 grid grid-cols-1 gap-1">
+                                    <Button 
+                                      variant="ghost" 
+                                      size="sm" 
+                                      className="justify-start gap-2 h-8 text-xs font-bold text-indigo-600 hover:bg-indigo-50"
+                                      onClick={() => handleOpenHub(e.bpmProcessId || e.controlId)}
+                                    >
+                                      <CheckCircle2 className="h-3.5 w-3.5" /> Execute Activity
+                                    </Button>
+                                    {e.eventType === 'SCHEDULE' && (
+                                      <>
+                                        <Button 
+                                          variant="ghost" 
+                                          size="sm" 
+                                          className="justify-start gap-2 h-8 text-xs font-bold text-slate-600 hover:bg-slate-100"
+                                          onClick={() => handleEditClick(e)}
+                                        >
+                                          <Plus className="h-3.5 w-3.5" /> Edit Details
+                                        </Button>
+                                        <Button 
+                                          variant="ghost" 
+                                          size="sm" 
+                                          className="justify-start gap-2 h-8 text-xs font-bold text-rose-600 hover:bg-rose-50"
+                                          onClick={() => handleDeleteClick(e.id)}
+                                        >
+                                          <Trash2 className="h-3.5 w-3.5" /> Remove Schedule
+                                        </Button>
+                                      </>
+                                    )}
+                                  </div>
+                                </PopoverContent>
+                              </Popover>
+                            );
+                          })}
                         </div>
                       </div>
                     ))
@@ -481,31 +613,77 @@ export function TodoListPage() {
                           const process = processes?.items.find(p => p.id === event.bpmProcessId);
                           
                           return (
-                            <div 
-                              key={event.id}
-                              className={cn(
-                                "text-[10px] leading-tight p-1 px-1.5 rounded-sm border shadow-xs flex items-center justify-between group/pill cursor-pointer transition-all",
-                                isCompleted ? "bg-emerald-50 border-emerald-200 text-emerald-800" :
-                                isOverdue ? "bg-red-50 border-red-200 text-red-800" :
-                                "bg-indigo-50 border-indigo-200 text-indigo-800 hover:bg-indigo-100",
-                                event.eventType === 'REMEDIATION' && event.severity === 'Material Weakness' && "border-l-4 border-l-slate-900 shadow-md",
-                                event.eventType === 'REMEDIATION' && event.severity === 'Significant Deficiency' && "border-l-4 border-l-orange-500 shadow-sm"
-                              )}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleOpenHub(event.bpmProcessId || event.controlId);
-                              }}
-                            >
-                              <div className="flex items-center gap-1 overflow-hidden">
-                                {event.eventType === 'REMEDIATION' && (
-                                  event.severity === 'Material Weakness' ? 
-                                    <AlertCircle className="h-2 w-2 text-red-600" /> : 
-                                    <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />
-                                )}
-                                <span className="truncate font-medium">{process?.name || event.description || 'Activity'}</span>
-                                {event.reminderConfig && <Bell className="h-2 w-2 text-indigo-500 opacity-70 flex-shrink-0" />}
-                              </div>
-                            </div>
+                            <Popover key={event.id}>
+                              <PopoverTrigger asChild>
+                                <div 
+                                  className={cn(
+                                    "text-[10px] leading-tight p-1 px-1.5 rounded-sm border shadow-xs flex items-center justify-between group/pill cursor-pointer transition-all",
+                                    isCompleted ? "bg-emerald-50 border-emerald-200 text-emerald-800" :
+                                    isOverdue ? "bg-red-50 border-red-200 text-red-800" :
+                                    "bg-indigo-50 border-indigo-200 text-indigo-800 hover:bg-indigo-100",
+                                    event.eventType === 'REMEDIATION' && event.severity === 'Material Weakness' && "border-l-4 border-l-slate-900 shadow-md",
+                                    event.eventType === 'REMEDIATION' && event.severity === 'Significant Deficiency' && "border-l-4 border-l-orange-500 shadow-sm"
+                                  )}
+                                >
+                                  <div className="flex items-center gap-1 overflow-hidden">
+                                    {event.eventType === 'REMEDIATION' && (
+                                      event.severity === 'Material Weakness' ? 
+                                        <AlertCircle className="h-2 w-2 text-red-600" /> : 
+                                        <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />
+                                    )}
+                                    <span className="truncate font-medium">{process?.name || event.description || 'Activity'}</span>
+                                    {event.reminderConfig && <Bell className="h-2 w-2 text-indigo-500 opacity-70 flex-shrink-0" />}
+                                  </div>
+                                </div>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-64 p-0" align="start">
+                                <div className="p-3 border-b bg-slate-50/50">
+                                  <div className="flex justify-between items-start mb-1">
+                                    <Badge variant="outline" className="text-[9px] uppercase font-bold bg-white">{event.type || 'REMEDIATION'}</Badge>
+                                    <Badge className={cn(
+                                      "text-[9px] font-mono",
+                                      isCompleted ? "bg-emerald-600" : isOverdue ? "bg-red-600" : "bg-indigo-600"
+                                    )}>{event.status || 'Pending'}</Badge>
+                                  </div>
+                                  <h4 className="text-xs font-black text-slate-800 leading-snug">
+                                    {process?.name || event.description || 'Activity Detail'}
+                                  </h4>
+                                  <p className="text-[10px] text-slate-500 font-medium mt-1 flex items-center gap-1">
+                                    <Clock className="h-3 w-3" /> {format(new Date(event.plannedDate || event.targetDate), 'EEEE, d MMMM yyyy')}
+                                  </p>
+                                </div>
+                                <div className="p-2 grid grid-cols-1 gap-1">
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    className="justify-start gap-2 h-8 text-xs font-bold text-indigo-600 hover:bg-indigo-50"
+                                    onClick={() => handleOpenHub(event.bpmProcessId || event.controlId)}
+                                  >
+                                    <CheckCircle2 className="h-3.5 w-3.5" /> Execute Activity
+                                  </Button>
+                                  {event.eventType === 'SCHEDULE' && (
+                                    <>
+                                      <Button 
+                                        variant="ghost" 
+                                        size="sm" 
+                                        className="justify-start gap-2 h-8 text-xs font-bold text-slate-600 hover:bg-slate-100"
+                                        onClick={() => handleEditClick(event)}
+                                      >
+                                        <Plus className="h-3.5 w-3.5" /> Edit Details
+                                      </Button>
+                                      <Button 
+                                        variant="ghost" 
+                                        size="sm" 
+                                        className="justify-start gap-2 h-8 text-xs font-bold text-rose-600 hover:bg-rose-50"
+                                        onClick={() => handleDeleteClick(event.id)}
+                                      >
+                                        <Trash2 className="h-3.5 w-3.5" /> Remove Schedule
+                                      </Button>
+                                    </>
+                                  )}
+                                </div>
+                              </PopoverContent>
+                            </Popover>
                           );
                         })}
                         {dayEvents.length > 3 && (
@@ -530,6 +708,7 @@ export function TodoListPage() {
             glDesc={selectedHubProcess.name}
             fsliName={selectedHubProcess.fsliName}
             bpmProcessId={selectedHubProcess.id}
+            subProcessName={selectedHubProcess.name}
             year={format(new Date(), 'yyyy')}
           />
         )}

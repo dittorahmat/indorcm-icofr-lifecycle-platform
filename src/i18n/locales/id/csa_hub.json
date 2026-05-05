@@ -50,6 +50,8 @@
   "notifications": {
     "title": "Notifikasi",
     "markAllRead": "Tandai semua dibaca",
+    "clearAll": "Bersihkan semua",
+    "delete": "Hapus",
     "empty": "Belum ada notifikasi baru",
     "viewAll": "Lihat semua aktivitas"
   },
@@ -64,5 +66,10 @@
     "zeroTolerance": "Zero Tolerance: Satu kegagalan mengakibatkan status Ineffective.",
     "evidenceCount": "Poin Verifikasi",
     "submit": "Submit & Sign-off (Manager)"
+  },
+  "upload": {
+    "instruction": "Sesuai SK-5 Bab IV, lampirkan detail transaksi (ERP snippet) untuk mendukung sampling audit.",
+    "button": "Unggah Transaksi",
+    "modalTitle": "Manajemen Detail Transaksi"
   }
 }

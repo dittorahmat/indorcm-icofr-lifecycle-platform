@@ -58,6 +58,26 @@ export interface GLRow {
   ownerAcceptance?: "Accepted" | "Rejected"; // Owner acceptance status (null = Pending)
 }
 
+export interface TransactionDetail {
+  id: string;
+  organizationId: string;
+  noGL: string;
+  refNo?: string;
+  transDate?: number; // epoch millis
+  description?: string;
+  currency?: string;
+  dcFlag?: string; // D / C
+  amount?: number;
+}
+
+export interface TransactionUpload {
+  id: string;
+  filename: string;
+  uploadedBy: string;
+  rowCount: number;
+  createdAt: number;
+}
+
 export type BenchmarkBasis = "Revenue" | "PBT" | "Assets" | "Equity" | "Net Current Assets";
 
 export interface GLSnapshot {
@@ -386,7 +406,7 @@ export interface CSASchedule {
   organizationId: string;
   bpmProcessId: string;
   plannedDate: number; // epoch millis
-  type: "CSA" | "TOD" | "TOE";
+  type: "CSA" | "TOD" | "TOE" | "SCOPING" | "RCM" | "SOC" | "INVESTEE" | "SIGNOFF";
   status: "Not Started" | "In Progress" | "Completed" | "Overdue";
   assignedTo?: string; // User ID
   recurringFrequency?: "Monthly" | "Quarterly" | "Semi-Annual" | "Annual";

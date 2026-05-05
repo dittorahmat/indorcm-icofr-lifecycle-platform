@@ -134,6 +134,11 @@ export function AppSidebar(): JSX.Element {
                 <Link to="/dashboard" className="font-bold"><LayoutDashboard /> <span>{t('items.dashboard')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={isActive("/scoping")}>
+                <Link to="/scoping" className="font-bold"><Settings2 /> <span>{t('items.scoping')}</span></Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
             {userRole === 'Line 2' && (
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={isActive("/import")}>
@@ -154,11 +159,6 @@ export function AppSidebar(): JSX.Element {
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/csa")}>
                 <Link to="/csa" className="font-bold"><History /> <span>CSA Reports</span></Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/scoping")}>
-                <Link to="/scoping" className="font-bold"><Settings2 /> <span>{t('items.scoping')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>

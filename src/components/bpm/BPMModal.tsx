@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
   FileSpreadsheet, Network, History, Printer, XCircle, 
-  Database, ListChecks, ShieldCheck, FileText
+  Database, ListChecks, ShieldCheck, FileText, Workflow as WorkflowIcon
 } from 'lucide-react';
 import { BPMWorksheet } from './BPMWorksheet';
 import { Lampiran6LogView } from './Lampiran6LogView';
@@ -21,8 +21,9 @@ import { RCMTLCPage } from '@/pages/rcm/RCMTLCPage';
 import { RCMITGCPage } from '@/pages/rcm/RCMITGCPage';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
-import { Control, User, GLRow } from '@shared/types';
+import { Control, User, TransactionDetail } from '@shared/types';
 import { useTranslation } from 'react-i18next';
+import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 
 interface BPMModalProps {
   isOpen: boolean;
@@ -31,6 +32,7 @@ interface BPMModalProps {
   glDesc: string;
   fsliName: string;
   bpmProcessId?: string;
+  subProcessName?: string;
   year: string;
 }
 
@@ -41,11 +43,15 @@ export function BPMModal({
   glDesc, 
   fsliName,
   bpmProcessId,
+  subProcessName,
   year
 }: BPMModalProps) {
   const { t } = useTranslation(['bpm', 'common']);
   const [activeTab, setActiveTab] = React.useState("worksheet");
-  const [selectedSamples, setSelectedSamples] = React.useState<GLRow[]>([]);
+  const [selectedSamples, setSelectedSamples] = React.useState<TransactionDetail[]>([]);
+
+  // Safety guard for modal closing
+  useUnsavedChanges(isOpen && selectedSamples.length > 0 && activeTab === 'sampling');
 
   const { data: currentUser } = useQuery({
     queryKey: ['auth-me'],
@@ -53,11 +59,12 @@ export function BPMModal({
   });
 
   const { data: controls } = useQuery({
-    queryKey: ['bpm-controls', noGL, bpmProcessId],
+    queryKey: ['bpm-controls', noGL, bpmProcessId, subProcessName],
     queryFn: async () => {
       const all = await api<{ items: Control[] }>('/api/controls');
       return all.items.filter(c => 
         (bpmProcessId && c.bpmProcessId === bpmProcessId) || 
+        (subProcessName && c.subProcess === subProcessName) ||
         (!c.bpmProcessId && c.fsliCodes?.includes(noGL))
       );
     },
@@ -82,6 +89,14 @@ export function BPMModal({
                     BPM-REF: {noGL}
                   </Badge>
                   <span className="text-[10px] uppercase font-bold tracking-widest">{fsliName}</span>
+                  {subProcessName && (
+                    <>
+                      <div className="h-3 w-[1px] bg-white/30 mx-1" />
+                      <span className="text-[10px] uppercase font-black text-yellow-400 tracking-tight flex items-center gap-1">
+                        <WorkflowIcon className="h-3 w-3" /> {subProcessName}
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -124,6 +139,7 @@ export function BPMModal({
                   noGL={noGL} 
                   fsliName={fsliName} 
                   bpmProcessId={bpmProcessId || ""} 
+                  subProcessName={subProcessName}
                   workingYear={year}
                 />
               </TabsContent>

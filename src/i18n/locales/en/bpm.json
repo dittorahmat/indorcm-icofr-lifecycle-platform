@@ -167,5 +167,34 @@
       "locked": "LOCKED",
       "auditBaseline": "Audit Baseline"
     }
+  },
+  "sampling": {
+    "title": "Transaction Sampling",
+    "description": "Select Journal/GL rows to be tested in this CSA.",
+    "apply": "Add as CSA Samples",
+    "selected": "{{count}} Transactions Selected",
+    "empty": "No transaction records found.",
+    "search": "Search transactions...",
+    "columns": {
+      "date": "Date",
+      "ref": "Ref No",
+      "description": "Description",
+      "amount": "Amount",
+      "currency": "Currency",
+      "dc": "D/C"
+    },
+    "upload": {
+      "title": "Upload Transaction Snippet (ERP)",
+      "dropzone": "Click or drag Excel/CSV files here",
+      "mapping": "ERP Column Mapping",
+      "success": "Data uploaded and saved successfully."
+    },
+    "reset": {
+      "title": "Clear Transaction Data?",
+      "description": "All transaction rows uploaded for account {{noGL}} will be permanently deleted. This action cannot be undone.",
+      "confirm": "Delete Now",
+      "cancel": "Cancel",
+      "success": "Transaction data successfully cleared."
+    }
   }
 }

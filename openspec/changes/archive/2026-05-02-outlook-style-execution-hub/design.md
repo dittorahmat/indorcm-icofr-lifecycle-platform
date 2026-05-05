@@ -8,6 +8,7 @@ The current `TodoListPage.tsx` uses a simple split-view layout. The goal is to r
 - Implement a full-width monthly grid layout for `TodoListPage.tsx`.
 - Create a reusable `NotificationCenter` component in the global header.
 - Implement a database-backed reminder system with configurable intervals.
+- Provide Full CRUD (Create, Read, Update, Delete) for calendar activities.
 - Integrate `UnSavedChanges` warnings across all scheduling forms.
 - Support visual differentiation of activities based on status and severity.
 
@@ -33,6 +34,11 @@ The current `TodoListPage.tsx` uses a simple split-view layout. The goal is to r
 ### 4. Notification Hub Fetching & Localization
 - **Decision**: Fetch notifications on `AppLayout` mount using TanStack Query, and fully localize all hardcoded text using `react-i18next`.
 - **Rationale**: Simple to implement and fulfills the "refresh/navigation only" fetch requirement. i18n ensures SK-5 terminology is accurate in both EN and ID.
+
+### 5. Activity Interaction Model (Edit/Delete)
+- **Decision**: When a calendar item (in the grid or the sidebar list) is clicked, show an "Activity Detail Popover" instead of immediately opening the execution modal.
+- **Rationale**: Provides a unified entry point for different actions (Execute, Edit, Delete) across all views. Prevents accidental execution and allows management of metadata.
+- **UI Element**: Use Radix UI / Shadcn Popover for lightweight detail viewing and action selection.
 
 ## Risks / Trade-offs
 

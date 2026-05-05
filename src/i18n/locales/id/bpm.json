@@ -167,5 +167,34 @@
       "locked": "TERKUNCI",
       "auditBaseline": "Baseline Audit"
     }
+  },
+  "sampling": {
+    "title": "Pemilihan Sampel Transaksi",
+    "description": "Pilih baris data Journal/GL untuk diuji dalam CSA.",
+    "apply": "Jadikan Sampel CSA",
+    "selected": "{{count}} Transaksi Terpilih",
+    "empty": "Data transaksi tidak ditemukan.",
+    "search": "Cari transaksi...",
+    "columns": {
+      "date": "Tanggal",
+      "ref": "No Referensi",
+      "description": "Deskripsi",
+      "amount": "Nominal",
+      "currency": "Mata Uang",
+      "dc": "D/C"
+    },
+    "upload": {
+      "title": "Unggah Snippet Transaksi (ERP)",
+      "dropzone": "Klik atau seret file Excel/CSV ke sini",
+      "mapping": "Pemetaan Kolom ERP",
+      "success": "Data berhasil diunggah dan disimpan."
+    },
+    "reset": {
+      "title": "Kosongkan Data Transaksi?",
+      "description": "Seluruh baris transaksi yang telah diunggah untuk akun {{noGL}} akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.",
+      "confirm": "Hapus Sekarang",
+      "cancel": "Batal",
+      "success": "Data transaksi berhasil dikosongkan."
+    }
   }
 }

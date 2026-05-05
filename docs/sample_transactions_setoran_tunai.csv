@@ -1,0 +1,14 @@
+transDate,refNo,description,amount,currency,dcFlag,noGL
+2025-04-01,JV-001,Setoran Tunai - Toko Berkah,5000000,IDR,D,111101
+2025-04-01,JV-002,Beban Listrik Kantor Pusat,1250000,IDR,C,510101
+2025-04-02,JV-003,Setoran Tunai - Pelanggan Bpk. Budi,2500000,IDR,D,111101
+2025-04-02,JV-004,Pembelian ATK (Kertas & Tinta),450000,IDR,C,510202
+2025-04-03,JV-005,Setoran Kas Cabang Bandung,15000000,IDR,D,111101
+2025-04-04,JV-006,Biaya Maintenance AC,350000,IDR,C,510303
+2025-04-05,JV-007,Penerimaan Setoran Tunai - Refund Vendor,1200000,IDR,D,111101
+2025-04-05,JV-008,Pembayaran Gaji Security,3500000,IDR,C,510404
+2025-04-06,JV-009,Setoran Tunai Malam (Drop Box),8900000,IDR,D,111101
+2025-04-07,JV-010,Beban Internet & Telepon,850000,IDR,C,510505
+2025-04-08,JV-011,Setoran Tunai - Penjualan Event CFD,4200000,IDR,D,111101
+2025-04-09,JV-012,Penggantian Biaya Perjalanan Dinas,750000,IDR,C,510606
+2025-04-10,JV-013,Setoran Tunai Akhir Pekan,6300000,IDR,D,111101

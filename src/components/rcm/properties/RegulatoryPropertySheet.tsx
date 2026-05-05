@@ -332,9 +332,23 @@ export function RegulatoryPropertySheet({
                               <div className="absolute -left-8 top-1/2 w-8 h-px bg-dashed border-t-2 border-dashed border-slate-200" />
                               
                               <div className="bg-slate-50 px-4 py-1.5 flex justify-between items-center border-b">
-                                <div className="flex items-center gap-2">
-                                    <ShieldCheck className="h-3.5 w-3.5 text-green-600" />
-                                    <span className="text-[10px] font-black uppercase text-slate-500 tracking-tight">Kontrol #{cIdx + 1}</span>
+                                <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-2">
+                                      <Select value={ctrl.data.classification || 'TLC'} onValueChange={(v: ControlLevel) => updateSpecificControl(ctrl.index, 'classification', v)}>
+                                          <SelectTrigger className="h-6 w-[75px] text-[9px] font-black uppercase bg-white border-slate-200 shadow-sm">
+                                            <SelectValue placeholder="CLASS" />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            <SelectItem value="TLC" className="text-[10px]">TLC</SelectItem>
+                                            <SelectItem value="ELC" className="text-[10px]">ELC</SelectItem>
+                                            <SelectItem value="ITGC" className="text-[10px]">ITGC</SelectItem>
+                                          </SelectContent>
+                                      </Select>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <ShieldCheck className="h-3.5 w-3.5 text-green-600" />
+                                        <span className="text-[10px] font-black uppercase text-slate-500 tracking-tight">Kontrol #{cIdx + 1}</span>
+                                    </div>
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <Badge variant="outline" className="font-mono text-[9px] h-5 border-slate-200 text-slate-400">{ctrl.data.controlId || 'PENDING'}</Badge>
@@ -355,25 +369,14 @@ export function RegulatoryPropertySheet({
                                   />
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-3">
+                                <div className="flex items-center gap-6">
                                   <div className="space-y-1">
                                     <Label className="text-[9px] font-bold uppercase text-slate-400">Key Control?</Label>
                                     <Select value={ctrl.data.isKeyControl ? 'Yes' : 'No'} onValueChange={(v) => updateSpecificControl(ctrl.index, 'isKeyControl', v === 'Yes')}>
-                                        <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
+                                        <SelectTrigger className="h-7 text-xs w-[80px]"><SelectValue /></SelectTrigger>
                                         <SelectContent>
-                                          <SelectItem value="Yes">Yes</SelectItem>
-                                          <SelectItem value="No">No</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                  </div>
-                                  <div className="space-y-1">
-                                    <Label className="text-[9px] font-bold uppercase text-slate-400">Klasifikasi</Label>
-                                    <Select value={ctrl.data.classification || 'TLC'} onValueChange={(v: ControlLevel) => updateSpecificControl(ctrl.index, 'classification', v)}>
-                                        <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
-                                        <SelectContent>
-                                          <SelectItem value="TLC">TLC</SelectItem>
-                                          <SelectItem value="ELC">ELC</SelectItem>
-                                          <SelectItem value="ITGC">ITGC</SelectItem>
+                                          <SelectItem value="Yes" className="text-xs">Yes</SelectItem>
+                                          <SelectItem value="No" className="text-xs">No</SelectItem>
                                         </SelectContent>
                                     </Select>
                                   </div>

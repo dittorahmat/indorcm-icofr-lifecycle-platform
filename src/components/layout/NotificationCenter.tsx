@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bell, CheckCheck, Info, AlertTriangle, AlertCircle } from 'lucide-react';
+import { Bell, CheckCheck, Info, AlertTriangle, AlertCircle, Trash2, X } from 'lucide-react';
 import { 
   Popover, 
   PopoverContent, 
@@ -52,6 +52,20 @@ export function NotificationCenter() {
     }
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => api(`/api/notifications/${id}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    }
+  });
+
+  const clearAllMutation = useMutation({
+    mutationFn: () => api('/api/notifications/clear-all', { method: 'POST' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    }
+  });
+
   const handleNotificationClick = (n: Notification) => {
     if (!n.readStatus) {
       markAsReadMutation.mutate(n.id);
@@ -78,16 +92,28 @@ export function NotificationCenter() {
       <PopoverContent className="w-80 p-0 mr-4 mt-2 shadow-xl border-slate-200" align="end">
         <div className="flex items-center justify-between px-4 py-3 border-b bg-slate-50/50">
           <h3 className="font-bold text-sm text-slate-900">{t('notifications.title')}</h3>
-          {unreadCount > 0 && (
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="h-7 text-[11px] text-indigo-600 hover:text-indigo-700 p-0 font-semibold"
-              onClick={() => markAllAsReadMutation.mutate()}
-            >
-              <CheckCheck className="h-3 w-3 mr-1" /> {t('notifications.markAllRead')}
-            </Button>
-          )}
+          <div className="flex gap-3">
+            {unreadCount > 0 && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-7 text-[11px] text-indigo-600 hover:text-indigo-700 p-0 font-semibold"
+                onClick={() => markAllAsReadMutation.mutate()}
+              >
+                <CheckCheck className="h-3 w-3 mr-1" /> {t('notifications.markAllRead')}
+              </Button>
+            )}
+            {notifications.length > 0 && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-7 text-[11px] text-red-600 hover:text-red-700 p-0 font-semibold"
+                onClick={() => clearAllMutation.mutate()}
+              >
+                <Trash2 className="h-3 w-3 mr-1" /> {t('notifications.clearAll')}
+              </Button>
+            )}
+          </div>
         </div>
         
         <ScrollArea className="h-[350px]">
@@ -102,7 +128,7 @@ export function NotificationCenter() {
                 <div 
                   key={n.id} 
                   className={cn(
-                    "p-4 cursor-pointer transition-colors hover:bg-slate-50 relative",
+                    "p-4 cursor-pointer transition-colors hover:bg-slate-50 relative group",
                     !n.readStatus && "bg-indigo-50/30"
                   )}
                   onClick={() => handleNotificationClick(n)}
@@ -122,7 +148,7 @@ export function NotificationCenter() {
                        n.type === 'error' ? <AlertCircle className="h-4 w-4" /> :
                        <Info className="h-4 w-4" />}
                     </div>
-                    <div className="space-y-1">
+                    <div className="space-y-1 flex-grow">
                       <p className={cn(
                         "text-[13px] leading-snug",
                         !n.readStatus ? "font-semibold text-slate-900" : "text-slate-600"
@@ -133,6 +159,17 @@ export function NotificationCenter() {
                         {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true, locale: id })}
                       </p>
                     </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50 hover:text-red-600 -mr-2"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteMutation.mutate(n.id);
+                      }}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
                   </div>
                 </div>
               ))}

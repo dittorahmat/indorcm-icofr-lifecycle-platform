@@ -43,18 +43,19 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 
 interface BPMWorksheetProps {
   bpmProcessId: string;
+  subProcessName?: string;
   fsliName: string;
   noGL: string;
   workingYear: string;
 }
 
-export function BPMWorksheet({ bpmProcessId, fsliName, noGL, workingYear }: BPMWorksheetProps) {
+export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, workingYear }: BPMWorksheetProps) {
   const { t } = useTranslation('bpm');
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedDiagramId = searchParams.get('diagramId');
   const isBpmModalOpen = !!selectedDiagramId;
-  const currentSubProcess = searchParams.get('subProcess') || "";
+  const currentSubProcess = searchParams.get('subProcess') || subProcessName || "";
   
   const [isAddingApp, setIsAddingApp] = React.useState(false);
   const [newAppName, setNewAppName] = React.useState("");
@@ -79,11 +80,12 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL, workingYear }: BPMW
 
   // 1. Fetch Controls
   const { data: controls, isLoading } = useQuery({
-    queryKey: ['bpm-controls', noGL, bpmProcessId],
+    queryKey: ['bpm-controls', noGL, bpmProcessId, subProcessName],
     queryFn: async () => {
       const all = await api<{ items: Control[] }>('/api/controls');
       return all.items.filter(c => 
         (bpmProcessId && c.bpmProcessId === bpmProcessId) || 
+        (subProcessName && c.subProcess === subProcessName) ||
         (!c.bpmProcessId && c.fsliCodes?.includes(noGL))
       );
     }
@@ -526,7 +528,7 @@ export function BPMWorksheet({ bpmProcessId, fsliName, noGL, workingYear }: BPMW
         <div className="space-y-0.5">
           <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2">
             <FileSpreadsheet className="h-4 w-4 text-indigo-600" />
-            {t('worksheet.title')} - {fsliName} ({noGL})
+            {t('worksheet.title')} - {subProcessName || fsliName} ({noGL})
           </h4>
           <p className="text-[10px] text-slate-500 italic">{t('worksheet.description')}</p>
         </div>

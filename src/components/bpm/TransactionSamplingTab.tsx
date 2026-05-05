@@ -1,36 +1,55 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
-import { GLRow } from '@shared/types';
+import { TransactionDetail } from '@shared/types';
 import { 
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, Database, Search, Plus } from 'lucide-react';
+import { Loader2, Search, Plus, Upload, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
+import { format } from 'date-fns';
+import { TransactionUploadModal } from './TransactionUploadModal';
+import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface TransactionSamplingTabProps {
   noGL: string;
-  onSamplesSelected: (samples: GLRow[]) => void;
+  onSamplesSelected: (samples: TransactionDetail[]) => void;
 }
 
 export function TransactionSamplingTab({ noGL, onSamplesSelected }: TransactionSamplingTabProps) {
+  const { t } = useTranslation(['bpm', 'csa_hub', 'common']);
+  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = React.useState('');
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
+  const [isUploadModalOpen, setIsUploadModalOpen] = React.useState(false);
 
-  const { data: rowsData, isLoading } = useQuery({
-    queryKey: ['gl-rows-sampling', noGL],
-    queryFn: () => api<{ items: GLRow[] }>(`/api/gl-rows?noGL=${noGL}`),
+  const { data: rowsData, isLoading, refetch } = useQuery({
+    queryKey: ['transaction-details-sampling', noGL],
+    queryFn: () => api<{ items: TransactionDetail[] }>(`/api/transaction-details?noGL=${noGL}`),
   });
 
   const filteredRows = React.useMemo(() => {
     if (!rowsData?.items) return [];
     return rowsData.items.filter(row => 
-      row.glDesc.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      row.ymd.includes(searchTerm)
+      (row.description?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+      (row.refNo?.toLowerCase().includes(searchTerm.toLowerCase()) || '')
     );
   }, [rowsData, searchTerm]);
 
@@ -42,32 +61,73 @@ export function TransactionSamplingTab({ noGL, onSamplesSelected }: TransactionS
   };
 
   const handleApply = () => {
-    const selectedRows = rowsData?.items.filter(r => selectedIds.has((r as any).id)) || [];
+    const selectedRows = rowsData?.items.filter(r => selectedIds.has(r.id)) || [];
     onSamplesSelected(selectedRows);
+  };
+
+  const handleReset = async () => {
+    try {
+      await api(`/api/transaction-details/${noGL}`, { method: 'DELETE' });
+      toast.success(t('bpm:sampling.reset.success'));
+      refetch();
+    } catch (err) {
+      toast.error('Gagal menghapus data.');
+    }
   };
 
   return (
     <div className="flex flex-col h-full bg-white">
       <div className="p-4 border-b flex justify-between items-center bg-slate-50/50">
-        <div className="relative w-72">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <Input 
-            placeholder="Cari transaksi..." 
-            className="pl-9 h-9 text-xs" 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+        <div className="flex items-center gap-4">
+          <div className="relative w-72">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Input 
+              placeholder={t('bpm:sampling.search')} 
+              className="pl-9 h-9 text-xs" 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <Button 
+            variant="outline" 
+            className="h-9 text-xs gap-2 border-dashed"
+            onClick={() => setIsUploadModalOpen(true)}
+          >
+            <Upload className="h-4 w-4" /> {t('csa_hub:upload.button')}
+          </Button>
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-9 w-9 text-slate-400 hover:text-red-600 hover:bg-red-50">
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{t('bpm:sampling.reset.title')}</AlertDialogTitle>
+                <AlertDialogDescription>
+                  {t('bpm:sampling.reset.description', { noGL })}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>{t('bpm:sampling.reset.cancel')}</AlertDialogCancel>
+                <AlertDialogAction onClick={handleReset} className="bg-red-600 hover:bg-red-700">
+                  {t('bpm:sampling.reset.confirm')}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
         <div className="flex items-center gap-4">
           <p className="text-xs font-bold text-slate-500">
-            {selectedIds.size} Transaksi Terpilih
+            {t('bpm:sampling.selected', { count: selectedIds.size })}
           </p>
           <Button 
             disabled={selectedIds.size === 0}
             onClick={handleApply}
             className="bg-indigo-600 hover:bg-indigo-700 h-9 font-bold gap-2 shadow-sm"
           >
-            <Plus className="h-4 w-4" /> Jadikan Sampel CSA
+            <Plus className="h-4 w-4" /> {t('bpm:sampling.apply')}
           </Button>
         </div>
       </div>
@@ -77,39 +137,62 @@ export function TransactionSamplingTab({ noGL, onSamplesSelected }: TransactionS
           <TableHeader className="bg-white sticky top-0 z-10 shadow-sm">
             <TableRow>
               <TableHead className="w-12 text-center"></TableHead>
-              <TableHead className="w-32 text-[10px] font-black uppercase">Tanggal</TableHead>
-              <TableHead className="text-[10px] font-black uppercase">Referensi / Deskripsi</TableHead>
-              <TableHead className="w-32 text-[10px] font-black uppercase text-right">Nilai</TableHead>
-              <TableHead className="w-24 text-[10px] font-black uppercase text-center">Mata Uang</TableHead>
+              <TableHead className="w-32 text-[10px] font-black uppercase">{t('bpm:sampling.columns.date')}</TableHead>
+              <TableHead className="w-40 text-[10px] font-black uppercase">{t('bpm:sampling.columns.ref')}</TableHead>
+              <TableHead className="text-[10px] font-black uppercase">{t('bpm:sampling.columns.description')}</TableHead>
+              <TableHead className="w-32 text-[10px] font-black uppercase text-right">{t('bpm:sampling.columns.amount')}</TableHead>
+              <TableHead className="w-24 text-[10px] font-black uppercase text-center">{t('bpm:sampling.columns.currency')}</TableHead>
+              <TableHead className="w-16 text-[10px] font-black uppercase text-center">{t('bpm:sampling.columns.dc')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow><TableCell colSpan={5} className="h-64 text-center"><Loader2 className="h-8 w-8 animate-spin mx-auto text-indigo-500" /></TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} className="h-64 text-center"><Loader2 className="h-8 w-8 animate-spin mx-auto text-indigo-500" /></TableCell></TableRow>
             ) : filteredRows.length === 0 ? (
-              <TableRow><TableCell colSpan={5} className="h-64 text-center text-slate-400 italic">Data transaksi tidak ditemukan.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} className="h-64 text-center text-slate-400 italic">{t('bpm:sampling.empty')}</TableCell></TableRow>
             ) : filteredRows.map((row) => (
-              <TableRow key={(row as any).id} className={cn("hover:bg-indigo-50/30 transition-colors", selectedIds.has((row as any).id) && "bg-indigo-50/50")}>
+              <TableRow key={row.id} className={cn("hover:bg-indigo-50/30 transition-colors", selectedIds.has(row.id) && "bg-indigo-50/50")}>
                 <TableCell className="text-center">
                   <Checkbox 
-                    checked={selectedIds.has((row as any).id)} 
-                    onCheckedChange={() => toggleSelect((row as any).id)} 
+                    checked={selectedIds.has(row.id)} 
+                    onCheckedChange={() => toggleSelect(row.id)} 
                   />
                 </TableCell>
-                <TableCell className="text-xs font-medium text-slate-600">{row.ymd}</TableCell>
-                <TableCell>
-                   <div className="text-xs font-bold text-slate-900">{row.glDesc}</div>
-                   <div className="text-[10px] text-slate-400 uppercase tracking-tighter">REF: {(row as any).id.substring(0,8)}</div>
+                <TableCell className="text-xs font-medium text-slate-600">
+                  {row.transDate ? format(new Date(row.transDate), 'dd/MM/yyyy') : '-'}
+                </TableCell>
+                <TableCell className="text-xs font-bold text-indigo-600">
+                  {row.refNo || '-'}
+                </TableCell>
+                <TableCell className="text-xs text-slate-900">
+                   {row.description}
                 </TableCell>
                 <TableCell className="text-xs font-mono font-bold text-right">
-                  {new Intl.NumberFormat('id-ID').format(row.balance)}
+                  {new Intl.NumberFormat('id-ID').format(row.amount || 0)}
                 </TableCell>
-                <TableCell className="text-center"><Badge variant="outline" className="text-[10px]">{row.currency}</Badge></TableCell>
+                <TableCell className="text-center">
+                  <Badge variant="outline" className="text-[10px] uppercase font-bold">{row.currency}</Badge>
+                </TableCell>
+                <TableCell className="text-center">
+                  <span className={cn(
+                    "text-[10px] font-black px-1.5 py-0.5 rounded",
+                    row.dcFlag === 'D' ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                  )}>
+                    {row.dcFlag}
+                  </span>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </div>
+
+      <TransactionUploadModal 
+        isOpen={isUploadModalOpen} 
+        onClose={() => setIsUploadModalOpen(false)} 
+        noGL={noGL}
+        onSuccess={() => refetch()}
+      />
     </div>
   );
 }

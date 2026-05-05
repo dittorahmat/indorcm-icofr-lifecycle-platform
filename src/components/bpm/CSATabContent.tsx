@@ -46,6 +46,11 @@ const StartEndNode = ({ data }: NodeProps) => (
     "px-6 py-2 shadow-md rounded-[50px] bg-white border-2 min-w-[120px] text-center",
     data.type === 'start' ? "border-green-600" : "border-red-600"
   )}>
+    <Handle 
+      type={data.type === 'start' ? "source" : "target"} 
+      position={data.type === 'start' ? Position.Bottom : Position.Top} 
+      className="opacity-0" 
+    />
     <span className={cn("font-bold text-[11px] uppercase tracking-wider", data.type === 'start' ? "text-green-700" : "text-red-700")}>
       {data.label}
     </span>
@@ -74,13 +79,29 @@ const nodeTypes = {
   'automated-activity': ActivityNode,
   decision: ({ data }: NodeProps) => (
     <div className="relative flex items-center justify-center w-[80px] h-[80px]">
+      <Handle type="target" position={Position.Top} className="opacity-0" />
       <div className="absolute inset-0 border-2 rotate-45 transform shadow-md flex items-center justify-center bg-white border-slate-800">
          <div className="-rotate-45 text-center text-[9px] px-2 font-bold leading-tight uppercase text-slate-700">{data.label}</div>
       </div>
+      <Handle type="source" position={Position.Left} id="no" className="opacity-0" />
+      <Handle type="source" position={Position.Right} id="yes" className="opacity-0" />
+      <Handle type="source" position={Position.Bottom} className="opacity-0" />
     </div>
   ),
-  document: ({ data }: NodeProps) => <div className="px-3 py-2 border-2 border-slate-800 bg-white text-[10px] font-bold uppercase rounded-br-lg flex items-center gap-2"><FileText className="h-3 w-3" /> {data.label}</div>,
-  system: ({ data }: NodeProps) => <div className="px-3 py-2 border-2 border-blue-800 bg-blue-50 text-[10px] font-bold uppercase flex flex-col items-center gap-1"><Database className="h-3 w-3" /> {data.label}</div>,
+  document: ({ data }: NodeProps) => (
+    <div className="px-3 py-2 border-2 border-slate-800 bg-white text-[10px] font-bold uppercase rounded-br-lg flex items-center gap-2 relative">
+      <Handle type="target" position={Position.Top} className="opacity-0" />
+      <FileText className="h-3 w-3" /> {data.label}
+      <Handle type="source" position={Position.Bottom} className="opacity-0" />
+    </div>
+  ),
+  system: ({ data }: NodeProps) => (
+    <div className="px-3 py-2 border-2 border-blue-800 bg-blue-50 text-[10px] font-bold uppercase flex flex-col items-center gap-1 relative">
+      <Handle type="target" position={Position.Top} className="opacity-0" />
+      <Database className="h-3 w-3" /> {data.label}
+      <Handle type="source" position={Position.Bottom} className="opacity-0" />
+    </div>
+  ),
   risk: ({ data }: NodeProps) => <div className="w-10 h-8 bg-red-600 flex items-center justify-center text-white"><AlertTriangle className="h-4 w-4" /></div>,
   control: ({ data }: NodeProps) => <div className="w-8 h-8 rounded-full bg-green-600 flex items-center justify-center text-white"><ShieldCheck className="h-4 w-4" /></div>,
 };
@@ -166,7 +187,7 @@ export function CSATabContent({
       replaceSamples(newSamples);
       setView('form'); // Skip gate
     }
-  }, [initialSamples, controls, replaceSamples]);
+  }, [initialSamples, controls, replaceSamples, view]);
 
   const { data: diagram } = useQuery({
     queryKey: ['bpm-diagrams', 'by-gl', noGL],

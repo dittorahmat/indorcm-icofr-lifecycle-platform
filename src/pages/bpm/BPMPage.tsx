@@ -801,6 +801,7 @@ export function BPMPage() {
             glDesc={selectedGLRow.glDesc}
             fsliName={selectedFsli}
             bpmProcessId={selectedBpmId || undefined}
+            subProcessName={selectedBpmName}
             year={viewYear}
           />
         )}

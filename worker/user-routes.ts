@@ -10,7 +10,8 @@ import {
   rcmControls, organization, testRecords, aggregateDeficiencies,
   documents, documentDepartments, documentGls, documentFslis,
   systemLicenses, accountAssertions, simulationAccountApplications,
-  vendors, socReports, socEvaluations, csaSchedules, notifications
+  vendors, socReports, socEvaluations, csaSchedules, notifications,
+  transactionDetails, transactionUploads
 } from './db/schema';
 import { eq, and, desc, sql, ilike, inArray, SQL } from 'drizzle-orm';
 import type { 
@@ -1236,7 +1237,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
       if (sourceBpms.length > 0) {
         console.log(`[CARRY_FORWARD] Cloning data from ${prevYear} to ${targetYear} for Org: ${orgId}`);
         
-        await db.transaction(async (tx: any) => {
+        try {
           const diagramMap = new Map<string, string>();
           const rcmMap = new Map<string, string>();
           const controlMap = new Map<string, string>();
@@ -1245,7 +1246,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
           for (const source of sourceBpms) {
             const newId = crypto.randomUUID();
             diagramMap.set(source.id, newId);
-            await tx.insert(bpmDiagrams).values({
+            await db.insert(bpmDiagrams).values({
               ...source,
               id: newId,
               year: targetYear,
@@ -1256,13 +1257,13 @@ export function userRoutes(app: Hono<HonoEnv>) {
           }
 
           // Clone RCMs
-          const sourceRcms = await tx.select().from(rcms)
+          const sourceRcms = await db.select().from(rcms)
             .where(and(eq(rcms.organizationId, orgId), eq(rcms.year, prevYear)));
           
           for (const source of sourceRcms) {
             const newId = crypto.randomUUID();
             rcmMap.set(source.id, newId);
-            await tx.insert(rcms).values({
+            await db.insert(rcms).values({
               ...source,
               id: newId,
               year: targetYear,
@@ -1273,13 +1274,13 @@ export function userRoutes(app: Hono<HonoEnv>) {
           }
 
           // Clone Controls
-          const sourceControls = await tx.select().from(controls)
+          const sourceControls = await db.select().from(controls)
             .where(and(eq(controls.organizationId, orgId), eq(controls.year, prevYear)));
           
           for (const source of sourceControls) {
             const newId = crypto.randomUUID();
             controlMap.set(source.id, newId);
-            await tx.insert(controls).values({
+            await db.insert(controls).values({
               ...source,
               id: newId,
               year: targetYear,
@@ -1289,7 +1290,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
           }
 
           // Clone RCM-Control Mappings
-          const sourceMappings = await tx.select().from(rcmControls)
+          const sourceMappings = await db.select().from(rcmControls)
             .where(eq(rcmControls.organizationId, orgId));
           
           for (const source of sourceMappings) {
@@ -1297,7 +1298,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
             const newControlId = controlMap.get(source.controlId);
             
             if (newRcmId && newControlId) {
-              await tx.insert(rcmControls).values({
+              await db.insert(rcmControls).values({
                 ...source,
                 id: crypto.randomUUID(),
                 rcmId: newRcmId,
@@ -1308,7 +1309,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
           }
 
           // Clone BPM-Node-RCM Mappings
-          const sourceNodeRcms = await tx.select().from(bpmNodeRcms)
+          const sourceNodeRcms = await db.select().from(bpmNodeRcms)
             .where(eq(bpmNodeRcms.organizationId, orgId));
           
           for (const source of sourceNodeRcms) {
@@ -1316,7 +1317,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
             const newRcmId = rcmMap.get(source.rcmId);
             
             if (newDiagramId && newRcmId) {
-              await tx.insert(bpmNodeRcms).values({
+              await db.insert(bpmNodeRcms).values({
                 ...source,
                 id: crypto.randomUUID(),
                 diagramId: newDiagramId,
@@ -1324,7 +1325,10 @@ export function userRoutes(app: Hono<HonoEnv>) {
               });
             }
           }
-        });
+        } catch (e: any) {
+          console.error('[CARRY_FORWARD] Failed during sequential operations:', e);
+          // Non-blocking for the simulation creation
+        }
       }
     }
 
@@ -1549,9 +1553,9 @@ export function userRoutes(app: Hono<HonoEnv>) {
 
     if (!sim) return bad(c, "Simulation not found", 404);
 
-    await db.transaction(async (tx: any) => {
+    try {
       for (const m of mappings) {
-        await tx.update(glRows)
+        await db.update(glRows)
           .set({ assignedDepartmentIds: m.departmentIds })
           .where(and(
             eq(glRows.snapshotId, sim.glSnapshotId),
@@ -1559,9 +1563,10 @@ export function userRoutes(app: Hono<HonoEnv>) {
             eq(glRows.organizationId, orgId)
           ));
       }
-    });
-
-    return ok(c, { success: true });
+      return ok(c, { success: true });
+    } catch (e: any) {
+      return bad(c, `Sync failed: ${e.message}`);
+    }
   });
 
   app.get('/api/simulations/:id/account-applications', async (c) => {
@@ -1583,10 +1588,10 @@ export function userRoutes(app: Hono<HonoEnv>) {
     const orgId = c.get('organizationId');
     const { mappings } = await c.req.json<{ mappings: { accountCode: string, applicationIds: string[] }[] }>();
 
-    await db.transaction(async (tx: any) => {
+    try {
       for (const m of mappings) {
         // 1. Clear existing for this account in this simulation
-        await tx.delete(simulationAccountApplications).where(and(
+        await db.delete(simulationAccountApplications).where(and(
           eq(simulationAccountApplications.simulationId, simId),
           eq(simulationAccountApplications.accountCode, m.accountCode),
           eq(simulationAccountApplications.organizationId, orgId)
@@ -1595,7 +1600,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
         // 2. Insert new ones
         if (m.applicationIds.length > 0) {
           for (const appId of m.applicationIds) {
-            await tx.insert(simulationAccountApplications).values({
+            await db.insert(simulationAccountApplications).values({
               id: crypto.randomUUID(),
               organizationId: orgId,
               simulationId: simId,
@@ -1604,15 +1609,16 @@ export function userRoutes(app: Hono<HonoEnv>) {
             });
 
             // 3. Auto-flag application as Significant in Library
-            await tx.update(applications)
+            await db.update(applications)
               .set({ isSignificant: true })
               .where(and(eq(applications.id, appId), eq(applications.organizationId, orgId)));
           }
         }
       }
-    });
-
-    return ok(c, { success: true });
+      return ok(c, { success: true });
+    } catch (e: any) {
+      return bad(c, `Sync failed: ${e.message}`);
+    }
   });
 
 
@@ -1739,6 +1745,16 @@ export function userRoutes(app: Hono<HonoEnv>) {
       .where(and(eq(bpmDiagrams.id, id), eq(bpmDiagrams.organizationId, orgId)));
 
     // 2. Sync Relational Tables (Transaction-like)
+    // Find matching BPM Process to get the ID and noGL for cross-linking
+    const matchedProcesses = await db.select().from(bpmProcesses)
+      .where(and(
+        eq(bpmProcesses.organizationId, orgId),
+        eq(bpmProcesses.name, body.subProcess)
+      )).limit(1);
+    
+    const bpmProcessId = matchedProcesses.length > 0 ? matchedProcesses[0].id : null;
+    const noGL = matchedProcesses.length > 0 ? matchedProcesses[0].noGL : null;
+
     // First, clear existing node-specific links (Activity -> Risk)
     await db.delete(bpmNodeRcms).where(eq(bpmNodeRcms.diagramId, id));
 
@@ -1799,12 +1815,20 @@ export function userRoutes(app: Hono<HonoEnv>) {
                 rcmId: riskId,
                 level: reg.classification || 'TLC',
                 cosoPrinciples: reg.cosoPrinciples || [],
+                bpmProcessId: bpmProcessId,
+                fsliCodes: noGL ? [noGL] : [],
+                businessProcess: body.name,
+                subProcess: body.subProcess,
               });
             } else {
               await db.update(controls).set({
                 name: reg.controlDescription || node.data.label,
                 level: reg.classification || 'TLC',
                 cosoPrinciples: reg.cosoPrinciples || [],
+                bpmProcessId: bpmProcessId,
+                businessProcess: body.name,
+                subProcess: body.subProcess,
+                ...(noGL ? { fsliCodes: [noGL] } : {})
               }).where(eq(controls.id, ctrlId));
             }
 
@@ -2586,6 +2610,128 @@ export function userRoutes(app: Hono<HonoEnv>) {
       ));
 
     return ok(c, { success: true });
+  });
+
+  // --- Transaction Details Routes ---
+
+  app.get('/api/transaction-details', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+    const noGL = c.req.query('noGL');
+
+    if (!noGL) return bad(c, 'noGL is required');
+
+    const items = await db.select().from(transactionDetails).where(and(
+      eq(transactionDetails.organizationId, orgId),
+      eq(transactionDetails.noGL, noGL)
+    )).limit(500);
+
+    return ok(c, { items });
+  });
+
+  app.post('/api/transaction-details', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+    const userId = c.get('userId');
+    const body = await c.req.json<{ rows: any[], filename?: string, noGL: string, mode?: 'append' | 'replace' }>();
+
+    if (!body.rows || !Array.isArray(body.rows)) return bad(c, 'Invalid rows array');
+    if (!body.noGL) return bad(c, 'noGL is required');
+
+    try {
+      // 1. Handle Purge if mode is 'replace'
+      if (body.mode === 'replace') {
+        await db.delete(transactionDetails).where(and(
+          eq(transactionDetails.organizationId, orgId),
+          eq(transactionDetails.noGL, body.noGL)
+        ));
+      }
+
+      // 2. Batch Insert Transactions
+      const rowsToInsert = body.rows.map((row: any) => ({
+        id: crypto.randomUUID(),
+        organizationId: orgId,
+        noGL: body.noGL,
+        refNo: row.refNo,
+        transDate: row.transDate ? new Date(row.transDate) : null,
+        description: row.description,
+        currency: row.currency,
+        dcFlag: row.dcFlag,
+        amount: row.amount,
+      }));
+
+      if (rowsToInsert.length > 0) {
+        for (let i = 0; i < rowsToInsert.length; i += 1000) {
+          await db.insert(transactionDetails).values(rowsToInsert.slice(i, i + 1000));
+        }
+      }
+
+      // 3. Log to transaction_uploads (Audit Trail)
+      await db.insert(transactionUploads).values({
+        id: crypto.randomUUID(),
+        organizationId: orgId,
+        uploadedBy: userId,
+        noGL: body.noGL,
+        filename: body.filename || 'ERP Snippet',
+        rowCount: rowsToInsert.length,
+        createdAt: new Date(),
+      });
+
+      // 4. Trigger Notification
+      await db.insert(notifications).values({
+        id: crypto.randomUUID(),
+        organizationId: orgId,
+        userId,
+        message: `Upload Completed: ${body.filename || 'ERP Snippet'} (${rowsToInsert.length} rows) for GL ${body.noGL}. Mode: ${body.mode || 'append'}`,
+        type: 'success',
+        readStatus: false,
+        createdAt: new Date(),
+      });
+
+      return ok(c, { success: true });
+    } catch (err: any) {
+      console.error('Upload Error:', err);
+      return bad(c, `Failed to ingestion data: ${err.message}`);
+    }
+  });
+
+  app.delete('/api/transaction-details/:noGL', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+    const noGL = c.req.param('noGL');
+
+    await db.delete(transactionDetails).where(and(
+      eq(transactionDetails.organizationId, orgId),
+      eq(transactionDetails.noGL, noGL)
+    ));
+
+    return ok(c, { success: true });
+  });
+
+  app.get('/api/transaction-uploads', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+    const noGL = c.req.query('noGL');
+
+    if (!noGL) return bad(c, 'noGL is required');
+
+    const items = await db.select({
+      id: transactionUploads.id,
+      filename: transactionUploads.filename,
+      uploadedBy: user.name,
+      rowCount: transactionUploads.rowCount,
+      createdAt: transactionUploads.createdAt,
+    })
+    .from(transactionUploads)
+    .innerJoin(user, eq(transactionUploads.uploadedBy, user.id))
+    .where(and(
+      eq(transactionUploads.organizationId, orgId),
+      eq(transactionUploads.noGL, noGL)
+    ))
+    .orderBy(desc(transactionUploads.createdAt))
+    .limit(20);
+
+    return ok(c, { items });
   });
 
   // --- Reporting & Aggregation Refactored ---
@@ -3507,6 +3653,36 @@ ${knowledgeBase}
 
     await db.update(notifications)
       .set({ readStatus: true })
+      .where(and(
+        eq(notifications.organizationId, orgId),
+        eq(notifications.userId, userId)
+      ));
+
+    return ok(c, { success: true });
+  });
+
+  app.delete('/api/notifications/:id', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const id = c.req.param('id');
+    const orgId = c.get('organizationId');
+    const userId = c.get('userId');
+
+    await db.delete(notifications)
+      .where(and(
+        eq(notifications.id, id),
+        eq(notifications.organizationId, orgId),
+        eq(notifications.userId, userId)
+      ));
+
+    return ok(c, { success: true });
+  });
+
+  app.post('/api/notifications/clear-all', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+    const userId = c.get('userId');
+
+    await db.delete(notifications)
       .where(and(
         eq(notifications.organizationId, orgId),
         eq(notifications.userId, userId)
