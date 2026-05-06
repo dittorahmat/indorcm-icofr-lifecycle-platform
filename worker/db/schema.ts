@@ -300,6 +300,7 @@ export const csaRecords = pgTable("csa_records", {
 	controlId: text("control_id").references(() => controls.id), // Optional for aggregate CSA
 	bpmProcessId: text("bpm_process_id").references(() => bpmProcesses.id), // New: Link to sub-process
 	period: text("period").notNull(),
+	scheduleId: text("schedule_id").references(() => csaSchedules.id), // Link to planning schedule
 	assessmentDate: timestamp("assessment_date").notNull(),
 	assessedBy: text("assessed_by").references(() => user.id),
 	result: text("result").notNull(), // Effective, Ineffective, No Transaction

@@ -74,5 +74,17 @@
     "instruction": "Sesuai SK-5 Bab IV, lampirkan detail transaksi (ERP snippet) untuk mendukung sampling audit.",
     "button": "Unggah Transaksi",
     "modalTitle": "Manajemen Detail Transaksi"
+  },
+  "status": {
+    "pending": "Belum Dimulai",
+    "started": "Sedang Dikerjakan",
+    "completed": "Selesai",
+    "overdue": "Terlambat"
+  },
+  "actions": {
+    "save": "Simpan & Selesaikan",
+    "saveDraft": "Simpan Draf",
+    "cancel": "Batal",
+    "execute": "Eksekusi Aktivitas"
   }
 }

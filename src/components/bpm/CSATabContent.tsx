@@ -20,7 +20,7 @@ import {
   Printer, ChevronLeft, Eye, UploadCloud, Check
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Control, CSARecord, CSATestSample, User, GLRow } from '@shared/types';
+import { Control, CSARecord, CSATestSample, User, GLRow, TransactionDetail } from '@shared/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -135,10 +135,11 @@ type CSAFormValues = z.infer<typeof csaFormSchema>;
 interface CSATabContentProps {
   noGL?: string;
   controls?: Control[];
-  initialSamples?: GLRow[];
+  initialSamples?: (GLRow | TransactionDetail)[];
   bpmProcessId?: string;
   subProcessName?: string;
   standalone?: boolean;
+  scheduleId?: string; // New: link to task schedule
 }
 
 export function CSATabContent({ 
@@ -147,7 +148,8 @@ export function CSATabContent({
   initialSamples = [],
   bpmProcessId,
   subProcessName,
-  standalone = false 
+  standalone = false,
+  scheduleId
 }: CSATabContentProps) {
   const { t } = useTranslation(['bpm', 'common', 'csa_hub']);
   const queryClient = useQueryClient();
@@ -161,8 +163,8 @@ export function CSATabContent({
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
   const { data: diagram } = useQuery({
-    queryKey: ['bpm-diagrams', 'by-gl', noGL],
-    queryFn: () => api<any>(`/api/bpm-diagrams/by-gl/${noGL}`),
+    queryKey: ['bpm-diagrams', 'by-gl', noGL, subProcessName],
+    queryFn: () => api<any>(`/api/bpm-diagrams/by-gl/${noGL}${subProcessName ? `?subProcess=${encodeURIComponent(subProcessName)}` : ''}`),
     enabled: !!noGL
   });
 
@@ -252,8 +254,16 @@ export function CSATabContent({
           });
         }
 
+        // Determine reference label based on type
+        let sampleRef = "";
+        if ("glDesc" in s) {
+          sampleRef = s.glDesc;
+        } else if ("description" in s) {
+          sampleRef = s.description || "N/A";
+        }
+
         return {
-          sampleRef: s.glDesc,
+          sampleRef,
           glRowId: (s as any).id,
           controlResults
         };
@@ -277,10 +287,15 @@ export function CSATabContent({
 
   const createMutation = useMutation({
     mutationFn: (data: any) => api('/api/csa', { method: 'POST', body: JSON.stringify(data) }),
-    onSuccess: () => {
-      toast.success("CSA Sign-off successful");
+    onSuccess: (_, variables) => {
+      toast.success(variables.isDraft ? "Draft saved successfully" : "CSA Sign-off successful");
       queryClient.invalidateQueries({ queryKey: ['csa-list'] });
-      setView('list');
+      queryClient.invalidateQueries({ queryKey: ['csa-schedules'] });
+      if (!variables.isDraft) {
+        setView('list');
+      } else {
+        form.reset(form.getValues(), { keepDirty: false });
+      }
     }
   });
 
@@ -336,6 +351,17 @@ export function CSATabContent({
     }
   }, [activeCsa, form]);
 
+  const onSaveDraft = async () => {
+    const values = form.getValues();
+    createMutation.mutate({
+      ...values,
+      isDraft: true,
+      scheduleId,
+      bpmProcessId,
+      organizationId: (initialSamples[0] as any)?.organizationId || searchParams.get('orgId'),
+    });
+  };
+
   const onSubmit = async (values: CSAFormValues) => {
     // Validation: Aggregate Zero Tolerance & Mandatory Evidence
     const flatResults = values.samples.flatMap(s => Object.values(s.controlResults));
@@ -365,6 +391,8 @@ export function CSATabContent({
     createMutation.mutate({
       ...values,
       result: realResult,
+      isDraft: false,
+      scheduleId,
       bpmProcessId,
       organizationId: (initialSamples[0] as any)?.organizationId || searchParams.get('orgId'),
     });
@@ -701,6 +729,15 @@ export function CSATabContent({
                         {!isReadOnly && (
                           <div className="flex justify-end gap-3">
                             <Button variant="outline" onClick={() => setView('list')} className="px-8 font-bold">Batal</Button>
+                            <Button 
+                              type="button"
+                              disabled={createMutation.isPending || isAuthenticating} 
+                              onClick={onSaveDraft}
+                              className="bg-amber-500 hover:bg-amber-600 text-white font-black px-8 h-12 gap-2 shadow-xl shadow-amber-100 uppercase tracking-widest"
+                            >
+                               {createMutation.isPending && createMutation.variables?.isDraft ? <RefreshCw className="h-5 w-5 animate-spin" /> : <FileText className="h-5 w-5" />}
+                               Simpan Draft
+                            </Button>
                             <Button disabled={createMutation.isPending || isAuthenticating} type="submit" className="bg-indigo-600 hover:bg-indigo-700 font-black px-12 h-12 gap-2 shadow-xl shadow-indigo-100 uppercase tracking-widest">
                                {isAuthenticating ? <RefreshCw className="h-5 w-5 animate-spin" /> : <UserCheck className="h-5 w-5" />}
                                Submit & Sign-off

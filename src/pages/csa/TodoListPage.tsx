@@ -56,7 +56,7 @@ import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 
 export function TodoListPage() {
-  const { t } = useTranslation(['csa', 'common', 'rcm', 'csa_hub']);
+  const { t, i18n } = useTranslation(['csa', 'common', 'rcm', 'csa_hub']);
   const queryClient = useQueryClient();
   const [currentDate, setCurrentDate] = React.useState(new Date());
   const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(new Date());
@@ -68,7 +68,7 @@ export function TodoListPage() {
   
   // Execution Hub Modal State
   const [isHubOpen, setIsHubOpen] = React.useState(false);
-  const [selectedHubProcess, setSelectedHubProcess] = React.useState<{ id: string, name: string, noGL: string, fsliName: string } | null>(null);
+  const [selectedHubProcess, setSelectedHubProcess] = React.useState<{ id: string, name: string, noGL: string, fsliName: string, scheduleId?: string } | null>(null);
 
   const [formData, setFormData] = React.useState({
     bpmProcessId: '',
@@ -124,16 +124,22 @@ export function TodoListPage() {
     }
   });
 
-  const handleOpenHub = (processId: string) => {
+  const handleOpenHub = (event: CSASchedule | string) => {
+    const processId = typeof event === 'string' ? event : event.bpmProcessId;
+    const scheduleId = typeof event === 'string' ? undefined : event.id;
+    
     const process = processes?.items.find(p => p.id === processId);
     if (process) {
       setSelectedHubProcess({
         id: process.id,
         name: process.name,
         noGL: process.noGL,
-        fsliName: process.fsliName || 'N/A'
+        fsliName: process.fsliName || 'N/A',
+        scheduleId: scheduleId // Pass schedule context
       });
       setIsHubOpen(true);
+    } else {
+      toast.error("Proses tidak ditemukan atau belum ter-link dengan BPM.");
     }
   };
 
@@ -497,15 +503,19 @@ export function TodoListPage() {
                                     <div className="flex justify-between items-start mb-1">
                                       <Badge variant="outline" className="text-[9px] uppercase font-bold bg-white">{e.type || 'REMEDIATION'}</Badge>
                                       <Badge className={cn(
-                                        "text-[9px] font-mono",
-                                        isCompleted ? "bg-emerald-600" : isOverdue ? "bg-red-600" : "bg-indigo-600"
-                                      )}>{e.status || 'Pending'}</Badge>
+                                        "text-[9px] font-mono uppercase",
+                                        isCompleted ? "bg-emerald-600" : isOverdue ? "bg-red-600" : e.status === 'In Progress' ? "bg-amber-500" : "bg-indigo-600"
+                                      )}>
+                                        {e.status === 'Completed' ? t('csa_hub:status.completed') : 
+                                         e.status === 'In Progress' ? t('csa_hub:status.started') : 
+                                         isOverdue ? t('csa_hub:status.overdue') : t('csa_hub:status.pending')}
+                                      </Badge>
                                     </div>
                                     <h4 className="text-xs font-black text-slate-800 leading-snug">
                                       {process?.name || e.description || 'Activity Detail'}
                                     </h4>
                                     <p className="text-[10px] text-slate-500 font-medium mt-1 flex items-center gap-1">
-                                      <Clock className="h-3 w-3" /> {format(new Date(e.plannedDate || e.targetDate), 'EEEE, d MMMM yyyy')}
+                                      <Clock className="h-3 w-3" /> {format(new Date(e.plannedDate || e.targetDate), 'EEEE, d MMMM yyyy', { locale: i18n.language === 'id' ? idLocale : enUS })}
                                     </p>
                                   </div>
                                   <div className="p-2 grid grid-cols-1 gap-1">
@@ -513,9 +523,9 @@ export function TodoListPage() {
                                       variant="ghost" 
                                       size="sm" 
                                       className="justify-start gap-2 h-8 text-xs font-bold text-indigo-600 hover:bg-indigo-50"
-                                      onClick={() => handleOpenHub(e.bpmProcessId || e.controlId)}
+                                      onClick={() => handleOpenHub(e)}
                                     >
-                                      <CheckCircle2 className="h-3.5 w-3.5" /> Execute Activity
+                                      <CheckCircle2 className="h-3.5 w-3.5" /> {t('csa_hub:actions.execute')}
                                     </Button>
                                     {e.eventType === 'SCHEDULE' && (
                                       <>
@@ -601,7 +611,9 @@ export function TodoListPage() {
                                   className={cn(
                                     "text-[10px] leading-tight p-1 px-1.5 rounded-sm border shadow-xs flex items-center justify-between group/pill cursor-pointer transition-all",
                                     isCompleted ? "bg-emerald-50 border-emerald-200 text-emerald-800" :
+                                    (event.status === 'In Progress' && isOverdue) ? "bg-red-100 border-red-300 text-red-900 animate-pulse" :
                                     isOverdue ? "bg-red-50 border-red-200 text-red-800" :
+                                    event.status === 'In Progress' ? "bg-amber-50 border-amber-200 text-amber-800" :
                                     "bg-indigo-50 border-indigo-200 text-indigo-800 hover:bg-indigo-100",
                                     event.eventType === 'REMEDIATION' && event.severity === 'Material Weakness' && "border-l-4 border-l-slate-900 shadow-md",
                                     event.eventType === 'REMEDIATION' && event.severity === 'Significant Deficiency' && "border-l-4 border-l-orange-500 shadow-sm"
@@ -639,11 +651,10 @@ export function TodoListPage() {
                                     variant="ghost" 
                                     size="sm" 
                                     className="justify-start gap-2 h-8 text-xs font-bold text-indigo-600 hover:bg-indigo-50"
-                                    onClick={() => handleOpenHub(event.bpmProcessId || event.controlId)}
+                                    onClick={() => handleOpenHub(event)}
                                   >
-                                    <CheckCircle2 className="h-3.5 w-3.5" /> Execute Activity
-                                  </Button>
-                                  {event.eventType === 'SCHEDULE' && (
+                                    <CheckCircle2 className="h-3.5 w-3.5" /> {t('csa_hub:actions.execute')}
+                                  </Button>                                  {event.eventType === 'SCHEDULE' && (
                                     <>
                                       <Button 
                                         variant="ghost" 
@@ -692,6 +703,7 @@ export function TodoListPage() {
             bpmProcessId={selectedHubProcess.id}
             subProcessName={selectedHubProcess.name}
             year={format(new Date(), 'yyyy')}
+            scheduleId={(selectedHubProcess as any).scheduleId}
           />
         )}
         <UnsavedChangesDialog blocker={blocker} />

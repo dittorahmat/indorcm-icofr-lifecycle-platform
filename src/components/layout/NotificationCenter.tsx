@@ -178,7 +178,11 @@ export function NotificationCenter() {
         </ScrollArea>
         
         <div className="p-2 border-t bg-slate-50/50">
-          <Button variant="ghost" className="w-full h-8 text-xs text-slate-500 hover:text-slate-900">
+          <Button 
+            variant="ghost" 
+            className="w-full h-8 text-xs text-slate-500 hover:text-slate-900"
+            onClick={() => navigate('/notifications')}
+          >
             {t('notifications.viewAll')}
           </Button>
         </div>

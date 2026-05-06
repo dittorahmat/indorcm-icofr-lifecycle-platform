@@ -2924,6 +2924,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
       organizationId: orgId,
       controlId: body.controlId, // Optional
       bpmProcessId: body.bpmProcessId, // New
+      scheduleId: body.scheduleId, // Link to planning
       period: body.period || "2024-Q1",
       assessmentDate,
       assessedBy: userId,
@@ -2943,8 +2944,10 @@ export function userRoutes(app: Hono<HonoEnv>) {
       biometricVerified: body.biometricVerified ?? false,
     };
 
-    // 1. Validation: Enforce Granular Evidence for Effective results
-    if (body.result === 'Effective' && body.samples) {
+    const isDraft = body.isDraft ?? false;
+
+    // 1. Validation: Enforce Granular Evidence for Effective results (Skip if draft)
+    if (!isDraft && body.result === 'Effective' && body.samples) {
       for (const sample of body.samples) {
         if (sample.controlResults) {
           const results = Object.values(sample.controlResults) as any[];
@@ -2959,7 +2962,17 @@ export function userRoutes(app: Hono<HonoEnv>) {
     // 2. Insert Record
     await db.insert(csaRecords).values(newCsa);
 
-    // 2. Insert Samples in new format
+    // 3. Update Schedule Status if provided
+    if (body.scheduleId) {
+      await db.update(csaSchedules)
+        .set({ status: isDraft ? 'In Progress' : 'Completed' })
+        .where(and(
+          eq(csaSchedules.id, body.scheduleId),
+          eq(csaSchedules.organizationId, orgId)
+        ));
+    }
+
+    // 4. Insert Samples in new format
     if (body.samples && Array.isArray(body.samples)) {
       for (const sample of body.samples) {
         await db.insert(csaSamples).values({
@@ -3312,7 +3325,20 @@ export function userRoutes(app: Hono<HonoEnv>) {
     const db = getDb(c.env.DATABASE_URL);
     const orgId = c.get('organizationId');
     const noGL = c.req.param('noGL');
+    const subProcessName = c.req.query('subProcess');
 
+    if (subProcessName) {
+      // Direct lookup by subProcess name and organization
+      const diagrams = await db.select().from(bpmDiagrams)
+        .where(and(
+          eq(bpmDiagrams.organizationId, orgId),
+          eq(bpmDiagrams.subProcess, subProcessName)
+        )).limit(1);
+
+      if (diagrams.length > 0) return ok(c, diagrams[0]);
+    }
+
+    // Fallback: original logic if subProcess not provided or not found directly
     // 1. Find the BPM Process linked to this GL
     const processes = await db.select().from(bpmProcesses)
       .where(and(
@@ -3338,14 +3364,13 @@ export function userRoutes(app: Hono<HonoEnv>) {
                 eq(bpmDiagrams.organizationId, orgId),
                 eq(bpmDiagrams.name, process.name)
             )).limit(1);
-        
+
         if (byName.length === 0) return notFound(c, 'Diagram not found for this process');
         return ok(c, byName[0]);
     }
 
     return ok(c, diagrams[0]);
   });
-
   // --- Knowledge Base Document Routes ---
 
   app.get('/api/documents', async (c) => {

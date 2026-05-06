@@ -36,6 +36,7 @@ interface BPMModalProps {
   bpmProcessId?: string;
   subProcessName?: string;
   year: string;
+  scheduleId?: string; // New: link to task schedule
 }
 
 export function BPMModal({ 
@@ -46,11 +47,19 @@ export function BPMModal({
   fsliName,
   bpmProcessId,
   subProcessName,
-  year
+  year,
+  scheduleId
 }: BPMModalProps) {
   const { t } = useTranslation(['bpm', 'common']);
-  const [activeTab, setActiveTab] = React.useState("worksheet");
+  const [activeTab, setActiveTab] = React.useState(scheduleId ? "csa" : "worksheet");
   const [selectedSamples, setSelectedSamples] = React.useState<TransactionDetail[]>([]);
+
+  // Auto-switch to CSA tab if opening from a schedule
+  React.useEffect(() => {
+    if (isOpen && scheduleId) {
+      setActiveTab("csa");
+    }
+  }, [isOpen, scheduleId]);
 
   // Safety guard for modal closing
   const blocker = useUnsavedChanges(isOpen && selectedSamples.length > 0 && activeTab === 'sampling');
@@ -174,6 +183,7 @@ export function BPMModal({
                   initialSamples={selectedSamples}
                   bpmProcessId={bpmProcessId}
                   subProcessName={subProcessName}
+                  scheduleId={scheduleId}
                 />
               </TabsContent>
 

@@ -74,5 +74,17 @@
     "instruction": "Per SK-5 Chapter IV, attach transaction details (ERP snippet) to support audit sampling.",
     "button": "Upload Transactions",
     "modalTitle": "Transaction Detail Management"
+  },
+  "status": {
+    "pending": "Not Started",
+    "started": "In Progress",
+    "completed": "Completed",
+    "overdue": "Overdue"
+  },
+  "actions": {
+    "save": "Save & Complete",
+    "saveDraft": "Save as Draft",
+    "cancel": "Cancel",
+    "execute": "Execute Activity"
   }
 }
