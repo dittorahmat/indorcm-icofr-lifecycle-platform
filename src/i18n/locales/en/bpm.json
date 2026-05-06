@@ -195,6 +195,13 @@
       "confirm": "Delete Now",
       "cancel": "Cancel",
       "success": "Transaction data successfully cleared."
+    },
+    "export": {
+      "title": "Export BPM Diagram",
+      "generating": "Generating high-fidelity PDF...",
+      "success": "Successfully exported diagram: {{filename}}",
+      "error": "Failed to export diagram. Please try again.",
+      "history": "Export History"
     }
   }
 }

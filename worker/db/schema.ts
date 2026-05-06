@@ -613,6 +613,15 @@ export const csaSchedules = pgTable("csa_schedules", {
 	createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const bpmExports = pgTable("bpm_exports", {
+	id: text("id").primaryKey(),
+	organizationId: text("organization_id").notNull().references(() => organization.id),
+	userId: text("user_id").notNull().references(() => user.id),
+	diagramId: text("diagram_id").notNull().references(() => bpmDiagrams.id, { onDelete: 'cascade' }),
+	filename: text("filename").notNull(),
+	createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 
 // --- RELATIONS ---
 

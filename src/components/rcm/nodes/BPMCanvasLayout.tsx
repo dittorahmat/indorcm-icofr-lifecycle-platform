@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { ShieldCheck, Calendar, FileType, MapPin, Hash } from 'lucide-react';
+import { ShieldCheck, Calendar, FileType, MapPin, Hash, Building2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
@@ -11,9 +11,11 @@ interface LayoutProps {
   year: string;
   version?: string;
   isDraft?: boolean;
+  noGL?: string;
+  fsliName?: string;
 }
 
-export const BPMCanvasHeader = ({ subProcess, year, version = '1.0', isDraft }: LayoutProps) => {
+export const BPMCanvasHeader = ({ subProcess, year, version = '1.0', isDraft, noGL, fsliName }: LayoutProps) => {
   const { t } = useTranslation(['bpm', 'common']);
   const { data: settings } = useQuery({
     queryKey: ['settings'],
@@ -21,57 +23,68 @@ export const BPMCanvasHeader = ({ subProcess, year, version = '1.0', isDraft }: 
   });
 
   return (
-    <div className="w-full bg-white border-b-2 border-slate-800 p-4 mb-4 flex flex-col gap-4 shadow-sm">
-      {/* Top row: Logo & Signatories placeholder */}
-      <div className="flex justify-between items-start">
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 bg-slate-100 rounded-lg border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden">
-             {settings?.logoUrl ? (
-               <img src={settings.logoUrl} alt="Logo" className="w-full h-full object-contain" />
-             ) : (
-               <span className="text-[8px] font-black text-slate-300 uppercase text-center">LOGO<br/>BUMN</span>
-             )}
-          </div>
-          <div className="flex flex-col">
-            <h1 className="text-lg font-black uppercase tracking-tighter text-slate-800 leading-none">
-              {settings?.companyName || "PT. INDO GRC PRO"}
-            </h1>
-            <p className="text-[10px] font-bold text-indigo-600 mt-1 uppercase tracking-widest">
-              Standard Operating Procedure / BPM Flow
-            </p>
-          </div>
+    <div className="w-full bg-white border-2 border-slate-800 mb-6 overflow-hidden">
+      {/* Table Header Style like Appendix 4 */}
+      <div className="grid grid-cols-12 border-b-2 border-slate-800">
+        {/* Logo Section */}
+        <div className="col-span-3 border-r-2 border-slate-800 p-4 flex flex-col items-center justify-center gap-2 bg-slate-50/50">
+           <div className="w-20 h-20 bg-white rounded border shadow-sm flex items-center justify-center overflow-hidden p-1">
+              {settings?.logoUrl ? (
+                <img src={settings.logoUrl} alt="Logo" className="w-full h-full object-contain" />
+              ) : (
+                <Building2 className="h-10 w-10 text-slate-200" />
+              )}
+           </div>
+           <span className="text-[10px] font-black uppercase text-slate-600 text-center leading-tight">
+             {settings?.companyName || "PT. INDO GRC PRO"}
+           </span>
         </div>
 
-        <div className="grid grid-cols-2 gap-x-8 gap-y-1 text-[9px] border-l pl-8 border-slate-200">
-           <div className="flex items-center gap-2">
-              <Hash className="h-3 w-3 text-slate-400" />
-              <span className="text-slate-500 font-bold uppercase">Version:</span>
-              <span className="font-mono">{version}</span>
+        {/* Title Section */}
+        <div className="col-span-6 border-r-2 border-slate-800 p-6 flex flex-col items-center justify-center text-center">
+           <h1 className="text-xl font-black uppercase tracking-tight text-slate-900">
+             Business Process Mapping (BPM)
+           </h1>
+           <div className="mt-2 h-0.5 w-16 bg-indigo-600" />
+           <p className="mt-3 text-sm font-bold text-indigo-700 uppercase tracking-widest">
+             {subProcess}
+           </p>
+        </div>
+
+        {/* Metadata Section */}
+        <div className="col-span-3 grid grid-rows-4 text-[10px] uppercase font-bold">
+           <div className="border-b border-slate-800 px-3 flex items-center justify-between">
+              <span className="text-slate-400 font-black">Versi</span>
+              <span className="text-slate-900">{version}</span>
            </div>
-           <div className="flex items-center gap-2">
-              <Calendar className="h-3 w-3 text-slate-400" />
-              <span className="text-slate-500 font-bold uppercase">Year:</span>
-              <span>{year}</span>
+           <div className="border-b border-slate-800 px-3 flex items-center justify-between">
+              <span className="text-slate-400 font-black">Revisi</span>
+              <span className="text-slate-900">00</span>
            </div>
-           <div className="flex items-center gap-2">
-              <FileType className="h-3 w-3 text-slate-400" />
-              <span className="text-slate-500 font-bold uppercase">Status:</span>
-              <span className={cn("px-1 rounded", isDraft ? "bg-amber-100 text-amber-800" : "bg-green-100 text-green-800")}>
-                {isDraft ? 'DRAFT' : 'CONTROLLED'}
-              </span>
+           <div className="border-b border-slate-800 px-3 flex items-center justify-between bg-slate-50">
+              <span className="text-slate-400 font-black">Tahun</span>
+              <span className="text-slate-900">{year}</span>
+           </div>
+           <div className="px-3 flex items-center justify-between">
+              <span className="text-slate-400 font-black">Halaman</span>
+              <span className="text-slate-900">1 dari 1</span>
            </div>
         </div>
       </div>
 
-      {/* Process Meta */}
-      <div className="bg-slate-800 text-white p-2 rounded flex justify-between items-center px-4">
-         <div className="flex items-center gap-2">
-            <span className="text-[10px] font-black opacity-50 uppercase">Sub Process:</span>
-            <span className="text-xs font-bold uppercase tracking-tight">{subProcess}</span>
+      {/* Second Row: Lifecycle Detail */}
+      <div className="grid grid-cols-12 bg-slate-900 text-white py-2 px-4">
+         <div className="col-span-4 flex items-center gap-3">
+            <span className="text-[9px] font-black opacity-60 uppercase tracking-widest">Siklus:</span>
+            <span className="text-[10px] font-bold truncate">ICOFR LIFECYCLE</span>
          </div>
-         <div className="flex items-center gap-2">
+         <div className="col-span-4 flex items-center gap-3 border-x border-white/20 px-4">
+            <span className="text-[9px] font-black opacity-60 uppercase tracking-widest">FSLI:</span>
+            <span className="text-[10px] font-bold">{fsliName || "TBD"}</span>
+         </div>
+         <div className="col-span-4 flex items-center justify-end gap-2">
             <ShieldCheck className="h-4 w-4 text-emerald-400" />
-            <span className="text-[9px] font-bold">ALIGNED WITH REGULATION SK-5/2024</span>
+            <span className="text-[10px] font-black tracking-tighter">APPENDIX 4 - SK-5/2024</span>
          </div>
       </div>
     </div>
@@ -79,34 +92,50 @@ export const BPMCanvasHeader = ({ subProcess, year, version = '1.0', isDraft }: 
 };
 
 export const BPMCanvasFooter = () => {
-  const { t } = useTranslation(['bpm', 'common']);
-  
   return (
     <div className="w-full mt-8 grid grid-cols-3 border-2 border-slate-800 bg-white">
-       <div className="border-r-2 border-slate-800 p-2 min-h-[100px] flex flex-col">
-          <span className="text-[8px] font-black uppercase text-slate-400 mb-auto">Disusun Oleh (Lini 1)</span>
-          <div className="h-10 border-b border-slate-100 mb-2" />
-          <div className="flex justify-between text-[9px] font-bold uppercase">
-             <span>Nama:</span>
-             <span>Tanggal:</span>
+       <div className="border-r-2 border-slate-800 p-4 min-h-[120px] flex flex-col">
+          <span className="text-[9px] font-black uppercase text-slate-500 mb-4 border-b pb-1">Disusun Oleh (Lini 1)</span>
+          <div className="flex-1" />
+          <div className="space-y-1">
+             <div className="flex justify-between text-[10px] font-bold uppercase">
+                <span className="text-slate-400">Nama:</span>
+                <span className="w-32 border-b border-slate-200" />
+             </div>
+             <div className="flex justify-between text-[10px] font-bold uppercase pt-1">
+                <span className="text-slate-400">Tgl:</span>
+                <span className="w-32 border-b border-slate-200" />
+             </div>
           </div>
        </div>
-       <div className="border-r-2 border-slate-800 p-2 min-h-[100px] flex flex-col">
-          <span className="text-[8px] font-black uppercase text-slate-400 mb-auto">Direview Oleh (Lini 2)</span>
-          <div className="h-10 border-b border-slate-100 mb-2" />
-          <div className="flex justify-between text-[9px] font-bold uppercase">
-             <span>Nama:</span>
-             <span>Tanggal:</span>
+       <div className="border-r-2 border-slate-800 p-4 min-h-[120px] flex flex-col">
+          <span className="text-[9px] font-black uppercase text-slate-500 mb-4 border-b pb-1">Direview Oleh (Lini 2)</span>
+          <div className="flex-1" />
+          <div className="space-y-1">
+             <div className="flex justify-between text-[10px] font-bold uppercase">
+                <span className="text-slate-400">Nama:</span>
+                <span className="w-32 border-b border-slate-200" />
+             </div>
+             <div className="flex justify-between text-[10px] font-bold uppercase pt-1">
+                <span className="text-slate-400">Tgl:</span>
+                <span className="w-32 border-b border-slate-200" />
+             </div>
           </div>
        </div>
-       <div className="p-2 min-h-[100px] flex flex-col bg-slate-50/50">
-          <span className="text-[8px] font-black uppercase text-slate-400 mb-auto">Disetujui Oleh (CFO)</span>
-          <div className="h-10 flex items-center justify-center opacity-20 rotate-[-15deg] select-none pointer-events-none">
-             <ShieldCheck className="h-8 w-8 text-slate-300" />
+       <div className="p-4 min-h-[120px] flex flex-col bg-slate-50/30">
+          <span className="text-[9px] font-black uppercase text-slate-500 mb-4 border-b pb-1">Disetujui Oleh (CFO)</span>
+          <div className="flex-1 flex items-center justify-center opacity-10 rotate-[-12deg] select-none pointer-events-none">
+             <ShieldCheck className="h-10 w-10 text-slate-900" />
           </div>
-          <div className="flex justify-between text-[9px] font-bold uppercase mt-auto">
-             <span>Nama:</span>
-             <span>Sign-off:</span>
+          <div className="space-y-1 mt-auto">
+             <div className="flex justify-between text-[10px] font-bold uppercase">
+                <span className="text-slate-400">Nama:</span>
+                <span className="w-32 border-b border-slate-200" />
+             </div>
+             <div className="flex justify-between text-[10px] font-bold uppercase pt-1">
+                <span className="text-slate-400">Sign:</span>
+                <span className="w-32 border-b border-slate-200 font-mono italic text-[8px] flex items-center justify-center">DIGITALLY SIGNED</span>
+             </div>
           </div>
        </div>
     </div>

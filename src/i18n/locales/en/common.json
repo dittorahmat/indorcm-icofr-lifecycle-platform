@@ -24,7 +24,8 @@
     "success": "Success",
     "error": "Error",
     "warning": "Warning",
-    "info": "Information"
+    "info": "Information",
+    "exportSuccess": "Report exported successfully."
   },
   "yes": "Yes",
   "no": "No",

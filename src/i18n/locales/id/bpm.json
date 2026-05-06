@@ -195,6 +195,13 @@
       "confirm": "Hapus Sekarang",
       "cancel": "Batal",
       "success": "Data transaksi berhasil dikosongkan."
+    },
+    "export": {
+      "title": "Ekspor Diagram BPM",
+      "generating": "Menghasilkan PDF high-fidelity...",
+      "success": "Berhasil mengekspor diagram: {{filename}}",
+      "error": "Gagal mengekspor diagram. Silahkan coba lagi.",
+      "history": "Riwayat Ekspor"
     }
   }
 }

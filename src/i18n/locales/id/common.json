@@ -24,7 +24,8 @@
     "success": "Sukses",
     "error": "Gagal",
     "warning": "Peringatan",
-    "info": "Informasi"
+    "info": "Informasi",
+    "exportSuccess": "Laporan berhasil diekspor."
   },
   "yes": "Ya",
   "no": "Tidak",

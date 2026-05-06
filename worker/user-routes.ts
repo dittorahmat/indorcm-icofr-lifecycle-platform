@@ -11,7 +11,7 @@ import {
   documents, documentDepartments, documentGls, documentFslis,
   systemLicenses, accountAssertions, simulationAccountApplications,
   vendors, socReports, socEvaluations, csaSchedules, notifications,
-  transactionDetails, transactionUploads
+  transactionDetails, transactionUploads, bpmExports
 } from './db/schema';
 import { eq, and, desc, sql, ilike, inArray, SQL } from 'drizzle-orm';
 import type { 
@@ -3678,6 +3678,58 @@ ${knowledgeBase}
     } catch (error: any) {
       return bad(c, `AI service error: ${error.message}`, 500);
     }
+  });
+
+  // --- BPM Export History Routes ---
+
+  app.get('/api/bpm-exports', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+    const diagramId = c.req.query('diagramId');
+
+    let conditions = eq(bpmExports.organizationId, orgId);
+    if (diagramId) {
+      conditions = and(conditions, eq(bpmExports.diagramId, diagramId)) as SQL;
+    }
+
+    const items = await db.select({
+      id: bpmExports.id,
+      filename: bpmExports.filename,
+      userName: user.name,
+      createdAt: bpmExports.createdAt,
+      diagramName: bpmDiagrams.name
+    })
+    .from(bpmExports)
+    .innerJoin(user, eq(bpmExports.userId, user.id))
+    .innerJoin(bpmDiagrams, eq(bpmExports.diagramId, bpmDiagrams.id))
+    .where(conditions)
+    .orderBy(desc(bpmExports.createdAt))
+    .limit(100);
+
+    return ok(c, { items });
+  });
+
+  app.post('/api/bpm-exports', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const orgId = c.get('organizationId');
+    const userId = c.get('userId');
+    const body = await c.req.json<{ diagramId: string, filename: string }>();
+
+    if (!body.diagramId || !body.filename) {
+      return bad(c, 'diagramId and filename are required');
+    }
+
+    const id = crypto.randomUUID();
+    await db.insert(bpmExports).values({
+      id,
+      organizationId: orgId,
+      userId,
+      diagramId: body.diagramId,
+      filename: body.filename,
+      createdAt: new Date()
+    });
+
+    return ok(c, { id });
   });
 
   // --- Notification Routes ---

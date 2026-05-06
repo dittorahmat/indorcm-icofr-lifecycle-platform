@@ -51,13 +51,16 @@ export function BPMModal({
   scheduleId
 }: BPMModalProps) {
   const { t } = useTranslation(['bpm', 'common']);
-  const [activeTab, setActiveTab] = React.useState(scheduleId ? "csa" : "worksheet");
+  // Default to CSA tab as the primary entry point for Execution Hub
+  const [activeTab, setActiveTab] = React.useState("csa");
   const [selectedSamples, setSelectedSamples] = React.useState<TransactionDetail[]>([]);
 
-  // Auto-switch to CSA tab if opening from a schedule
+  // Maintain tab sync if opened/re-opened with a schedule
   React.useEffect(() => {
-    if (isOpen && scheduleId) {
-      setActiveTab("csa");
+    if (isOpen) {
+      if (scheduleId) {
+        setActiveTab("csa");
+      }
     }
   }, [isOpen, scheduleId]);
 

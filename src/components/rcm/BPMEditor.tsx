@@ -40,6 +40,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 import { useTranslation } from 'react-i18next';
+import { format } from 'date-fns';
+import { toPng } from 'html-to-image';
+import { jsPDF } from 'jspdf';
 import { RegulatoryPropertySheet } from './properties/RegulatoryPropertySheet';
 
 import { 
@@ -95,12 +98,14 @@ interface BPMEditorProps {
 export function BPMEditor({ diagramId, subProcess, workingYear }: BPMEditorProps) {
   const { t } = useTranslation(['risklibrary', 'common', 'bpm']);
   const [documentView, setDocumentView] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   const queryClient = useQueryClient();
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [impactData, setImpactData] = useState<{ id: string, type: 'Risk' | 'Control', count: number, usage: any[] } | null>(null);
+  const [rfInstance, setRfInstance] = useState<any>(null);
 
   // 1. Fetch Diagram Data
   const { data: diagram, isLoading: isDiagramLoading } = useQuery({
@@ -133,7 +138,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear }: BPMEditorProps
     return currentNodes !== originalNodes || currentEdges !== originalEdges;
   }, [nodes, edges, diagram, isLocked, localizedInitialNodes]);
 
-  const blocker = useUnsavedChanges(isDirty);
+  const blocker = useUnsavedChanges(isDirty || isExporting);
 
   useEffect(() => {
     if (diagram) {
@@ -211,9 +216,104 @@ export function BPMEditor({ diagramId, subProcess, workingYear }: BPMEditorProps
     }
   });
 
+  const logExportMutation = useMutation({
+    mutationFn: (filename: string) => api('/api/bpm-exports', {
+      method: 'POST',
+      body: JSON.stringify({ diagramId, filename })
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bpm-exports'] });
+    }
+  });
+
   const exportToImage = async () => {
-    toast.info("Exporting diagram...");
-    window.print();
+    if (!rfInstance) return;
+
+    // Capture the entire document canvas
+    const element = document.getElementById('bpm-document-canvas') as HTMLElement;
+    if (!element) return;
+
+    setIsExporting(true);
+    const toastId = toast.loading(t('bpm:export.generating'));
+
+    try {
+      // 1. Force immediate fitView to ensure all nodes are within the diagram div bounds
+      rfInstance.fitView({ padding: 0.15, duration: 0 });
+      
+      // Wait for React Flow and potential logo images to be ready
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      // 2. Capture snapshot with FULL scroll dimensions
+      const width = element.scrollWidth;
+      const height = element.scrollHeight;
+
+      // We use a lower pixelRatio (2 instead of 3) to avoid reaching browser canvas size limits
+      // while still maintaining high-fidelity (retina quality).
+      const dataUrl = await toPng(element, {
+        backgroundColor: '#ffffff',
+        quality: 1.0,
+        pixelRatio: 2, 
+        width: width,
+        height: height,
+        style: {
+          width: `${width}px`,
+          height: `${height}px`,
+          transform: 'none',
+          margin: '0',
+          padding: '0', // Dimensions already include padding via scrollWidth
+        }
+      });
+
+      // 3. Prepare PDF
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a4',
+      });
+
+      const imgProps = pdf.getImageProperties(dataUrl);
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      
+      // Calculate scaling to fit BOTH width and height of A4
+      const ratio = Math.min(pageWidth / imgProps.width, pageHeight / imgProps.height);
+      
+      const pdfWidth = imgProps.width * ratio;
+      const pdfHeight = imgProps.height * ratio;
+
+      // Center the image on the A4 page
+      const xPos = (pageWidth - pdfWidth) / 2;
+      const yPos = (pageHeight - pdfHeight) / 2;
+
+      pdf.addImage(dataUrl, 'PNG', xPos, yPos, pdfWidth, pdfHeight, undefined, 'FAST');
+      
+      const filename = `BPM_${subProcess.replace(/\s+/g, '_')}_${format(new Date(), 'yyyyMMdd')}.pdf`;
+      pdf.save(filename);
+
+      // 4. Audit Log
+      await logExportMutation.mutateAsync(filename);
+      
+      toast.success(t('bpm:export.success', { filename }), { id: toastId });
+
+      // 5. Global Notification
+      if (diagram) {
+        await api('/api/notifications', {
+          method: 'POST',
+          body: JSON.stringify({
+            organizationId: diagram.organizationId,
+            userId: diagram.createdBy,
+            message: `BPM Exported: ${filename}`,
+            type: 'success'
+          })
+        });
+      }
+
+    } catch (err) {
+      console.error('Export Error:', err);
+      toast.error(t('bpm:export.error'), { id: toastId });
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const onNodesDelete = useCallback((deleted: any[]) => {
@@ -231,17 +331,23 @@ export function BPMEditor({ diagramId, subProcess, workingYear }: BPMEditorProps
       <div className="flex-1 relative flex flex-col h-full overflow-hidden">
         {documentView ? (
           <div className="bg-slate-100 p-8 overflow-y-auto print:p-0 h-full">
-             <div className="max-w-5xl mx-auto border-2 border-slate-300 p-8 shadow-2xl bg-white print:border-none print:shadow-none min-h-screen">
+             <div id="bpm-document-canvas" className="max-w-5xl mx-auto border-2 border-slate-300 p-8 shadow-2xl bg-white print:border-none print:shadow-none min-h-screen">
                 <BPMCanvasHeader 
                   subProcess={subProcess} 
                   year={workingYear} 
                   isDraft={isDirty} 
+                  fsliName={diagram?.fsliName || "N/A"}
                 />
                 
                 <div className="h-[800px] border-2 border-slate-100 rounded-lg relative overflow-hidden">
                    <ReactFlow
                       nodes={nodes}
                       edges={edges}
+                      onInit={(instance) => {
+                         setRfInstance(instance);
+                         // Auto fit on load
+                         setTimeout(() => instance.fitView(), 100);
+                      }}
                       nodeTypes={nodeTypes}
                       fitView
                       nodesDraggable={false}
@@ -269,6 +375,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear }: BPMEditorProps
           <ReactFlow
             nodes={nodes}
             edges={edges}
+            onInit={setRfInstance}
             onNodesChange={isLocked ? undefined : onNodesChange}
             onEdgesChange={isLocked ? undefined : onEdgesChange}
             onNodesDelete={isLocked ? undefined : onNodesDelete}
@@ -409,6 +516,27 @@ export function BPMEditor({ diagramId, subProcess, workingYear }: BPMEditorProps
         </AlertDialog>
       </div>
       <UnsavedChangesDialog blocker={blocker} />
+      <AnimatePresence>
+        {isExporting && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center"
+          >
+            <div className="bg-white p-8 rounded-2xl shadow-2xl flex flex-col items-center gap-4 text-center max-w-sm">
+              <div className="relative">
+                 <RefreshCw className="h-12 w-12 text-indigo-600 animate-spin" />
+                 <FileText className="absolute inset-0 m-auto h-5 w-5 text-indigo-400" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="font-black text-slate-800 uppercase tracking-tight">{t('bpm:export.title')}</h3>
+                <p className="text-sm text-slate-500">{t('bpm:export.generating')}</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
