@@ -85,6 +85,17 @@
     "save": "Simpan & Selesaikan",
     "saveDraft": "Simpan Draf",
     "cancel": "Batal",
-    "execute": "Eksekusi Aktivitas"
+    "execute": "Eksekusi Aktivitas",
+    "exportApp7a": "Export Lampiran 7a",
+    "layoutDetailed": "Layout A: Matriks Detail",
+    "layoutSummary": "Layout B: Ringkasan Simpulan"
+  },
+  "appendix7a": {
+    "title": "Kertas Kerja Evaluasi Pengendalian (CSA)",
+    "testProcedure": "Prosedur Pengujian",
+    "archiveLocation": "Lokasi Arsip Fisik",
+    "procedurePlaceholder": "Jelaskan langkah-langkah pengujian...",
+    "locationPlaceholder": "Contoh: Lemari A - Ruang Brankas",
+    "archiveNote": "Lokasi penyimpanan dokumen fisik asli untuk keperluan audit onsite."
   }
 }

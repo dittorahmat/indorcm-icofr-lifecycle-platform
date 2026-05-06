@@ -2065,9 +2065,9 @@ export function userRoutes(app: Hono<HonoEnv>) {
       createdAt: bpmProcesses.createdAt,
       createdBy: bpmProcesses.createdBy,
       controlCount: bpmProcesses.controlCount,
-      riskCount: bpmProcesses.riskCount
-    })
-    .from(bpmProcesses)
+      riskCount: bpmProcesses.riskCount,
+      standardTestProcedure: bpmProcesses.standardTestProcedure
+      })    .from(bpmProcesses)
     .where(eq(bpmProcesses.organizationId, orgId));
 
     if (noGL) {
@@ -2114,6 +2114,24 @@ export function userRoutes(app: Hono<HonoEnv>) {
     });
 
     return ok(c, newProcess);
+  });
+
+  app.patch('/api/bpm-processes/:id', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const id = c.req.param('id');
+    const orgId = c.get('organizationId');
+    const body = await c.req.json<Partial<BPMProcess>>();
+
+    await db.update(bpmProcesses)
+      .set({
+        name: body.name,
+        bpmCode: body.bpmCode,
+        fsliName: body.fsliName,
+        standardTestProcedure: body.standardTestProcedure,
+      })
+      .where(and(eq(bpmProcesses.id, id), eq(bpmProcesses.organizationId, orgId)));
+
+    return ok(c, { success: true });
   });
 
   app.delete('/api/bpm-processes/:id', async (c) => {
@@ -2933,6 +2951,8 @@ export function userRoutes(app: Hono<HonoEnv>) {
       isBpmConfirmed: body.isBpmConfirmed ?? false,
       samplingMethodology: body.samplingMethodology,
       documentList: body.documentList,
+      testProcedure: body.testProcedure,
+      archiveLocation: body.archiveLocation,
 
       // Forensic Metadata
       gpsVerified: body.gpsVerified ?? false,

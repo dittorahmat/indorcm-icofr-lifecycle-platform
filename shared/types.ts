@@ -302,7 +302,9 @@ export interface BPMProcess {
   id: string;
   name: string;
   noGL: string; // Link to specific Account
+  bpmCode?: string; // e.g., BPM-FIN-01
   fsliName: string;
+  standardTestProcedure?: string; // Master template for CSA
   createdBy: string;
   createdAt: string;
   riskCount?: number;
@@ -413,6 +415,8 @@ export interface CSASchedule {
   createdAt: number;
 }
 
+export type CSASample = CSATestSample;
+
 export interface CSATestSample {
   id: string;
   sampleRef: string;
@@ -454,6 +458,10 @@ export interface CSARecord {
   evidenceUrl?: string;
   comments: string;
   samples: CSATestSample[]; // Dynamic sampling
+
+  // Appendix 7a Fields
+  testProcedure?: string;
+  archiveLocation?: string;
 
   // New Smart CSA Gate
   isBpmConfirmed?: boolean;

@@ -17,10 +17,18 @@ import { api } from '@/lib/api-client';
 import { 
   RefreshCw, ShieldCheck, CheckCircle2, AlertTriangle, 
   X, UserCheck, Activity, Database, FileText, LayoutDashboard,
-  Printer, ChevronLeft, Eye, UploadCloud, Check
+  Printer, ChevronLeft, Eye, UploadCloud, Check, MapPin, ChevronDown, Download
 } from 'lucide-react';
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Appendix7aDetailed } from '../reports/Appendix7aDetailed';
+import { Appendix7aSummary } from '../reports/Appendix7aSummary';
 import { cn } from '@/lib/utils';
-import { Control, CSARecord, CSATestSample, User, GLRow, TransactionDetail } from '@shared/types';
+import { Control, CSARecord, CSATestSample, User, GLRow, TransactionDetail, BPMProcess } from '@shared/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -112,6 +120,8 @@ const csaFormSchema = z.object({
   period: z.string().min(1, "Period is required"),
   result: z.enum(['Effective', 'Ineffective', 'No Transaction']),
   comments: z.string().optional(),
+  testProcedure: z.string().optional(),
+  archiveLocation: z.string().optional(),
   samplingMethodology: z.string().min(1, "Methodology is required"),
   documentList: z.string().min(1, "Document list is required"),
   isBpmConfirmed: z.boolean().refine(val => val === true, "BPM confirmation is required"),
@@ -161,22 +171,61 @@ export function CSATabContent({
   const [view, setView] = useState<'list' | 'form'>('list');
   const [activeCsaId, setActiveCsaId] = useState<string | null>(null);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [printLayout, setPrintLayout] = useState<'detailed' | 'summary' | null>(null);
 
+  // 1. Queries
   const { data: diagram } = useQuery({
     queryKey: ['bpm-diagrams', 'by-gl', noGL, subProcessName],
     queryFn: () => api<any>(`/api/bpm-diagrams/by-gl/${noGL}${subProcessName ? `?subProcess=${encodeURIComponent(subProcessName)}` : ''}`),
     enabled: !!noGL
   });
 
-  // Dynamically extract risks and controls from diagram nodes (Source of Truth)
+  const { data: bpmProcess } = useQuery({
+    queryKey: ['bpm-processes', bpmProcessId],
+    queryFn: () => api<BPMProcess>(`/api/bpm-processes?id=${bpmProcessId}`).then((res: any) => res.items.find((p: any) => p.id === bpmProcessId)),
+    enabled: !!bpmProcessId
+  });
+
+  const { data: csaList, isLoading: isListLoading } = useQuery({
+    queryKey: ['csa-list', bpmProcessId],
+    queryFn: () => api<{ items: CSARecord[] }>(`/api/csa?bpmProcessId=${bpmProcessId}`),
+    enabled: !!bpmProcessId && view === 'list'
+  });
+
+  const { data: activeCsa } = useQuery({
+    queryKey: ['csa-detail', activeCsaId],
+    queryFn: () => api<CSARecord>(`/api/csa/${activeCsaId}`),
+    enabled: !!activeCsaId
+  });
+
+  // 2. Form Initialization
+  const form = useForm<CSAFormValues>({
+    resolver: zodResolver(csaFormSchema),
+    defaultValues: {
+      period: '2025-Q1',
+      result: 'Effective',
+      comments: '',
+      testProcedure: '',
+      archiveLocation: '',
+      samplingMethodology: 'Attribute Sampling / Zero Tolerance Approach',
+      documentList: 'Invoice, Evidence of Approval, GL Posting',
+      isBpmConfirmed: false,
+      samples: []
+    }
+  });
+
+  const { fields, replace: replaceSamples } = useFieldArray({
+    control: form.control,
+    name: "samples"
+  });
+
+  // 3. Derived Data & Memos
   const bpmRiskControlPairs = useMemo(() => {
     if (!diagram?.nodes) return [];
     const pairs: { riskId: string; riskName: string; controlId: string; controlName: string; code: string }[] = [];
-    
     diagram.nodes.forEach((node: any) => {
-      const nodePairs = node.data?.regulatoryPairs || 
-                       (node.data?.regulatoryData ? [node.data.regulatoryData] : []);
-      
+      const nodePairs = node.data?.regulatoryPairs || (node.data?.regulatoryData ? [node.data.regulatoryData] : []);
       if ((node.type === 'activity' || node.type === 'automated-activity') && nodePairs.length > 0) {
         nodePairs.forEach((reg: any) => {
           if (reg.riskId && reg.controlId) {
@@ -194,10 +243,8 @@ export function CSATabContent({
     return pairs;
   }, [diagram]);
 
-  // Use BPM pairs if available, otherwise fallback to prop controls (for legacy support)
   const activeControls = useMemo(() => {
     if (bpmRiskControlPairs.length > 0) {
-      // Deduplicate controls by ID
       const seen = new Set();
       return bpmRiskControlPairs.filter(p => {
         const isNew = !seen.has(p.controlId);
@@ -208,35 +255,38 @@ export function CSATabContent({
     return propControls;
   }, [bpmRiskControlPairs, propControls]);
 
-  const form = useForm<CSAFormValues>({
-    resolver: zodResolver(csaFormSchema),
-    defaultValues: {
-      period: '2025-Q1',
-      result: 'Effective',
-      comments: '',
-      samplingMethodology: 'Attribute Sampling / Zero Tolerance Approach',
-      documentList: 'Invoice, Evidence of Approval, GL Posting',
-      isBpmConfirmed: false,
-      samples: []
-    }
-  });
+  const watchSamples = form.watch('samples');
 
-  const { fields, append, remove, replace: replaceSamples } = useFieldArray({
-    control: form.control,
-    name: "samples"
-  });
+  const allPoints = useMemo(() => {
+    return watchSamples.flatMap((s, sIdx) => 
+      Object.entries(s.controlResults).map(([cId, res]) => ({
+        sIdx,
+        cId,
+        sampleRef: s.sampleRef,
+        glRowId: s.glRowId,
+        ...res
+      }))
+    );
+  }, [watchSamples]);
 
-  // Track unsaved changes
-  const isDirty = form.formState.isDirty && view === 'form' && !activeCsaId;
-  const blocker = useUnsavedChanges(isDirty);
+  const previewRecord = useMemo(() => {
+    const values = form.getValues();
+    return {
+      ...activeCsa,
+      ...values,
+      id: activeCsaId || "PREVIEW-DRAFT",
+      assessmentDate: activeCsa?.assessmentDate || Date.now(),
+      assessedBy: activeCsa?.assessedBy || "Current User"
+    } as any;
+  }, [watchSamples, activeCsa, activeCsaId]); // Removed 'form' from deps to avoid infinite loops, getValues is used internally
 
-  // Auto-populate samples when initialSamples change
+  const anyPointFailed = allPoints.some(p => !p.implemented);
+
+  // 4. Effects
   useEffect(() => {
-    if (initialSamples.length > 0 && view !== 'form') {
+    if (initialSamples.length > 0 && !isInitialized && view !== 'form') {
       const newSamples = initialSamples.map(s => {
         const controlResults: Record<string, any> = {};
-        
-        // Use default-fail logic: implemented = false
         if (bpmRiskControlPairs.length > 0) {
           bpmRiskControlPairs.forEach(pair => {
             controlResults[pair.controlId] = {
@@ -254,37 +304,65 @@ export function CSATabContent({
           });
         }
 
-        // Determine reference label based on type
         let sampleRef = "";
-        if ("glDesc" in s) {
-          sampleRef = s.glDesc;
-        } else if ("description" in s) {
-          sampleRef = s.description || "N/A";
-        }
+        if ("glDesc" in s) sampleRef = s.glDesc;
+        else if ("description" in s) sampleRef = s.description || "N/A";
 
-        return {
-          sampleRef,
-          glRowId: (s as any).id,
-          controlResults
-        };
+        return { sampleRef, glRowId: (s as any).id, controlResults };
       });
       replaceSamples(newSamples);
+      setIsInitialized(true);
       setView('form');
     }
-  }, [initialSamples, bpmRiskControlPairs, activeControls, replaceSamples, view]);
+  }, [initialSamples, bpmRiskControlPairs, activeControls, replaceSamples, isInitialized, view]);
 
-  const { data: csaList, isLoading: isListLoading } = useQuery({
-    queryKey: ['csa-list', bpmProcessId],
-    queryFn: () => api<{ items: CSARecord[] }>(`/api/csa?bpmProcessId=${bpmProcessId}`),
-    enabled: !!bpmProcessId && view === 'list'
-  });
+  useEffect(() => {
+    if (bpmProcess?.standardTestProcedure && !activeCsaId && !form.getValues('testProcedure')) {
+      form.setValue('testProcedure', bpmProcess.standardTestProcedure);
+    }
+  }, [bpmProcess, activeCsaId, form]);
 
-  const { data: activeCsa } = useQuery({
-    queryKey: ['csa-detail', activeCsaId],
-    queryFn: () => api<CSARecord>(`/api/csa/${activeCsaId}`),
-    enabled: !!activeCsaId
-  });
+  useEffect(() => {
+    if (activeCsa) {
+      form.reset({
+        period: activeCsa.period,
+        result: activeCsa.result,
+        comments: activeCsa.comments || '',
+        testProcedure: (activeCsa as any).testProcedure || '',
+        archiveLocation: (activeCsa as any).archiveLocation || '',
+        samplingMethodology: (activeCsa as any).samplingMethodology || '',
+        documentList: (activeCsa as any).documentList || '',
+        isBpmConfirmed: true,
+        samples: activeCsa.samples.map(s => {
+          const transformedResults: Record<string, any> = {};
+          if (s.controlResults) {
+            Object.entries(s.controlResults).forEach(([id, val]) => {
+              transformedResults[id] = typeof val === 'boolean' ? { implemented: val } : val;
+            });
+          }
+          return {
+            sampleRef: s.sampleRef,
+            glRowId: s.glRowId,
+            controlResults: transformedResults
+          };
+        })
+      });
+      setView('form');
+    }
+  }, [activeCsa, form]);
 
+  useEffect(() => {
+    if (anyPointFailed && form.getValues('result') === 'Effective') {
+      form.setValue('result', 'Ineffective');
+      toast.warning("Zero Tolerance: Status diset ke Ineffective karena ada kontrol yang gagal.");
+    }
+  }, [anyPointFailed, form]);
+
+  // 5. Hooks (Safety)
+  const isDirty = form.formState.isDirty && view === 'form' && !activeCsaId;
+  const blocker = useUnsavedChanges(isDirty);
+
+  // 6. Mutations
   const createMutation = useMutation({
     mutationFn: (data: any) => api('/api/csa', { method: 'POST', body: JSON.stringify(data) }),
     onSuccess: (_, variables) => {
@@ -293,6 +371,7 @@ export function CSATabContent({
       queryClient.invalidateQueries({ queryKey: ['csa-schedules'] });
       if (!variables.isDraft) {
         setView('list');
+        setActiveCsaId(null);
       } else {
         form.reset(form.getValues(), { keepDirty: false });
       }
@@ -312,6 +391,7 @@ export function CSATabContent({
     }
   });
 
+  // 7. Handlers
   const handleFileUploadTrigger = (sIdx: number, cId: string) => {
     setActiveUploadRow({ sIdx, cId });
     fileInputRef.current?.click();
@@ -324,33 +404,6 @@ export function CSATabContent({
     }
   };
 
-  useEffect(() => {
-    if (activeCsa) {
-      form.reset({
-        period: activeCsa.period,
-        result: activeCsa.result,
-        comments: activeCsa.comments || '',
-        samplingMethodology: (activeCsa as any).samplingMethodology || '',
-        documentList: (activeCsa as any).documentList || '',
-        isBpmConfirmed: true,
-        samples: activeCsa.samples.map(s => {
-          // SHIM: Transform legacy boolean results to new object format
-          const transformedResults: Record<string, any> = {};
-          if (s.controlResults) {
-            Object.entries(s.controlResults).forEach(([id, val]) => {
-              transformedResults[id] = typeof val === 'boolean' ? { implemented: val } : val;
-            });
-          }
-          return {
-            sampleRef: s.sampleRef,
-            glRowId: s.glRowId,
-            controlResults: transformedResults
-          };
-        })
-      });
-    }
-  }, [activeCsa, form]);
-
   const onSaveDraft = async () => {
     const values = form.getValues();
     createMutation.mutate({
@@ -358,12 +411,13 @@ export function CSATabContent({
       isDraft: true,
       scheduleId,
       bpmProcessId,
+      testProcedure: values.testProcedure,
+      archiveLocation: values.archiveLocation,
       organizationId: (initialSamples[0] as any)?.organizationId || searchParams.get('orgId'),
     });
   };
 
   const onSubmit = async (values: CSAFormValues) => {
-    // Validation: Aggregate Zero Tolerance & Mandatory Evidence
     const flatResults = values.samples.flatMap(s => Object.values(s.controlResults));
     const anySampleFailed = flatResults.some(r => !r.implemented);
     const anyMissingEvidence = flatResults.some(r => r.implemented && !r.evidenceUrl);
@@ -394,37 +448,42 @@ export function CSATabContent({
       isDraft: false,
       scheduleId,
       bpmProcessId,
+      testProcedure: values.testProcedure,
+      archiveLocation: values.archiveLocation,
       organizationId: (initialSamples[0] as any)?.organizationId || searchParams.get('orgId'),
     });
   };
 
+  const handlePrint = (layout: 'detailed' | 'summary') => {
+    setPrintLayout(layout);
+    setTimeout(() => {
+      window.print();
+      setPrintLayout(null);
+    }, 500);
+  };
+
   const isReadOnly = !!activeCsaId;
-
-  // Watch form samples for detailed table
-  const watchSamples = form.watch('samples');
-  const allPoints = useMemo(() => {
-    return watchSamples.flatMap((s, sIdx) => 
-      Object.entries(s.controlResults).map(([cId, res]) => ({
-        sIdx,
-        cId,
-        sampleRef: s.sampleRef,
-        glRowId: s.glRowId,
-        ...res
-      }))
-    );
-  }, [watchSamples]);
-
-  const anyPointFailed = allPoints.some(p => !p.implemented);
-
-  useEffect(() => {
-    if (anyPointFailed && form.getValues('result') === 'Effective') {
-      form.setValue('result', 'Ineffective');
-      toast.warning("Zero Tolerance: Status diset ke Ineffective karena ada kontrol yang gagal.");
-    }
-  }, [anyPointFailed, form]);
 
   return (
     <div className="h-full flex flex-col bg-white overflow-hidden">
+      <style dangerouslySetInnerHTML={{ __html: `
+        @media screen {
+          .printable-area { display: none; }
+        }
+        @media print {
+          body * { visibility: hidden; }
+          .printable-area, .printable-area * { visibility: visible; }
+          .printable-area { 
+            position: absolute; 
+            left: 0; 
+            top: 0; 
+            width: 100%; 
+            display: block !important;
+          }
+          .print-hidden { display: none !important; }
+        }
+      `}} />
+      
       <input 
         type="file" 
         ref={fileInputRef} 
@@ -433,8 +492,25 @@ export function CSATabContent({
         accept=".pdf,.png,.jpg,.jpeg,.xlsx" 
       />
 
-      <ResizablePanelGroup direction="horizontal" className="flex-1">
-        {/* Left Panel: Diagram */}
+      {/* PRINTABLE AREA */}
+      <div className="printable-area">
+        {printLayout === 'detailed' && (
+          <Appendix7aDetailed 
+            record={previewRecord} 
+            bpmProcessName={subProcessName || bpmProcess?.name || "N/A"} 
+            noGL={noGL} 
+          />
+        )}
+        {printLayout === 'summary' && (
+          <Appendix7aSummary 
+            record={previewRecord} 
+            bpmProcessName={subProcessName || bpmProcess?.name || "N/A"} 
+            noGL={noGL} 
+          />
+        )}
+      </div>
+
+      <ResizablePanelGroup direction="horizontal" className="flex-1 print-hidden">
         <ResizablePanel defaultSize={30} minSize={20}>
           <div className="h-full relative bg-slate-50 border-r overflow-hidden">
             {diagram ? (
@@ -448,7 +524,6 @@ export function CSATabContent({
 
         <ResizableHandle withHandle />
 
-        {/* Right Panel: Assessment Tables */}
         <ResizablePanel defaultSize={70}>
           <div className="h-full flex flex-col overflow-hidden">
             <div className="flex-1 overflow-y-auto bg-white p-6 relative">
@@ -485,7 +560,26 @@ export function CSATabContent({
                           </TableCell>
                           <TableCell className="text-xs text-slate-500">{new Date(item.assessmentDate).toLocaleDateString()}</TableCell>
                           <TableCell className="text-right">
-                            <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => { setActiveCsaId(item.id); setView('form'); }}><Eye className="h-3.5 w-3.5" /></Button>
+                            <div className="flex justify-end gap-1">
+                              <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => { setActiveCsaId(item.id); setView('form'); }}>
+                                <Eye className="h-3.5 w-3.5" />
+                              </Button>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="outline" size="icon" className="h-7 w-7 text-indigo-600 border-indigo-200">
+                                    <Printer className="h-3.5 w-3.5" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem className="text-[10px] font-bold gap-2 cursor-pointer" onClick={() => { setActiveCsaId(item.id); handlePrint('detailed'); }}>
+                                    <FileText className="h-3.5 w-3.5" /> Export Appendix 7a (Detailed)
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem className="text-[10px] font-bold gap-2 cursor-pointer" onClick={() => { setActiveCsaId(item.id); handlePrint('summary'); }}>
+                                    <LayoutDashboard className="h-3.5 w-3.5" /> Export Appendix 7a (Summary)
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -495,7 +589,6 @@ export function CSATabContent({
               ) : (
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-12">
-                    {/* Header & Meta Fields */}
                     <div className="space-y-4">
                       <div className="grid grid-cols-3 gap-6 p-5 bg-slate-50 rounded-xl border border-slate-100 shadow-inner">
                         <FormField control={form.control} name="period" render={({ field: f }) => (
@@ -535,9 +628,30 @@ export function CSATabContent({
                           </div>
                         </FormItem>
                       )} />
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-slate-50/50 border border-slate-200 rounded-xl">
+                        <FormField control={form.control} name="testProcedure" render={({ field: f }) => (
+                          <FormItem className="col-span-1">
+                            <FormLabel className="text-[10px] font-black uppercase text-slate-400 flex items-center gap-2">
+                               <FileText className="h-3 w-3" /> {t('csa_hub:appendix7a.testProcedure')}
+                            </FormLabel>
+                            <FormControl><Textarea {...f} disabled={isReadOnly} className="min-h-[100px] text-xs bg-white" placeholder={t('csa_hub:appendix7a.procedurePlaceholder')} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField control={form.control} name="archiveLocation" render={({ field: f }) => (
+                          <FormItem className="col-span-1">
+                            <FormLabel className="text-[10px] font-black uppercase text-slate-400 flex items-center gap-2">
+                               <MapPin className="h-3 w-3" /> {t('csa_hub:appendix7a.archiveLocation')}
+                            </FormLabel>
+                            <FormControl><Input {...f} disabled={isReadOnly} className="h-10 text-xs bg-white" placeholder={t('csa_hub:appendix7a.locationPlaceholder')} /></FormControl>
+                            <FormMessage />
+                            <p className="text-[9px] text-slate-400 mt-2 italic">{t('csa_hub:appendix7a.archiveNote')}</p>
+                          </FormItem>
+                        )} />
+                      </div>
                     </div>
 
-                    {/* TABLE 1: SUMMARY MATRIX */}
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <h4 className="text-xs font-black uppercase text-slate-700 flex items-center gap-2">
@@ -597,7 +711,6 @@ export function CSATabContent({
                       </div>
                     </div>
 
-                    {/* TABLE 2: GRANULAR EVIDENCE */}
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <h4 className="text-xs font-black uppercase text-slate-700 flex items-center gap-2">
@@ -688,7 +801,6 @@ export function CSATabContent({
                         </Table>
                       </div>
 
-                      {/* STATS SUMMARY CARD */}
                       <div className="flex justify-between items-center bg-slate-100 p-5 rounded-xl border border-slate-200 shadow-inner">
                          <div className="flex gap-10">
                            <div className="text-center border-r pr-10 border-slate-300">
@@ -707,7 +819,6 @@ export function CSATabContent({
                            {(() => {
                              const anyPassWithoutEvidence = allPoints.some(p => p.implemented && !p.evidenceUrl);
                              const nothingDone = allPoints.every(p => !p.implemented && !p.evidenceUrl && !p.comment);
-                             
                              if (nothingDone) return <p className="text-xl font-black uppercase italic text-slate-400">Belum Dimulai</p>;
                              if (anyPassWithoutEvidence) return <p className="text-xl font-black uppercase italic text-rose-500 animate-pulse">Butuh Evidence</p>;
                              return <p className="text-xl font-black uppercase italic text-emerald-600">Siap Sign-off</p>;
@@ -716,7 +827,6 @@ export function CSATabContent({
                       </div>
                     </div>
 
-                    {/* COMMENTS & FOOTER */}
                     <div className="pt-8 border-t space-y-6">
                         <FormField control={form.control} name="comments" render={({ field: f }) => (
                           <FormItem>
@@ -726,24 +836,58 @@ export function CSATabContent({
                           </FormItem>
                         )} />
 
-                        {!isReadOnly && (
-                          <div className="flex justify-end gap-3">
-                            <Button variant="outline" onClick={() => setView('list')} className="px-8 font-bold">Batal</Button>
-                            <Button 
-                              type="button"
-                              disabled={createMutation.isPending || isAuthenticating} 
-                              onClick={onSaveDraft}
-                              className="bg-amber-500 hover:bg-amber-600 text-white font-black px-8 h-12 gap-2 shadow-xl shadow-amber-100 uppercase tracking-widest"
-                            >
-                               {createMutation.isPending && createMutation.variables?.isDraft ? <RefreshCw className="h-5 w-5 animate-spin" /> : <FileText className="h-5 w-5" />}
-                               Simpan Draft
-                            </Button>
-                            <Button disabled={createMutation.isPending || isAuthenticating} type="submit" className="bg-indigo-600 hover:bg-indigo-700 font-black px-12 h-12 gap-2 shadow-xl shadow-indigo-100 uppercase tracking-widest">
-                               {isAuthenticating ? <RefreshCw className="h-5 w-5 animate-spin" /> : <UserCheck className="h-5 w-5" />}
-                               Submit & Sign-off
-                            </Button>
-                          </div>
-                        )}
+                        <div className="flex justify-end gap-3">
+                          <Button 
+                            variant="outline" 
+                            type="button"
+                            onClick={() => { 
+                              setActiveCsaId(null); 
+                              setView('list'); 
+                              form.reset();
+                              setIsInitialized(false);
+                            }} 
+                            className="px-8 font-bold"
+                          >
+                             {isReadOnly ? <ChevronLeft className="h-4 w-4 mr-2" /> : null}
+                             {isReadOnly ? "Kembali ke Daftar" : "Batal"}
+                          </Button>
+
+                          {(isReadOnly || watchSamples.length > 0) && (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button type="button" className="bg-slate-800 hover:bg-slate-900 text-white font-black px-8 h-12 gap-2 shadow-xl uppercase tracking-widest">
+                                  <Printer className="h-5 w-5" /> {t('csa_hub:actions.exportApp7a')} <ChevronDown className="h-4 w-4 ml-1" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-56">
+                                <DropdownMenuItem className="text-xs font-bold gap-2 py-3 cursor-pointer" onClick={() => handlePrint('detailed')}>
+                                  <FileText className="h-4 w-4 text-indigo-600" /> {t('csa_hub:actions.layoutDetailed')}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem className="text-xs font-bold gap-2 py-3 cursor-pointer" onClick={() => handlePrint('summary')}>
+                                  <LayoutDashboard className="h-4 w-4 text-indigo-600" /> {t('csa_hub:actions.layoutSummary')}
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          )}
+
+                          {!isReadOnly && (
+                            <>
+                              <Button 
+                                type="button"
+                                disabled={createMutation.isPending || isAuthenticating} 
+                                onClick={onSaveDraft}
+                                className="bg-amber-500 hover:bg-amber-600 text-white font-black px-8 h-12 gap-2 shadow-xl shadow-amber-100 uppercase tracking-widest"
+                              >
+                                 {createMutation.isPending && createMutation.variables?.isDraft ? <RefreshCw className="h-5 w-5 animate-spin" /> : <FileText className="h-5 w-5" />}
+                                 {t('csa_hub:actions.saveDraft')}
+                              </Button>
+                              <Button disabled={createMutation.isPending || isAuthenticating} type="submit" className="bg-indigo-600 hover:bg-indigo-700 font-black px-12 h-12 gap-2 shadow-xl shadow-indigo-100 uppercase tracking-widest">
+                                 {isAuthenticating ? <RefreshCw className="h-5 w-5 animate-spin" /> : <UserCheck className="h-5 w-5" />}
+                                 {t('csa_hub:actions.save')}
+                              </Button>
+                            </>
+                          )}
+                        </div>
                     </div>
                   </form>
                 </Form>

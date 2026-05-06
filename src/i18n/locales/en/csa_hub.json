@@ -85,6 +85,17 @@
     "save": "Save & Complete",
     "saveDraft": "Save as Draft",
     "cancel": "Cancel",
-    "execute": "Execute Activity"
+    "execute": "Execute Activity",
+    "exportApp7a": "Export Appendix 7a",
+    "layoutDetailed": "Layout A: Detailed Matrix",
+    "layoutSummary": "Layout B: Summary View"
+  },
+  "appendix7a": {
+    "title": "Control Self-Assessment Workpaper (CSA)",
+    "testProcedure": "Test Procedures",
+    "archiveLocation": "Physical Archive Location",
+    "procedurePlaceholder": "Describe the testing steps performed...",
+    "locationPlaceholder": "E.g., Cabinet A - Vault Room",
+    "archiveNote": "Storage location of original physical documents for onsite audit purposes."
   }
 }

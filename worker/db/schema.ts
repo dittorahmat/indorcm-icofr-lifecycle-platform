@@ -307,6 +307,9 @@ export const csaRecords = pgTable("csa_records", {
 	comments: text("comments"),
 	isBpmConfirmed: boolean("is_bpm_confirmed").default(false),
 
+	// Appendix 7a Fields
+	testProcedure: text("test_procedure"),
+	archiveLocation: text("archive_location"),
 
 	// Section II: Prosedur (Lampiran 7)
 	samplingMethodology: text("sampling_methodology"),
@@ -341,9 +344,9 @@ export const csaRecords = pgTable("csa_records", {
 
 export const csaSamples = pgTable("csa_samples", {
 	id: text("id").primaryKey(),
-	organizationId: text("organization_id").notNull().references(() => organization.id),
-	csaRecordId: text("csa_record_id").notNull().references(() => csaRecords.id, { onDelete: 'cascade' }),
-	glRowId: text("gl_row_id").references(() => glRows.id), // Link to original transaction
+	organizationId: text("organization_id").references(() => organization.id).notNull(),
+	csaRecordId: text("csa_record_id").references(() => csaRecords.id, { onDelete: 'cascade' }),
+	glRowId: text("gl_row_id"), // Link to original transaction/GL row (Flexi-link, no strict FK to allow both GL and TransDetails)
 	sampleRef: text("sample_ref"),
 	
 	// Refactored Multi-Control Results
@@ -446,6 +449,7 @@ export const bpmProcesses = pgTable("bpm_processes", {
 	name: text("name").notNull(),
 	riskCount: integer("risk_count").default(0),
 	controlCount: integer("control_count").default(0),
+	standardTestProcedure: text("standard_test_procedure"), // Master template for CSA
 	createdAt: timestamp("created_at").notNull(),
 	createdBy: text("created_by").references(() => user.id),
 });
