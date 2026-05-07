@@ -30,10 +30,11 @@ import {
 
 interface TransactionSamplingTabProps {
   noGL: string;
+  bpmProcessId?: string;
   onSamplesSelected: (samples: TransactionDetail[]) => void;
 }
 
-export function TransactionSamplingTab({ noGL, onSamplesSelected }: TransactionSamplingTabProps) {
+export function TransactionSamplingTab({ noGL, bpmProcessId, onSamplesSelected }: TransactionSamplingTabProps) {
   const { t } = useTranslation(['bpm', 'csa_hub', 'common']);
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = React.useState('');
@@ -41,8 +42,12 @@ export function TransactionSamplingTab({ noGL, onSamplesSelected }: TransactionS
   const [isUploadModalOpen, setIsUploadModalOpen] = React.useState(false);
 
   const { data: rowsData, isLoading, refetch } = useQuery({
-    queryKey: ['transaction-details-sampling', noGL],
-    queryFn: () => api<{ items: TransactionDetail[] }>(`/api/transaction-details?noGL=${noGL}`),
+    queryKey: ['transaction-details-sampling', noGL, bpmProcessId],
+    queryFn: () => {
+      let url = `/api/transaction-details?noGL=${noGL}`;
+      if (bpmProcessId) url += `&bpmProcessId=${bpmProcessId}`;
+      return api<{ items: TransactionDetail[] }>(url);
+    },
   });
 
   const filteredRows = React.useMemo(() => {

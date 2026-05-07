@@ -99,7 +99,7 @@ export function ScopingPage() {
       queryClient.invalidateQueries({ queryKey: ['simulations'] });
       setSearchParams({ id: newSim.id });
       setIsCreating(false);
-      toast.success("Simulation created successfully");
+      toast.success(t('common:notifications.created'));
     }
   });
 
@@ -107,7 +107,7 @@ export function ScopingPage() {
     mutationFn: (id: string) => api(`/api/simulations/${id}`, { method: 'DELETE' }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['simulations'] });
-      toast.success("Simulation deleted");
+      toast.success(t('common:notifications.deleted'));
     }
   });
 
@@ -115,7 +115,7 @@ export function ScopingPage() {
     mutationFn: (id: string) => api(`/api/gl-snapshots/${id}/set-active`, { method: 'POST' }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gl-snapshots'] });
-      toast.success("Source GL set as active");
+      toast.success(t('common:notifications.updated'));
     }
   });
 
@@ -123,7 +123,7 @@ export function ScopingPage() {
     mutationFn: (id: string) => api(`/api/gl-snapshots/${id}`, { method: 'DELETE' }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gl-snapshots'] });
-      toast.success("Snapshot deleted");
+      toast.success(t('common:notifications.deleted'));
     }
   });
 
@@ -173,16 +173,16 @@ export function ScopingPage() {
             noUrut: parseInt(String(r[mapping.noUrut] || '0')) || 0
           };
         }).filter(r => r.glDesc); // Only require description, allow empty No_GL for summary rows
-        if (rows.length === 0) { toast.error("No valid GL rows found"); return; }
+        if (rows.length === 0) { toast.error(t('common:notifications.error')); return; }
         const snap = await api<GLSnapshot>('/api/gl-snapshots', { method: 'POST', body: JSON.stringify({ filename: file.name, rows }) });
         queryClient.invalidateQueries({ queryKey: ['gl-snapshots'] });
         setBenchmarkModalSnap(snap);
-        toast.success(`Uploaded ${rows.length} rows. Please set benchmark mapping.`);
-      } catch (err) { console.error("Parse error:", err); toast.error("Failed to parse GL file."); }
+        toast.success(t('common:notifications.success'));
+      } catch (err) { console.error("Parse error:", err); toast.error(t('common:notifications.error')); }
     };
     if (file.name.endsWith('.csv')) reader.readAsText(file);
     else reader.readAsBinaryString(file);
-  }, [queryClient]);
+  }, [queryClient, t]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ 
     onDrop,

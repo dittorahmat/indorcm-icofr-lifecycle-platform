@@ -28,10 +28,11 @@ interface TransactionUploadModalProps {
   isOpen: boolean;
   onClose: () => void;
   noGL: string;
+  bpmProcessId?: string;
   onSuccess: () => void;
 }
 
-export function TransactionUploadModal({ isOpen, onClose, noGL, onSuccess }: TransactionUploadModalProps) {
+export function TransactionUploadModal({ isOpen, onClose, noGL, bpmProcessId, onSuccess }: TransactionUploadModalProps) {
   const { t, i18n } = useTranslation(['bpm', 'csa_hub', 'common']);
   const [isUploading, setIsUploading] = React.useState(false);
   const [isReplaceMode, setIsReplaceMode] = React.useState(false);
@@ -102,6 +103,7 @@ export function TransactionUploadModal({ isOpen, onClose, noGL, onSuccess }: Tra
             rows, 
             filename, 
             noGL, 
+            bpmProcessId,
             mode: isReplaceMode ? 'replace' : 'append' 
           }),
         });
@@ -117,7 +119,7 @@ export function TransactionUploadModal({ isOpen, onClose, noGL, onSuccess }: Tra
       }
     };
     reader.readAsArrayBuffer(file);
-  }, [noGL, isReplaceMode, t, refetchHistory, onSuccess, onClose]);
+  }, [noGL, bpmProcessId, isReplaceMode, t, refetchHistory, onSuccess, onClose]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,

@@ -20,7 +20,12 @@
     "approval": "Materiality Approval",
     "documents": "Related Documents",
     "riskLibrary": "Risk Library",
-    "changelog": "Log Perubahan (Change Log)",
+    "changelog": "Change Log",
+    "todo": "To-do List",
+    "csaReports": "CSA Reports",
+    "rcmTlc": "RCM TLC Matrix",
+    "rcmElc": "RCM ELC Matrix",
+    "rcmItgc": "RCM ITGC Matrix",
     "soc": "SOC Monitoring",
     "deficiencies": "Deficiency & Remediation",
     "tod": "Test of Design (TOD)",
@@ -32,6 +37,12 @@
     "predictive": "Predictive Story Life",
     "improvement": "Continuous Improvement",
     "settings": "User Admin",
-    "adminUsers": "User Management"
+    "adminUsers": "User Management",
+    "logout": "Logout"
+  },
+  "sections": {
+    "rcmMatrix": "RCM Matrix",
+    "copyright": "© 2026 IndoGRC Pro",
+    "auditPortal": "Audit Portal (KAP)"
   }
 }

@@ -5,6 +5,7 @@ import React, { Suspense } from "react";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NotificationCenter } from "./NotificationCenter";
+import { cn } from "@/lib/utils";
 
 // Lazy load the sidebar to split the bundle
 const AppSidebar = React.lazy(() => import("@/components/app-sidebar").then(module => ({ default: module.AppSidebar })));
@@ -18,9 +19,9 @@ type AppLayoutProps = {
 
 export function AppLayout({ children, container = false, className, contentClassName }: AppLayoutProps): JSX.Element {
   return (
-    <SidebarProvider defaultOpen={false}>
+    <SidebarProvider defaultOpen={true} open={true} onOpenChange={() => {}}>
       <Suspense fallback={
-        <div className="h-screen w-[16rem] border-r bg-sidebar p-4 space-y-4 hidden md:block">
+        <div className="h-screen w-64 border-r bg-sidebar p-4 space-y-4 hidden md:block">
            <div className="flex items-center gap-2 px-2 py-1 mb-6">
              <Skeleton className="h-6 w-6 rounded-md" />
              <Skeleton className="h-4 w-24" />
@@ -36,12 +37,12 @@ export function AppLayout({ children, container = false, className, contentClass
       }>
         <AppSidebar />
       </Suspense>
-      <SidebarInset className={className}>
-        <div className="flex items-center justify-between px-4 py-2 border-b bg-white sticky top-0 z-20 h-14">
+      <SidebarInset className={cn("flex flex-col h-screen overflow-hidden", className)}>
+        <div className="flex items-center justify-between px-4 py-2 border-b bg-white shrink-0 h-14">
           <div className="flex items-center gap-2">
-            <SidebarTrigger />
-            <div className="h-4 w-[1px] bg-slate-200 mx-2" />
-            <span className="text-sm font-semibold text-slate-600">IndoGRC Pro</span>
+            <span className="text-xs font-black uppercase tracking-tighter text-indigo-900 px-2 py-1 bg-indigo-50 rounded border border-indigo-100">
+               IndoGRC Pro
+            </span>
           </div>
           
           <div className="flex items-center gap-3">
@@ -50,11 +51,13 @@ export function AppLayout({ children, container = false, className, contentClass
           </div>
         </div>
 
-        {container ? (
-          <div className={"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10 lg:py-12" + (contentClassName ? ` ${contentClassName}` : "")}>{children}</div>
-        ) : (
-          <div className={contentClassName}>{children}</div>
-        )}
+        <div className={cn(
+          "flex-1 overflow-auto bg-slate-50/50",
+          container && "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8",
+          contentClassName
+        )}>
+          {children}
+        </div>
       </SidebarInset>
     </SidebarProvider>
   );

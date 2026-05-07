@@ -3,7 +3,8 @@
 - [x] 1.1 Add `standardTestProcedure` to `bpmProcesses` in `worker/db/schema.ts`.
 - [x] 1.2 Add `testProcedure` and `archiveLocation` to `csaRecords` in `worker/db/schema.ts`.
 - [x] 1.3 Update `POST /api/csa` and `GET /api/bpm-processes` routes to handle new fields.
-- [x] 1.4 Run `npx drizzle-kit push` to sync database schema.
+- [x] 1.4 Add `DELETE /api/csa/:id` and filter support for `scheduleId` in `GET /api/csa`.
+- [x] 1.5 Run `npx drizzle-kit push` to sync database schema.
 
 ## 2. Master Data UI (Templates)
 
@@ -15,6 +16,10 @@
 - [x] 3.1 Add `testProcedure` (textarea) and `archiveLocation` (input) fields to `CSATabContent.tsx` form.
 - [x] 3.2 Ensure new fields are integrated with `useForm` and saved during draft/final submission.
 - [x] 3.3 Apply `UnsavedChangesDialog` consistency to the updated CSA form.
+- [x] 3.4 Implement "Smart Entry": If `scheduleId` is provided, auto-load existing record or trigger new form.
+- [x] 3.5 Fix "Stuck in Detail" loop: Refine `isInitialized` state to allow manual navigation back to list.
+- [x] 3.6 Refine "Kembali ke Daftar": Implement `manualViewOverride` and state atomicity to prevent background redirects.
+- [x] 3.7 Add "Delete Assessment" button in History Table with confirmation dialog.
 
 ## 4. Reporting & PDF Export (Lampiran 7a)
 

@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { CSASchedule, BPMProcess, ActionPlan, User } from '@shared/types';
 import { 
@@ -48,7 +48,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { BPMModal } from '@/components/bpm/BPMModal';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -58,32 +57,31 @@ import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 export function TodoListPage() {
   const { t, i18n } = useTranslation(['csa', 'common', 'rcm', 'csa_hub']);
   const queryClient = useQueryClient();
-  const [currentDate, setCurrentDate] = React.useState(new Date());
-  const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(new Date());
-  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
-  const [isRescheduleOpen, setIsRescheduleOpen] = React.useState(false);
-  const [selectedEvent, setSelectedEvent] = React.useState<any>(null);
-  const [isEditMode, setIsEditMode] = React.useState(false);
-  const [editingId, setEditingId] = React.useState<string | null>(null);
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   
   // Execution Hub Modal State
-  const [isHubOpen, setIsHubOpen] = React.useState(false);
-  const [selectedHubProcess, setSelectedHubProcess] = React.useState<{ id: string, name: string, noGL: string, fsliName: string, scheduleId?: string } | null>(null);
+  const [isHubOpen, setIsHubOpen] = useState(false);
+  const [selectedHubProcess, setSelectedHubProcess] = useState<{ id: string, name: string, noGL: string, fsliName: string, scheduleId?: string } | null>(null);
 
-  const [formData, setFormData] = React.useState({
+  const [formData, setFormData] = useState({
     bpmProcessId: '',
     type: 'CSA',
     plannedDate: format(new Date(), 'yyyy-MM-dd'),
     reminderConfig: { value: 30, unit: 'minute' }
   });
 
-  const [rescheduleData, setRescheduleData] = React.useState({
+  const [rescheduleData, setRescheduleData] = useState({
     newDate: '',
     justification: ''
   });
 
-  const [isDirty, setIsDirty] = React.useState(false);
-  const [isRescheduleDirty, setIsRescheduleDirty] = React.useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+  const [isRescheduleDirty, setIsRescheduleDirty] = useState(false);
   
   const blocker = useUnsavedChanges((isDirty && isDialogOpen) || (isRescheduleDirty && isRescheduleOpen));
 
@@ -139,7 +137,7 @@ export function TodoListPage() {
       });
       setIsHubOpen(true);
     } else {
-      toast.error("Proses tidak ditemukan atau belum ter-link dengan BPM.");
+      toast.error(t('common:notifications.processNotFound'));
     }
   };
 
@@ -147,7 +145,7 @@ export function TodoListPage() {
     mutationFn: (data: any) => api('/api/csa/schedules', { method: 'POST', body: JSON.stringify(data) }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['csa-schedules'] });
-      toast.success(t('rcm:matrix.save_success'));
+      toast.success(t('common:notifications.created'));
       setIsDialogOpen(false);
       setIsDirty(false);
     }
@@ -156,7 +154,7 @@ export function TodoListPage() {
   const handleCreate = () => {
     const needsProcess = ['CSA', 'TOD', 'TOE', 'RCM', 'REMEDIATION'].includes(formData.type);
     if ((needsProcess && !formData.bpmProcessId) || !formData.plannedDate) {
-      toast.error("Mohon lengkapi data (Tanggal & Sub-Proses)");
+      toast.error(t('common:notifications.missingData'));
       return;
     }
     
@@ -181,7 +179,7 @@ export function TodoListPage() {
   };
 
   const handleDeleteClick = (id: string) => {
-    if (confirm("Hapus jadwal ini secara permanen?")) {
+    if (confirm(t('common:unsavedChanges.description'))) {
       deleteScheduleMutation.mutate(id);
     }
   };
@@ -203,13 +201,13 @@ export function TodoListPage() {
     setIsDirty(true);
   };
 
-  const calendarDays = React.useMemo(() => {
+  const calendarDays = useMemo(() => {
     const start = startOfWeek(startOfMonth(currentDate));
     const end = endOfWeek(endOfMonth(currentDate));
     return eachDayOfInterval({ start, end });
   }, [currentDate]);
 
-  const getEventsForDay = React.useCallback((day: Date) => {
+  const getEventsForDay = useCallback((day: Date) => {
     const events: any[] = [];
     
     // Add CSA/TOD/TOE Schedules
@@ -233,7 +231,7 @@ export function TodoListPage() {
     return events;
   }, [schedules, remediations]);
 
-  const monthlyTaskSummary = React.useMemo(() => {
+  const monthlyTaskSummary = useMemo(() => {
     return calendarDays
       .filter(day => isSameMonth(day, currentDate))
       .map(day => ({ day, events: getEventsForDay(day) }))
@@ -703,7 +701,7 @@ export function TodoListPage() {
             bpmProcessId={selectedHubProcess.id}
             subProcessName={selectedHubProcess.name}
             year={format(new Date(), 'yyyy')}
-            scheduleId={(selectedHubProcess as any).scheduleId}
+            scheduleId={selectedHubProcess.scheduleId}
           />
         )}
         <UnsavedChangesDialog blocker={blocker} />

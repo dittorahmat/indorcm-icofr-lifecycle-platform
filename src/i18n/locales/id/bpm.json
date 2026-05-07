@@ -82,6 +82,9 @@
     "title": "Matriks Aktivitas Pengendalian (RCM)",
     "description": "Identifikasi risiko dan aktivitas pengendalian di tingkat transaksi.",
     "addRow": "Tambah Baris di Worksheet",
+    "bpmCodeLabel": "Kode BPM",
+    "bpmCodePlaceholder": "BPM-001",
+    "saveMetadata": "Simpan Metadata",
     "loading": "Memuat lembar kerja kontrol...",
     "empty": "Data tidak ditemukan. Klik \"Tambah Baris Baru\" di atas untuk memulai pemetaan.",
     "columns": {
@@ -92,11 +95,13 @@
     }
   },
   "modal": {
-    "title": "Pemetaan Proses Bisnis",
+    "title": "Business Process Mapping",
     "owner": "Pemilik Departemen",
     "tabs": {
-      "worksheet": "List of Sub Process",
-      "csa": "CSA",
+      "worksheet": "Lembar Kerja",
+      "sampling": "Detail Transaksi",
+      "csa": "Asesmen CSA",
+      "rcm": "Matriks RCM (5a,b,c)",
       "logs": "Log Perubahan (Lampiran 6)"
     }
   },

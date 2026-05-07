@@ -70,135 +70,136 @@ export function RCMELCPage({ embedded = false }: RCMELCPageProps) {
   };
 
   const content = (
-    <div className="flex flex-col space-y-6">
+    <div className="flex flex-col h-full overflow-hidden max-w-full">
       {!embedded && (
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">{t('matrix.title_elc')}</h1>
-            <p className="text-muted-foreground italic text-sm">Entity Level Control Matrix (17 COSO Principles) according to SK-5 Lampiran 5 a.</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 bg-white border rounded-lg px-3 py-1.5 shadow-sm">
-               <Building2 className="h-4 w-4 text-slate-400" />
-               {isLoadingOrgs ? (
-                 <Loader2 className="h-3 w-3 animate-spin text-slate-400" />
-               ) : (
-                 <Select value={selectedOrgId} onValueChange={setSelectedOrgId}>
-                    <SelectTrigger className="w-[200px] border-none focus:ring-0 h-7 text-xs font-bold">
-                      <SelectValue placeholder={t('matrix.filter_subsidiary')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">{t('matrix.filter_all')}</SelectItem>
-                      {orgsData?.organizations.map(org => (
-                        <SelectItem key={org.id} value={org.id}>{org.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                 </Select>
-               )}
+        <div className="p-4 pb-2 space-y-3 shrink-0 bg-white/80 backdrop-blur-md border-b z-10">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-xl font-black tracking-tight text-slate-900 leading-none">{t('matrix.title_elc')}</h1>
+              <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest mt-1 opacity-70">Entity Level Control Matrix (17 COSO Principles) - SK-5 Lampiran 5 a.</p>
             </div>
-            <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isFetching}>
-               {isFetching ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" /> : <RefreshCw className="h-3.5 w-3.5 mr-2" />}
-               Refresh
-            </Button>
-            <Button className="bg-indigo-600 hover:bg-indigo-700 shadow-lg" disabled={!isDirty}>
-              <Save className="h-4 w-4 mr-2" /> {t('common:save')}
-            </Button>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 bg-white border rounded-lg px-2 py-1 shadow-sm">
+                 <Building2 className="h-3 w-3 text-slate-400" />
+                 {isLoadingOrgs ? (
+                   <Loader2 className="h-3 w-3 animate-spin text-slate-400" />
+                 ) : (
+                   <Select value={selectedOrgId} onValueChange={setSelectedOrgId}>
+                      <SelectTrigger className="w-[180px] border-none focus:ring-0 h-6 text-[10px] font-bold">
+                        <SelectValue placeholder={t('matrix.filter_subsidiary')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all" className="text-[10px]">{t('matrix.filter_all')}</SelectItem>
+                        {orgsData?.organizations.map(org => (
+                          <SelectItem key={org.id} value={org.id} className="text-[10px]">{org.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                   </Select>
+                 )}
+              </div>
+              <Button variant="outline" size="xs" onClick={handleRefresh} disabled={isFetching} className="h-7 text-[10px] font-bold">
+                 {isFetching ? <Loader2 className="h-3 w-3 animate-spin mr-1.5" /> : <RefreshCw className="h-3 w-3 mr-1.5" />}
+                 Refresh
+              </Button>
+              <Button className="bg-indigo-600 hover:bg-indigo-700 shadow-md h-7 text-[10px] font-bold px-4" disabled={!isDirty}>
+                <Save className="h-3 w-3 mr-1.5" /> {t('common:save')}
+              </Button>
+            </div>
           </div>
         </div>
       )}
 
-      <div className={cn(
-        "border rounded-xl bg-white shadow-sm overflow-x-auto relative",
-        embedded ? "min-h-[200px]" : "min-h-[400px]"
-      )}>
-        <TooltipProvider>
-          <Table className="min-w-[1800px]">
-            <TableHeader className="bg-slate-50/80 sticky top-0 z-20">
-              <TableRow className="divide-x border-b">
-                <TableHead className="w-[120px] font-black uppercase text-[10px] sticky left-0 z-30 bg-slate-50 border-r-2">{t('matrix.control_ref')}</TableHead>
-                <TableHead className="w-[350px] font-black uppercase text-[10px] sticky left-[120px] z-30 bg-slate-50 border-r-2">{t('matrix.control_description')}</TableHead>
-                <TableHead className="w-[100px] font-black uppercase text-[10px] text-center">{t('matrix.frequency')}</TableHead>
-                <TableHead className="w-[150px] font-black uppercase text-[10px]">{t('matrix.supporting_docs')}</TableHead>
-                <TableHead className="w-[150px] font-black uppercase text-[10px]">{t('matrix.executing_function')}</TableHead>
-                <TableHead className="w-[150px] font-black uppercase text-[10px]">{t('matrix.executor_role')}</TableHead>
-                <TableHead className="w-[100px] font-black uppercase text-[10px] text-center">{t('matrix.effective_period')}</TableHead>
-                
-                {COSO_PRINCIPLES.map(p => (
-                  <TableHead key={p} className="w-[50px] p-0 font-black text-center group">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="cursor-help py-4 h-full flex items-center justify-center hover:bg-indigo-50 transition-colors">
-                          <span className="text-[11px] text-indigo-600">{p}</span>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent side="top" className="max-w-[250px] bg-indigo-900 text-white p-3 shadow-xl">
-                        <p className="text-xs font-bold mb-1">Prinsip {p}</p>
-                        <p className="text-[10px] leading-relaxed opacity-90">{t(`matrix.coso_tooltips.p${p}`)}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TableHead>
-                ))}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoadingControls ? (
-                <TableRow><TableCell colSpan={24} className="h-64 text-center">
-                  <div className="flex flex-col items-center gap-2">
-                     <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
-                     <span className="text-sm font-medium text-slate-500">Loading ELC data...</span>
-                  </div>
-                </TableCell></TableRow>
-              ) : elcItems.length === 0 ? (
-                <TableRow><TableCell colSpan={24} className="h-64 text-center text-slate-400 italic">Belum ada data Entity Level Control (ELC) untuk entitas ini.</TableCell></TableRow>
-              ) : elcItems.map((ctrl) => (
-                <TableRow key={ctrl.id} className="group hover:bg-slate-50/50 transition-colors divide-x divide-slate-100 border-b">
-                  <TableCell className="font-mono text-[10px] font-bold text-slate-500 sticky left-0 z-10 bg-white border-r-2">
-                    {ctrl.code}
-                  </TableCell>
-                  <TableCell className="align-top py-4 sticky left-[120px] z-10 bg-white border-r-2 max-w-[350px]">
-                    <div className="flex flex-col gap-1">
-                      <span className="text-xs font-bold text-slate-800 leading-tight">{ctrl.name}</span>
-                      <p className="text-[10px] text-slate-500 italic line-clamp-2">{ctrl.description}</p>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-center text-[10px] font-medium text-slate-600">
-                    {ctrl.frequency || '-'}
-                  </TableCell>
-                  <TableCell className="text-[10px] text-slate-500 max-w-[150px] truncate">
-                    {ctrl.supportingDocs || '-'}
-                  </TableCell>
-                  <TableCell className="text-[10px] text-slate-500">
-                    {(ctrl as any).companyName || '-'}
-                  </TableCell>
-                  <TableCell className="text-[10px] text-slate-500">
-                    {ctrl.executorRole || 'Control Owner'}
-                  </TableCell>
-                  <TableCell className="text-center text-[10px] font-bold text-indigo-600">
-                    {ctrl.effectiveDate ? new Date(ctrl.effectiveDate).getFullYear() : '-'}
-                  </TableCell>
+      <div className="flex-1 overflow-hidden p-0">
+        <div className="h-[calc(100vh-120px)] w-full border-t border-b bg-white overflow-auto border-slate-200 relative scrollbar-thin scrollbar-thumb-slate-200">
+          <TooltipProvider>
+            <Table className="min-w-[1800px] table-fixed border-separate border-spacing-0">
+              <TableHeader className="sticky top-0 z-50">
+                <TableRow className="divide-x divide-slate-200 bg-slate-100 h-10">
+                  <TableHead className="w-[110px] font-black uppercase text-[10px] sticky left-0 z-[60] bg-slate-100 border-r-2 border-slate-300 px-3">{t('matrix.control_ref')}</TableHead>
+                  <TableHead className="w-[350px] font-black uppercase text-[10px] sticky left-[110px] z-[60] bg-slate-100 border-r-2 border-slate-300 px-3">{t('matrix.control_description')}</TableHead>
+                  <TableHead className="w-[90px] font-black uppercase text-[10px] text-center bg-slate-100">{t('matrix.frequency')}</TableHead>
+                  <TableHead className="w-[140px] font-black uppercase text-[10px] bg-slate-100 px-3">{t('matrix.supporting_docs')}</TableHead>
+                  <TableHead className="w-[140px] font-black uppercase text-[10px] bg-slate-100 px-3">{t('matrix.executing_function')}</TableHead>
+                  <TableHead className="w-[140px] font-black uppercase text-[10px] bg-slate-100 px-3">{t('matrix.executor_role')}</TableHead>
+                  <TableHead className="w-[90px] font-black uppercase text-[10px] text-center bg-slate-100">{t('matrix.effective_period')}</TableHead>
                   
-                  {COSO_PRINCIPLES.map(p => {
-                    const isMapped = ctrl.cosoPrinciples?.includes(p as any);
-                    return (
-                      <TableCell key={p} className={cn(
-                        "text-center p-0",
-                        isMapped ? "bg-emerald-50/30" : ""
-                      )}>
-                        <div className="flex items-center justify-center h-full min-h-[45px]">
-                          {isMapped ? (
-                            <Check className="h-4 w-4 text-emerald-600 stroke-[3px]" />
-                          ) : (
-                            <span className="text-slate-100">—</span>
-                          )}
-                        </div>
-                      </TableCell>
-                    );
-                  })}
+                  {COSO_PRINCIPLES.map(p => (
+                    <TableHead key={p} className="w-[45px] p-0 font-black text-center group bg-slate-100">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="cursor-help py-3 h-full flex items-center justify-center hover:bg-indigo-50 transition-colors">
+                            <span className="text-[10px] text-indigo-600">{p}</span>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-[250px] bg-indigo-900 text-white p-3 shadow-xl">
+                          <p className="text-xs font-bold mb-1">Prinsip {p}</p>
+                          <p className="text-[10px] leading-relaxed opacity-90">{t(`matrix.coso_tooltips.p${p}`)}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TableHead>
+                  ))}
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TooltipProvider>
+              </TableHeader>
+              <TableBody>
+                {isLoadingControls ? (
+                  <TableRow><TableCell colSpan={COSO_PRINCIPLES.length + 7} className="h-64 text-center">
+                    <div className="flex flex-col items-center gap-2">
+                       <Loader2 className="h-6 w-6 animate-spin text-indigo-500" />
+                       <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Loading ELC data...</span>
+                    </div>
+                  </TableCell></TableRow>
+                ) : elcItems.length === 0 ? (
+                  <TableRow><TableCell colSpan={COSO_PRINCIPLES.length + 7} className="h-64 text-center text-slate-400 italic text-[10px]">Belum ada data Entity Level Control (ELC).</TableCell></TableRow>
+                ) : elcItems.map((ctrl) => (
+                  <TableRow key={ctrl.id} className="group hover:bg-indigo-50/5 transition-colors divide-x divide-slate-100 border-b h-10">
+                    <TableCell className="font-mono text-[10px] font-bold text-slate-500 sticky left-0 z-30 bg-white border-r-2 border-slate-200 px-3">
+                      {ctrl.code}
+                    </TableCell>
+                    <TableCell className="align-top py-2 sticky left-[110px] z-30 bg-white border-r-2 border-slate-200 max-w-[350px] px-3">
+                      <div className="flex flex-col gap-0.5 leading-tight">
+                        <span className="text-[10px] font-bold text-slate-800">{ctrl.name}</span>
+                        <p className="text-[9px] text-slate-500 italic line-clamp-2">{ctrl.description}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center text-[10px] font-medium text-slate-600 bg-slate-50/30">
+                      {ctrl.frequency || '-'}
+                    </TableCell>
+                    <TableCell className="text-[10px] text-slate-500 px-3 truncate">
+                      {ctrl.supportingDocs || '-'}
+                    </TableCell>
+                    <TableCell className="text-[10px] text-slate-500 px-3 bg-slate-50/30">
+                      {(ctrl as any).companyName || '-'}
+                    </TableCell>
+                    <TableCell className="text-[10px] text-slate-500 px-3">
+                      {ctrl.executorRole || 'Control Owner'}
+                    </TableCell>
+                    <TableCell className="text-center text-[10px] font-bold text-indigo-600 bg-slate-50/30">
+                      {ctrl.effectiveDate ? new Date(ctrl.effectiveDate).getFullYear() : '-'}
+                    </TableCell>
+                    
+                    {COSO_PRINCIPLES.map(p => {
+                      const isMapped = ctrl.cosoPrinciples?.includes(p as any);
+                      return (
+                        <TableCell key={p} className={cn(
+                          "text-center p-0",
+                          isMapped ? "bg-emerald-50/40" : ""
+                        )}>
+                          <div className="flex items-center justify-center h-full min-h-[35px]">
+                            {isMapped ? (
+                              <Check className="h-3.5 w-3.5 text-emerald-600 stroke-[3px]" />
+                            ) : (
+                              <span className="text-slate-100 text-[9px]">—</span>
+                            )}
+                          </div>
+                        </TableCell>
+                      );
+                    })}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TooltipProvider>
+        </div>
       </div>
     </div>
   );

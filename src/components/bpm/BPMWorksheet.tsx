@@ -47,6 +47,8 @@ import { useTranslation } from 'react-i18next';
 import { BPMEditor } from '../rcm/BPMEditor';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
+import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 
 interface BPMWorksheetProps {
   bpmProcessId: string;
@@ -159,15 +161,29 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
   });
 
   const [standardProcedure, setStandardProcedure] = React.useState("");
+  const [bpmCode, setBpmCode] = React.useState("");
+
+  const isMetadataDirty = React.useMemo(() => {
+    return standardProcedure !== (bpmProcess?.standardTestProcedure || "") || 
+           bpmCode !== (bpmProcess?.bpmCode || "");
+  }, [standardProcedure, bpmCode, bpmProcess]);
+
+  const metadataBlocker = useUnsavedChanges(isMetadataDirty && isProcedureOpen);
 
   React.useEffect(() => {
     if (bpmProcess?.standardTestProcedure) {
       setStandardProcedure(bpmProcess.standardTestProcedure);
     }
+    if (bpmProcess?.bpmCode) {
+      setBpmCode(bpmProcess.bpmCode);
+    }
   }, [bpmProcess]);
 
-  const handleSaveProcedure = () => {
-    updateProcessMutation.mutate({ standardTestProcedure: standardProcedure });
+  const handleSaveMetadata = () => {
+    updateProcessMutation.mutate({ 
+      standardTestProcedure: standardProcedure,
+      bpmCode: bpmCode 
+    });
   };
 
   const createDiagramMutation = useMutation({
@@ -607,15 +623,25 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
          <CollapsibleContent>
             <div className="p-4 space-y-3 max-w-4xl mx-auto">
                <div className="flex items-center justify-between">
-                  <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Master Prosedur Pengujian (Standard)</Label>
+                  <div className="flex items-center gap-4">
+                     <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest whitespace-nowrap">BPM Code:</Label>
+                     <Input 
+                       className="h-8 text-[10px] font-mono font-bold uppercase w-32 bg-white"
+                       placeholder="BPM-FIN-01"
+                       value={bpmCode}
+                       onChange={e => setBpmCode(e.target.value)}
+                     />
+                     <div className="h-4 w-[1px] bg-slate-300 mx-2" />
+                     <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Master Prosedur Pengujian (Standard)</Label>
+                  </div>
                   <Button 
                     size="sm" 
                     className="h-7 text-[10px] gap-1.5 bg-indigo-600" 
-                    onClick={handleSaveProcedure}
+                    onClick={handleSaveMetadata}
                     disabled={updateProcessMutation.isPending}
                   >
                     {updateProcessMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
-                    Save Standard
+                    Save Metadata
                   </Button>
                </div>
                <Textarea 
@@ -624,7 +650,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
                  value={standardProcedure}
                  onChange={e => setStandardProcedure(e.target.value)}
                />
-               <p className="text-[9px] text-slate-400 italic">Prosedur ini akan muncul otomatis sebagai draf saat auditor melakukan pengerjaan CSA baru.</p>
+               <p className="text-[9px] text-slate-400 italic">Prosedur dan Kode ini akan menjadi acuan identitas proses dalam pengerjaan CSA.</p>
             </div>
          </CollapsibleContent>
       </Collapsible>

@@ -127,7 +127,7 @@ export function BPMModal({
             </div>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" className="h-8 text-[10px] font-bold bg-white/10 border-white/20 hover:bg-white/20 text-white">
-                <Printer className="h-3.5 w-3.5 mr-1.5" /> Export Appendix 11
+                <Printer className="h-3.5 w-3.5 mr-1.5" /> {t('common:actions.printPdf')}
               </Button>
               <Button variant="ghost" size="icon" onClick={() => onOpenChange(false)} className="text-white hover:bg-white/10">
                 <XCircle className="h-5 w-5" />
@@ -141,19 +141,19 @@ export function BPMModal({
             <div className="px-6 border-b bg-white shrink-0 shadow-sm z-10">
               <TabsList className="h-14 bg-transparent gap-8 p-0">
                 <TabsTrigger value="worksheet" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-[11px] uppercase text-slate-500 tracking-wider">
-                  <FileSpreadsheet className="h-4 w-4" /> Worksheet
+                  <FileSpreadsheet className="h-4 w-4" /> {t('modal.tabs.worksheet')}
                 </TabsTrigger>
                 <TabsTrigger value="sampling" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-[11px] uppercase text-slate-500 tracking-wider">
-                  <Database className="h-4 w-4" /> Detail Transaksi
+                  <Database className="h-4 w-4" /> {t('modal.tabs.sampling')}
                 </TabsTrigger>
                 <TabsTrigger value="csa" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-[11px] uppercase text-slate-500 tracking-wider">
-                  <ShieldCheck className="h-4 w-4" /> CSA Assessment
+                  <ShieldCheck className="h-4 w-4" /> {t('modal.tabs.csa')}
                 </TabsTrigger>
                 <TabsTrigger value="rcm" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-[11px] uppercase text-slate-500 tracking-wider">
-                  <ListChecks className="h-4 w-4" /> RCM Matrix (5a,b,c)
+                  <ListChecks className="h-4 w-4" /> {t('modal.tabs.rcm')}
                 </TabsTrigger>
                 <TabsTrigger value="logs" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-[11px] uppercase text-slate-500 tracking-wider">
-                  <History className="h-4 w-4" /> Log Perubahan
+                  <History className="h-4 w-4" /> {t('modal.tabs.logs')}
                 </TabsTrigger>
               </TabsList>
             </div>
@@ -172,6 +172,7 @@ export function BPMModal({
               <TabsContent value="sampling" className="m-0 focus-visible:ring-0 h-full overflow-hidden">
                 <TransactionSamplingTab 
                   noGL={noGL} 
+                  bpmProcessId={bpmProcessId}
                   onSamplesSelected={(samples) => {
                     setSelectedSamples(samples);
                     setActiveTab("csa");

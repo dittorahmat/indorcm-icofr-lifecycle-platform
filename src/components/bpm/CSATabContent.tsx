@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   ResizableHandle,
   ResizablePanel,
@@ -17,7 +17,7 @@ import { api } from '@/lib/api-client';
 import { 
   RefreshCw, ShieldCheck, CheckCircle2, AlertTriangle, 
   X, UserCheck, Activity, Database, FileText, LayoutDashboard,
-  Printer, ChevronLeft, Eye, UploadCloud, Check, MapPin, ChevronDown, Download
+  Printer, ChevronLeft, Eye, UploadCloud, Check, MapPin, ChevronDown, Download, Trash2
 } from 'lucide-react';
 import { 
   DropdownMenu,
@@ -164,7 +164,7 @@ export function CSATabContent({
   const { t } = useTranslation(['bpm', 'common', 'csa_hub']);
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeUploadRow, setActiveUploadRow] = useState<{ sIdx: number, cId: string } | null>(null);
   
   const noGL = propNoGL || searchParams.get('noGL') || "";
@@ -173,6 +173,9 @@ export function CSATabContent({
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [printLayout, setPrintLayout] = useState<'detailed' | 'summary' | null>(null);
+  
+  // Ref to track if user has explicitly closed the form/detail view
+  const manualViewOverride = useRef<'list' | 'form' | null>(null);
 
   // 1. Queries
   const { data: diagram } = useQuery({
@@ -191,6 +194,13 @@ export function CSATabContent({
     queryKey: ['csa-list', bpmProcessId],
     queryFn: () => api<{ items: CSARecord[] }>(`/api/csa?bpmProcessId=${bpmProcessId}`),
     enabled: !!bpmProcessId && view === 'list'
+  });
+
+  // Query to find if there's an existing record for the current schedule
+  const { data: linkedScheduleRecord, isLoading: isCheckingSchedule } = useQuery({
+    queryKey: ['csa-record-by-schedule', scheduleId],
+    queryFn: () => api<{ items: CSARecord[] }>(`/api/csa?scheduleId=${scheduleId}`).then(res => res.items[0]),
+    enabled: !!scheduleId && !isInitialized && manualViewOverride.current !== 'list'
   });
 
   const { data: activeCsa } = useQuery({
@@ -281,20 +291,75 @@ export function CSATabContent({
       assessmentDate: activeCsa?.assessmentDate || Date.now(),
       assessedBy: activeCsa?.assessedBy || "Current User"
     } as any;
-  }, [activeCsa, activeCsaId, form]);
+  }, [activeCsa, activeCsaId, watchSamples, form]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const anyPointFailed = allPoints.some(p => !p.implemented);
 
   // 4. Effects
+  // Context Isolation: Reset internal states when the process or schedule changes
   useEffect(() => {
-    // Only auto-populate if explicitly NOT initialized AND we have a direct reason to go to form
-    // Reasons to skip list and go to form: 
-    // 1. scheduleId is present (Coming from Todo List)
-    // 2. initialSamples has items AND isInitialized is false (Coming from Sampling Tab)
-    const comingFromTodoList = !!scheduleId;
-    const comingFromSamplingTab = initialSamples.length > 0 && !isInitialized;
+    setIsInitialized(false);
+    setActiveCsaId(null);
+    setView('list');
+    form.reset();
+    manualViewOverride.current = null;
+  }, [bpmProcessId, scheduleId, form]);
 
-    if ((comingFromTodoList || comingFromSamplingTab) && initialSamples.length > 0 && view !== 'form') {
+  // Smart Entry Logic
+  useEffect(() => {
+    // RESET initialized state if new samples arrive from parent hub
+    if (initialSamples.length > 0 && !isInitialized && view === 'list') {
+      // This is fresh data from Sampling tab, let's allow initialization to run
+      manualViewOverride.current = null;
+    }
+  }, [initialSamples.length, isInitialized, view]);
+
+  useEffect(() => {
+    if (isInitialized || manualViewOverride.current === 'list') return;
+
+    // SCENARIO 1: Coming from Todo List (scheduleId provided)
+    if (scheduleId) {
+      if (isCheckingSchedule) return; // Wait for direct record check
+
+      if (linkedScheduleRecord) {
+        // Record exists! Set it and go to form
+        setActiveCsaId(linkedScheduleRecord.id);
+        setView('form');
+        setIsInitialized(true);
+      } else if (initialSamples.length > 0) {
+        // No record yet, but we have samples. Start new assessment.
+        const newSamples = initialSamples.map(s => {
+          const controlResults: Record<string, any> = {};
+          if (bpmRiskControlPairs.length > 0) {
+            bpmRiskControlPairs.forEach(pair => {
+              controlResults[pair.controlId] = {
+                implemented: false,
+                riskId: pair.riskId,
+                riskName: pair.riskName,
+                controlName: pair.controlName,
+                evidenceUrl: '',
+                comment: ''
+              };
+            });
+          } else {
+            activeControls.forEach(ctrl => {
+              controlResults[ctrl.id] = { implemented: false };
+            });
+          }
+
+          let sampleRef = "";
+          if ("glDesc" in s) sampleRef = s.glDesc;
+          else if ("description" in s) sampleRef = (s as any).description || "N/A";
+
+          return { sampleRef, glRowId: (s as any).id, controlResults };
+        });
+        replaceSamples(newSamples);
+        setIsInitialized(true);
+        setView('form');
+      }
+    } 
+    // SCENARIO 2: Just picked samples in Hub (No schedule, but fresh samples)
+    else if (initialSamples.length > 0 && view !== 'form') {
       const newSamples = initialSamples.map(s => {
         const controlResults: Record<string, any> = {};
         if (bpmRiskControlPairs.length > 0) {
@@ -324,7 +389,7 @@ export function CSATabContent({
       setIsInitialized(true);
       setView('form');
     }
-  }, [initialSamples, bpmRiskControlPairs, activeControls, replaceSamples, isInitialized, view, scheduleId]);
+  }, [scheduleId, linkedScheduleRecord, isCheckingSchedule, initialSamples, bpmRiskControlPairs, activeControls, replaceSamples, isInitialized, view]);
 
   useEffect(() => {
     if (bpmProcess?.standardTestProcedure && !activeCsaId && !form.getValues('testProcedure')) {
@@ -333,7 +398,8 @@ export function CSATabContent({
   }, [bpmProcess, activeCsaId, form]);
 
   useEffect(() => {
-    if (activeCsa) {
+    // Only load record data if we have an ID AND we are NOT explicitly in list view
+    if (activeCsa && activeCsaId && view !== 'list' && manualViewOverride.current !== 'list') {
       form.reset({
         period: activeCsa.period,
         result: activeCsa.result,
@@ -359,7 +425,7 @@ export function CSATabContent({
       });
       setView('form');
     }
-  }, [activeCsa, form]);
+  }, [activeCsa, activeCsaId, view, form]);
 
   useEffect(() => {
     if (anyPointFailed && form.getValues('result') === 'Effective') {
@@ -368,7 +434,16 @@ export function CSATabContent({
     }
   }, [anyPointFailed, form]);
 
-  // 5. Safety Blocker
+  // Sync: Ensure activeCsaId is null when in list view to prevent stuck details
+  useEffect(() => {
+    if (view === 'list') {
+      setActiveCsaId(null);
+      setIsInitialized(true);
+      manualViewOverride.current = 'list';
+    }
+  }, [view]);
+
+  // 5. Hooks (Safety)
   const isDirty = form.formState.isDirty && view === 'form' && !activeCsaId;
   const blocker = useUnsavedChanges(isDirty);
 
@@ -383,7 +458,8 @@ export function CSATabContent({
       if (!variables.isDraft) {
         setView('list');
         setActiveCsaId(null);
-        setIsInitialized(true); // Don't auto-reopen after completion
+        setIsInitialized(true);
+        manualViewOverride.current = 'list';
       } else {
         setActiveCsaId(newRecord.id);
         form.reset(form.getValues(), { keepDirty: false });
@@ -404,7 +480,22 @@ export function CSATabContent({
     }
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => api(`/api/csa/${id}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      toast.success("Assessment deleted successfully");
+      queryClient.invalidateQueries({ queryKey: ['csa-list'] });
+      queryClient.invalidateQueries({ queryKey: ['csa-schedules'] });
+    }
+  });
+
   // 7. Event Handlers
+  const handleDelete = (id: string) => {
+    if (confirm("Hapus asesmen ini secara permanen? Data sampel dan bukti juga akan terhapus.")) {
+      deleteMutation.mutate(id);
+    }
+  };
+
   const handleFileUploadTrigger = (sIdx: number, cId: string) => {
     setActiveUploadRow({ sIdx, cId });
     fileInputRef.current?.click();
@@ -477,7 +568,16 @@ export function CSATabContent({
     }, 500);
   };
 
-  const isReadOnly = !!activeCsaId && !isDirty; // Read only only if we have an ID and NO unsaved changes (drafting counts as not read-only)
+  // Atomic Back to List Handler
+  const handleBackToList = () => {
+    manualViewOverride.current = 'list';
+    setActiveCsaId(null);
+    setView('list');
+    form.reset();
+    setIsInitialized(true);
+  };
+
+  const isReadOnly = !!activeCsaId && !isDirty;
 
   return (
     <div className="h-full flex flex-col bg-white overflow-hidden">
@@ -507,7 +607,6 @@ export function CSATabContent({
         accept=".pdf,.png,.jpg,.jpeg,.xlsx" 
       />
 
-      {/* PRINTABLE AREA */}
       <div className="printable-area">
         {printLayout === 'detailed' && (
           <Appendix7aDetailed 
@@ -546,7 +645,52 @@ export function CSATabContent({
                 <div className="space-y-6">
                   <div className="flex justify-between items-center">
                     <h3 className="text-xl font-black text-slate-900 tracking-tight">Assessment History</h3>
-                    <Button onClick={() => { setView('form'); setIsInitialized(false); }} className="bg-indigo-600 hover:bg-indigo-700 font-bold text-xs gap-2">
+                    <Button 
+                      onClick={() => { 
+                        manualViewOverride.current = 'form';
+                        setIsInitialized(true); 
+                        setView('form'); 
+                        setActiveCsaId(null);
+
+                        // If we have initialSamples waiting from Sampling tab, use them!
+                        const prepSamples = initialSamples.map(s => {
+                          const controlResults: Record<string, any> = {};
+                          if (bpmRiskControlPairs.length > 0) {
+                            bpmRiskControlPairs.forEach(pair => {
+                              controlResults[pair.controlId] = {
+                                implemented: false,
+                                riskId: pair.riskId,
+                                riskName: pair.riskName,
+                                controlName: pair.controlName,
+                                evidenceUrl: '',
+                                comment: ''
+                              };
+                            });
+                          } else {
+                            activeControls.forEach(ctrl => {
+                              controlResults[ctrl.id] = { implemented: false };
+                            });
+                          }
+
+                          let sampleRef = "";
+                          if ("glDesc" in s) sampleRef = s.glDesc;
+                          else if ("description" in s) sampleRef = (s as any).description || "N/A";
+
+                          return { sampleRef, glRowId: (s as any).id, controlResults };
+                        });
+
+                        form.reset({
+                           period: '2025-Q1',
+                           result: 'Effective',
+                           comments: '',
+                           testProcedure: bpmProcess?.standardTestProcedure || '',
+                           archiveLocation: '',
+                           isBpmConfirmed: false,
+                           samples: prepSamples
+                        });
+                      }} 
+                      className="bg-indigo-600 hover:bg-indigo-700 font-bold text-xs gap-2"
+                    >
                       + New Assessment
                     </Button>
                   </div>
@@ -576,7 +720,7 @@ export function CSATabContent({
                           <TableCell className="text-xs text-slate-500">{new Date(item.assessmentDate).toLocaleDateString()}</TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-1">
-                              <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => { setActiveCsaId(item.id); setView('form'); }}>
+                              <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => { manualViewOverride.current = 'form'; setActiveCsaId(item.id); setView('form'); }}>
                                 <Eye className="h-3.5 w-3.5" />
                               </Button>
                               <DropdownMenu>
@@ -594,6 +738,14 @@ export function CSATabContent({
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-7 w-7 text-slate-300 hover:text-red-600 hover:bg-red-50" 
+                                onClick={() => handleDelete(item.id)}
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
                             </div>
                           </TableCell>
                         </TableRow>
@@ -607,14 +759,14 @@ export function CSATabContent({
                     <div className="space-y-4">
                       <div className="grid grid-cols-3 gap-6 p-5 bg-slate-50 rounded-xl border border-slate-100 shadow-inner">
                         <FormField control={form.control} name="period" render={({ field: f }) => (
-                          <FormItem><FormLabel className="text-[10px] font-black uppercase text-slate-400">Periode</FormLabel><FormControl><Input {...f} disabled={!!activeCsaId && !isDirty} className="h-9 font-bold text-xs" /></FormControl></FormItem>
+                          <FormItem><FormLabel className="text-[10px] font-black uppercase text-slate-400">Periode</FormLabel><FormControl><Input {...f} disabled={isReadOnly} className="h-9 font-bold text-xs" /></FormControl></FormItem>
                         )} />
                         <div className="col-span-2">
                           <FormField control={form.control} name="result" render={({ field: f }) => (
                             <FormItem className="space-y-1">
                               <FormLabel className="text-[10px] font-black uppercase text-slate-400">Hasil Akhir (SK-5)</FormLabel>
                               <FormControl>
-                                <RadioGroup onValueChange={f.onChange} value={f.value} className="flex gap-4" disabled={!!activeCsaId && !isDirty}>
+                                <RadioGroup onValueChange={f.onChange} value={f.value} className="flex gap-4" disabled={isReadOnly}>
                                   {['Effective', 'Ineffective', 'No Transaction'].map(res => (
                                     <div key={res} className="flex items-center space-x-2">
                                       <RadioGroupItem value={res} id={res} disabled={res === 'Effective' && anyPointFailed} />
@@ -631,7 +783,7 @@ export function CSATabContent({
                       <FormField control={form.control} name="isBpmConfirmed" render={({ field: f }) => (
                         <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4 bg-indigo-50 border border-indigo-100 rounded-lg">
                           <FormControl>
-                            <Checkbox checked={f.value} onCheckedChange={f.onChange} disabled={!!activeCsaId && !isDirty} />
+                            <Checkbox checked={f.value} onCheckedChange={f.onChange} disabled={isReadOnly} />
                           </FormControl>
                           <div className="space-y-1 leading-none">
                             <FormLabel className="text-xs font-bold text-indigo-900 cursor-pointer">
@@ -650,7 +802,7 @@ export function CSATabContent({
                             <FormLabel className="text-[10px] font-black uppercase text-slate-400 flex items-center gap-2">
                                <FileText className="h-3 w-3" /> {t('csa_hub:appendix7a.testProcedure')}
                             </FormLabel>
-                            <FormControl><Textarea {...f} disabled={!!activeCsaId && !isDirty} className="min-h-[100px] text-xs bg-white" placeholder={t('csa_hub:appendix7a.procedurePlaceholder')} /></FormControl>
+                            <FormControl><Textarea {...f} disabled={isReadOnly} className="min-h-[100px] text-xs bg-white" placeholder={t('csa_hub:appendix7a.procedurePlaceholder')} /></FormControl>
                             <FormMessage />
                           </FormItem>
                         )} />
@@ -659,7 +811,7 @@ export function CSATabContent({
                             <FormLabel className="text-[10px] font-black uppercase text-slate-400 flex items-center gap-2">
                                <MapPin className="h-3 w-3" /> {t('csa_hub:appendix7a.archiveLocation')}
                             </FormLabel>
-                            <FormControl><Input {...f} disabled={!!activeCsaId && !isDirty} className="h-10 text-xs bg-white" placeholder={t('csa_hub:appendix7a.locationPlaceholder')} /></FormControl>
+                            <FormControl><Input {...f} disabled={isReadOnly} className="h-10 text-xs bg-white" placeholder={t('csa_hub:appendix7a.locationPlaceholder')} /></FormControl>
                             <FormMessage />
                             <p className="text-[9px] text-slate-400 mt-2 italic">{t('csa_hub:appendix7a.archiveNote')}</p>
                           </FormItem>
@@ -712,7 +864,7 @@ export function CSATabContent({
                                         <Checkbox 
                                           checked={f.value} 
                                           onCheckedChange={f.onChange} 
-                                          disabled={!!activeCsaId && !isDirty} 
+                                          disabled={isReadOnly} 
                                           className={cn("h-5 w-5", f.value ? "text-green-600 border-green-600" : "text-slate-300")}
                                         />
                                       </div>
@@ -775,7 +927,7 @@ export function CSATabContent({
                                         variant={point.evidenceUrl ? "default" : "outline"} 
                                         size="icon" 
                                         className={cn("h-8 w-8 rounded-lg", point.evidenceUrl ? "bg-indigo-600" : "border-slate-200")}
-                                        onClick={() => (!activeCsaId || isDirty) && handleFileUploadTrigger(point.sIdx, point.cId)}
+                                        onClick={() => !isReadOnly && handleFileUploadTrigger(point.sIdx, point.cId)}
                                       >
                                         {uploadMutation.isPending && activeUploadRow?.sIdx === point.sIdx && activeUploadRow?.cId === point.cId ? (
                                           <RefreshCw className="h-4 w-4 animate-spin" />
@@ -792,7 +944,7 @@ export function CSATabContent({
                                   <FormField control={form.control} name={`samples.${point.sIdx}.controlResults.${point.cId}.comment`} render={({ field: f }) => (
                                     <Input 
                                       {...f} 
-                                      disabled={!!activeCsaId && !isDirty} 
+                                      disabled={isReadOnly} 
                                       className="h-8 text-xs border-transparent hover:border-slate-200 focus:border-indigo-400 bg-transparent transition-all"
                                       placeholder="Tambahkan catatan..."
                                     />
@@ -804,7 +956,7 @@ export function CSATabContent({
                                       <Checkbox 
                                         checked={f.value} 
                                         onCheckedChange={f.onChange} 
-                                        disabled={!!activeCsaId && !isDirty} 
+                                        disabled={isReadOnly} 
                                         className={cn("h-6 w-6", f.value ? "text-green-600 border-green-600" : "text-red-400 border-red-200")}
                                       />
                                     </div>
@@ -846,7 +998,7 @@ export function CSATabContent({
                         <FormField control={form.control} name="comments" render={({ field: f }) => (
                           <FormItem>
                             <FormLabel className="text-[10px] font-black uppercase text-slate-400">Management Rationale / Catatan Temuan</FormLabel>
-                            <FormControl><Textarea {...f} disabled={!!activeCsaId && !isDirty} className="min-h-[120px] text-sm shadow-sm" placeholder="Wajib diisi jika status INEFFECTIVE..." /></FormControl>
+                            <FormControl><Textarea {...f} disabled={isReadOnly} className="min-h-[120px] text-sm shadow-sm" placeholder="Wajib diisi jika status INEFFECTIVE..." /></FormControl>
                             <FormMessage />
                           </FormItem>
                         )} />
@@ -855,19 +1007,14 @@ export function CSATabContent({
                           <Button 
                             variant="outline" 
                             type="button"
-                            onClick={() => { 
-                              setActiveCsaId(null); 
-                              setView('list'); 
-                              form.reset();
-                              setIsInitialized(false); // Fully reset initialization state
-                            }} 
+                            onClick={handleBackToList} 
                             className="px-8 font-bold"
                           >
-                             {activeCsaId && !isDirty ? <ChevronLeft className="h-4 w-4 mr-2" /> : null}
-                             {activeCsaId && !isDirty ? "Kembali ke Daftar" : "Batal"}
+                             {isReadOnly ? <ChevronLeft className="h-4 w-4 mr-2" /> : null}
+                             {isReadOnly ? "Kembali ke Daftar" : "Batal"}
                           </Button>
 
-                          {(activeCsaId || watchSamples.length > 0) && (
+                          {(isReadOnly || watchSamples.length > 0) && (
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button type="button" className="bg-slate-800 hover:bg-slate-900 text-white font-black px-8 h-12 gap-2 shadow-xl uppercase tracking-widest">
@@ -885,7 +1032,7 @@ export function CSATabContent({
                             </DropdownMenu>
                           )}
 
-                          {(!activeCsaId || isDirty) && (
+                          {!isReadOnly && (
                             <>
                               <Button 
                                 type="button"

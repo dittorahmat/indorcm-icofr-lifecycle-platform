@@ -34,7 +34,18 @@ Digital CSA assessments need to be transformed into formal documents (Lampiran 7
 - **Decision**: Integrate procedure editing into the **Worksheet** view of each process.
 - **Rationale**: This is where Lini 2 / Compliance managers already work to define risks and controls. Adding procedures here keeps the workflow centralized.
 
-### 4. Localization
+### 4. Smart Entry & Housekeeping
+- **Smart Entry**: 
+  - If `scheduleId` is provided, frontend will query `/api/csa?scheduleId=XYZ`. 
+  - If a record exists, open it in **Edit mode**. If not, auto-open a **New Assessment** form pre-filled with samples.
+  - **Resilient Navigation**: Clicking "Batal" or "Back to List" will set `isInitialized` to `true` while clearing other selection states. This prevents the "Smart Entry" effect from immediately re-triggering and "stucking" the user in the detail view.
+  - **Loop Prevention**: Auto-fill scenarios based on `initialSamples` must be strictly guarded by `!isInitialized`. This prevents the system from auto-redirecting to form view when the user has explicitly chosen to see the history list.
+  - **Context Isolation**: Use a `useEffect` keyed on `bpmProcessId` and `scheduleId` to fully reset the `isInitialized` flag and `activeCsaId`. This ensures that every time the hub opens a different process, the state starts clean.
+  - **Explicit Navigation Priority**: Use a `useRef` named `manualViewOverride` to track if the user has explicitly chosen to see the history list. All auto-fill and auto-load effects MUST check this flag before switching views. This flag is reset only on context change (process/schedule).
+  - **State Machine Stability**: Navigation state transitions (clearing ID, resetting view, and disabling auto-fills) are bundled into atomic actions. A dedicated synchronization effect ensures that if `view === 'list'`, the component is forcefully detached from any assessment detail state.
+- **Housekeeping**: Implement `DELETE /api/csa/:id` to clear assessment records and linked samples from `csa_samples` table.
+
+### 5. Localization
 - **Decision**: All report headers, labels, and static text must be pulled from `id/csa_hub.json` and `en/csa_hub.json`.
 - **Rationale**: Standardizes terminology like "Kertas Kerja", "Prosedur Uji", and "Simpulan Efektivitas".
 

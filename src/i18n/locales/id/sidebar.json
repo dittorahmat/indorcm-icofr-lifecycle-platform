@@ -21,6 +21,11 @@
     "documents": "Dokumen Terkait",
     "riskLibrary": "Risk Library",
     "changelog": "Log Perubahan",
+    "todo": "Daftar Tugas",
+    "csaReports": "Laporan CSA",
+    "rcmTlc": "Matriks RCM TLC",
+    "rcmElc": "Matriks RCM ELC",
+    "rcmItgc": "Matriks RCM ITGC",
     "soc": "Pemantauan SOC",
     "deficiencies": "Defisiensi & Remediasi",
     "tod": "Test of Design (TOD)",
@@ -32,6 +37,12 @@
     "predictive": "Predictive Story Life",
     "improvement": "Continuous Improvement",
     "settings": "Admin User",
-    "adminUsers": "Manajemen User"
+    "adminUsers": "Manajemen User",
+    "logout": "Keluar"
+  },
+  "sections": {
+    "rcmMatrix": "Matriks RCM",
+    "copyright": "© 2026 IndoGRC Pro",
+    "auditPortal": "Portal Audit (KAP)"
   }
 }

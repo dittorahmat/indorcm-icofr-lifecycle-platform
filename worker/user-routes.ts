@@ -2122,6 +2122,22 @@ export function userRoutes(app: Hono<HonoEnv>) {
     const orgId = c.get('organizationId');
     const body = await c.req.json<Partial<BPMProcess>>();
 
+    // Uniqueness Check for bpmCode
+    if (body.bpmCode) {
+      const existing = await db.select()
+        .from(bpmProcesses)
+        .where(and(
+          eq(bpmProcesses.organizationId, orgId),
+          eq(bpmProcesses.bpmCode, body.bpmCode),
+          ne(bpmProcesses.id, id)
+        ))
+        .limit(1);
+      
+      if (existing.length > 0) {
+        return bad(c, `BPM Code '${body.bpmCode}' sudah digunakan oleh proses lain.`);
+      }
+    }
+
     await db.update(bpmProcesses)
       .set({
         name: body.name,
@@ -2648,13 +2664,20 @@ export function userRoutes(app: Hono<HonoEnv>) {
     const db = getDb(c.env.DATABASE_URL);
     const orgId = c.get('organizationId');
     const noGL = c.req.query('noGL');
+    const bpmProcessId = c.req.query('bpmProcessId');
 
     if (!noGL) return bad(c, 'noGL is required');
 
-    const items = await db.select().from(transactionDetails).where(and(
+    let conditions = and(
       eq(transactionDetails.organizationId, orgId),
       eq(transactionDetails.noGL, noGL)
-    )).limit(500);
+    );
+
+    if (bpmProcessId) {
+      conditions = and(conditions, eq(transactionDetails.bpmProcessId, bpmProcessId)) as SQL;
+    }
+
+    const items = await db.select().from(transactionDetails).where(conditions).limit(500);
 
     return ok(c, { items });
   });
@@ -2663,32 +2686,55 @@ export function userRoutes(app: Hono<HonoEnv>) {
     const db = getDb(c.env.DATABASE_URL);
     const orgId = c.get('organizationId');
     const userId = c.get('userId');
-    const body = await c.req.json<{ rows: any[], filename?: string, noGL: string, mode?: 'append' | 'replace' }>();
+    const body = await c.req.json<{ rows: any[], filename?: string, noGL: string, bpmProcessId?: string, mode?: 'append' | 'replace' }>();
 
     if (!body.rows || !Array.isArray(body.rows)) return bad(c, 'Invalid rows array');
     if (!body.noGL) return bad(c, 'noGL is required');
 
     try {
+      // 0. Fetch BPM Process mappings for this org
+      const allProcesses = await db.select({ id: bpmProcesses.id, code: bpmProcesses.bpmCode })
+        .from(bpmProcesses)
+        .where(eq(bpmProcesses.organizationId, orgId));
+      
+      const codeToIdMap = new Map(allProcesses.filter(p => p.code).map(p => [p.code!.toUpperCase(), p.id]));
+
       // 1. Handle Purge if mode is 'replace'
       if (body.mode === 'replace') {
-        await db.delete(transactionDetails).where(and(
+        let purgeConditions = and(
           eq(transactionDetails.organizationId, orgId),
           eq(transactionDetails.noGL, body.noGL)
-        ));
+        );
+        if (body.bpmProcessId) {
+          purgeConditions = and(purgeConditions, eq(transactionDetails.bpmProcessId, body.bpmProcessId)) as SQL;
+        }
+        await db.delete(transactionDetails).where(purgeConditions);
       }
 
-      // 2. Batch Insert Transactions
-      const rowsToInsert = body.rows.map((row: any) => ({
-        id: crypto.randomUUID(),
-        organizationId: orgId,
-        noGL: body.noGL,
-        refNo: row.refNo,
-        transDate: row.transDate ? new Date(row.transDate) : null,
-        description: row.description,
-        currency: row.currency,
-        dcFlag: row.dcFlag,
-        amount: row.amount,
-      }));
+      // 2. Batch Insert Transactions with Smart Linkage
+      const rowsToInsert = body.rows.map((row: any) => {
+        // Priority 1: BPM Code in row (Human-readable mapping)
+        // Priority 2: BPM Process ID in body (Direct context)
+        let resolvedProcessId = body.bpmProcessId || null;
+        
+        if (row.bpmCode) {
+          const mappedId = codeToIdMap.get(String(row.bpmCode).toUpperCase());
+          if (mappedId) resolvedProcessId = mappedId;
+        }
+
+        return {
+          id: crypto.randomUUID(),
+          organizationId: orgId,
+          noGL: body.noGL,
+          bpmProcessId: resolvedProcessId,
+          refNo: row.refNo,
+          transDate: row.transDate ? new Date(row.transDate) : null,
+          description: row.description,
+          currency: row.currency,
+          dcFlag: row.dcFlag,
+          amount: row.amount,
+        };
+      });
 
       if (rowsToInsert.length > 0) {
         for (let i = 0; i < rowsToInsert.length; i += 1000) {
@@ -2882,23 +2928,44 @@ export function userRoutes(app: Hono<HonoEnv>) {
     const orgId = c.get('organizationId');
     const controlId = c.req.query('controlId');
     const bpmProcessId = c.req.query('bpmProcessId');
+    const scheduleId = c.req.query('scheduleId');
 
-    let query = db.select().from(csaRecords).where(eq(csaRecords.organizationId, orgId));
+    let conditions = eq(csaRecords.organizationId, orgId);
+    if (controlId) conditions = and(conditions, eq(csaRecords.controlId, controlId)) as SQL;
+    if (bpmProcessId) conditions = and(conditions, eq(csaRecords.bpmProcessId, bpmProcessId)) as SQL;
+    if (scheduleId) conditions = and(conditions, eq(csaRecords.scheduleId, scheduleId)) as SQL;
 
-    if (controlId) {
-      query = db.select().from(csaRecords).where(and(
-        eq(csaRecords.organizationId, orgId),
-        eq(csaRecords.controlId, controlId)
-      ));
-    } else if (bpmProcessId) {
-      query = db.select().from(csaRecords).where(and(
-        eq(csaRecords.organizationId, orgId),
-        eq(csaRecords.bpmProcessId, bpmProcessId)
-      ));
+    const items = await db.select().from(csaRecords)
+      .where(conditions)
+      .orderBy(desc(csaRecords.assessmentDate));
+
+    return ok(c, { items });
+  });
+
+  app.delete('/api/csa/:id', async (c) => {
+    const db = getDb(c.env.DATABASE_URL);
+    const id = c.req.param('id');
+    const orgId = c.get('organizationId');
+
+    // 1. Find the record
+    const records = await db.select().from(csaRecords)
+      .where(and(eq(csaRecords.id, id), eq(csaRecords.organizationId, orgId))).limit(1);
+    
+    if (records.length === 0) return notFound(c);
+    const record = records[0];
+
+    // 2. Cascading delete
+    await db.delete(csaSamples).where(eq(csaSamples.csaRecordId, id));
+    await db.delete(csaRecords).where(and(eq(csaRecords.id, id), eq(csaRecords.organizationId, orgId)));
+
+    // 3. Reset schedule status
+    if (record.scheduleId) {
+      await db.update(csaSchedules)
+        .set({ status: 'Not Started' })
+        .where(and(eq(csaSchedules.id, record.scheduleId), eq(csaSchedules.organizationId, orgId)));
     }
 
-    const items = await query.orderBy(desc(csaRecords.assessmentDate));
-    return ok(c, { items });
+    return ok(c, { success: true });
   });
 
   app.get('/api/csa/:id', async (c) => {

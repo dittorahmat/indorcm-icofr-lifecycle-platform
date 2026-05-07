@@ -95,8 +95,10 @@
     "title": "Business Process Mapping",
     "owner": "Department Owner",
     "tabs": {
-      "worksheet": "List of Sub Process",
-      "csa": "CSA",
+      "worksheet": "Worksheet",
+      "sampling": "Transaction Detail",
+      "csa": "CSA Assessment",
+      "rcm": "RCM Matrix (5a,b,c)",
       "logs": "Change Logs (Appx 6)"
     }
   },

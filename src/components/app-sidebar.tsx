@@ -101,83 +101,87 @@ export function AppSidebar(): JSX.Element {
   };
 
   return (
-    <Sidebar variant="sidebar" collapsible="icon">
-      <SidebarHeader className="h-16 flex items-center px-4 border-b">
+    <Sidebar variant="sidebar" collapsible="none" className="w-64 border-r">
+      <SidebarHeader className="h-14 flex items-center px-4 border-b">
         <div className="flex items-center gap-3 overflow-hidden">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shrink-0 font-bold">
+          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground shrink-0 font-bold text-xs">
             IS
           </div>
-          <div className="flex flex-col gap-0.5 leading-none transition-opacity duration-200 group-data-[collapsible=icon]:opacity-0">
-            <span className="font-bold text-sm">IndoGRC Pro</span>
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">ICOFR Digital</span>
+          <div className="flex flex-col gap-0 leading-none">
+            <span className="font-bold text-[13px]">IndoGRC Pro</span>
+            <span className="text-[9px] text-muted-foreground uppercase tracking-widest font-black">ICOFR Digital</span>
           </div>
         </div>
       </SidebarHeader>
       <SidebarContent>
         {userRole === 'External Auditor' && (
-          <SidebarGroup>
-            <SidebarGroupLabel className="font-bold text-white uppercase text-[10px] tracking-widest opacity-80">{t('groups.master')}</SidebarGroupLabel>
-            <SidebarMenu>
+          <SidebarGroup className="py-2">
+            <SidebarGroupLabel className="font-black text-slate-400 uppercase text-[9px] tracking-widest h-6 px-4">
+              {t('groups.master')}
+            </SidebarGroupLabel>
+            <SidebarMenu className="px-2">
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive("/audit-portal")}>
-                  <Link to="/audit-portal"><Briefcase className="text-blue-600" /> <span className="font-semibold text-blue-700">Audit Portal (KAP)</span></Link>
+                <SidebarMenuButton asChild isActive={isActive("/audit-portal")} className="h-8 text-[11px]">
+                  <Link to="/audit-portal"><Briefcase className="h-3.5 w-3.5 text-blue-600" /> <span className="font-bold text-blue-700">{t('sections.auditPortal')}</span></Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroup>
         )}
 
-        <SidebarGroup>
-          <SidebarGroupLabel className="font-bold text-white uppercase text-[10px] tracking-widest opacity-80">{t('groups.master')}</SidebarGroupLabel>
-          <SidebarMenu>
+        <SidebarGroup className="py-2">
+          <SidebarGroupLabel className="font-black text-slate-400 uppercase text-[9px] tracking-widest h-6 px-4">
+            {t('groups.master')}
+          </SidebarGroupLabel>
+          <SidebarMenu className="px-2">
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/dashboard")}>
-                <Link to="/dashboard" className="font-bold"><LayoutDashboard /> <span>{t('items.dashboard')}</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/dashboard")} className="h-8 text-[11px]">
+                <Link to="/dashboard" className="font-bold"><LayoutDashboard className="h-3.5 w-3.5" /> <span>{t('items.dashboard')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/scoping")}>
-                <Link to="/scoping" className="font-bold"><Settings2 /> <span>{t('items.scoping')}</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/scoping")} className="h-8 text-[11px]">
+                <Link to="/scoping" className="font-bold"><Settings2 className="h-3.5 w-3.5" /> <span>{t('items.scoping')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             {userRole === 'Line 2' && (
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive("/import")}>
-                  <Link to="/import" className="font-bold"><RefreshCw /> <span>{t('items.sync')}</span></Link>
+                <SidebarMenuButton asChild isActive={isActive("/import")} className="h-8 text-[11px]">
+                  <Link to="/import" className="font-bold"><RefreshCw className="h-3.5 w-3.5" /> <span>{t('items.sync')}</span></Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             )}
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/bpm")}>
-                <Link to="/bpm" className="font-bold"><ListChecks /> <span>{t('items.bpm')}</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/bpm")} className="h-8 text-[11px]">
+                <Link to="/bpm" className="font-bold"><ListChecks className="h-3.5 w-3.5" /> <span>{t('items.bpm')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/todo")}>
-                <Link to="/todo" className="font-bold"><CalendarIcon /> <span>To-do List</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/todo")} className="h-8 text-[11px]">
+                <Link to="/todo" className="font-bold"><CalendarIcon className="h-3.5 w-3.5" /> <span>{t('items.todo')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/csa")}>
-                <Link to="/csa" className="font-bold"><History /> <span>CSA Reports</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/csa")} className="h-8 text-[11px]">
+                <Link to="/csa" className="font-bold"><History className="h-3.5 w-3.5" /> <span>{t('items.csaReports')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/notifications")}>
-                <Link to="/notifications" className="font-bold"><Bell /> <span>{t('items.notifications') || 'Notifikasi'}</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/notifications")} className="h-8 text-[11px]">
+                <Link to="/notifications" className="font-bold"><Bell className="h-3.5 w-3.5" /> <span>{t('items.notifications')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/applications")}>
-                <Link to="/applications" className="font-bold"><Cpu className="text-indigo-500" /> <span>{t('items.applications') || 'Inventory Aplikasi'}</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/applications")} className="h-8 text-[11px]">
+                <Link to="/applications" className="font-bold"><Cpu className="h-3.5 w-3.5 text-indigo-500" /> <span>{t('items.applications')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             {(userRole === 'Komisaris' || userRole === 'CFO' || userRole === 'Line 2' || userRole === 'Admin') && (
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive("/scoping/approval")}>
+                <SidebarMenuButton asChild isActive={isActive("/scoping/approval")} className="h-8 text-[11px]">
                   <Link to="/scoping/approval" className="flex items-center justify-between w-full font-bold">
                     <div className="flex items-center gap-2">
-                      <ShieldCheck /> <span>{t('items.approval')}</span>
+                      <ShieldCheck className="h-3.5 w-3.5" /> <span>{t('items.approval')}</span>
                     </div>
                     <PendingApprovalBadge role={userRole} />
                   </Link>
@@ -187,141 +191,155 @@ export function AppSidebar(): JSX.Element {
           </SidebarMenu>
         </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel className="font-bold text-white uppercase text-[10px] tracking-widest opacity-80">RCM Matrix</SidebarGroupLabel>
-          <SidebarMenu>
+        <SidebarGroup className="py-2">
+          <SidebarGroupLabel className="font-black text-slate-400 uppercase text-[9px] tracking-widest h-6 px-4">
+            {t('sections.rcmMatrix')}
+          </SidebarGroupLabel>
+          <SidebarMenu className="px-2">
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/rcm/tlc")}>
-                <Link to="/rcm/tlc" className="font-bold"><ShieldCheck className="text-emerald-500" /> <span>RCM TLC Matrix</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/rcm/tlc")} className="h-8 text-[11px]">
+                <Link to="/rcm/tlc" className="font-bold"><ShieldCheck className="h-3.5 w-3.5 text-emerald-500" /> <span>{t('items.rcmTlc')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/rcm/elc")}>
-                <Link to="/rcm/elc" className="font-bold"><ShieldCheck className="text-indigo-500" /> <span>RCM ELC Matrix</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/rcm/elc")} className="h-8 text-[11px]">
+                <Link to="/rcm/elc" className="font-bold"><ShieldCheck className="h-3.5 w-3.5 text-indigo-500" /> <span>{t('items.rcmElc')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/rcm/itgc")}>
-                <Link to="/rcm/itgc" className="font-bold"><ShieldCheck className="text-blue-500" /> <span>RCM ITGC Matrix</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/rcm/itgc")} className="h-8 text-[11px]">
+                <Link to="/rcm/itgc" className="font-bold"><ShieldCheck className="h-3.5 w-3.5 text-blue-500" /> <span>{t('items.rcmItgc')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/change-log")}>
-                <Link to="/change-log" className="font-bold"><History /> <span>{t('items.changelog')}</span></Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel className="font-bold text-white uppercase text-[10px] tracking-widest opacity-80">{t('groups.deficiency')}</SidebarGroupLabel>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/deficiencies")}>
-                <Link to="/deficiencies" className="font-bold"><ShieldAlert /> <span>{t('items.deficiencies')}</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/change-log")} className="h-8 text-[11px]">
+                <Link to="/change-log" className="font-bold"><History className="h-3.5 w-3.5" /> <span>{t('items.changelog')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel className="font-bold text-white uppercase text-[10px] tracking-widest opacity-80">{t('groups.testing')}</SidebarGroupLabel>
-          <SidebarMenu>
+        <SidebarGroup className="py-2">
+          <SidebarGroupLabel className="font-black text-slate-400 uppercase text-[9px] tracking-widest h-6 px-4">
+            {t('groups.deficiency')}
+          </SidebarGroupLabel>
+          <SidebarMenu className="px-2">
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/testing?type=TOD")}>
-                <Link to="/testing?type=TOD" className="font-bold"><ShieldCheck /> <span>{t('items.tod')}</span></Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/testing?type=TOE")}>
-                <Link to="/testing?type=TOE" className="font-bold"><ShieldAlert /> <span>{t('items.toe')}</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/deficiencies")} className="h-8 text-[11px]">
+                <Link to="/deficiencies" className="font-bold"><ShieldAlert className="h-3.5 w-3.5" /> <span>{t('items.deficiencies')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel className="font-bold text-white uppercase text-[10px] tracking-widest opacity-80">{t('groups.report')}</SidebarGroupLabel>
-          <SidebarMenu>
+        <SidebarGroup className="py-2">
+          <SidebarGroupLabel className="font-black text-slate-400 uppercase text-[9px] tracking-widest h-6 px-4">
+            {t('groups.testing')}
+          </SidebarGroupLabel>
+          <SidebarMenu className="px-2">
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/wbs-recap")}>
-                <Link to="/wbs-recap" className="font-bold"><FileBarChart /> <span>{t('items.wbs')}</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/testing?type=TOD")} className="h-8 text-[11px]">
+                <Link to="/testing?type=TOD" className="font-bold"><ShieldCheck className="h-3.5 w-3.5" /> <span>{t('items.tod')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/reports")}>
-                <Link to="/reports" className="font-bold"><FileText className="h-3 w-3 opacity-50" /> <span>{t('items.app11')}</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/testing?type=TOE")} className="h-8 text-[11px]">
+                <Link to="/testing?type=TOE" className="font-bold"><ShieldAlert className="h-3.5 w-3.5" /> <span>{t('items.toe')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel className="font-bold text-white uppercase text-[10px] tracking-widest opacity-80">{t('groups.ai')}</SidebarGroupLabel>
-          <SidebarMenu>
+        <SidebarGroup className="py-2">
+          <SidebarGroupLabel className="font-black text-slate-400 uppercase text-[9px] tracking-widest h-6 px-4">
+            {t('groups.report')}
+          </SidebarGroupLabel>
+          <SidebarMenu className="px-2">
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/ai-hub?tool=anomaly")}>
-                <Link to="/ai-hub?tool=anomaly" className="font-bold"><Search className="h-4 w-4" /> <span>{t('items.anomaly')}</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/wbs-recap")} className="h-8 text-[11px]">
+                <Link to="/wbs-recap" className="font-bold"><FileBarChart className="h-3.5 w-3.5" /> <span>{t('items.wbs')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/ai-hub?tool=journal")}>
-                <Link to="/ai-hub?tool=journal" className="font-bold"><FileBarChart className="h-4 w-4" /> <span>{t('items.journal')}</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/reports")} className="h-8 text-[11px]">
+                <Link to="/reports" className="font-bold"><FileText className="h-3.5 w-3.5 opacity-70" /> <span>{t('items.app11')}</span></Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
+
+        <SidebarGroup className="py-2">
+          <SidebarGroupLabel className="font-black text-slate-400 uppercase text-[9px] tracking-widest h-6 px-4">
+            {t('groups.ai')}
+          </SidebarGroupLabel>
+          <SidebarMenu className="px-2">
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={isActive("/ai-hub?tool=anomaly")} className="h-8 text-[11px]">
+                <Link to="/ai-hub?tool=anomaly" className="font-bold"><Search className="h-3.5 w-3.5" /> <span>{t('items.anomaly')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/ai-hub?tool=predictive")}>
-                <Link to="/ai-hub?tool=predictive" className="font-bold"><Bot className="h-4 w-4" /> <span>{t('items.predictive')}</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/ai-hub?tool=journal")} className="h-8 text-[11px]">
+                <Link to="/ai-hub?tool=journal" className="font-bold"><FileBarChart className="h-3.5 w-3.5" /> <span>{t('items.journal')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/documents")}>
-                <Link to="/documents" className="font-bold"><FileText className="h-4 w-4" /> <span>{t('items.documents') || 'Dokumen Terkait'}</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/ai-hub?tool=predictive")} className="h-8 text-[11px]">
+                <Link to="/ai-hub?tool=predictive" className="font-bold"><Bot className="h-3.5 w-3.5" /> <span>{t('items.predictive')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/ai-hub?tool=improvement")}>
-                <Link to="/ai-hub?tool=improvement" className="font-bold"><Cpu className="h-4 w-4" /> <span>{t('items.improvement')}</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/documents")} className="h-8 text-[11px]">
+                <Link to="/documents" className="font-bold"><FileText className="h-3.5 w-3.5" /> <span>{t('items.documents')}</span></Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={isActive("/ai-hub?tool=improvement")} className="h-8 text-[11px]">
+                <Link to="/ai-hub?tool=improvement" className="font-bold"><Cpu className="h-3.5 w-3.5" /> <span>{t('items.improvement')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
         
-        <SidebarGroup className="mt-auto border-t pt-4">
-          <SidebarGroupLabel className="font-bold text-white uppercase text-[10px] tracking-widest opacity-80">{t('groups.user')}</SidebarGroupLabel>
-          <SidebarMenu>
+        <SidebarGroup className="mt-auto border-t pt-2">
+          <SidebarGroupLabel className="font-black text-slate-400 uppercase text-[9px] tracking-widest h-6 px-4">
+            {t('groups.user')}
+          </SidebarGroupLabel>
+          <SidebarMenu className="px-2">
             <SidebarMenuItem>
-              <div className="px-2 pb-2">
+              <div className="px-2 pb-1 pt-1">
                  <LanguageSwitcher />
               </div>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/settings")}>
-                <Link to="/settings" className="font-bold"><UserCog /> <span>{t('items.settings')}</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/settings")} className="h-8 text-[11px]">
+                <Link to="/settings" className="font-bold"><UserCog className="h-3.5 w-3.5" /> <span>{t('items.settings')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             {userRole === 'Admin' && (
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive("/admin/users")}>
-                  <Link to="/admin/users" className="font-bold text-amber-600"><UserCog /> <span>{t('items.adminUsers')}</span></Link>
+                <SidebarMenuButton asChild isActive={isActive("/admin/users")} className="h-8 text-[11px]">
+                  <Link to="/admin/users" className="font-bold text-amber-600"><UserCog className="h-3.5 w-3.5" /> <span>{t('items.adminUsers')}</span></Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             )}
              <SidebarMenuItem>
                 <SidebarMenuButton 
                   onClick={handleLogout}
-                  className="text-destructive hover:bg-destructive/10 hover:text-destructive font-bold"
+                  className="h-8 text-[11px] text-destructive hover:bg-destructive/10 hover:text-destructive font-bold"
                 >
-                  <LogOut className="h-4 w-4 shrink-0" />
-                  <span>Logout</span>
+                  <LogOut className="h-3.5 w-3.5 shrink-0" />
+                  <span>{t('items.logout')}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
 
       </SidebarContent>
-      <SidebarFooter>
-        <div className="px-2 text-xs text-muted-foreground">© 2026 IndoGRC Pro</div>
+      <SidebarFooter className="border-t">
+        <div className="px-4 py-3 text-[10px] font-medium text-muted-foreground uppercase tracking-tighter">
+          {t('sections.copyright')}
+        </div>
       </SidebarFooter>
     </Sidebar>
   );

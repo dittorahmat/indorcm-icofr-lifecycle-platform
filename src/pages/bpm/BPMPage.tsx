@@ -319,7 +319,7 @@ export function BPMPage() {
       queryClient.invalidateQueries({ queryKey: ['bpm-processes'] });
       setIsCreatingBPM(false);
       setBpmName("");
-      toast.success("BPM Process created");
+      toast.success(t('common:notifications.created'));
     }
   });
 
@@ -328,7 +328,7 @@ export function BPMPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bpm-processes'] });
       setSelectedBpmId(null);
-      toast.success("BPM Process deleted");
+      toast.success(t('common:notifications.deleted'));
     }
   });
 
@@ -778,9 +778,12 @@ export function BPMPage() {
                               >
                                 <span className="font-bold text-indigo-600 hover:underline flex items-center gap-1.5">
                                   {bpm.name}
+                                  {bpm.bpmCode && <Badge className="h-4 px-1 text-[8px] bg-slate-900 text-white font-mono">{bpm.bpmCode}</Badge>}
                                   <ShieldCheck className="h-3 w-3 opacity-0 group-hover/name:opacity-100 transition-opacity" />
                                 </span>
-                                <span className="text-[10px] text-slate-400 uppercase tracking-tighter">BPM ID: {bpm.id.substring(0,8)}</span>
+                                <span className="text-[10px] text-slate-400 uppercase tracking-tighter flex items-center gap-2">
+                                   ID: {bpm.id.substring(0,8)}
+                                </span>
                               </div>
                             </TooltipTrigger>
                             <TooltipContent>Open Execution Hub (CSA, Sampling, RCM)</TooltipContent>

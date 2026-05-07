@@ -10,6 +10,14 @@ To comply with **Regulation SK-5/DKU.MBU/11/2024**, every CSA (Control Self-Asse
 - **Branded Headers**: Integration of company logo (fetched from settings) and professional metadata in the PDF headers, consistent with `BPMCanvasHeader`.
 - **Master Test Procedure Templates**: Ability to define and maintain standard test procedures within the BPM Workflow Editor/Worksheet.
 - **Enhanced CSA Form**: New fields for `Test Procedures` (auto-populated from master) and `Archive Location` (free text).
+- **Smart Entry Points**: Context-aware assessment loading:
+  - Todo List: Automatically opens the specific draft or new record linked to the `scheduleId`.
+  - BPM/RCM Page: Defaults to the Assessment History List for research.
+- **Resilient Navigation**: Fix for the "infinite loop" navigation bug where "Back to List" would sometimes fail due to aggressive auto-population logic.
+- **Navigation Stability**: Ensuring manual navigation actions (Batal/Back) explicitly override automated state transitions to prevent users from getting "trapped" in assessment views.
+- **Resilient Navigation State**: Implementation of a session-stable tracking mechanism (using Refs) to prioritize explicit user navigation choices over automated background redirects.
+- **Context Isolation**: Guaranteed reset of all internal state machines and navigation overrides whenever the business process or schedule context changes.
+- **Housekeeping (Housekeeping)**: New ability to delete assessment records to facilitate clean testing during development.
 - **Audit Traceability**: Integration of QR codes for document verification on the generated reports.
 - **Persistence**: Migration to store these new fields in the `csa_records` and `bpm_processes` tables.
 

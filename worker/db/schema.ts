@@ -115,6 +115,7 @@ export const transactionDetails = pgTable("transaction_details", {
 	id: text("id").primaryKey(),
 	organizationId: text("organization_id").notNull().references(() => organization.id),
 	noGL: text("no_gl").notNull(),
+	bpmProcessId: text("bpm_process_id"), // Explicit link to sub-process
 	refNo: text("ref_no"),
 	transDate: timestamp("trans_date"),
 	description: text("description"),
@@ -124,6 +125,7 @@ export const transactionDetails = pgTable("transaction_details", {
 }, (table) => {
 	return {
 		noGLIdx: index("trans_no_gl_idx").on(table.noGL),
+		bpmProcessIdx: index("trans_bpm_process_idx").on(table.bpmProcessId),
 	};
 });
 
@@ -452,6 +454,11 @@ export const bpmProcesses = pgTable("bpm_processes", {
 	standardTestProcedure: text("standard_test_procedure"), // Master template for CSA
 	createdAt: timestamp("created_at").notNull(),
 	createdBy: text("created_by").references(() => user.id),
+}, (table) => {
+	return {
+		orgBpmCodeIdx: index("bpm_processes_org_code_idx").on(table.organizationId, table.bpmCode),
+		noGLIdx: index("bpm_processes_no_gl_idx").on(table.noGL),
+	};
 });
 
 export const accountAssertions = pgTable("account_assertions", {
