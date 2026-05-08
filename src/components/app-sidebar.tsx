@@ -38,7 +38,6 @@ import {
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarHeader,
   SidebarSeparator,
@@ -265,7 +264,7 @@ export function AppSidebar(): JSX.Element {
           </SidebarMenu>
         </SidebarGroup>
 
-        <SidebarGroup className="mt-auto border-t pt-2">
+        <SidebarGroup className="mt-auto pt-2">
           <SidebarGroupLabel className="font-black text-slate-400 uppercase text-[14px] tracking-widest h-10 px-4">
             {t('groups.user')}
           </SidebarGroupLabel>
@@ -300,11 +299,6 @@ export function AppSidebar(): JSX.Element {
         </SidebarGroup>
 
       </SidebarContent>
-      <SidebarFooter className="border-t">
-        <div className="px-4 py-3 text-[10px] font-medium text-muted-foreground uppercase tracking-tighter">
-          {t('sections.copyright')}
-        </div>
-      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   );

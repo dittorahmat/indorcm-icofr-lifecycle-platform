@@ -61,7 +61,7 @@ export function TransactionUploadModal({ isOpen, onClose, noGL, bpmProcessId, on
         const workbook = XLSX.read(data, { type: 'array' });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
-        const json = XLSX.utils.sheet_to_json(worksheet) as any[];
+        const json = XLSX.utils.sheet_to_json(worksheet, { defval: "" }) as any[];
         
         if (json.length === 0) {
           toast.error("File kosong");
