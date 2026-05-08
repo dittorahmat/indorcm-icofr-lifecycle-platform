@@ -14,4 +14,6 @@ The system SHALL automatically associate uploaded transactions with the active b
 #### Scenario: Uploading CSV with row-level BPM Codes
 - **WHEN** a user uploads a transaction file containing a `bpmCode` column
 - **THEN** the system SHALL resolve each row's `bpmCode` to its corresponding process ID
-- **AND** it SHALL link each transaction item to the correct sub-process, even if multiple processes are present in a single upload.
+- **AND** if a row has a non-empty `bpmCode`, it SHALL link that item to the matched sub-process
+- **AND** if a row has an EXPLICITLY empty `bpmCode`, it SHALL mark that transaction as **unlinked** (belongs only to the GL Account)
+- **AND** it SHALL prioritize these row-level instructions over the UI context where the upload originated.

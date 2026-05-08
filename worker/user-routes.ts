@@ -13,7 +13,7 @@ import {
   vendors, socReports, socEvaluations, csaSchedules, notifications,
   transactionDetails, transactionUploads, bpmExports
 } from './db/schema';
-import { eq, and, desc, sql, ilike, inArray, SQL } from 'drizzle-orm';
+import { eq, ne, and, desc, sql, ilike, inArray, SQL } from 'drizzle-orm';
 import type { 
   Control, RCM, CSARecord, TestRecord, Deficiency, ActionPlan, 
   UserRole, UserLevel, Materiality, Scoping, ChangeLog, SOCReport, Application, 
@@ -2055,8 +2055,19 @@ export function userRoutes(app: Hono<HonoEnv>) {
     const db = getDb(c.env.DATABASE_URL);
     const orgId = c.get('organizationId');
     const noGL = c.req.query('noGL');
+    const id = c.req.query('id');
 
-    const query = db.select({
+    let conditions = eq(bpmProcesses.organizationId, orgId);
+    
+    if (id) {
+      conditions = and(conditions, eq(bpmProcesses.id, id)) as SQL;
+    }
+    
+    if (noGL) {
+      conditions = and(conditions, eq(bpmProcesses.noGL, noGL)) as SQL;
+    }
+
+    const items = await db.select({
       id: bpmProcesses.id,
       organizationId: bpmProcesses.organizationId,
       noGL: bpmProcesses.noGL,
@@ -2066,19 +2077,12 @@ export function userRoutes(app: Hono<HonoEnv>) {
       createdBy: bpmProcesses.createdBy,
       controlCount: bpmProcesses.controlCount,
       riskCount: bpmProcesses.riskCount,
+      bpmCode: bpmProcesses.bpmCode,
       standardTestProcedure: bpmProcesses.standardTestProcedure
-      })    .from(bpmProcesses)
-    .where(eq(bpmProcesses.organizationId, orgId));
+    })
+    .from(bpmProcesses)
+    .where(conditions);
 
-    if (noGL) {
-      const items = await query.where(and(
-        eq(bpmProcesses.organizationId, orgId),
-        eq(bpmProcesses.noGL, noGL)
-      ));
-      return ok(c, { items });
-    }
-
-    const items = await query;
     return ok(c, { items });
   });
 
@@ -2122,30 +2126,33 @@ export function userRoutes(app: Hono<HonoEnv>) {
     const orgId = c.get('organizationId');
     const body = await c.req.json<Partial<BPMProcess>>();
 
+    const updateData: any = {};
+    if (body.name !== undefined) updateData.name = body.name;
+    if (body.bpmCode !== undefined) updateData.bpmCode = body.bpmCode;
+    if (body.fsliName !== undefined) updateData.fsliName = body.fsliName;
+    if (body.standardTestProcedure !== undefined) updateData.standardTestProcedure = body.standardTestProcedure;
+
     // Uniqueness Check for bpmCode
-    if (body.bpmCode) {
+    if (updateData.bpmCode) {
       const existing = await db.select()
         .from(bpmProcesses)
         .where(and(
           eq(bpmProcesses.organizationId, orgId),
-          eq(bpmProcesses.bpmCode, body.bpmCode),
+          eq(bpmProcesses.bpmCode, updateData.bpmCode),
           ne(bpmProcesses.id, id)
         ))
         .limit(1);
       
       if (existing.length > 0) {
-        return bad(c, `BPM Code '${body.bpmCode}' sudah digunakan oleh proses lain.`);
+        return bad(c, `BPM Code '${updateData.bpmCode}' sudah digunakan oleh proses lain.`);
       }
     }
 
-    await db.update(bpmProcesses)
-      .set({
-        name: body.name,
-        bpmCode: body.bpmCode,
-        fsliName: body.fsliName,
-        standardTestProcedure: body.standardTestProcedure,
-      })
-      .where(and(eq(bpmProcesses.id, id), eq(bpmProcesses.organizationId, orgId)));
+    if (Object.keys(updateData).length > 0) {
+      await db.update(bpmProcesses)
+        .set(updateData)
+        .where(and(eq(bpmProcesses.id, id), eq(bpmProcesses.organizationId, orgId)));
+    }
 
     return ok(c, { success: true });
   });
@@ -2713,13 +2720,18 @@ export function userRoutes(app: Hono<HonoEnv>) {
 
       // 2. Batch Insert Transactions with Smart Linkage
       const rowsToInsert = body.rows.map((row: any) => {
-        // Priority 1: BPM Code in row (Human-readable mapping)
-        // Priority 2: BPM Process ID in body (Direct context)
+        // Default context from the body
         let resolvedProcessId = body.bpmProcessId || null;
         
-        if (row.bpmCode) {
-          const mappedId = codeToIdMap.get(String(row.bpmCode).toUpperCase());
-          if (mappedId) resolvedProcessId = mappedId;
+        // If row has EXPLICIT bpmCode data (even if empty string)
+        if (typeof row.bpmCode !== 'undefined') {
+          // Explicit column present -> Reset default context
+          resolvedProcessId = null; 
+          const codeStr = String(row.bpmCode).trim().toUpperCase();
+          if (codeStr) {
+            const mappedId = codeToIdMap.get(codeStr);
+            if (mappedId) resolvedProcessId = mappedId;
+          }
         }
 
         return {

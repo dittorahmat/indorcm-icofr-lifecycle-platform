@@ -314,7 +314,7 @@ export function TodoListPage() {
 
                   <div className="p-4 bg-slate-50 rounded-lg border border-slate-100 space-y-3">
                     <div className="flex items-center gap-2 text-indigo-700">
-                      <Bell className="h-4 w-4" />
+                      <div className="h-2 w-2 bg-indigo-600 rounded-full" />
                       <span className="text-xs font-bold uppercase">{t('csa_hub:scheduling.setReminder')}</span>
                     </div>
                     <div className="flex items-center gap-3">
@@ -624,7 +624,7 @@ export function TodoListPage() {
                                         <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />
                                     )}
                                     <span className="truncate font-medium">{process?.name || event.description || 'Activity'}</span>
-                                    {event.reminderConfig && <Bell className="h-2 w-2 text-indigo-500 opacity-70 flex-shrink-0" />}
+                                    {event.reminderConfig && <div className="w-1 h-1 bg-indigo-500 rounded-full opacity-70 flex-shrink-0" />}
                                   </div>
                                 </div>
                               </PopoverTrigger>

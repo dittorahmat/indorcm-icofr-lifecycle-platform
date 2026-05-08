@@ -528,7 +528,7 @@ export const GLDataGrid = React.memo(function GLDataGrid({
       </div>
 
       <div className="rounded-md border bg-white shadow-sm overflow-hidden">
-        <div className="overflow-x-auto overflow-y-auto max-h-[600px]">
+        <div className="overflow-x-auto">
           <Table className="relative">
             <TableHeader className="bg-slate-50 sticky top-0 z-10 shadow-sm">
               {table.getHeaderGroups().map(headerGroup => (

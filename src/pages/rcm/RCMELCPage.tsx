@@ -109,8 +109,8 @@ export function RCMELCPage({ embedded = false }: RCMELCPageProps) {
         </div>
       )}
 
-      <div className="flex-1 overflow-hidden p-0">
-        <div className="h-[calc(100vh-120px)] w-full border-t border-b bg-white overflow-auto border-slate-200 relative scrollbar-thin scrollbar-thumb-slate-200">
+      <div className="flex-1 p-0">
+        <div className="w-full border-t border-b bg-white border-slate-200 relative">
           <TooltipProvider>
             <Table className="min-w-[1800px] table-fixed border-separate border-spacing-0">
               <TableHeader className="sticky top-0 z-50">

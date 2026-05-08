@@ -62,6 +62,7 @@ export interface TransactionDetail {
   id: string;
   organizationId: string;
   noGL: string;
+  bpmProcessId?: string;
   refNo?: string;
   transDate?: number; // epoch millis
   description?: string;

@@ -3,7 +3,6 @@ import { Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { ThemeToggle } from '@/components/ThemeToggle'
 import { Toaster, toast } from '@/components/ui/sonner'
 import type { User, Chat, ChatMessage } from '@shared/types'
 import { api } from '@/lib/api-client'
@@ -81,8 +80,6 @@ export function DemoPage() {
   return (
     <AppLayout>
     <main className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground p-4 overflow-hidden relative">
-      <ThemeToggle />
-
       <div className="absolute inset-0 bg-gradient-rainbow opacity-10 dark:opacity-20" />
       
       <div className="space-y-6 relative z-10 max-w-3xl w-full">

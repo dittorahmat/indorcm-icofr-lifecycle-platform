@@ -710,7 +710,55 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <div className="lg:col-span-1 space-y-6">
+          {/* Main Content - Left (Order 1 on Desktop) */}
+          <div className="lg:col-span-3 space-y-6 order-2 lg:order-1">
+            <Tabs defaultValue="worksheet" className="w-full">
+              <TabsList className="grid w-full max-w-[550px] grid-cols-3 mb-4">
+                <TabsTrigger value="worksheet">{t('approval.tabWorksheet')}</TabsTrigger>
+                <TabsTrigger value="history" className="flex items-center gap-2">
+                  <History className="h-3 w-3" /> {t('approval.tabHistory')}
+                  {simState.history?.length > 0 && <Badge variant="secondary" className="ml-1 h-4 px-1 text-[9px]">{simState.history.length}</Badge>}
+                </TabsTrigger>
+                <TabsTrigger value="integrity" className="flex items-center gap-2">
+                  <ShieldCheck className="h-3 w-3" /> {t('approval.tabIntegrity')}
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="worksheet" className="space-y-6">
+                <GLDataGrid
+                  data={mergedGlData}
+                  assessmentData={simState.assessmentData || {}}
+                  omValue={omValue}
+                  pmValue={pmValue}
+                  onAssessmentChange={handleAssessmentChange}
+                  onOwnerAcceptanceChange={handleOwnerAcceptanceChange}
+                  isReadOnly={isLocked}
+                  departments={departments?.items || []}
+                  onAssignDepartments={handleAssignDepartments}
+                  applications={appsData?.items || []}
+                  selectedApps={localAppMappings}
+                  onAppsChange={handleAppsChange}
+                  onQuickAddApp={handleQuickAddApp}
+                />
+              </TabsContent>
+              <TabsContent value="history">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2"><History className="h-5 w-5" /> {t('approval.tabHistory')} & Feedback</CardTitle>
+                    <CardDescription>Track all actions and comments for this materiality baseline.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-6">
+                    <ApprovalHistoryTimeline history={simState.history} />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              <TabsContent value="integrity" className="space-y-6">
+                <ScopingHealthDashboard glData={glData} />
+              </TabsContent>
+            </Tabs>
+          </div>
+
+          {/* Parameters - Right (Order 2 on Desktop) */}
+          <div className="lg:col-span-1 space-y-6 order-1 lg:order-2">
             <Card className="border-slate-200 shadow-sm overflow-hidden">
               <CardHeader className="pb-3 border-b border-slate-50 bg-slate-50/50">
                 <CardTitle className="text-xs uppercase font-bold text-slate-500 tracking-wider flex items-center gap-2">
@@ -776,52 +824,6 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
                 </ol>
               </CardContent>
             </Card>
-          </div>
-
-          <div className="lg:col-span-3 space-y-6">
-            <Tabs defaultValue="worksheet" className="w-full">
-              <TabsList className="grid w-full max-w-[550px] grid-cols-3 mb-4">
-                <TabsTrigger value="worksheet">{t('approval.tabWorksheet')}</TabsTrigger>
-                <TabsTrigger value="history" className="flex items-center gap-2">
-                  <History className="h-3 w-3" /> {t('approval.tabHistory')}
-                  {simState.history?.length > 0 && <Badge variant="secondary" className="ml-1 h-4 px-1 text-[9px]">{simState.history.length}</Badge>}
-                </TabsTrigger>
-                <TabsTrigger value="integrity" className="flex items-center gap-2">
-                  <ShieldCheck className="h-3 w-3" /> {t('approval.tabIntegrity')}
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value="worksheet" className="space-y-6">
-                <GLDataGrid
-                  data={mergedGlData}
-                  assessmentData={simState.assessmentData || {}}
-                  omValue={omValue}
-                  pmValue={pmValue}
-                  onAssessmentChange={handleAssessmentChange}
-                  onOwnerAcceptanceChange={handleOwnerAcceptanceChange}
-                  isReadOnly={isLocked}
-                  departments={departments?.items || []}
-                  onAssignDepartments={handleAssignDepartments}
-                  applications={appsData?.items || []}
-                  selectedApps={localAppMappings}
-                  onAppsChange={handleAppsChange}
-                  onQuickAddApp={handleQuickAddApp}
-                />
-              </TabsContent>
-              <TabsContent value="history">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2"><History className="h-5 w-5" /> {t('approval.tabHistory')} & Feedback</CardTitle>
-                    <CardDescription>Track all actions and comments for this materiality baseline.</CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-6">
-                    <ApprovalHistoryTimeline history={simState.history} />
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              <TabsContent value="integrity" className="space-y-6">
-                <ScopingHealthDashboard glData={glData} />
-              </TabsContent>
-            </Tabs>
           </div>
         </div>
       </div>

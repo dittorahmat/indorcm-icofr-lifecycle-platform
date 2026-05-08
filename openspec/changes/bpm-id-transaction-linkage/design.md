@@ -32,7 +32,14 @@ The current system links transactions solely via `noGL` (Account Code). This des
   - If `bpmProcessId` is provided: Return transactions matching both `noGL` AND `bpmProcessId`.
   - If NOT provided: Return transactions matching `noGL` (Legacy/Global view).
 
-### 4. Migration Strategy
+### 4. Linkage Priority (Smart Linkage)
+- **Decision**: Establish clear precedence for resolving `bpmProcessId` during uploads.
+- **Priority Rules**:
+  1. **Explicit Column**: If the CSV contains a `bpmCode` column, the system MUST use its value for each row. An empty string in this column explicitly marks the transaction as **unlinked** (belongs to the Account/GL but not to any specific sub-process).
+  2. **Implicit Context**: If the CSV **lacks** a `bpmCode` column, the system SHALL default all rows to the `bpmProcessId` provided in the upload request (the context of the modal it was uploaded from).
+- **Rationale**: This allows users to perform bulk uploads for multiple processes in one file while still supporting surgical, process-specific uploads without requiring column modification.
+
+### 5. Migration Strategy
 - **Decision**: Use `npx drizzle-kit push` for immediate schema updates.
 - **Rationale**: The development environment uses a direct push model to Neon/D1.
 

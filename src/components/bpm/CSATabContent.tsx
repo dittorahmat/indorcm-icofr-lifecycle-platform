@@ -625,20 +625,8 @@ export function CSATabContent({
       </div>
 
       <ResizablePanelGroup direction="horizontal" className="flex-1 print-hidden">
-        <ResizablePanel defaultSize={30} minSize={20}>
-          <div className="h-full relative bg-slate-50 border-r overflow-hidden">
-            {diagram ? (
-              <ReactFlow nodes={diagram.nodes} edges={diagram.edges} nodeTypes={nodeTypes} fitView>
-                <Background color="#cbd5e1" gap={16} />
-                <Controls />
-              </ReactFlow>
-            ) : <div className="h-full flex flex-col items-center justify-center opacity-20"><LayoutDashboard className="h-12 w-12 mb-2" /><p className="text-xs font-bold uppercase">No Diagram Linked</p></div>}
-          </div>
-        </ResizablePanel>
-
-        <ResizableHandle withHandle />
-
-        <ResizablePanel defaultSize={70}>
+        {/* Main Content - Left (Order 1) */}
+        <ResizablePanel defaultSize={70} minSize={30}>
           <div className="h-full flex flex-col overflow-hidden">
             <div className="flex-1 overflow-y-auto bg-white p-6 relative">
               {view === 'list' ? (
@@ -1055,6 +1043,20 @@ export function CSATabContent({
                 </Form>
               )}
             </div>
+          </div>
+        </ResizablePanel>
+
+        <ResizableHandle withHandle />
+
+        {/* Diagram - Right (Order 2) */}
+        <ResizablePanel defaultSize={30} minSize={20}>
+          <div className="h-full relative bg-slate-50 border-l overflow-hidden">
+            {diagram ? (
+              <ReactFlow nodes={diagram.nodes} edges={diagram.edges} nodeTypes={nodeTypes} fitView>
+                <Background color="#cbd5e1" gap={16} />
+                <Controls />
+              </ReactFlow>
+            ) : <div className="h-full flex flex-col items-center justify-center opacity-20"><LayoutDashboard className="h-12 w-12 mb-2" /><p className="text-xs font-bold uppercase">No Diagram Linked</p></div>}
           </div>
         </ResizablePanel>
       </ResizablePanelGroup>

@@ -162,6 +162,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
 
   const [standardProcedure, setStandardProcedure] = React.useState("");
   const [bpmCode, setBpmCode] = React.useState("");
+  const [isProcedureOpen, setIsProcedureOpen] = React.useState(false);
 
   const isMetadataDirty = React.useMemo(() => {
     return standardProcedure !== (bpmProcess?.standardTestProcedure || "") || 
@@ -171,15 +172,18 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
   const metadataBlocker = useUnsavedChanges(isMetadataDirty && isProcedureOpen);
 
   React.useEffect(() => {
-    if (bpmProcess?.standardTestProcedure) {
-      setStandardProcedure(bpmProcess.standardTestProcedure);
-    }
-    if (bpmProcess?.bpmCode) {
-      setBpmCode(bpmProcess.bpmCode);
+    if (bpmProcess) {
+      setStandardProcedure(bpmProcess.standardTestProcedure || "");
+      setBpmCode(bpmProcess.bpmCode || "");
     }
   }, [bpmProcess]);
 
   const handleSaveMetadata = () => {
+    if (!bpmCode.trim()) {
+      toast.error("BPM Code tidak boleh kosong");
+      return;
+    }
+    
     updateProcessMutation.mutate({ 
       standardTestProcedure: standardProcedure,
       bpmCode: bpmCode 
@@ -582,8 +586,6 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
     columns,
     getCoreRowModel: getCoreRowModel(),
   });
-
-  const [isProcedureOpen, setIsProcedureOpen] = React.useState(false);
 
   return (
     <div className="flex flex-col h-full min-h-0">

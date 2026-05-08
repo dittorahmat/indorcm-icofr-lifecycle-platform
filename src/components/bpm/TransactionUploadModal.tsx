@@ -94,6 +94,7 @@ export function TransactionUploadModal({ isOpen, onClose, noGL, bpmProcessId, on
             amount: typeof row.amount === 'number' ? row.amount : parseFloat(String(row.amount || '0').replace(/,/g, '')),
             currency: row.currency || 'IDR',
             dcFlag: row.dcFlag || (parseFloat(String(row.amount)) < 0 ? 'C' : 'D'),
+            bpmCode: typeof row.bpmCode !== 'undefined' ? String(row.bpmCode) : undefined,
           };
         });
 

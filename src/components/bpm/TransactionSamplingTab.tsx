@@ -1,5 +1,5 @@
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { TransactionDetail } from '@shared/types';
 import { 
@@ -14,7 +14,6 @@ import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import { TransactionUploadModal } from './TransactionUploadModal';
-import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { 
   AlertDialog,
@@ -196,6 +195,7 @@ export function TransactionSamplingTab({ noGL, bpmProcessId, onSamplesSelected }
         isOpen={isUploadModalOpen} 
         onClose={() => setIsUploadModalOpen(false)} 
         noGL={noGL}
+        bpmProcessId={bpmProcessId}
         onSuccess={() => refetch()}
       />
     </div>
