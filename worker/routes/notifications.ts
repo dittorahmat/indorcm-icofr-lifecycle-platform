@@ -7,7 +7,7 @@ import { and, eq, desc, sql } from 'drizzle-orm';
 
 const notificationsApp = new Hono<HonoEnv>();
 
-notificationsApp.get('/unread-count', async (c) => {
+notificationsApp.get('/notifications/unread-count', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const userId = c.get('userId');
@@ -25,7 +25,7 @@ notificationsApp.get('/unread-count', async (c) => {
   return ok(c, { count: Number(result[0]?.count || 0) });
 });
 
-notificationsApp.get('/', async (c) => {
+notificationsApp.get('/notifications', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const userId = c.get('userId');
@@ -42,7 +42,7 @@ notificationsApp.get('/', async (c) => {
   return ok(c, items);
 });
 
-notificationsApp.post('/:id/read', async (c) => {
+notificationsApp.post('/notifications/:id/read', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const id = c.req.param('id');
   const orgId = c.get('organizationId');
@@ -59,7 +59,7 @@ notificationsApp.post('/:id/read', async (c) => {
   return ok(c, { success: true });
 });
 
-notificationsApp.post('/read-all', async (c) => {
+notificationsApp.post('/notifications/read-all', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const userId = c.get('userId');
@@ -74,7 +74,7 @@ notificationsApp.post('/read-all', async (c) => {
   return ok(c, { success: true });
 });
 
-notificationsApp.delete('/:id', async (c) => {
+notificationsApp.delete('/notifications/:id', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const id = c.req.param('id');
   const orgId = c.get('organizationId');
@@ -90,7 +90,7 @@ notificationsApp.delete('/:id', async (c) => {
   return ok(c, { success: true });
 });
 
-notificationsApp.post('/clear-all', async (c) => {
+notificationsApp.post('/notifications/clear-all', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const userId = c.get('userId');

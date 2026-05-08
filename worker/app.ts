@@ -5,6 +5,15 @@ import { userRoutes } from './user-routes';
 import notifications from './routes/notifications';
 import license from './routes/license';
 import aiDocs from './routes/ai-docs';
+import rcm from './routes/rcm';
+import bpm from './routes/bpm';
+import scoping from './routes/scoping';
+import remediation from './routes/remediation';
+import users from './routes/users';
+import infrastructure from './routes/infrastructure';
+import reporting from './routes/reporting';
+import transactions from './routes/transactions';
+import csa from './routes/csa';
 import { getAuth } from './auth';
 import { getDb } from './db';
 import * as schema from './db/schema';
@@ -16,7 +25,7 @@ import { getMachineFingerprint, verifyLicense, checkLicenseStatus } from './lib/
 let cachedLicenseStatus: {
     status: string | null;
     timestamp: number;
-    licenseKey: string; // Simpan key untuk deteksi perubahan
+    licenseKey: string;
 } | null = null;
 
 const LICENSE_CACHE_TTL = 60 * 60 * 1000; // 1 Jam
@@ -63,20 +72,18 @@ export const createApp = () => {
 
   // License Guard Middleware
   app.use('/api/*', async (c, next) => {
-    // 1. Explicit Bypass (for Cloudflare Demo)
     if (c.env.SKIP_LICENSE === 'true') {
       c.set('licenseStatus', 'bypassed');
       return next();
     }
 
-    // 2. Skip for public routes and license activation/status
     const publicPaths = [
         '/api/health', 
-        '/api/license/activate', 
         '/api/license/status', 
+        '/api/license/activate', 
         '/api/client-errors',
-        '/api/dev/re-seed',
-        '/api/dev/fix-db'
+        '/api/user/dev/re-seed',
+        '/api/user/dev/fix-db'
     ];
     
     if (publicPaths.includes(c.req.path) || (c.req.path.startsWith('/api/auth/') && c.req.path !== '/api/user/me')) {
@@ -91,7 +98,6 @@ export const createApp = () => {
     const db = getDb(c.env.DATABASE_URL);
     const now = Date.now();
 
-    // 3. Get License from DB (Fast Read)
     let activeLicense;
     try {
       activeLicense = await db.select().from(schema.systemLicenses).limit(1);
@@ -109,7 +115,6 @@ export const createApp = () => {
 
     const license = activeLicense[0];
 
-    // 4. Check Cache (with Key Change Detection)
     const isKeySame = cachedLicenseStatus?.licenseKey === license.licenseKey;
     const isCacheValid = cachedLicenseStatus && (now - cachedLicenseStatus.timestamp < LICENSE_CACHE_TTL);
 
@@ -121,7 +126,6 @@ export const createApp = () => {
       return next();
     }
     
-    // 5. Cache Miss, Expired, or Key Changed -> Heavy Cryptographic Verification
     const publicKey = c.env.LICENSE_PUBLIC_KEY || process.env.LICENSE_PUBLIC_KEY || '';
     const payload = await verifyLicense(license.licenseKey, publicKey);
     
@@ -134,22 +138,18 @@ export const createApp = () => {
     const fingerprint = getMachineFingerprint();
     const status = checkLicenseStatus(payload, fingerprint, license.lastHeartbeat);
 
-    // 6. Update Cache
     cachedLicenseStatus = { status, timestamp: now, licenseKey: license.licenseKey };
 
     if (status) {
-        // Update status in DB if it changed
         if (license.status !== status) {
             await db.update(schema.systemLicenses).set({ status }).where(eq(schema.systemLicenses.id, license.id));
         }
         return c.json({ success: false, error: status, message: `License issue: ${status}` }, 403);
     }
 
-    // --- HEARTBEAT THROTTLING (1 JAM) ---
     const lastUpdateTs = new Date(license.lastHeartbeat).getTime();
     const ONE_HOUR = 60 * 60 * 1000;
 
-    // Hanya tulis ke database jika sudah lewat 1 jam
     if (now - lastUpdateTs > ONE_HOUR) {
         await db.update(schema.systemLicenses).set({ 
             lastHeartbeat: new Date(),
@@ -164,20 +164,17 @@ export const createApp = () => {
 
   // Auth Middleware
   app.use('/api/*', async (c, next) => {
-    // Skip middleware for public auth routes (signIn, signUp, etc.)
-    // But NOT for /api/auth/me which we want to be protected by our session logic
     if (c.req.path.startsWith('/api/auth/') && c.req.path !== '/api/user/me') {
       return next();
     }
 
-    // Public paths that don't require authentication
     const publicPaths = [
         '/api/health', 
-        '/api/license/activate', 
         '/api/license/status', 
+        '/api/license/activate', 
         '/api/client-errors', 
-        '/api/dev/re-seed',
-        '/api/dev/fix-db'
+        '/api/user/dev/re-seed',
+        '/api/user/dev/fix-db'
     ];
     
     if (publicPaths.includes(c.req.path)) {
@@ -196,13 +193,11 @@ export const createApp = () => {
     }
 
     if (!session) {
-      if (c.req.path === '/api/auth/me') return c.json({ success: false, error: 'Unauthorized' }, 401);
       return c.json({ success: false, error: 'Unauthorized' }, 401);
     }
 
     let activeOrgId = (session.session as any).activeOrganizationId;
 
-    // Fallback: If no active org in session, find the first one from DB
     if (!activeOrgId) {
       const db = getDb(c.env.DATABASE_URL);
       const userMember = await db.select().from(schema.member).where(eq(schema.member.userId, session.user.id)).limit(1);
@@ -232,21 +227,29 @@ export const createApp = () => {
     }
   });
 
-  // Specific routes first
-  const routes = app
-    .route('/api/notifications', notifications)
-    .route('/api/license', license)
-    .route('/api', aiDocs);
+  // Direct Mounting to avoid nested sub-app complexity
+  app.route('/api', notifications);
+  app.route('/api', license);
+  app.route('/api', rcm);
+  app.route('/api', bpm);
+  app.route('/api', scoping);
+  app.route('/api', remediation);
+  app.route('/api', users);
+  app.route('/api', infrastructure);
+  app.route('/api', reporting);
+  app.route('/api', transactions);
+  app.route('/api', csa);
+  app.route('/api', aiDocs);
     
+  // Legacy function routes
   userRoutes(app);
 
-  // Better Auth Route Handler as fallback for all other /api/auth/*
   app.all('/api/auth/*', async (c) => {
     const auth = getAuth(c.env);
     return auth.handler(c.req.raw);
   });
   
-  return routes;
+  return app;
 };
 
 export type AppType = ReturnType<typeof createApp>;

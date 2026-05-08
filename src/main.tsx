@@ -13,9 +13,11 @@ import { RootLayout } from '@/components/layout/RootLayout';
 import '@/index.css';
 import './i18n/config';
 
+import { UnsavedChangesProvider } from '@/context/UnsavedChangesContext';
+import { UnsavedChangesGuard } from '@/components/UnsavedChangesGuard';
+
 // Lazy load all pages for optimized bundle size
 const HomePage = lazy(() => import('@/pages/HomePage').then(module => ({ default: module.HomePage })));
-// Don't lazy load LoginPage - critical route for auth flow (prevents logout errors)
 import { LoginPage } from '@/pages/LoginPage';
 import { WelcomePage } from '@/pages/WelcomePage';
 const Dashboard = lazy(() => import('@/pages/Dashboard').then(module => ({ default: module.Dashboard })));
@@ -45,7 +47,6 @@ const NotificationsPage = lazy(() => import('@/pages/notifications/Notifications
 import { ActivationPage } from '@/pages/ActivationPage';
 import { LicenseGuard } from '@/components/LicenseGuard';
 import { LicenseProvider } from '@/context/LicenseContext';
-import { authClient } from '@/lib/auth-client';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 
 import { I18nextProvider } from 'react-i18next';
@@ -57,51 +58,61 @@ const queryClient = new QueryClient();
 
 const router = createBrowserRouter([
   {
-    element: <LicenseGuard />,
+    element: (
+      <>
+        <UnsavedChangesGuard />
+        <Outlet />
+      </>
+    ),
     children: [
       {
-        path: "/activate",
-        element: <ActivationPage />,
-      },
-      {
-        path: "/",
-        element: <LoginPage />,
-      },
-      {
-        path: "/welcome",
-        element: <WelcomePage />,
-      },
-      {
-        element: <ProtectedRoute />,
+        element: <LicenseGuard />,
         children: [
           {
-            element: <RootLayout />,
-            errorElement: <RouteErrorBoundary />,
+            path: "/activate",
+            element: <ActivationPage />,
+          },
+          {
+            path: "/",
+            element: <LoginPage />,
+          },
+          {
+            path: "/welcome",
+            element: <WelcomePage />,
+          },
+          {
+            element: <ProtectedRoute />,
             children: [
-              { path: "/dashboard", element: <PageSuspense><Dashboard /></PageSuspense> },
-              { path: "/scoping", element: <PageSuspense><ScopingPage /></PageSuspense> },
-              { path: "/scoping/approval", element: <PageSuspense><ApprovalPage /></PageSuspense> },
-              { path: "/rcm", element: <PageSuspense><RCMList /></PageSuspense> },
-              { path: "/rcm/tlc", element: <PageSuspense><RCMTLCPage /></PageSuspense> },
-              { path: "/rcm/elc", element: <PageSuspense><RCMELCPage /></PageSuspense> },
-              { path: "/rcm/itgc", element: <PageSuspense><RCMITGCPage /></PageSuspense> },
-              { path: "/change-log", element: <PageSuspense><ChangeLogPage /></PageSuspense> },
-              { path: "/soc-monitoring", element: <PageSuspense><SOCMonitoringPage /></PageSuspense> },
-              { path: "/applications", element: <PageSuspense><SOCMonitoringPage /></PageSuspense> },
-              { path: "/bpm", element: <PageSuspense><BPMPage /></PageSuspense> },
-              { path: "/todo", element: <PageSuspense><TodoListPage /></PageSuspense> },
-              { path: "/csa", element: <PageSuspense><CSAPage /></PageSuspense> },
-              { path: "/testing", element: <PageSuspense><TestWorkbench /></PageSuspense> },
-              { path: "/deficiencies", element: <PageSuspense><DeficiencyBoard /></PageSuspense> },
-              { path: "/reports", element: <PageSuspense><ReportsPage /></PageSuspense> },
-              { path: "/ai-hub", element: <PageSuspense><AIHubPage /></PageSuspense> },
-              { path: "/wbs-recap", element: <PageSuspense><WBSPage /></PageSuspense> },
-              { path: "/audit-portal", element: <PageSuspense><ExternalAuditPortal /></PageSuspense> },
-              { path: "/import", element: <PageSuspense><ImportPage /></PageSuspense> },
-              { path: "/settings", element: <PageSuspense><SettingsPage /></PageSuspense> },
-              { path: "/admin/users", element: <PageSuspense><UserManagementPage /></PageSuspense> },
-              { path: "/documents", element: <PageSuspense><DocumentsPage /></PageSuspense> },
-              { path: "/notifications", element: <PageSuspense><NotificationsPage /></PageSuspense> },
+              {
+                element: <RootLayout />,
+                errorElement: <RouteErrorBoundary />,
+                children: [
+                  { path: "/dashboard", element: <PageSuspense><Dashboard /></PageSuspense> },
+                  { path: "/scoping", element: <PageSuspense><ScopingPage /></PageSuspense> },
+                  { path: "/scoping/approval", element: <PageSuspense><ApprovalPage /></PageSuspense> },
+                  { path: "/rcm", element: <PageSuspense><RCMList /></PageSuspense> },
+                  { path: "/rcm/tlc", element: <PageSuspense><RCMTLCPage /></PageSuspense> },
+                  { path: "/rcm/elc", element: <PageSuspense><RCMELCPage /></PageSuspense> },
+                  { path: "/rcm/itgc", element: <PageSuspense><RCMITGCPage /></PageSuspense> },
+                  { path: "/change-log", element: <PageSuspense><ChangeLogPage /></PageSuspense> },
+                  { path: "/soc-monitoring", element: <PageSuspense><SOCMonitoringPage /></PageSuspense> },
+                  { path: "/applications", element: <PageSuspense><SOCMonitoringPage /></PageSuspense> },
+                  { path: "/bpm", element: <PageSuspense><BPMPage /></PageSuspense> },
+                  { path: "/todo", element: <PageSuspense><TodoListPage /></PageSuspense> },
+                  { path: "/csa", element: <PageSuspense><CSAPage /></PageSuspense> },
+                  { path: "/testing", element: <PageSuspense><TestWorkbench /></PageSuspense> },
+                  { path: "/deficiencies", element: <PageSuspense><DeficiencyBoard /></PageSuspense> },
+                  { path: "/reports", element: <PageSuspense><ReportsPage /></PageSuspense> },
+                  { path: "/ai-hub", element: <PageSuspense><AIHubPage /></PageSuspense> },
+                  { path: "/wbs-recap", element: <PageSuspense><WBSPage /></PageSuspense> },
+                  { path: "/audit-portal", element: <PageSuspense><ExternalAuditPortal /></PageSuspense> },
+                  { path: "/import", element: <PageSuspense><ImportPage /></PageSuspense> },
+                  { path: "/settings", element: <PageSuspense><SettingsPage /></PageSuspense> },
+                  { path: "/admin/users", element: <PageSuspense><UserManagementPage /></PageSuspense> },
+                  { path: "/documents", element: <PageSuspense><DocumentsPage /></PageSuspense> },
+                  { path: "/notifications", element: <PageSuspense><NotificationsPage /></PageSuspense> },
+                ]
+              },
             ]
           },
         ]
@@ -114,14 +125,16 @@ const router = createBrowserRouter([
 createRoot(document.getElementById('root')!).render(
     <QueryClientProvider client={queryClient}>
       <LicenseProvider>
-        <I18nextProvider i18n={i18n}>
-          <ErrorBoundary>
-            <Suspense fallback={<div className="h-screen w-full flex items-center justify-center"><Skeleton className="h-12 w-12 rounded-full" /></div>}>
-              <RouterProvider router={router} />
-            </Suspense>
-            <Toaster richColors closeButton />
-          </ErrorBoundary>
-        </I18nextProvider>
+        <UnsavedChangesProvider>
+          <I18nextProvider i18n={i18n}>
+            <ErrorBoundary>
+              <Suspense fallback={<div className="h-screen w-full flex items-center justify-center"><Skeleton className="h-12 w-12 rounded-full" /></div>}>
+                <RouterProvider router={router} />
+              </Suspense>
+              <Toaster richColors closeButton />
+            </ErrorBoundary>
+          </I18nextProvider>
+        </UnsavedChangesProvider>
       </LicenseProvider>
     </QueryClientProvider>
 );

@@ -276,7 +276,7 @@ ${knowledgeBase}
 
 // --- File Handling Routes ---
 
-aiDocsApp.post('/upload', async (c) => {
+aiDocsApp.post('/files/upload', async (c) => {
   const orgId = c.get('organizationId');
   if (!orgId) return bad(c, 'Organization ID required');
 

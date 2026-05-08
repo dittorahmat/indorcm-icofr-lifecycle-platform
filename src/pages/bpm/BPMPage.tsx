@@ -223,7 +223,7 @@ export function BPMPage() {
 
   // 0. Build lookup map for GL rows to speed up auto-healing and filter logic
   const glLookupMap = React.useMemo(() => {
-    if (!activeSnap) return new Map<string, string>();
+    if (!activeSnap || !activeSnap.rows) return new Map<string, string>();
     const map = new Map<string, string>();
     activeSnap.rows.forEach(r => {
       if (r.glDesc && r.fsliName) map.set(`desc:${r.glDesc}`, r.fsliName);
@@ -255,7 +255,7 @@ export function BPMPage() {
 
   // 3. Filtered GL Numbers (Unique combination of noGL + glDesc)
   const glNumbers = React.useMemo(() => {
-    if (!activeSnap || !selectedFsli) return [];
+    if (!activeSnap || !activeSnap.rows || !selectedFsli) return [];
     const accounts: { key: string, noGL: string, glDesc: string }[] = [];
     const seen = new Set<string>();
     activeSnap.rows
@@ -271,7 +271,7 @@ export function BPMPage() {
   }, [activeSnap, selectedFsli]);
 
   const selectedGLRow = React.useMemo(() => {
-    if (!selectedAccountKey || !activeSnap) return null;
+    if (!selectedAccountKey || !activeSnap || !activeSnap.rows) return null;
     const [noGL, glDesc] = selectedAccountKey.split(' ||| ');
     return activeSnap.rows.find(r => r.noGL === noGL && r.glDesc === glDesc);
   }, [selectedAccountKey, activeSnap]);

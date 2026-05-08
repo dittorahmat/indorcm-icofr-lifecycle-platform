@@ -8,11 +8,10 @@ import { getMachineFingerprint, verifyLicense, checkLicenseStatus } from '../lib
 
 const licenseApp = new Hono<HonoEnv>();
 
-licenseApp.get('/status', async (c) => {
-  // 1. Check for bypass flag first
+licenseApp.get('/license/status', async (c) => {
   if (c.env.SKIP_LICENSE === 'true') {
       return ok(c, {
-        status: 'active', // Report as active to frontend to satisfy guard
+        status: 'active',
         machineId: 'CLOUDFLARE-DEMO-BYPASS',
         daysRemaining: 999,
         clientName: 'Cloudflare Demo'
@@ -51,7 +50,7 @@ licenseApp.get('/status', async (c) => {
   });
 });
 
-licenseApp.post('/activate', async (c) => {
+licenseApp.post('/license/activate', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const { licenseKey } = await c.req.json<{ licenseKey: string }>();
 
@@ -71,7 +70,6 @@ licenseApp.post('/activate', async (c) => {
     return bad(c, `Activation failed: ${status}`);
   }
 
-  // Upsert license
   const existing = await db.select().from(systemLicenses).limit(1);
   if (existing.length > 0) {
     await db.update(systemLicenses).set({
