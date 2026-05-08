@@ -5,17 +5,21 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { UserRole } from '@shared/types';
 import { toast } from 'sonner';
 import { useTheme } from '@/hooks/use-theme';
 import { NotificationCenter } from './NotificationCenter';
+import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
+import { Pin, PinOff } from 'lucide-react';
 
 export function MainHeader() {
   const currentRole = (localStorage.getItem('mockRole') as UserRole) || 'Line 1';
   const location = useLocation();
   const navigate = useNavigate();
   const { isDark } = useTheme();
+  const { isPinned, setIsPinned } = useSidebar();
 
   const handleLogout = () => {
     localStorage.removeItem('authToken');
@@ -30,18 +34,38 @@ export function MainHeader() {
       "sticky top-0 z-40 w-full border-b transition-colors duration-300",
       isDark
         ? "bg-[#022c22] border-emerald-900/50 text-emerald-50"
-        : "bg-[#87CEEB] border-black/10 text-black shadow-md"
+        : "bg-[#417dc1] border-blue-700 text-white shadow-md"
     )}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center gap-6">
-            <Link to="/dashboard" className="flex items-center gap-2 group">
-              <Shield className={cn(
-                "h-7 w-7 transition-transform group-hover:scale-110",
-                isDark ? "text-emerald-400" : "text-black"
+            <div className="flex items-center gap-2">
+              <SidebarTrigger className={cn(
+                "h-9 w-9",
+                !isDark && "text-white hover:bg-white/10"
               )} />
-              <span className="font-black text-black text-lg uppercase tracking-tighter">IndoGRC Pro</span>
-            </Link>
+              
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className={cn(
+                  "h-9 w-9",
+                  !isDark && "text-white/70 hover:text-white hover:bg-white/10"
+                )}
+                onClick={() => setIsPinned(!isPinned)}
+                title={isPinned ? "Unpin sidebar" : "Pin sidebar"}
+              >
+                {isPinned ? <Pin className="h-4 w-4" /> : <PinOff className="h-4 w-4 opacity-50" />}
+              </Button>
+
+              <Link to="/dashboard" className="flex items-center gap-2 group ml-2">
+                <Shield className={cn(
+                  "h-7 w-7 transition-transform group-hover:scale-110",
+                  isDark ? "text-emerald-400" : "text-white"
+                )} />
+                <span className="font-display tracking-tight text-white text-lg font-bold hidden sm:inline-block">IndoGRC Pro</span>
+              </Link>
+            </div>
           </div>
           <div className="flex items-center gap-4">
             <NotificationCenter />

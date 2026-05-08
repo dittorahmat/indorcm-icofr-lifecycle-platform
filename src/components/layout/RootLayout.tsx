@@ -3,15 +3,16 @@ import { Outlet } from "react-router-dom";
 import { MainHeader } from "@/components/layout/MainHeader";
 import { AIFabButton, AIChatDrawer } from "@/components/ai-chatbot";
 import { LicenseBanner, LicenseModal } from "@/components/LicenseNotifications";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 export function RootLayout(): JSX.Element {
   const [isChatOpen, setIsChatOpen] = React.useState(false);
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground">
+    <SidebarProvider className="min-h-screen flex flex-col bg-background text-foreground">
       <MainHeader />
       <LicenseBanner />
-      <div className="flex-1 relative">
+      <div className="flex-1 relative flex flex-col">
         <Outlet />
       </div>
 
@@ -19,7 +20,7 @@ export function RootLayout(): JSX.Element {
       {/* Global AI Chatbot */}
       <AIFabButton isOpen={isChatOpen} onToggle={() => setIsChatOpen(!isChatOpen)} />
       <AIChatDrawer isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
-    </div>
+    </SidebarProvider>
   );
 }
 export default RootLayout;

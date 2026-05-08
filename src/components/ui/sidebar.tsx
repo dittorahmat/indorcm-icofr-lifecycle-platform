@@ -25,6 +25,7 @@ import {
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
+const SIDEBAR_PINNED_COOKIE_NAME = "sidebar_pinned"
 const SIDEBAR_WIDTH = "16rem"
 const SIDEBAR_WIDTH_MOBILE = "18rem"
 const SIDEBAR_WIDTH_ICON = "3rem"
@@ -34,6 +35,8 @@ type SidebarContextProps = {
   state: "expanded" | "collapsed"
   open: boolean
   setOpen: (open: boolean) => void
+  isPinned: boolean
+  setIsPinned: (isPinned: boolean) => void
   openMobile: boolean
   setOpenMobile: (open: boolean) => void
   isMobile: boolean
@@ -57,6 +60,7 @@ const SidebarProvider = React.forwardRef<
     defaultOpen?: boolean
     open?: boolean
     onOpenChange?: (open: boolean) => void
+    defaultPinned?: boolean
   }
 >(
   (
@@ -64,6 +68,7 @@ const SidebarProvider = React.forwardRef<
       defaultOpen = true,
       open: openProp,
       onOpenChange: setOpenProp,
+      defaultPinned = true,
       className,
       style,
       children,
@@ -93,12 +98,49 @@ const SidebarProvider = React.forwardRef<
       [setOpenProp, open]
     )
 
+    // Pin state
+    const [isPinned, _setIsPinned] = React.useState(defaultPinned)
+    const setIsPinned = React.useCallback(
+      (value: boolean) => {
+        _setIsPinned(value)
+        document.cookie = `${SIDEBAR_PINNED_COOKIE_NAME}=${value}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+        
+        // If pinning, ensure it's open. If unpinning, collapse it.
+        setOpen(value)
+      },
+      [setOpen]
+    )
+
+    // Initialize from cookies
+    React.useEffect(() => {
+      const cookies = document.cookie.split("; ")
+      const pinnedCookie = cookies.find((c) => c.startsWith(`${SIDEBAR_PINNED_COOKIE_NAME}=`))
+      if (pinnedCookie) {
+        _setIsPinned(pinnedCookie.split("=")[1] === "true")
+      }
+      
+      const stateCookie = cookies.find((c) => c.startsWith(`${SIDEBAR_COOKIE_NAME}=`))
+      if (stateCookie) {
+        _setOpen(stateCookie.split("=")[1] === "true")
+      }
+    }, [])
+
     // Helper to toggle the sidebar.
     const toggleSidebar = React.useCallback(() => {
-      return isMobile
-        ? setOpenMobile((open) => !open)
-        : setOpen((open) => !open)
-    }, [isMobile, setOpen, setOpenMobile])
+      // If we're on mobile, always use the mobile sheet
+      if (isMobile) {
+        return setOpenMobile((open) => !open)
+      }
+
+      // On desktop, if it's pinned, toggling it should unpin it first
+      if (isPinned) {
+        setIsPinned(false)
+        return setOpen(false)
+      }
+
+      // Otherwise just toggle the open state
+      return setOpen((open) => !open)
+    }, [isMobile, isPinned, setOpen, setIsPinned, setOpenMobile])
 
     // Adds a keyboard shortcut to toggle the sidebar.
     React.useEffect(() => {
@@ -125,12 +167,14 @@ const SidebarProvider = React.forwardRef<
         state,
         open,
         setOpen,
+        isPinned,
+        setIsPinned,
         isMobile,
         openMobile,
         setOpenMobile,
         toggleSidebar,
       }),
-      [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
+      [state, open, setOpen, isPinned, setIsPinned, isMobile, openMobile, setOpenMobile, toggleSidebar]
     )
 
     return (
@@ -163,7 +207,7 @@ SidebarProvider.displayName = "SidebarProvider"
 const Sidebar = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> & {
-    side?: "left" | "right"
+    side?: "left" | "right" | "top" | "bottom"
     variant?: "sidebar" | "floating" | "inset"
     collapsible?: "offcanvas" | "icon" | "none"
   }
@@ -172,20 +216,23 @@ const Sidebar = React.forwardRef<
     {
       side = "left",
       variant = "sidebar",
-      collapsible = "offcanvas",
+      collapsible: collapsibleProp = "offcanvas",
       className,
       children,
       ...props
     },
     ref
   ) => {
-    const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
+    const { isMobile, state, openMobile, setOpenMobile, isPinned } = useSidebar()
+
+    // Determine collapsible behavior
+    const collapsible = isPinned && !isMobile ? "none" : collapsibleProp
 
     if (collapsible === "none") {
       return (
         <div
           className={cn(
-            "flex h-full w-[--sidebar-width] flex-col bg-sidebar text-sidebar-foreground",
+            "flex w-[--sidebar-width] flex-col bg-sidebar text-sidebar-foreground",
             className
           )}
           ref={ref}
@@ -242,7 +289,7 @@ const Sidebar = React.forwardRef<
         />
         <div
           className={cn(
-            "fixed inset-y-0 z-10 hidden h-svh w-[--sidebar-width] transition-[left,right,width] duration-200 ease-linear md:flex",
+            "absolute inset-y-0 z-10 hidden h-full w-[--sidebar-width] transition-[left,right,width] duration-200 ease-linear md:flex",
             side === "left"
               ? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"
               : "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
@@ -717,7 +764,7 @@ const SidebarMenuSubButton = React.forwardRef<
   HTMLAnchorElement,
   React.ComponentProps<"a"> & {
     asChild?: boolean
-    size?: "sm" | "md"
+    size?: "sm" | "md" | "lg"
     isActive?: boolean
   }
 >(({ asChild = false, size = "md", isActive, className, ...props }, ref) => {

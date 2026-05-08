@@ -2678,7 +2678,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
     let conditions = and(
       eq(transactionDetails.organizationId, orgId),
       eq(transactionDetails.noGL, noGL)
-    );
+    ) as SQL;
 
     if (bpmProcessId) {
       conditions = and(conditions, eq(transactionDetails.bpmProcessId, bpmProcessId)) as SQL;

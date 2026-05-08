@@ -48,6 +48,9 @@ import { LicenseProvider } from '@/context/LicenseContext';
 import { authClient } from '@/lib/auth-client';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 
+import { I18nextProvider } from 'react-i18next';
+import i18n from './i18n/config';
+
 enableMapSet();
 // Initialize query client
 const queryClient = new QueryClient();
@@ -111,12 +114,14 @@ const router = createBrowserRouter([
 createRoot(document.getElementById('root')!).render(
     <QueryClientProvider client={queryClient}>
       <LicenseProvider>
-        <ErrorBoundary>
-          <Suspense fallback={<div className="h-screen w-full flex items-center justify-center"><Skeleton className="h-12 w-12 rounded-full" /></div>}>
-            <RouterProvider router={router} />
-          </Suspense>
-          <Toaster richColors closeButton />
-        </ErrorBoundary>
+        <I18nextProvider i18n={i18n}>
+          <ErrorBoundary>
+            <Suspense fallback={<div className="h-screen w-full flex items-center justify-center"><Skeleton className="h-12 w-12 rounded-full" /></div>}>
+              <RouterProvider router={router} />
+            </Suspense>
+            <Toaster richColors closeButton />
+          </ErrorBoundary>
+        </I18nextProvider>
       </LicenseProvider>
     </QueryClientProvider>
 );

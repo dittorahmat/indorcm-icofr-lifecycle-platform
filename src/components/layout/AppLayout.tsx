@@ -18,7 +18,7 @@ type AppLayoutProps = {
 
 export function AppLayout({ children, container = false, className, contentClassName }: AppLayoutProps): JSX.Element {
   return (
-    <SidebarProvider defaultOpen={true} open={true} onOpenChange={() => {}} className="min-h-0 h-full">
+    <div className="flex flex-1 min-h-0">
       <Suspense fallback={
         <div className="h-screen w-64 border-r bg-sidebar p-4 space-y-4 hidden md:block">
            <Skeleton className="h-8 w-full" />
@@ -41,6 +41,6 @@ export function AppLayout({ children, container = false, className, contentClass
           {children}
         </div>
       </SidebarInset>
-    </SidebarProvider>
+    </div>
   );
 }
