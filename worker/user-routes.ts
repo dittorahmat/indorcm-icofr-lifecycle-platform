@@ -21,9 +21,6 @@ import type {
   AggregateDeficiency, AccountAssertion, RCMControlMapping
 } from "@shared/types";
 import { parseCsv } from './csv';
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { ICOFR_KNOWLEDGE_BASE } from './knowledge-base';
-import { getDocumentProxy, extractText } from "unpdf";
 import { getAuth } from './auth';
 import { seedDatabase } from './db/seed';
 
