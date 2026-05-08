@@ -9,121 +9,26 @@ import {
   applications, member, account, session, bpmDiagrams, bpmNodeRcms, 
   rcmControls, organization, testRecords, aggregateDeficiencies,
   documents, documentDepartments, documentGls, documentFslis,
-  systemLicenses, accountAssertions, simulationAccountApplications,
+  accountAssertions, simulationAccountApplications,
   vendors, socReports, socEvaluations, csaSchedules, notifications,
   transactionDetails, transactionUploads, bpmExports
 } from './db/schema';
 import { eq, ne, and, desc, sql, ilike, inArray, SQL } from 'drizzle-orm';
 import type { 
   Control, RCM, CSARecord, TestRecord, Deficiency, ActionPlan, 
-  UserRole, UserLevel, Materiality, Scoping, ChangeLog, SOCReport, Application, 
-  BUMNCluster, RiskLibrary, Settings, User, GLSnapshot, MaterialitySimulation, 
-  SimulationStatus, BenchmarkBasis, BPMProcess, Department, BPMWorkflowStatus,
+  UserRole, UserLevel, Settings, GLSnapshot, MaterialitySimulation, 
+  SimulationStatus, BPMProcess, BPMWorkflowStatus,
   AggregateDeficiency, AccountAssertion, RCMControlMapping
 } from "@shared/types";
-import { z } from "zod";
-import { parseCsv, unparseCsv } from './csv';
+import { parseCsv } from './csv';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { ICOFR_KNOWLEDGE_BASE } from './knowledge-base';
 import { getDocumentProxy, extractText } from "unpdf";
-import * as pdfjs from "pdfjs-dist";
 import { getAuth } from './auth';
-import { getMachineFingerprint, verifyLicense, checkLicenseStatus } from './lib/license';
 import { seedDatabase } from './db/seed';
 
 export function userRoutes(app: Hono<HonoEnv>) {
-  // --- Licensing Routes ---
-
-  app.get('/api/license/status', async (c) => {
-    // 1. Check for bypass flag first
-    if (c.env.SKIP_LICENSE === 'true') {
-        return ok(c, {
-          status: 'active', // Report as active to frontend to satisfy guard
-          machineId: 'CLOUDFLARE-DEMO-BYPASS',
-          daysRemaining: 999,
-          clientName: 'Cloudflare Demo'
-        });
-    }
-
-    const db = getDb(c.env.DATABASE_URL);
-    const activeLicense = await db.select().from(systemLicenses).limit(1);
-    const fingerprint = getMachineFingerprint();
-
-    if (activeLicense.length === 0) {
-      return ok(c, {
-        status: 'unactivated',
-        machineId: fingerprint,
-        daysRemaining: 0
-      });
-    }
-
-    const license = activeLicense[0];
-    const publicKey = c.env.LICENSE_PUBLIC_KEY || process.env.LICENSE_PUBLIC_KEY || '';
-    const payload = await verifyLicense(license.licenseKey, publicKey);
-
-    let daysRemaining = 0;
-    if (payload) {
-      const expiry = new Date(payload.expiryDate);
-      daysRemaining = Math.max(0, Math.ceil((expiry.getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
-    }
-
-    return ok(c, {
-      status: license.status,
-      machineId: fingerprint,
-      daysRemaining,
-      clientName: payload?.clientName,
-      expiryDate: payload?.expiryDate,
-      tier: payload?.tier
-    });
-  });
-
-  app.post('/api/license/activate', async (c) => {
-    const db = getDb(c.env.DATABASE_URL);
-    const { licenseKey } = await c.req.json<{ licenseKey: string }>();
-
-    if (!licenseKey) return bad(c, 'License key is required');
-
-    const publicKey = c.env.LICENSE_PUBLIC_KEY || process.env.LICENSE_PUBLIC_KEY || '';
-    const payload = await verifyLicense(licenseKey, publicKey);
-
-    if (!payload) {
-      return bad(c, 'Invalid license key signature');
-    }
-
-    const fingerprint = getMachineFingerprint();
-    const status = checkLicenseStatus(payload, fingerprint);
-
-    if (status) {
-      return bad(c, `Activation failed: ${status}`);
-    }
-
-    // Upsert license
-    const existing = await db.select().from(systemLicenses).limit(1);
-    const now = new Date();
-    
-    if (existing.length > 0) {
-      await db.update(systemLicenses).set({
-        licenseKey,
-        machineCode: fingerprint,
-        activatedAt: now,
-        expiresAt: new Date(payload.expiryDate),
-        lastHeartbeat: now,
-        status: 'active'
-      }).where(eq(systemLicenses.id, existing[0].id));
-    } else {
-      await db.insert(systemLicenses).values({
-        id: crypto.randomUUID(),
-        licenseKey,
-        machineCode: fingerprint,
-        activatedAt: now,
-        expiresAt: new Date(payload.expiryDate),
-        lastHeartbeat: now,
-        status: 'active'
-      });
-    }
-
-    return ok(c, { success: true, message: 'License activated successfully' });
-  });
+  // --- User Routes ---
 
   app.get('/api/user/me', async (c) => {
     const db = getDb(c.env.DATABASE_URL);
@@ -2727,7 +2632,11 @@ export function userRoutes(app: Hono<HonoEnv>) {
         .from(bpmProcesses)
         .where(eq(bpmProcesses.organizationId, orgId));
       
-      const codeToIdMap = new Map(allProcesses.filter(p => p.code).map(p => [p.code!.trim().toUpperCase(), p.id]));
+      const codeToIdMap = new Map<string, string>(
+        allProcesses
+          .filter((p: any) => p.code)
+          .map((p: any) => [p.code!.trim().toUpperCase(), p.id] as [string, string])
+      );
 
       // 1. Handle Purge if mode is 'replace'
       if (body.mode === 'replace') {
@@ -2760,7 +2669,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
         const resolvedGL = row.noGL || body.noGL;
 
         // Default context from the body
-        let resolvedProcessId = body.bpmProcessId || null;
+        let resolvedProcessId: string | null = body.bpmProcessId || null;
         
         // Priority 2: Explicit row-level instruction (bpmCode)
         // We check for both undefined and null to be safe
@@ -3070,8 +2979,8 @@ export function userRoutes(app: Hono<HonoEnv>) {
       assessedBy: userId,
       result: body.result || "Effective",
       comments: body.comments,
-      isBpmConfirmed: body.isBpmConfirmed ?? false,
-      samplingMethodology: body.samplingMethodology,
+      isDraft: body.isDraft ?? false,
+      isBpmConfirmed: body.isBpmConfirmed ?? false,      samplingMethodology: body.samplingMethodology,
       documentList: body.documentList,
       testProcedure: body.testProcedure,
       archiveLocation: body.archiveLocation,
@@ -3513,296 +3422,9 @@ export function userRoutes(app: Hono<HonoEnv>) {
 
     return ok(c, diagrams[0]);
   });
-  // --- Knowledge Base Document Routes ---
-
-  app.get('/api/documents', async (c) => {
-    const db = getDb(c.env.DATABASE_URL);
-    const orgId = c.get('organizationId');
-    const role = c.get('userRole');
-    const userDeptId = c.get('departmentId');
-
-    // Case 1: Line 1 - Strict isolation
-    if (role === 'Line 1') {
-      const docs = await db.execute(sql`
-        SELECT DISTINCT d.* 
-        FROM documents d
-        LEFT JOIN document_departments dd ON d.id = dd.document_id
-        WHERE d.organization_id = ${orgId}
-        AND (
-          d.type = 'External' 
-          OR (d.type = 'Internal' AND (dd.department_id = ${userDeptId}))
-        )
-        ORDER BY d.created_at DESC
-      `);
-      return ok(c, { items: docs.rows });
-    }
-
-    // Case 2: Admin, Line 2, Line 3 - Global View
-    // We remove the organizationId filter so everything is visible
-    console.log('[API] GET /api/documents - Admin/Lini2/3 Global Fetch');
-    const items = await db.select().from(documents)
-      .orderBy(desc(documents.createdAt));
-    
-    console.log(`[API] Found ${items.length} documents in total`);
-    if (items.length > 0) {
-      console.log('[API] Sample Item:', { id: items[0].id, type: items[0].type, org: items[0].organizationId });
-    }
-
-    return ok(c, { items });
-  });
-
-  app.post('/api/documents', async (c) => {
-    console.log('[API] Document Upload Started');
-    const role = c.get('userRole');
-    if (role !== 'Admin' && role !== 'Line 2') return bad(c, 'Access Denied');
-
-    const db = getDb(c.env.DATABASE_URL);
-    const orgId = c.get('organizationId');
-    const userId = c.get('userId');
-    
-    try {
-      const formData = await c.req.formData();
-      const file = formData.get('file') as File;
-      if (!file) return bad(c, 'File is required');
-
-      const title = formData.get('title') as string;
-      const type = formData.get('type') as string;
-      const category = formData.get('category') as string;
-      const deptIds = JSON.parse(formData.get('departmentIds') as string || '[]');
-      const glCodes = JSON.parse(formData.get('glCodes') as string || '[]');
-      const fsliCodes = JSON.parse(formData.get('fsliCodes') as string || '[]');
-
-      // IMPORTANT: Read stream only ONCE.
-      const arrayBuffer = await file.arrayBuffer();
-      const uint8Array = new Uint8Array(arrayBuffer);
-
-      // Extract text using unpdf with robust font support
-      let extractedText = "";
-      try {
-        console.log('[API] Extracting text with CMaps support...');
-        // We use CDN for CMaps to keep worker bundle small but extraction accurate
-        const pdf = await getDocumentProxy(uint8Array, {
-          cMapUrl: "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/cmaps/",
-          cMapPacked: true,
-          standardFontDataUrl: "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/standard_fonts/",
-        });
-        
-        const result = await extractText(pdf, { mergePages: true });
-        extractedText = result.text || "";
-        console.log('[API] Text extracted successfully, length:', extractedText.length);
-      } catch (e: any) {
-        console.error('[API] PDF extraction failed:', e.message);
-        // Continue with empty text rather than failing upload
-      }
-
-      // Store in R2 (Using the buffer we already read)
-      const key = `docs/${orgId}/${crypto.randomUUID()}-${file.name}`;
-      console.log('[API] Saving to R2:', key);
-      await c.env.DOCUMENTS_BUCKET.put(key, arrayBuffer, {
-        httpMetadata: { contentType: file.type }
-      });
-
-      const docId = crypto.randomUUID();
-      const newDoc = {
-        id: docId,
-        organizationId: orgId,
-        title: title || file.name,
-        type,
-        category,
-        content: extractedText,
-        fileUrl: key,
-        createdBy: userId,
-        createdAt: new Date(),
-      };
-
-      await db.insert(documents).values(newDoc);
-
-      // Junctions
-      for (const dId of deptIds) {
-        await db.insert(documentDepartments).values({ id: crypto.randomUUID(), organizationId: orgId, documentId: docId, departmentId: dId });
-      }
-      for (const gCode of glCodes) {
-        await db.insert(documentGls).values({ id: crypto.randomUUID(), organizationId: orgId, documentId: docId, glCode: gCode });
-      }
-      for (const fCode of fsliCodes) {
-        await db.insert(documentFslis).values({ id: crypto.randomUUID(), organizationId: orgId, documentId: docId, fsliCode: fCode });
-      }
-
-      console.log('[API] Upload success:', docId);
-      return ok(c, { ...newDoc, success: true });
-
-    } catch (error: any) {
-      console.error('[API] Fatal Upload Error:', error);
-      return bad(c, `Upload failed: ${error.message}`, 500);
-    }
-  });
-
-  app.delete('/api/documents/:id', async (c) => {
-    const role = c.get('userRole');
-    if (role !== 'Admin' && role !== 'Line 2') return bad(c, 'Access Denied: Only Admin or Line 2 can delete documents');
-
-    const db = getDb(c.env.DATABASE_URL);
-    const id = c.req.param('id');
-    const orgId = c.get('organizationId');
-
-    const existing = await db.select().from(documents).where(and(eq(documents.id, id), eq(documents.organizationId, orgId))).limit(1);
-    if (existing.length === 0) return notFound(c);
-
-    // Delete from R2
-    if (existing[0].fileUrl) {
-      await c.env.DOCUMENTS_BUCKET.delete(existing[0].fileUrl);
-    }
-
-    // Delete from DB
-    await db.delete(documents).where(eq(documents.id, id));
-    
-    return ok(c, { success: true });
-  });
-
-  app.get('/api/documents/download/:id', async (c) => {
-    const db = getDb(c.env.DATABASE_URL);
-    const id = c.req.param('id');
-    const orgId = c.get('organizationId');
-    const mode = c.req.query('mode');
-
-    const existing = await db.select().from(documents).where(and(eq(documents.id, id), eq(documents.organizationId, orgId))).limit(1);
-    if (existing.length === 0) return notFound(c);
-
-    if (!existing[0].fileUrl) return bad(c, 'File not found');
-
-    const object = await c.env.DOCUMENTS_BUCKET.get(existing[0].fileUrl);
-    if (!object) return notFound(c, 'File not found in storage');
-
-    const headers = new Headers();
-    object.writeHttpMetadata(headers);
-    headers.set('etag', object.httpEtag);
-    
-    if (mode === 'view') {
-      headers.set('Content-Disposition', 'inline');
-    } else {
-      headers.set('Content-Disposition', `attachment; filename="${existing[0].title}.pdf"`);
-    }
-
-    return new Response(object.body, { headers });
-  });
-
-  // --- AI Chatbot Routes ---
-
-  const rateLimitStore = new Map<string, { count: number; resetDate: number }>();
-
-  app.post('/api/ai/chat', async (c) => {
-    const apiKey = c.env.GEMINI_API_KEY;
-    if (!apiKey || apiKey === 'YOUR_GEMINI_API_KEY_HERE') {
-      return bad(c, 'GEMINI_API_KEY not configured.');
-    }
-
-    let body: { message: string; conversationHistory?: Array<{ role: string; content: string }> };
-    try {
-      body = await c.req.json();
-    } catch (e) {
-      return bad(c, 'Invalid request body');
-    }
-
-    const { message, conversationHistory = [] } = body;
-
-    const clientId = c.req.header('X-Forwarded-For') || c.req.header('CF-Connecting-IP') || 'unknown';
-    const now = Date.now();
-    const dayMs = 86400000;
-
-    let rateLimitData = rateLimitStore.get(clientId);
-    if (!rateLimitData || now > rateLimitData.resetDate) {
-      rateLimitData = { count: 0, resetDate: now + dayMs };
-      rateLimitStore.set(clientId, rateLimitData);
-    }
-
-    if (rateLimitData.count >= 100) {
-      return bad(c, 'Rate limit exceeded.', 429);
-    }
-
-    rateLimitData.count++;
-
-    const context = (body as any).context;
-    const pageContext = context?.path ? `\nPengguna saat ini sedang melihat halaman: ${context.path}` : '';
-
-    const role = c.get('userRole');
-    const userDeptId = c.get('departmentId');
-    const db = getDb(c.env.DATABASE_URL);
-    const orgId = c.get('organizationId');
-
-    // --- Dynamic Knowledge Retrieval ---
-    let relevantDocs: any[] = [];
-    try {
-      if (role === 'Line 1') {
-        const docsResult = await db.execute(sql`
-          SELECT DISTINCT d.content, d.title
-          FROM documents d
-          LEFT JOIN document_departments dd ON d.id = dd.document_id
-          WHERE d.organization_id = ${orgId}
-          AND (
-            d.type = 'External' 
-            OR (d.type = 'Internal' AND dd.department_id = ${userDeptId})
-          )
-        `);
-        relevantDocs = docsResult.rows;
-      } else {
-        relevantDocs = await db.select({ content: documents.content, title: documents.title })
-          .from(documents)
-          .where(eq(documents.organizationId, orgId));
-      }
-    } catch (e) {
-      console.error('Failed to fetch dynamic knowledge:', e);
-    }
-
-    const dynamicKnowledge = relevantDocs
-      .filter(d => d.content)
-      .map(d => `--- DOKUMEN: ${d.title} ---\n${d.content}\n`)
-      .join('\n\n');
-
-    // Use dynamic knowledge, fallback to hardcoded if empty (for transition)
-    const knowledgeBase = dynamicKnowledge || ICOFR_KNOWLEDGE_BASE;
-
-    try {
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({
-        model: "gemini-2.5-flash-lite",
-        systemInstruction: `Anda adalah Asisten AI ICOFR yang membantu pengguna memahami regulasi Pengendalian Internal atas Pelaporan Keuangan (ICOFR) berdasarkan dokumen perusahaan dan regulasi pemerintah.
-
-Jawablah pertanyaan dengan akurat berdasarkan dokumen yang disediakan di bawah ini.
-Jika dokumen menyebutkan nomor pasal atau bab, sertakan dalam jawaban.
-${pageContext}
-
-Jika pertanyaan tidak terkait ICOFR atau dokumen yang disediakan, jawab dengan sopan bahwa Anda hanya dapat membantu pertanyaan terkait ICOFR sesuai dokumen yang Anda miliki.
-
-Bahasa: Bahasa Indonesia
-
---- KNOWLEDGE BASE ---
-${knowledgeBase}
---- END KNOWLEDGE BASE ---`
-      });
-
-      const recentHistory = conversationHistory.slice(-10);
-      const chat = model.startChat({
-        history: recentHistory.map(msg => ({
-          role: msg.role === 'user' ? 'user' : 'model',
-          parts: [{ text: msg.content }]
-        }))
-      });
-
-      const result = await chat.sendMessage(message);
-      const response = await result.response;
-      const responseText = response.text();
-
-      return ok(c, {
-        response: responseText,
-        sources: []
-      });
-
-    } catch (error: any) {
-      return bad(c, `AI service error: ${error.message}`, 500);
-    }
-  });
 
   // --- BPM Export History Routes ---
+
 
   app.get('/api/bpm-exports', async (c) => {
     const db = getDb(c.env.DATABASE_URL);
@@ -3855,83 +3477,4 @@ ${knowledgeBase}
   });
 
   // --- Notification Routes ---
-
-  app.get('/api/notifications', async (c) => {
-    const db = getDb(c.env.DATABASE_URL);
-    const orgId = c.get('organizationId');
-    const userId = c.get('userId');
-
-    const items = await db.select()
-      .from(notifications)
-      .where(and(
-        eq(notifications.organizationId, orgId),
-        eq(notifications.userId, userId)
-      ))
-      .orderBy(desc(notifications.createdAt))
-      .limit(50);
-
-    return ok(c, items);
-  });
-
-  app.post('/api/notifications/:id/read', async (c) => {
-    const db = getDb(c.env.DATABASE_URL);
-    const id = c.req.param('id');
-    const orgId = c.get('organizationId');
-    const userId = c.get('userId');
-
-    await db.update(notifications)
-      .set({ readStatus: true })
-      .where(and(
-        eq(notifications.id, id),
-        eq(notifications.organizationId, orgId),
-        eq(notifications.userId, userId)
-      ));
-
-    return ok(c, { success: true });
-  });
-
-  app.post('/api/notifications/read-all', async (c) => {
-    const db = getDb(c.env.DATABASE_URL);
-    const orgId = c.get('organizationId');
-    const userId = c.get('userId');
-
-    await db.update(notifications)
-      .set({ readStatus: true })
-      .where(and(
-        eq(notifications.organizationId, orgId),
-        eq(notifications.userId, userId)
-      ));
-
-    return ok(c, { success: true });
-  });
-
-  app.delete('/api/notifications/:id', async (c) => {
-    const db = getDb(c.env.DATABASE_URL);
-    const id = c.req.param('id');
-    const orgId = c.get('organizationId');
-    const userId = c.get('userId');
-
-    await db.delete(notifications)
-      .where(and(
-        eq(notifications.id, id),
-        eq(notifications.organizationId, orgId),
-        eq(notifications.userId, userId)
-      ));
-
-    return ok(c, { success: true });
-  });
-
-  app.post('/api/notifications/clear-all', async (c) => {
-    const db = getDb(c.env.DATABASE_URL);
-    const orgId = c.get('organizationId');
-    const userId = c.get('userId');
-
-    await db.delete(notifications)
-      .where(and(
-        eq(notifications.organizationId, orgId),
-        eq(notifications.userId, userId)
-      ));
-
-    return ok(c, { success: true });
-  });
 }

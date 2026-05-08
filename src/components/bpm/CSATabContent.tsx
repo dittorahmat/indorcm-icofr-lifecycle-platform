@@ -32,7 +32,7 @@ import { Control, CSARecord, CSATestSample, User, GLRow, TransactionDetail, BPMP
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm, useFieldArray, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -113,6 +113,10 @@ const nodeTypes = {
   ),
   risk: ({ data }: NodeProps) => <div className="w-10 h-8 bg-red-600 flex items-center justify-center text-white"><AlertTriangle className="h-4 w-4" /></div>,
   control: ({ data }: NodeProps) => <div className="w-8 h-8 rounded-full bg-green-600 flex items-center justify-center text-white"><ShieldCheck className="h-4 w-4" /></div>,
+  'risk-control-badge': ({ data }: NodeProps) => <div className="p-1 bg-indigo-100 border border-indigo-300 text-[8px] font-bold rounded">{data.label}</div>,
+  'docked-risk': ({ data }: NodeProps) => <div className="p-1 bg-red-100 border border-red-300 text-[8px] font-bold rounded">{data.label}</div>,
+  'docked-control': ({ data }: NodeProps) => <div className="p-1 bg-green-100 border border-green-300 text-[8px] font-bold rounded">{data.label}</div>,
+  'reference': ({ data }: NodeProps) => <div className="p-1 bg-slate-100 border border-slate-300 text-[8px] font-bold rounded italic">{data.label}</div>,
 };
 
 // --- Form Validation ---
@@ -230,7 +234,13 @@ export function CSATabContent({
     name: "samples"
   });
 
-  // 3. Derived Data & Memos
+  // 3. Reactivity & Data Transformation
+  // Use useWatch for reliable reactivity on deep nested updates
+  const watchSamples = useWatch({
+    control: form.control,
+    name: "samples"
+  }) || [];
+
   const bpmRiskControlPairs = useMemo(() => {
     if (!diagram?.nodes) return [];
     const pairs: { riskId: string; riskName: string; controlId: string; controlName: string; code: string }[] = [];
@@ -268,19 +278,16 @@ export function CSATabContent({
     return propControls;
   }, [bpmRiskControlPairs, propControls]);
 
-  const watchSamples = form.watch('samples');
-
-  const allPoints = useMemo(() => {
-    return watchSamples.flatMap((s, sIdx) => 
-      Object.entries(s.controlResults).map(([cId, res]) => ({
-        sIdx,
-        cId,
-        sampleRef: s.sampleRef,
-        glRowId: s.glRowId,
-        ...res
-      }))
-    );
-  }, [watchSamples]);
+  // Transform samples to a flat list for the table, always derived from watchSamples
+  const allPoints = watchSamples.flatMap((s, sIdx) => 
+    Object.entries(s.controlResults || {}).map(([cId, res]) => ({
+      sIdx,
+      cId,
+      sampleRef: s.sampleRef,
+      glRowId: s.glRowId,
+      ...(res as any)
+    }))
+  );
 
   const previewRecord = useMemo(() => {
     const values = form.getValues();
@@ -474,7 +481,16 @@ export function CSATabContent({
       return api<{ url: string }>('/api/upload', { method: 'POST', body: formData });
     },
     onSuccess: (data, variables) => {
-      form.setValue(`samples.${variables.sIdx}.controlResults.${variables.cId}.evidenceUrl`, data.url, { shouldDirty: true });
+      console.log(`[CSA] Upload Success for Sample ${variables.sIdx}, Control ${variables.cId}:`, data.url);
+      
+      // Use full path with quotes for control ID to handle potential hyphens or special chars safely
+      const path = `samples.${variables.sIdx}.controlResults.${variables.cId}.evidenceUrl` as any;
+      form.setValue(path, data.url, { 
+        shouldDirty: true,
+        shouldTouch: true,
+        shouldValidate: true 
+      });
+      
       toast.success("Bukti berhasil diunggah");
       setActiveUploadRow(null);
     }
@@ -506,6 +522,8 @@ export function CSATabContent({
     if (file && activeUploadRow) {
       uploadMutation.mutate({ ...activeUploadRow, file });
     }
+    // Reset value to allow uploading same file again
+    e.target.value = '';
   };
 
   const onSaveDraft = async () => {
@@ -577,7 +595,25 @@ export function CSATabContent({
     setIsInitialized(true);
   };
 
-  const isReadOnly = !!activeCsaId && !isDirty;
+  const getFileNameFromUrl = (url: string) => {
+    if (!url) return '';
+    const parts = url.split('/');
+    const lastPart = parts[parts.length - 1];
+    // Key format: uploads/orgId/uuid-filename.ext
+    // A UUID (v4) has 5 parts (4 hyphens). slice(5) gets everything after the 5th segment.
+    const filenameParts = lastPart.split('-');
+    if (filenameParts.length > 5) {
+      return filenameParts.slice(5).join('-');
+    }
+    return lastPart;
+  };
+
+  const isReadOnly = useMemo(() => {
+    if (!activeCsaId) return false;
+    if (!activeCsa) return false; 
+    if (activeCsa.isDraft) return false;
+    return true;
+  }, [activeCsaId, activeCsa]);
 
   return (
     <div className="h-full flex flex-col bg-white overflow-hidden">
@@ -910,22 +946,66 @@ export function CSATabContent({
                                 </TableCell>
                                 <TableCell className="text-center">
                                    <div className="flex flex-col items-center gap-1">
-                                      <Button 
-                                        type="button"
-                                        variant={point.evidenceUrl ? "default" : "outline"} 
-                                        size="icon" 
-                                        className={cn("h-8 w-8 rounded-lg", point.evidenceUrl ? "bg-indigo-600" : "border-slate-200")}
-                                        onClick={() => !isReadOnly && handleFileUploadTrigger(point.sIdx, point.cId)}
-                                      >
-                                        {uploadMutation.isPending && activeUploadRow?.sIdx === point.sIdx && activeUploadRow?.cId === point.cId ? (
-                                          <RefreshCw className="h-4 w-4 animate-spin" />
-                                        ) : point.evidenceUrl ? (
-                                          <Check className="h-4 w-4" />
-                                        ) : (
-                                          <UploadCloud className="h-4 w-4" />
+                                      <div className="flex items-center justify-center gap-1.5">
+                                        <TooltipProvider>
+                                          <Tooltip>
+                                            <TooltipTrigger asChild>
+                                              <Button 
+                                                type="button"
+                                                variant={point.evidenceUrl ? "secondary" : "outline"} 
+                                                size="icon" 
+                                                className={cn(
+                                                  "h-8 w-8 rounded-lg transition-all", 
+                                                  point.evidenceUrl ? "bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100" : "border-dashed border-slate-300 text-slate-400 hover:border-indigo-400 hover:text-indigo-600"
+                                                )}
+                                                onClick={() => !isReadOnly && handleFileUploadTrigger(point.sIdx, point.cId)}
+                                                disabled={isReadOnly || uploadMutation.isPending}
+                                              >
+                                                {uploadMutation.isPending && activeUploadRow?.sIdx === point.sIdx && activeUploadRow?.cId === point.cId ? (
+                                                  <RefreshCw className="h-4 w-4 animate-spin" />
+                                                ) : point.evidenceUrl ? (
+                                                  <Check className="h-4 w-4" />
+                                                ) : (
+                                                  <UploadCloud className="h-4 w-4" />
+                                                )}
+                                              </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                              {isReadOnly ? "Record sudah di-signoff (Read-only)" : (point.evidenceUrl ? "Ganti bukti (Re-upload)" : "Unggah bukti")}
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        </TooltipProvider>
+
+                                        {point.evidenceUrl && (
+                                          <TooltipProvider>
+                                            <Tooltip>
+                                              <TooltipTrigger asChild>
+                                                <Button 
+                                                  type="button"
+                                                  variant="default" 
+                                                  size="icon" 
+                                                  className="h-8 w-8 rounded-lg bg-indigo-600 hover:bg-indigo-700 shadow-sm"
+                                                  onClick={() => window.open(point.evidenceUrl, '_blank')}
+                                                >
+                                                  <Eye className="h-4 w-4" />
+                                                </Button>
+                                              </TooltipTrigger>
+                                              <TooltipContent>
+                                                Lihat Bukti (Preview)
+                                              </TooltipContent>
+                                            </Tooltip>
+                                          </TooltipProvider>
                                         )}
-                                      </Button>
-                                      {point.evidenceUrl && <span className="text-[8px] text-emerald-600 font-bold uppercase">Attached</span>}
+                                      </div>
+                                      
+                                      {point.evidenceUrl && (
+                                        <div 
+                                          className="max-w-[80px] truncate text-[9px] text-emerald-700 font-bold uppercase tracking-tighter" 
+                                          title={getFileNameFromUrl(point.evidenceUrl)}
+                                        >
+                                          {getFileNameFromUrl(point.evidenceUrl) || 'Attached'}
+                                        </div>
+                                      )}
                                    </div>
                                 </TableCell>
                                 <TableCell>

@@ -4,10 +4,13 @@ import { authClient } from "./auth-client";
 export async function api<T>(path: string, init?: RequestInit): Promise<T> {
   const session = await authClient.getSession();
   
-  const headers = {
-    'Content-Type': 'application/json',
-    ...init?.headers,
+  const headers: Record<string, string> = {
+    ...init?.headers as Record<string, string>,
   };
+
+  if (!(init?.body instanceof FormData)) {
+    headers['Content-Type'] = 'application/json';
+  }
 
   // Note: authClient handles session headers automatically if using its own fetch, 
   // but for our custom api function, we might need to rely on cookies or manual header injection.

@@ -2,6 +2,9 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { userRoutes } from './user-routes';
+import notifications from './routes/notifications';
+import license from './routes/license';
+import aiDocs from './routes/ai-docs';
 import { getAuth } from './auth';
 import { getDb } from './db';
 import * as schema from './db/schema';
@@ -230,6 +233,11 @@ export const createApp = () => {
   });
 
   // Specific routes first
+  const routes = app
+    .route('/api/notifications', notifications)
+    .route('/api/license', license)
+    .route('/api', aiDocs);
+    
   userRoutes(app);
 
   // Better Auth Route Handler as fallback for all other /api/auth/*
@@ -238,5 +246,7 @@ export const createApp = () => {
     return auth.handler(c.req.raw);
   });
   
-  return app;
+  return routes;
 };
+
+export type AppType = ReturnType<typeof createApp>;

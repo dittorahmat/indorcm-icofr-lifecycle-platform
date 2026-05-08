@@ -307,6 +307,7 @@ export const csaRecords = pgTable("csa_records", {
 	assessedBy: text("assessed_by").references(() => user.id),
 	result: text("result").notNull(), // Effective, Ineffective, No Transaction
 	comments: text("comments"),
+	isDraft: boolean("is_draft").default(true),
 	isBpmConfirmed: boolean("is_bpm_confirmed").default(false),
 
 	// Appendix 7a Fields

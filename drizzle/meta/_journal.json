@@ -281,6 +281,13 @@
       "when": 1777674131511,
       "tag": "0039_stiff_lockjaw",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1778240726958,
+      "tag": "0040_stiff_ben_urich",
+      "breakpoints": true
     }
   ]
 }

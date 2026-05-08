@@ -456,6 +456,7 @@ export interface CSARecord {
   assessmentDate: number; // epoch millis
   assessedBy: string; // User ID
   result: "Effective" | "Ineffective" | "No Transaction";
+  isDraft?: boolean;
   evidenceUrl?: string;
   comments: string;
   samples: CSATestSample[]; // Dynamic sampling

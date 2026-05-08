@@ -59,7 +59,10 @@ const nodeTypes = {
   activity: ActivityNode,
   'automated-activity': ActivityNode, // Reuse activity for simplicity
   decision: ({ data }: NodeProps) => <div className="w-10 h-10 border-2 border-slate-800 rotate-45 bg-white flex items-center justify-center"><div className="-rotate-45 text-[8px] font-bold">{data.label}</div></div>,
-  // Fallbacks for other types
+  'risk-control-badge': ({ data }: NodeProps) => <div className="p-1 bg-indigo-100 border border-indigo-300 text-[8px] font-bold rounded">{data.label}</div>,
+  'docked-risk': ({ data }: NodeProps) => <div className="p-1 bg-red-100 border border-red-300 text-[8px] font-bold rounded">{data.label}</div>,
+  'docked-control': ({ data }: NodeProps) => <div className="p-1 bg-green-100 border border-green-300 text-[8px] font-bold rounded">{data.label}</div>,
+  'reference': ({ data }: NodeProps) => <div className="p-1 bg-slate-100 border border-slate-300 text-[8px] font-bold rounded italic">{data.label}</div>,
 };
 
 interface CSAViewerModalProps {
@@ -113,6 +116,9 @@ export function CSAViewerModal({ isOpen, onClose, controlId }: CSAViewerModalPro
             <ShieldCheck className="h-5 w-5 text-green-600" />
             BPM Context for Control Assessment
           </DialogTitle>
+          <div className="sr-only">
+            Visual representation of the business process where this control is executed.
+          </div>
         </DialogHeader>
         
         <div className="flex-1 relative bg-slate-50">

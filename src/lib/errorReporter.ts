@@ -85,6 +85,10 @@ const isReactRouterFutureFlagMessage = (message: string): boolean => {
   return futurePatterns.some((p) => p.test(message));
 };
 
+const isChromeExtensionMessageChannelError = (message: string): boolean => {
+  return message.includes("A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received");
+};
+
 const isDeprecatedReactWarningMessage = (message: string): boolean => {
   const deprecatedPatterns = [
     /componentWillReceiveProps/,
@@ -470,6 +474,11 @@ class ErrorReporter {
       return { shouldReport: false, reason: "react_router_future_flag" };
     }
 
+    // Skip Chrome extension message channel errors
+    if (isChromeExtensionMessageChannelError(message)) {
+      return { shouldReport: false, reason: "chrome_extension_noise" };
+    }
+
     // Skip deprecated React lifecycle warnings
     if (level === "warning" && isDeprecatedReactWarningMessage(message)) {
       return { shouldReport: false, reason: "deprecated_react_warning" };
@@ -685,6 +694,9 @@ const shouldReportImmediate = (context: ErrorContext): boolean => {
     /v7_\w+.*future flag/i,
   ];
   if (futurePatterns.some((pattern) => pattern.test(message))) return false;
+
+  // Skip Chrome extension message channel errors
+  if (isChromeExtensionMessageChannelError(message)) return false;
 
   // Skip deprecated React lifecycle warnings
   const deprecatedPatterns = [

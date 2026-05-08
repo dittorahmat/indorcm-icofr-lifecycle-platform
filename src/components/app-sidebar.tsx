@@ -84,6 +84,22 @@ function PendingApprovalBadge({ role }: { role: string | null | undefined }) {
   );
 }
 
+function NotificationBadge() {
+  const { data: notificationData } = useQuery({
+    queryKey: ['notifications', 'unread-count'],
+    queryFn: () => api<{ count: number }>('/api/notifications/unread-count'),
+    refetchInterval: 30000 // Refetch every 30s
+  });
+
+  if (!notificationData?.count || notificationData.count <= 0) return null;
+
+  return (
+    <div className="h-5 w-5 rounded-full bg-rose-600 text-[10px] font-black text-white flex items-center justify-center animate-pulse shadow-sm shadow-rose-200">
+      {notificationData.count > 9 ? '9+' : notificationData.count}
+    </div>
+  );
+}
+
 export function AppSidebar(): JSX.Element {
   const location = useLocation();
   const navigate = useNavigate();
@@ -164,7 +180,12 @@ export function AppSidebar(): JSX.Element {
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/notifications")} className="min-h-12 h-auto py-2 text-[16px]">
-                <Link to="/notifications" className="font-bold"><Megaphone className="h-5 w-5" /> <span>{t('items.notifications')}</span></Link>
+                <Link to="/notifications" className="flex items-center justify-between w-full font-bold">
+                  <div className="flex items-center gap-2">
+                    <Megaphone className="h-5 w-5" /> <span>{t('items.notifications')}</span>
+                  </div>
+                  <NotificationBadge />
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>

@@ -221,17 +221,27 @@ export function BPMPage() {
     updateAssertionMutation.mutate(localAssertion);
   };
 
+  // 0. Build lookup map for GL rows to speed up auto-healing and filter logic
+  const glLookupMap = React.useMemo(() => {
+    if (!activeSnap) return new Map<string, string>();
+    const map = new Map<string, string>();
+    activeSnap.rows.forEach(r => {
+      if (r.glDesc && r.fsliName) map.set(`desc:${r.glDesc}`, r.fsliName);
+      if (r.noGL && r.fsliName) map.set(`no:${r.noGL}`, r.fsliName);
+    });
+    return map;
+  }, [activeSnap]);
+
   // 2. Derive unique significant FSLIs based on Scoping Criteria with Auto-Healing
   const significantFsliNames = React.useMemo(() => {
     const names = new Set<string>();
     if (activeSim && activeSim.significantAccounts) {
       activeSim.significantAccounts.forEach(sa => { 
         if (sa.name) {
-          // AUTO-HEALING: If sa.name is actually a GL Description (found in snapshot rows),
-          // reconcile it back to the true FSLI Name.
-          const glMatch = activeSnap?.rows.find(r => r.glDesc === sa.name || r.noGL === sa.fsliCode);
-          if (glMatch && glMatch.fsliName) {
-            names.add(glMatch.fsliName);
+          // AUTO-HEALING: Use lookup map instead of .find() for O(1) lookup
+          const fsliNameFromMap = glLookupMap.get(`desc:${sa.name}`) || glLookupMap.get(`no:${sa.fsliCode}`);
+          if (fsliNameFromMap) {
+            names.add(fsliNameFromMap);
           } else {
             names.add(sa.name);
           }
@@ -241,7 +251,7 @@ export function BPMPage() {
     const urlFsli = searchParams.get('fsli');
     if (urlFsli) names.add(urlFsli);
     return Array.from(names).sort();
-  }, [activeSim, activeSnap, searchParams]);
+  }, [activeSim, glLookupMap, searchParams]);
 
   // 3. Filtered GL Numbers (Unique combination of noGL + glDesc)
   const glNumbers = React.useMemo(() => {
