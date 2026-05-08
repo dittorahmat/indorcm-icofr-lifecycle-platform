@@ -12,7 +12,7 @@
   "items": {
     "dashboard": "Dashboard",
     "sync": "Sync Financial Statement",
-    "bpm": "BPM",
+    "bpm": "BPM & CSA",
     "scoping": "Significant Account Identification",
     "csa": "CSA Reports",
     "notifications": "Notifications",
