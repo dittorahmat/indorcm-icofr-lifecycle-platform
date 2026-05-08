@@ -50,8 +50,8 @@ export function LoginPage() {
 
       toast.success(`Login successful`);
 
-      // Smart Redirect (better-auth session handles the data now)
-      navigate('/welcome');
+      // Smart Redirect
+      navigate('/dashboard');
       
     } catch (err: any) {
       setError(err.message || 'Invalid credentials. Please ensure your email and password are correct.');

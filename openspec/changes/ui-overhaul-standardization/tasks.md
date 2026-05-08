@@ -31,9 +31,13 @@
 - [x] 4.1 `ScopingPage.tsx`: Move Parameter panel to **Right**, Grid/Tabs to **Left**.
 - [x] 4.2 `CSATabContent.tsx`: Move Assessment History to **Left**, Chart/Flow to **Right**.
 
-## 5. Verification
+## 5. Flow Optimization
 
-- [x] 5.1 Confirm Header only has 1 Notification Center and NO Theme Toggle.
-- [x] 5.2 Confirm Sidebar is Skyblue, Bold Black, and Static.
-- [x] 5.3 Confirm Global Scrollbar handles Sidebar + Content + Grid as one unit.
-- [x] 5.4 Confirm Zebra Striping and thick borders on all tables.
+- [x] 5.1 Update `src/pages/LoginPage.tsx` to redirect directly to `/dashboard` instead of `/welcome`.
+
+## 6. Verification
+
+- [x] 6.1 Confirm Header only has 1 Notification Center and NO Theme Toggle.
+- [x] 6.2 Confirm Sidebar is Skyblue, Bold Black, and Static.
+- [x] 6.3 Confirm Global Scrollbar handles Sidebar + Content + Grid as one unit.
+- [x] 6.4 Confirm Zebra Striping and thick borders on all tables.

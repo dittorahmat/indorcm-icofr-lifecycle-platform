@@ -36,9 +36,9 @@ The application needs a unified and standardized UI to meet user requirements fo
 - **Decision**: Modify `src/components/ui/table.tsx` (or `index.css`) to add `even:bg-slate-100/50` (zebra) and `border-2` or specific border classes for thickness.
 - **Scrolling**: Remove `max-h` or `ScrollArea` containers from tables. Ensure they render their full height so the main container scroll handles navigation.
 
-### 5. RCM Inline Editing
-- **Decision**: Add an `isEditing` state to the RCM table. When active, insert a new row `<tr>` directly after the edited row with input fields.
-- **Rationale**: Mimics the requested "row below and freeze others" behavior.
+### 6. Login Flow Optimization
+- **Decision**: Skip the `WelcomePage` and redirect users directly to the `/dashboard` after a successful login.
+- **Rationale**: Simplifies the user journey and provides immediate access to critical data.
 
 ## Risks / Trade-offs
 
