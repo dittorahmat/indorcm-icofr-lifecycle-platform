@@ -2128,7 +2128,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
 
     const updateData: any = {};
     if (body.name !== undefined) updateData.name = body.name;
-    if (body.bpmCode !== undefined) updateData.bpmCode = body.bpmCode;
+    if (body.bpmCode !== undefined) updateData.bpmCode = body.bpmCode.trim().toUpperCase();
     if (body.fsliName !== undefined) updateData.fsliName = body.fsliName;
     if (body.standardTestProcedure !== undefined) updateData.standardTestProcedure = body.standardTestProcedure;
 
@@ -2691,7 +2691,23 @@ export function userRoutes(app: Hono<HonoEnv>) {
     } 
     // If no bpmProcessId parameter at all, return everything for the GL (Global View)
 
-    const items = await db.select().from(transactionDetails).where(conditions).limit(500);
+    const items = await db.select({
+      id: transactionDetails.id,
+      organizationId: transactionDetails.organizationId,
+      noGL: transactionDetails.noGL,
+      bpmProcessId: transactionDetails.bpmProcessId,
+      bpmCode: bpmProcesses.bpmCode,
+      refNo: transactionDetails.refNo,
+      transDate: transactionDetails.transDate,
+      description: transactionDetails.description,
+      currency: transactionDetails.currency,
+      dcFlag: transactionDetails.dcFlag,
+      amount: transactionDetails.amount,
+    })
+    .from(transactionDetails)
+    .leftJoin(bpmProcesses, eq(transactionDetails.bpmProcessId, bpmProcesses.id))
+    .where(conditions)
+    .limit(1000);
 
     return ok(c, { items });
   });
@@ -2711,7 +2727,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
         .from(bpmProcesses)
         .where(eq(bpmProcesses.organizationId, orgId));
       
-      const codeToIdMap = new Map(allProcesses.filter(p => p.code).map(p => [p.code!.toUpperCase(), p.id]));
+      const codeToIdMap = new Map(allProcesses.filter(p => p.code).map(p => [p.code!.trim().toUpperCase(), p.id]));
 
       // 1. Handle Purge if mode is 'replace'
       if (body.mode === 'replace') {
@@ -2747,13 +2763,17 @@ export function userRoutes(app: Hono<HonoEnv>) {
         let resolvedProcessId = body.bpmProcessId || null;
         
         // Priority 2: Explicit row-level instruction (bpmCode)
-        if (typeof row.bpmCode !== 'undefined') {
-          // Explicit column present -> Reset default context
+        // We check for both undefined and null to be safe
+        if (typeof row.bpmCode !== 'undefined' && row.bpmCode !== null) {
+          // Explicit column present -> Reset default context to null (unlinked)
+          // unless a valid BPM Code is matched.
           resolvedProcessId = null; 
           const codeStr = String(row.bpmCode).trim().toUpperCase();
-          if (codeStr) {
+          if (codeStr && codeStr !== 'NULL' && codeStr !== 'UNDEFINED') {
             const mappedId = codeToIdMap.get(codeStr);
-            if (mappedId) resolvedProcessId = mappedId;
+            if (mappedId) {
+              resolvedProcessId = mappedId;
+            }
           }
         }
 
@@ -2765,7 +2785,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
           refNo: row.refNo,
           transDate: row.transDate ? new Date(row.transDate) : null,
           description: row.description,
-          currency: row.currency,
+          currency: row.currency || 'IDR',
           dcFlag: row.dcFlag,
           amount: row.amount,
         };

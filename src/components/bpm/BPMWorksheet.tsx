@@ -186,7 +186,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
     
     updateProcessMutation.mutate({ 
       standardTestProcedure: standardProcedure,
-      bpmCode: bpmCode 
+      bpmCode: bpmCode.trim() 
     });
   };
 

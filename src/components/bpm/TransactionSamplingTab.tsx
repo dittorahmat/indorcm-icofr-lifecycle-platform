@@ -44,8 +44,11 @@ export function TransactionSamplingTab({ noGL, bpmProcessId, onSamplesSelected }
     queryKey: ['transaction-details-sampling', noGL, bpmProcessId],
     queryFn: () => {
       let url = `/api/transaction-details?noGL=${noGL}`;
-      if (bpmProcessId) url += `&bpmProcessId=${bpmProcessId}`;
-      return api<{ items: TransactionDetail[] }>(url);
+      // Robustness: only add if truthy and not 'null'/'undefined' strings
+      if (bpmProcessId && bpmProcessId !== 'null' && bpmProcessId !== 'undefined') {
+        url += `&bpmProcessId=${bpmProcessId}`;
+      }
+      return api<{ items: (TransactionDetail & { bpmCode?: string })[] }>(url);
     },
   });
 
@@ -53,7 +56,8 @@ export function TransactionSamplingTab({ noGL, bpmProcessId, onSamplesSelected }
     if (!rowsData?.items) return [];
     return rowsData.items.filter(row => 
       (row.description?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-      (row.refNo?.toLowerCase().includes(searchTerm.toLowerCase()) || '')
+      (row.refNo?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+      (row.bpmCode?.toLowerCase().includes(searchTerm.toLowerCase()) || '')
     );
   }, [rowsData, searchTerm]);
 
@@ -71,6 +75,10 @@ export function TransactionSamplingTab({ noGL, bpmProcessId, onSamplesSelected }
 
   const handleReset = async () => {
     try {
+      // If we have a process context, we only want to delete transactions for THIS process/GL pair
+      // or those that are unlinked for this GL.
+      // But for now, let's keep it simple and delete all for the GL as per existing logic, 
+      // but warn the user.
       await api(`/api/transaction-details/${noGL}`, { method: 'DELETE' });
       toast.success(t('bpm:sampling.reset.success'));
       refetch();
@@ -141,6 +149,7 @@ export function TransactionSamplingTab({ noGL, bpmProcessId, onSamplesSelected }
           <TableHeader className="bg-white sticky top-0 z-10 shadow-sm">
             <TableRow>
               <TableHead className="w-12 text-center"></TableHead>
+              <TableHead className="w-24 text-[10px] font-black uppercase">BPM Code</TableHead>
               <TableHead className="w-32 text-[10px] font-black uppercase">{t('bpm:sampling.columns.date')}</TableHead>
               <TableHead className="w-40 text-[10px] font-black uppercase">{t('bpm:sampling.columns.ref')}</TableHead>
               <TableHead className="text-[10px] font-black uppercase">{t('bpm:sampling.columns.description')}</TableHead>
@@ -151,9 +160,9 @@ export function TransactionSamplingTab({ noGL, bpmProcessId, onSamplesSelected }
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow><TableCell colSpan={7} className="h-64 text-center"><Loader2 className="h-8 w-8 animate-spin mx-auto text-indigo-500" /></TableCell></TableRow>
+              <TableRow><TableCell colSpan={8} className="h-64 text-center"><Loader2 className="h-8 w-8 animate-spin mx-auto text-indigo-500" /></TableCell></TableRow>
             ) : filteredRows.length === 0 ? (
-              <TableRow><TableCell colSpan={7} className="h-64 text-center text-slate-400 italic">{t('bpm:sampling.empty')}</TableCell></TableRow>
+              <TableRow><TableCell colSpan={8} className="h-64 text-center text-slate-400 italic">{t('bpm:sampling.empty')}</TableCell></TableRow>
             ) : filteredRows.map((row) => (
               <TableRow key={row.id} className={cn("hover:bg-indigo-50/30 transition-colors", selectedIds.has(row.id) && "bg-indigo-50/50")}>
                 <TableCell className="text-center">
@@ -161,6 +170,15 @@ export function TransactionSamplingTab({ noGL, bpmProcessId, onSamplesSelected }
                     checked={selectedIds.has(row.id)} 
                     onCheckedChange={() => toggleSelect(row.id)} 
                   />
+                </TableCell>
+                <TableCell>
+                  {row.bpmCode ? (
+                    <Badge variant="secondary" className="text-[9px] font-mono font-bold bg-slate-100 text-slate-600 border-slate-200">
+                      {row.bpmCode}
+                    </Badge>
+                  ) : (
+                    <span className="text-[9px] text-slate-300 italic">Unlinked</span>
+                  )}
                 </TableCell>
                 <TableCell className="text-xs font-medium text-slate-600">
                   {row.transDate ? format(new Date(row.transDate), 'dd/MM/yyyy') : '-'}

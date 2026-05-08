@@ -69,32 +69,53 @@ export function TransactionUploadModal({ isOpen, onClose, noGL, bpmProcessId, on
           return;
         }
 
-        // Direct Processing of Standardized Headers
+        // Direct Processing of Standardized Headers with Robust Column Matching
         const rows = json.map(row => {
-          let parsedDate: any = row.transDate;
+          // Normalize keys to lowercase and trimmed for robust lookup
+          const normalizedRow: Record<string, any> = {};
+          Object.keys(row).forEach(k => {
+            normalizedRow[k.toLowerCase().trim()] = row[k];
+          });
+
+          // Helper to find value by multiple possible header names
+          const getVal = (possibleKeys: string[]) => {
+            for (const pk of possibleKeys) {
+              const key = pk.toLowerCase().trim();
+              if (typeof normalizedRow[key] !== 'undefined') return normalizedRow[key];
+            }
+            return undefined;
+          };
+
+          const rawDate = getVal(['transDate', 'trans_date', 'tanggal', 'date']);
+          let parsedDate: any = rawDate;
           
           // Handle Excel Serial Dates (numbers)
-          if (typeof row.transDate === 'number') {
-            // Excel dates are days since Dec 30, 1899
-            const date = new Date(Math.round((row.transDate - 25569) * 864e5));
+          if (typeof rawDate === 'number') {
+            const date = new Date(Math.round((rawDate - 25569) * 864e5));
             parsedDate = date.toISOString();
-          } else if (row.transDate) {
-            // Try to parse string
-            const d = new Date(row.transDate);
+          } else if (rawDate) {
+            const d = new Date(rawDate);
             if (!isNaN(d.getTime())) {
               parsedDate = d.toISOString();
             }
           }
 
+          const rowGL = getVal(['noGL', 'no_gl', 'gl_code', 'account', 'gl']);
+          const rowBpmCode = getVal(['bpmCode', 'bpm_code', 'kode_bpm', 'bpm']);
+          const rowAmount = getVal(['amount', 'nilai', 'balance', 'total']);
+
           return {
-            noGL: String(row.noGL || noGL),
+            noGL: String(rowGL || noGL),
             transDate: parsedDate,
-            refNo: String(row.refNo || ''),
-            description: String(row.description || ''),
-            amount: typeof row.amount === 'number' ? row.amount : parseFloat(String(row.amount || '0').replace(/,/g, '')),
-            currency: row.currency || 'IDR',
-            dcFlag: row.dcFlag || (parseFloat(String(row.amount)) < 0 ? 'C' : 'D'),
-            bpmCode: typeof row.bpmCode !== 'undefined' ? String(row.bpmCode) : undefined,
+            refNo: String(getVal(['refNo', 'ref_no', 'reference', 'no_ref']) || ''),
+            description: String(getVal(['description', 'keterangan', 'desc']) || ''),
+            amount: typeof rowAmount === 'number' ? rowAmount : parseFloat(String(rowAmount || '0').replace(/,/g, '')),
+            currency: getVal(['currency', 'mata_uang', 'ccy']) || 'IDR',
+            dcFlag: getVal(['dcFlag', 'dc_flag', 'dc', 'd_c']) || (parseFloat(String(rowAmount)) < 0 ? 'C' : 'D'),
+            // Crucial: If column is present but empty, it MUST be an empty string, not undefined
+            // Undefined means "column not found", which triggers context fallback in backend.
+            // Empty string means "explicitly unlinked".
+            bpmCode: typeof rowBpmCode !== 'undefined' ? String(rowBpmCode).trim() : undefined,
           };
         });
 
@@ -158,7 +179,7 @@ export function TransactionUploadModal({ isOpen, onClose, noGL, bpmProcessId, on
                     <AlertCircle className="h-5 w-5 text-indigo-600 shrink-0" />
                     <div className="space-y-0.5">
                       <p className="text-xs font-bold text-indigo-900">Konfigurasi Unggah</p>
-                      <p className="text-[10px] text-indigo-700">Format kolom wajib: transDate, refNo, description, amount, currency, dcFlag, noGL.</p>
+                      <p className="text-[10px] text-indigo-700">Format kolom yang didukung: transDate, refNo, description, amount, currency, dcFlag, noGL, bpmCode.</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-md border border-indigo-200 shadow-sm">
