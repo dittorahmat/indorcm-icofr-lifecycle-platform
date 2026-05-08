@@ -18,7 +18,12 @@ type AppLayoutProps = {
 
 export function AppLayout({ children, container = false, className, contentClassName }: AppLayoutProps): JSX.Element {
   return (
-    <div className="flex flex-1 min-h-0">
+    <div className="flex flex-1 min-h-screen relative">
+      {/* Fixed Sidebar Background Strip */}
+      <div 
+        className="fixed inset-y-0 left-0 bg-sidebar pointer-events-none -z-10 transition-[width] duration-200 ease-linear md:block hidden" 
+        style={{ width: "var(--sidebar-width)" }}
+      />
       <Suspense fallback={
         <div className="h-screen w-64 border-r bg-sidebar p-4 space-y-4 hidden md:block">
            <Skeleton className="h-8 w-full" />

@@ -2680,9 +2680,16 @@ export function userRoutes(app: Hono<HonoEnv>) {
       eq(transactionDetails.noGL, noGL)
     ) as SQL;
 
-    if (bpmProcessId) {
+    // --- STRICT ISOLATION LOGIC ---
+    if (bpmProcessId && bpmProcessId !== 'undefined' && bpmProcessId !== 'null') {
+      // If we are in a Hub (bpmProcessId provided), ONLY show transactions for that ID.
+      // This strictly excludes unlinked (NULL) records.
       conditions = and(conditions, eq(transactionDetails.bpmProcessId, bpmProcessId)) as SQL;
-    }
+    } else if (bpmProcessId === 'null') {
+      // Specifically requested unlinked records
+      conditions = and(conditions, sql`${transactionDetails.bpmProcessId} IS NULL`) as SQL;
+    } 
+    // If no bpmProcessId parameter at all, return everything for the GL (Global View)
 
     const items = await db.select().from(transactionDetails).where(conditions).limit(500);
 
@@ -2708,22 +2715,38 @@ export function userRoutes(app: Hono<HonoEnv>) {
 
       // 1. Handle Purge if mode is 'replace'
       if (body.mode === 'replace') {
+        // Broad purge to clean up BOTH linked and unlinked junk for this specific GL
         let purgeConditions = and(
           eq(transactionDetails.organizationId, orgId),
           eq(transactionDetails.noGL, body.noGL)
         );
+        
+        // If we are uploading from a process hub, we only purge:
+        // - Records for this GL that belong to THIS process
+        // - Records for this GL that have NO process (potential previous junk)
         if (body.bpmProcessId) {
-          purgeConditions = and(purgeConditions, eq(transactionDetails.bpmProcessId, body.bpmProcessId)) as SQL;
+          purgeConditions = and(
+            purgeConditions, 
+            sql`(${transactionDetails.bpmProcessId} = ${body.bpmProcessId} OR ${transactionDetails.bpmProcessId} IS NULL)`
+          ) as SQL;
+        } else {
+          // If uploading from global view, purge ALL records for this GL (linked or not)
+          // or just unlinked? Let's go with just unlinked to be safe.
+          purgeConditions = and(purgeConditions, sql`${transactionDetails.bpmProcessId} IS NULL`) as SQL;
         }
+        
         await db.delete(transactionDetails).where(purgeConditions);
       }
 
       // 2. Batch Insert Transactions with Smart Linkage
       const rowsToInsert = body.rows.map((row: any) => {
+        // Priority 1: Use specific noGL in row, fallback to body's default
+        const resolvedGL = row.noGL || body.noGL;
+
         // Default context from the body
         let resolvedProcessId = body.bpmProcessId || null;
         
-        // If row has EXPLICIT bpmCode data (even if empty string)
+        // Priority 2: Explicit row-level instruction (bpmCode)
         if (typeof row.bpmCode !== 'undefined') {
           // Explicit column present -> Reset default context
           resolvedProcessId = null; 
@@ -2737,7 +2760,7 @@ export function userRoutes(app: Hono<HonoEnv>) {
         return {
           id: crypto.randomUUID(),
           organizationId: orgId,
-          noGL: body.noGL,
+          noGL: resolvedGL,
           bpmProcessId: resolvedProcessId,
           refNo: row.refNo,
           transDate: row.transDate ? new Date(row.transDate) : null,
