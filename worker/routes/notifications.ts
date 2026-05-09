@@ -42,6 +42,27 @@ notificationsApp.get('/notifications', async (c) => {
   return ok(c, items);
 });
 
+notificationsApp.post('/notifications', async (c) => {
+  const db = getDb(c.env.DATABASE_URL);
+  const orgId = c.get('organizationId');
+  const userId = c.get('userId');
+  const body = await c.req.json<{ message: string; type?: string; link?: string }>();
+
+  const id = crypto.randomUUID();
+  await db.insert(notifications).values({
+    id,
+    organizationId: orgId,
+    userId: userId,
+    message: body.message,
+    type: (body.type as any) || 'info',
+    link: body.link,
+    readStatus: false,
+    createdAt: new Date(),
+  });
+
+  return ok(c, { id });
+});
+
 notificationsApp.post('/notifications/:id/read', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const id = c.req.param('id');

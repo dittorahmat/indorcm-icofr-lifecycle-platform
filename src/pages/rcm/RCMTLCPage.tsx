@@ -27,8 +27,6 @@ interface RCMMatrixItem extends RCMControlMapping {
   fsliName: string;
   noGL: string;
   subProcessName: string;
-  // ...
-
   riskDescription: string;
   isFraudRelated: boolean;
   riskRating: string;
@@ -39,6 +37,7 @@ interface RCMMatrixItem extends RCMControlMapping {
   mappedControlDescription?: string;
   companyName: string;
   locationCode: string;
+  automatedSubNature?: string | null;
 }
 
 interface RCMTLCPageProps {
@@ -110,7 +109,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId }: RCMTLCPageProps) {
       assertionPd: item.assertionPd,
       controlType: item.controlType,
       controlNature: item.controlNature,
-      automatedType: item.automatedType,
+      automatedSubNature: item.automatedSubNature,
       frequency: item.frequency,
       isKeyControl: item.isKeyControl,
       supportingDocs: item.supportingDocs,
@@ -316,20 +315,20 @@ export function RCMTLCPage({ embedded = false, filterBpmId }: RCMTLCPageProps) {
                     {/* IPO Indicators */}
                     {['ipoC', 'ipoA', 'ipoV', 'ipoRa'].map((f) => (
                       <TableCell key={f} className={cn("text-center text-[10px] font-black border-slate-200", f === 'ipoC' && "border-l-4 border-blue-300", item[f as keyof RCMMatrixItem] ? "text-blue-700 bg-blue-50/30" : "text-slate-200")}>
-                         {item[f as keyof RCMMatrixItem] || '—'}
+                         {(item[f as keyof RCMMatrixItem] as any) || '—'}
                       </TableCell>
                     ))}
 
                     {/* Assertion Indicators */}
                     {['assertionE', 'assertionC', 'assertionA', 'assertionCo', 'assertionRo', 'assertionVa', 'assertionPd'].map((f) => (
                       <TableCell key={f} className={cn("text-center text-[10px] font-black border-slate-200", f === 'assertionE' && "border-l-4 border-indigo-300", item[f as keyof RCMMatrixItem] ? "text-indigo-700 bg-indigo-50/30" : "text-slate-200")}>
-                         {item[f as keyof RCMMatrixItem] || '—'}
+                         {(item[f as keyof RCMMatrixItem] as any) || '—'}
                       </TableCell>
                     ))}
 
                     <TableCell className="text-[10px] font-medium px-3">{item.controlType}</TableCell>
                     <TableCell className="text-[10px] font-medium px-3 bg-slate-50/30">{item.controlNature}</TableCell>
-                    <TableCell className="text-[10px] font-medium px-3">{item.automatedType || '-'}</TableCell>
+                    <TableCell className="text-[10px] font-medium px-3">{item.automatedSubNature || '-'}</TableCell>
                     <TableCell className="text-[10px] font-medium px-3 text-center">{item.frequency}</TableCell>
                     <TableCell className="text-[10px] font-medium px-3 bg-slate-50/30">{item.supportingApp || '-'}</TableCell>
                     <TableCell className="text-[10px] font-medium px-3">{item.executingFunction}</TableCell>
@@ -386,14 +385,14 @@ export function RCMTLCPage({ embedded = false, filterBpmId }: RCMTLCPageProps) {
                     {/* IPO Inputs */}
                     {['ipoC', 'ipoA', 'ipoV', 'ipoRa'].map((f) => (
                       <TableCell key={f} className="p-0 bg-white">
-                         <Input className="h-10 border-none focus-visible:ring-0 text-center text-[10px] uppercase font-black" value={item[f as keyof RCMMatrixItem] || ''} onChange={e => handleInputChange(item.mappingId, f as any, e.target.value)} maxLength={1} />
+                         <Input className="h-10 border-none focus-visible:ring-0 text-center text-[10px] uppercase font-black" value={(item[f as keyof RCMMatrixItem] as any) || ''} onChange={e => handleInputChange(item.mappingId, f as any, e.target.value)} maxLength={1} />
                       </TableCell>
                     ))}
 
                     {/* Assertion Inputs */}
                     {['assertionE', 'assertionC', 'assertionA', 'assertionCo', 'assertionRo', 'assertionVa', 'assertionPd'].map((f) => (
                       <TableCell key={f} className="p-0 bg-white">
-                         <Input className="h-10 border-none focus-visible:ring-0 text-center text-[10px] uppercase font-black" value={item[f as keyof RCMMatrixItem] || ''} onChange={e => handleInputChange(item.mappingId, f as any, e.target.value)} maxLength={1} />
+                         <Input className="h-10 border-none focus-visible:ring-0 text-center text-[10px] uppercase font-black" value={(item[f as keyof RCMMatrixItem] as any) || ''} onChange={e => handleInputChange(item.mappingId, f as any, e.target.value)} maxLength={1} />
                       </TableCell>
                     ))}
 

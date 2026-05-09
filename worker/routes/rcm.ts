@@ -48,18 +48,20 @@ rcm.post('/rcm', async (c) => {
     status: "Draft",
   };
 
-  await db.insert(rcms).values(newItem);
+  await db.transaction(async (tx) => {
+    await tx.insert(rcms).values(newItem);
 
-  // System Audit Log
-  await db.insert(auditLogs).values({
-    id: crypto.randomUUID(),
-    organizationId: orgId,
-    userId: userId,
-    action: 'CREATE',
-    entityType: 'RCM',
-    entityId: id,
-    descriptionAfter: `Created RCM: ${newItem.process}`,
-    dataAfter: newItem,
+    // System Audit Log
+    await tx.insert(auditLogs).values({
+      id: crypto.randomUUID(),
+      organizationId: orgId,
+      userId: userId,
+      action: 'CREATE',
+      entityType: 'RCM',
+      entityId: id,
+      descriptionAfter: `Created RCM: ${newItem.process}`,
+      dataAfter: newItem,
+    });
   });
 
   return ok(c, newItem);
@@ -258,40 +260,45 @@ rcm.post('/rcm-matrix/tlc/batch-update', async (c) => {
 
   if (!items || !Array.isArray(items)) return bad(c, 'Invalid items array');
 
-  for (const item of items) {
-    if (!item.id) continue;
-    
-    await db.update(rcmControls)
-      .set({
-        controlName: item.controlName,
-        controlDescription: item.controlDescription,
-        ipoC: item.ipoC,
-        ipoA: item.ipoA,
-        ipoV: item.ipoV,
-        ipoRa: item.ipoRa,
-        assertionE: item.assertionE,
-        assertionC: item.assertionC,
-        assertionA: item.assertionA,
-        assertionCo: item.assertionCo,
-        assertionVa: item.assertionVa,
-        assertionRo: item.assertionRo,
-        assertionPd: item.assertionPd,
-        controlType: item.controlType,
-        controlNature: item.controlNature,
-        automatedControlType: item.automatedType,
-        frequency: item.frequency,
-        isKeyControl: item.isKeyControl,
-        supportingDocs: item.supportingDocs,
-        supportingApp: item.supportingApp,
-        executingFunction: item.executingFunction,
-        executorRole: item.executorRole,
-        affectedFsliItem: item.affectedFsliItem,
-        effectivePeriod: item.effectivePeriod,
-      })
-      .where(and(eq(rcmControls.id, item.id), eq(rcmControls.organizationId, orgId)));
+  try {
+    await db.transaction(async (tx) => {
+      for (const item of items) {
+        if (!item.id) continue;
+        
+        await tx.update(rcmControls)
+          .set({
+            controlName: item.controlName,
+            controlDescription: item.controlDescription,
+            ipoC: item.ipoC,
+            ipoA: item.ipoA,
+            ipoV: item.ipoV,
+            ipoRa: item.ipoRa,
+            assertionE: item.assertionE,
+            assertionC: item.assertionC,
+            assertionA: item.assertionA,
+            assertionCo: item.assertionCo,
+            assertionVa: item.assertionVa,
+            assertionRo: item.assertionRo,
+            assertionPd: item.assertionPd,
+            controlType: item.controlType,
+            controlNature: item.controlNature,
+            automatedSubNature: item.automatedSubNature,
+            frequency: item.frequency,
+            isKeyControl: item.isKeyControl,
+            supportingDocs: item.supportingDocs,
+            supportingApp: item.supportingApp,
+            executingFunction: item.executingFunction,
+            executorRole: item.executorRole,
+            affectedFsliItem: item.affectedFsliItem,
+            effectivePeriod: item.effectivePeriod,
+          })
+          .where(and(eq(rcmControls.id, item.id), eq(rcmControls.organizationId, orgId)));
+      }
+    });
+    return ok(c, { success: true });
+  } catch (e: any) {
+    return bad(c, `Update failed: ${e.message}`);
   }
-
-  return ok(c, { success: true });
 });
 
 rcm.get('/rcm/matrix/itgc', async (c) => {
@@ -363,30 +370,35 @@ rcm.post('/rcm-matrix/itgc/batch-update', async (c) => {
 
   if (!items || !Array.isArray(items)) return bad(c, 'Invalid items array');
 
-  for (const item of items) {
-    if (!item.id) continue;
-    
-    await db.update(rcmControls)
-      .set({
-        controlName: item.controlName,
-        controlDescription: item.controlDescription,
-        itgcDomain: item.itgcDomain,
-        controlType: item.controlType,
-        controlNature: item.controlNature,
-        automatedControlType: item.automatedType,
-        frequency: item.frequency,
-        isKeyControl: item.isKeyControl,
-        supportingDocs: item.supportingDocs,
-        supportingApp: item.supportingApp,
-        executingFunction: item.executingFunction,
-        executorRole: item.executorRole,
-        affectedFsliItem: item.affectedFsliItem,
-        effectivePeriod: item.effectivePeriod,
-      })
-      .where(and(eq(rcmControls.id, item.id), eq(rcmControls.organizationId, orgId)));
+  try {
+    await db.transaction(async (tx) => {
+      for (const item of items) {
+        if (!item.id) continue;
+        
+        await tx.update(rcmControls)
+          .set({
+            controlName: item.controlName,
+            controlDescription: item.controlDescription,
+            itgcDomain: item.itgcDomain,
+            controlType: item.controlType,
+            controlNature: item.controlNature,
+            automatedSubNature: item.automatedSubNature,
+            frequency: item.frequency,
+            isKeyControl: item.isKeyControl,
+            supportingDocs: item.supportingDocs,
+            supportingApp: item.supportingApp,
+            executingFunction: item.executingFunction,
+            executorRole: item.executorRole,
+            affectedFsliItem: item.affectedFsliItem,
+            effectivePeriod: item.effectivePeriod,
+          })
+          .where(and(eq(rcmControls.id, item.id), eq(rcmControls.organizationId, orgId)));
+      }
+    });
+    return ok(c, { success: true });
+  } catch (e: any) {
+    return bad(c, `Update failed: ${e.message}`);
   }
-
-  return ok(c, { success: true });
 });
 
 // --- Controls Refactored ---
@@ -595,8 +607,10 @@ rcm.delete('/controls/:id', async (c) => {
     }
   }
 
-  await db.delete(controls).where(eq(controls.id, id));
-  await db.delete(rcmControls).where(eq(rcmControls.controlId, id));
+  await db.transaction(async (tx) => {
+    await tx.delete(controls).where(eq(controls.id, id));
+    await tx.delete(rcmControls).where(eq(rcmControls.controlId, id));
+  });
 
   return ok(c, { success: true });
 });

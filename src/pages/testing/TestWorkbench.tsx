@@ -146,8 +146,8 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
     }
   });
 
-  const suggestion = getSuggestedSampleRange(control.frequency, control.riskRating, control.nature);
-  const remediationStatus = openDeficiencyDate ? isReadyForRemediationTest(control.frequency, openDeficiencyDate) : null;
+  const suggestion = getSuggestedSampleRange(control.frequency as any, control.riskRating as any, control.nature as any);
+  const remediationStatus = openDeficiencyDate ? isReadyForRemediationTest(control.frequency as any, openDeficiencyDate) : null;
 
   // Unsaved Changes Guard
   const blocker = useUnsavedChanges(form.formState.isDirty);
@@ -188,10 +188,11 @@ function ControlTestCard({ control, openDeficiencyDate, history }: { control: Co
     toast.success(t('validation.authSuccess'));
 
     mutation.mutate({
+      organizationId: control.organizationId,
       controlId: control.id,
       period: "2024-Q1", // Default period
       ...values,
-    });
+    } as any);
   }
 
   return (
@@ -550,7 +551,7 @@ export function TestWorkbench() {
             filteredControls.map(control => {
               const latestOpenDeficiency = deficienciesData?.items
                 .filter(d => d.controlId === control.id && d.status === 'Open')
-                .sort((a, b) => b.identifiedDate - a.identifiedDate)[0];
+                .sort((a, b) => ((b.identifiedDate || 0) as number) - ((a.identifiedDate || 0) as number))[0];
 
               const violation = isCoolingOffViolation(control);
               const controlHistory = testsData?.items.filter(t => t.controlId === control.id) || [];
@@ -588,7 +589,7 @@ export function TestWorkbench() {
                     ) : (
                       <ControlTestCard 
                         control={control} 
-                        openDeficiencyDate={latestOpenDeficiency?.identifiedDate}
+                        openDeficiencyDate={latestOpenDeficiency?.identifiedDate as number}
                         history={controlHistory}
                       />
                     )}

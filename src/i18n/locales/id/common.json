@@ -56,7 +56,17 @@
     "policyUmbrella": "Payung Kebijakan",
     "linkedTo": "Terhubung ke",
     "elcTab": "RCM ELC (Strategis)",
-    "tlcTab": "RCM TLC (Operasional)"
+    "tlcTab": "RCM TLC (Operasional)",
+    "category": "Kategori",
+    "subCategory": "Sub Kategori"
+  },
+  "access": {
+    "restricted": "Akses Dibatasi",
+    "assignedTo": "Akun ini ditugaskan kepada",
+    "lini1Restricted": "Sebagai Lini 1, Anda hanya dapat mengelola proses bisnis untuk akun milik departemen Anda sendiri."
+  },
+  "cycles": {
+    "yearCycle": "Siklus {{year}}"
   },
   "calendar": {
     "today": "Hari Ini",

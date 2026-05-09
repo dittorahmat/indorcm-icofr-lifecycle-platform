@@ -140,9 +140,9 @@ const controlSchema = z.object({
   cosoPrinciples: z.array(z.number()).min(1, 'At least one COSO principle is required'),
   relatedControlIds: z.array(z.string()).optional(), // New: For linkage
   attachmentUrl: z.string().optional(), // New: Policy PDF
-  itgcArea: z.string().optional(),
+  itgcDomain: z.string().optional(),
   cobitId: z.string().optional(),
-  isFraudRisk: z.boolean(),
+  isFraudRelated: z.boolean(),
   effectiveDate: z.string(),
   isKeyControl: z.boolean(),
   eucComplexity: z.enum(['Low', 'Medium', 'High']).optional(),
@@ -171,26 +171,26 @@ export function ControlEditor({ isOpen, setIsOpen, control }: ControlEditorProps
   const form = useForm<ControlFormValues>({
     resolver: zodResolver(controlSchema),
     defaultValues: {
-      level: control?.level || 'TLC',
+      level: (control?.level as any) || 'TLC',
       code: control?.code || '',
       name: control?.name || '',
       description: control?.description || '',
-      type: control?.type || 'Preventive',
-      nature: control?.nature || 'Manual',
-      frequency: control?.frequency || 'Monthly',
-      riskQuantitative: control?.riskAssessment?.quantitativeScore || 'Low',
-      riskQualitative: control?.riskAssessment?.qualitativeScore || 'Low',
+      type: (control?.type as any) || 'Preventive',
+      nature: (control?.nature as any) || 'Manual',
+      frequency: (control?.frequency as any) || 'Monthly',
+      riskQuantitative: (control?.riskAssessment as any)?.quantitativeScore || 'Low',
+      riskQualitative: (control?.riskAssessment as any)?.qualitativeScore || 'Low',
       assertions: control?.assertions || [],
       ipos: control?.ipos || [],
       cosoPrinciples: control?.cosoPrinciples?.map(Number) || [],
       relatedControlIds: control?.relatedControlIds || [],
       attachmentUrl: control?.attachmentUrl || '',
-      itgcArea: control?.itgcArea || '',
-      isFraudRisk: control?.isFraudRisk || false,
+      itgcDomain: control?.itgcDomain || '',
+      isFraudRelated: control?.isFraudRelated || false,
       effectiveDate: control?.effectiveDate ? new Date(control.effectiveDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
       isKeyControl: control?.isKeyControl || false,
-      eucComplexity: control?.eucComplexity || 'Low',
-      ipeType: control?.ipeType || 'Standard/Custom',
+      eucComplexity: (control?.eucComplexity as any) || 'Low',
+      ipeType: (control?.ipeType as any) || 'Standard/Custom',
     }
   });
 
@@ -402,10 +402,10 @@ export function ControlEditor({ isOpen, setIsOpen, control }: ControlEditorProps
                   </FormItem>
                 )} />
 
-                <FormField control={form.control} name="isFraudRisk" render={({ field }) => (
+                <FormField control={form.control} name="isFraudRelated" render={({ field }) => (
                   <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 bg-red-50/30 border-red-100">
                     <FormControl>
-                      <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                      <Checkbox checked={field.value as boolean} onCheckedChange={field.onChange} />
                     </FormControl>
                     <div className="space-y-1 leading-none">
                       <FormLabel className="text-red-800">Fraud Risk (Kecurangan)</FormLabel>
@@ -468,16 +468,16 @@ export function ControlEditor({ isOpen, setIsOpen, control }: ControlEditorProps
 
               {nature !== 'Manual' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField control={form.control} name="itgcArea" render={({ field }) => (
-                    <FormItem><FormLabel>ITGC Area</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select ITGC Area" /></SelectTrigger></FormControl><SelectContent>{ITGC_AREAS.map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}</SelectContent></Select></FormItem>
+                  <FormField control={form.control} name="itgcDomain" render={({ field }) => (
+                    <FormItem><FormLabel>ITGC Area</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value as string}><FormControl><SelectTrigger><SelectValue placeholder="Select ITGC Area" /></SelectTrigger></FormControl><SelectContent>{ITGC_AREAS.map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}</SelectContent></Select></FormItem>
                   )} />
                   <FormField control={form.control} name="cobitId" render={({ field }) => (
                     <FormItem>
                       <FormLabel>COBIT 2019 ID (Optional)</FormLabel>
                       <FormControl><Input placeholder="e.g. APO09" {...field} onChange={e => field.onChange(e.target.value.toUpperCase())} /></FormControl>
-                      {field.value && COBIT_ITGC_MAPPING[field.value] && form.watch('itgcArea') && !COBIT_ITGC_MAPPING[field.value].includes(form.watch('itgcArea') as string) && (
+                      {field.value && COBIT_ITGC_MAPPING[field.value] && form.watch('itgcDomain') && !COBIT_ITGC_MAPPING[field.value].includes(form.watch('itgcDomain') as string) && (
                         <p className="text-[10px] text-amber-600 font-bold mt-1">
-                          Peringatan: Berdasarkan Tabel 1, {field.value} biasanya tidak dipetakan ke area {form.watch('itgcArea')}.
+                          Peringatan: Berdasarkan Tabel 1, {field.value} biasanya tidak dipetakan ke area {form.watch('itgcDomain')}.
                         </p>
                       )}
                     </FormItem>

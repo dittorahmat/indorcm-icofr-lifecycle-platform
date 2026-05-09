@@ -38,6 +38,7 @@ interface RCMMatrixItem extends RCMControlMapping {
   mappedControlDescription?: string;
   companyName: string;
   locationCode: string;
+  automatedSubNature?: string | null;
 }
 
 interface RCMITGCPageProps {
@@ -99,7 +100,7 @@ export function RCMITGCPage({ embedded = false, filterBpmId }: RCMITGCPageProps)
       itgcDomain: item.itgcDomain,
       controlType: item.controlType,
       controlNature: item.controlNature,
-      automatedType: item.automatedType,
+      automatedSubNature: item.automatedSubNature,
       frequency: item.frequency,
       isKeyControl: item.isKeyControl,
       supportingDocs: item.supportingDocs,
@@ -272,7 +273,7 @@ export function RCMITGCPage({ embedded = false, filterBpmId }: RCMITGCPageProps)
                        </Select>
                     </TableCell>
                     <TableCell className="p-0 bg-indigo-50/30">
-                       <Select value={item.automatedType || ''} onValueChange={val => handleInputChange(item.mappingId, 'automatedType', val)} disabled={item.controlNature !== 'Otomatis' && !item.controlNature?.includes('ITDM')}>
+                       <Select value={item.automatedSubNature || ''} onValueChange={val => handleInputChange(item.mappingId, 'automatedSubNature', val)} disabled={item.controlNature !== 'Otomatis' && !item.controlNature?.includes('ITDM')}>
                          <SelectTrigger className="h-full border-none rounded-none focus:ring-0 text-[10px] font-bold text-indigo-700 shadow-none px-3 italic"><SelectValue placeholder="..." /></SelectTrigger>
                          <SelectContent>
                             {['Automated Control', 'Automated Calculation', 'Restricted Access', 'Interface'].map(v => <SelectItem key={v} value={v} className="text-[10px]">{v}</SelectItem>)}

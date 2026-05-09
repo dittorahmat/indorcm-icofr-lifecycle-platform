@@ -7,6 +7,7 @@ import { api } from '@/lib/api-client';
 import type { RCM, Deficiency, Control } from '@shared/types';
 import { CheckCircle, AlertTriangle, Clock, ShieldCheck, UserCheck, Zap } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { PageHeader } from '@/components/layout/PageHeader';
 
 const ComplianceCharts = React.lazy(() => import('@/components/dashboard/ComplianceCharts').then(m => ({ default: m.ComplianceCharts })));
 
@@ -56,10 +57,10 @@ export function Dashboard() {
   return (
     <AppLayout container>
       <div className="space-y-8">
-        <div>
-          <h1 className="text-3xl font-bold">{t('title')}</h1>
-          <p className="text-muted-foreground">{t('description')}</p>
-        </div>
+        <PageHeader 
+          title={t('title')} 
+          description={t('description')} 
+        />
 
         <div className="grid gap-6 md:grid-cols-3">
           {kpiData.map((kpi, index) => (

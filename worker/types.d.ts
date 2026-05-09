@@ -8,7 +8,7 @@
  * Note: These are lightweight declarations intended only to satisfy the compiler.
  * Runtime behavior is provided by the installed 'xlsx' package (loaded dynamically).
  */
-/* eslint-disable @typescript-eslint/no-empty-interface */
+ 
 /* tslint:disable:interface-name */
 declare module 'xlsx/xlsx.mjs' {
   const content: any;

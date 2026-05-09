@@ -14,6 +14,7 @@ import {
   History,
   Megaphone,
   Network,
+  Bell as BellIcon,
   UploadCloud,
   Cpu,
   Bot,
@@ -147,50 +148,50 @@ export function AppSidebar(): JSX.Element {
           </SidebarGroupLabel>
           <SidebarMenu className="px-2">
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/dashboard")} className="min-h-12 h-auto py-2 text-[16px]">
-                <Link to="/dashboard" className="font-bold"><LayoutDashboard className="h-5 w-5" /> <span>{t('items.dashboard')}</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/dashboard")} className="min-h-12 h-auto py-2 text-[16px]" title={t('items.dashboard')}>
+                <Link to="/dashboard" className="font-bold"><LayoutDashboard className="h-5 w-5" aria-hidden="true" /> <span>{t('items.dashboard')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/scoping")} className="min-h-12 h-auto py-2 text-[16px]">
-                <Link to="/scoping" className="font-bold"><Settings2 className="h-5 w-5" /> <span>{t('items.scoping')}</span></Link>    
+              <SidebarMenuButton asChild isActive={isActive("/scoping")} className="min-h-12 h-auto py-2 text-[16px]" title={t('items.scoping')}>
+                <Link to="/scoping" className="font-bold"><Target className="h-5 w-5" aria-hidden="true" /> <span>{t('items.scoping')}</span></Link>    
               </SidebarMenuButton>
             </SidebarMenuItem>
             {userRole === 'Line 2' && (
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive("/import")} className="min-h-12 h-auto py-2 text-[16px]">
-                  <Link to="/import" className="font-bold"><RefreshCw className="h-5 w-5" /> <span>{t('items.sync')}</span></Link>      
+                <SidebarMenuButton asChild isActive={isActive("/import")} className="min-h-12 h-auto py-2 text-[16px]" title={t('items.sync')}>
+                  <Link to="/import" className="font-bold"><RefreshCw className="h-5 w-5" aria-hidden="true" /> <span>{t('items.sync')}</span></Link>      
                 </SidebarMenuButton>
               </SidebarMenuItem>
             )}
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/bpm")} className="min-h-12 h-auto py-2 text-[16px]">
-                <Link to="/bpm" className="font-bold"><ListChecks className="h-5 w-5" /> <span>{t('items.bpm')}</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/bpm")} className="min-h-12 h-auto py-2 text-[16px]" title={t('items.bpm')}>
+                <Link to="/bpm" className="font-bold"><Workflow className="h-5 w-5" aria-hidden="true" /> <span>{t('items.bpm')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/todo")} className="min-h-12 h-auto py-2 text-[16px]">
-                <Link to="/todo" className="font-bold"><CalendarIcon className="h-5 w-5" /> <span>{t('items.todo')}</span></Link>       
+              <SidebarMenuButton asChild isActive={isActive("/todo")} className="min-h-12 h-auto py-2 text-[16px]" title={t('items.todo')}>
+                <Link to="/todo" className="font-bold"><ListTodo className="h-5 w-5" aria-hidden="true" /> <span>{t('items.todo')}</span></Link>       
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/csa")} className="min-h-12 h-auto py-2 text-[16px]">
-                <Link to="/csa" className="font-bold"><History className="h-5 w-5" /> <span>{t('items.csaReports')}</span></Link>       
+              <SidebarMenuButton asChild isActive={isActive("/csa")} className="min-h-12 h-auto py-2 text-[16px]" title={t('items.csaReports')}>
+                <Link to="/csa" className="font-bold"><ClipboardCheck className="h-5 w-5" aria-hidden="true" /> <span>{t('items.csaReports')}</span></Link>       
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/notifications")} className="min-h-12 h-auto py-2 text-[16px]">
+              <SidebarMenuButton asChild isActive={isActive("/notifications")} className="min-h-12 h-auto py-2 text-[16px]" title={t('items.notifications')}>
                 <Link to="/notifications" className="flex items-center justify-between w-full font-bold">
                   <div className="flex items-center gap-2">
-                    <Megaphone className="h-5 w-5" /> <span>{t('items.notifications')}</span>
+                    <BellIcon className="h-5 w-5" aria-hidden="true" /> <span>{t('items.notifications')}</span>
                   </div>
                   <NotificationBadge />
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/applications")} className="min-h-12 h-auto py-2 text-[16px]">
-                <Link to="/applications" className="font-bold"><Cpu className="h-5 w-5 text-indigo-500" /> <span>{t('items.applications')}</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/applications")} className="min-h-12 h-auto py-2 text-[16px]" title={t('items.applications')}>
+                <Link to="/applications" className="font-bold"><Cpu className="h-5 w-5 text-indigo-500" aria-hidden="true" /> <span>{t('items.applications')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             {(userRole === 'Komisaris' || userRole === 'CFO' || userRole === 'Line 2' || userRole === 'Admin') && (
@@ -285,16 +286,11 @@ export function AppSidebar(): JSX.Element {
           </SidebarMenu>
         </SidebarGroup>
 
-        <SidebarGroup className="mt-auto pt-2">
+        <SidebarGroup className="mt-auto pt-2 pb-6">
           <SidebarGroupLabel className="font-black text-slate-400 uppercase text-[14px] tracking-widest h-10 px-4">
             {t('groups.user')}
           </SidebarGroupLabel>
           <SidebarMenu className="px-2">
-            <SidebarMenuItem>
-              <div className="px-2 pb-1 pt-1">
-                 <LanguageSwitcher />
-              </div>
-            </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/settings")} className="min-h-12 h-auto py-2 text-[16px]">
                 <Link to="/settings" className="font-bold"><UserCog className="h-5 w-5" /> <span>{t('items.settings')}</span></Link>    

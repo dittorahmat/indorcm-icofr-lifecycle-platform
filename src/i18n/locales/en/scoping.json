@@ -41,6 +41,34 @@
     "approveToKomutBtn": "Approve to Chairman",
     "approveFinalBtn": "Approve Baseline"
   },
+  "uploadButton": "Upload GL",
+  "emptyState": "Upload a GL file to start",
+  "benchmarkRequired": "Set benchmark first to enable simulations",
+  "masterDataTab": "Master Data GL",
+  "resetDataButton": "Reset Scoping Data",
+  "noBenchmarks": "No benchmarks defined in Master Data GL.",
+  "purgeConfirm": "This will permanently delete ALL simulations and GL snapshots. Continue?",
+  "params": {
+    "title": "Scoping Parameters",
+    "locations": "Significant Locations",
+    "omLabel": "% OM (Overall Materiality)",
+    "haircutLabel": "% Haircut (PM)",
+    "benchmarkValue": "{{basis}} Value",
+    "omValue": "Overall Materiality",
+    "pmValue": "Performance Materiality"
+  },
+  "logic": {
+    "title": "Scoping Logic",
+    "description": "An account is marked SIGNIFICANT if:",
+    "quant": "|Balance| >= PM (Quantitative)",
+    "qual": "At least one qualitative pillar at the FSLI level is 'HIGH'"
+  },
+  "editor": {
+    "saveDraft": "Save Draft",
+    "submitToCfo": "Submit to CFO",
+    "resubmitToCfo": "Re-submit to CFO",
+    "lockedMessage": "This baseline is officially approved and locked."
+  },
   "table": {
     "account": "Account",
     "balance": "Balance",

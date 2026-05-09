@@ -1,3 +1,6 @@
+import { type InferSelectModel, type InferInsertModel } from 'drizzle-orm';
+import * as schema from '../worker/db/schema';
+
 export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
@@ -17,21 +20,11 @@ export type ActionPlanStatus = "Draft" | "In Review" | "In Progress" | "Resolved
 export type UserRole = "Line 1" | "Line 2" | "Line 3" | "Admin" | "External Auditor" | "Commissioner" | "CFO";
 export type UserLevel = "Staff" | "Manager" | "Head" | "Director";
 
-export interface Department {
-  id: string;
-  name: string;
-  description?: string;
-}
+export type Department = InferSelectModel<typeof schema.departments>;
+export type NewDepartment = InferInsertModel<typeof schema.departments>;
 
-export interface Organization {
-  id: string;
-  name: string;
-  slug?: string;
-  logo?: string;
-  createdAt: number;
-  metadata?: any;
-  entityCode?: string;
-}
+export type Organization = InferSelectModel<typeof schema.organization>;
+export type NewOrganization = InferInsertModel<typeof schema.organization>;
 
 export type QualitativeLevel = "Low" | "Medium" | "High";
 
@@ -40,55 +33,25 @@ export interface QualitativeEntry {
   level: QualitativeLevel;
 }
 
-export interface GLRow {
-  ymd: string;
-  entityCode: string;
-  noGL: string;
-  glDesc: string;
-  currency: string;
-  balance: number;
-  fsliCode: string;
-  // New Fields from Template SK-5/2024
-  fsliName?: string;      // Dari kolom "FSLI"
-  category?: string;      // "Neraca" atau "Laba Rugi"
-  subKategori?: string;   // "Aset", "Pendapatan", dll
-  fsliBalance?: number;   // Verifikasi agregasi
-  noUrut?: number;        // Display order
-  assignedDepartmentIds?: string[]; // Department assignments
-  ownerAcceptance?: "Accepted" | "Rejected"; // Owner acceptance status (null = Pending)
-}
+export type GLRow = InferSelectModel<typeof schema.glRows>;
+export type NewGLRow = InferInsertModel<typeof schema.glRows>;
 
-export interface TransactionDetail {
-  id: string;
-  organizationId: string;
-  noGL: string;
-  bpmProcessId?: string;
-  refNo?: string;
-  transDate?: number; // epoch millis
-  description?: string;
-  currency?: string;
-  dcFlag?: string; // D / C
-  amount?: number;
+export interface TransactionDetail extends Omit<InferSelectModel<typeof schema.transactionDetails>, 'transDate'> {
+  transDate: number | null;
 }
+export type NewTransactionDetail = InferInsertModel<typeof schema.transactionDetails>;
 
-export interface TransactionUpload {
-  id: string;
-  filename: string;
-  uploadedBy: string;
-  rowCount: number;
-  createdAt: number;
+export interface TransactionUpload extends Omit<InferSelectModel<typeof schema.transactionUploads>, 'createdAt'> {
+  createdAt: number | null;
 }
+export type NewTransactionUpload = InferInsertModel<typeof schema.transactionUploads>;
 
 export type BenchmarkBasis = "Revenue" | "PBT" | "Assets" | "Equity" | "Net Current Assets";
 
-export interface GLSnapshot {
-  id: string;
-  filename: string;
-  uploadDate: number;
+export interface GLSnapshot extends Omit<InferSelectModel<typeof schema.glSnapshots>, 'benchmarkFsliNames' | 'uploadDate'> {
+  benchmarkFsliNames: string[];
   rows: GLRow[];
-  status: "Draft" | "Mapped";
-  isActive: boolean;
-  benchmarkFsliNames: string[]; // List of FSLI names marked as potential benchmarks
+  uploadDate: number;
 }
 
 export type SimulationStatus = "Draft" | "Pending CFO" | "Pending Komut" | "Approved" | "Rejected";
@@ -103,33 +66,13 @@ export interface ApprovalHistoryEntry {
   note: string;
 }
 
-export interface MaterialitySimulation {
-  id: string;
-  name: string;
-  year: number;
+export interface MaterialitySimulation extends Omit<InferSelectModel<typeof schema.simulations>, 'history' | 'significantAccounts' | 'assessmentData' | 'createdAt' | 'updatedAt'> {
   status: SimulationStatus;
-  basis: string; // FSLI name selected as basis
-  omPercentage: number;
-  haircutPercentage: number;
-  locationCount: number; // New: Added for multiplier logic
-  locationThreshold: number; // New: Default 80%
-  locationResults?: {
-    entityCode: string;
-    balance: number;
-    contributionPercentage: number;
-    cumulativePercentage: number;
-    isSignificant: boolean;
-  }[];
-  omValue: number;
-  pmValue: number;
-  glSnapshotId: string;
-  significantAccounts?: SignificantAccount[]; // Added for explicit scoping results
-  assessmentData: Record<string, Record<number, QualitativeLevel>>; // Key: FSLI Name, Sub-Key: ruleId (1-8)
-  approvedBy?: string;
-  approvedDate?: number;
-  createdBy: string;
-  createdAt: number;
   history: ApprovalHistoryEntry[];
+  significantAccounts?: SignificantAccount[];
+  assessmentData: Record<string, Record<number, QualitativeLevel>>;
+  createdAt: number;
+  updatedAt: number | null;
 }
 
 export type BUMNCluster = 
@@ -145,18 +88,11 @@ export type BUMNCluster =
   | "Industri Perkebunan dan Kehutanan" 
   | "Jasa Logistik";
 
-export interface Application {
-  id: string;
-  name: string;
+export type Application = InferSelectModel<typeof schema.applications> & {
+  linkedControlCount?: number;
   version?: string;
-  description: string;
-  statusITGC: "Effective" | "Ineffective" | "Not Tested";
-  lastITGCTestDate?: number;
-  criticality: "High" | "Medium" | "Low";
-  isSignificant?: boolean; // New: Flag from Scoping
-  linkedControlCount?: number; // New: Cross-check with RCM
-  itgcAreas?: ITGCArea[]; // New: Manual mapping (Program Dev, Changes, Ops, Access)
-}
+};
+export type NewApplication = InferInsertModel<typeof schema.applications>;
 
 export interface RiskLibrary {
   id: string;
@@ -200,96 +136,29 @@ export interface Scoping {
   significantProcesses: string[];
 }
 
-export interface AggregateDeficiency {
-  id: string;
-  name: string;
-  year: number;
-  deficiencyIds: string[];
-  affectedAccounts: string[];
-  affectedAssertions: ControlAssertion[];
-  combinedMagnitude: number;
-  aggregateLikelihood: "Low" | "Medium" | "High";
-  finalSeverity: DeficiencySeverity; // CD, SD, or MW
-  conclusionRationale: string;
-  identifiedBy: string; // User ID
-  identifiedDate: number;
-  remediationPlan?: string;
-  remediationStatus?: string;
-  targetDate?: number;
-  isBeforeYearEnd?: boolean;
-  description?: string; // Optional if needed
-}
+export type AggregateDeficiency = Omit<InferSelectModel<typeof schema.aggregateDeficiencies>, 'createdAt'> & {
+  createdAt: number;
+};
 
 export type ControlLevel = "ELC" | "TLC" | "ITGC";
 
-export interface Control {
-  id: string;
-  rcmId: string;
-  year?: number;
-  code: string; // e.g., "CTRL-001"
-  name: string;
-  description: string;
-  ownerId: string; // User ID
-  level: ControlLevel; // New: SK-5 Requirement
-  type: ControlType;
-  nature: ControlNature;
-  frequency: ControlFrequency;
+export interface Control extends Omit<InferSelectModel<typeof schema.controls>, 'relatedControlIds' | 'ipos' | 'assertions' | 'fsliCodes' | 'attributeQuestions' | 'effectiveDate' | 'lastCsaDate'> {
   assertions: ControlAssertion[];
   ipos: InformationProcessingObjective[];
   cosoPrinciples: COSOPrinciple[];
-  relatedControlIds: string[]; // New: For linkage (Many-to-Many)
-  attachmentUrl?: string; // New: For policy documents
-  itgcArea?: ITGCArea;
-  itgcAssertions?: Record<string, 'Y' | 'N'>; // New: Dummy IT assertions mapping
-  cobitId?: string; // New: For ITGC controls (Tabel 1)
-  isFraudRisk: boolean; // New: (Tabel 18)
-  effectiveDate: number; // New: epoch millis (Tabel 18)
-  automatedSubNature?: AutomatedSubNature; // New: (Tabel 18)
-  riskRating: "High" | "Medium" | "Low";
-  riskAssessment?: {
-    quantitativeScore: "High" | "Medium" | "Low";
-    qualitativeScore: "High" | "Medium" | "Low";
-    transactionValue?: number; // Optional: for quant comparison with materiality
-  };
-  isKeyControl: boolean;
-  itApplication?: string; // For Automated/ITDM
-  eucComplexity?: EUCComplexity; // New: (Tabel 14)
-  ipeType?: IPEType; // New: (Tabel 20)
-  fsliCodes?: string[]; // New: Linked FSLI codes from Scoping
-  departmentId?: string; // New: Assigned Lini 1 Department
-  bpmStatus?: BPMWorkflowStatus; // New: Workflow state (Draft, Pending, Approved)
-  
-  // BPM Spreadsheet Specific Fields (SK-5 Layout)
-  businessProcess?: string;
-  subProcess?: string;
-  location?: string;
-  isFraudRelated?: boolean;
-  reference?: string;
-  supportingDocs?: string;
-  applicationId?: string;
-  bpmProcessId?: string; // Link to the BPMProcess header list
-  organizationId?: string; // Target organization
-  executorRole?: string; // Role of the control executor
-
-  // New Smart CSA Metadata
-  csaStatus?: "Not Assessed" | "Effective" | "Ineffective";
-  lastCsaDate?: number; // epoch millis
-
-  // New Smart CSA Fields
+  relatedControlIds: string[];
+  fsliCodes?: string[];
   attributeQuestions?: {
     A: string;
     B: string;
     C: string;
     D: string;
   };
-
-  // MRC Specific Metadata - Tabel 21 (Hal 45 & 55)
   mrcMetadata?: {
-    expectation: string; // Kewajaran ekspektasi
-    investigationThreshold: string; // Batasan/Kriteria anomali
-    investigationProcedures: string; // Prosedur investigasi
+    expectation: string;
+    investigationThreshold: string;
+    investigationProcedures: string;
   };
-  // Line 2 Validation (Test of One) - Bab III 4
   line2Validation?: {
     status: "Pending" | "Validated" | "Rejected";
     validatedBy?: string;
@@ -297,20 +166,13 @@ export interface Control {
     testOfOneEvidenceUrl?: string;
     comments?: string;
   };
+  effectiveDate: number | null;
+  lastCsaDate: number | null;
 }
 
-export interface BPMProcess {
-  id: string;
-  name: string;
-  noGL: string; // Link to specific Account
-  bpmCode?: string; // e.g., BPM-FIN-01
-  fsliName: string;
-  standardTestProcedure?: string; // Master template for CSA
-  createdBy: string;
-  createdAt: string;
-  riskCount?: number;
-  controlCount?: number;
-}
+export type BPMProcess = Omit<InferSelectModel<typeof schema.bpmProcesses>, 'createdAt'> & {
+  createdAt: number;
+};
 
 export interface BPMNode {
   id: string;
@@ -343,54 +205,11 @@ export interface BPMEdge {
   label?: string;
 }
 
-export interface RCMControlMapping {
-  id: string;
-  rcmId: string;
-  controlName?: string;
-  controlDescription?: string; // Column xi
-  supportingDocs?: string; // Column xii
-  isKeyControl: boolean; // Column xiii
+export type RCMControlMapping = InferSelectModel<typeof schema.rcmControls>;
 
-  // Regulatory Metadata (Lampiran 5 b)
-  ipoC?: string;
-  ipoA?: string;
-  ipoV?: string;
-  ipoRa?: string;
-  assertionE?: string;
-  assertionC?: string;
-  assertionA?: string;
-  assertionCo?: string;
-  assertionVa?: string;
-  assertionRo?: string;
-  assertionPd?: string;
-  
-  controlType?: string; // Column xxv: Preventif / Detektif
-  controlNature?: string; // Column xxvi: Manual, Otomatis, ITDM - EUC, ITDM - IPE, MRC
-  automatedType?: string; // Column xxvii: Automated Control, Automated Calculation, Restricted Access, Interface
-  frequency?: string; // Column xxviii
-  supportingApp?: string; // Column xxix
-  executingFunction?: string; // Column xxx
-  executorRole?: string; // Column xxxi
-  affectedFsliItem?: string; // Column xxxii
-  effectivePeriod?: string; // Column xxxiii
-
-  // ELC & ITGC Regulatory Metadata
-  cosoPrinciples?: number[]; // Array of numbers 1-17
-  itgcDomain?: ITGCArea; // Access, Changes, Development, Operations
-  itgcAssertions?: Record<string, 'Y' | 'N'>; // JSON mapping for IT assertions
-  automatedControlType?: AutomatedSubNature; // Column xxvii: Automated Control, Automated Calculation, Restricted Access, Interface
-}
-
-export interface RCM {
-  id: string;
-  process: string;
-  year?: number;
-  // ... rest of RCM interface remains the same
-  subProcess: string;
-  riskDescription: string;
-  isFraudRelated: boolean;
+export interface RCM extends Omit<InferSelectModel<typeof schema.rcms>, 'auditTrail'> {
   riskRating: QualitativeLevel;
-  status: "Draft" | "Pending Validation" | "Active" | "Archived" | "Pending Change Approval"; // Added Pending Change Approval
+  status: "Draft" | "Pending Validation" | "Active" | "Archived" | "Pending Change Approval";
   controls: string[]; // Array of Control IDs
   bpmData?: {
     nodes: BPMNode[];
@@ -404,26 +223,14 @@ export interface RCM {
   };
 }
 
-export interface CSASchedule {
-  id: string;
-  organizationId: string;
-  bpmProcessId: string;
-  plannedDate: number; // epoch millis
-  type: "CSA" | "TOD" | "TOE" | "SCOPING" | "RCM" | "SOC" | "INVESTEE" | "SIGNOFF";
-  status: "Not Started" | "In Progress" | "Completed" | "Overdue";
-  assignedTo?: string; // User ID
-  recurringFrequency?: "Monthly" | "Quarterly" | "Semi-Annual" | "Annual";
+export type CSASchedule = Omit<InferSelectModel<typeof schema.csaSchedules>, 'plannedDate' | 'createdAt'> & {
+  plannedDate: number;
   createdAt: number;
-}
+};
 
 export type CSASample = CSATestSample;
 
-export interface CSATestSample {
-  id: string;
-  sampleRef: string;
-  glRowId?: string; // Link to original transaction row
-  
-  // New: Per-control results for this sample
+export interface CSATestSample extends Omit<InferSelectModel<typeof schema.csaSamples>, 'controlResults'> {
   controlResults?: Record<string, { 
     implemented: boolean; 
     evidenceUrl?: string; 
@@ -432,118 +239,37 @@ export interface CSATestSample {
     riskName: string;
     controlName: string;
   }>;
-
-  // Legacy (Keep for compatibility)
-  attributeResults?: {
-    A: boolean;
-    B: boolean;
-    C: boolean;
-    D: boolean;
-  };
-  itacResults?: {
-    expectedResult: string;
-    actualResult: string;
-    isMatch: boolean;
-  };
 }
 
-export interface CSARecord {
-  id:string;
-  organizationId: string;
-  controlId?: string; // Optional if assessing at Sub-Process level
-  bpmProcessId?: string; // New: Primary link for aggregate CSA
-  period: string; // e.g., "2024-Q1"
-  assessmentDate: number; // epoch millis
-  assessedBy: string; // User ID
+export interface CSARecord extends Omit<InferSelectModel<typeof schema.csaRecords>, 'assessmentDate' | 'capturedAt' | 'line2ValidatedDate'> {
   result: "Effective" | "Ineffective" | "No Transaction";
-  isDraft?: boolean;
-  evidenceUrl?: string;
-  comments: string;
-  samples: CSATestSample[]; // Dynamic sampling
-
-  // Appendix 7a Fields
-  testProcedure?: string;
-  archiveLocation?: string;
-
-  // New Smart CSA Gate
-  isBpmConfirmed?: boolean;
-
-  // Section II: Prosedur (Lampiran 7)
-  samplingMethodology?: string;
-  documentList?: string;
-
-  // Summary Regulatory Fields (SK-5/2024) - Aggregated from samples
-  attrA?: boolean;
-  attrB?: boolean;
-  attrC?: boolean;
-  attrD?: boolean;
-
-  // Forensic Metadata (Retained)
-  gpsVerified?: boolean;
-  latitude?: number;
-  longitude?: number;
-  timestampVerified?: boolean;
-  capturedAt?: number; // Store as epoch
-  hash?: string;
-  biometricVerified?: boolean;
-
-  // ITAC Specific (Lampiran 7 Hal 91-92)
-  itacScenario?: string;
-  itacMethod?: string;
-  itacSampleInfo?: string;
-
-  // Line 2 Validation
-  line2Status?: "Pending" | "Validated" | "Rejected";
-  line2Comments?: string;
-  line2ValidatedBy?: string;
-  line2ValidatedDate?: number;
+  samples: CSATestSample[];
+  assessmentDate: number;
+  capturedAt: number | null;
+  line2ValidatedDate: number | null;
 }
 
-export interface TestRecord {
-  id: string;
-  controlId: string;
+export interface TestRecord extends Omit<InferSelectModel<typeof schema.testRecords>, 'evaluationAttributes' | 'testDate'> {
   testType: "TOD" | "TOE";
-  method: TestMethod; // New: SK-5 Requirement (Gambar 4)
-  period: string; // e.g., "2024-Q1"
-  testDate: number; // epoch millis
-  testedBy: string; // User ID
   result: "Effective" | "Ineffective";
-  sampleSize?: number;
-  deviations?: number;
-  evidenceUrl?: string;
-  comments: string;
-  homogeneityJustification?: string;
-  // SK-5 Table 21 / Lampiran 8 Attributes
   evaluationAttributes?: {
-    objectiveAchieved: boolean; // Pencapaian Objektif
-    timingAccuracy: boolean; // Ketepatan Waktu
-    authorityCompetence: boolean; // Wewenang & Kompetensi
-    infoReliability: boolean; // Keandalan Informasi (IPE/EUC)
-    periodCoverage: boolean; // Periode yang Dicakup
-    evidenceAvailability: boolean; // Bukti yang Tersedia
+    objectiveAchieved: boolean;
+    timingAccuracy: boolean;
+    authorityCompetence: boolean;
+    infoReliability: boolean;
+    periodCoverage: boolean;
+    evidenceAvailability: boolean;
   };
+  testDate: number;
 }
 
-export interface Deficiency {
-  id: string;
-  controlId: string;
-  description: string;
+export interface Deficiency extends Omit<InferSelectModel<typeof schema.deficiencies>, 'assertions' | 'flowchartPath' | 'identifiedDate' | 'compensatingControlIds'> {
   severity: DeficiencySeverity;
-  identifiedDate: number; // epoch millis
-  identifiedBy: string; // User ID
   status: "Open" | "Remediated" | "Verified" | "Closed";
   relatedAssertions: ControlAssertion[];
-  // SK-5 Requirement: Compensating Controls (Bab VII 1.1.e)
-  compensatingControlIds?: string[]; 
-  rootCause?: string;
-  magnitude?: number; // Value exposed to risk (deprecated or for manual calc)
-  exposureValue?: number; // Nilai Eksposur Defisiensi (Lampiran 10)
-  likelihood?: "Low" | "Medium" | "High";
-  remediationEvidence?: string;
-  correctiveActionTaken?: string;
+  compensatingControlIds: string[];
   assertions?: string[];
   flowchartPath?: Record<number, boolean>;
-  // Step 0 Indicators (SK-5 1.1.c)
   preAssessment?: {
     seniorManagementFraud: boolean;
     materialFraudImpact: boolean;
@@ -551,32 +277,104 @@ export interface Deficiency {
     auditorIdentifiedMisstatement: boolean;
     ineffectiveAuditCommittee: boolean;
   };
+  identifiedDate: number | null;
 }
 
-export interface ActionPlan {
-  id: string;
-  deficiencyId: string;
-  description: string;
-  ownerId: string; // User ID
-  dueDate: number; // epoch millis
+export interface ActionPlan extends Omit<InferSelectModel<typeof schema.actionPlans>, 'dueDate' | 'targetDate' | 'actualCompletionDate'> {
   status: ActionPlanStatus;
-  completionDate?: number;
-  // SK-5 Regulatory Fields (Lampiran 6 & 11)
-  relatedFunction: string; // Fungsi Terkait
-  picName: string; // Penanggung Jawab
-  planDescription: string; // Deskripsi Rencana
-  activityDetail: string; // Detail Aktivitas
-  remediatedControlDescription?: string; // Deskripsi Pengendalian setelah Remediasi
-  targetDate: number; // Target Tanggal (epoch millis)
-  actualCompletionDate?: number; 
-  isApprovedByLine2: boolean;
-  isBeforeYearEnd: boolean; // For effectiveness conclusion
+  dueDate: number | null;
+  targetDate: number | null;
+  actualCompletionDate: number | null;
 }
+
+export type ChangeLog = Omit<InferSelectModel<typeof schema.auditLogs>, 'timestamp' | 'effectiveDate'> & {
+  timestamp: number | null;
+  effectiveDate: number | null;
+};
+
+export type Vendor = InferSelectModel<typeof schema.vendors>;
+
+export interface SOCEvaluation extends Omit<InferSelectModel<typeof schema.socEvaluations>, 'evaluatedAt'> {
+  evaluatedAt: number;
+}
+
+export interface SOCReport extends Omit<InferSelectModel<typeof schema.socReports>, 'periodStart' | 'periodEnd' | 'createdAt'> {
+  evaluation?: SOCEvaluation;
+  periodStart: number;
+  periodEnd: number;
+  createdAt: number;
+}
+
+export type WBSReport = {
+  id: string;
+  reportDate: number;
+  category: "Financial Reporting" | "Asset Misappropriation" | "Corruption" | "Other";
+  description: string;
+  impactMagnitude: number;
+  status: "Investigating" | "Confirmed" | "Closed";
+  isFinancialImpact: boolean;
+  relatedControlIds?: string[];
+};
+
+export type EntityMateriality = {
+  entityId: string;
+  entityName: string;
+  totalAssets: number;
+  allocatedOM: number;
+  allocatedPM: number;
+};
+
+export type InvesteeMateriality = {
+  id: string;
+  name: string;
+  ownershipPercentage: number;
+  investmentValue: number;
+  auditStatus: "Audit Report Received" | "Pending Review" | "Not Audited";
+  controlsTested: string;
+  allocatedOM: number;
+  allocatedPM: number;
+};
+
+export interface AccountAssertion extends Omit<InferSelectModel<typeof schema.accountAssertions>, 'updatedAt'> {
+  updatedAt: number | null;
+}
+
+export interface Materiality extends InferSelectModel<typeof schema.materiality> {
+  entityAllocations?: EntityMateriality[];
+  investeeAllocations?: InvesteeMateriality[];
+}
+
+export interface BPMDiagram extends Omit<InferSelectModel<typeof schema.bpmDiagrams>, 'nodes' | 'edges' | 'createdAt' | 'updatedAt'> {
+  nodes: BPMNode[];
+  edges: BPMEdge[];
+  createdAt: number;
+  updatedAt: number | null;
+}
+
+export type User = Omit<InferSelectModel<typeof schema.user>, 'createdAt' | 'updatedAt'> & {
+  createdAt: number;
+  updatedAt: number;
+};
+
+export type Chat = {
+  id: string;
+  title: string;
+};
+
+export type ChatMessage = {
+  id: string;
+  chatId: string;
+  userId: string;
+  text: string;
+  ts: number;
+};
+
+// --- Restored & Virtual Types ---
 
 export interface Settings {
   id: string;
   companyName: string;
-  logoUrl?: string; // Standard company logo for diagrams and reports
+  logoUrl?: string;
   ceoName: string;
   cfoName: string;
   fiscalYear: number;
@@ -587,159 +385,10 @@ export interface Settings {
   verificationHash?: string;
 }
 
-// SK-5 Requirement: Lampiran 6 - Log Perubahan
-export interface ChangeLog {
-  id: string;
-  entityId: string;
-  entityType: "RCM" | "Control" | "BPM";
-  descriptionBefore: string;
-  descriptionAfter: string;
-  referenceBefore?: string;
-  referenceAfter?: string;
-  userId: string;
-  timestamp: number;
-  effectiveDate: number;
-  approvedBy?: string;
-}
-
-export interface Vendor {
-  id: string;
-  organizationId: string;
-  name: string;
-  serviceType?: string;
-  contactPerson?: string;
-  createdAt: number;
-}
-
-export interface SOCEvaluation {
-  id: string;
-  organizationId: string;
-  socReportId: string;
-  attrA: boolean;
-  attrB: boolean;
-  attrC: boolean;
-  attrD: boolean;
-  attrE: boolean;
-  attrF: boolean;
-  attrG: boolean;
-  auditorOpinion?: string;
-  evaluatedBy: string;
-  evaluatedAt: number;
-}
-
-export interface SOCReport {
-  id: string;
-  organizationId: string;
-  vendorId: string;
-  vendorName?: string; // Join helper
-  reportType: string;
-  periodStart: number;
-  periodEnd: number;
-  fileUrl?: string;
-  status: "Valid" | "Expired";
-  createdAt: number;
-  evaluation?: SOCEvaluation;
-}
-
-// SK-5 Requirement: Whistleblowing System Integration (Lampiran 1 Prinsip 14 & 15)
-export interface WBSReport {
-  id: string;
-  reportDate: number;
-  category: "Financial Reporting" | "Asset Misappropriation" | "Corruption" | "Other";
-  description: string;
-  impactMagnitude: number;
-  status: "Investigating" | "Confirmed" | "Closed";
-  isFinancialImpact: boolean;
-  relatedControlIds?: string[];
-}
-
-// SK-5 Requirement: Group Materiality & Multiplier (Tabel 25)
-export interface EntityMateriality {
-  entityId: string;
-  entityName: string;
-  totalAssets: number;
-  allocatedOM: number;
-  allocatedPM: number;
-}
-
-export interface InvesteeMateriality {
-  id: string;
-  name: string;
-  ownershipPercentage: number;
-  investmentValue: number;
-  auditStatus: "Audit Report Received" | "Pending Review" | "Not Audited";
-  controlsTested: string; // Brief description of what was tested
-  allocatedOM: number;
-  allocatedPM: number;
-}
-
-export interface AccountAssertion {
-  id: string;
-  fsliName: string;
-  noGL: string;
-  assertionE?: string; // "Y" / "N"
-  assertionC?: string;
-  assertionA?: string;
-  assertionCo?: string;
-  assertionRo?: string;
-  assertionVa?: string;
-  assertionPd?: string;
-  updatedAt?: number;
-  updatedBy?: string;
-}
-
-export interface Materiality {
-  id: string;
-  year: number;
-  overallMateriality: number; // Group OM
-  performanceMateriality: number; // Group PM
-  benchmark: "Pre-Tax Income" | "Revenue" | "Assets" | "Equity";
-  percentage: number;
-  haircut: number;
-  // Group logic
-  isGroupConsolidation: boolean;
-  subsidiaryCount?: number;
-  multiplier?: number; // From Table 25 (1.5x - 9x)
-  entityAllocations?: EntityMateriality[];
-  investeeAllocations?: InvesteeMateriality[]; // FAQ No. 5
-}
-export interface BPMDiagram {
-  id: string;
-  name: string;
-  year?: number;
-  subProcess: string;
-  nodes: BPMNode[];
-  edges: BPMEdge[];
-  createdAt: number;
-  updatedAt: number;
-}
-
 export interface LoginCredentials {
   email: string;
   password?: string;
   mockRole?: UserRole;
-}
-
-export interface User {
-  id: string;
-  name: string;
-  email?: string;
-  role?: UserRole;
-  departmentId?: string;
-  level?: UserLevel;
-  language?: string;
-  processOwnershipHistory?: { processId: string; role: UserRole; endDate: number }[]; // For cooling-off validation
-}
-export interface Chat {
-  id: string;
-  title: string;
-}
-export interface ChatMessage {
-  id: string;
-  chatId: string;
-  userId: string;
-  text: string;
-  ts: number; // epoch millis
 }
 
 // --- AI & Analytics Types ---

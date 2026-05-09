@@ -35,11 +35,39 @@
     "tabWorksheet": "Ruang Lingkup",
     "tabHistory": "Log Aktivitas",
     "tabIntegrity": "Integritas Data",
-    "notesLabel": "Catatan Review & Umpan Balik",
+    "notesLabel": "Review Notes & Feedback",
     "notesPlaceholder": "Masukkan umpan balik atau catatan Anda untuk tim Lini 2...",
     "rejectBtn": "Tolak & Kembalikan",
     "approveToKomutBtn": "Setujui ke Komut",
     "approveFinalBtn": "Setujui Baseline"
+  },
+  "uploadButton": "Unggah GL",
+  "emptyState": "Unggah file GL untuk memulai",
+  "benchmarkRequired": "Atur benchmark terlebih dahulu untuk mengaktifkan simulasi",
+  "masterDataTab": "Master Data GL",
+  "resetDataButton": "Reset Data Scoping",
+  "noBenchmarks": "Belum ada benchmark yang ditentukan di Master Data GL.",
+  "purgeConfirm": "Ini akan menghapus seluruh simulasi dan snapshot GL secara permanen. Lanjutkan?",
+  "params": {
+    "title": "Parameter Scoping",
+    "locations": "Lokasi Signifikan",
+    "omLabel": "% OM (Materialitas Keseluruhan)",
+    "haircutLabel": "% Haircut (PM)",
+    "benchmarkValue": "Nilai {{basis}}",
+    "omValue": "Materialitas Keseluruhan",
+    "pmValue": "Materialitas Pelaksanaan"
+  },
+  "logic": {
+    "title": "Logika Scoping",
+    "description": "Sebuah akun ditandai SIGNIFIKAN jika:",
+    "quant": "|Saldo| >= PM (Kuantitatif)",
+    "qual": "Setidaknya satu pilar kualitatif di level FSLI bernilai 'TINGGI'"
+  },
+  "editor": {
+    "saveDraft": "Simpan Draft",
+    "submitToCfo": "Kirim ke CFO",
+    "resubmitToCfo": "Kirim Ulang ke CFO",
+    "lockedMessage": "Baseline ini telah disetujui secara resmi dan dikunci."
   },
   "table": {
     "account": "Akun",

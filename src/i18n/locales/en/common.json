@@ -56,7 +56,17 @@
     "policyUmbrella": "Policy Umbrella",
     "linkedTo": "Linked to",
     "elcTab": "RCM ELC (Strategic)",
-    "tlcTab": "RCM TLC (Operational)"
+    "tlcTab": "RCM TLC (Operational)",
+    "category": "Category",
+    "subCategory": "Sub Category"
+  },
+  "access": {
+    "restricted": "Access Restricted",
+    "assignedTo": "This account is assigned to",
+    "lini1Restricted": "As Line 1, you can only manage business processes for accounts belonging to your own department."
+  },
+  "cycles": {
+    "yearCycle": "{{year}} Cycle"
   },
   "calendar": {
     "today": "Today",

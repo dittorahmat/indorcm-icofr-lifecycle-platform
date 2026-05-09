@@ -15,6 +15,7 @@ export const user = pgTable("user", {
 	level: text("level"), // Staff, Manager
 	departmentId: text("departmentId"),
 	language: text("language").default("en"),
+	processOwnershipHistory: jsonb("process_ownership_history").$type<{ processId: string; role: string; endDate: number }[]>().default([]),
 });
 
 export const session = pgTable("session", {
@@ -109,6 +110,7 @@ export const glRows = pgTable("gl_rows", {
 	subKategori: text("sub_kategori"),
 	assignedDepartmentIds: jsonb("assigned_department_ids").$type<string[]>().default([]),
 	ownerAcceptance: ownerAcceptanceEnum("owner_acceptance"), // Accepted, Rejected, or null (Pending)
+	noUrut: integer("no_urut"),
 });
 
 export const transactionDetails = pgTable("transaction_details", {
@@ -169,6 +171,14 @@ export const simulations = pgTable("simulations", {
 	createdAt: timestamp("created_at").notNull(),
 	updatedAt: timestamp("updated_at"),
 	createdBy: text("created_by").references(() => user.id),
+	locationThreshold: integer("location_threshold").default(80),
+	locationResults: jsonb("location_results").$type<{
+		entityCode: string;
+		balance: number;
+		contributionPercentage: number;
+		cumulativePercentage: number;
+		isSignificant: boolean;
+	}[]>(),
 }, (table) => {
 	return {
 		yearStatusIdx: index("year_status_idx").on(table.year, table.status, table.createdAt),
@@ -267,10 +277,12 @@ export const controls = pgTable("controls", {
 	type: text("type"), 
 	nature: text("nature"),
 	frequency: text("frequency"),
+	riskRating: text("risk_rating"), // High, Medium, Low
+	riskAssessment: jsonb("risk_assessment"),
 	bpmStatus: text("bpm_status"),
 
 	// New Worksheet Fields
-	fsliCodes: jsonb("fsli_codes"),
+	fsliCodes: jsonb("fsli_codes").$type<string[]>(),
 	relatedControlIds: jsonb("related_control_ids").$type<string[]>().default([]), // New: Many-to-Many Linkage
 	attachmentUrl: text("attachment_url"), // New: Policy Document URL
 	businessProcess: text("business_process"),
@@ -278,22 +290,29 @@ export const controls = pgTable("controls", {
 	location: text("location"),
 	isFraudRelated: boolean("is_fraud_related").default(false),
 	isKeyControl: boolean("is_key_control").default(false),
-	ipo: jsonb("ipo"),
-	assertions: jsonb("assertions"),
+	ipos: jsonb("ipos").$type<any[]>(),
+	assertions: jsonb("assertions").$type<any[]>(),
+    cosoPrinciples: jsonb("coso_principles").$type<number[]>(),
 	supportingDocs: text("supporting_docs"),
 	reference: text("reference"),
 	applicationId: text("application_id").references(() => applications.id),
 	bpmProcessId: text("bpm_process_id").references(() => bpmProcesses.id),
 	attributeQuestions: jsonb("attribute_questions"),
+    executorRole: text("executor_role"),
+    effectiveDate: timestamp("effective_date"),
 
 	// CSA Standalone Metadata
 	csaStatus: text("csa_status").default("Not Assessed"), // Not Assessed, Effective, Ineffective
 	lastCsaDate: timestamp("last_csa_date"),
 
 	// ITGC Specific Columns
-	itgcDomain: text("itgc_domain"),	itgcAssertions: jsonb("itgc_assertions"),
-	automatedControlType: text("automated_control_type"),
+	itgcDomain: text("itgc_domain"),	
+    itgcAssertions: jsonb("itgc_assertions"),
+	automatedSubNature: text("automated_sub_nature"),
 	supportingApp: text("supporting_app"),
+    itApplication: text("it_application"), // Match legacy field name
+    eucComplexity: text("euc_complexity"),
+    ipeType: text("ipe_type"),
 });
 
 export const csaRecords = pgTable("csa_records", {
@@ -398,6 +417,9 @@ export const deficiencies = pgTable("deficiencies", {
 	likelihood: text("likelihood"),
 	assertions: jsonb("assertions").$type<string[]>(), // Assertions mapping (Lampiran 10)
 	flowchartPath: jsonb("flowchart_path").$type<Record<number, boolean>>(), // Path taken in Gambar 5
+	correctiveActionTaken: text("corrective_action_taken"),
+	remediationEvidence: text("remediation_evidence"),
+	compensatingControlIds: jsonb("compensating_control_ids").$type<string[]>().default([]),
 });
 
 export const actionPlans = pgTable("action_plans", {
@@ -581,6 +603,7 @@ export const socReports = pgTable("soc_reports", {
 	id: text("id").primaryKey(),
 	organizationId: text("organization_id").notNull().references(() => organization.id),
 	vendorId: text("vendor_id").notNull().references(() => vendors.id, { onDelete: 'cascade' }),
+	vendorName: text("vendor_name"), // Denormalized for UI ease
 	reportType: text("report_type").notNull(), // SOC 1 Tipe 2, etc.
 	periodStart: timestamp("period_start").notNull(),
 	periodEnd: timestamp("period_end").notNull(),

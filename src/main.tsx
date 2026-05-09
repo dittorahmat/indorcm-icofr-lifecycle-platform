@@ -11,7 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { PageSuspense } from '@/components/PageSuspense';
 import { RootLayout } from '@/components/layout/RootLayout';
 import '@/index.css';
-import './i18n/config';
+import i18n from './i18n/config';
 
 import { UnsavedChangesProvider } from '@/context/UnsavedChangesContext';
 import { UnsavedChangesGuard } from '@/components/UnsavedChangesGuard';
@@ -50,7 +50,7 @@ import { LicenseProvider } from '@/context/LicenseContext';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 
 import { I18nextProvider } from 'react-i18next';
-import i18n from './i18n/config';
+
 
 enableMapSet();
 // Initialize query client

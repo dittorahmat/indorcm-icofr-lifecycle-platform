@@ -59,6 +59,8 @@ import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 
+import { PageHeader } from '@/components/layout/PageHeader';
+
 export function ScopingPage() {
   const { t } = useTranslation('scoping');
   const queryClient = useQueryClient();
@@ -159,6 +161,9 @@ export function ScopingPage() {
           const parsedBal = parseBalance(r[mapping.balance]);
           const parsedFsliBal = parseBalance(r[mapping.fsliBalance]);
           return {
+            id: crypto.randomUUID(),
+            organizationId: 'org-1',
+            snapshotId: 'temp', // Will be set by backend
             ymd: String(r[mapping.period] || ''), 
             entityCode: String(r[mapping.entityCode] || ''),
             noGL: String(r[mapping.accountCode] || ''), 
@@ -167,10 +172,11 @@ export function ScopingPage() {
             balance: parsedBal.success ? parsedBal.value : 0,
             fsliCode: String(r[mapping.fsliCode] || ''), 
             fsliName: String(r[mapping.fsliName] || ''),
-            kategori: String(r[mapping.kategori] || ''), 
+            category: String(r[mapping.kategori] || ''), 
             subKategori: String(r[mapping.subKategori] || ''),
-            fsliBalance: parsedFsliBal.success ? parsedFsliBal.value : 0, 
-            noUrut: parseInt(String(r[mapping.noUrut] || '0')) || 0
+            noUrut: parseInt(String(r[mapping.noUrut] || '0')) || 0,
+            assignedDepartmentIds: [],
+            ownerAcceptance: null
           };
         }).filter(r => r.glDesc); // Only require description, allow empty No_GL for summary rows
         if (rows.length === 0) { toast.error(t('common:notifications.error')); return; }
@@ -197,36 +203,21 @@ export function ScopingPage() {
   return (
     <AppLayout container>
       <div className="space-y-6">
-        <div className="flex justify-between items-end">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{t('title')}</h1>
-            <div className="flex items-center gap-3 mt-1">
-              <p className="text-muted-foreground text-sm">{t('description')}</p>
-              {activeSnapshot && (
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className={cn(
-                    "gap-1.5 font-bold transition-colors",
-                    activeSnapshot.status === 'Mapped' 
-                      ? "bg-green-50 text-green-700 border-green-200" 
-                      : "bg-amber-50 text-amber-700 border-amber-200 animate-pulse"
-                  )}>
-                    <CheckCircle2 className="h-3.5 w-3.5" /> 
-                    {t('activeSource')}: {activeSnapshot.filename} ({activeSnapshot.status})
-                  </Badge>
-                  {activeSnapshot.status === 'Draft' && (
-                    <Button 
-                      variant="link" 
-                      size="sm" 
-                      className="h-6 text-amber-600 font-bold p-0 flex items-center gap-1 hover:text-amber-700 underline underline-offset-4"
-                      onClick={() => setBenchmarkModalSnap(activeSnapshot)}
-                    >
-                      <Settings2 className="h-3 w-3" /> {t('setBenchmark')}
-                    </Button>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
+        <PageHeader 
+          title={t('title')} 
+          description={t('description')}
+          badge={activeSnapshot && (
+            <Badge variant="outline" className={cn(
+              "gap-1.5 font-bold transition-colors",
+              activeSnapshot.status === 'Mapped' 
+                ? "bg-green-50 text-green-700 border-green-200" 
+                : "bg-amber-50 text-amber-700 border-amber-200 animate-pulse"
+            )}>
+              <CheckCircle2 className="h-3.5 w-3.5" /> 
+              {t('activeSource')}: {activeSnapshot.filename} ({activeSnapshot.status})
+            </Badge>
+          )}
+        >
           <div className="flex flex-col items-end gap-1">
             <div className="flex gap-2">
               <Select value={filterYear} onValueChange={setFilterYear}>
@@ -242,7 +233,7 @@ export function ScopingPage() {
               <div {...getRootProps()}>
                 <input {...getInputProps()} />
                 <Button variant="outline" className="gap-2 border-dashed border-2 hover:border-primary hover:bg-primary/5">
-                  <Upload className="h-4 w-4" /> Upload GL
+                  <Upload className="h-4 w-4" /> {t('uploadButton')}
                 </Button>
               </div>
               <Button 
@@ -250,17 +241,17 @@ export function ScopingPage() {
                 className="gap-2 shadow-lg shadow-primary/20" 
                 disabled={!activeSnapshot || activeSnapshot.status !== 'Mapped'}
               >
-                <Plus className="h-4 w-4" /> New Simulation
+                <Plus className="h-4 w-4" /> {t('simulation.createNew')}
               </Button>
             </div>
-            {!activeSnapshot && <p className="text-[10px] text-muted-foreground italic">Upload a GL file to start</p>}
+            {!activeSnapshot && <p className="text-[10px] text-muted-foreground italic">{t('emptyState')}</p>}
             {activeSnapshot && activeSnapshot.status === 'Draft' && (
               <p className="text-[10px] text-amber-600 font-medium italic flex items-center gap-1">
-                <AlertTriangle className="h-2.5 w-2.5" /> Set benchmark first to enable simulations
+                <AlertTriangle className="h-2.5 w-2.5" /> {t('benchmarkRequired')}
               </p>
             )}
           </div>
-        </div>
+        </PageHeader>
 
         <Tabs defaultValue="simulations" className="w-full">
           <TabsList className="grid w-full max-w-[400px] grid-cols-2 mb-6">
@@ -268,7 +259,7 @@ export function ScopingPage() {
               <LayoutGrid className="h-4 w-4" /> {t('simulation.title')}
             </TabsTrigger>
             <TabsTrigger value="master-gl" className="gap-2">
-              <Database className="h-4 w-4" /> Master Data GL
+              <Database className="h-4 w-4" /> {t('masterDataTab')}
             </TabsTrigger>
           </TabsList>
 
@@ -654,28 +645,7 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
 
   return (
     <AppLayout container>
-      {/* Unsaved Changes Confirmation */}
-      <AlertDialog open={blocker.state === "blocked"}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Unsaved Changes</AlertDialogTitle>
-            <AlertDialogDescription>
-              You have unsaved changes in your scoping assessment. If you leave now, these changes will be lost.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => blocker.reset?.()}>
-              Stay & Save
-            </AlertDialogCancel>
-            <AlertDialogAction 
-              className="bg-destructive hover:bg-destructive/90"
-              onClick={() => blocker.proceed?.()}
-            >
-              Leave Anyway
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <UnsavedChangesDialog blocker={blocker} />
 
       <div className="space-y-6 pb-20">
         <div className="flex justify-between items-center text-slate-900 dark:text-white">
@@ -695,16 +665,16 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
           {!isLocked && (
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => updateSimMutation.mutate(simState)} disabled={updateSimMutation.isPending}>
-                <Save className="h-4 w-4 mr-2" /> Save Draft
+                <Save className="h-4 w-4 mr-2" /> {t('editor.saveDraft')}
               </Button>
               <Button onClick={() => submitSimMutation.mutate()} className="bg-indigo-600 hover:bg-indigo-700" disabled={submitSimMutation.isPending || !simState.glSnapshotId}>
-                <Send className="h-4 w-4 mr-2" /> {simState.status === 'Rejected' ? 'Re-submit to CFO' : 'Submit to CFO'}
+                <Send className="h-4 w-4 mr-2" /> {simState.status === 'Rejected' ? t('editor.resubmitToCfo') : t('editor.submitToCfo')}
               </Button>
             </div>
           )}
           {simState.status === 'Approved' && (
             <div className="flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm font-semibold">
-              <ShieldCheck className="h-4 w-4" /> This baseline is officially approved and locked.
+              <ShieldCheck className="h-4 w-4" /> {t('editor.lockedMessage')}
             </div>
           )}
         </div>
@@ -762,12 +732,12 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
             <Card className="border-slate-200 shadow-sm overflow-hidden">
               <CardHeader className="pb-3 border-b border-slate-50 bg-slate-50/50">
                 <CardTitle className="text-xs uppercase font-bold text-slate-500 tracking-wider flex items-center gap-2">
-                  <Settings2 className="h-3.5 w-3.5" /> Scoping Parameters
+                  <Settings2 className="h-3.5 w-3.5" /> {t('params.title')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-5 pt-6">
                 <div className="space-y-2">
-                  <Label className="text-[10px] font-bold uppercase text-slate-400">Significant Locations</Label>
+                  <Label className="text-[10px] font-bold uppercase text-slate-400">{t('params.locations')}</Label>
                   <Input 
                     type="number" 
                     min={1} 
@@ -778,7 +748,7 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
                   <p className="text-[9px] text-blue-600 italic">Multiplier: {multiplier}x</p>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-[10px] font-bold uppercase text-slate-400">% OM (Overall Materiality)</Label>
+                  <Label className="text-[10px] font-bold uppercase text-slate-400">{t('params.omLabel')}</Label>
                   <Input 
                     type="number" 
                     step={0.1} 
@@ -788,7 +758,7 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-[10px] font-bold uppercase text-slate-400">% Haircut (PM)</Label>
+                  <Label className="text-[10px] font-bold uppercase text-slate-400">{t('params.haircutLabel')}</Label>
                   <Input 
                     type="number" 
                     disabled={isLocked} 
@@ -799,15 +769,15 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
                 <Separator />
                 <div className="space-y-3 bg-slate-50 p-4 rounded-lg border border-slate-100">
                   <div className="space-y-1">
-                    <p className="text-[9px] text-slate-400 uppercase font-bold tracking-widest flex justify-between">{simState.basis} Value <Info className="h-2.5 w-2.5" /></p>
+                    <p className="text-[9px] text-slate-400 uppercase font-bold tracking-widest flex justify-between">{t('params.benchmarkValue', { basis: simState.basis })} <Info className="h-2.5 w-2.5" /></p>
                     <p className="text-sm font-mono font-bold text-slate-700 text-right">Rp {benchmarkValue.toLocaleString('id-ID')}</p>
                   </div>
                   <div className="space-y-1 pt-2 border-t border-slate-200">
-                    <p className="text-[9px] text-slate-400 uppercase font-bold tracking-widest">Overall Materiality</p>
+                    <p className="text-[9px] text-slate-400 uppercase font-bold tracking-widest">{t('params.omValue')}</p>
                     <p className="text-lg font-mono font-bold text-primary text-right">Rp {omValue.toLocaleString('id-ID')}</p>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-[9px] text-blue-400 uppercase font-bold tracking-widest">Performance Materiality</p>
+                    <p className="text-[9px] text-blue-400 uppercase font-bold tracking-widest">{t('params.pmValue')}</p>
                     <p className="text-lg font-mono font-bold text-blue-600 text-right">Rp {pmValue.toLocaleString('id-ID')}</p>
                   </div>
                 </div>
@@ -815,12 +785,12 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
             </Card>
 
             <Card className="bg-amber-50 border-amber-200 shadow-sm">
-              <CardHeader className="pb-2"><CardTitle className="text-[10px] uppercase font-bold text-amber-800 flex items-center gap-2"><Info className="h-3 w-3" /> Scoping Logic</CardTitle></CardHeader>
+              <CardHeader className="pb-2"><CardTitle className="text-[10px] uppercase font-bold text-amber-800 flex items-center gap-2"><Info className="h-3 w-3" /> {t('logic.title')}</CardTitle></CardHeader>
               <CardContent className="text-[10px] text-amber-700 leading-relaxed space-y-2 italic">
-                <p>An account is marked <strong>SIGNIFICANT</strong> if:</p>
+                <p>{t('logic.description')}</p>
                 <ol className="list-decimal list-inside space-y-1">
-                  <li>|Balance| &gt;= PM (Quantitative)</li>
-                  <li>At least one qualitative pillar at the FSLI level is 'HIGH'</li>
+                  <li>{t('logic.quant')}</li>
+                  <li>{t('logic.qual')}</li>
                 </ol>
               </CardContent>
             </Card>

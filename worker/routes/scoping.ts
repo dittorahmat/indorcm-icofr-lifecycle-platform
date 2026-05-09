@@ -5,12 +5,13 @@ import { getDb } from '../db';
 import { 
   simulations, glSnapshots, glRows, organization, auditLogs,
   bpmDiagrams, rcms, controls, rcmControls, bpmNodeRcms,
-  simulationAccountApplications, applications
+  simulationAccountApplications, applications, notifications
 } from '../db/schema';
 import { eq, and, sql, SQL } from 'drizzle-orm';
 import type { 
   MaterialitySimulation, SimulationStatus, Settings 
 } from "@shared/types";
+import { ScopingService } from "../services/scoping-service";
 
 const scoping = new Hono<HonoEnv>();
 
@@ -46,108 +47,20 @@ scoping.post('/simulations', async (c) => {
   const body = await c.req.json<Partial<MaterialitySimulation>>();
   
   const targetYear = body.year || new Date().getFullYear();
-  const prevYear = targetYear - 1;
+  
+  // Use ScopingService for Carry Forward logic (Encapsulated & Transactional)
+  const scopingService = new ScopingService(db);
+  const cloned = await scopingService.carryForward(orgId, userId, targetYear);
 
-  // --- Carry Forward Logic ---
-  const existingBpm = await db.select({ id: bpmDiagrams.id })
-    .from(bpmDiagrams)
-    .where(and(eq(bpmDiagrams.organizationId, orgId), eq(bpmDiagrams.year, targetYear)))
-    .limit(1);
-
-  if (existingBpm.length === 0) {
-    const sourceBpms = await db.select().from(bpmDiagrams)
-      .where(and(eq(bpmDiagrams.organizationId, orgId), eq(bpmDiagrams.year, prevYear)));
-
-    if (sourceBpms.length > 0) {
-      console.log(`[CARRY_FORWARD] Cloning data from ${prevYear} to ${targetYear} for Org: ${orgId}`);
-      
-      try {
-        const diagramMap = new Map<string, string>();
-        const rcmMap = new Map<string, string>();
-        const controlMap = new Map<string, string>();
-
-        for (const source of sourceBpms) {
-          const newId = crypto.randomUUID();
-          diagramMap.set(source.id, newId);
-          await db.insert(bpmDiagrams).values({
-            ...source,
-            id: newId,
-            year: targetYear,
-            createdAt: new Date(),
-            createdBy: userId,
-            updatedAt: new Date()
-          });
-        }
-
-        const sourceRcms = await db.select().from(rcms)
-          .where(and(eq(rcms.organizationId, orgId), eq(rcms.year, prevYear)));
-        
-        for (const source of sourceRcms) {
-          const newId = crypto.randomUUID();
-          rcmMap.set(source.id, newId);
-          await db.insert(rcms).values({
-            ...source,
-            id: newId,
-            year: targetYear,
-            status: "Draft",
-            diagramId: source.diagramId ? diagramMap.get(source.diagramId) : null,
-            auditTrail: []
-          });
-        }
-
-        const sourceControls = await db.select().from(controls)
-          .where(and(eq(controls.organizationId, orgId), eq(controls.year, prevYear)));
-        
-        for (const source of sourceControls) {
-          const newId = crypto.randomUUID();
-          controlMap.set(source.id, newId);
-          await db.insert(controls).values({
-            ...source,
-            id: newId,
-            year: targetYear,
-            rcmId: source.rcmId ? rcmMap.get(source.rcmId) : null,
-            bpmStatus: "Draft"
-          });
-        }
-
-        const sourceMappings = await db.select().from(rcmControls)
-          .where(eq(rcmControls.organizationId, orgId));
-        
-        for (const source of sourceMappings) {
-          const newRcmId = rcmMap.get(source.rcmId);
-          const newControlId = controlMap.get(source.controlId);
-          
-          if (newRcmId && newControlId) {
-            await db.insert(rcmControls).values({
-              ...source,
-              id: crypto.randomUUID(),
-              rcmId: newRcmId,
-              controlId: newControlId,
-              year: targetYear
-            });
-          }
-        }
-
-        const sourceNodeRcms = await db.select().from(bpmNodeRcms)
-          .where(eq(bpmNodeRcms.organizationId, orgId));
-        
-        for (const source of sourceNodeRcms) {
-          const newDiagramId = diagramMap.get(source.diagramId);
-          const newRcmId = rcmMap.get(source.rcmId);
-          
-          if (newDiagramId && newRcmId) {
-            await db.insert(bpmNodeRcms).values({
-              ...source,
-              id: crypto.randomUUID(),
-              diagramId: newDiagramId,
-              rcmId: newRcmId
-            });
-          }
-        }
-      } catch (e: any) {
-        console.error('[CARRY_FORWARD] Failed during sequential operations:', e);
-      }
-    }
+  if (cloned) {
+    await db.insert(notifications).values({
+      id: crypto.randomUUID(),
+      organizationId: orgId,
+      userId: userId,
+      message: `Successfully carried forward RCM and BPM data from ${targetYear - 1} to ${targetYear}.`,
+      type: 'success',
+      createdAt: new Date(),
+    });
   }
 
   const id = crypto.randomUUID();
@@ -225,6 +138,20 @@ scoping.post('/simulations/:id/submit', async (c) => {
       history: [...history, newHistoryEntry]
     })
     .where(and(eq(simulations.id, id), eq(simulations.organizationId, orgId)));
+  
+  // Notify CFO
+  const cfos = await db.select({ id: user.id }).from(user).where(eq(user.role, 'CFO'));
+  for (const cfo of cfos) {
+    await db.insert(notifications).values({
+      id: crypto.randomUUID(),
+      organizationId: orgId,
+      userId: cfo.id,
+      message: `A new scoping simulation "${existing.name}" has been submitted for your review.`,
+      type: 'info',
+      link: `/scoping?id=${id}`,
+      createdAt: new Date(),
+    });
+  }
       
   const updated = await db.select().from(simulations).where(eq(simulations.id, id)).limit(1);
   return ok(c, updated[0]);
@@ -269,6 +196,17 @@ scoping.post('/simulations/:id/approve', async (c) => {
     })
     .where(and(eq(simulations.id, id), eq(simulations.organizationId, orgId)));
 
+  // Notify creator
+  await db.insert(notifications).values({
+    id: crypto.randomUUID(),
+    organizationId: orgId,
+    userId: sim.createdBy!,
+    message: `Your scoping simulation "${sim.name}" has been ${nextStatus === 'Approved' ? 'approved' : 'moved to next approval stage'}.`,
+    type: 'success',
+    link: `/scoping?id=${id}`,
+    createdAt: new Date(),
+  });
+
   return ok(c, { success: true });
 });
 
@@ -302,6 +240,17 @@ scoping.post('/simulations/:id/reject', async (c) => {
       updatedAt: new Date()
     })
     .where(and(eq(simulations.id, id), eq(simulations.organizationId, orgId)));
+
+  // Notify creator
+  await db.insert(notifications).values({
+    id: crypto.randomUUID(),
+    organizationId: orgId,
+    userId: sim.createdBy!,
+    message: `Your scoping simulation "${sim.name}" has been rejected. Reason: ${body.note}`,
+    type: 'error',
+    link: `/scoping?id=${id}`,
+    createdAt: new Date(),
+  });
 
   return ok(c, { success: true });
 });
@@ -366,15 +315,17 @@ scoping.post('/simulations/:id/account-departments/sync', async (c) => {
   if (!sim) return bad(c, "Simulation not found", 404);
 
   try {
-    for (const m of mappings) {
-      await db.update(glRows)
-        .set({ assignedDepartmentIds: m.departmentIds })
-        .where(and(
-          eq(glRows.snapshotId, sim.glSnapshotId),
-          eq(glRows.noGL, m.noGL),
-          eq(glRows.organizationId, orgId)
-        ));
-    }
+    await db.transaction(async (tx) => {
+      for (const m of mappings) {
+        await tx.update(glRows)
+          .set({ assignedDepartmentIds: m.departmentIds })
+          .where(and(
+            eq(glRows.snapshotId, sim.glSnapshotId!),
+            eq(glRows.noGL, m.noGL),
+            eq(glRows.organizationId, orgId)
+          ));
+      }
+    });
     return ok(c, { success: true });
   } catch (e: any) {
     return bad(c, `Sync failed: ${e.message}`);
@@ -401,29 +352,31 @@ scoping.post('/simulations/:id/account-applications/sync', async (c) => {
   const { mappings } = await c.req.json<{ mappings: { accountCode: string, applicationIds: string[] }[] }>();
 
   try {
-    for (const m of mappings) {
-      await db.delete(simulationAccountApplications).where(and(
-        eq(simulationAccountApplications.simulationId, simId),
-        eq(simulationAccountApplications.accountCode, m.accountCode),
-        eq(simulationAccountApplications.organizationId, orgId)
-      ));
+    await db.transaction(async (tx) => {
+      for (const m of mappings) {
+        await tx.delete(simulationAccountApplications).where(and(
+          eq(simulationAccountApplications.simulationId, simId),
+          eq(simulationAccountApplications.accountCode, m.accountCode),
+          eq(simulationAccountApplications.organizationId, orgId)
+        ));
 
-      if (m.applicationIds.length > 0) {
-        for (const appId of m.applicationIds) {
-          await db.insert(simulationAccountApplications).values({
-            id: crypto.randomUUID(),
-            organizationId: orgId,
-            simulationId: simId,
-            accountCode: m.accountCode,
-            applicationId: appId
-          });
+        if (m.applicationIds.length > 0) {
+          for (const appId of m.applicationIds) {
+            await tx.insert(simulationAccountApplications).values({
+              id: crypto.randomUUID(),
+              organizationId: orgId,
+              simulationId: simId,
+              accountCode: m.accountCode,
+              applicationId: appId
+            });
 
-          await db.update(applications)
-            .set({ isSignificant: true })
-            .where(and(eq(applications.id, appId), eq(applications.organizationId, orgId)));
+            await tx.update(applications)
+              .set({ isSignificant: true })
+              .where(and(eq(applications.id, appId), eq(applications.organizationId, orgId)));
+          }
         }
       }
-    }
+    });
     return ok(c, { success: true });
   } catch (e: any) {
     return bad(c, `Sync failed: ${e.message}`);

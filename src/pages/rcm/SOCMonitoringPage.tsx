@@ -24,6 +24,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+import { PageHeader } from '@/components/layout/PageHeader';
+
 export function SOCMonitoringPage() {
   const { t } = useTranslation(['sidebar', 'rcm', 'scoping', 'common']);
   const queryClient = useQueryClient();
@@ -66,27 +68,20 @@ export function SOCMonitoringPage() {
   return (
     <AppLayout container>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-              {t('items.applications', { ns: 'sidebar' })} & IT Assets
-            </h1>
-            <p className="text-muted-foreground text-sm font-medium">
-              Evaluation of 3rd Parties and Significant Applications (Bab III.1.5 & 4.3).
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" className="gap-2 bg-white" onClick={() => setIsAddVendorModalOpen(true)}>
-              <Globe className="h-4 w-4" /> Add Vendor
-            </Button>
-            <Button variant="outline" className="gap-2 bg-white" onClick={() => setIsAddSOCModalOpen(true)}>
-              <ShieldCheck className="h-4 w-4" /> Register SOC
-            </Button>
-            <Button className="gap-2 bg-indigo-600 hover:bg-indigo-700 shadow-lg" onClick={() => setIsAddAppModalOpen(true)}>
-              <Plus className="h-4 w-4" /> Add Application
-            </Button>
-          </div>
-        </div>
+        <PageHeader 
+          title={t('items.applications', { ns: 'sidebar' }) + " & IT Assets"}
+          description="Evaluation of 3rd Parties and Significant Applications (Bab III.1.5 & 4.3)."
+        >
+          <Button variant="outline" className="gap-2 bg-white" onClick={() => setIsAddVendorModalOpen(true)}>
+            <Globe className="h-4 w-4" /> Add Vendor
+          </Button>
+          <Button variant="outline" className="gap-2 bg-white" onClick={() => setIsAddSOCModalOpen(true)}>
+            <ShieldCheck className="h-4 w-4" /> Register SOC
+          </Button>
+          <Button className="gap-2 bg-indigo-600 hover:bg-indigo-700 shadow-lg" onClick={() => setIsAddAppModalOpen(true)}>
+            <Plus className="h-4 w-4" /> Add Application
+          </Button>
+        </PageHeader>
 
         <Tabs defaultValue="apps">
           <TabsList className="grid w-full grid-cols-2 max-w-[400px]">

@@ -38,6 +38,8 @@ import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 import { cn } from '@/lib/utils';
 
+import { PageHeader } from '@/components/layout/PageHeader';
+
 export function BPMPage() {
   const { t } = useTranslation(['bpm', 'common', 'rcm']);
   const queryClient = useQueryClient();
@@ -350,17 +352,16 @@ export function BPMPage() {
   return (
     <AppLayout container>
       <div className="space-y-6">
-        <div className="flex justify-between items-end">
-          <div>
-            <div className="flex items-center gap-3 mb-1">
-              <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{t('title')}</h1>
-              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 gap-1.5 py-1 px-3">
-                <Shield className="h-3 w-3" />
-                Fiscal Year: {viewYear}
-              </Badge>
-            </div>
-            <p className="text-muted-foreground text-sm">{t('description')}</p>
-          </div>
+        <PageHeader 
+          title={t('title')} 
+          description={t('description')}
+          badge={
+            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 gap-1.5 py-1 px-3">
+              <Shield className="h-3 w-3" />
+              Fiscal Year: {viewYear}
+            </Badge>
+          }
+        >
           <div className="flex flex-col items-end gap-2">
             <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Compliance Cycle</Label>
             <Select value={viewYear} onValueChange={handleYearChange}>
@@ -368,13 +369,13 @@ export function BPMPage() {
                 <SelectValue placeholder="Year" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="2024">2024 Cycle</SelectItem>
-                <SelectItem value="2025">2025 Cycle</SelectItem>
-                <SelectItem value="2026">2026 Cycle</SelectItem>
+                {dynamicYears.map(y => (
+                  <SelectItem key={y} value={y}>{t('common:cycles.yearCycle', { year: y })}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
-        </div>
+        </PageHeader>
 
         <Card className="border-slate-200 shadow-sm bg-slate-50/50">
           <CardContent className="pt-6">
@@ -431,14 +432,14 @@ export function BPMPage() {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Kategori</Label>
+                <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{t('common:icofr.category')}</Label>
                 <div className="h-10 px-3 flex items-center border rounded-md bg-slate-100 text-xs text-slate-600 font-medium">
                   {selectedGLRow?.category || "-"}
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Sub Kategori</Label>
+                <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{t('common:icofr.subCategory')}</Label>
                 <div className="h-10 px-3 flex items-center border rounded-md bg-slate-100 text-xs text-slate-600 font-medium">
                   {selectedGLRow?.subKategori || "-"}
                 </div>
@@ -468,15 +469,15 @@ export function BPMPage() {
         {!activeSim ? null : !selectedAccountKey ? (
           <div className="py-20 text-center border-2 border-dashed rounded-xl bg-slate-50/30">
             <Info className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-            <p className="text-slate-500 font-medium">Select an FSLI and GL Account to begin mapping.</p>
+            <p className="text-slate-500 font-medium">{t('bpm:emptyState')}</p>
           </div>
         ) : !hasAccess ? (
           <div className="py-20 text-center border-2 border-red-100 rounded-xl bg-red-50/30">
             <AlertTriangle className="h-12 w-12 text-red-400 mx-auto mb-4" />
-            <h3 className="text-lg font-bold text-red-800">Akses Dibatasi</h3>
+            <h3 className="text-lg font-bold text-red-800">{t('common:access.restricted')}</h3>
             <p className="text-red-600/80 text-sm max-w-md mx-auto mt-2">
-              Akun ini ditugaskan kepada <strong>{departmentName || "Departemen Lain"}</strong>. 
-              Sebagai Lini 1, Anda hanya dapat mengelola proses bisnis untuk akun milik departemen Anda sendiri.
+              {t('common:access.assignedTo')} <strong>{departmentName || "Departemen Lain"}</strong>. 
+              {t('common:access.lini1Restricted')}
             </p>
           </div>
         ) : (
@@ -724,14 +725,14 @@ export function BPMPage() {
                     <TableRow>
                       <TableCell colSpan={7} className="h-32 text-center">
                         <Loader2 className="h-8 w-8 animate-spin text-indigo-500 mx-auto" />
-                        <p className="text-xs text-slate-400 mt-2">Memuat daftar BPM...</p>
+                        <p className="text-xs text-slate-400 mt-2">{t('bpm:loading')}</p>
                       </TableCell>
                     </TableRow>
                   ) : filteredBpmProcesses.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={7} className="h-32 text-center">
                         <Info className="h-8 w-8 text-slate-300 mx-auto mb-2" />
-                        <p className="text-sm text-slate-500 italic">{searchTerm ? `Tidak ditemukan sub proses "${searchTerm}"` : 'Belum ada sub proses.'}</p>
+                        <p className="text-sm text-slate-500 italic">{searchTerm ? t('bpm:noSubProcesses') : t('bpm:noSubProcesses')}</p>
                       </TableCell>
                     </TableRow>
                   ) : filteredBpmProcesses.map((bpm) => (
@@ -805,7 +806,7 @@ export function BPMPage() {
                       <TableCell className="text-center"><Badge className="bg-orange-100 text-orange-700 font-bold">{bpm.riskCount || 0}</Badge></TableCell>
                       <TableCell className="text-center"><Badge className="bg-green-100 text-green-700 font-bold">{bpm.controlCount || 0}</Badge></TableCell>
                       <TableCell>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-300 hover:text-red-600 opacity-0 group-hover:opacity-100" onClick={(e) => { e.stopPropagation(); if (confirm(`Hapus proses "${bpm.name}"?`)) deleteBPMMutation.mutate(bpm.id); }}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-300 hover:text-red-600 opacity-0 group-hover:opacity-100" onClick={(e) => { e.stopPropagation(); if (confirm(t('bpm:deleteConfirm', { name: bpm.name }))) deleteBPMMutation.mutate(bpm.id); }}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </TableCell>
@@ -848,18 +849,18 @@ export function BPMPage() {
         <Dialog open={isCreatingBPM} onOpenChange={setIsCreatingBPM}>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>Create New BPM Process</DialogTitle>
+              <DialogTitle>{t('bpm:createModalTitle')}</DialogTitle>
               <DialogDescription>Define a major process heading for <strong>{selectedGLRow?.noGL}</strong>.</DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label className="text-xs uppercase font-bold text-slate-500">Process Name</Label>
+                <Label className="text-xs uppercase font-bold text-slate-500">{t('bpm:processNameLabel')}</Label>
                 <Input placeholder="e.g. Penerimaan setoran tunai" value={bpmName} onChange={e => setBpmName(e.target.value)} />
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsCreatingBPM(false)}>Cancel</Button>
-              <Button disabled={!bpmName || createBPMMutation.isPending} onClick={() => createBPMMutation.mutate({ name: bpmName, noGL: selectedGLRow?.noGL || "", fsliName: selectedFsli })}>Create Process</Button>
+              <Button variant="outline" onClick={() => setIsCreatingBPM(false)}>{t('common:actions.cancel')}</Button>
+              <Button disabled={!bpmName || createBPMMutation.isPending} onClick={() => createBPMMutation.mutate({ name: bpmName, noGL: selectedGLRow?.noGL || "", fsliName: selectedFsli })}>{t('bpm:createProcessButton')}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

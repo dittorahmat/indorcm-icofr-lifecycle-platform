@@ -4,7 +4,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { format } from 'date-fns';
 import { 
-  Bell, 
+  Bell as BellIcon, 
+  Megaphone,
   CheckCircle2, 
   AlertCircle, 
   Info, 
@@ -90,7 +91,7 @@ export function NotificationsPage() {
           <div>
             <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
               <div className="bg-indigo-100 p-2.5 rounded-xl">
-                <Bell className="h-7 w-7 text-indigo-600" />
+                <Megaphone className="h-7 w-7 text-indigo-600" />
               </div>
               {t('notifications.title')}
             </h1>
@@ -132,7 +133,7 @@ export function NotificationsPage() {
             ) : sortedNotifications.length === 0 ? (
               <div className="p-20 text-center flex flex-col items-center gap-4 bg-slate-50/50">
                 <div className="bg-white p-6 rounded-full shadow-sm border border-slate-100">
-                  <Bell className="h-12 w-12 text-slate-200" />
+                  <BellIcon className="h-12 w-12 text-slate-200" />
                 </div>
                 <div className="space-y-1">
                   <h3 className="text-lg font-bold text-slate-800">{t('notifications.empty')}</h3>

@@ -222,7 +222,7 @@ export function RCMList() {
                     <TableRow><TableCell colSpan={6} className="h-32 text-center text-slate-400 italic">No ITGC records found.</TableCell></TableRow>
                   ) : (controlsData?.items || []).filter(c => c.level === 'ITGC' && (c.name.toLowerCase().includes(searchTerm.toLowerCase()) || c.code?.toLowerCase().includes(searchTerm.toLowerCase()))).map((ctrl) => (
                     <TableRow key={ctrl.id} className="group hover:bg-indigo-50/10 transition-colors">
-                      <TableCell><Badge variant="outline" className="text-[10px] font-bold text-indigo-600 border-indigo-200 bg-indigo-50">{ctrl.itgcArea || 'Unassigned'}</Badge></TableCell>
+                      <TableCell><Badge variant="outline" className="text-[10px] font-bold text-indigo-600 border-indigo-200 bg-indigo-50">{ctrl.itgcDomain || 'Unassigned'}</Badge></TableCell>
                       <TableCell className="font-mono text-xs font-bold text-slate-500">{ctrl.code}</TableCell>
                       <TableCell>
                         <div className="flex flex-col">

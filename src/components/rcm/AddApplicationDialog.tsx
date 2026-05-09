@@ -39,8 +39,8 @@ export function AddApplicationDialog({ isOpen, onOpenChange, initialData }: AddA
     if (initialData) {
       setName(initialData.name);
       setDescription(initialData.description || "");
-      setCriticality(initialData.criticality);
-      setSelectedAreas(initialData.itgcAreas || []);
+      setCriticality((initialData.criticality as any) || "Medium");
+      setSelectedAreas((initialData.itgcAreas as any) || []);
     } else {
       setName("");
       setDescription("");
