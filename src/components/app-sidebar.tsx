@@ -34,7 +34,8 @@ import {
   Shield,
   Pin,
   PinOff,
-  PanelLeft
+  PanelLeft,
+  BrainCircuit
 } from "lucide-react";
 import {
   Sidebar,
@@ -303,6 +304,11 @@ export function AppSidebar(): JSX.Element {
                 </SidebarMenuButton>
               </SidebarMenuItem>
             )}
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={isActive("/ai-hub")} className="min-h-12 h-auto py-2 text-[16px]">
+                <Link to="/ai-hub" className="font-bold"><BrainCircuit className="h-5 w-5 text-indigo-500" /> <span>{t('items.aiAnalytics')}</span></Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
              <SidebarMenuItem>
                 <SidebarMenuButton
                   onClick={handleLogout}
