@@ -207,11 +207,14 @@ export function RCMITGCPage({ embedded = false, filterBpmId }: RCMITGCPageProps)
                    originalItem && JSON.stringify(item[field]) !== JSON.stringify(originalItem[field]);
 
                 return (
-                  <TableRow key={`${item.mappingId}-${idx}`} className="group hover:bg-indigo-50/5 transition-colors divide-x divide-slate-100 h-10">
-                    <TableCell className="text-center text-[10px] font-black text-slate-400 sticky left-0 z-30 bg-white border-r-2 border-slate-200">
+                  <TableRow key={`${item.mappingId}-${idx}`} className={cn(
+                    "group transition-colors divide-x divide-slate-100 h-10",
+                    idx % 2 === 1 ? "bg-slate-100/50" : "bg-white"
+                  )}>
+                    <TableCell className={cn("text-center text-[10px] font-black text-slate-400 sticky left-0 z-30 border-r-2 border-slate-200", idx % 2 === 1 ? "bg-slate-100/50" : "bg-white")}>
                        {idx + 1}
                     </TableCell>
-                    <TableCell className={cn("align-top font-bold text-slate-800 text-[10px] sticky left-[50px] z-30 bg-white border-r-2 border-slate-200", !isFirstOfProcess && "text-transparent border-none")}>
+                    <TableCell className={cn("align-top font-bold text-slate-800 text-[10px] sticky left-[50px] z-30 border-r-2 border-slate-200", !isFirstOfProcess && "text-transparent border-none", idx % 2 === 1 ? "bg-slate-100/50" : "bg-white")}>
                       <div className="flex flex-col gap-0 pr-2 pt-1 leading-tight">
                         <span className="uppercase tracking-tighter text-indigo-600 text-[9px] font-black">
                           {item.fsliName} {item.bpmCode && `[${item.bpmCode}]`}
@@ -219,7 +222,7 @@ export function RCMITGCPage({ embedded = false, filterBpmId }: RCMITGCPageProps)
                         <span className="line-clamp-2">{item.noGL} - {item.processName}</span>
                       </div>
                     </TableCell>
-                    <TableCell className={cn("align-top font-bold text-slate-600 text-[10px] sticky left-[310px] z-30 bg-white border-r-2 border-slate-200", !isFirstOfSub && "text-transparent border-none")}>
+                    <TableCell className={cn("align-top font-bold text-slate-600 text-[10px] sticky left-[310px] z-30 border-r-2 border-slate-200", !isFirstOfSub && "text-transparent border-none", idx % 2 === 1 ? "bg-slate-100/50" : "bg-white")}>
                       <div className="pt-1">{item.subProcessName}</div>
                     </TableCell>
                     

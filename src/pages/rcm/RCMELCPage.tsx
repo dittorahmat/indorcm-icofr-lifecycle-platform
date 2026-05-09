@@ -150,12 +150,15 @@ export function RCMELCPage({ embedded = false }: RCMELCPageProps) {
                   </TableCell></TableRow>
                 ) : elcItems.length === 0 ? (
                   <TableRow><TableCell colSpan={COSO_PRINCIPLES.length + 7} className="h-64 text-center text-slate-400 italic text-[10px]">Belum ada data Entity Level Control (ELC).</TableCell></TableRow>
-                ) : elcItems.map((ctrl) => (
-                  <TableRow key={ctrl.id} className="group hover:bg-indigo-50/5 transition-colors divide-x divide-slate-100 border-b h-10">
-                    <TableCell className="font-mono text-[10px] font-bold text-slate-500 sticky left-0 z-30 bg-white border-r-2 border-slate-200 px-3">
+                ) : elcItems.map((ctrl, index) => (
+                  <TableRow key={ctrl.id} className={cn(
+                    "group transition-colors divide-x divide-slate-100 border-b h-10",
+                    index % 2 === 1 ? "bg-slate-200/50" : "bg-white"
+                  )}>
+                    <TableCell className={cn("font-mono text-[10px] font-bold text-slate-500 sticky left-0 z-30 border-r-2 border-slate-200 px-3", index % 2 === 1 ? "bg-slate-200/50" : "bg-white")}>
                       {ctrl.code}
                     </TableCell>
-                    <TableCell className="align-top py-2 sticky left-[110px] z-30 bg-white border-r-2 border-slate-200 max-w-[350px] px-3">
+                    <TableCell className={cn("align-top py-2 sticky left-[110px] z-30 border-r-2 border-slate-200 max-w-[350px] px-3", index % 2 === 1 ? "bg-slate-200/50" : "bg-white")}>
                       <div className="flex flex-col gap-0.5 leading-tight">
                         <span className="text-[10px] font-bold text-slate-800">{ctrl.name}</span>
                         <p className="text-[9px] text-slate-500 italic line-clamp-2">{ctrl.description}</p>

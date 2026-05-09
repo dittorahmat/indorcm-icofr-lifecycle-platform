@@ -238,6 +238,7 @@ export function BPMPage() {
   const significantFsliNames = React.useMemo(() => {
     const names = new Set<string>();
     if (activeSim && activeSim.significantAccounts) {
+      console.log('DEBUG: Significant Accounts Raw:', activeSim.significantAccounts);
       activeSim.significantAccounts.forEach(sa => { 
         if (sa.name) {
           // AUTO-HEALING: Use lookup map instead of .find() for O(1) lookup
@@ -252,7 +253,9 @@ export function BPMPage() {
     }
     const urlFsli = searchParams.get('fsli');
     if (urlFsli) names.add(urlFsli);
-    return Array.from(names).sort();
+    const result = Array.from(names).sort();
+    console.log('DEBUG: Significant FSLI Names Result:', result);
+    return result;
   }, [activeSim, glLookupMap, searchParams]);
 
   // 3. Filtered GL Numbers (Unique combination of noGL + glDesc)

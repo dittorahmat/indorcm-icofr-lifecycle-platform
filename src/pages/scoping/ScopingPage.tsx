@@ -516,18 +516,42 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
   const { omValue, pmValue, multiplier, benchmarkValue } = calculateValues;
 
   const significantAccounts = React.useMemo(() => {
-    return mergedGlData.filter(row => {
-      const assessments = simState.assessmentData?.[row.fsliName || ''] || {};
-      const isQualSignificant = Object.values(assessments).some(v => v === 'High');
-      const isKuanSignificant = Math.abs(row.balance) >= pmValue;
-      return isQualSignificant || isKuanSignificant;
-    }).map(row => ({
-      name: row.fsliName || "Unmapped FSLI",
-      balance: row.balance,
-      isQuantitative: Math.abs(row.balance) >= pmValue,
-      fsliCode: row.fsliCode || row.noGL, // Prefer FSLI code, fallback to noGL for unique ID
-      assignedDepartmentIds: localDeptMappings[row.noGL] || []
-    }));
+    // 1. Group by FSLI
+    const groups = new Map<string, GLRow[]>();
+    mergedGlData.forEach(row => {
+      const fsliName = row.fsliName || "Unmapped FSLI";
+      if (!groups.has(fsliName)) groups.set(fsliName, []);
+      groups.get(fsliName)!.push(row);
+    });
+
+    console.log('DEBUG: FSLI Groups identified:', Array.from(groups.keys()));
+
+    const result: SignificantAccount[] = [];
+    const MANDATORY_FSLIS = ['Kas dan Setara Kas'];
+
+    // 2. Evaluate Significance per FSLI group
+    groups.forEach((rows, fsliName) => {
+      const assessments = simState.assessmentData?.[fsliName] || {};
+      const isQualSignificant = Object.values(assessments).some(v => v === 'High') || MANDATORY_FSLIS.includes(fsliName);
+      
+      rows.forEach(row => {
+        const isKuanSignificant = Math.abs(row.balance) >= pmValue;
+        
+        // Include if FSLI group is qualitatively significant OR this specific account is quantitatively significant
+        if (isQualSignificant || isKuanSignificant) {
+          result.push({
+            name: fsliName,
+            balance: row.balance,
+            isQuantitative: isKuanSignificant,
+            fsliCode: row.fsliCode || row.noGL,
+            assignedDepartmentIds: localDeptMappings[row.noGL] || []
+          });
+        }
+      });
+    });
+
+    console.log('DEBUG: significantAccounts count:', result.length);
+    return result;
   }, [mergedGlData, simState.assessmentData, pmValue, localDeptMappings]);
 
   const updateSimMutation = useMutation({

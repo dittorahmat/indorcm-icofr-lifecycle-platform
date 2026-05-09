@@ -37,71 +37,55 @@ export function MainHeader() {
         ? "bg-[#022c22] border-emerald-900/50 text-emerald-50"
         : "bg-[#417dc1] border-blue-700 text-white shadow-md"
     )}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2">
-              <SidebarTrigger className={cn(
-                "h-9 w-9",
-                !isDark && "text-white hover:bg-white/10"
+      <div className="flex h-16 items-center justify-between px-3">
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3">
+            <Link to="/dashboard" className="flex items-center gap-2 group">
+              <Shield className={cn(
+                "h-7 w-7 transition-transform group-hover:scale-110",
+                isDark ? "text-emerald-400" : "text-white"
               )} />
-              
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className={cn(
-                  "h-9 w-9",
-                  !isDark && "text-white/70 hover:text-white hover:bg-white/10"
-                )}
-                onClick={() => setIsPinned(!isPinned)}
-                title={isPinned ? "Unpin sidebar" : "Pin sidebar"}
-              >
-                {isPinned ? <Pin className="h-4 w-4" /> : <PinOff className="h-4 w-4 opacity-50" />}
-              </Button>
-
-              <Link to="/dashboard" className="flex items-center gap-2 group ml-2">
-                <Shield className={cn(
-                  "h-7 w-7 transition-transform group-hover:scale-110",
-                  isDark ? "text-emerald-400" : "text-white"
-                )} />
-                <span className="font-display tracking-tight text-white text-lg font-bold hidden sm:inline-block">IndoGRC Pro</span>
-              </Link>
-            </div>
+              <span className="font-display tracking-tight text-white text-lg font-bold hidden sm:inline-block">IndoGRC Pro</span>
+            </Link>
+            <SidebarTrigger className={cn(
+              "h-9 w-9",
+              !isDark && "text-white hover:bg-white/10"
+            )} />
           </div>
-          <div className="flex items-center gap-4">
-            <LanguageSwitcher />
-            <NotificationBell />
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <div className="relative cursor-pointer hover:opacity-80 transition-opacity ml-2">
-                  <Avatar className="h-9 w-9 border-2 border-white/20">
-                    <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-                    <AvatarFallback className="bg-blue-800 text-white">CN</AvatarFallback>
-                  </Avatar>
-                  <Badge
-                    variant={isDark ? "outline" : "secondary"}
-                    className={cn(
-                      "absolute -bottom-1 -right-2 text-[10px] px-1 h-4 min-w-[16px] justify-center border-blue-900",
-                      !isDark && "bg-white text-blue-700 hover:bg-white font-bold"
-                    )}
-                  >
-                    {currentRole.split(' ').pop()?.substring(0, 1)}
-                  </Badge>
-                </div>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel className="font-bold">My Account</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer font-medium">Profile</DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer font-medium">Settings</DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout} className="text-red-600 focus:text-red-600 cursor-pointer font-bold">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Logout
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <LanguageSwitcher />
+          <NotificationBell />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <div className="relative cursor-pointer hover:opacity-80 transition-opacity ml-2">
+                <Avatar className="h-9 w-9 border-2 border-white/20">
+                  <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+                  <AvatarFallback className="bg-blue-800 text-white">CN</AvatarFallback>
+                </Avatar>
+                <Badge
+                  variant={isDark ? "outline" : "secondary"}
+                  className={cn(
+                    "absolute -bottom-1 -right-2 text-[10px] px-1 h-4 min-w-[16px] justify-center border-blue-900",
+                    !isDark && "bg-white text-blue-700 hover:bg-white font-bold"
+                  )}
+                >
+                  {currentRole.split(' ').pop()?.substring(0, 1)}
+                </Badge>
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel className="font-bold">My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="cursor-pointer font-medium">Profile</DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer font-medium">Settings</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLogout} className="text-red-600 focus:text-red-600 cursor-pointer font-bold">
+                <LogOut className="mr-2 h-4 w-4" />
+                Logout
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>
