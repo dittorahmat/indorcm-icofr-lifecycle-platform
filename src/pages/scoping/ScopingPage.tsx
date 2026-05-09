@@ -11,12 +11,13 @@ import { Separator } from '@/components/ui/separator';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import type { 
-  MaterialitySimulation, GLRow, GLSnapshot, QualitativeLevel, UserRole, SimulationStatus, Department, Application 
+  MaterialitySimulation, GLRow, GLSnapshot, QualitativeLevel, UserRole, SimulationStatus, Department, Application, SignificantAccount 
 } from '@shared/types';
 import { Badge } from '@/components/ui/badge';
 import { 
   Plus, Save, Loader2, Trash2, Upload, ArrowLeft, Send, History, ShieldCheck, Settings2, Info,
-  Database, LayoutGrid, FileSpreadsheet, AlertTriangle, CheckCircle2, Building2
+  Database, LayoutGrid, FileSpreadsheet, AlertTriangle, CheckCircle2, Building2,
+  ChevronLeft, ChevronRight, PanelLeftClose, PanelLeftOpen
 } from 'lucide-react';
 import { GLDataGrid } from '@/components/scoping/GLDataGrid';
 import { ScopingHealthDashboard } from '@/components/scoping/ScopingHealthDashboard';
@@ -139,9 +140,15 @@ export function ScopingPage() {
       let headers: string[] = [];
       try {
         if (file.name.endsWith('.csv')) {
-          const results = Papa.parse(bstr as string, { header: true, skipEmptyLines: false, transformHeader: (h) => h.trim() });
+          const results = Papa.parse(bstr as string, { 
+            header: true, 
+            skipEmptyLines: 'greedy', 
+            transformHeader: (h) => h.trim(),
+            delimitersToGuess: [',', ';', '\t', '|']
+          });
           rawData = results.data;
           headers = results.meta.fields || [];
+          console.log('[CSV Parse] Delimiter:', results.meta.delimiter, 'Headers:', headers);
         } else {
           const workbook = XLSX.read(bstr, { type: 'binary' });
           const worksheet = workbook.Sheets[workbook.SheetNames[0]];
@@ -405,6 +412,7 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
   const [glData, setGlData] = React.useState<GLRow[]>([]);
   const [localAppMappings, setLocalAppMappings] = React.useState<Record<string, string[]>>({});
   const [localDeptMappings, setLocalDeptMappings] = React.useState<Record<string, string[]>>({});
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
 
   // Fetch applications library
   const { data: appsData } = useQuery({
@@ -524,8 +532,6 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
       groups.get(fsliName)!.push(row);
     });
 
-    console.log('DEBUG: FSLI Groups identified:', Array.from(groups.keys()));
-
     const result: SignificantAccount[] = [];
     const MANDATORY_FSLIS = ['Kas dan Setara Kas'];
 
@@ -550,7 +556,6 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
       });
     });
 
-    console.log('DEBUG: significantAccounts count:', result.length);
     return result;
   }, [mergedGlData, simState.assessmentData, pmValue, localDeptMappings]);
 
@@ -573,7 +578,6 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
       });
 
       // 3. Sync department mappings to gl_rows for access control
-      // This is crucial because BPM access depends on gl_rows table
       const deptMappingsToSync = Object.entries(localDeptMappings).map(([noGL, departmentIds]) => ({
         noGL,
         departmentIds
@@ -666,7 +670,6 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
     }
   };
 
-
   return (
     <AppLayout container>
       <UnsavedChangesDialog blocker={blocker} />
@@ -703,9 +706,108 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
           )}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Main Content - Left (Order 1 on Desktop) */}
-          <div className="lg:col-span-3 space-y-6 order-2 lg:order-1">
+        <div className="flex gap-6 items-start">
+          {/* Parameters Panel - Left Collapsible */}
+          <AnimatePresence initial={false}>
+            {!isSidebarCollapsed && (
+              <motion.div
+                initial={{ width: 0, opacity: 0, x: -50 }}
+                animate={{ width: 300, opacity: 1, x: 0 }}
+                exit={{ width: 0, opacity: 0, x: -50 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                className="shrink-0 space-y-6 overflow-hidden"
+              >
+                <Card className="border-slate-200 shadow-sm overflow-hidden w-[300px]">
+                  <CardHeader className="pb-3 border-b border-slate-50 bg-slate-50/50 flex flex-row items-center justify-between">
+                    <CardTitle className="text-xs uppercase font-bold text-slate-500 tracking-wider flex items-center gap-2">
+                      <Settings2 className="h-3.5 w-3.5" /> {t('params.title')}
+                    </CardTitle>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-6 w-6 text-slate-400 hover:text-slate-600" 
+                      onClick={() => setIsSidebarCollapsed(true)}
+                    >
+                      <PanelLeftClose className="h-4 w-4" />
+                    </Button>
+                  </CardHeader>
+                  <CardContent className="space-y-5 pt-6">
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-bold uppercase text-slate-400">{t('params.locations')}</Label>
+                      <Input 
+                        type="number" 
+                        min={1} 
+                        disabled={isLocked} 
+                        value={simState.locationCount ?? 1} 
+                        onChange={e => setSimState(s => ({ ...s, locationCount: Number(e.target.value) }))} 
+                      />
+                      <p className="text-[9px] text-blue-600 italic">Multiplier: {multiplier}x</p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-bold uppercase text-slate-400">{t('params.omLabel')}</Label>
+                      <Input 
+                        type="number" 
+                        step={0.1} 
+                        disabled={isLocked} 
+                        value={simState.omPercentage ?? 0} 
+                        onChange={e => setSimState(s => ({ ...s, omPercentage: Number(e.target.value) }))} 
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-bold uppercase text-slate-400">{t('params.haircutLabel')}</Label>
+                      <Input 
+                        type="number" 
+                        disabled={isLocked} 
+                        value={simState.haircutPercentage ?? 0} 
+                        onChange={e => setSimState(s => ({ ...s, haircutPercentage: Number(e.target.value) }))} 
+                      />
+                    </div>
+                    <Separator />
+                    <div className="space-y-3 bg-slate-50 p-4 rounded-lg border border-slate-100">
+                      <div className="space-y-1">
+                        <p className="text-[9px] text-slate-400 uppercase font-bold tracking-widest flex justify-between">{t('params.benchmarkValue', { basis: simState.basis })} <Info className="h-2.5 w-2.5" /></p>
+                        <p className="text-sm font-mono font-bold text-slate-700 text-right">Rp {benchmarkValue.toLocaleString('id-ID')}</p>
+                      </div>
+                      <div className="space-y-1 pt-2 border-t border-slate-200">
+                        <p className="text-[9px] text-slate-400 uppercase font-bold tracking-widest">{t('params.omValue')}</p>
+                        <p className="text-lg font-mono font-bold text-primary text-right">Rp {omValue.toLocaleString('id-ID')}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[9px] text-blue-400 uppercase font-bold tracking-widest">{t('params.pmValue')}</p>
+                        <p className="text-lg font-mono font-bold text-blue-600 text-right">Rp {pmValue.toLocaleString('id-ID')}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-amber-50 border-amber-200 shadow-sm w-[300px]">
+                  <CardHeader className="pb-2"><CardTitle className="text-[10px] uppercase font-bold text-amber-800 flex items-center gap-2"><Info className="h-3 w-3" /> {t('logic.title')}</CardTitle></CardHeader>
+                  <CardContent className="text-[10px] text-amber-700 leading-relaxed space-y-2 italic">
+                    <p>{t('logic.description')}</p>
+                    <ol className="list-decimal list-inside space-y-1">
+                      <li>{t('logic.quant')}</li>
+                      <li>{t('logic.qual')}</li>
+                    </ol>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Toggle Button when collapsed */}
+          {isSidebarCollapsed && (
+            <Button
+              variant="outline"
+              size="icon"
+              className="mt-2 shrink-0 bg-white shadow-sm border-indigo-100 text-indigo-600 hover:bg-indigo-50"
+              onClick={() => setIsSidebarCollapsed(false)}
+            >
+              <PanelLeftOpen className="h-4 w-4" />
+            </Button>
+          )}
+
+          {/* Main Content - Right */}
+          <div className="flex-1 min-w-0 space-y-6">
             <Tabs defaultValue="worksheet" className="w-full">
               <TabsList className="grid w-full max-w-[550px] grid-cols-3 mb-4">
                 <TabsTrigger value="worksheet">{t('approval.tabWorksheet')}</TabsTrigger>
@@ -749,75 +851,6 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
                 <ScopingHealthDashboard glData={glData} />
               </TabsContent>
             </Tabs>
-          </div>
-
-          {/* Parameters - Right (Order 2 on Desktop) */}
-          <div className="lg:col-span-1 space-y-6 order-1 lg:order-2">
-            <Card className="border-slate-200 shadow-sm overflow-hidden">
-              <CardHeader className="pb-3 border-b border-slate-50 bg-slate-50/50">
-                <CardTitle className="text-xs uppercase font-bold text-slate-500 tracking-wider flex items-center gap-2">
-                  <Settings2 className="h-3.5 w-3.5" /> {t('params.title')}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-5 pt-6">
-                <div className="space-y-2">
-                  <Label className="text-[10px] font-bold uppercase text-slate-400">{t('params.locations')}</Label>
-                  <Input 
-                    type="number" 
-                    min={1} 
-                    disabled={isLocked} 
-                    value={simState.locationCount ?? 1} 
-                    onChange={e => setSimState(s => ({ ...s, locationCount: Number(e.target.value) }))} 
-                  />
-                  <p className="text-[9px] text-blue-600 italic">Multiplier: {multiplier}x</p>
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-[10px] font-bold uppercase text-slate-400">{t('params.omLabel')}</Label>
-                  <Input 
-                    type="number" 
-                    step={0.1} 
-                    disabled={isLocked} 
-                    value={simState.omPercentage ?? 0} 
-                    onChange={e => setSimState(s => ({ ...s, omPercentage: Number(e.target.value) }))} 
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-[10px] font-bold uppercase text-slate-400">{t('params.haircutLabel')}</Label>
-                  <Input 
-                    type="number" 
-                    disabled={isLocked} 
-                    value={simState.haircutPercentage ?? 0} 
-                    onChange={e => setSimState(s => ({ ...s, haircutPercentage: Number(e.target.value) }))} 
-                  />
-                </div>
-                <Separator />
-                <div className="space-y-3 bg-slate-50 p-4 rounded-lg border border-slate-100">
-                  <div className="space-y-1">
-                    <p className="text-[9px] text-slate-400 uppercase font-bold tracking-widest flex justify-between">{t('params.benchmarkValue', { basis: simState.basis })} <Info className="h-2.5 w-2.5" /></p>
-                    <p className="text-sm font-mono font-bold text-slate-700 text-right">Rp {benchmarkValue.toLocaleString('id-ID')}</p>
-                  </div>
-                  <div className="space-y-1 pt-2 border-t border-slate-200">
-                    <p className="text-[9px] text-slate-400 uppercase font-bold tracking-widest">{t('params.omValue')}</p>
-                    <p className="text-lg font-mono font-bold text-primary text-right">Rp {omValue.toLocaleString('id-ID')}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-[9px] text-blue-400 uppercase font-bold tracking-widest">{t('params.pmValue')}</p>
-                    <p className="text-lg font-mono font-bold text-blue-600 text-right">Rp {pmValue.toLocaleString('id-ID')}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-amber-50 border-amber-200 shadow-sm">
-              <CardHeader className="pb-2"><CardTitle className="text-[10px] uppercase font-bold text-amber-800 flex items-center gap-2"><Info className="h-3 w-3" /> {t('logic.title')}</CardTitle></CardHeader>
-              <CardContent className="text-[10px] text-amber-700 leading-relaxed space-y-2 italic">
-                <p>{t('logic.description')}</p>
-                <ol className="list-decimal list-inside space-y-1">
-                  <li>{t('logic.quant')}</li>
-                  <li>{t('logic.qual')}</li>
-                </ol>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>

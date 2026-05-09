@@ -399,6 +399,53 @@ scoping.get('/gl-snapshots', async (c) => {
   return ok(c, { items });
 });
 
+scoping.post('/gl-snapshots', async (c) => {
+  const db = getDb(c.env.DATABASE_URL);
+  const orgId = c.get('organizationId');
+  const { filename, rows } = await c.req.json<{ filename: string, rows: any[] }>();
+
+  const snapshotId = crypto.randomUUID();
+  const now = new Date();
+
+  await db.transaction(async (tx) => {
+    // 1. Create the snapshot record
+    await tx.insert(glSnapshots).values({
+      id: snapshotId,
+      organizationId: orgId,
+      filename,
+      uploadDate: now,
+      status: 'Draft',
+      isActive: false
+    });
+
+    // 2. Insert rows in batches to avoid overwhelming the DB
+    const batchSize = 100;
+    for (let i = 0; i < rows.length; i += batchSize) {
+      const batch = rows.slice(i, i + batchSize).map(r => ({
+        id: crypto.randomUUID(),
+        snapshotId,
+        organizationId: orgId,
+        ymd: r.ymd,
+        entityCode: r.entityCode,
+        noGL: r.noGL,
+        glDesc: r.glDesc,
+        currency: r.currency,
+        balance: r.balance,
+        fsliCode: r.fsliCode,
+        fsliName: r.fsliName,
+        category: r.category,
+        subKategori: r.subKategori,
+        noUrut: r.noUrut,
+        assignedDepartmentIds: r.assignedDepartmentIds || [],
+        ownerAcceptance: r.ownerAcceptance
+      }));
+      await tx.insert(glRows).values(batch);
+    }
+  });
+
+  return ok(c, { id: snapshotId, filename, uploadDate: now, status: 'Draft' });
+});
+
 scoping.get('/gl-snapshots/:id', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const id = c.req.param('id');

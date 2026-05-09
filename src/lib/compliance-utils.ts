@@ -326,23 +326,26 @@ export const GL_COLUMN_MAPPING = {
 export type GLField = keyof typeof GL_COLUMN_MAPPING;
 
 /**
- * Auto-detect column mapping from CSV headers
+ * Auto-detect column mapping from CSV headers (Case-Insensitive)
  */
 export function detectGLColumns(headers: string[]): Record<string, string> {
   const mapping: Record<string, string> = {};
 
   headers.forEach(header => {
-    const trimmedHeader = header.trim();
+    const trimmedHeader = header.trim().toLowerCase();
     
     // Check each field type
     (Object.keys(GL_COLUMN_MAPPING) as GLField[]).forEach(field => {
       // If this field already has a mapping, skip
       if (mapping[field]) return;
       
-      // Check if header matches any variation
+      // Check if header matches any variation (case-insensitive)
       const variations = GL_COLUMN_MAPPING[field] as readonly string[];
-      if (variations.includes(trimmedHeader)) {
-        mapping[field] = trimmedHeader;
+      const match = variations.find(v => v.toLowerCase() === trimmedHeader);
+      
+      if (match) {
+        // Store the ORIGINAL header name to use as a key
+        mapping[field] = header.trim();
       }
     });
   });
@@ -391,6 +394,46 @@ export function calculateBenchmarkValue(
 
   // Sum absolute values for conservatism
   return matchingRows.reduce((sum, row) => sum + Math.abs(row.balance), 0);
+}
+
+/**
+ * Sorts GL data hierarchically: 
+ * 1. Groups by fsliName
+ * 2. Sorts groups by the minimum noUrut found in each group
+ * 3. Sorts GL accounts within each group by noUrut
+ */
+export function sortGLHierarchically(data: GLRow[]): GLRow[] {
+  // Group by fsliName
+  const groups = new Map<string, GLRow[]>();
+  data.forEach(row => {
+    const fsliName = row.fsliName || 'Unmapped FSLI';
+    if (!groups.has(fsliName)) {
+      groups.set(fsliName, []);
+    }
+    groups.get(fsliName)!.push(row);
+  });
+
+  // Sort GL within each group by noUrut ascending
+  groups.forEach(rows => {
+    rows.sort((a, b) => (a.noUrut || 0) - (b.noUrut || 0));
+  });
+
+  // Convert to array and sort groups by min noUrut, then by fsliName alphabetically
+  const sortedGroups = Array.from(groups.entries())
+    .map(([fsliName, rows]) => {
+      const validNoUruts = rows.map(r => r.noUrut).filter((n): n is number => n !== null && n !== undefined);
+      const minNoUrut = validNoUruts.length > 0 ? Math.min(...validNoUruts) : 999999;
+      return { fsliName, minNoUrut, rows };
+    })
+    .sort((a, b) => {
+      if (a.minNoUrut !== b.minNoUrut) {
+        return a.minNoUrut - b.minNoUrut;
+      }
+      return a.fsliName.localeCompare(b.fsliName);
+    });
+
+  // Flatten back to single array
+  return sortedGroups.flatMap(g => g.rows);
 }
 
 /**

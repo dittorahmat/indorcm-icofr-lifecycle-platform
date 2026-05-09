@@ -5,10 +5,12 @@ import {
   getFilteredRowModel,
   getGroupedRowModel,
   getExpandedRowModel,
+  getSortedRowModel,
   flexRender,
   ColumnDef,
   GroupingState,
   VisibilityState,
+  SortingState,
 } from '@tanstack/react-table';
 import { GLRow, QualitativeLevel, Department, User, Application } from '@shared/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -25,6 +27,7 @@ import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { MultiSelect, Option } from '@/components/ui/multi-select';
 import { useTranslation } from 'react-i18next';
+import { sortGLHierarchically } from '@/lib/compliance-utils';
 
 interface GLDataGridProps {
   data: GLRow[];
@@ -76,44 +79,14 @@ export const GLDataGrid = React.memo(function GLDataGrid({
     queryFn: () => api<User>('/api/user/me'),
   });
 
-  // Pre-sort data: group by fsliName, find min noUrut per group, then sort
-  const sortedData = React.useMemo(() => {
-    // Group by fsliName
-    const groups = new Map<string, GLRow[]>();
-    data.forEach(row => {
-      const fsliName = row.fsliName || '';
-      if (!groups.has(fsliName)) {
-        groups.set(fsliName, []);
-      }
-      groups.get(fsliName)!.push(row);
-    });
-
-    // Sort GL within each group by noUrut ascending
-    groups.forEach(rows => {
-      rows.sort((a, b) => a.noUrut - b.noUrut);
-    });
-
-    // Convert to array and sort groups by min noUrut, then by fsliName alphabetically
-    const sortedGroups = Array.from(groups.entries())
-      .map(([fsliName, rows]) => ({
-        fsliName,
-        minNoUrut: Math.min(...rows.map(r => r.noUrut)),
-        rows
-      }))
-      .sort((a, b) => {
-        if (a.minNoUrut !== b.minNoUrut) {
-          return a.minNoUrut - b.minNoUrut;
-        }
-        // If min noUrut is the same, sort by fsliName alphabetically
-        return a.fsliName.localeCompare(b.fsliName);
-      });
-
-    // Flatten back to single array
-    return sortedGroups.flatMap(g => g.rows);
-  }, [data]);
+  // Hierarchical sorting based on noUrut (Standard: SK-5/2024 Table 5)
+  const sortedData = React.useMemo(() => sortGLHierarchically(data), [data]);
 
   const [grouping, setGrouping] = React.useState<GroupingState>(['fsliName']);
   const [expanded, setExpanded] = React.useState({});
+  const [sorting, setSorting] = React.useState<SortingState>([
+    { id: 'noUrut', desc: false }
+  ]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({
     noUrut: false
   });
@@ -129,6 +102,8 @@ export const GLDataGrid = React.memo(function GLDataGrid({
         accessorKey: 'noUrut',
         header: '#',
         cell: info => <span className="text-[9px] text-slate-400">{info.getValue<number>()}</span>,
+        aggregatedCell: info => <span className="text-[9px] text-slate-500 font-bold">{info.getValue<number>()}</span>,
+        aggregationFn: 'min',
         size: 40,
       },
       {
@@ -441,16 +416,19 @@ export const GLDataGrid = React.memo(function GLDataGrid({
       grouping,
       expanded,
       columnVisibility,
+      sorting,
     },
     onGroupingChange: setGrouping,
     onExpandedChange: setExpanded,
     onColumnVisibilityChange: setColumnVisibility,
+    onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getGroupedRowModel: getGroupedRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     autoResetExpanded: false, // CRITICAL: Prevent collapse on update
-    getRowId: (row) => row.noGL || `row-${row.noUrut}`, // Stable IDs
+    getRowId: (row) => row.id, // Stable UUID from database
   });
 
   const handleExportExcel = () => {
@@ -527,9 +505,9 @@ export const GLDataGrid = React.memo(function GLDataGrid({
         </Button>
       </div>
 
-      <div className="rounded-md border bg-white shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <Table className="relative">
+      <div className="rounded-md border bg-white shadow-sm overflow-hidden w-full">
+        <div className="overflow-x-auto w-full">
+          <Table className="relative w-full">
             <TableHeader className="bg-slate-50 sticky top-0 z-10 shadow-sm">
               {table.getHeaderGroups().map(headerGroup => (
                 <TableRow key={headerGroup.id} className="hover:bg-transparent">

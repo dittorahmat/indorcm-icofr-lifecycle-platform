@@ -9,20 +9,32 @@ dotenv.config();
 const connectionString = process.env.DATABASE_URL!;
 const sql = postgres(connectionString);
 const db = drizzle(sql);
-
 async function debugData() {
-  const activeSnaps = await db.select().from(glSnapshots).where(eq(glSnapshots.isActive, true));
-  if (activeSnaps.length === 0) {
-    console.log("No active snapshot found.");
-    process.exit(0);
+  const allRows = await db.select().from(glRows);
+  console.log('TOTAL GL ROWS IN DATABASE:', allRows.length);
+
+  const snapshots = await db.select().from(glSnapshots);
+  console.log(`Checking ${snapshots.length} snapshots...`);
+
+  for (const snap of snapshots) {
+    const rows = allRows.filter(r => r.snapshotId === snap.id);
+    console.log(`Snapshot: ${snap.filename} (ID: ${snap.id}) - ${rows.length} rows`);
+
+    const counts = new Map<string, number>();
+    rows.forEach(r => {
+      const key = `${r.noGL}|${r.glDesc}|${r.fsliName}|${Math.round(r.balance)}`;
+      counts.set(key, (counts.get(key) || 0) + 1);
+    });
+
+    const duplicates = Array.from(counts.entries()).filter(([_, count]) => count > 1);
+    // ...
+
+    if (duplicates.length > 0) {
+      console.log(`Snapshot: ${snap.filename} (ID: ${snap.id}) - ${snap.isActive ? 'ACTIVE' : 'inactive'}`);
+      console.log('  Duplicates found:');
+      console.table(duplicates.map(([key, count]) => ({ key, count })));
+    }
   }
-  
-  const activeSnap = activeSnaps[0];
-  const rows = await db.select().from(glRows).where(eq(glRows.snapshotId, activeSnap.id));
-  
-  // Cari semua baris yang mengandung kata 'Kas'
-  const kasRows = rows.filter(r => (r.fsliName && r.fsliName.includes('Kas')) || (r.glDesc && r.glDesc.includes('Kas')));
-  console.log('Baris yang mengandung "Kas":', kasRows.map(r => ({ fsli: r.fsliName, desc: r.glDesc })));
   
   process.exit(0);
 }
