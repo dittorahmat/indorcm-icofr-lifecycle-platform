@@ -401,6 +401,94 @@ bpm.delete('/bpm-diagrams/:id', async (c) => {
   return ok(c, { success: true });
 });
 
+bpm.get('/bpm-diagrams/by-control/:controlId', async (c) => {
+  const db = getDb(c.env.DATABASE_URL);
+  const orgId = c.get('organizationId');
+  const controlId = c.req.param('controlId');
+
+  // 1. Find the risk(s) linked to this control
+  const links = await db.select().from(rcmControls).where(and(
+    eq(rcmControls.controlId, controlId),
+    eq(rcmControls.organizationId, orgId)
+  ));
+
+  if (links.length === 0) return notFound(c, 'Control not linked to any risk');
+
+  // 2. Find the diagram node(s) linked to those risk(s)
+  const riskIds = links.map((l: any) => l.rcmId);
+  const nodeLinks = await db.select().from(bpmNodeRcms).where(and(
+    inArray(bpmNodeRcms.rcmId, riskIds),
+    eq(bpmNodeRcms.organizationId, orgId)
+  ));
+
+  if (nodeLinks.length === 0) return notFound(c, 'Risk not linked to any diagram node');
+
+  // For now, return the first diagram found
+  const firstLink = nodeLinks[0];
+  const diag = await db.select().from(bpmDiagrams).where(and(
+    eq(bpmDiagrams.id, firstLink.diagramId),
+    eq(bpmDiagrams.organizationId, orgId)
+  )).limit(1);
+
+  if (diag.length === 0) return notFound(c, 'Diagram not found');
+
+  return ok(c, {
+    diagram: diag[0],
+    nodeId: firstLink.nodeId
+  });
+});
+
+bpm.get('/bpm-diagrams/by-gl/:noGL', async (c) => {
+  const db = getDb(c.env.DATABASE_URL);
+  const orgId = c.get('organizationId');
+  const noGL = c.req.param('noGL');
+  const subProcessName = c.req.query('subProcess');
+
+  if (subProcessName) {
+    // Direct lookup by subProcess name and organization
+    const diagrams = await db.select().from(bpmDiagrams)
+      .where(and(
+        eq(bpmDiagrams.organizationId, orgId),
+        eq(bpmDiagrams.subProcess, subProcessName)
+      )).limit(1);
+
+    if (diagrams.length > 0) return ok(c, diagrams[0]);
+  }
+
+  // Fallback: original logic if subProcess not provided or not found directly
+  // 1. Find the BPM Process linked to this GL
+  const processes = await db.select().from(bpmProcesses)
+    .where(and(
+      eq(bpmProcesses.organizationId, orgId),
+      eq(bpmProcesses.noGL, noGL)
+    )).limit(1);
+
+  if (processes.length === 0) return notFound(c, 'No BPM process linked to this account');
+
+  const process = processes[0];
+
+  // 2. Find the diagram that matches this process name/subprocess
+  const diagrams = await db.select().from(bpmDiagrams)
+    .where(and(
+      eq(bpmDiagrams.organizationId, orgId),
+      eq(bpmDiagrams.subProcess, process.name)
+    )).limit(1);
+
+  if (diagrams.length === 0) {
+      // Fallback: try matching by name
+      const byName = await db.select().from(bpmDiagrams)
+          .where(and(
+              eq(bpmDiagrams.organizationId, orgId),
+              eq(bpmDiagrams.name, process.name)
+          )).limit(1);
+
+      if (byName.length === 0) return notFound(c, 'Diagram not found for this process');
+      return ok(c, byName[0]);
+  }
+
+  return ok(c, diagrams[0]);
+});
+
 // --- BPM Process Routes ---
 
 bpm.get('/bpm-processes', async (c) => {

@@ -97,5 +97,12 @@
     "procedurePlaceholder": "Describe the testing steps performed...",
     "locationPlaceholder": "E.g., Cabinet A - Vault Room",
     "archiveNote": "Storage location of original physical documents for onsite audit purposes."
+  },
+  "forensic": {
+    "title": "Forensic Verification",
+    "gps": "GPS Location Verified",
+    "timestamp": "Timestamp Verified",
+    "biometric": "Biometric Identity Verified",
+    "hash": "Digital Signature Hash"
   }
 }

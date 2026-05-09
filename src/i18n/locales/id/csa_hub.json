@@ -97,5 +97,12 @@
     "procedurePlaceholder": "Jelaskan langkah-langkah pengujian...",
     "locationPlaceholder": "Contoh: Lemari A - Ruang Brankas",
     "archiveNote": "Lokasi penyimpanan dokumen fisik asli untuk keperluan audit onsite."
+  },
+  "forensic": {
+    "title": "Verifikasi Forensik",
+    "gps": "Lokasi GPS Terverifikasi",
+    "timestamp": "Waktu Tercatat Terverifikasi",
+    "biometric": "Identitas Biometrik Terverifikasi",
+    "hash": "Digital Signature Hash"
   }
 }
