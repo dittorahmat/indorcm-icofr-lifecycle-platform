@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Node } from 'reactflow';
 import { useTranslation } from 'react-i18next';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { format } from 'date-fns';
@@ -202,25 +203,25 @@ export function RegulatoryPropertySheet({
   };
 
   return (
-    <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent className="w-full sm:max-w-[850px] overflow-hidden flex flex-col p-0">
-        <SheetHeader className="p-6 border-b bg-slate-50/50">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="w-[95vw] max-w-[1000px] h-[90vh] overflow-hidden flex flex-col p-0">
+        <DialogHeader className="p-6 border-b bg-slate-50/50">
           <div className="flex items-center justify-between">
             <div className="flex flex-col gap-1">
-              <SheetTitle className="flex items-center gap-2 text-xl">
+              <DialogTitle className="flex items-center gap-2 text-xl">
                 {canHaveRcm ? <ShieldAlert className="h-5 w-5 text-indigo-600" /> : <Database className="h-5 w-5" />}
                 {selectedNode.data.label}
-              </SheetTitle>
-              <SheetDescription className="font-mono text-[10px] flex gap-2">
+              </DialogTitle>
+              <DialogDescription className="font-mono text-[10px] flex gap-2">
                 <span className="bg-slate-200 px-1 rounded">ID: {selectedNode.id}</span>
                 <span className="bg-slate-200 px-1 rounded uppercase">Type: {selectedNode.type}</span>
-              </SheetDescription>
+              </DialogDescription>
             </div>
             <Button variant="ghost" size="icon" onClick={handleClose} className="h-8 w-8">
               <X className="h-4 w-4" />
             </Button>
           </div>
-        </SheetHeader>
+        </DialogHeader>
 
         <Tabs defaultValue="properties" className="flex-1 flex flex-col overflow-hidden">
           <div className="px-6 border-b bg-white">
@@ -238,16 +239,16 @@ export function RegulatoryPropertySheet({
             <TabsContent value="properties" className="m-0 p-6 space-y-10 pb-20 focus-visible:outline-none">
               {/* 1. Visual Info */}
               <section className="bg-slate-50/50 p-4 rounded-xl border border-slate-100">
-                <Label className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-3 block">Visual Diagram Info</Label>
+                <Label className="text-xs font-semibold uppercase text-slate-600 tracking-wide mb-3 block">{t('rcm:matrix.properties.visual_diagram_info')}</Label>
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label className="text-[9px] font-bold text-slate-500 uppercase">Label</Label>
-                      <Input value={selectedNode.data.label} onChange={(e) => onUpdateNodeData(selectedNode.id, { label: e.target.value })} className="h-8 text-xs bg-white" />
+                      <Label className="text-xs font-medium text-slate-700 uppercase">{t('rcm:matrix.properties.label')}</Label>
+                      <Input value={selectedNode.data.label} onChange={(e) => onUpdateNodeData(selectedNode.id, { label: e.target.value })} className="h-10 text-sm bg-white" />
                     </div>
                     {canHaveRcm && (
                       <div className="space-y-2">
-                        <Label className="text-[9px] font-bold text-slate-500 uppercase">Pelaksana (Role)</Label>
-                        <Input value={selectedNode.data.role || ''} onChange={(e) => onUpdateNodeData(selectedNode.id, { role: e.target.value })} className="h-8 text-xs bg-white" />
+                        <Label className="text-xs font-medium text-slate-700 uppercase">{t('rcm:matrix.properties.pelaksana')}</Label>
+                        <Input value={selectedNode.data.role || ''} onChange={(e) => onUpdateNodeData(selectedNode.id, { role: e.target.value })} className="h-10 text-sm bg-white" />
                       </div>
                     )}
                 </div>
@@ -258,9 +259,9 @@ export function RegulatoryPropertySheet({
                   {groupedRisks.length === 0 && (
                     <div className="text-center py-12 border-2 border-dashed rounded-2xl bg-slate-50">
                       <AlertTriangle className="h-8 w-8 text-amber-400 mx-auto mb-3" />
-                      <p className="text-sm text-slate-500 italic mb-4">Belum ada identifikasi Risiko & Kontrol.</p>
+                      <p className="text-sm text-slate-500 italic mb-4">{t('bpm:noSubProcesses')}</p>
                       <Button onClick={addNewRisk} className="bg-indigo-600 hover:bg-indigo-700">
-                        <PlusCircle className="h-4 w-4 mr-2" /> Mulai Identifikasi
+                        <PlusCircle className="h-4 w-4 mr-2" /> {t('rcm:matrix.properties.tambah_risiko_baru')}
                       </Button>
                     </div>
                   )}
@@ -272,7 +273,7 @@ export function RegulatoryPropertySheet({
                         <div className="bg-red-600 px-4 py-2 flex justify-between items-center text-white">
                           <div className="flex items-center gap-2">
                             <AlertTriangle className="h-4 w-4" />
-                            <h3 className="text-xs font-black uppercase tracking-widest">Risiko #{gIdx + 1}</h3>
+                            <h3 className="text-xs font-black uppercase tracking-widest">{t('rcm:matrix.properties.id_risiko')} #{gIdx + 1}</h3>
                           </div>
                           <div className="flex items-center gap-3">
                             <Badge className="bg-red-800 text-[9px] font-mono border-none">{group.risk.riskId || 'PENDING ID'}</Badge>
@@ -283,18 +284,18 @@ export function RegulatoryPropertySheet({
                         </div>
                         <div className="p-5 space-y-4">
                           <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase text-red-900/50">Deskripsi Risiko Aktivitas</Label>
+                            <Label className="text-[10px] font-black uppercase text-red-900/50">{t('rcm:matrix.properties.deskripsi_risiko')}</Label>
                             <Textarea 
                               value={group.risk.riskDescription || ''} 
                               onChange={(e) => updateAllPairsForRisk(group.risk.riskId || group.risk._tempRiskId, 'riskDescription', e.target.value)}
                               className="min-h-[80px] text-sm border-red-200 bg-white focus-visible:ring-red-500"
-                              placeholder="Apa yang bisa salah?"
+                              placeholder={t('common:placeholders.description')}
                             />
                           </div>
 
                           <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                              <Label className="text-[10px] font-black uppercase text-red-900/50">Terkait Fraud?</Label>
+                              <Label className="text-[10px] font-black uppercase text-red-900/50">{t('rcm:matrix.properties.terkait_fraud')}</Label>
                               <Select value={group.risk.isFraudRelated ? 'Yes' : 'No'} onValueChange={(v) => updateAllPairsForRisk(group.risk.riskId || group.risk._tempRiskId, 'isFraudRelated', v === 'Yes')}>
                                 <SelectTrigger className="h-9 text-sm bg-white border-red-200"><SelectValue /></SelectTrigger>
                                 <SelectContent>
@@ -304,7 +305,7 @@ export function RegulatoryPropertySheet({
                               </Select>
                             </div>
                             <div className="space-y-2">
-                              <Label className="text-[10px] font-black uppercase text-red-900/50">Risk Rating</Label>
+                              <Label className="text-[10px] font-black uppercase text-red-900/50">{t('rcm:matrix.properties.risk_rating_label')}</Label>
                               <Select value={group.risk.riskRating || 'Low'} onValueChange={(v: QualitativeLevel) => updateAllPairsForRisk(group.risk.riskId || group.risk._tempRiskId, 'riskRating', v)}>
                                 <SelectTrigger className="h-9 text-sm bg-white border-red-200"><SelectValue /></SelectTrigger>
                                 <SelectContent>
@@ -316,73 +317,69 @@ export function RegulatoryPropertySheet({
                             </div>
                           </div>
                           
-                          <div className="pt-2 flex justify-end">
-                            <Button variant="outline" size="sm" className="h-7 text-[9px] font-bold border-red-200 text-red-700 hover:bg-red-50 gap-1.5" onClick={() => addControlToRisk(group.risk.riskId || group.risk._tempRiskId)}>
-                              <PlusCircle className="h-3 w-3" /> Tambah Kontrol untuk Risiko Ini
+                          <div className="pt-2">
+                            <Button 
+                              variant="outline" 
+                              className="w-full h-10 border-2 border-dashed border-indigo-200 bg-indigo-50/50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs gap-2" 
+                              onClick={() => addControlToRisk(group.risk.riskId || group.risk._tempRiskId)}
+                            >
+                              <PlusCircle className="h-4 w-4" /> {t('rcm:matrix.properties.add_control')}
                             </Button>
                           </div>
                         </div>
                       </div>
 
                       {/* CONTROLS LIST (Nested) */}
-                      <div className="ml-8 space-y-6 relative border-l-2 border-dashed border-slate-200 pl-8">
+                      <Accordion type="single" collapsible className="ml-8 space-y-4">
                         {group.controls.map((ctrl, cIdx) => (
-                          <div key={ctrl.data.controlId || ctrl.data._tempControlId} className="bg-white border rounded-xl shadow-sm overflow-hidden group/ctrl relative">
-                              {/* Connector Line */}
-                              <div className="absolute -left-8 top-1/2 w-8 h-px bg-dashed border-t-2 border-dashed border-slate-200" />
-                              
-                              <div className="bg-slate-50 px-4 py-1.5 flex justify-between items-center border-b">
-                                <div className="flex items-center gap-4">
+                          <AccordionItem key={ctrl.data.controlId || ctrl.data._tempControlId} value={ctrl.data.controlId || ctrl.data._tempControlId} className="bg-white border rounded-xl shadow-sm overflow-hidden">
+                              <AccordionTrigger className="px-4 py-3 hover:no-underline bg-slate-50/50">
+                                <div className="flex items-center gap-4 flex-1">
                                     <div className="flex items-center gap-2">
                                       <Select value={ctrl.data.classification || 'TLC'} onValueChange={(v: ControlLevel) => updateSpecificControl(ctrl.index, 'classification', v)}>
-                                          <SelectTrigger className="h-6 w-[75px] text-[9px] font-black uppercase bg-white border-slate-200 shadow-sm">
-                                            <SelectValue placeholder="CLASS" />
+                                          <SelectTrigger className="h-7 w-[80px] text-[10px] font-bold uppercase shadow-sm">
+                                            <SelectValue />
                                           </SelectTrigger>
                                           <SelectContent>
-                                            <SelectItem value="TLC" className="text-[10px]">TLC</SelectItem>
-                                            <SelectItem value="ELC" className="text-[10px]">ELC</SelectItem>
-                                            <SelectItem value="ITGC" className="text-[10px]">ITGC</SelectItem>
+                                            <SelectItem value="TLC" className="text-xs">TLC</SelectItem>
+                                            <SelectItem value="ELC" className="text-xs">ELC</SelectItem>
+                                            <SelectItem value="ITGC" className="text-xs">ITGC</SelectItem>
                                           </SelectContent>
                                       </Select>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <ShieldCheck className="h-3.5 w-3.5 text-green-600" />
-                                        <span className="text-[10px] font-black uppercase text-slate-500 tracking-tight">Kontrol #{cIdx + 1}</span>
+                                      <span className="text-xs font-bold text-slate-700">Kontrol #{cIdx + 1}</span>
+                                      <Badge variant="outline" className="text-[9px] font-mono border-slate-200 bg-slate-50 text-slate-500 uppercase">{ctrl.data.controlId || 'PENDING'}</Badge>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-3">
-                                    <Badge variant="outline" className="font-mono text-[9px] h-5 border-slate-200 text-slate-400">{ctrl.data.controlId || 'PENDING'}</Badge>
-                                    <Button variant="ghost" size="icon" className="h-6 w-6 text-slate-300 hover:text-rose-600" onClick={() => removeSpecificPair(ctrl.index)}>
-                                      <X className="h-3 w-3" />
-                                    </Button>
-                                </div>
-                              </div>
-
-                              <div className="p-4 space-y-4">
+                                <Button 
+                                  variant="ghost" size="sm" 
+                                  className="h-7 w-7 text-slate-400 hover:text-rose-600 p-0 mr-2" 
+                                  onClick={(e) => { e.stopPropagation(); removeSpecificPair(ctrl.index); }}
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              </AccordionTrigger>
+                              <AccordionContent className="p-4 space-y-4">
                                 <div className="space-y-1.5">
-                                  <Label className="text-[9px] font-bold uppercase text-slate-400">Deskripsi Prosedur Kontrol</Label>
+                                  <Label className="text-xs font-medium text-slate-600">Deskripsi Prosedur Kontrol</Label>
                                   <Textarea 
                                     value={ctrl.data.controlDescription || ''} 
                                     onChange={(e) => updateSpecificControl(ctrl.index, 'controlDescription', e.target.value)}
-                                    className="min-h-[60px] text-xs bg-slate-50/30"
+                                    className="min-h-[80px] text-sm"
                                     placeholder="Apa tindakan mitigasinya?"
                                   />
                                 </div>
-
                                 <div className="flex items-center gap-6">
                                   <div className="space-y-1">
-                                    <Label className="text-[9px] font-bold uppercase text-slate-400">Key Control?</Label>
+                                    <Label className="text-xs font-medium text-slate-600">Key Control?</Label>
                                     <Select value={ctrl.data.isKeyControl ? 'Yes' : 'No'} onValueChange={(v) => updateSpecificControl(ctrl.index, 'isKeyControl', v === 'Yes')}>
-                                        <SelectTrigger className="h-7 text-xs w-[80px]"><SelectValue /></SelectTrigger>
+                                        <SelectTrigger className="h-9 text-sm w-[100px]"><SelectValue /></SelectTrigger>
                                         <SelectContent>
-                                          <SelectItem value="Yes" className="text-xs">Yes</SelectItem>
-                                          <SelectItem value="No" className="text-xs">No</SelectItem>
+                                          <SelectItem value="Yes">Yes</SelectItem>
+                                          <SelectItem value="No">No</SelectItem>
                                         </SelectContent>
                                     </Select>
                                   </div>
                                 </div>
-
-                                {/* Dynamic Compliance Form */}
                                 <div className="mt-4 pt-4 border-t border-slate-100">
                                     {(!ctrl.data.classification || ctrl.data.classification === 'TLC') && (
                                       <TLCForm data={ctrl.data} onChange={(f, v) => updateSpecificControl(ctrl.index, f, v)} />
@@ -394,34 +391,20 @@ export function RegulatoryPropertySheet({
                                       <ITGCForm data={ctrl.data} onChange={(f, v) => updateSpecificControl(ctrl.index, f, v)} />
                                     )}
                                 </div>
-                              </div>
-                          </div>
+                              </AccordionContent>
+                          </AccordionItem>
                         ))}
-                      </div>
+                      </Accordion>
                     </div>
                   ))}
 
                   <Button variant="outline" className="w-full h-14 border-dashed border-2 bg-indigo-50/30 hover:bg-indigo-50 hover:border-indigo-300 text-indigo-600 gap-2 font-black uppercase tracking-widest text-xs" onClick={addNewRisk}>
-                    <PlusCircle className="h-5 w-5" /> Identifikasi Risiko Baru
+                    <PlusCircle className="h-5 w-5" /> {t('rcm:matrix.properties.tambah_risiko_baru')}
                   </Button>
                 </div>
               )}
 
-              <div className="pt-12 border-t">
-                <Button 
-                  variant="destructive" 
-                  size="sm" 
-                  className="w-full gap-2 text-[10px] h-10 font-black uppercase tracking-widest shadow-lg shadow-red-100" 
-                  onClick={() => onDeleteNode(selectedNode.id)}
-                >
-                  <Trash2 className="h-4 w-4" /> Remove Node {canHaveRcm ? '& ALL Linked Data' : ''}
-                </Button>
-                <p className="text-[9px] text-center text-slate-400 mt-4 italic">
-                  {selectedNode.type === 'swimlane' 
-                    ? "Menghapus Swimlane tidak akan menghapus node di dalamnya, namun akan melepas pengelompokannya."
-                    : "Tindakan ini akan menghapus node dari diagram dan seluruh relasi RCM-nya di database (jika ada)."}
-                </p>
-              </div>
+              {/* Removed Remove Node button from here as it's now in the sticky footer */}
             </TabsContent>
 
             <TabsContent value="history" className="m-0 p-6 focus-visible:outline-none">
@@ -449,36 +432,34 @@ export function RegulatoryPropertySheet({
         </Tabs>
 
         {/* STICKY FOOTER */}
-        <div className="p-4 border-t bg-slate-50 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
-           <div className="flex items-center justify-between mb-3">
-              <div className="flex flex-col">
-                  <span className="text-[10px] font-black uppercase text-slate-400 leading-none">Status</span>
-                  <span className={cn("text-[11px] font-bold flex items-center gap-1.5 mt-1", isDirty ? "text-amber-600" : "text-emerald-600")}>
-                    <div className={cn("h-2 w-2 rounded-full", isDirty ? "bg-amber-400 animate-pulse" : "bg-emerald-500")} />
-                    {isDirty ? 'Pending Sync' : 'Synced to Matrix'}
-                  </span>
-              </div>
-              <div className="flex items-start gap-2 bg-rose-50 border border-rose-100 p-2 rounded-lg max-w-[400px]">
-                 <AlertCircle className="h-3 w-3 text-rose-500 shrink-0 mt-0.5" />
-                 <p className="text-[9px] text-rose-700 leading-tight italic">
-                    {t('rcm:matrix.properties.warnings.hard_delete_notice')}
-                 </p>
-              </div>
-           </div>
-           
+        <div className="p-4 border-t bg-slate-50 shadow-[0_-4px_12px_rgba(0,0,0,0.05)] flex items-center justify-between">
            <Button 
-             onClick={onSave} 
-             disabled={isSaving || !isDirty}
-             className={cn(
-               "w-full text-white font-black uppercase tracking-widest text-[10px] h-10 gap-2 shadow-lg transition-all",
-               isDirty ? "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-100" : "bg-slate-300 shadow-none cursor-not-allowed"
-             )}
+             variant="outline" 
+             className="text-red-600 border-red-200 hover:bg-red-50 font-medium text-sm"
+             onClick={() => onDeleteNode(selectedNode.id)}
            >
-             {isSaving ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <ShieldCheck className="h-3.5 w-3.5" />}
-             {isSaving ? 'Saving...' : (isDirty ? 'Save & Sync to Matrix' : 'Changes Synced')}
+             <Trash2 className="h-4 w-4 mr-2" /> {t('rcm:matrix.properties.remove_node')}
            </Button>
+           
+           <div className="flex items-center gap-3">
+             <span className={cn("text-xs font-medium flex items-center gap-1.5", isDirty ? "text-amber-600" : "text-emerald-600")}>
+               <div className={cn("h-2 w-2 rounded-full", isDirty ? "bg-amber-400 animate-pulse" : "bg-emerald-500")} />
+               {isDirty ? t('rcm:matrix.properties.pending_sync') : t('rcm:matrix.properties.synced')}
+             </span>
+             <Button 
+               onClick={onSave} 
+               disabled={isSaving || !isDirty}
+               className={cn(
+                 "text-white font-medium text-sm h-10 px-6 gap-2 shadow-sm transition-all",
+                 isDirty ? "bg-indigo-600 hover:bg-indigo-700" : "bg-slate-300 cursor-not-allowed"
+               )}
+             >
+               {isSaving ? <RefreshCw className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
+               {t('rcm:matrix.properties.save_changes')}
+             </Button>
+           </div>
         </div>
-      </SheetContent>
-    </Sheet>
-  );
-}
+      </DialogContent>
+      </Dialog>
+      );
+      }
