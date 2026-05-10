@@ -104,5 +104,10 @@
     "timestamp": "Waktu Tercatat Terverifikasi",
     "biometric": "Identitas Biometrik Terverifikasi",
     "hash": "Digital Signature Hash"
+  },
+  "form": {
+    "addManualSample": "Tambah Sampel Manual",
+    "sampleReference": "Referensi Sampel",
+    "typeReference": "Ketik referensi..."
   }
 }

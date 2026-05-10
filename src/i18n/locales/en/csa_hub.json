@@ -104,5 +104,10 @@
     "timestamp": "Timestamp Verified",
     "biometric": "Biometric Identity Verified",
     "hash": "Digital Signature Hash"
+  },
+  "form": {
+    "addManualSample": "Add Manual Sample",
+    "sampleReference": "Sample Reference",
+    "typeReference": "Type reference..."
   }
 }

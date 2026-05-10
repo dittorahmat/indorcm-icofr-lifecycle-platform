@@ -20,6 +20,8 @@ import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
+import { RCMPageHeader } from '@/components/rcm/RCMPageHeader';
+import { InlineEditRow } from '@/components/rcm/InlineEditRow';
 interface RCMMatrixItem extends RCMControlMapping {
   mappingId: string;
   processName: string;
@@ -251,27 +253,23 @@ export function RCMTLCPage({ embedded = false, filterBpmId }: RCMTLCPageProps) {
                 <TableRow><TableCell colSpan={34} className="h-64 text-center">Loading matrix data...</TableCell></TableRow>
               ) : filteredItems.length === 0 ? (
                 <TableRow><TableCell colSpan={34} className="h-64 text-center italic text-slate-400">No RCM relationships found.</TableCell></TableRow>
-              ) : filteredItems.flatMap((item, idx) => {
-                const originalItem = matrixData?.items?.find(o => o.mappingId === item.mappingId);
-                const isFirstOfProcess = idx === 0 || item.noGL !== filteredItems[idx-1].noGL;
-                const isFirstOfSub = idx === 0 || item.subProcessName !== filteredItems[idx-1].subProcessName;
-                const isFirstOfRisk = idx === 0 || item.riskDescription !== filteredItems[idx-1].riskDescription;
-
+              ) : filteredItems.map((item, idx) => {
                 const isEditing = editingMappingId === item.mappingId;
-                const isFrozen = isAnyEditing && !isEditing;
 
-                const isFieldDirty = (field: keyof RCMMatrixItem) => 
-                   originalItem && JSON.stringify(item[field]) !== JSON.stringify(originalItem[field]);
-
-                const mainRow = (
-                  <TableRow key={`${item.mappingId}-${idx}`} className={cn(
-                    "group transition-colors divide-x divide-slate-100 h-10",
-                    isFrozen && "opacity-50 pointer-events-none grayscale-[0.5]"
+                return (
+                  <TableRow key={item.mappingId} className={cn(
+                    "group transition-colors border-b h-11",
+                    idx % 2 === 1 ? "bg-slate-200/50" : "bg-white"
                   )}>
-                    <TableCell className={cn("text-center text-[10px] font-black text-slate-400 sticky left-0 z-30 border-r-2 border-slate-200", idx % 2 === 1 ? "bg-slate-200/50" : "bg-white")}>
-                       {idx + 1}
+                    <TableCell className="sticky left-0 z-30 bg-white border-r border-slate-200">
+                      <InlineEditRow 
+                        isEditing={isEditing}
+                        onEdit={() => setEditingMappingId(item.mappingId)}
+                        onSave={() => { handleSave(); setEditingMappingId(null); }}
+                        onCancel={() => setEditingMappingId(null)}
+                      />
                     </TableCell>
-                    <TableCell className={cn("align-top font-bold text-slate-800 text-[10px] sticky left-[50px] z-30 border-r-2 border-slate-200", !isFirstOfProcess && "text-transparent border-none", idx % 2 === 1 ? "bg-slate-200/50" : "bg-white")}>
+                    <TableCell className="align-top font-bold text-slate-800 text-[10px] sticky left-[50px] z-30 bg-white border-r border-slate-200">
                       <div className="flex flex-col gap-0 pr-2 pt-1 leading-tight">
                         <span className="uppercase tracking-tighter text-indigo-600 text-[9px] font-black">
                           {item.fsliName} {item.bpmCode && `[${item.bpmCode}]`}
@@ -279,20 +277,16 @@ export function RCMTLCPage({ embedded = false, filterBpmId }: RCMTLCPageProps) {
                         <span className="line-clamp-2">{item.noGL} - {item.processName}</span>
                       </div>
                     </TableCell>
-                    <TableCell className={cn("align-top font-bold text-slate-600 text-[10px] sticky left-[310px] z-30 border-r-2 border-slate-200", !isFirstOfSub && "text-transparent border-none", idx % 2 === 1 ? "bg-slate-200/50" : "bg-white")}>
+                    <TableCell className="align-top font-bold text-slate-600 text-[10px] sticky left-[310px] z-30 bg-white border-r border-slate-200">
                       <div className="pt-1">{item.subProcessName}</div>
                     </TableCell>
                     
-                    <TableCell className={cn("align-top text-[10px] text-slate-600 px-3 pt-2", idx % 2 === 1 ? "bg-slate-200/50" : "bg-white")}>{item.companyName}</TableCell>
-                    <TableCell className={cn("align-top text-[10px] text-slate-600 font-mono px-2 pt-2 text-center", idx % 2 === 1 ? "bg-slate-200/50" : "bg-white")}>{item.locationCode}</TableCell>
+                    <TableCell className="text-[10px] text-slate-600 px-3">{item.companyName}</TableCell>
+                    <TableCell className="text-[10px] text-slate-600 font-mono px-2 text-center">{item.locationCode}</TableCell>
                     
-                    <TableCell className={cn("align-top text-[10px] text-slate-700 px-3 pt-2 leading-tight", !isFirstOfRisk && "opacity-30", idx % 2 === 1 ? "bg-slate-200/50" : "bg-white")}>
-                      {item.riskDescription}
-                    </TableCell>
-                    <TableCell className={cn("text-center align-top pt-2", idx % 2 === 1 ? "bg-slate-200/50" : "bg-white")}>
-                      {item.isFraudRelated && <AlertTriangle className="h-3 w-3 text-rose-500 mx-auto" />}
-                    </TableCell>
-                    <TableCell className={cn("text-center align-top pt-2", idx % 2 === 1 ? "bg-slate-200/50" : "bg-white")}>
+                    <TableCell className="text-[10px] text-slate-700 px-3 leading-tight">{item.riskDescription}</TableCell>
+                    <TableCell className="text-center">{item.isFraudRelated && <AlertTriangle className="h-3 w-3 text-rose-500 mx-auto" />}</TableCell>
+                    <TableCell className="text-center">
                       <Badge className={cn("text-[9px] font-black px-1.5 h-4 leading-none uppercase", 
                         item.riskRating === 'High' ? "bg-rose-100 text-rose-700" : 
                         item.riskRating === 'Medium' ? "bg-amber-100 text-amber-700" : 
@@ -300,117 +294,50 @@ export function RCMTLCPage({ embedded = false, filterBpmId }: RCMTLCPageProps) {
                       )}>{item.riskRating}</Badge>
                     </TableCell>
 
-                    <TableCell className={cn("align-top font-mono text-[10px] pt-2 font-bold text-indigo-700 px-3", idx % 2 === 1 ? "bg-slate-200/50" : "bg-white")}>
-                      {item.controlCode}
+                    <TableCell className="font-mono text-[10px] font-bold text-indigo-700 px-3">{item.controlCode}</TableCell>
+                    <TableCell className="text-[10px] text-slate-800 px-3">
+                      {isEditing ? <Input value={item.mappedControlName || item.baseControlName || ''} onChange={e => handleInputChange(item.mappingId, 'mappedControlName', e.target.value)} /> : (item.mappedControlName || item.baseControlName)}
                     </TableCell>
-                    <TableCell className={cn("align-top text-[10px] text-slate-800 px-3 pt-2", idx % 2 === 1 ? "bg-slate-200/50" : "bg-white")}>{item.mappedControlName || item.baseControlName}</TableCell>
-                    <TableCell className={cn("align-top text-[10px] text-slate-600 italic px-3 pt-2 line-clamp-2", idx % 2 === 1 ? "bg-slate-200/50" : "bg-white")}>{item.mappedControlDescription || item.baseControlDescription}</TableCell>
+                    <TableCell className="text-[10px] text-slate-600 italic px-3">{isEditing ? <Input value={item.mappedControlDescription || item.baseControlDescription || ''} onChange={e => handleInputChange(item.mappingId, 'mappedControlDescription', e.target.value)} /> : (item.mappedControlDescription || item.baseControlDescription)}</TableCell>
 
-                    <TableCell className={cn("align-top text-[10px] text-slate-500 px-3 pt-2 truncate", idx % 2 === 1 ? "bg-slate-200/50" : "bg-white")}>{item.supportingDocs}</TableCell>
-                    <TableCell className={cn("text-center align-top pt-2 px-3", idx % 2 === 1 ? "bg-slate-200/50" : "bg-white")}>
-                       <Check className={cn("h-4 w-4 mx-auto", item.isKeyControl ? "text-indigo-600" : "text-slate-200")} />
-                    </TableCell>
+                    <TableCell className="text-[10px] text-slate-500 px-3">{item.supportingDocs}</TableCell>
+                    <TableCell className="text-center px-3"><Check className={cn("h-4 w-4 mx-auto", item.isKeyControl ? "text-indigo-600" : "text-slate-200")} /></TableCell>
 
                     {/* IPO Indicators */}
                     {['ipoC', 'ipoA', 'ipoV', 'ipoRa'].map((f) => (
-                      <TableCell key={f} className={cn("text-center text-[10px] font-black border-slate-200", f === 'ipoC' && "border-l-4 border-blue-300", item[f as keyof RCMMatrixItem] ? "text-blue-700" : "text-slate-200", idx % 2 === 1 ? "bg-slate-200/50" : "bg-white")}>
-                         {(item[f as keyof RCMMatrixItem] as any) || '—'}
+                      <TableCell key={f} className="text-center p-1">
+                         <div className={cn(
+                            "h-5 w-5 mx-auto rounded flex items-center justify-center text-[9px] font-black",
+                            item[f as keyof RCMMatrixItem] ? "bg-blue-100 text-blue-700" : "bg-slate-50 text-slate-300"
+                         )}>
+                            {item[f as keyof RCMMatrixItem] ? '✓' : '—'}
+                         </div>
                       </TableCell>
                     ))}
 
                     {/* Assertion Indicators */}
                     {['assertionE', 'assertionC', 'assertionA', 'assertionCo', 'assertionRo', 'assertionVa', 'assertionPd'].map((f) => (
-                      <TableCell key={f} className={cn("text-center text-[10px] font-black border-slate-200", f === 'assertionE' && "border-l-4 border-indigo-300", item[f as keyof RCMMatrixItem] ? "text-indigo-700" : "text-slate-200", idx % 2 === 1 ? "bg-slate-200/50" : "bg-white")}>
-                         {(item[f as keyof RCMMatrixItem] as any) || '—'}
+                      <TableCell key={f} className="text-center p-1">
+                         <div className={cn(
+                            "h-5 w-5 mx-auto rounded flex items-center justify-center text-[9px] font-black",
+                            item[f as keyof RCMMatrixItem] ? "bg-indigo-100 text-indigo-700" : "bg-slate-50 text-slate-300"
+                         )}>
+                            {item[f as keyof RCMMatrixItem] ? '✓' : '—'}
+                         </div>
                       </TableCell>
                     ))}
 
-                    <TableCell className={cn("text-[10px] font-medium px-3", idx % 2 === 1 ? "bg-slate-200/50" : "bg-white")}>{item.controlType}</TableCell>
-                    <TableCell className={cn("text-[10px] font-medium px-3", idx % 2 === 1 ? "bg-slate-200/50" : "bg-white")}>{item.controlNature}</TableCell>
-                    <TableCell className={cn("text-[10px] font-medium px-3", idx % 2 === 1 ? "bg-slate-200/50" : "bg-white")}>{item.automatedSubNature || '-'}</TableCell>
-                    <TableCell className={cn("text-[10px] font-medium px-3 text-center", idx % 2 === 1 ? "bg-slate-200/50" : "bg-white")}>{item.frequency}</TableCell>
-                    <TableCell className={cn("text-[10px] font-medium px-3", idx % 2 === 1 ? "bg-slate-200/50" : "bg-white")}>{item.supportingApp || '-'}</TableCell>
-                    <TableCell className={cn("text-[10px] font-medium px-3", idx % 2 === 1 ? "bg-slate-200/50" : "bg-white")}>{item.executingFunction}</TableCell>
-                    <TableCell className={cn("text-[10px] font-medium px-3", idx % 2 === 1 ? "bg-slate-200/50" : "bg-white")}>{item.executorRole}</TableCell>
-                    <TableCell className={cn("text-[10px] font-mono font-medium px-3 truncate", idx % 2 === 1 ? "bg-slate-200/50" : "bg-white")}>{item.affectedFsliItem}</TableCell>
-                    <TableCell className={cn("text-[10px] text-center font-bold text-indigo-600", idx % 2 === 1 ? "bg-slate-200/50" : "bg-white")}>{item.effectivePeriod}</TableCell>
-                    
-                    <TableCell className={cn("text-center sticky right-0 z-30 border-l-2 border-slate-200", idx % 2 === 1 ? "bg-slate-200/50" : "bg-white")}>
-                       <Button 
-                         variant={isEditing ? "destructive" : "ghost"} 
-                         size="xs" 
-                         className="h-7 text-[10px] font-bold"
-                         onClick={() => handleEditClick(item.mappingId)}
-                       >
-                         {isEditing ? "Cancel" : "Edit"}
-                       </Button>
-                    </TableCell>
+                    <TableCell className="text-[10px] font-medium px-3">{item.controlType}</TableCell>
+                    <TableCell className="text-[10px] font-medium px-3">{item.controlNature}</TableCell>
+                    <TableCell className="text-[10px] font-medium px-3">{item.automatedSubNature || '-'}</TableCell>
+                    <TableCell className="text-[10px] font-medium px-3 text-center">{item.frequency}</TableCell>
+                    <TableCell className="text-[10px] font-medium px-3">{item.supportingApp || '-'}</TableCell>
+                    <TableCell className="text-[10px] font-medium px-3">{item.executingFunction}</TableCell>
+                    <TableCell className="text-[10px] font-medium px-3">{item.executorRole}</TableCell>
+                    <TableCell className="text-[10px] font-mono font-medium px-3">{item.affectedFsliItem}</TableCell>
+                    <TableCell className="text-[10px] text-center font-bold text-indigo-600">{item.effectivePeriod}</TableCell>
                   </TableRow>
                 );
-
-                if (!isEditing) return [mainRow];
-
-                const editRow = (
-                  <TableRow key={`${item.mappingId}-edit`} className="bg-blue-50/80 border-b-4 border-blue-400">
-                    <TableCell colSpan={9} className="bg-blue-100/50 border-r-2 border-blue-200">
-                       <div className="px-4 py-2">
-                          <p className="text-[9px] font-black text-blue-700 uppercase tracking-widest mb-1">Inline Editing Control: {item.controlCode}</p>
-                          <p className="text-[10px] text-blue-900 font-bold">Modify fields in the row below. Other rows are frozen.</p>
-                       </div>
-                    </TableCell>
-                    <TableCell className="p-0">
-                       <Input 
-                         className="h-10 border-none focus-visible:ring-0 text-[10px] px-3 font-bold bg-white" 
-                         value={item.mappedControlName || item.baseControlName || ''} 
-                         onChange={e => handleInputChange(item.mappingId, 'mappedControlName', e.target.value)} 
-                         placeholder="Control Name..."
-                       />
-                    </TableCell>
-                    <TableCell className="p-0">
-                       <Input 
-                         className="h-10 border-none focus-visible:ring-0 text-[10px] px-3 italic bg-white" 
-                         value={item.mappedControlDescription || item.baseControlDescription || ''} 
-                         onChange={e => handleInputChange(item.mappingId, 'mappedControlDescription', e.target.value)} 
-                         placeholder="Control Description..."
-                       />
-                    </TableCell>
-                    <TableCell className="p-0">
-                       <Input className="h-10 border-none focus-visible:ring-0 text-[10px] px-3 bg-white" value={item.supportingDocs || ''} onChange={e => handleInputChange(item.mappingId, 'supportingDocs', e.target.value)} placeholder="Supporting Docs..." />
-                    </TableCell>
-                    <TableCell className="text-center align-middle bg-white">
-                       <input type="checkbox" className="h-4 w-4 rounded border-slate-300 text-indigo-600 cursor-pointer" checked={item.isKeyControl} onChange={e => handleInputChange(item.mappingId, 'isKeyControl', e.target.checked)} />
-                    </TableCell>
-                    
-                    {/* IPO Inputs */}
-                    {['ipoC', 'ipoA', 'ipoV', 'ipoRa'].map((f) => (
-                      <TableCell key={f} className="p-0 bg-white">
-                         <Input className="h-10 border-none focus-visible:ring-0 text-center text-[10px] uppercase font-black" value={(item[f as keyof RCMMatrixItem] as any) || ''} onChange={e => handleInputChange(item.mappingId, f as any, e.target.value)} maxLength={1} />
-                      </TableCell>
-                    ))}
-
-                    {/* Assertion Inputs */}
-                    {['assertionE', 'assertionC', 'assertionA', 'assertionCo', 'assertionRo', 'assertionVa', 'assertionPd'].map((f) => (
-                      <TableCell key={f} className="p-0 bg-white">
-                         <Input className="h-10 border-none focus-visible:ring-0 text-center text-[10px] uppercase font-black" value={(item[f as keyof RCMMatrixItem] as any) || ''} onChange={e => handleInputChange(item.mappingId, f as any, e.target.value)} maxLength={1} />
-                      </TableCell>
-                    ))}
-
-                    <TableCell className="p-0 bg-white">
-                       <Select value={item.controlType || ''} onValueChange={val => handleInputChange(item.mappingId, 'controlType', val)}>
-                         <SelectTrigger className="h-10 border-none rounded-none focus:ring-0 text-[10px] shadow-none px-3 font-medium"><SelectValue /></SelectTrigger>
-                         <SelectContent><SelectItem value="Preventif" className="text-[10px]">Preventif</SelectItem><SelectItem value="Detektif" className="text-[10px]">Detektif</SelectItem></SelectContent>
-                       </Select>
-                    </TableCell>
-                    <TableCell colSpan={7} className="bg-blue-50/30 text-right pr-4">
-                       <Button size="sm" className="bg-blue-600 hover:bg-blue-700 h-7 text-[10px] font-bold shadow-lg" onClick={() => setEditingMappingId(null)}>
-                          Finish Editing
-                       </Button>
-                    </TableCell>
-                    <TableCell className="sticky right-0 z-30 bg-white" />
-                  </TableRow>
-                );
-
-                return [mainRow, editRow];
               })}
             </TableBody>
           </Table>

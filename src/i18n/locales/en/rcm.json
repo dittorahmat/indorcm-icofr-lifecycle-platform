@@ -1,6 +1,11 @@
 {
-  "matrix": {
-    "title_tlc": "RCM TLC Matrix",
+  "actions": {
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "saving": "Saving..."
+  },
+  "matrix": {    "title_tlc": "RCM TLC Matrix",
     "title_elc": "RCM ELC Matrix",
     "process_info": "Business Process Information",
     "sub_process": "Sub-Process Information",

@@ -17,7 +17,7 @@ import { api } from '@/lib/api-client';
 import { 
   RefreshCw, ShieldCheck, CheckCircle2, AlertTriangle, 
   X, UserCheck, Activity, Database, FileText, LayoutDashboard,
-  Printer, ChevronLeft, Eye, UploadCloud, Check, MapPin, ChevronDown, Download, Trash2
+  Printer, ChevronLeft, Eye, UploadCloud, Check, MapPin, ChevronDown, Download, Trash2, Plus
 } from 'lucide-react';
 import { 
   DropdownMenu,
@@ -229,17 +229,19 @@ export function CSATabContent({
     }
   });
 
-  const { fields, replace: replaceSamples } = useFieldArray({
+  const { fields, replace: replaceSamples, append } = useFieldArray({
     control: form.control,
     name: "samples"
   });
 
   // 3. Reactivity & Data Transformation
   // Use useWatch for reliable reactivity on deep nested updates
-  const watchSamples = useWatch({
+  const watchSamplesRaw = useWatch({
     control: form.control,
     name: "samples"
-  }) || [];
+  });
+  
+  const watchSamples = useMemo(() => watchSamplesRaw || [], [watchSamplesRaw]);
 
   const bpmRiskControlPairs = useMemo(() => {
     if (!diagram?.nodes) return [];
@@ -278,17 +280,6 @@ export function CSATabContent({
     return propControls;
   }, [bpmRiskControlPairs, propControls]);
 
-  // Transform samples to a flat list for the table, always derived from watchSamples
-  const allPoints = watchSamples.flatMap((s, sIdx) => 
-    Object.entries(s.controlResults || {}).map(([cId, res]) => ({
-      sIdx,
-      cId,
-      sampleRef: s.sampleRef,
-      glRowId: s.glRowId,
-      ...(res as any)
-    }))
-  );
-
   const previewRecord = useMemo(() => {
     const values = form.getValues();
     return {
@@ -300,7 +291,10 @@ export function CSATabContent({
     } as any;
   }, [activeCsa, activeCsaId, watchSamples, form]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const anyPointFailed = allPoints.some(p => !p.implemented);
+  const anyPointFailed = useMemo(() => 
+    watchSamples.some(s => Object.values(s.controlResults).some((r: any) => !r.implemented)),
+    [watchSamples]
+  );
 
   // 4. Effects
   // Context Isolation: Reset internal states when the process or schedule changes
@@ -451,7 +445,8 @@ export function CSATabContent({
   }, [view]);
 
   // 5. Hooks (Safety)
-  const isDirty = form.formState.isDirty && view === 'form' && !activeCsaId;
+  // Standardized isDirty detection for CSA workspace
+  const isDirty = form.formState.isDirty && view === 'form';
   const blocker = useUnsavedChanges(isDirty);
 
   // 6. Mutations
@@ -848,23 +843,52 @@ export function CSATabContent({
                         <h4 className="text-xs font-black uppercase text-slate-700 flex items-center gap-2">
                           <LayoutDashboard className="h-3.5 w-3.5" /> 1. Summary Status Matrix
                         </h4>
-                        <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-100 text-[10px] font-bold">
-                          Quick Pass/Fail Toggle
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          {!isReadOnly && (
+                            <Button 
+                              type="button"
+                              onClick={() => {
+                                const controlResults: Record<string, any> = {};
+                                activeControls.forEach(ctrl => {
+                                  const pair = bpmRiskControlPairs.find(p => p.controlId === ctrl.id);
+                                  controlResults[ctrl.id] = {
+                                    implemented: false,
+                                    riskId: pair?.riskId || '',
+                                    riskName: pair?.riskName || ctrl.description || 'N/A',
+                                    controlName: pair?.controlName || ctrl.name || 'N/A',
+                                    evidenceUrl: '',
+                                    comment: ''
+                                  };
+                                });
+                                append({ sampleRef: '', controlResults });
+                              }}
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-[10px] font-bold border-indigo-200 text-indigo-700 hover:bg-indigo-50"
+                            >
+                              <Plus className="h-3.5 w-3.5 mr-1" /> {t('csa_hub:form.addManualSample')}
+                            </Button>
+                          )}
+                          <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-100 text-[10px] font-bold">
+                            Quick Pass/Fail Toggle
+                          </Badge>
+                        </div>
                       </div>
                       <div className="border rounded-xl overflow-x-auto shadow-sm">
                         <Table>
                           <TableHeader className="bg-slate-50">
                             <TableRow className="divide-x">
                               <TableHead className="w-10 text-[9px] font-bold">#</TableHead>
-                              <TableHead className="text-[9px] font-bold min-w-[200px]">Sample Reference</TableHead>
+                              <TableHead className="text-[9px] font-bold min-w-[200px]">{t('csa_hub:form.sampleReference')}</TableHead>
                               <TooltipProvider>
                                 {activeControls.map(ctrl => (
                                   <TableHead key={ctrl.id} className="text-[9px] font-black text-center uppercase tracking-tighter w-24">
                                     <Tooltip>
-                                      <TooltipTrigger className="w-full h-full cursor-help">{ctrl.code}</TooltipTrigger>
+                                      <TooltipTrigger className="w-full h-full cursor-help line-clamp-2 text-left leading-tight">
+                                        {ctrl.name}
+                                      </TooltipTrigger>
                                       <TooltipContent className="bg-slate-900 text-white p-2 text-[10px] max-w-xs">
-                                        <p className="font-bold">{ctrl.name}</p>
+                                        <p className="font-bold">[{ctrl.code}] {ctrl.name}</p>
                                         <p className="opacity-80 mt-1 italic">{ctrl.description}</p>
                                       </TooltipContent>
                                     </Tooltip>
@@ -878,8 +902,15 @@ export function CSATabContent({
                               <TableRow key={field.id} className="divide-x hover:bg-slate-50/50 transition-colors">
                                 <TableCell className="text-[10px] font-bold text-slate-400 text-center">{sIdx + 1}</TableCell>
                                 <TableCell className="text-[10px] font-medium py-1 px-3">
-                                  <div className="font-bold text-slate-900">{field.sampleRef}</div>
-                                  <div className="text-[9px] text-slate-400">ID: {field.glRowId?.substring(0,8)}</div>
+                                  <FormField control={form.control} name={`samples.${sIdx}.sampleRef`} render={({ field: f }) => (
+                                    <Input 
+                                      {...f} 
+                                      disabled={isReadOnly} 
+                                      className="h-8 text-[10px] font-bold border-transparent hover:border-slate-200 focus:border-indigo-400 bg-transparent transition-all"
+                                      placeholder={t('csa_hub:form.typeReference')}
+                                    />
+                                  )} />
+                                  <div className="text-[9px] text-slate-400 px-3">ID: {field.glRowId?.substring(0,8) || 'Manual'}</div>
                                 </TableCell>
                                 {activeControls.map(ctrl => (
                                   <TableCell key={ctrl.id} className="text-center p-0">
@@ -908,8 +939,12 @@ export function CSATabContent({
                           <Database className="h-3.5 w-3.5" /> 2. Detailed Verification & Evidence
                         </h4>
                         <div className="flex gap-2">
-                           <Badge className="bg-emerald-600 text-[9px] font-black uppercase tracking-wider">{allPoints.filter(p => p.implemented).length} Passed</Badge>
-                           <Badge className="bg-red-600 text-[9px] font-black uppercase tracking-wider">{allPoints.filter(p => !p.implemented).length} Deficiency</Badge>
+                           <Badge className="bg-emerald-600 text-[9px] font-black uppercase tracking-wider">
+                              {watchSamples.reduce((acc, s) => acc + Object.values(s.controlResults).filter((r: any) => r.implemented).length, 0)} Passed
+                           </Badge>
+                           <Badge className="bg-red-600 text-[9px] font-black uppercase tracking-wider">
+                              {watchSamples.reduce((acc, s) => acc + Object.values(s.controlResults).filter((r: any) => !r.implemented).length, 0)} Deficiency
+                           </Badge>
                         </div>
                       </div>
                       
@@ -926,111 +961,156 @@ export function CSATabContent({
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {allPoints.map((point, pIdx) => (
-                              <TableRow key={`${point.glRowId}-${point.cId}`} className={cn(
-                                "divide-x border-b transition-colors",
-                                point.implemented ? "bg-white" : "bg-red-50/50"
-                              )}>
-                                <TableCell className="py-3 px-4">
-                                  <div className="font-bold text-xs text-slate-900">{point.sampleRef}</div>
-                                  <code className="text-[9px] text-slate-400">ID: {point.glRowId?.substring(0,8)}</code>
-                                </TableCell>
-                                <TableCell className="text-[11px] font-medium text-slate-600 italic">
-                                  {point.riskName}
-                                </TableCell>
-                                <TableCell>
-                                  <div className="flex flex-col gap-0.5">
-                                    <span className="font-bold text-xs text-slate-800">{point.controlName}</span>
-                                    <Badge variant="outline" className="w-fit text-[9px] h-4 font-mono">{point.cId}</Badge>
-                                  </div>
-                                </TableCell>
-                                <TableCell className="text-center">
-                                   <div className="flex flex-col items-center gap-1">
-                                      <div className="flex items-center justify-center gap-1.5">
-                                        <TooltipProvider>
-                                          <Tooltip>
-                                            <TooltipTrigger asChild>
-                                              <Button 
-                                                type="button"
-                                                variant={point.evidenceUrl ? "secondary" : "outline"} 
-                                                size="icon" 
-                                                className={cn(
-                                                  "h-8 w-8 rounded-lg transition-all", 
-                                                  point.evidenceUrl ? "bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100" : "border-dashed border-slate-300 text-slate-400 hover:border-indigo-400 hover:text-indigo-600"
-                                                )}
-                                                onClick={() => !isReadOnly && handleFileUploadTrigger(point.sIdx, point.cId)}
-                                                disabled={isReadOnly || uploadMutation.isPending}
-                                              >
-                                                {uploadMutation.isPending && activeUploadRow?.sIdx === point.sIdx && activeUploadRow?.cId === point.cId ? (
-                                                  <RefreshCw className="h-4 w-4 animate-spin" />
-                                                ) : point.evidenceUrl ? (
-                                                  <Check className="h-4 w-4" />
-                                                ) : (
-                                                  <UploadCloud className="h-4 w-4" />
-                                                )}
-                                              </Button>
-                                            </TooltipTrigger>
-                                            <TooltipContent>
-                                              {isReadOnly ? "Record sudah di-signoff (Read-only)" : (point.evidenceUrl ? "Ganti bukti (Re-upload)" : "Unggah bukti")}
-                                            </TooltipContent>
-                                          </Tooltip>
-                                        </TooltipProvider>
-
-                                        {point.evidenceUrl && (
-                                          <TooltipProvider>
-                                            <Tooltip>
-                                              <TooltipTrigger asChild>
-                                                <Button 
-                                                  type="button"
-                                                  variant="default" 
-                                                  size="icon" 
-                                                  className="h-8 w-8 rounded-lg bg-indigo-600 hover:bg-indigo-700 shadow-sm"
-                                                  onClick={() => window.open(point.evidenceUrl, '_blank')}
-                                                >
-                                                  <Eye className="h-4 w-4" />
-                                                </Button>
-                                              </TooltipTrigger>
-                                              <TooltipContent>
-                                                Lihat Bukti (Preview)
-                                              </TooltipContent>
-                                            </Tooltip>
-                                          </TooltipProvider>
-                                        )}
-                                      </div>
-                                      
-                                      {point.evidenceUrl && (
-                                        <div 
-                                          className="max-w-[80px] truncate text-[9px] text-emerald-700 font-bold uppercase tracking-tighter" 
-                                          title={getFileNameFromUrl(point.evidenceUrl)}
-                                        >
-                                          {getFileNameFromUrl(point.evidenceUrl) || 'Attached'}
+                            {watchSamples.map((sample, sIdx) => (
+                              <React.Fragment key={`${sample.glRowId || 'manual'}-${sIdx}`}>
+                                {/* Grouping Header */}
+                                <TableRow className="bg-slate-100/50 hover:bg-slate-100 border-t-2 border-slate-200">
+                                  <TableCell colSpan={6} className="py-2 px-4">
+                                    <div className="flex items-center justify-between">
+                                      <div className="flex items-center gap-3">
+                                        <Badge variant="outline" className="bg-white text-slate-700 border-slate-300 font-black px-2 py-0.5">SAMPEL #{sIdx + 1}</Badge>
+                                        <div className="flex flex-col">
+                                          <span className="text-[11px] font-black text-slate-900 uppercase tracking-tight">
+                                            {sample.sampleRef || "Empty Reference"}
+                                          </span>
+                                          <span className="text-[9px] text-slate-500 font-mono">ID: {sample.glRowId || 'MANUAL-ENTRY'}</span>
                                         </div>
-                                      )}
-                                   </div>
-                                </TableCell>
-                                <TableCell>
-                                  <FormField control={form.control} name={`samples.${point.sIdx}.controlResults.${point.cId}.comment`} render={({ field: f }) => (
-                                    <Input 
-                                      {...f} 
-                                      disabled={isReadOnly} 
-                                      className="h-8 text-xs border-transparent hover:border-slate-200 focus:border-indigo-400 bg-transparent transition-all"
-                                      placeholder="Tambahkan catatan..."
-                                    />
-                                  )} />
-                                </TableCell>
-                                <TableCell className="text-center">
-                                  <FormField control={form.control} name={`samples.${point.sIdx}.controlResults.${point.cId}.implemented`} render={({ field: f }) => (
-                                    <div className="flex items-center justify-center">
-                                      <Checkbox 
-                                        checked={f.value} 
-                                        onCheckedChange={f.onChange} 
-                                        disabled={isReadOnly} 
-                                        className={cn("h-6 w-6", f.value ? "text-green-600 border-green-600" : "text-red-400 border-red-200")}
-                                      />
+                                      </div>
+                                      <div className="flex gap-2 items-center">
+                                        <div className="flex -space-x-1 overflow-hidden">
+                                          {Object.values(sample.controlResults).map((res: any, idx) => (
+                                            <div key={idx} className={cn(
+                                              "inline-block h-3 w-3 rounded-full ring-2 ring-white",
+                                              res.implemented ? "bg-emerald-500" : "bg-red-500"
+                                            )} />
+                                          ))}
+                                        </div>
+                                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">
+                                          {Object.values(sample.controlResults).filter((r: any) => r.implemented).length} / {Object.values(sample.controlResults).length} PASSED
+                                        </span>
+                                      </div>
                                     </div>
-                                  )} />
-                                </TableCell>
-                              </TableRow>
+                                  </TableCell>
+                                </TableRow>
+
+                                {/* Individual Control Rows */}
+                                {Object.entries(sample.controlResults).map(([cId, res]: [string, any]) => (
+                                  <TableRow 
+                                    key={`${sample.glRowId || 'manual'}-${sIdx}-${cId}`} 
+                                    className={cn(
+                                      "divide-x border-b transition-colors",
+                                      res.implemented ? "bg-white" : "bg-red-50/50"
+                                    )}
+                                  >
+                                    <TableCell className="py-3 px-4 bg-slate-50/30 w-48">
+                                      <div className="flex items-center gap-2">
+                                        <div className={cn(
+                                          "h-1.5 w-1.5 rounded-full shrink-0",
+                                          res.implemented ? "bg-emerald-500" : "bg-red-500"
+                                        )} />
+                                        <span className="font-bold text-[10px] text-slate-500 uppercase tracking-wider truncate">
+                                          POINT VERIFICATION
+                                        </span>
+                                      </div>
+                                    </TableCell>
+                                    <TableCell className="text-[11px] font-medium text-slate-600 italic">
+                                      {res.riskName || "N/A"}
+                                    </TableCell>
+                                    <TableCell>
+                                      <div className="flex flex-col gap-0.5">
+                                        <span className="font-bold text-xs text-slate-800">{res.controlName || "N/A"}</span>
+                                        <Badge variant="outline" className="w-fit text-[9px] h-4 font-mono">{cId}</Badge>
+                                      </div>
+                                    </TableCell>
+                                    <TableCell className="text-center">
+                                       <div className="flex flex-col items-center gap-1">
+                                          <div className="flex items-center justify-center gap-1.5">
+                                            <TooltipProvider>
+                                              <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                  <Button 
+                                                    type="button"
+                                                    variant={res.evidenceUrl ? "secondary" : "outline"} 
+                                                    size="icon" 
+                                                    className={cn(
+                                                      "h-8 w-8 rounded-lg transition-all", 
+                                                      res.evidenceUrl ? "bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100" : "border-dashed border-slate-300 text-slate-400 hover:border-indigo-400 hover:text-indigo-600"
+                                                    )}
+                                                    onClick={() => !isReadOnly && handleFileUploadTrigger(sIdx, cId)}
+                                                    disabled={isReadOnly || uploadMutation.isPending}
+                                                  >
+                                                    {uploadMutation.isPending && activeUploadRow?.sIdx === sIdx && activeUploadRow?.cId === cId ? (
+                                                      <RefreshCw className="h-4 w-4 animate-spin" />
+                                                    ) : res.evidenceUrl ? (
+                                                      <Check className="h-4 w-4" />
+                                                    ) : (
+                                                      <UploadCloud className="h-4 w-4" />
+                                                    )}
+                                                  </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                  {isReadOnly ? "Record sudah di-signoff (Read-only)" : (res.evidenceUrl ? "Ganti bukti (Re-upload)" : "Unggah bukti")}
+                                                </TooltipContent>
+                                              </Tooltip>
+                                            </TooltipProvider>
+
+                                            {res.evidenceUrl && (
+                                              <TooltipProvider>
+                                                <Tooltip>
+                                                  <TooltipTrigger asChild>
+                                                    <Button 
+                                                      type="button"
+                                                      variant="default" 
+                                                      size="icon" 
+                                                      className="h-8 w-8 rounded-lg bg-indigo-600 hover:bg-indigo-700 shadow-sm"
+                                                      onClick={() => window.open(res.evidenceUrl, '_blank')}
+                                                    >
+                                                      <Eye className="h-4 w-4" />
+                                                    </Button>
+                                                  </TooltipTrigger>
+                                                  <TooltipContent>
+                                                    Lihat Bukti (Preview)
+                                                  </TooltipContent>
+                                                </Tooltip>
+                                              </TooltipProvider>
+                                            )}
+                                          </div>
+                                          
+                                          {res.evidenceUrl && (
+                                            <div 
+                                              className="max-w-[80px] truncate text-[9px] text-emerald-700 font-bold uppercase tracking-tighter" 
+                                              title={getFileNameFromUrl(res.evidenceUrl)}
+                                            >
+                                              {getFileNameFromUrl(res.evidenceUrl) || 'Attached'}
+                                            </div>
+                                          )}
+                                       </div>
+                                    </TableCell>
+                                    <TableCell>
+                                      <FormField control={form.control} name={`samples.${sIdx}.controlResults.${cId}.comment`} render={({ field: f }) => (
+                                        <Input 
+                                          {...f} 
+                                          disabled={isReadOnly} 
+                                          className="h-8 text-xs border-transparent hover:border-slate-200 focus:border-indigo-400 bg-transparent transition-all"
+                                          placeholder="Tambahkan catatan..."
+                                        />
+                                      )} />
+                                    </TableCell>
+                                    <TableCell className="text-center">
+                                      <FormField control={form.control} name={`samples.${sIdx}.controlResults.${cId}.implemented`} render={({ field: f }) => (
+                                        <div className="flex items-center justify-center">
+                                          <Checkbox 
+                                            checked={f.value} 
+                                            onCheckedChange={f.onChange} 
+                                            disabled={isReadOnly} 
+                                            className={cn("h-6 w-6", f.value ? "text-green-600 border-green-600" : "text-red-400 border-red-200")}
+                                          />
+                                        </div>
+                                      )} />
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </React.Fragment>
                             ))}
                           </TableBody>
                         </Table>
@@ -1039,21 +1119,22 @@ export function CSATabContent({
                       <div className="flex justify-between items-center bg-slate-100 p-5 rounded-xl border border-slate-200 shadow-inner">
                          <div className="flex gap-10">
                            <div className="text-center border-r pr-10 border-slate-300">
-                             <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Verification Points</p>
-                             <p className="text-2xl font-black text-slate-700">{allPoints.length}</p>
+                             <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Samples</p>
+                             <p className="text-2xl font-black text-slate-700">{watchSamples.length}</p>
                            </div>
                            <div className="text-center">
                              <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Progress</p>
                              <p className="text-2xl font-black text-indigo-600">
-                                {allPoints.filter(p => p.implemented || p.comment || p.evidenceUrl).length} / {allPoints.length}
+                                {watchSamples.reduce((acc, s) => acc + Object.values(s.controlResults).filter((r: any) => r.implemented || r.comment || r.evidenceUrl).length, 0)} / {watchSamples.reduce((acc, s) => acc + Object.keys(s.controlResults).length, 0)}
                              </p>
                            </div>
                          </div>
                          <div className="text-right">
                            <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Status Dokumentasi</p>
                            {(() => {
-                             const anyPassWithoutEvidence = allPoints.some(p => p.implemented && !p.evidenceUrl);
-                             const nothingDone = allPoints.every(p => !p.implemented && !p.evidenceUrl && !p.comment);
+                             const flatResults = watchSamples.flatMap(s => Object.values(s.controlResults) as any[]);
+                             const anyPassWithoutEvidence = flatResults.some(r => r.implemented && !r.evidenceUrl);
+                             const nothingDone = flatResults.every(r => !r.implemented && !r.evidenceUrl && !r.comment);
                              if (nothingDone) return <p className="text-xl font-black uppercase italic text-slate-400">Belum Dimulai</p>;
                              if (anyPassWithoutEvidence) return <p className="text-xl font-black uppercase italic text-rose-500 animate-pulse">Butuh Evidence</p>;
                              return <p className="text-xl font-black uppercase italic text-emerald-600">Siap Sign-off</p>;

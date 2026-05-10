@@ -15,7 +15,7 @@ const accountAssertionsRoute = new Hono<HonoEnv>();
  * Supports filtering by fsliName and noGL.
  * Returns a single item if both filters are present, otherwise returns a list.
  */
-accountAssertionsRoute.get('/', async (c) => {
+accountAssertionsRoute.get('/account-assertions', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const fsliName = c.req.query('fsliName');
@@ -57,7 +57,7 @@ accountAssertionsRoute.get('/', async (c) => {
  * POST /api/account-assertions
  * Atomic upsert for a single account assertion.
  */
-accountAssertionsRoute.post('/', async (c) => {
+accountAssertionsRoute.post('/account-assertions', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const userId = c.get('userId');

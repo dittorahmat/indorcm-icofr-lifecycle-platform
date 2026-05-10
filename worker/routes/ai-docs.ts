@@ -276,7 +276,7 @@ ${knowledgeBase}
 
 // --- File Handling Routes ---
 
-aiDocsApp.post('/files/upload', async (c) => {
+aiDocsApp.post('/upload', async (c) => {
   const orgId = c.get('organizationId');
   if (!orgId) return bad(c, 'Organization ID required');
 
@@ -298,8 +298,14 @@ aiDocsApp.post('/files/upload', async (c) => {
 });
 
 aiDocsApp.get('/files/*', async (c) => {
-  const key = c.req.path.replace('/api/files/', '');
+  // Use split to reliably get everything after /files/ regardless of mount point
+  const pathParts = c.req.path.split('/files/');
+  let key = pathParts.length > 1 ? pathParts[1] : null;
+  
   if (!key) return bad(c, 'Key is required');
+  
+  // Ensure the key is decoded (e.g., %20 -> space) to match R2 storage keys
+  key = decodeURIComponent(key);
 
   const object = await c.env.DOCUMENTS_BUCKET.get(key);
   if (!object) return notFound(c, 'File not found');
