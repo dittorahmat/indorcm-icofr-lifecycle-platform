@@ -8,6 +8,7 @@ import aiDocs from './routes/ai-docs';
 import rcm from './routes/rcm';
 import bpm from './routes/bpm';
 import scoping from './routes/scoping';
+import accountAssertions from './routes/account-assertions';
 import remediation from './routes/remediation';
 import users from './routes/users';
 import infrastructure from './routes/infrastructure';
@@ -233,6 +234,7 @@ export const createApp = () => {
   app.route('/api', rcm);
   app.route('/api', bpm);
   app.route('/api', scoping);
+  app.route('/api', accountAssertions);
   app.route('/api', remediation);
   app.route('/api', users);
   app.route('/api', infrastructure);

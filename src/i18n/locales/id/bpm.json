@@ -20,6 +20,13 @@
   "createModalTitle": "Buat Proses BPM Baru",
   "processNameLabel": "Nama Proses",
   "createProcessButton": "Buat Proses",
+  "notifications": {
+    "title": "Notifikasi",
+    "markAllRead": "Tandai Semua Dibaca",
+    "clearAll": "Hapus Semua",
+    "empty": "Tidak ada notifikasi baru.",
+    "viewAll": "Lihat Semua Notifikasi"
+  },
   "assertions": {
     "title": "Asersi Laporan Keuangan (Source of Truth)",
     "subtitle": "TABEL 8 REGULASI SK-5",

@@ -20,6 +20,13 @@
   "createModalTitle": "Create New BPM Process",
   "processNameLabel": "Process Name",
   "createProcessButton": "Create Process",
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark All Read",
+    "clearAll": "Clear All",
+    "empty": "No new notifications.",
+    "viewAll": "View All Notifications"
+  },
   "assertions": {
     "title": "Financial Assertions (Source of Truth)",
     "subtitle": "TABLE 8 REGULATION SK-5",

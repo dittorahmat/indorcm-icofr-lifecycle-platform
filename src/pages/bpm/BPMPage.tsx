@@ -137,15 +137,22 @@ export function BPMPage() {
     }
   });
 
-  // 1b. Fetch Active Simulation for Account Assignments - Filtered by viewYear & Status Approved
+  // 1b. Fetch Active Simulation for Account Assignments - Filtered by viewYear
   const { data: activeSim } = useQuery({
     queryKey: ['active-simulation', viewYear],
     queryFn: async () => {
       const list = await api<{ items: MaterialitySimulation[] }>(`/api/simulations?year=${viewYear}`);
-      // Filter ONLY Approved and get the latest by createdAt as the official baseline
-      return [...list.items]
+      if (list.items.length === 0) return null;
+
+      // Priority 1: Latest Approved
+      const approved = [...list.items]
         .filter(s => s.status === 'Approved')
-        .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))[0] || null;
+        .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))[0];
+      
+      if (approved) return approved;
+
+      // Priority 2: Latest regardless of status (Draft/Pending)
+      return [...list.items].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))[0];
     }
   });
 
@@ -165,23 +172,27 @@ export function BPMPage() {
     queryFn: async () => {
       if (!selectedFsli || !selectedAccountKey) return null;
       const noGL = selectedAccountKey.split(' ||| ')[0];
-      return api<AccountAssertion>(`/api/account-assertions?fsliName=${selectedFsli}&noGL=${noGL}`);
+      // Updated to use the new filtered endpoint which returns a single object
+      return api<AccountAssertion>(`/api/account-assertions?fsliName=${encodeURIComponent(selectedFsli)}&noGL=${encodeURIComponent(noGL)}`);
     },
     enabled: !!selectedFsli && !!selectedAccountKey
   });
 
   // Sync local assertion state when data is loaded
   React.useEffect(() => {
-    if (accountAssertion) {
-      setLocalAssertion(accountAssertion);
-    } else if (selectedAccountKey) {
-      setLocalAssertion({ 
-        assertionE: 'N', assertionC: 'N', assertionA: 'N', 
-        assertionCo: 'N', assertionRo: 'N', assertionVa: 'N', 
-        assertionPd: 'N' 
-      });
+    if (accountAssertion !== undefined) {
+      if (accountAssertion === null) {
+        // Initialize with 'N' if no record found
+        setLocalAssertion({ 
+          assertionE: 'N', assertionC: 'N', assertionA: 'N', 
+          assertionCo: 'N', assertionRo: 'N', assertionVa: 'N', 
+          assertionPd: 'N' 
+        });
+      } else {
+        setLocalAssertion(accountAssertion);
+      }
     }
-  }, [accountAssertion, selectedAccountKey]);
+  }, [accountAssertion]);
 
   const updateAssertionMutation = useMutation({
     mutationFn: (data: Partial<AccountAssertion>) => api('/api/account-assertions', {
@@ -234,11 +245,27 @@ export function BPMPage() {
     return map;
   }, [activeSnap]);
 
-  // 2. Derive unique significant FSLIs based on Scoping Criteria with Auto-Healing
+  // 0b. Build FSLI -> Min noUrut map for hierarchical sorting
+  const fsliNoUrutMap = React.useMemo(() => {
+    const map = new Map<string, number>();
+    if (!activeSnap || !activeSnap.rows) return map;
+    
+    activeSnap.rows.forEach(r => {
+      if (r.fsliName) {
+        const currentMin = map.get(r.fsliName) ?? 999999;
+        const rowNoUrut = r.noUrut ?? 999999;
+        if (rowNoUrut < currentMin) {
+          map.set(r.fsliName, rowNoUrut);
+        }
+      }
+    });
+    return map;
+  }, [activeSnap]);
+
+  // 2. Derive unique significant FSLIs based on Scoping Criteria with Auto-Healing & Hierarchical Sorting
   const significantFsliNames = React.useMemo(() => {
     const names = new Set<string>();
     if (activeSim && activeSim.significantAccounts) {
-      console.log('DEBUG: Significant Accounts Raw:', activeSim.significantAccounts);
       activeSim.significantAccounts.forEach(sa => { 
         if (sa.name) {
           // AUTO-HEALING: Use lookup map instead of .find() for O(1) lookup
@@ -253,10 +280,17 @@ export function BPMPage() {
     }
     const urlFsli = searchParams.get('fsli');
     if (urlFsli) names.add(urlFsli);
-    const result = Array.from(names).sort();
-    console.log('DEBUG: Significant FSLI Names Result:', result);
+
+    // Hierarchical sort based on noUrut (consistent with ScopingPage)
+    const result = Array.from(names).sort((a, b) => {
+      const orderA = fsliNoUrutMap.get(a) ?? 999999;
+      const orderB = fsliNoUrutMap.get(b) ?? 999999;
+      if (orderA !== orderB) return orderA - orderB;
+      return a.localeCompare(b);
+    });
+    
     return result;
-  }, [activeSim, glLookupMap, searchParams]);
+  }, [activeSim, glLookupMap, fsliNoUrutMap, searchParams]);
 
   // 3. Filtered GL Numbers (Unique combination of noGL + glDesc)
   const glNumbers = React.useMemo(() => {

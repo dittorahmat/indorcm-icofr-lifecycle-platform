@@ -59,6 +59,7 @@ import { MaterialitySimulation } from "@shared/types";
 import { authClient } from "@/lib/auth-client";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import { NotificationBell } from "./layout/NotificationBell";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 
@@ -181,14 +182,17 @@ export function AppSidebar(): JSX.Element {
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/notifications")} className="min-h-12 h-auto py-2 text-[16px]" title={t('items.notifications')}>
-                <Link to="/notifications" className="flex items-center justify-between w-full font-bold">
-                  <div className="flex items-center gap-2">
-                    <BellIcon className="h-5 w-5" aria-hidden="true" /> <span>{t('items.notifications')}</span>
-                  </div>
-                  <NotificationBadge />
+              <div className="px-2 py-1 flex items-center justify-between w-full font-bold min-h-12 text-[16px] text-slate-700 hover:bg-slate-100 rounded-md transition-colors group">
+                <Link to="/notifications" className="flex items-center gap-2 flex-1">
+                  <BellIcon className="h-5 w-5" aria-hidden="true" /> <span>{t('items.notifications')}</span>
                 </Link>
-              </SidebarMenuButton>
+                <div className="flex items-center gap-1">
+                  <NotificationBadge />
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                    <NotificationBell />
+                  </div>
+                </div>
+              </div>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/applications")} className="min-h-12 h-auto py-2 text-[16px]" title={t('items.applications')}>
