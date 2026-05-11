@@ -14,17 +14,13 @@ const transactions = new Hono<HonoEnv>();
 transactions.get('/transaction-details', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
-  const accountCode = c.req.query('accountCode');
-  const month = c.req.query('month');
+  const noGL = c.req.query('noGL');
 
   let conditions = eq(transactionDetails.organizationId, orgId);
 
   // --- STRICT ISOLATION LOGIC ---
-  if (accountCode) {
-    conditions = and(conditions, eq(transactionDetails.accountCode, accountCode)) as any;
-  }
-  if (month) {
-    conditions = and(conditions, eq(transactionDetails.month, month)) as any;
+  if (noGL) {
+    conditions = and(conditions, eq(transactionDetails.noGL, noGL)) as any;
   }
 
   const items = await db.select().from(transactionDetails).where(conditions).limit(1000);
@@ -57,10 +53,8 @@ transactions.post('/transaction-details/upload', async (c) => {
   await db.insert(transactionUploads).values({
     id,
     organizationId: orgId,
-    fileName: body.fileName,
-    month: body.month,
-    year: body.year,
-    status: 'Processing',
+    noGL: body.noGL,
+    filename: body.fileName,
     rowCount: body.rowCount || 0,
     uploadedBy: c.get('userId'),
     createdAt: new Date(),

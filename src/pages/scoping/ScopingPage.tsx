@@ -55,19 +55,23 @@ import {
   calculateBenchmarkValue,
   getGroupMultiplier
 } from '@/lib/compliance-utils';
-import { useTranslation } from 'react-i18next';
-import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
-import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-
 import { PageHeader } from '@/components/layout/PageHeader';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { useUnsavedChangesContext } from '@/context/UnsavedChangesContext';
 
 export function ScopingPage() {
   const { t } = useTranslation('scoping');
+  const { setDirty, resetDirty } = useUnsavedChangesContext();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedSimId = searchParams.get('id');
+
+  // Reset dirty state on mount if not in editor
+  React.useEffect(() => {
+    if (!selectedSimId) resetDirty();
+  }, [selectedSimId, resetDirty]);
   const [filterYear, setFilterYear] = React.useState<string>("2025"); // Default to 2025
   
   const currentYear = new Date().getFullYear();
@@ -479,7 +483,10 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
     });
   }, [simState, simulation, localAppMappings, localDeptMappings]);
 
-  const blocker = useUnsavedChanges(isDirty);
+  const { setDirty } = useUnsavedChangesContext();
+  React.useEffect(() => {
+    setDirty(isDirty);
+  }, [isDirty, setDirty]);
 
   React.useEffect(() => {
     setSimState(simulation);
@@ -672,8 +679,6 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
 
   return (
     <AppLayout container>
-      <UnsavedChangesDialog blocker={blocker} />
-
       <div className="space-y-6 pb-20">
         <div className="flex justify-between items-center text-slate-900 dark:text-white">
           <div className="flex items-center gap-4">
@@ -854,7 +859,6 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
           </div>
         </div>
       </div>
-      <UnsavedChangesDialog blocker={blocker} />
     </AppLayout>
   );
 }

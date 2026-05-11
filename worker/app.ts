@@ -216,6 +216,16 @@ export const createApp = () => {
     await next();
   });
 
+  // Global Error Handler
+  app.onError((err, c) => {
+    console.error(`[HONO ERROR] ${err.message}`, err.stack);
+    return c.json({ 
+      success: false, 
+      error: err.name || 'Internal Server Error', 
+      message: err.message 
+    }, 500);
+  });
+
   app.get('/api/health', (c) => c.json({ success: true, data: { status: 'healthy', timestamp: new Date().toISOString() }}));
   
   app.post('/api/client-errors', async (c) => {

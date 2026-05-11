@@ -567,7 +567,7 @@ bpm.patch('/bpm-processes/:id', async (c) => {
 
   const updateData: any = {};
   if (body.name !== undefined) updateData.name = body.name;
-  if (body.bpmCode !== undefined) updateData.bpmCode = body.bpmCode.trim().toUpperCase();
+  if (body.bpmCode !== undefined && body.bpmCode !== null) updateData.bpmCode = body.bpmCode.trim().toUpperCase();
   if (body.fsliName !== undefined) updateData.fsliName = body.fsliName;
   if (body.standardTestProcedure !== undefined) updateData.standardTestProcedure = body.standardTestProcedure;
 

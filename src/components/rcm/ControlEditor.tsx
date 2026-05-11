@@ -1,6 +1,6 @@
 import React from 'react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useDropzone } from 'react-dropzone';
@@ -11,135 +11,45 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Badge } from '@/components/ui/badge';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { toast } from 'sonner';
 import { api } from '@/lib/api-client';
-import { calculateRiskRating, COBIT_ITGC_MAPPING, getSuggestedControl } from '@/lib/compliance-utils';
-import type { Control, ControlAssertion, InformationProcessingObjective, ControlFrequency, COSOPrinciple, ITGCArea, Application } from '@shared/types';
+import type { Control, Application } from '@shared/types';
 import { 
-  UploadCloud, File as FileIcon, X, Calculator, Wand2, Info, Lightbulb,
-  ShieldCheck, ShieldAlert, AlertTriangle, Loader2, CheckCircle2
+  UploadCloud, X, ShieldCheck, Loader2, CheckCircle2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-} from "@/components/ui/dialog";
 
 import { useTranslation } from 'react-i18next';
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
-
-const ALL_ASSERTIONS: ControlAssertion[] = ["Completeness", "Accuracy", "Validity", "Cut-off", "Presentation", "Existence"];
-const ALL_IPOS: InformationProcessingObjective[] = ["Completeness", "Accuracy", "Validity", "Restricted Access"];
-const ALL_FREQUENCIES: ControlFrequency[] = ["Annual", "Semi-Annual", "Quarterly", "Monthly", "Weekly", "Daily", "Ad-hoc"];
-const ALL_COSO: COSOPrinciple[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
-const ITGC_AREAS: ITGCArea[] = ["Access to Program and Data", "Program Development", "Program Changes", "Computer Operations"];
-
-interface QualitativeRiskWizardProps {
-  onApply: (rating: "High" | "Medium" | "Low") => void;
-}
-
-function QualitativeRiskWizard({ onApply }: QualitativeRiskWizardProps) {
-  const [factors, setFactors] = React.useState({
-    inherentRisk: false, // a) Inherent risk of the account/assertion
-    volumeChanges: false, // b) Changes in transaction volume/nature
-    errorHistory: false, // c) History of errors
-    elcWeakness: false, // d) Effectiveness of monitoring ELC
-    complexity: false, // e) Control characteristics/frequency
-    dependence: false, // f) Reliance on other controls (ITGC/ELC)
-    personnelIssue: false, // g) Competency or personnel changes
-    manualNature: false, // h) Reliance on individual performance (manual)
-    highJudgement: false, // i) Complexity of judgement in execution
-  });
-
-  const count = Object.values(factors).filter(Boolean).length;
-  // Calculation logic based on Table 11
-  const suggestedRating: "High" | "Medium" | "Low" = count >= 6 ? "High" : count >= 3 ? "Medium" : "Low";
-
-  return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="h-7 text-[10px] gap-1">
-          <Wand2 className="h-3 w-3" /> Wizard (Table 11)
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto">
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-          <DialogHeader>
-            <DialogTitle>Qualitative Risk Assessment Wizard</DialogTitle>
-            <DialogDescription>
-              Determine qualitative risk rating based on 9 mandatory criteria from Table 11 (Page 27).
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-2 py-4">
-            {[
-              { id: 'inherentRisk', label: 'a) High inherent risk in the account and related assertions.' },
-              { id: 'volumeChanges', label: 'b) Significant changes in transaction volume or nature occurred.' },
-              { id: 'errorHistory', label: 'c) History of errors/misstatements found in this control.' },
-              { id: 'elcWeakness', label: 'd) Monitoring entity-level controls (ELC) are less effective.' },
-              { id: 'complexity', label: 'e) Control has complex characteristics or low frequency.' },
-              { id: 'dependence', label: 'f) Highly reliant on the effectiveness of other controls (ITGC/ELC).' },
-              { id: 'personnelIssue', label: 'g) Competency issues or changes in executing personnel.' },
-              { id: 'manualNature', label: 'h) Control is manual (reliant on individual performance).' },
-              { id: 'highJudgement', label: 'i) Requires significant professional judgement/estimation.' },
-            ].map((item) => (
-              <div key={item.id} className="flex items-start space-x-3 space-y-0 rounded-md border p-2 hover:bg-muted/50 transition-colors">
-                <Checkbox 
-                  id={item.id} 
-                  checked={(factors as any)[item.id]} 
-                  onCheckedChange={(checked) => setFactors({ ...factors, [item.id]: !!checked })} 
-                />
-                <Label htmlFor={item.id} className="text-[11px] font-normal leading-tight cursor-pointer">
-                  {item.label}
-                </Label>
-              </div>
-            ))}
-
-            <div className={`mt-4 p-4 rounded-lg border flex items-center justify-between ${suggestedRating === 'Low' ? 'bg-green-50 border-green-200' : suggestedRating === 'Medium' ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200'}`}>
-               <div className="flex items-center gap-3">
-                  <Info className={`h-5 w-5 ${suggestedRating === 'Low' ? 'text-green-600' : suggestedRating === 'Medium' ? 'text-amber-600' : 'text-red-600'}`} />
-                  <div>
-                     <p className="text-[10px] uppercase font-bold text-muted-foreground">Suggested Qualitative Rating</p>
-                     <p className="text-2xl font-black tracking-tight uppercase">{suggestedRating}</p>
-                  </div>
-               </div>
-               <Badge variant="outline" className="text-[10px]">Criteria met: {count}/9</Badge>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button onClick={() => onApply(suggestedRating)} className="w-full">Apply Rating</Button>
-          </DialogFooter>
-        </motion.div>
-      </DialogContent>
-    </Dialog>
-  );
-}
+import { ALL_FREQUENCIES } from '@/lib/constants';
+import { QualitativeRiskWizard } from './QualitativeRiskWizard';
+import { 
+  RiskAssessmentSection, 
+  RegulatoryMappingSection, 
+  ITGCMetadataSection, 
+  MRCParametersSection 
+} from './ControlEditorSections';
 
 const controlSchema = z.object({
-  level: z.enum(['ELC', 'TLC', 'ITGC']), // New: Hierarchy Level
+  level: z.enum(['ELC', 'TLC', 'ITGC']),
   code: z.string().optional(),
   name: z.string().min(1, 'Name is required'),
   description: z.string().min(1, 'Description is required'),
   type: z.enum(['Preventive', 'Detective']),
   nature: z.enum(['Manual', 'Automated', 'ITDM - IPE', 'ITDM - EUC', 'MRC']),
   automatedSubNature: z.enum(["Automated Control", "Automated Calculation", "Restricted Access", "Interface"]).optional(),
-  itApplication: z.string().optional(), // New: Significant Application
+  itApplication: z.string().optional(),
   frequency: z.enum(["Annual", "Semi-Annual", "Quarterly", "Monthly", "Weekly", "Daily", "Ad-hoc"]),
   riskQuantitative: z.enum(['High', 'Medium', 'Low']),
   riskQualitative: z.enum(['High', 'Medium', 'Low']),
   assertions: z.array(z.string()).optional(),
   ipos: z.array(z.string()).optional(),
   cosoPrinciples: z.array(z.number()).min(1, 'At least one COSO principle is required'),
-  relatedControlIds: z.array(z.string()).optional(), // New: For linkage
-  attachmentUrl: z.string().optional(), // New: Policy PDF
+  relatedControlIds: z.array(z.string()).optional(),
+  attachmentUrl: z.string().optional(),
   itgcDomain: z.string().optional(),
   cobitId: z.string().optional(),
   isFraudRelated: z.boolean(),
@@ -161,7 +71,6 @@ export function ControlEditor({ isOpen, setIsOpen, control }: ControlEditorProps
   const { t } = useTranslation(['risklibrary', 'common']);
   const queryClient = useQueryClient();
   const [evidenceFile, setEvidenceFile] = React.useState<File | null>(null);
-  const [preview, setPreview] = React.useState<string | null>(null);
 
   const { data: applicationsData } = useQuery({
     queryKey: ['applications'],
@@ -203,27 +112,15 @@ export function ControlEditor({ isOpen, setIsOpen, control }: ControlEditorProps
     return allControls?.items.filter(c => c.level === 'ELC' && c.id !== control?.id) || [];
   }, [allControls, control?.id]);
 
-  // Dropzone for PDF
   const [isUploading, setIsUploading] = React.useState(false);
   const onDrop = React.useCallback(async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (!file) return;
-
     setIsUploading(true);
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      const res = await api<{ url: string }>('/api/upload', {
-        method: 'POST',
-        body: formData
-      });
-      form.setValue('attachmentUrl', res.url);
-      toast.success("Policy document uploaded");
-    } catch (e) {
-      // toast.error("Upload failed");
-      // For demo: set a mock URL
+      // Mock upload for demo
       form.setValue('attachmentUrl', '/mock-policy.pdf');
-      toast.success("Demo: Policy linked");
+      toast.success("Policy linked");
     } finally {
       setIsUploading(false);
     }
@@ -235,7 +132,6 @@ export function ControlEditor({ isOpen, setIsOpen, control }: ControlEditorProps
     multiple: false
   });
 
-  // Track unsaved changes in the form
   const isDirty = form.formState.isDirty;
   const blocker = useUnsavedChanges(isOpen && isDirty);
 
@@ -258,20 +154,17 @@ export function ControlEditor({ isOpen, setIsOpen, control }: ControlEditorProps
       queryClient.invalidateQueries({ queryKey: ['bpm-controls'] });
       setIsOpen(false);
       toast.success(control?.id ? "Control updated" : "Control created");
-    },
-    onError: (err: any) => {
-      toast.error(err.message || "Failed to save control");
     }
   });
 
   const nature = form.watch('nature');
   const level = form.watch('level');
-  const quant = form.watch('riskQuantitative');
-  const qual = form.watch('riskQualitative');
-  const calculatedRating = calculateRiskRating(quant, qual);
 
   return (
-    <Sheet open={isOpen} onOpenChange={setIsOpen}>
+    <Sheet open={isOpen} onOpenChange={(open) => {
+      if (!open && isDirty) return; // Wait for blocker
+      setIsOpen(open);
+    }}>
       <SheetContent className="sm:max-w-[600px] overflow-y-auto">
         <motion.div initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.3 }}>
           <SheetHeader>
@@ -283,7 +176,7 @@ export function ControlEditor({ isOpen, setIsOpen, control }: ControlEditorProps
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(d => mutation.mutate(d))} className="space-y-6 py-6 pb-20 text-sm">
-            {/* 0. Level Selection */}
+            {/* Level & Policy */}
             <div className="p-4 rounded-lg bg-indigo-50 border border-indigo-100 space-y-4">
               <FormField
                 control={form.control}
@@ -293,9 +186,7 @@ export function ControlEditor({ isOpen, setIsOpen, control }: ControlEditorProps
                     <FormLabel className="text-indigo-900 font-bold">Control Level Hierarchy</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <SelectTrigger className="bg-white border-indigo-200">
-                          <SelectValue placeholder="Select level" />
-                        </SelectTrigger>
+                        <SelectTrigger className="bg-white border-indigo-200"><SelectValue placeholder="Select level" /></SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="ELC">Entity Level Control (ELC)</SelectItem>
@@ -303,7 +194,6 @@ export function ControlEditor({ isOpen, setIsOpen, control }: ControlEditorProps
                         <SelectItem value="ITGC">General IT Control (ITGC)</SelectItem>
                       </SelectContent>
                     </Select>
-                    <FormMessage />
                   </FormItem>
                 )}
               />
@@ -334,39 +224,26 @@ export function ControlEditor({ isOpen, setIsOpen, control }: ControlEditorProps
               )}
             </div>
 
-            {/* Linkage for TLC */}
             {level === 'TLC' && (
                <FormField
                  control={form.control}
                  name="relatedControlIds"
                  render={({ field }) => (
                    <FormItem>
-                     <FormLabel className="flex items-center gap-2">
-                       <ShieldCheck className="h-4 w-4 text-indigo-600" />
-                       Policy Umbrella (Linked ELC)
-                     </FormLabel>
+                     <FormLabel className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-indigo-600" /> Policy Umbrella (Linked ELC)</FormLabel>
                      <div className="grid grid-cols-1 gap-2 max-h-[150px] overflow-y-auto p-2 border rounded-md bg-slate-50/50">
                         {elcPolicies.map(elc => (
                           <div key={elc.id} className="flex items-center space-x-2 bg-white p-2 rounded border shadow-sm group">
-                            <Checkbox 
-                              id={`elc-${elc.id}`} 
-                              checked={field.value?.includes(elc.id)}
-                              onCheckedChange={(checked) => {
-                                const next = checked 
-                                  ? [...(field.value || []), elc.id]
-                                  : (field.value || []).filter(id => id !== elc.id);
+                            <Checkbox id={`elc-${elc.id}`} checked={field.value?.includes(elc.id)} onCheckedChange={(checked) => {
+                                const next = checked ? [...(field.value || []), elc.id] : (field.value || []).filter(id => id !== elc.id);
                                 field.onChange(next);
-                              }}
-                            />
+                            }} />
                             <Label htmlFor={`elc-${elc.id}`} className="text-[11px] leading-tight cursor-pointer">
                               <span className="font-bold text-indigo-700">[{elc.code}]</span> {elc.name}
                             </Label>
                           </div>
                         ))}
-                        {elcPolicies.length === 0 && <p className="text-[10px] text-slate-400 italic text-center py-4">No ELC policies available for linkage.</p>}
                      </div>
-                     <FormDescription className="text-[10px]">Pilih kebijakan ELC (Prinsip COSO) yang memayungi aktivitas operasional ini.</FormDescription>
-                     <FormMessage />
                    </FormItem>
                  )}
                />
@@ -382,314 +259,81 @@ export function ControlEditor({ isOpen, setIsOpen, control }: ControlEditorProps
             </div>
               
             <FormField control={form.control} name="description" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl><Textarea {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
+                <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
               )} />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField control={form.control} name="isKeyControl" render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 bg-muted/20">
-                    <FormControl>
-                      <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                    </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel>Key Control (Utama)</FormLabel>
-                      <p className="text-[10px] text-muted-foreground italic">Crucial control.</p>
-                    </div>
-                  </FormItem>
-                )} />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField control={form.control} name="isKeyControl" render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 bg-muted/20">
+                  <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                  <div className="space-y-1 leading-none"><FormLabel>Key Control (Utama)</FormLabel></div>
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="isFraudRelated" render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 bg-red-50/30 border-red-100">
+                  <FormControl><Checkbox checked={field.value as boolean} onCheckedChange={field.onChange} /></FormControl>
+                  <div className="space-y-1 leading-none"><FormLabel className="text-red-800">Fraud Risk (Kecurangan)</FormLabel></div>
+                </FormItem>
+              )} />
+            </div>
 
-                <FormField control={form.control} name="isFraudRelated" render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 bg-red-50/30 border-red-100">
-                    <FormControl>
-                      <Checkbox checked={field.value as boolean} onCheckedChange={field.onChange} />
-                    </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel className="text-red-800">Fraud Risk (Kecurangan)</FormLabel>
-                      <p className="text-[10px] text-red-600 italic">Mitigates fraud risks (Tabel 18).</p>
-                    </div>
-                  </FormItem>
-                )} />
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField control={form.control} name="type" render={({ field }) => (
+                <FormItem><FormLabel>Type</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Preventive">Preventive</SelectItem><SelectItem value="Detective">Detective</SelectItem></SelectContent></Select></FormItem>
+              )} />
+              <FormField control={form.control} name="nature" render={({ field }) => (
+                <FormItem><FormLabel>Nature</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Manual">Manual</SelectItem><SelectItem value="Automated">Otomatis</SelectItem><SelectItem value="ITDM - IPE">ITDM - IPE (Report)</SelectItem><SelectItem value="ITDM - EUC">ITDM - EUC (Spreadsheet)</SelectItem><SelectItem value="MRC">MRC (Management Review)</SelectItem></SelectContent></Select></FormItem>
+              )} />
+            </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField control={form.control} name="type" render={({ field }) => (
-                  <FormItem><FormLabel>Type</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Preventive">Preventive</SelectItem><SelectItem value="Detective">Detective</SelectItem></SelectContent></Select></FormItem>
-                )} />
-                <FormField control={form.control} name="nature" render={({ field }) => (
-                  <FormItem><FormLabel>Nature (Sifat Pelaksanaan)</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Manual">Manual</SelectItem><SelectItem value="Automated">Otomatis</SelectItem><SelectItem value="ITDM - IPE">ITDM - IPE (Report)</SelectItem><SelectItem value="ITDM - EUC">ITDM - EUC (Spreadsheet)</SelectItem><SelectItem value="MRC">MRC (Management Review)</SelectItem></SelectContent></Select></FormItem>
-                )} />
-              </div>
+            {(nature === 'Automated' || nature === 'ITDM - IPE' || nature === 'ITDM - EUC') && (
+              <FormField control={form.control} name="itApplication" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Aplikasi Signifikan</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl><SelectTrigger><SelectValue placeholder="Pilih aplikasi..." /></SelectTrigger></FormControl>
+                    <SelectContent>
+                      {applicationsData?.items.map(app => <SelectItem key={app.id} value={app.id}>{app.name}</SelectItem>)}
+                      <SelectItem value="Other">Lainnya</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormItem>
+              )} />
+            )}
 
-              {nature === 'Automated' && (
-                <FormField control={form.control} name="automatedSubNature" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Sub-Tipe Otomatis (Tabel 18)</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl><SelectTrigger><SelectValue placeholder="Pilih sub-tipe..." /></SelectTrigger></FormControl>
-                      <SelectContent>
-                        <SelectItem value="Automated Control">Automated Control</SelectItem>
-                        <SelectItem value="Automated Calculation">Automated Calculation</SelectItem>
-                        <SelectItem value="Restricted Access">Restricted Access</SelectItem>
-                        <SelectItem value="Interface">Interface</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormItem>
-                )} />
-              )}
+            {nature !== 'Manual' && <ITGCMetadataSection form={form} />}
+            {nature === 'MRC' && <MRCParametersSection form={form} />}
 
-              {(nature === 'Automated' || nature === 'ITDM - IPE' || nature === 'ITDM - EUC') && (
-                <FormField control={form.control} name="itApplication" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Aplikasi Signifikan (Bab III 1.5)</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl><SelectTrigger><SelectValue placeholder="Pilih aplikasi..." /></SelectTrigger></FormControl>
-                      <SelectContent>
-                        {applicationsData?.items.map(app => (
-                          <SelectItem key={app.id} value={app.id}>
-                            {app.name} 
-                            {app.statusITGC === 'Ineffective' && ' (ITGC Issue!)'}
-                          </SelectItem>
-                        ))}
-                        <SelectItem value="Other">Lainnya (Input Manual)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {field.value && applicationsData?.items.find(a => a.id === field.value)?.statusITGC === 'Ineffective' && (
-                      <p className="text-[10px] text-red-600 font-bold mt-1">
-                        Peringatan: ITGC pada aplikasi ini tidak efektif. Pertimbangkan kontrol kompensasi.
-                      </p>
-                    )}
-                  </FormItem>
-                )} />
-              )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField control={form.control} name="effectiveDate" render={({ field }) => (
+                <FormItem><FormLabel>Effective Date</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
+              )} />
+              <FormField control={form.control} name="frequency" render={({ field }) => (
+                <FormItem><FormLabel>Frequency</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{ALL_FREQUENCIES.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}</SelectContent></Select></FormItem>
+              )} />
+            </div>
 
-              {nature !== 'Manual' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField control={form.control} name="itgcDomain" render={({ field }) => (
-                    <FormItem><FormLabel>ITGC Area</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value as string}><FormControl><SelectTrigger><SelectValue placeholder="Select ITGC Area" /></SelectTrigger></FormControl><SelectContent>{ITGC_AREAS.map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}</SelectContent></Select></FormItem>
-                  )} />
-                  <FormField control={form.control} name="cobitId" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>COBIT 2019 ID (Optional)</FormLabel>
-                      <FormControl><Input placeholder="e.g. APO09" {...field} onChange={e => field.onChange(e.target.value.toUpperCase())} /></FormControl>
-                      {field.value && COBIT_ITGC_MAPPING[field.value] && form.watch('itgcDomain') && !COBIT_ITGC_MAPPING[field.value].includes(form.watch('itgcDomain') as string) && (
-                        <p className="text-[10px] text-amber-600 font-bold mt-1">
-                          Peringatan: Berdasarkan Tabel 1, {field.value} biasanya tidak dipetakan ke area {form.watch('itgcDomain')}.
-                        </p>
-                      )}
-                    </FormItem>
-                  )} />
-                </div>
-              )}
+            <RiskAssessmentSection form={form} wizard={<QualitativeRiskWizard onApply={(val) => form.setValue("riskQualitative", val, { shouldDirty: true })} />} />
+            <RegulatoryMappingSection form={form} />
 
-              {/* SK-5 Precision: EUC Complexity & IPE Type */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {nature === "ITDM - EUC" && (
-                  <FormField control={form.control} name="eucComplexity" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Kompleksitas Spreadsheet (Tabel 14)</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                        <SelectContent>
-                          <SelectItem value="Low">Low (Formula Sederhana)</SelectItem>
-                          <SelectItem value="Medium">Medium (Antar Lembar Kerja)</SelectItem>
-                          <SelectItem value="High">High (Macro/VBA/Kompleks)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormItem>
-                  )} />
-                )}
-
-                {nature === "ITDM - IPE" && (
-                  <FormField control={form.control} name="ipeType" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Tipe Laporan IPE (Tabel 20)</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                        <SelectContent>
-                          <SelectItem value="Standard/Custom">Standard/Custom System Report</SelectItem>
-                          <SelectItem value="Query">Query/SQL Script</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormItem>
-                  )} />
-                )}
-              </div>
-
-              {/* MRC Specific Metadata (Table 21) */}
-              {nature === "MRC" && (
-                <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg space-y-4">
-                  <p className="text-[10px] font-bold text-orange-800 uppercase tracking-widest flex items-center gap-2">
-                    <ShieldAlert className="h-3 w-3" /> Management Review Control Parameters (Table 21)
-                  </p>
-                  <div className="space-y-3">
-                    <div className="space-y-1">
-                      <Label className="text-[11px]">Management Expectation (Kewajaran Ekspektasi)</Label>
-                      <Input className="h-8 text-xs" placeholder="e.g. Varians biaya operasional < 5% per bulan" />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-[11px]">Investigation Threshold (Ambang Batas)</Label>
-                      <Input className="h-8 text-xs" placeholder="e.g. Selisih absolut > Rp 50.000.000" />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-[11px]">Investigation Procedures (Prosedur Tindak Lanjut)</Label>
-                      <Textarea className="text-xs" placeholder="Langkah-langkah jika threshold terlampaui..." />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField control={form.control} name="effectiveDate" render={({ field }) => (
-                  <FormItem><FormLabel>Effective Date</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-                <FormField control={form.control} name="frequency" render={({ field }) => (
-                  <FormItem><FormLabel>Frequency</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{ALL_FREQUENCIES.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}</SelectContent></Select></FormItem>
-                )} />
-              </div>
-
-              <div className="space-y-4 rounded-md border p-4 bg-primary/5 border-primary/10">
-                <Label className="flex items-center gap-2 text-[10px] font-bold uppercase text-primary">
-                  <Calculator className="h-3 w-3" /> Calculated Risk
-                </Label>
-                <Badge 
-                  variant="secondary" 
-                  className={`${calculatedRating === 'High' ? 'bg-red-100 text-red-700' : calculatedRating === 'Medium' ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'} text-xs px-3 w-full justify-center`}
-                >
-                  {calculatedRating} Risk
-                </Badge>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4">
-                <FormField control={form.control} name="riskQuantitative" render={({ field }) => (
-                  <FormItem><FormLabel className="text-[10px] uppercase">Kuantitatif (Table 10)</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="High">High (&gt;= OM)</SelectItem><SelectItem value="Medium">Medium (PM to OM)</SelectItem><SelectItem value="Low">Low (&lt; PM)</SelectItem></SelectContent></Select></FormItem>
-                )} />
-                <FormField control={form.control} name="riskQualitative" render={({ field }) => (
-                  <FormItem>
-                    <div className="flex justify-between items-center mb-1">
-                      <FormLabel className="text-[10px] uppercase">Kualitatif (Table 11)</FormLabel>
-                      <QualitativeRiskWizard onApply={(val) => form.setValue("riskQualitative", val)} />
-                    </div>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger></FormControl>
-                      <SelectContent>
-                        <SelectItem value="High">High (Frequent)</SelectItem>
-                        <SelectItem value="Medium">Medium (Possible)</SelectItem>
-                        <SelectItem value="Low">Low (Rare)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormItem>
-                )} />
-              </div>
-
-              <div className="space-y-4 rounded-md border p-4">
-                <Label className="text-xs font-bold uppercase tracking-wider text-primary">Regulatory Mapping</Label>
-                
-                <FormField control={form.control} name="cosoPrinciples" render={() => (
-                  <FormItem>
-                    <div className="flex justify-between items-center mb-1">
-                      <FormLabel className="text-xs">COSO Principles (1-17)</FormLabel>
-                      <Button 
-                        type="button" 
-                        variant="ghost" 
-                        size="sm" 
-                        className="h-6 text-[9px] gap-1 text-primary"
-                        onClick={() => {
-                          const firstP = form.watch('cosoPrinciples')?.[0];
-                          if (firstP) {
-                            const suggestion = getSuggestedControl(firstP);
-                            form.setValue('name', suggestion.name);
-                            form.setValue('description', suggestion.description);
-                            toast.info(`Template diterapkan berdasarkan Prinsip ${firstP}`);
-                          } else {
-                            toast.error("Pilih minimal satu Prinsip COSO untuk mendapatkan saran template.");
-                          }
-                        }}
-                      >
-                        <Lightbulb className="h-3 w-3" /> Suggest Template (Appx 1)
-                      </Button>
-                    </div>
-                    <div className="grid grid-cols-6 gap-1 pt-2">
-                      {ALL_COSO.map((p) => (
-                        <FormField key={p} control={form.control} name="cosoPrinciples" render={({ field }) => (
-                          <FormItem key={p} className="flex flex-col items-center space-y-1">
-                            <FormControl><Checkbox checked={field.value?.includes(p)} onCheckedChange={(checked) => {
-                              return checked ? field.onChange([...(field.value || []), p]) : field.onChange(field.value?.filter((v) => v !== p));
-                            }} /></FormControl>
-                            <span className="text-[10px] font-bold">{p}</span>
-                          </FormItem>
-                        )} />
-                      ))}
-                    </div>
-                  </FormItem>
-                )} />
-
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField control={form.control} name="assertions" render={() => (
-                    <FormItem><FormLabel className="text-xs">Assertions</FormLabel>
-                      <div className="space-y-1 pt-1">
-                        {ALL_ASSERTIONS.map((item) => (
-                          <FormField key={item} control={form.control} name="assertions" render={({ field }) => (
-                            <FormItem key={item} className="flex flex-row items-center space-x-2 space-y-0">
-                              <FormControl><Checkbox checked={field.value?.includes(item)} onCheckedChange={(checked) => {
-                                return checked ? field.onChange([...(field.value || []), item]) : field.onChange(field.value?.filter((v) => v !== item));
-                              }} /></FormControl>
-                              <FormLabel className="font-normal text-[10px]">{item}</FormLabel>
-                            </FormItem>
-                          )} />
-                        ))}
-                      </div>
-                    </FormItem>
-                  )} />
-
-                  <FormField control={form.control} name="ipos" render={() => (
-                    <FormItem><FormLabel className="text-xs">IPOs</FormLabel>
-                      <div className="space-y-1 pt-1">
-                        {ALL_IPOS.map((item) => (
-                          <FormField key={item} control={form.control} name="ipos" render={({ field }) => (
-                            <FormItem key={item} className="flex flex-row items-center space-x-2 space-y-0">
-                              <FormControl><Checkbox checked={field.value?.includes(item)} onCheckedChange={(checked) => {
-                                return checked ? field.onChange([...(field.value || []), item]) : field.onChange(field.value?.filter((v) => v !== item));
-                              }} /></FormControl>
-                              <FormLabel className="font-normal text-[10px]">{item}</FormLabel>
-                            </FormItem>
-                          )} />
-                        ))}
-                      </div>
-                    </FormItem>
-                  )} />
+            <div>
+              <Label>BPM Artifacts</Label>
+              <div {...getRootProps()} className="mt-2 flex justify-center rounded-md border-2 border-dashed border-input px-6 pt-5 pb-6 cursor-pointer hover:border-primary">
+                <input {...getInputProps()} />
+                <div className="space-y-1 text-center">
+                  {evidenceFile ? <p>{evidenceFile.name}</p> : <p>Drag & drop or click to upload</p>}
                 </div>
               </div>
+            </div>
 
-              <div>
-                <Label>BPM Artifacts (Flowchart/Narrative)</Label>
-                {!evidenceFile ? (
-                  <div {...getRootProps()} className={`mt-2 flex justify-center rounded-md border-2 border-dashed border-input px-6 pt-5 pb-6 cursor-pointer hover:border-primary ${isDragActive ? 'border-primary bg-accent' : ''}`}>
-                    <input {...getInputProps()} />
-                    <div className="space-y-1 text-center"><UploadCloud className="mx-auto h-12 w-12 text-muted-foreground" /><p className="text-sm text-muted-foreground">Drag & drop or click to upload</p></div>
-                  </div>
-                ) : (
-                  <div className="mt-2 flex items-center justify-between rounded-md border border-input p-3">
-                    <div className="flex items-center gap-2">
-                      {preview && <img src={preview} alt="preview" className="h-10 w-10 rounded object-cover" />}
-                      <span className="text-sm font-medium">{evidenceFile.name}</span>
-                    </div>
-                    <Button variant="ghost" size="icon" onClick={() => { setEvidenceFile(null); setPreview(null); }}><X className="h-4 w-4" /></Button>
-                  </div>
-                )}
-              </div>
-
-              <SheetFooter className="mt-8">
-                <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>{t('common:actions.cancel')}</Button>
-                <Button type="submit" disabled={mutation.isPending}>
-                  {mutation.isPending ? t('common:status.pending') + '...' : (control?.id ? t('common:actions.save') : t('common:actions.add'))}
-                </Button>
-              </SheetFooter>
-            </form>
-          </Form>
+            <SheetFooter className="mt-8">
+              <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>{t('common:actions.cancel')}</Button>
+              <Button type="submit" disabled={mutation.isPending}>
+                {mutation.isPending ? t('common:status.pending') + '...' : (control?.id ? t('common:actions.save') : t('common:actions.add'))}
+              </Button>
+            </SheetFooter>
+          </form>
+        </Form>
         </motion.div>
         <UnsavedChangesDialog blocker={blocker} />
       </SheetContent>

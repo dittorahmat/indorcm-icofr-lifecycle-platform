@@ -400,18 +400,16 @@ csa.post('/csa/testing-records', async (c) => {
     id,
     organizationId: orgId,
     controlId: body.controlId!,
-    testType: body.testType || 'TOE',
+    testType: (body.testType as any) || 'TOE',
     period: body.period || new Date().getFullYear().toString(),
-    status: body.status || 'Draft',
-    result: body.result || 'Effective',
-    testerId: userId,
-    testedAt: new Date(),
+    result: (body.result as any) || 'Effective',
+    testedBy: userId,
+    testDate: new Date(),
     sampleSize: body.sampleSize || 0,
-    exceptionCount: body.exceptionCount || 0,
-    conclusionRationale: body.conclusionRationale,
+    comments: body.comments,
   };
 
-  await db.insert(testRecords).values(newRecord);
+  await db.insert(testRecords).values(newRecord as any);
   return ok(c, newRecord);
 });
 

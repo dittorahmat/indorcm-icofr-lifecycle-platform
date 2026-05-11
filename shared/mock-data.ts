@@ -383,7 +383,7 @@ export const MOCK_CONTROLS: Control[] = [
     supportingDocs: 'Credit Form',
     reference: 'SOP-FIN-01',
     applicationId: 'app-001',
-    attributeQuestions: null,
+    attributeQuestions: undefined,
     executorRole: 'Finance Manager',
     csaStatus: 'Effective',
     lastCsaDate: null,
@@ -428,7 +428,7 @@ export const MOCK_CONTROLS: Control[] = [
     supportingDocs: 'Legal Review Form',
     reference: 'SOP-LEGAL-01',
     applicationId: null,
-    attributeQuestions: null,
+    attributeQuestions: undefined,
     executorRole: 'Legal Counsel',
     csaStatus: 'Effective',
     lastCsaDate: null,
@@ -522,7 +522,7 @@ export const MOCK_CONTROLS: Control[] = [
     supportingDocs: 'QC Report',
     reference: 'SOP-QC-01',
     applicationId: 'app-003',
-    attributeQuestions: null,
+    attributeQuestions: undefined,
     executorRole: 'QC Manager',
     csaStatus: 'Effective',
     lastCsaDate: null,
@@ -565,7 +565,7 @@ export const MOCK_CONTROLS: Control[] = [
     supportingDocs: 'Recon Report',
     reference: 'SOP-LOG-02',
     applicationId: 'app-002',
-    attributeQuestions: null,
+    attributeQuestions: undefined,
     executorRole: 'Logistics Staff',
     csaStatus: 'Effective',
     lastCsaDate: null,
@@ -576,7 +576,7 @@ export const MOCK_CONTROLS: Control[] = [
     eucComplexity: null,
     ipeType: null,
     riskAssessment: null,
-    fsliCodes: null,
+    fsliCodes: undefined,
     itApplication: 'Weighbridge System'
   },
   {
@@ -610,7 +610,7 @@ export const MOCK_CONTROLS: Control[] = [
     supportingDocs: 'HBA Sheet',
     reference: 'SOP-FIN-02',
     applicationId: null,
-    attributeQuestions: null,
+    attributeQuestions: undefined,
     executorRole: 'Billing Head',
     csaStatus: 'Effective',
     lastCsaDate: null,
@@ -621,7 +621,7 @@ export const MOCK_CONTROLS: Control[] = [
     eucComplexity: null,
     ipeType: null,
     riskAssessment: null,
-    fsliCodes: null,
+    fsliCodes: undefined,
     itApplication: null
   },
   {
@@ -656,7 +656,7 @@ export const MOCK_CONTROLS: Control[] = [
     supportingDocs: 'Journal Entry',
     reference: 'SOP-ACC-01',
     applicationId: 'app-001',
-    attributeQuestions: null,
+    attributeQuestions: undefined,
     executorRole: 'Accounting Manager',
     csaStatus: 'Effective',
     lastCsaDate: null,
@@ -667,7 +667,7 @@ export const MOCK_CONTROLS: Control[] = [
     eucComplexity: null,
     ipeType: null,
     riskAssessment: null,
-    fsliCodes: null
+    fsliCodes: [],
   },
   {
     id: 'ctrl-prod-01',
@@ -700,7 +700,7 @@ export const MOCK_CONTROLS: Control[] = [
     supportingDocs: 'DPR Report',
     reference: 'SOP-PROD-01',
     applicationId: null,
-    attributeQuestions: null,
+    attributeQuestions: undefined,
     executorRole: 'Mine Manager',
     csaStatus: 'Effective',
     lastCsaDate: null,
@@ -711,7 +711,7 @@ export const MOCK_CONTROLS: Control[] = [
     eucComplexity: null,
     ipeType: null,
     riskAssessment: null,
-    fsliCodes: null,
+    fsliCodes: undefined,
     itApplication: null
   },
   {
@@ -746,7 +746,7 @@ export const MOCK_CONTROLS: Control[] = [
     supportingDocs: 'SCADA Logs',
     reference: 'SOP-PROD-02',
     applicationId: 'app-004',
-    attributeQuestions: null,
+    attributeQuestions: undefined,
     executorRole: 'SCADA Operator',
     csaStatus: 'Effective',
     lastCsaDate: null,
@@ -757,7 +757,7 @@ export const MOCK_CONTROLS: Control[] = [
     eucComplexity: null,
     ipeType: null,
     riskAssessment: null,
-    fsliCodes: null
+    fsliCodes: [],
   },
   {
     id: 'ctrl-prod-03',
@@ -796,7 +796,7 @@ export const MOCK_CONTROLS: Control[] = [
     supportingDocs: 'Survey Report',
     reference: 'SOP-LOG-03',
     applicationId: null,
-    attributeQuestions: null,
+    attributeQuestions: undefined,
     executorRole: 'Survey Team Head',
     csaStatus: 'Effective',
     lastCsaDate: null,
@@ -807,7 +807,7 @@ export const MOCK_CONTROLS: Control[] = [
     eucComplexity: null,
     ipeType: null,
     riskAssessment: null,
-    fsliCodes: null
+    fsliCodes: [],
   },
   {
     id: 'ctrl-prod-04',
@@ -840,7 +840,7 @@ export const MOCK_CONTROLS: Control[] = [
     supportingDocs: 'Variance Sheet',
     reference: 'SOP-ACC-02',
     applicationId: null,
-    attributeQuestions: null,
+    attributeQuestions: undefined,
     executorRole: 'Accounting Staff',
     csaStatus: 'Effective',
     lastCsaDate: null,
@@ -851,7 +851,7 @@ export const MOCK_CONTROLS: Control[] = [
     eucComplexity: null,
     ipeType: null,
     riskAssessment: null,
-    fsliCodes: null,
+    fsliCodes: undefined,
     itApplication: null
   },
   {
@@ -885,7 +885,7 @@ export const MOCK_CONTROLS: Control[] = [
     supportingDocs: 'Pre-qual Report',
     reference: 'SOP-PROC-01',
     applicationId: null,
-    attributeQuestions: null,
+    attributeQuestions: undefined,
     executorRole: 'Procurement Head',
     csaStatus: 'Effective',
     lastCsaDate: null,
@@ -896,7 +896,7 @@ export const MOCK_CONTROLS: Control[] = [
     eucComplexity: null,
     ipeType: null,
     riskAssessment: null,
-    fsliCodes: null,
+    fsliCodes: undefined,
     itApplication: null
   },
   {
@@ -930,7 +930,7 @@ export const MOCK_CONTROLS: Control[] = [
     supportingDocs: 'WCC Document',
     reference: 'SOP-ENG-01',
     applicationId: null,
-    attributeQuestions: null,
+    attributeQuestions: undefined,
     executorRole: 'Engineering Manager',
     csaStatus: 'Effective',
     lastCsaDate: null,
@@ -941,7 +941,7 @@ export const MOCK_CONTROLS: Control[] = [
     eucComplexity: null,
     ipeType: null,
     riskAssessment: null,
-    fsliCodes: null,
+    fsliCodes: undefined,
     itApplication: null
   },
   {
@@ -976,7 +976,7 @@ export const MOCK_CONTROLS: Control[] = [
     supportingDocs: 'ERP Recon',
     reference: 'SOP-FIN-03',
     applicationId: 'app-001',
-    attributeQuestions: null,
+    attributeQuestions: undefined,
     executorRole: 'Finance Staff',
     csaStatus: 'Effective',
     lastCsaDate: null,
@@ -987,7 +987,7 @@ export const MOCK_CONTROLS: Control[] = [
     eucComplexity: null,
     ipeType: null,
     riskAssessment: null,
-    fsliCodes: null
+    fsliCodes: [],
   },
   {
     id: 'ctrl-fa-01',
@@ -1020,7 +1020,7 @@ export const MOCK_CONTROLS: Control[] = [
     supportingDocs: 'Budget Approval',
     reference: 'SOP-MGMT-01',
     applicationId: null,
-    attributeQuestions: null,
+    attributeQuestions: undefined,
     executorRole: 'BOD',
     csaStatus: 'Effective',
     lastCsaDate: null,
@@ -1031,7 +1031,7 @@ export const MOCK_CONTROLS: Control[] = [
     eucComplexity: null,
     ipeType: null,
     riskAssessment: null,
-    fsliCodes: null,
+    fsliCodes: undefined,
     itApplication: null
   },
   {
@@ -1065,7 +1065,7 @@ export const MOCK_CONTROLS: Control[] = [
     supportingDocs: 'Review Sheet',
     reference: 'SOP-ACC-03',
     applicationId: null,
-    attributeQuestions: null,
+    attributeQuestions: undefined,
     executorRole: 'Accounting Staff',
     csaStatus: 'Effective',
     lastCsaDate: null,
@@ -1076,7 +1076,7 @@ export const MOCK_CONTROLS: Control[] = [
     eucComplexity: null,
     ipeType: null,
     riskAssessment: null,
-    fsliCodes: null,
+    fsliCodes: undefined,
     itApplication: null
   },
   {
@@ -1116,7 +1116,7 @@ export const MOCK_CONTROLS: Control[] = [
     supportingDocs: 'Methodology Memo',
     reference: 'SOP-TECH-01',
     applicationId: null,
-    attributeQuestions: null,
+    attributeQuestions: undefined,
     executorRole: 'Technical Head',
     csaStatus: 'Effective',
     lastCsaDate: null,
@@ -1127,7 +1127,7 @@ export const MOCK_CONTROLS: Control[] = [
     eucComplexity: null,
     ipeType: null,
     riskAssessment: null,
-    fsliCodes: null
+    fsliCodes: [],
   },
   {
     id: 'ctrl-env-02',
@@ -1160,7 +1160,7 @@ export const MOCK_CONTROLS: Control[] = [
     supportingDocs: 'ARO Report',
     reference: 'SOP-ENV-01',
     applicationId: null,
-    attributeQuestions: null,
+    attributeQuestions: undefined,
     executorRole: 'Environmental Manager',
     csaStatus: 'Effective',
     lastCsaDate: null,
@@ -1171,7 +1171,7 @@ export const MOCK_CONTROLS: Control[] = [
     eucComplexity: null,
     ipeType: null,
     riskAssessment: null,
-    fsliCodes: null,
+    fsliCodes: undefined,
     itApplication: null
   },
   {
@@ -1207,7 +1207,7 @@ export const MOCK_CONTROLS: Control[] = [
     supportingDocs: 'User List',
     reference: 'SOP-IT-01',
     applicationId: 'app-001',
-    attributeQuestions: null,
+    attributeQuestions: undefined,
     executorRole: 'IT Admin',
     csaStatus: 'Effective',
     lastCsaDate: null,
@@ -1217,7 +1217,7 @@ export const MOCK_CONTROLS: Control[] = [
     eucComplexity: null,
     ipeType: null,
     riskAssessment: null,
-    fsliCodes: null
+    fsliCodes: [],
   },
   {
     id: 'ctrl-it-02',
@@ -1252,7 +1252,7 @@ export const MOCK_CONTROLS: Control[] = [
     supportingDocs: 'CR Form',
     reference: 'SOP-IT-02',
     applicationId: 'app-002',
-    attributeQuestions: null,
+    attributeQuestions: undefined,
     executorRole: 'IT Head',
     csaStatus: 'Effective',
     lastCsaDate: null,
@@ -1262,7 +1262,7 @@ export const MOCK_CONTROLS: Control[] = [
     eucComplexity: null,
     ipeType: null,
     riskAssessment: null,
-    fsliCodes: null
+    fsliCodes: [],
   },
   {
     id: 'ctrl-it-03',
@@ -1297,7 +1297,7 @@ export const MOCK_CONTROLS: Control[] = [
     supportingDocs: 'Backup Logs',
     reference: 'SOP-IT-03',
     applicationId: 'app-004',
-    attributeQuestions: null,
+    attributeQuestions: undefined,
     executorRole: 'IT Ops',
     csaStatus: 'Effective',
     lastCsaDate: null,
@@ -1307,7 +1307,7 @@ export const MOCK_CONTROLS: Control[] = [
     eucComplexity: null,
     ipeType: null,
     riskAssessment: null,
-    fsliCodes: null
+    fsliCodes: [],
   },
   {
     id: 'ctrl-it-04',
@@ -1342,7 +1342,7 @@ export const MOCK_CONTROLS: Control[] = [
     supportingDocs: 'Interface Logs',
     reference: 'SOP-IT-04',
     applicationId: 'app-001',
-    attributeQuestions: null,
+    attributeQuestions: undefined,
     executorRole: 'Finance Staff',
     csaStatus: 'Effective',
     lastCsaDate: null,
@@ -1352,7 +1352,7 @@ export const MOCK_CONTROLS: Control[] = [
     eucComplexity: null,
     ipeType: null,
     riskAssessment: null,
-    fsliCodes: null
+    fsliCodes: [],
   },
 ];
 
@@ -1376,7 +1376,7 @@ export const MOCK_DEFICIENCIES: Deficiency[] = [
     magnitude: 5000000000,
     likelihood: 'Medium',
     assertions: ['Accuracy'],
-    flowchartPath: null,
+    flowchartPath: undefined,
     correctiveActionTaken: null,
     remediationEvidence: null,
     compensatingControlIds: []
@@ -1396,7 +1396,7 @@ export const MOCK_DEFICIENCIES: Deficiency[] = [
     magnitude: 12500000000,
     likelihood: 'High',
     assertions: ['Cut-off'],
-    flowchartPath: null,
+    flowchartPath: undefined,
     correctiveActionTaken: null,
     remediationEvidence: null,
     compensatingControlIds: []
@@ -1416,7 +1416,7 @@ export const MOCK_DEFICIENCIES: Deficiency[] = [
     magnitude: 4000000000,
     likelihood: 'Medium',
     assertions: ['Existence'],
-    flowchartPath: null,
+    flowchartPath: undefined,
     correctiveActionTaken: null,
     remediationEvidence: null,
     compensatingControlIds: []

@@ -1,17 +1,20 @@
 import { Hono } from "hono";
 import type { HonoEnv } from '../app';
 import { ok, bad, notFound } from '../lib/utils';
-import { getDb } from '../db';
+import { getDb, type DrizzleDb } from '../db';
 import { 
   simulations, glSnapshots, glRows, organization, auditLogs,
   bpmDiagrams, rcms, controls, rcmControls, bpmNodeRcms,
-  simulationAccountApplications, applications, notifications
+  simulationAccountApplications, applications, notifications,
+  user
 } from '../db/schema';
 import { eq, and, sql, SQL } from 'drizzle-orm';
 import type { 
   MaterialitySimulation, SimulationStatus, Settings 
 } from "@shared/types";
 import { ScopingService } from "../services/scoping-service";
+
+import { rbac } from "../lib/guard";
 
 const scoping = new Hono<HonoEnv>();
 
@@ -33,14 +36,14 @@ scoping.get('/simulations', async (c) => {
 
 scoping.get('/simulations/:id', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
-  const id = c.req.param('id');
+  const id = c.req.param('id') as string;
   const orgId = c.get('organizationId');
   const item = await db.select().from(simulations).where(and(eq(simulations.id, id), eq(simulations.organizationId, orgId))).limit(1);
   if (item.length === 0) return notFound(c);
   return ok(c, item[0]);
 });
 
-scoping.post('/simulations', async (c) => {
+scoping.post('/simulations', rbac(['Line 2', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const userId = c.get('userId');
@@ -59,7 +62,7 @@ scoping.post('/simulations', async (c) => {
       userId: userId,
       message: `Successfully carried forward RCM and BPM data from ${targetYear - 1} to ${targetYear}.`,
       type: 'success',
-      createdAt: new Date(),
+      createdAt: new Date() as any,
     });
   }
 
@@ -71,28 +74,28 @@ scoping.post('/simulations', async (c) => {
     status: "Draft" as any,
     omValue: body.omValue || 0,
     pmValue: body.pmValue || 0,
-    glSnapshotId: body.glSnapshotId,
+    glSnapshotId: body.glSnapshotId || '',
     locationCount: body.locationCount || 1,
     omPercentage: body.omPercentage ?? 5,
     haircutPercentage: body.haircutPercentage ?? 25,
-    basis: body.basis || "Revenue",
-    createdAt: new Date(),
+    basis: (body.basis as any) || "Revenue",
+    createdAt: new Date() as any,
     createdBy: userId,
   };
-  await db.insert(simulations).values(newSim);
+  await db.insert(simulations).values(newSim as any);
   return ok(c, newSim);
 });
 
-scoping.put('/simulations/:id', async (c) => {
+scoping.put('/simulations/:id', rbac(['Line 2', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
-  const id = c.req.param('id');
+  const id = c.req.param('id') as string;
   const orgId = c.get('organizationId');
   const body = await c.req.json<Partial<MaterialitySimulation>>();
   
   await db.update(simulations)
     .set({
       name: body.name,
-      basis: body.basis,
+      basis: body.basis as any,
       omPercentage: body.omPercentage,
       haircutPercentage: body.haircutPercentage,
       locationCount: body.locationCount,
@@ -100,16 +103,16 @@ scoping.put('/simulations/:id', async (c) => {
       pmValue: body.pmValue,
       significantAccounts: body.significantAccounts,
       assessmentData: body.assessmentData,
-      updatedAt: new Date(),
+      updatedAt: new Date() as any,
     })
     .where(and(eq(simulations.id, id), eq(simulations.organizationId, orgId)));
   
   return ok(c, { success: true });
 });
 
-scoping.post('/simulations/:id/submit', async (c) => {
+scoping.post('/simulations/:id/submit', rbac(['Line 2', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
-  const id = c.req.param('id');
+  const id = c.req.param('id') as string;
   const orgId = c.get('organizationId');
   const userId = c.get('userId');
   const userRole = c.get('userRole');
@@ -131,7 +134,7 @@ scoping.post('/simulations/:id/submit', async (c) => {
   await db.update(simulations)
     .set({ 
       status: 'Pending CFO', 
-      updatedAt: new Date(),
+      updatedAt: new Date() as any,
       omValue: body.omValue,
       pmValue: body.pmValue,
       significantAccounts: body.significantAccounts,
@@ -159,7 +162,7 @@ scoping.post('/simulations/:id/submit', async (c) => {
 
 scoping.post('/simulations/:id/approve', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
-  const id = c.req.param('id');
+  const id = c.req.param('id') as string;
   const orgId = c.get('organizationId');
   const userId = c.get('userId');
   const userRole = c.get('userRole');
@@ -191,7 +194,7 @@ scoping.post('/simulations/:id/approve', async (c) => {
     .set({
       status: nextStatus,
       history: [...history, newHistoryEntry],
-      updatedAt: new Date(),
+      updatedAt: new Date() as any,
       ...(nextStatus === 'Approved' ? { approvedBy: userId, approvedDate: new Date().getTime() } : {})
     })
     .where(and(eq(simulations.id, id), eq(simulations.organizationId, orgId)));
@@ -212,7 +215,7 @@ scoping.post('/simulations/:id/approve', async (c) => {
 
 scoping.post('/simulations/:id/reject', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
-  const id = c.req.param('id');
+  const id = c.req.param('id') as string;
   const orgId = c.get('organizationId');
   const userId = c.get('userId');
   const userRole = c.get('userRole');
@@ -237,7 +240,7 @@ scoping.post('/simulations/:id/reject', async (c) => {
     .set({
       status: 'Rejected',
       history: [...history, newHistoryEntry],
-      updatedAt: new Date()
+      updatedAt: new Date() as any
     })
     .where(and(eq(simulations.id, id), eq(simulations.organizationId, orgId)));
 
@@ -315,7 +318,7 @@ scoping.post('/simulations/:id/account-departments/sync', async (c) => {
   if (!sim) return bad(c, "Simulation not found", 404);
 
   try {
-    await db.transaction(async (tx) => {
+    await db.transaction(async (tx: DrizzleDb) => {
       for (const m of mappings) {
         await tx.update(glRows)
           .set({ assignedDepartmentIds: m.departmentIds })
@@ -352,7 +355,7 @@ scoping.post('/simulations/:id/account-applications/sync', async (c) => {
   const { mappings } = await c.req.json<{ mappings: { accountCode: string, applicationIds: string[] }[] }>();
 
   try {
-    await db.transaction(async (tx) => {
+    await db.transaction(async (tx: DrizzleDb) => {
       for (const m of mappings) {
         await tx.delete(simulationAccountApplications).where(and(
           eq(simulationAccountApplications.simulationId, simId),
@@ -388,14 +391,8 @@ scoping.post('/simulations/:id/account-applications/sync', async (c) => {
 scoping.get('/gl-snapshots', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
-  const year = c.req.query('year');
   
-  let conditions: SQL = eq(glSnapshots.organizationId, orgId);
-  if (year) {
-    conditions = and(conditions, eq(glSnapshots.year, parseInt(year))) as SQL;
-  }
-  
-  const items = await db.select().from(glSnapshots).where(conditions);
+  const items = await db.select().from(glSnapshots).where(eq(glSnapshots.organizationId, orgId));
   return ok(c, { items });
 });
 
@@ -407,7 +404,7 @@ scoping.post('/gl-snapshots', async (c) => {
   const snapshotId = crypto.randomUUID();
   const now = new Date();
 
-  await db.transaction(async (tx) => {
+  await db.transaction(async (tx: DrizzleDb) => {
     // 1. Create the snapshot record
     await tx.insert(glSnapshots).values({
       id: snapshotId,

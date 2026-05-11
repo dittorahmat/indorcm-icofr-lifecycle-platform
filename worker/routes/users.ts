@@ -224,8 +224,7 @@ users.get('/dev/re-seed', async (c) => {
   const isSyncOnly = mode === 'auth';
   
   try {
-    const db = getDb(c.env.DATABASE_URL);
-    await seedDatabase(db, { syncAuthOnly: isSyncOnly });
+    await seedDatabase(c.env.DATABASE_URL, c.env.BETTER_AUTH_SECRET, 'true', isSyncOnly);
     return ok(c, { message: isSyncOnly ? 'Auth synced!' : 'Database re-seeded successfully' });
   } catch (e: any) {
     console.error('Seed error:', e);

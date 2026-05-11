@@ -87,9 +87,12 @@ export function RCMELCPage({ embedded = false }: { embedded?: boolean }) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {elcItems.map((ctrl, index) => (
-                  <TableRow key={ctrl.id} className="group transition-colors border-b border-slate-100 hover:bg-slate-50/50 h-11">
-                    <TableCell className="sticky left-0 z-30 bg-white border-r border-slate-200">
+                {elcItems.map((ctrl, idx) => (
+                  <TableRow key={ctrl.id} className={cn(
+                    "group transition-colors border-b border-slate-100 hover:bg-slate-50/50 h-12",
+                    idx % 2 === 1 ? "bg-slate-50/50" : "bg-white"
+                  )}>
+                    <TableCell className="sticky left-0 z-30 bg-inherit border-r border-slate-100">
                       <InlineEditRow 
                         isEditing={editingId === ctrl.id}
                         onEdit={() => setEditingId(ctrl.id)}
@@ -97,23 +100,23 @@ export function RCMELCPage({ embedded = false }: { embedded?: boolean }) {
                         onCancel={() => setEditingId(null)}
                       />
                     </TableCell>
-                    <TableCell className="align-top py-2 sticky left-[110px] z-30 border-r-2 border-slate-200 max-w-[350px] px-3 bg-white">
+                    <TableCell className="align-top py-2 sticky left-[110px] z-30 border-r-2 border-slate-100 max-w-[350px] px-3 bg-inherit">
                       <div className="flex flex-col gap-0.5 leading-tight">
-                        <span className="text-[10px] font-bold text-slate-800">{ctrl.name}</span>
-                        <p className="text-[9px] text-slate-500 italic line-clamp-2">{ctrl.description}</p>
+                        <span className="text-xs font-bold text-slate-800">{ctrl.name}</span>
+                        <p className="text-[11px] text-slate-500 italic line-clamp-2">{ctrl.description}</p>
                       </div>
                     </TableCell>
-                    <TableCell className="text-center text-[10px] font-medium text-slate-600">{ctrl.frequency || '-'}</TableCell>
-                    <TableCell className="text-[10px] text-slate-500 px-3 truncate">{ctrl.supportingDocs || '-'}</TableCell>
-                    <TableCell className="text-[10px] text-slate-500 px-3">{ctrl.companyName || '-'}</TableCell>
-                    <TableCell className="text-[10px] text-slate-500 px-3">{ctrl.executorRole || 'Control Owner'}</TableCell>
-                    <TableCell className="text-center text-[10px] font-bold text-indigo-600">{ctrl.effectiveDate ? new Date(ctrl.effectiveDate).getFullYear() : '-'}</TableCell>
+                    <TableCell className="text-center text-xs font-medium text-slate-600">{ctrl.frequency || '-'}</TableCell>
+                    <TableCell className="text-xs text-slate-500 px-3 truncate">{ctrl.supportingDocs || '-'}</TableCell>
+                    <TableCell className="text-xs text-slate-500 px-3">{ctrl.companyName || '-'}</TableCell>
+                    <TableCell className="text-xs text-slate-500 px-3">{ctrl.executorRole || 'Control Owner'}</TableCell>
+                    <TableCell className="text-center text-xs font-bold text-indigo-600">{ctrl.effectiveDate ? new Date(ctrl.effectiveDate).getFullYear() : '-'}</TableCell>
                     {COSO_PRINCIPLES.map(p => {
                       const isMapped = ctrl.cosoPrinciples?.includes(p as any);
                       return (
                         <TableCell key={p} className="text-center p-0">
-                          <div className="flex items-center justify-center h-full min-h-[35px]">
-                            {isMapped ? <Check className="h-3.5 w-3.5 text-emerald-600 stroke-[3px]" /> : <span className="text-slate-100 text-[9px]">—</span>}
+                          <div className="flex items-center justify-center h-full min-h-[40px]">
+                            {isMapped ? <Check className="h-4 w-4 text-emerald-600 stroke-[3px]" /> : <span className="text-slate-100 text-xs">—</span>}
                           </div>
                         </TableCell>
                       );

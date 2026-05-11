@@ -1,47 +1,44 @@
 /* eslint-disable react-refresh/only-export-components */
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 
 interface UnsavedChangesContextType {
   isDirty: boolean;
   setDirty: (dirty: boolean) => void;
-  message: string;
-  setMessage: (msg: string) => void;
+  resetDirty: () => void;
 }
 
 const UnsavedChangesContext = createContext<UnsavedChangesContextType | undefined>(undefined);
 
+/**
+ * Provider to track "dirty" state (unsaved changes) globally.
+ * Allows components to signal that they have unsaved data.
+ */
 export const UnsavedChangesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isDirty, setIsDirty] = useState(false);
-  const [message, setMessage] = useState('You have unsaved changes. Are you sure you want to leave?');
 
   const setDirty = useCallback((dirty: boolean) => {
     setIsDirty(dirty);
   }, []);
 
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (isDirty) {
-        e.preventDefault();
-        e.returnValue = message;
-        return message;
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [isDirty, message]);
+  const resetDirty = useCallback(() => {
+    setIsDirty(false);
+  }, []);
 
   return (
-    <UnsavedChangesContext.Provider value={{ isDirty, setDirty, message, setMessage }}>
+    <UnsavedChangesContext.Provider value={{ isDirty, setDirty, resetDirty }}>
       {children}
     </UnsavedChangesContext.Provider>
   );
 };
 
-export const useUnsavedChanges = () => {
+/**
+ * Hook to access the global unsaved changes state.
+ * Use this to set isDirty to true when a form is modified.
+ */
+export const useUnsavedChangesContext = () => {
   const context = useContext(UnsavedChangesContext);
   if (context === undefined) {
-    throw new Error('useUnsavedChanges must be used within an UnsavedChangesProvider');
+    throw new Error('useUnsavedChangesContext must be used within an UnsavedChangesProvider');
   }
   return context;
 };

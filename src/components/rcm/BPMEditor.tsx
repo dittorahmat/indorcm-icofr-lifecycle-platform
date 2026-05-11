@@ -37,8 +37,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
-import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
+import { useUnsavedChangesContext } from '@/context/UnsavedChangesContext';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import { toPng } from 'html-to-image';
@@ -107,6 +106,8 @@ export function BPMEditor({ diagramId, subProcess, workingYear }: BPMEditorProps
   const [impactData, setImpactData] = useState<{ id: string, type: 'Risk' | 'Control', count: number, usage: any[] } | null>(null);
   const [rfInstance, setRfInstance] = useState<any>(null);
 
+  const { setDirty, resetDirty } = useUnsavedChangesContext();
+
   // 1. Fetch Diagram Data
   const { data: diagram, isLoading: isDiagramLoading } = useQuery({
     queryKey: ['bpm-diagrams', diagramId],
@@ -138,7 +139,11 @@ export function BPMEditor({ diagramId, subProcess, workingYear }: BPMEditorProps
     return currentNodes !== originalNodes || currentEdges !== originalEdges;
   }, [nodes, edges, diagram, isLocked, localizedInitialNodes]);
 
-  const blocker = useUnsavedChanges(isDirty || isExporting);
+  // Sync isDirty with global context
+  useEffect(() => {
+    setDirty(isDirty || isExporting);
+    return () => resetDirty();
+  }, [isDirty, isExporting, setDirty, resetDirty]);
 
   useEffect(() => {
     if (diagram) {
@@ -515,7 +520,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear }: BPMEditorProps
           </AlertDialogContent>
         </AlertDialog>
       </div>
-      <UnsavedChangesDialog blocker={blocker} />
+
       <AnimatePresence>
         {isExporting && (
           <motion.div 

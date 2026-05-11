@@ -1,27 +1,31 @@
 import React, { useEffect } from 'react';
-import { useUnsavedChanges } from '@/context/UnsavedChangesContext';
-import { useBlocker } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { useUnsavedChangesContext } from '@/context/UnsavedChangesContext';
+import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
+import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
+import { useLocation } from 'react-router-dom';
 
+/**
+ * Global guard component that intercepts navigation if there are unsaved changes.
+ * Uses the global context to determine if the state is "dirty".
+ */
 export const UnsavedChangesGuard: React.FC = () => {
-  const { isDirty } = useUnsavedChanges();
-  const { t } = useTranslation('common');
+  const { isDirty, resetDirty } = useUnsavedChangesContext();
+  const location = useLocation();
+  
+  // Use the React Router blocker hook
+  const blocker = useUnsavedChanges(isDirty);
 
-  const blocker = useBlocker(
-    ({ currentLocation, nextLocation }) =>
-      isDirty && currentLocation.pathname !== nextLocation.pathname
-  );
-
+  // Reset dirty state when we successfully navigate to a new location
   useEffect(() => {
-    if (blocker.state === 'blocked') {
-      const confirmLeave = window.confirm(t('unsavedChanges.description'));
-      if (confirmLeave) {
-        blocker.proceed();
-      } else {
-        blocker.reset();
-      }
+    if (!isDirty) return;
+    
+    // If the blocker was active and we've moved (meaning proceed() was called),
+    // or if we just want to be safe and reset on any successful navigation.
+    // However, we only reset if we are NOT currently blocked.
+    if (blocker.state === 'unblocked') {
+       resetDirty();
     }
-  }, [blocker, t]);
+  }, [location.pathname, location.search, isDirty, blocker.state, resetDirty]);
 
-  return null;
+  return <UnsavedChangesDialog blocker={blocker} />;
 };

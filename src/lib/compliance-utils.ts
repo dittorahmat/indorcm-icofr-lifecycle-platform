@@ -422,8 +422,9 @@ export function sortGLHierarchically(data: GLRow[]): GLRow[] {
   const sortedGroups = Array.from(groups.entries())
     .map(([fsliName, rows]) => {
       const validNoUruts = rows.map(r => r.noUrut).filter((n): n is number => n !== null && n !== undefined);
-      const minNoUrut = validNoUruts.length > 0 ? Math.min(...validNoUruts) : 999999;
+      const minNoUrut = validNoUruts.length > 0 ? Math.min(...validNoUruts) : 0;
       return { fsliName, minNoUrut, rows };
+
     })
     .sort((a, b) => {
       if (a.minNoUrut !== b.minNoUrut) {
