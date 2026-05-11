@@ -35,6 +35,9 @@ import { ScopingSimulationForm } from './components/ScopingSimulationForm';
 import { ScopingEditorHeader } from './components/ScopingEditorHeader';
 import { ScopingEditorContent } from './components/ScopingEditorContent';
 
+import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
+import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
+
 import type { MaterialitySimulation } from '@shared/types';
 
 export function ScopingPage() {
@@ -199,8 +202,10 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
   const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
   const {
     simState, setSimState, mergedGlData, omValue, pmValue, multiplier, benchmarkValue,
-    departments, applications, localAppMappings, isLocked, mutations, handlers
+    departments, applications, localAppMappings, isLocked, mutations, handlers, isDirty
   } = useScopingEditor(simulation);
+
+  const blocker = useUnsavedChanges(isDirty);
 
   const handleOwnerAcceptanceChange = async (noGL: string, acceptance: "Accepted" | "Rejected") => {
     if (isLocked) return;
@@ -294,6 +299,7 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
             onQuickAddApp={handleQuickAddApp}
           />
         </div>
+        <UnsavedChangesDialog blocker={blocker} />
       </div>
     </AppLayout>
   );

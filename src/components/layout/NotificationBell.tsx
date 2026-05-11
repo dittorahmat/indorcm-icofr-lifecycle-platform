@@ -39,10 +39,16 @@ export function NotificationBell() {
       const res = await api<Notification[]>('/api/notifications');
       return res || [];
     },
-    refetchInterval: 30000, // Poll every 30s
+    refetchInterval: 60000, // Full list less frequent
   });
 
-  const unreadCount = notifications.filter(n => !n.readStatus).length;
+  const { data: unreadData } = useQuery({
+    queryKey: ['notifications', 'unread-count'],
+    queryFn: () => api<{ count: number }>('/api/notifications/unread-count'),
+    refetchInterval: 15000, // Unread count more frequent
+  });
+
+  const unreadCount = unreadData?.count ?? notifications.filter(n => !n.readStatus).length;
 
   const markReadMutation = useMutation({
     mutationFn: () => api('/api/notifications/read-all', { method: 'POST' }),

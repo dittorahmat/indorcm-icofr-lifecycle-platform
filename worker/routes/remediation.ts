@@ -8,6 +8,7 @@ import {
 } from '../db/schema';
 import { eq, and, SQL } from 'drizzle-orm';
 import type { Deficiency, ActionPlan, AggregateDeficiency } from "@shared/types";
+import { AuditService } from "../services/audit-service";
 
 const remediation = new Hono<HonoEnv>();
 
@@ -55,17 +56,16 @@ remediation.post('/actionplans', async (c) => {
 
   await db.insert(actionPlans).values(newPlan);
 
-  await db.insert(auditLogs).values({
-    id: crypto.randomUUID(),
+  const auditService = new AuditService(db);
+  await auditService.logAction({
     organizationId: orgId,
     userId,
     action: 'CREATE',
     entityType: 'Control',
     entityId: id,
-    descriptionAfter: `Created action plan for deficiency ${body.deficiencyId}`,
+    description: `Created action plan for deficiency ${body.deficiencyId}`,
     dataAfter: newPlan,
     isRegulatory: true,
-    timestamp: new Date()
   });
 
   return ok(c, newPlan);
@@ -118,18 +118,17 @@ remediation.put('/actionplans/:id', async (c) => {
 
   await db.update(actionPlans).set(updateData).where(eq(actionPlans.id, id));
 
-  await db.insert(auditLogs).values({
-    id: crypto.randomUUID(),
+  const auditService = new AuditService(db);
+  await auditService.logAction({
     organizationId: orgId,
     userId,
     action: 'UPDATE',
     entityType: 'Control',
     entityId: id,
-    descriptionAfter: `Updated action plan status to ${body.status || oldData.status}`,
+    description: `Updated action plan status to ${body.status || oldData.status}`,
     dataBefore: oldData,
     dataAfter: { ...oldData, ...updateData },
     isRegulatory: true,
-    timestamp: new Date()
   });
 
   return ok(c, { success: true });
@@ -196,18 +195,17 @@ remediation.put('/deficiencies/:id', async (c) => {
 
   await db.update(deficiencies).set(updateData).where(eq(deficiencies.id, id));
 
-  await db.insert(auditLogs).values({
-    id: crypto.randomUUID(),
+  const auditService = new AuditService(db);
+  await auditService.logAction({
     organizationId: orgId,
     userId,
     action: 'UPDATE',
     entityType: 'Control',
     entityId: id,
-    descriptionAfter: `Updated deficiency metadata (DoD/Severity)`,
+    description: `Updated deficiency metadata (DoD/Severity)`,
     dataBefore: oldData,
     dataAfter: { ...oldData, ...updateData },
     isRegulatory: true,
-    timestamp: new Date()
   });
 
   return ok(c, { success: true });

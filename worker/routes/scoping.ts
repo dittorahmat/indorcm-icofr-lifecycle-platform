@@ -12,7 +12,9 @@ import { eq, and, sql, SQL } from 'drizzle-orm';
 import type { 
   MaterialitySimulation, SimulationStatus, Settings 
 } from "@shared/types";
-import { ScopingService } from "../services/scoping-service";
+import { ScopingService } from '../services/scoping-service';
+import { AuditService } from "../services/audit-service";
+
 
 import { rbac } from "../lib/guard";
 
@@ -253,14 +255,14 @@ scoping.post('/simulations/assign-department', async (c) => {
       eq(glRows.organizationId, orgId)
     ));
 
-  await db.insert(auditLogs).values({
-    id: crypto.randomUUID(),
+  const auditService = new AuditService(db);
+  await auditService.logAction({
     organizationId: orgId,
     userId: c.get('userId'),
     action: 'ASSIGN_DEPARTMENT',
     entityType: 'GL_Account',
     entityId: `${sim.glSnapshotId}:${body.accountName}`,
-    descriptionAfter: `Assigned department ${body.departmentId} to account ${body.accountName}`,
+    description: `Assigned department ${body.departmentId} to account ${body.accountName}`,
     dataAfter: body
   });
 

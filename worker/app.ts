@@ -10,6 +10,7 @@ import bpm from './routes/bpm';
 import scoping from './routes/scoping';
 import accountAssertions from './routes/account-assertions';
 import remediation from './routes/remediation';
+import audit from './routes/audit';
 import users from './routes/users';
 import infrastructure from './routes/infrastructure';
 import reporting from './routes/reporting';
@@ -246,6 +247,7 @@ export const createApp = () => {
   app.route('/api', scoping);
   app.route('/api', accountAssertions);
   app.route('/api', remediation);
+  app.route('/api', audit);
   app.route('/api', users);
   app.route('/api', infrastructure);
   app.route('/api', reporting);

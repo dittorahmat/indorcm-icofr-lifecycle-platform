@@ -10,7 +10,7 @@ export class AuditService {
   async logAction(params: {
     organizationId: string;
     userId: string;
-    action: 'CREATE' | 'UPDATE' | 'DELETE' | 'VALIDATE' | 'APPROVE_CHANGE' | 'UPDATE_BPM' | 'ASSIGN_DEPARTMENT' | 'SUBMIT' | 'PURGE' | 'SET_ACTIVE';
+    action: string;
     entityType: string;
     entityId: string;
     dataBefore?: any;

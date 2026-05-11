@@ -9,6 +9,7 @@ import {
 import { eq, and, sql, desc, SQL } from 'drizzle-orm';
 import type { CSARecord, TestRecord, Deficiency } from "@shared/types";
 import { generateCsaPdf } from "../lib/csa-pdf";
+import { AuditService } from "../services/audit-service";
 
 const csa = new Hono<HonoEnv>();
 
@@ -250,14 +251,14 @@ csa.post('/csa', async (c) => {
   }
 
   // 6. Audit Log
-  await db.insert(auditLogs).values({
-    id: crypto.randomUUID(),
+  const auditService = new AuditService(db);
+  await auditService.logAction({
     organizationId: orgId,
     userId: userId,
     action: 'SIGN_OFF_CSA',
     entityType: 'Control',
     entityId: newCsa.controlId,
-    descriptionAfter: `Completed CSA for ${newCsa.period} with result: ${newCsa.result}`,
+    description: `Completed CSA for ${newCsa.period} with result: ${newCsa.result}`,
     dataAfter: { csaId: id, ...newCsa },
     isRegulatory: true,
     effectiveDate: assessmentDate,
