@@ -51,7 +51,11 @@ export function CSAList({ items, isLoading, onViewDetail, onDelete, onPrint, onN
                   item.result === 'Effective' ? "bg-green-600" : "bg-red-600"
                 )}>{item.result}</Badge>
               </TableCell>
-              <TableCell className="text-xs text-slate-500">{new Date(item.assessmentDate).toLocaleDateString()}</TableCell>
+              <TableCell className="text-xs text-slate-500">
+                {new Date(item.assessmentDate).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                {' '}
+                {new Date(item.assessmentDate).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+              </TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-1">
                   <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => onViewDetail(item.id)}>

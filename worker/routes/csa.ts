@@ -89,6 +89,49 @@ csa.delete('/csa/schedules/:id', async (c) => {
   return ok(c, { success: true });
 });
 
+csa.put('/csa/:id', async (c) => {
+  const db = getDb(c.env.DATABASE_URL);
+  const id = c.req.param('id');
+  const orgId = c.get('organizationId');
+  const body = await c.req.json();
+
+  // 1. Update CSA Record
+  await db.update(csaRecords)
+    .set({
+      result: body.result,
+      comments: body.comments,
+      isDraft: body.isDraft,
+      isBpmConfirmed: body.isBpmConfirmed,
+      samplingMethodology: body.samplingMethodology,
+      documentList: body.documentList,
+      testProcedure: body.testProcedure,
+      archiveLocation: body.archiveLocation,
+    })
+    .where(and(eq(csaRecords.id, id), eq(csaRecords.organizationId, orgId)));
+
+  // 2. Resync Samples: Delete and re-insert sequentially
+  await db.delete(csaSamples).where(eq(csaSamples.csaRecordId, id));
+  
+  if (body.samples && Array.isArray(body.samples)) {
+    const samplesToInsert = body.samples.map((s: any) => ({
+      id: crypto.randomUUID(),
+      organizationId: orgId,
+      csaRecordId: id,
+      glRowId: s.glRowId,
+      sampleRef: s.sampleRef,
+      controlResults: s.controlResults,
+      itacExpectedResult: s.itacExpectedResult,
+      itacActualResult: s.itacActualResult,
+      itacMatch: s.itacMatch
+    }));
+    if (samplesToInsert.length > 0) {
+      await db.insert(csaSamples).values(samplesToInsert);
+    }
+  }
+
+  return ok(c, { success: true });
+});
+
 // --- CSA & Testing Refactored (Smart CSA) ---
 
 csa.get('/csa', async (c) => {

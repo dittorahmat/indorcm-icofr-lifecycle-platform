@@ -187,8 +187,13 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
 
   // 6. Mutations
   const createMutation = useMutation({
-    mutationFn: (data: any) => api<CSARecord>('/api/csa', { method: 'POST', body: JSON.stringify(data) }),
-    onSuccess: (newRecord, variables: any) => {
+    mutationFn: (data: any) => {
+      const url = activeCsaId ? `/api/csa/${activeCsaId}` : '/api/csa';
+      const method = activeCsaId ? 'PUT' : 'POST';
+      return api<CSARecord>(url, { method, body: JSON.stringify(data) });
+    },
+    onSuccess: (response: any, variables: any) => {
+      // response might be { success: true } from PUT, or the record itself from POST
       toast.success(variables.isDraft ? "Draft saved successfully" : "CSA Sign-off successful");
       queryClient.invalidateQueries({ queryKey: ['csa-list'] });
       queryClient.invalidateQueries({ queryKey: ['csa-schedules'] });
@@ -199,7 +204,9 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
         setIsInitialized(true);
         manualViewOverride.current = 'list';
       } else {
-        setActiveCsaId(newRecord.id);
+        // If it was a POST, we get the record back. If PUT, we might not.
+        const id = response.id || activeCsaId;
+        setActiveCsaId(id);
         form.reset(form.getValues(), { keepDirty: false });
       }
     }
