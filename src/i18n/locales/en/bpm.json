@@ -107,6 +107,9 @@
   "modal": {
     "title": "Business Process Mapping",
     "owner": "Department Owner",
+    "deleteTitle": "Delete {{type}}?",
+    "usedInCount": "Used in <strong>{{count}}</strong> places.",
+    "undoWarning": "This cannot be undone.",
     "tabs": {
       "worksheet": "Worksheet",
       "sampling": "Transaction Detail",
@@ -171,7 +174,12 @@
     "swimlane": {
       "department": "Department",
       "function": "Fungsi / Function",
-      "add": "Add Swimlane"
+      "add": "Add Swimlane",
+      "defaults": {
+        "lane": "New Swimlane",
+        "dept": "New Department",
+        "func": "New Function"
+      }
     },
     "roles": {
       "default": "Staff"
@@ -180,7 +188,10 @@
       "save": "Save Flow",
       "saving": "Saving...",
       "locked": "LOCKED",
-      "auditBaseline": "Audit Baseline"
+      "auditBaseline": "Audit Baseline",
+      "backToEditor": "Back to Editor",
+      "printExport": "Print / Export PDF",
+      "documentView": "Document View"
     }
   },
   "sampling": {

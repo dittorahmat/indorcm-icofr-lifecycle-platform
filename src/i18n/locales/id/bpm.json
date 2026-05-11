@@ -110,6 +110,9 @@
   "modal": {
     "title": "Business Process Mapping",
     "owner": "Pemilik Departemen",
+    "deleteTitle": "Hapus {{type}}?",
+    "usedInCount": "Digunakan di <strong>{{count}}</strong> tempat.",
+    "undoWarning": "Tindakan ini tidak dapat dibatalkan.",
     "tabs": {
       "worksheet": "Lembar Kerja",
       "sampling": "Detail Transaksi",
@@ -174,7 +177,12 @@
     "swimlane": {
       "department": "Departemen",
       "function": "Fungsi / Function",
-      "add": "Tambah Swimlane"
+      "add": "Tambah Swimlane",
+      "defaults": {
+        "lane": "Swimlane Baru",
+        "dept": "Departemen Baru",
+        "func": "Fungsi Baru"
+      }
     },
     "roles": {
       "default": "Staf"
@@ -183,7 +191,10 @@
       "save": "Simpan Alur",
       "saving": "Menyimpan...",
       "locked": "TERKUNCI",
-      "auditBaseline": "Baseline Audit"
+      "auditBaseline": "Baseline Audit",
+      "backToEditor": "Kembali ke Editor",
+      "printExport": "Cetak / Ekspor PDF",
+      "documentView": "Tampilan Dokumen"
     }
   },
   "sampling": {

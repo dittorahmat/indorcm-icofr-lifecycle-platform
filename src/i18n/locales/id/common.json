@@ -1,4 +1,9 @@
 {
+  "account": {
+    "title": "Akun Saya",
+    "profile": "Profil",
+    "settings": "Pengaturan"
+  },
   "actions": {
     "add": "Tambah",
     "save": "Simpan",
@@ -10,7 +15,9 @@
     "all": "Semua",
     "submit": "Kirim",
     "addSample": "Tambah Sampel",
-    "printPdf": "Cetak PDF"
+    "printPdf": "Cetak PDF",
+    "logout": "Keluar",
+    "deletePermanently": "Hapus Permanen"
   },
   "status": {
     "draft": "Draft",
@@ -31,6 +38,7 @@
     "deleted": "Berhasil dihapus",
     "saved": "Berhasil disimpan",
     "purged": "Semua data berhasil dihapus",
+    "logoutSuccess": "Berhasil keluar",
     "missingData": "Mohon lengkapi data (Tanggal & Sub-Proses)",
     "processNotFound": "Proses tidak ditemukan atau belum ter-link dengan BPM."
   },

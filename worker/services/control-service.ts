@@ -54,17 +54,14 @@ export class ControlService {
       year: data.year,
     };
 
-    await this.db.transaction(async (tx) => {
-      await tx.insert(controls).values(newControl as any);
-      const auditTx = new AuditService(tx as any);
-      await auditTx.logAction({
-        organizationId: orgId,
-        userId,
-        action: 'CREATE',
-        entityType: 'Control',
-        entityId: id,
-        dataAfter: newControl,
-      });
+    await this.db.insert(controls).values(newControl as any);
+    await this.audit.logAction({
+      organizationId: orgId,
+      userId,
+      action: 'CREATE',
+      entityType: 'Control',
+      entityId: id,
+      dataAfter: newControl,
     });
 
     return newControl;
@@ -74,80 +71,68 @@ export class ControlService {
     const [existing] = await this.db.select().from(controls).where(and(eq(controls.id, id), eq(controls.organizationId, orgId))).limit(1);
     if (!existing) throw new Error('Control not found');
 
-    await this.db.transaction(async (tx) => {
-      await tx.update(controls)
-        .set({
-          ...data,
-          updatedAt: new Date() as any,
-        } as any)
-        .where(eq(controls.id, id));
-      
-      const auditTx = new AuditService(tx as any);
-      await auditTx.logAction({
-        organizationId: orgId,
-        userId,
-        action: 'UPDATE',
-        entityType: 'Control',
-        entityId: id,
-        dataBefore: existing,
-        dataAfter: { ...existing, ...data },
-      });
+    await this.db.update(controls)
+      .set({
+        ...data,
+        updatedAt: new Date() as any,
+      } as any)
+      .where(eq(controls.id, id));
+    
+    await this.audit.logAction({
+      organizationId: orgId,
+      userId,
+      action: 'UPDATE',
+      entityType: 'Control',
+      entityId: id,
+      dataBefore: existing,
+      dataAfter: { ...existing, ...data },
     });
 
     return { success: true };
   }
 
   async approve(orgId: string, userId: string, id: string) {
-    await this.db.transaction(async (tx) => {
-      await tx.update(controls).set({ bpmStatus: 'Approved' }).where(and(eq(controls.id, id), eq(controls.organizationId, orgId)));
-      const auditTx = new AuditService(tx as any);
-      await auditTx.logAction({
-        organizationId: orgId,
-        userId,
-        action: 'APPROVE_CHANGE',
-        entityType: 'Control',
-        entityId: id,
-        description: "Updated & Approved via Workflow",
-        isRegulatory: true,
-        effectiveDate: new Date(),
-        approvedBy: userId
-      });
+    await this.db.update(controls).set({ bpmStatus: 'Approved' }).where(and(eq(controls.id, id), eq(controls.organizationId, orgId)));
+    await this.audit.logAction({
+      organizationId: orgId,
+      userId,
+      action: 'APPROVE_CHANGE',
+      entityType: 'Control',
+      entityId: id,
+      description: "Updated & Approved via Workflow",
+      isRegulatory: true,
+      effectiveDate: new Date(),
+      approvedBy: userId
     });
     return { success: true };
   }
 
   async submitForApproval(orgId: string, userId: string, id: string) {
-    await this.db.transaction(async (tx) => {
-      await tx.update(controls).set({ bpmStatus: 'Pending Approval' }).where(and(eq(controls.id, id), eq(controls.organizationId, orgId)));
-      const auditTx = new AuditService(tx as any);
-      await auditTx.logAction({
-        organizationId: orgId,
-        userId,
-        action: 'UPDATE',
-        entityType: 'Control',
-        entityId: id,
-        description: "Submitted for approval",
-        isRegulatory: true,
-        effectiveDate: new Date()
-      });
+    await this.db.update(controls).set({ bpmStatus: 'Pending Approval' }).where(and(eq(controls.id, id), eq(controls.organizationId, orgId)));
+    await this.audit.logAction({
+      organizationId: orgId,
+      userId,
+      action: 'UPDATE',
+      entityType: 'Control',
+      entityId: id,
+      description: "Submitted for approval",
+      isRegulatory: true,
+      effectiveDate: new Date()
     });
     return { success: true };
   }
 
   async reject(orgId: string, userId: string, id: string, note?: string) {
-    await this.db.transaction(async (tx) => {
-      await tx.update(controls).set({ bpmStatus: 'Rejected' }).where(and(eq(controls.id, id), eq(controls.organizationId, orgId)));
-      const auditTx = new AuditService(tx as any);
-      await auditTx.logAction({
-        organizationId: orgId,
-        userId,
-        action: 'UPDATE',
-        entityType: 'Control',
-        entityId: id,
-        description: `Rejected changes. Note: ${note || 'No note provided'}`,
-        isRegulatory: true,
-        effectiveDate: new Date()
-      });
+    await this.db.update(controls).set({ bpmStatus: 'Rejected' }).where(and(eq(controls.id, id), eq(controls.organizationId, orgId)));
+    await this.audit.logAction({
+      organizationId: orgId,
+      userId,
+      action: 'UPDATE',
+      entityType: 'Control',
+      entityId: id,
+      description: `Rejected changes. Note: ${note || 'No note provided'}`,
+      isRegulatory: true,
+      effectiveDate: new Date()
     });
     return { success: true };
   }
@@ -174,10 +159,8 @@ export class ControlService {
       }
     }
 
-    await this.db.transaction(async (tx) => {
-      await tx.delete(controls).where(eq(controls.id, id));
-      await tx.delete(rcmControls).where(eq(rcmControls.controlId, id));
-    });
+    await this.db.delete(controls).where(eq(controls.id, id));
+    await this.db.delete(rcmControls).where(eq(rcmControls.controlId, id));
 
     return { success: true };
   }

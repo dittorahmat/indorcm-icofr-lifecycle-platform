@@ -112,52 +112,23 @@ scoping.put('/simulations/:id', rbac(['Line 2', 'Admin']), async (c) => {
 
 scoping.post('/simulations/:id/submit', rbac(['Line 2', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
+  const scopingService = new ScopingService(db);
   const id = c.req.param('id') as string;
-  const orgId = c.get('organizationId');
-  const userId = c.get('userId');
-  const userRole = c.get('userRole');
   const body = await c.req.json<Partial<MaterialitySimulation>>();
   
-  const [existing] = await db.select().from(simulations).where(and(eq(simulations.id, id), eq(simulations.organizationId, orgId))).limit(1);
-  if (!existing) return notFound(c, 'Simulation not found');
-
-  const history = (existing.history as any[]) || [];
-  const newHistoryEntry = {
-    id: crypto.randomUUID(),
-    action: "Submit",
-    role: userRole,
-    userId: userId,
-    timestamp: Date.now(),
-    note: body.history?.[0]?.note || "Submitted for approval"
-  };
-
-  await db.update(simulations)
-    .set({ 
-      status: 'Pending CFO', 
-      updatedAt: new Date() as any,
-      omValue: body.omValue,
-      pmValue: body.pmValue,
-      significantAccounts: body.significantAccounts,
-      history: [...history, newHistoryEntry]
-    })
-    .where(and(eq(simulations.id, id), eq(simulations.organizationId, orgId)));
-  
-  // Notify CFO
-  const cfos = await db.select({ id: user.id }).from(user).where(eq(user.role, 'CFO'));
-  for (const cfo of cfos) {
-    await db.insert(notifications).values({
-      id: crypto.randomUUID(),
-      organizationId: orgId,
-      userId: cfo.id,
-      message: `A new scoping simulation "${existing.name}" has been submitted for your review.`,
-      type: 'info',
-      link: `/scoping?id=${id}`,
-      createdAt: new Date(),
-    });
+  try {
+    const updated = await scopingService.submitSimulation(
+      c.get('organizationId'),
+      c.get('userId'),
+      c.get('userRole'),
+      id,
+      body
+    );
+    return ok(c, updated);
+  } catch (e: any) {
+    if (e.message === 'Simulation not found') return notFound(c, e.message);
+    return bad(c, e.message);
   }
-      
-  const updated = await db.select().from(simulations).where(eq(simulations.id, id)).limit(1);
-  return ok(c, updated[0]);
 });
 
 scoping.post('/simulations/:id/approve', async (c) => {
@@ -318,17 +289,16 @@ scoping.post('/simulations/:id/account-departments/sync', async (c) => {
   if (!sim) return bad(c, "Simulation not found", 404);
 
   try {
-    await db.transaction(async (tx: DrizzleDb) => {
-      for (const m of mappings) {
-        await tx.update(glRows)
-          .set({ assignedDepartmentIds: m.departmentIds })
-          .where(and(
-            eq(glRows.snapshotId, sim.glSnapshotId!),
-            eq(glRows.noGL, m.noGL),
-            eq(glRows.organizationId, orgId)
-          ));
-      }
-    });
+    // Sequential updates to avoid transaction issues and overwhelming the DB
+    for (const m of mappings) {
+      await db.update(glRows)
+        .set({ assignedDepartmentIds: m.departmentIds })
+        .where(and(
+          eq(glRows.snapshotId, sim.glSnapshotId!),
+          eq(glRows.noGL, m.noGL),
+          eq(glRows.organizationId, orgId)
+        ));
+    }
     return ok(c, { success: true });
   } catch (e: any) {
     return bad(c, `Sync failed: ${e.message}`);
@@ -355,31 +325,29 @@ scoping.post('/simulations/:id/account-applications/sync', async (c) => {
   const { mappings } = await c.req.json<{ mappings: { accountCode: string, applicationIds: string[] }[] }>();
 
   try {
-    await db.transaction(async (tx: DrizzleDb) => {
-      for (const m of mappings) {
-        await tx.delete(simulationAccountApplications).where(and(
-          eq(simulationAccountApplications.simulationId, simId),
-          eq(simulationAccountApplications.accountCode, m.accountCode),
-          eq(simulationAccountApplications.organizationId, orgId)
-        ));
+    for (const m of mappings) {
+      await db.delete(simulationAccountApplications).where(and(
+        eq(simulationAccountApplications.simulationId, simId),
+        eq(simulationAccountApplications.accountCode, m.accountCode),
+        eq(simulationAccountApplications.organizationId, orgId)
+      ));
 
-        if (m.applicationIds.length > 0) {
-          for (const appId of m.applicationIds) {
-            await tx.insert(simulationAccountApplications).values({
-              id: crypto.randomUUID(),
-              organizationId: orgId,
-              simulationId: simId,
-              accountCode: m.accountCode,
-              applicationId: appId
-            });
+      if (m.applicationIds.length > 0) {
+        for (const appId of m.applicationIds) {
+          await db.insert(simulationAccountApplications).values({
+            id: crypto.randomUUID(),
+            organizationId: orgId,
+            simulationId: simId,
+            accountCode: m.accountCode,
+            applicationId: appId
+          });
 
-            await tx.update(applications)
-              .set({ isSignificant: true })
-              .where(and(eq(applications.id, appId), eq(applications.organizationId, orgId)));
-          }
+          await db.update(applications)
+            .set({ isSignificant: true })
+            .where(and(eq(applications.id, appId), eq(applications.organizationId, orgId)));
         }
       }
-    });
+    }
     return ok(c, { success: true });
   } catch (e: any) {
     return bad(c, `Sync failed: ${e.message}`);
@@ -404,41 +372,39 @@ scoping.post('/gl-snapshots', async (c) => {
   const snapshotId = crypto.randomUUID();
   const now = new Date();
 
-  await db.transaction(async (tx: DrizzleDb) => {
-    // 1. Create the snapshot record
-    await tx.insert(glSnapshots).values({
-      id: snapshotId,
-      organizationId: orgId,
-      filename,
-      uploadDate: now,
-      status: 'Draft',
-      isActive: false
-    });
-
-    // 2. Insert rows in batches to avoid overwhelming the DB
-    const batchSize = 100;
-    for (let i = 0; i < rows.length; i += batchSize) {
-      const batch = rows.slice(i, i + batchSize).map(r => ({
-        id: crypto.randomUUID(),
-        snapshotId,
-        organizationId: orgId,
-        ymd: r.ymd,
-        entityCode: r.entityCode,
-        noGL: r.noGL,
-        glDesc: r.glDesc,
-        currency: r.currency,
-        balance: r.balance,
-        fsliCode: r.fsliCode,
-        fsliName: r.fsliName,
-        category: r.category,
-        subKategori: r.subKategori,
-        noUrut: r.noUrut,
-        assignedDepartmentIds: r.assignedDepartmentIds || [],
-        ownerAcceptance: r.ownerAcceptance
-      }));
-      await tx.insert(glRows).values(batch);
-    }
+  // 1. Create the snapshot record
+  await db.insert(glSnapshots).values({
+    id: snapshotId,
+    organizationId: orgId,
+    filename,
+    uploadDate: now,
+    status: 'Draft',
+    isActive: false
   });
+
+  // 2. Insert rows in batches to avoid overwhelming the DB
+  const batchSize = 100;
+  for (let i = 0; i < rows.length; i += batchSize) {
+    const batch = rows.slice(i, i + batchSize).map(r => ({
+      id: crypto.randomUUID(),
+      snapshotId,
+      organizationId: orgId,
+      ymd: r.ymd,
+      entityCode: r.entityCode,
+      noGL: r.noGL,
+      glDesc: r.glDesc,
+      currency: r.currency,
+      balance: r.balance,
+      fsliCode: r.fsliCode,
+      fsliName: r.fsliName,
+      category: r.category,
+      subKategori: r.subKategori,
+      noUrut: r.noUrut,
+      assignedDepartmentIds: r.assignedDepartmentIds || [],
+      ownerAcceptance: r.ownerAcceptance
+    }));
+    await db.insert(glRows).values(batch);
+  }
 
   return ok(c, { id: snapshotId, filename, uploadDate: now, status: 'Draft' });
 });
@@ -458,7 +424,7 @@ scoping.get('/gl-snapshots/:id', async (c) => {
   });
 });
 
-scoping.post('/gl-snapshots/:id/mapping', async (c) => {
+scoping.put('/gl-snapshots/:id/mapping', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const id = c.req.param('id');
   const orgId = c.get('organizationId');

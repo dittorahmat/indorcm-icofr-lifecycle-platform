@@ -1,26 +1,15 @@
 import { ControlFrequency, Control, GLRow, BenchmarkBasis } from "@shared/types";
+import { 
+  getGroupMultiplier, 
+  calculateBenchmarkValue, 
+  calculateRiskRating 
+} from "../pages/scoping/services/materiality-calc";
 
-/**
- * Logika Matrix Risiko 3x3 berdasarkan Tabel 12 (Hal 37)
- * Mengombinasikan Faktor Kuantitatif dan Kualitatif
- */
-export function calculateRiskRating(
-  quantitative: "High" | "Medium" | "Low",
-  qualitative: "High" | "Medium" | "Low"
-): "High" | "Medium" | "Low" {
-  if (quantitative === "High") {
-    return qualitative === "Low" ? "Medium" : "High";
-  }
-  if (quantitative === "Medium") {
-    if (qualitative === "High") return "High";
-    if (qualitative === "Medium") return "Medium";
-    return "Low";
-  }
-  if (quantitative === "Low") {
-    return qualitative === "High" ? "Medium" : "Low";
-  }
-  return "Low";
-}
+export { 
+  getGroupMultiplier, 
+  calculateBenchmarkValue, 
+  calculateRiskRating 
+};
 
 /**
  * Panduan Penentuan Jumlah Sampel berdasarkan Tabel 22 (Hal 56)
@@ -169,29 +158,6 @@ export function getDeficiencyDistribution(severity: string): DeficiencyStakehold
     default:
       return ["Unit Kerja / Process Owner"];
   }
-}
-
-/**
- * Get Multiplier based on Table 25 (Hal 104)
- */
-export function getGroupMultiplier(count: number): number {
-  if (count <= 1) return 1;
-  if (count === 2) return 1.5;
-  if (count <= 4) return 2;
-  if (count <= 6) return 2.5;
-  if (count <= 9) return 3;
-  if (count <= 14) return 3.5;
-  if (count <= 19) return 4;
-  if (count <= 25) return 4.5;
-  if (count <= 30) return 5;
-  if (count <= 40) return 5.5;
-  if (count <= 50) return 6;
-  if (count <= 64) return 6.5;
-  if (count <= 80) return 7;
-  if (count <= 94) return 7.5;
-  if (count <= 110) return 8;
-  if (count <= 130) return 8.5;
-  return 9;
 }
 
 /**
@@ -376,24 +342,6 @@ export function filterEmptyRows(rows: any[]): any[] {
     );
     return hasData;
   });
-}
-
-/**
- * Calculate benchmark value from GL data based on selected FSLI basis
- */
-export function calculateBenchmarkValue(
-  glData: GLRow[], 
-  basis: string
-): number {
-  if (!basis) return 0;
-
-  // Filter GL rows that belong to the selected FSLI name
-  const matchingRows = glData.filter(row => 
-    row.fsliName === basis
-  );
-
-  // Sum absolute values for conservatism
-  return matchingRows.reduce((sum, row) => sum + Math.abs(row.balance), 0);
 }
 
 /**

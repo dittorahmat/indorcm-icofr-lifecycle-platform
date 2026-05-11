@@ -8,6 +8,7 @@ import {
 import { eq, sql, and } from 'drizzle-orm';
 import type { Settings } from "@shared/types";
 import { seedDatabase } from '../db/seed';
+import { ScopingService } from '../services/scoping-service';
 
 const users = new Hono<HonoEnv>();
 
@@ -267,11 +268,10 @@ users.get('/dev/purge-all', async (c) => {
 
 users.delete('/dev/purge-scoping', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
+  const scopingService = new ScopingService(db);
   try {
-    await db.execute(sql`DELETE FROM simulations`);
-    await db.execute(sql`DELETE FROM gl_snapshots`);
-    await db.execute(sql`DELETE FROM gl_rows`);
-    return ok(c, { message: "Scoping data purged." });
+    const result = await scopingService.purgeData(c.get('organizationId'), c.get('userId'));
+    return ok(c, result);
   } catch (e: any) {
     return ok(c, { error: e.message });
   }

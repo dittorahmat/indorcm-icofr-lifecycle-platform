@@ -65,6 +65,19 @@ export function NotificationBell() {
     }
   });
 
+  const markSingleReadMutation = useMutation({
+    mutationFn: (id: string) => api(`/api/notifications/${id}/read`, { method: 'POST' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    },
+  });
+
+  const handleNotificationClick = (n: Notification) => {
+    if (!n.readStatus) {
+      markSingleReadMutation.mutate(n.id);
+    }
+  };
+
   const getIcon = (type: string) => {
     switch (type) {
       case 'success': return <CheckCircle2 className="h-4 w-4 text-green-500" />;
@@ -129,10 +142,14 @@ export function NotificationBell() {
           ) : (
             <div className="flex flex-col">
               {notifications.map((n) => (
-                <DropdownMenuItem key={n.id} className={cn(
-                  "p-4 cursor-default focus:bg-slate-50 flex gap-3 items-start border-b last:border-0 group",
-                  !n.readStatus && "bg-indigo-50/30"
-                )}>
+                <DropdownMenuItem 
+                  key={n.id} 
+                  className={cn(
+                    "p-4 cursor-pointer focus:bg-slate-50 flex gap-3 items-start border-b last:border-0 group",
+                    !n.readStatus && "bg-indigo-50/30"
+                  )}
+                  onClick={() => handleNotificationClick(n)}
+                >
                   <div className="mt-0.5 shrink-0">
                     {getIcon(n.type)}
                   </div>

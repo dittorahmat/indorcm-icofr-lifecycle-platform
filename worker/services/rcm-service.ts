@@ -33,17 +33,14 @@ export class RcmService {
       year: data.year,
     };
 
-    await this.db.transaction(async (tx) => {
-      await tx.insert(rcms).values(newItem as any);
-      const auditTx = new AuditService(tx as any);
-      await auditTx.logAction({
-        organizationId: orgId,
-        userId,
-        action: 'CREATE',
-        entityType: 'RCM',
-        entityId: id,
-        dataAfter: newItem,
-      });
+    await this.db.insert(rcms).values(newItem as any);
+    await this.audit.logAction({
+      organizationId: orgId,
+      userId,
+      action: 'CREATE',
+      entityType: 'RCM',
+      entityId: id,
+      dataAfter: newItem,
     });
 
     return newItem;
@@ -65,18 +62,15 @@ export class RcmService {
     if (data.status !== undefined) updateData.status = data.status;
 
     if (Object.keys(updateData).length > 0) {
-      await this.db.transaction(async (tx) => {
-        await tx.update(rcms).set(updateData).where(eq(rcms.id, id));
-        const auditTx = new AuditService(tx as any);
-        await auditTx.logAction({
-          organizationId: orgId,
-          userId,
-          action: 'UPDATE',
-          entityType: 'RCM',
-          entityId: id,
-          dataBefore: existing,
-          dataAfter: { ...existing, ...updateData },
-        });
+      await this.db.update(rcms).set(updateData).where(eq(rcms.id, id));
+      await this.audit.logAction({
+        organizationId: orgId,
+        userId,
+        action: 'UPDATE',
+        entityType: 'RCM',
+        entityId: id,
+        dataBefore: existing,
+        dataAfter: { ...existing, ...updateData },
       });
     }
 
@@ -84,35 +78,29 @@ export class RcmService {
   }
 
   async validate(orgId: string, userId: string, id: string) {
-    await this.db.transaction(async (tx) => {
-      await tx.update(rcms).set({ status: 'Active' }).where(and(eq(rcms.id, id), eq(rcms.organizationId, orgId)));
-      const auditTx = new AuditService(tx as any);
-      await auditTx.logAction({
-        organizationId: orgId,
-        userId,
-        action: 'VALIDATE',
-        entityType: 'RCM',
-        entityId: id,
-        description: "RCM Design Validated and Activated",
-      });
+    await this.db.update(rcms).set({ status: 'Active' }).where(and(eq(rcms.id, id), eq(rcms.organizationId, orgId)));
+    await this.audit.logAction({
+      organizationId: orgId,
+      userId,
+      action: 'VALIDATE',
+      entityType: 'RCM',
+      entityId: id,
+      description: "RCM Design Validated and Activated",
     });
     return { success: true };
   }
 
   async approveChange(orgId: string, userId: string, id: string) {
-    await this.db.transaction(async (tx) => {
-      await tx.update(rcms).set({ status: 'Active' }).where(and(eq(rcms.id, id), eq(rcms.organizationId, orgId)));
-      const auditTx = new AuditService(tx as any);
-      await auditTx.logAction({
-        organizationId: orgId,
-        userId,
-        action: 'APPROVE_CHANGE',
-        entityType: 'RCM',
-        entityId: id,
-        isRegulatory: true,
-        effectiveDate: new Date(),
-        approvedBy: userId
-      });
+    await this.db.update(rcms).set({ status: 'Active' }).where(and(eq(rcms.id, id), eq(rcms.organizationId, orgId)));
+    await this.audit.logAction({
+      organizationId: orgId,
+      userId,
+      action: 'APPROVE_CHANGE',
+      entityType: 'RCM',
+      entityId: id,
+      isRegulatory: true,
+      effectiveDate: new Date(),
+      approvedBy: userId
     });
     return { success: true };
   }

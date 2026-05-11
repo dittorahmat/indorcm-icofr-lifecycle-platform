@@ -13,6 +13,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { NotificationBell } from './NotificationBell';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
+import { useTranslation } from 'react-i18next';
 
 
 export function MainHeader() {
@@ -22,11 +23,13 @@ export function MainHeader() {
   const { isDark } = useTheme();
   const { isPinned, setIsPinned } = useSidebar();
 
+  const { t } = useTranslation('common');
+
   const handleLogout = () => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('mockRole');
     localStorage.removeItem('userId');
-    toast.success('Logout successful');
+    toast.success(t('notifications.logoutSuccess'));
     navigate('/');
   };
 
@@ -75,14 +78,14 @@ export function MainHeader() {
               </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel className="font-bold">My Account</DropdownMenuLabel>
+              <DropdownMenuLabel className="font-bold">{t('account.title')}</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer font-medium">Profile</DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer font-medium">Settings</DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer font-medium">{t('account.profile')}</DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer font-medium">{t('account.settings')}</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout} className="text-red-600 focus:text-red-600 cursor-pointer font-bold">
                 <LogOut className="mr-2 h-4 w-4" />
-                Logout
+                {t('actions.logout')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

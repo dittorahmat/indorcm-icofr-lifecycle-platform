@@ -10,7 +10,7 @@ export class AuditService {
   async logAction(params: {
     organizationId: string;
     userId: string;
-    action: 'CREATE' | 'UPDATE' | 'DELETE' | 'VALIDATE' | 'APPROVE_CHANGE' | 'UPDATE_BPM' | 'ASSIGN_DEPARTMENT';
+    action: 'CREATE' | 'UPDATE' | 'DELETE' | 'VALIDATE' | 'APPROVE_CHANGE' | 'UPDATE_BPM' | 'ASSIGN_DEPARTMENT' | 'SUBMIT' | 'PURGE' | 'SET_ACTIVE';
     entityType: string;
     entityId: string;
     dataBefore?: any;
@@ -50,8 +50,8 @@ export class AuditService {
       entityType,
       entityId,
       descriptionAfter: description,
-      dataBefore: dataBefore ? JSON.parse(JSON.stringify(dataBefore)) : null,
-      dataAfter: dataAfter ? JSON.parse(JSON.stringify(dataAfter)) : null,
+      dataBefore: dataBefore ? structuredClone(dataBefore) : null,
+      dataAfter: dataAfter ? structuredClone(dataAfter) : null,
       timestamp: new Date(),
       effectiveDate: effectiveDate || null,
       isRegulatory: isRegulatory || false,

@@ -231,13 +231,15 @@ rcm.post('/rcm-matrix/:type/batch-update', rbac(['Line 2', 'Admin']), async (c) 
   const orgId = c.get('organizationId');
   const { items } = await c.req.json();
 
-  await db.transaction(async (tx: DrizzleDb) => {
+  try {
     for (const item of items) {
       if (!item.mappingId) continue;
-      await tx.update(rcmControls).set(item).where(and(eq(rcmControls.id, item.mappingId), eq(rcmControls.organizationId, orgId)));
+      await db.update(rcmControls).set(item).where(and(eq(rcmControls.id, item.mappingId), eq(rcmControls.organizationId, orgId)));
     }
-  });
-  return ok(c, { success: true });
+    return ok(c, { success: true });
+  } catch (e: any) {
+    return bad(c, `Batch update failed: ${e.message}`);
+  }
 });
 
 // --- Controls Routes (Refactored to Service Layer) ---

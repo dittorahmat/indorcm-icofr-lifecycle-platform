@@ -1,4 +1,9 @@
 {
+  "account": {
+    "title": "My Account",
+    "profile": "Profile",
+    "settings": "Settings"
+  },
   "actions": {
     "add": "Add",
     "save": "Save",
@@ -10,7 +15,9 @@
     "all": "All",
     "submit": "Submit",
     "addSample": "Add Sample",
-    "printPdf": "Print PDF"
+    "printPdf": "Print PDF",
+    "logout": "Logout",
+    "deletePermanently": "Delete Permanently"
   },
   "status": {
     "draft": "Draft",
@@ -24,15 +31,16 @@
     "success": "Success",
     "error": "Error",
     "warning": "Warning",
-    "info": "Information",
+    "info": "Info",
     "exportSuccess": "Report exported successfully.",
     "created": "Created successfully",
     "updated": "Updated successfully",
     "deleted": "Deleted successfully",
     "saved": "Saved successfully",
-    "purged": "All data purged successfully",
-    "missingData": "Please complete all required fields (Date & Sub-Process)",
-    "processNotFound": "Process not found or not linked with BPM."
+    "purged": "All data successfully purged",
+    "logoutSuccess": "Logout successful",
+    "missingData": "Please complete the data (Date & Sub-Process)",
+    "processNotFound": "Process not found or not linked to BPM."
   },
   "placeholders": {
     "search": "Search...",

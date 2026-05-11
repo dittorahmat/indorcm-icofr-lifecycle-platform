@@ -217,6 +217,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear }: BPMEditorProps
     mutationFn: (data: any) => api(`/api/bpm-diagrams/${diagramId}`, { method: 'PUT', body: JSON.stringify(data) }),
     onSuccess: () => {
       toast.success(t('common:notifications.success'));
+      resetDirty();
       queryClient.invalidateQueries({ queryKey: ['bpm-diagrams'] });
     }
   });
@@ -469,7 +470,9 @@ export function BPMEditor({ diagramId, subProcess, workingYear }: BPMEditorProps
                         id, type: 'swimlane', position: { x: 0, y: 0 }, zIndex: -1,
                         style: { width: 350, height: 800 },
                         data: { 
-                          label: 'New Swimlane', department: 'New Department', function: 'New Function',
+                          label: t('bpm:editor.swimlane.defaults.lane'), 
+                          department: t('bpm:editor.swimlane.defaults.dept'), 
+                          function: t('bpm:editor.swimlane.defaults.func'),
                           onChangeDepartment: (v: string) => updateNodeData(id, { department: v }),
                           onChangeFunction: (v: string) => updateNodeData(id, { function: v })
                         } 
@@ -503,18 +506,18 @@ export function BPMEditor({ diagramId, subProcess, workingYear }: BPMEditorProps
         <AlertDialog open={!!impactData} onOpenChange={(open) => !open && setImpactData(null)}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle className="text-red-600">Delete {impactData?.type}?</AlertDialogTitle>
+              <AlertDialogTitle className="text-red-600">{t('bpm:modal.deleteTitle', { type: impactData?.type })}</AlertDialogTitle>
               <AlertDialogDescription asChild>
                 <div className="text-sm text-muted-foreground space-y-3">
-                  <p>Used in <strong>{impactData?.count}</strong> places.</p>
-                  <p className="text-red-700 font-medium">This cannot be undone.</p>
+                  <div dangerouslySetInnerHTML={{ __html: t('bpm:modal.usedInCount', { count: impactData?.count }) }} />
+                  <p className="text-red-700 font-medium">{t('bpm:modal.undoWarning')}</p>
                 </div>
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel>{t('common:actions.cancel')}</AlertDialogCancel>
               <Button variant="destructive" onClick={() => impactData && queryClient.invalidateQueries({ queryKey: [impactData.type === 'Risk' ? 'rcm' : 'controls'] })} disabled={saveMutation.isPending}>
-                Delete Permanently
+                {t('common:actions.delete')}
               </Button>
             </AlertDialogFooter>
           </AlertDialogContent>
