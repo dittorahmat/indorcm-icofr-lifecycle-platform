@@ -55,8 +55,8 @@ export function RCMELCPage({ embedded = false }: { embedded?: boolean }) {
           onRefresh={() => queryClient.invalidateQueries({ queryKey: ['controls-elc'] })}
         />
       )}
-      <div className="p-0 relative">
-        <div className="w-full border-t border-b bg-white border-slate-200">
+      <div className="p-0 relative flex-1 overflow-hidden flex flex-col">
+        <div className="w-full border-t border-b bg-white border-slate-200 overflow-auto flex-1">
           <TooltipProvider>
             <Table noWrapper className="min-w-[1800px] table-fixed border-separate border-spacing-0">
               <TableHeader className="sticky top-16 z-50 bg-slate-100">
@@ -89,7 +89,7 @@ export function RCMELCPage({ embedded = false }: { embedded?: boolean }) {
               <TableBody>
                 {elcItems.map((ctrl, idx) => {
                   const isEven = idx % 2 === 1;
-                  const rowBg = isEven ? "bg-[#A9A9A9]" : "bg-white";
+                  const rowBg = isEven ? "bg-[#D3D3D3]" : "bg-white";
 
                   return (
                     <TableRow key={ctrl.id} className={cn(

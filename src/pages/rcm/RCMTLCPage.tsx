@@ -192,10 +192,10 @@ export function RCMTLCPage({ embedded = false, filterBpmId }: RCMTLCPageProps) {
       )}
 
       {/* Matrix Area - Expands fully */}
-      <div className="p-0 relative">
-        <div className="w-full border-t border-b bg-white border-slate-200">
+      <div className="p-0 relative flex-1 overflow-hidden flex flex-col">
+        <div className="w-full border-t border-b bg-white border-slate-200 overflow-auto flex-1">
           <Table noWrapper className="min-w-[4800px] table-fixed border-separate border-spacing-0">
-            <TableHeader className="sticky top-16 z-50">
+            <TableHeader className="sticky top-0 z-50">
               <TableRow className="divide-x divide-slate-200 bg-slate-100 h-10">
                 {/* Fixed Columns Header */}
                 <TableHead className="w-[50px] font-black uppercase text-[10px] text-center sticky left-0 z-[60] bg-slate-100 border-r-2 border-slate-300">i. No</TableHead>
@@ -260,7 +260,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId }: RCMTLCPageProps) {
               ) : filteredItems.map((item, idx) => {
                 const isEditing = editingMappingId === item.mappingId;
                 const isEven = idx % 2 === 1;
-                const rowBg = isEven ? "bg-[#A9A9A9]" : "bg-white";
+                const rowBg = isEven ? "bg-[#D3D3D3]" : "bg-white";
 
                 return (
                   <TableRow key={`${item.mappingId}-${idx}`} className={cn(

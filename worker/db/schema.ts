@@ -1,5 +1,21 @@
-import { pgTable, text, integer, timestamp, boolean, doublePrecision, jsonb, pgEnum, index } from "drizzle-orm/pg-core";
+import { pgTable, text, integer, timestamp, boolean, doublePrecision, jsonb, pgEnum, index, customType } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
+
+// Custom type for PostgreSQL tsvector and vector
+const tsvector = customType<{ data: string }>({
+	dataType() {
+		return "tsvector";
+	},
+});
+
+const vector = customType<{ data: number[]; config: { dimensions: number } }>({
+	dataType(config) {
+		return `vector(${config?.dimensions})`;
+	},
+	toDriver(value: number[]) {
+		return `[${value.join(",")}]`;
+	},
+});
 
 // --- BETTER AUTH TABLES ---
 
@@ -554,10 +570,15 @@ export const documents = pgTable("documents", {
 	type: text("type").notNull(), // Internal, External
 	category: text("category"), // SOP, Regulation, etc.
 	content: text("content"), // Extracted text
+	embedding: vector("embedding", { dimensions: 768 }), // Vector for AI semantic search
+	ftsTokens: tsvector("fts_tokens"), // tsvector for full-text keyword search
 	fileUrl: text("file_url"), // R2 path/URL
 	createdAt: timestamp("created_at").notNull().defaultNow(),
 	createdBy: text("created_by").references(() => user.id),
-});
+}, (table) => ({
+	embeddingIdx: index("doc_embedding_idx").using("hnsw", table.embedding.op("vector_cosine_ops")),
+	ftsIdx: index("doc_fts_idx").using("gin", table.ftsTokens),
+}));
 
 export const documentDepartments = pgTable("document_departments", {
 	id: text("id").primaryKey(),
@@ -579,6 +600,20 @@ export const documentFslis = pgTable("document_fslis", {
 	documentId: text("document_id").notNull().references(() => documents.id, { onDelete: 'cascade' }),
 	fsliCode: text("fsli_code").notNull(),
 });
+
+export const documentChunks = pgTable("document_chunks", {
+	id: text("id").primaryKey(),
+	organizationId: text("organization_id").references(() => organization.id),
+	documentId: text("document_id").notNull().references(() => documents.id, { onDelete: 'cascade' }),
+	content: text("content").notNull(),
+	embedding: vector("embedding", { dimensions: 768 }),
+	ftsTokens: tsvector("fts_tokens"),
+	metadata: jsonb("metadata"), // For storing page numbers, section headers, etc.
+	createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+	embeddingIdx: index("chunk_embedding_idx").using("hnsw", table.embedding.op("vector_cosine_ops")),
+	ftsIdx: index("chunk_fts_idx").using("gin", table.ftsTokens),
+}));
 
 export const systemLicenses = pgTable("system_licenses", {
 	id: text("id").primaryKey(),

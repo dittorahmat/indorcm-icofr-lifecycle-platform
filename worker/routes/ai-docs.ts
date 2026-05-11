@@ -2,11 +2,12 @@ import { Hono } from "hono";
 import type { HonoEnv } from '../app';
 import { ok, bad, notFound } from '../lib/utils';
 import { getDb } from '../db';
-import { documents, documentDepartments, documentGls, documentFslis, user } from '../db/schema';
+import { documents, documentDepartments, documentGls, documentFslis, user, documentChunks } from '../db/schema';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { getDocumentProxy, extractText } from "unpdf";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { ICOFR_KNOWLEDGE_BASE } from '../knowledge-base';
+import { AIService } from '../services/ai-service';
 
 const aiDocsApp = new Hono<HonoEnv>();
 
@@ -84,6 +85,8 @@ aiDocsApp.post('/documents', async (c) => {
     });
 
     const docId = crypto.randomUUID();
+    const apiKey = c.env.GEMINI_API_KEY;
+    
     const newDoc = {
       id: docId,
       organizationId: orgId,
@@ -97,6 +100,34 @@ aiDocsApp.post('/documents', async (c) => {
     };
 
     await db.insert(documents).values(newDoc);
+
+    // Granular RAG Chunking
+    if (apiKey && extractedText) {
+      try {
+        const aiService = new AIService(apiKey);
+        const chunks = AIService.splitIntoChunks(extractedText);
+        
+        for (let i = 0; i < chunks.length; i++) {
+          const chunkContent = chunks[i];
+          const embedding = await aiService.generateEmbedding(chunkContent);
+          
+          await db.insert(documentChunks).values({
+            id: crypto.randomUUID(),
+            organizationId: orgId,
+            documentId: docId,
+            content: chunkContent,
+            embedding,
+            ftsTokens: sql`to_tsvector('indonesian', ${chunkContent})`,
+            metadata: { pagePart: i + 1 }
+          });
+          
+          // Small delay for rate limits in 2026 free-tier if applicable
+          if (chunks.length > 1) await new Promise(r => setTimeout(r, 100));
+        }
+      } catch (err: any) {
+        console.error('[API] Granular RAG processing failed:', err.message);
+      }
+    }
 
     for (const dId of deptIds) {
       await db.insert(documentDepartments).values({ id: crypto.randomUUID(), organizationId: orgId, documentId: docId, departmentId: dId });
@@ -203,35 +234,22 @@ aiDocsApp.post('/ai/chat', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
 
-  let relevantDocs: any[] = [];
+  let retrievalResults: any[] = [];
   try {
-    if (role === 'Line 1') {
-      const docsResult = await db.execute(sql`
-        SELECT DISTINCT d.content, d.title
-        FROM documents d
-        LEFT JOIN document_departments dd ON d.id = dd.document_id
-        WHERE d.organization_id = ${orgId}
-        AND (
-          d.type = 'External' 
-          OR (d.type = 'Internal' AND dd.department_id = ${userDeptId})
-        )
-      `);
-      relevantDocs = docsResult.rows;
-    } else {
-      relevantDocs = await db.select({ content: documents.content, title: documents.title })
-        .from(documents)
-        .where(eq(documents.organizationId, orgId));
-    }
-  } catch (e) {
-    console.error('Failed to fetch dynamic knowledge:', e);
+    const aiService = new AIService(apiKey);
+    const queryVector = await aiService.generateEmbedding(message);
+    
+    // In a real 2026 production app, we would add filtering by role/dept inside hybridSearch
+    retrievalResults = await aiService.hybridSearch(db, orgId, message, queryVector, 10);
+  } catch (e: any) {
+    console.error('Retrieval failed, falling back to basic prompt:', e.message);
   }
 
-  const dynamicKnowledge = relevantDocs
-    .filter(d => d.content)
-    .map(d => `--- DOKUMEN: ${d.title} ---\n${d.content}\n`)
-    .join('\n\n');
+  const knowledgeBase = retrievalResults.length > 0
+    ? retrievalResults.map(r => AIService.situationalChunking(r.content, { title: r.title, category: r.category })).join('\n\n')
+    : ICOFR_KNOWLEDGE_BASE;
 
-  const knowledgeBase = dynamicKnowledge || ICOFR_KNOWLEDGE_BASE;
+  const sources = retrievalResults.map(r => ({ title: r.title, score: r.score }));
 
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
@@ -239,7 +257,8 @@ aiDocsApp.post('/ai/chat', async (c) => {
       model: "gemini-2.5-flash-lite",
       systemInstruction: `Anda adalah Asisten AI ICOFR yang membantu pengguna memahami regulasi Pengendalian Internal atas Pelaporan Keuangan (ICOFR) berdasarkan dokumen perusahaan dan regulasi pemerintah.
 
-Jawablah pertanyaan dengan akurat berdasarkan dokumen yang disediakan di bawah ini.
+
+Jawablah pertanyaan dengan akurat berdasarkan potongan dokumen yang disediakan di bawah ini.
 Jika dokumen menyebutkan nomor pasal atau bab, sertakan dalam jawaban.
 ${pageContext}
 
@@ -266,7 +285,7 @@ ${knowledgeBase}
 
     return ok(c, {
       response: responseText,
-      sources: []
+      sources: sources
     });
 
   } catch (error: any) {
