@@ -267,8 +267,13 @@ export function AppSidebar(): JSX.Element {
           </SidebarGroupLabel>
           <SidebarMenu className="px-2">
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/ai-hub")} className="min-h-12 h-auto py-2 text-[16px]">
+              <SidebarMenuButton asChild isActive={isActive("/ai-hub")}>
                 <Link to="/ai-hub" className="font-bold"><BrainCircuit className="h-5 w-5 text-white" /> <span>{t('items.aiAnalytics')}</span></Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={isActive("/documents")}>
+                <Link to="/documents" className="font-bold"><FileText className="h-5 w-5 text-white" /> <span>{t('items.documents')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
