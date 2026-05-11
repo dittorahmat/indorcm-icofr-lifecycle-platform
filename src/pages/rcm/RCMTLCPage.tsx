@@ -141,7 +141,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId }: RCMTLCPageProps) {
 
   const content = (
 
-    <div className="flex flex-col min-w-0">
+    <div className="flex flex-col min-w-0 h-screen overflow-hidden">
       {!embedded && (
         <>
           {/* Header - Static inside the scrolling area */}

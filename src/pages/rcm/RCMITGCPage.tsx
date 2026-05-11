@@ -118,7 +118,7 @@ export function RCMITGCPage({ embedded = false, filterBpmId }: RCMITGCPageProps)
   );
 
   const content = (
-    <div className="flex flex-col min-w-0">
+    <div className="flex flex-col min-w-0 h-screen overflow-hidden">
       {!embedded && (
         <RCMPageHeader 
           title="RCM ITGC Matrix"
@@ -136,6 +136,7 @@ export function RCMITGCPage({ embedded = false, filterBpmId }: RCMITGCPageProps)
         <div className="w-full border-t border-b bg-white border-slate-200 overflow-auto flex-1">
           <Table noWrapper className="min-w-[3800px] table-fixed border-separate border-spacing-0">
             <TableHeader className="sticky top-0 z-50 bg-slate-100">
+
               <TableRow className="divide-x divide-slate-200 h-10">
                 <TableHead className="w-[50px] font-black uppercase text-xs text-center sticky left-0 z-[60] bg-slate-100 border-r-2 border-slate-300">i. No</TableHead>
                 <TableHead className="w-[260px] font-black uppercase text-xs sticky left-[50px] z-[60] bg-slate-100 border-r-2 border-slate-300 text-indigo-700 px-3">ii. {t('matrix.process_info')}</TableHead>

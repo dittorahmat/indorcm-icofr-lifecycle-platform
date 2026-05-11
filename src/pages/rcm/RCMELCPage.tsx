@@ -45,7 +45,7 @@ export function RCMELCPage({ embedded = false }: { embedded?: boolean }) {
   const blocker = useUnsavedChanges(false);
 
   const content = (
-    <div className="flex flex-col min-w-0">
+    <div className="flex flex-col min-w-0 h-screen overflow-hidden">
       {!embedded && (
         <RCMPageHeader 
           title={t('rcm:matrix.title_elc')}
@@ -59,7 +59,8 @@ export function RCMELCPage({ embedded = false }: { embedded?: boolean }) {
         <div className="w-full border-t border-b bg-white border-slate-200 overflow-auto flex-1">
           <TooltipProvider>
             <Table noWrapper className="min-w-[1800px] table-fixed border-separate border-spacing-0">
-              <TableHeader className="sticky top-16 z-50 bg-slate-100">
+              <TableHeader className="sticky top-0 z-50 bg-slate-100">
+
                 <TableRow className="divide-x divide-slate-200 h-10">
                   <TableHead className="w-[110px] font-black uppercase text-[10px] sticky left-0 z-[60] bg-slate-100 px-3">{t('matrix.control_ref')}</TableHead>
                   <TableHead className="w-[350px] font-black uppercase text-[10px] sticky left-[110px] z-[60] bg-slate-100 px-3">{t('matrix.control_description')}</TableHead>
