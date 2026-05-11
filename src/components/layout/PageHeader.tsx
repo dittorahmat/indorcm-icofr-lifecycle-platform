@@ -1,5 +1,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 
 interface PageHeaderProps {
   title: string;
@@ -14,6 +15,7 @@ export function PageHeader({ title, description, children, className, badge }: P
     <div className={cn("flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8", className)}>
       <div className="space-y-1">
         <div className="flex items-center gap-3">
+          <SidebarTrigger className="h-8 w-8 text-slate-700" />
           <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white leading-none">
             {title}
           </h1>

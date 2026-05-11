@@ -118,10 +118,10 @@ export function RCMITGCPage({ embedded = false, filterBpmId }: RCMITGCPageProps)
   );
 
   const content = (
-    <div className="flex flex-col h-full overflow-hidden max-w-full">
+    <div className="flex flex-col min-w-0">
       {!embedded && (
         <RCMPageHeader 
-          title={t('rcm:itgc.title')}
+          title="RCM ITGC Matrix"
           subtitle="Regulatory Compliance Matrix - ITGC (Lampiran 5.c)"
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
@@ -132,10 +132,10 @@ export function RCMITGCPage({ embedded = false, filterBpmId }: RCMITGCPageProps)
           ]}
         />
       )}
-      <div className="flex-1 p-0">
-        <div className="w-full border-t border-b bg-white border-slate-200 relative">
-          <Table className="min-w-[3800px] table-fixed border-separate border-spacing-0">
-            <TableHeader className="sticky top-0 z-50 bg-slate-100">
+      <div className="p-0 relative">
+        <div className="w-full border-t border-b bg-white border-slate-200">
+          <Table noWrapper className="min-w-[3800px] table-fixed border-separate border-spacing-0">
+            <TableHeader className="sticky top-16 z-50 bg-slate-100">
               <TableRow className="divide-x divide-slate-200 h-10">
                 <TableHead className="w-[50px] font-black uppercase text-xs text-center sticky left-0 z-[60] bg-slate-100 border-r-2 border-slate-300">i. No</TableHead>
                 <TableHead className="w-[260px] font-black uppercase text-xs sticky left-[50px] z-[60] bg-slate-100 border-r-2 border-slate-300 text-indigo-700 px-3">ii. {t('matrix.process_info')}</TableHead>
@@ -162,12 +162,15 @@ export function RCMITGCPage({ embedded = false, filterBpmId }: RCMITGCPageProps)
             <TableBody>
               {filteredItems.map((item, idx) => {
                 const isEditing = editingMappingId === item.mappingId;
+                const isEven = idx % 2 === 1;
+                const rowBg = isEven ? "bg-[#A9A9A9]" : "bg-white";
+
                 return (
                   <TableRow key={`${item.mappingId}-${idx}`} className={cn(
                     "group transition-colors border-b border-slate-100 hover:bg-slate-50/50 h-12",
-                    idx % 2 === 1 ? "bg-slate-50/50" : "bg-white"
+                    rowBg
                   )}>
-                    <TableCell className="sticky left-0 z-30 bg-inherit border-r border-slate-100">
+                    <TableCell className={cn("sticky left-0 z-30 border-r border-slate-100", rowBg)}>
                       <InlineEditRow 
                         isEditing={isEditing}
                         onEdit={() => setEditingMappingId(item.mappingId)}
@@ -175,13 +178,13 @@ export function RCMITGCPage({ embedded = false, filterBpmId }: RCMITGCPageProps)
                         onCancel={() => setEditingMappingId(null)}
                       />
                     </TableCell>
-                    <TableCell className="align-top font-bold text-slate-800 text-xs sticky left-[50px] z-30 bg-inherit border-r border-slate-100">
+                    <TableCell className={cn("align-top font-bold text-slate-800 text-xs sticky left-[50px] z-30 border-r border-slate-100", rowBg)}>
                       <div className="flex flex-col gap-0 pr-2 pt-1 leading-tight">
                         <span className="uppercase tracking-tighter text-indigo-600 text-[10px] font-black">{item.fsliName} {item.bpmCode && `[${item.bpmCode}]`}</span>
                         <span className="line-clamp-2">{item.noGL} - {item.processName}</span>
                       </div>
                     </TableCell>
-                    <TableCell className="align-top font-bold text-slate-600 text-xs sticky left-[310px] z-30 bg-inherit border-r border-slate-100">{item.subProcessName}</TableCell>
+                    <TableCell className={cn("align-top font-bold text-slate-600 text-xs sticky left-[310px] z-30 border-r border-slate-100", rowBg)}>{item.subProcessName}</TableCell>
                     <TableCell className="text-xs text-slate-600 px-3">{item.companyName}</TableCell>
                     <TableCell className="text-xs text-slate-600 text-center">{item.locationCode}</TableCell>
                     <TableCell className="text-xs text-slate-700 px-3">{item.riskDescription}</TableCell>
@@ -198,7 +201,7 @@ export function RCMITGCPage({ embedded = false, filterBpmId }: RCMITGCPageProps)
                     <TableCell className="text-xs font-medium px-3">{item.executingFunction}</TableCell>
                     <TableCell className="text-xs font-medium px-3">{item.executorRole}</TableCell>
                     <TableCell className="text-xs font-medium px-3">{item.effectivePeriod}</TableCell>
-                    <TableCell className="sticky right-0 z-30 bg-inherit" />
+                    <TableCell className={cn("sticky right-0 z-30", rowBg)} />
                   </TableRow>
                 );
               })}

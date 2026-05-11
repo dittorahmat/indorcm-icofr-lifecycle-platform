@@ -45,21 +45,21 @@ export function RCMELCPage({ embedded = false }: { embedded?: boolean }) {
   const blocker = useUnsavedChanges(false);
 
   const content = (
-    <div className="flex flex-col h-full overflow-hidden max-w-full">
+    <div className="flex flex-col min-w-0">
       {!embedded && (
         <RCMPageHeader 
-          title={t('matrix.title_elc')}
+          title={t('rcm:matrix.title_elc')}
           subtitle="Entity Level Control Matrix (17 COSO Principles) - SK-5 Lampiran 5 a."
           searchTerm=""
           onSearchChange={() => {}}
           onRefresh={() => queryClient.invalidateQueries({ queryKey: ['controls-elc'] })}
         />
       )}
-      <div className="flex-1 p-0">
-        <div className="w-full border-t border-b bg-white border-slate-200 relative">
+      <div className="p-0 relative">
+        <div className="w-full border-t border-b bg-white border-slate-200">
           <TooltipProvider>
-            <Table className="min-w-[1800px] table-fixed border-separate border-spacing-0">
-              <TableHeader className="sticky top-0 z-50 bg-slate-100">
+            <Table noWrapper className="min-w-[1800px] table-fixed border-separate border-spacing-0">
+              <TableHeader className="sticky top-16 z-50 bg-slate-100">
                 <TableRow className="divide-x divide-slate-200 h-10">
                   <TableHead className="w-[110px] font-black uppercase text-[10px] sticky left-0 z-[60] bg-slate-100 px-3">{t('matrix.control_ref')}</TableHead>
                   <TableHead className="w-[350px] font-black uppercase text-[10px] sticky left-[110px] z-[60] bg-slate-100 px-3">{t('matrix.control_description')}</TableHead>
@@ -87,42 +87,48 @@ export function RCMELCPage({ embedded = false }: { embedded?: boolean }) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {elcItems.map((ctrl, idx) => (
-                  <TableRow key={ctrl.id} className={cn(
-                    "group transition-colors border-b border-slate-100 hover:bg-slate-50/50 h-12",
-                    idx % 2 === 1 ? "bg-slate-50/50" : "bg-white"
-                  )}>
-                    <TableCell className="sticky left-0 z-30 bg-inherit border-r border-slate-100">
-                      <InlineEditRow 
-                        isEditing={editingId === ctrl.id}
-                        onEdit={() => setEditingId(ctrl.id)}
-                        onSave={() => setEditingId(null)}
-                        onCancel={() => setEditingId(null)}
-                      />
-                    </TableCell>
-                    <TableCell className="align-top py-2 sticky left-[110px] z-30 border-r-2 border-slate-100 max-w-[350px] px-3 bg-inherit">
-                      <div className="flex flex-col gap-0.5 leading-tight">
-                        <span className="text-xs font-bold text-slate-800">{ctrl.name}</span>
-                        <p className="text-[11px] text-slate-500 italic line-clamp-2">{ctrl.description}</p>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-center text-xs font-medium text-slate-600">{ctrl.frequency || '-'}</TableCell>
-                    <TableCell className="text-xs text-slate-500 px-3 truncate">{ctrl.supportingDocs || '-'}</TableCell>
-                    <TableCell className="text-xs text-slate-500 px-3">{ctrl.companyName || '-'}</TableCell>
-                    <TableCell className="text-xs text-slate-500 px-3">{ctrl.executorRole || 'Control Owner'}</TableCell>
-                    <TableCell className="text-center text-xs font-bold text-indigo-600">{ctrl.effectiveDate ? new Date(ctrl.effectiveDate).getFullYear() : '-'}</TableCell>
-                    {COSO_PRINCIPLES.map(p => {
-                      const isMapped = ctrl.cosoPrinciples?.includes(p as any);
-                      return (
-                        <TableCell key={p} className="text-center p-0">
-                          <div className="flex items-center justify-center h-full min-h-[40px]">
-                            {isMapped ? <Check className="h-4 w-4 text-emerald-600 stroke-[3px]" /> : <span className="text-slate-100 text-xs">—</span>}
-                          </div>
-                        </TableCell>
-                      );
-                    })}
-                  </TableRow>
-                ))}
+                {elcItems.map((ctrl, idx) => {
+                  const isEven = idx % 2 === 1;
+                  const rowBg = isEven ? "bg-[#A9A9A9]" : "bg-white";
+
+                  return (
+                    <TableRow key={ctrl.id} className={cn(
+                      "group transition-colors border-b border-slate-100 hover:bg-slate-50/50 h-12",
+                      rowBg
+                    )}>
+                      <TableCell className={cn("sticky left-0 z-30 border-r border-slate-100", rowBg)}>
+                        <InlineEditRow 
+                          isEditing={editingId === ctrl.id}
+                          onEdit={() => setEditingId(ctrl.id)}
+                          onSave={() => setEditingId(null)}
+                          onCancel={() => setEditingId(null)}
+                        />
+                      </TableCell>
+                      <TableCell className={cn("align-top py-2 sticky left-[110px] z-30 border-r-2 border-slate-100 max-w-[350px] px-3", rowBg)}>
+                        <div className="flex flex-col gap-0.5 leading-tight">
+                          <span className="text-xs font-bold text-slate-800">{ctrl.name}</span>
+                          <p className="text-[11px] text-slate-500 italic line-clamp-2">{ctrl.description}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-center text-xs font-medium text-slate-600">{ctrl.frequency || '-'}</TableCell>
+                      <TableCell className="text-xs text-slate-500 px-3 truncate">{ctrl.supportingDocs || '-'}</TableCell>
+                      <TableCell className="text-xs text-slate-500 px-3">{ctrl.companyName || '-'}</TableCell>
+                      <TableCell className="text-xs text-slate-500 px-3">{ctrl.executorRole || 'Control Owner'}</TableCell>
+                      <TableCell className="text-center text-xs font-bold text-indigo-600">{ctrl.effectiveDate ? new Date(ctrl.effectiveDate).getFullYear() : '-'}</TableCell>
+                      {COSO_PRINCIPLES.map(p => {
+                        const isMapped = ctrl.cosoPrinciples?.includes(p as any);
+                        return (
+                          <TableCell key={p} className="text-center p-0">
+                            <div className="flex items-center justify-center h-full min-h-[40px]">
+                              {isMapped ? <Check className="h-4 w-4 text-emerald-600 stroke-[3px]" /> : <span className="text-slate-100 text-xs">—</span>}
+                            </div>
+                          </TableCell>
+                        );
+                      })}
+                      <TableCell className={cn("sticky right-0 z-30", rowBg)} />
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </TooltipProvider>

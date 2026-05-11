@@ -22,6 +22,7 @@ import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 import { RCMPageHeader } from '@/components/rcm/RCMPageHeader';
 import { InlineEditRow } from '@/components/rcm/InlineEditRow';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 interface RCMMatrixItem extends RCMControlMapping {
   mappingId: string;
   processName: string;
@@ -140,15 +141,18 @@ export function RCMTLCPage({ embedded = false, filterBpmId }: RCMTLCPageProps) {
 
   const content = (
 
-    <div className="flex flex-col h-full overflow-hidden max-w-full">
+    <div className="flex flex-col min-w-0">
       {!embedded && (
         <>
-          {/* Header - Fixed */}
-          <div className="p-4 pb-2 space-y-3 shrink-0 bg-white/80 backdrop-blur-md border-b z-10">
+          {/* Header - Static inside the scrolling area */}
+          <div className="p-4 pb-2 space-y-3 shrink-0 bg-white/80 backdrop-blur-md border-b z-10 w-full">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <h1 className="text-xl font-black tracking-tight text-slate-900 leading-none">{t('matrix.title_tlc')}</h1>
-                <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest mt-1 opacity-70">SK-5/DKU.MBU/11/2024 Regulatory Compliance Matrix</p>
+              <div className="flex items-center gap-2">
+                <SidebarTrigger className="h-8 w-8 text-slate-700" />
+                <div>
+                  <h1 className="text-xl font-black tracking-tight text-slate-900 leading-none">{t('rcm:matrix.title_tlc')}</h1>
+                  <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest mt-1 opacity-70">SK-5/DKU.MBU/11/2024 Regulatory Compliance Matrix</p>
+                </div>
               </div>
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="xs" onClick={() => queryClient.invalidateQueries({ queryKey: ['rcm-matrix-tlc'] })} className="bg-white h-7 text-[10px] font-bold">
@@ -187,11 +191,11 @@ export function RCMTLCPage({ embedded = false, filterBpmId }: RCMTLCPageProps) {
         </>
       )}
 
-      {/* Matrix Area - Scrollable */}
-      <div className="flex-1 p-0">
-        <div className="w-full border-t border-b bg-white border-slate-200 relative">
-          <Table className="min-w-[4800px] table-fixed border-separate border-spacing-0">
-            <TableHeader className="sticky top-0 z-50">
+      {/* Matrix Area - Expands fully */}
+      <div className="p-0 relative">
+        <div className="w-full border-t border-b bg-white border-slate-200">
+          <Table noWrapper className="min-w-[4800px] table-fixed border-separate border-spacing-0">
+            <TableHeader className="sticky top-16 z-50">
               <TableRow className="divide-x divide-slate-200 bg-slate-100 h-10">
                 {/* Fixed Columns Header */}
                 <TableHead className="w-[50px] font-black uppercase text-[10px] text-center sticky left-0 z-[60] bg-slate-100 border-r-2 border-slate-300">i. No</TableHead>
@@ -255,13 +259,15 @@ export function RCMTLCPage({ embedded = false, filterBpmId }: RCMTLCPageProps) {
                 <TableRow><TableCell colSpan={34} className="h-64 text-center italic text-slate-400">No RCM relationships found.</TableCell></TableRow>
               ) : filteredItems.map((item, idx) => {
                 const isEditing = editingMappingId === item.mappingId;
+                const isEven = idx % 2 === 1;
+                const rowBg = isEven ? "bg-[#A9A9A9]" : "bg-white";
 
                 return (
                   <TableRow key={`${item.mappingId}-${idx}`} className={cn(
                     "group transition-colors border-b h-12",
-                    idx % 2 === 1 ? "bg-slate-50/50" : "bg-white"
+                    rowBg
                   )}>
-                    <TableCell className="sticky left-0 z-30 bg-inherit border-r border-slate-100">
+                    <TableCell className={cn("sticky left-0 z-30 border-r border-slate-100", rowBg)}>
                       <InlineEditRow 
                         isEditing={isEditing}
                         onEdit={() => setEditingMappingId(item.mappingId)}
@@ -269,7 +275,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId }: RCMTLCPageProps) {
                         onCancel={() => setEditingMappingId(null)}
                       />
                     </TableCell>
-                    <TableCell className="align-top font-bold text-slate-800 text-xs sticky left-[50px] z-30 bg-inherit border-r border-slate-100">
+                    <TableCell className={cn("align-top font-bold text-slate-800 text-xs sticky left-[50px] z-30 border-r border-slate-100", rowBg)}>
                       <div className="flex flex-col gap-0 pr-2 pt-1 leading-tight">
                         <span className="uppercase tracking-tighter text-indigo-600 text-[10px] font-black">
                           {item.fsliName} {item.bpmCode && `[${item.bpmCode}]`}
@@ -277,7 +283,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId }: RCMTLCPageProps) {
                         <span className="line-clamp-2">{item.noGL} - {item.processName}</span>
                       </div>
                     </TableCell>
-                    <TableCell className="align-top font-bold text-slate-600 text-xs sticky left-[310px] z-30 bg-inherit border-r border-slate-100">
+                    <TableCell className={cn("align-top font-bold text-slate-600 text-xs sticky left-[310px] z-30 border-r border-slate-100", rowBg)}>
                       <div className="pt-1">{item.subProcessName}</div>
                     </TableCell>
                     
@@ -336,6 +342,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId }: RCMTLCPageProps) {
                     <TableCell className="text-xs font-medium px-3">{item.executorRole}</TableCell>
                     <TableCell className="text-xs font-mono font-medium px-3">{item.affectedFsliItem}</TableCell>
                     <TableCell className="text-xs text-center font-bold text-indigo-600">{item.effectivePeriod}</TableCell>
+                    <TableCell className={cn("sticky right-0 z-30 border-l border-slate-100", rowBg)} />
                   </TableRow>
                 );
               })}

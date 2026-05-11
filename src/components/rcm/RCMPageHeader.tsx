@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, Filter, Save, Loader2 } from 'lucide-react';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 
 interface RCMPageHeaderProps {
   title: string;
@@ -27,9 +28,12 @@ export function RCMPageHeader({
   return (
     <div className="p-4 pb-2 space-y-3 shrink-0 bg-white/80 backdrop-blur-md border-b z-10">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-black tracking-tight text-slate-900 leading-none">{title}</h1>
-          <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest mt-1 opacity-70">{subtitle}</p>
+        <div className="flex items-center gap-2">
+          <SidebarTrigger className="h-8 w-8 text-slate-700" />
+          <div>
+            <h1 className="text-xl font-black tracking-tight text-slate-900 leading-none">{title}</h1>
+            <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest mt-1 opacity-70">{subtitle}</p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           {onRefresh && (

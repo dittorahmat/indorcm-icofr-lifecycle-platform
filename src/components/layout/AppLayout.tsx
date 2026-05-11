@@ -37,9 +37,9 @@ export function AppLayout({ children, container = false, className, contentClass
       }>
         <AppSidebar />
       </Suspense>
-      <SidebarInset className={cn("flex flex-col min-h-screen", className)}>
+      <SidebarInset className={cn("flex flex-col min-h-0", className)}>
         <div className={cn(
-          "flex-1 bg-slate-50/50",
+          "flex-1 bg-slate-50/50 flex flex-col min-w-0",
           container && "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8",
           contentClassName
         )}>

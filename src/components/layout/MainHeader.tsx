@@ -46,14 +46,10 @@ export function MainHeader() {
             <Link to="/dashboard" className="flex items-center gap-2 group">
               <Shield className={cn(
                 "h-7 w-7 transition-transform group-hover:scale-110",
-                isDark ? "text-emerald-400" : "text-white"
+                isDark ? "text-emerald-400" : "white"
               )} />
               <span className="font-display tracking-tight text-white text-lg font-bold hidden sm:inline-block">IndoGRC Pro</span>
             </Link>
-            <SidebarTrigger className={cn(
-              "h-9 w-9",
-              !isDark && "text-white hover:bg-white/10"
-            )} />
           </div>
         </div>
         <div className="flex items-center gap-4">
