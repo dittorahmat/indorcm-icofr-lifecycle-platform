@@ -20,7 +20,8 @@ console.error = (...args: any[]) => {
   
   // Fail test if React key warnings appear
   if (message.includes('Encountered two children with the same key')) {
-    throw new Error(`[RUNTIME SAFETY FAIL] Duplicate React Key detected: ${message}`);
+    const formattedMessage = args.join(' ');
+    throw new Error(`[RUNTIME SAFETY FAIL] Duplicate React Key detected: ${formattedMessage}`);
   }
 
   // Fail on other critical React errors

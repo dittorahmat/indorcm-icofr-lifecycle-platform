@@ -21,6 +21,8 @@ import { BPMWorksheet } from '@/components/bpm/BPMWorksheet';
 import { BPMModal } from '@/components/bpm/BPMModal';
 import { CSAModal } from '@/components/bpm/CSAModal';
 import { BPMEditor } from '@/components/rcm/BPMEditor';
+import { BPMAccountAssertion } from '@/components/bpm/BPMAccountAssertion';
+import { BPMDiagramList } from '@/components/bpm/BPMDiagramList';
 import { toast } from 'sonner';
 import { 
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
@@ -35,6 +37,7 @@ import {
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
+import { useActiveSnapshot, useActiveSimulation, useAccountAssertions, useBpmProcesses, useBpmDiagrams } from '@/hooks/use-bpm';
 import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 import { cn } from '@/lib/utils';
 
@@ -167,16 +170,10 @@ export function BPMPage() {
   });
 
   // Fetch Account Assertions
-  const { data: accountAssertion, isLoading: assertionLoading } = useQuery({
-    queryKey: ['account-assertions', selectedFsli, selectedAccountKey],
-    queryFn: async () => {
-      if (!selectedFsli || !selectedAccountKey) return null;
-      const noGL = selectedAccountKey.split(' ||| ')[0];
-      // Updated to use the new filtered endpoint which returns a single object
-      return api<AccountAssertion>(`/api/account-assertions?fsliName=${encodeURIComponent(selectedFsli)}&noGL=${encodeURIComponent(noGL)}`);
-    },
-    enabled: !!selectedFsli && !!selectedAccountKey
-  });
+  const { assertion: accountAssertion, isLoading: assertionLoading, updateAssertion } = useAccountAssertions(
+    selectedFsli, 
+    selectedAccountKey.split(' ||| ')[0]
+  );
 
   // Sync local assertion state when data is loaded
   React.useEffect(() => {
@@ -519,207 +516,14 @@ export function BPMPage() {
           </div>
         ) : (
           <div className="space-y-6">
-            {/* Financial Assertion Table */}
-            <Card className="border-slate-200 shadow-sm overflow-hidden">
-              <CardHeader className="bg-indigo-50/50 py-3 px-4 border-b">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Shield className="h-4 w-4 text-indigo-600" />
-                    <CardTitle className="text-sm font-bold uppercase tracking-wide text-indigo-900">{t('assertions.title')}</CardTitle>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    {isAssertionDirty && (
-                      <Button size="sm" onClick={handleSaveAssertions} disabled={updateAssertionMutation.isPending} className="h-7 px-3 text-[10px] gap-1.5 bg-indigo-600 hover:bg-indigo-700">
-                        {updateAssertionMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
-                        {t('common:actions.save')}
-                      </Button>
-                    )}
-                    <Badge variant="secondary" className="bg-indigo-100 text-indigo-700 font-bold text-[10px]">{t('assertions.subtitle')}</Badge>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="p-0">
-                <TooltipProvider>
-                  <Table>
-                    <TableHeader className="bg-slate-50/50">
-                      <TableRow className="divide-x divide-slate-100">
-                        <TableHead className="text-center w-[120px]">
-                          <Tooltip>
-                            <TooltipTrigger className="cursor-help flex items-center justify-center gap-1 mx-auto">
-                              <span className="font-bold text-[10px] uppercase">{t('assertions.tooltip.eo.label')}</span>
-                              <Info className="h-3 w-3 text-slate-400" />
-                            </TooltipTrigger>
-                            <TooltipContent side="top" className="max-w-xs">
-                              <p className="text-xs"><strong>{t('assertions.tooltip.eo.label')}</strong></p>
-                              <p className="text-[10px] mt-1">{t('assertions.tooltip.eo.desc')}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TableHead>
-                        <TableHead className="text-center w-[120px]">
-                          <Tooltip>
-                            <TooltipTrigger className="cursor-help flex items-center justify-center gap-1 mx-auto">
-                              <span className="font-bold text-[10px] uppercase">{t('assertions.tooltip.c.label')}</span>
-                              <Info className="h-3 w-3 text-slate-400" />
-                            </TooltipTrigger>
-                            <TooltipContent side="top" className="max-w-xs">
-                              <p className="text-xs"><strong>{t('assertions.tooltip.c.label')}</strong></p>
-                              <p className="text-[10px] mt-1">{t('assertions.tooltip.c.desc')}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TableHead>
-                        <TableHead className="text-center w-[120px]">
-                          <Tooltip>
-                            <TooltipTrigger className="cursor-help flex items-center justify-center gap-1 mx-auto">
-                              <span className="font-bold text-[10px] uppercase">{t('assertions.tooltip.a.label')}</span>
-                              <Info className="h-3 w-3 text-slate-400" />
-                            </TooltipTrigger>
-                            <TooltipContent side="top" className="max-w-xs">
-                              <p className="text-xs"><strong>{t('assertions.tooltip.a.label')}</strong></p>
-                              <p className="text-[10px] mt-1">{t('assertions.tooltip.a.desc')}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TableHead>
-                        <TableHead className="text-center w-[120px]">
-                          <Tooltip>
-                            <TooltipTrigger className="cursor-help flex items-center justify-center gap-1 mx-auto">
-                              <span className="font-bold text-[10px] uppercase">{t('assertions.tooltip.co.label')}</span>
-                              <Info className="h-3 w-3 text-slate-400" />
-                            </TooltipTrigger>
-                            <TooltipContent side="top" className="max-w-xs">
-                              <p className="text-xs"><strong>{t('assertions.tooltip.co.label')}</strong></p>
-                              <p className="text-[10px] mt-1">{t('assertions.tooltip.co.desc')}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TableHead>
-                        <TableHead className="text-center w-[120px]">
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger className="cursor-help flex items-center justify-center gap-1 mx-auto">
-                                <span className="font-bold text-[10px] uppercase">{t('assertions.tooltip.ro.label')}</span>
-                                <Info className="h-3 w-3 text-slate-400" />
-                              </TooltipTrigger>
-                              <TooltipContent side="top" className="max-w-xs">
-                                <p className="text-xs"><strong>{t('assertions.tooltip.ro.label')}</strong></p>
-                                <p className="text-[10px] mt-1">{t('assertions.tooltip.ro.desc')}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </TableHead>
-                        <TableHead className="text-center w-[120px]">
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger className="cursor-help flex items-center justify-center gap-1 mx-auto">
-                                <span className="font-bold text-[10px] uppercase">{t('assertions.tooltip.va.label')}</span>
-                                <Info className="h-3 w-3 text-slate-400" />
-                              </TooltipTrigger>
-                              <TooltipContent side="top" className="max-w-xs">
-                                <p className="text-xs"><strong>{t('assertions.tooltip.va.label')}</strong></p>
-                                <p className="text-[10px] mt-1">{t('assertions.tooltip.va.desc')}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </TableHead>
-                        <TableHead className="text-center w-[120px]">
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger className="cursor-help flex items-center justify-center gap-1 mx-auto">
-                                <span className="font-bold text-[10px] uppercase">{t('assertions.tooltip.pd.label')}</span>
-                                <Info className="h-3 w-3 text-slate-400" />
-                              </TooltipTrigger>
-                              <TooltipContent side="top" className="max-w-xs">
-                                <p className="text-xs"><strong>{t('assertions.tooltip.pd.label')}</strong></p>
-                                <p className="text-[10px] mt-1">{t('assertions.tooltip.pd.desc')}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      <TableRow className="divide-x divide-slate-100">
-                        <TableCell className="p-0">
-                          <Select value={localAssertion.assertionE || "N"} onValueChange={(v) => handleAssertionChange('assertionE', v)} disabled={assertionLoading}>
-                            <SelectTrigger className="h-10 border-none rounded-none focus:ring-0 text-xs shadow-none text-center font-bold">
-                              <SelectValue placeholder="-" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Y">{t('common:yes')}</SelectItem>
-                              <SelectItem value="N">{t('common:no')}</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        <TableCell className="p-0">
-                          <Select value={localAssertion.assertionC || "N"} onValueChange={(v) => handleAssertionChange('assertionC', v)} disabled={assertionLoading}>
-                            <SelectTrigger className="h-10 border-none rounded-none focus:ring-0 text-xs shadow-none text-center font-bold">
-                              <SelectValue placeholder="-" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Y">{t('common:yes')}</SelectItem>
-                              <SelectItem value="N">{t('common:no')}</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        <TableCell className="p-0">
-                          <Select value={localAssertion.assertionA || "N"} onValueChange={(v) => handleAssertionChange('assertionA', v)} disabled={assertionLoading}>
-                            <SelectTrigger className="h-10 border-none rounded-none focus:ring-0 text-xs shadow-none text-center font-bold">
-                              <SelectValue placeholder="-" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Y">{t('common:yes')}</SelectItem>
-                              <SelectItem value="N">{t('common:no')}</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        <TableCell className="p-0">
-                          <Select value={localAssertion.assertionCo || "N"} onValueChange={(v) => handleAssertionChange('assertionCo', v)} disabled={assertionLoading}>
-                            <SelectTrigger className="h-10 border-none rounded-none focus:ring-0 text-xs shadow-none text-center font-bold">
-                              <SelectValue placeholder="-" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Y">{t('common:yes')}</SelectItem>
-                              <SelectItem value="N">{t('common:no')}</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        <TableCell className="p-0">
-                          <Select value={localAssertion.assertionRo || "N"} onValueChange={(v) => handleAssertionChange('assertionRo', v)} disabled={assertionLoading}>
-                            <SelectTrigger className="h-10 border-none rounded-none focus:ring-0 text-xs shadow-none text-center font-bold">
-                              <SelectValue placeholder="-" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Y">{t('common:yes')}</SelectItem>
-                              <SelectItem value="N">{t('common:no')}</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        <TableCell className="p-0">
-                          <Select value={localAssertion.assertionVa || "N"} onValueChange={(v) => handleAssertionChange('assertionVa', v)} disabled={assertionLoading}>
-                            <SelectTrigger className="h-10 border-none rounded-none focus:ring-0 text-xs shadow-none text-center font-bold">
-                              <SelectValue placeholder="-" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Y">{t('common:yes')}</SelectItem>
-                              <SelectItem value="N">{t('common:no')}</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        <TableCell className="p-0">
-                          <Select value={localAssertion.assertionPd || "N"} onValueChange={(v) => handleAssertionChange('assertionPd', v)} disabled={assertionLoading}>
-                            <SelectTrigger className="h-10 border-none rounded-none focus:ring-0 text-xs shadow-none text-center font-bold">
-                              <SelectValue placeholder="-" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Y">{t('common:yes')}</SelectItem>
-                              <SelectItem value="N">{t('common:no')}</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
-                </TooltipProvider>
-              </CardContent>
-            </Card>
+            <BPMAccountAssertion 
+              localAssertion={localAssertion}
+              assertionLoading={assertionLoading}
+              isAssertionDirty={isAssertionDirty}
+              onAssertionChange={handleAssertionChange}
+              onSave={handleSaveAssertions}
+              isSaving={updateAssertion.isPending}
+            />
 
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-100/50 p-4 rounded-lg border border-slate-200">
               <div className="flex-1 w-full md:max-w-sm relative">
@@ -744,114 +548,26 @@ export function BPMPage() {
               </div>
             </div>
 
-            <div className="border rounded-xl bg-white shadow-sm overflow-hidden">
-              <Table>
-                <TableHeader className="bg-slate-50">
-                  <TableRow>
-                    <TableHead className="w-[80px] text-center">{t('table.action')}</TableHead>
-                    <TableHead className="font-bold">{t('table.subProcess')}</TableHead>
-                    <TableHead className="font-bold">{t('table.company')}</TableHead>
-                    <TableHead className="font-bold">{t('table.location')}</TableHead>
-                    <TableHead className="text-center font-bold">{t('table.risks')}</TableHead>
-                    <TableHead className="text-center font-bold">{t('table.controls')}</TableHead>
-                    <TableHead className="w-[50px]"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {bpmLoading ? (
-                    <TableRow>
-                      <TableCell colSpan={7} className="h-32 text-center">
-                        <Loader2 className="h-8 w-8 animate-spin text-indigo-500 mx-auto" />
-                        <p className="text-xs text-slate-400 mt-2">{t('bpm:loading')}</p>
-                      </TableCell>
-                    </TableRow>
-                  ) : filteredBpmProcesses.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={7} className="h-32 text-center">
-                        <Info className="h-8 w-8 text-slate-300 mx-auto mb-2" />
-                        <p className="text-sm text-slate-500 italic">{searchTerm ? t('bpm:noSubProcesses') : t('bpm:noSubProcesses')}</p>
-                      </TableCell>
-                    </TableRow>
-                  ) : filteredBpmProcesses.map((bpm) => (
-                    <TableRow key={bpm.id} className="group hover:bg-indigo-50/30 transition-colors">
-                      <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-1">
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost" size="icon" className="h-8 w-8 text-indigo-600 hover:bg-indigo-100"
-                                  onClick={() => {
-                                    const diagram = diagrams?.items.find(d => d.subProcess === bpm.name);
-                                    if (diagram) handleOpenDiagram(diagram.id, bpm.name);
-                                    else createDiagramMutation.mutate(bpm.name);
-                                  }}
-                                >
-                                  <Edit2 className="h-4 w-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Open Visual Workflow Editor</TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost" size="icon" className="h-8 w-8 text-emerald-600 hover:bg-emerald-100"
-                                  onClick={() => {
-                                    setSelectedBpmId(bpm.id);
-                                    setIsModalOpen(true);
-                                  }}
-                                >
-                                  <FileSpreadsheet className="h-4 w-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Open RCM Worksheet (Spreadsheet)</TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <div 
-                                className="flex flex-col cursor-pointer p-1 rounded group/name" 
-                                onClick={() => { 
-                                  setSelectedBpmId(bpm.id); 
-                                  setSelectedBpmName(bpm.name);
-                                  setIsModalOpen(true); // Open the Hub instead of CSAModal
-                                }}
-                              >
-                                <span className="font-bold text-indigo-600 hover:underline flex items-center gap-1.5">
-                                  {bpm.name}
-                                  {bpm.bpmCode && <Badge className="h-4 px-1 text-[8px] bg-slate-900 text-white font-mono">{bpm.bpmCode}</Badge>}
-                                  <ShieldCheck className="h-3 w-3 opacity-0 group-hover/name:opacity-100 transition-opacity" />
-                                </span>
-                                <span className="text-[10px] text-slate-400 uppercase tracking-tighter flex items-center gap-2">
-                                   ID: {bpm.id.substring(0,8)}
-                                </span>
-                              </div>
-                            </TooltipTrigger>
-                            <TooltipContent>Open Execution Hub (CSA, Sampling, RCM)</TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </TableCell>
-                      <TableCell className="text-slate-600 font-medium text-xs">{settings?.companyName || "PT BUMN SEjahtera"}</TableCell>
-                      <TableCell><Badge variant="outline" className="font-mono text-[10px] bg-slate-50">{selectedGLRow?.entityCode || "ENT-01"}</Badge></TableCell>
-                      <TableCell className="text-center"><Badge className="bg-orange-100 text-orange-700 font-bold">{bpm.riskCount || 0}</Badge></TableCell>
-                      <TableCell className="text-center"><Badge className="bg-green-100 text-green-700 font-bold">{bpm.controlCount || 0}</Badge></TableCell>
-                      <TableCell>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-300 hover:text-red-600 opacity-0 group-hover:opacity-100" onClick={(e) => { e.stopPropagation(); if (confirm(t('bpm:deleteConfirm', { name: bpm.name }))) deleteBPMMutation.mutate(bpm.id); }}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+            <BPMDiagramList 
+              bpmLoading={bpmLoading}
+              filteredBpmProcesses={filteredBpmProcesses}
+              diagrams={diagrams}
+              settings={settings}
+              selectedGLRow={selectedGLRow}
+              onOpenDiagram={handleOpenDiagram}
+              onCreateDiagram={(name) => createDiagramMutation.mutate(name)}
+              onOpenWorksheet={(id, name) => {
+                setSelectedBpmId(id);
+                setSelectedBpmName(name);
+                setIsModalOpen(true);
+              }}
+              onDeleteProcess={(id, name) => {
+                if (confirm(t('bpm:deleteConfirm', { name }))) {
+                  deleteBPMMutation.mutate(id);
+                }
+              }}
+              searchTerm={searchTerm}
+            />
           </div>
         )}
 

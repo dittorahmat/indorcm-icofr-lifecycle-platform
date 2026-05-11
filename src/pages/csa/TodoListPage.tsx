@@ -53,6 +53,8 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
+import { TodoListFilters } from '@/components/csa/TodoListFilters';
+import { TodoListGrid } from '@/components/csa/TodoListGrid';
 
 export function TodoListPage() {
   const { t, i18n } = useTranslation(['csa', 'common', 'rcm', 'csa_hub']);
@@ -239,205 +241,16 @@ export function TodoListPage() {
   }, [calendarDays, currentDate, getEventsForDay]);
 
   return (
-    <AppLayout contentClassName="bg-slate-50/50">
-      <div className="flex flex-col h-[calc(100vh-4rem)] border border-slate-200 bg-white rounded-xl shadow-sm overflow-hidden m-4">
-        {/* Outlook-style Toolbar */}
-        <div className="flex items-center justify-between px-4 py-2 border-b bg-white">
-          <div className="flex items-center gap-4">
-            <Dialog open={isDialogOpen} onOpenChange={(open) => {
-              if (!open) {
-                if (isDirty) {
-                  if (confirm(t('common:unsavedChanges.description'))) {
-                    setIsDialogOpen(false);
-                    resetForm();
-                  }
-                } else {
-                  setIsDialogOpen(false);
-                  resetForm();
-                }
-                return;
-              }
-              setIsDialogOpen(open);
-            }}>
-              <DialogTrigger asChild>
-                <Button className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2 shadow-sm" onClick={resetForm}>
-                  <Plus className="h-4 w-4" /> {t('csa_hub:scheduling.newEvent')} <ChevronDown className="h-3 w-3 ml-1" />
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[500px]">
-                <DialogHeader>
-                  <DialogTitle>{t('csa_hub:scheduling.title')}</DialogTitle>
-                  <DialogDescription>{t('csa_hub:scheduling.description')}</DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <div className="space-y-2">
-                    <Label>{t('csa_hub:scheduling.activityType')}</Label>
-                    <Select value={formData.type} onValueChange={(v) => updateFormData({ type: v })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="CSA">{t('csa_hub:scheduling.types.csa')}</SelectItem>
-                        <SelectItem value="TOD">{t('csa_hub:scheduling.types.tod')}</SelectItem>
-                        <SelectItem value="TOE">{t('csa_hub:scheduling.types.toe')}</SelectItem>
-                        <SelectItem value="REMEDIATION">{t('csa_hub:scheduling.types.remediation')}</SelectItem>
-                        <SelectItem value="SCOPING">{t('csa_hub:scheduling.types.scoping')}</SelectItem>
-                        <SelectItem value="RCM">{t('csa_hub:scheduling.types.rcm')}</SelectItem>
-                        <SelectItem value="SOC">{t('csa_hub:scheduling.types.soc')}</SelectItem>
-                        <SelectItem value="INVESTEE">{t('csa_hub:scheduling.types.investee')}</SelectItem>
-                        <SelectItem value="SIGNOFF">{t('csa_hub:scheduling.types.signoff')}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  {['CSA', 'TOD', 'TOE', 'RCM', 'REMEDIATION'].includes(formData.type) && (
-                    <div className="space-y-2">
-                      <Label>{t('csa_hub:scheduling.subProcess')}</Label>
-                      <Select value={formData.bpmProcessId} onValueChange={(v) => updateFormData({ bpmProcessId: v })}>
-                        <SelectTrigger><SelectValue placeholder={t('common:actions.select')} /></SelectTrigger>
-                        <SelectContent>
-                          {processes?.items.map(p => (
-                            <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-
-                  <div className="space-y-2">
-                    <Label>{t('csa_hub:scheduling.targetDate')}</Label>
-                    <input 
-                      type="date" 
-                      className="w-full h-10 px-3 border rounded-md text-sm focus:ring-2 focus:ring-indigo-500" 
-                      value={formData.plannedDate} 
-                      onChange={e => updateFormData({ plannedDate: e.target.value })}
-                    />
-                  </div>
-
-                  <div className="p-4 bg-slate-50 rounded-lg border border-slate-100 space-y-3">
-                    <div className="flex items-center gap-2 text-indigo-700">
-                      <div className="h-2 w-2 bg-indigo-600 rounded-full" />
-                      <span className="text-xs font-bold uppercase">{t('csa_hub:scheduling.setReminder')}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <input 
-                        type="number" 
-                        className="w-20 h-9 px-2 border rounded-md text-sm"
-                        value={formData.reminderConfig.value}
-                        onChange={e => updateFormData({ reminderConfig: { ...formData.reminderConfig, value: parseInt(e.target.value) } })}
-                      />
-                      <Select 
-                        value={formData.reminderConfig.unit} 
-                        onValueChange={(v: any) => updateFormData({ reminderConfig: { ...formData.reminderConfig, unit: v } })}
-                      >
-                        <SelectTrigger className="h-9 w-[120px]"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="minute">{t('csa_hub:scheduling.units.minute')}</SelectItem>
-                          <SelectItem value="hour">{t('csa_hub:scheduling.units.hour')}</SelectItem>
-                          <SelectItem value="day">{t('csa_hub:scheduling.units.day')}</SelectItem>
-                          <SelectItem value="month">{t('csa_hub:scheduling.units.month')}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <span className="text-xs text-slate-500 font-medium">{t('csa_hub:scheduling.beforeDeadline')}</span>
-                    </div>
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsDialogOpen(false)}>{t('common:actions.cancel')}</Button>
-                  <Button onClick={handleCreate} disabled={createScheduleMutation.isPending} className="bg-indigo-600 shadow-lg shadow-indigo-200">{t('csa_hub:scheduling.save')}</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-
-            {/* Reschedule Dialog */}
-            <Dialog open={isRescheduleOpen} onOpenChange={(open) => {
-              if (!open && isRescheduleDirty) {
-                if (confirm(t('common:unsavedChanges.description'))) {
-                  setIsRescheduleOpen(false);
-                  setIsRescheduleDirty(false);
-                }
-                return;
-              }
-              setIsRescheduleOpen(open);
-            }}>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>{t('csa_hub:scheduling.reschedule.title')}</DialogTitle>
-                  <DialogDescription>{t('csa_hub:scheduling.reschedule.description')}</DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <div className="space-y-2">
-                    <Label>{t('csa_hub:scheduling.reschedule.newDate')}</Label>
-                    <input 
-                      type="date" 
-                      className="w-full h-10 px-3 border rounded-md text-sm focus:ring-2 focus:ring-indigo-500" 
-                      value={rescheduleData.newDate} 
-                      onChange={e => {
-                        setRescheduleData(prev => ({ ...prev, newDate: e.target.value }));
-                        setIsRescheduleDirty(true);
-                      }}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>{t('csa_hub:scheduling.reschedule.justification')} <span className="text-red-500">*</span></Label>
-                    <textarea 
-                      className="w-full min-h-[100px] p-3 border rounded-md text-sm focus:ring-2 focus:ring-indigo-500"
-                      placeholder={t('csa_hub:scheduling.reschedule.placeholder')}
-                      value={rescheduleData.justification}
-                      onChange={e => {
-                        setRescheduleData(prev => ({ ...prev, justification: e.target.value }));
-                        setIsRescheduleDirty(true);
-                      }}
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsRescheduleOpen(false)}>{t('common:actions.cancel')}</Button>
-                  <Button 
-                    disabled={!rescheduleData.justification.trim() || !rescheduleData.newDate} 
-                    className="bg-indigo-600"
-                    onClick={() => {
-                      toast.success(t('rcm:matrix.save_success'));
-                      setIsRescheduleOpen(false);
-                      setIsRescheduleDirty(false);
-                    }}
-                  >
-                    {t('csa_hub:scheduling.reschedule.save')}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-
-            
-            <div className="flex items-center gap-1">
-              <Tabs defaultValue="month" className="hidden md:block">
-                <TabsList className="bg-slate-100/50 p-1">
-                  <TabsTrigger value="day" className="text-xs px-4">{t('common:calendar.day')}</TabsTrigger>
-                  <TabsTrigger value="week" className="text-xs px-4">{t('common:calendar.week')}</TabsTrigger>
-                  <TabsTrigger value="month" className="text-xs px-4">{t('common:calendar.month')}</TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <div className="flex items-center border rounded-md p-0.5 bg-slate-50">
-              <Button variant="ghost" size="icon" className="h-7 w-7 rounded-sm" onClick={() => setCurrentDate(subMonths(currentDate, 1))}>
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="sm" className="h-7 px-3 text-xs font-semibold" onClick={() => setCurrentDate(new Date())}>
-                {t('common:calendar.today')}
-              </Button>
-              <Button variant="ghost" size="icon" className="h-7 w-7 rounded-sm" onClick={() => setCurrentDate(addMonths(currentDate, 1))}>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-            <h2 className="text-sm font-bold text-slate-700 ml-2">
-              {format(currentDate, 'MMMM yyyy')}
-            </h2>
-            <div className="h-4 w-[1px] bg-slate-200 mx-1" />
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500"><Search className="h-4 w-4" /></Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500"><Printer className="h-4 w-4" /></Button>
-          </div>
-        </div>
+    <AppLayout container={false}>
+      <div className="flex flex-col h-[calc(100vh-64px)] overflow-hidden">
+        {/* Calendar Header with Controls */}
+        <TodoListFilters 
+          currentDate={currentDate}
+          onPrevMonth={() => setCurrentDate(subMonths(currentDate, 1))}
+          onNextMonth={() => setCurrentDate(addMonths(currentDate, 1))}
+          onToday={() => setCurrentDate(new Date())}
+          onCreateClick={() => { resetForm(); setIsDialogOpen(true); }}
+        />
 
         <div className="flex flex-1 overflow-hidden">
           {/* Calendar Sidebar */}
@@ -559,136 +372,12 @@ export function TodoListPage() {
             </div>
           </div>
 
-          {/* Monthly Grid */}
-          <div className="flex-1 flex flex-col bg-slate-50 overflow-hidden">
-            {/* Grid Header */}
-            <div className="grid grid-cols-7 border-b bg-white shadow-sm">
-              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                <div key={day} className="py-2 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                  {day}
-                </div>
-              ))}
-            </div>
-
-            {/* Grid Body */}
-            <div className="flex-1 overflow-y-auto scrollbar-hide">
-              <div className="grid grid-cols-7 auto-rows-fr min-h-full">
-                {calendarDays.map((day, idx) => {
-                  const dayEvents = getEventsForDay(day);
-                  const isCurrentMonth = isSameMonth(day, currentDate);
-                  
-                  return (
-                    <div 
-                      key={idx} 
-                      className={cn(
-                        "min-h-[140px] border-r border-b p-1 transition-colors hover:bg-slate-100/50 group bg-white",
-                        !isCurrentMonth && "bg-slate-50/50 text-slate-300"
-                      )}
-                      onClick={() => setSelectedDate(day)}
-                    >
-                      <div className="flex justify-start mb-1 px-1">
-                        <span className={cn(
-                          "text-[11px] font-bold w-6 h-6 flex items-center justify-center rounded-full transition-colors",
-                          isToday(day) ? "bg-indigo-600 text-white" : "text-slate-500",
-                          !isCurrentMonth && "opacity-30"
-                        )}>
-                          {format(day, 'd')}
-                        </span>
-                      </div>
-                      
-                      <div className="space-y-1">
-                        {dayEvents.slice(0, 3).map(event => {
-                          const isOverdue = event.status !== 'Completed' && isPast(new Date(event.plannedDate || event.targetDate));
-                          const isCompleted = event.status === 'Completed';
-                          const process = processes?.items.find(p => p.id === event.bpmProcessId);
-                          
-                          return (
-                            <Popover key={event.id}>
-                              <PopoverTrigger asChild>
-                                <div 
-                                  className={cn(
-                                    "text-[10px] leading-tight p-1 px-1.5 rounded-sm border shadow-xs flex items-center justify-between group/pill cursor-pointer transition-all",
-                                    isCompleted ? "bg-emerald-50 border-emerald-200 text-emerald-800" :
-                                    (event.status === 'In Progress' && isOverdue) ? "bg-red-100 border-red-300 text-red-900 animate-pulse" :
-                                    isOverdue ? "bg-red-50 border-red-200 text-red-800" :
-                                    event.status === 'In Progress' ? "bg-amber-50 border-amber-200 text-amber-800" :
-                                    "bg-indigo-50 border-indigo-200 text-indigo-800 hover:bg-indigo-100",
-                                    event.eventType === 'REMEDIATION' && event.severity === 'Material Weakness' && "border-l-4 border-l-slate-900 shadow-md",
-                                    event.eventType === 'REMEDIATION' && event.severity === 'Significant Deficiency' && "border-l-4 border-l-orange-500 shadow-sm"
-                                  )}
-                                >
-                                  <div className="flex items-center gap-1 overflow-hidden">
-                                    {event.eventType === 'REMEDIATION' && (
-                                      event.severity === 'Material Weakness' ? 
-                                        <AlertCircle className="h-2 w-2 text-red-600" /> : 
-                                        <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />
-                                    )}
-                                    <span className="truncate font-medium">{process?.name || event.description || 'Activity'}</span>
-                                    {event.reminderConfig && <div className="w-1 h-1 bg-indigo-500 rounded-full opacity-70 flex-shrink-0" />}
-                                  </div>
-                                </div>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-64 p-0" align="start">
-                                <div className="p-3 border-b bg-slate-50/50">
-                                  <div className="flex justify-between items-start mb-1">
-                                    <Badge variant="outline" className="text-[9px] uppercase font-bold bg-white">{event.type || 'REMEDIATION'}</Badge>
-                                    <Badge className={cn(
-                                      "text-[9px] font-mono",
-                                      isCompleted ? "bg-emerald-600" : isOverdue ? "bg-red-600" : "bg-indigo-600"
-                                    )}>{event.status || 'Pending'}</Badge>
-                                  </div>
-                                  <h4 className="text-xs font-black text-slate-800 leading-snug">
-                                    {process?.name || event.description || 'Activity Detail'}
-                                  </h4>
-                                  <p className="text-[10px] text-slate-500 font-medium mt-1 flex items-center gap-1">
-                                    <Clock className="h-3 w-3" /> {format(new Date(event.plannedDate || event.targetDate), 'EEEE, d MMMM yyyy')}
-                                  </p>
-                                </div>
-                                <div className="p-2 grid grid-cols-1 gap-1">
-                                  <Button 
-                                    variant="ghost" 
-                                    size="sm" 
-                                    className="justify-start gap-2 h-8 text-xs font-bold text-indigo-600 hover:bg-indigo-50"
-                                    onClick={() => handleOpenHub(event)}
-                                  >
-                                    <CheckCircle2 className="h-3.5 w-3.5" /> {t('csa_hub:actions.execute')}
-                                  </Button>                                  {event.eventType === 'SCHEDULE' && (
-                                    <>
-                                      <Button 
-                                        variant="ghost" 
-                                        size="sm" 
-                                        className="justify-start gap-2 h-8 text-xs font-bold text-slate-600 hover:bg-slate-100"
-                                        onClick={() => handleEditClick(event)}
-                                      >
-                                        <Plus className="h-3.5 w-3.5" /> Edit Details
-                                      </Button>
-                                      <Button 
-                                        variant="ghost" 
-                                        size="sm" 
-                                        className="justify-start gap-2 h-8 text-xs font-bold text-rose-600 hover:bg-rose-50"
-                                        onClick={() => handleDeleteClick(event.id)}
-                                      >
-                                        <Trash2 className="h-3.5 w-3.5" /> Remove Schedule
-                                      </Button>
-                                    </>
-                                  )}
-                                </div>
-                              </PopoverContent>
-                            </Popover>
-                          );
-                        })}
-                        {dayEvents.length > 3 && (
-                          <div className="text-[9px] font-bold text-slate-400 px-1.5 py-0.5">
-                            +{dayEvents.length - 3} more
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
+          <TodoListGrid 
+            calendarDays={calendarDays}
+            currentDate={currentDate}
+            getEventsForDay={getEventsForDay}
+            onSelectDate={setSelectedDate}
+          />
         </div>
 
         {selectedHubProcess && (

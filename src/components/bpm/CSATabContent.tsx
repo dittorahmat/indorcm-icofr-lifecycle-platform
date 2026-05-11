@@ -187,7 +187,7 @@ export function CSATabContent({
       assessmentDate: activeCsa?.assessmentDate || Date.now(),
       assessedBy: activeCsa?.assessedBy || "Current User"
     } as any;
-  }, [activeCsa, activeCsaId, watchSamples, form]);
+  }, [activeCsa, activeCsaId, form]);
 
   return (
     <div className="h-full flex flex-col bg-white overflow-hidden">

@@ -29,7 +29,16 @@ export class BpmService {
     const diag = diags[0];
     const nodes = (diag.nodes as any[]) || [];
 
-    const hydratedNodes = await Promise.all(nodes.map(async (node: any) => {
+    const hydratedNodes = await this.hydrateDiagramNodes(id, nodes);
+
+    return {
+      ...diag,
+      nodes: hydratedNodes
+    };
+  }
+
+  private async hydrateDiagramNodes(diagramId: string, nodes: any[]) {
+    return await Promise.all(nodes.map(async (node: any) => {
       if (node.type === 'activity' || node.type === 'automated-activity') {
         const mappings = await this.db.select({
           risk: rcms,
@@ -39,7 +48,7 @@ export class BpmService {
         .innerJoin(rcms, eq(bpmNodeRcms.rcmId, rcms.id))
         .leftJoin(rcmControls, eq(rcms.id, rcmControls.rcmId))
         .where(and(
-          eq(bpmNodeRcms.diagramId, id),
+          eq(bpmNodeRcms.diagramId, diagramId),
           eq(bpmNodeRcms.nodeId, node.id)
         ));
 
@@ -71,11 +80,6 @@ export class BpmService {
       }
       return node;
     }));
-
-    return {
-      ...diag,
-      nodes: hydratedNodes
-    };
   }
 
   async createDiagram(orgId: string, userId: string, body: any) {
@@ -111,9 +115,44 @@ export class BpmService {
     const oldDiagrams = await this.db.select().from(bpmDiagrams).where(and(eq(bpmDiagrams.id, id), eq(bpmDiagrams.organizationId, orgId))).limit(1);
     const oldDiagram = oldDiagrams[0];
 
+    // 1. Update Diagram Metadata & Log Action
+    await this.updateDiagramMetadata(orgId, userId, id, body, oldDiagram);
+
+    // 2. Resolve BPM Process & NoGL
+    const matchedProcesses = await this.db.select().from(bpmProcesses)
+      .where(and(
+        eq(bpmProcesses.organizationId, orgId),
+        sql`TRIM(LOWER(${bpmProcesses.name})) = TRIM(LOWER(${body.subProcess}))`
+      )).limit(1);
+    
+    const bpmProcessId = matchedProcesses.length > 0 ? matchedProcesses[0].id : null;
+    const noGL = matchedProcesses.length > 0 ? matchedProcesses[0].noGL : null;
+
+    // 3. Clear existing node-RCM mappings for this diagram
+    await this.db.delete(bpmNodeRcms).where(eq(bpmNodeRcms.diagramId, id));
+
+    const nodes = body.nodes || [];
+    const edges = body.edges || [];
+
+    // 4. Sync Risks and Controls from Nodes
+    const { activeRiskControlPairs, activeRiskIds, activeControlIds } = 
+      await this.syncRisksAndControlsFromNodes(orgId, id, nodes, bpmProcessId, noGL, body.name, body.subProcess);
+
+    // 5. Sync from Edges (Risk -> Control)
+    await this.syncMappingsFromEdges(orgId, edges, nodes, activeRiskControlPairs);
+
+    // 6, 7, 8. Cleanup stale data
+    await this.cleanupStaleData(orgId, id, activeRiskIds, activeControlIds, activeRiskControlPairs);
+
+    // 9. Update Summary Counts in BPM Processes
+    await this.updateProcessSummaryCounts(orgId, id);
+
+    return { success: true };
+  }
+
+  private async updateDiagramMetadata(orgId: string, userId: string, id: string, body: any, oldDiagram: any) {
     const yearValue = body.year ? parseInt(body.year.toString()) : undefined;
 
-    // 1. Update Diagram Metadata
     await this.db.update(bpmDiagrams)
       .set({
         name: body.name,
@@ -135,27 +174,21 @@ export class BpmService {
       dataAfter: body,
       description: `Updated BPM Diagram: ${body.name}`
     });
+  }
 
-    // 2. Resolve BPM Process & NoGL
-    const matchedProcesses = await this.db.select().from(bpmProcesses)
-      .where(and(
-        eq(bpmProcesses.organizationId, orgId),
-        sql`TRIM(LOWER(${bpmProcesses.name})) = TRIM(LOWER(${body.subProcess}))`
-      )).limit(1);
-    
-    const bpmProcessId = matchedProcesses.length > 0 ? matchedProcesses[0].id : null;
-    const noGL = matchedProcesses.length > 0 ? matchedProcesses[0].noGL : null;
-
-    // 3. Clear existing node-RCM mappings for this diagram
-    await this.db.delete(bpmNodeRcms).where(eq(bpmNodeRcms.diagramId, id));
-
-    const nodes = body.nodes || [];
-    const edges = body.edges || [];
+  private async syncRisksAndControlsFromNodes(
+    orgId: string, 
+    diagramId: string, 
+    nodes: any[], 
+    bpmProcessId: string | null, 
+    noGL: string | null, 
+    processName: string, 
+    subProcessName: string
+  ) {
     const activeRiskControlPairs = new Set<string>();
-    const activeRiskIdsInDiagram = new Set<string>();
-    const activeControlIdsInDiagram = new Set<string>();
+    const activeRiskIds = new Set<string>();
+    const activeControlIds = new Set<string>();
 
-    // 4. Sync Risks and Controls from Nodes
     for (const node of nodes) {
       const insertedRiskIdsForNode = new Set<string>();
       const nodePairs = node.data?.regulatoryPairs || 
@@ -163,104 +196,23 @@ export class BpmService {
 
       if ((node.type === 'activity' || node.type === 'automated-activity') && nodePairs.length > 0) {
         for (const reg of nodePairs) {
-          if (reg.riskId) activeRiskIdsInDiagram.add(reg.riskId);
-          if (reg.controlId) activeControlIdsInDiagram.add(reg.controlId);
-          
           const riskId = reg.riskId;
           const ctrlId = reg.controlId;
 
           if (riskId && ctrlId) {
+            activeRiskIds.add(riskId);
+            activeControlIds.add(ctrlId);
             activeRiskControlPairs.add(`${riskId}:${ctrlId}`);
             
-            // Sync Risk
-            const existingRisk = await this.db.select().from(rcms).where(and(eq(rcms.id, riskId), eq(rcms.organizationId, orgId))).limit(1);
-            if (existingRisk.length === 0) {
-              await this.db.insert(rcms).values({
-                id: riskId,
-                organizationId: orgId,
-                process: body.name || "Default Process",
-                subProcess: body.subProcess || "Default Sub Process",
-                riskDescription: reg.riskDescription || "Draft Risk",
-                isFraudRelated: reg.isFraudRelated || false,
-                riskRating: reg.riskRating || "Low",
-                status: "Draft",
-                diagramId: id
-              });
-            } else {
-              await this.db.update(rcms).set({
-                riskDescription: reg.riskDescription,
-                isFraudRelated: reg.isFraudRelated,
-                riskRating: reg.riskRating,
-              }).where(eq(rcms.id, riskId));
-            }
+            await this.syncRisk(orgId, diagramId, riskId, reg, processName, subProcessName);
+            await this.syncControl(orgId, ctrlId, riskId, reg, bpmProcessId, noGL, processName, subProcessName, node.data?.label);
+            await this.syncRcmControlMapping(orgId, riskId, ctrlId, reg, node.data?.label);
 
-            // Sync Control
-            const existingCtrl = await this.db.select().from(controls).where(and(eq(controls.id, ctrlId), eq(controls.organizationId, orgId))).limit(1);
-            if (existingCtrl.length === 0) {
-              await this.db.insert(controls).values({
-                id: ctrlId,
-                organizationId: orgId,
-                code: ctrlId,
-                name: reg.controlDescription || node.data.label || "Draft Control",
-                rcmId: riskId,
-                level: reg.classification || 'TLC',
-                cosoPrinciples: reg.cosoPrinciples || [],
-                bpmProcessId: bpmProcessId,
-                fsliCodes: noGL ? [noGL] : [],
-                businessProcess: body.name,
-                subProcess: body.subProcess,
-              });
-            } else {
-              await this.db.update(controls).set({
-                name: reg.controlDescription || node.data.label,
-                level: reg.classification || 'TLC',
-                cosoPrinciples: reg.cosoPrinciples || [],
-                bpmProcessId: bpmProcessId,
-                businessProcess: body.name,
-                subProcess: body.subProcess,
-                ...(noGL ? { fsliCodes: [noGL] } : {})
-              }).where(eq(controls.id, ctrlId));
-            }
-
-            // Sync RCM-Control Mapping
-            const existingMap = await this.db.select().from(rcmControls).where(and(
-              eq(rcmControls.rcmId, riskId),
-              eq(rcmControls.controlId, ctrlId),
-              eq(rcmControls.organizationId, orgId)
-            )).limit(1);
-
-            const mapValues = {
-              controlName: reg.controlDescription || node.data.label,
-              controlDescription: reg.controlDescription,
-              isKeyControl: reg.isKeyControl,
-              ipoC: reg.ipoC,
-              ipoA: reg.ipoA,
-              ipoV: reg.ipoV,
-              ipoRa: reg.ipoRa,
-              cosoPrinciples: reg.cosoPrinciples,
-              itgcDomain: reg.itgcDomain,
-              itgcAssertions: reg.itgcAssertions,
-              controlType: reg.classification === 'ELC' ? 'ELC' : 'TLC',
-            };
-
-            if (existingMap.length === 0) {
-              await this.db.insert(rcmControls).values({
-                id: crypto.randomUUID(),
-                organizationId: orgId,
-                rcmId: riskId,
-                controlId: ctrlId,
-                ...mapValues
-              });
-            } else {
-              await this.db.update(rcmControls).set(mapValues).where(eq(rcmControls.id, existingMap[0].id));
-            }
-
-            // Create Node-RCM linkage
             if (!insertedRiskIdsForNode.has(riskId)) {
               await this.db.insert(bpmNodeRcms).values({
                 id: crypto.randomUUID(),
                 organizationId: orgId,
-                diagramId: id,
+                diagramId,
                 nodeId: node.id,
                 rcmId: riskId
               });
@@ -277,7 +229,7 @@ export class BpmService {
             await this.db.insert(bpmNodeRcms).values({
               id: crypto.randomUUID(),
               organizationId: orgId,
-              diagramId: id,
+              diagramId,
               nodeId: node.id,
               rcmId: riskEntry.rcmId
             });
@@ -285,13 +237,112 @@ export class BpmService {
           }
 
           if (riskEntry.controlIds) {
-            riskEntry.controlIds.forEach((ctrlId: string) => activeRiskControlPairs.add(`${riskEntry.rcmId}:${ctrlId}`));
+            riskEntry.controlIds.forEach((ctrlId: string) => {
+              activeRiskControlPairs.add(`${riskEntry.rcmId}:${ctrlId}`);
+              activeRiskIds.add(riskEntry.rcmId);
+              activeControlIds.add(ctrlId);
+            });
           }
         }
       }
     }
 
-    // 5. Sync from Edges (Risk -> Control)
+    return { activeRiskControlPairs, activeRiskIds, activeControlIds };
+  }
+
+  private async syncRisk(orgId: string, diagramId: string, riskId: string, reg: any, processName: string, subProcessName: string) {
+    const existingRisk = await this.db.select().from(rcms).where(and(eq(rcms.id, riskId), eq(rcms.organizationId, orgId))).limit(1);
+    if (existingRisk.length === 0) {
+      await this.db.insert(rcms).values({
+        id: riskId,
+        organizationId: orgId,
+        process: processName || "Default Process",
+        subProcess: subProcessName || "Default Sub Process",
+        riskDescription: reg.riskDescription || "Draft Risk",
+        isFraudRelated: reg.isFraudRelated || false,
+        riskRating: reg.riskRating || "Low",
+        status: "Draft",
+        diagramId
+      });
+    } else {
+      await this.db.update(rcms).set({
+        riskDescription: reg.riskDescription,
+        isFraudRelated: reg.isFraudRelated,
+        riskRating: reg.riskRating,
+      }).where(eq(rcms.id, riskId));
+    }
+  }
+
+  private async syncControl(
+    orgId: string, 
+    ctrlId: string, 
+    riskId: string, 
+    reg: any, 
+    bpmProcessId: string | null, 
+    noGL: string | null, 
+    processName: string, 
+    subProcessName: string,
+    nodeLabel?: string
+  ) {
+    const existingCtrl = await this.db.select().from(controls).where(and(eq(controls.id, ctrlId), eq(controls.organizationId, orgId))).limit(1);
+    const controlData = {
+      name: reg.controlDescription || nodeLabel || "Draft Control",
+      level: reg.classification || 'TLC',
+      cosoPrinciples: reg.cosoPrinciples || [],
+      bpmProcessId: bpmProcessId,
+      businessProcess: processName,
+      subProcess: subProcessName,
+      ...(noGL ? { fsliCodes: [noGL] } : {})
+    };
+
+    if (existingCtrl.length === 0) {
+      await this.db.insert(controls).values({
+        id: ctrlId,
+        organizationId: orgId,
+        code: ctrlId,
+        rcmId: riskId,
+        ...controlData
+      });
+    } else {
+      await this.db.update(controls).set(controlData).where(eq(controls.id, ctrlId));
+    }
+  }
+
+  private async syncRcmControlMapping(orgId: string, riskId: string, ctrlId: string, reg: any, nodeLabel?: string) {
+    const existingMap = await this.db.select().from(rcmControls).where(and(
+      eq(rcmControls.rcmId, riskId),
+      eq(rcmControls.controlId, ctrlId),
+      eq(rcmControls.organizationId, orgId)
+    )).limit(1);
+
+    const mapValues = {
+      controlName: reg.controlDescription || nodeLabel,
+      controlDescription: reg.controlDescription,
+      isKeyControl: reg.isKeyControl,
+      ipoC: reg.ipoC,
+      ipoA: reg.ipoA,
+      ipoV: reg.ipoV,
+      ipoRa: reg.ipoRa,
+      cosoPrinciples: reg.cosoPrinciples,
+      itgcDomain: reg.itgcDomain,
+      itgcAssertions: reg.itgcAssertions,
+      controlType: reg.classification === 'ELC' ? 'ELC' : 'TLC',
+    };
+
+    if (existingMap.length === 0) {
+      await this.db.insert(rcmControls).values({
+        id: crypto.randomUUID(),
+        organizationId: orgId,
+        rcmId: riskId,
+        controlId: ctrlId,
+        ...mapValues
+      });
+    } else {
+      await this.db.update(rcmControls).set(mapValues).where(eq(rcmControls.id, existingMap[0].id));
+    }
+  }
+
+  private async syncMappingsFromEdges(orgId: string, edges: any[], nodes: any[], activeRiskControlPairs: Set<string>) {
     for (const edge of edges) {
       const sourceNode = nodes.find((n: any) => n.id === edge.source);
       const targetNode = nodes.find((n: any) => n.id === edge.target);
@@ -303,7 +354,6 @@ export class BpmService {
       }
     }
 
-    // Insert any missing mappings from active pairs
     for (const pair of activeRiskControlPairs) {
       const [rcmId, ctrlId] = pair.split(':');
       const existing = await this.db.select().from(rcmControls).where(and(
@@ -321,8 +371,15 @@ export class BpmService {
         });
       }
     }
+  }
 
-    // 6. Cleanup stale mappings
+  private async cleanupStaleData(
+    orgId: string, 
+    diagramId: string, 
+    activeRiskIdsInDiagram: Set<string>, 
+    activeControlIdsInDiagram: Set<string>, 
+    activeRiskControlPairs: Set<string>
+  ) {
     if (activeRiskIdsInDiagram.size > 0) {
       for (const rcmId of activeRiskIdsInDiagram) {
         const activeCtrlsForThisRisk = Array.from(activeRiskControlPairs)
@@ -345,7 +402,6 @@ export class BpmService {
       }
     }
 
-    // 7. Cleanup orphan controls
     if (activeControlIdsInDiagram.size > 0) {
       const orphanCheckResult = await this.db.execute(sql`
         SELECT id FROM controls 
@@ -370,8 +426,7 @@ export class BpmService {
       }
     }
 
-    // 8. Cleanup stale risks
-    const risksOfThisDiagram = await this.db.select({ id: rcms.id }).from(rcms).where(eq(rcms.diagramId, id));
+    const risksOfThisDiagram = await this.db.select({ id: rcms.id }).from(rcms).where(eq(rcms.diagramId, diagramId));
     const riskIdsOfThisDiagram = risksOfThisDiagram.map((r: any) => r.id);
     
     for (const drId of riskIdsOfThisDiagram) {
@@ -379,11 +434,12 @@ export class BpmService {
           await this.db.delete(rcms).where(and(eq(rcms.id, drId), eq(rcms.organizationId, orgId)));
        }
     }
+  }
 
-    // 9. Update Summary Counts in BPM Processes
+  private async updateProcessSummaryCounts(orgId: string, diagramId: string) {
     const linkedRisks = await this.db.select({ id: bpmNodeRcms.rcmId })
       .from(bpmNodeRcms)
-      .where(eq(bpmNodeRcms.diagramId, id))
+      .where(eq(bpmNodeRcms.diagramId, diagramId))
       .groupBy(bpmNodeRcms.rcmId);
     
     const riskCount = linkedRisks.length;
@@ -401,7 +457,7 @@ export class BpmService {
       controlCount = linkedCtrls.length;
     }
 
-    const diagResult = await this.db.select().from(bpmDiagrams).where(eq(bpmDiagrams.id, id)).limit(1);
+    const diagResult = await this.db.select().from(bpmDiagrams).where(eq(bpmDiagrams.id, diagramId)).limit(1);
     if (diagResult.length > 0 && diagResult[0].subProcess) {
       await this.db.update(bpmProcesses)
         .set({ riskCount, controlCount })
@@ -410,8 +466,6 @@ export class BpmService {
           eq(bpmProcesses.name, diagResult[0].subProcess)
         ));
     }
-
-    return { success: true };
   }
 
   async deleteDiagram(orgId: string, id: string) {

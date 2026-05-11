@@ -125,4 +125,12 @@ bpm.delete('/bpm-processes/:id', rbac(['Line 2', 'Admin']), async (c) => {
   return ok(c, result);
 });
 
+bpm.get('/legacy/bpm-summary', async (c) => {
+  const db = getDb(c.env.DATABASE_URL);
+  const orgId = c.get('organizationId')!;
+  const bpmService = new BpmService(db);
+  const items = await bpmService.getAllDiagrams(orgId);
+  return ok(c, { items });
+});
+
 export default bpm;

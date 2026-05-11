@@ -1,31 +1,13 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useForm, useFieldArray, useWatch } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { CSARecord, BPMDiagram, BPMProcess, Control } from '@shared/types';
 import { promptBiometricAuth } from '@/lib/forensic-utils';
 import { useSearchParams } from 'react-router-dom';
-
-const csaFormSchema = z.object({
-  period: z.string().min(1, "Period is required"),
-  result: z.enum(['Effective', 'Ineffective', 'No Transaction']),
-  comments: z.string().optional(),
-  testProcedure: z.string().optional(),
-  archiveLocation: z.string().optional(),
-  samplingMethodology: z.string().optional(),
-  documentList: z.string().optional(),
-  isBpmConfirmed: z.boolean(),
-  samples: z.array(z.object({
-    sampleRef: z.string().optional(),
-    glRowId: z.string().optional(),
-    controlResults: z.record(z.string(), z.any())
-  }))
-});
-
-export type CSAFormValues = z.infer<typeof csaFormSchema>;
+import { useCSAForm, CSAFormValues } from './csa/use-csa-form';
+export type { CSAFormValues };
+import { useCSADiagramLink } from './csa/use-csa-diagram-link';
 
 interface UseCSAProps {
   bpmProcessId: string;
@@ -43,6 +25,15 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
   const [activeUploadRow, setActiveUploadRow] = useState<{ sIdx: number; cId: string } | null>(null);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const manualViewOverride = useRef<'list' | 'form' | null>(null);
+
+  const {
+    form,
+    fields,
+    replaceSamples,
+    append,
+    watchSamples,
+    anyPointFailed
+  } = useCSAForm();
 
   // 1. Queries
   const { data: bpmProcess } = useQuery({
@@ -75,76 +66,7 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
     enabled: !!activeCsaId
   });
 
-  // 2. Form & Field Array
-  const form = useForm<CSAFormValues>({
-    resolver: zodResolver(csaFormSchema),
-    defaultValues: {
-      period: '2025-Q1',
-      result: 'Effective',
-      comments: '',
-      testProcedure: '',
-      archiveLocation: '',
-      samplingMethodology: 'Attribute Sampling / Zero Tolerance Approach',
-      documentList: 'Invoice, Evidence of Approval, GL Posting',
-      isBpmConfirmed: false,
-      samples: []
-    }
-  });
-
-  const { fields, replace: replaceSamples, append } = useFieldArray({
-    control: form.control,
-    name: "samples"
-  });
-
-  // 3. Reactivity & Data Transformation
-  const watchSamplesRaw = useWatch({
-    control: form.control,
-    name: "samples"
-  });
-  
-  const watchSamples = useMemo(() => watchSamplesRaw || [], [watchSamplesRaw]);
-
-  const bpmRiskControlPairs = useMemo(() => {
-    if (!diagram?.nodes) return [];
-    const pairs: { riskId: string; riskName: string; controlId: string; controlName: string; code: string }[] = [];
-    
-    diagram.nodes.forEach((node: any) => {
-      const nodePairs = node.data?.regulatoryPairs || 
-                       (node.data?.regulatoryData ? [node.data.regulatoryData] : []);
-      
-      if ((node.type === 'activity' || node.type === 'automated-activity') && nodePairs.length > 0) {
-        nodePairs.forEach((reg: any) => {
-          if (reg.riskId && reg.controlId) {
-            pairs.push({
-              riskId: reg.riskId,
-              riskName: reg.riskDescription || "N/A",
-              controlId: reg.controlId,
-              controlName: reg.controlDescription || node.data.label || "N/A",
-              code: reg.controlId
-            });
-          }
-        });
-      }
-    });
-    return pairs;
-  }, [diagram]);
-
-  const activeControls = useMemo(() => {
-    if (bpmRiskControlPairs.length > 0) {
-      const seen = new Set();
-      return bpmRiskControlPairs.filter(p => {
-        const isNew = !seen.has(p.controlId);
-        seen.add(p.controlId);
-        return isNew;
-      }).map(p => ({ id: p.controlId, name: p.controlName, code: p.code, description: p.riskName }));
-    }
-    return propControls;
-  }, [bpmRiskControlPairs, propControls]);
-
-  const anyPointFailed = useMemo(() => 
-    watchSamples.some(s => Object.values(s.controlResults).some((r: any) => !r.implemented)),
-    [watchSamples]
-  );
+  const { bpmRiskControlPairs, activeControls } = useCSADiagramLink(diagram, propControls);
 
   const isReadOnly = useMemo(() => {
     if (!activeCsaId) return false;
@@ -152,6 +74,37 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
     if (activeCsa.isDraft) return false;
     return true;
   }, [activeCsaId, activeCsa]);
+
+  const initializeFromSamples = useCallback((samples: any[]) => {
+    const newSamples = samples.map(s => {
+      const controlResults: Record<string, any> = {};
+      if (bpmRiskControlPairs.length > 0) {
+        bpmRiskControlPairs.forEach(pair => {
+          controlResults[pair.controlId] = {
+            implemented: false,
+            riskId: pair.riskId,
+            riskName: pair.riskName,
+            controlName: pair.controlName,
+            evidenceUrl: '',
+            comment: ''
+          };
+        });
+      } else {
+        activeControls.forEach(ctrl => {
+          controlResults[ctrl.id] = { implemented: false };
+        });
+      }
+
+      let sampleRef = "";
+      if ("glDesc" in s) sampleRef = s.glDesc;
+      else if ("description" in s) sampleRef = (s as any).description || "N/A";
+
+      return { sampleRef, glRowId: (s as any).id, controlResults };
+    });
+    replaceSamples(newSamples);
+    setIsInitialized(true);
+    setView('form');
+  }, [bpmRiskControlPairs, activeControls, replaceSamples]);
 
   // 4. Effects
   useEffect(() => {
@@ -185,7 +138,7 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
     else if (initialSamples.length > 0 && view !== 'form') {
       initializeFromSamples(initialSamples);
     }
-  }, [scheduleId, linkedScheduleRecord, isCheckingSchedule, initialSamples, bpmRiskControlPairs, activeControls, replaceSamples, isInitialized, view]);
+  }, [scheduleId, linkedScheduleRecord, isCheckingSchedule, initialSamples, isInitialized, view, initializeFromSamples]);
 
   useEffect(() => {
     if (bpmProcess?.standardTestProcedure && !activeCsaId && !form.getValues('testProcedure')) {
@@ -223,13 +176,6 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
   }, [activeCsa, activeCsaId, view, form]);
 
   useEffect(() => {
-    if (anyPointFailed && form.getValues('result') === 'Effective') {
-      form.setValue('result', 'Ineffective');
-      toast.warning("Zero Tolerance: Status diset ke Ineffective karena ada kontrol yang gagal.");
-    }
-  }, [anyPointFailed, form]);
-
-  useEffect(() => {
     if (view === 'list') {
       setActiveCsaId(null);
       setIsInitialized(true);
@@ -237,36 +183,7 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
     }
   }, [view]);
 
-  const initializeFromSamples = (samples: any[]) => {
-    const newSamples = samples.map(s => {
-      const controlResults: Record<string, any> = {};
-      if (bpmRiskControlPairs.length > 0) {
-        bpmRiskControlPairs.forEach(pair => {
-          controlResults[pair.controlId] = {
-            implemented: false,
-            riskId: pair.riskId,
-            riskName: pair.riskName,
-            controlName: pair.controlName,
-            evidenceUrl: '',
-            comment: ''
-          };
-        });
-      } else {
-        activeControls.forEach(ctrl => {
-          controlResults[ctrl.id] = { implemented: false };
-        });
-      }
 
-      let sampleRef = "";
-      if ("glDesc" in s) sampleRef = s.glDesc;
-      else if ("description" in s) sampleRef = (s as any).description || "N/A";
-
-      return { sampleRef, glRowId: (s as any).id, controlResults };
-    });
-    replaceSamples(newSamples);
-    setIsInitialized(true);
-    setView('form');
-  };
 
   // 6. Mutations
   const createMutation = useMutation({
