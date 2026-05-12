@@ -95,6 +95,16 @@ bpm.get('/bpm-processes', async (c) => {
   return ok(c, { items });
 });
 
+bpm.get('/bpm-processes/:id/controls', async (c) => {
+  const db = getDb(c.env.DATABASE_URL);
+  const bpmService = new BpmService(db);
+  const id = c.req.param('id');
+  const orgId = c.get('organizationId')!;
+
+  const items = await bpmService.getControlsByProcess(orgId, id!);
+  return ok(c, { items });
+});
+
 bpm.post('/bpm-processes', rbac(['Line 2', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const bpmService = new BpmService(db);

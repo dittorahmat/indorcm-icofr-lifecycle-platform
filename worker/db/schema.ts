@@ -416,6 +416,31 @@ export const testRecords = pgTable("test_records", {
 	sampleSize: integer("sample_size"),
 	homogeneityJustification: text("homogeneity_justification"),
 	evaluationAttributes: jsonb("evaluation_attributes"),
+	
+	// Lampiran 8: 6-Pilar TOD (Test of Design)
+	todPilarObjective: boolean("tod_pilar_objective"),
+	todPilarTiming: boolean("tod_pilar_timing"),
+	todPilarAuthority: boolean("tod_pilar_authority"),
+	todPilarReliability: boolean("tod_pilar_reliability"),
+	todPilarCoverage: boolean("tod_pilar_coverage"),
+	todPilarEvidence: boolean("tod_pilar_evidence"),
+	todPilarComments: jsonb("tod_pilar_comments").$type<Record<string, string>>(),
+});
+
+export const testSamples = pgTable("test_samples", {
+	id: text("id").primaryKey(),
+	organizationId: text("organization_id").notNull().references(() => organization.id),
+	testRecordId: text("test_record_id").notNull().references(() => testRecords.id, { onDelete: 'cascade' }),
+	sampleRef: text("sample_ref"),
+	
+	// Lampiran 7 Attributes
+	attrA: boolean("attr_a").default(false),
+	attrB: boolean("attr_b").default(false),
+	attrC: boolean("attr_c").default(false),
+	attrD: boolean("attr_d").default(false),
+	
+	status: text("status").notNull().default("Pass"), // Pass, Fail
+	comments: text("comments"),
 });
 
 export const deficiencies = pgTable("deficiencies", {
@@ -688,6 +713,28 @@ export const bpmExports = pgTable("bpm_exports", {
 	createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const todEvaluations = pgTable("tod_evaluations", {
+	id: text("id").primaryKey(),
+	organizationId: text("organization_id").notNull().references(() => organization.id),
+	csaId: text("csa_id").notNull().references(() => csaRecords.id, { onDelete: 'cascade' }),
+	controlId: text("control_id").notNull().references(() => controls.id),
+	evaluatorId: text("evaluator_id").references(() => user.id),
+	
+	// Lampiran 8 Criteria (Pilar TOD)
+	pilarObjective: boolean("pilar_objective").default(false),
+	pilarTiming: boolean("pilar_timing").default(false),
+	pilarAuthority: boolean("pilar_authority").default(false),
+	pilarReliability: boolean("pilar_reliability").default(false),
+	pilarCoverage: boolean("pilar_coverage").default(false),
+	pilarEvidence: boolean("pilar_evidence").default(false),
+	
+	kkReference: text("kk_reference"),
+	conclusion: text("conclusion"), // Effective, Ineffective
+	comment: text("comment"),
+	createdAt: timestamp("created_at").notNull().defaultNow(),
+	updatedAt: timestamp("updated_at"),
+});
+
 
 // --- RELATIONS ---
 
@@ -740,4 +787,20 @@ export const socReportRelations = relations(socReports, ({ one, many }) => ({
 export const socEvaluationRelations = relations(socEvaluations, ({ one }) => ({
 	report: one(socReports, { fields: [socEvaluations.socReportId], references: [socReports.id] }),
 	evaluator: one(user, { fields: [socEvaluations.evaluatedBy], references: [user.id] }),
+}));
+
+export const testRecordRelations = relations(testRecords, ({ many, one }) => ({
+	samples: many(testSamples),
+	control: one(controls, { fields: [testRecords.controlId], references: [controls.id] }),
+	testedByUser: one(user, { fields: [testRecords.testedBy], references: [user.id] }),
+}));
+
+export const testSampleRelations = relations(testSamples, ({ one }) => ({
+	testRecord: one(testRecords, { fields: [testSamples.testRecordId], references: [testRecords.id] }),
+}));
+
+export const todEvaluationRelations = relations(todEvaluations, ({ one }) => ({
+	csaRecord: one(csaRecords, { fields: [todEvaluations.csaId], references: [csaRecords.id] }),
+	control: one(controls, { fields: [todEvaluations.controlId], references: [controls.id] }),
+	evaluator: one(user, { fields: [todEvaluations.evaluatorId], references: [user.id] }),
 }));

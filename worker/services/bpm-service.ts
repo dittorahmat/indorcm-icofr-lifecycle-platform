@@ -627,4 +627,12 @@ export class BpmService {
     await this.db.delete(bpmProcesses).where(and(eq(bpmProcesses.id, id), eq(bpmProcesses.organizationId, orgId)));
     return { success: true };
   }
+
+  async getControlsByProcess(orgId: string, bpmProcessId: string) {
+    return await this.db.select().from(controls)
+      .where(and(
+        eq(controls.organizationId, orgId),
+        eq(controls.bpmProcessId, bpmProcessId)
+      ));
+  }
 }

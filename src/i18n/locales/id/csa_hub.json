@@ -103,11 +103,30 @@
     "gps": "Lokasi GPS Terverifikasi",
     "timestamp": "Waktu Tercatat Terverifikasi",
     "biometric": "Identitas Biometrik Terverifikasi",
-    "hash": "Digital Signature Hash"
+    "hash": "Hash Tanda Tangan Digital"
   },
   "form": {
     "addManualSample": "Tambah Sampel Manual",
     "sampleReference": "Referensi Sampel",
     "typeReference": "Ketik referensi..."
+  },
+  "tod": {
+    "title": "Lampiran 8: Verifikasi Rancangan Pengendalian (TOD)",
+    "subtitle": "Alur Kerja Evaluasi Lini 2",
+    "matrixTitle": "Matriks Verifikasi Desain & Bukti Transaksi",
+    "rcmAttributes": "Atribut Pengendalian (RCM)",
+    "evaluationPillars": "6-Pilar Evaluasi Desain",
+    "saveEvaluation": "Simpan Evaluasi",
+    "conclusion": "Kesimpulan Desain",
+    "justification": "Catatan / Justifikasi",
+    "kkRef": "Referensi Kertas Kerja",
+    "pillars": {
+      "objective": "Pencapaian Objektif",
+      "timing": "Ketepatan Waktu",
+      "authority": "Wewenang & Kompetensi",
+      "reliability": "Keandalan Informasi",
+      "coverage": "Periode Cakupan",
+      "evidence": "Bukti yang Tersedia"
+    }
   }
 }

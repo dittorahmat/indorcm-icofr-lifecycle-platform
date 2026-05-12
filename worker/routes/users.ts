@@ -3,7 +3,8 @@ import type { HonoEnv } from '../app';
 import { ok, bad, notFound } from '../lib/utils';
 import { getDb } from '../db';
 import { 
-  user, organization, auditLogs, member, departments
+  user, organization, auditLogs, member, departments,
+  testRecords, testSamples
 } from '../db/schema';
 import { eq, sql, and } from 'drizzle-orm';
 import type { Settings } from "@shared/types";
@@ -214,11 +215,40 @@ users.get('/dev/fix-db', async (c) => {
     await db.execute(sql`ALTER TABLE "user" ADD COLUMN IF NOT EXISTS "language" text DEFAULT 'en';`);
     await db.execute(sql`ALTER TABLE applications ADD COLUMN IF NOT EXISTS itgc_areas jsonb DEFAULT '[]';`);
     await db.execute(sql`ALTER TABLE notifications ADD COLUMN IF NOT EXISTS type text DEFAULT 'info';`);
-    return ok(c, { message: "Database fixed! Columns significant_accounts, language, itgc_areas, and notification type added." });
+    
+    // Task 3.4: Legacy Data Migration
+    const legacyTests = await db.select().from(testRecords);
+    let migratedCount = 0;
+    
+    for (const test of legacyTests) {
+        const existingSamples = await db.select().from(testSamples).where(eq(testSamples.testRecordId, test.id)).limit(1);
+        if (existingSamples.length === 0) {
+            await db.insert(testSamples).values({
+                id: crypto.randomUUID(),
+                organizationId: test.organizationId,
+                testRecordId: test.id,
+                sampleRef: 'LEGACY-SUMMARY',
+                attrA: true,
+                attrB: true,
+                attrC: true,
+                attrD: true,
+                status: test.result === 'Effective' || test.result === 'Pass' ? 'Pass' : 'Fail',
+                comments: 'Auto-generated from legacy test record result.'
+            });
+            migratedCount++;
+        }
+    }
+
+
+    return ok(c, { 
+        message: "Database fixed and legacy tests migrated!",
+        migratedTests: migratedCount
+    });
   } catch (e: any) {
     return ok(c, { error: e.message });
   }
 });
+
 
 users.get('/dev/re-seed', async (c) => {
   const mode = c.req.query('mode') || 'full';

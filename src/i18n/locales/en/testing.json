@@ -79,5 +79,31 @@
     "openDeficiency": "OPEN DEFICIENCY",
     "tests": "TESTS",
     "remediationReadiness": "Remediation Testing Readiness (Table 23)"
+  },
+  "sampling": {
+    "title": "Regulatory Sampling Grid",
+    "addSample": "Add Sample",
+    "ref": "Sample Ref (Voucher/No)",
+    "status": "Status",
+    "comments": "Sample Notes",
+    "empty": "No samples yet. Click 'Add Sample' to start.",
+    "commentPlaceholder": "Notes for this sample..."
+  },
+  "pillars": {
+    "objective": "Objective Achievement",
+    "timing": "Timeliness",
+    "authority": "Authority & Competence",
+    "reliability": "Information Reliability",
+    "coverage": "Period Coverage",
+    "evidence": "Evidence Sufficiency",
+    "commentPlaceholder": "Enter evaluation basis for this pillar...",
+    "descriptions": {
+      "objective": "Is the control designed to effectively mitigate the risk?",
+      "timing": "Is the control frequency adequate for the risk?",
+      "authority": "Does the performer have appropriate authority?",
+      "reliability": "Is the IPE/EUC used reliable and accurate?",
+      "coverage": "Does the control cover the entire reporting period?",
+      "evidence": "Is supporting evidence available and sufficient?"
+    }
   }
 }

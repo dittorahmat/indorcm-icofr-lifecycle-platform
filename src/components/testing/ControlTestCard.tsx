@@ -24,6 +24,10 @@ import { AlertTriangle, Info, Clock, UserCheck, Loader2 } from 'lucide-react';
 import { promptBiometricAuth } from '@/lib/forensic-utils';
 import { EvaluationAttributesSection } from './EvaluationAttributesSection';
 import { ControlHistory } from './ControlHistory';
+import { TODSixPillarForm } from './TODSixPillarForm';
+import { RegulatorySamplingTable } from './RegulatorySamplingTable';
+import { useBlocker } from 'react-router-dom';
+import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 
 import { testSchema, TestFormValues } from './test-schema';
 
@@ -38,7 +42,7 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
   const queryClient = useQueryClient();
   const [isAuthenticating, setIsAuthenticating] = React.useState(false);
   
-  const form = useForm<TestFormValues>({
+  const form = useForm<any>({
     resolver: zodResolver(testSchema),
     defaultValues: {
       method: "Inspection",
@@ -50,11 +54,26 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
         infoReliability: true,
         periodCoverage: true,
         evidenceAvailability: true,
-      }
+      },
+      todPilarObjective: true,
+      todPilarTiming: true,
+      todPilarAuthority: true,
+      todPilarReliability: true,
+      todPilarCoverage: true,
+      todPilarEvidence: true,
+      todPilarComments: {},
+      samples: [],
     }
   });
 
+  const { isDirty } = form.formState;
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      isDirty && currentLocation.pathname !== nextLocation.pathname
+  );
+
   const suggestion = getSuggestedSampleRange(control.frequency as any, control.riskRating as any, control.nature as any);
+
   const remediationStatus = openDeficiencyDate ? isReadyForRemediationTest(control.frequency as any, openDeficiencyDate) : null;
 
   const mutation = useMutation({
@@ -73,12 +92,35 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
   });
 
   const onSubmit = async (values: TestFormValues) => {
-    if (values.testType === 'TOE' && values.sampleSize! < suggestion.min && !values.homogeneityJustification) {
-      form.setError('homogeneityJustification', { 
-        type: 'manual', 
-        message: t('validation.belowMinJustificationRequired') 
-      });
-      return;
+    // TOE validation
+    if (values.testType === 'TOE') {
+       if (values.sampleSize! < suggestion.min && !values.homogeneityJustification) {
+        form.setError('homogeneityJustification', { 
+          type: 'manual', 
+          message: t('validation.belowMinJustificationRequired') 
+        });
+        return;
+      }
+      
+      // Auto-set status based on samples (Zero Tolerance)
+      if (values.samples.some(s => s.status === 'Fail')) {
+        values.result = 'Ineffective';
+      }
+    }
+
+    // TOD validation - if any pillar is unchecked, status must be Ineffective
+    if (values.testType === 'TOD') {
+      const pillars = [
+        values.todPilarObjective, 
+        values.todPilarTiming, 
+        values.todPilarAuthority, 
+        values.todPilarReliability, 
+        values.todPilarCoverage, 
+        values.todPilarEvidence
+      ];
+      if (pillars.some(p => p === false)) {
+        values.result = 'Ineffective';
+      }
     }
 
     setIsAuthenticating(true);
@@ -97,6 +139,7 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
       ...values,
     } as any);
   };
+
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -160,57 +203,8 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)}>
                 <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.3 }}>
-                  <TabsContent value="tod" className="pt-6 space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-4">
-                        <h3 className="font-semibold text-sm">{t('tod.checklist')}</h3>
-                        <div className="space-y-2">
-                          <div className="flex items-center space-x-2"><Checkbox id={`tod1-${control.id}`} /><Label htmlFor={`tod1-${control.id}`} className="text-xs">{t('tod.q1')}</Label></div>
-                          <div className="flex items-center space-x-2"><Checkbox id={`tod2-${control.id}`} /><Label htmlFor={`tod2-${control.id}`} className="text-xs">{t('tod.q2')}</Label></div>
-                        </div>
-
-                        {control.nature === "ITDM - IPE" && (
-                          <div className="p-3 bg-orange-50 border border-orange-100 rounded-md space-y-2">
-                            <p className="text-[10px] font-bold text-orange-800 uppercase">{t('tod.ipeTitle')} ({control.ipeType})</p>
-                            <div className="flex items-center space-x-2"><Checkbox id={`ipe1-${control.id}`} /><Label htmlFor={`ipe1-${control.id}`} className="text-[10px]">{t('tod.ipeP1')}</Label></div>
-                            {control.ipeType === "Query" && (
-                              <>
-                                <div className="flex items-center space-x-2"><Checkbox id={`ipeq-${control.id}`} /><Label htmlFor={`ipeq-${control.id}`} className="text-[10px] text-red-700 font-semibold">{t('tod.ipeP2')}</Label></div>
-                                <div className="flex items-center space-x-2"><Checkbox id={`ipet-${control.id}`} /><Label htmlFor={`ipet-${control.id}`} className="text-[10px]">{t('tod.ipeP3')}</Label></div>
-                              </>
-                            )}
-                            <div className="flex items-center space-x-2"><Checkbox id={`ipe2-${control.id}`} /><Label htmlFor={`ipe2-${control.id}`} className="text-[10px]">{t('tod.ipeP4')}</Label></div>
-                          </div>
-                        )}
-
-                        {control.nature === "ITDM - EUC" && (
-                          <div className="p-3 bg-purple-50 border border-purple-100 rounded-md space-y-2">
-                            <p className="text-[10px] font-bold text-purple-800 uppercase">{t('tod.eucTitle')} ({control.eucComplexity} Complexity)</p>
-                            <div className="flex items-center space-x-2"><Checkbox id={`euc1-${control.id}`} /><Label htmlFor={`euc1-${control.id}`} className="text-[10px]">{t('tod.eucP1')}</Label></div>
-                            <div className="flex items-center space-x-2"><Checkbox id={`eucav-${control.id}`} /><Label htmlFor={`eucav-${control.id}`} className="text-[10px]">{t('tod.eucP2')}</Label></div>
-                            {(control.eucComplexity === "Medium" || control.eucComplexity === "High") && (
-                              <>
-                                <div className="flex items-center space-x-2"><Checkbox id={`eucv-${control.id}`} /><Label htmlFor={`eucv-${control.id}`} className="text-[10px]">{t('tod.eucP3')}</Label></div>
-                                <div className="flex items-center space-x-2"><Checkbox id={`euca-${control.id}`} /><Label htmlFor={`euca-${control.id}`} className="text-[10px]">{t('tod.eucP4')}</Label></div>
-                              </>
-                            )}
-                            {control.eucComplexity === "High" && (
-                              <div className="flex items-center space-x-2"><Checkbox id={`eucch-${control.id}`} /><Label htmlFor={`eucch-${control.id}`} className="text-[10px]">{t('tod.eucP5')}</Label></div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                      
-                      <FormField control={form.control} name="method" render={({ field }) => (
-                        <FormItem><FormLabel className="text-xs">{t('actions.method')}</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Inquiry">Inquiry</SelectItem><SelectItem value="Observation">Observation</SelectItem><SelectItem value="Inspection">Inspection</SelectItem><SelectItem value="Reperformance">Reperformance</SelectItem></SelectContent></Select></FormItem>
-                      )} />
-                    </div>
-                    
-                    <EvaluationAttributesSection form={form} t={t} />
-                    
-                    <FormField control={form.control} name="comments" render={({ field }) => (
-                      <FormItem><FormLabel className="text-xs">{t('tod.comments')}</FormLabel><FormControl><Textarea placeholder={t('tod.placeholder')} {...field} className="min-h-[100px] text-xs" /></FormControl><FormMessage /></FormItem>
-                    )} />
+                  <TabsContent value="tod" className="pt-6 space-y-6">
+                    <TODSixPillarForm form={form} t={t} />
                     
                     <div className="flex justify-end gap-2 mt-4">
                       <Button type="submit" disabled={isAuthenticating || mutation.isPending} onClick={() => { form.setValue('testType', 'TOD'); form.setValue('result', 'Ineffective'); }} variant="destructive" size="sm">
@@ -222,11 +216,9 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
                     </div>
                   </TabsContent>
 
-                  <TabsContent value="toe" className="pt-6 space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <TabsContent value="toe" className="pt-6 space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                       <div className="space-y-4">
-                        <h3 className="font-semibold text-sm">{t('toe.sampling')}</h3>
-                        
                         <div className={cn(
                           "p-3 rounded-md flex items-start gap-3 border transition-colors",
                           form.watch('sampleSize') !== undefined && form.watch('sampleSize')! < suggestion.min 
@@ -259,7 +251,6 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
                         </div>
 
                         <div className="grid grid-cols-2 gap-2">
-                          <div className="space-y-1"><Label htmlFor={`pop-${control.id}`} className="text-[10px] uppercase font-bold text-muted-foreground">{t('toe.population')}</Label><Input id={`pop-${control.id}`} type="number" defaultValue="250" className="h-8 text-xs" /></div>
                           <FormField control={form.control} name="sampleSize" render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground flex justify-between">
@@ -298,14 +289,14 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
                       </div>
 
                       <FormField control={form.control} name="method" render={({ field }) => (
-                        <FormItem><FormLabel className="text-xs">{t('actions.method')}</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Inquiry">Inquiry</SelectItem><SelectItem value="Observation">Observation</SelectItem><SelectItem value="Inspection">Inspection</SelectItem><SelectItem value="Reperformance">Reperformance</SelectItem></SelectContent></Select></FormItem>
+                        <FormItem><FormLabel className="text-xs font-bold uppercase text-muted-foreground">{t('actions.method')}</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Inquiry">Inquiry</SelectItem><SelectItem value="Observation">Observation</SelectItem><SelectItem value="Inspection">Inspection</SelectItem><SelectItem value="Reperformance">Reperformance</SelectItem></SelectContent></Select></FormItem>
                       )} />
                     </div>
 
-                    <EvaluationAttributesSection form={form} t={t} />
+                    <RegulatorySamplingTable control={form.control} t={t} />
 
                     <FormField control={form.control} name="comments" render={({ field }) => (
-                      <FormItem><FormLabel className="text-xs">{t('toe.comments')}</FormLabel><FormControl><Textarea placeholder={t('toe.placeholder')} {...field} className="min-h-[100px] text-xs" /></FormControl><FormMessage /></FormItem>
+                      <FormItem><FormLabel className="text-xs font-bold uppercase text-muted-foreground">{t('toe.comments')}</FormLabel><FormControl><Textarea placeholder={t('toe.placeholder')} {...field} className="min-h-[100px] text-xs" /></FormControl><FormMessage /></FormItem>
                     )} />
 
                     <div className="flex justify-end gap-2 mt-4">
@@ -321,10 +312,13 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
               </form>
             </Form>
           </Tabs>
+
         </CardContent>
       </Card>
 
       <ControlHistory history={history} />
+      
+      <UnsavedChangesDialog blocker={blocker as any} />
     </div>
   );
 }

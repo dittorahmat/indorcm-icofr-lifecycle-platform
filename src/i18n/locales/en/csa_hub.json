@@ -109,5 +109,24 @@
     "addManualSample": "Add Manual Sample",
     "sampleReference": "Sample Reference",
     "typeReference": "Type reference..."
+  },
+  "tod": {
+    "title": "Lampiran 8: Control Design Verification (TOD)",
+    "subtitle": "Line 2 Evaluation Workflow",
+    "matrixTitle": "Design Verification & Evidence Matrix",
+    "rcmAttributes": "Control Attributes (RCM)",
+    "evaluationPillars": "6-Pillar Design Evaluation",
+    "saveEvaluation": "Save Evaluation",
+    "conclusion": "Design Conclusion",
+    "justification": "Notes / Justification",
+    "kkRef": "Workpaper Reference",
+    "pillars": {
+      "objective": "Objective Achievement",
+      "timing": "Timing Accuracy",
+      "authority": "Authority & Competence",
+      "reliability": "Information Reliability",
+      "coverage": "Period Coverage",
+      "evidence": "Evidence Availability"
+    }
   }
 }

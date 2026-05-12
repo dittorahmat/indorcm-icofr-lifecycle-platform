@@ -79,5 +79,31 @@
     "openDeficiency": "DEFISIENSI TERBUKA",
     "tests": "PENGUJIAN",
     "remediationReadiness": "Kesiapan Pengujian Remediasi (Tabel 23)"
+  },
+  "sampling": {
+    "title": "Grid Sampling Regulatif",
+    "addSample": "Tambah Sampel",
+    "ref": "Ref. Sampel (Voucher/No)",
+    "status": "Status",
+    "comments": "Catatan Sampel",
+    "empty": "Belum ada sampel. Klik 'Tambah Sampel' untuk memulai.",
+    "commentPlaceholder": "Catatan untuk sampel ini..."
+  },
+  "pillars": {
+    "objective": "Pencapaian Objektif",
+    "timing": "Ketepatan Waktu",
+    "authority": "Wewenang & Kompetensi",
+    "reliability": "Keandalan Informasi",
+    "coverage": "Cakupan Periode",
+    "evidence": "Kecukupan Bukti",
+    "commentPlaceholder": "Masukkan dasar evaluasi pilar ini...",
+    "descriptions": {
+      "objective": "Apakah kontrol dirancang untuk memitigasi risiko?",
+      "timing": "Apakah frekuensi kontrol memadai?",
+      "authority": "Apakah pelaksana memiliki wewenang yang tepat?",
+      "reliability": "Apakah IPE/EUC yang digunakan dapat diandalkan?",
+      "coverage": "Apakah kontrol mencakup seluruh periode pelaporan?",
+      "evidence": "Apakah bukti pendukung tersedia dan memadai?"
+    }
   }
 }

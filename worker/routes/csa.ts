@@ -4,7 +4,8 @@ import { ok, bad, notFound } from '../lib/utils';
 import { getDb } from '../db';
 import { 
   csaRecords, csaSamples, csaSchedules, testRecords, auditLogs, 
-  controls, rcms, rcmControls, deficiencies
+  controls, rcms, rcmControls, deficiencies, testSamples, notifications,
+  todEvaluations, user
 } from '../db/schema';
 import { eq, and, sql, desc, SQL } from 'drizzle-orm';
 import type { CSARecord, TestRecord, Deficiency } from "@shared/types";
@@ -63,10 +64,25 @@ csa.post('/csa/schedules', async (c) => {
 
   if (schedulesToInsert.length > 0) {
     await db.insert(csaSchedules).values(schedulesToInsert);
+    
+    // Add Notification for the assigned user
+    if (body.assignedTo) {
+        await db.insert(notifications).values({
+            id: crypto.randomUUID(),
+            organizationId: orgId,
+            userId: body.assignedTo,
+            message: `Baru: ${schedulesToInsert.length} jadwal CSA telah ditugaskan kepada Anda.`,
+            type: 'info',
+            link: '/csa',
+            readStatus: false,
+            createdAt: new Date(),
+        });
+    }
   }
 
   return ok(c, { count: schedulesToInsert.length });
 });
+
 
 csa.put('/csa/schedules/:id', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
@@ -308,6 +324,26 @@ csa.post('/csa', async (c) => {
     approvedBy: userId
   });
 
+  // 7. Notification for Line 2 (Fungsi ICOFR)
+  if (!isDraft) {
+      const line2Users = await db.select().from(user)
+          .where(eq(user.role, 'Line 2')); // Simplified role check, assuming global role or mapped to organization elsewhere
+      
+      if (line2Users.length > 0) {
+          const notificationsToInsert = line2Users.map((u: any) => ({
+              id: crypto.randomUUID(),
+              organizationId: orgId,
+              userId: u.id,
+              message: `Pemberitahuan: Laporan CSA untuk periode ${newCsa.period} telah di-sign off oleh Lini 1. Segera lakukan verifikasi desain (Lampiran 8).`,
+              type: 'warning' as const,
+              link: '/csa',
+              readStatus: false,
+              createdAt: new Date(),
+          }));
+          await db.insert(notifications).values(notificationsToInsert);
+      }
+  }
+
   return ok(c, newCsa);
 });
 
@@ -412,38 +448,135 @@ csa.post('/csa/samples/batch', async (c) => {
   return ok(c, { success: true });
 });
 
+// --- TOD (Lampiran 8) Routes ---
+
+csa.get('/tod-evaluations', async (c) => {
+  const db = getDb(c.env.DATABASE_URL);
+  const orgId = c.get('organizationId');
+  const csaId = c.req.query('csaId');
+  const controlId = c.req.query('controlId');
+
+  let conditions = eq(todEvaluations.organizationId, orgId);
+  if (csaId) conditions = and(conditions, eq(todEvaluations.csaId, csaId)) as SQL;
+  if (controlId) conditions = and(conditions, eq(todEvaluations.controlId, controlId)) as SQL;
+
+  const items = await db.select().from(todEvaluations).where(conditions);
+  return ok(c, { items });
+});
+
+csa.post('/tod-evaluations', async (c) => {
+  const db = getDb(c.env.DATABASE_URL);
+  const orgId = c.get('organizationId');
+  const userId = c.get('userId');
+  const body = await c.req.json<any>();
+
+  if (!body.csaId || !body.controlId) return bad(c, "csaId and controlId are required");
+
+  // Check for existing evaluation to update or insert (Upsert logic)
+  const existing = await db.select().from(todEvaluations).where(and(
+    eq(todEvaluations.csaId, body.csaId),
+    eq(todEvaluations.controlId, body.controlId),
+    eq(todEvaluations.organizationId, orgId)
+  )).limit(1);
+
+  const values = {
+    organizationId: orgId,
+    csaId: body.csaId,
+    controlId: body.controlId,
+    evaluatorId: userId,
+    pilarObjective: body.pilarObjective,
+    pilarTiming: body.pilarTiming,
+    pilarAuthority: body.pilarAuthority,
+    pilarReliability: body.pilarReliability,
+    pilarCoverage: body.pilarCoverage,
+    pilarEvidence: body.pilarEvidence,
+    kkReference: body.kkReference,
+    conclusion: body.conclusion,
+    comment: body.comment,
+    updatedAt: new Date(),
+  };
+
+  if (existing.length > 0) {
+    await db.update(todEvaluations)
+      .set(values)
+      .where(eq(todEvaluations.id, existing[0].id));
+    return ok(c, { ...existing[0], ...values });
+  } else {
+    const newId = crypto.randomUUID();
+    await db.insert(todEvaluations).values({ id: newId, ...values, createdAt: new Date() });
+    return ok(c, { id: newId, ...values });
+  }
+});
+
 // --- TestingWorkbench Routes ---
 
 csa.get('/tests', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
-  const items = await db.select().from(testRecords).where(eq(testRecords.organizationId, orgId));
+  const items = await db.query.testRecords.findMany({
+    where: eq(testRecords.organizationId, orgId),
+    with: {
+        samples: true
+    },
+    orderBy: [desc(testRecords.testDate)]
+  });
   return ok(c, { items });
 });
+
 
 csa.post('/tests', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const userId = c.get('userId');
-  const body = await c.req.json<Partial<TestRecord>>();
+  const body = await c.req.json<any>();
 
   const id = crypto.randomUUID();
   const newRecord = {
     id,
     organizationId: orgId,
     controlId: body.controlId!,
-    testType: (body.testType as any) || 'TOE',
+    testType: body.testType || 'TOE',
     period: body.period || new Date().getFullYear().toString(),
-    result: (body.result as any) || 'Effective',
+    result: body.result || 'Effective',
     testedBy: userId,
     testDate: new Date(),
     sampleSize: body.sampleSize || 0,
     comments: body.comments,
+    homogeneityJustification: body.homogeneityJustification,
+    evaluationAttributes: body.evaluationAttributes,
+    
+    // Lampiran 8: TOD Pillars
+    todPilarObjective: body.todPilarObjective,
+    todPilarTiming: body.todPilarTiming,
+    todPilarAuthority: body.todPilarAuthority,
+    todPilarReliability: body.todPilarReliability,
+    todPilarCoverage: body.todPilarCoverage,
+    todPilarEvidence: body.todPilarEvidence,
+    todPilarComments: body.todPilarComments,
   };
 
   await db.insert(testRecords).values(newRecord as any);
+
+  // Insert Samples if any
+  if (body.samples && Array.isArray(body.samples) && body.samples.length > 0) {
+    const samplesToInsert = body.samples.map((s: any) => ({
+      id: crypto.randomUUID(),
+      organizationId: orgId,
+      testRecordId: id,
+      sampleRef: s.sampleRef,
+      attrA: s.attrA,
+      attrB: s.attrB,
+      attrC: s.attrC,
+      attrD: s.attrD,
+      status: s.status || 'Pass',
+      comments: s.comments
+    }));
+    await db.insert(testSamples).values(samplesToInsert);
+  }
+
   return ok(c, newRecord);
 });
+
 
 csa.get('/csa/testing-records', async (c) => {
   const db = getDb(c.env.DATABASE_URL);

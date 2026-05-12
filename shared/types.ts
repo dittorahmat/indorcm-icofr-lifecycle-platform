@@ -249,7 +249,16 @@ export interface CSARecord extends Omit<InferSelectModel<typeof schema.csaRecord
   line2ValidatedDate: number | null;
 }
 
-export interface TestRecord extends Omit<InferSelectModel<typeof schema.testRecords>, 'evaluationAttributes' | 'testDate'> {
+export type TestSample = InferSelectModel<typeof schema.testSamples>;
+export type NewTestSample = InferInsertModel<typeof schema.testSamples>;
+
+export type TODEvaluation = Omit<InferSelectModel<typeof schema.todEvaluations>, 'createdAt' | 'updatedAt'> & {
+  createdAt: number;
+  updatedAt: number | null;
+};
+export type NewTODEvaluation = InferInsertModel<typeof schema.todEvaluations>;
+
+export interface TestRecord extends Omit<InferSelectModel<typeof schema.testRecords>, 'evaluationAttributes' | 'testDate' | 'todPilarComments'> {
   testType: "TOD" | "TOE";
   result: "Effective" | "Ineffective";
   evaluationAttributes?: {
@@ -261,7 +270,13 @@ export interface TestRecord extends Omit<InferSelectModel<typeof schema.testReco
     evidenceAvailability: boolean;
   };
   testDate: number;
+  todPilarComments?: Record<string, string>;
+  samples?: TestSample[];
 }
+
+export type Notification = Omit<InferSelectModel<typeof schema.notifications>, 'createdAt'> & {
+  createdAt: number;
+};
 
 export interface Deficiency extends Omit<InferSelectModel<typeof schema.deficiencies>, 'assertions' | 'flowchartPath' | 'identifiedDate' | 'compensatingControlIds'> {
   severity: DeficiencySeverity;

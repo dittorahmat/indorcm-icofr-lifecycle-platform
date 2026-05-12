@@ -295,6 +295,13 @@
       "when": 1778499201518,
       "tag": "0041_add_rag_columns_to_documents",
       "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1778589894668,
+      "tag": "0042_silly_taskmaster",
+      "breakpoints": true
     }
   ]
 }

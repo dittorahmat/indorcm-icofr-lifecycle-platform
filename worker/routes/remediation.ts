@@ -4,7 +4,7 @@ import { ok, notFound } from '../lib/utils';
 import { getDb } from '../db';
 import { 
   deficiencies, actionPlans, auditLogs, aggregateDeficiencies, 
-  organization
+  organization, notifications
 } from '../db/schema';
 import { eq, and, SQL } from 'drizzle-orm';
 import type { Deficiency, ActionPlan, AggregateDeficiency } from "@shared/types";
@@ -56,7 +56,22 @@ remediation.post('/actionplans', async (c) => {
 
   await db.insert(actionPlans).values(newPlan);
 
+  // Trigger Notification for Action Plan Owner
+  if (newPlan.ownerId && newPlan.ownerId !== userId) {
+    await db.insert(notifications).values({
+        id: crypto.randomUUID(),
+        organizationId: orgId,
+        userId: newPlan.ownerId,
+        message: `Rencana Aksi baru telah ditugaskan kepada Anda: ${newPlan.description}`,
+        type: 'warning',
+        link: '/deficiencies',
+        readStatus: false,
+        createdAt: new Date(),
+    });
+  }
+
   const auditService = new AuditService(db);
+
   await auditService.logAction({
     organizationId: orgId,
     userId,
