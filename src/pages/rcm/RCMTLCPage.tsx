@@ -141,7 +141,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId }: RCMTLCPageProps) {
 
   const content = (
 
-    <div className="flex flex-col min-w-0 h-screen overflow-hidden">
+    <div className="flex flex-col min-w-0 h-screen">
       {!embedded && (
         <>
           {/* Header - Static inside the scrolling area */}
@@ -192,64 +192,64 @@ export function RCMTLCPage({ embedded = false, filterBpmId }: RCMTLCPageProps) {
       )}
 
       {/* Matrix Area - Expands fully */}
-      <div className="p-0 relative flex-1 overflow-hidden flex flex-col">
-        <div className="w-full border-t border-b bg-white border-slate-200 overflow-auto flex-1">
+      <div className="p-0 relative flex-1 flex flex-col overflow-hidden">
+        <div className="w-full border-t border-b bg-white border-slate-950 overflow-auto flex-1">
           <Table noWrapper className="min-w-[4800px] table-fixed border-separate border-spacing-0">
-            <TableHeader className="sticky top-0 z-50">
-              <TableRow className="divide-x divide-slate-200 bg-slate-100 h-10">
+            <TableHeader className="sticky top-0 z-50 border-b border-slate-950">
+              <TableRow className="divide-x divide-slate-950 bg-slate-100 h-10 border-b border-slate-950">
                 {/* Fixed Columns Header */}
-                <TableHead className="w-[50px] font-black uppercase text-[10px] text-center sticky left-0 z-[60] bg-slate-100 border-r-2 border-slate-300">i. No</TableHead>
-                <TableHead className="w-[260px] font-black uppercase text-[10px] sticky left-[50px] z-[60] bg-slate-100 border-r-2 border-slate-300 text-indigo-700 px-3">ii. {t('matrix.process_info')}</TableHead>
-                <TableHead className="w-[200px] font-black uppercase text-[10px] sticky left-[310px] z-[60] bg-slate-100 border-r-2 border-slate-300 px-3">iii. {t('matrix.sub_process')}</TableHead>
+                <TableHead className="w-[50px] font-black uppercase text-[10px] text-center sticky left-0 z-[60] bg-slate-100 border-r border-slate-950">i. No</TableHead>
+                <TableHead className="w-[260px] font-black uppercase text-[10px] sticky left-[50px] z-[60] bg-slate-100 border-r border-slate-950 text-indigo-700 px-3">ii. {t('matrix.process_info')}</TableHead>
+                <TableHead className="w-[200px] font-black uppercase text-[10px] sticky left-[310px] z-[60] bg-slate-100 border-r border-slate-950 px-3">iii. {t('matrix.sub_process')}</TableHead>
                 
                 {/* Floating Columns Header */}
-                <TableHead className="w-[180px] font-black uppercase text-[10px] bg-slate-100 px-3">iv. {t('matrix.company')}</TableHead>
-                <TableHead className="w-[90px] font-black uppercase text-[10px] bg-slate-100 text-center px-2">v. {t('matrix.location')}</TableHead>
-                <TableHead className="w-[380px] font-black uppercase text-[10px] bg-slate-100 px-3">vi. {t('matrix.risk_description')}</TableHead>
-                <TableHead className="w-[70px] text-center font-black uppercase text-[10px] bg-slate-100">vii. Fraud</TableHead>
-                <TableHead className="w-[110px] text-center font-black uppercase text-[10px] bg-slate-100">viii. {t('matrix.risk_rating')}</TableHead>
-                <TableHead className="w-[130px] font-black uppercase text-[10px] bg-slate-100 px-3">ix. {t('matrix.control_ref')}</TableHead>
-                <TableHead className="w-[320px] font-black uppercase text-[10px] bg-slate-100 px-3">x. {t('matrix.control_name')}</TableHead>
-                <TableHead className="w-[450px] font-black uppercase text-[10px] bg-slate-100 px-3">xi. {t('matrix.control_description')}</TableHead>
-                <TableHead className="w-[220px] font-black uppercase text-[10px] bg-slate-100 px-3">xii. {t('matrix.supporting_docs')}</TableHead>
-                <TableHead className="w-[90px] text-center font-black uppercase text-[10px] bg-slate-100">xiii. Utama?</TableHead>
+                <TableHead className="w-[180px] font-black uppercase text-[10px] bg-slate-100 px-3 border-r border-slate-950">iv. {t('matrix.company')}</TableHead>
+                <TableHead className="w-[90px] font-black uppercase text-[10px] bg-slate-100 text-center px-2 border-r border-slate-950">v. {t('matrix.location')}</TableHead>
+                <TableHead className="w-[380px] font-black uppercase text-[10px] bg-slate-100 px-3 border-r border-slate-950">vi. {t('matrix.risk_description')}</TableHead>
+                <TableHead className="w-[70px] text-center font-black uppercase text-[10px] bg-slate-100 border-r border-slate-950">vii. Fraud</TableHead>
+                <TableHead className="w-[110px] text-center font-black uppercase text-[10px] bg-slate-100 border-r border-slate-950">viii. {t('matrix.risk_rating')}</TableHead>
+                <TableHead className="w-[130px] font-black uppercase text-[10px] bg-slate-100 px-3 border-r border-slate-950">ix. {t('matrix.control_ref')}</TableHead>
+                <TableHead className="w-[320px] font-black uppercase text-[10px] bg-slate-100 px-3 border-r border-slate-950">x. {t('matrix.control_name')}</TableHead>
+                <TableHead className="w-[450px] font-black uppercase text-[10px] bg-slate-100 px-3 border-r border-slate-950">xi. {t('matrix.control_description')}</TableHead>
+                <TableHead className="w-[220px] font-black uppercase text-[10px] bg-slate-100 px-3 border-r border-slate-950">xii. {t('matrix.supporting_docs')}</TableHead>
+                <TableHead className="w-[90px] text-center font-black uppercase text-[10px] bg-slate-100 border-r border-slate-950">xiii. Utama?</TableHead>
                 
-                <TableHead className="w-[200px] bg-blue-50 text-blue-900 font-black uppercase text-[10px] text-center border-l border-blue-200" colSpan={4}>IPO (xiv-xvii)</TableHead>
-                <TableHead className="w-[350px] bg-indigo-50 text-indigo-900 font-black uppercase text-[10px] text-center border-l border-indigo-200" colSpan={7}>{t('matrix.assertions')} (xviii-xxiv)</TableHead>
+                <TableHead className="w-[200px] bg-blue-50 text-blue-900 font-black uppercase text-[10px] text-center border-l border-blue-300" colSpan={4}>IPO (xiv-xvii)</TableHead>
+                <TableHead className="w-[350px] bg-indigo-50 text-indigo-900 font-black uppercase text-[10px] text-center border-l border-indigo-300" colSpan={7}>{t('matrix.assertions')} (xviii-xxiv)</TableHead>
                 
-                <TableHead className="w-[160px] font-black uppercase text-[10px] bg-slate-100 px-3">xxv. {t('matrix.type')}</TableHead>
-                <TableHead className="w-[180px] font-black uppercase text-[10px] bg-slate-100 px-3">xxvi. {t('matrix.nature')}</TableHead>
-                <TableHead className="w-[200px] font-black uppercase text-[10px] bg-slate-100 px-3">xxvii. {t('matrix.automated_type')}</TableHead>
-                <TableHead className="w-[130px] font-black uppercase text-[10px] bg-slate-100 text-center px-3">xxviii. {t('matrix.frequency')}</TableHead>
-                <TableHead className="w-[180px] font-black uppercase text-[10px] bg-slate-100 px-3">xxix. {t('matrix.supporting_app')}</TableHead>
-                <TableHead className="w-[180px] font-black uppercase text-[10px] bg-slate-100 px-3">xxx. {t('matrix.executing_function')}</TableHead>
-                <TableHead className="w-[180px] font-black uppercase text-[10px] bg-slate-100 px-3">xxxi. {t('matrix.executor_role')}</TableHead>
-                <TableHead className="w-[220px] font-black uppercase text-[10px] bg-slate-100 px-3">xxxii. {t('matrix.affected_fsli_item')}</TableHead>
-                <TableHead className="w-[130px] font-black uppercase text-[10px] bg-slate-100 text-center px-3">xxxiii. {t('matrix.effective_period')}</TableHead>
-                <TableHead className="w-[100px] font-black uppercase text-[10px] bg-slate-100 text-center sticky right-0 z-[60] border-l-2 border-slate-300">Action</TableHead>
+                <TableHead className="w-[160px] font-black uppercase text-[10px] bg-slate-100 px-3 border-r border-slate-950">xxv. {t('matrix.type')}</TableHead>
+                <TableHead className="w-[180px] font-black uppercase text-[10px] bg-slate-100 px-3 border-r border-slate-950">xxvi. {t('matrix.nature')}</TableHead>
+                <TableHead className="w-[200px] font-black uppercase text-[10px] bg-slate-100 px-3 border-r border-slate-950">xxvii. {t('matrix.automated_type')}</TableHead>
+                <TableHead className="w-[130px] font-black uppercase text-[10px] bg-slate-100 text-center px-3 border-r border-slate-950">xxviii. {t('matrix.frequency')}</TableHead>
+                <TableHead className="w-[180px] font-black uppercase text-[10px] bg-slate-100 px-3 border-r border-slate-950">xxix. {t('matrix.supporting_app')}</TableHead>
+                <TableHead className="w-[180px] font-black uppercase text-[10px] bg-slate-100 px-3 border-r border-slate-950">xxx. {t('matrix.executing_function')}</TableHead>
+                <TableHead className="w-[180px] font-black uppercase text-[10px] bg-slate-100 px-3 border-r border-slate-950">xxxi. {t('matrix.executor_role')}</TableHead>
+                <TableHead className="w-[220px] font-black uppercase text-[10px] bg-slate-100 px-3 border-r border-slate-950">xxxii. {t('matrix.affected_fsli_item')}</TableHead>
+                <TableHead className="w-[130px] font-black uppercase text-[10px] bg-slate-100 text-center px-3 border-r border-slate-950">xxxiii. {t('matrix.effective_period')}</TableHead>
+                <TableHead className="w-[100px] font-black uppercase text-[10px] bg-slate-100 text-center sticky right-0 z-[60] border-l border-slate-950">Action</TableHead>
               </TableRow>
               
               {/* Sub-Header Row */}
-              <TableRow className="divide-x divide-slate-200 text-[9px] bg-slate-50 h-8">
-                 <TableHead className="sticky left-0 z-[60] bg-slate-50 border-r-2 border-slate-300"></TableHead>
-                 <TableHead className="sticky left-[50px] z-[60] bg-slate-50 border-r-2 border-slate-300"></TableHead>
-                 <TableHead className="sticky left-[310px] z-[60] bg-slate-50 border-r-2 border-slate-300"></TableHead>
-                 <TableHead colSpan={10} className="bg-slate-50/30"></TableHead>
+              <TableRow className="divide-x divide-slate-950 text-[9px] bg-slate-50 h-8 border-b border-slate-950">
+                 <TableHead className="sticky left-0 z-[60] bg-slate-50 border-r border-slate-950"></TableHead>
+                 <TableHead className="sticky left-[50px] z-[60] bg-slate-50 border-r border-slate-950"></TableHead>
+                 <TableHead className="sticky left-[310px] z-[60] bg-slate-50 border-r border-slate-950"></TableHead>
+                 <TableHead colSpan={10} className="bg-slate-50/30 border-r border-slate-950"></TableHead>
                  
-                 <TableHead className="text-center bg-blue-600 text-white border-l-4 border-blue-800 font-bold">C</TableHead>
-                 <TableHead className="text-center bg-blue-600 text-white font-bold">A</TableHead>
-                 <TableHead className="text-center bg-blue-600 text-white font-bold">V</TableHead>
-                 <TableHead className="text-center bg-blue-600 text-white font-bold">RA</TableHead>
+                 <TableHead className="text-center bg-blue-600 text-white border-l border-blue-800 font-bold border-r border-blue-800">C</TableHead>
+                 <TableHead className="text-center bg-blue-600 text-white font-bold border-r border-blue-800">A</TableHead>
+                 <TableHead className="text-center bg-blue-600 text-white font-bold border-r border-blue-800">V</TableHead>
+                 <TableHead className="text-center bg-blue-600 text-white font-bold border-r border-blue-800">RA</TableHead>
 
-                 <TableHead className="text-center bg-indigo-600 text-white border-l-4 border-indigo-800 font-bold">E/O</TableHead>
-                 <TableHead className="text-center bg-indigo-600 text-white font-bold">C</TableHead>
-                 <TableHead className="text-center bg-indigo-600 text-white font-bold">A</TableHead>
-                 <TableHead className="text-center bg-indigo-600 text-white font-bold">CO</TableHead>
-                 <TableHead className="text-center bg-indigo-600 text-white font-bold">R&O</TableHead>
-                 <TableHead className="text-center bg-indigo-600 text-white font-bold">V/A</TableHead>
-                 <TableHead className="text-center bg-indigo-600 text-white font-bold">PD</TableHead>
-                 <TableHead colSpan={9} className="bg-slate-50/30"></TableHead>
-                 <TableHead className="sticky right-0 z-[60] bg-slate-50 border-l-2 border-slate-300"></TableHead>
+                 <TableHead className="text-center bg-indigo-600 text-white border-l border-indigo-800 font-bold border-r border-indigo-800">E/O</TableHead>
+                 <TableHead className="text-center bg-indigo-600 text-white font-bold border-r border-indigo-800">C</TableHead>
+                 <TableHead className="text-center bg-indigo-600 text-white font-bold border-r border-indigo-800">A</TableHead>
+                 <TableHead className="text-center bg-indigo-600 text-white font-bold border-r border-indigo-800">CO</TableHead>
+                 <TableHead className="text-center bg-indigo-600 text-white font-bold border-r border-indigo-800">R&O</TableHead>
+                 <TableHead className="text-center bg-indigo-600 text-white font-bold border-r border-indigo-800">V/A</TableHead>
+                 <TableHead className="text-center bg-indigo-600 text-white font-bold border-r border-indigo-800">PD</TableHead>
+                 <TableHead colSpan={9} className="bg-slate-50/30 border-r border-slate-950"></TableHead>
+                 <TableHead className="sticky right-0 z-[60] bg-slate-50 border-l border-slate-950"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -264,10 +264,10 @@ export function RCMTLCPage({ embedded = false, filterBpmId }: RCMTLCPageProps) {
 
                 return (
                   <TableRow key={`${item.mappingId}-${idx}`} className={cn(
-                    "group transition-colors border-b h-12",
+                    "group transition-colors border-b border-slate-950 h-12",
                     rowBg
                   )}>
-                    <TableCell className={cn("sticky left-0 z-30 border-r border-slate-100", rowBg)}>
+                    <TableCell className={cn("sticky left-0 z-30 border-r border-slate-950", rowBg)}>
                       <InlineEditRow 
                         isEditing={isEditing}
                         onEdit={() => setEditingMappingId(item.mappingId)}
@@ -275,7 +275,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId }: RCMTLCPageProps) {
                         onCancel={() => setEditingMappingId(null)}
                       />
                     </TableCell>
-                    <TableCell className={cn("align-top font-bold text-slate-800 text-xs sticky left-[50px] z-30 border-r border-slate-100", rowBg)}>
+                    <TableCell className={cn("align-top font-bold text-slate-800 text-xs sticky left-[50px] z-30 border-r border-slate-950", rowBg)}>
                       <div className="flex flex-col gap-0 pr-2 pt-1 leading-tight">
                         <span className="uppercase tracking-tighter text-indigo-600 text-[10px] font-black">
                           {item.fsliName} {item.bpmCode && `[${item.bpmCode}]`}
@@ -283,16 +283,16 @@ export function RCMTLCPage({ embedded = false, filterBpmId }: RCMTLCPageProps) {
                         <span className="line-clamp-2">{item.noGL} - {item.processName}</span>
                       </div>
                     </TableCell>
-                    <TableCell className={cn("align-top font-bold text-slate-600 text-xs sticky left-[310px] z-30 border-r border-slate-100", rowBg)}>
+                    <TableCell className={cn("align-top font-bold text-slate-600 text-xs sticky left-[310px] z-30 border-r border-slate-950", rowBg)}>
                       <div className="pt-1">{item.subProcessName}</div>
                     </TableCell>
                     
-                    <TableCell className="text-xs text-slate-600 px-3">{item.companyName}</TableCell>
-                    <TableCell className="text-xs text-slate-600 font-mono px-2 text-center">{item.locationCode}</TableCell>
+                    <TableCell className="text-xs text-slate-600 px-3 border-r border-slate-950">{item.companyName}</TableCell>
+                    <TableCell className="text-xs text-slate-600 font-mono px-2 text-center border-r border-slate-950">{item.locationCode}</TableCell>
                     
-                    <TableCell className="text-xs text-slate-700 px-3 leading-tight">{item.riskDescription}</TableCell>
-                    <TableCell className="text-center">{item.isFraudRelated && <AlertTriangle className="h-3.5 w-3.5 text-rose-500 mx-auto" />}</TableCell>
-                    <TableCell className="text-center">
+                    <TableCell className="text-xs text-slate-700 px-3 leading-tight border-r border-slate-950">{item.riskDescription}</TableCell>
+                    <TableCell className="text-center border-r border-slate-950">{item.isFraudRelated && <AlertTriangle className="h-3.5 w-3.5 text-rose-500 mx-auto" />}</TableCell>
+                    <TableCell className="text-center border-r border-slate-950">
                       <Badge className={cn("text-[10px] font-black px-2 h-5 leading-none uppercase", 
                         item.riskRating === 'High' ? "bg-rose-50 text-rose-700 border-rose-200" : 
                         item.riskRating === 'Medium' ? "bg-amber-50 text-amber-700 border-amber-200" : 
@@ -300,18 +300,18 @@ export function RCMTLCPage({ embedded = false, filterBpmId }: RCMTLCPageProps) {
                       )}>{item.riskRating}</Badge>
                     </TableCell>
 
-                    <TableCell className="font-mono text-xs font-bold text-indigo-700 px-3">{item.controlCode}</TableCell>
-                    <TableCell className="text-xs text-slate-800 px-3">
+                    <TableCell className="font-mono text-xs font-bold text-indigo-700 px-3 border-r border-slate-950">{item.controlCode}</TableCell>
+                    <TableCell className="text-xs text-slate-800 px-3 border-r border-slate-950">
                       {isEditing ? <Input value={item.mappedControlName || item.baseControlName || ''} onChange={e => handleInputChange(item.mappingId, 'mappedControlName', e.target.value)} /> : (item.mappedControlName || item.baseControlName)}
                     </TableCell>
-                    <TableCell className="text-xs text-slate-600 italic px-3">{isEditing ? <Input value={item.mappedControlDescription || item.baseControlDescription || ''} onChange={e => handleInputChange(item.mappingId, 'mappedControlDescription', e.target.value)} /> : (item.mappedControlDescription || item.baseControlDescription)}</TableCell>
+                    <TableCell className="text-xs text-slate-600 italic px-3 border-r border-slate-950">{isEditing ? <Input value={item.mappedControlDescription || item.baseControlDescription || ''} onChange={e => handleInputChange(item.mappingId, 'mappedControlDescription', e.target.value)} /> : (item.mappedControlDescription || item.baseControlDescription)}</TableCell>
 
-                    <TableCell className="text-xs text-slate-500 px-3">{item.supportingDocs}</TableCell>
-                    <TableCell className="text-center px-3"><Check className={cn("h-4 w-4 mx-auto", item.isKeyControl ? "text-indigo-600" : "text-slate-200")} /></TableCell>
+                    <TableCell className="text-xs text-slate-500 px-3 border-r border-slate-950">{item.supportingDocs}</TableCell>
+                    <TableCell className="text-center px-3 border-r border-slate-950"><Check className={cn("h-4 w-4 mx-auto", item.isKeyControl ? "text-indigo-600" : "text-slate-200")} /></TableCell>
 
                     {/* IPO Indicators */}
                     {['ipoC', 'ipoA', 'ipoV', 'ipoRa'].map((f) => (
-                      <TableCell key={f} className="text-center p-1">
+                      <TableCell key={f} className="text-center p-1 border-r border-slate-950">
                          <div className={cn(
                             "h-6 w-6 mx-auto rounded flex items-center justify-center text-[10px] font-black",
                             item[f as keyof RCMMatrixItem] ? "bg-blue-50 text-blue-700" : "bg-slate-50 text-slate-300"
@@ -323,7 +323,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId }: RCMTLCPageProps) {
 
                     {/* Assertion Indicators */}
                     {['assertionE', 'assertionC', 'assertionA', 'assertionCo', 'assertionRo', 'assertionVa', 'assertionPd'].map((f) => (
-                      <TableCell key={f} className="text-center p-1">
+                      <TableCell key={f} className="text-center p-1 border-r border-slate-950">
                          <div className={cn(
                             "h-6 w-6 mx-auto rounded flex items-center justify-center text-[10px] font-black",
                             item[f as keyof RCMMatrixItem] ? "bg-indigo-50 text-indigo-700" : "bg-slate-50 text-slate-300"
@@ -333,16 +333,16 @@ export function RCMTLCPage({ embedded = false, filterBpmId }: RCMTLCPageProps) {
                       </TableCell>
                     ))}
 
-                    <TableCell className="text-xs font-medium px-3">{item.controlType}</TableCell>
-                    <TableCell className="text-xs font-medium px-3">{item.controlNature}</TableCell>
-                    <TableCell className="text-xs font-medium px-3">{item.automatedSubNature || '-'}</TableCell>
-                    <TableCell className="text-xs font-medium px-3 text-center">{item.frequency}</TableCell>
-                    <TableCell className="text-xs font-medium px-3">{item.supportingApp || '-'}</TableCell>
-                    <TableCell className="text-xs font-medium px-3">{item.executingFunction}</TableCell>
-                    <TableCell className="text-xs font-medium px-3">{item.executorRole}</TableCell>
-                    <TableCell className="text-xs font-mono font-medium px-3">{item.affectedFsliItem}</TableCell>
-                    <TableCell className="text-xs text-center font-bold text-indigo-600">{item.effectivePeriod}</TableCell>
-                    <TableCell className={cn("sticky right-0 z-30 border-l border-slate-100", rowBg)} />
+                    <TableCell className="text-xs font-medium px-3 border-r border-slate-950">{item.controlType}</TableCell>
+                    <TableCell className="text-xs font-medium px-3 border-r border-slate-950">{item.controlNature}</TableCell>
+                    <TableCell className="text-xs font-medium px-3 border-r border-slate-950">{item.automatedSubNature || '-'}</TableCell>
+                    <TableCell className="text-xs font-medium px-3 text-center border-r border-slate-950">{item.frequency}</TableCell>
+                    <TableCell className="text-xs font-medium px-3 border-r border-slate-950">{item.supportingApp || '-'}</TableCell>
+                    <TableCell className="text-xs font-medium px-3 border-r border-slate-950">{item.executingFunction}</TableCell>
+                    <TableCell className="text-xs font-medium px-3 border-r border-slate-950">{item.executorRole}</TableCell>
+                    <TableCell className="text-xs font-mono font-medium px-3 border-r border-slate-950">{item.affectedFsliItem}</TableCell>
+                    <TableCell className="text-xs text-center font-bold text-indigo-600 border-r border-slate-950">{item.effectivePeriod}</TableCell>
+                    <TableCell className={cn("sticky right-0 z-30 border-l border-slate-950", rowBg)} />
                   </TableRow>
                 );
               })}

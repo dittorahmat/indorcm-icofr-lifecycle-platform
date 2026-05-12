@@ -414,9 +414,35 @@ csa.post('/csa/samples/batch', async (c) => {
 
 // --- TestingWorkbench Routes ---
 
+csa.get('/tests', async (c) => {
+  const db = getDb(c.env.DATABASE_URL);
+  const orgId = c.get('organizationId');
+  const items = await db.select().from(testRecords).where(eq(testRecords.organizationId, orgId));
+  return ok(c, { items });
+});
+
 csa.post('/tests', async (c) => {
-  // Alias for testing-records
-  return c.redirect('/api/csa/testing-records', 307);
+  const db = getDb(c.env.DATABASE_URL);
+  const orgId = c.get('organizationId');
+  const userId = c.get('userId');
+  const body = await c.req.json<Partial<TestRecord>>();
+
+  const id = crypto.randomUUID();
+  const newRecord = {
+    id,
+    organizationId: orgId,
+    controlId: body.controlId!,
+    testType: (body.testType as any) || 'TOE',
+    period: body.period || new Date().getFullYear().toString(),
+    result: (body.result as any) || 'Effective',
+    testedBy: userId,
+    testDate: new Date(),
+    sampleSize: body.sampleSize || 0,
+    comments: body.comments,
+  };
+
+  await db.insert(testRecords).values(newRecord as any);
+  return ok(c, newRecord);
 });
 
 csa.get('/csa/testing-records', async (c) => {

@@ -6,12 +6,50 @@ import {
   organization, aggregateDeficiencies, controls, rcms, deficiencies, 
   testRecords, bpmExports
 } from '../db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import type { Settings } from "@shared/types";
 
 const reporting = new Hono<HonoEnv>();
 
 // --- Reporting & Aggregation Refactored ---
+
+reporting.get('/reports/summary', async (c) => {
+  const db = getDb(c.env.DATABASE_URL);
+  const orgId = c.get('organizationId');
+
+  const [controlCount, rcmCount, allDeficiencyRecords] = await Promise.all([
+    db.select({ count: sql<number>`count(*)` }).from(controls).where(eq(controls.organizationId, orgId)),
+    db.select({ count: sql<number>`count(*)` }).from(rcms).where(eq(rcms.organizationId, orgId)),
+    db.select().from(deficiencies).where(eq(deficiencies.organizationId, orgId))
+  ]);
+
+  const deficienciesBySeverity = [
+    { name: 'Control Deficiency', count: allDeficiencyRecords.filter((d: any) => d.severity === 'Control Deficiency').length },    
+    { name: 'Significant Deficiency', count: allDeficiencyRecords.filter((d: any) => d.severity === 'Significant Deficiency').length },
+    { name: 'Material Weakness', count: allDeficiencyRecords.filter((d: any) => d.severity === 'Material Weakness').length },      
+  ];
+
+  const deficienciesByStatus = [
+    { name: 'Open', count: allDeficiencyRecords.filter((d: any) => d.status === 'Open').length },
+    { name: 'Remediated', count: allDeficiencyRecords.filter((d: any) => d.status === 'Remediated').length },
+    { name: 'Verified', count: allDeficiencyRecords.filter((d: any) => d.status === 'Verified').length },
+    { name: 'Closed', count: allDeficiencyRecords.filter((d: any) => d.status === 'Closed').length },
+  ];
+
+  const openCount = allDeficiencyRecords.filter((d: any) => d.status === 'Open').length;
+  const hasMaterialWeakness = allDeficiencyRecords.some((d: any) => d.severity === 'Material Weakness');
+  const effectiveness = hasMaterialWeakness ? 0 : 100; // Simplified logic for summary
+
+  return ok(c, {
+    totalControls: Number(controlCount[0]?.count || 0),
+    totalRcm: Number(rcmCount[0]?.count || 0),
+    openDeficiencies: openCount,
+    effectiveness,
+    deficienciesBySeverity,
+    deficienciesByStatus,
+    allDeficiencies: allDeficiencyRecords
+  });
+});
 
 reporting.post('/reports/sign-off', async (c) => {
   const db = getDb(c.env.DATABASE_URL);

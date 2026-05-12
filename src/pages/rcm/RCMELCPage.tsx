@@ -45,7 +45,7 @@ export function RCMELCPage({ embedded = false }: { embedded?: boolean }) {
   const blocker = useUnsavedChanges(false);
 
   const content = (
-    <div className="flex flex-col min-w-0 h-screen overflow-hidden">
+    <div className="flex flex-col min-w-0 h-screen">
       {!embedded && (
         <RCMPageHeader 
           title={t('rcm:matrix.title_elc')}
@@ -55,22 +55,22 @@ export function RCMELCPage({ embedded = false }: { embedded?: boolean }) {
           onRefresh={() => queryClient.invalidateQueries({ queryKey: ['controls-elc'] })}
         />
       )}
-      <div className="p-0 relative flex-1 overflow-hidden flex flex-col">
-        <div className="w-full border-t border-b bg-white border-slate-200 overflow-auto flex-1">
+      <div className="p-0 relative flex-1 flex flex-col overflow-hidden">
+        <div className="w-full border-t border-b bg-white border-slate-950 overflow-auto flex-1">
           <TooltipProvider>
             <Table noWrapper className="min-w-[1800px] table-fixed border-separate border-spacing-0">
               <TableHeader className="sticky top-0 z-50 bg-slate-100">
 
-                <TableRow className="divide-x divide-slate-200 h-10">
-                  <TableHead className="w-[110px] font-black uppercase text-[10px] sticky left-0 z-[60] bg-slate-100 px-3">{t('matrix.control_ref')}</TableHead>
-                  <TableHead className="w-[350px] font-black uppercase text-[10px] sticky left-[110px] z-[60] bg-slate-100 px-3">{t('matrix.control_description')}</TableHead>
-                  <TableHead className="w-[90px] font-black uppercase text-[10px] text-center bg-slate-100">{t('matrix.frequency')}</TableHead>
-                  <TableHead className="w-[140px] font-black uppercase text-[10px] bg-slate-100 px-3">{t('matrix.supporting_docs')}</TableHead>
-                  <TableHead className="w-[140px] font-black uppercase text-[10px] bg-slate-100 px-3">{t('matrix.executing_function')}</TableHead>
-                  <TableHead className="w-[140px] font-black uppercase text-[10px] bg-slate-100 px-3">{t('matrix.executor_role')}</TableHead>
-                  <TableHead className="w-[90px] font-black uppercase text-[10px] text-center bg-slate-100">{t('matrix.effective_period')}</TableHead>
+                <TableRow className="divide-x divide-slate-950 h-10 border-b border-slate-950">
+                  <TableHead className="w-[110px] font-black uppercase text-[10px] sticky left-0 z-[60] bg-slate-100 px-3 border-r border-slate-950">{t('matrix.control_ref')}</TableHead>
+                  <TableHead className="w-[350px] font-black uppercase text-[10px] sticky left-[110px] z-[60] bg-slate-100 px-3 border-r border-slate-950">{t('matrix.control_description')}</TableHead>
+                  <TableHead className="w-[90px] font-black uppercase text-[10px] text-center bg-slate-100 border-r border-slate-950">{t('matrix.frequency')}</TableHead>
+                  <TableHead className="w-[140px] font-black uppercase text-[10px] bg-slate-100 px-3 border-r border-slate-950">{t('matrix.supporting_docs')}</TableHead>
+                  <TableHead className="w-[140px] font-black uppercase text-[10px] bg-slate-100 px-3 border-r border-slate-950">{t('matrix.executing_function')}</TableHead>
+                  <TableHead className="w-[140px] font-black uppercase text-[10px] bg-slate-100 px-3 border-r border-slate-950">{t('matrix.executor_role')}</TableHead>
+                  <TableHead className="w-[90px] font-black uppercase text-[10px] text-center bg-slate-100 border-r border-slate-950">{t('matrix.effective_period')}</TableHead>
                   {COSO_PRINCIPLES.map(p => (
-                    <TableHead key={p} className="w-[45px] p-0 font-black text-center group bg-slate-100">
+                    <TableHead key={p} className="w-[45px] p-0 font-black text-center group bg-slate-100 border-r border-slate-950">
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <div className="cursor-help py-3 h-full flex items-center justify-center hover:bg-indigo-50 transition-colors">
@@ -84,7 +84,7 @@ export function RCMELCPage({ embedded = false }: { embedded?: boolean }) {
                       </Tooltip>
                     </TableHead>
                   ))}
-                  <TableHead className="w-[80px] font-black uppercase text-[10px] sticky right-0 z-[60] bg-slate-100">Action</TableHead>
+                  <TableHead className="w-[80px] font-black uppercase text-[10px] sticky right-0 z-[60] bg-slate-100 border-l border-slate-950">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -94,10 +94,10 @@ export function RCMELCPage({ embedded = false }: { embedded?: boolean }) {
 
                   return (
                     <TableRow key={ctrl.id} className={cn(
-                      "group transition-colors border-b border-slate-100 hover:bg-slate-50/50 h-12",
+                      "group transition-colors border-b border-slate-950 hover:bg-slate-50/50 h-12",
                       rowBg
                     )}>
-                      <TableCell className={cn("sticky left-0 z-30 border-r border-slate-100", rowBg)}>
+                      <TableCell className={cn("sticky left-0 z-30 border-r border-slate-950", rowBg)}>
                         <InlineEditRow 
                           isEditing={editingId === ctrl.id}
                           onEdit={() => setEditingId(ctrl.id)}
@@ -105,28 +105,28 @@ export function RCMELCPage({ embedded = false }: { embedded?: boolean }) {
                           onCancel={() => setEditingId(null)}
                         />
                       </TableCell>
-                      <TableCell className={cn("align-top py-2 sticky left-[110px] z-30 border-r-2 border-slate-100 max-w-[350px] px-3", rowBg)}>
+                      <TableCell className={cn("align-top py-2 sticky left-[110px] z-30 border-r border-slate-950 max-w-[350px] px-3", rowBg)}>
                         <div className="flex flex-col gap-0.5 leading-tight">
                           <span className="text-xs font-bold text-slate-800">{ctrl.name}</span>
                           <p className="text-[11px] text-slate-500 italic line-clamp-2">{ctrl.description}</p>
                         </div>
                       </TableCell>
-                      <TableCell className="text-center text-xs font-medium text-slate-600">{ctrl.frequency || '-'}</TableCell>
-                      <TableCell className="text-xs text-slate-500 px-3 truncate">{ctrl.supportingDocs || '-'}</TableCell>
-                      <TableCell className="text-xs text-slate-500 px-3">{ctrl.companyName || '-'}</TableCell>
-                      <TableCell className="text-xs text-slate-500 px-3">{ctrl.executorRole || 'Control Owner'}</TableCell>
-                      <TableCell className="text-center text-xs font-bold text-indigo-600">{ctrl.effectiveDate ? new Date(ctrl.effectiveDate).getFullYear() : '-'}</TableCell>
+                      <TableCell className="text-center text-xs font-medium text-slate-600 border-r border-slate-950">{ctrl.frequency || '-'}</TableCell>
+                      <TableCell className="text-xs text-slate-500 px-3 truncate border-r border-slate-950">{ctrl.supportingDocs || '-'}</TableCell>
+                      <TableCell className="text-xs text-slate-500 px-3 border-r border-slate-950">{ctrl.companyName || '-'}</TableCell>
+                      <TableCell className="text-xs text-slate-500 px-3 border-r border-slate-950">{ctrl.executorRole || 'Control Owner'}</TableCell>
+                      <TableCell className="text-center text-xs font-bold text-indigo-600 border-r border-slate-950">{ctrl.effectiveDate ? new Date(ctrl.effectiveDate).getFullYear() : '-'}</TableCell>
                       {COSO_PRINCIPLES.map(p => {
                         const isMapped = ctrl.cosoPrinciples?.includes(p as any);
                         return (
-                          <TableCell key={p} className="text-center p-0">
+                          <TableCell key={p} className="text-center p-0 border-r border-slate-950">
                             <div className="flex items-center justify-center h-full min-h-[40px]">
                               {isMapped ? <Check className="h-4 w-4 text-emerald-600 stroke-[3px]" /> : <span className="text-slate-100 text-xs">—</span>}
                             </div>
                           </TableCell>
                         );
                       })}
-                      <TableCell className={cn("sticky right-0 z-30", rowBg)} />
+                      <TableCell className={cn("sticky right-0 z-30 border-l border-slate-950", rowBg)} />
                     </TableRow>
                   );
                 })}
