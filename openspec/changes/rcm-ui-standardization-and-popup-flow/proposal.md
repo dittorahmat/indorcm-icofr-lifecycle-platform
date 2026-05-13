@@ -8,6 +8,7 @@ The current RCM matrix pages (ELC, TLC, ITGC) face several UI/UX challenges that
 - **Group Headers**: Implementation of multi-level grouping in tables to maintain context during horizontal scrolling, pulling repeated "Process Info" into category dividers.
 - **Enhanced Borders**: Prominent horizontal grid lines and vertical guides every 5 columns to prevent line-slipping in wide tables.
 - **Popup Edit Flow**: Replacement of inline editing with a structured, multi-section Dialog/Modal for each control mapping.
+- **Integrated Assessment Flow**: Overhaul of `TODVerificationDialog` to allow editing of RCM master data during evaluation, ensuring data parity between RCM TLC and CSA modules.
 - **Redundancy Cleanup**: Removal of redundant "Action" columns where sticky pencil icons are already present at the start of the row.
 - **Unsaved Changes Guard**: Integration of the `unsaved-changes-guard` (from archived proposal) into all RCM edit flows to prevent data loss.
 - **Localization (i18n)**: Comprehensive localization of all new UI elements and labels in `@src/i18n/`.

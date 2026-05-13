@@ -86,21 +86,21 @@ export function CSAReviewMatrix({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {controls.map((control) => {
-              const tod = getTODStatus(control.id);
+            {controls.map((control: any) => {
+              const tod = getTODStatus(control.controlId);
               return (
-                <TableRow key={control.id} className="group hover:bg-white transition-colors">
+                <TableRow key={control.mappingId} className="group hover:bg-white transition-colors">
                   <TableCell className="sticky left-0 z-10 bg-white group-hover:bg-indigo-50/30 border-r shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] py-3">
                     <button 
                       onClick={() => onControlClick(control)}
                       className="text-left hover:underline decoration-indigo-300 decoration-2 underline-offset-4"
                     >
                       <div className="font-black text-slate-900 text-xs flex items-center gap-2">
-                        {control.code || control.reference}
+                        {control.controlCode}
                         <ExternalLink className="h-3 w-3 text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                       </div>
                       <div className="text-[10px] text-slate-500 font-medium line-clamp-1 mt-0.5 max-w-[240px]">
-                        {control.name}
+                        {control.mappedControlName || control.baseControlName}
                       </div>
                     </button>
                   </TableCell>
@@ -111,12 +111,12 @@ export function CSAReviewMatrix({
                     </Badge>
                   </TableCell>
                   {record.samples?.map((sample, sIdx) => {
-                    const res = (sample.controlResults as any)?.[control.id];
+                    const res = (sample.controlResults as any)?.[control.controlId];
                     const isPassed = res?.implemented;
                     const evidenceUrl = res?.evidenceUrl;
 
                     return (
-                      <TableCell key={`${control.id}-${sIdx}`} className="text-center border-r p-0 group-hover:bg-white transition-colors">
+                      <TableCell key={`${control.mappingId}-${sIdx}`} className="text-center border-r p-0 group-hover:bg-white transition-colors">
                          <div className={cn(
                            "h-full w-full py-3 flex items-center justify-center gap-2",
                            isPassed ? "bg-green-50/20" : "bg-red-50/20"

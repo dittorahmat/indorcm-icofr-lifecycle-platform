@@ -12,13 +12,16 @@ import { FileText, Printer, Search, Download, History, ShieldCheck, ChevronDown,
 import { Input } from '@/components/ui/input';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 import { CSAReviewMatrix } from '@/components/csa/CSAReviewMatrix';
 import { TODVerificationDialog } from '@/components/csa/TODVerificationDialog';
 import { useTOD } from '@/hooks/useTOD';
+import { useTranslation } from 'react-i18next';
 
 function CSARecordRow({ record: initialRecord, process }: { record: CSARecord, process?: BPMProcess }) {
   const [isExpanded, setIsExpanded] = React.useState(false);
   const [selectedControl, setSelectedControl] = React.useState<Control | null>(null);
+  const { t } = useTranslation(['csa_hub', 'common']);
   
   const { evaluations, saveMutation } = useTOD(initialRecord.id);
 
@@ -31,14 +34,14 @@ function CSARecordRow({ record: initialRecord, process }: { record: CSARecord, p
 
   const record = fullRecord || initialRecord;
 
-  // Fetch all controls for this process to build the matrix
-  const { data: controlsData } = useQuery({
-    queryKey: ['bpm-controls', initialRecord.bpmProcessId],
-    queryFn: () => api<{ items: Control[] }>(`/api/bpm-processes/${initialRecord.bpmProcessId}/controls`),
+  // Fetch all control mappings for this process to build the matrix
+  const { data: matrixData } = useQuery({
+    queryKey: ['rcm-matrix-tlc-process', initialRecord.bpmProcessId],
+    queryFn: () => api<{ items: any[] }>(`/api/rcm-matrix/tlc?bpmProcessId=${initialRecord.bpmProcessId}`),
     enabled: isExpanded && !!initialRecord.bpmProcessId
   });
 
-  const controls = controlsData?.items || [];
+  const controls = matrixData?.items || [];
 
   return (
     <>
@@ -58,7 +61,7 @@ function CSARecordRow({ record: initialRecord, process }: { record: CSARecord, p
                 {isExpanded ? <ChevronDown className="h-4 w-4 text-indigo-600" /> : <ChevronRight className="h-4 w-4 text-slate-400" />}
              </div>
              <div>
-               <div className="font-bold text-slate-900">{process?.name || 'Unknown Process'}</div>
+               <div className="font-bold text-slate-900">{process?.name || t('page.unknownProcess')}</div>
                <div className="text-[9px] text-slate-400 uppercase font-black tracking-tight">ID: {initialRecord.bpmProcessId?.substring(0,8)}</div>
              </div>
            </div>
@@ -75,7 +78,7 @@ function CSARecordRow({ record: initialRecord, process }: { record: CSARecord, p
         </TableCell>
         <TableCell className="text-center">
            <Badge variant="outline" className="font-black text-[10px] bg-white border-slate-200">
-             {record.samples?.length || 0} Samples
+             {record.samples?.length || 0} {t('page.table.samples')}
            </Badge>
         </TableCell>
         <TableCell className="text-right" onClick={e => e.stopPropagation()}>
@@ -98,7 +101,7 @@ function CSARecordRow({ record: initialRecord, process }: { record: CSARecord, p
                  <div className="h-40 flex items-center justify-center bg-slate-50/50">
                     <div className="flex flex-col items-center gap-3">
                         <div className="h-6 w-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest animate-pulse">Fetching Transaction Samples...</span>
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest animate-pulse">{t('page.loadingSamples')}</span>
                     </div>
                  </div>
                ) : (
@@ -122,10 +125,65 @@ function CSARecordRow({ record: initialRecord, process }: { record: CSARecord, p
           onOpenChange={(open) => !open && setSelectedControl(null)}
           control={selectedControl}
           csaId={record.id}
-          initialData={evaluations.find(e => e.controlId === selectedControl.id)}
-          onSave={(values) => {
-            saveMutation.mutate({ ...values, controlId: selectedControl.id });
-            setSelectedControl(null);
+          initialData={evaluations.find(e => e.controlId === (selectedControl as any).controlId)}
+          onSave={async (values) => {
+            try {
+              // Orchestrate dual save
+              const rcmPayload = {
+                mappingId: (selectedControl as any).mappingId,
+                riskDescription: values.riskDescription,
+                isFraudRelated: values.isFraudRelated,
+                riskRating: values.riskRating,
+                controlName: values.mappedControlName,
+                controlDescription: values.mappedControlDescription,
+                supportingDocs: values.supportingDocs,
+                isKeyControl: values.isKeyControl,
+                controlType: values.controlType,
+                controlNature: values.controlNature,
+                automatedSubNature: values.automatedSubNature,
+                frequency: values.frequency,
+                supportingApp: values.supportingApp,
+                executingFunction: values.executingFunction,
+                executorRole: values.executorRole,
+                affectedFsliItem: values.affectedFsliItem,
+                effectivePeriod: values.effectivePeriod,
+                ipoC: values.ipoC,
+                ipoA: values.ipoA,
+                ipoV: values.ipoV,
+                ipoRa: values.ipoRa,
+                assertionE: values.assertionE,
+                assertionC: values.assertionC,
+                assertionA: values.assertionA,
+                assertionCo: values.assertionCo,
+                assertionVa: values.assertionVa,
+                assertionRo: values.assertionRo,
+                assertionPd: values.assertionPd,
+              };
+
+              const todPayload = {
+                controlId: (selectedControl as any).controlId,
+                pilarObjective: values.pilarObjective,
+                pilarTiming: values.pilarTiming,
+                pilarAuthority: values.pilarAuthority,
+                pilarReliability: values.pilarReliability,
+                pilarCoverage: values.pilarCoverage,
+                pilarEvidence: values.pilarEvidence,
+                kkReference: values.kkReference,
+                conclusion: values.conclusion,
+                comment: values.comment,
+              };
+
+              // Run both updates
+              await Promise.all([
+                api('/api/rcm-matrix/tlc/batch-update', { method: 'POST', body: JSON.stringify({ items: [rcmPayload] }) }),
+                saveMutation.mutateAsync(todPayload)
+              ]);
+
+              toast.success("RCM Design & TOD Evaluation synced successfully");
+              setSelectedControl(null);
+            } catch (err) {
+              toast.error("Failed to sync design changes");
+            }
           }}
           isPending={saveMutation.isPending}
         />
@@ -136,6 +194,7 @@ function CSARecordRow({ record: initialRecord, process }: { record: CSARecord, p
 
 export function CSAPage() {
   const [searchTerm, setSearchTerm] = React.useState("");
+  const { t } = useTranslation(['csa_hub', 'common']);
 
   const { data: records, isLoading } = useQuery({
     queryKey: ['csa-records-all'],
@@ -166,13 +225,12 @@ export function CSAPage() {
                  <History className="h-8 w-8 text-white" />
               </div>
               <div>
-                CSA Reports & Line 2 Review
+                {t('page.title')}
                 <div className="h-1.5 w-1/2 bg-indigo-600 rounded-full mt-1" />
               </div>
             </h1>
             <p className="text-slate-500 text-sm mt-3 font-medium max-w-xl leading-relaxed">
-              Historical archive of Control Self-Assessments. Use this module to perform 
-              regulatory design verification (Lampiran 8) for Line 2 accountability.
+              {t('page.description')}
             </p>
           </div>
         </div>
@@ -181,7 +239,7 @@ export function CSAPage() {
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input 
-              placeholder="Search by sub-process or period..." 
+              placeholder={t('page.searchPlaceholder')} 
               className="pl-11 h-12 bg-slate-50/50 border-slate-200 rounded-2xl focus:ring-indigo-500 transition-all border-2" 
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
@@ -190,8 +248,8 @@ export function CSAPage() {
           <div className="hidden sm:flex items-center gap-3 px-5 py-3 bg-indigo-50 rounded-2xl border-2 border-indigo-100 shadow-sm shadow-indigo-100/50 animate-in fade-in slide-in-from-right-4">
              <ShieldCheck className="h-5 w-5 text-indigo-600" />
              <div className="flex flex-col">
-                <span className="text-[10px] font-black uppercase text-indigo-700 tracking-widest leading-none">Line 2 Auditor</span>
-                <span className="text-[9px] font-bold text-indigo-400 uppercase tracking-tighter mt-0.5">Verification Mode Active</span>
+                <span className="text-[10px] font-black uppercase text-indigo-700 tracking-widest leading-none">{t('page.modeBadge')}</span>
+                <span className="text-[9px] font-bold text-indigo-400 uppercase tracking-tighter mt-0.5">{t('page.modeSubtitle')}</span>
              </div>
           </div>
         </div>
@@ -200,12 +258,12 @@ export function CSAPage() {
           <Table>
             <TableHeader className="bg-slate-50/80 backdrop-blur-md border-b-2 border-slate-100">
               <TableRow className="hover:bg-transparent border-none">
-                <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400 py-6 pl-8">Sub-Proses Bisnis</TableHead>
-                <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Periode</TableHead>
-                <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Status Efektivitas</TableHead>
-                <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tanggal Sign-off</TableHead>
-                <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Sampel</TableHead>
-                <TableHead className="text-right text-[10px] font-black uppercase tracking-widest text-slate-400 pr-8">Reports</TableHead>
+                <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400 py-6 pl-8">{t('page.table.subProcess')}</TableHead>
+                <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">{t('page.table.period')}</TableHead>
+                <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">{t('page.table.status')}</TableHead>
+                <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t('page.table.signOff')}</TableHead>
+                <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">{t('page.table.samples')}</TableHead>
+                <TableHead className="text-right text-[10px] font-black uppercase tracking-widest text-slate-400 pr-8">{t('page.table.reports')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -216,11 +274,11 @@ export function CSAPage() {
                         <div className="h-12 w-12 border-4 border-slate-100 rounded-full" />
                         <div className="h-12 w-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin absolute top-0 left-0" />
                       </div>
-                      <span className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] animate-pulse">Synchronizing Reports...</span>
+                      <span className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] animate-pulse">{t('page.loading')}</span>
                    </div>
                 </TableCell></TableRow>
               ) : filteredRecords.length === 0 ? (
-                <TableRow className="border-none"><TableCell colSpan={6} className="h-80 text-center text-slate-400 italic border-none">Tidak ada laporan CSA yang ditemukan.</TableCell></TableRow>
+                <TableRow className="border-none"><TableCell colSpan={6} className="h-80 text-center text-slate-400 italic border-none">{t('page.empty')}</TableCell></TableRow>
               ) : filteredRecords.map((record) => (
                 <CSARecordRow 
                   key={record.id} 

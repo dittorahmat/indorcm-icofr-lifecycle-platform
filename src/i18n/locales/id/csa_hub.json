@@ -128,5 +128,24 @@
       "coverage": "Periode Cakupan",
       "evidence": "Bukti yang Tersedia"
     }
+  },
+  "page": {
+    "title": "Laporan CSA & Review Lini 2",
+    "description": "Arsip historis Control Self-Assessment. Gunakan modul ini untuk melakukan verifikasi desain regulatif (Lampiran 8) untuk akuntabilitas Lini 2.",
+    "searchPlaceholder": "Cari berdasarkan sub-proses atau periode...",
+    "modeBadge": "Auditor Lini 2",
+    "modeSubtitle": "Mode Verifikasi Aktif",
+    "loading": "Sinkronisasi Laporan...",
+    "loadingSamples": "Mengambil Sampel Transaksi...",
+    "empty": "Tidak ada laporan CSA yang ditemukan.",
+    "unknownProcess": "Proses Tidak Diketahui",
+    "table": {
+      "subProcess": "Sub-Proses Bisnis",
+      "period": "Periode",
+      "status": "Status Efektivitas",
+      "signOff": "Tanggal Sign-off",
+      "samples": "Sampel",
+      "reports": "Laporan"
+    }
   }
 }

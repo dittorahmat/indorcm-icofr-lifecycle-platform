@@ -5,7 +5,7 @@ import { getDb } from '../db';
 import { 
   csaRecords, csaSamples, csaSchedules, testRecords, auditLogs, 
   controls, rcms, rcmControls, deficiencies, testSamples, notifications,
-  todEvaluations, user
+  todEvaluations, user, member
 } from '../db/schema';
 import { eq, and, sql, desc, SQL } from 'drizzle-orm';
 import type { CSARecord, TestRecord, Deficiency } from "@shared/types";
@@ -326,8 +326,16 @@ csa.post('/csa', async (c) => {
 
   // 7. Notification for Line 2 (Fungsi ICOFR)
   if (!isDraft) {
-      const line2Users = await db.select().from(user)
-          .where(eq(user.role, 'Line 2')); // Simplified role check, assuming global role or mapped to organization elsewhere
+      // Find Line 2 users in this organization
+      const line2Users = await db.select({
+          id: user.id
+      })
+      .from(user)
+      .innerJoin(member, eq(user.id, member.userId))
+      .where(and(
+          eq(member.organizationId, orgId),
+          eq(member.role, 'Line 2')
+      ));
       
       if (line2Users.length > 0) {
           const notificationsToInsert = line2Users.map((u: any) => ({

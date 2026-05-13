@@ -128,5 +128,24 @@
       "coverage": "Period Coverage",
       "evidence": "Evidence Availability"
     }
+  },
+  "page": {
+    "title": "CSA Reports & Line 2 Review",
+    "description": "Historical archive of Control Self-Assessments. Use this module to perform regulatory design verification (Lampiran 8) for Line 2 accountability.",
+    "searchPlaceholder": "Search by sub-process or period...",
+    "modeBadge": "Line 2 Auditor",
+    "modeSubtitle": "Verification Mode Active",
+    "loading": "Synchronizing Reports...",
+    "loadingSamples": "Fetching Transaction Samples...",
+    "empty": "No CSA reports found.",
+    "unknownProcess": "Unknown Process",
+    "table": {
+      "subProcess": "Business Sub-Process",
+      "period": "Period",
+      "status": "Effectiveness Status",
+      "signOff": "Sign-off Date",
+      "samples": "Samples",
+      "reports": "Reports"
+    }
   }
 }

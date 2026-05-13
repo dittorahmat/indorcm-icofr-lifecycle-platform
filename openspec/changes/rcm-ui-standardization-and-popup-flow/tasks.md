@@ -24,6 +24,8 @@
 ## 4. UI Polish & Global Features
 
 - [ ] 4.1 Update Sidebar navigation if any RCM links need re-labeling or regrouping
-- [ ] 4.2 Implement/Integrate global Notification Bell in `AppLayout.tsx` for system-wide status updates
-- [ ] 4.3 Audit all RCM pages for "code smells", unused imports, and broken API endpoints after refactor
-- [ ] 4.4 Run full project verification: `npm run lint`, `tsc`, `npm test`, and `npm run build`
+- [ ] 4.2 Overhaul `TODVerificationDialog.tsx` to use the new standardized RCM form fields (editable context)
+- [ ] 4.3 Implement cross-module save orchestration in `TODVerificationDialog` (RCM Update + TOD Save)
+- [ ] 4.4 Implement/Integrate global Notification Bell in `AppLayout.tsx` for system-wide status updates
+- [ ] 4.5 Audit all RCM and CSA pages for "code smells", unused imports, and broken API endpoints after refactor
+- [ ] 4.6 Run full project verification: `npm run lint`, `tsc`, `npm test`, and `npm run build`

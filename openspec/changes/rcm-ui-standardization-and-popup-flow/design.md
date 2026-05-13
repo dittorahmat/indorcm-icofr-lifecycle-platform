@@ -34,8 +34,14 @@ The RCM (Risk Control Matrix) pages—ELC, TLC, and ITGC—are the core of the a
 - **Rationale**: 34 fields in a vertical form or inline grid are overwhelming. Sectioning data makes auditing more systematic.
 
 ### 4. Safety Guard Integration
-- **What**: Bind the `isDirty` state of the `RCMEditDialog` form to the `useUnsavedChanges` hook.
+- **What**: Bind the `isDirty` state of the `RCMEditDialog` and `TODVerificationDialog` forms to the `useUnsavedChanges` hook.
 - **Rationale**: Prevents data loss if a user accidentally clicks outside the modal or navigates away while editing a complex mapping.
+
+### 5. Cross-Module Data Sync (RCM + TOD)
+- **What**: Overhaul `TODVerificationDialog` to use a unified schema. When the auditor saves a TOD evaluation, the system will trigger a dual-update:
+    1. Update the **Control Mapping** (Risk, Control, Assertions) in the RCM repository.
+    2. Update the **TOD Evaluation** (6 Pillars, Conclusion) in the Testing repository.
+- **Rationale**: Line 2 (Auditors) are often the ones identifying errors in the RCM design. Allowing them to fix the "Design" while "Testing" it eliminates the need for context switching and ensures the RCM is always the Single Source of Truth.
 
 ## Risks / Trade-offs
 
