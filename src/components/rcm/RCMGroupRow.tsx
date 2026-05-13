@@ -19,7 +19,7 @@ export function RCMGroupRow({ title, colSpan, className, depth = 0 }: RCMGroupRo
     )}>
       <TableCell colSpan={colSpan} className="p-0">
         <div className={cn(
-          "flex items-center gap-2 font-black uppercase text-[11px] tracking-widest px-4 h-full",
+          "flex items-center gap-2 font-black uppercase text-xs tracking-widest px-4 h-full",
           depth > 0 && "pl-10"
         )}>
           {depth === 0 ? (

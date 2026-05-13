@@ -101,22 +101,22 @@ export const GLDataGrid = React.memo(function GLDataGrid({
       {
         accessorKey: 'noUrut',
         header: '#',
-        cell: info => <span className="text-[9px] text-slate-400">{info.getValue<number>()}</span>,
-        aggregatedCell: info => <span className="text-[9px] text-slate-500 font-bold">{info.getValue<number>()}</span>,
+        cell: info => <span className="text-xs text-slate-400">{info.getValue<number>()}</span>,
+        aggregatedCell: info => <span className="text-xs text-slate-500 font-bold">{info.getValue<number>()}</span>,
         aggregationFn: 'min',
         size: 40,
       },
       {
         accessorKey: 'entityCode',
         header: 'Entity Code',
-        cell: info => <span className="font-mono text-[10px]">{info.getValue<string>()}</span>,
+        cell: info => <span className="font-mono text-xs">{info.getValue<string>()}</span>,
         size: 80,
       },
       {
         accessorKey: 'fsliName',
         header: 'FSLI',
         cell: ({ row, getValue }) => (
-          <div className="flex items-center gap-2 font-bold text-[11px] text-slate-700">
+          <div className="flex items-center gap-2 font-bold text-xs text-slate-700">
             {row.getCanExpand() && (
               <button onClick={row.getToggleExpandedHandler()} className="cursor-pointer">
                 {row.getIsExpanded() ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
@@ -129,7 +129,7 @@ export const GLDataGrid = React.memo(function GLDataGrid({
       {
         accessorKey: 'noGL',
         header: 'Account Code',
-        cell: info => <span className="font-mono text-[9px] text-slate-500">{info.getValue<string>()}</span>,
+        cell: info => <span className="font-mono text-xs text-slate-500">{info.getValue<string>()}</span>,
         size: 100,
       },
       {
@@ -137,7 +137,7 @@ export const GLDataGrid = React.memo(function GLDataGrid({
         header: 'Account Description',
         cell: ({ row, getValue }) => {
           const glDesc = getValue<string>();
-          if (row.getIsGrouped()) return <span className="text-[10px]">{glDesc}</span>;
+          if (row.getIsGrouped()) return <span className="text-xs">{glDesc}</span>;
 
           const fsliName = row.original.fsliName || "";
           const noGL = row.original.noGL || "";
@@ -157,7 +157,7 @@ export const GLDataGrid = React.memo(function GLDataGrid({
           if (isInScope) {
             if (!hasAccess) {
               return (
-                <div className="text-[10px] text-slate-400 flex items-center gap-1.5 italic">
+                <div className="text-xs text-slate-400 flex items-center gap-1.5 italic">
                   <Lock className="h-2.5 w-2.5" /> {glDesc}
                 </div>
               );
@@ -172,7 +172,7 @@ export const GLDataGrid = React.memo(function GLDataGrid({
               <Link 
                 to={`/bpm?${params.toString()}`}
                 target="_blank"
-                className="text-[10px] text-blue-600 underline hover:text-blue-800 font-medium flex items-center gap-1 group truncate max-w-[180px]"
+                className="text-xs text-blue-600 underline hover:text-blue-800 font-medium flex items-center gap-1 group truncate max-w-[180px]"
                 title={`Open BPM Workflow for ${glDesc}`}
               >
                 {glDesc}
@@ -182,7 +182,7 @@ export const GLDataGrid = React.memo(function GLDataGrid({
           }
 
           return (
-            <span className="text-[10px] truncate max-w-[180px]" title={glDesc}>
+            <span className="text-xs truncate max-w-[180px]" title={glDesc}>
               {glDesc}
             </span>
           );
@@ -210,7 +210,7 @@ export const GLDataGrid = React.memo(function GLDataGrid({
                 onChange={(ids) => onAssignDepartments?.(row.original.noGL, ids)}
                 placeholder={t('table.assignDept', 'Assign Dept...')}
                 disabled={isDisabled}
-                className="min-h-7 py-1 text-[10px]"
+                className="min-h-7 py-1 text-xs"
               />
             </div>
           );
@@ -247,7 +247,7 @@ export const GLDataGrid = React.memo(function GLDataGrid({
               onValueChange={(val: "Accepted" | "Rejected") => onOwnerAcceptanceChange?.(noGL, val)}
             >
               <SelectTrigger className={cn(
-                "h-7 w-full text-[9px] px-1 border-none bg-transparent hover:bg-slate-100 transition-colors",
+                "h-7 w-full text-xs px-1 border-none bg-transparent hover:bg-slate-100 transition-colors",
                 currentAcceptance === 'Accepted' ? "text-green-600 font-bold bg-green-50" :
                 currentAcceptance === 'Rejected' ? "text-red-600 font-bold bg-red-50" :
                 "text-slate-300 italic"
@@ -269,7 +269,7 @@ export const GLDataGrid = React.memo(function GLDataGrid({
           const val = info.getValue<number>();
           return (
             <div className={cn(
-              "text-right font-mono text-[10px]",
+              "text-right font-mono text-xs",
               Math.abs(val) >= pmValue ? "text-red-600 font-bold" : "text-slate-500"
             )}>
               {val.toLocaleString('id-ID')}
@@ -279,7 +279,7 @@ export const GLDataGrid = React.memo(function GLDataGrid({
       },
       {
         id: 'quantFlag',
-        header: () => <div className="text-center bg-orange-50/50 -mx-2 py-1 text-[9px]">Quantitative</div>,
+        header: () => <div className="text-center bg-orange-50/50 -mx-2 py-1 text-xs">Quantitative</div>,
         cell: ({ row }) => {
           const balance = row.getIsGrouped() 
             ? row.getLeafRows().reduce((sum, r) => sum + Math.abs(r.original.balance), 0)
@@ -288,9 +288,9 @@ export const GLDataGrid = React.memo(function GLDataGrid({
           return (
             <div className="text-center">
               {isSignificant ? (
-                <Badge className="bg-red-600 h-4 px-1.5 text-[8px] uppercase tracking-tighter">Significant</Badge>
+                <Badge className="bg-red-600 h-4 px-1.5 text-xs uppercase tracking-tighter">Significant</Badge>
               ) : (
-                <span className="text-slate-300 text-[9px] font-medium italic">Not Significant</span>
+                <span className="text-slate-300 text-xs font-medium italic">Not Significant</span>
               )}
             </div>
           );
@@ -299,12 +299,12 @@ export const GLDataGrid = React.memo(function GLDataGrid({
       ...QUALITATIVE_RULES.map(rule => ({
         id: `rule-${rule.id}`,
         header: () => (
-          <div className="text-[9px] uppercase tracking-tighter text-slate-400 text-center leading-tight max-w-[60px] mx-auto whitespace-normal">
+          <div className="text-xs uppercase tracking-tighter text-slate-400 text-center leading-tight max-w-[60px] mx-auto whitespace-normal">
             {rule.label}
           </div>
         ),
         cell: ({ row }) => {
-          if (!row.getIsGrouped()) return <div className="text-center text-slate-200 text-[8px]">-</div>;
+          if (!row.getIsGrouped()) return <div className="text-center text-slate-200 text-xs">-</div>;
           
           const fsliName = row.getValue('fsliName') as string;
           const currentLevel = assessmentData?.[fsliName]?.[rule.id] || "";
@@ -316,7 +316,7 @@ export const GLDataGrid = React.memo(function GLDataGrid({
               onValueChange={(val: QualitativeLevel) => onAssessmentChange(fsliName, rule.id, val)}
             >
               <SelectTrigger className={cn(
-                "h-7 w-full text-[9px] px-1 border-none bg-transparent hover:bg-slate-100 transition-colors",
+                "h-7 w-full text-xs px-1 border-none bg-transparent hover:bg-slate-100 transition-colors",
                 currentLevel === 'High' ? "text-red-600 font-bold bg-red-50" : 
                 currentLevel === 'Medium' ? "text-amber-600 font-medium bg-amber-50" : 
                 currentLevel === 'Low' ? "text-green-600 bg-green-50" : "text-slate-300 italic"
@@ -348,11 +348,11 @@ export const GLDataGrid = React.memo(function GLDataGrid({
             const isKuanSignificant = leaves.some(lr => Math.abs(lr.original.balance) >= pmValue);
             const isInScope = isKuanSignificant || isQualSignificant;
             return isInScope ? (
-              <Badge className="bg-indigo-600 text-[10px] h-5 px-3 uppercase font-extrabold shadow-sm border-2 border-indigo-200 whitespace-nowrap">
+              <Badge className="bg-indigo-600 text-xs h-5 px-3 uppercase font-extrabold shadow-sm border-2 border-indigo-200 whitespace-nowrap">
                 In Scope
               </Badge>
             ) : (
-              <Badge variant="outline" className="text-[9px] h-4 px-1.5 opacity-40 whitespace-nowrap">
+              <Badge variant="outline" className="text-xs h-4 px-1.5 opacity-40 whitespace-nowrap">
                 Out Scope
               </Badge>
             );
@@ -362,9 +362,9 @@ export const GLDataGrid = React.memo(function GLDataGrid({
           const isInScope = isQualSignificant || isKuanSignificant;
 
           if (isInScope) {
-            return <Badge className="text-[9px] h-5 px-2 font-bold bg-indigo-600 whitespace-nowrap uppercase">In Scope</Badge>;
+            return <Badge className="text-xs h-5 px-2 font-bold bg-indigo-600 whitespace-nowrap uppercase">In Scope</Badge>;
           }
-          return <Badge variant="outline" className="text-[9px] h-4 px-1.5 opacity-40 text-slate-400 whitespace-nowrap uppercase">Out Scope</Badge>;
+          return <Badge variant="outline" className="text-xs h-4 px-1.5 opacity-40 text-slate-400 whitespace-nowrap uppercase">Out Scope</Badge>;
         }
       },
       {
@@ -399,7 +399,7 @@ export const GLDataGrid = React.memo(function GLDataGrid({
                 onChange={(ids) => onAppsChange(noGL, ids)}
                 onCreateNew={(name) => onQuickAddApp(name, noGL)}
                 disabled={isReadOnly}
-                className="min-h-7 py-1 text-[10px]"
+                className="min-h-7 py-1 text-xs"
               />
             </div>
           );
@@ -514,7 +514,7 @@ export const GLDataGrid = React.memo(function GLDataGrid({
                   {headerGroup.headers.map(header => (
                     <TableHead
                       key={header.id}
-                      className="border-r last:border-r-0 h-16 text-[10px] font-bold uppercase text-slate-500 whitespace-nowrap px-2"
+                      className="border-r last:border-r-0 h-16 text-xs font-bold uppercase text-slate-500 whitespace-nowrap px-2"
                       style={{ width: header.getSize() }}
                     >
                       {header.isPlaceholder ? null : (
@@ -524,7 +524,7 @@ export const GLDataGrid = React.memo(function GLDataGrid({
                             <div className="relative mt-1" onClick={e => e.stopPropagation()}>
                               <Filter className="absolute left-1.5 top-1.5 h-2.5 w-2.5 text-slate-300" />
                               <input
-                                className="w-full pl-5 pr-1 py-1 text-[9px] font-normal border rounded"
+                                className="w-full pl-5 pr-1 py-1 text-xs font-normal border rounded"
                                 placeholder="Search..."
                                 onChange={e => header.column.setFilterValue(e.target.value)}
                               />
@@ -554,7 +554,7 @@ export const GLDataGrid = React.memo(function GLDataGrid({
                       {cell.getIsGrouped() ? (
                         <div className="flex items-center gap-2">
                           {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                          <span className="text-[9px] text-slate-400 font-normal">
+                          <span className="text-xs text-slate-400 font-normal">
                             ({row.getLeafRows().length})
                           </span>
                         </div>
@@ -568,7 +568,7 @@ export const GLDataGrid = React.memo(function GLDataGrid({
             </TableBody>
           </Table>
         </div>
-        <div className="p-2 border-t bg-slate-50 text-[10px] text-slate-400 italic flex justify-between">
+        <div className="p-2 border-t bg-slate-50 text-xs text-slate-400 italic flex justify-between">
           <span>Showing {table.getRowModel().rows.length} rows</span>
           <span>Standard: SK-5/2024 Table 5 Compliance Engine</span>
         </div>

@@ -123,7 +123,7 @@ export function SignificantLocationModal({
               </div>
             </div>
             <div className="text-right">
-              <p className="text-[10px] text-blue-500 uppercase font-bold tracking-tight">Total Basis Value</p>
+              <p className="text-xs text-blue-500 uppercase font-bold tracking-tight">Total Basis Value</p>
               <p className="text-xl font-black text-[#417dc1]">
                 Rp {analysisResults.reduce((sum, r) => sum + r.balance, 0).toLocaleString('id-ID')}
               </p>
@@ -166,11 +166,11 @@ export function SignificantLocationModal({
                       </TableCell>
                       <TableCell className="text-center">
                         {row.isSignificant ? (
-                          <Badge className="bg-green-600 h-6 px-3 gap-1.5 uppercase font-black text-[10px]">
+                          <Badge className="bg-green-600 h-6 px-3 gap-1.5 uppercase font-black text-xs">
                             <CheckCircle2 className="h-3 w-3" /> Yes
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="text-slate-400 border-slate-200 h-6 px-3 gap-1.5 uppercase font-bold text-[10px]">
+                          <Badge variant="outline" className="text-slate-400 border-slate-200 h-6 px-3 gap-1.5 uppercase font-bold text-xs">
                             <XCircle className="h-3 w-3" /> No
                           </Badge>
                         )}

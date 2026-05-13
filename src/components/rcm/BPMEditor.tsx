@@ -439,7 +439,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear }: BPMEditorProps
 
             <Panel position="top-left" className="bg-white/80 backdrop-blur-sm p-2 rounded-lg border shadow-sm flex flex-col gap-2">
                <div className="flex flex-col">
-                 <span className="text-[10px] font-black text-slate-400 uppercase leading-none">{t('bpm:modal.title')}</span>
+                 <span className="text-xs font-black text-slate-400 uppercase leading-none">{t('bpm:modal.title')}</span>
                  <span className="text-xs font-bold text-slate-700">{subProcess}</span>
                </div>
                {!isLocked && (
@@ -464,7 +464,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear }: BPMEditorProps
                     <Button variant="outline" size="icon" className="h-7 w-7" title={t('bpm:editor.nodes.offPageRef')} onClick={() => createActivityNode('off-page-ref')}><ChevronRight className="h-3.5 w-3.5 text-slate-600" /></Button>
                     <Button variant="outline" size="icon" className="h-7 w-7" title={t('bpm:editor.nodes.reference')} onClick={() => createActivityNode('reference')}><LinkIcon className="h-3.5 w-3.5 text-slate-600" /></Button>
                     <Separator orientation="vertical" className="h-7 mx-1" />
-                    <Button variant="secondary" size="sm" className="h-7 px-2 gap-1 text-[9px] font-bold uppercase tracking-tighter" onClick={() => {
+                    <Button variant="secondary" size="sm" className="h-7 px-2 gap-1 text-xs font-bold uppercase tracking-tighter" onClick={() => {
                       const id = `lane_${Date.now()}`;
                       setNodes(nds => [...nds, { 
                         id, type: 'swimlane', position: { x: 0, y: 0 }, zIndex: -1,

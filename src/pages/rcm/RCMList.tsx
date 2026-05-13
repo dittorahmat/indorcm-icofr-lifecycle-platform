@@ -169,15 +169,15 @@ export function RCMList() {
                           <span className="text-xs text-slate-500 line-clamp-1">{ctrl.description}</span>
                         </div>
                       </TableCell>
-                      <TableCell><Badge variant="secondary" className="text-[10px] font-bold uppercase">{ctrl.nature}</Badge></TableCell>
-                      <TableCell className="text-center"><Badge className={cn("text-[10px] font-bold", ctrl.riskRating === 'High' ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700")}>{ctrl.riskRating}</Badge></TableCell>
+                      <TableCell><Badge variant="secondary" className="text-xs font-bold uppercase">{ctrl.nature}</Badge></TableCell>
+                      <TableCell className="text-center"><Badge className={cn("text-xs font-bold", ctrl.riskRating === 'High' ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700")}>{ctrl.riskRating}</Badge></TableCell>
                       <TableCell className="text-center">
                         <div className="flex justify-center">
                           {ctrl.relatedControlIds && ctrl.relatedControlIds.length > 0 ? (
                             <Badge className="bg-indigo-100 text-indigo-700 border-indigo-200 font-bold gap-1.5 py-1">
                               <ShieldCheck className="h-3 w-3" /> {ctrl.relatedControlIds.length} Linked
                             </Badge>
-                          ) : <span className="text-[10px] text-slate-300 italic">No Link</span>}
+                          ) : <span className="text-xs text-slate-300 italic">No Link</span>}
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
@@ -222,7 +222,7 @@ export function RCMList() {
                     <TableRow><TableCell colSpan={6} className="h-32 text-center text-slate-400 italic">No ITGC records found.</TableCell></TableRow>
                   ) : (controlsData?.items || []).filter(c => c.level === 'ITGC' && (c.name.toLowerCase().includes(searchTerm.toLowerCase()) || c.code?.toLowerCase().includes(searchTerm.toLowerCase()))).map((ctrl) => (
                     <TableRow key={ctrl.id} className="group hover:bg-indigo-50/10 transition-colors">
-                      <TableCell><Badge variant="outline" className="text-[10px] font-bold text-indigo-600 border-indigo-200 bg-indigo-50">{ctrl.itgcDomain || 'Unassigned'}</Badge></TableCell>
+                      <TableCell><Badge variant="outline" className="text-xs font-bold text-indigo-600 border-indigo-200 bg-indigo-50">{ctrl.itgcDomain || 'Unassigned'}</Badge></TableCell>
                       <TableCell className="font-mono text-xs font-bold text-slate-500">{ctrl.code}</TableCell>
                       <TableCell>
                         <div className="flex flex-col">
@@ -231,7 +231,7 @@ export function RCMList() {
                         </div>
                       </TableCell>
                       <TableCell className="text-center">
-                        <Badge className="bg-slate-100 text-slate-600 border-none text-[9px] font-bold uppercase">{ctrl.automatedSubNature || '-'}</Badge>
+                        <Badge className="bg-slate-100 text-slate-600 border-none text-xs font-bold uppercase">{ctrl.automatedSubNature || '-'}</Badge>
                       </TableCell>
                       <TableCell className="text-sm font-medium text-slate-600">{ctrl.itApplication || '-'}</TableCell>
                       <TableCell className="text-right">
@@ -275,16 +275,16 @@ export function RCMList() {
                         <React.Fragment key={principle.id}>
                           {(principle.id === 1 || principle.id === 6 || principle.id === 10 || principle.id === 13 || principle.id === 16) && (
                             <TableRow className="bg-slate-100/50 hover:bg-slate-100/50 border-y-2 border-slate-200">
-                              <TableCell colSpan={4} className="py-2 px-4"><span className="text-[10px] font-black uppercase text-slate-500 tracking-[0.2em]">{principle.component}</span></TableCell>
+                              <TableCell colSpan={4} className="py-2 px-4"><span className="text-xs font-black uppercase text-slate-500 tracking-[0.2em]">{principle.component}</span></TableCell>
                             </TableRow>
                           )}
                           <TableRow className="group hover:bg-indigo-50/20 transition-colors">
                             <TableCell className="align-top py-6">
                               <div className="flex gap-4">
-                                <div className="h-7 w-7 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-[11px] font-black shrink-0 border border-indigo-200">{principle.id}</div>
+                                <div className="h-7 w-7 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-black shrink-0 border border-indigo-200">{principle.id}</div>
                                 <div className="space-y-0.5">
                                    <span className="text-[13px] font-bold text-slate-800 leading-tight block">{principle.name}</span>
-                                   <span className="text-[10px] text-slate-400 font-medium">COSO Principle {principle.id}</span>
+                                   <span className="text-xs text-slate-400 font-medium">COSO Principle {principle.id}</span>
                                 </div>
                               </div>
                             </TableCell>
@@ -294,17 +294,17 @@ export function RCMList() {
                                   <div key={ctrl.id} className="flex flex-col p-3 border rounded-lg bg-white shadow-sm group/item hover:border-indigo-300 transition-colors">
                                     <div className="flex justify-between items-start">
                                       <div className="flex items-center gap-2">
-                                         <Badge variant="outline" className="text-[9px] font-mono h-4">{ctrl.code || 'N/A'}</Badge>
+                                         <Badge variant="outline" className="text-xs font-mono h-4">{ctrl.code || 'N/A'}</Badge>
                                          <span className="text-xs font-bold text-slate-800">{ctrl.name}</span>
                                       </div>
                                       <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover/item:opacity-100" onClick={() => handleEditControl(ctrl)}>
                                         <Edit2 className="h-3 w-3 text-indigo-600" />
                                       </Button>
                                     </div>
-                                    <p className="text-[11px] text-slate-500 mt-2 line-clamp-2 leading-relaxed italic">"{ctrl.description}"</p>
+                                    <p className="text-xs text-slate-500 mt-2 line-clamp-2 leading-relaxed italic">"{ctrl.description}"</p>
                                     <div className="flex items-center gap-3 mt-3">
-                                       <Badge className="bg-slate-100 text-slate-600 border-none text-[9px] font-bold uppercase">{ctrl.frequency}</Badge>
-                                       {ctrl.attachmentUrl && <div className="flex items-center gap-1.5 text-indigo-600 text-[10px] font-black"><FileDown className="h-3.5 w-3.5" /> DOKUMEN KEBIJAKAN</div>}
+                                       <Badge className="bg-slate-100 text-slate-600 border-none text-xs font-bold uppercase">{ctrl.frequency}</Badge>
+                                       {ctrl.attachmentUrl && <div className="flex items-center gap-1.5 text-indigo-600 text-xs font-black"><FileDown className="h-3.5 w-3.5" /> DOKUMEN KEBIJAKAN</div>}
                                     </div>
                                   </div>
                                 )) : (
@@ -316,7 +316,7 @@ export function RCMList() {
                               </div>
                             </TableCell>
                             <TableCell className="text-center py-4">
-                               {relatedControls.length > 0 ? <Badge className="bg-emerald-500 text-white border-none font-black text-[9px] shadow-sm">TERPETAKAN</Badge> : <Badge variant="outline" className="text-rose-400 border-rose-200 bg-rose-50 text-[9px] font-black animate-pulse">GAP (RISIKO)</Badge>}
+                               {relatedControls.length > 0 ? <Badge className="bg-emerald-500 text-white border-none font-black text-xs shadow-sm">TERPETAKAN</Badge> : <Badge variant="outline" className="text-rose-400 border-rose-200 bg-rose-50 text-xs font-black animate-pulse">GAP (RISIKO)</Badge>}
                             </TableCell>
                             <TableCell className="text-right py-4 pr-6">
                                <Button variant="ghost" size="icon" className="h-9 w-9 text-indigo-600 bg-indigo-50/50 hover:bg-indigo-100 rounded-full" onClick={() => handleCreateControl({ level: 'ELC', cosoPrinciples: [principle.id as any], name: `Kontrol Prinsip ${principle.id}` })}>

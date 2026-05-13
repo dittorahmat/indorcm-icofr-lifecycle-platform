@@ -149,13 +149,13 @@ export function TransactionSamplingTab({ noGL, bpmProcessId, onSamplesSelected }
           <TableHeader className="bg-white sticky top-0 z-10 shadow-sm">
             <TableRow>
               <TableHead className="w-12 text-center"></TableHead>
-              <TableHead className="w-24 text-[10px] font-black uppercase">BPM Code</TableHead>
-              <TableHead className="w-32 text-[10px] font-black uppercase">{t('bpm:sampling.columns.date')}</TableHead>
-              <TableHead className="w-40 text-[10px] font-black uppercase">{t('bpm:sampling.columns.ref')}</TableHead>
-              <TableHead className="text-[10px] font-black uppercase">{t('bpm:sampling.columns.description')}</TableHead>
-              <TableHead className="w-32 text-[10px] font-black uppercase text-right">{t('bpm:sampling.columns.amount')}</TableHead>
-              <TableHead className="w-24 text-[10px] font-black uppercase text-center">{t('bpm:sampling.columns.currency')}</TableHead>
-              <TableHead className="w-16 text-[10px] font-black uppercase text-center">{t('bpm:sampling.columns.dc')}</TableHead>
+              <TableHead className="w-24 text-xs font-black uppercase">BPM Code</TableHead>
+              <TableHead className="w-32 text-xs font-black uppercase">{t('bpm:sampling.columns.date')}</TableHead>
+              <TableHead className="w-40 text-xs font-black uppercase">{t('bpm:sampling.columns.ref')}</TableHead>
+              <TableHead className="text-xs font-black uppercase">{t('bpm:sampling.columns.description')}</TableHead>
+              <TableHead className="w-32 text-xs font-black uppercase text-right">{t('bpm:sampling.columns.amount')}</TableHead>
+              <TableHead className="w-24 text-xs font-black uppercase text-center">{t('bpm:sampling.columns.currency')}</TableHead>
+              <TableHead className="w-16 text-xs font-black uppercase text-center">{t('bpm:sampling.columns.dc')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -173,11 +173,11 @@ export function TransactionSamplingTab({ noGL, bpmProcessId, onSamplesSelected }
                 </TableCell>
                 <TableCell>
                   {row.bpmCode ? (
-                    <Badge variant="secondary" className="text-[9px] font-mono font-bold bg-slate-100 text-slate-600 border-slate-200">
+                    <Badge variant="secondary" className="text-xs font-mono font-bold bg-slate-100 text-slate-600 border-slate-200">
                       {row.bpmCode}
                     </Badge>
                   ) : (
-                    <span className="text-[9px] text-slate-300 italic">Unlinked</span>
+                    <span className="text-xs text-slate-300 italic">Unlinked</span>
                   )}
                 </TableCell>
                 <TableCell className="text-xs font-medium text-slate-600">
@@ -193,11 +193,11 @@ export function TransactionSamplingTab({ noGL, bpmProcessId, onSamplesSelected }
                   {new Intl.NumberFormat('id-ID').format(row.amount || 0)}
                 </TableCell>
                 <TableCell className="text-center">
-                  <Badge variant="outline" className="text-[10px] uppercase font-bold">{row.currency}</Badge>
+                  <Badge variant="outline" className="text-xs uppercase font-bold">{row.currency}</Badge>
                 </TableCell>
                 <TableCell className="text-center">
                   <span className={cn(
-                    "text-[10px] font-black px-1.5 py-0.5 rounded",
+                    "text-xs font-black px-1.5 py-0.5 rounded",
                     row.dcFlag === 'D' ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
                   )}>
                     {row.dcFlag}

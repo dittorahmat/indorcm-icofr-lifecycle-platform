@@ -169,7 +169,7 @@ export function ImportPage() {
                   <div className="max-h-96 overflow-auto border rounded-md shadow-inner bg-background">
                     <Table>
                       <TableHeader className="sticky top-0 bg-muted z-10">
-                        <TableRow>{Object.keys(rcmRowSchema.shape).map(key => <TableHead key={key} className="uppercase text-[10px] font-bold">{key}</TableHead>)}</TableRow>
+                        <TableRow>{Object.keys(rcmRowSchema.shape).map(key => <TableHead key={key} className="uppercase text-xs font-bold">{key}</TableHead>)}</TableRow>
                       </TableHeader>
                       <TableBody>
                         {rows.map((row, index) => (
@@ -177,7 +177,7 @@ export function ImportPage() {
                             {Object.keys(rcmRowSchema.shape).map(key => (
                               <TableCell key={key} className={cn("text-xs", row.errors?.some(e => e.path[0] === key) && "text-destructive font-medium")}>
                                 {row.data[key as keyof RcmRow]}
-                                {row.errors?.some(e => e.path[0] === key) && <Badge variant="destructive" className="ml-2 text-[8px] h-4">Error</Badge>}
+                                {row.errors?.some(e => e.path[0] === key) && <Badge variant="destructive" className="ml-2 text-xs h-4">Error</Badge>}
                               </TableCell>
                             ))}
                           </TableRow>

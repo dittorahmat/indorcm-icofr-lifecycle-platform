@@ -73,10 +73,10 @@ export function ReportsPage() {
         <Tabs defaultValue="dashboard" className="w-full">
           <div className="border-b no-print">
             <TabsList className="bg-transparent h-auto p-0 gap-6">
-              <TabsTrigger value="dashboard" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2 font-bold uppercase tracking-wider text-[10px]">{t('tabs.dashboard')}</TabsTrigger>
-              <TabsTrigger value="management" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2 font-bold uppercase tracking-wider text-[10px]">{t('tabs.managementAssessment')}</TabsTrigger>
-              <TabsTrigger value="audit" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2 font-bold uppercase tracking-wider text-[10px]">{t('tabs.testingResults')}</TabsTrigger>
-              <TabsTrigger value="appendices" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2 font-bold uppercase tracking-wider text-[10px]">Regulatory Appendices</TabsTrigger>
+              <TabsTrigger value="dashboard" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2 font-bold uppercase tracking-wider text-xs">{t('tabs.dashboard')}</TabsTrigger>
+              <TabsTrigger value="management" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2 font-bold uppercase tracking-wider text-xs">{t('tabs.managementAssessment')}</TabsTrigger>
+              <TabsTrigger value="audit" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2 font-bold uppercase tracking-wider text-xs">{t('tabs.testingResults')}</TabsTrigger>
+              <TabsTrigger value="appendices" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2 font-bold uppercase tracking-wider text-xs">Regulatory Appendices</TabsTrigger>
             </TabsList>
           </div>
 
@@ -99,14 +99,14 @@ export function ReportsPage() {
             <div className="flex flex-wrap items-center justify-between gap-4 bg-muted/20 p-4 rounded-lg border border-dashed no-print">
               <div className="flex items-center gap-4">
                 <div className="space-y-1">
-                  <p className="text-[10px] font-bold uppercase text-muted-foreground">Test Type</p>
+                  <p className="text-xs font-bold uppercase text-muted-foreground">Test Type</p>
                   <div className="flex gap-1">
                     {['ALL', 'TOD', 'TOE'].map(t => (
                       <Button 
                         key={t} 
                         size="sm" 
                         variant={testTypeFilter === t ? 'default' : 'outline'} 
-                        className="h-7 text-[10px]"
+                        className="h-7 text-xs"
                         onClick={() => setTestTypeFilter(t as any)}
                       >
                         {t}
@@ -115,14 +115,14 @@ export function ReportsPage() {
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-[10px] font-bold uppercase text-muted-foreground">Status</p>
+                  <p className="text-xs font-bold uppercase text-muted-foreground">Status</p>
                   <div className="flex gap-1">
                     {['ALL', 'Effective', 'Ineffective'].map(s => (
                       <Button 
                         key={s} 
                         size="sm" 
                         variant={testStatusFilter === s ? 'default' : 'outline'} 
-                        className="h-7 text-[10px]"
+                        className="h-7 text-xs"
                         onClick={() => setTestStatusFilter(s as any)}
                       >
                         {s === 'ALL' ? 'ALL' : s === 'Effective' ? t('reports:testing.effective').toUpperCase() : t('reports:testing.ineffective').toUpperCase()}
@@ -132,8 +132,8 @@ export function ReportsPage() {
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-[10px] font-bold text-blue-700 uppercase">Regulatory Reference</p>
-                <p className="text-[11px] text-blue-600 italic">SK-5 Bab V & Lampiran 8</p>
+                <p className="text-xs font-bold text-blue-700 uppercase">Regulatory Reference</p>
+                <p className="text-xs text-blue-600 italic">SK-5 Bab V & Lampiran 8</p>
               </div>
             </div>
 
@@ -147,16 +147,16 @@ export function ReportsPage() {
                   <Table>
                     <TableHeader className="bg-muted/50">
                       <TableRow>
-                        <TableHead className="w-[40px] text-[10px] uppercase font-bold text-center">No</TableHead>
-                        <TableHead className="w-[180px] text-[10px] uppercase font-bold">Process Context (Appx 5)</TableHead>
-                        <TableHead className="w-[180px] text-[10px] uppercase font-bold">Control Reference</TableHead>
-                        <TableHead className="w-[120px] text-[10px] uppercase font-bold text-center">Assertion (Table 8)</TableHead>
-                        <TableHead className="w-[60px] text-[10px] uppercase font-bold text-center">Type</TableHead>
-                        <TableHead className="w-[80px] text-[10px] uppercase font-bold text-center">Method</TableHead>
-                        <TableHead className="text-[10px] uppercase font-bold text-center">Appx 8 Criteria (xxvii-xxxii)</TableHead>
-                        <TableHead className="w-[60px] text-[10px] uppercase font-bold text-center">Sample</TableHead>
-                        <TableHead className="w-[90px] text-[10px] uppercase font-bold text-center">Result</TableHead>
-                        <TableHead className="w-[200px] text-[10px] uppercase font-bold text-left">Walkthrough / Notes</TableHead>
+                        <TableHead className="w-[40px] text-xs uppercase font-bold text-center">No</TableHead>
+                        <TableHead className="w-[180px] text-xs uppercase font-bold">Process Context (Appx 5)</TableHead>
+                        <TableHead className="w-[180px] text-xs uppercase font-bold">Control Reference</TableHead>
+                        <TableHead className="w-[120px] text-xs uppercase font-bold text-center">Assertion (Table 8)</TableHead>
+                        <TableHead className="w-[60px] text-xs uppercase font-bold text-center">Type</TableHead>
+                        <TableHead className="w-[80px] text-xs uppercase font-bold text-center">Method</TableHead>
+                        <TableHead className="text-xs uppercase font-bold text-center">Appx 8 Criteria (xxvii-xxxii)</TableHead>
+                        <TableHead className="w-[60px] text-xs uppercase font-bold text-center">Sample</TableHead>
+                        <TableHead className="w-[90px] text-xs uppercase font-bold text-center">Result</TableHead>
+                        <TableHead className="w-[200px] text-xs uppercase font-bold text-left">Walkthrough / Notes</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -173,32 +173,32 @@ export function ReportsPage() {
                               <TableCell className="text-center text-xs font-medium text-muted-foreground">{index + 1}</TableCell>
                               <TableCell className="py-3">
                                 <div className="space-y-0.5">
-                                  <p className="text-[10px] font-bold text-blue-800 uppercase tracking-tighter">{rcm?.process || 'N/A'}</p>
-                                  <p className="text-[10px] text-slate-600 line-clamp-1 italic">{rcm?.subProcess || 'N/A'}</p>
+                                  <p className="text-xs font-bold text-blue-800 uppercase tracking-tighter">{rcm?.process || 'N/A'}</p>
+                                  <p className="text-xs text-slate-600 line-clamp-1 italic">{rcm?.subProcess || 'N/A'}</p>
                                 </div>
                               </TableCell>
                               <TableCell className="py-3">
                                 <div className="space-y-0.5">
                                   <p className="text-xs font-bold text-primary leading-none">{control?.code || '???'}</p>
-                                  <p className="text-[11px] font-medium leading-tight text-slate-700 line-clamp-2">{control?.name || 'Unknown Control'}</p>
+                                  <p className="text-xs font-medium leading-tight text-slate-700 line-clamp-2">{control?.name || 'Unknown Control'}</p>
                                 </div>
                               </TableCell>
                               <TableCell className="text-center">
                                 <div className="flex flex-wrap justify-center gap-0.5">
                                   {(control?.assertions || []).map(a => (
-                                    <Badge key={a} variant="outline" className="text-[8px] h-3.5 px-1 bg-slate-50">{a.substring(0,1)}</Badge>
+                                    <Badge key={a} variant="outline" className="text-xs h-3.5 px-1 bg-slate-50">{a.substring(0,1)}</Badge>
                                   ))}
                                 </div>
                               </TableCell>
                               <TableCell className="text-center">
                                 <Badge variant="outline" className={cn(
-                                  "text-[9px] h-5",
+                                  "text-xs h-5",
                                   test.testType === 'TOD' ? "border-blue-200 text-blue-700 bg-blue-50" : "border-purple-200 text-purple-700 bg-purple-50"
                                 )}>
                                   {test.testType}
                                 </Badge>
                               </TableCell>
-                              <TableCell className="text-center text-[10px] font-medium text-slate-600 font-mono italic">{test.method}</TableCell>
+                              <TableCell className="text-center text-xs font-medium text-slate-600 font-mono italic">{test.method}</TableCell>
                               <TableCell className="text-center">
                                 <div className="flex flex-col items-center gap-1">
                                   <div className="flex gap-0.5">
@@ -212,7 +212,7 @@ export function ReportsPage() {
                                       />
                                     ))}
                                   </div>
-                                  <span className="text-[9px] font-bold text-slate-500">{attrCount}/6 Criteria</span>
+                                  <span className="text-xs font-bold text-slate-500">{attrCount}/6 Criteria</span>
                                 </div>
                               </TableCell>
                               <TableCell className="text-center text-xs font-mono font-bold text-slate-600">
@@ -220,15 +220,15 @@ export function ReportsPage() {
                               </TableCell>
                               <TableCell className="text-center">
                                 <Badge className={cn(
-                                  "text-[10px] uppercase font-bold",
+                                  "text-xs uppercase font-bold",
                                   test.result === 'Effective' ? "bg-green-100 text-green-700 hover:bg-green-100 border-green-200" : "bg-red-100 text-red-700 hover:bg-red-100 border-red-200"
                                 )} variant="outline">
                                   {test.result === 'Effective' ? <><CheckCircle2 className="h-2 w-2 mr-1" /> {t('reports:testing.effective').toUpperCase()}</> : <><XCircle className="h-2 w-2 mr-1" /> {t('reports:testing.ineffective').toUpperCase()}</>}
                                 </Badge>
                               </TableCell>
-                              <TableCell className="py-3 text-[10px] text-muted-foreground leading-relaxed">
+                              <TableCell className="py-3 text-xs text-muted-foreground leading-relaxed">
                                 <p className="line-clamp-3 italic">"{test.comments}"</p>
-                                <p className="text-[8px] mt-1 uppercase font-bold">Audit Ref: {test.id.substring(0,8).toUpperCase()}</p>
+                                <p className="text-xs mt-1 uppercase font-bold">Audit Ref: {test.id.substring(0,8).toUpperCase()}</p>
                               </TableCell>
                             </TableRow>
                           );

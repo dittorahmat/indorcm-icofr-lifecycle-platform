@@ -53,19 +53,19 @@ export function ScopingHealthDashboard({ glData }: ScopingHealthDashboardProps) 
           <div className="flex justify-between items-center mb-2">
             <span className="text-xs text-muted-foreground">Balance Check:</span>
             {balanceStatus.isBalanced ? (
-              <Badge className="bg-green-600 text-[10px]">BALANCED</Badge>
+              <Badge className="bg-green-600 text-xs">BALANCED</Badge>
             ) : (
-              <Badge variant="destructive" className="text-[10px]">UNBALANCED</Badge>
+              <Badge variant="destructive" className="text-xs">UNBALANCED</Badge>
             )}
           </div>
           <div className="text-right">
-            <p className="text-[10px] text-muted-foreground uppercase">Total Net Balance</p>
+            <p className="text-xs text-muted-foreground uppercase">Total Net Balance</p>
             <p className={cn("font-mono font-bold", balanceStatus.isBalanced ? "text-green-700" : "text-destructive")}>
               Rp {balanceStatus.total.toLocaleString('id-ID')}
             </p>
           </div>
           {!balanceStatus.isBalanced && (
-            <p className="text-[9px] text-destructive mt-2 italic">
+            <p className="text-xs text-destructive mt-2 italic">
               * WARNING: GL data should sum to zero. Check for missing journal entries.
             </p>
           )}
@@ -81,9 +81,9 @@ export function ScopingHealthDashboard({ glData }: ScopingHealthDashboardProps) 
                 <BarChart3 className="h-4 w-4" />
                 Benford's Law Analysis (Fraud Risk - P8)
               </CardTitle>
-              <CardDescription className="text-[10px]">Digit distribution analysis for anomaly detection.</CardDescription>
+              <CardDescription className="text-xs">Digit distribution analysis for anomaly detection.</CardDescription>
             </div>
-            <Badge variant="outline" className="text-[9px] bg-slate-50 text-slate-500 border-slate-200">
+            <Badge variant="outline" className="text-xs bg-slate-50 text-slate-500 border-slate-200">
               Forensic View
             </Badge>
           </div>
@@ -105,7 +105,7 @@ export function ScopingHealthDashboard({ glData }: ScopingHealthDashboardProps) 
                 </ComposedChart>
               </ResponsiveContainer>
             </div>
-            <div className="w-48 p-3 rounded-lg bg-slate-50 border border-slate-100 text-[9px] text-slate-600 leading-relaxed">
+            <div className="w-48 p-3 rounded-lg bg-slate-50 border border-slate-100 text-xs text-slate-600 leading-relaxed">
               <div className="flex items-center gap-1 font-bold text-amber-700 mb-1">
                 <AlertCircle className="h-3 w-3" /> GUIDANCE
               </div>

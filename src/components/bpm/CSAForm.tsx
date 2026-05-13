@@ -52,12 +52,12 @@ export function CSAForm({
         <div className="space-y-4">
           <div className="grid grid-cols-3 gap-6 p-5 bg-slate-50 rounded-xl border border-slate-100 shadow-inner">
             <FormField control={form.control} name="period" render={({ field: f }) => (
-              <FormItem><FormLabel className="text-[10px] font-black uppercase text-slate-400">Periode</FormLabel><FormControl><Input {...f} disabled={isReadOnly} className="h-9 font-bold text-xs" /></FormControl></FormItem>
+              <FormItem><FormLabel className="text-xs font-black uppercase text-slate-400">Periode</FormLabel><FormControl><Input {...f} disabled={isReadOnly} className="h-9 font-bold text-xs" /></FormControl></FormItem>
             )} />
             <div className="col-span-2">
               <FormField control={form.control} name="result" render={({ field: f }) => (
                 <FormItem className="space-y-1">
-                  <FormLabel className="text-[10px] font-black uppercase text-slate-400">Hasil Akhir (SK-5)</FormLabel>
+                  <FormLabel className="text-xs font-black uppercase text-slate-400">Hasil Akhir (SK-5)</FormLabel>
                   <FormControl>
                     <RadioGroup onValueChange={f.onChange} value={f.value} className="flex gap-4" disabled={isReadOnly}>
                       {['Effective', 'Ineffective', 'No Transaction'].map(res => (
@@ -82,7 +82,7 @@ export function CSAForm({
                 <FormLabel className="text-xs font-bold text-indigo-900 cursor-pointer">
                   Konfirmasi Konsistensi BPM
                 </FormLabel>
-                <p className="text-[10px] text-indigo-700 leading-tight">
+                <p className="text-xs text-indigo-700 leading-tight">
                   Sesuai regulasi SK-5 Bab IV Bagian 2.2a, saya mengonfirmasi alur proses dan narasi kontrol masih sesuai dengan kondisi riil.
                 </p>
               </div>
@@ -92,7 +92,7 @@ export function CSAForm({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-slate-50/50 border border-slate-200 rounded-xl">
             <FormField control={form.control} name="testProcedure" render={({ field: f }) => (
               <FormItem className="col-span-1">
-                <FormLabel className="text-[10px] font-black uppercase text-slate-400 flex items-center gap-2">
+                <FormLabel className="text-xs font-black uppercase text-slate-400 flex items-center gap-2">
                    <FileText className="h-3 w-3" /> {t('csa_hub:appendix7a.testProcedure')}
                 </FormLabel>
                 <FormControl><Textarea {...f} disabled={isReadOnly} className="min-h-[100px] text-xs bg-white" placeholder={t('csa_hub:appendix7a.procedurePlaceholder')} /></FormControl>
@@ -101,12 +101,12 @@ export function CSAForm({
             )} />
             <FormField control={form.control} name="archiveLocation" render={({ field: f }) => (
               <FormItem className="col-span-1">
-                <FormLabel className="text-[10px] font-black uppercase text-slate-400 flex items-center gap-2">
+                <FormLabel className="text-xs font-black uppercase text-slate-400 flex items-center gap-2">
                    <MapPin className="h-3 w-3" /> {t('csa_hub:appendix7a.archiveLocation')}
                 </FormLabel>
                 <FormControl><Input {...f} disabled={isReadOnly} className="h-10 text-xs bg-white" placeholder={t('csa_hub:appendix7a.locationPlaceholder')} /></FormControl>
                 <FormMessage />
-                <p className="text-[9px] text-slate-400 mt-2 italic">{t('csa_hub:appendix7a.archiveNote')}</p>
+                <p className="text-xs text-slate-400 mt-2 italic">{t('csa_hub:appendix7a.archiveNote')}</p>
               </FormItem>
             )} />
           </div>
@@ -138,12 +138,12 @@ export function CSAForm({
                   }}
                   variant="outline"
                   size="sm"
-                  className="h-7 text-[10px] font-bold border-indigo-200 text-indigo-700 hover:bg-indigo-50"
+                  className="h-7 text-xs font-bold border-indigo-200 text-indigo-700 hover:bg-indigo-50"
                 >
                   <Plus className="h-3.5 w-3.5 mr-1" /> {t('csa_hub:form.addManualSample')}
                 </Button>
               )}
-              <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-100 text-[10px] font-bold">
+              <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-100 text-xs font-bold">
                 Quick Pass/Fail Toggle
               </Badge>
             </div>
@@ -152,16 +152,16 @@ export function CSAForm({
             <Table>
               <TableHeader className="bg-slate-50">
                 <TableRow className="divide-x">
-                  <TableHead className="w-10 text-[9px] font-bold">#</TableHead>
-                  <TableHead className="text-[9px] font-bold min-w-[200px]">{t('csa_hub:form.sampleReference')}</TableHead>
+                  <TableHead className="w-10 text-xs font-bold">#</TableHead>
+                  <TableHead className="text-xs font-bold min-w-[200px]">{t('csa_hub:form.sampleReference')}</TableHead>
                   <TooltipProvider>
                     {activeControls.map(ctrl => (
-                      <TableHead key={ctrl.id} className="text-[9px] font-black text-center uppercase tracking-tighter w-24">
+                      <TableHead key={ctrl.id} className="text-xs font-black text-center uppercase tracking-tighter w-24">
                         <Tooltip>
                           <TooltipTrigger className="w-full h-full cursor-help line-clamp-2 text-left leading-tight">
                             {ctrl.name}
                           </TooltipTrigger>
-                          <TooltipContent className="bg-slate-900 text-white p-2 text-[10px] max-w-xs">
+                          <TooltipContent className="bg-slate-900 text-white p-2 text-xs max-w-xs">
                             <p className="font-bold">[{ctrl.code}] {ctrl.name}</p>
                             <p className="opacity-80 mt-1 italic">{ctrl.description}</p>
                           </TooltipContent>
@@ -174,17 +174,17 @@ export function CSAForm({
               <TableBody>
                 {fields.map((field, sIdx) => (
                   <TableRow key={field.id} className="divide-x hover:bg-slate-50/50 transition-colors">
-                    <TableCell className="text-[10px] font-bold text-slate-400 text-center">{sIdx + 1}</TableCell>
-                    <TableCell className="text-[10px] font-medium py-1 px-3">
+                    <TableCell className="text-xs font-bold text-slate-400 text-center">{sIdx + 1}</TableCell>
+                    <TableCell className="text-xs font-medium py-1 px-3">
                       <FormField control={form.control} name={`samples.${sIdx}.sampleRef`} render={({ field: f }) => (
                         <Input 
                           {...f} 
                           disabled={isReadOnly} 
-                          className="h-8 text-[10px] font-bold border-transparent hover:border-slate-200 focus:border-indigo-400 bg-transparent transition-all"
+                          className="h-8 text-xs font-bold border-transparent hover:border-slate-200 focus:border-indigo-400 bg-transparent transition-all"
                           placeholder={t('csa_hub:form.typeReference')}
                         />
                       )} />
-                      <div className="text-[9px] text-slate-400 px-3">ID: {field.glRowId?.substring(0,8) || 'Manual'}</div>
+                      <div className="text-xs text-slate-400 px-3">ID: {field.glRowId?.substring(0,8) || 'Manual'}</div>
                     </TableCell>
                     {activeControls.map(ctrl => (
                       <TableCell key={ctrl.id} className="text-center p-0">
@@ -213,10 +213,10 @@ export function CSAForm({
               <Database className="h-3.5 w-3.5" /> 2. Detailed Verification & Evidence
             </h4>
             <div className="flex gap-2">
-               <Badge className="bg-emerald-600 text-[9px] font-black uppercase tracking-wider">
+               <Badge className="bg-emerald-600 text-xs font-black uppercase tracking-wider">
                   {watchSamples.reduce((acc, s) => acc + Object.values(s.controlResults).filter((r: any) => r.implemented).length, 0)} Passed
                </Badge>
-               <Badge className="bg-red-600 text-[9px] font-black uppercase tracking-wider">
+               <Badge className="bg-red-600 text-xs font-black uppercase tracking-wider">
                   {watchSamples.reduce((acc, s) => acc + Object.values(s.controlResults).filter((r: any) => !r.implemented).length, 0)} Deficiency
                </Badge>
             </div>
@@ -226,12 +226,12 @@ export function CSAForm({
             <Table>
               <TableHeader className="bg-slate-900 text-white">
                 <TableRow className="divide-x divide-white/10 hover:bg-transparent">
-                  <TableHead className="text-[10px] font-black text-white py-4 px-4 min-w-[200px]">Transaction Detail</TableHead>
-                  <TableHead className="text-[10px] font-black text-white">Risk Name</TableHead>
-                  <TableHead className="text-[10px] font-black text-white">Control Name</TableHead>
-                  <TableHead className="text-[10px] font-black text-white text-center w-32">Evidence</TableHead>
-                  <TableHead className="text-[10px] font-black text-white min-w-[200px]">Keterangan</TableHead>
-                  <TableHead className="text-[10px] font-black text-white text-center w-24">Pass?</TableHead>
+                  <TableHead className="text-xs font-black text-white py-4 px-4 min-w-[200px]">Transaction Detail</TableHead>
+                  <TableHead className="text-xs font-black text-white">Risk Name</TableHead>
+                  <TableHead className="text-xs font-black text-white">Control Name</TableHead>
+                  <TableHead className="text-xs font-black text-white text-center w-32">Evidence</TableHead>
+                  <TableHead className="text-xs font-black text-white min-w-[200px]">Keterangan</TableHead>
+                  <TableHead className="text-xs font-black text-white text-center w-24">Pass?</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -243,10 +243,10 @@ export function CSAForm({
                           <div className="flex items-center gap-3">
                             <Badge variant="outline" className="bg-white text-slate-700 border-slate-300 font-black px-2 py-0.5">SAMPEL #{sIdx + 1}</Badge>
                             <div className="flex flex-col">
-                              <span className="text-[11px] font-black text-slate-900 uppercase tracking-tight">
+                              <span className="text-xs font-black text-slate-900 uppercase tracking-tight">
                                 {sample.sampleRef || "Empty Reference"}
                               </span>
-                              <span className="text-[9px] text-slate-500 font-mono">ID: {sample.glRowId || 'MANUAL-ENTRY'}</span>
+                              <span className="text-xs text-slate-500 font-mono">ID: {sample.glRowId || 'MANUAL-ENTRY'}</span>
                             </div>
                           </div>
                           <div className="flex gap-2 items-center">
@@ -258,7 +258,7 @@ export function CSAForm({
                                 )} />
                               ))}
                             </div>
-                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">
+                            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">
                               {Object.values(sample.controlResults).filter((r: any) => r.implemented).length} / {Object.values(sample.controlResults).length} PASSED
                             </span>
                           </div>
@@ -280,18 +280,18 @@ export function CSAForm({
                               "h-1.5 w-1.5 rounded-full shrink-0",
                               res.implemented ? "bg-emerald-500" : "bg-red-500"
                             )} />
-                            <span className="font-bold text-[10px] text-slate-500 uppercase tracking-wider truncate">
+                            <span className="font-bold text-xs text-slate-500 uppercase tracking-wider truncate">
                               POINT VERIFICATION
                             </span>
                           </div>
                         </TableCell>
-                        <TableCell className="text-[11px] font-medium text-slate-600 italic">
+                        <TableCell className="text-xs font-medium text-slate-600 italic">
                           {res.riskName || "N/A"}
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-col gap-0.5">
                             <span className="font-bold text-xs text-slate-800">{res.controlName || "N/A"}</span>
-                            <Badge variant="outline" className="w-fit text-[9px] h-4 font-mono">{cId}</Badge>
+                            <Badge variant="outline" className="w-fit text-xs h-4 font-mono">{cId}</Badge>
                           </div>
                         </TableCell>
                         <TableCell className="text-center">
@@ -350,7 +350,7 @@ export function CSAForm({
                               
                               {res.evidenceUrl && (
                                 <div 
-                                  className="max-w-[80px] truncate text-[9px] text-emerald-700 font-bold uppercase tracking-tighter" 
+                                  className="max-w-[80px] truncate text-xs text-emerald-700 font-bold uppercase tracking-tighter" 
                                   title={getFileNameFromUrl(res.evidenceUrl)}
                                 >
                                   {getFileNameFromUrl(res.evidenceUrl) || 'Attached'}
@@ -391,18 +391,18 @@ export function CSAForm({
           <div className="flex justify-between items-center bg-slate-100 p-5 rounded-xl border border-slate-200 shadow-inner">
              <div className="flex gap-10">
                <div className="text-center border-r pr-10 border-slate-300">
-                 <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Samples</p>
+                 <p className="text-xs font-black uppercase text-slate-400 tracking-widest">Samples</p>
                  <p className="text-2xl font-black text-slate-700">{watchSamples.length}</p>
                </div>
                <div className="text-center">
-                 <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Progress</p>
+                 <p className="text-xs font-black uppercase text-slate-400 tracking-widest">Progress</p>
                  <p className="text-2xl font-black text-indigo-600">
                     {watchSamples.reduce((acc, s) => acc + Object.values(s.controlResults).filter((r: any) => r.implemented || r.comment || r.evidenceUrl).length, 0)} / {watchSamples.reduce((acc, s) => acc + Object.keys(s.controlResults).length, 0)}
                  </p>
                </div>
              </div>
              <div className="text-right">
-               <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Status Dokumentasi</p>
+               <p className="text-xs font-black uppercase text-slate-400 tracking-widest">Status Dokumentasi</p>
                {(() => {
                  const flatResults = watchSamples.flatMap(s => Object.values(s.controlResults) as any[]);
                  const anyPassWithoutEvidence = flatResults.some(r => r.implemented && !r.evidenceUrl);
@@ -418,7 +418,7 @@ export function CSAForm({
         <div className="pt-8 border-t space-y-6">
             <FormField control={form.control} name="comments" render={({ field: f }) => (
               <FormItem>
-                <FormLabel className="text-[10px] font-black uppercase text-slate-400">Management Rationale / Catatan Temuan</FormLabel>
+                <FormLabel className="text-xs font-black uppercase text-slate-400">Management Rationale / Catatan Temuan</FormLabel>
                 <FormControl><Textarea {...f} disabled={isReadOnly} className="min-h-[120px] text-sm shadow-sm" placeholder="Wajib diisi jika status INEFFECTIVE..." /></FormControl>
                 <FormMessage />
               </FormItem>

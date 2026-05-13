@@ -95,7 +95,7 @@ export function COSOHeatmap({ principleStatuses }: COSOHeatmapProps) {
                         </p>
                         <div className="mt-1">
                           <Badge variant="outline" className={cn(
-                            "text-[9px] uppercase px-1.5 py-0",
+                            "text-xs uppercase px-1.5 py-0",
                             isEffective ? "text-green-700 border-green-300" : 
                             isIneffective ? "text-red-700 border-red-300" : "text-slate-500"
                           )}>

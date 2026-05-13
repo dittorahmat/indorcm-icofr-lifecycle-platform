@@ -105,7 +105,7 @@ export function RemediationForm({ isOpen, setIsOpen, actionPlan, onSubmit, isLoa
                   <FormItem>
                     <FormLabel className="text-xs uppercase font-bold text-muted-foreground">{t('form.fields.relatedFunction')}</FormLabel>
                     <FormControl><Input placeholder={t('form.placeholders.relatedFunction')} {...field} className="h-8 text-xs" /></FormControl>
-                    <FormMessage className="text-[10px]" />
+                    <FormMessage className="text-xs" />
                   </FormItem>
                 )}
               />
@@ -116,7 +116,7 @@ export function RemediationForm({ isOpen, setIsOpen, actionPlan, onSubmit, isLoa
                   <FormItem>
                     <FormLabel className="text-xs uppercase font-bold text-muted-foreground">{t('form.fields.picName')}</FormLabel>
                     <FormControl><Input placeholder={t('form.placeholders.picName')} {...field} className="h-8 text-xs" /></FormControl>
-                    <FormMessage className="text-[10px]" />
+                    <FormMessage className="text-xs" />
                   </FormItem>
                 )}
               />
@@ -134,7 +134,7 @@ export function RemediationForm({ isOpen, setIsOpen, actionPlan, onSubmit, isLoa
                       <Calendar className="absolute right-2 top-2 h-4 w-4 text-muted-foreground pointer-events-none" />
                     </div>
                   </FormControl>
-                  <FormMessage className="text-[10px]" />
+                  <FormMessage className="text-xs" />
                 </FormItem>
               )}
             />
@@ -146,7 +146,7 @@ export function RemediationForm({ isOpen, setIsOpen, actionPlan, onSubmit, isLoa
                 <FormItem>
                   <FormLabel className="text-xs uppercase font-bold text-muted-foreground">{t('form.fields.planDescription')}</FormLabel>
                   <FormControl><Textarea placeholder={t('form.placeholders.planDescription')} {...field} className="min-h-[60px] text-xs" /></FormControl>
-                  <FormMessage className="text-[10px]" />
+                  <FormMessage className="text-xs" />
                 </FormItem>
               )}
             />
@@ -158,7 +158,7 @@ export function RemediationForm({ isOpen, setIsOpen, actionPlan, onSubmit, isLoa
                 <FormItem>
                   <FormLabel className="text-xs uppercase font-bold text-muted-foreground">{t('form.fields.activityDetail')}</FormLabel>
                   <FormControl><Textarea placeholder={t('form.placeholders.activityDetail')} {...field} className="min-h-[80px] text-xs" /></FormControl>
-                  <FormMessage className="text-[10px]" />
+                  <FormMessage className="text-xs" />
                 </FormItem>
               )}
             />
@@ -170,7 +170,7 @@ export function RemediationForm({ isOpen, setIsOpen, actionPlan, onSubmit, isLoa
                 <FormItem>
                   <FormLabel className="text-xs uppercase font-bold text-muted-foreground">{t('form.fields.remediatedControlDescription')}</FormLabel>
                   <FormControl><Textarea placeholder={t('form.placeholders.remediatedControlDescription')} {...field} className="min-h-[60px] text-xs" /></FormControl>
-                  <FormMessage className="text-[10px]" />
+                  <FormMessage className="text-xs" />
                 </FormItem>
               )}
             />

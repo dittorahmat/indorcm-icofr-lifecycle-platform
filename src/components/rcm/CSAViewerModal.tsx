@@ -31,7 +31,7 @@ const ActivityNode = ({ data, type, id }: NodeProps) => (
   <BaseNode type={type} highlight={data.highlight}>
     <div className="px-4 py-3 shadow-md rounded-sm bg-white border-2 border-slate-800 min-w-[160px] text-center">
       <Handle type="target" position={Position.Top} className="opacity-0" />
-      <div className="font-bold text-[9px] mb-1.5 uppercase text-slate-500 border-b pb-1">
+      <div className="font-bold text-xs mb-1.5 uppercase text-slate-500 border-b pb-1">
         {data.role || "Role"}
       </div>
       <div className="text-[12px] font-semibold text-slate-800 leading-tight">{data.label}</div>
@@ -45,7 +45,7 @@ const StartEndNode = ({ data }: NodeProps) => (
     "px-6 py-2 shadow-md rounded-[50px] bg-white border-2 min-w-[120px] text-center",
     data.type === 'start' ? "border-green-600" : "border-red-600"
   )}>
-    <span className={cn("font-bold text-[11px] uppercase tracking-wider", data.type === 'start' ? "text-green-700" : "text-red-700")}>
+    <span className={cn("font-bold text-xs uppercase tracking-wider", data.type === 'start' ? "text-green-700" : "text-red-700")}>
       {data.label}
     </span>
   </div>
@@ -58,11 +58,11 @@ const nodeTypes = {
   end: StartEndNode,
   activity: ActivityNode,
   'automated-activity': ActivityNode, // Reuse activity for simplicity
-  decision: ({ data }: NodeProps) => <div className="w-10 h-10 border-2 border-slate-800 rotate-45 bg-white flex items-center justify-center"><div className="-rotate-45 text-[8px] font-bold">{data.label}</div></div>,
-  'risk-control-badge': ({ data }: NodeProps) => <div className="p-1 bg-indigo-100 border border-indigo-300 text-[8px] font-bold rounded">{data.label}</div>,
-  'docked-risk': ({ data }: NodeProps) => <div className="p-1 bg-red-100 border border-red-300 text-[8px] font-bold rounded">{data.label}</div>,
-  'docked-control': ({ data }: NodeProps) => <div className="p-1 bg-green-100 border border-green-300 text-[8px] font-bold rounded">{data.label}</div>,
-  'reference': ({ data }: NodeProps) => <div className="p-1 bg-slate-100 border border-slate-300 text-[8px] font-bold rounded italic">{data.label}</div>,
+  decision: ({ data }: NodeProps) => <div className="w-10 h-10 border-2 border-slate-800 rotate-45 bg-white flex items-center justify-center"><div className="-rotate-45 text-xs font-bold">{data.label}</div></div>,
+  'risk-control-badge': ({ data }: NodeProps) => <div className="p-1 bg-indigo-100 border border-indigo-300 text-xs font-bold rounded">{data.label}</div>,
+  'docked-risk': ({ data }: NodeProps) => <div className="p-1 bg-red-100 border border-red-300 text-xs font-bold rounded">{data.label}</div>,
+  'docked-control': ({ data }: NodeProps) => <div className="p-1 bg-green-100 border border-green-300 text-xs font-bold rounded">{data.label}</div>,
+  'reference': ({ data }: NodeProps) => <div className="p-1 bg-slate-100 border border-slate-300 text-xs font-bold rounded italic">{data.label}</div>,
 };
 
 interface CSAViewerModalProps {

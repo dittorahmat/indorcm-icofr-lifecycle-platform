@@ -176,7 +176,7 @@ export function DoDWizard({ isOpen, setIsOpen, onComplete, isAggregate = false, 
               <p className="text-base font-medium leading-relaxed">{t('wizard.box3.question')}</p>
               
               <div className="bg-muted/30 p-3 rounded-md space-y-2 border border-muted">
-                <Label htmlFor="exposure" className="text-[10px] font-bold uppercase text-muted-foreground">{t('wizard.box3.exposureLabel')}</Label>
+                <Label htmlFor="exposure" className="text-xs font-bold uppercase text-muted-foreground">{t('wizard.box3.exposureLabel')}</Label>
                 <div className="flex gap-2">
                   <Input 
                     id="exposure" 
@@ -187,14 +187,14 @@ export function DoDWizard({ isOpen, setIsOpen, onComplete, isAggregate = false, 
                     className="h-8 text-xs"
                   />
                   {performanceMateriality && (
-                    <div className="text-[9px] flex flex-col justify-center">
+                    <div className="text-xs flex flex-col justify-center">
                       <span className="text-muted-foreground">{t('wizard.box3.thresholdLabel')}</span>
                       <span className="font-mono font-bold">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(performanceMateriality)}</span>
                     </div>
                   )}
                 </div>
                 {isMaterialByPM && (
-                  <div className="flex items-center gap-1.5 text-[10px] text-orange-600 font-bold bg-orange-50 p-1.5 rounded animate-in zoom-in duration-300">
+                  <div className="flex items-center gap-1.5 text-xs text-orange-600 font-bold bg-orange-50 p-1.5 rounded animate-in zoom-in duration-300">
                     <AlertTriangle className="h-3 w-3" />
                     {t('wizard.box3.materialWarning')}
                   </div>
@@ -249,7 +249,7 @@ export function DoDWizard({ isOpen, setIsOpen, onComplete, isAggregate = false, 
               </div>
 
               {exposureValue && performanceMateriality && (
-                <div className="text-left bg-muted/50 p-3 rounded-lg border border-muted text-[10px] space-y-1">
+                <div className="text-left bg-muted/50 p-3 rounded-lg border border-muted text-xs space-y-1">
                   <p className="font-bold uppercase text-muted-foreground mb-1">{t('wizard.result.quantComparison')}</p>
                   <div className="flex justify-between">
                     <span>{t('wizard.result.exposureValue')}</span>
@@ -268,7 +268,7 @@ export function DoDWizard({ isOpen, setIsOpen, onComplete, isAggregate = false, 
 
               <div className="text-left space-y-3 mt-4 border-t pt-4">
                 <div>
-                  <label className="text-[10px] font-bold uppercase text-muted-foreground block mb-1.5">{t('wizard.result.assertionsLabel')}</label>
+                  <label className="text-xs font-bold uppercase text-muted-foreground block mb-1.5">{t('wizard.result.assertionsLabel')}</label>
                   <div className="grid grid-cols-2 gap-x-4 gap-y-2">
                     {ASSERTION_OPTIONS.map(assertion => (
                       <div key={assertion} className="flex items-center space-x-2">
@@ -277,14 +277,14 @@ export function DoDWizard({ isOpen, setIsOpen, onComplete, isAggregate = false, 
                           checked={selectedAssertions.includes(assertion)} 
                           onCheckedChange={() => toggleAssertion(assertion)}
                         />
-                        <Label htmlFor={`assertion-${assertion}`} className="text-[10px] leading-none cursor-pointer">{assertion}</Label>
+                        <Label htmlFor={`assertion-${assertion}`} className="text-xs leading-none cursor-pointer">{assertion}</Label>
                       </div>
                     ))}
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold uppercase text-muted-foreground">{t('wizard.result.rationaleLabel')}</label>
+                  <label className="text-xs font-bold uppercase text-muted-foreground">{t('wizard.result.rationaleLabel')}</label>
                   <Textarea 
                     value={rationale}
                     onChange={(e) => setRationale(e.target.value)}
@@ -305,15 +305,15 @@ export function DoDWizard({ isOpen, setIsOpen, onComplete, isAggregate = false, 
           {step === 'RESULT' ? (
             <div className="w-full space-y-2">
               <Button onClick={handleFinish} disabled={!rationale || selectedAssertions.length === 0} className="w-full">{t('wizard.result.applyButton')}</Button>
-              <p className="text-[9px] text-center text-muted-foreground uppercase font-bold tracking-tight">Ref: Gambar 5 SK-5/DKU.MBU/11/2024 (Hal. 73)</p>
+              <p className="text-xs text-center text-muted-foreground uppercase font-bold tracking-tight">Ref: Gambar 5 SK-5/DKU.MBU/11/2024 (Hal. 73)</p>
             </div>
           ) : (
             <div className="w-full flex justify-between items-center">
                <div className="flex flex-col">
-                 <span className="text-[10px] text-muted-foreground uppercase font-bold">
+                 <span className="text-xs text-muted-foreground uppercase font-bold">
                    {t('wizard.common.boxProgress', { step: String.fromCharCode(96 + (step as number)) })}
                  </span>
-                 <span className="text-[9px] text-muted-foreground/60 font-medium">Ref: Gambar 5 SK-5/2024</span>
+                 <span className="text-xs text-muted-foreground/60 font-medium">Ref: Gambar 5 SK-5/2024</span>
                </div>
                <Button variant="ghost" size="sm" onClick={reset}>{t('wizard.common.reset')}</Button>
             </div>

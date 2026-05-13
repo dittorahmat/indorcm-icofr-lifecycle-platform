@@ -111,11 +111,11 @@ export function WBSPage() {
                   <TableRow key={report.id}>
                     <TableCell className="text-xs whitespace-nowrap">{new Date(report.reportDate).toLocaleDateString()}</TableCell>
                     <TableCell>
-                      <Badge variant="outline" className="text-[10px]">{report.category}</Badge>
+                      <Badge variant="outline" className="text-xs">{report.category}</Badge>
                     </TableCell>
                     <TableCell className="max-w-[300px]">
                       <div className="text-sm font-medium">{report.description}</div>
-                      <div className="text-[10px] text-muted-foreground font-mono mt-1">{report.id}</div>
+                      <div className="text-xs text-muted-foreground font-mono mt-1">{report.id}</div>
                     </TableCell>
                     <TableCell className="text-right font-mono text-xs text-red-600 font-bold">
                       {formatCurrency(report.impactMagnitude)}
@@ -132,7 +132,7 @@ export function WBSPage() {
                     <TableCell>
                       <div className="flex gap-1 flex-wrap">
                         {report.relatedControlIds?.map(c => (
-                          <Badge key={c} variant="secondary" className="text-[9px] cursor-pointer hover:bg-primary hover:text-white transition-colors">
+                          <Badge key={c} variant="secondary" className="text-xs cursor-pointer hover:bg-primary hover:text-white transition-colors">
                             {c}
                           </Badge>
                         ))}

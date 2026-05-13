@@ -64,11 +64,11 @@ export function ChangeLogPage() {
                   ) : logs.length > 0 ? (
                     logs.sort((a, b) => b.timestamp - a.timestamp).map((log) => (
                       <TableRow key={log.id}>
-                        <TableCell className="font-mono text-[10px]">{log.id.substring(0, 8)}...</TableCell>
+                        <TableCell className="font-mono text-xs">{log.id.substring(0, 8)}...</TableCell>
                         <TableCell className="py-4">
                           <div className="space-y-3">
                             <div className="flex items-start gap-3">
-                              <div className="bg-slate-50 text-slate-700 p-2 rounded text-[11px] flex-1 border border-slate-100">
+                              <div className="bg-slate-50 text-slate-700 p-2 rounded text-xs flex-1 border border-slate-100">
                                 <span className="font-bold block uppercase mb-1 opacity-70">Changes:</span>
                                 {log.descriptionAfter}
                               </div>
@@ -77,8 +77,8 @@ export function ChangeLogPage() {
                         </TableCell>
                         <TableCell>
                           <div className="space-y-1">
-                            <Badge variant="outline" className="text-[10px]">{log.entityType}</Badge>
-                            <div className="text-[10px] font-mono text-muted-foreground">{log.entityId}</div>
+                            <Badge variant="outline" className="text-xs">{log.entityType}</Badge>
+                            <div className="text-xs font-mono text-muted-foreground">{log.entityId}</div>
                           </div>
                         </TableCell>
                         <TableCell className="text-xs whitespace-nowrap">
@@ -94,7 +94,7 @@ export function ChangeLogPage() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 text-[10px]">
+                          <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 text-xs">
                             {log.approvedBy || "System"}
                           </Badge>
                         </TableCell>

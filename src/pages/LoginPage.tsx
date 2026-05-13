@@ -167,8 +167,8 @@ export function LoginPage() {
           <CardFooter className="flex flex-col space-y-2">
             {/* Credential Helper */}
             <div className="text-xs text-muted-foreground text-center space-y-1">
-              <p className="font-medium text-[10px] uppercase tracking-wider text-slate-400">Demo Credentials (Lini 1):</p>
-              <div className="grid grid-cols-2 gap-2 text-[8px] bg-slate-50 p-2 rounded-lg border border-slate-100 max-h-[120px] overflow-y-auto text-left">
+              <p className="font-medium text-xs uppercase tracking-wider text-slate-400">Demo Credentials (Lini 1):</p>
+              <div className="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-2 rounded-lg border border-slate-100 max-h-[120px] overflow-y-auto text-left">
                 <div>
                   <p className="font-bold text-slate-500 mb-0.5">Mining Ops (.ops)</p>
                   <p>staff.ops@bumn.go.id</p>
@@ -198,7 +198,7 @@ export function LoginPage() {
                   <p>admin@bumn.go.id (Admin)</p>
                 </div>
               </div>
-              <p className="pt-1 text-[10px]">Password: <code className="bg-muted px-1 rounded">password</code></p>
+              <p className="pt-1 text-xs">Password: <code className="bg-muted px-1 rounded">password</code></p>
             </div>
           </CardFooter>
         </Card>

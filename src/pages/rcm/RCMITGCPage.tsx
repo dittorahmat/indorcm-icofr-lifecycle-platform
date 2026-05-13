@@ -93,7 +93,7 @@ export function RCMITGCPage({ embedded = false, filterBpmId }: RCMITGCPageProps)
             </Button>
           )
         },
-        { id: 'no', header: 'No', width: '50px', sticky: 'left', stickyOffset: '50px', className: 'text-center font-mono text-[11px] text-slate-400', render: (_, idx) => idx + 1 },
+        { id: 'no', header: 'No', width: '50px', sticky: 'left', stickyOffset: '50px', className: 'text-center font-mono text-xs text-slate-400', render: (_, idx) => idx + 1 },
         { 
           id: 'process_info', 
           header: t('matrix.process_info'), 
@@ -103,7 +103,7 @@ export function RCMITGCPage({ embedded = false, filterBpmId }: RCMITGCPageProps)
           className: 'font-bold text-slate-800',
           render: (row) => (
             <div className="flex flex-col gap-0 leading-tight">
-              <span className="uppercase tracking-tighter text-indigo-600 text-[9px] font-black">
+              <span className="uppercase tracking-tighter text-indigo-600 text-xs font-black">
                 {row.fsliName} {row.bpmCode && `[${row.bpmCode}]`}
               </span>
               <span className="line-clamp-2 text-xs">{row.noGL} - {row.processName}</span>

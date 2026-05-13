@@ -397,7 +397,7 @@ export function BPMPage() {
           }
         >
           <div className="flex flex-col items-end gap-2">
-            <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Compliance Cycle</Label>
+            <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">Compliance Cycle</Label>
             <Select value={viewYear} onValueChange={handleYearChange}>
               <SelectTrigger className="w-[120px] bg-white border-slate-200">
                 <SelectValue placeholder="Year" />
@@ -415,7 +415,7 @@ export function BPMPage() {
           <CardContent className="pt-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
               <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                <Label className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
                   <Database className="h-3 w-3" /> 1. {t('bpm:fsliLabel')}
                 </Label>
                 <Select 
@@ -441,7 +441,7 @@ export function BPMPage() {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                <Label className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
                   <Search className="h-3 w-3" /> 2. {t('common:glAccount', 'GL Account')}
                 </Label>
                 <Select 
@@ -466,14 +466,14 @@ export function BPMPage() {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{t('common:icofr.category')}</Label>
+                <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">{t('common:icofr.category')}</Label>
                 <div className="h-10 px-3 flex items-center border rounded-md bg-slate-100 text-xs text-slate-600 font-medium">
                   {selectedGLRow?.category || "-"}
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{t('common:icofr.subCategory')}</Label>
+                <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">{t('common:icofr.subCategory')}</Label>
                 <div className="h-10 px-3 flex items-center border rounded-md bg-slate-100 text-xs text-slate-600 font-medium">
                   {selectedGLRow?.subKategori || "-"}
                 </div>
@@ -487,7 +487,7 @@ export function BPMPage() {
             <ShieldCheck className="h-5 w-5 text-emerald-600" />
             <div>
               <p className="text-xs font-bold text-emerald-900">{t('bpm:baseline.status')}</p>
-              <p className="text-[10px] text-emerald-700">{t('bpm:baseline.description', { year: viewYear })}</p>
+              <p className="text-xs text-emerald-700">{t('bpm:baseline.description', { year: viewYear })}</p>
             </div>
           </div>
         ) : !snapLoading && (
@@ -537,7 +537,7 @@ export function BPMPage() {
               </div>
               <div className="flex items-center gap-3 w-full md:w-auto">
                 <div className="hidden md:block text-right">
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Owner Unit</p>
+                  <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Owner Unit</p>
                   <p className="text-xs font-bold text-slate-600">{departmentName || "Finance & Accounting"}</p>
                 </div>
                 {(currentUser?.role === 'Line 2' || currentUser?.role === 'Admin' || hasAccess) && (

@@ -38,7 +38,7 @@ export function AIAnalyticsMockup() {
         
         <div className="relative z-10 space-y-2">
           <div className="flex items-center gap-2">
-            <Badge className="bg-indigo-500 hover:bg-indigo-600 text-[10px] font-black tracking-tighter uppercase">Enterprise AI</Badge>
+            <Badge className="bg-indigo-500 hover:bg-indigo-600 text-xs font-black tracking-tighter uppercase">Enterprise AI</Badge>
             <div className="h-1 w-1 rounded-full bg-slate-500"></div>
             <span className="text-indigo-200 text-xs font-bold uppercase tracking-widest">Digital Audit Core</span>
           </div>
@@ -50,7 +50,7 @@ export function AIAnalyticsMockup() {
 
         <div className="relative z-10 flex gap-4">
           <div className="text-right px-4 border-r border-slate-700">
-            <p className="text-[10px] text-slate-500 font-bold uppercase">System Status</p>
+            <p className="text-xs text-slate-500 font-bold uppercase">System Status</p>
             <div className="flex items-center gap-1 text-green-400 font-mono text-xs">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -60,7 +60,7 @@ export function AIAnalyticsMockup() {
             </div>
           </div>
           <div className="text-right">
-            <p className="text-[10px] text-slate-500 font-bold uppercase">Data Freshness</p>
+            <p className="text-xs text-slate-500 font-bold uppercase">Data Freshness</p>
             <p className="text-indigo-300 font-mono text-xs uppercase">Real-time Sync</p>
           </div>
         </div>
@@ -152,7 +152,7 @@ function AnalyticsTab() {
               <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
                 <div className="h-full bg-red-500 w-[32%]"></div>
               </div>
-              <p className="text-[10px] text-muted-foreground">Threshold limit: 2.0%</p>
+              <p className="text-xs text-muted-foreground">Threshold limit: 2.0%</p>
             </div>
           </CardContent>
         </Card>
@@ -181,7 +181,7 @@ function AnalyticsTab() {
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <p className="text-center text-[10px] mt-4 font-mono text-slate-500 uppercase tracking-widest">Efficiency Baseline: $42.50/ton</p>
+          <p className="text-center text-xs mt-4 font-mono text-slate-500 uppercase tracking-widest">Efficiency Baseline: $42.50/ton</p>
         </CardContent>
       </Card>
 
@@ -192,21 +192,21 @@ function AnalyticsTab() {
         <CardContent>
           <div className="grid grid-cols-2 gap-4">
             <div className="p-3 border rounded-lg bg-slate-50">
-              <p className="text-[10px] font-bold text-slate-500 uppercase">Ghost Employee Check</p>
+              <p className="text-xs font-bold text-slate-500 uppercase">Ghost Employee Check</p>
               <div className="flex items-center justify-between mt-1">
                 <span className="text-lg font-bold">0 Active</span>
                 <CheckCircle2 className="h-4 w-4 text-green-500" />
               </div>
             </div>
             <div className="p-3 border rounded-lg bg-slate-50">
-              <p className="text-[10px] font-bold text-slate-500 uppercase">Duplicate Vendor Payment</p>
+              <p className="text-xs font-bold text-slate-500 uppercase">Duplicate Vendor Payment</p>
               <div className="flex items-center justify-between mt-1">
                 <span className="text-lg font-bold">1 Flagged</span>
                 <ShieldAlert className="h-4 w-4 text-red-500" />
               </div>
             </div>
             <div className="p-3 border rounded-lg bg-slate-50">
-              <p className="text-[10px] font-bold text-slate-500 uppercase">Procurement Split PO</p>
+              <p className="text-xs font-bold text-slate-500 uppercase">Procurement Split PO</p>
               <div className="flex items-center justify-between mt-1">
                 <span className="text-lg font-bold">2 Potential</span>
                 <AlertTriangle className="h-4 w-4 text-amber-500" />
@@ -266,13 +266,13 @@ function AICasesTab() {
                   <CardHeader className={cn("pb-4 h-full", uc.color)}>
                     <div className="flex items-center justify-between">
                       <div className="p-2 bg-white rounded-lg shadow-sm">{uc.icon}</div>
-                      <Badge variant="outline" className="bg-white/50 text-[10px] font-bold">{uc.status}</Badge>
+                      <Badge variant="outline" className="bg-white/50 text-xs font-bold">{uc.status}</Badge>
                     </div>
                     <CardTitle className="mt-4 text-lg font-black tracking-tight">{uc.title}</CardTitle>
                   </CardHeader>
                   <CardContent className="pt-4">
                     <p className="text-sm text-slate-600 leading-relaxed italic">"{uc.desc}"</p>
-                    <div className="mt-6 flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                    <div className="mt-6 flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-widest">
                       <span>Model Accuracy: 94.2%</span>
                       <span className="group-hover:text-primary transition-colors">Details →</span>
                     </div>
@@ -336,7 +336,7 @@ function AIDrilldownView({ useCase, onBack }: { useCase: any, onBack: () => void
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {data.metrics.map((m, i) => (
             <div key={i} className="p-4 rounded-xl border bg-slate-50/50 border-slate-200/60 shadow-sm space-y-1">
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{m.label}</p>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">{m.label}</p>
               <div className="flex items-center justify-between">
                 <span className="text-2xl font-black tracking-tight">{m.value}</span>
                 {m.trend && (
@@ -356,7 +356,7 @@ function AIDrilldownView({ useCase, onBack }: { useCase: any, onBack: () => void
             <h3 className="text-sm font-bold uppercase tracking-tight text-slate-600 flex items-center gap-2">
               <Activity className="h-4 w-4" /> {data.chart.title}
             </h3>
-            <span className="text-[10px] font-mono text-slate-400">Visualization: {data.chart.type.toUpperCase()}</span>
+            <span className="text-xs font-mono text-slate-400">Visualization: {data.chart.type.toUpperCase()}</span>
           </div>
           
           <div className="h-[300px] w-full bg-slate-50/30 rounded-xl border border-dashed border-slate-200 p-4">
@@ -407,7 +407,7 @@ function AIDrilldownView({ useCase, onBack }: { useCase: any, onBack: () => void
             <h3 className="text-sm font-bold uppercase tracking-tight text-slate-600 flex items-center gap-2">
               <Search className="h-4 w-4" /> Discovery Log (Mock Data)
             </h3>
-            <Badge variant="outline" className="text-[8px] font-black uppercase tracking-tighter">Real-time Analysis</Badge>
+            <Badge variant="outline" className="text-xs font-black uppercase tracking-tighter">Real-time Analysis</Badge>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
@@ -424,9 +424,9 @@ function AIDrilldownView({ useCase, onBack }: { useCase: any, onBack: () => void
                     {Object.values(f).map((v: any, j) => (
                       <td key={j} className="py-3 px-2 font-medium">
                         {v === 'High' || v === 'Critical' || v === 'Fail' ? (
-                          <Badge className="bg-red-500 text-[8px] h-4 uppercase">{v}</Badge>
+                          <Badge className="bg-red-500 text-xs h-4 uppercase">{v}</Badge>
                         ) : v === 'Pass' || v === 'Good' || v === 'Low Risk' ? (
-                          <Badge className="bg-green-500 text-[8px] h-4 uppercase">{v}</Badge>
+                          <Badge className="bg-green-500 text-xs h-4 uppercase">{v}</Badge>
                         ) : (
                           <span className="text-slate-700">{v}</span>
                         )}
@@ -478,11 +478,11 @@ function CCMTab() {
                 )} />
                 <div className="flex-1 space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
                       <Clock className="h-3 w-3" /> {alert.time}
                     </span>
                     <Badge variant="outline" className={cn(
-                      "text-[8px] h-4 px-1 font-black",
+                      "text-xs h-4 px-1 font-black",
                       alert.type === 'ALERT' ? "border-red-200 text-red-700 bg-red-50" : "border-slate-200 text-slate-600 bg-slate-50"
                     )}>{alert.type}</Badge>
                   </div>
@@ -502,7 +502,7 @@ function CCMTab() {
           </CardHeader>
           <CardContent className="relative z-10">
             <div className="text-5xl font-black italic tracking-tighter">98.4</div>
-            <p className="text-[10px] font-bold text-green-400 mt-2 flex items-center gap-1 uppercase">
+            <p className="text-xs font-bold text-green-400 mt-2 flex items-center gap-1 uppercase">
               <TrendingUp className="h-3 w-3" /> +1.2% from last week
             </p>
           </CardContent>
@@ -515,7 +515,7 @@ function CCMTab() {
           <CardContent>
             <div className="space-y-4">
               <div className="space-y-1">
-                <div className="flex justify-between text-[10px] font-bold uppercase">
+                <div className="flex justify-between text-xs font-bold uppercase">
                   <span>Automated Controls</span>
                   <span>82%</span>
                 </div>
@@ -524,7 +524,7 @@ function CCMTab() {
                 </div>
               </div>
               <div className="space-y-1">
-                <div className="flex justify-between text-[10px] font-bold uppercase">
+                <div className="flex justify-between text-xs font-bold uppercase">
                   <span>Manual Controls Covered</span>
                   <span>45%</span>
                 </div>

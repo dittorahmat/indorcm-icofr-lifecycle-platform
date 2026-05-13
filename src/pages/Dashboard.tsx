@@ -79,46 +79,46 @@ export function Dashboard() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <Card className="border-blue-200 bg-blue-50/20">
             <CardHeader className="pb-2">
-              <CardTitle className="text-[10px] font-bold uppercase text-blue-800 flex items-center gap-2">
+              <CardTitle className="text-xs font-bold uppercase text-blue-800 flex items-center gap-2">
                 <UserCheck className="h-3 w-3" /> {t('kpis.csaCompletion')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-blue-900">88.5%</div>
-              <p className="text-[10px] text-blue-700 italic">{t('kpis.csaTarget')}</p>
+              <p className="text-xs text-blue-700 italic">{t('kpis.csaTarget')}</p>
             </CardContent>
           </Card>
           <Card className="border-orange-200 bg-orange-50/20">
             <CardHeader className="pb-2">
-              <CardTitle className="text-[10px] font-bold uppercase text-orange-800 flex items-center gap-2">
+              <CardTitle className="text-xs font-bold uppercase text-orange-800 flex items-center gap-2">
                 <Zap className="h-3 w-3" /> {t('kpis.remediationVelocity')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-orange-900">12 Days</div>
-              <p className="text-[10px] text-orange-700 italic">{t('kpis.remediationAvg')}</p>
+              <p className="text-xs text-orange-700 italic">{t('kpis.remediationAvg')}</p>
             </CardContent>
           </Card>
           <Card className="border-green-200 bg-green-50/20">
             <CardHeader className="pb-2">
-              <CardTitle className="text-[10px] font-bold uppercase text-green-800 flex items-center gap-2">
+              <CardTitle className="text-xs font-bold uppercase text-green-800 flex items-center gap-2">
                 <ShieldCheck className="h-3 w-3" /> {t('kpis.line2Validation')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-900">94.2%</div>
-              <p className="text-[10px] text-green-700 italic">{t('kpis.line2Detail')}</p>
+              <p className="text-xs text-green-700 italic">{t('kpis.line2Detail')}</p>
             </CardContent>
           </Card>
           <Card className="border-slate-200 bg-slate-50/20">
             <CardHeader className="pb-2">
-              <CardTitle className="text-[10px] font-bold uppercase text-slate-800 flex items-center gap-2">
+              <CardTitle className="text-xs font-bold uppercase text-slate-800 flex items-center gap-2">
                 <Clock className="h-3 w-3" /> {t('kpis.reportingReadiness')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-slate-900">Ready</div>
-              <p className="text-[10px] text-slate-700 italic">{t('kpis.reportingStatus')}</p>
+              <p className="text-xs text-slate-700 italic">{t('kpis.reportingStatus')}</p>
             </CardContent>
           </Card>
         </div>
@@ -142,17 +142,17 @@ export function Dashboard() {
                 cosoCoverage.map((c) => (
                   <div 
                     key={c.principle} 
-                    className={`h-12 flex flex-col items-center justify-center rounded-md border text-[10px] font-bold transition-all
+                    className={`h-12 flex flex-col items-center justify-center rounded-md border text-xs font-bold transition-all
                       ${c.count > 0 ? 'bg-green-100 border-green-200 text-green-800' : 'bg-red-50 border-red-100 text-red-400'}`}
                     title={`${c.count} controls mapped to Principle ${c.principle}`}
                   >
                     <span>P{c.principle}</span>
-                    <span className="text-[8px] opacity-70">{c.count}</span>
+                    <span className="text-xs opacity-70">{c.count}</span>
                   </div>
                 ))
               )}
             </div>
-            <div className="mt-4 flex gap-4 text-[10px] uppercase font-bold tracking-tight">
+            <div className="mt-4 flex gap-4 text-xs uppercase font-bold tracking-tight">
               <div className="flex items-center gap-1.5"><div className="h-3 w-3 bg-green-100 border border-green-200 rounded" /> {t('coso.covered')}</div>
               <div className="flex items-center gap-1.5"><div className="h-3 w-3 bg-red-50 border border-red-100 rounded" /> {t('coso.zeroCoverage')}</div>
             </div>

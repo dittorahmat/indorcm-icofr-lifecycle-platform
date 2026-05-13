@@ -65,7 +65,7 @@ export function MainHeader() {
                 <Badge
                   variant={isDark ? "outline" : "secondary"}
                   className={cn(
-                    "absolute -bottom-1 -right-2 text-[10px] px-1 h-4 min-w-[16px] justify-center border-blue-900",
+                    "absolute -bottom-1 -right-2 text-xs px-1 h-4 min-w-[16px] justify-center border-blue-900",
                     !isDark && "bg-white text-blue-700 hover:bg-white font-bold"
                   )}
                 >

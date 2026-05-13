@@ -57,16 +57,16 @@ export const Appendix7aDetailed = React.forwardRef<HTMLDivElement, Appendix7aDet
              <h2 className="text-xs font-black uppercase tracking-widest text-slate-400 border-b pb-1">I. Metodologi & Prosedur Pengujian</h2>
              <div className="grid grid-cols-2 gap-8">
                 <div className="space-y-2">
-                   <p className="text-[10px] font-black text-slate-500 uppercase">Metodologi Sampling</p>
+                   <p className="text-xs font-black text-slate-500 uppercase">Metodologi Sampling</p>
                    <p className="text-xs font-medium leading-relaxed">{record.samplingMethodology || "-"}</p>
                 </div>
                 <div className="space-y-2">
-                   <p className="text-[10px] font-black text-slate-500 uppercase">Lokasi Arsip Fisik</p>
+                   <p className="text-xs font-black text-slate-500 uppercase">Lokasi Arsip Fisik</p>
                    <p className="text-xs font-bold text-indigo-700 italic">{(record as any).archiveLocation || "-"}</p>
                 </div>
              </div>
              <div className="space-y-2 mt-4">
-                <p className="text-[10px] font-black text-slate-500 uppercase">Narasi Prosedur Pengujian</p>
+                <p className="text-xs font-black text-slate-500 uppercase">Narasi Prosedur Pengujian</p>
                 <div className="p-4 bg-slate-50 border border-slate-100 rounded-lg text-xs leading-relaxed whitespace-pre-wrap">
                    {(record as any).testProcedure || "Prosedur pengujian standar telah dilakukan sesuai dengan instruksi kerja yang berlaku."}
                 </div>
@@ -80,13 +80,13 @@ export const Appendix7aDetailed = React.forwardRef<HTMLDivElement, Appendix7aDet
               <Table>
                 <TableHeader className="bg-slate-900">
                   <TableRow className="hover:bg-transparent">
-                    <TableHead className="text-[10px] font-black text-white w-10 text-center">NO</TableHead>
-                    <TableHead className="text-[10px] font-black text-white min-w-[150px]">REFERENSI SAMPEL / TRANSAKSI</TableHead>
+                    <TableHead className="text-xs font-black text-white w-10 text-center">NO</TableHead>
+                    <TableHead className="text-xs font-black text-white min-w-[150px]">REFERENSI SAMPEL / TRANSAKSI</TableHead>
                     {controlIds.map(id => (
-                      <TableHead key={id} className="text-[10px] font-black text-white text-center border-l border-white/10 uppercase py-4">
+                      <TableHead key={id} className="text-xs font-black text-white text-center border-l border-white/10 uppercase py-4">
                         <div className="flex flex-col gap-1">
                           <span>{controlMap[id]?.code || id}</span>
-                          <span className="text-[8px] opacity-60 font-normal leading-tight line-clamp-2">{controlMap[id]?.name}</span>
+                          <span className="text-xs opacity-60 font-normal leading-tight line-clamp-2">{controlMap[id]?.name}</span>
                         </div>
                       </TableHead>
                     ))}
@@ -95,10 +95,10 @@ export const Appendix7aDetailed = React.forwardRef<HTMLDivElement, Appendix7aDet
                 <TableBody>
                   {record.samples?.map((sample, sIdx) => (
                     <TableRow key={sample.id} className="divide-x border-b-2 border-slate-100">
-                      <TableCell className="text-[10px] font-bold text-center">{sIdx + 1}</TableCell>
+                      <TableCell className="text-xs font-bold text-center">{sIdx + 1}</TableCell>
                       <TableCell className="py-4">
                         <div className="text-xs font-black">{sample.sampleRef}</div>
-                        <div className="text-[9px] text-slate-400 font-mono mt-1">ID: {sample.glRowId?.substring(0,8)}</div>
+                        <div className="text-xs text-slate-400 font-mono mt-1">ID: {sample.glRowId?.substring(0,8)}</div>
                       </TableCell>
                       {controlIds.map(cId => {
                         const res = (sample.controlResults as any)?.[cId];
@@ -110,12 +110,12 @@ export const Appendix7aDetailed = React.forwardRef<HTMLDivElement, Appendix7aDet
                               isPass ? "bg-emerald-50/50" : "bg-rose-50/50"
                             )}>
                               <div className={cn(
-                                "w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black",
+                                "w-6 h-6 rounded-full flex items-center justify-center text-xs font-black",
                                 isPass ? "bg-emerald-600 text-white" : "bg-rose-600 text-white"
                               )}>
                                 {isPass ? "P" : "F"}
                               </div>
-                              {res?.evidenceUrl && <span className="text-[8px] font-black text-emerald-700 uppercase">Evidence √</span>}
+                              {res?.evidenceUrl && <span className="text-xs font-black text-emerald-700 uppercase">Evidence √</span>}
                             </div>
                           </TableCell>
                         );
@@ -131,34 +131,34 @@ export const Appendix7aDetailed = React.forwardRef<HTMLDivElement, Appendix7aDet
           <div className="space-y-6 pt-8">
              <div className="p-6 bg-slate-900 text-white rounded-xl shadow-xl flex justify-between items-center">
                 <div className="space-y-1">
-                   <p className="text-[10px] font-black text-indigo-300 uppercase tracking-widest">Simpulan Akhir Efektivitas</p>
+                   <p className="text-xs font-black text-indigo-300 uppercase tracking-widest">Simpulan Akhir Efektivitas</p>
                    <h3 className="text-2xl font-black uppercase italic italic">{record.result}</h3>
                 </div>
                 <div className="text-right">
                    <ShieldCheck className="h-10 w-10 text-emerald-400 mb-1 ml-auto" />
-                   <p className="text-[9px] font-bold opacity-50 uppercase leading-none text-white">Verified by IndoGRC Forensic Engine</p>
+                   <p className="text-xs font-bold opacity-50 uppercase leading-none text-white">Verified by IndoGRC Forensic Engine</p>
                 </div>
              </div>
 
              <div className="grid grid-cols-3 border-2 border-slate-900 bg-white rounded-lg overflow-hidden h-40">
                 <div className="border-r-2 border-slate-900 p-4 flex flex-col">
-                   <span className="text-[9px] font-black uppercase text-slate-400">Dikerjakan Oleh (Auditee)</span>
-                   <div className="flex-1 border-b border-slate-100 flex items-center justify-center italic text-[10px] text-slate-300">Digital Signature Verified</div>
-                   <div className="flex justify-between text-[10px] font-black uppercase mt-2">
+                   <span className="text-xs font-black uppercase text-slate-400">Dikerjakan Oleh (Auditee)</span>
+                   <div className="flex-1 border-b border-slate-100 flex items-center justify-center italic text-xs text-slate-300">Digital Signature Verified</div>
+                   <div className="flex justify-between text-xs font-black uppercase mt-2">
                       <span>{record.assessedBy}</span>
                       <span>{format(new Date(record.assessmentDate), 'dd/MM/yy')}</span>
                    </div>
                 </div>
                 <div className="border-r-2 border-slate-900 p-4 flex flex-col bg-slate-50/50">
-                   <span className="text-[9px] font-black uppercase text-slate-400">Direview Oleh (Lini 2)</span>
+                   <span className="text-xs font-black uppercase text-slate-400">Direview Oleh (Lini 2)</span>
                    <div className="flex-1 border-b border-slate-100" />
-                   <div className="flex justify-between text-[10px] font-black uppercase mt-2">
+                   <div className="flex justify-between text-xs font-black uppercase mt-2">
                       <span>Nama:</span>
                       <span>Tanggal:</span>
                    </div>
                 </div>
                 <div className="p-4 flex flex-col">
-                   <span className="text-[9px] font-black uppercase text-slate-400">Otentikasi Dokumen</span>
+                   <span className="text-xs font-black uppercase text-slate-400">Otentikasi Dokumen</span>
                    <div className="flex-1 flex items-center justify-center p-4">
                       {/* QR Code Placeholder */}
                       <div className="w-20 h-20 bg-slate-100 border-2 border-dashed border-slate-300 flex items-center justify-center text-center p-2">
@@ -170,7 +170,7 @@ export const Appendix7aDetailed = React.forwardRef<HTMLDivElement, Appendix7aDet
           </div>
 
           <div className="pt-8 text-center opacity-30">
-             <p className="text-[8px] font-bold uppercase tracking-widest">© 2026 IndoGRC Pro - Internal Control Over Financial Reporting Lifecycle Platform</p>
+             <p className="text-xs font-bold uppercase tracking-widest">© 2026 IndoGRC Pro - Internal Control Over Financial Reporting Lifecycle Platform</p>
           </div>
         </div>
       </div>

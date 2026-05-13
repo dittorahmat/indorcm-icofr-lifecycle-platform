@@ -41,7 +41,7 @@ export function RiskHeatmap() {
             </CardTitle>
             <CardDescription>Kombinasi Faktor Kuantitatif vs Kualitatif - PT BATUBARA NUSANTARA SEJAHTERA</CardDescription>
           </div>
-          <Badge variant="outline" className="bg-white gap-1 text-[10px] font-bold">
+          <Badge variant="outline" className="bg-white gap-1 text-xs font-bold">
             <Info className="h-3 w-3" /> Tabel 12 Juknis
           </Badge>
         </div>
@@ -51,7 +51,7 @@ export function RiskHeatmap() {
           <div className="grid grid-cols-[40px_1fr] gap-4 w-full max-w-[600px]">
             {/* Y-Axis Label */}
             <div className="flex flex-col justify-between py-10">
-              <span className="text-[10px] font-black text-slate-400 uppercase vertical-text -rotate-180 h-full flex items-center justify-center">Kuantitatif</span>
+              <span className="text-xs font-black text-slate-400 uppercase vertical-text -rotate-180 h-full flex items-center justify-center">Kuantitatif</span>
             </div>
 
             <div className="space-y-4">
@@ -70,10 +70,10 @@ export function RiskHeatmap() {
                             outcome.color,
                             outcome.textColor
                           )}>
-                            <span className="text-[10px] font-black opacity-60 uppercase tracking-tighter">{qn}-{ql}</span>
+                            <span className="text-xs font-black opacity-60 uppercase tracking-tighter">{qn}-{ql}</span>
                             <span className="text-xs font-black mt-1">{outcome.label}</span>
                             {risks.length > 0 && (
-                              <Badge className="absolute -top-2 -right-2 bg-slate-900 text-white border-white border-2 h-5 w-5 flex items-center justify-center p-0 text-[10px]">
+                              <Badge className="absolute -top-2 -right-2 bg-slate-900 text-white border-white border-2 h-5 w-5 flex items-center justify-center p-0 text-xs">
                                 {risks.length}
                               </Badge>
                             )}
@@ -82,7 +82,7 @@ export function RiskHeatmap() {
                         <PopoverContent className="w-80 p-0 overflow-hidden shadow-2xl border-indigo-100">
                           <div className={cn("p-3 text-white text-xs font-bold flex justify-between items-center", outcome.color.replace('hover:', ''))}>
                             <span>RISIKO: {qn} Qn / {ql} Ql</span>
-                            <Badge variant="outline" className="bg-white/20 border-white/30 text-white text-[10px]">{outcome.label}</Badge>
+                            <Badge variant="outline" className="bg-white/20 border-white/30 text-white text-xs">{outcome.label}</Badge>
                           </div>
                           <div className="p-4 space-y-3">
                             {risks.length > 0 ? (
@@ -92,14 +92,14 @@ export function RiskHeatmap() {
                                     <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
                                     <p className="text-xs font-bold text-slate-800">{r.title}</p>
                                   </div>
-                                  <p className="text-[10px] text-slate-500 ml-3.5 uppercase font-medium">Process: {r.process}</p>
+                                  <p className="text-xs text-slate-500 ml-3.5 uppercase font-medium">Process: {r.process}</p>
                                 </div>
                               ))
                             ) : (
                               <p className="text-xs text-slate-400 italic text-center py-2">Tidak ada data risiko di kategori ini.</p>
                             )}
                             <div className="pt-2 border-t mt-2">
-                              <button className="text-[10px] font-bold text-primary hover:underline flex items-center gap-1">
+                              <button className="text-xs font-bold text-primary hover:underline flex items-center gap-1">
                                 <ExternalLink className="h-3 w-3" /> Lihat Detail di RCM Matrix
                               </button>
                             </div>
@@ -113,12 +113,12 @@ export function RiskHeatmap() {
 
               {/* X-Axis Labels */}
               <div className="grid grid-cols-3 gap-2 text-center">
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Rendah</span>
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Medium</span>
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Tinggi</span>
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Rendah</span>
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Medium</span>
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Tinggi</span>
               </div>
               <div className="text-center">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Kualitatif</span>
+                <span className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Kualitatif</span>
               </div>
             </div>
           </div>

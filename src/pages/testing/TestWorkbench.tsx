@@ -94,14 +94,14 @@ export function TestWorkbench() {
                   )}>
                     <div className="flex items-center gap-3 text-left">
                       <span className="font-semibold">{control.name}</span>
-                      {latestOpenDeficiency && <Badge variant="destructive" className="text-[8px] h-4">{t('badges.openDeficiency')}</Badge>}
+                      {latestOpenDeficiency && <Badge variant="destructive" className="text-xs h-4">{t('badges.openDeficiency')}</Badge>}
                       {violation && (
-                        <Badge variant="outline" className="text-[8px] h-4 border-amber-500 text-amber-700 bg-amber-50 gap-1">
+                        <Badge variant="outline" className="text-xs h-4 border-amber-500 text-amber-700 bg-amber-50 gap-1">
                           <AlertTriangle className="h-2 w-2" /> {t('coolingOff.violation')}
                         </Badge>
                       )}
                       {controlHistory.length > 0 && (
-                        <Badge variant="secondary" className="text-[8px] h-4 gap-1">
+                        <Badge variant="secondary" className="text-xs h-4 gap-1">
                           <History className="h-2 w-2" /> {controlHistory.length} {t('badges.tests')}
                         </Badge>
                       )}

@@ -274,7 +274,7 @@ export function TodoListPage() {
             </div>
 
             <div className="flex-1 flex flex-col overflow-hidden">
-              <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-4 py-3 bg-white border-b">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 px-4 py-3 bg-white border-b">
                 {t('common:calendar.todoTitle')}
               </h3>
               <ScrollArea className="flex-1">
@@ -286,7 +286,7 @@ export function TodoListPage() {
                   ) : (
                     monthlyTaskSummary.map(({ day, events }) => (
                       <div key={day.toISOString()} className="p-3 bg-white border-b last:border-b-0">
-                        <p className="text-[10px] font-bold text-indigo-600 mb-2">{format(day, 'EEEE, d MMM')}</p>
+                        <p className="text-xs font-bold text-indigo-600 mb-2">{format(day, 'EEEE, d MMM')}</p>
                         <div className="space-y-1.5">
                           {events.map((e: any) => {
                             const isOverdue = e.status !== 'Completed' && isPast(new Date(e.plannedDate || e.targetDate));
@@ -296,7 +296,7 @@ export function TodoListPage() {
                             return (
                               <Popover key={e.id}>
                                 <PopoverTrigger asChild>
-                                  <div className="text-[11px] text-slate-600 truncate flex items-center justify-between gap-1.5 p-1.5 rounded-md hover:bg-slate-50 cursor-pointer transition-colors border border-transparent hover:border-slate-100 group/item">
+                                  <div className="text-xs text-slate-600 truncate flex items-center justify-between gap-1.5 p-1.5 rounded-md hover:bg-slate-50 cursor-pointer transition-colors border border-transparent hover:border-slate-100 group/item">
                                     <div className="flex items-center gap-2 overflow-hidden">
                                       <div className={cn(
                                         "w-2 h-2 rounded-full shrink-0",
@@ -312,9 +312,9 @@ export function TodoListPage() {
                                 <PopoverContent className="w-64 p-0" align="start" side="right" sideOffset={10}>
                                   <div className="p-3 border-b bg-slate-50/50">
                                     <div className="flex justify-between items-start mb-1">
-                                      <Badge variant="outline" className="text-[9px] uppercase font-bold bg-white">{e.type || 'REMEDIATION'}</Badge>
+                                      <Badge variant="outline" className="text-xs uppercase font-bold bg-white">{e.type || 'REMEDIATION'}</Badge>
                                       <Badge className={cn(
-                                        "text-[9px] font-mono uppercase",
+                                        "text-xs font-mono uppercase",
                                         isCompleted ? "bg-emerald-600" : isOverdue ? "bg-red-600" : e.status === 'In Progress' ? "bg-amber-500" : "bg-indigo-600"
                                       )}>
                                         {e.status === 'Completed' ? t('csa_hub:status.completed') : 
@@ -325,7 +325,7 @@ export function TodoListPage() {
                                     <h4 className="text-xs font-black text-slate-800 leading-snug">
                                       {process?.name || e.description || 'Activity Detail'}
                                     </h4>
-                                    <p className="text-[10px] text-slate-500 font-medium mt-1 flex items-center gap-1">
+                                    <p className="text-xs text-slate-500 font-medium mt-1 flex items-center gap-1">
                                       <Clock className="h-3 w-3" /> {format(new Date(e.plannedDate || e.targetDate), 'EEEE, d MMMM yyyy', { locale: i18n.language === 'id' ? idLocale : enUS })}
                                     </p>
                                   </div>

@@ -22,7 +22,7 @@ export function TodoListGrid({
       {/* Grid Header */}
       <div className="grid grid-cols-7 border-b bg-white shadow-sm">
         {daysOfWeek.map(day => (
-          <div key={day} className="py-2 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+          <div key={day} className="py-2 text-center text-xs font-bold text-slate-400 uppercase tracking-widest">
             {day}
           </div>
         ))}
@@ -46,7 +46,7 @@ export function TodoListGrid({
               >
                 <div className="flex justify-start mb-1 px-1">
                   <span className={cn(
-                    "text-[11px] font-bold w-6 h-6 flex items-center justify-center rounded-full transition-colors",
+                    "text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full transition-colors",
                     isToday(day) ? "bg-indigo-600 text-white" : "text-slate-500",
                     !isCurrentMonth && "opacity-30"
                   )}>
@@ -59,7 +59,7 @@ export function TodoListGrid({
                     <div 
                       key={event.id}
                       className={cn(
-                        "text-[10px] px-1.5 py-0.5 rounded border flex items-center gap-1 truncate shadow-sm",
+                        "text-xs px-1.5 py-0.5 rounded border flex items-center gap-1 truncate shadow-sm",
                         event.eventType === 'REMEDIATION' 
                           ? "bg-amber-50 border-amber-100 text-amber-700" 
                           : "bg-indigo-50 border-indigo-100 text-indigo-700"
@@ -73,7 +73,7 @@ export function TodoListGrid({
                     </div>
                   ))}
                   {dayEvents.length > 3 && (
-                    <p className="text-[9px] text-slate-400 font-bold px-1 mt-1">
+                    <p className="text-xs text-slate-400 font-bold px-1 mt-1">
                       + {dayEvents.length - 3} more...
                     </p>
                   )}

@@ -85,7 +85,7 @@ export function SimulationListTable({ data, onSelect, onDelete, isLoading }: Sim
                 {getStatusBadge(sim.status)}
               </TableCell>
               <TableCell>
-                <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest border-slate-300">
+                <Badge variant="outline" className="text-xs font-black uppercase tracking-widest border-slate-300">
                   {sim.basis}
                 </Badge>
               </TableCell>
@@ -97,7 +97,7 @@ export function SimulationListTable({ data, onSelect, onDelete, isLoading }: Sim
                   variant="outline" 
                   size="sm" 
                   className={cn(
-                    "h-8 text-[10px] gap-2 font-black uppercase tracking-tight transition-all",
+                    "h-8 text-xs gap-2 font-black uppercase tracking-tight transition-all",
                     sim.locationResults 
                       ? "border-green-200 text-green-700 bg-green-50/50 hover:bg-green-100" 
                       : "border-blue-200 text-blue-700 bg-blue-50/50 hover:bg-blue-100"
@@ -111,7 +111,7 @@ export function SimulationListTable({ data, onSelect, onDelete, isLoading }: Sim
                   {sim.locationResults ? `${sim.locationResults.filter(r => r.isSignificant).length} Significant` : "Analyze Locations"}
                 </Button>
               </TableCell>
-              <TableCell className="text-[11px] text-slate-500 font-medium">
+              <TableCell className="text-xs text-slate-500 font-medium">
                 <div className="flex items-center gap-1.5 text-slate-400">
                   <Clock className="h-3 w-3" />
                   {format(sim.createdAt, 'dd MMM yyyy')}

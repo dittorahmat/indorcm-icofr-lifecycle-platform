@@ -116,10 +116,10 @@ export function BPMDiagramList({
                       >
                         <span className="font-bold text-indigo-600 hover:underline flex items-center gap-1.5">
                           {bpm.name}
-                          {bpm.bpmCode && <Badge className="h-4 px-1 text-[8px] bg-slate-900 text-white font-mono">{bpm.bpmCode}</Badge>}
+                          {bpm.bpmCode && <Badge className="h-4 px-1 text-xs bg-slate-900 text-white font-mono">{bpm.bpmCode}</Badge>}
                           <ShieldCheck className="h-3 w-3 opacity-0 group-hover/name:opacity-100 transition-opacity" />
                         </span>
-                        <span className="text-[10px] text-slate-400 uppercase tracking-tighter flex items-center gap-2">
+                        <span className="text-xs text-slate-400 uppercase tracking-tighter flex items-center gap-2">
                            ID: {bpm.id.substring(0,8)}
                         </span>
                       </div>
@@ -129,7 +129,7 @@ export function BPMDiagramList({
                 </TooltipProvider>
               </TableCell>
               <TableCell className="text-slate-600 font-medium text-xs">{settings?.companyName || "PT BUMN SEjahtera"}</TableCell>
-              <TableCell><Badge variant="outline" className="font-mono text-[10px] bg-slate-50">{selectedGLRow?.entityCode || "ENT-01"}</Badge></TableCell>
+              <TableCell><Badge variant="outline" className="font-mono text-xs bg-slate-50">{selectedGLRow?.entityCode || "ENT-01"}</Badge></TableCell>
               <TableCell className="text-center"><Badge className="bg-orange-100 text-orange-700 font-bold">{bpm.riskCount || 0}</Badge></TableCell>
               <TableCell className="text-center"><Badge className="bg-green-100 text-green-700 font-bold">{bpm.controlCount || 0}</Badge></TableCell>
               <TableCell>

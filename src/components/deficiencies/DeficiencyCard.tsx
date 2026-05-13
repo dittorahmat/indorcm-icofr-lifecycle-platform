@@ -58,22 +58,22 @@ export function DeficiencyCard({ deficiency, actionPlan }: DeficiencyCardProps) 
 
           {actionPlan && (
             <div className="flex flex-wrap gap-2 pt-1">
-              <Badge variant="outline" className="text-[9px] gap-1 bg-slate-50 border-slate-200">
+              <Badge variant="outline" className="text-xs gap-1 bg-slate-50 border-slate-200">
                 <Users className="h-2.5 w-2.5" /> {actionPlan.picName || 'No PIC'}
               </Badge>
-              <Badge variant="outline" className="text-[9px] bg-slate-50 border-slate-200">
+              <Badge variant="outline" className="text-xs bg-slate-50 border-slate-200">
                 {actionPlan.relatedFunction || 'No Function'}
               </Badge>
             </div>
           )}
 
           <div className="pt-2 border-t border-muted">
-             <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase mb-1.5">
+             <div className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground uppercase mb-1.5">
                 <Users className="h-3 w-3" /> Report Distribution (Tabel 24)
              </div>
              <div className="flex flex-wrap gap-1">
                 {distribution.map((stakeholder, i) => (
-                  <Badge key={i} variant="secondary" className="text-[9px] bg-muted/50 border-none font-normal">
+                  <Badge key={i} variant="secondary" className="text-xs bg-muted/50 border-none font-normal">
                     {stakeholder}
                   </Badge>
                 ))}
@@ -84,16 +84,16 @@ export function DeficiencyCard({ deficiency, actionPlan }: DeficiencyCardProps) 
             <div className="pt-2 border-t border-muted space-y-2">
               {deficiency.correctiveActionTaken && (
                 <div className="space-y-1">
-                  <div className="text-[10px] font-bold text-green-700 uppercase">Corrective Action Taken</div>
-                  <p className="text-[11px] leading-tight text-muted-foreground italic">
+                  <div className="text-xs font-bold text-green-700 uppercase">Corrective Action Taken</div>
+                  <p className="text-xs leading-tight text-muted-foreground italic">
                     {deficiency.correctiveActionTaken}
                   </p>
                 </div>
               )}
               {deficiency.remediationEvidence && (
                 <div className="space-y-1">
-                  <div className="text-[10px] font-bold text-blue-700 uppercase">Remediation Evidence</div>
-                  <div className="flex items-center gap-1 text-[11px] text-blue-600 bg-blue-50 px-2 py-1 rounded border border-blue-100 w-fit">
+                  <div className="text-xs font-bold text-blue-700 uppercase">Remediation Evidence</div>
+                  <div className="flex items-center gap-1 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded border border-blue-100 w-fit">
                     <History className="h-3 w-3" /> {deficiency.remediationEvidence}
                   </div>
                 </div>

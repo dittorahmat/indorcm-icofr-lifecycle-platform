@@ -36,16 +36,9 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
   const [emptyRowCount, setEmptyRowCount] = useState(0);
 
   const processData = useCallback((rawRows: any[], headers?: string[]) => {
-    console.log('========== [GL DEBUG] START PROCESSING ==========');
-    console.log('[1] Raw rows received:', rawRows.length);
-    console.log('[1] Headers:', headers);
-    console.log('[1] First 3 raw rows:', rawRows.slice(0, 3));
-    
     // 1. Filter empty rows
     const filteredRows = filterEmptyRows(rawRows);
     const emptyCount = rawRows.length - filteredRows.length;
-    console.log('[2] After filtering empty rows:', filteredRows.length, '(removed:', emptyCount, ')');
-    console.log('[2] First 3 filtered rows:', filteredRows.slice(0, 3));
     
     setEmptyRowCount(emptyCount);
     if (emptyCount > 0) {
@@ -55,31 +48,24 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
     // 2. Auto-detect column mapping
     let mapping: Record<string, string>;
     if (headers && headers.length > 0) {
-      console.log('[3] Detecting columns from headers:', headers);
       mapping = detectGLColumns(headers);
     } else {
       const firstRowKeys = Object.keys(filteredRows[0] || {});
-      console.log('[3] Detecting columns from first row keys:', firstRowKeys);
       mapping = detectGLColumns(firstRowKeys);
     }
-    console.log('[3] Detected mapping:', mapping);
     setDetectedMapping(mapping);
 
     // 3. Validate mapping
     const validation = validateGLMapping(mapping);
-    console.log('[4] Validation result:', validation);
     if (!validation.valid) {
       toast.error(`Missing required columns: ${validation.missing.join(', ')}`, {
         description: `Expected columns: ${validation.missing.map(m => Object.keys(GL_COLUMN_MAPPING).find(k => (GL_COLUMN_MAPPING[k as keyof typeof GL_COLUMN_MAPPING] as unknown as string[]).includes(m)) || m).join(', ')}`
       });
-      console.log('[4] ❌ VALIDATION FAILED - Returning early');
       return;
     }
-    console.log('[4] ✅ Validation PASSED');
 
     // 4. Map rows using detected mapping
-    console.log('[5] Starting row mapping...');
-    const glRows: GLRow[] = filteredRows.map((row, index) => {
+    const glRows: GLRow[] = filteredRows.map((row) => {
       // Get raw balance value - handle various column name formats
       let balanceRaw = row[mapping.balance];
       
@@ -93,22 +79,9 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
         balanceRaw = '0';
       }
       
-      if (index < 3) {
-        console.log(`[5] Row ${index}:`, {
-          balanceColumn: mapping.balance,
-          balanceRaw: balanceRaw,
-          balanceType: typeof balanceRaw,
-          accountName: row[mapping.accountName]
-        });
-      }
-      
       // Parse balance using Indonesian format parser
       const parsedBalance = parseBalance(balanceRaw);
       
-      if (index < 3) {
-        console.log(`[5] Row ${index} parsed:`, parsedBalance);
-      }
-
       if (!parsedBalance.success) {
         toast.warning(`Invalid balance for ${row[mapping.accountName] || 'Unknown'}: ${balanceRaw}`);
       }
@@ -122,16 +95,9 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
         currency: mapping.currency ? (row[mapping.currency] || row[mapping.currency?.toLowerCase()]) : undefined,
       };
     }).filter(row => {
-      const hasBalance = row.balance !== undefined && row.balance !== 0;
-      if (!hasBalance) {
-        console.log('[5] Filtered out row with 0 balance:', row.accountName);
-      }
       return row.accountName && row.balance !== undefined;
     });
     
-    console.log('[5] ✅ Mapped rows:', glRows.length);
-    console.log('[5] First 3 mapped rows:', glRows.slice(0, 3));
-
     // 5. Balance Check
     const totalBalance = glRows.reduce((sum, row) => sum + row.balance, 0);
     const isBalanced = Math.abs(totalBalance) < 0.01;
@@ -331,7 +297,7 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
                   <BarChart3 className="h-4 w-4 text-primary" />
                   Benford's Law Analysis
                 </CardTitle>
-                <CardDescription className="text-[10px]">Statistical audit for data manipulation detection.</CardDescription>
+                <CardDescription className="text-xs">Statistical audit for data manipulation detection.</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="h-[300px] w-full mt-4">
@@ -350,7 +316,7 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
                     </ComposedChart>
                   </ResponsiveContainer>
                 </div>
-                <div className="mt-4 p-3 rounded bg-muted/30 border text-[10px] italic flex gap-2">
+                <div className="mt-4 p-3 rounded bg-muted/30 border text-xs italic flex gap-2">
                   <AlertCircle className="h-4 w-4 shrink-0 text-muted-foreground" />
                   <span>Large deviations from the red line may indicate artificial data entry or fraud risks (SK-5 Principle 8).</span>
                 </div>

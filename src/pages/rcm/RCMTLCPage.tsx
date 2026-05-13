@@ -97,7 +97,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId }: RCMTLCPageProps) {
             </Button>
           )
         },
-        { id: 'no', header: 'No', width: '50px', sticky: 'left', stickyOffset: '50px', className: 'text-center font-mono text-[11px] text-slate-400', render: (_, idx) => idx + 1 },
+        { id: 'no', header: 'No', width: '50px', sticky: 'left', stickyOffset: '50px', className: 'text-center font-mono text-xs text-slate-400', render: (_, idx) => idx + 1 },
         { 
           id: 'process_info', 
           header: t('matrix.process_info'), 
@@ -107,7 +107,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId }: RCMTLCPageProps) {
           className: 'font-bold text-slate-800',
           render: (row) => (
             <div className="flex flex-col gap-0 leading-tight">
-              <span className="uppercase tracking-tighter text-indigo-600 text-[9px] font-black">
+              <span className="uppercase tracking-tighter text-indigo-600 text-xs font-black">
                 {row.fsliName} {row.bpmCode && `[${row.bpmCode}]`}
               </span>
               <span className="line-clamp-2 text-xs">{row.noGL} - {row.processName}</span>
@@ -137,7 +137,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId }: RCMTLCPageProps) {
           width: '110px', 
           className: 'text-center',
           render: (row) => (
-            <Badge className={cn("text-[9px] font-black px-2 h-5 leading-none uppercase", 
+            <Badge className={cn("text-xs font-black px-2 h-5 leading-none uppercase", 
               row.riskRating === 'High' ? "bg-rose-50 text-rose-700 border-rose-200" : 
               row.riskRating === 'Medium' ? "bg-amber-50 text-amber-700 border-amber-200" : 
               "bg-emerald-50 text-emerald-700 border-emerald-200"

@@ -103,7 +103,7 @@ export function NotificationsPage() {
             <Button 
               variant="outline" 
               size="sm" 
-              className="font-bold text-[10px] uppercase tracking-wider gap-2 h-9"
+              className="font-bold text-xs uppercase tracking-wider gap-2 h-9"
               onClick={() => markAllReadMutation.mutate()}
               disabled={!sortedNotifications.length || markAllReadMutation.isPending}
             >
@@ -113,7 +113,7 @@ export function NotificationsPage() {
             <Button 
               variant="outline" 
               size="sm" 
-              className="font-bold text-[10px] uppercase tracking-wider gap-2 h-9 text-rose-600 hover:text-rose-700 hover:bg-rose-50"
+              className="font-bold text-xs uppercase tracking-wider gap-2 h-9 text-rose-600 hover:text-rose-700 hover:bg-rose-50"
               onClick={() => clearAllMutation.mutate()}
               disabled={!sortedNotifications.length || clearAllMutation.isPending}
             >
@@ -128,7 +128,7 @@ export function NotificationsPage() {
             {isLoading ? (
               <div className="p-12 text-center">
                 <div className="animate-spin h-8 w-8 border-4 border-indigo-600 border-t-transparent rounded-full mx-auto mb-4" />
-                <p className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Loading notifications...</p>
+                <p className="text-slate-400 font-bold uppercase text-xs tracking-widest">Loading notifications...</p>
               </div>
             ) : sortedNotifications.length === 0 ? (
               <div className="p-20 text-center flex flex-col items-center gap-4 bg-slate-50/50">
@@ -170,7 +170,7 @@ export function NotificationsPage() {
                         )}>
                           {n.title || n.type.toUpperCase()}
                         </h4>
-                        <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 tabular-nums uppercase">
+                        <div className="flex items-center gap-2 text-xs font-bold text-slate-400 tabular-nums uppercase">
                           <Clock className="h-3 w-3" />
                           {format(new Date(n.createdAt), 'HH:mm, d MMM yyyy')}
                         </div>
@@ -187,7 +187,7 @@ export function NotificationsPage() {
                         {n.link && (
                           <Button 
                             variant="link" 
-                            className="p-0 h-auto text-[10px] font-black uppercase text-indigo-600 hover:text-indigo-700 gap-1"
+                            className="p-0 h-auto text-xs font-black uppercase text-indigo-600 hover:text-indigo-700 gap-1"
                             onClick={() => navigate(n.link!)}
                           >
                             <ExternalLink className="h-3 w-3" /> View Details
@@ -196,7 +196,7 @@ export function NotificationsPage() {
                         {!n.readStatus && (
                           <Button 
                             variant="ghost" 
-                            className="p-0 h-auto text-[10px] font-black uppercase text-slate-400 hover:text-indigo-600 gap-1"
+                            className="p-0 h-auto text-xs font-black uppercase text-slate-400 hover:text-indigo-600 gap-1"
                             onClick={() => markReadMutation.mutate(n.id)}
                           >
                             Mark as read
@@ -204,7 +204,7 @@ export function NotificationsPage() {
                         )}
                         <Button 
                           variant="ghost" 
-                          className="p-0 h-auto text-[10px] font-black uppercase text-slate-400 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-opacity ml-auto"
+                          className="p-0 h-auto text-xs font-black uppercase text-slate-400 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-opacity ml-auto"
                           onClick={() => deleteMutation.mutate(n.id)}
                         >
                           <Trash2 className="h-3 w-3 mr-1" /> Delete

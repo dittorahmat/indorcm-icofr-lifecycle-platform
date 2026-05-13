@@ -54,7 +54,7 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
       <div className="flex justify-between items-center">
         <h3 className="text-sm font-bold uppercase tracking-tight flex items-center gap-2">
           {t('sampling.title')} 
-          <span className="text-[10px] font-normal lowercase text-muted-foreground">(Lampiran 7)</span>
+          <span className="text-xs font-normal lowercase text-muted-foreground">(Lampiran 7)</span>
         </h3>
         {!isReadOnly && (
           <Button type="button" variant="outline" size="sm" onClick={addSample} className="h-8 gap-2">
@@ -67,14 +67,14 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
         <Table>
           <TableHeader className="bg-muted/50">
             <TableRow>
-              <TableHead className="w-[50px] text-center text-[10px] uppercase font-bold">No</TableHead>
-              <TableHead className="text-[10px] uppercase font-bold">{t('sampling.ref')}</TableHead>
-              <TableHead className="w-[80px] text-center text-[10px] uppercase font-bold">Attr A</TableHead>
-              <TableHead className="w-[80px] text-center text-[10px] uppercase font-bold">Attr B</TableHead>
-              <TableHead className="w-[80px] text-center text-[10px] uppercase font-bold">Attr C</TableHead>
-              <TableHead className="w-[80px] text-center text-[10px] uppercase font-bold">Attr D</TableHead>
-              <TableHead className="w-[100px] text-center text-[10px] uppercase font-bold">{t('sampling.status')}</TableHead>
-              <TableHead className="text-[10px] uppercase font-bold">{t('sampling.comments')}</TableHead>
+              <TableHead className="w-[50px] text-center text-xs uppercase font-bold">No</TableHead>
+              <TableHead className="text-xs uppercase font-bold">{t('sampling.ref')}</TableHead>
+              <TableHead className="w-[80px] text-center text-xs uppercase font-bold">Attr A</TableHead>
+              <TableHead className="w-[80px] text-center text-xs uppercase font-bold">Attr B</TableHead>
+              <TableHead className="w-[80px] text-center text-xs uppercase font-bold">Attr C</TableHead>
+              <TableHead className="w-[80px] text-center text-xs uppercase font-bold">Attr D</TableHead>
+              <TableHead className="w-[100px] text-center text-xs uppercase font-bold">{t('sampling.status')}</TableHead>
+              <TableHead className="text-xs uppercase font-bold">{t('sampling.comments')}</TableHead>
               {!isReadOnly && <TableHead className="w-[50px]"></TableHead>}
             </TableRow>
           </TableHeader>
@@ -88,13 +88,13 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
             ) : (
               fields.map((field, index) => (
                 <TableRow key={field.id} className={cn(field.status === 'Fail' && "bg-red-50/30")}>
-                  <TableCell className="text-center font-mono text-[10px]">{index + 1}</TableCell>
+                  <TableCell className="text-center font-mono text-xs">{index + 1}</TableCell>
                   <TableCell>
                     <Input 
                       value={field.sampleRef} 
                       onChange={(e) => update(index, { ...field, sampleRef: e.target.value })}
                       disabled={isReadOnly}
-                      className="h-8 text-[11px] font-medium"
+                      className="h-8 text-xs font-medium"
                       placeholder="e.g. VOU-001"
                     />
                   </TableCell>
@@ -129,7 +129,7 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
                   <TableCell>
                     <div className="flex justify-center">
                       <div className={cn(
-                        "flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-bold uppercase",
+                        "flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold uppercase",
                         field.status === 'Pass' ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
                       )}>
                         {field.status === 'Pass' ? <CheckCircle2 className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
@@ -142,7 +142,7 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
                       value={field.comments || ''} 
                       onChange={(e) => update(index, { ...field, comments: e.target.value })}
                       disabled={isReadOnly}
-                      className="h-8 text-[11px]"
+                      className="h-8 text-xs"
                       placeholder={t('sampling.commentPlaceholder')}
                     />
                   </TableCell>
@@ -167,7 +167,7 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
       </div>
       
       {fields.length > 0 && (
-        <div className="flex items-center gap-4 text-[10px] text-muted-foreground bg-muted/20 p-2 rounded border border-dashed">
+        <div className="flex items-center gap-4 text-xs text-muted-foreground bg-muted/20 p-2 rounded border border-dashed">
           <p className="font-bold uppercase tracking-tight text-blue-700">Lampiran 7 Legend:</p>
           <p><strong>Attr A:</strong> Otomatisitas</p>
           <p><strong>Attr B:</strong> Populasi Lengkap</p>

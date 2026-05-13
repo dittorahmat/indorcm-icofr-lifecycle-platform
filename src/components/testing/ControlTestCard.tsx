@@ -151,11 +151,11 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
               <CardDescription className="text-xs">{control.description}</CardDescription>
             </div>
             <div className="flex flex-col items-end gap-1">
-               <Badge variant="outline" className="text-[10px]">{control.frequency}</Badge>
+               <Badge variant="outline" className="text-xs">{control.frequency}</Badge>
                <Badge 
                   variant="secondary" 
                   className={cn(
-                    "text-[10px] uppercase font-bold",
+                    "text-xs uppercase font-bold",
                     control.riskRating === 'High' ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'
                   )}
                 >
@@ -168,7 +168,7 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
           {control.line2Validation?.status === 'Validated' && (
             <div className="mb-6 p-3 bg-green-50 border border-green-100 rounded-md flex items-center gap-3">
               <UserCheck className="h-4 w-4 text-green-600" />
-              <div className="text-[11px] text-green-800">
+              <div className="text-xs text-green-800">
                 <span className="font-bold uppercase mr-2">Validated by Line 2:</span>
                 "{control.line2Validation.comments}" ({new Date(control.line2Validation.validatedDate!).toLocaleDateString()})
               </div>
@@ -232,7 +232,7 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
                           )}
                           <div className="space-y-1">
                             <p className={cn(
-                              "text-[10px] font-bold uppercase leading-none",
+                              "text-xs font-bold uppercase leading-none",
                               form.watch('sampleSize') !== undefined && form.watch('sampleSize')! < suggestion.min ? "text-red-800" : "text-blue-800"
                             )}>
                               {form.watch('sampleSize') !== undefined && form.watch('sampleSize')! < suggestion.min 
@@ -253,23 +253,23 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
                         <div className="grid grid-cols-2 gap-2">
                           <FormField control={form.control} name="sampleSize" render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground flex justify-between">
+                              <FormLabel className="text-xs uppercase font-bold text-muted-foreground flex justify-between">
                                 {t('toe.sampleSize')}
                                 {field.value !== undefined && field.value < suggestion.min && (
-                                  <Badge variant="destructive" className="text-[8px] h-3 px-1 animate-pulse">
+                                  <Badge variant="destructive" className="text-xs h-3 px-1 animate-pulse">
                                     {t('toe.belowMin')}
                                   </Badge>
                                 )}
                               </FormLabel>
                               <FormControl><Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10))} className={cn("h-8 text-xs", field.value !== undefined && field.value < suggestion.min && "border-red-500 bg-red-50")} /></FormControl>
-                              <FormMessage className="text-[10px]" />
+                              <FormMessage className="text-xs" />
                             </FormItem>
                           )} />
                         </div>
 
                         <FormField control={form.control} name="homogeneityJustification" render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1">
+                            <FormLabel className="text-xs uppercase font-bold text-muted-foreground flex items-center gap-1">
                               {t('toe.homogeneity')}
                               {form.watch('sampleSize')! < suggestion.min && <span className="text-red-500 font-bold">*</span>}
                             </FormLabel>
@@ -283,7 +283,7 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
                                 placeholder={t('toe.homogeneityPlaceholder')}
                               />
                             </FormControl>
-                            <FormMessage className="text-[10px]" />
+                            <FormMessage className="text-xs" />
                           </FormItem>
                         )} />
                       </div>

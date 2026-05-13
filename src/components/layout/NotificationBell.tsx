@@ -100,7 +100,7 @@ export function NotificationBell() {
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
             <Badge 
-              className="absolute -top-1 -right-1 h-4 min-w-[16px] px-1 flex items-center justify-center bg-red-500 text-white border-none text-[10px]"
+              className="absolute -top-1 -right-1 h-4 min-w-[16px] px-1 flex items-center justify-center bg-red-500 text-white border-none text-xs"
             >
               {unreadCount}
             </Badge>
@@ -115,7 +115,7 @@ export function NotificationBell() {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="h-6 text-[9px] text-indigo-600 hover:text-indigo-700 p-0 font-bold uppercase tracking-tighter"
+                className="h-6 text-xs text-indigo-600 hover:text-indigo-700 p-0 font-bold uppercase tracking-tighter"
                 onClick={(e) => {
                   e.stopPropagation();
                   markReadMutation.mutate();
@@ -128,7 +128,7 @@ export function NotificationBell() {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="h-6 text-[9px] text-red-600 hover:text-red-700 p-0 font-bold uppercase tracking-tighter"
+                className="h-6 text-xs text-red-600 hover:text-red-700 p-0 font-bold uppercase tracking-tighter"
                 onClick={(e) => {
                   e.stopPropagation();
                   clearAllMutation.mutate();
@@ -163,7 +163,7 @@ export function NotificationBell() {
                     <p className="text-xs text-slate-700 leading-relaxed">
                       {n.message}
                     </p>
-                    <span className="text-[10px] text-slate-400">
+                    <span className="text-xs text-slate-400">
                       {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true, locale })}
                     </span>
                   </div>
@@ -187,7 +187,7 @@ export function NotificationBell() {
         <div className="p-2">
           <Button 
             variant="ghost" 
-            className="w-full h-8 text-[10px] font-bold text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 uppercase tracking-widest"
+            className="w-full h-8 text-xs font-bold text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 uppercase tracking-widest"
             onClick={() => navigate('/notifications')}
           >
             {t('notifications.viewAll')}

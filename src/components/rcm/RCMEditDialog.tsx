@@ -153,7 +153,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                 <DialogTitle className="text-xl font-black tracking-tight text-slate-900">
                   {t('matrix.control_name')}: {data?.controlCode || '-'}
                 </DialogTitle>
-                <DialogDescription className="text-[11px] font-bold uppercase tracking-widest text-slate-500 mt-0.5">
+                <DialogDescription className="text-xs font-bold uppercase tracking-widest text-slate-500 mt-0.5">
                   Standardized Auditor Workbench - SK-5 Regulatory Compliance
                 </DialogDescription>
              </div>
@@ -167,19 +167,19 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                 <TabsList className="bg-transparent h-12 p-0 gap-8 justify-start">
                   <TabsTrigger 
                     value="general" 
-                    className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-indigo-600 data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none h-full px-0 font-black uppercase text-[10px] tracking-wider"
+                    className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-indigo-600 data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none h-full px-0 font-black uppercase text-xs tracking-wider"
                   >
                     <Info className="h-3.5 w-3.5 mr-2" /> {t('matrix.sections.general')}
                   </TabsTrigger>
                   <TabsTrigger 
                     value="risk" 
-                    className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-indigo-600 data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none h-full px-0 font-black uppercase text-[10px] tracking-wider"
+                    className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-indigo-600 data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none h-full px-0 font-black uppercase text-xs tracking-wider"
                   >
                     <ShieldAlert className="h-3.5 w-3.5 mr-2" /> {t('matrix.sections.risk_control')}
                   </TabsTrigger>
                   <TabsTrigger 
                     value="compliance" 
-                    className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-indigo-600 data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none h-full px-0 font-black uppercase text-[10px] tracking-wider"
+                    className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-indigo-600 data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none h-full px-0 font-black uppercase text-xs tracking-wider"
                   >
                     <CheckCircle2 className="h-3.5 w-3.5 mr-2" /> {t('matrix.sections.compliance')}
                   </TabsTrigger>
@@ -196,7 +196,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                           name="processName"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-[10px] font-black uppercase text-slate-400">{t('matrix.process_info')}</FormLabel>
+                              <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.process_info')}</FormLabel>
                               <FormControl><Input {...field} readOnly className="bg-slate-50 border-slate-200 text-xs font-semibold text-slate-700" /></FormControl>
                             </FormItem>
                           )}
@@ -206,7 +206,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                           name="subProcessName"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-[10px] font-black uppercase text-slate-400">{t('matrix.sub_process')}</FormLabel>
+                              <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.sub_process')}</FormLabel>
                               <FormControl><Input {...field} readOnly className="bg-slate-50 border-slate-200 text-xs font-semibold text-slate-700" /></FormControl>
                             </FormItem>
                           )}
@@ -218,7 +218,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                           name="fsliName"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-[10px] font-black uppercase text-slate-400">Financial Item (FSLI)</FormLabel>
+                              <FormLabel className="text-xs font-black uppercase text-slate-400">Financial Item (FSLI)</FormLabel>
                               <FormControl><Input {...field} readOnly className="bg-slate-50 border-slate-200 text-xs font-semibold text-slate-700" /></FormControl>
                             </FormItem>
                           )}
@@ -229,8 +229,8 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                             name="noGL"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="text-[10px] font-black uppercase text-slate-400">No GL</FormLabel>
-                                <FormControl><Input {...field} readOnly className="bg-slate-50 border-slate-200 text-[11px] font-mono font-bold text-indigo-700" /></FormControl>
+                                <FormLabel className="text-xs font-black uppercase text-slate-400">No GL</FormLabel>
+                                <FormControl><Input {...field} readOnly className="bg-slate-50 border-slate-200 text-xs font-mono font-bold text-indigo-700" /></FormControl>
                               </FormItem>
                             )}
                           />
@@ -239,8 +239,8 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                             name="bpmCode"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="text-[10px] font-black uppercase text-slate-400">BPM Code</FormLabel>
-                                <FormControl><Input {...field} readOnly className="bg-slate-50 border-slate-200 text-[11px] font-mono font-bold text-indigo-700" /></FormControl>
+                                <FormLabel className="text-xs font-black uppercase text-slate-400">BPM Code</FormLabel>
+                                <FormControl><Input {...field} readOnly className="bg-slate-50 border-slate-200 text-xs font-mono font-bold text-indigo-700" /></FormControl>
                               </FormItem>
                             )}
                           />
@@ -254,7 +254,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                       </div>
                       <div>
                          <p className="text-xs font-bold text-indigo-900 leading-tight">Regulatory Context</p>
-                         <p className="text-[11px] text-indigo-700 mt-1 leading-relaxed opacity-80">
+                         <p className="text-xs text-indigo-700 mt-1 leading-relaxed opacity-80">
                            Data Identitas Proses di atas bersifat read-only dan ditarik langsung dari master data Business Process Mapping (BPM) untuk menjaga integritas audit trail.
                          </p>
                       </div>
@@ -270,7 +270,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                           name="riskDescription"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-[10px] font-black uppercase text-slate-400">{t('matrix.risk_description')}</FormLabel>
+                              <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.risk_description')}</FormLabel>
                               <FormControl><Textarea {...field} rows={3} className="text-xs border-slate-200 focus:border-indigo-300 transition-all leading-normal" /></FormControl>
                             </FormItem>
                           )}
@@ -283,9 +283,9 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                           name="mappedControlName"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-[10px] font-black uppercase text-slate-400">{t('matrix.control_name')}</FormLabel>
+                              <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.control_name')}</FormLabel>
                               <FormControl><Input {...field} className="text-xs border-slate-200 font-bold" /></FormControl>
-                              <FormMessage className="text-[10px]" />
+                              <FormMessage className="text-xs" />
                             </FormItem>
                           )}
                         />
@@ -294,7 +294,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                           name="mappedControlDescription"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-[10px] font-black uppercase text-slate-400">{t('matrix.control_description')}</FormLabel>
+                              <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.control_description')}</FormLabel>
                               <FormControl><Textarea {...field} rows={5} className="text-xs border-slate-200 leading-relaxed italic" /></FormControl>
                             </FormItem>
                           )}
@@ -308,7 +308,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                               name="riskRating"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel className="text-[10px] font-black uppercase text-slate-400">{t('matrix.risk_rating')}</FormLabel>
+                                  <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.risk_rating')}</FormLabel>
                                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
                                       <SelectTrigger className="text-xs h-9 border-slate-200"><SelectValue /></SelectTrigger>
@@ -327,7 +327,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                               name="isFraudRelated"
                               render={({ field }) => (
                                 <FormItem className="flex flex-row items-center justify-between rounded-lg border border-slate-200 p-2 h-9 bg-white mt-auto">
-                                  <FormLabel className="text-[10px] font-black uppercase text-slate-400 mb-0">{t('matrix.is_fraud')}</FormLabel>
+                                  <FormLabel className="text-xs font-black uppercase text-slate-400 mb-0">{t('matrix.is_fraud')}</FormLabel>
                                   <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                                 </FormItem>
                               )}
@@ -340,7 +340,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                               name="controlType"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel className="text-[10px] font-black uppercase text-slate-400">{t('matrix.type')}</FormLabel>
+                                  <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.type')}</FormLabel>
                                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
                                       <SelectTrigger className="text-xs h-9 border-slate-200"><SelectValue /></SelectTrigger>
@@ -358,7 +358,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                               name="controlNature"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel className="text-[10px] font-black uppercase text-slate-400">{t('matrix.nature')}</FormLabel>
+                                  <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.nature')}</FormLabel>
                                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
                                       <SelectTrigger className="text-xs h-9 border-slate-200"><SelectValue /></SelectTrigger>
@@ -381,7 +381,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                             name="frequency"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="text-[10px] font-black uppercase text-slate-400">{t('matrix.frequency')}</FormLabel>
+                                <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.frequency')}</FormLabel>
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                   <FormControl>
                                     <SelectTrigger className="text-xs h-9 border-slate-200"><SelectValue /></SelectTrigger>
@@ -407,7 +407,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                 <TabsContent value="compliance" className="m-0 space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
                    <div className="space-y-4">
                       <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
-                         <Badge className="bg-blue-600 text-[10px] font-black">IPO</Badge>
+                         <Badge className="bg-blue-600 text-xs font-black">IPO</Badge>
                          <h3 className="text-xs font-black uppercase tracking-widest text-slate-700">{t('matrix.ipo')}</h3>
                       </div>
                       <div className="grid grid-cols-4 gap-4">
@@ -426,7 +426,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                                 <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                                 <div className="leading-none">
                                    <FormLabel className="text-xs font-black text-blue-700">{item.label}</FormLabel>
-                                   <p className="text-[9px] text-slate-400 font-bold uppercase mt-1">{item.desc}</p>
+                                   <p className="text-xs text-slate-400 font-bold uppercase mt-1">{item.desc}</p>
                                 </div>
                               </FormItem>
                             )}
@@ -437,7 +437,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
 
                    <div className="space-y-4">
                       <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
-                         <Badge className="bg-indigo-600 text-[10px] font-black">ASERSi</Badge>
+                         <Badge className="bg-indigo-600 text-xs font-black">ASERSi</Badge>
                          <h3 className="text-xs font-black uppercase tracking-widest text-slate-700">{t('matrix.assertions')}</h3>
                       </div>
                       <div className="grid grid-cols-4 gap-4">
@@ -459,7 +459,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                                 <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                                 <div className="leading-none">
                                    <FormLabel className="text-xs font-black text-indigo-700">{item.label}</FormLabel>
-                                   <p className="text-[9px] text-slate-400 font-bold uppercase mt-1">{item.desc}</p>
+                                   <p className="text-xs text-slate-400 font-bold uppercase mt-1">{item.desc}</p>
                                 </div>
                               </FormItem>
                             )}
@@ -475,7 +475,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                <div className="flex items-center justify-between w-full">
                   <div className="flex items-center gap-2">
                     {form.formState.isDirty && (
-                      <Badge variant="outline" className="animate-pulse bg-amber-50 text-amber-600 border-amber-200 font-black text-[9px] uppercase px-2 py-1">
+                      <Badge variant="outline" className="animate-pulse bg-amber-50 text-amber-600 border-amber-200 font-black text-xs uppercase px-2 py-1">
                         Unsaved Changes
                       </Badge>
                     )}

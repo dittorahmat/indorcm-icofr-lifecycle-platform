@@ -20,7 +20,7 @@ export const RiskAssessmentSection = ({ form, wizard }: { form: any; wizard?: Re
   return (
     <div className="space-y-4">
       <div className="space-y-4 rounded-md border p-4 bg-primary/5 border-primary/10">
-        <Label className="flex items-center gap-2 text-[10px] font-bold uppercase text-primary">
+        <Label className="flex items-center gap-2 text-xs font-bold uppercase text-primary">
           <Calculator className="h-3 w-3" /> Calculated Risk
         </Label>
         <Badge 
@@ -33,12 +33,12 @@ export const RiskAssessmentSection = ({ form, wizard }: { form: any; wizard?: Re
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField control={form.control} name="riskQuantitative" render={({ field }) => (
-          <FormItem><FormLabel className="text-[10px] uppercase">Kuantitatif (Table 10)</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="High">High (at least OM)</SelectItem><SelectItem value="Medium">Medium (PM to OM)</SelectItem><SelectItem value="Low">Low (Below PM)</SelectItem></SelectContent></Select></FormItem>
+          <FormItem><FormLabel className="text-xs uppercase">Kuantitatif (Table 10)</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="High">High (at least OM)</SelectItem><SelectItem value="Medium">Medium (PM to OM)</SelectItem><SelectItem value="Low">Low (Below PM)</SelectItem></SelectContent></Select></FormItem>
         )} />
         <FormField control={form.control} name="riskQualitative" render={({ field }) => (
           <FormItem>
             <div className="flex justify-between items-center mb-1">
-              <FormLabel className="text-[10px] uppercase">Kualitatif (Table 11)</FormLabel>
+              <FormLabel className="text-xs uppercase">Kualitatif (Table 11)</FormLabel>
               {wizard}
             </div>
             <Select onValueChange={field.onChange} value={field.value}>
@@ -69,7 +69,7 @@ export const RegulatoryMappingSection = ({ form }: { form: any }) => {
               type="button" 
               variant="ghost" 
               size="sm" 
-              className="h-6 text-[9px] gap-1 text-primary"
+              className="h-6 text-xs gap-1 text-primary"
               onClick={() => {
                 const firstP = form.watch('cosoPrinciples')?.[0];
                 if (firstP) {
@@ -92,7 +92,7 @@ export const RegulatoryMappingSection = ({ form }: { form: any }) => {
                   <FormControl><Checkbox checked={field.value?.includes(p)} onCheckedChange={(checked) => {
                     return checked ? field.onChange([...(field.value || []), p]) : field.onChange(field.value?.filter((v: any) => v !== p));
                   }} /></FormControl>
-                  <span className="text-[10px] font-bold">{p}</span>
+                  <span className="text-xs font-bold">{p}</span>
                 </FormItem>
               )} />
             ))}
@@ -110,7 +110,7 @@ export const RegulatoryMappingSection = ({ form }: { form: any }) => {
                     <FormControl><Checkbox checked={field.value?.includes(item)} onCheckedChange={(checked) => {
                       return checked ? field.onChange([...(field.value || []), item]) : field.onChange(field.value?.filter((v: any) => v !== item));
                     }} /></FormControl>
-                    <FormLabel className="font-normal text-[10px]">{item}</FormLabel>
+                    <FormLabel className="font-normal text-xs">{item}</FormLabel>
                   </FormItem>
                 )} />
               ))}
@@ -127,7 +127,7 @@ export const RegulatoryMappingSection = ({ form }: { form: any }) => {
                     <FormControl><Checkbox checked={field.value?.includes(item)} onCheckedChange={(checked) => {
                       return checked ? field.onChange([...(field.value || []), item]) : field.onChange(field.value?.filter((v: any) => v !== item));
                     }} /></FormControl>
-                    <FormLabel className="font-normal text-[10px]">{item}</FormLabel>
+                    <FormLabel className="font-normal text-xs">{item}</FormLabel>
                   </FormItem>
                 )} />
               ))}
@@ -150,7 +150,7 @@ export const ITGCMetadataSection = ({ form }: { form: any }) => {
           <FormLabel>COBIT 2019 ID (Optional)</FormLabel>
           <FormControl><Input placeholder="e.g. APO09" {...field} onChange={e => field.onChange(e.target.value.toUpperCase())} /></FormControl>
           {field.value && COBIT_ITGC_MAPPING[field.value] && form.watch('itgcDomain') && !COBIT_ITGC_MAPPING[field.value].includes(form.watch('itgcDomain') as string) && (
-            <p className="text-[10px] text-amber-600 font-bold mt-1">
+            <p className="text-xs text-amber-600 font-bold mt-1">
               Peringatan: Berdasarkan Tabel 1, {field.value} biasanya tidak dipetakan ke area {form.watch('itgcDomain')}.
             </p>
           )}
@@ -163,20 +163,20 @@ export const ITGCMetadataSection = ({ form }: { form: any }) => {
 export const MRCParametersSection = ({ form }: { form: any }) => {
   return (
     <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg space-y-4">
-      <p className="text-[10px] font-bold text-orange-800 uppercase tracking-widest flex items-center gap-2">
+      <p className="text-xs font-bold text-orange-800 uppercase tracking-widest flex items-center gap-2">
         <ShieldAlert className="h-3 w-3" /> Management Review Control Parameters (Table 21)
       </p>
       <div className="space-y-3">
         <div className="space-y-1">
-          <Label className="text-[11px]">Management Expectation (Kewajaran Ekspektasi)</Label>
+          <Label className="text-xs">Management Expectation (Kewajaran Ekspektasi)</Label>
           <Input className="h-8 text-xs" placeholder="e.g. Varians biaya operasional < 5% per bulan" />
         </div>
         <div className="space-y-1">
-          <Label className="text-[11px]">Investigation Threshold (Ambang Batas)</Label>
+          <Label className="text-xs">Investigation Threshold (Ambang Batas)</Label>
           <Input className="h-8 text-xs" placeholder="e.g. Selisih absolut > Rp 50.000.000" />
         </div>
         <div className="space-y-1">
-          <Label className="text-[11px]">Investigation Procedures (Prosedur Tindak Lanjut)</Label>
+          <Label className="text-xs">Investigation Procedures (Prosedur Tindak Lanjut)</Label>
           <Textarea className="text-xs" placeholder="Langkah-langkah jika threshold terlampaui..." />
         </div>
       </div>

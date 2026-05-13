@@ -1,5 +1,15 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle 
+} from "@/components/ui/alert-dialog";
 import { Node } from 'reactflow';
 import { useTranslation } from 'react-i18next';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -46,19 +56,19 @@ function EntityHistoryList({ entityId }: { entityId: string }) {
   return (
     <div className="space-y-3 p-1">
       {data.items.map((log) => (
-        <div key={log.id} className="border rounded-xl p-3 bg-white shadow-sm text-[10px] space-y-2 border-slate-100">
+        <div key={log.id} className="border rounded-xl p-3 bg-white shadow-sm text-xs space-y-2 border-slate-100">
            <div className="flex justify-between items-center">
               <span className="font-black text-indigo-600 uppercase tracking-tight">{log.userId.split('@')[0]}</span>
               <span className="text-slate-400 font-medium">{format(log.timestamp, 'dd MMM yyyy HH:mm')}</span>
            </div>
            <div className="text-slate-600 leading-relaxed bg-slate-50 p-2 rounded-lg border border-slate-100/50">
              <div className="flex items-center gap-2 mb-1">
-                <Badge variant="outline" className="text-[8px] h-4 bg-white uppercase">{log.entityType}</Badge>
+                <Badge variant="outline" className="text-xs h-4 bg-white uppercase">{log.entityType}</Badge>
                 <span className="text-slate-400">Changed mapping/metadata:</span>
              </div>
              <p className="font-medium text-slate-800 italic">"{log.descriptionAfter}"</p>
              {log.descriptionBefore && (
-               <p className="text-[9px] text-slate-400 mt-1 line-through decoration-red-200">Before: {log.descriptionBefore}</p>
+               <p className="text-xs text-slate-400 mt-1 line-through decoration-red-200">Before: {log.descriptionBefore}</p>
              )}
            </div>
         </div>
@@ -78,6 +88,8 @@ export function RegulatoryPropertySheet({
   isDirty = false
 }: RegulatoryPropertySheetProps) {
   const { t } = useTranslation(['bpm', 'rcm', 'common', 'risklibrary']);
+  const [isConfirmDiscardOpen, setIsConfirmDiscardOpen] = React.useState(false);
+  const [deleteConfirm, setDeleteConfirm] = React.useState<{ type: 'risk' | 'control', id?: string, index?: number } | null>(null);
 
   const canHaveRcm = useMemo(() => {
     if (!selectedNode) return false;
@@ -110,9 +122,7 @@ export function RegulatoryPropertySheet({
 
   const handleClose = () => {
     if (isDirty) {
-      if (window.confirm(t('rcm:matrix.properties.warnings.unsaved_changes'))) {
-        onClose();
-      }
+       setIsConfirmDiscardOpen(true);
     } else {
       onClose();
     }
@@ -127,12 +137,12 @@ export function RegulatoryPropertySheet({
       if (!match) return p;
 
       const updated = { ...p, [field]: value };
-      
+
       // SMART ID ASSIGNMENT: If this was a pending risk and user entered description
       if (!updated.riskId && field === 'riskDescription' && value.trim().length > 0) {
         updated.riskId = `R-${crypto.randomUUID().substring(0, 8)}`;
       }
-      
+
       return updated;
     });
     onUpdateNodeData(selectedNode.id, { regulatoryPairs: nextPairs });
@@ -189,21 +199,20 @@ export function RegulatoryPropertySheet({
     onUpdateNodeData(selectedNode.id, { regulatoryPairs: nextPairs });
   };
 
-  const removeRisk = (riskKey: string) => {
-    if (window.confirm(t('rcm:matrix.properties.warnings.delete_risk_confirm'))) {
-      const nextPairs = pairs.filter((p: any) => (p.riskId !== riskKey && p._tempRiskId !== riskKey));
-      onUpdateNodeData(selectedNode.id, { regulatoryPairs: nextPairs });
-    }
+  const executeRemoveRisk = (riskKey: string) => {
+    const nextPairs = pairs.filter((p: any) => (p.riskId !== riskKey && p._tempRiskId !== riskKey));
+    onUpdateNodeData(selectedNode.id, { regulatoryPairs: nextPairs });
+    setDeleteConfirm(null);
   };
 
-  const removeSpecificPair = (index: number) => {
-    if (window.confirm(t('rcm:matrix.properties.warnings.delete_control_confirm'))) {
-      removePair(index);
-    }
+  const executeRemoveControl = (index: number) => {
+    removePair(index);
+    setDeleteConfirm(null);
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="w-[95vw] max-w-[1000px] h-[90vh] overflow-hidden flex flex-col p-0">
         <DialogHeader className="p-6 border-b bg-slate-50/50">
           <div className="flex items-center justify-between">
@@ -212,7 +221,7 @@ export function RegulatoryPropertySheet({
                 {canHaveRcm ? <ShieldAlert className="h-5 w-5 text-indigo-600" /> : <Database className="h-5 w-5" />}
                 {selectedNode.data.label}
               </DialogTitle>
-              <DialogDescription className="font-mono text-[10px] flex gap-2">
+              <DialogDescription className="font-mono text-xs flex gap-2">
                 <span className="bg-slate-200 px-1 rounded">ID: {selectedNode.id}</span>
                 <span className="bg-slate-200 px-1 rounded uppercase">Type: {selectedNode.type}</span>
               </DialogDescription>
@@ -276,15 +285,15 @@ export function RegulatoryPropertySheet({
                             <h3 className="text-xs font-black uppercase tracking-widest">{t('rcm:matrix.properties.id_risiko')} #{gIdx + 1}</h3>
                           </div>
                           <div className="flex items-center gap-3">
-                            <Badge className="bg-red-800 text-[9px] font-mono border-none">{group.risk.riskId || 'PENDING ID'}</Badge>
-                            <Button variant="ghost" size="icon" className="h-6 w-6 text-red-200 hover:text-white hover:bg-red-700" onClick={() => removeRisk(group.risk.riskId || group.risk._tempRiskId)}>
+                            <Badge className="bg-red-800 text-xs font-mono border-none">{group.risk.riskId || 'PENDING ID'}</Badge>
+                            <Button variant="ghost" size="icon" className="h-6 w-6 text-red-200 hover:text-white hover:bg-red-700" onClick={() => setDeleteConfirm({ type: 'risk', id: group.risk.riskId || group.risk._tempRiskId })}>
                               <Trash2 className="h-3 w-3" />
                             </Button>
                           </div>
                         </div>
                         <div className="p-5 space-y-4">
                           <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase text-red-900/50">{t('rcm:matrix.properties.deskripsi_risiko')}</Label>
+                            <Label className="text-xs font-black uppercase text-red-900/50">{t('rcm:matrix.properties.deskripsi_risiko')}</Label>
                             <Textarea 
                               value={group.risk.riskDescription || ''} 
                               onChange={(e) => updateAllPairsForRisk(group.risk.riskId || group.risk._tempRiskId, 'riskDescription', e.target.value)}
@@ -295,7 +304,7 @@ export function RegulatoryPropertySheet({
 
                           <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                              <Label className="text-[10px] font-black uppercase text-red-900/50">{t('rcm:matrix.properties.terkait_fraud')}</Label>
+                              <Label className="text-xs font-black uppercase text-red-900/50">{t('rcm:matrix.properties.terkait_fraud')}</Label>
                               <Select value={group.risk.isFraudRelated ? 'Yes' : 'No'} onValueChange={(v) => updateAllPairsForRisk(group.risk.riskId || group.risk._tempRiskId, 'isFraudRelated', v === 'Yes')}>
                                 <SelectTrigger className="h-9 text-sm bg-white border-red-200"><SelectValue /></SelectTrigger>
                                 <SelectContent>
@@ -305,7 +314,7 @@ export function RegulatoryPropertySheet({
                               </Select>
                             </div>
                             <div className="space-y-2">
-                              <Label className="text-[10px] font-black uppercase text-red-900/50">{t('rcm:matrix.properties.risk_rating_label')}</Label>
+                              <Label className="text-xs font-black uppercase text-red-900/50">{t('rcm:matrix.properties.risk_rating_label')}</Label>
                               <Select value={group.risk.riskRating || 'Low'} onValueChange={(v: QualitativeLevel) => updateAllPairsForRisk(group.risk.riskId || group.risk._tempRiskId, 'riskRating', v)}>
                                 <SelectTrigger className="h-9 text-sm bg-white border-red-200"><SelectValue /></SelectTrigger>
                                 <SelectContent>
@@ -316,7 +325,7 @@ export function RegulatoryPropertySheet({
                               </Select>
                             </div>
                           </div>
-                          
+
                           <div className="pt-2">
                             <Button 
                               variant="outline" 
@@ -337,7 +346,7 @@ export function RegulatoryPropertySheet({
                                 <div className="flex items-center gap-4 flex-1">
                                     <div className="flex items-center gap-2">
                                       <Select value={ctrl.data.classification || 'TLC'} onValueChange={(v: ControlLevel) => updateSpecificControl(ctrl.index, 'classification', v)}>
-                                          <SelectTrigger className="h-7 w-[80px] text-[10px] font-bold uppercase shadow-sm">
+                                          <SelectTrigger className="h-7 w-[80px] text-xs font-bold uppercase shadow-sm">
                                             <SelectValue />
                                           </SelectTrigger>
                                           <SelectContent>
@@ -347,13 +356,13 @@ export function RegulatoryPropertySheet({
                                           </SelectContent>
                                       </Select>
                                       <span className="text-xs font-bold text-slate-700">Kontrol #{cIdx + 1}</span>
-                                      <Badge variant="outline" className="text-[9px] font-mono border-slate-200 bg-slate-50 text-slate-500 uppercase">{ctrl.data.controlId || 'PENDING'}</Badge>
+                                      <Badge variant="outline" className="text-xs font-mono border-slate-200 bg-slate-50 text-slate-500 uppercase">{ctrl.data.controlId || 'PENDING'}</Badge>
                                     </div>
                                 </div>
                                 <Button 
                                   variant="ghost" size="sm" 
                                   className="h-7 w-7 text-slate-400 hover:text-rose-600 p-0 mr-2" 
-                                  onClick={(e) => { e.stopPropagation(); removeSpecificPair(ctrl.index); }}
+                                  onClick={(e) => { e.stopPropagation(); setDeleteConfirm({ type: 'control', index: ctrl.index }); }}
                                 >
                                   <Trash2 className="h-3.5 w-3.5" />
                                 </Button>
@@ -413,15 +422,15 @@ export function RegulatoryPropertySheet({
                     <h4 className="text-xs font-black uppercase text-slate-700 tracking-wider flex items-center gap-2">
                       <History className="h-3 w-3" /> Audit Trail (Lampiran 6)
                     </h4>
-                    <p className="text-[10px] text-slate-500 italic">Riwayat perubahan regulasi untuk seluruh risiko/kontrol pada node ini.</p>
+                    <p className="text-xs text-slate-500 italic">Riwayat perubahan regulasi untuk seluruh risiko/kontrol pada node ini.</p>
                   </div>
-                  
+
                   {/* Show history for each control in pairs */}
                   {Array.from(new Set(pairs.map((p: any) => p.controlId))).map((cId: any) => (
                     <div key={cId} className="space-y-3">
                        <div className="flex items-center gap-2">
                           <div className="h-1.5 w-1.5 rounded-full bg-indigo-400" />
-                          <span className="text-[10px] font-bold text-slate-500 font-mono">Entity: {cId}</span>
+                          <span className="text-xs font-bold text-slate-500 font-mono">Entity: {cId}</span>
                        </div>
                        <EntityHistoryList entityId={cId} />
                     </div>
@@ -440,7 +449,7 @@ export function RegulatoryPropertySheet({
            >
              <Trash2 className="h-4 w-4 mr-2" /> {t('rcm:matrix.properties.remove_node')}
            </Button>
-           
+
            <div className="flex items-center gap-3">
              <span className={cn("text-xs font-medium flex items-center gap-1.5", isDirty ? "text-amber-600" : "text-emerald-600")}>
                <div className={cn("h-2 w-2 rounded-full", isDirty ? "bg-amber-400 animate-pulse" : "bg-emerald-500")} />
@@ -460,6 +469,56 @@ export function RegulatoryPropertySheet({
            </div>
         </div>
       </DialogContent>
-      </Dialog>
-      );
-      }
+    </Dialog>
+
+    <AlertDialog open={!!deleteConfirm} onOpenChange={(o) => !o && setDeleteConfirm(null)}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle className="text-red-600">
+            {deleteConfirm?.type === 'risk' ? t('rcm:matrix.properties.warnings.delete_risk_confirm') : t('rcm:matrix.properties.warnings.delete_control_confirm')}
+          </AlertDialogTitle>
+          <AlertDialogDescription>
+            {deleteConfirm?.type === 'risk' 
+              ? "WARNING: Deleting this risk will delete ALL control data under it. This data will be PERMANENTLY removed from the RCM database when you press 'Save & Sync'." 
+              : "Delete this Risk-Control mapping row? Data associated with this row will be lost from the TLC Matrix permanently after sync."}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={() => setDeleteConfirm(null)}>{t('common:actions.cancel')}</AlertDialogCancel>
+          <AlertDialogAction 
+            onClick={() => deleteConfirm?.type === 'risk' ? executeRemoveRisk(deleteConfirm.id!) : executeRemoveControl(deleteConfirm!.index!)}
+            className="bg-red-600 hover:bg-red-700 text-white font-bold"
+          >
+            {t('common:actions.delete')}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+
+    <AlertDialog open={isConfirmDiscardOpen} onOpenChange={setIsConfirmDiscardOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{t('common:unsavedChanges.title')}</AlertDialogTitle>
+          <AlertDialogDescription>
+            {t('common:unsavedChanges.description')}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={() => setIsConfirmDiscardOpen(false)}>
+            {t('common:unsavedChanges.stay')}
+          </AlertDialogCancel>
+          <AlertDialogAction 
+            onClick={() => {
+              setIsConfirmDiscardOpen(false);
+              onClose();
+            }}
+            className="bg-red-600 hover:bg-red-700 text-white font-bold"
+          >
+            {t('common:unsavedChanges.discard')}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
+  );
+}

@@ -62,7 +62,7 @@ export function ScopingSimulationForm({ activeSnap, onSubmit, isPending, yearOpt
               </SelectContent>
             </Select>
           ) : (
-            <div className="p-2 border rounded-md bg-amber-50 text-[10px] text-amber-700 flex gap-1 items-start">
+            <div className="p-2 border rounded-md bg-amber-50 text-xs text-amber-700 flex gap-1 items-start">
               <AlertTriangle className="h-3 w-3 shrink-0" />
               <span>No benchmarks defined in Master Data GL.</span>
             </div>
@@ -74,7 +74,7 @@ export function ScopingSimulationForm({ activeSnap, onSubmit, isPending, yearOpt
         </div>
       </div>
       <div className="p-3 bg-blue-50 border border-blue-100 rounded-md">
-        <p className="text-[10px] text-blue-700 leading-relaxed italic">
+        <p className="text-xs text-blue-700 leading-relaxed italic">
           Multiplier: <strong>{getGroupMultiplier(locations)}x</strong>.
           Default OM: <strong>{defaultOm}%</strong>.
         </p>

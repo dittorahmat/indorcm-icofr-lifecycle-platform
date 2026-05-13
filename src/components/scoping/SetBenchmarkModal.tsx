@@ -125,7 +125,7 @@ export function SetBenchmarkModal({ snapshot: initialSnapshot, isOpen, onOpenCha
                         />
                       </TableCell>
                       <TableCell className="text-xs font-bold text-slate-700">{item.name}</TableCell>
-                      <TableCell className="text-right font-mono text-[11px] text-slate-500">
+                      <TableCell className="text-right font-mono text-xs text-slate-500">
                         Rp {item.total.toLocaleString('id-ID')}
                       </TableCell>
                     </TableRow>
@@ -139,12 +139,12 @@ export function SetBenchmarkModal({ snapshot: initialSnapshot, isOpen, onOpenCha
             <div className="p-4 rounded-xl bg-white border border-slate-200 shadow-sm space-y-4">
               <h4 className="text-xs font-bold uppercase tracking-widest text-slate-400">Selection Summary</h4>
               <div className="space-y-1">
-                <p className="text-[10px] text-slate-500 font-medium">Selected Benchmarks:</p>
+                <p className="text-xs text-slate-500 font-medium">Selected Benchmarks:</p>
                 <p className="text-2xl font-bold text-indigo-600">{selectedFsliNames.length}</p>
               </div>
               <Separator />
               <div className="space-y-1">
-                <p className="text-[10px] text-slate-500 font-medium">Total Benchmark Value:</p>
+                <p className="text-xs text-slate-500 font-medium">Total Benchmark Value:</p>
                 <p className="text-lg font-mono font-bold text-slate-800">
                   Rp {totalSelectedValue.toLocaleString('id-ID')}
                 </p>
@@ -153,17 +153,17 @@ export function SetBenchmarkModal({ snapshot: initialSnapshot, isOpen, onOpenCha
 
             <div className="p-4 rounded-xl bg-indigo-50 border border-indigo-100 flex gap-3 shadow-sm">
               <AlertCircle className="h-5 w-5 text-indigo-500 shrink-0" />
-              <p className="text-[11px] text-indigo-700 leading-relaxed italic">
+              <p className="text-xs text-indigo-700 leading-relaxed italic">
                 Only the selected FSLIs will appear in the "Basis" dropdown when creating a new simulation.
               </p>
             </div>
 
             {selectedFsliNames.length > 0 && (
               <div className="space-y-2">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Selected List:</p>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Selected List:</p>
                 <div className="flex flex-wrap gap-1.5">
                   {selectedFsliNames.map(name => (
-                    <Badge key={name} variant="secondary" className="text-[9px] bg-indigo-100 text-indigo-700 border-indigo-200">
+                    <Badge key={name} variant="secondary" className="text-xs bg-indigo-100 text-indigo-700 border-indigo-200">
                       {name}
                     </Badge>
                   ))}

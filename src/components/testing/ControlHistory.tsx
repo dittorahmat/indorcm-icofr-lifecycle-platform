@@ -27,12 +27,12 @@ export function ControlHistory({ history }: ControlHistoryProps) {
             history.sort((a, b) => (b.testDate || 0) - (a.testDate || 0)).map((h) => (
               <div key={h.id} className="text-xs border rounded-md p-3 space-y-2 bg-slate-50/50">
                 <div className="flex justify-between items-center">
-                  <Badge variant="outline" className="text-[9px]">{h.testType}</Badge>
-                  <span className="text-[9px] text-muted-foreground">{h.testDate ? new Date(h.testDate).toLocaleDateString() : 'N/A'}</span>
+                  <Badge variant="outline" className="text-xs">{h.testType}</Badge>
+                  <span className="text-xs text-muted-foreground">{h.testDate ? new Date(h.testDate).toLocaleDateString() : 'N/A'}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="font-bold">{h.method}</span>
-                  <Badge className={cn("gap-1 text-[9px]", getTestResultLabel(h.result).color)}>
+                  <Badge className={cn("gap-1 text-xs", getTestResultLabel(h.result).color)}>
                     {h.result === 'Effective' ? (
                       <CheckCircle2 className="h-2 w-2" />
                     ) : (
@@ -47,7 +47,7 @@ export function ControlHistory({ history }: ControlHistoryProps) {
                   <div className="pt-2 border-t flex flex-wrap gap-1">
                     {Object.entries(h.evaluationAttributes).map(([key, val]) => (
                       <Badge key={key} variant={val ? "secondary" : "outline"} className={cn(
-                        "text-[8px] h-4 px-1",
+                        "text-xs h-4 px-1",
                         !val && "text-red-500 border-red-200"
                       )}>
                         {key.substring(0, 3)}

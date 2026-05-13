@@ -41,7 +41,7 @@ export const RcmTlcTable: React.FC<RcmTableProps> = ({ items, isLoading, onEdit 
               <TableCell className="font-bold text-indigo-700">{item.controlCode}</TableCell>
               <TableCell>
                 <div className="font-medium">{item.mappedControlName || item.baseControlName}</div>
-                <div className="text-[10px] text-muted-foreground line-clamp-1 italic">
+                <div className="text-xs text-muted-foreground line-clamp-1 italic">
                   {item.mappedControlDescription || item.baseControlDescription}
                 </div>
               </TableCell>
@@ -62,7 +62,7 @@ export const RcmTlcTable: React.FC<RcmTableProps> = ({ items, isLoading, onEdit 
                   {['E', 'C', 'A', 'Co', 'Va', 'Ro', 'Pd'].map(a => (
                     <div 
                       key={a}
-                      className={`w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-bold border ${item[`assertion${a}`] ? 'bg-indigo-600 border-indigo-700 text-white' : 'bg-slate-100 border-slate-200 text-slate-400'}`}
+                      className={`w-4 h-4 rounded-full flex items-center justify-center text-xs font-bold border ${item[`assertion${a}`] ? 'bg-indigo-600 border-indigo-700 text-white' : 'bg-slate-100 border-slate-200 text-slate-400'}`}
                     >
                       {a[0]}
                     </div>
@@ -74,7 +74,7 @@ export const RcmTlcTable: React.FC<RcmTableProps> = ({ items, isLoading, onEdit 
                   {['C', 'A', 'V', 'Ra'].map(a => (
                     <div 
                       key={a}
-                      className={`w-4 h-4 rounded-sm flex items-center justify-center text-[8px] font-bold border ${item[`ipo${a}`] ? 'bg-emerald-600 border-emerald-700 text-white' : 'bg-slate-100 border-slate-200 text-slate-400'}`}
+                      className={`w-4 h-4 rounded-sm flex items-center justify-center text-xs font-bold border ${item[`ipo${a}`] ? 'bg-emerald-600 border-emerald-700 text-white' : 'bg-slate-100 border-slate-200 text-slate-400'}`}
                     >
                       {a[0]}
                     </div>

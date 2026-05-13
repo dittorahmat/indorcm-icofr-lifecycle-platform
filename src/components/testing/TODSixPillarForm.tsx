@@ -64,7 +64,7 @@ export function TODSixPillarForm({ form, t, isReadOnly }: TODSixPillarFormProps)
       <div className="flex items-center justify-between border-b pb-2">
         <h3 className="text-sm font-bold uppercase tracking-tight text-blue-900 flex items-center gap-2">
           Test of Design: 6-Pilar Verification
-          <span className="text-[10px] font-normal lowercase text-muted-foreground">(Lampiran 8)</span>
+          <span className="text-xs font-normal lowercase text-muted-foreground">(Lampiran 8)</span>
         </h3>
       </div>
 
@@ -77,10 +77,10 @@ export function TODSixPillarForm({ form, t, isReadOnly }: TODSixPillarFormProps)
                   <pillar.icon className="h-4 w-4" />
                 </div>
                 <div>
-                  <FormLabel className="text-[11px] font-bold uppercase tracking-tight block mb-1">
+                  <FormLabel className="text-xs font-bold uppercase tracking-tight block mb-1">
                     {pillar.label}
                   </FormLabel>
-                  <p className="text-[10px] text-muted-foreground leading-tight">
+                  <p className="text-xs text-muted-foreground leading-tight">
                     {t(`pillars.descriptions.${pillar.commentKey}`)}
                   </p>
                 </div>
@@ -112,11 +112,11 @@ export function TODSixPillarForm({ form, t, isReadOnly }: TODSixPillarFormProps)
                     <Textarea 
                       {...field} 
                       disabled={isReadOnly}
-                      className="text-[11px] min-h-[60px] bg-background resize-none"
+                      className="text-xs min-h-[60px] bg-background resize-none"
                       placeholder={t('pillars.commentPlaceholder')}
                     />
                   </FormControl>
-                  <FormMessage className="text-[9px]" />
+                  <FormMessage className="text-xs" />
                 </FormItem>
               )}
             />
@@ -124,7 +124,7 @@ export function TODSixPillarForm({ form, t, isReadOnly }: TODSixPillarFormProps)
         ))}
       </div>
 
-      <div className="p-4 bg-blue-50 border border-blue-100 rounded-lg text-[10px] text-blue-800 leading-relaxed italic">
+      <div className="p-4 bg-blue-50 border border-blue-100 rounded-lg text-xs text-blue-800 leading-relaxed italic">
         <strong>Regulatory Note (Lampiran 8):</strong> Evaluasi rancangan harus mempertimbangkan apakah kontrol secara individual atau kombinasi dengan kontrol lain cukup presisi untuk mencegah atau mendeteksi salah saji material secara tepat waktu.
       </div>
     </div>

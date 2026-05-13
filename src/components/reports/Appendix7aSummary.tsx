@@ -54,7 +54,7 @@ export const Appendix7aSummary = React.forwardRef<HTMLDivElement, Appendix7aSumm
           <div className="grid grid-cols-3 gap-6">
              <div className="col-span-2 p-6 bg-slate-50 border-2 border-slate-900 rounded-xl flex flex-col justify-between">
                 <div>
-                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Simpulan Akhir</p>
+                   <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Simpulan Akhir</p>
                    <h3 className={cn(
                      "text-3xl font-black uppercase italic",
                      record.result === 'Effective' ? "text-emerald-600" : "text-rose-600"
@@ -63,7 +63,7 @@ export const Appendix7aSummary = React.forwardRef<HTMLDivElement, Appendix7aSumm
                    </h3>
                 </div>
                 <div className="mt-6 space-y-2">
-                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Justifikasi Manajemen</p>
+                   <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Justifikasi Manajemen</p>
                    <p className="text-xs leading-relaxed text-slate-700 italic">
                       {record.comments || "Berdasarkan hasil pengujian sampel, pengendalian dinyatakan efektif/tidak efektif sesuai dengan kriteria yang ditetapkan."}
                    </p>
@@ -71,11 +71,11 @@ export const Appendix7aSummary = React.forwardRef<HTMLDivElement, Appendix7aSumm
              </div>
              <div className="p-6 bg-indigo-900 text-white rounded-xl shadow-lg flex flex-col items-center justify-center text-center">
                 <ShieldCheck className="h-12 w-12 text-indigo-300 mb-4" />
-                <p className="text-[10px] font-bold uppercase opacity-60">Total Verification Points</p>
+                <p className="text-xs font-bold uppercase opacity-60">Total Verification Points</p>
                 <p className="text-4xl font-black tracking-tighter">
                    {summaryRows.reduce((acc, [_, stats]) => acc + stats.total, 0)}
                 </p>
-                <div className="mt-4 flex gap-4 text-[9px] font-black uppercase">
+                <div className="mt-4 flex gap-4 text-xs font-black uppercase">
                    <span className="text-emerald-400">{summaryRows.reduce((acc, [_, stats]) => acc + stats.pass, 0)} PASSED</span>
                    <span className="text-rose-400">{summaryRows.reduce((acc, [_, stats]) => acc + stats.fail, 0)} FAILED</span>
                 </div>
@@ -89,12 +89,12 @@ export const Appendix7aSummary = React.forwardRef<HTMLDivElement, Appendix7aSumm
               <Table>
                 <TableHeader className="bg-slate-900">
                   <TableRow className="hover:bg-transparent">
-                    <TableHead className="text-[10px] font-black text-white w-10 text-center">NO</TableHead>
-                    <TableHead className="text-[10px] font-black text-white">KODE & NAMA KONTROL</TableHead>
-                    <TableHead className="text-[10px] font-black text-white text-center">TOTAL SAMPEL</TableHead>
-                    <TableHead className="text-[10px] font-black text-white text-center">PASS</TableHead>
-                    <TableHead className="text-[10px] font-black text-white text-center">FAIL</TableHead>
-                    <TableHead className="text-[10px] font-black text-white text-center">STATUS</TableHead>
+                    <TableHead className="text-xs font-black text-white w-10 text-center">NO</TableHead>
+                    <TableHead className="text-xs font-black text-white">KODE & NAMA KONTROL</TableHead>
+                    <TableHead className="text-xs font-black text-white text-center">TOTAL SAMPEL</TableHead>
+                    <TableHead className="text-xs font-black text-white text-center">PASS</TableHead>
+                    <TableHead className="text-xs font-black text-white text-center">FAIL</TableHead>
+                    <TableHead className="text-xs font-black text-white text-center">STATUS</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -102,10 +102,10 @@ export const Appendix7aSummary = React.forwardRef<HTMLDivElement, Appendix7aSumm
                     const isControlEffective = stats.fail === 0;
                     return (
                       <TableRow key={id} className="divide-x border-b-2 border-slate-100">
-                        <TableCell className="text-[10px] font-bold text-center">{idx + 1}</TableCell>
+                        <TableCell className="text-xs font-bold text-center">{idx + 1}</TableCell>
                         <TableCell className="py-4">
                            <div className="flex flex-col gap-1">
-                              <span className="font-mono text-[9px] font-bold text-indigo-600">{id}</span>
+                              <span className="font-mono text-xs font-bold text-indigo-600">{id}</span>
                               <span className="text-xs font-black text-slate-800">{stats.name}</span>
                            </div>
                         </TableCell>
@@ -114,7 +114,7 @@ export const Appendix7aSummary = React.forwardRef<HTMLDivElement, Appendix7aSumm
                         <TableCell className="text-center font-bold text-xs text-rose-600">{stats.fail}</TableCell>
                         <TableCell className="text-center">
                            <Badge className={cn(
-                             "text-[9px] font-black uppercase px-3",
+                             "text-xs font-black uppercase px-3",
                              isControlEffective ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"
                            )}>
                              {isControlEffective ? "EFFECTIVE" : "INEFFECTIVE"}
@@ -134,17 +134,17 @@ export const Appendix7aSummary = React.forwardRef<HTMLDivElement, Appendix7aSumm
              <div className="p-6 bg-slate-50 border border-slate-200 rounded-xl space-y-4">
                 <div className="grid grid-cols-2 gap-8">
                    <div className="space-y-1">
-                      <p className="text-[9px] font-black text-slate-400 uppercase">Metodologi Sampling</p>
+                      <p className="text-xs font-black text-slate-400 uppercase">Metodologi Sampling</p>
                       <p className="text-xs font-medium">{record.samplingMethodology || "-"}</p>
                    </div>
                    <div className="space-y-1 text-right">
-                      <p className="text-[9px] font-black text-slate-400 uppercase">Lokasi Arsip Fisik</p>
+                      <p className="text-xs font-black text-slate-400 uppercase">Lokasi Arsip Fisik</p>
                       <p className="text-xs font-bold text-indigo-700">{(record as any).archiveLocation || "-"}</p>
                    </div>
                 </div>
                 <Separator />
                 <div className="space-y-2">
-                   <p className="text-[9px] font-black text-slate-400 uppercase">Narasi Prosedur</p>
+                   <p className="text-xs font-black text-slate-400 uppercase">Narasi Prosedur</p>
                    <p className="text-xs leading-relaxed whitespace-pre-wrap">{(record as any).testProcedure || "N/A"}</p>
                 </div>
              </div>
@@ -153,23 +153,23 @@ export const Appendix7aSummary = React.forwardRef<HTMLDivElement, Appendix7aSumm
           {/* Footer Area */}
           <div className="grid grid-cols-3 border-2 border-slate-900 bg-white rounded-lg overflow-hidden h-40">
              <div className="border-r-2 border-slate-900 p-4 flex flex-col">
-                <span className="text-[9px] font-black uppercase text-slate-400">Dikerjakan Oleh (Auditee)</span>
-                <div className="flex-1 flex items-center justify-center italic text-[10px] text-slate-300">Digital Signature Verified</div>
-                <div className="flex justify-between text-[10px] font-black uppercase mt-2">
+                <span className="text-xs font-black uppercase text-slate-400">Dikerjakan Oleh (Auditee)</span>
+                <div className="flex-1 flex items-center justify-center italic text-xs text-slate-300">Digital Signature Verified</div>
+                <div className="flex justify-between text-xs font-black uppercase mt-2">
                    <span>{record.assessedBy}</span>
                    <span>{format(new Date(record.assessmentDate), 'dd/MM/yy')}</span>
                 </div>
              </div>
              <div className="border-r-2 border-slate-900 p-4 flex flex-col bg-slate-50/50">
-                <span className="text-[9px] font-black uppercase text-slate-400">Direview Oleh (Lini 2)</span>
+                <span className="text-xs font-black uppercase text-slate-400">Direview Oleh (Lini 2)</span>
                 <div className="flex-1 border-b border-slate-100" />
-                <div className="flex justify-between text-[10px] font-black uppercase mt-2">
+                <div className="flex justify-between text-xs font-black uppercase mt-2">
                    <span>Nama:</span>
                    <span>Tanggal:</span>
                 </div>
              </div>
              <div className="p-4 flex flex-col">
-                <span className="text-[9px] font-black uppercase text-slate-400">Otentikasi Dokumen</span>
+                <span className="text-xs font-black uppercase text-slate-400">Otentikasi Dokumen</span>
                 <div className="flex-1 flex items-center justify-center p-4">
                    <div className="w-20 h-20 bg-slate-100 border-2 border-dashed border-slate-300 flex items-center justify-center text-center p-2">
                       <span className="text-[7px] font-black text-slate-400">SCAN QR TO VERIFY DOCUMENT INTEGRITY</span>

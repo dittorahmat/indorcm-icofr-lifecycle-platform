@@ -179,11 +179,11 @@ export function TransactionUploadModal({ isOpen, onClose, noGL, bpmProcessId, on
                     <AlertCircle className="h-5 w-5 text-indigo-600 shrink-0" />
                     <div className="space-y-0.5">
                       <p className="text-xs font-bold text-indigo-900">Konfigurasi Unggah</p>
-                      <p className="text-[10px] text-indigo-700">Format kolom yang didukung: transDate, refNo, description, amount, currency, dcFlag, noGL, bpmCode.</p>
+                      <p className="text-xs text-indigo-700">Format kolom yang didukung: transDate, refNo, description, amount, currency, dcFlag, noGL, bpmCode.</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-md border border-indigo-200 shadow-sm">
-                    <Label htmlFor="replace-mode" className="text-[10px] font-black uppercase text-slate-500 cursor-pointer">Ganti Data Lama</Label>
+                    <Label htmlFor="replace-mode" className="text-xs font-black uppercase text-slate-500 cursor-pointer">Ganti Data Lama</Label>
                     <Switch id="replace-mode" checked={isReplaceMode} onCheckedChange={setIsReplaceMode} />
                   </div>
                 </div>
@@ -241,16 +241,16 @@ export function TransactionUploadModal({ isOpen, onClose, noGL, bpmProcessId, on
                           <div>
                             <p className="text-xs font-bold text-slate-700">{h.filename}</p>
                             <div className="flex gap-2 items-center mt-1">
-                              <Badge variant="outline" className="text-[9px] py-0 h-4">{h.rowCount} Baris</Badge>
-                              <span className="text-[10px] text-slate-400">Oleh {h.uploadedBy}</span>
+                              <Badge variant="outline" className="text-xs py-0 h-4">{h.rowCount} Baris</Badge>
+                              <span className="text-xs text-slate-400">Oleh {h.uploadedBy}</span>
                             </div>
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="text-[10px] font-medium text-slate-500">
+                          <p className="text-xs font-medium text-slate-500">
                             {formatDistanceToNow(new Date(h.createdAt), { addSuffix: true, locale })}
                           </p>
-                          <span className="text-[9px] text-slate-300 group-hover:text-indigo-400 transition-colors">ID: {h.id.substring(0,8)}</span>
+                          <span className="text-xs text-slate-300 group-hover:text-indigo-400 transition-colors">ID: {h.id.substring(0,8)}</span>
                         </div>
                       </div>
                     ))}

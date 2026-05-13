@@ -77,10 +77,10 @@ export function RCMELCPage({ embedded = false }: { embedded?: boolean }) {
             </Button>
           )
         },
-        { id: 'no', header: 'No', accessorKey: 'no', width: '50px', sticky: 'left', stickyOffset: '50px', className: 'text-center font-mono text-[11px] text-slate-400' },
+        { id: 'no', header: 'No', accessorKey: 'no', width: '50px', sticky: 'left', stickyOffset: '50px', className: 'text-center font-mono text-xs text-slate-400' },
         { id: 'code', header: t('matrix.control_ref'), accessorKey: 'code', width: '110px', sticky: 'left', stickyOffset: '100px', className: 'font-mono font-bold text-indigo-700' },
         { id: 'name', header: t('matrix.control_name'), accessorKey: 'name', width: '250px', className: 'font-bold text-slate-800' },
-        { id: 'description', header: t('matrix.control_description'), accessorKey: 'description', width: '350px', className: 'italic text-slate-500 text-[11px] leading-tight line-clamp-2' },
+        { id: 'description', header: t('matrix.control_description'), accessorKey: 'description', width: '350px', className: 'italic text-slate-500 text-xs leading-tight line-clamp-2' },
       ]
     },
     {

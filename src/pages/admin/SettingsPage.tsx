@@ -116,7 +116,7 @@ export function SettingsPage() {
                         )}
                       </div>
                     </div>
-                    <p className="text-[10px] text-slate-400 italic">Recommended: Transparent PNG, 200x200px</p>
+                    <p className="text-xs text-slate-400 italic">Recommended: Transparent PNG, 200x200px</p>
                   </div>
                </div>
             </CardContent>
@@ -165,7 +165,7 @@ export function SettingsPage() {
                   <div>
                     <div className="flex items-center gap-2">
                        <CardTitle>Compliance Cycle Control</CardTitle>
-                       <Badge variant="destructive" className="h-5 px-1.5 text-[9px]">Critical</Badge>
+                       <Badge variant="destructive" className="h-5 px-1.5 text-xs">Critical</Badge>
                     </div>
                     <CardDescription>Manage global fiscal year and period locking.</CardDescription>
                   </div>
@@ -178,7 +178,7 @@ export function SettingsPage() {
                        {localSettings.isPeriodLocked ? <Lock className="h-3.5 w-3.5" /> : <ShieldCheck className="h-3.5 w-3.5 text-green-600" />}
                        Period Status: {localSettings.isPeriodLocked ? 'LOCKED' : 'OPEN'}
                     </p>
-                    <p className="text-[11px] text-rose-700/70">When locked, all RCM, Scoping, and Diagram edits are disabled system-wide.</p>
+                    <p className="text-xs text-rose-700/70">When locked, all RCM, Scoping, and Diagram edits are disabled system-wide.</p>
                   </div>
                   <Switch 
                     checked={localSettings.isPeriodLocked} 

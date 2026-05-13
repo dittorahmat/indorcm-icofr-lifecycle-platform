@@ -50,7 +50,7 @@ export function ScopingEditorContent({
           <TabsTrigger value="history" className="flex items-center gap-2">
             <History className="h-3 w-3" /> {t('approval.tabHistory')}
             {simState.history && simState.history.length > 0 && (
-              <Badge variant="secondary" className="ml-1 h-4 px-1 text-[9px]">
+              <Badge variant="secondary" className="ml-1 h-4 px-1 text-xs">
                 {simState.history.length}
               </Badge>
             )}

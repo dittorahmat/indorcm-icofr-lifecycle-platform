@@ -203,7 +203,7 @@ export function ApprovalPage() {
                   onChange={(e) => setNote(e.target.value)}
                   className="min-h-[100px]"
                 />
-                <p className="text-[10px] text-muted-foreground italic">Note: Rejection requires a reason to be provided.</p>
+                <p className="text-xs text-muted-foreground italic">Note: Rejection requires a reason to be provided.</p>
               </div>
               <DialogFooter className="flex justify-between items-center sm:justify-between w-full">
                 <Button variant="outline" onClick={() => setIsReviewOpen(false)}>Cancel</Button>

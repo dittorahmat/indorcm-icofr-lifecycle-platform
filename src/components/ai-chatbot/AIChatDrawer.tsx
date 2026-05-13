@@ -213,7 +213,7 @@ export function AIChatDrawer({ isOpen, onClose }: AIChatDrawerProps) {
             disabled={isLoading}
             placeholder="Tanyakan sesuatu tentang ICOFR..."
           />
-          <p className="mt-2 text-[10px] text-center text-muted-foreground italic">
+          <p className="mt-2 text-xs text-center text-muted-foreground italic">
             AI dapat memberikan informasi yang tidak akurat. Selalu verifikasi regulasi resmi.
           </p>
         </div>

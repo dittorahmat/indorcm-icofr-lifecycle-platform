@@ -82,7 +82,7 @@ export function NotificationCenter() {
           <Bell className="h-5 w-5 text-slate-600" />
           {unreadCount > 0 && (
             <Badge 
-              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-red-600 hover:bg-red-700 border-2 border-white text-[10px] font-bold"
+              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-red-600 hover:bg-red-700 border-2 border-white text-xs font-bold"
             >
               {unreadCount > 9 ? '9+' : unreadCount}
             </Badge>
@@ -97,7 +97,7 @@ export function NotificationCenter() {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="h-7 text-[11px] text-indigo-600 hover:text-indigo-700 p-0 font-semibold"
+                className="h-7 text-xs text-indigo-600 hover:text-indigo-700 p-0 font-semibold"
                 onClick={() => markAllAsReadMutation.mutate()}
               >
                 <CheckCheck className="h-3 w-3 mr-1" /> {t('notifications.markAllRead')}
@@ -107,7 +107,7 @@ export function NotificationCenter() {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="h-7 text-[11px] text-red-600 hover:text-red-700 p-0 font-semibold"
+                className="h-7 text-xs text-red-600 hover:text-red-700 p-0 font-semibold"
                 onClick={() => clearAllMutation.mutate()}
               >
                 <Trash2 className="h-3 w-3 mr-1" /> {t('notifications.clearAll')}
@@ -155,7 +155,7 @@ export function NotificationCenter() {
                       )}>
                         {n.message}
                       </p>
-                      <p className="text-[11px] text-slate-400 flex items-center gap-1">
+                      <p className="text-xs text-slate-400 flex items-center gap-1">
                         {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true, locale: id })}
                       </p>
                     </div>

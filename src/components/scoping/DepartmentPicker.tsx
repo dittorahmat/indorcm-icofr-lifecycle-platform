@@ -32,7 +32,7 @@ export function DepartmentPicker({
       disabled={disabled}
     >
       <SelectTrigger className={cn(
-        "h-7 w-full text-[10px] px-2 bg-transparent border-dashed border-slate-200 hover:border-slate-400 hover:bg-slate-50 transition-all",
+        "h-7 w-full text-xs px-2 bg-transparent border-dashed border-slate-200 hover:border-slate-400 hover:bg-slate-50 transition-all",
         !selectedId && "text-slate-400 italic",
         selectedId && "text-indigo-700 font-semibold border-indigo-200 bg-indigo-50",
         className
@@ -43,11 +43,11 @@ export function DepartmentPicker({
         </div>
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="unassigned" className="text-[10px] italic text-slate-400">
+        <SelectItem value="unassigned" className="text-xs italic text-slate-400">
           Not Assigned
         </SelectItem>
         {departments.map((dept) => (
-          <SelectItem key={dept.id} value={dept.id} className="text-[11px] font-medium">
+          <SelectItem key={dept.id} value={dept.id} className="text-xs font-medium">
             {dept.name}
           </SelectItem>
         ))}

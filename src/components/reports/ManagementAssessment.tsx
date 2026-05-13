@@ -99,7 +99,7 @@ export function ManagementAssessment({
                 {(summaryData?.allDeficiencies || []).filter((d: any) => d.severity !== 'Control Deficiency').map((def: any) => (
                   <TableRow key={def.id}>
                     <TableCell className="font-medium">{def.description}</TableCell>
-                    <TableCell><Badge variant="outline" className="text-[10px]">{def.severity}</Badge></TableCell>
+                    <TableCell><Badge variant="outline" className="text-xs">{def.severity}</Badge></TableCell>
                     <TableCell className="italic text-muted-foreground">Monitor progress via Deficiency Board</TableCell>
                   </TableRow>
                 ))}

@@ -32,17 +32,17 @@ export function RCMPageHeader({
           <SidebarTrigger className="h-8 w-8 text-slate-700" />
           <div>
             <h1 className="text-xl font-black tracking-tight text-slate-900 leading-none">{title}</h1>
-            <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest mt-1 opacity-70">{subtitle}</p>
+            <p className="text-muted-foreground text-xs font-bold uppercase tracking-widest mt-1 opacity-70">{subtitle}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           {onRefresh && (
-            <Button variant="outline" size="xs" onClick={onRefresh} className="bg-white h-7 text-[10px] font-bold">
+            <Button variant="outline" size="xs" onClick={onRefresh} className="bg-white h-7 text-xs font-bold">
               <Filter className="h-3 w-3 mr-1.5" /> Refresh
             </Button>
           )}
           {onSave && (
-            <Button onClick={onSave} disabled={isSaving} size="xs" className="bg-indigo-600 hover:bg-indigo-700 shadow-md h-7 text-[10px] font-bold px-4">
+            <Button onClick={onSave} disabled={isSaving} size="xs" className="bg-indigo-600 hover:bg-indigo-700 shadow-md h-7 text-xs font-bold px-4">
               {isSaving ? <Loader2 className="h-3 w-3 mr-1.5 animate-spin" /> : <Save className="h-3 w-3 mr-1.5" />}
               Save
             </Button>
@@ -55,7 +55,7 @@ export function RCMPageHeader({
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <Input 
             placeholder="Search matrix..." 
-            className="pl-8 bg-white border-slate-200 h-8 text-[11px] font-medium" 
+            className="pl-8 bg-white border-slate-200 h-8 text-xs font-medium" 
             value={searchTerm} 
             onChange={(e) => onSearchChange(e.target.value)} 
           />
@@ -65,8 +65,8 @@ export function RCMPageHeader({
             {metadata.map((item, idx) => (
               <React.Fragment key={idx}>
                 <div className="text-right">
-                  <p className="text-[8px] text-slate-400 font-black uppercase tracking-wider leading-none">{item.label}</p>
-                  <p className="text-[10px] font-bold text-slate-700">{item.value}</p>
+                  <p className="text-xs text-slate-400 font-black uppercase tracking-wider leading-none">{item.label}</p>
+                  <p className="text-xs font-bold text-slate-700">{item.value}</p>
                 </div>
                 {idx < metadata.length - 1 && <div className="w-px h-4 bg-slate-300" />}
               </React.Fragment>

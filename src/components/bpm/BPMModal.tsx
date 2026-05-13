@@ -110,14 +110,14 @@ export function BPMModal({
                   {subProcessName || glDesc}
                 </DialogTitle>
                 <div className="flex items-center gap-2 mt-0.5 opacity-80">
-                  <Badge className="bg-white/20 text-white border-none font-mono text-[10px]">
+                  <Badge className="bg-white/20 text-white border-none font-mono text-xs">
                     BPM-REF: {noGL}
                   </Badge>
-                  <span className="text-[10px] uppercase font-bold tracking-widest">{fsliName}</span>
+                  <span className="text-xs uppercase font-bold tracking-widest">{fsliName}</span>
                   {subProcessName && glDesc && (
                     <>
                       <div className="h-3 w-[1px] bg-white/30 mx-1" />
-                      <span className="text-[10px] uppercase font-medium text-indigo-200 tracking-tight italic">
+                      <span className="text-xs uppercase font-medium text-indigo-200 tracking-tight italic">
                         Account: {glDesc}
                       </span>
                     </>
@@ -126,7 +126,7 @@ export function BPMModal({
               </div>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" className="h-8 text-[10px] font-bold bg-white/10 border-white/20 hover:bg-white/20 text-white">
+              <Button variant="outline" size="sm" className="h-8 text-xs font-bold bg-white/10 border-white/20 hover:bg-white/20 text-white">
                 <Printer className="h-3.5 w-3.5 mr-1.5" /> {t('common:actions.printPdf')}
               </Button>
               <Button variant="ghost" size="icon" onClick={() => onOpenChange(false)} className="text-white hover:bg-white/10">
@@ -140,19 +140,19 @@ export function BPMModal({
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
             <div className="px-6 border-b bg-white shrink-0 shadow-sm z-10">
               <TabsList className="h-14 bg-transparent gap-8 p-0">
-                <TabsTrigger value="worksheet" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-[11px] uppercase text-slate-500 tracking-wider">
+                <TabsTrigger value="worksheet" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-xs uppercase text-slate-500 tracking-wider">
                   <FileSpreadsheet className="h-4 w-4" /> {t('modal.tabs.worksheet')}
                 </TabsTrigger>
-                <TabsTrigger value="sampling" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-[11px] uppercase text-slate-500 tracking-wider">
+                <TabsTrigger value="sampling" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-xs uppercase text-slate-500 tracking-wider">
                   <Database className="h-4 w-4" /> {t('modal.tabs.sampling')}
                 </TabsTrigger>
-                <TabsTrigger value="csa" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-[11px] uppercase text-slate-500 tracking-wider">
+                <TabsTrigger value="csa" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-xs uppercase text-slate-500 tracking-wider">
                   <ShieldCheck className="h-4 w-4" /> {t('modal.tabs.csa')}
                 </TabsTrigger>
-                <TabsTrigger value="rcm" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-[11px] uppercase text-slate-500 tracking-wider">
+                <TabsTrigger value="rcm" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-xs uppercase text-slate-500 tracking-wider">
                   <ListChecks className="h-4 w-4" /> {t('modal.tabs.rcm')}
                 </TabsTrigger>
-                <TabsTrigger value="logs" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-[11px] uppercase text-slate-500 tracking-wider">
+                <TabsTrigger value="logs" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-xs uppercase text-slate-500 tracking-wider">
                   <History className="h-4 w-4" /> {t('modal.tabs.logs')}
                 </TabsTrigger>
               </TabsList>

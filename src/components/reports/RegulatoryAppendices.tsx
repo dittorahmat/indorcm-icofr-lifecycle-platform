@@ -38,7 +38,7 @@ export function RegulatoryAppendices({ rcmData, controlsData, testsData, summary
 
       <Tabs defaultValue="rcm-tlc" className="flex flex-col md:flex-row gap-6">
         <TabsList className="flex flex-col h-auto bg-transparent border-r rounded-none p-0 items-start min-w-[200px]">
-          <div className="px-4 py-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Risk Control Matrix</div>
+          <div className="px-4 py-2 text-xs font-bold text-muted-foreground uppercase tracking-widest">Risk Control Matrix</div>
           <TabsTrigger value="rcm-elc" className="w-full justify-start rounded-none border-l-2 border-l-transparent data-[state=active]:border-l-primary data-[state=active]:bg-muted/50 px-4 py-2">
             <ShieldCheck className="h-4 w-4 mr-2" /> ELC (Lampiran 5a)
           </TabsTrigger>
@@ -49,7 +49,7 @@ export function RegulatoryAppendices({ rcmData, controlsData, testsData, summary
             <Info className="h-4 w-4 mr-2" /> ITGC (Lampiran 5c)
           </TabsTrigger>
           
-          <div className="px-4 py-2 mt-4 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Findings & DoD</div>
+          <div className="px-4 py-2 mt-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Findings & DoD</div>
           <TabsTrigger value="findings" className="w-full justify-start rounded-none border-l-2 border-l-transparent data-[state=active]:border-l-primary data-[state=active]:bg-muted/50 px-4 py-2">
             <AlertCircle className="h-4 w-4 mr-2" /> Temuan (Lampiran 9)
           </TabsTrigger>
@@ -57,7 +57,7 @@ export function RegulatoryAppendices({ rcmData, controlsData, testsData, summary
             <LayoutGrid className="h-4 w-4 mr-2" /> DoD (Lampiran 10)
           </TabsTrigger>
 
-          <div className="px-4 py-2 mt-4 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Governance</div>
+          <div className="px-4 py-2 mt-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Governance</div>
           <TabsTrigger value="changelog" className="w-full justify-start rounded-none border-l-2 border-l-transparent data-[state=active]:border-l-primary data-[state=active]:bg-muted/50 px-4 py-2">
             <History className="h-4 w-4 mr-2" /> Log Perubahan (Lmp 6)
           </TabsTrigger>
@@ -65,7 +65,7 @@ export function RegulatoryAppendices({ rcmData, controlsData, testsData, summary
             <ClipboardCheck className="h-4 w-4 mr-2" /> Dok. CSA (Lampiran 7)
           </TabsTrigger>
 
-          <div className="px-4 py-2 mt-4 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Final Conclusion</div>
+          <div className="px-4 py-2 mt-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Final Conclusion</div>
           <TabsTrigger value="rcm-lamp11" className="w-full justify-start rounded-none border-l-2 border-l-transparent data-[state=active]:border-l-primary data-[state=active]:bg-muted/50 px-4 py-2">
             <ShieldCheck className="h-4 w-4 mr-2" /> Asesmen Manajemen (Lmp 11)
           </TabsTrigger>

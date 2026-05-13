@@ -53,7 +53,7 @@ export function ITGCForm({ data, onChange }: ITGCFormProps) {
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <Label className="text-[10px] font-black uppercase text-indigo-900 tracking-wider">Domain ITGC (Lampiran 5.c)</Label>
+        <Label className="text-xs font-black uppercase text-indigo-900 tracking-wider">Domain ITGC (Lampiran 5.c)</Label>
         <TooltipProvider>
           <Select 
             value={data.itgcDomain || ''} 
@@ -67,7 +67,7 @@ export function ITGCForm({ data, onChange }: ITGCFormProps) {
                 <SelectItem key={d.id} value={d.id}>
                   <div className="flex flex-col items-start max-w-[300px]">
                     <span className="font-bold">{d.label}</span>
-                    <span className="text-[9px] opacity-50 whitespace-normal leading-tight text-left">{d.desc}</span>
+                    <span className="text-xs opacity-50 whitespace-normal leading-tight text-left">{d.desc}</span>
                   </div>
                 </SelectItem>
               ))}
@@ -79,7 +79,7 @@ export function ITGCForm({ data, onChange }: ITGCFormProps) {
       {isAutomatedRelated && (
         <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-indigo-50/50 border border-indigo-100/50 animate-in fade-in slide-in-from-top-2 duration-300">
           <div className="space-y-2">
-            <Label className="text-[10px] font-black uppercase text-indigo-900 tracking-wider">Jenis Pengendalian Otomatis</Label>
+            <Label className="text-xs font-black uppercase text-indigo-900 tracking-wider">Jenis Pengendalian Otomatis</Label>
             <Select 
               value={data.automatedControlType || ''} 
               onValueChange={(v) => onChange('automatedControlType', v)}
@@ -95,7 +95,7 @@ export function ITGCForm({ data, onChange }: ITGCFormProps) {
             </Select>
           </div>
           <div className="space-y-2">
-            <Label className="text-[10px] font-black uppercase text-indigo-900 tracking-wider">Aplikasi Pendukung</Label>
+            <Label className="text-xs font-black uppercase text-indigo-900 tracking-wider">Aplikasi Pendukung</Label>
             <Input 
               value={data.supportingApp || ''}
               onChange={(e) => onChange('supportingApp', e.target.value)}
@@ -109,7 +109,7 @@ export function ITGCForm({ data, onChange }: ITGCFormProps) {
       <div className="space-y-4">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
-            <h4 className="text-[10px] font-black uppercase text-indigo-900 tracking-wider">IT Assertion (CIA)</h4>
+            <h4 className="text-xs font-black uppercase text-indigo-900 tracking-wider">IT Assertion (CIA)</h4>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -121,7 +121,7 @@ export function ITGCForm({ data, onChange }: ITGCFormProps) {
               </Tooltip>
             </TooltipProvider>
           </div>
-          <p className="text-[9px] text-slate-500 italic">Dokumentasi teknis keandalan sistem.</p>
+          <p className="text-xs text-slate-500 italic">Dokumentasi teknis keandalan sistem.</p>
         </div>
 
         <TooltipProvider>
@@ -129,12 +129,12 @@ export function ITGCForm({ data, onChange }: ITGCFormProps) {
             {itAssertions.map((a) => (
               <div key={a.key} className="px-3 py-2 flex items-center justify-between group">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold text-slate-600 uppercase">{a.label}</span>
+                  <span className="text-xs font-bold text-slate-600 uppercase">{a.label}</span>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Info className="h-3 w-3 text-slate-300 group-hover:text-indigo-400 transition-colors cursor-help" />
                     </TooltipTrigger>
-                    <TooltipContent side="right" className="max-w-[200px] text-[10px]">
+                    <TooltipContent side="right" className="max-w-[200px] text-xs">
                       {a.tooltip}
                     </TooltipContent>
                   </Tooltip>
@@ -143,7 +143,7 @@ export function ITGCForm({ data, onChange }: ITGCFormProps) {
                   value={currentAssertions[a.key] || 'N'} 
                   onValueChange={(v) => handleAssertionChange(a.key, v)}
                 >
-                  <SelectTrigger className="h-7 text-[9px] w-16 bg-slate-50">
+                  <SelectTrigger className="h-7 text-xs w-16 bg-slate-50">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>

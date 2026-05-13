@@ -51,13 +51,13 @@ export const ReportHeader = ({
             <p className="text-sm font-black text-indigo-700 uppercase tracking-widest mt-1">
               {title}
             </p>
-            <div className="flex items-center gap-2 mt-2 text-[10px] text-slate-400 font-bold uppercase">
+            <div className="flex items-center gap-2 mt-2 text-xs text-slate-400 font-bold uppercase">
                <MapPin className="h-3 w-3" /> Digital Governance Platform
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-1 text-[10px] border-l-2 pl-6 border-slate-100">
+        <div className="grid grid-cols-1 gap-1 text-xs border-l-2 pl-6 border-slate-100">
            <div className="flex items-center justify-between gap-4">
               <span className="text-slate-400 font-black uppercase">Doc No:</span>
               <span className="font-mono font-bold text-slate-700">{documentNo}</span>
@@ -72,7 +72,7 @@ export const ReportHeader = ({
            </div>
            <div className="flex items-center justify-between gap-4">
               <span className="text-slate-400 font-black uppercase">Status:</span>
-              <Badge className={cn("text-[8px] h-4 px-1.5 font-black uppercase", isDraft ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800")}>
+              <Badge className={cn("text-xs h-4 px-1.5 font-black uppercase", isDraft ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800")}>
                 {isDraft ? 'DRAFT' : 'FINAL'}
               </Badge>
            </div>
@@ -83,13 +83,13 @@ export const ReportHeader = ({
       {subProcess && (
         <div className="bg-slate-900 text-white p-3 rounded-lg flex justify-between items-center px-6 shadow-md">
            <div className="flex items-center gap-3">
-              <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Sub-Proses:</span>
+              <span className="text-xs font-black text-white/40 uppercase tracking-widest">Sub-Proses:</span>
               <span className="text-sm font-black uppercase tracking-tight">{subProcess}</span>
            </div>
            <div className="flex items-center gap-3">
               <div className="h-6 w-[1px] bg-white/10" />
               <ShieldCheck className="h-4 w-4 text-emerald-400" />
-              <span className="text-[9px] font-black uppercase tracking-widest">Regulatory Aligned SK-5/2024</span>
+              <span className="text-xs font-black uppercase tracking-widest">Regulatory Aligned SK-5/2024</span>
            </div>
         </div>
       )}

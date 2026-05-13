@@ -61,11 +61,11 @@ export function ApprovalHistoryTimeline({ history }: ApprovalHistoryTimelineProp
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-1">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-bold text-slate-900">{entry.action}</span>
-                <Badge variant="outline" className="text-[10px] h-4 px-1.5 py-0 uppercase font-bold tracking-tight bg-slate-50">
+                <Badge variant="outline" className="text-xs h-4 px-1.5 py-0 uppercase font-bold tracking-tight bg-slate-50">
                   {entry.role}
                 </Badge>
               </div>
-              <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
+              <div className="flex items-center gap-1.5 text-xs text-slate-400">
                 <Clock className="h-3 w-3" />
                 {format(entry.timestamp, 'dd MMM yyyy, HH:mm')}
               </div>
@@ -77,7 +77,7 @@ export function ApprovalHistoryTimeline({ history }: ApprovalHistoryTimelineProp
                   <User className="h-3 w-3 text-slate-400" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-[11px] text-slate-500 font-medium mb-1">User ID: {entry.userId}</p>
+                  <p className="text-xs text-slate-500 font-medium mb-1">User ID: {entry.userId}</p>
                   <p className={cn(
                     "text-xs leading-relaxed",
                     entry.action === 'Reject' ? "text-red-700 font-medium italic" : "text-slate-600"

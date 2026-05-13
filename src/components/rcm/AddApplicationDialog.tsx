@@ -128,7 +128,7 @@ export function AddApplicationDialog({ isOpen, onOpenChange, initialData }: AddA
                   />
                   <label 
                     htmlFor={`add-app-${area}`}
-                    className="text-[11px] font-medium leading-tight cursor-pointer text-slate-700"
+                    className="text-xs font-medium leading-tight cursor-pointer text-slate-700"
                   >
                     {area}
                   </label>

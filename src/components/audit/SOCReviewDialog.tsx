@@ -64,19 +64,19 @@ export function SOCReviewDialog({ report, isOpen, onClose, onSave }: SOCReviewDi
         <div className="space-y-6 py-4">
           <div className="grid grid-cols-2 gap-4 bg-muted/30 p-4 rounded-lg border">
              <div>
-                <Label className="text-[10px] uppercase font-bold text-muted-foreground">Vendor</Label>
+                <Label className="text-xs uppercase font-bold text-muted-foreground">Vendor</Label>
                 <p className="text-sm font-semibold">{report.vendorName}</p>
              </div>
              <div>
-                <Label className="text-[10px] uppercase font-bold text-muted-foreground">Type</Label>
+                <Label className="text-xs uppercase font-bold text-muted-foreground">Type</Label>
                 <p className="text-sm font-semibold">{report.reportType}</p>
              </div>
              <div>
-                <Label className="text-[10px] uppercase font-bold text-muted-foreground">Period End</Label>
+                <Label className="text-xs uppercase font-bold text-muted-foreground">Period End</Label>
                 <p className="text-xs">{new Date(report.periodEnd).toLocaleDateString()}</p>
              </div>
              <div>
-                <Label className="text-[10px] uppercase font-bold text-muted-foreground">Status</Label>
+                <Label className="text-xs uppercase font-bold text-muted-foreground">Status</Label>
                 <p className="text-xs font-bold uppercase">{report.status}</p>
              </div>
           </div>
@@ -171,7 +171,7 @@ function CheckItem({ id, label, desc, checked, onChecked }: { id: string, label:
         <Label htmlFor={id} className="text-sm font-bold leading-none cursor-pointer">
           {label}
         </Label>
-        <p className="text-[11px] text-muted-foreground leading-relaxed italic">
+        <p className="text-xs text-muted-foreground leading-relaxed italic">
           {desc}
         </p>
       </div>

@@ -200,7 +200,7 @@ export function ControlEditor({ isOpen, setIsOpen, control }: ControlEditorProps
 
               {level === 'ELC' && (
                 <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase text-indigo-400 tracking-widest">Policy Attachment (PDF)</Label>
+                  <Label className="text-xs font-black uppercase text-indigo-400 tracking-widest">Policy Attachment (PDF)</Label>
                   <div {...getRootProps()} className={cn(
                     "border-2 border-dashed rounded-lg p-4 transition-colors cursor-pointer text-center",
                     isDragActive ? "border-primary bg-primary/5" : "border-indigo-200 hover:bg-white",
@@ -216,7 +216,7 @@ export function ControlEditor({ isOpen, setIsOpen, control }: ControlEditorProps
                     ) : (
                       <div className="space-y-1">
                         <UploadCloud className="h-6 w-6 mx-auto text-indigo-400" />
-                        <p className="text-[10px] text-indigo-600 font-medium">Click or drag policy PDF here</p>
+                        <p className="text-xs text-indigo-600 font-medium">Click or drag policy PDF here</p>
                       </div>
                     )}
                   </div>
@@ -238,7 +238,7 @@ export function ControlEditor({ isOpen, setIsOpen, control }: ControlEditorProps
                                 const next = checked ? [...(field.value || []), elc.id] : (field.value || []).filter(id => id !== elc.id);
                                 field.onChange(next);
                             }} />
-                            <Label htmlFor={`elc-${elc.id}`} className="text-[11px] leading-tight cursor-pointer">
+                            <Label htmlFor={`elc-${elc.id}`} className="text-xs leading-tight cursor-pointer">
                               <span className="font-bold text-indigo-700">[{elc.code}]</span> {elc.name}
                             </Label>
                           </div>

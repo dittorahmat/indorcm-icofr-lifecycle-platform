@@ -88,7 +88,7 @@ function KanbanColumn({
                     <Button 
                       size="sm" 
                       variant="outline" 
-                      className="flex-1 h-7 text-[10px]"
+                      className="flex-1 h-7 text-xs"
                       onClick={() => onEditPlan(ap)}
                     >
                       Edit Plan
@@ -98,7 +98,7 @@ function KanbanColumn({
                     <Button 
                       size="sm" 
                       variant="default" 
-                      className="flex-1 h-7 text-[10px] bg-blue-600 hover:bg-blue-700"
+                      className="flex-1 h-7 text-xs bg-blue-600 hover:bg-blue-700"
                       onClick={() => onStatusChange(ap.id, "In Review")}
                     >
                       Submit for Review
@@ -109,7 +109,7 @@ function KanbanColumn({
                       <Button 
                         size="sm" 
                         variant="default" 
-                        className="flex-1 h-7 text-[10px] bg-green-600 hover:bg-green-700"
+                        className="flex-1 h-7 text-xs bg-green-600 hover:bg-green-700"
                         onClick={() => onStatusChange(ap.id, "In Progress")}
                       >
                         Approve Plan
@@ -117,7 +117,7 @@ function KanbanColumn({
                       <Button 
                         size="sm" 
                         variant="outline" 
-                        className="flex-1 h-7 text-[10px] text-red-600 border-red-200 hover:bg-red-50"
+                        className="flex-1 h-7 text-xs text-red-600 border-red-200 hover:bg-red-50"
                         onClick={() => onStatusChange(ap.id, "Draft")}
                       >
                         Reject
@@ -351,7 +351,7 @@ export function DeficiencyBoard() {
                   key={r}
                   variant={mockRole === r ? "default" : "ghost"} 
                   size="sm" 
-                  className="h-7 text-[10px] px-2"
+                  className="h-7 text-xs px-2"
                   onClick={() => handleRoleChange(r)}
                 >
                   {r}

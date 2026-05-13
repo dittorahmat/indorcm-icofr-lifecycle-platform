@@ -31,10 +31,10 @@ export function CSAList({ items, isLoading, onViewDetail, onDelete, onPrint, onN
       <Table>
         <TableHeader className="bg-slate-50">
           <TableRow>
-            <TableHead className="text-[10px] font-black uppercase">Period</TableHead>
-            <TableHead className="text-[10px] font-black uppercase text-center">Result</TableHead>
-            <TableHead className="text-[10px] font-black uppercase">Date</TableHead>
-            <TableHead className="text-right text-[10px] font-black uppercase">Action</TableHead>
+            <TableHead className="text-xs font-black uppercase">Period</TableHead>
+            <TableHead className="text-xs font-black uppercase text-center">Result</TableHead>
+            <TableHead className="text-xs font-black uppercase">Date</TableHead>
+            <TableHead className="text-right text-xs font-black uppercase">Action</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -47,10 +47,9 @@ export function CSAList({ items, isLoading, onViewDetail, onDelete, onPrint, onN
               <TableCell className="font-bold text-xs">{item.period}</TableCell>
               <TableCell className="text-center">
                 <Badge className={cn(
-                  "text-[9px] font-black uppercase",
-                  item.result === 'Effective' ? "bg-green-600" : "bg-red-600"
-                )}>{item.result}</Badge>
-              </TableCell>
+                "text-xs font-black uppercase",
+                item.result === 'Effective' ? "bg-green-600" : "bg-red-600"
+                )}>{item.result}</Badge>              </TableCell>
               <TableCell className="text-xs text-slate-500">
                 {new Date(item.assessmentDate).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                 {' '}
@@ -68,10 +67,10 @@ export function CSAList({ items, isLoading, onViewDetail, onDelete, onPrint, onN
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem className="text-[10px] font-bold gap-2 cursor-pointer" onClick={() => onPrint(item.id, 'detailed')}>
+                      <DropdownMenuItem className="text-xs font-bold gap-2 cursor-pointer" onClick={() => onPrint(item.id, 'detailed')}>
                         <FileText className="h-3.5 w-3.5" /> Export Appendix 7a (Detailed)
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="text-[10px] font-bold gap-2 cursor-pointer" onClick={() => onPrint(item.id, 'summary')}>
+                      <DropdownMenuItem className="text-xs font-bold gap-2 cursor-pointer" onClick={() => onPrint(item.id, 'summary')}>
                         <LayoutDashboard className="h-3.5 w-3.5" /> Export Appendix 7a (Summary)
                       </DropdownMenuItem>
                     </DropdownMenuContent>

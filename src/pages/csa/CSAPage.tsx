@@ -62,14 +62,14 @@ function CSARecordRow({ record: initialRecord, process }: { record: CSARecord, p
              </div>
              <div>
                <div className="font-bold text-slate-900">{process?.name || t('page.unknownProcess')}</div>
-               <div className="text-[9px] text-slate-400 uppercase font-black tracking-tight">ID: {initialRecord.bpmProcessId?.substring(0,8)}</div>
+               <div className="text-xs text-slate-400 uppercase font-black tracking-tight">ID: {initialRecord.bpmProcessId?.substring(0,8)}</div>
              </div>
            </div>
         </TableCell>
         <TableCell className="text-center font-black text-indigo-700 text-xs">{initialRecord.period}</TableCell>
         <TableCell className="text-center">
           <Badge className={cn(
-            "text-[9px] font-black uppercase shadow-none border-none",
+            "text-xs font-black uppercase shadow-none border-none",
             initialRecord.result === 'Effective' ? "bg-green-500 text-white" : "bg-red-500 text-white"
           )}>{initialRecord.result}</Badge>
         </TableCell>
@@ -77,16 +77,16 @@ function CSARecordRow({ record: initialRecord, process }: { record: CSARecord, p
           {format(new Date(initialRecord.assessmentDate), 'dd MMM yyyy HH:mm')}
         </TableCell>
         <TableCell className="text-center">
-           <Badge variant="outline" className="font-black text-[10px] bg-white border-slate-200">
+           <Badge variant="outline" className="font-black text-xs bg-white border-slate-200">
              {record.samples?.length || 0} {t('page.table.samples')}
            </Badge>
         </TableCell>
         <TableCell className="text-right" onClick={e => e.stopPropagation()}>
           <div className="flex justify-end gap-2 pr-2">
-            <Button variant="outline" size="sm" className="h-8 text-[10px] gap-1.5 border-slate-200 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 font-bold shadow-sm">
+            <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5 border-slate-200 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 font-bold shadow-sm">
               <Printer className="h-3.5 w-3.5" /> PDF
             </Button>
-            <Button variant="outline" size="sm" className="h-8 text-[10px] gap-1.5 border-slate-200 font-bold shadow-sm">
+            <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5 border-slate-200 font-bold shadow-sm">
               <Download className="h-3.5 w-3.5" /> XLS
             </Button>
           </div>
@@ -101,7 +101,7 @@ function CSARecordRow({ record: initialRecord, process }: { record: CSARecord, p
                  <div className="h-40 flex items-center justify-center bg-slate-50/50">
                     <div className="flex flex-col items-center gap-3">
                         <div className="h-6 w-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest animate-pulse">{t('page.loadingSamples')}</span>
+                        <span className="text-xs font-black text-slate-400 uppercase tracking-widest animate-pulse">{t('page.loadingSamples')}</span>
                     </div>
                  </div>
                ) : (
@@ -248,8 +248,8 @@ export function CSAPage() {
           <div className="hidden sm:flex items-center gap-3 px-5 py-3 bg-indigo-50 rounded-2xl border-2 border-indigo-100 shadow-sm shadow-indigo-100/50 animate-in fade-in slide-in-from-right-4">
              <ShieldCheck className="h-5 w-5 text-indigo-600" />
              <div className="flex flex-col">
-                <span className="text-[10px] font-black uppercase text-indigo-700 tracking-widest leading-none">{t('page.modeBadge')}</span>
-                <span className="text-[9px] font-bold text-indigo-400 uppercase tracking-tighter mt-0.5">{t('page.modeSubtitle')}</span>
+                <span className="text-xs font-black uppercase text-indigo-700 tracking-widest leading-none">{t('page.modeBadge')}</span>
+                <span className="text-xs font-bold text-indigo-400 uppercase tracking-tighter mt-0.5">{t('page.modeSubtitle')}</span>
              </div>
           </div>
         </div>
@@ -258,12 +258,12 @@ export function CSAPage() {
           <Table>
             <TableHeader className="bg-slate-50/80 backdrop-blur-md border-b-2 border-slate-100">
               <TableRow className="hover:bg-transparent border-none">
-                <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400 py-6 pl-8">{t('page.table.subProcess')}</TableHead>
-                <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">{t('page.table.period')}</TableHead>
-                <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">{t('page.table.status')}</TableHead>
-                <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t('page.table.signOff')}</TableHead>
-                <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">{t('page.table.samples')}</TableHead>
-                <TableHead className="text-right text-[10px] font-black uppercase tracking-widest text-slate-400 pr-8">{t('page.table.reports')}</TableHead>
+                <TableHead className="text-xs font-black uppercase tracking-widest text-slate-400 py-6 pl-8">{t('page.table.subProcess')}</TableHead>
+                <TableHead className="text-xs font-black uppercase tracking-widest text-slate-400 text-center">{t('page.table.period')}</TableHead>
+                <TableHead className="text-xs font-black uppercase tracking-widest text-slate-400 text-center">{t('page.table.status')}</TableHead>
+                <TableHead className="text-xs font-black uppercase tracking-widest text-slate-400">{t('page.table.signOff')}</TableHead>
+                <TableHead className="text-xs font-black uppercase tracking-widest text-slate-400 text-center">{t('page.table.samples')}</TableHead>
+                <TableHead className="text-right text-xs font-black uppercase tracking-widest text-slate-400 pr-8">{t('page.table.reports')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

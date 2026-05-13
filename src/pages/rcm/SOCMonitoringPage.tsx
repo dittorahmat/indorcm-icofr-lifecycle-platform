@@ -125,11 +125,11 @@ export function SOCMonitoringPage() {
                           <TableCell className="font-semibold text-slate-800">
                             {app.name}
                             {app.isSignificant && (
-                              <Badge variant="outline" className="ml-2 text-[8px] bg-indigo-50 text-indigo-600 border-indigo-200">SIGNIFICANT</Badge>
+                              <Badge variant="outline" className="ml-2 text-xs bg-indigo-50 text-indigo-600 border-indigo-200">SIGNIFICANT</Badge>
                             )}
                           </TableCell>
                           <TableCell>
-                            <Badge variant={app.criticality === 'High' ? 'destructive' : 'default'} className="text-[10px]">
+                            <Badge variant={app.criticality === 'High' ? 'destructive' : 'default'} className="text-xs">
                               {app.criticality}
                             </Badge>
                           </TableCell>
@@ -152,7 +152,7 @@ export function SOCMonitoringPage() {
                                 {mappedAreas.map(area => (
                                   <Tooltip key={area}>
                                     <TooltipTrigger asChild>
-                                      <Badge variant="outline" className="text-[8px] bg-blue-50 text-blue-700 border-blue-200 uppercase font-black cursor-help">
+                                      <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200 uppercase font-black cursor-help">
                                         {area.split(' ').map(word => word[0]).join('')}
                                       </Badge>
                                     </TooltipTrigger>
@@ -161,7 +161,7 @@ export function SOCMonitoringPage() {
                                     </TooltipContent>
                                   </Tooltip>
                                 ))}
-                                {mappedAreas.length === 0 && <span className="text-[10px] text-slate-400 italic">No mapping</span>}
+                                {mappedAreas.length === 0 && <span className="text-xs text-slate-400 italic">No mapping</span>}
                               </div>
                             </TooltipProvider>
                           </TableCell>
@@ -196,7 +196,7 @@ export function SOCMonitoringPage() {
               <Info className="h-5 w-5 text-blue-600 mt-0.5" />
               <div className="space-y-1">
                 <p className="text-xs font-bold text-blue-800 uppercase tracking-wide">Table 1 Compliance: COBIT to ITGC Mapping</p>
-                <p className="text-[11px] text-blue-700 leading-relaxed italic">
+                <p className="text-xs text-blue-700 leading-relaxed italic">
                   In accordance with SK-5 Table 1 regulation, each IT control (COBIT 2019) is automatically mapped to 4 main ITGC areas: 
                   Access to Program & Data, Program Change, Program Development, and Computer Operations.
                 </p>
@@ -276,11 +276,11 @@ export function SOCMonitoringPage() {
                         </TableCell>
                         <TableCell>
                           {soc.evaluation?.id ? (
-                            <Badge variant="outline" className="text-[10px] gap-1 border-green-200 text-green-700 bg-green-50">
+                            <Badge variant="outline" className="text-xs gap-1 border-green-200 text-green-700 bg-green-50">
                               <ShieldCheck className="h-3 w-3" /> Reviewed
                             </Badge>
                           ) : (
-                            <Badge variant="outline" className="text-[10px] gap-1 border-amber-200 text-amber-700 bg-amber-50">
+                            <Badge variant="outline" className="text-xs gap-1 border-amber-200 text-amber-700 bg-amber-50">
                               <AlertCircle className="h-3 w-3" /> Pending Review
                             </Badge>
                           )}

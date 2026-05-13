@@ -224,13 +224,13 @@ export function TODVerificationDialog({
                     {t('csa_hub:tod.title')}
                   </DialogTitle>
                   <div className="flex items-center gap-2 mt-1">
-                     <Badge variant="outline" className="bg-indigo-500/20 border-indigo-400/30 text-indigo-100 font-bold text-[10px] py-0">LINE 2 REVIEW & DESIGN SYNC</Badge>
-                     <p className="text-slate-400 text-[11px] font-medium tracking-wide uppercase">{t('csa_hub:tod.subtitle')}</p>
+                     <Badge variant="outline" className="bg-indigo-500/20 border-indigo-400/30 text-indigo-100 font-bold text-xs py-0">LINE 2 REVIEW & DESIGN SYNC</Badge>
+                     <p className="text-slate-400 text-xs font-medium tracking-wide uppercase">{t('csa_hub:tod.subtitle')}</p>
                   </div>
                 </div>
               </div>
               <div className="text-right hidden md:block">
-                 <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Control Reference</div>
+                 <div className="text-xs font-black text-slate-500 uppercase tracking-widest">Control Reference</div>
                  <div className="text-xl font-black tracking-tighter text-indigo-400">{rcmMapping?.controlCode || '-'}</div>
               </div>
             </div>
@@ -241,7 +241,7 @@ export function TODVerificationDialog({
               {/* Left Column: Editable Design Context (RCM) */}
               <ScrollArea className="w-full md:w-1/2 border-r bg-slate-50/50">
                 <div className="p-8 space-y-8">
-                  <div className="flex items-center gap-2 text-indigo-600 font-black text-[10px] uppercase tracking-widest mb-6">
+                  <div className="flex items-center gap-2 text-indigo-600 font-black text-xs uppercase tracking-widest mb-6">
                     <Target className="h-4 w-4" />
                     DESIGN CONTEXT (EDITABLE RCM)
                   </div>
@@ -252,7 +252,7 @@ export function TODVerificationDialog({
                       name="riskRating"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-[10px] font-black uppercase text-slate-400">{t('matrix.risk_rating')}</FormLabel>
+                          <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.risk_rating')}</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value || undefined}>
                             <FormControl><SelectTrigger className="h-9 text-xs border-slate-200"><SelectValue /></SelectTrigger></FormControl>
                             <SelectContent>
@@ -269,7 +269,7 @@ export function TODVerificationDialog({
                       name="isFraudRelated"
                       render={({ field }) => (
                         <FormItem className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-3 h-9 mt-auto">
-                          <FormLabel className="text-[10px] font-black uppercase text-slate-400 mb-0">Fraud Related?</FormLabel>
+                          <FormLabel className="text-xs font-black uppercase text-slate-400 mb-0">Fraud Related?</FormLabel>
                           <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                         </FormItem>
                       )}
@@ -281,7 +281,7 @@ export function TODVerificationDialog({
                     name="riskDescription"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-[10px] font-black uppercase text-slate-400">{t('matrix.risk_description')}</FormLabel>
+                        <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.risk_description')}</FormLabel>
                         <FormControl><Textarea {...field} rows={3} className="text-xs border-slate-200" /></FormControl>
                       </FormItem>
                     )}
@@ -293,7 +293,7 @@ export function TODVerificationDialog({
                       name="mappedControlName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-[10px] font-black uppercase text-slate-400">{t('matrix.control_name')}</FormLabel>
+                          <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.control_name')}</FormLabel>
                           <FormControl><Input {...field} className="text-xs font-bold border-slate-200" /></FormControl>
                         </FormItem>
                       )}
@@ -303,7 +303,7 @@ export function TODVerificationDialog({
                       name="mappedControlDescription"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-[10px] font-black uppercase text-slate-400">{t('matrix.control_description')}</FormLabel>
+                          <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.control_description')}</FormLabel>
                           <FormControl><Textarea {...field} rows={4} className="text-xs border-slate-200 italic" /></FormControl>
                         </FormItem>
                       )}
@@ -316,7 +316,7 @@ export function TODVerificationDialog({
                         name="frequency"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-[10px] font-black uppercase text-slate-400">{t('matrix.frequency')}</FormLabel>
+                            <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.frequency')}</FormLabel>
                             <FormControl><Input {...field} className="text-xs border-slate-200" /></FormControl>
                           </FormItem>
                         )}
@@ -326,7 +326,7 @@ export function TODVerificationDialog({
                         name="controlNature"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-[10px] font-black uppercase text-slate-400">{t('matrix.nature')}</FormLabel>
+                            <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.nature')}</FormLabel>
                             <FormControl><Input {...field} className="text-xs border-slate-200" /></FormControl>
                           </FormItem>
                         )}
@@ -339,7 +339,7 @@ export function TODVerificationDialog({
                       name="controlType"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-[10px] font-black uppercase text-slate-400">{t('matrix.type')}</FormLabel>
+                          <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.type')}</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value || undefined}>
                             <FormControl><SelectTrigger className="h-9 text-xs border-slate-200"><SelectValue placeholder="Pilih Tipe" /></SelectTrigger></FormControl>
                             <SelectContent>
@@ -355,7 +355,7 @@ export function TODVerificationDialog({
                       name="isKeyControl"
                       render={({ field }) => (
                         <FormItem className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-3 h-9 mt-auto">
-                          <FormLabel className="text-[10px] font-black uppercase text-slate-400 mb-0">{t('matrix.is_key_control')}</FormLabel>
+                          <FormLabel className="text-xs font-black uppercase text-slate-400 mb-0">{t('matrix.is_key_control')}</FormLabel>
                           <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                         </FormItem>
                       )}
@@ -368,7 +368,7 @@ export function TODVerificationDialog({
                       name="automatedSubNature"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-[10px] font-black uppercase text-slate-400">{t('matrix.automated_type')}</FormLabel>
+                          <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.automated_type')}</FormLabel>
                           <FormControl><Input {...field} className="text-xs border-slate-200" placeholder="Contoh: Automated Calculation" /></FormControl>
                         </FormItem>
                       )}
@@ -378,7 +378,7 @@ export function TODVerificationDialog({
                       name="supportingApp"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-[10px] font-black uppercase text-slate-400">{t('matrix.supporting_app')}</FormLabel>
+                          <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.supporting_app')}</FormLabel>
                           <FormControl><Input {...field} className="text-xs border-slate-200" /></FormControl>
                         </FormItem>
                       )}
@@ -391,7 +391,7 @@ export function TODVerificationDialog({
                       name="executingFunction"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-[10px] font-black uppercase text-slate-400">{t('matrix.executing_function')}</FormLabel>
+                          <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.executing_function')}</FormLabel>
                           <FormControl><Input {...field} className="text-xs border-slate-200" /></FormControl>
                         </FormItem>
                       )}
@@ -401,7 +401,7 @@ export function TODVerificationDialog({
                       name="executorRole"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-[10px] font-black uppercase text-slate-400">{t('matrix.executor_role')}</FormLabel>
+                          <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.executor_role')}</FormLabel>
                           <FormControl><Input {...field} className="text-xs border-slate-200" /></FormControl>
                         </FormItem>
                       )}
@@ -414,7 +414,7 @@ export function TODVerificationDialog({
                       name="affectedFsliItem"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-[10px] font-black uppercase text-slate-400">{t('matrix.affected_fsli_item')}</FormLabel>
+                          <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.affected_fsli_item')}</FormLabel>
                           <FormControl><Input {...field} className="text-xs border-slate-200" /></FormControl>
                         </FormItem>
                       )}
@@ -424,7 +424,7 @@ export function TODVerificationDialog({
                       name="effectivePeriod"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-[10px] font-black uppercase text-slate-400">{t('matrix.effective_period')}</FormLabel>
+                          <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.effective_period')}</FormLabel>
                           <FormControl><Input {...field} className="text-xs border-slate-200" /></FormControl>
                         </FormItem>
                       )}
@@ -436,7 +436,7 @@ export function TODVerificationDialog({
                     name="supportingDocs"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-[10px] font-black uppercase text-slate-400">{t('matrix.supporting_docs')}</FormLabel>
+                        <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.supporting_docs')}</FormLabel>
                         <FormControl><Textarea {...field} rows={2} className="text-xs border-slate-200" /></FormControl>
                       </FormItem>
                     )}
@@ -444,7 +444,7 @@ export function TODVerificationDialog({
 
                   <div className="space-y-6 pt-4 border-t border-slate-200">
                     <div>
-                      <h4 className="text-[10px] font-black uppercase text-slate-400 mb-3 tracking-widest">Compliance Markers</h4>
+                      <h4 className="text-xs font-black uppercase text-slate-400 mb-3 tracking-widest">Compliance Markers</h4>
                       <div className="grid grid-cols-4 gap-2">
                         {['ipoC', 'ipoA', 'ipoV', 'ipoRa'].map(f => (
                           <FormField
@@ -453,7 +453,7 @@ export function TODVerificationDialog({
                             name={f as any}
                             render={({ field }) => (
                               <FormItem className="flex flex-col items-center gap-1 space-y-0 p-2 rounded-lg border border-slate-200 bg-white">
-                                <FormLabel className="text-[9px] font-black">{f.replace('ipo', '')}</FormLabel>
+                                <FormLabel className="text-xs font-black">{f.replace('ipo', '')}</FormLabel>
                                 <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                               </FormItem>
                             )}
@@ -469,7 +469,7 @@ export function TODVerificationDialog({
                           name={f as any}
                           render={({ field }) => (
                             <FormItem className="flex flex-col items-center gap-1 space-y-0 p-1 rounded-lg border border-slate-200 bg-white">
-                              <FormLabel className="text-[8px] font-black">{f.replace('assertion', '').toUpperCase()}</FormLabel>
+                              <FormLabel className="text-xs font-black">{f.replace('assertion', '').toUpperCase()}</FormLabel>
                               <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                             </FormItem>
                           )}
@@ -483,7 +483,7 @@ export function TODVerificationDialog({
               {/* Right Column: Assessment (Interactive) */}
               <ScrollArea className="w-full md:w-1/2 bg-white shadow-[-10px_0_15px_-5px_rgba(0,0,0,0.02)]">
                 <div className="p-8 space-y-8">
-                  <div className="flex items-center gap-2 text-indigo-600 font-black text-[10px] uppercase tracking-widest mb-6">
+                  <div className="flex items-center gap-2 text-indigo-600 font-black text-xs uppercase tracking-widest mb-6">
                      <Target className="h-4 w-4" />
                      EVALUASI RANCANGAN (LAMPIRAN 8)
                   </div>
@@ -502,7 +502,7 @@ export function TODVerificationDialog({
                           {pilar.label}
                         </Label>
                         {errors[pilar.id as keyof CombinedFormValues] && (
-                           <span className="text-[10px] font-bold text-red-500 animate-pulse">Required</span>
+                           <span className="text-xs font-bold text-red-500 animate-pulse">Required</span>
                         )}
                       </div>
                       <Textarea 
@@ -519,7 +519,7 @@ export function TODVerificationDialog({
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
                     <div className="space-y-2">
-                       <Label className="text-[10px] font-black uppercase text-slate-500 flex items-center gap-1.5">
+                       <Label className="text-xs font-black uppercase text-slate-500 flex items-center gap-1.5">
                          <FileText className="h-3.5 w-3.5 text-indigo-500" /> {t('csa_hub:tod.kkRef')}
                        </Label>
                        <Input 
@@ -530,7 +530,7 @@ export function TODVerificationDialog({
                     </div>
 
                     <div className="space-y-2">
-                       <Label className="text-[10px] font-black uppercase text-slate-500">
+                       <Label className="text-xs font-black uppercase text-slate-500">
                          {t('csa_hub:tod.conclusion')}
                        </Label>
                        <div className="flex gap-2 h-11">
@@ -538,7 +538,7 @@ export function TODVerificationDialog({
                             type="button"
                             variant="outline"
                             className={cn(
-                              "flex-1 gap-2 font-black text-[10px] uppercase border-2 rounded-xl transition-all",
+                              "flex-1 gap-2 font-black text-xs uppercase border-2 rounded-xl transition-all",
                               form.watch('conclusion') === 'Effective' ? "bg-green-50 border-green-600 text-green-700 shadow-sm" : "opacity-40 grayscale"
                             )}
                             onClick={() => form.setValue('conclusion', 'Effective', { shouldDirty: true })}
@@ -549,7 +549,7 @@ export function TODVerificationDialog({
                             type="button"
                             variant="outline"
                             className={cn(
-                              "flex-1 gap-2 font-black text-[10px] uppercase border-2 rounded-xl transition-all",
+                              "flex-1 gap-2 font-black text-xs uppercase border-2 rounded-xl transition-all",
                               form.watch('conclusion') === 'Ineffective' ? "bg-red-50 border-red-600 text-red-700 shadow-sm" : "opacity-40 grayscale"
                             )}
                             onClick={() => form.setValue('conclusion', 'Ineffective', { shouldDirty: true })}
@@ -561,7 +561,7 @@ export function TODVerificationDialog({
                   </div>
 
                   <div className="space-y-2">
-                     <Label className="text-[10px] font-black uppercase text-slate-500">
+                     <Label className="text-xs font-black uppercase text-slate-500">
                        Overall Assessment Comment
                      </Label>
                      <Textarea 
@@ -572,7 +572,7 @@ export function TODVerificationDialog({
                   </div>
 
                   <div className="pt-6 border-t flex justify-end gap-3 sticky bottom-0 bg-white pb-4">
-                    <Button type="button" variant="ghost" onClick={() => handleOpenChange(false)} className="font-black uppercase text-[10px] tracking-widest text-slate-400">
+                    <Button type="button" variant="ghost" onClick={() => handleOpenChange(false)} className="font-black uppercase text-xs tracking-widest text-slate-400">
                       {t('common:actions.cancel')}
                     </Button>
                     <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 shadow-xl shadow-indigo-200 px-8 py-6 rounded-2xl font-black uppercase tracking-widest text-xs" disabled={isPending}>

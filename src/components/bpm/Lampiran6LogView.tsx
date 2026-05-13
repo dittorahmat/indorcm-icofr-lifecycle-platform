@@ -55,9 +55,9 @@ export function Lampiran6LogView({ entityId }: Lampiran6LogViewProps) {
             <History className="h-4 w-4 text-indigo-500" />
             Lampiran 6: Log Perubahan BPM & RCM
           </h4>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Histori Persetujuan & Modifikasi Pengendalian</p>
+          <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Histori Persetujuan & Modifikasi Pengendalian</p>
         </div>
-        <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-100 px-2 py-0.5 text-[10px]">
+        <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-100 px-2 py-0.5 text-xs">
           {logs.length} Entries
         </Badge>
       </div>
@@ -66,10 +66,10 @@ export function Lampiran6LogView({ entityId }: Lampiran6LogViewProps) {
         <Table>
           <TableHeader className="bg-slate-50">
             <TableRow>
-              <TableHead className="text-[10px] font-bold uppercase py-3">Tanggal & Waktu</TableHead>
-              <TableHead className="text-[10px] font-bold uppercase py-3">Pelaksana (Staff)</TableHead>
-              <TableHead className="text-[10px] font-bold uppercase py-3">Perubahan</TableHead>
-              <TableHead className="text-[10px] font-bold uppercase py-3 text-center">Approver (Manager)</TableHead>
+              <TableHead className="text-xs font-bold uppercase py-3">Tanggal & Waktu</TableHead>
+              <TableHead className="text-xs font-bold uppercase py-3">Pelaksana (Staff)</TableHead>
+              <TableHead className="text-xs font-bold uppercase py-3">Perubahan</TableHead>
+              <TableHead className="text-xs font-bold uppercase py-3 text-center">Approver (Manager)</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -81,7 +81,7 @@ export function Lampiran6LogView({ entityId }: Lampiran6LogViewProps) {
                       <Calendar className="h-3 w-3 text-slate-400" />
                       {format(log.timestamp, 'dd MMM yyyy')}
                     </div>
-                    <span className="text-[10px] text-slate-400 font-mono ml-4.5">
+                    <span className="text-xs text-slate-400 font-mono ml-4.5">
                       {format(log.timestamp, 'HH:mm:ss')}
                     </span>
                   </div>
@@ -96,8 +96,8 @@ export function Lampiran6LogView({ entityId }: Lampiran6LogViewProps) {
                 </TableCell>
                 <TableCell className="max-w-[300px]">
                   <div className="space-y-1.5">
-                    <p className="text-[11px] text-slate-700 font-medium line-clamp-2">{log.descriptionAfter}</p>
-                    <Badge variant="secondary" className="text-[9px] h-4 px-1.5 bg-slate-100 text-slate-500 font-normal">
+                    <p className="text-xs text-slate-700 font-medium line-clamp-2">{log.descriptionAfter}</p>
+                    <Badge variant="secondary" className="text-xs h-4 px-1.5 bg-slate-100 text-slate-500 font-normal">
                       Manual Update
                     </Badge>
                   </div>
@@ -108,7 +108,7 @@ export function Lampiran6LogView({ entityId }: Lampiran6LogViewProps) {
                       <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
                       <span className="text-xs font-bold text-slate-700">{getUserName(log.approvedBy)}</span>
                     </div>
-                    <span className="text-[9px] text-slate-400 italic">Validated</span>
+                    <span className="text-xs text-slate-400 italic">Validated</span>
                   </div>
                 </TableCell>
               </TableRow>

@@ -35,9 +35,6 @@ import { ScopingSimulationForm } from './components/ScopingSimulationForm';
 import { ScopingEditorHeader } from './components/ScopingEditorHeader';
 import { ScopingEditorContent } from './components/ScopingEditorContent';
 
-import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
-import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
-
 import type { MaterialitySimulation } from '@shared/types';
 
 export function ScopingPage() {
@@ -119,7 +116,7 @@ export function ScopingPage() {
                 <Plus className="h-4 w-4" /> {t('scoping:simulation.createNew')}
               </Button>
             </div>
-            {!activeSnapshot && <p className="text-[10px] text-muted-foreground italic">{t('scoping:emptyState')}</p>}
+            {!activeSnapshot && <p className="text-xs text-muted-foreground italic">{t('scoping:emptyState')}</p>}
           </div>
         </PageHeader>
 
@@ -205,8 +202,6 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
     departments, applications, localAppMappings, isLocked, mutations, handlers, isDirty
   } = useScopingEditor(simulation);
 
-  const blocker = useUnsavedChanges(isDirty);
-
   const handleOwnerAcceptanceChange = async (noGL: string, acceptance: "Accepted" | "Rejected") => {
     if (isLocked) return;
     try {
@@ -257,10 +252,10 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
                 />
 
                 <Card className="bg-amber-50 border-amber-200 shadow-sm w-[300px] p-4">
-                   <h3 className="text-[10px] uppercase font-bold text-amber-800 flex items-center gap-2 mb-2">
+                   <h3 className="text-xs uppercase font-bold text-amber-800 flex items-center gap-2 mb-2">
                      <AlertTriangle className="h-3 w-3" /> {t('logic.title')}
                    </h3>
-                   <div className="text-[10px] text-amber-700 leading-relaxed space-y-2 italic">
+                   <div className="text-xs text-amber-700 leading-relaxed space-y-2 italic">
                     <p>{t('logic.description')}</p>
                     <ol className="list-decimal list-inside space-y-1">
                       <li>{t('logic.quant')}</li>
@@ -299,7 +294,6 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
             onQuickAddApp={handleQuickAddApp}
           />
         </div>
-        <UnsavedChangesDialog blocker={blocker} />
       </div>
     </AppLayout>
   );

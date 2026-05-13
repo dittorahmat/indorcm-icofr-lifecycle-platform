@@ -54,14 +54,14 @@ export function ELCForm({ data, onChange }: ELCFormProps) {
     <TooltipProvider>
       <div className="space-y-4">
         <div className="flex flex-col gap-1 mb-2">
-          <h4 className="text-[10px] font-black uppercase text-indigo-900 tracking-wider">Pemetaan 17 Prinsip COSO (Lampiran 1)</h4>
-          <p className="text-[9px] text-slate-500 italic">Tentukan prinsip COSO mana yang dipayungi oleh kontrol entitas ini.</p>
+          <h4 className="text-xs font-black uppercase text-indigo-900 tracking-wider">Pemetaan 17 Prinsip COSO (Lampiran 1)</h4>
+          <p className="text-xs text-slate-500 italic">Tentukan prinsip COSO mana yang dipayungi oleh kontrol entitas ini.</p>
         </div>
 
         <div className="border rounded-lg bg-white shadow-sm overflow-hidden">
           <div className="bg-slate-50 border-b px-3 py-1.5 flex justify-between items-center">
-            <span className="text-[9px] font-bold text-slate-400 uppercase">Prinsip COSO</span>
-            <span className="text-[9px] font-bold text-slate-400 uppercase">Relevan?</span>
+            <span className="text-xs font-bold text-slate-400 uppercase">Prinsip COSO</span>
+            <span className="text-xs font-bold text-slate-400 uppercase">Relevan?</span>
           </div>
           <ScrollArea className="h-[250px]">
             <div className="divide-y">
@@ -70,21 +70,21 @@ export function ELCForm({ data, onChange }: ELCFormProps) {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <div className="flex items-center gap-3 cursor-help">
-                        <Badge variant="outline" className="font-mono text-[9px] h-5 w-8 flex justify-center bg-indigo-50 border-indigo-100 text-indigo-700">
+                        <Badge variant="outline" className="font-mono text-xs h-5 w-8 flex justify-center bg-indigo-50 border-indigo-100 text-indigo-700">
                           {p.label}
                         </Badge>
-                        <span className="text-[10px] font-medium text-slate-700 underline decoration-dotted decoration-slate-300 underline-offset-2">{p.desc}</span>
+                        <span className="text-xs font-medium text-slate-700 underline decoration-dotted decoration-slate-300 underline-offset-2">{p.desc}</span>
                       </div>
                     </TooltipTrigger>
                     <TooltipContent side="right" className="max-w-[250px] bg-slate-900 text-white p-3">
-                       <p className="text-[10px] leading-relaxed">{t(`matrix.coso_tooltips.p${p.id}`)}</p>
+                       <p className="text-xs leading-relaxed">{t(`matrix.coso_tooltips.p${p.id}`)}</p>
                     </TooltipContent>
                   </Tooltip>
                   <Select 
                     value={currentMapping.includes(p.id) ? 'Y' : 'N'} 
                     onValueChange={(v) => handleToggle(p.id, v)}
                   >
-                    <SelectTrigger className="h-7 text-[9px] w-16 bg-white">
+                    <SelectTrigger className="h-7 text-xs w-16 bg-white">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>

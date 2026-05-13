@@ -35,7 +35,7 @@ export const BPMCanvasHeader = ({ subProcess, year, version = '1.0', isDraft, no
                 <Building2 className="h-10 w-10 text-slate-200" />
               )}
            </div>
-           <span className="text-[10px] font-black uppercase text-slate-600 text-center leading-tight">
+           <span className="text-xs font-black uppercase text-slate-600 text-center leading-tight">
              {settings?.companyName || "PT. INDO GRC PRO"}
            </span>
         </div>
@@ -52,7 +52,7 @@ export const BPMCanvasHeader = ({ subProcess, year, version = '1.0', isDraft, no
         </div>
 
         {/* Metadata Section */}
-        <div className="col-span-3 grid grid-rows-4 text-[10px] uppercase font-bold">
+        <div className="col-span-3 grid grid-rows-4 text-xs uppercase font-bold">
            <div className="border-b border-slate-800 px-3 flex items-center justify-between">
               <span className="text-slate-400 font-black">Versi</span>
               <span className="text-slate-900">{version}</span>
@@ -75,16 +75,16 @@ export const BPMCanvasHeader = ({ subProcess, year, version = '1.0', isDraft, no
       {/* Second Row: Lifecycle Detail */}
       <div className="grid grid-cols-12 bg-slate-900 text-white py-2 px-4">
          <div className="col-span-4 flex items-center gap-3">
-            <span className="text-[9px] font-black opacity-60 uppercase tracking-widest">Siklus:</span>
-            <span className="text-[10px] font-bold truncate">ICOFR LIFECYCLE</span>
+            <span className="text-xs font-black opacity-60 uppercase tracking-widest">Siklus:</span>
+            <span className="text-xs font-bold truncate">ICOFR LIFECYCLE</span>
          </div>
          <div className="col-span-4 flex items-center gap-3 border-x border-white/20 px-4">
-            <span className="text-[9px] font-black opacity-60 uppercase tracking-widest">FSLI:</span>
-            <span className="text-[10px] font-bold">{fsliName || "TBD"}</span>
+            <span className="text-xs font-black opacity-60 uppercase tracking-widest">FSLI:</span>
+            <span className="text-xs font-bold">{fsliName || "TBD"}</span>
          </div>
          <div className="col-span-4 flex items-center justify-end gap-2">
             <ShieldCheck className="h-4 w-4 text-emerald-400" />
-            <span className="text-[10px] font-black tracking-tighter">APPENDIX 4 - SK-5/2024</span>
+            <span className="text-xs font-black tracking-tighter">APPENDIX 4 - SK-5/2024</span>
          </div>
       </div>
     </div>
@@ -95,46 +95,46 @@ export const BPMCanvasFooter = () => {
   return (
     <div className="w-full mt-8 grid grid-cols-3 border-2 border-slate-800 bg-white">
        <div className="border-r-2 border-slate-800 p-4 min-h-[120px] flex flex-col">
-          <span className="text-[9px] font-black uppercase text-slate-500 mb-4 border-b pb-1">Disusun Oleh (Lini 1)</span>
+          <span className="text-xs font-black uppercase text-slate-500 mb-4 border-b pb-1">Disusun Oleh (Lini 1)</span>
           <div className="flex-1" />
           <div className="space-y-1">
-             <div className="flex justify-between text-[10px] font-bold uppercase">
+             <div className="flex justify-between text-xs font-bold uppercase">
                 <span className="text-slate-400">Nama:</span>
                 <span className="w-32 border-b border-slate-200" />
              </div>
-             <div className="flex justify-between text-[10px] font-bold uppercase pt-1">
+             <div className="flex justify-between text-xs font-bold uppercase pt-1">
                 <span className="text-slate-400">Tgl:</span>
                 <span className="w-32 border-b border-slate-200" />
              </div>
           </div>
        </div>
        <div className="border-r-2 border-slate-800 p-4 min-h-[120px] flex flex-col">
-          <span className="text-[9px] font-black uppercase text-slate-500 mb-4 border-b pb-1">Direview Oleh (Lini 2)</span>
+          <span className="text-xs font-black uppercase text-slate-500 mb-4 border-b pb-1">Direview Oleh (Lini 2)</span>
           <div className="flex-1" />
           <div className="space-y-1">
-             <div className="flex justify-between text-[10px] font-bold uppercase">
+             <div className="flex justify-between text-xs font-bold uppercase">
                 <span className="text-slate-400">Nama:</span>
                 <span className="w-32 border-b border-slate-200" />
              </div>
-             <div className="flex justify-between text-[10px] font-bold uppercase pt-1">
+             <div className="flex justify-between text-xs font-bold uppercase pt-1">
                 <span className="text-slate-400">Tgl:</span>
                 <span className="w-32 border-b border-slate-200" />
              </div>
           </div>
        </div>
        <div className="p-4 min-h-[120px] flex flex-col bg-slate-50/30">
-          <span className="text-[9px] font-black uppercase text-slate-500 mb-4 border-b pb-1">Disetujui Oleh (CFO)</span>
+          <span className="text-xs font-black uppercase text-slate-500 mb-4 border-b pb-1">Disetujui Oleh (CFO)</span>
           <div className="flex-1 flex items-center justify-center opacity-10 rotate-[-12deg] select-none pointer-events-none">
              <ShieldCheck className="h-10 w-10 text-slate-900" />
           </div>
           <div className="space-y-1 mt-auto">
-             <div className="flex justify-between text-[10px] font-bold uppercase">
+             <div className="flex justify-between text-xs font-bold uppercase">
                 <span className="text-slate-400">Nama:</span>
                 <span className="w-32 border-b border-slate-200" />
              </div>
-             <div className="flex justify-between text-[10px] font-bold uppercase pt-1">
+             <div className="flex justify-between text-xs font-bold uppercase pt-1">
                 <span className="text-slate-400">Sign:</span>
-                <span className="w-32 border-b border-slate-200 font-mono italic text-[8px] flex items-center justify-center">DIGITALLY SIGNED</span>
+                <span className="w-32 border-b border-slate-200 font-mono italic text-xs flex items-center justify-center">DIGITALLY SIGNED</span>
              </div>
           </div>
        </div>

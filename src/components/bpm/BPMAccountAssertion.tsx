@@ -54,12 +54,12 @@ export function BPMAccountAssertion({
           </div>
           <div className="flex items-center gap-3">
             {isAssertionDirty && (
-              <Button size="sm" onClick={onSave} disabled={isSaving} className="h-7 px-3 text-[10px] gap-1.5 bg-indigo-600 hover:bg-indigo-700">
+              <Button size="sm" onClick={onSave} disabled={isSaving} className="h-7 px-3 text-xs gap-1.5 bg-indigo-600 hover:bg-indigo-700">
                 {isSaving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
                 {t('common:actions.save')}
               </Button>
             )}
-            <Badge variant="secondary" className="bg-indigo-100 text-indigo-700 font-bold text-[10px]">{t('assertions.subtitle')}</Badge>
+            <Badge variant="secondary" className="bg-indigo-100 text-indigo-700 font-bold text-xs">{t('assertions.subtitle')}</Badge>
           </div>
         </div>
       </CardHeader>
@@ -72,12 +72,12 @@ export function BPMAccountAssertion({
                   <TableHead key={field.key} className="text-center w-[120px]">
                     <Tooltip>
                       <TooltipTrigger className="cursor-help flex items-center justify-center gap-1 mx-auto">
-                        <span className="font-bold text-[10px] uppercase">{field.label}</span>
+                        <span className="font-bold text-xs uppercase">{field.label}</span>
                         <Info className="h-3 w-3 text-slate-400" />
                       </TooltipTrigger>
                       <TooltipContent side="top" className="max-w-xs">
                         <p className="text-xs"><strong>{field.label}</strong></p>
-                        <p className="text-[10px] mt-1">{field.desc}</p>
+                        <p className="text-xs mt-1">{field.desc}</p>
                       </TooltipContent>
                     </Tooltip>
                   </TableHead>

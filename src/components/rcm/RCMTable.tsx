@@ -63,7 +63,7 @@ export function RCMTable({
                   key={`group-${gIdx}`}
                   colSpan={group.columns.length}
                   className={cn(
-                    "text-center font-black uppercase text-[10px] tracking-widest border-r border-slate-700/50 py-2 px-2",
+                    "text-center font-black uppercase text-xs tracking-widest border-r border-slate-700/50 py-2 px-2",
                     group.className,
                     group.columns[0]?.sticky === 'left' && "sticky left-0 z-[70] bg-slate-900 shadow-[2px_0_5px_rgba(0,0,0,0.2)]"
                   )}
@@ -80,7 +80,7 @@ export function RCMTable({
                 <th 
                   key={`col-${col.id}-${cIdx}`}
                   className={cn(
-                    "font-black uppercase text-[9px] px-3 border-r border-slate-300 text-slate-600 align-middle",
+                    "font-black uppercase text-xs px-3 border-r border-slate-300 text-slate-600 align-middle",
                     col.sticky === 'left' && "sticky z-[70] bg-slate-100 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]",
                     col.sticky === 'right' && "sticky right-0 z-[70] bg-slate-100",
                     col.headerClassName
@@ -99,7 +99,7 @@ export function RCMTable({
                           </div>
                         </TooltipTrigger>
                         <TooltipContent side="top" className="max-w-[300px] bg-slate-900 text-white p-3 border-none shadow-2xl rounded-xl z-[100]">
-                           <div className="text-[11px] leading-relaxed font-medium">
+                           <div className="text-xs leading-relaxed font-medium">
                               {col.tooltip}
                            </div>
                         </TooltipContent>
@@ -133,7 +133,7 @@ export function RCMTable({
                         <td 
                           key={`cell-${col.id}-${cIdx}`}
                           className={cn(
-                            "px-3 border-r border-slate-100 py-2 text-[11px]",
+                            "px-3 border-r border-slate-100 py-2 text-xs",
                             col.sticky === 'left' && cn("sticky z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]", rowBg),
                             col.sticky === 'right' && cn("sticky right-0 z-30 border-l shadow-[-2px_0_5px_-2px_rgba(0,0,0,0.05)]", rowBg),
                             col.className

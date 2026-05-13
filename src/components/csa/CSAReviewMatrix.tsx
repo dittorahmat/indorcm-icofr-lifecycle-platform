@@ -56,10 +56,10 @@ export function CSAReviewMatrix({
           {t('tod.matrixTitle')}
         </h3>
         <div className="flex gap-4">
-             <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400">
+             <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400">
                 <div className="w-2 h-2 rounded-full bg-green-500" /> Pass
              </div>
-             <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400">
+             <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400">
                 <div className="w-2 h-2 rounded-full bg-red-500" /> Fail
              </div>
         </div>
@@ -70,17 +70,17 @@ export function CSAReviewMatrix({
           <TableHeader className="bg-white">
             <TableRow className="hover:bg-transparent border-b-2">
               <TableHead className="w-[280px] sticky left-0 z-20 bg-white border-r shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
-                <div className="text-[10px] font-black uppercase text-slate-400 py-1">{t('tod.rcmAttributes')}</div>
+                <div className="text-xs font-black uppercase text-slate-400 py-1">{t('tod.rcmAttributes')}</div>
               </TableHead>
               <TableHead className="w-[120px] text-center border-r bg-slate-50/50">
-                <div className="text-[10px] font-black uppercase text-slate-400 py-1">TOD Lini 2</div>
+                <div className="text-xs font-black uppercase text-slate-400 py-1">TOD Lini 2</div>
               </TableHead>
               {record.samples?.map((sample, idx) => (
                 <TableHead key={sample.id || idx} className="min-w-[100px] text-center border-r">
-                   <div className="text-[10px] font-black text-slate-600 truncate max-w-[120px] mx-auto" title={sample.sampleRef || `Sample ${idx+1}`}>
+                   <div className="text-xs font-black text-slate-600 truncate max-w-[120px] mx-auto" title={sample.sampleRef || `Sample ${idx+1}`}>
                      {sample.sampleRef || `Sample ${idx+1}`}
                    </div>
-                   <div className="text-[8px] font-bold text-slate-400 uppercase mt-0.5">Evidence</div>
+                   <div className="text-xs font-bold text-slate-400 uppercase mt-0.5">Evidence</div>
                 </TableHead>
               ))}
             </TableRow>
@@ -99,13 +99,13 @@ export function CSAReviewMatrix({
                         {control.controlCode}
                         <ExternalLink className="h-3 w-3 text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                       </div>
-                      <div className="text-[10px] text-slate-500 font-medium line-clamp-1 mt-0.5 max-w-[240px]">
+                      <div className="text-xs text-slate-500 font-medium line-clamp-1 mt-0.5 max-w-[240px]">
                         {control.mappedControlName || control.baseControlName}
                       </div>
                     </button>
                   </TableCell>
                   <TableCell className="text-center border-r py-3 bg-slate-50/30 group-hover:bg-indigo-50/20 transition-colors">
-                    <Badge className={cn("px-2 py-0.5 text-[9px] font-black uppercase border shadow-none pointer-events-none flex items-center gap-1 w-fit mx-auto", tod.color)}>
+                    <Badge className={cn("px-2 py-0.5 text-xs font-black uppercase border shadow-none pointer-events-none flex items-center gap-1 w-fit mx-auto", tod.color)}>
                       {tod.icon}
                       {tod.label}
                     </Badge>

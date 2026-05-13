@@ -35,7 +35,7 @@ const StartEndNode = ({ data }: NodeProps) => (
       position={data.type === 'start' ? Position.Bottom : Position.Top} 
       className="opacity-0" 
     />
-    <span className={cn("font-bold text-[11px] uppercase tracking-wider", data.type === 'start' ? "text-green-700" : "text-red-700")}>
+    <span className={cn("font-bold text-xs uppercase tracking-wider", data.type === 'start' ? "text-green-700" : "text-red-700")}>
       {data.label}
     </span>
   </div>
@@ -47,7 +47,7 @@ const ActivityNode = ({ data, type }: NodeProps) => (
     data.highlight && "ring-8 ring-yellow-400 ring-offset-4 rounded-lg animate-pulse scale-110 z-50"
   )}>
     <Handle type="target" position={Position.Top} className="opacity-0" />
-    <div className="font-bold text-[9px] mb-1.5 uppercase text-slate-500 border-b pb-1 flex items-center justify-center gap-1">
+    <div className="font-bold text-xs mb-1.5 uppercase text-slate-500 border-b pb-1 flex items-center justify-center gap-1">
       {type === 'automated-activity' ? <Database className="h-2.5 w-2.5" /> : <Activity className="h-2.5 w-2.5" />}
       {data.role || (type === 'automated-activity' ? "SYSTEM" : "Role")}
     </div>
@@ -65,7 +65,7 @@ const nodeTypes = {
     <div className="relative flex items-center justify-center w-[80px] h-[80px]">
       <Handle type="target" position={Position.Top} className="opacity-0" />
       <div className="absolute inset-0 border-2 rotate-45 transform shadow-md flex items-center justify-center bg-white border-slate-800">
-         <div className="-rotate-45 text-center text-[9px] px-2 font-bold leading-tight uppercase text-slate-700">{data.label}</div>
+         <div className="-rotate-45 text-center text-xs px-2 font-bold leading-tight uppercase text-slate-700">{data.label}</div>
       </div>
       <Handle type="source" position={Position.Left} id="no" className="opacity-0" />
       <Handle type="source" position={Position.Right} id="yes" className="opacity-0" />
@@ -73,14 +73,14 @@ const nodeTypes = {
     </div>
   ),
   document: ({ data }: NodeProps) => (
-    <div className="px-3 py-2 border-2 border-slate-800 bg-white text-[10px] font-bold uppercase rounded-br-lg flex items-center gap-2 relative">
+    <div className="px-3 py-2 border-2 border-slate-800 bg-white text-xs font-bold uppercase rounded-br-lg flex items-center gap-2 relative">
       <Handle type="target" position={Position.Top} className="opacity-0" />
       <FileText className="h-3 w-3" /> {data.label}
       <Handle type="source" position={Position.Bottom} className="opacity-0" />
     </div>
   ),
   system: ({ data }: NodeProps) => (
-    <div className="px-3 py-2 border-2 border-blue-800 bg-blue-50 text-[10px] font-bold uppercase flex flex-col items-center gap-1 relative">
+    <div className="px-3 py-2 border-2 border-blue-800 bg-blue-50 text-xs font-bold uppercase flex flex-col items-center gap-1 relative">
       <Handle type="target" position={Position.Top} className="opacity-0" />
       <Database className="h-3 w-3" /> {data.label}
       <Handle type="source" position={Position.Bottom} className="opacity-0" />
@@ -88,10 +88,10 @@ const nodeTypes = {
   ),
   risk: ({ data }: NodeProps) => <div className="w-10 h-8 bg-red-600 flex items-center justify-center text-white"><AlertTriangle className="h-4 w-4" /></div>,
   control: ({ data }: NodeProps) => <div className="w-8 h-8 rounded-full bg-green-600 flex items-center justify-center text-white"><ShieldCheck className="h-4 w-4" /></div>,
-  'risk-control-badge': ({ data }: NodeProps) => <div className="p-1 bg-indigo-100 border border-indigo-300 text-[8px] font-bold rounded">{data.label}</div>,
-  'docked-risk': ({ data }: NodeProps) => <div className="p-1 bg-red-100 border border-red-300 text-[8px] font-bold rounded">{data.label}</div>,
-  'docked-control': ({ data }: NodeProps) => <div className="p-1 bg-green-100 border border-green-300 text-[8px] font-bold rounded">{data.label}</div>,
-  'reference': ({ data }: NodeProps) => <div className="p-1 bg-slate-100 border border-slate-300 text-[8px] font-bold rounded italic">{data.label}</div>,
+  'risk-control-badge': ({ data }: NodeProps) => <div className="p-1 bg-indigo-100 border border-indigo-300 text-xs font-bold rounded">{data.label}</div>,
+  'docked-risk': ({ data }: NodeProps) => <div className="p-1 bg-red-100 border border-red-300 text-xs font-bold rounded">{data.label}</div>,
+  'docked-control': ({ data }: NodeProps) => <div className="p-1 bg-green-100 border border-green-300 text-xs font-bold rounded">{data.label}</div>,
+  'reference': ({ data }: NodeProps) => <div className="p-1 bg-slate-100 border border-slate-300 text-xs font-bold rounded italic">{data.label}</div>,
 };
 
 interface CSATabContentProps {

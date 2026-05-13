@@ -280,7 +280,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
     {
       id: 'no',
       header: 'No',
-      cell: info => <span className="text-[10px] text-slate-400 px-2">{info.row.index + 1}</span>,
+      cell: info => <span className="text-xs text-slate-400 px-2">{info.row.index + 1}</span>,
       size: 40
     },
     {
@@ -288,7 +288,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
       header: 'No. BPM',
       cell: ({ row, getValue }) => (
         <Input 
-          className="h-8 text-[10px] border-slate-200 focus:border-indigo-300 bg-white px-2 font-mono uppercase w-[100px]"
+          className="h-8 text-xs border-slate-200 focus:border-indigo-300 bg-white px-2 font-mono uppercase w-[100px]"
           placeholder="BPM-001"
           defaultValue={getValue<string>()}
           onBlur={(e) => debouncedUpdate(row.original.id, 'bpmCode', e.target.value)}
@@ -308,7 +308,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
             variant={diagram ? "default" : "outline"} 
             size="sm" 
             className={cn(
-              "h-7 text-[9px] gap-1.5 uppercase font-bold mx-2",
+              "h-7 text-xs gap-1.5 uppercase font-bold mx-2",
               diagram ? "bg-indigo-600 hover:bg-indigo-700" : "text-slate-400 border-slate-200"
             )}
             onClick={() => {
@@ -395,7 +395,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
           value={getValue<boolean>() ? 'Y' : 'T'} 
           onValueChange={(v) => updateMutation.mutate({ id: row.original.id, data: { isFraudRelated: v === 'Y' } })}
         >
-          <SelectTrigger className="h-7 text-[10px] border-slate-200 bg-white">
+          <SelectTrigger className="h-7 text-xs border-slate-200 bg-white">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -424,7 +424,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
         return (
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className="h-8 w-full justify-start font-normal px-2 text-[10px] gap-2 border-slate-200 bg-white">
+              <Button variant="outline" size="sm" className="h-8 w-full justify-start font-normal px-2 text-xs gap-2 border-slate-200 bg-white">
                 <Shield className={cn("h-3.5 w-3.5", selectedIds.length > 0 ? "text-indigo-600" : "text-slate-300")} />
                 {selectedIds.length > 0 ? `${selectedIds.length} Linked` : "Select ELC..."}
               </Button>
@@ -448,7 +448,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
                       >
                         <div className="flex flex-col">
                           <span className="font-bold">{elc.code}</span>
-                          <span className="text-[10px] text-slate-500 line-clamp-1">{elc.name}</span>
+                          <span className="text-xs text-slate-500 line-clamp-1">{elc.name}</span>
                         </div>
                         {selectedIds.includes(elc.id) && <Check className="h-3 w-3 text-indigo-600" />}
                       </CommandItem>
@@ -481,7 +481,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
           value={getValue<boolean>() ? 'Y' : 'T'} 
           onValueChange={(v) => updateMutation.mutate({ id: row.original.id, data: { isKeyControl: v === 'Y' } })}
         >
-          <SelectTrigger className="h-7 text-[10px] border-slate-200 bg-white">
+          <SelectTrigger className="h-7 text-xs border-slate-200 bg-white">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -521,7 +521,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
           value={getValue<string>()} 
           onValueChange={(v: ControlType) => updateMutation.mutate({ id: row.original.id, data: { type: v } })}
         >
-          <SelectTrigger className="h-7 text-[10px] border-slate-200 bg-white">
+          <SelectTrigger className="h-7 text-xs border-slate-200 bg-white">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -539,7 +539,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
           value={getValue<string>()} 
           onValueChange={(v: ControlNature) => updateMutation.mutate({ id: row.original.id, data: { nature: v } })}
         >
-          <SelectTrigger className="h-7 text-[10px] border-slate-200 bg-white min-w-[80px]">
+          <SelectTrigger className="h-7 text-xs border-slate-200 bg-white min-w-[80px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -566,7 +566,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
             }
           }}
         >
-          <SelectTrigger className="h-7 text-[10px] border-slate-200 bg-white min-w-[120px]">
+          <SelectTrigger className="h-7 text-xs border-slate-200 bg-white min-w-[120px]">
             <SelectValue placeholder="Pilih..." />
           </SelectTrigger>
           <SelectContent>
@@ -595,7 +595,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
             <FileSpreadsheet className="h-4 w-4 text-indigo-600" />
             Control Activity Matrix (RCM) - {subProcessName || fsliName} ({noGL})
           </h4>
-          <p className="text-[10px] text-slate-500 italic">Identify risks and control activities at the transaction level.</p>
+          <p className="text-xs text-slate-500 italic">Identify risks and control activities at the transaction level.</p>
         </div>
         
         <div className="flex items-center gap-2">
@@ -626,19 +626,19 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
             <div className="p-4 space-y-3 max-w-4xl mx-auto">
                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                     <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest whitespace-nowrap">BPM Code:</Label>
+                     <Label className="text-xs font-black uppercase text-slate-500 tracking-widest whitespace-nowrap">BPM Code:</Label>
                      <Input 
-                       className="h-8 text-[10px] font-mono font-bold uppercase w-32 bg-white"
+                       className="h-8 text-xs font-mono font-bold uppercase w-32 bg-white"
                        placeholder="BPM-FIN-01"
                        value={bpmCode}
                        onChange={e => setBpmCode(e.target.value)}
                      />
                      <div className="h-4 w-[1px] bg-slate-300 mx-2" />
-                     <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Master Prosedur Pengujian (Standard)</Label>
+                     <Label className="text-xs font-black uppercase text-slate-500 tracking-widest">Master Prosedur Pengujian (Standard)</Label>
                   </div>
                   <Button 
                     size="sm" 
-                    className="h-7 text-[10px] gap-1.5 bg-indigo-600" 
+                    className="h-7 text-xs gap-1.5 bg-indigo-600" 
                     onClick={handleSaveMetadata}
                     disabled={updateProcessMutation.isPending}
                   >
@@ -652,7 +652,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
                  value={standardProcedure}
                  onChange={e => setStandardProcedure(e.target.value)}
                />
-               <p className="text-[9px] text-slate-400 italic">Prosedur dan Kode ini akan menjadi acuan identitas proses dalam pengerjaan CSA.</p>
+               <p className="text-xs text-slate-400 italic">Prosedur dan Kode ini akan menjadi acuan identitas proses dalam pengerjaan CSA.</p>
             </div>
          </CollapsibleContent>
       </Collapsible>
@@ -665,7 +665,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
                 {headerGroup.headers.map(header => (
                   <TableHead 
                     key={header.id}
-                    className="border-b border-r h-12 text-[10px] font-extrabold uppercase text-slate-600 px-3 bg-slate-50 shadow-[0_1px_0_0_rgba(0,0,0,0.05)]"
+                    className="border-b border-r h-12 text-xs font-extrabold uppercase text-slate-600 px-3 bg-slate-50 shadow-[0_1px_0_0_rgba(0,0,0,0.05)]"
                   >
                     {flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>

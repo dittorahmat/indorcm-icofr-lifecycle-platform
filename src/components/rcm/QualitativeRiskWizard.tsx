@@ -32,7 +32,7 @@ export function QualitativeRiskWizard({ onApply }: QualitativeRiskWizardProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="h-7 text-[10px] gap-1">
+        <Button variant="outline" size="sm" className="h-7 text-xs gap-1">
           <Wand2 className="h-3 w-3" /> Wizard (Table 11)
         </Button>
       </DialogTrigger>
@@ -62,7 +62,7 @@ export function QualitativeRiskWizard({ onApply }: QualitativeRiskWizardProps) {
                   checked={(factors as any)[item.id]} 
                   onCheckedChange={(checked) => setFactors({ ...factors, [item.id]: !!checked })} 
                 />
-                <Label htmlFor={item.id} className="text-[11px] font-normal leading-tight cursor-pointer">
+                <Label htmlFor={item.id} className="text-xs font-normal leading-tight cursor-pointer">
                   {item.label}
                 </Label>
               </div>
@@ -72,11 +72,11 @@ export function QualitativeRiskWizard({ onApply }: QualitativeRiskWizardProps) {
                <div className="flex items-center gap-3">
                   <Info className={`h-5 w-5 ${suggestedRating === 'Low' ? 'text-green-600' : suggestedRating === 'Medium' ? 'text-amber-600' : 'text-red-600'}`} />
                   <div>
-                     <p className="text-[10px] uppercase font-bold text-muted-foreground">Suggested Qualitative Rating</p>
+                     <p className="text-xs uppercase font-bold text-muted-foreground">Suggested Qualitative Rating</p>
                      <p className="text-2xl font-black tracking-tight uppercase">{suggestedRating}</p>
                   </div>
                </div>
-               <Badge variant="outline" className="text-[10px]">Criteria met: {count}/9</Badge>
+               <Badge variant="outline" className="text-xs">Criteria met: {count}/9</Badge>
             </div>
           </div>
           <DialogFooter>

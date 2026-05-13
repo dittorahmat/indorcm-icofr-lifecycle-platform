@@ -205,6 +205,17 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
     });
   }, [mergedGlData, simState.assessmentData, pmValue]);
 
+  // Memoize initial app mappings for comparison
+  const initialAppMappings = React.useMemo(() => {
+    if (!initialMappings?.items) return {};
+    const map: Record<string, string[]> = {};
+    initialMappings.items.forEach(m => {
+      if (!map[m.accountCode]) map[m.accountCode] = [];
+      map[m.accountCode].push(m.applicationId);
+    });
+    return map;
+  }, [initialMappings]);
+
   // Dirty state tracking
   const isDirty = React.useMemo(() => {
     const initialDeptMappings: Record<string, string[]> = {};
@@ -230,12 +241,12 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
       omPercentage: initialSimulation.omPercentage,
       haircutPercentage: initialSimulation.haircutPercentage,
       basis: initialSimulation.basis,
-      appMappings: {}, // App mappings are fetched separately, simplification
+      appMappings: initialAppMappings,
       deptMappings: initialDeptMappings
     };
 
     return JSON.stringify(currentState) !== JSON.stringify(originalState);
-  }, [simState, localAppMappings, localDeptMappings, initialSimulation]);
+  }, [simState, localAppMappings, localDeptMappings, initialSimulation, initialAppMappings]);
 
   React.useEffect(() => {
     setDirty(isDirty);
