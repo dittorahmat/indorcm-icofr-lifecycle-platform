@@ -45,13 +45,18 @@ function CSARecordRow({ record: initialRecord, process }: { record: CSARecord, p
       <TableRow 
         className={cn(
             "hover:bg-indigo-50/10 transition-colors cursor-pointer",
-            isExpanded && "bg-indigo-50/5 border-l-4 border-l-indigo-600"
+            isExpanded && "bg-indigo-50/5 border-l-4 border-l-indigo-600 shadow-sm z-10"
         )}
         onClick={() => setIsExpanded(!isExpanded)}
       >
-        <TableCell>
+        <TableCell className="py-4">
            <div className="flex items-center gap-3">
-             {isExpanded ? <ChevronDown className="h-4 w-4 text-indigo-600" /> : <ChevronRight className="h-4 w-4 text-slate-400" />}
+             <div className={cn(
+                 "p-1 rounded-md transition-transform duration-200",
+                 isExpanded ? "bg-indigo-100 rotate-0" : "rotate-0"
+             )}>
+                {isExpanded ? <ChevronDown className="h-4 w-4 text-indigo-600" /> : <ChevronRight className="h-4 w-4 text-slate-400" />}
+             </div>
              <div>
                <div className="font-bold text-slate-900">{process?.name || 'Unknown Process'}</div>
                <div className="text-[9px] text-slate-400 uppercase font-black tracking-tight">ID: {initialRecord.bpmProcessId?.substring(0,8)}</div>
@@ -61,24 +66,24 @@ function CSARecordRow({ record: initialRecord, process }: { record: CSARecord, p
         <TableCell className="text-center font-black text-indigo-700 text-xs">{initialRecord.period}</TableCell>
         <TableCell className="text-center">
           <Badge className={cn(
-            "text-[9px] font-black uppercase",
-            initialRecord.result === 'Effective' ? "bg-green-600" : "bg-red-600"
+            "text-[9px] font-black uppercase shadow-none border-none",
+            initialRecord.result === 'Effective' ? "bg-green-500 text-white" : "bg-red-500 text-white"
           )}>{initialRecord.result}</Badge>
         </TableCell>
         <TableCell className="text-xs text-slate-500 font-medium">
           {format(new Date(initialRecord.assessmentDate), 'dd MMM yyyy HH:mm')}
         </TableCell>
         <TableCell className="text-center">
-           <Badge variant="outline" className="font-black text-[10px] bg-white">
+           <Badge variant="outline" className="font-black text-[10px] bg-white border-slate-200">
              {record.samples?.length || 0} Samples
            </Badge>
         </TableCell>
         <TableCell className="text-right" onClick={e => e.stopPropagation()}>
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" size="sm" className="h-8 text-[10px] gap-1.5 border-indigo-200 text-indigo-600 hover:bg-indigo-50 font-bold">
+          <div className="flex justify-end gap-2 pr-2">
+            <Button variant="outline" size="sm" className="h-8 text-[10px] gap-1.5 border-slate-200 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 font-bold shadow-sm">
               <Printer className="h-3.5 w-3.5" /> PDF
             </Button>
-            <Button variant="outline" size="sm" className="h-8 text-[10px] gap-1.5 font-bold">
+            <Button variant="outline" size="sm" className="h-8 text-[10px] gap-1.5 border-slate-200 font-bold shadow-sm">
               <Download className="h-3.5 w-3.5" /> XLS
             </Button>
           </div>
@@ -86,23 +91,25 @@ function CSARecordRow({ record: initialRecord, process }: { record: CSARecord, p
       </TableRow>
       
       {isExpanded && (
-        <TableRow className="bg-slate-50/30 hover:bg-slate-50/30 border-b-2">
+        <TableRow className="bg-slate-50/30 hover:bg-slate-50/30">
           <TableCell colSpan={6} className="p-0">
              <div className="animate-in fade-in slide-in-from-top-2 duration-300">
                {isRecordLoading ? (
-                 <div className="h-32 flex items-center justify-center">
-                    <div className="flex flex-col items-center gap-2">
-                        <div className="h-5 w-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Loading Samples...</span>
+                 <div className="h-40 flex items-center justify-center bg-slate-50/50">
+                    <div className="flex flex-col items-center gap-3">
+                        <div className="h-6 w-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest animate-pulse">Fetching Transaction Samples...</span>
                     </div>
                  </div>
                ) : (
-                 <CSAReviewMatrix 
-                   record={record} 
-                   controls={controls}
-                   todEvaluations={evaluations}
-                   onControlClick={setSelectedControl}
-                 />
+                 <div className="p-4">
+                    <CSAReviewMatrix 
+                      record={record} 
+                      controls={controls}
+                      todEvaluations={evaluations}
+                      onControlClick={setSelectedControl}
+                    />
+                 </div>
                )}
              </div>
           </TableCell>
@@ -151,57 +158,69 @@ export function CSAPage() {
 
   return (
     <AppLayout container>
-      <div className="space-y-6 pb-20">
+      <div className="space-y-6 pb-20 pt-4">
         <div className="flex justify-between items-end">
           <div>
-            <h1 className="text-4xl font-black tracking-tighter text-slate-900 flex items-center gap-3">
-              <div className="p-2 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-200">
+            <h1 className="text-4xl font-black tracking-tighter text-slate-900 flex items-center gap-4">
+              <div className="p-3 bg-indigo-600 rounded-3xl shadow-xl shadow-indigo-200 ring-4 ring-indigo-50">
                  <History className="h-8 w-8 text-white" />
               </div>
-              CSA Reports & Line 2 Review
+              <div>
+                CSA Reports & Line 2 Review
+                <div className="h-1.5 w-1/2 bg-indigo-600 rounded-full mt-1" />
+              </div>
             </h1>
-            <p className="text-slate-500 text-sm mt-2 font-medium">Archived Control Self-Assessments and Line 2 TOD Verifications.</p>
+            <p className="text-slate-500 text-sm mt-3 font-medium max-w-xl leading-relaxed">
+              Historical archive of Control Self-Assessments. Use this module to perform 
+              regulatory design verification (Lampiran 8) for Line 2 accountability.
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-4 bg-white p-5 rounded-2xl border shadow-sm ring-1 ring-slate-200/50">
+        <div className="flex items-center gap-4 bg-white p-6 rounded-3xl border shadow-xl shadow-slate-200/40 ring-1 ring-slate-200/50">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input 
-              placeholder="Cari berdasarkan sub-proses atau periode..." 
-              className="pl-9 h-11 bg-slate-50/50 border-slate-200 rounded-xl focus:ring-indigo-500" 
+              placeholder="Search by sub-process or period..." 
+              className="pl-11 h-12 bg-slate-50/50 border-slate-200 rounded-2xl focus:ring-indigo-500 transition-all border-2" 
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
             />
           </div>
-          <div className="flex items-center gap-2 px-4 py-2 bg-indigo-50 rounded-xl border border-indigo-100">
-             <ShieldCheck className="h-4 w-4 text-indigo-600" />
-             <span className="text-[10px] font-black uppercase text-indigo-700 tracking-wider">Line 2 Auditor Mode</span>
+          <div className="hidden sm:flex items-center gap-3 px-5 py-3 bg-indigo-50 rounded-2xl border-2 border-indigo-100 shadow-sm shadow-indigo-100/50 animate-in fade-in slide-in-from-right-4">
+             <ShieldCheck className="h-5 w-5 text-indigo-600" />
+             <div className="flex flex-col">
+                <span className="text-[10px] font-black uppercase text-indigo-700 tracking-widest leading-none">Line 2 Auditor</span>
+                <span className="text-[9px] font-bold text-indigo-400 uppercase tracking-tighter mt-0.5">Verification Mode Active</span>
+             </div>
           </div>
         </div>
 
-        <div className="border rounded-2xl bg-white shadow-xl shadow-slate-200/50 overflow-hidden ring-1 ring-slate-200/50">
+        <div className="border rounded-[2.5rem] bg-white shadow-2xl shadow-slate-200/50 overflow-hidden ring-1 ring-slate-200/50">
           <Table>
-            <TableHeader className="bg-slate-50/80 backdrop-blur-sm border-b">
-              <TableRow className="hover:bg-transparent">
-                <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400 py-4">Sub-Proses Bisnis</TableHead>
+            <TableHeader className="bg-slate-50/80 backdrop-blur-md border-b-2 border-slate-100">
+              <TableRow className="hover:bg-transparent border-none">
+                <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400 py-6 pl-8">Sub-Proses Bisnis</TableHead>
                 <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Periode</TableHead>
                 <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Status Efektivitas</TableHead>
                 <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tanggal Sign-off</TableHead>
                 <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Sampel</TableHead>
-                <TableHead className="text-right text-[10px] font-black uppercase tracking-widest text-slate-400">Reports</TableHead>
+                <TableHead className="text-right text-[10px] font-black uppercase tracking-widest text-slate-400 pr-8">Reports</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                <TableRow><TableCell colSpan={6} className="h-64 text-center">
-                   <div className="flex flex-col items-center gap-2">
-                      <div className="h-8 w-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-                      <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Loading reports...</span>
+                <TableRow className="border-none"><TableCell colSpan={6} className="h-80 text-center border-none">
+                   <div className="flex flex-col items-center gap-4">
+                      <div className="relative">
+                        <div className="h-12 w-12 border-4 border-slate-100 rounded-full" />
+                        <div className="h-12 w-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin absolute top-0 left-0" />
+                      </div>
+                      <span className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] animate-pulse">Synchronizing Reports...</span>
                    </div>
                 </TableCell></TableRow>
               ) : filteredRecords.length === 0 ? (
-                <TableRow><TableCell colSpan={6} className="h-64 text-center text-slate-400 italic">Tidak ada laporan CSA yang ditemukan.</TableCell></TableRow>
+                <TableRow className="border-none"><TableCell colSpan={6} className="h-80 text-center text-slate-400 italic border-none">Tidak ada laporan CSA yang ditemukan.</TableCell></TableRow>
               ) : filteredRecords.map((record) => (
                 <CSARecordRow 
                   key={record.id} 

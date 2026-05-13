@@ -15,7 +15,9 @@ The system SHALL display a dedicated popup form for "Lampiran 8 - Verifikasi Ran
 #### Scenario: Opening the TOD popup
 - **WHEN** the user clicks on a Control ID or Name in the transposed matrix
 - **THEN** a modal SHALL open displaying the Lampiran 8 form for that specific control
-- **AND** the form SHALL include 8 evaluation criteria (Pencapaian Objektif, Ketepatan Waktu, Wewenang, Keandalan Informasi, Periode Cakupan, Bukti yang Tersedia, Referensi KK, and Kesimpulan).
+- **AND** the form SHALL display the full **Risk Context** from the RCM (Risk Description, Fraud Related, Risk Rating)
+- **AND** the form SHALL include 6 **Free-Text Justification Fields** for design evaluation (Pencapaian Objektif, Ketepatan Waktu, Wewenang, Keandalan Informasi, Periode Cakupan, Bukti yang Tersedia).
+- **AND** the form SHALL include fields for **KK Reference** and a final **Design Conclusion** (Effective/Ineffective).
 
 ### Requirement: Automated Pre-population from RCM
 The system SHALL automatically populate the control attributes in the Lampiran 8 TOD form using data from the master Risk Control Matrix (RCM).

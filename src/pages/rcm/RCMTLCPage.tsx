@@ -4,29 +4,22 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { api } from '@/lib/api-client';
 import { RCMControlMapping } from '@shared/types';
 import { 
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
-} from '@/components/ui/table';
+  Search, RefreshCw, Edit3, AlertTriangle, Check, Shield
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Search, Save, Loader2, AlertTriangle, Filter, Check
-} from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { 
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
-} from '@/components/ui/select';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
-import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
-import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 import { RCMPageHeader } from '@/components/rcm/RCMPageHeader';
-import { InlineEditRow } from '@/components/rcm/InlineEditRow';
-import { SidebarTrigger } from '@/components/ui/sidebar';
+import { RCMTable, RCMColumnGroup } from '@/components/rcm/RCMTable';
+import { RCMGroupRow } from '@/components/rcm/RCMGroupRow';
+import { RCMEditDialog } from '@/components/rcm/RCMEditDialog';
+
 interface RCMMatrixItem extends RCMControlMapping {
   mappingId: string;
   processName: string;
-  bpmCode?: string; // New
+  bpmCode?: string;
   fsliName: string;
   noGL: string;
   subProcessName: string;
@@ -52,304 +45,207 @@ export function RCMTLCPage({ embedded = false, filterBpmId }: RCMTLCPageProps) {
   const { t } = useTranslation(['rcm', 'common']);
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = React.useState('');
-  const [localItems, setLocalItems] = React.useState<RCMMatrixItem[]>([]);
+  const [editingItem, setEditingItem] = React.useState<RCMMatrixItem | null>(null);
 
   const { data: matrixData, isLoading } = useQuery({
     queryKey: ['rcm-matrix-tlc', filterBpmId],
     queryFn: async () => {
       const url = filterBpmId ? `/api/rcm-matrix/tlc?bpmProcessId=${filterBpmId}` : '/api/rcm-matrix/tlc';
       const res = await api<{ items: RCMMatrixItem[] }>(url);
-      setLocalItems(res.items);
       return res;
     },
   });
 
-  const { data: appsData } = useQuery({
-    queryKey: ['applications-list'],
-    queryFn: () => api<{ items: any[] }>('/api/applications'),
-  });
-
-  const isDirty = React.useMemo(() => {
-    if (!matrixData?.items || localItems.length === 0) return false;
-    return JSON.stringify(localItems) !== JSON.stringify(matrixData.items);
-  }, [localItems, matrixData?.items]);
-
-  const blocker = useUnsavedChanges(isDirty);
-
   const saveMutation = useMutation({
-    mutationFn: (items: Partial<RCMMatrixItem>[]) => 
+    mutationFn: (values: any) => 
       api('/api/rcm-matrix/tlc/batch-update', { 
         method: 'POST', 
-        body: JSON.stringify({ items }) 
+        body: JSON.stringify({ items: [values] }) 
       }),
     onSuccess: () => {
-      toast.success(t('matrix.save_success'));
+      toast.success(t('rcm:matrix.save_success'));
       queryClient.invalidateQueries({ queryKey: ['rcm-matrix-tlc'] });
+      setEditingItem(null);
     }
   });
 
-  const handleInputChange = (id: string, field: keyof RCMMatrixItem, value: any) => {
-    setLocalItems(prev => prev.map(item => 
-      item.mappingId === id ? { ...item, [field]: value } : item
-    ));
-  };
-
-  const handleSave = () => {
-    const payload = localItems.map(item => ({
-      id: item.mappingId,
-      controlName: item.mappedControlName,
-      controlDescription: item.mappedControlDescription,
-      ipoC: item.ipoC,
-      ipoA: item.ipoA,
-      ipoV: item.ipoV,
-      ipoRa: item.ipoRa,
-      assertionE: item.assertionE,
-      assertionC: item.assertionC,
-      assertionA: item.assertionA,
-      assertionCo: item.assertionCo,
-      assertionVa: item.assertionVa,
-      assertionRo: item.assertionRo,
-      assertionPd: item.assertionPd,
-      controlType: item.controlType,
-      controlNature: item.controlNature,
-      automatedSubNature: item.automatedSubNature,
-      frequency: item.frequency,
-      isKeyControl: item.isKeyControl,
-      supportingDocs: item.supportingDocs,
-      supportingApp: item.supportingApp,
-      executingFunction: item.executingFunction,
-      executorRole: item.executorRole,
-      affectedFsliItem: item.affectedFsliItem,
-      effectivePeriod: item.effectivePeriod,
-    }));
-    saveMutation.mutate(payload);
-  };
-
-  const filteredItems = localItems.filter(item => 
+  const items = matrixData?.items || [];
+  const filteredItems = items.filter(item => 
     item.processName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     item.riskDescription?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (item.mappedControlName || item.baseControlName)?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const [editingMappingId, setEditingMappingId] = React.useState<string | null>(null);
+  const columnGroups: RCMColumnGroup[] = [
+    {
+      title: t('matrix.groups.process'),
+      className: 'bg-slate-200/50',
+      columns: [
+        {
+          id: 'action',
+          header: 'Action',
+          width: '50px',
+          sticky: 'left',
+          render: (row) => (
+            <Button 
+              variant="ghost" 
+              size="xs" 
+              className="h-7 w-7 p-0 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50"
+              onClick={() => setEditingItem(row)}
+            >
+              <Edit3 className="h-3.5 w-3.5" />
+            </Button>
+          )
+        },
+        { id: 'no', header: 'No', width: '50px', sticky: 'left', stickyOffset: '50px', className: 'text-center font-mono text-[11px] text-slate-400', render: (_, idx) => idx + 1 },
+        { 
+          id: 'process_info', 
+          header: t('matrix.process_info'), 
+          width: '260px', 
+          sticky: 'left', 
+          stickyOffset: '100px',
+          className: 'font-bold text-slate-800',
+          render: (row) => (
+            <div className="flex flex-col gap-0 leading-tight">
+              <span className="uppercase tracking-tighter text-indigo-600 text-[9px] font-black">
+                {row.fsliName} {row.bpmCode && `[${row.bpmCode}]`}
+              </span>
+              <span className="line-clamp-2 text-xs">{row.noGL} - {row.processName}</span>
+            </div>
+          )
+        },
+        { id: 'sub_process', header: t('matrix.sub_process'), accessorKey: 'subProcessName', width: '200px', className: 'font-bold text-slate-600 text-xs' },
+      ]
+    },
+    {
+      title: t('matrix.groups.risk'),
+      className: 'bg-rose-50/50',
+      columns: [
+        { id: 'company', header: t('matrix.company'), accessorKey: 'companyName', width: '180px', className: 'text-xs text-slate-600' },
+        { id: 'location', header: t('matrix.location'), accessorKey: 'locationCode', width: '90px', className: 'text-xs text-slate-600 font-mono text-center' },
+        { id: 'risk_desc', header: t('matrix.risk_description'), accessorKey: 'riskDescription', width: '380px', className: 'text-xs text-slate-700 leading-tight' },
+        { 
+          id: 'fraud', 
+          header: 'Fraud', 
+          width: '70px', 
+          className: 'text-center',
+          render: (row) => row.isFraudRelated && <AlertTriangle className="h-3.5 w-3.5 text-rose-500 mx-auto" />
+        },
+        { 
+          id: 'risk_rating', 
+          header: t('matrix.risk_rating'), 
+          width: '110px', 
+          className: 'text-center',
+          render: (row) => (
+            <Badge className={cn("text-[9px] font-black px-2 h-5 leading-none uppercase", 
+              row.riskRating === 'High' ? "bg-rose-50 text-rose-700 border-rose-200" : 
+              row.riskRating === 'Medium' ? "bg-amber-50 text-amber-700 border-amber-200" : 
+              "bg-emerald-50 text-emerald-700 border-emerald-200"
+            )}>{row.riskRating}</Badge>
+          )
+        },
+      ]
+    },
+    {
+      title: t('matrix.groups.control'),
+      className: 'bg-indigo-50/50',
+      columns: [
+        { id: 'control_ref', header: t('matrix.control_ref'), accessorKey: 'controlCode', width: '130px', className: 'font-mono text-xs font-bold text-indigo-700' },
+        { id: 'control_name', header: t('matrix.control_name'), accessorKey: 'mappedControlName', width: '320px', className: 'text-xs text-slate-800 font-bold' },
+        { id: 'control_desc', header: t('matrix.control_description'), accessorKey: 'mappedControlDescription', width: '450px', className: 'text-xs text-slate-600 italic' },
+        { id: 'docs', header: t('matrix.supporting_docs'), accessorKey: 'supportingDocs', width: '220px', className: 'text-xs text-slate-500' },
+        { 
+          id: 'is_key', 
+          header: t('matrix.is_key_control'), 
+          width: '90px', 
+          className: 'text-center',
+          render: (row) => row.isKeyControl ? <Shield className="h-4 w-4 mx-auto text-indigo-600 fill-indigo-50" /> : <span className="text-slate-200">—</span>
+        },
+      ]
+    },
+    {
+      title: 'IPO',
+      className: 'bg-blue-600 text-white',
+      columns: [
+        { id: 'ipoC', header: 'C', width: '50px', className: 'text-center', render: (row) => row.ipoC ? '✓' : '—' },
+        { id: 'ipoA', header: 'A', width: '50px', className: 'text-center', render: (row) => row.ipoA ? '✓' : '—' },
+        { id: 'ipoV', header: 'V', width: '50px', className: 'text-center', render: (row) => row.ipoV ? '✓' : '—' },
+        { id: 'ipoRa', header: 'RA', width: '50px', className: 'text-center', render: (row) => row.ipoRa ? '✓' : '—' },
+      ]
+    },
+    {
+      title: t('matrix.assertions'),
+      className: 'bg-indigo-600 text-white',
+      columns: [
+        { id: 'ae', header: 'E/O', width: '50px', className: 'text-center', render: (row) => row.assertionE ? '✓' : '—' },
+        { id: 'ac', header: 'C', width: '50px', className: 'text-center', render: (row) => row.assertionC ? '✓' : '—' },
+        { id: 'aa', header: 'A', width: '50px', className: 'text-center', render: (row) => row.assertionA ? '✓' : '—' },
+        { id: 'aco', header: 'CO', width: '50px', className: 'text-center', render: (row) => row.assertionCo ? '✓' : '—' },
+        { id: 'aro', header: 'R&O', width: '50px', className: 'text-center', render: (row) => row.assertionRo ? '✓' : '—' },
+        { id: 'ava', header: 'V/A', width: '50px', className: 'text-center', render: (row) => row.assertionVa ? '✓' : '—' },
+        { id: 'apd', header: 'PD', width: '50px', className: 'text-center', render: (row) => row.assertionPd ? '✓' : '—' },
+      ]
+    },
+    {
+      title: t('matrix.groups.metadata'),
+      columns: [
+        { id: 'type', header: t('matrix.type'), accessorKey: 'controlType', width: '160px' },
+        { id: 'nature', header: t('matrix.nature'), accessorKey: 'controlNature', width: '180px' },
+        { id: 'auto_type', header: t('matrix.automated_type'), accessorKey: 'automatedSubNature', width: '200px' },
+        { id: 'frequency', header: t('matrix.frequency'), accessorKey: 'frequency', width: '130px', className: 'text-center' },
+        { id: 'app', header: t('matrix.supporting_app'), accessorKey: 'supportingApp', width: '180px' },
+        { id: 'function', header: t('matrix.executing_function'), accessorKey: 'executingFunction', width: '180px' },
+        { id: 'role', header: t('matrix.executor_role'), accessorKey: 'executorRole', width: '180px' },
+        { id: 'fsli', header: t('matrix.affected_fsli_item'), accessorKey: 'affectedFsliItem', width: '220px', className: 'font-mono' },
+        { id: 'period', header: t('matrix.effective_period'), accessorKey: 'effectivePeriod', width: '130px', className: 'text-center font-bold text-indigo-600' },
+      ]
+    }
+  ];
 
-  const handleEditClick = (mappingId: string) => {
-    setEditingMappingId(mappingId === editingMappingId ? null : mappingId);
+  const renderGroupRow = (row: RCMMatrixItem, index: number, prevRow?: RCMMatrixItem) => {
+    if (!prevRow || prevRow.processName !== row.processName) {
+      return (
+        <RCMGroupRow 
+          key={`group-${row.processName}`} 
+          title={`${row.noGL} - ${row.processName}`} 
+          colSpan={35} 
+        />
+      );
+    }
+    return null;
   };
 
-  const isAnyEditing = editingMappingId !== null;
-
   const content = (
-
     <div className="flex flex-col min-w-0 h-screen">
       {!embedded && (
-        <>
-          {/* Header - Static inside the scrolling area */}
-          <div className="p-4 pb-2 space-y-3 shrink-0 bg-white/80 backdrop-blur-md border-b z-10 w-full">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="flex items-center gap-2">
-                <SidebarTrigger className="h-8 w-8 text-slate-700" />
-                <div>
-                  <h1 className="text-xl font-black tracking-tight text-slate-900 leading-none">{t('rcm:matrix.title_tlc')}</h1>
-                  <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest mt-1 opacity-70">SK-5/DKU.MBU/11/2024 Regulatory Compliance Matrix</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="xs" onClick={() => queryClient.invalidateQueries({ queryKey: ['rcm-matrix-tlc'] })} className="bg-white h-7 text-[10px] font-bold">
-                  <Filter className="h-3 w-3 mr-1.5" /> Refresh
-                </Button>
-                <Button onClick={handleSave} disabled={saveMutation.isPending} size="xs" className="bg-indigo-600 hover:bg-indigo-700 shadow-md h-7 text-[10px] font-bold px-4">
-                  {saveMutation.isPending ? <Loader2 className="h-3 w-3 mr-1.5 animate-spin" /> : <Save className="h-3 w-3 mr-1.5" />}
-                  {t('common:actions.save')}
-                </Button>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between gap-4">
-               <div className="relative max-w-md w-full">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                <Input 
-                  placeholder="Search matrix..." 
-                  className="pl-8 bg-white border-slate-200 h-8 text-[11px] font-medium" 
-                  value={searchTerm} 
-                  onChange={(e) => setSearchTerm(e.target.value)} 
-                />
-              </div>
-              <div className="flex gap-4 items-center bg-slate-100/50 px-3 py-1 rounded-lg border border-slate-200">
-                 <div className="text-right">
-                    <p className="text-[8px] text-slate-400 font-black uppercase tracking-wider leading-none">{t('matrix.company')}</p>
-                    <p className="text-[10px] font-bold text-slate-700">{localItems[0]?.companyName || "N/A"}</p>
-                 </div>
-                 <div className="w-px h-4 bg-slate-300" />
-                 <div className="text-right">
-                    <p className="text-[8px] text-slate-400 font-black uppercase tracking-wider leading-none">{t('matrix.location')}</p>
-                    <p className="text-[10px] font-bold text-slate-700">{localItems[0]?.locationCode || "N/A"}</p>
-                 </div>
-              </div>
-            </div>
-          </div>
-        </>
+        <RCMPageHeader 
+          title={t('rcm:matrix.title_tlc')}
+          subtitle={t('rcm:matrix.subtitle_tlc')}
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          onRefresh={() => queryClient.invalidateQueries({ queryKey: ['rcm-matrix-tlc'] })}
+          metadata={[
+            { label: t('matrix.company'), value: items[0]?.companyName || "N/A" },
+            { label: t('matrix.location'), value: items[0]?.locationCode || "N/A" }
+          ]}
+        />
       )}
 
-      {/* Matrix Area - Expands fully */}
-      <div className="p-0 relative flex-1 flex flex-col overflow-hidden">
-        <div className="w-full border-t border-b bg-white border-slate-950 overflow-auto flex-1">
-          <Table noWrapper className="min-w-[4800px] table-fixed border-separate border-spacing-0">
-            <TableHeader className="sticky top-0 z-50 border-b border-slate-950">
-              <TableRow className="divide-x divide-slate-950 bg-slate-100 h-10 border-b border-slate-950">
-                {/* Fixed Columns Header */}
-                <TableHead className="w-[50px] font-black uppercase text-[10px] text-center sticky left-0 z-[60] bg-slate-100 border-r border-slate-950">i. No</TableHead>
-                <TableHead className="w-[260px] font-black uppercase text-[10px] sticky left-[50px] z-[60] bg-slate-100 border-r border-slate-950 text-indigo-700 px-3">ii. {t('matrix.process_info')}</TableHead>
-                <TableHead className="w-[200px] font-black uppercase text-[10px] sticky left-[310px] z-[60] bg-slate-100 border-r border-slate-950 px-3">iii. {t('matrix.sub_process')}</TableHead>
-                
-                {/* Floating Columns Header */}
-                <TableHead className="w-[180px] font-black uppercase text-[10px] bg-slate-100 px-3 border-r border-slate-950">iv. {t('matrix.company')}</TableHead>
-                <TableHead className="w-[90px] font-black uppercase text-[10px] bg-slate-100 text-center px-2 border-r border-slate-950">v. {t('matrix.location')}</TableHead>
-                <TableHead className="w-[380px] font-black uppercase text-[10px] bg-slate-100 px-3 border-r border-slate-950">vi. {t('matrix.risk_description')}</TableHead>
-                <TableHead className="w-[70px] text-center font-black uppercase text-[10px] bg-slate-100 border-r border-slate-950">vii. Fraud</TableHead>
-                <TableHead className="w-[110px] text-center font-black uppercase text-[10px] bg-slate-100 border-r border-slate-950">viii. {t('matrix.risk_rating')}</TableHead>
-                <TableHead className="w-[130px] font-black uppercase text-[10px] bg-slate-100 px-3 border-r border-slate-950">ix. {t('matrix.control_ref')}</TableHead>
-                <TableHead className="w-[320px] font-black uppercase text-[10px] bg-slate-100 px-3 border-r border-slate-950">x. {t('matrix.control_name')}</TableHead>
-                <TableHead className="w-[450px] font-black uppercase text-[10px] bg-slate-100 px-3 border-r border-slate-950">xi. {t('matrix.control_description')}</TableHead>
-                <TableHead className="w-[220px] font-black uppercase text-[10px] bg-slate-100 px-3 border-r border-slate-950">xii. {t('matrix.supporting_docs')}</TableHead>
-                <TableHead className="w-[90px] text-center font-black uppercase text-[10px] bg-slate-100 border-r border-slate-950">xiii. Utama?</TableHead>
-                
-                <TableHead className="w-[200px] bg-blue-50 text-blue-900 font-black uppercase text-[10px] text-center border-l border-blue-300" colSpan={4}>IPO (xiv-xvii)</TableHead>
-                <TableHead className="w-[350px] bg-indigo-50 text-indigo-900 font-black uppercase text-[10px] text-center border-l border-indigo-300" colSpan={7}>{t('matrix.assertions')} (xviii-xxiv)</TableHead>
-                
-                <TableHead className="w-[160px] font-black uppercase text-[10px] bg-slate-100 px-3 border-r border-slate-950">xxv. {t('matrix.type')}</TableHead>
-                <TableHead className="w-[180px] font-black uppercase text-[10px] bg-slate-100 px-3 border-r border-slate-950">xxvi. {t('matrix.nature')}</TableHead>
-                <TableHead className="w-[200px] font-black uppercase text-[10px] bg-slate-100 px-3 border-r border-slate-950">xxvii. {t('matrix.automated_type')}</TableHead>
-                <TableHead className="w-[130px] font-black uppercase text-[10px] bg-slate-100 text-center px-3 border-r border-slate-950">xxviii. {t('matrix.frequency')}</TableHead>
-                <TableHead className="w-[180px] font-black uppercase text-[10px] bg-slate-100 px-3 border-r border-slate-950">xxix. {t('matrix.supporting_app')}</TableHead>
-                <TableHead className="w-[180px] font-black uppercase text-[10px] bg-slate-100 px-3 border-r border-slate-950">xxx. {t('matrix.executing_function')}</TableHead>
-                <TableHead className="w-[180px] font-black uppercase text-[10px] bg-slate-100 px-3 border-r border-slate-950">xxxi. {t('matrix.executor_role')}</TableHead>
-                <TableHead className="w-[220px] font-black uppercase text-[10px] bg-slate-100 px-3 border-r border-slate-950">xxxii. {t('matrix.affected_fsli_item')}</TableHead>
-                <TableHead className="w-[130px] font-black uppercase text-[10px] bg-slate-100 text-center px-3 border-r border-slate-950">xxxiii. {t('matrix.effective_period')}</TableHead>
-                <TableHead className="w-[100px] font-black uppercase text-[10px] bg-slate-100 text-center sticky right-0 z-[60] border-l border-slate-950">Action</TableHead>
-              </TableRow>
-              
-              {/* Sub-Header Row */}
-              <TableRow className="divide-x divide-slate-950 text-[9px] bg-slate-50 h-8 border-b border-slate-950">
-                 <TableHead className="sticky left-0 z-[60] bg-slate-50 border-r border-slate-950"></TableHead>
-                 <TableHead className="sticky left-[50px] z-[60] bg-slate-50 border-r border-slate-950"></TableHead>
-                 <TableHead className="sticky left-[310px] z-[60] bg-slate-50 border-r border-slate-950"></TableHead>
-                 <TableHead colSpan={10} className="bg-slate-50/30 border-r border-slate-950"></TableHead>
-                 
-                 <TableHead className="text-center bg-blue-600 text-white border-l border-blue-800 font-bold border-r border-blue-800">C</TableHead>
-                 <TableHead className="text-center bg-blue-600 text-white font-bold border-r border-blue-800">A</TableHead>
-                 <TableHead className="text-center bg-blue-600 text-white font-bold border-r border-blue-800">V</TableHead>
-                 <TableHead className="text-center bg-blue-600 text-white font-bold border-r border-blue-800">RA</TableHead>
+      <RCMTable 
+        groups={columnGroups}
+        data={filteredItems}
+        isLoading={isLoading}
+        renderGroupRow={renderGroupRow}
+        minWidth="4800px"
+      />
 
-                 <TableHead className="text-center bg-indigo-600 text-white border-l border-indigo-800 font-bold border-r border-indigo-800">E/O</TableHead>
-                 <TableHead className="text-center bg-indigo-600 text-white font-bold border-r border-indigo-800">C</TableHead>
-                 <TableHead className="text-center bg-indigo-600 text-white font-bold border-r border-indigo-800">A</TableHead>
-                 <TableHead className="text-center bg-indigo-600 text-white font-bold border-r border-indigo-800">CO</TableHead>
-                 <TableHead className="text-center bg-indigo-600 text-white font-bold border-r border-indigo-800">R&O</TableHead>
-                 <TableHead className="text-center bg-indigo-600 text-white font-bold border-r border-indigo-800">V/A</TableHead>
-                 <TableHead className="text-center bg-indigo-600 text-white font-bold border-r border-indigo-800">PD</TableHead>
-                 <TableHead colSpan={9} className="bg-slate-50/30 border-r border-slate-950"></TableHead>
-                 <TableHead className="sticky right-0 z-[60] bg-slate-50 border-l border-slate-950"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
-                <TableRow><TableCell colSpan={34} className="h-64 text-center">Loading matrix data...</TableCell></TableRow>
-              ) : filteredItems.length === 0 ? (
-                <TableRow><TableCell colSpan={34} className="h-64 text-center italic text-slate-400">No RCM relationships found.</TableCell></TableRow>
-              ) : filteredItems.map((item, idx) => {
-                const isEditing = editingMappingId === item.mappingId;
-                const isEven = idx % 2 === 1;
-                const rowBg = isEven ? "bg-[#D3D3D3]" : "bg-white";
-
-                return (
-                  <TableRow key={`${item.mappingId}-${idx}`} className={cn(
-                    "group transition-colors border-b border-slate-950 h-12",
-                    rowBg
-                  )}>
-                    <TableCell className={cn("sticky left-0 z-30 border-r border-slate-950", rowBg)}>
-                      <InlineEditRow 
-                        isEditing={isEditing}
-                        onEdit={() => setEditingMappingId(item.mappingId)}
-                        onSave={() => { handleSave(); setEditingMappingId(null); }}
-                        onCancel={() => setEditingMappingId(null)}
-                      />
-                    </TableCell>
-                    <TableCell className={cn("align-top font-bold text-slate-800 text-xs sticky left-[50px] z-30 border-r border-slate-950", rowBg)}>
-                      <div className="flex flex-col gap-0 pr-2 pt-1 leading-tight">
-                        <span className="uppercase tracking-tighter text-indigo-600 text-[10px] font-black">
-                          {item.fsliName} {item.bpmCode && `[${item.bpmCode}]`}
-                        </span>
-                        <span className="line-clamp-2">{item.noGL} - {item.processName}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className={cn("align-top font-bold text-slate-600 text-xs sticky left-[310px] z-30 border-r border-slate-950", rowBg)}>
-                      <div className="pt-1">{item.subProcessName}</div>
-                    </TableCell>
-                    
-                    <TableCell className="text-xs text-slate-600 px-3 border-r border-slate-950">{item.companyName}</TableCell>
-                    <TableCell className="text-xs text-slate-600 font-mono px-2 text-center border-r border-slate-950">{item.locationCode}</TableCell>
-                    
-                    <TableCell className="text-xs text-slate-700 px-3 leading-tight border-r border-slate-950">{item.riskDescription}</TableCell>
-                    <TableCell className="text-center border-r border-slate-950">{item.isFraudRelated && <AlertTriangle className="h-3.5 w-3.5 text-rose-500 mx-auto" />}</TableCell>
-                    <TableCell className="text-center border-r border-slate-950">
-                      <Badge className={cn("text-[10px] font-black px-2 h-5 leading-none uppercase", 
-                        item.riskRating === 'High' ? "bg-rose-50 text-rose-700 border-rose-200" : 
-                        item.riskRating === 'Medium' ? "bg-amber-50 text-amber-700 border-amber-200" : 
-                        "bg-emerald-50 text-emerald-700 border-emerald-200"
-                      )}>{item.riskRating}</Badge>
-                    </TableCell>
-
-                    <TableCell className="font-mono text-xs font-bold text-indigo-700 px-3 border-r border-slate-950">{item.controlCode}</TableCell>
-                    <TableCell className="text-xs text-slate-800 px-3 border-r border-slate-950">
-                      {isEditing ? <Input value={item.mappedControlName || item.baseControlName || ''} onChange={e => handleInputChange(item.mappingId, 'mappedControlName', e.target.value)} /> : (item.mappedControlName || item.baseControlName)}
-                    </TableCell>
-                    <TableCell className="text-xs text-slate-600 italic px-3 border-r border-slate-950">{isEditing ? <Input value={item.mappedControlDescription || item.baseControlDescription || ''} onChange={e => handleInputChange(item.mappingId, 'mappedControlDescription', e.target.value)} /> : (item.mappedControlDescription || item.baseControlDescription)}</TableCell>
-
-                    <TableCell className="text-xs text-slate-500 px-3 border-r border-slate-950">{item.supportingDocs}</TableCell>
-                    <TableCell className="text-center px-3 border-r border-slate-950"><Check className={cn("h-4 w-4 mx-auto", item.isKeyControl ? "text-indigo-600" : "text-slate-200")} /></TableCell>
-
-                    {/* IPO Indicators */}
-                    {['ipoC', 'ipoA', 'ipoV', 'ipoRa'].map((f) => (
-                      <TableCell key={f} className="text-center p-1 border-r border-slate-950">
-                         <div className={cn(
-                            "h-6 w-6 mx-auto rounded flex items-center justify-center text-[10px] font-black",
-                            item[f as keyof RCMMatrixItem] ? "bg-blue-50 text-blue-700" : "bg-slate-50 text-slate-300"
-                         )}>
-                            {item[f as keyof RCMMatrixItem] ? '✓' : '—'}
-                         </div>
-                      </TableCell>
-                    ))}
-
-                    {/* Assertion Indicators */}
-                    {['assertionE', 'assertionC', 'assertionA', 'assertionCo', 'assertionRo', 'assertionVa', 'assertionPd'].map((f) => (
-                      <TableCell key={f} className="text-center p-1 border-r border-slate-950">
-                         <div className={cn(
-                            "h-6 w-6 mx-auto rounded flex items-center justify-center text-[10px] font-black",
-                            item[f as keyof RCMMatrixItem] ? "bg-indigo-50 text-indigo-700" : "bg-slate-50 text-slate-300"
-                         )}>
-                            {item[f as keyof RCMMatrixItem] ? '✓' : '—'}
-                         </div>
-                      </TableCell>
-                    ))}
-
-                    <TableCell className="text-xs font-medium px-3 border-r border-slate-950">{item.controlType}</TableCell>
-                    <TableCell className="text-xs font-medium px-3 border-r border-slate-950">{item.controlNature}</TableCell>
-                    <TableCell className="text-xs font-medium px-3 border-r border-slate-950">{item.automatedSubNature || '-'}</TableCell>
-                    <TableCell className="text-xs font-medium px-3 text-center border-r border-slate-950">{item.frequency}</TableCell>
-                    <TableCell className="text-xs font-medium px-3 border-r border-slate-950">{item.supportingApp || '-'}</TableCell>
-                    <TableCell className="text-xs font-medium px-3 border-r border-slate-950">{item.executingFunction}</TableCell>
-                    <TableCell className="text-xs font-medium px-3 border-r border-slate-950">{item.executorRole}</TableCell>
-                    <TableCell className="text-xs font-mono font-medium px-3 border-r border-slate-950">{item.affectedFsliItem}</TableCell>
-                    <TableCell className="text-xs text-center font-bold text-indigo-600 border-r border-slate-950">{item.effectivePeriod}</TableCell>
-                    <TableCell className={cn("sticky right-0 z-30 border-l border-slate-950", rowBg)} />
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
+      <RCMEditDialog 
+        open={!!editingItem}
+        onOpenChange={(open) => !open && setEditingItem(null)}
+        data={editingItem}
+        onSave={(values) => saveMutation.mutate(values)}
+        isSaving={saveMutation.isPending}
+      />
     </div>
   );
 
@@ -358,7 +254,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId }: RCMTLCPageProps) {
   return (
     <AppLayout container={false} className="bg-slate-100/30">
       {content}
-      <UnsavedChangesDialog blocker={blocker} />
     </AppLayout>
   );
 }
+

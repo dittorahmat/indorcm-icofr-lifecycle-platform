@@ -1,19 +1,15 @@
 import React from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { api } from '@/lib/api-client';
 import { Control, Organization } from '@shared/types';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Check, Building2, Loader2, RefreshCw } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { cn } from '@/lib/utils';
+import { Check, Edit3 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
-import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 import { RCMPageHeader } from '@/components/rcm/RCMPageHeader';
-import { InlineEditRow } from '@/components/rcm/InlineEditRow';
+import { RCMTable, RCMColumnGroup } from '@/components/rcm/RCMTable';
+import { RCMEditDialog } from '@/components/rcm/RCMEditDialog';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 const COSO_PRINCIPLES = Array.from({ length: 17 }, (_, i) => i + 1);
 
@@ -21,9 +17,9 @@ export function RCMELCPage({ embedded = false }: { embedded?: boolean }) {
   const { t } = useTranslation(['rcm', 'common']);
   const queryClient = useQueryClient();
   const [selectedOrgId, setSelectedOrgId] = React.useState<string>('all');
-  const [editingId, setEditingId] = React.useState<string | null>(null);
+  const [editingItem, setEditingItem] = React.useState<any | null>(null);
 
-  const { data: controlsData, isLoading: isLoadingControls, isFetching } = useQuery({
+  const { data: controlsData, isLoading: isLoadingControls } = useQuery({
     queryKey: ['controls-elc'],
     queryFn: () => api<{ items: Control[] }>(`/api/controls?level=ELC`),
     staleTime: 30000,
@@ -35,113 +31,127 @@ export function RCMELCPage({ embedded = false }: { embedded?: boolean }) {
     staleTime: 300000,
   });
 
+  const saveMutation = useMutation({
+    mutationFn: (values: any) => api(`/api/controls/${values.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(values)
+    }),
+    onSuccess: () => {
+      toast.success(t('rcm:matrix.save_success'));
+      queryClient.invalidateQueries({ queryKey: ['controls-elc'] });
+      setEditingItem(null);
+    }
+  });
+
   const elcItems = React.useMemo(() => {
     const items = controlsData?.items || [];
     const orgs = orgsData?.organizations || [];
-    const mapped = items.map(item => ({ ...item, companyName: orgs.find(o => o.id === item.organizationId)?.name || 'N/A' }));
+    const mapped = items.map((item, idx) => ({ 
+      ...item, 
+      no: idx + 1,
+      mappingId: item.id, // For RCMTable key
+      companyName: orgs.find(o => o.id === item.organizationId)?.name || 'N/A',
+      mappedControlName: item.name,
+      mappedControlDescription: item.description
+    }));
     return selectedOrgId === 'all' ? mapped : mapped.filter(item => item.organizationId === selectedOrgId);
   }, [controlsData?.items, orgsData?.organizations, selectedOrgId]);
 
-  const blocker = useUnsavedChanges(false);
+  const columnGroups: RCMColumnGroup[] = [
+    {
+      title: t('matrix.groups.process'),
+      columns: [
+        {
+          id: 'action',
+          header: 'Action',
+          width: '50px',
+          sticky: 'left',
+          render: (row) => (
+            <Button 
+              variant="ghost" 
+              size="xs" 
+              className="h-7 w-7 p-0 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50"
+              onClick={() => setEditingItem(row)}
+            >
+              <Edit3 className="h-3.5 w-3.5" />
+            </Button>
+          )
+        },
+        { id: 'no', header: 'No', accessorKey: 'no', width: '50px', sticky: 'left', stickyOffset: '50px', className: 'text-center font-mono text-[11px] text-slate-400' },
+        { id: 'code', header: t('matrix.control_ref'), accessorKey: 'code', width: '110px', sticky: 'left', stickyOffset: '100px', className: 'font-mono font-bold text-indigo-700' },
+        { id: 'name', header: t('matrix.control_name'), accessorKey: 'name', width: '250px', className: 'font-bold text-slate-800' },
+        { id: 'description', header: t('matrix.control_description'), accessorKey: 'description', width: '350px', className: 'italic text-slate-500 text-[11px] leading-tight line-clamp-2' },
+      ]
+    },
+    {
+      title: t('matrix.groups.control'),
+      columns: [
+        { id: 'frequency', header: t('matrix.frequency'), accessorKey: 'frequency', width: '90px', className: 'text-center font-medium' },
+        { id: 'supportingDocs', header: t('matrix.supporting_docs'), accessorKey: 'supportingDocs', width: '150px' },
+        { id: 'companyName', header: t('matrix.executing_function'), accessorKey: 'companyName', width: '150px' },
+        { id: 'executorRole', header: t('matrix.executor_role'), accessorKey: 'executorRole', width: '150px' },
+        { 
+          id: 'effectivePeriod', 
+          header: t('matrix.effective_period'), 
+          width: '100px', 
+          className: 'text-center font-bold text-indigo-600',
+          render: (row) => row.effectiveDate ? new Date(row.effectiveDate).getFullYear() : '-'
+        },
+      ]
+    },
+    {
+      title: t('matrix.groups.compliance'),
+      columns: COSO_PRINCIPLES.map(p => ({
+        id: `coso-${p}`,
+        header: `${p}`,
+        width: '45px',
+        className: 'p-0',
+        headerClassName: 'text-center',
+        tooltip: `Prinsip ${p}: ${t(`matrix.coso_tooltips.p${p}`)}`,
+        render: (row) => {
+          const isMapped = row.cosoPrinciples?.includes(p);
+          return (
+            <div className="flex items-center justify-center h-full">
+              {isMapped ? <Check className="h-4 w-4 text-emerald-600 stroke-[3px]" /> : <span className="text-slate-200 text-xs">—</span>}
+            </div>
+          );
+        }
+      }))
+    }
+  ];
 
   const content = (
     <div className="flex flex-col min-w-0 h-screen">
       {!embedded && (
         <RCMPageHeader 
           title={t('rcm:matrix.title_elc')}
-          subtitle="Entity Level Control Matrix (17 COSO Principles) - SK-5 Lampiran 5 a."
+          subtitle={t('rcm:matrix.subtitle_elc')}
           searchTerm=""
           onSearchChange={() => {}}
           onRefresh={() => queryClient.invalidateQueries({ queryKey: ['controls-elc'] })}
         />
       )}
-      <div className="p-0 relative flex-1 flex flex-col overflow-hidden">
-        <div className="w-full border-t border-b bg-white border-slate-950 overflow-auto flex-1">
-          <TooltipProvider>
-            <Table noWrapper className="min-w-[1800px] table-fixed border-separate border-spacing-0">
-              <TableHeader className="sticky top-0 z-50 bg-slate-100">
-
-                <TableRow className="divide-x divide-slate-950 h-10 border-b border-slate-950">
-                  <TableHead className="w-[110px] font-black uppercase text-[10px] sticky left-0 z-[60] bg-slate-100 px-3 border-r border-slate-950">{t('matrix.control_ref')}</TableHead>
-                  <TableHead className="w-[350px] font-black uppercase text-[10px] sticky left-[110px] z-[60] bg-slate-100 px-3 border-r border-slate-950">{t('matrix.control_description')}</TableHead>
-                  <TableHead className="w-[90px] font-black uppercase text-[10px] text-center bg-slate-100 border-r border-slate-950">{t('matrix.frequency')}</TableHead>
-                  <TableHead className="w-[140px] font-black uppercase text-[10px] bg-slate-100 px-3 border-r border-slate-950">{t('matrix.supporting_docs')}</TableHead>
-                  <TableHead className="w-[140px] font-black uppercase text-[10px] bg-slate-100 px-3 border-r border-slate-950">{t('matrix.executing_function')}</TableHead>
-                  <TableHead className="w-[140px] font-black uppercase text-[10px] bg-slate-100 px-3 border-r border-slate-950">{t('matrix.executor_role')}</TableHead>
-                  <TableHead className="w-[90px] font-black uppercase text-[10px] text-center bg-slate-100 border-r border-slate-950">{t('matrix.effective_period')}</TableHead>
-                  {COSO_PRINCIPLES.map(p => (
-                    <TableHead key={p} className="w-[45px] p-0 font-black text-center group bg-slate-100 border-r border-slate-950">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div className="cursor-help py-3 h-full flex items-center justify-center hover:bg-indigo-50 transition-colors">
-                            <span className="text-[10px] text-indigo-600">{p}</span>
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="max-w-[250px] bg-indigo-900 text-white p-3 shadow-xl">
-                          <p className="text-xs font-bold mb-1">Prinsip {p}</p>
-                          <p className="text-[10px] leading-relaxed opacity-90">{t(`matrix.coso_tooltips.p${p}`)}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TableHead>
-                  ))}
-                  <TableHead className="w-[80px] font-black uppercase text-[10px] sticky right-0 z-[60] bg-slate-100 border-l border-slate-950">Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {elcItems.map((ctrl, idx) => {
-                  const isEven = idx % 2 === 1;
-                  const rowBg = isEven ? "bg-[#D3D3D3]" : "bg-white";
-
-                  return (
-                    <TableRow key={ctrl.id} className={cn(
-                      "group transition-colors border-b border-slate-950 hover:bg-slate-50/50 h-12",
-                      rowBg
-                    )}>
-                      <TableCell className={cn("sticky left-0 z-30 border-r border-slate-950", rowBg)}>
-                        <InlineEditRow 
-                          isEditing={editingId === ctrl.id}
-                          onEdit={() => setEditingId(ctrl.id)}
-                          onSave={() => setEditingId(null)}
-                          onCancel={() => setEditingId(null)}
-                        />
-                      </TableCell>
-                      <TableCell className={cn("align-top py-2 sticky left-[110px] z-30 border-r border-slate-950 max-w-[350px] px-3", rowBg)}>
-                        <div className="flex flex-col gap-0.5 leading-tight">
-                          <span className="text-xs font-bold text-slate-800">{ctrl.name}</span>
-                          <p className="text-[11px] text-slate-500 italic line-clamp-2">{ctrl.description}</p>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center text-xs font-medium text-slate-600 border-r border-slate-950">{ctrl.frequency || '-'}</TableCell>
-                      <TableCell className="text-xs text-slate-500 px-3 truncate border-r border-slate-950">{ctrl.supportingDocs || '-'}</TableCell>
-                      <TableCell className="text-xs text-slate-500 px-3 border-r border-slate-950">{ctrl.companyName || '-'}</TableCell>
-                      <TableCell className="text-xs text-slate-500 px-3 border-r border-slate-950">{ctrl.executorRole || 'Control Owner'}</TableCell>
-                      <TableCell className="text-center text-xs font-bold text-indigo-600 border-r border-slate-950">{ctrl.effectiveDate ? new Date(ctrl.effectiveDate).getFullYear() : '-'}</TableCell>
-                      {COSO_PRINCIPLES.map(p => {
-                        const isMapped = ctrl.cosoPrinciples?.includes(p as any);
-                        return (
-                          <TableCell key={p} className="text-center p-0 border-r border-slate-950">
-                            <div className="flex items-center justify-center h-full min-h-[40px]">
-                              {isMapped ? <Check className="h-4 w-4 text-emerald-600 stroke-[3px]" /> : <span className="text-slate-100 text-xs">—</span>}
-                            </div>
-                          </TableCell>
-                        );
-                      })}
-                      <TableCell className={cn("sticky right-0 z-30 border-l border-slate-950", rowBg)} />
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </TooltipProvider>
-        </div>
-      </div>
+      <RCMTable 
+        groups={columnGroups}
+        data={elcItems}
+        isLoading={isLoadingControls}
+        minWidth="2200px"
+      />
+      
+      <RCMEditDialog 
+        open={!!editingItem}
+        onOpenChange={(open) => !open && setEditingItem(null)}
+        data={editingItem}
+        onSave={(values) => saveMutation.mutate(values)}
+        isSaving={saveMutation.isPending}
+      />
     </div>
   );
 
   return (
     <AppLayout container={false} className="bg-slate-100/30">
       {content}
-      <UnsavedChangesDialog blocker={blocker} />
     </AppLayout>
   );
 }
+

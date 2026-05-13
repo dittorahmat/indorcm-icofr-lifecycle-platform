@@ -720,13 +720,13 @@ export const todEvaluations = pgTable("tod_evaluations", {
 	controlId: text("control_id").notNull().references(() => controls.id),
 	evaluatorId: text("evaluator_id").references(() => user.id),
 	
-	// Lampiran 8 Criteria (Pilar TOD)
-	pilarObjective: boolean("pilar_objective").default(false),
-	pilarTiming: boolean("pilar_timing").default(false),
-	pilarAuthority: boolean("pilar_authority").default(false),
-	pilarReliability: boolean("pilar_reliability").default(false),
-	pilarCoverage: boolean("pilar_coverage").default(false),
-	pilarEvidence: boolean("pilar_evidence").default(false),
+	// Lampiran 8 Criteria (Pilar TOD) - Free text justification
+	pilarObjective: text("pilar_objective"),
+	pilarTiming: text("pilar_timing"),
+	pilarAuthority: text("pilar_authority"),
+	pilarReliability: text("pilar_reliability"),
+	pilarCoverage: text("pilar_coverage"),
+	pilarEvidence: text("pilar_evidence"),
 	
 	kkReference: text("kk_reference"),
 	conclusion: text("conclusion"), // Effective, Ineffective
