@@ -406,27 +406,26 @@ export function BPMEditor({ diagramId, subProcess, workingYear }: BPMEditorProps
             <Controls />
             <MiniMap />
             
-            <Panel position="top-right" className="flex gap-2 print:hidden">
+            <Panel position="top-right" className="flex gap-3 print:hidden">
               <Button 
                 size="sm" 
                 variant="outline" 
-                className="h-8 gap-2 bg-white border-slate-200"
+                className="h-9 gap-2 bg-white border-slate-200 hover:bg-slate-50 transition-all font-bold text-[10px] uppercase tracking-widest px-4 rounded-xl shadow-sm"
                 onClick={() => setDocumentView(true)}
               >
-                <Layout className="h-3.5 w-3.5" />
+                <Layout className="h-3.5 w-3.5 text-indigo-500" />
                 Document View
               </Button>
 
               {isLocked && (
-                <Badge variant="outline" className="h-8 bg-amber-50 text-amber-700 border-amber-200 gap-1.5 px-3">
+                <Badge variant="outline" className="h-9 bg-amber-50 text-amber-700 border-amber-200 gap-2 px-4 font-bold text-[10px] uppercase tracking-widest rounded-xl shadow-sm">
                   <ShieldCheck className="h-3.5 w-3.5" />
-                  {t('bpm:editor.actions.locked')} ({t('bpm:editor.actions.auditBaseline')} {diagram?.year || workingYear})
+                  {t('bpm:editor.actions.locked')}
                 </Badge>
               )}
               <Button 
                 size="sm" 
-                variant="default" 
-                className="h-8 gap-2 bg-indigo-600 hover:bg-indigo-700" 
+                className="h-9 gap-2 bg-slate-900 hover:bg-slate-800 shadow-lg shadow-slate-200 transition-all font-bold text-[10px] uppercase tracking-widest px-6 rounded-xl" 
                 onClick={() => saveMutation.mutate({ 
                   nodes, edges, name: `Flow: ${subProcess}`, subProcess, year: diagram?.year || parseInt(workingYear) 
                 })} 
@@ -437,49 +436,60 @@ export function BPMEditor({ diagramId, subProcess, workingYear }: BPMEditorProps
               </Button>
             </Panel>
 
-            <Panel position="top-left" className="bg-white/80 backdrop-blur-sm p-2 rounded-lg border shadow-sm flex flex-col gap-2">
-               <div className="flex flex-col">
-                 <span className="text-xs font-black text-slate-400 uppercase leading-none">{t('bpm:modal.title')}</span>
-                 <span className="text-xs font-bold text-slate-700">{subProcess}</span>
+            <Panel position="top-left" className="bg-white/90 backdrop-blur-md p-5 rounded-[2rem] border border-slate-200 shadow-2xl flex flex-col gap-5 max-w-[280px]">
+               <div className="flex flex-col border-b border-slate-100 pb-4">
+                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">{t('bpm:modal.title')}</span>
+                 <span className="text-sm font-display font-bold text-slate-900 leading-tight">{subProcess}</span>
                </div>
+               
                {!isLocked && (
-                 <div className="flex gap-1 pt-1 flex-wrap max-w-[220px]">
-                    <Button variant="outline" size="icon" className="h-7 w-7 border-green-600" title={t('bpm:editor.nodes.start')} onClick={() => {
-                      const id = `start_${Date.now()}`;
-                      setNodes(nds => [...nds, { id, type: 'start', position: { x: 250, y: 0 }, data: { label: t('bpm:editor.nodes.start'), type: 'start' } }]);
-                    }}><PlayCircle className="h-3.5 w-3.5 text-green-600" /></Button>
-                    <Button variant="outline" size="icon" className="h-7 w-7 border-red-600" title={t('bpm:editor.nodes.end')} onClick={() => {
-                      const id = `end_${Date.now()}`;
-                      setNodes(nds => [...nds, { id, type: 'end', position: { x: 250, y: 500 }, data: { label: t('bpm:editor.nodes.end'), type: 'end' } }]);
-                    }}><StopCircle className="h-3.5 w-3.5 text-red-600" /></Button>
-                    <Separator orientation="vertical" className="h-7 mx-1" />
-                    <Button variant="outline" size="icon" className="h-7 w-7" title={t('bpm:editor.nodes.activity')} onClick={() => createActivityNode('activity')}><Activity className="h-3.5 w-3.5 text-slate-600" /></Button>
-                    <Button variant="outline" size="icon" className="h-7 w-7" title={t('bpm:editor.nodes.manualInput')} onClick={() => createActivityNode('manual-input')}><Workflow className="h-3.5 w-3.5 text-slate-600" /></Button>
-                    <Button variant="outline" size="icon" className="h-7 w-7 bg-blue-50" title={t('bpm:editor.nodes.automated')} onClick={() => createActivityNode('automated-activity')}><Database className="h-3.5 w-3.5 text-blue-600" /></Button>
-                    <Button variant="outline" size="icon" className="h-7 w-7" title={t('bpm:editor.nodes.decision')} onClick={() => createActivityNode('decision')}><GitCommit className="h-3.5 w-3.5 text-slate-600 rotate-90" /></Button>
-                    <Button variant="outline" size="icon" className="h-7 w-7" title={t('bpm:editor.nodes.output')} onClick={() => createActivityNode('output')}><LayoutDashboard className="h-3.5 w-3.5 text-slate-600" /></Button>
-                    <Button variant="outline" size="icon" className="h-7 w-7" title={t('bpm:editor.nodes.physical')} onClick={() => createActivityNode('document')}><FileText className="h-3.5 w-3.5 text-slate-600" /></Button>
-                    <Button variant="outline" size="icon" className="h-7 w-7" title={t('bpm:editor.nodes.archive')} onClick={() => createActivityNode('archive')}><Trash2 className="h-3.5 w-3.5 text-slate-600" /></Button>
-                    <Button variant="outline" size="icon" className="h-7 w-7" title={t('bpm:editor.nodes.dataMedia')} onClick={() => createActivityNode('data-media')}><Database className="h-3.5 w-3.5 text-blue-800" /></Button>
-                    <Button variant="outline" size="icon" className="h-7 w-7" title={t('bpm:editor.nodes.offPageRef')} onClick={() => createActivityNode('off-page-ref')}><ChevronRight className="h-3.5 w-3.5 text-slate-600" /></Button>
-                    <Button variant="outline" size="icon" className="h-7 w-7" title={t('bpm:editor.nodes.reference')} onClick={() => createActivityNode('reference')}><LinkIcon className="h-3.5 w-3.5 text-slate-600" /></Button>
-                    <Separator orientation="vertical" className="h-7 mx-1" />
-                    <Button variant="secondary" size="sm" className="h-7 px-2 gap-1 text-xs font-bold uppercase tracking-tighter" onClick={() => {
-                      const id = `lane_${Date.now()}`;
-                      setNodes(nds => [...nds, { 
-                        id, type: 'swimlane', position: { x: 0, y: 0 }, zIndex: -1,
-                        style: { width: 350, height: 800 },
-                        data: { 
-                          label: t('bpm:editor.swimlane.defaults.lane'), 
-                          department: t('bpm:editor.swimlane.defaults.dept'), 
-                          function: t('bpm:editor.swimlane.defaults.func'),
-                          onChangeDepartment: (v: string) => updateNodeData(id, { department: v }),
-                          onChangeFunction: (v: string) => updateNodeData(id, { function: v })
-                        } 
-                      }]);
-                    }}>
-                      <GripVertical className="h-3 w-3" /> {t('bpm:swimlane.add')}
-                    </Button>
+                 <div className="space-y-5">
+                    <div className="space-y-3">
+                       <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest px-1">Flow Controls</p>
+                       <div className="flex gap-2">
+                          <Button variant="outline" size="icon" className="h-10 w-10 border-emerald-200 bg-emerald-50/50 hover:bg-emerald-100 rounded-xl transition-all shadow-sm" title={t('bpm:editor.nodes.start')} onClick={() => {
+                            const id = `start_${Date.now()}`;
+                            setNodes(nds => [...nds, { id, type: 'start', position: { x: 250, y: 0 }, data: { label: t('bpm:editor.nodes.start'), type: 'start' } }]);
+                          }}><PlayCircle className="h-5 w-5 text-emerald-600" /></Button>
+                          <Button variant="outline" size="icon" className="h-10 w-10 border-rose-200 bg-rose-50/50 hover:bg-rose-100 rounded-xl transition-all shadow-sm" title={t('bpm:editor.nodes.end')} onClick={() => {
+                            const id = `end_${Date.now()}`;
+                            setNodes(nds => [...nds, { id, type: 'end', position: { x: 250, y: 500 }, data: { label: t('bpm:editor.nodes.end'), type: 'end' } }]);
+                          }}><StopCircle className="h-5 w-5 text-rose-600" /></Button>
+                       </div>
+                    </div>
+
+                    <div className="space-y-3">
+                       <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest px-1">Process Elements</p>
+                       <div className="grid grid-cols-4 gap-2">
+                          <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100" title={t('bpm:editor.nodes.activity')} onClick={() => createActivityNode('activity')}><Activity className="h-4 w-4 text-slate-600" /></Button>
+                          <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100" title={t('bpm:editor.nodes.manualInput')} onClick={() => createActivityNode('manual-input')}><Workflow className="h-4 w-4 text-slate-600" /></Button>
+                          <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg bg-blue-50/30 hover:bg-blue-100/50 border-blue-100" title={t('bpm:editor.nodes.automated')} onClick={() => createActivityNode('automated-activity')}><Database className="h-4 w-4 text-blue-600" /></Button>
+                          <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100" title={t('bpm:editor.nodes.decision')} onClick={() => createActivityNode('decision')}><GitCommit className="h-4 w-4 text-slate-600 rotate-90" /></Button>
+                          <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100" title={t('bpm:editor.nodes.output')} onClick={() => createActivityNode('output')}><LayoutDashboard className="h-4 w-4 text-slate-600" /></Button>
+                          <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100" title={t('bpm:editor.nodes.physical')} onClick={() => createActivityNode('document')}><FileText className="h-4 w-4 text-slate-600" /></Button>
+                          <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100" title={t('bpm:editor.nodes.archive')} onClick={() => createActivityNode('archive')}><Trash2 className="h-4 w-4 text-slate-600" /></Button>
+                          <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg bg-indigo-50/30 hover:bg-indigo-100/50 border-indigo-100" title={t('bpm:editor.nodes.dataMedia')} onClick={() => createActivityNode('data-media')}><Database className="h-4 w-4 text-indigo-700" /></Button>
+                       </div>
+                    </div>
+
+                    <div className="pt-2">
+                      <Button variant="secondary" className="w-full h-10 gap-2 text-[10px] font-bold uppercase tracking-widest rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all" onClick={() => {
+                        const id = `lane_${Date.now()}`;
+                        setNodes(nds => [...nds, { 
+                          id, type: 'swimlane', position: { x: 0, y: 0 }, zIndex: -1,
+                          style: { width: 400, height: 1000 },
+                          data: { 
+                            label: t('bpm:editor.swimlane.defaults.lane'), 
+                            department: t('bpm:editor.swimlane.defaults.dept'), 
+                            function: t('bpm:editor.swimlane.defaults.func'),
+                            onChangeDepartment: (v: string) => updateNodeData(id, { department: v }),
+                            onChangeFunction: (v: string) => updateNodeData(id, { function: v })
+                          } 
+                        }]);
+                      }}>
+                        <GripVertical className="h-3.5 w-3.5" /> {t('bpm:swimlane.add')}
+                      </Button>
+                    </div>
                  </div>
                )}
             </Panel>

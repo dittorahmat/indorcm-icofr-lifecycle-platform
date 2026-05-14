@@ -9,10 +9,34 @@
     "csaTarget": "Target: 100% per Quarter",
     "remediationVelocity": "Remediation Velocity",
     "remediationAvg": "Avg time to resolve CD",
-    "line2Validation": "Line 2 Validation Rate",
+    "remediationAvgDays": "12 Days Avg.",
+    "line2Validation": "Line 2 Validation",
+    "line2Percent": "94.2% Verified",
     "line2Detail": "Test of One completion",
     "reportingReadiness": "Reporting Readiness",
-    "reportingStatus": "Current cycle status"
+    "reportingStatus": "Current cycle status",
+    "cycleReadiness": "Cycle Readiness",
+    "ready": "READY",
+    "reportingCycle": "Reporting Cycle {{year}}",
+    "activeControls": "Active Controls",
+    "needRemediation": "Need Remediation",
+    "principlesCoverage": "17 Principles Coverage"
+  },
+  "actionCenter": {
+    "title": "Action Center",
+    "description": "Urgent actions for this cycle.",
+    "csa": {
+      "title": "Complete Self-Assessment",
+      "description": "Some business processes require immediate self-certification."
+    },
+    "deficiency": {
+      "title": "Remediate Findings",
+      "description": "Immediately follow up on findings with High/Material severity."
+    },
+    "reports": {
+      "title": "Management Assessment",
+      "description": "Draft effectiveness report is ready for review."
+    }
   },
   "coso": {
     "title": "17 COSO Principles Coverage",

@@ -1,27 +1,61 @@
 {
   "title": "Reports & Exports",
   "description": "Standardized ICOFR reports for {{companyName}} compliance.",
+  "pageTitle": "ICOFR Reporting & Management Assessment",
+  "pageDescription": "Regulatory reporting dashboard and Appendix 11 sign-off portal.",
   "actions": {
     "exportCsv": "Export CSV",
     "print": "Print Report",
-    "signAndLock": "Sign & Lock Report (CEO & CFO)"
+    "signAndLock": "Sign & Lock Report (CEO & CFO)",
+    "generatingReport": "Generating consolidated report..."
   },
   "tabs": {
     "overview": "Overview",
-    "management": "Management Assessment",
-    "audit": "Test Results Report",
+    "dashboard": "Dashboard",
+    "managementAssessment": "Management Assessment",
+    "testingResults": "Testing Results",
     "appendices": "Regulatory Appendices"
   },
   "assessment": {
+    "title": "Management Assessment on ICOFR Implementation Effectiveness",
+    "subtitle": "Appendix 11 - SK-5/DKU.MBU/11/2024",
     "conclusionEffective": "Conclusion: Effective",
     "conclusionIneffective": "Conclusion: Ineffective",
+    "effectiveDesc": "Based on the evaluation performed, management concludes that the Company has maintained, in all material respects, effective internal control over financial reporting as of the report date.",
+    "ineffectiveDesc": "Based on the evaluation performed, management concludes that the Company did not maintain effective internal control over financial reporting as of the report date, due to identified material weaknesses.",
     "directorsStatement": "The Board of Directors of {{companyName}} states that:",
+    "statement1": "We have reviewed the financial statements of {{companyName}} ending on {{date}}.",
+    "statement2": "To our knowledge, the financial statements do not contain any untrue statement of a material fact or omit to state a material fact necessary to make the statements made, in light of the circumstances under which such statements were made, not misleading.",
+    "statement3": "To our knowledge, the financial statements and other financial information included in the financial statements, fairly present in all material respects the financial condition and results of operations for the period presented.",
+    "statement4": "We have implemented controls and procedures for the preparation of financial statements deemed necessary to properly prepare and present the financial statements (consolidated) and free from material misstatement.",
+    "deficiencyTitle": "Deficiency Details & Remediation Plan",
+    "noDeficiencies": "No significant deficiencies or material weaknesses found.",
+    "remediationPlan": "Remediation Plan",
+    "monitorProgress": "Monitor progress via Deficiency Board",
     "signed": "SIGNED",
     "awaitingSign": "Awaiting CEO/CFO Sign-off",
     "periodFinalized": "PERIOD FINALIZED & SIGNED"
   },
   "testing": {
+    "title": "Test Results Report (TOD & TOE)",
+    "description": "Consolidated results of control design and operating effectiveness testing.",
     "effective": "Effective",
-    "ineffective": "Ineffective"
+    "ineffective": "Ineffective",
+    "filters": {
+      "type": "Test Type",
+      "status": "Status"
+    },
+    "table": {
+      "no": "No",
+      "process": "Process Context (Appx 5)",
+      "control": "Control Reference",
+      "assertion": "Assertion (Table 8)",
+      "type": "Type",
+      "method": "Method",
+      "criteria": "Appx 8 Criteria (xxvii-xxxii)",
+      "sample": "Sample",
+      "result": "Result",
+      "notes": "Walkthrough / Notes"
+    }
   }
 }

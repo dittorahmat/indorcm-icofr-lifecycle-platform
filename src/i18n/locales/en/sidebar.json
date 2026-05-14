@@ -1,11 +1,9 @@
 {
   "groups": {
-    "master": "MASTER",
-    "rcsa": "RCSA",
-    "deficiency": "Deficiency & Remediation",
-    "testing": "TOD/TOE",
-    "report": "Report",
-    "ai": "AI",
+    "mainTasks": "Main Tasks",
+    "reportingRcm": "Reporting & RCM",
+    "testing": "Testing",
+    "others": "Others",
     "user": "User",
     "admin": "Administration"
   },

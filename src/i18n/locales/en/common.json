@@ -74,7 +74,9 @@
     "lini1Restricted": "As Line 1, you can only manage business processes for accounts belonging to your own department."
   },
   "cycles": {
-    "yearCycle": "{{year}} Cycle"
+    "yearCycle": "{{year}} Cycle",
+    "complianceCycle": "Compliance Cycle",
+    "cycleLabel": "Cycle: {{year}}"
   },
   "calendar": {
     "today": "Today",

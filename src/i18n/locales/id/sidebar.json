@@ -1,11 +1,9 @@
 {
   "groups": {
-    "master": "MASTER",
-    "rcsa": "RCSA",
-    "deficiency": "Defisiensi & Remediasi",
-    "testing": "TOD/TOE",
-    "report": "Laporan",
-    "ai": "AI",
+    "mainTasks": "Pekerjaan Utama",
+    "reportingRcm": "Pelaporan & RCM",
+    "testing": "Pengujian",
+    "others": "Lainnya",
     "user": "User",
     "admin": "Administrasi"
   },

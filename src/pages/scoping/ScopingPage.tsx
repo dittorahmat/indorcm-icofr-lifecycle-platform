@@ -1,11 +1,12 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { 
-  Plus, Trash2, Upload, Database, LayoutGrid, CheckCircle2, AlertTriangle, PanelLeftOpen
+  Plus, Trash2, Upload, Database, LayoutGrid, CheckCircle2, AlertTriangle, PanelLeftOpen,
+  Calendar, ArrowRight
 } from 'lucide-react';
 import { GLSourceTable } from '@/components/scoping/GLSourceTable';
 import { SimulationListTable } from '@/components/scoping/SimulationListTable';
@@ -36,6 +37,29 @@ import { ScopingEditorHeader } from './components/ScopingEditorHeader';
 import { ScopingEditorContent } from './components/ScopingEditorContent';
 
 import type { MaterialitySimulation } from '@shared/types';
+
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const itemVariants: Variants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      type: 'spring',
+      stiffness: 100,
+      damping: 15
+    }
+  }
+};
 
 export function ScopingPage() {
   const { t } = useTranslation(['scoping', 'common']);
@@ -74,113 +98,129 @@ export function ScopingPage() {
 
   return (
     <AppLayout container>
-      <div className="space-y-6">
+      <motion.div 
+        className="space-y-6"
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+      >
         <PageHeader 
-          title={t('scoping:title')} 
+          title={<span className="font-display tracking-tight">{t('scoping:title')}</span>} 
           description={t('scoping:description')}
           badge={activeSnapshot && (
             <Badge variant="outline" className={cn(
-              "gap-1.5 font-bold transition-colors",
+              "gap-1.5 font-bold uppercase tracking-wider text-[10px] transition-all px-2.5 py-0.5 shadow-sm",
               activeSnapshot.status === 'Mapped' 
-                ? "bg-green-50 text-green-700 border-green-200" 
-                : "bg-amber-50 text-amber-700 border-amber-200 animate-pulse"
+                ? "bg-emerald-50 text-emerald-700 border-emerald-100" 
+                : "bg-amber-50 text-amber-700 border-amber-100"
             )}>
-              <CheckCircle2 className="h-3.5 w-3.5" /> 
-              {t('scoping:activeSource')}: {activeSnapshot.filename} ({activeSnapshot.status})
+              <div className={cn("h-1.5 w-1.5 rounded-full", activeSnapshot.status === 'Mapped' ? "bg-emerald-500" : "bg-amber-500")} />
+              {activeSnapshot.filename}
             </Badge>
           )}
         >
           <div className="flex flex-col items-end gap-1">
             <div className="flex gap-2">
               <Select value={filterYear} onValueChange={setFilterYear}>
-                <SelectTrigger className="w-[100px] bg-white">
-                  <SelectValue placeholder={t('common:placeholders.year')} />
+                <SelectTrigger className="w-[110px] h-10 bg-white border-slate-200 text-xs font-bold uppercase tracking-wider">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                    <SelectValue placeholder={t('common:placeholders.year')} />
+                  </div>
                 </SelectTrigger>
                 <SelectContent>
                   {dynamicYears.map(y => (
-                    <SelectItem key={y} value={y}>{y}</SelectItem>
+                    <SelectItem key={y} value={y} className="text-xs font-bold uppercase">{y}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
               <div {...getRootProps()}>
                 <input {...getInputProps()} />
-                <Button variant="outline" className="gap-2 border-dashed border-2 hover:border-primary hover:bg-primary/5">
-                  <Upload className="h-4 w-4" /> {t('scoping:uploadButton')}
+                <Button variant="outline" className="h-10 gap-2 border-slate-200 bg-white hover:bg-slate-50 transition-all font-bold text-xs uppercase tracking-wider">
+                  <Upload className="h-3.5 w-3.5 text-slate-500" /> {t('scoping:uploadButton')}
                 </Button>
               </div>
               <Button 
                 onClick={() => setIsCreating(true)} 
-                className="gap-2 shadow-lg shadow-primary/20" 
+                className="h-10 gap-2 bg-slate-900 hover:bg-slate-800 shadow-lg shadow-slate-200 transition-all font-bold text-xs uppercase tracking-wider" 
                 disabled={!activeSnapshot || activeSnapshot.status !== 'Mapped'}
               >
-                <Plus className="h-4 w-4" /> {t('scoping:simulation.createNew')}
+                <Plus className="h-3.5 w-3.5" /> {t('scoping:simulation.createNew')}
               </Button>
             </div>
-            {!activeSnapshot && <p className="text-xs text-muted-foreground italic">{t('scoping:emptyState')}</p>}
+            {!activeSnapshot && <p className="text-[10px] font-bold text-rose-500 uppercase tracking-tighter animate-pulse">{t('scoping:emptyState')}</p>}
           </div>
         </PageHeader>
 
         <Tabs defaultValue="simulations" className="w-full">
-          <TabsList className="grid w-full max-w-[400px] grid-cols-2 mb-6">
-            <TabsTrigger value="simulations" className="gap-2">
+          <TabsList className="grid w-full max-w-[440px] grid-cols-2 mb-8 bg-slate-100/50 p-1 border border-slate-200 rounded-xl">
+            <TabsTrigger value="simulations" className="gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest py-2">
               <LayoutGrid className="h-4 w-4" /> {t('scoping:simulation.title')}
             </TabsTrigger>
-            <TabsTrigger value="master-gl" className="gap-2">
+            <TabsTrigger value="master-gl" className="gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest py-2">
               <Database className="h-4 w-4" /> {t('scoping:masterDataTab')}
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="simulations">
-            <SimulationListTable 
-              data={simulations} 
-              onSelect={(id) => setSearchParams({ id })} 
-              onDelete={mutations.deleteSim.mutate} 
-              isLoading={isLoading}
-            />
+            <motion.div variants={itemVariants}>
+              <SimulationListTable 
+                data={simulations} 
+                onSelect={(id) => setSearchParams({ id })} 
+                onDelete={mutations.deleteSim.mutate} 
+                isLoading={isLoading}
+              />
+            </motion.div>
           </TabsContent>
 
           <TabsContent value="master-gl">
-            <div className="flex justify-end mb-4">
-              <Button 
-                variant="destructive" 
-                size="sm" 
-                className="gap-2 opacity-50 hover:opacity-100 transition-opacity"
-                onClick={() => {
-                  if (confirm(t('scoping:purgeConfirm'))) {
-                    api('/api/dev/purge-scoping', { method: 'DELETE' }).then(() => {
-                      queryClient.invalidateQueries();
-                      toast.success(t('common:notifications.purged'));
-                    });
-                  }
-                }}
-              >
-                <Trash2 className="h-4 w-4" /> {t('scoping:resetDataButton')}
-              </Button>
-            </div>
-            <GLSourceTable 
-              data={snapshots} 
-              onSetActive={mutations.setActiveSnap.mutate}
-              onSetBenchmark={setBenchmarkModalSnap}
-              onDelete={mutations.deleteSnap.mutate}
-              isLoading={isLoading}
-            />
+            <motion.div variants={itemVariants}>
+              <div className="flex justify-end mb-4">
+                <Button 
+                  variant="destructive" 
+                  size="sm" 
+                  className="gap-2 h-8 font-bold text-[10px] uppercase tracking-widest bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-100 transition-all shadow-none"
+                  onClick={() => {
+                    if (confirm(t('scoping:purgeConfirm'))) {
+                      api('/api/dev/purge-scoping', { method: 'DELETE' }).then(() => {
+                        queryClient.invalidateQueries();
+                        toast.success(t('common:notifications.purged'));
+                      });
+                    }
+                  }}
+                >
+                  <Trash2 className="h-3.5 w-3.5" /> {t('scoping:resetDataButton')}
+                </Button>
+              </div>
+              <GLSourceTable 
+                data={snapshots} 
+                onSetActive={mutations.setActiveSnap.mutate}
+                onSetBenchmark={setBenchmarkModalSnap}
+                onDelete={mutations.deleteSnap.mutate}
+                isLoading={isLoading}
+              />
+            </motion.div>
           </TabsContent>
         </Tabs>
 
         <Dialog open={isCreating} onOpenChange={setIsCreating}>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>{t('scoping:simulation.createNew')}</DialogTitle>
-              <DialogDescription>
-                {t('scoping:simulation.basisDescription', { filename: activeSnapshot?.filename })}
-              </DialogDescription>
-            </DialogHeader>
-            <ScopingSimulationForm 
-              activeSnap={activeSnapshot || null}
-              onSubmit={(data) => mutations.createSim.mutate({ ...data, glSnapshotId: activeSnapshot?.id })} 
-              isPending={mutations.createSim.isPending}
-              yearOptions={dynamicYears}
-            />
+          <DialogContent className="sm:max-w-[425px] border-none shadow-2xl rounded-2xl overflow-hidden p-0">
+            <div className="bg-slate-900 p-6 text-white">
+              <DialogHeader>
+                <DialogTitle className="font-display text-2xl tracking-tight">{t('scoping:simulation.createNew')}</DialogTitle>
+                <DialogDescription className="text-slate-400 text-xs">
+                  {t('scoping:simulation.basisDescription', { filename: activeSnapshot?.filename })}
+                </DialogDescription>
+              </DialogHeader>
+            </div>
+            <div className="p-6">
+              <ScopingSimulationForm 
+                activeSnap={activeSnapshot || null}
+                onSubmit={(data) => mutations.createSim.mutate({ ...data, glSnapshotId: activeSnapshot?.id })} 
+                isPending={mutations.createSim.isPending}
+                yearOptions={dynamicYears}
+              />
+            </div>
           </DialogContent>
         </Dialog>
 
@@ -189,7 +229,7 @@ export function ScopingPage() {
           isOpen={!!benchmarkModalSnap} 
           onOpenChange={(open) => !open && setBenchmarkModalSnap(null)} 
         />
-      </div>
+      </motion.div>
     </AppLayout>
   );
 }
@@ -228,6 +268,8 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
           onSubmit={() => mutations.submit.mutate()}
           isSaving={mutations.save.isPending}
           isSubmitting={mutations.submit.isPending}
+          omValue={omValue}
+          pmValue={pmValue}
         />
 
         <div className="flex gap-6 items-start">
@@ -251,15 +293,22 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
                   onCollapse={() => setIsSidebarCollapsed(true)}
                 />
 
-                <Card className="bg-amber-50 border-amber-200 shadow-sm w-[300px] p-4">
-                   <h3 className="text-xs uppercase font-bold text-amber-800 flex items-center gap-2 mb-2">
-                     <AlertTriangle className="h-3 w-3" /> {t('logic.title')}
+                <Card className="relative group overflow-hidden bg-amber-50 border-amber-100 shadow-sm w-[300px] p-5">
+                   <div className="absolute top-0 right-0 w-20 h-20 bg-amber-200/20 rounded-full -mr-10 -mt-10" />
+                   <h3 className="text-[10px] uppercase font-bold text-amber-800 tracking-widest flex items-center gap-2 mb-3">
+                     <AlertTriangle className="h-3.5 w-3.5" /> {t('logic.title')}
                    </h3>
-                   <div className="text-xs text-amber-700 leading-relaxed space-y-2 italic">
+                   <div className="text-[11px] text-amber-900 leading-relaxed space-y-3 font-medium">
                     <p>{t('logic.description')}</p>
-                    <ol className="list-decimal list-inside space-y-1">
-                      <li>{t('logic.quant')}</li>
-                      <li>{t('logic.qual')}</li>
+                    <ol className="space-y-2">
+                      <li className="flex gap-2">
+                        <Badge variant="outline" className="h-4 w-4 p-0 flex items-center justify-center rounded-full bg-amber-100 border-amber-300 text-amber-800 text-[10px]">1</Badge>
+                        <span>{t('logic.quant')}</span>
+                      </li>
+                      <li className="flex gap-2">
+                        <Badge variant="outline" className="h-4 w-4 p-0 flex items-center justify-center rounded-full bg-amber-100 border-amber-300 text-amber-800 text-[10px]">2</Badge>
+                        <span>{t('logic.qual')}</span>
+                      </li>
                     </ol>
                   </div>
                 </Card>
@@ -271,28 +320,30 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
             <Button
               variant="outline"
               size="icon"
-              className="mt-2 shrink-0 bg-white shadow-sm border-indigo-100 text-indigo-600 hover:bg-indigo-50"
+              className="mt-2 shrink-0 h-10 w-10 bg-white shadow-md border-indigo-100 text-indigo-600 hover:bg-indigo-50 transition-all rounded-xl"
               onClick={() => setIsSidebarCollapsed(false)}
             >
-              <PanelLeftOpen className="h-4 w-4" />
+              <PanelLeftOpen className="h-5 w-5" />
             </Button>
           )}
 
-          <ScopingEditorContent 
-            simState={simState}
-            mergedGlData={mergedGlData}
-            omValue={omValue}
-            pmValue={pmValue}
-            isLocked={isLocked}
-            departments={departments}
-            applications={applications}
-            selectedApps={localAppMappings}
-            onAssessmentChange={handlers.onAssessmentChange}
-            onOwnerAcceptanceChange={handleOwnerAcceptanceChange}
-            onAssignDepartments={handlers.onAssignDepartments}
-            onAppsChange={handlers.onAppsChange}
-            onQuickAddApp={handleQuickAddApp}
-          />
+          <div className="flex-1 overflow-hidden">
+            <ScopingEditorContent 
+              simState={simState}
+              mergedGlData={mergedGlData}
+              omValue={omValue}
+              pmValue={pmValue}
+              isLocked={isLocked}
+              departments={departments}
+              applications={applications}
+              selectedApps={localAppMappings}
+              onAssessmentChange={handlers.onAssessmentChange}
+              onOwnerAcceptanceChange={handleOwnerAcceptanceChange}
+              onAssignDepartments={handlers.onAssignDepartments}
+              onAppsChange={handlers.onAppsChange}
+              onQuickAddApp={handleQuickAddApp}
+            />
+          </div>
         </div>
       </div>
     </AppLayout>

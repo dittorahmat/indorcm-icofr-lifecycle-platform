@@ -74,7 +74,9 @@
     "lini1Restricted": "Sebagai Lini 1, Anda hanya dapat mengelola proses bisnis untuk akun milik departemen Anda sendiri."
   },
   "cycles": {
-    "yearCycle": "Siklus {{year}}"
+    "yearCycle": "Siklus {{year}}",
+    "complianceCycle": "Siklus Kepatuhan",
+    "cycleLabel": "Siklus: {{year}}"
   },
   "calendar": {
     "today": "Hari Ini",

@@ -64,8 +64,8 @@ export function ReportsPage() {
     <AppLayout container>
       <div className="flex flex-col gap-6">
         <PageHeader 
-          title="ICOFR Reporting & Management Assessment" 
-          description="Regulatory reporting dashboard and Appendix 11 sign-off portal."
+          title={t('pageTitle')} 
+          description={t('pageDescription')}
         >
           <ReportExportPanel onExport={handleExport} />
         </PageHeader>
@@ -73,10 +73,10 @@ export function ReportsPage() {
         <Tabs defaultValue="dashboard" className="w-full">
           <div className="border-b no-print">
             <TabsList className="bg-transparent h-auto p-0 gap-6">
-              <TabsTrigger value="dashboard" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2 font-bold uppercase tracking-wider text-xs">{t('tabs.dashboard')}</TabsTrigger>
-              <TabsTrigger value="management" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2 font-bold uppercase tracking-wider text-xs">{t('tabs.managementAssessment')}</TabsTrigger>
-              <TabsTrigger value="audit" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2 font-bold uppercase tracking-wider text-xs">{t('tabs.testingResults')}</TabsTrigger>
-              <TabsTrigger value="appendices" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2 font-bold uppercase tracking-wider text-xs">Regulatory Appendices</TabsTrigger>
+              <TabsTrigger value="dashboard" className="rounded-none border-b-2 border-transparent data-[state=active]:border-indigo-600 data-[state=active]:bg-transparent px-0 py-2.5 font-bold uppercase tracking-wider text-[10px] text-slate-500 data-[state=active]:text-indigo-600 transition-all">{t('tabs.dashboard')}</TabsTrigger>
+              <TabsTrigger value="management" className="rounded-none border-b-2 border-transparent data-[state=active]:border-indigo-600 data-[state=active]:bg-transparent px-0 py-2.5 font-bold uppercase tracking-wider text-[10px] text-slate-500 data-[state=active]:text-indigo-600 transition-all">{t('tabs.managementAssessment')}</TabsTrigger>
+              <TabsTrigger value="audit" className="rounded-none border-b-2 border-transparent data-[state=active]:border-indigo-600 data-[state=active]:bg-transparent px-0 py-2.5 font-bold uppercase tracking-wider text-[10px] text-slate-500 data-[state=active]:text-indigo-600 transition-all">{t('tabs.testingResults')}</TabsTrigger>
+              <TabsTrigger value="appendices" className="rounded-none border-b-2 border-transparent data-[state=active]:border-indigo-600 data-[state=active]:bg-transparent px-0 py-2.5 font-bold uppercase tracking-wider text-[10px] text-slate-500 data-[state=active]:text-indigo-600 transition-all">{t('tabs.appendices')}</TabsTrigger>
             </TabsList>
           </div>
 
@@ -95,18 +95,18 @@ export function ReportsPage() {
             />
           </TabsContent>
 
-          <TabsContent value="audit" className="pt-4 space-y-6">
-            <div className="flex flex-wrap items-center justify-between gap-4 bg-muted/20 p-4 rounded-lg border border-dashed no-print">
-              <div className="flex items-center gap-4">
-                <div className="space-y-1">
-                  <p className="text-xs font-bold uppercase text-muted-foreground">Test Type</p>
+          <TabsContent value="audit" className="pt-6 space-y-6">
+            <div className="flex flex-wrap items-center justify-between gap-4 bg-slate-50 p-4 rounded-lg border border-slate-200 no-print shadow-sm">
+              <div className="flex items-center gap-6">
+                <div className="space-y-1.5">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{t('testing.filters.type')}</p>
                   <div className="flex gap-1">
                     {['ALL', 'TOD', 'TOE'].map(t => (
                       <Button 
                         key={t} 
                         size="sm" 
                         variant={testTypeFilter === t ? 'default' : 'outline'} 
-                        className="h-7 text-xs"
+                        className={cn("h-7 px-3 text-[10px] font-bold", testTypeFilter === t ? "bg-indigo-600" : "bg-white text-slate-600")}
                         onClick={() => setTestTypeFilter(t as any)}
                       >
                         {t}
@@ -114,15 +114,15 @@ export function ReportsPage() {
                     ))}
                   </div>
                 </div>
-                <div className="space-y-1">
-                  <p className="text-xs font-bold uppercase text-muted-foreground">Status</p>
+                <div className="space-y-1.5">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{t('testing.filters.status')}</p>
                   <div className="flex gap-1">
                     {['ALL', 'Effective', 'Ineffective'].map(s => (
                       <Button 
                         key={s} 
                         size="sm" 
                         variant={testStatusFilter === s ? 'default' : 'outline'} 
-                        className="h-7 text-xs"
+                        className={cn("h-7 px-3 text-[10px] font-bold", testStatusFilter === s ? "bg-indigo-600" : "bg-white text-slate-600")}
                         onClick={() => setTestStatusFilter(s as any)}
                       >
                         {s === 'ALL' ? 'ALL' : s === 'Effective' ? t('reports:testing.effective').toUpperCase() : t('reports:testing.ineffective').toUpperCase()}
@@ -132,31 +132,31 @@ export function ReportsPage() {
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-xs font-bold text-blue-700 uppercase">Regulatory Reference</p>
-                <p className="text-xs text-blue-600 italic">SK-5 Bab V & Lampiran 8</p>
+                <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-wide">Regulatory Reference</p>
+                <p className="text-[11px] text-slate-500 italic font-medium">SK-5 Bab V & Lampiran 8</p>
               </div>
             </div>
 
-            <Card>
-              <CardHeader className="pb-0">
-                <CardTitle className="text-lg">Test Results Report (TOD & TOE)</CardTitle>
-                <CardDescription>Consolidated results of control design and operating effectiveness testing.</CardDescription>
+            <Card className="border-slate-200 shadow-sm overflow-hidden">
+              <CardHeader className="bg-slate-50/50 border-b py-4">
+                <CardTitle className="text-base font-bold text-slate-900">{t('testing.title')}</CardTitle>
+                <CardDescription className="text-xs">{t('testing.description')}</CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
-                <div className="rounded-md border overflow-x-auto">
+                <div className="rounded-lg border border-slate-200 overflow-x-auto shadow-sm bg-white">
                   <Table>
-                    <TableHeader className="bg-muted/50">
+                    <TableHeader className="bg-slate-50/80">
                       <TableRow>
-                        <TableHead className="w-[40px] text-xs uppercase font-bold text-center">No</TableHead>
-                        <TableHead className="w-[180px] text-xs uppercase font-bold">Process Context (Appx 5)</TableHead>
-                        <TableHead className="w-[180px] text-xs uppercase font-bold">Control Reference</TableHead>
-                        <TableHead className="w-[120px] text-xs uppercase font-bold text-center">Assertion (Table 8)</TableHead>
-                        <TableHead className="w-[60px] text-xs uppercase font-bold text-center">Type</TableHead>
-                        <TableHead className="w-[80px] text-xs uppercase font-bold text-center">Method</TableHead>
-                        <TableHead className="text-xs uppercase font-bold text-center">Appx 8 Criteria (xxvii-xxxii)</TableHead>
-                        <TableHead className="w-[60px] text-xs uppercase font-bold text-center">Sample</TableHead>
-                        <TableHead className="w-[90px] text-xs uppercase font-bold text-center">Result</TableHead>
-                        <TableHead className="w-[200px] text-xs uppercase font-bold text-left">Walkthrough / Notes</TableHead>
+                        <TableHead className="w-[40px] text-[10px] uppercase font-bold text-center text-slate-500 tracking-wider">{t('testing.table.no')}</TableHead>
+                        <TableHead className="w-[180px] text-[10px] uppercase font-bold text-slate-500 tracking-wider">{t('testing.table.process')}</TableHead>
+                        <TableHead className="w-[180px] text-[10px] uppercase font-bold text-slate-500 tracking-wider">{t('testing.table.control')}</TableHead>
+                        <TableHead className="w-[120px] text-[10px] uppercase font-bold text-center text-slate-500 tracking-wider">{t('testing.table.assertion')}</TableHead>
+                        <TableHead className="w-[60px] text-[10px] uppercase font-bold text-center text-slate-500 tracking-wider">{t('testing.table.type')}</TableHead>
+                        <TableHead className="w-[80px] text-[10px] uppercase font-bold text-center text-slate-500 tracking-wider">{t('testing.table.method')}</TableHead>
+                        <TableHead className="text-[10px] uppercase font-bold text-center text-slate-500 tracking-wider">{t('testing.table.criteria')}</TableHead>
+                        <TableHead className="w-[60px] text-[10px] uppercase font-bold text-center text-slate-500 tracking-wider">{t('testing.table.sample')}</TableHead>
+                        <TableHead className="w-[90px] text-[10px] uppercase font-bold text-center text-slate-500 tracking-wider">{t('testing.table.result')}</TableHead>
+                        <TableHead className="w-[200px] text-[10px] uppercase font-bold text-left text-slate-500 tracking-wider">{t('testing.table.notes')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>

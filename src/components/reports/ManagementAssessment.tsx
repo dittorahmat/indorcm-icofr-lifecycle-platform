@@ -32,92 +32,98 @@ export function ManagementAssessment({
   const { t } = useTranslation('reports');
 
   return (
-    <div className="pt-4">
-      <div className="flex justify-end mb-4 gap-2 no-print">
+    <div className="pt-6">
+      <div className="flex justify-end mb-6 gap-2 no-print">
         {!isSigned ? (
-          <Button onClick={onSignOff} variant="destructive" className="font-bold" disabled={isSigningOff}>
-            {isSigningOff ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Lock className="h-4 w-4 mr-2" />}
+          <Button onClick={onSignOff} variant="destructive" className="font-bold shadow-md h-9 gap-2" disabled={isSigningOff}>
+            {isSigningOff ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />}
             {t('actions.signAndLock')}
           </Button>
         ) : (
-          <Badge className="bg-blue-600 text-white px-4 py-2 text-sm shadow-md gap-2">
+          <Badge className="bg-indigo-600 text-white px-5 py-2 text-xs font-bold shadow-sm gap-2 border-none">
             <CheckCircle2 className="h-4 w-4" /> {t('assessment.periodFinalized')}
           </Badge>
         )}
       </div>
       
-      <Card className="print:shadow-none border-none sm:border relative overflow-hidden">
+      <Card className="print:shadow-none border-slate-200 relative overflow-hidden bg-white">
         <AnimatePresence>
           {isSigned && (
-            <motion.div initial={{ scale: 2, opacity: 0 }} animate={{ scale: 1, opacity: 0.15 }} className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-              <div className="border-8 border-green-600 text-green-600 font-black text-9xl p-10 rotate-[-30deg] uppercase tracking-tighter">{t('assessment.signed')}</div>
+            <motion.div initial={{ scale: 2, opacity: 0 }} animate={{ scale: 1, opacity: 0.1 }} className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+              <div className="border-[16px] border-emerald-600 text-emerald-600 font-black text-9xl p-12 rotate-[-25deg] uppercase tracking-tighter opacity-20">{t('assessment.signed')}</div>
             </motion.div>
           )}
         </AnimatePresence>
-        <CardHeader className="text-center border-b pb-8">
-          <div className="flex justify-center mb-4"><Shield className="h-12 w-12 text-primary" /></div>
-          <CardTitle className="text-2xl uppercase">Management Assessment on ICOFR Implementation Effectiveness</CardTitle>
-          <CardDescription>Appendix 11 - SK-5/DKU.MBU/11/2024</CardDescription>
+        <CardHeader className="text-center border-b border-slate-100 pb-10 pt-12">
+          <div className="flex justify-center mb-6"><Shield className="h-14 w-14 text-indigo-600" /></div>
+          <CardTitle className="text-2xl font-bold uppercase tracking-tight text-slate-900">{t('assessment.title')}</CardTitle>
+          <CardDescription className="text-sm font-medium text-slate-500 mt-2">{t('assessment.subtitle')}</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-8 py-8 px-10">
-          <div className="space-y-4 text-justify leading-relaxed">
-            <p>{t('assessment.directorsStatement', { companyName: settings?.companyName || 'IndoRCM' })}</p>
+        <CardContent className="space-y-10 py-10 px-12">
+          <div className="space-y-6 text-justify leading-relaxed">
+            <p className="text-sm font-semibold text-slate-800">{t('assessment.directorsStatement', { companyName: settings?.companyName || 'IndoRCM' })}</p>
             
             {!isEffective ? (
-              <div className="p-4 bg-red-50 border border-red-200 rounded-md mb-6">
-                <p className="font-bold text-red-800 underline mb-2 text-center uppercase">{t('assessment.conclusionIneffective')}</p>
-                <p className="text-sm text-red-700">
-                  Based on the evaluation performed, management concludes that the Company <strong>did not maintain</strong> effective internal control over financial reporting as of the report date, due to identified material weaknesses.
+              <div className="p-5 bg-rose-50 border border-rose-100 rounded-lg shadow-sm">
+                <p className="font-bold text-rose-800 mb-2 text-center uppercase tracking-wide">{t('assessment.conclusionIneffective')}</p>
+                <p className="text-sm text-rose-700 leading-relaxed">
+                  {t('assessment.ineffectiveDesc')}
                 </p>
               </div>
             ) : (
-              <div className="p-4 bg-green-50 border border-green-200 rounded-md mb-6">
-                <p className="font-bold text-green-800 underline mb-2 text-center uppercase">{t('assessment.conclusionEffective')}</p>
-                <p className="text-sm text-green-700">
-                  Based on the evaluation performed, management concludes that the Company <strong>has maintained</strong>, in all material respects, effective internal control over financial reporting as of the report date.
+              <div className="p-5 bg-emerald-50 border border-emerald-100 rounded-lg shadow-sm">
+                <p className="font-bold text-emerald-800 mb-2 text-center uppercase tracking-wide">{t('assessment.conclusionEffective')}</p>
+                <p className="text-sm text-emerald-700 leading-relaxed">
+                  {t('assessment.effectiveDesc')}
                 </p>
               </div>
             )}
 
-            <ol className="list-decimal pl-5 space-y-6 text-sm text-foreground/90">
-              <li>We have reviewed the financial statements of {settings?.companyName || 'IndoRCM'} ending on {new Date(settings?.signedOffDate || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}.</li>
-              <li>To our knowledge, the financial statements do not contain any untrue statement of a material fact or omit to state a material fact necessary to make the statements made, in light of the circumstances under which such statements were made, not misleading.</li>
-              <li>To our knowledge, the financial statements and other financial information included in the financial statements, fairly present in all material respects the financial condition and results of operations for the period presented.</li>
-              <li>We have implemented controls and procedures for the preparation of financial statements deemed necessary to properly prepare and present the financial statements (consolidated) and free from material misstatement.</li>
+            <ol className="list-decimal pl-6 space-y-5 text-sm text-slate-700 font-medium">
+              <li>{t('assessment.statement1', { companyName: settings?.companyName || 'IndoRCM', date: new Date(settings?.signedOffDate || Date.now()).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }) })}</li>
+              <li>{t('assessment.statement2')}</li>
+              <li>{t('assessment.statement3')}</li>
+              <li>{t('assessment.statement4')}</li>
             </ol>
           </div>
 
-          <div className="bg-muted/30 p-6 rounded-lg space-y-4">
-            <h3 className="font-bold border-b pb-2 flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4" /> Deficiency Details & Remediation Plan
+          <div className="bg-slate-50 p-8 rounded-xl border border-slate-200 space-y-5 shadow-sm">
+            <h3 className="font-bold text-slate-900 border-b border-slate-200 pb-3 flex items-center gap-2 text-sm uppercase tracking-wider">
+              <AlertTriangle className="h-4 w-4 text-orange-500" /> {t('assessment.deficiencyTitle')}
             </h3>
-            <Table className="text-xs">
-              <TableHeader>
-                <TableRow><TableHead>Deficiency</TableHead><TableHead>Severity</TableHead><TableHead>Remediation Plan</TableHead></TableRow>
-              </TableHeader>
-              <TableBody>
-                {(summaryData?.allDeficiencies || []).filter((d: any) => d.severity !== 'Control Deficiency').map((def: any) => (
-                  <TableRow key={def.id}>
-                    <TableCell className="font-medium">{def.description}</TableCell>
-                    <TableCell><Badge variant="outline" className="text-xs">{def.severity}</Badge></TableCell>
-                    <TableCell className="italic text-muted-foreground">Monitor progress via Deficiency Board</TableCell>
+            <div className="rounded-lg border border-slate-200 overflow-hidden bg-white">
+              <Table className="text-xs">
+                <TableHeader className="bg-slate-50">
+                  <TableRow>
+                    <TableHead className="font-bold text-slate-600 uppercase tracking-wider">{t('testing.table.notes')}</TableHead>
+                    <TableHead className="w-[150px] font-bold text-slate-600 uppercase tracking-wider">Severity</TableHead>
+                    <TableHead className="w-[200px] font-bold text-slate-600 uppercase tracking-wider">{t('assessment.remediationPlan')}</TableHead>
                   </TableRow>
-                ))}
-                {!(summaryData?.allDeficiencies || []).some((d: any) => d.severity !== 'Control Deficiency') && (
-                  <TableRow><TableCell colSpan={3} className="text-center py-4 text-muted-foreground">No significant deficiencies or material weaknesses found.</TableCell></TableRow>
-                )}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {(summaryData?.allDeficiencies || []).filter((d: any) => d.severity !== 'Control Deficiency').map((def: any) => (
+                    <TableRow key={def.id} className="hover:bg-slate-50/50">
+                      <TableCell className="font-medium text-slate-800 py-3">{def.description}</TableCell>
+                      <TableCell className="py-3"><Badge variant="outline" className={cn("text-[10px] font-bold border-none", def.severity === 'Material Weakness' ? "bg-rose-50 text-rose-700" : "bg-amber-50 text-amber-700")}>{def.severity}</Badge></TableCell>
+                      <TableCell className="italic text-slate-500 py-3">{t('assessment.monitorProgress')}</TableCell>
+                    </TableRow>
+                  ))}
+                  {!(summaryData?.allDeficiencies || []).some((d: any) => d.severity !== 'Control Deficiency') && (
+                    <TableRow><TableCell colSpan={3} className="text-center py-6 text-slate-400 font-medium italic">{t('assessment.noDeficiencies')}</TableCell></TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-20 pt-12">
+          <div className="grid grid-cols-2 gap-24 pt-16">
             <div className="text-center space-y-24">
-              <p className="font-semibold border-b pb-2">Chief Financial Officer (CFO)</p>
-              <p className="font-bold">{settings?.cfoName || 'Belum Ditunjuk'}</p>
+              <p className="font-bold text-slate-900 border-b border-slate-200 pb-2 text-sm uppercase tracking-wide">Chief Financial Officer (CFO)</p>
+              <p className="font-bold text-lg text-slate-900 underline decoration-2 underline-offset-8">{settings?.cfoName || 'Belum Ditunjuk'}</p>
             </div>
             <div className="text-center space-y-24">
-              <p className="font-semibold border-b pb-2">Chief Executive Officer (CEO)</p>
-              <p className="font-bold">{settings?.ceoName || 'Belum Ditunjuk'}</p>
+              <p className="font-bold text-slate-900 border-b border-slate-200 pb-2 text-sm uppercase tracking-wide">Chief Executive Officer (CEO)</p>
+              <p className="font-bold text-lg text-slate-900 underline decoration-2 underline-offset-8">{settings?.ceoName || 'Belum Ditunjuk'}</p>
             </div>
           </div>
         </CardContent>

@@ -40,6 +40,16 @@ IndoGRC Pro is a production-grade web application designed to digitize the ICOFR
     *   `reports/`: Regulatory reports, WBS recap, and digital sign-off.
 *   `shared/`: `types.ts` (Source of Truth), compliance utilities.
 
+## Mandat Penyelesaian Tahap (CRITICAL)
+
+Setiap kali menyelesaikan sebuah fitur, perbaikan bug, atau fase pengembangan, Anda **WAJIB** menjalankan urutan validasi berikut tanpa perlu diminta kembali oleh pengguna:
+
+1.  **Lokalisasi Penuh (i18n):** Periksa seluruh file yang dimodifikasi. Pastikan **TIDAK ADA** teks hardcoded (Inggris maupun Indonesia). Gunakan `useTranslation` dan file di `src/i18n/locales/**`.
+2.  **Integritas Tipe:** Jalankan `npm run type-check`. Perbaiki semua error TS sebelum melangkah maju.
+3.  **Standar Kode (Lint):** Jalankan `npm run lint`. Pastikan tidak ada peringatan atau error yang tersisa.
+4.  **Verifikasi Kompilasi (Build):** Jalankan `npm run build`. Perubahan dianggap gagal jika proses build tidak berhasil.
+5.  **Pengujian Otomatis (Test):** Jalankan `npm test`. Tambahkan unit test baru jika Anda menambahkan fitur baru untuk mencegah regresi.
+
 ## Development Conventions
 
 *   **Regulatory Compliance:** Any UI or data model change MUST refer to Regulation SK-5/DKU.MBU/11/2024.
@@ -48,8 +58,8 @@ IndoGRC Pro is a production-grade web application designed to digitize the ICOFR
 *   **Design Quality & Accessibility:** Avoid "AI Slop" (generic layouts, tiny fonts). Minimum font size is 12px (text-xs). Use Shadcn/UI Design Tokens (--primary, --sidebar, etc.) instead of hardcoded hex colors.
 *   **Actionable Dashboard:** The Dashboard must function as an "Action Center," prioritizing urgent tasks (remediation, pending validation) to drive the ICOFR lifecycle.
 *   **Data Persistence:** Always generate and run drizzle migrations using `npx drizzle-kit push` after schema changes.
-*   **Localization:** Support multi-language (English/Indonesian) using `src/i18n/**`. Ensure all UI strings are localized.
+*   **Localization:** Support multi-language (English/Indonesian) using `src/i18n/**`. All UI strings **MUST** be localized.
 *   **Data Loss Prevention:** Implement `UnSavedChanges` warning for any form or editor state to prevent accidental data loss, following the `useUnsavedChanges` hook pattern.
 *   **Navigation & Alerts:** Integrate critical workflows into the Sidebar menu and provide real-time feedback via a Notification Bell where appropriate.
 *   **Code Quality:** Rigorously apply SOLID, DRY, KISS, and YAGNI principles. Actively identify and refactor code smells. After refactoring, verify system integrity (API endpoints, imports, etc.).
-*   **Quality Assurance:** Adhere to TDD (Test Driven Development) with a "Fail Fast, Fix Early" mindset. Ensure all changes pass `type-check`, `test`, `lint`, and `build` commands. Create automated tests for new features and bug fixes.
+*   **Quality Assurance:** Adhere to TDD (Test Driven Development) with a "Fail Fast, Fix Early" mindset. A task is only "Done" when it passes all steps in the **Mandat Penyelesaian Tahap**.

@@ -9,10 +9,34 @@
     "csaTarget": "Target: 100% per Kuartal",
     "remediationVelocity": "Kecepatan Remediasi",
     "remediationAvg": "Rata-rata waktu penyelesaian CD",
-    "line2Validation": "Tingkat Validasi Lini 2",
+    "remediationAvgDays": "Rata-rata 12 Hari",
+    "line2Validation": "Validasi Lini 2",
+    "line2Percent": "94.2% Terverifikasi",
     "line2Detail": "Penyelesaian Test of One",
     "reportingReadiness": "Kesiapan Pelaporan",
-    "reportingStatus": "Status siklus saat ini"
+    "reportingStatus": "Status siklus saat ini",
+    "cycleReadiness": "Kesiapan Siklus",
+    "ready": "SIAP",
+    "reportingCycle": "Siklus Pelaporan {{year}}",
+    "activeControls": "Kontrol Aktif",
+    "needRemediation": "Butuh Remediasi",
+    "principlesCoverage": "Cakupan 17 Prinsip"
+  },
+  "actionCenter": {
+    "title": "Pusat Aksi",
+    "description": "Tindakan mendesak untuk siklus ini.",
+    "csa": {
+      "title": "Selesaikan Self-Assessment",
+      "description": "Beberapa proses bisnis memerlukan sertifikasi mandiri segera."
+    },
+    "deficiency": {
+      "title": "Remediasi Temuan",
+      "description": "Segera tindak lanjuti temuan dengan keparahan Tinggi/Material."
+    },
+    "reports": {
+      "title": "Asesmen Manajemen",
+      "description": "Draf laporan efektivitas siap untuk ditinjau."
+    }
   },
   "coso": {
     "title": "Cakupan 17 Prinsip COSO",

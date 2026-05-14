@@ -1,27 +1,61 @@
 {
   "title": "Laporan & Ekspor",
   "description": "Laporan ICOFR standar untuk kepatuhan {{companyName}}.",
+  "pageTitle": "Pelaporan & Asesmen Manajemen ICOFR",
+  "pageDescription": "Dashboard pelaporan regulasi dan portal pengesahan Lampiran 11.",
   "actions": {
     "exportCsv": "Ekspor CSV",
     "print": "Cetak Laporan",
-    "signAndLock": "Tanda Tangan & Kunci Laporan (CEO & CFO)"
+    "signAndLock": "Tanda Tangan & Kunci Laporan (CEO & CFO)",
+    "generatingReport": "Menghasilkan laporan konsolidasi..."
   },
   "tabs": {
     "overview": "Ikhtisar",
-    "management": "Asesmen Manajemen",
-    "audit": "Laporan Hasil Pengujian",
+    "dashboard": "Dashboard",
+    "managementAssessment": "Asesmen Manajemen",
+    "testingResults": "Hasil Pengujian",
     "appendices": "Lampiran Peraturan"
   },
   "assessment": {
+    "title": "Laporan Asesmen Manajemen atas Efektivitas Penerapan ICOFR",
+    "subtitle": "Lampiran 11 - SK-5/DKU.MBU/11/2024",
     "conclusionEffective": "Kesimpulan: Efektif",
     "conclusionIneffective": "Kesimpulan: Tidak Efektif",
+    "effectiveDesc": "Berdasarkan evaluasi yang dilakukan, manajemen menyimpulkan bahwa Perusahaan telah memelihara, dalam semua hal yang material, pengendalian internal yang efektif atas pelaporan keuangan pada tanggal laporan.",
+    "ineffectiveDesc": "Berdasarkan evaluasi yang dilakukan, manajemen menyimpulkan bahwa Perusahaan tidak memelihara pengendalian internal yang efektif atas pelaporan keuangan pada tanggal laporan, dikarenakan adanya kelemahan material yang teridentifikasi.",
     "directorsStatement": "Direksi {{companyName}} menyatakan bahwa:",
+    "statement1": "Kami telah menelaah laporan keuangan {{companyName}} yang berakhir pada tanggal {{date}}.",
+    "statement2": "Sepanjang pengetahuan kami, laporan keuangan tersebut tidak mengandung pernyataan yang tidak benar tentang fakta material atau tidak mencantumkan fakta material yang diperlukan agar pernyataan tersebut dibuat, berdasarkan keadaan di bawah mana pernyataan tersebut dibuat, tidak menyesatkan.",
+    "statement3": "Sepanjang pengetahuan kami, laporan keuangan dan informasi keuangan lainnya yang termasuk dalam laporan keuangan, menyajikan secara wajar dalam semua hal yang material posisi keuangan dan hasil operasi untuk periode yang disajikan.",
+    "statement4": "Kami telah menerapkan kontrol dan prosedur untuk penyusunan laporan keuangan yang dianggap perlu untuk menyusun dan menyajikan laporan keuangan (konsolidasian) secara tepat dan bebas dari salah saji material.",
+    "deficiencyTitle": "Detail Defisiensi & Rencana Remediasi",
+    "noDeficiencies": "Tidak ditemukan defisiensi signifikan atau kelemahan material.",
+    "remediationPlan": "Rencana Remediasi",
+    "monitorProgress": "Pantau progres melalui Papan Defisiensi",
     "signed": "TANDA TANGAN",
     "awaitingSign": "Menunggu Tanda Tangan CEO/CFO",
     "periodFinalized": "PERIODE DIFINALISASI & DITANDATANGANI"
   },
   "testing": {
+    "title": "Laporan Hasil Pengujian (TOD & TOE)",
+    "description": "Hasil konsolidasi pengujian rancangan dan efektivitas operasi kontrol.",
     "effective": "Efektif",
-    "ineffective": "Tidak Efektif"
+    "ineffective": "Tidak Efektif",
+    "filters": {
+      "type": "Tipe Uji",
+      "status": "Status"
+    },
+    "table": {
+      "no": "No",
+      "process": "Konteks Proses (Lamp. 5)",
+      "control": "Referensi Kontrol",
+      "assertion": "Asersi (Tabel 8)",
+      "type": "Tipe",
+      "method": "Metode",
+      "criteria": "Kriteria Lamp. 8 (xxvii-xxxii)",
+      "sample": "Sampel",
+      "result": "Hasil",
+      "notes": "Walkthrough / Catatan"
+    }
   }
 }
