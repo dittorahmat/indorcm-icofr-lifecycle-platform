@@ -10,8 +10,10 @@ import { motion } from 'framer-motion';
 import { authClient } from '@/lib/auth-client';
 import { toast } from 'sonner';
 import { LoginCredentials } from '@shared/types';
+import { useTranslation } from 'react-i18next';
 
 export function LoginPage() {
+  const { t } = useTranslation('auth');
   const navigate = useNavigate();
   const [credentials, setCredentials] = useState<LoginCredentials>({ email: '', password: '' });
   const [isLoading, setIsLoading] = useState(false);
@@ -27,12 +29,12 @@ export function LoginPage() {
 
     // Validation
     if (!credentials.email || !credentials.password) {
-      setError('Email and password are required');
+      setError(t('validation.required'));
       return;
     }
 
     if (!validateEmail(credentials.email)) {
-      setError('Invalid email format');
+      setError(t('validation.invalidEmail'));
       return;
     }
 
@@ -45,72 +47,43 @@ export function LoginPage() {
       });
 
       if (authError) {
-        throw new Error(authError.message || 'Login failed');
+        throw new Error(authError.message || t('loginFailed'));
       }
 
-      toast.success(`Login successful`);
+      toast.success(t('loginSuccess'));
 
       // Smart Redirect
       navigate('/dashboard');
       
     } catch (err: any) {
-      setError(err.message || 'Invalid credentials. Please ensure your email and password are correct.');
-      toast.error('Login failed');
+      setError(err.message || t('validation.invalidCredentials'));
+      toast.error(t('loginFailed'));
     } finally {
       setIsLoading(false);
     }
   };
 
-  const getDepartmentFromEmail = (email: string): string => {
-    const emailLower = email.toLowerCase();
-    if (emailLower.includes('.ops')) return 'dept-ops';
-    if (emailLower.includes('.fin')) return 'dept-fin';
-    if (emailLower.includes('.log')) return 'dept-log';
-    if (emailLower.includes('.it')) return 'dept-it';
-    if (emailLower.includes('.hr')) return 'dept-hr';
-    return ''; // Default
-  };
-
-  const getLevelFromEmail = (email: string): string => {
-    const emailLower = email.toLowerCase();
-    if (emailLower.includes('manager') || emailLower.includes('mgr')) return 'Manager';
-    if (emailLower.includes('staff')) return 'Staff';
-    return 'Staff'; // Default
-  };
-
-  const getRoleFromEmail = (email: string): string => {
-    const emailLower = email.toLowerCase();
-    if (emailLower.includes('staff') || emailLower.includes('manager') || emailLower.startsWith('line1@')) return 'Line 1';
-    if (emailLower.startsWith('line2@')) return 'Line 2';
-    if (emailLower.startsWith('line3@')) return 'Line 3';
-    if (emailLower.startsWith('cfo@')) return 'CFO';
-    if (emailLower.startsWith('komisaris@')) return 'Commissioner';
-    if (emailLower.startsWith('admin@')) return 'Admin';
-    if (emailLower.startsWith('external@')) return 'External Auditor';
-    return 'Line 1'; // Default
-  };
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background text-foreground relative overflow-hidden">
-      {/* Gradient Background - sama dengan HomePage */}
-      <div className="absolute inset-0 -z-10 h-full w-full bg-background bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]">
-        <div className="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-primary/10 opacity-20 blur-[100px]"></div>
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 text-foreground relative overflow-hidden">
+      {/* Background Pattern - Subtle & Professional */}
+      <div className="absolute inset-0 -z-10 h-full w-full bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:24px_24px] opacity-40" />
 
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.4 }}
         className="w-full max-w-md px-4"
       >
-        <Card className="border shadow-lg">
-          <CardHeader className="space-y-1 text-center">
-            <div className="flex justify-center mb-4">
-              <Shield className="h-12 w-12 text-primary" />
+        <Card className="border-slate-200 shadow-xl bg-white/80 backdrop-blur-sm">
+          <CardHeader className="space-y-1 text-center pb-8 pt-10">
+            <div className="flex justify-center mb-6">
+              <div className="h-16 w-16 bg-slate-900 rounded-2xl flex items-center justify-center shadow-lg shadow-slate-200">
+                <Shield className="h-8 w-8 text-white" />
+              </div>
             </div>
-            <CardTitle className="text-2xl font-display font-bold">IndoGRC Pro</CardTitle>
-            <CardDescription>
-              Enterprise ICOFR Lifecycle Platform
+            <CardTitle className="text-3xl font-display font-extrabold tracking-tight text-slate-900">IndoGRC Pro</CardTitle>
+            <CardDescription className="text-sm font-semibold text-slate-500 uppercase tracking-widest mt-2">
+              {t('subtitle')}
             </CardDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
@@ -123,7 +96,7 @@ export function LoginPage() {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t('email')}</Label>
                 <Input
                   id="email"
                   type="email"
@@ -136,7 +109,7 @@ export function LoginPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{t('password')}</Label>
                 <Input
                   id="password"
                   type="password"
@@ -156,10 +129,10 @@ export function LoginPage() {
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Signing in...
+                    {t('signingIn')}
                   </>
                 ) : (
-                  'Sign In'
+                  t('signIn')
                 )}
               </Button>
             </CardContent>
@@ -167,7 +140,7 @@ export function LoginPage() {
           <CardFooter className="flex flex-col space-y-2">
             {/* Credential Helper */}
             <div className="text-xs text-muted-foreground text-center space-y-1">
-              <p className="font-medium text-xs uppercase tracking-wider text-slate-400">Demo Credentials (Lini 1):</p>
+              <p className="font-medium text-xs uppercase tracking-wider text-slate-400">{t('demo.title')}</p>
               <div className="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-2 rounded-lg border border-slate-100 max-h-[120px] overflow-y-auto text-left">
                 <div>
                   <p className="font-bold text-slate-500 mb-0.5">Mining Ops (.ops)</p>
@@ -191,21 +164,21 @@ export function LoginPage() {
                   <p>staff.hr@bumn.go.id</p>
                   <p className="mb-1">manager.hr@bumn.go.id</p>
 
-                  <p className="font-bold text-slate-500 mb-0.5 border-t pt-1">Core Access</p>
+                  <p className="font-bold text-slate-500 mb-0.5 border-t pt-1">{t('demo.coreAccess')}</p>
                   <p>line2@bumn.go.id (L2)</p>
                   <p>cfo@bumn.go.id (CFO)</p>
                   <p>komisaris@bumn.go.id (Commissioner)</p>
                   <p>admin@bumn.go.id (Admin)</p>
                 </div>
               </div>
-              <p className="pt-1 text-xs">Password: <code className="bg-muted px-1 rounded">password</code></p>
+              <p className="pt-1 text-xs">{t('demo.password')}: <code className="bg-muted px-1 rounded">password</code></p>
             </div>
           </CardFooter>
         </Card>
 
         {/* Footer */}
         <p className="text-center text-sm text-muted-foreground mt-6">
-          Compliance with SK-5/DKU.MBU/11/2024
+          {t('compliance')}
         </p>
       </motion.div>
     </div>

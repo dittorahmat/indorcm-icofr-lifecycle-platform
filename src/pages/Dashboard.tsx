@@ -99,11 +99,11 @@ export function Dashboard() {
           description={t('description')} 
         >
           <div className="flex gap-2">
-             <Button variant="outline" className="gap-2 bg-white border-slate-200 hover:bg-slate-50 transition-all" onClick={() => navigate('/rcm')}>
-                <Target className="h-4 w-4 text-slate-500" /> Manage RCM
+             <Button variant="outline" className="gap-2 border-slate-200 hover:bg-slate-50 transition-colors" onClick={() => navigate('/rcm')}>
+                <Target className="h-4 w-4 text-slate-500" /> {t('actions.manageRcm')}
              </Button>
-             <Button className="gap-2 bg-slate-900 hover:bg-slate-800 shadow-lg shadow-slate-200 transition-all" onClick={() => navigate('/csa')}>
-                <ClipboardCheck className="h-4 w-4" /> Start Assessment
+             <Button className="gap-2 bg-slate-900 hover:bg-slate-800 transition-colors" onClick={() => navigate('/csa')}>
+                <ClipboardCheck className="h-4 w-4" /> {t('actions.startAssessment')}
              </Button>
           </div>
         </PageHeader>
@@ -112,22 +112,21 @@ export function Dashboard() {
         <div className="grid gap-6 md:grid-cols-4">
           {/* PRIMARY HERO KPI */}
           <motion.div variants={itemVariants}>
-            <Card className="bg-slate-900 text-white shadow-xl shadow-slate-200 border-none overflow-hidden relative group h-full">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-indigo-500/20 transition-all duration-500" />
-              <CardHeader className="pb-2 relative z-10">
-                <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-indigo-300 flex items-center gap-2">
+            <Card className="bg-slate-900 text-white border-none h-full shadow-md">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-slate-400 flex items-center gap-2">
                   <Clock className="h-3 w-3" /> {t('kpis.cycleReadiness')}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="relative z-10">
+              <CardContent>
                 <div className="text-4xl font-display font-bold tracking-tight">{t('kpis.ready')}</div>
-                <p className="text-[10px] text-slate-400 mt-1 font-medium uppercase tracking-wider">{t('kpis.reportingCycle', { year: '2026' })}</p>
+                <p className="text-[10px] text-slate-500 mt-1 font-medium uppercase tracking-wider">{t('kpis.reportingCycle', { year: '2026' })}</p>
                 <div className="mt-5 h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
                    <motion.div 
                     initial={{ width: 0 }}
                     animate={{ width: '92%' }}
                     transition={{ duration: 1, delay: 0.5 }}
-                    className="h-full bg-indigo-400 rounded-full shadow-[0_0_10px_rgba(129,140,248,0.5)]" 
+                    className="h-full bg-slate-100 rounded-full" 
                    />
                 </div>
               </CardContent>
@@ -141,41 +140,37 @@ export function Dashboard() {
               value: controlsData?.items.length || '0', 
               subtitle: t('kpis.activeControls'),
               icon: CheckCircle,
-              color: 'text-emerald-600',
-              bg: 'bg-emerald-50',
-              border: 'border-emerald-100'
+              color: 'text-slate-900',
+              bg: 'bg-slate-50'
             },
             { 
               title: t('kpis.openDeficiencies'), 
               value: openDeficiencies.length, 
               subtitle: t('kpis.needRemediation'),
               icon: ShieldAlert,
-              color: 'text-rose-600',
-              bg: 'bg-rose-50',
-              border: 'border-rose-100',
-              valueColor: 'text-rose-600'
+              color: 'text-red-600',
+              bg: 'bg-red-50',
+              valueColor: 'text-red-600'
             },
             { 
               title: t('kpis.cosoCoverage'), 
               value: `${cosoPercentage}%`, 
               subtitle: t('kpis.principlesCoverage'),
               icon: ShieldCheck,
-              color: 'text-blue-600',
-              bg: 'bg-blue-50',
-              border: 'border-blue-100'
+              color: 'text-slate-900',
+              bg: 'bg-slate-50'
             }
           ].map((kpi, i) => (
             <motion.div key={i} variants={itemVariants}>
-              <Card className="border-slate-200 bg-white shadow-sm hover:shadow-md transition-shadow duration-300 h-full overflow-hidden relative group">
-                <div className={cn("absolute top-0 right-0 w-16 h-16 rounded-full -mr-8 -mt-8 opacity-20 transition-transform group-hover:scale-110", kpi.bg)} />
+              <Card className="border-slate-200 bg-white shadow-sm h-full">
                 <CardHeader className="pb-1">
-                  <CardTitle className="text-[10px] font-bold uppercase text-slate-400 tracking-widest flex items-center gap-2">
+                  <CardTitle className="text-[10px] font-bold uppercase text-slate-500 tracking-widest flex items-center gap-2">
                     <kpi.icon className={cn("h-3 w-3", kpi.color)} /> {kpi.title}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className={cn("text-3xl font-display font-bold", kpi.valueColor || "text-slate-900")}>{kpi.value}</div>
-                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight mt-0.5">{kpi.subtitle}</p>
+                  <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-tight mt-0.5">{kpi.subtitle}</p>
                 </CardContent>
               </Card>
             </motion.div>
@@ -207,7 +202,7 @@ export function Dashboard() {
                       </CardTitle>
                       <CardDescription className="text-[11px] font-medium text-slate-500 mt-1">{t('coso.description')}</CardDescription>
                     </div>
-                    <Badge variant="outline" className="font-mono text-[10px] bg-white border-slate-200 px-2.5 py-0.5">17 PRINCIPLES</Badge>
+                    <Badge variant="outline" className="font-mono text-[10px] bg-white border-slate-200 px-2.5 py-0.5">{t('badges.principles')}</Badge>
                   </div>
                 </CardHeader>
                 <CardContent className="p-6">
@@ -267,7 +262,7 @@ export function Dashboard() {
                        <h4 className="font-display font-bold text-slate-900 text-base">{t('actionCenter.csa.title')}</h4>
                        <p className="text-[11px] text-slate-500 mt-1.5 leading-relaxed font-medium">{t('actionCenter.csa.description')}</p>
                        <div className="mt-4 flex items-center text-[10px] font-bold text-indigo-600 uppercase tracking-widest opacity-0 group-hover:opacity-100 transform translate-x-[-10px] group-hover:translate-x-0 transition-all duration-300">
-                          CONTINUE <ChevronRight className="h-3 w-3 ml-1" />
+                          {t('actions.continue')} <ChevronRight className="h-3 w-3 ml-1" />
                        </div>
                      </div>
                   </div>
@@ -284,12 +279,12 @@ export function Dashboard() {
                             <div className="p-2.5 rounded-lg bg-rose-50 text-rose-600 ring-4 ring-rose-50/50 group-hover:ring-rose-100/50 transition-all">
                               <AlertTriangle className="h-5 w-5" />
                             </div>
-                            <Badge className="bg-rose-600 text-white border-none font-bold text-[10px] px-2 py-0.5 shadow-sm">{openDeficiencies.length} NEW</Badge>
+                            <Badge className="bg-rose-600 text-white border-none font-bold text-[10px] px-2 py-0.5 shadow-sm">{openDeficiencies.length} {t('badges.new')}</Badge>
                         </div>
                         <h4 className="font-display font-bold text-slate-900 text-base">{t('actionCenter.deficiency.title')}</h4>
                         <p className="text-[11px] text-slate-500 mt-1.5 leading-relaxed font-medium">{t('actionCenter.deficiency.description')}</p>
                         <div className="mt-4 flex items-center text-[10px] font-bold text-rose-600 uppercase tracking-widest opacity-0 group-hover:opacity-100 transform translate-x-[-10px] group-hover:translate-x-0 transition-all duration-300">
-                           REVIEW ISSUES <ChevronRight className="h-3 w-3 ml-1" />
+                           {t('actions.reviewIssues')} <ChevronRight className="h-3 w-3 ml-1" />
                         </div>
                       </div>
                     </div>
@@ -306,12 +301,12 @@ export function Dashboard() {
                           <div className="p-2.5 rounded-lg bg-emerald-50 text-emerald-600 ring-4 ring-emerald-50/50 group-hover:ring-emerald-100/50 transition-all">
                              <FileText className="h-5 w-5" />
                           </div>
-                          <Badge className="bg-emerald-600 text-white border-none font-bold text-[10px] px-2 py-0.5 shadow-sm">REPORT</Badge>
+                          <Badge className="bg-emerald-600 text-white border-none font-bold text-[10px] px-2 py-0.5 shadow-sm">{t('badges.report')}</Badge>
                        </div>
                        <h4 className="font-display font-bold text-slate-900 text-base">{t('actionCenter.reports.title')}</h4>
                        <p className="text-[11px] text-slate-500 mt-1.5 leading-relaxed font-medium">{t('actionCenter.reports.description')}</p>
                        <div className="mt-4 flex items-center text-[10px] font-bold text-emerald-600 uppercase tracking-widest opacity-0 group-hover:opacity-100 transform translate-x-[-10px] group-hover:translate-x-0 transition-all duration-300">
-                          GENERATE <ChevronRight className="h-3 w-3 ml-1" />
+                          {t('actions.generate')} <ChevronRight className="h-3 w-3 ml-1" />
                        </div>
                      </div>
                   </div>

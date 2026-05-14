@@ -127,7 +127,7 @@ export function AppSidebar(): JSX.Element {
   };
 
   return (
-    <Sidebar variant="sidebar" collapsible="icon" className="w-64 border-r border-slate-200">
+    <Sidebar variant="sidebar" collapsible="icon" className="w-64 border-r border-sidebar-border">
       <SidebarContent className="pt-4">
         {/* MASTER */}
         <SidebarGroup className="py-2">
@@ -183,17 +183,17 @@ export function AppSidebar(): JSX.Element {
           <SidebarMenu className="px-3">
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/rcm/elc")} className="h-10 text-sm">
-                <Link to="/rcm/elc" className="font-medium"><ShieldCheck className="h-4 w-4" /> <span>{t('items.rcmElc')}</span></Link>
+                <Link to="/rcm/elc" className="font-medium"><Shield className="h-4 w-4" /> <span>{t('items.rcmElc')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/rcm/tlc")} className="h-10 text-sm">
-                <Link to="/rcm/tlc" className="font-medium"><ShieldCheck className="h-4 w-4" /> <span>{t('items.rcmTlc')}</span></Link>
+                <Link to="/rcm/tlc" className="font-medium"><ListChecks className="h-4 w-4" /> <span>{t('items.rcmTlc')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/rcm/itgc")} className="h-10 text-sm">
-                <Link to="/rcm/itgc" className="font-medium"><ShieldCheck className="h-4 w-4" /> <span>{t('items.rcmItgc')}</span></Link>
+                <Link to="/rcm/itgc" className="font-medium"><Database className="h-4 w-4" /> <span>{t('items.rcmItgc')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
@@ -203,12 +203,12 @@ export function AppSidebar(): JSX.Element {
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/wbs-recap")} className="h-10 text-sm">
-                <Link to="/wbs-recap" className="font-medium"><FileBarChart className="h-4 w-4" /> <span>{t('items.wbs')}</span></Link>
+                <Link to="/wbs-recap" className="font-medium"><AlertTriangle className="h-4 w-4" /> <span>{t('items.wbs')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/reports")} className="h-10 text-sm">
-                <Link to="/reports" className="font-medium"><FileText className="h-4 w-4" /> <span>{t('items.app11')}</span></Link>
+                <Link to="/reports" className="font-medium"><FileBarChart className="h-4 w-4" /> <span>{t('items.app11')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -222,12 +222,12 @@ export function AppSidebar(): JSX.Element {
           <SidebarMenu className="px-3">
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/testing?type=TOD")} className="h-10 text-sm">
-                <Link to="/testing?type=TOD" className="font-medium"><ShieldCheck className="h-4 w-4" /> <span>{t('items.tod')}</span></Link>
+                <Link to="/testing?type=TOD" className="font-medium"><Search className="h-4 w-4" /> <span>{t('items.tod')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/testing?type=TOE")} className="h-10 text-sm">
-                <Link to="/testing?type=TOE" className="font-medium"><ShieldAlert className="h-4 w-4" /> <span>{t('items.toe')}</span></Link>
+                <Link to="/testing?type=TOE" className="font-medium"><History className="h-4 w-4" /> <span>{t('items.toe')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>

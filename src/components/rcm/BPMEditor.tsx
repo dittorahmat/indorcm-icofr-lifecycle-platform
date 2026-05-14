@@ -414,7 +414,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear }: BPMEditorProps
                 onClick={() => setDocumentView(true)}
               >
                 <Layout className="h-3.5 w-3.5 text-indigo-500" />
-                Document View
+                {t('bpm:editor.actions.documentView')}
               </Button>
 
               {isLocked && (
@@ -425,7 +425,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear }: BPMEditorProps
               )}
               <Button 
                 size="sm" 
-                className="h-9 gap-2 bg-slate-900 hover:bg-slate-800 shadow-lg shadow-slate-200 transition-all font-bold text-[10px] uppercase tracking-widest px-6 rounded-xl" 
+                className="h-9 gap-2 bg-slate-900 hover:bg-slate-800 shadow-sm transition-all font-bold text-[10px] uppercase tracking-widest px-6 rounded-xl" 
                 onClick={() => saveMutation.mutate({ 
                   nodes, edges, name: `Flow: ${subProcess}`, subProcess, year: diagram?.year || parseInt(workingYear) 
                 })} 
@@ -436,7 +436,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear }: BPMEditorProps
               </Button>
             </Panel>
 
-            <Panel position="top-left" className="bg-white/90 backdrop-blur-md p-5 rounded-[2rem] border border-slate-200 shadow-2xl flex flex-col gap-5 max-w-[280px]">
+            <Panel position="top-left" className="bg-white/95 backdrop-blur-md p-5 rounded-[1.5rem] border border-slate-200 shadow-xl flex flex-col gap-5 max-w-[280px]">
                <div className="flex flex-col border-b border-slate-100 pb-4">
                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">{t('bpm:modal.title')}</span>
                  <span className="text-sm font-display font-bold text-slate-900 leading-tight">{subProcess}</span>
@@ -463,17 +463,17 @@ export function BPMEditor({ diagramId, subProcess, workingYear }: BPMEditorProps
                        <div className="grid grid-cols-4 gap-2">
                           <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100" title={t('bpm:editor.nodes.activity')} onClick={() => createActivityNode('activity')}><Activity className="h-4 w-4 text-slate-600" /></Button>
                           <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100" title={t('bpm:editor.nodes.manualInput')} onClick={() => createActivityNode('manual-input')}><Workflow className="h-4 w-4 text-slate-600" /></Button>
-                          <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg bg-blue-50/30 hover:bg-blue-100/50 border-blue-100" title={t('bpm:editor.nodes.automated')} onClick={() => createActivityNode('automated-activity')}><Database className="h-4 w-4 text-blue-600" /></Button>
+                          <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg bg-slate-50 hover:bg-slate-100 border-slate-200" title={t('bpm:editor.nodes.automated')} onClick={() => createActivityNode('automated-activity')}><Database className="h-4 w-4 text-slate-700" /></Button>
                           <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100" title={t('bpm:editor.nodes.decision')} onClick={() => createActivityNode('decision')}><GitCommit className="h-4 w-4 text-slate-600 rotate-90" /></Button>
                           <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100" title={t('bpm:editor.nodes.output')} onClick={() => createActivityNode('output')}><LayoutDashboard className="h-4 w-4 text-slate-600" /></Button>
                           <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100" title={t('bpm:editor.nodes.physical')} onClick={() => createActivityNode('document')}><FileText className="h-4 w-4 text-slate-600" /></Button>
                           <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100" title={t('bpm:editor.nodes.archive')} onClick={() => createActivityNode('archive')}><Trash2 className="h-4 w-4 text-slate-600" /></Button>
-                          <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg bg-indigo-50/30 hover:bg-indigo-100/50 border-indigo-100" title={t('bpm:editor.nodes.dataMedia')} onClick={() => createActivityNode('data-media')}><Database className="h-4 w-4 text-indigo-700" /></Button>
+                          <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg bg-slate-50 hover:bg-slate-100 border-slate-200" title={t('bpm:editor.nodes.dataMedia')} onClick={() => createActivityNode('data-media')}><Database className="h-4 w-4 text-slate-700" /></Button>
                        </div>
                     </div>
 
                     <div className="pt-2">
-                      <Button variant="secondary" className="w-full h-10 gap-2 text-[10px] font-bold uppercase tracking-widest rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all" onClick={() => {
+                      <Button variant="secondary" className="w-full h-10 gap-2 text-[10px] font-bold uppercase tracking-widest rounded-xl bg-slate-900 text-white hover:bg-slate-800 shadow-sm transition-all" onClick={() => {
                         const id = `lane_${Date.now()}`;
                         setNodes(nds => [...nds, { 
                           id, type: 'swimlane', position: { x: 0, y: 0 }, zIndex: -1,

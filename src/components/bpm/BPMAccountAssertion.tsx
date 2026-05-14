@@ -36,7 +36,7 @@ export function BPMAccountAssertion({
   const { t } = useTranslation(['bpm', 'common']);
 
   const assertionFields = [
-    { key: 'assertionE', label: t('assertions.tooltip.eo.label'), desc: t('assertions.tooltip.eo.desc'), color: 'text-indigo-600' },
+    { key: 'assertionE', label: t('assertions.tooltip.eo.label'), desc: t('assertions.tooltip.eo.desc'), color: 'text-primary' },
     { key: 'assertionC', label: t('assertions.tooltip.c.label'), desc: t('assertions.tooltip.c.desc'), color: 'text-blue-600' },
     { key: 'assertionA', label: t('assertions.tooltip.a.label'), desc: t('assertions.tooltip.a.desc'), color: 'text-emerald-600' },
     { key: 'assertionCo', label: t('assertions.tooltip.co.label'), desc: t('assertions.tooltip.co.desc'), color: 'text-amber-600' },
@@ -46,11 +46,11 @@ export function BPMAccountAssertion({
   ] as const;
 
   return (
-    <Card className="border-slate-200 shadow-xl shadow-slate-100 overflow-hidden rounded-[2rem] bg-white">
+    <Card className="border-slate-200 shadow-md overflow-hidden rounded-[2rem] bg-white">
       <CardHeader className="bg-slate-50/50 py-5 px-8 border-b">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="h-10 w-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100 shadow-sm">
+            <div className="h-10 w-10 rounded-2xl bg-slate-50 text-primary flex items-center justify-center border border-slate-200 shadow-sm">
               <Shield className="h-5 w-5" />
             </div>
             <div>
@@ -66,7 +66,7 @@ export function BPMAccountAssertion({
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 10 }}
                 >
-                  <Button size="sm" onClick={onSave} disabled={isSaving} className="h-9 px-6 rounded-xl text-[10px] font-bold uppercase tracking-widest gap-2 bg-slate-900 hover:bg-slate-800 shadow-lg shadow-slate-200">
+                  <Button size="sm" onClick={onSave} disabled={isSaving} className="h-9 px-6 rounded-xl text-[10px] font-bold uppercase tracking-widest gap-2 bg-slate-900 hover:bg-slate-800 shadow-md">
                     {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
                     {t('common:actions.save')}
                   </Button>

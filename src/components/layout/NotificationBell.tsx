@@ -115,7 +115,7 @@ export function NotificationBell() {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="h-6 text-xs text-indigo-600 hover:text-indigo-700 p-0 font-bold uppercase tracking-tighter"
+                className="h-6 text-xs text-slate-600 hover:text-slate-900 p-0 font-bold uppercase tracking-tighter"
                 onClick={(e) => {
                   e.stopPropagation();
                   markReadMutation.mutate();
@@ -152,7 +152,7 @@ export function NotificationBell() {
                   key={n.id} 
                   className={cn(
                     "p-4 cursor-pointer focus:bg-slate-50 flex gap-3 items-start border-b last:border-0 group",
-                    !n.readStatus && "bg-indigo-50/30"
+                    !n.readStatus && "bg-slate-50/80"
                   )}
                   onClick={() => handleNotificationClick(n)}
                 >
@@ -187,7 +187,7 @@ export function NotificationBell() {
         <div className="p-2">
           <Button 
             variant="ghost" 
-            className="w-full h-8 text-xs font-bold text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 uppercase tracking-widest"
+            className="w-full h-8 text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-50 uppercase tracking-widest"
             onClick={() => navigate('/notifications')}
           >
             {t('notifications.viewAll')}

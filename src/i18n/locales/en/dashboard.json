@@ -43,5 +43,17 @@
     "description": "Ensuring all mandatory COSO principles are mapped to controls (Appendix 1).",
     "covered": "Covered",
     "zeroCoverage": "Zero Coverage (Action Required)"
+  },
+  "actions": {
+    "manageRcm": "Manage RCM",
+    "startAssessment": "Start Assessment",
+    "continue": "CONTINUE",
+    "reviewIssues": "REVIEW ISSUES",
+    "generate": "GENERATE"
+  },
+  "badges": {
+    "new": "NEW",
+    "report": "REPORT",
+    "principles": "17 PRINCIPLES"
   }
 }

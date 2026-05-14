@@ -55,7 +55,9 @@
     "haircutLabel": "% Haircut (PM)",
     "benchmarkValue": "{{basis}} Value",
     "omValue": "Overall Materiality",
-    "pmValue": "Performance Materiality"
+    "pmValue": "Performance Materiality",
+    "unit": "Unit",
+    "multiplier": "Multiplier"
   },
   "logic": {
     "title": "Scoping Logic",

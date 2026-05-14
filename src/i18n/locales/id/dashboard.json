@@ -43,5 +43,17 @@
     "description": "Memastikan seluruh prinsip COSO wajib telah dipetakan ke kontrol (Lampiran 1).",
     "covered": "Tercakup",
     "zeroCoverage": "Tanpa Cakupan (Butuh Tindakan)"
+  },
+  "actions": {
+    "manageRcm": "Kelola RCM",
+    "startAssessment": "Mulai Asesmen",
+    "continue": "LANJUTKAN",
+    "reviewIssues": "TINJAU TEMUAN",
+    "generate": "BUAT LAPORAN"
+  },
+  "badges": {
+    "new": "BARU",
+    "report": "LAPORAN",
+    "principles": "17 PRINSIP"
   }
 }

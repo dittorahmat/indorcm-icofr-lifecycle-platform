@@ -55,7 +55,9 @@
     "haircutLabel": "% Haircut (PM)",
     "benchmarkValue": "Nilai {{basis}}",
     "omValue": "Materialitas Keseluruhan",
-    "pmValue": "Materialitas Pelaksanaan"
+    "pmValue": "Materialitas Pelaksanaan",
+    "unit": "Unit",
+    "multiplier": "Multiplier"
   },
   "logic": {
     "title": "Logika Scoping",

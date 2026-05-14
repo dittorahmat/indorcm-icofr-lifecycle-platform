@@ -288,7 +288,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
       header: 'No. BPM',
       cell: ({ row, getValue }) => (
         <Input 
-          className="h-8 text-xs border-slate-200 focus:border-indigo-300 bg-white px-2 font-mono uppercase w-[100px]"
+          className="h-8 text-xs border-slate-200 focus:border-slate-400 bg-white px-2 font-mono uppercase w-[100px]"
           placeholder="BPM-001"
           defaultValue={getValue<string>()}
           onBlur={(e) => debouncedUpdate(row.original.id, 'bpmCode', e.target.value)}
@@ -309,7 +309,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
             size="sm" 
             className={cn(
               "h-7 text-xs gap-1.5 uppercase font-bold mx-2",
-              diagram ? "bg-indigo-600 hover:bg-indigo-700" : "text-slate-400 border-slate-200"
+              diagram ? "bg-slate-900 hover:bg-slate-800" : "text-slate-400 border-slate-200"
             )}
             onClick={() => {
               if (diagram) {
@@ -333,7 +333,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
       header: t('worksheet.columns.businessProcess'),
       cell: ({ row, getValue }) => (
         <Input 
-          className="h-8 text-xs border-slate-200 focus:border-indigo-300 bg-white px-2 min-w-[150px]"
+          className="h-8 text-xs border-slate-200 focus:border-slate-400 bg-white px-2 min-w-[150px]"
           placeholder="Isi Proses..."
           defaultValue={getValue<string>()}
           onBlur={(e) => debouncedUpdate(row.original.id, 'businessProcess', e.target.value)}
@@ -345,7 +345,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
       header: t('worksheet.columns.subProcess'),
       cell: ({ row, getValue }) => (
         <Input 
-          className="h-8 text-xs border-slate-200 focus:border-indigo-300 bg-white px-2 font-bold min-w-[180px]"
+          className="h-8 text-xs border-slate-200 focus:border-slate-400 bg-white px-2 font-bold min-w-[180px]"
           placeholder="Nama Sub-Proses..."
           defaultValue={getValue<string>()}
           onBlur={(e) => debouncedUpdate(row.original.id, 'subProcess', e.target.value)}
@@ -357,7 +357,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
       header: t('worksheet.columns.controlName'),
       cell: ({ row, getValue }) => (
         <Input 
-          className="h-8 text-xs border-slate-200 focus:border-indigo-300 bg-white px-2 font-medium text-indigo-700 min-w-[200px]"
+          className="h-8 text-xs border-slate-200 focus:border-slate-400 bg-white px-2 font-medium text-slate-900 min-w-[200px]"
           defaultValue={getValue<string>()}
           onBlur={(e) => debouncedUpdate(row.original.id, 'name', e.target.value)}
         />
@@ -368,7 +368,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
       header: t('worksheet.columns.location'),
       cell: ({ row, getValue }) => (
         <Input 
-          className="h-8 text-xs border-slate-200 focus:border-indigo-300 bg-white px-2 min-w-[100px]"
+          className="h-8 text-xs border-slate-200 focus:border-slate-400 bg-white px-2 min-w-[100px]"
           placeholder="Lokasi..."
           defaultValue={getValue<string>()}
           onBlur={(e) => debouncedUpdate(row.original.id, 'location', e.target.value)}
@@ -380,7 +380,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
       header: 'Proses Bisnis (Aktivitas)',
       cell: ({ row, getValue }) => (
         <textarea 
-          className="w-full min-h-[60px] text-xs border border-slate-200 focus:ring-1 focus:ring-indigo-300 bg-white p-2 resize-none min-w-[250px] rounded-md"
+          className="w-full min-h-[60px] text-xs border border-slate-200 focus:ring-1 focus:ring-slate-400 bg-white p-2 resize-none min-w-[250px] rounded-md"
           placeholder="Deskripsikan aktivitas..."
           defaultValue={getValue<string>()}
           onBlur={(e) => debouncedUpdate(row.original.id, 'description', e.target.value)}
@@ -574,7 +574,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
             {apps?.items.map(app => (
               <SelectItem key={app.id} value={app.id}>{app.name}</SelectItem>
             ))}
-            <SelectItem value="add-new" className="text-indigo-600 font-bold border-t mt-1">+ Add New Application</SelectItem>
+            <SelectItem value="add-new" className="text-primary font-bold border-t mt-1">+ Add New Application</SelectItem>
           </SelectContent>
         </Select>
       )
@@ -589,10 +589,10 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      <div className="flex items-center justify-between bg-indigo-50/50 p-4 border-b shrink-0">
+      <div className="flex items-center justify-between bg-slate-50/50 p-4 border-b shrink-0">
         <div className="space-y-0.5">
           <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2">
-            <FileSpreadsheet className="h-4 w-4 text-indigo-600" />
+            <FileSpreadsheet className="h-4 w-4 text-primary" />
             Control Activity Matrix (RCM) - {subProcessName || fsliName} ({noGL})
           </h4>
           <p className="text-xs text-slate-500 italic">Identify risks and control activities at the transaction level.</p>
@@ -603,7 +603,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
             onClick={() => setIsProcedureOpen(!isProcedureOpen)} 
             variant="outline" 
             size="sm"
-            className="h-9 gap-2 border-indigo-200 text-indigo-700 font-bold"
+            className="h-9 gap-2 border-slate-200 text-slate-900 font-bold"
           >
             <Shield className="h-4 w-4" />
             {isProcedureOpen ? "Hide Procedure" : "Set Std. Procedure"}
@@ -612,7 +612,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
             onClick={() => createMutation.mutate()} 
             variant="default" 
             size="sm"
-            className="bg-indigo-600 hover:bg-indigo-700 font-bold gap-2 shadow-md px-4 h-9"
+            className="bg-slate-900 hover:bg-slate-800 font-bold gap-2 shadow-md px-4 h-9"
             disabled={createMutation.isPending}
           >
             {createMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlusCircle className="h-4 w-4" />}
@@ -638,7 +638,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
                   </div>
                   <Button 
                     size="sm" 
-                    className="h-7 text-xs gap-1.5 bg-indigo-600" 
+                    className="h-7 text-xs gap-1.5 bg-slate-900 hover:bg-slate-800" 
                     onClick={handleSaveMetadata}
                     disabled={updateProcessMutation.isPending}
                   >
@@ -678,7 +678,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
               <TableRow>
                 <TableCell colSpan={20} className="h-32 text-center border-b">
                   <div className="flex flex-col items-center gap-2">
-                    <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
                     <p className="text-xs text-slate-400 animate-pulse font-medium">Loading...</p>
                   </div>
                 </TableCell>
@@ -694,7 +694,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
               </TableRow>
             ) : (
               table.getRowModel().rows.map(row => (
-                <TableRow key={row.id} className="hover:bg-indigo-50/30 transition-colors h-12 group border-b">
+                <TableRow key={row.id} className="hover:bg-slate-50/30 transition-colors h-12 group border-b">
                   {row.getVisibleCells().map(cell => (
                     <TableCell key={cell.id} className="border-r p-1 overflow-hidden relative border-b">
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -742,7 +742,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
         <DialogContent className="max-w-[95vw] w-[1400px] h-[90vh] flex flex-col p-0 overflow-hidden">
           <DialogHeader className="p-6 pb-2 shrink-0">
             <DialogTitle className="flex items-center gap-2 text-xl">
-              <WorkflowIcon className="h-5 w-5 text-indigo-600" />
+              <WorkflowIcon className="h-5 w-5 text-primary" />
               BPM Workflow Editor: {currentSubProcess}
             </DialogTitle>
           </DialogHeader>

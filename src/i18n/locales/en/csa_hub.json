@@ -108,7 +108,37 @@
   "form": {
     "addManualSample": "Add Manual Sample",
     "sampleReference": "Sample Reference",
-    "typeReference": "Type reference..."
+    "typeReference": "Type reference...",
+    "periodLabel": "Period",
+    "resultLabel": "Final Conclusion (SK-5)",
+    "effective": "Effective",
+    "ineffective": "Ineffective",
+    "noTransaction": "No Transaction",
+    "bpmConfirmation": "BPM Consistency Confirmation",
+    "bpmConfirmationDesc": "In accordance with SK-5 regulation Chapter IV Section 2.2a, I confirm the process flow and control narrative still match the actual conditions.",
+    "summaryTitle": "1. Summary Status Matrix",
+    "quickToggle": "Quick Pass/Fail Toggle",
+    "verificationTitle": "2. Detailed Verification & Evidence",
+    "documentationStatus": "Documentation Status",
+    "readyToSign": "Ready to Sign-off",
+    "needEvidence": "Need Evidence",
+    "notStarted": "Not Started",
+    "managementRationale": "Management Rationale / Finding Notes",
+    "rationalePlaceholder": "Required if status is INEFFECTIVE...",
+    "pointVerification": "POINT VERIFICATION",
+    "emptyReference": "Empty Reference",
+    "manualEntry": "MANUAL-ENTRY",
+    "passed": "PASSED",
+    "deficiency": "DEFICIENCY",
+    "table": {
+      "transactionDetail": "Transaction Detail",
+      "riskName": "Risk Name",
+      "controlName": "Control Name",
+      "evidence": "Evidence",
+      "notes": "Notes",
+      "pass": "Pass?",
+      "backToList": "Back to List"
+    }
   },
   "tod": {
     "title": "Lampiran 8: Control Design Verification (TOD)",

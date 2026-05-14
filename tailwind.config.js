@@ -14,7 +14,6 @@ export default {
   				'sans-serif'
   			],
   			display: [
-  				'Cal Sans',
   				'Inter',
   				'system-ui',
   				'sans-serif'

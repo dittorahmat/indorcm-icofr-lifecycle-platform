@@ -33,10 +33,10 @@ export function MaterialityParamsCard({
   const { t } = useTranslation('scoping');
 
   return (
-    <Card className="border-slate-200 shadow-sm overflow-hidden w-[300px] bg-white">
-      <CardHeader className="pb-3 border-b border-slate-50 bg-slate-50/50 flex flex-row items-center justify-between px-5">
+    <Card className="border-slate-200 shadow-sm overflow-hidden w-[300px] bg-white flex flex-col h-full">
+      <CardHeader className="pb-3 border-b border-slate-100 bg-slate-50/50 flex flex-row items-center justify-between px-5">
         <CardTitle className="text-[10px] uppercase font-bold text-slate-500 tracking-[0.2em] flex items-center gap-2">
-          <Settings2 className="h-3.5 w-3.5 text-indigo-600" /> {t('params.title')}
+          <Settings2 className="h-3.5 w-3.5 text-slate-900" /> {t('params.title')}
         </CardTitle>
         <Button 
           variant="ghost" 
@@ -47,9 +47,9 @@ export function MaterialityParamsCard({
           <PanelLeftClose className="h-4 w-4" />
         </Button>
       </CardHeader>
-      <CardContent className="space-y-6 pt-6 px-5">
+      <CardContent className="space-y-6 pt-6 px-5 flex-1">
         <div className="space-y-2.5">
-          <Label className="text-[10px] font-bold uppercase text-slate-400 tracking-wider flex items-center gap-2">
+          <Label className="text-[10px] font-bold uppercase text-slate-500 tracking-wider flex items-center gap-2">
              <Layers className="h-3 w-3" /> {t('params.locations')}
           </Label>
           <div className="relative">
@@ -59,19 +59,19 @@ export function MaterialityParamsCard({
               disabled={isLocked} 
               value={simState.locationCount ?? 1} 
               onChange={e => setSimState(s => ({ ...s, locationCount: Number(e.target.value) }))} 
-              className="h-10 font-bold bg-slate-50 border-slate-200 focus:bg-white transition-all pr-12"
+              className="h-10 font-bold bg-slate-50 border-slate-200 focus:bg-white transition-all pr-12 text-slate-900"
             />
-            <div className="absolute inset-y-0 right-3 flex items-center text-[10px] font-bold text-indigo-600 uppercase">
-              Unit
+            <div className="absolute inset-y-0 right-3 flex items-center text-[10px] font-bold text-slate-400 uppercase">
+              {t('params.unit')}
             </div>
           </div>
-          <p className="text-[10px] font-bold text-indigo-600/70 uppercase tracking-tighter flex items-center gap-1.5 px-1">
-             <Calculator className="h-3 w-3" /> Multiplier: <span className="text-indigo-700">{multiplier}x</span>
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter flex items-center gap-1.5 px-1">
+             <Calculator className="h-3 w-3" /> {t('params.multiplier')}: <span className="text-slate-900">{multiplier}x</span>
           </p>
         </div>
 
         <div className="space-y-2.5">
-          <Label className="text-[10px] font-bold uppercase text-slate-400 tracking-wider flex items-center gap-2">
+          <Label className="text-[10px] font-bold uppercase text-slate-500 tracking-wider flex items-center gap-2">
              <Percent className="h-3 w-3" /> {t('params.omLabel')}
           </Label>
           <div className="relative">
@@ -81,7 +81,7 @@ export function MaterialityParamsCard({
               disabled={isLocked} 
               value={simState.omPercentage ?? 0} 
               onChange={e => setSimState(s => ({ ...s, omPercentage: Number(e.target.value) }))} 
-              className="h-10 font-bold bg-slate-50 border-slate-200 focus:bg-white transition-all pr-10"
+              className="h-10 font-bold bg-slate-50 border-slate-200 focus:bg-white transition-all pr-10 text-slate-900"
             />
             <div className="absolute inset-y-0 right-3 flex items-center text-slate-400">
               %
@@ -90,8 +90,8 @@ export function MaterialityParamsCard({
         </div>
 
         <div className="space-y-2.5">
-          <Label className="text-[10px] font-bold uppercase text-slate-400 tracking-wider flex items-center gap-2">
-             <ShieldAlert className="h-3 w-3 text-rose-400" /> {t('params.haircutLabel')}
+          <Label className="text-[10px] font-bold uppercase text-slate-500 tracking-wider flex items-center gap-2">
+             <ShieldAlert className="h-3 w-3 text-red-500" /> {t('params.haircutLabel')}
           </Label>
           <div className="relative">
             <Input 
@@ -99,7 +99,7 @@ export function MaterialityParamsCard({
               disabled={isLocked} 
               value={simState.haircutPercentage ?? 0} 
               onChange={e => setSimState(s => ({ ...s, haircutPercentage: Number(e.target.value) }))} 
-              className="h-10 font-bold bg-slate-50 border-slate-200 focus:bg-white transition-all pr-10"
+              className="h-10 font-bold bg-slate-50 border-slate-200 focus:bg-white transition-all pr-10 text-slate-900"
             />
             <div className="absolute inset-y-0 right-3 flex items-center text-slate-400">
               %
@@ -109,25 +109,23 @@ export function MaterialityParamsCard({
 
         <Separator className="bg-slate-100" />
         
-        <div className="space-y-4 bg-slate-900 rounded-2xl p-5 text-white shadow-xl shadow-slate-100 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-16 h-16 bg-white/5 rounded-full -mr-8 -mt-8 group-hover:scale-110 transition-transform" />
-          
+        <div className="space-y-4 bg-slate-900 rounded-xl p-5 text-white shadow-md relative overflow-hidden">
           <div className="space-y-1 relative z-10">
             <p className="text-[9px] text-slate-500 uppercase font-bold tracking-[0.15em] flex justify-between items-center">
               {t('params.benchmarkValue', { basis: simState.basis })} 
               <Info className="h-2.5 w-2.5 opacity-40" />
             </p>
-            <p className="text-sm font-display font-bold text-slate-200 text-right">Rp {benchmarkValue.toLocaleString('id-ID')}</p>
+            <p className="text-sm font-display font-bold text-white text-right">Rp {benchmarkValue.toLocaleString('id-ID')}</p>
           </div>
 
           <div className="space-y-1 pt-3 border-t border-white/10 relative z-10">
-            <p className="text-[9px] text-indigo-400 uppercase font-bold tracking-[0.15em]">OM Value</p>
+            <p className="text-[9px] text-slate-400 uppercase font-bold tracking-[0.15em]">{t('params.omValue')}</p>
             <p className="text-xl font-display font-bold text-white text-right tracking-tight leading-none mt-1">Rp {omValue.toLocaleString('id-ID')}</p>
           </div>
 
           <div className="space-y-1 relative z-10">
-            <p className="text-[9px] text-blue-400 uppercase font-bold tracking-[0.15em]">PM Value</p>
-            <p className="text-xl font-display font-bold text-blue-300 text-right tracking-tight leading-none mt-1">Rp {pmValue.toLocaleString('id-ID')}</p>
+            <p className="text-[9px] text-slate-400 uppercase font-bold tracking-[0.15em]">{t('params.pmValue')}</p>
+            <p className="text-xl font-display font-bold text-slate-200 text-right tracking-tight leading-none mt-1">Rp {pmValue.toLocaleString('id-ID')}</p>
           </div>
         </div>
       </CardContent>

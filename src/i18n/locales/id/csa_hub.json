@@ -108,7 +108,37 @@
   "form": {
     "addManualSample": "Tambah Sampel Manual",
     "sampleReference": "Referensi Sampel",
-    "typeReference": "Ketik referensi..."
+    "typeReference": "Ketik referensi...",
+    "periodLabel": "Periode",
+    "resultLabel": "Hasil Akhir (SK-5)",
+    "effective": "Effective",
+    "ineffective": "Ineffective",
+    "noTransaction": "No Transaction",
+    "bpmConfirmation": "Konfirmasi Konsistensi BPM",
+    "bpmConfirmationDesc": "Sesuai regulasi SK-5 Bab IV Bagian 2.2a, saya mengonfirmasi alur proses dan narasi kontrol masih sesuai dengan kondisi riil.",
+    "summaryTitle": "1. Ringkasan Matriks Status",
+    "quickToggle": "Toggle Cepat Lulus/Gagal",
+    "verificationTitle": "2. Verifikasi Detail & Bukti",
+    "documentationStatus": "Status Dokumentasi",
+    "readyToSign": "Siap Sign-off",
+    "needEvidence": "Butuh Evidence",
+    "notStarted": "Belum Dimulai",
+    "managementRationale": "Management Rationale / Catatan Temuan",
+    "rationalePlaceholder": "Wajib diisi jika status INEFFECTIVE...",
+    "pointVerification": "POIN VERIFIKASI",
+    "emptyReference": "Referensi Kosong",
+    "manualEntry": "INPUT-MANUAL",
+    "passed": "LULUS",
+    "deficiency": "DEFISIENSI",
+    "table": {
+      "transactionDetail": "Detail Transaksi",
+      "riskName": "Nama Risiko",
+      "controlName": "Nama Kontrol",
+      "evidence": "Bukti",
+      "notes": "Keterangan",
+      "pass": "Lulus?",
+      "backToList": "Kembali ke Daftar"
+    }
   },
   "tod": {
     "title": "Lampiran 8: Verifikasi Rancangan Pengendalian (TOD)",

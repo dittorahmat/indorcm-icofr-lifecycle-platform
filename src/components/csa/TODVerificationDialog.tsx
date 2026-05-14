@@ -216,7 +216,7 @@ export function TODVerificationDialog({
           <DialogHeader className="p-6 bg-slate-900 text-white shrink-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="p-2.5 bg-indigo-500 rounded-2xl shadow-lg shadow-indigo-500/20">
+                <div className="p-2.5 bg-slate-800 rounded-2xl shadow-md">
                   <ShieldCheck className="h-7 w-7 text-white" />
                 </div>
                 <div>
@@ -224,14 +224,14 @@ export function TODVerificationDialog({
                     {t('csa_hub:tod.title')}
                   </DialogTitle>
                   <div className="flex items-center gap-2 mt-1">
-                     <Badge variant="outline" className="bg-indigo-500/20 border-indigo-400/30 text-indigo-100 font-bold text-xs py-0">LINE 2 REVIEW & DESIGN SYNC</Badge>
+                     <Badge variant="outline" className="bg-slate-100 border-slate-200 text-slate-700 font-bold text-xs py-0">LINE 2 REVIEW & DESIGN SYNC</Badge>
                      <p className="text-slate-400 text-xs font-medium tracking-wide uppercase">{t('csa_hub:tod.subtitle')}</p>
                   </div>
                 </div>
               </div>
               <div className="text-right hidden md:block">
                  <div className="text-xs font-black text-slate-500 uppercase tracking-widest">Control Reference</div>
-                 <div className="text-xl font-black tracking-tighter text-indigo-400">{rcmMapping?.controlCode || '-'}</div>
+                 <div className="text-xl font-black tracking-tighter text-primary">{rcmMapping?.controlCode || '-'}</div>
               </div>
             </div>
           </DialogHeader>
@@ -241,7 +241,7 @@ export function TODVerificationDialog({
               {/* Left Column: Editable Design Context (RCM) */}
               <ScrollArea className="w-full md:w-1/2 border-r bg-slate-50/50">
                 <div className="p-8 space-y-8">
-                  <div className="flex items-center gap-2 text-indigo-600 font-black text-xs uppercase tracking-widest mb-6">
+                  <div className="flex items-center gap-2 text-primary font-black text-xs uppercase tracking-widest mb-6">
                     <Target className="h-4 w-4" />
                     DESIGN CONTEXT (EDITABLE RCM)
                   </div>
@@ -483,7 +483,7 @@ export function TODVerificationDialog({
               {/* Right Column: Assessment (Interactive) */}
               <ScrollArea className="w-full md:w-1/2 bg-white shadow-[-10px_0_15px_-5px_rgba(0,0,0,0.02)]">
                 <div className="p-8 space-y-8">
-                  <div className="flex items-center gap-2 text-indigo-600 font-black text-xs uppercase tracking-widest mb-6">
+                  <div className="flex items-center gap-2 text-primary font-black text-xs uppercase tracking-widest mb-6">
                      <Target className="h-4 w-4" />
                      EVALUASI RANCANGAN (LAMPIRAN 8)
                   </div>
@@ -498,7 +498,7 @@ export function TODVerificationDialog({
                   ].map((pilar) => (
                     <div key={pilar.id} className="space-y-2 group">
                       <div className="flex justify-between items-center">
-                        <Label htmlFor={pilar.id} className="text-xs font-black uppercase tracking-tight text-slate-600 group-focus-within:text-indigo-600 transition-colors">
+                        <Label htmlFor={pilar.id} className="text-xs font-black uppercase tracking-tight text-slate-600 group-focus-within:text-primary transition-colors">
                           {pilar.label}
                         </Label>
                         {errors[pilar.id as keyof CombinedFormValues] && (
@@ -510,7 +510,7 @@ export function TODVerificationDialog({
                         {...form.register(pilar.id as any)}
                         placeholder={pilar.placeholder}
                         className={cn(
-                          "min-h-[100px] text-xs font-medium resize-none transition-all border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10",
+                          "min-h-[100px] text-xs font-medium resize-none transition-all border-slate-200 rounded-xl focus:ring-4 focus:ring-slate-400/10",
                           errors[pilar.id as keyof CombinedFormValues] ? "border-red-300 bg-red-50/30" : "hover:border-slate-300"
                         )}
                       />
@@ -520,12 +520,12 @@ export function TODVerificationDialog({
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
                     <div className="space-y-2">
                        <Label className="text-xs font-black uppercase text-slate-500 flex items-center gap-1.5">
-                         <FileText className="h-3.5 w-3.5 text-indigo-500" /> {t('csa_hub:tod.kkRef')}
+                         <FileText className="h-3.5 w-3.5 text-primary" /> {t('csa_hub:tod.kkRef')}
                        </Label>
                        <Input 
                          {...form.register('kkReference')} 
                          placeholder="Misal: KK-TOD-FIN-01" 
-                         className="h-11 font-mono text-xs border-slate-200 rounded-xl focus:ring-indigo-500/10"
+                         className="h-11 font-mono text-xs border-slate-200 rounded-xl focus:ring-slate-400/10"
                        />
                     </div>
 
@@ -567,7 +567,7 @@ export function TODVerificationDialog({
                      <Textarea 
                        {...form.register('comment')}
                        placeholder="Berikan kesimpulan akhir mengenai rancangan kontrol ini..."
-                       className="min-h-[80px] text-xs resize-none border-slate-200 rounded-xl focus:ring-indigo-500/10"
+                       className="min-h-[80px] text-xs resize-none border-slate-200 rounded-xl focus:ring-slate-400/10"
                      />
                   </div>
 
@@ -575,7 +575,7 @@ export function TODVerificationDialog({
                     <Button type="button" variant="ghost" onClick={() => handleOpenChange(false)} className="font-black uppercase text-xs tracking-widest text-slate-400">
                       {t('common:actions.cancel')}
                     </Button>
-                    <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 shadow-xl shadow-indigo-200 px-8 py-6 rounded-2xl font-black uppercase tracking-widest text-xs" disabled={isPending}>
+                    <Button type="submit" className="bg-slate-900 hover:bg-slate-800 shadow-md px-8 py-6 rounded-2xl font-black uppercase tracking-widest text-xs" disabled={isPending}>
                       {isPending ? "Syncing..." : t('csa_hub:tod.saveEvaluation')}
                     </Button>
                   </div>

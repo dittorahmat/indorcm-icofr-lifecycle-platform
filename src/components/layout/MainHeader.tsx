@@ -37,16 +37,16 @@ export function MainHeader() {
     <header className={cn(
       "sticky top-0 z-40 w-full border-b transition-colors duration-300",
       isDark
-        ? "bg-[#022c22] border-emerald-900/50 text-emerald-50"
-        : "bg-[#417dc1] border-blue-700 text-white shadow-md"
+        ? "bg-slate-950 border-slate-800 text-slate-50"
+        : "bg-sidebar border-sidebar-border text-sidebar-foreground"
     )}>
-      <div className="flex h-16 items-center justify-between px-3">
+      <div className="flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-3">
             <Link to="/dashboard" className="flex items-center gap-2 group">
               <Shield className={cn(
                 "h-7 w-7 transition-transform group-hover:scale-110",
-                isDark ? "text-emerald-400" : "white"
+                isDark ? "text-emerald-400" : "text-white"
               )} />
               <span className="font-display tracking-tight text-white text-lg font-bold hidden sm:inline-block">IndoGRC Pro</span>
             </Link>
@@ -58,15 +58,15 @@ export function MainHeader() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <div className="relative cursor-pointer hover:opacity-80 transition-opacity ml-2">
-                <Avatar className="h-9 w-9 border-2 border-white/20">
+                <Avatar className="h-9 w-9 border-2 border-white/10 shadow-sm">
                   <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-                  <AvatarFallback className="bg-blue-800 text-white">CN</AvatarFallback>
+                  <AvatarFallback className="bg-slate-800 text-white font-bold">CN</AvatarFallback>
                 </Avatar>
                 <Badge
                   variant={isDark ? "outline" : "secondary"}
                   className={cn(
-                    "absolute -bottom-1 -right-2 text-xs px-1 h-4 min-w-[16px] justify-center border-blue-900",
-                    !isDark && "bg-white text-blue-700 hover:bg-white font-bold"
+                    "absolute -bottom-1 -right-2 text-[10px] px-1 h-4 min-w-[16px] justify-center border-slate-900 shadow-sm",
+                    !isDark && "bg-white text-slate-900 hover:bg-white font-black"
                   )}
                 >
                   {currentRole.split(' ').pop()?.substring(0, 1)}
