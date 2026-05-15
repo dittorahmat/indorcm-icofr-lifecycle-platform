@@ -38,7 +38,7 @@ export function MainHeader() {
       "sticky top-0 z-40 w-full border-b transition-colors duration-300",
       isDark
         ? "bg-slate-950 border-slate-800 text-slate-50"
-        : "bg-sidebar border-sidebar-border text-sidebar-foreground"
+        : "bg-primary border-primary/10 text-primary-foreground"
     )}>
       <div className="flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-6">

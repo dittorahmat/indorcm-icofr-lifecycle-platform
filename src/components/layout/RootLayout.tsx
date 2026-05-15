@@ -10,10 +10,10 @@ export function RootLayout(): JSX.Element {
   const { isChatOpen, setIsChatOpen, toggleChat } = useAIChatStore();
 
   return (
-    <SidebarProvider className="min-h-screen flex flex-col bg-background text-foreground">
+    <SidebarProvider className="min-h-screen flex flex-col bg-background text-foreground min-w-0">
       <MainHeader />
       <LicenseBanner />
-      <div className="flex-1 relative flex flex-col">
+      <div className="flex-1 relative flex flex-col min-w-0">
         <Outlet />
       </div>
 

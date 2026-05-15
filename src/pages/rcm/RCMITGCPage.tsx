@@ -166,7 +166,7 @@ export function RCMITGCPage({ embedded = false, filterBpmId }: RCMITGCPageProps)
   };
 
   const content = (
-    <div className="flex flex-col min-w-0 h-screen">
+    <div className="flex flex-col min-w-0 flex-1">
       {!embedded && (
         <RCMPageHeader 
           title="RCM ITGC Matrix"

@@ -18,7 +18,7 @@ type AppLayoutProps = {
 
 export function AppLayout({ children, container = false, className, contentClassName }: AppLayoutProps): JSX.Element {
   return (
-    <div className="flex flex-1 min-h-screen relative">
+    <div className="flex flex-1 min-h-0 relative min-w-0">
       {/* Fixed Sidebar Background Strip */}
       <div 
         className="fixed inset-y-0 left-0 bg-sidebar pointer-events-none -z-10 transition-[width] duration-200 ease-linear md:block hidden" 
@@ -37,7 +37,7 @@ export function AppLayout({ children, container = false, className, contentClass
       }>
         <AppSidebar />
       </Suspense>
-      <SidebarInset className={cn("flex flex-col min-h-0 bg-background", className)}>
+      <SidebarInset className={cn("flex flex-col min-h-0 min-w-0 bg-background", className)}>
         <div className={cn(
           "flex-1 flex flex-col min-w-0",
           container && "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8",

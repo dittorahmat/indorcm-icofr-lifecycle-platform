@@ -216,7 +216,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId }: RCMTLCPageProps) {
   };
 
   const content = (
-    <div className="flex flex-col min-w-0 h-screen">
+    <div className="flex flex-col min-w-0 flex-1">
       {!embedded && (
         <RCMPageHeader 
           title={t('rcm:matrix.title_tlc')}
