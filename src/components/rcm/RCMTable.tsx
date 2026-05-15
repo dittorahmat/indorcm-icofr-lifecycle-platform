@@ -121,10 +121,10 @@ export function RCMTable({
               const rowBg = isEven ? "bg-slate-50/80" : "bg-white";
 
               return (
-                <React.Fragment key={row.mappingId || row.id || idx}>
+                <React.Fragment key={`${row.mappingId || row.id || 'row'}-${idx}`}>
                   {groupRow}
                   <tr className={cn(
-                    "group transition-colors border-b border-slate-200 h-14 hover:bg-indigo-50/40",
+                    "group transition-all border-b border-slate-200 h-14 relative hover:z-10",
                     rowBg,
                     rowClassName?.(row, idx)
                   )}>
@@ -133,7 +133,8 @@ export function RCMTable({
                         <td 
                           key={`cell-${col.id}-${cIdx}`}
                           className={cn(
-                            "px-3 border-r border-slate-100 py-2 text-xs",
+                            "px-3 border-r border-slate-100 py-2 text-xs transition-colors duration-200",
+                            "group-hover:bg-indigo-50/70 group-hover:border-indigo-100/50",
                             col.sticky === 'left' && cn("sticky z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]", rowBg),
                             col.sticky === 'right' && cn("sticky right-0 z-30 border-l shadow-[-2px_0_5px_-2px_rgba(0,0,0,0.05)]", rowBg),
                             col.className
@@ -143,6 +144,10 @@ export function RCMTable({
                           }}
                         >
                           {col.render ? col.render(row, idx) : (row[col.accessorKey as string] || '-')}
+                          {/* Row Indicator Accent */}
+                          {cIdx === 0 && (
+                            <div className="absolute left-0 top-0 bottom-0 w-1 bg-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          )}
                         </td>
                       );
                     })}

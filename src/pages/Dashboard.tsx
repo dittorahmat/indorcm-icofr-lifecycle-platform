@@ -25,19 +25,19 @@ const containerVariants: Variants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.05
+      staggerChildren: 0.04
     }
   }
 };
 
 const itemVariants: Variants = {
-  hidden: { y: 10, opacity: 0 },
+  hidden: { y: 8, opacity: 0 },
   visible: {
     y: 0,
     opacity: 1,
     transition: {
-      duration: 0.4,
-      ease: [0.22, 1, 0.36, 1]
+      duration: 0.35,
+      ease: [0.16, 1, 0.3, 1] // ease-out-expo
     }
   }
 };
@@ -117,7 +117,7 @@ export function Dashboard() {
         {/* SECTION 1: TIERED KPIs */}
         <div className="grid gap-6 md:grid-cols-4">
           <motion.div variants={itemVariants}>
-            <Card className="bg-slate-900 text-white border-none h-full shadow-lg ring-1 ring-slate-800">
+            <Card className="bg-slate-900 text-white border-none h-full shadow-lg ring-1 ring-slate-800 overflow-hidden relative group">
               <CardHeader className="pb-2">
                 <CardTitle className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
                   <Clock className="h-3 w-3" /> {t('kpis.cycleReadiness')}
@@ -130,11 +130,14 @@ export function Dashboard() {
                    <motion.div 
                     initial={{ width: 0 }}
                     animate={{ width: '92%' }}
-                    transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
+                    transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
                     className="h-full bg-white rounded-full" 
                    />
                 </div>
               </CardContent>
+              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                <ShieldCheck className="h-20 w-20 -mr-4 -mt-4 rotate-12" />
+              </div>
             </Card>
           </motion.div>
 
@@ -166,7 +169,7 @@ export function Dashboard() {
             }
           ].map((kpi, i) => (
             <motion.div key={i} variants={itemVariants}>
-              <Card className="border-slate-200 bg-white shadow-sm hover:shadow-md transition-shadow h-full">
+              <Card className="border-slate-200 bg-white shadow-sm hover:shadow-md transition-all duration-300 h-full border-b-2 hover:border-b-slate-400">
                 <CardHeader className="pb-1">
                   <CardTitle className="text-[10px] font-bold uppercase text-slate-500 tracking-[0.2em] flex items-center gap-2">
                     <kpi.icon className={cn("h-3 w-3", kpi.color)} /> {kpi.title}
@@ -182,8 +185,10 @@ export function Dashboard() {
         </div>
 
         {/* MAIN DASHBOARD GRID */}
-        <div className="grid gap-8 lg:grid-cols-3">
-          <div className="lg:col-span-2 space-y-8">
+        <div className="grid gap-8 lg:grid-cols-12">
+          
+          {/* LEFT CONTENT AREA (Span 8) */}
+          <div className="lg:col-span-8 space-y-8">
             <motion.div variants={itemVariants}>
               <React.Suspense fallback={<Skeleton className="h-[350px] w-full" />}>
                 <ComplianceCharts 
@@ -222,10 +227,10 @@ export function Dashboard() {
                                 <div 
                                   key={pNum} 
                                   className={cn(
-                                    "h-10 flex flex-col items-center justify-center rounded border transition-all duration-200 cursor-default",
+                                    "h-10 flex flex-col items-center justify-center rounded transition-all duration-300 cursor-default",
                                     (c?.count ?? 0) > 0 
-                                      ? 'bg-slate-900 border-slate-900 text-white shadow-sm' 
-                                      : 'bg-white border-slate-100 text-slate-300'
+                                      ? 'bg-slate-900 border border-slate-900 text-white shadow-sm ring-1 ring-slate-900/5' 
+                                      : 'bg-white border border-dashed border-slate-200 text-slate-300 opacity-60'
                                   )}
                                   title={`${c?.count || 0} controls mapped to Principle ${pNum}`}
                                 >
@@ -241,100 +246,108 @@ export function Dashboard() {
                   </div>
                   <div className="mt-8 flex gap-6 text-[10px] uppercase font-bold tracking-[0.15em] text-slate-400 border-t pt-5">
                     <div className="flex items-center gap-2"><div className="h-2 w-2 bg-slate-900 rounded-full" /> {t('coso.covered')}</div>
-                    <div className="flex items-center gap-2"><div className="h-2 w-2 bg-white border border-slate-200 rounded-full" /> {t('coso.zeroCoverage')}</div>
+                    <div className="flex items-center gap-2"><div className="h-2 w-2 bg-white border border-dashed border-slate-200 rounded-full" /> {t('coso.zeroCoverage')}</div>
                   </div>
                 </CardContent>
               </Card>
             </motion.div>
           </div>
 
-          <div className="lg:col-span-1 space-y-6">
-            <motion.div variants={itemVariants} className="h-full">
-              <Card className="border-slate-200 shadow-sm overflow-hidden h-full flex flex-col bg-white">
+          {/* RIGHT SIDEBAR (Span 4) */}
+          <div className="lg:col-span-4 space-y-6">
+            <motion.div variants={itemVariants}>
+              <Card className="border-slate-200 shadow-sm overflow-hidden bg-white">
                 <CardHeader className="bg-slate-50/50 border-b py-5 px-6">
                   <CardTitle className="text-xs font-bold uppercase tracking-[0.2em] text-slate-900 flex items-center gap-2">
                      <Activity className="h-4 w-4 text-slate-900" /> {t('actionCenter.title')}
                   </CardTitle>
                   <CardDescription className="text-[11px] font-medium text-slate-500 mt-1">{t('actionCenter.description')}</CardDescription>
                 </CardHeader>
-                <CardContent className="p-4 space-y-3 flex-1">
-                  <div 
-                    className="group flex flex-col p-5 rounded-lg border border-slate-100 bg-white hover:border-slate-900 hover:shadow-md transition-all duration-300 cursor-pointer relative overflow-hidden" 
+                <CardContent className="p-0 divide-y divide-slate-100">
+                  
+                  {/* Action 1: CSA */}
+                  <button 
+                    className="w-full flex items-center gap-4 p-5 hover:bg-slate-50 transition-all duration-300 text-left group hover:scale-[1.01] active:scale-[0.99] relative overflow-hidden"
                     onClick={() => navigate('/todo')}
                   >
-                     <div className="flex justify-between items-start mb-4">
-                        <div className="p-2 rounded bg-slate-50 text-slate-900 border border-slate-100 group-hover:bg-slate-900 group-hover:text-white group-hover:border-slate-900 transition-colors">
-                           <ClipboardCheck className="h-5 w-5" />
-                        </div>
-                        <div className="text-right">
-                          <Badge className="bg-slate-100 text-slate-900 hover:bg-slate-100 border-none font-bold text-[10px] px-2 py-0.5 rounded-sm">{csaCompletion}%</Badge>
-                        </div>
-                     </div>
-                     <h4 className="font-display font-extrabold text-slate-900 text-base flex items-center justify-between">
-                       {t('actionCenter.csa.title')}
-                       <ArrowUpRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all translate-y-1 group-hover:translate-y-0" />
-                     </h4>
-                     <p className="text-[11px] text-slate-500 mt-1.5 leading-relaxed font-medium">{t('actionCenter.csa.description')}</p>
-                  </div>
+                    <div className="absolute inset-0 bg-indigo-500/0 group-hover:bg-indigo-500/5 transition-colors" />
+                    <div className="h-10 w-10 shrink-0 rounded-lg bg-slate-100 flex items-center justify-center text-slate-900 group-hover:bg-slate-900 group-hover:text-white transition-all duration-300 relative z-10 shadow-sm">
+                      <ClipboardCheck className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1 min-w-0 relative z-10">
+                      <h4 className="font-display font-extrabold text-slate-900 text-sm">{t('actionCenter.csa.title')}</h4>
+                      <p className="text-[11px] text-slate-500 mt-0.5 truncate">{t('actionCenter.csa.description')}</p>
+                    </div>
+                    <div className="text-right relative z-10">
+                      <Badge variant="outline" className="bg-white border-slate-200 text-slate-900 font-bold text-[10px] group-hover:border-slate-900 transition-colors">{csaCompletion}%</Badge>
+                      <ArrowUpRight className="h-3 w-3 text-slate-300 group-hover:text-slate-900 ml-auto mt-1 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0" />
+                    </div>
+                  </button>
 
+                  {/* Action 2: Deficiencies (Urgent) */}
                   {openDeficiencies.length > 0 && (
-                    <div 
-                      className="group flex flex-col p-5 rounded-lg border border-slate-100 bg-white hover:border-rose-600 hover:shadow-md transition-all duration-300 cursor-pointer relative overflow-hidden" 
+                    <button 
+                      className="w-full flex items-center gap-4 p-5 hover:bg-rose-50/50 transition-all duration-300 text-left group hover:scale-[1.01] active:scale-[0.99] relative overflow-hidden"
                       onClick={() => navigate('/deficiencies')}
                     >
-                      <div className="flex justify-between items-start mb-4">
-                          <div className="p-2 rounded bg-rose-50 text-rose-600 border border-rose-100 group-hover:bg-rose-600 group-hover:text-white group-hover:border-rose-600 transition-colors">
-                            <AlertTriangle className="h-5 w-5" />
-                          </div>
-                          <Badge className="bg-rose-600 text-white border-none font-bold text-[10px] px-2 py-0.5 rounded-sm">{openDeficiencies.length} {t('badges.new')}</Badge>
+                      <div className="absolute inset-0 bg-rose-500/0 group-hover:bg-rose-500/5 transition-colors" />
+                      <div className="h-10 w-10 shrink-0 rounded-lg bg-rose-50 flex items-center justify-center text-rose-600 group-hover:bg-rose-600 group-hover:text-white transition-all duration-300 relative z-10 shadow-sm">
+                        <AlertTriangle className="h-5 w-5" />
                       </div>
-                      <h4 className="font-display font-extrabold text-slate-900 text-base flex items-center justify-between">
-                        {t('actionCenter.deficiency.title')}
-                        <ArrowUpRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all translate-y-1 group-hover:translate-y-0" />
-                      </h4>
-                      <p className="text-[11px] text-slate-500 mt-1.5 leading-relaxed font-medium">{t('actionCenter.deficiency.description')}</p>
-                    </div>
+                      <div className="flex-1 min-w-0 relative z-10">
+                        <h4 className="font-display font-extrabold text-slate-900 text-sm">{t('actionCenter.deficiency.title')}</h4>
+                        <p className="text-[11px] text-slate-500 mt-0.5 truncate">{t('actionCenter.deficiency.description')}</p>
+                      </div>
+                      <div className="text-right relative z-10">
+                        <Badge className="bg-rose-600 text-white border-none font-bold text-[10px] ring-2 ring-white group-hover:ring-rose-100 transition-all">{openDeficiencies.length}</Badge>
+                        <ArrowUpRight className="h-3 w-3 text-rose-300 group-hover:text-rose-600 ml-auto mt-1 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0" />
+                      </div>
+                    </button>
                   )}
 
-                  <div 
-                    className="group flex flex-col p-5 rounded-lg border border-slate-100 bg-white hover:border-emerald-600 hover:shadow-md transition-all duration-300 cursor-pointer relative overflow-hidden" 
+                  {/* Action 3: Reports */}
+                  <button 
+                    className="w-full flex items-center gap-4 p-5 hover:bg-emerald-50/50 transition-all duration-300 text-left group hover:scale-[1.01] active:scale-[0.99] relative overflow-hidden"
                     onClick={() => navigate('/reports')}
                   >
-                     <div className="flex justify-between items-start mb-4">
-                        <div className="p-2 rounded bg-emerald-50 text-emerald-600 border border-emerald-100 group-hover:bg-emerald-600 group-hover:text-white group-hover:border-emerald-600 transition-colors">
-                           <FileText className="h-5 w-5" />
-                        </div>
-                        <Badge className="bg-emerald-600 text-white border-none font-bold text-[10px] px-2 py-0.5 rounded-sm uppercase tracking-tighter">{t('badges.report')}</Badge>
-                     </div>
-                     <h4 className="font-display font-extrabold text-slate-900 text-base flex items-center justify-between">
-                       {t('actionCenter.reports.title')}
-                       <ArrowUpRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all translate-y-1 group-hover:translate-y-0" />
-                     </h4>
-                     <p className="text-[11px] text-slate-500 mt-1.5 leading-relaxed font-medium">{t('actionCenter.reports.description')}</p>
-                  </div>
+                    <div className="absolute inset-0 bg-emerald-500/0 group-hover:bg-emerald-500/5 transition-colors" />
+                    <div className="h-10 w-10 shrink-0 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300 relative z-10 shadow-sm">
+                      <FileText className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1 min-w-0 relative z-10">
+                      <h4 className="font-display font-extrabold text-slate-900 text-sm">{t('actionCenter.reports.title')}</h4>
+                      <p className="text-[11px] text-slate-500 mt-0.5 truncate">{t('actionCenter.reports.description')}</p>
+                    </div>
+                    <div className="text-right relative z-10">
+                      <Badge variant="outline" className="bg-emerald-50 border-emerald-100 text-emerald-700 font-bold text-[10px] uppercase group-hover:bg-emerald-100 transition-colors">Ready</Badge>
+                      <ArrowUpRight className="h-3 w-3 text-emerald-300 group-hover:text-emerald-600 ml-auto mt-1 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0" />
+                    </div>
+                  </button>
                 </CardContent>
               </Card>
             </motion.div>
 
-            <motion.div variants={itemVariants} className="space-y-3">
+            {/* SECONDARY METRICS (Optimized grid) */}
+            <motion.div variants={itemVariants} className="grid grid-cols-2 gap-3">
                {[
-                 { label: t('kpis.remediationVelocity'), value: t('kpis.remediationAvgDays'), icon: TrendingUp, color: 'text-slate-600', bg: 'bg-slate-50' },
-                 { label: t('kpis.line2Validation'), value: t('kpis.line2Percent'), icon: ShieldCheck, color: 'text-slate-600', bg: 'bg-slate-50' }
+                 { label: t('kpis.remediationVelocity'), value: t('kpis.remediationAvgDays'), icon: TrendingUp, color: 'text-blue-600', bg: 'bg-blue-50' },
+                 { label: t('kpis.line2Validation'), value: t('kpis.line2Percent'), icon: ShieldCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' }
                ].map((metric, i) => (
-                 <div key={i} className="group flex items-center justify-between p-4 bg-white border border-slate-100 rounded-lg shadow-sm hover:shadow-md hover:border-slate-200 transition-all duration-300 cursor-pointer">
-                    <div className="flex items-center gap-4">
-                       <div className={cn("h-10 w-10 rounded flex items-center justify-center transition-all group-hover:bg-slate-900 group-hover:text-white", metric.bg)}>
-                          <metric.icon className="h-5 w-5 transition-colors" />
-                       </div>
-                       <div>
-                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{metric.label}</p>
-                          <p className="text-sm font-display font-extrabold text-slate-900 mt-0.5">{metric.value}</p>
-                       </div>
+                 <div key={i} className="group p-3 bg-white border border-slate-100 rounded-lg shadow-sm hover:shadow-md hover:border-slate-200 transition-all duration-300 cursor-pointer flex flex-col gap-2 ring-1 ring-slate-100/50">
+                    <div className={cn("h-7 w-7 rounded flex items-center justify-center transition-all group-hover:bg-slate-900 group-hover:text-white shrink-0 shadow-sm", metric.bg)}>
+                        <metric.icon className="h-3.5 w-3.5" />
                     </div>
-                    <ChevronRight className="h-4 w-4 text-slate-300 group-hover:text-slate-900 transition-colors" />
+                    <div>
+                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1 line-clamp-1">{metric.label}</p>
+                        <div className="flex items-center justify-between">
+                          <p className="text-lg font-display font-extrabold text-slate-900 leading-none">{metric.value}</p>
+                          <ChevronRight className="h-3 w-3 text-slate-300 group-hover:text-slate-900 transition-all duration-300 translate-x-0 group-hover:translate-x-1" />
+                        </div>
+                    </div>
                  </div>
                ))}
             </motion.div>
+
           </div>
         </div>
       </motion.div>

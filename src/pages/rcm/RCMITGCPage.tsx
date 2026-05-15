@@ -54,11 +54,31 @@ export function RCMITGCPage({ embedded = false, filterBpmId }: RCMITGCPageProps)
   });
 
   const saveMutation = useMutation({
-    mutationFn: (values: any) => 
-      api('/api/rcm-matrix/itgc/batch-update', { 
+    mutationFn: (values: any) => {
+      // 1. Reverse mapping: standardized UI names -> backend DB names
+      const dbValues: any = {
+        ...values,
+        controlName: values.mappedControlName,
+        controlDescription: values.mappedControlDescription,
+      };
+
+      // 2. Boolean normalization for IPO & Assertions (text columns in DB)
+      const booleanFields = [
+        'ipoC', 'ipoA', 'ipoV', 'ipoRa',
+        'assertionE', 'assertionC', 'assertionA', 'assertionCo', 'assertionVa', 'assertionRo', 'assertionPd'
+      ];
+
+      booleanFields.forEach(field => {
+        if (typeof values[field] === 'boolean') {
+          dbValues[field] = values[field] ? 'Y' : 'N';
+        }
+      });
+
+      return api('/api/rcm-matrix/itgc/batch-update', { 
         method: 'POST', 
-        body: JSON.stringify({ items: [values] }) 
-      }),
+        body: JSON.stringify({ items: [dbValues] }) 
+      });
+    },
     onSuccess: () => {
       toast.success(t('rcm:matrix.save_success'));
       queryClient.invalidateQueries({ queryKey: ['rcm-matrix-itgc'] });

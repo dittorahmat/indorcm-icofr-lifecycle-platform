@@ -49,14 +49,13 @@ const containerVariants: Variants = {
 };
 
 const itemVariants: Variants = {
-  hidden: { y: 20, opacity: 0 },
+  hidden: { y: 12, opacity: 0 },
   visible: {
     y: 0,
     opacity: 1,
     transition: {
-      type: 'spring',
-      stiffness: 100,
-      damping: 15
+      duration: 0.4,
+      ease: [0.16, 1, 0.3, 1] // ease-out-expo
     }
   }
 };
@@ -105,24 +104,24 @@ export function ScopingPage() {
         variants={containerVariants}
       >
         <PageHeader 
-          title={<span className="font-display tracking-tight">{t('scoping:title')}</span>} 
+          title={<span className="font-display font-extrabold tracking-tight text-slate-900">{t('scoping:title')}</span>} 
           description={t('scoping:description')}
           badge={activeSnapshot && (
             <Badge variant="outline" className={cn(
-              "gap-1.5 font-bold uppercase tracking-wider text-[10px] transition-all px-2.5 py-0.5 shadow-sm",
+              "gap-1.5 font-bold uppercase tracking-wider text-[10px] transition-all px-2.5 py-1 shadow-sm ring-1 ring-slate-200/50",
               activeSnapshot.status === 'Mapped' 
-                ? "bg-emerald-50 text-emerald-700 border-emerald-100" 
-                : "bg-amber-50 text-amber-700 border-amber-100"
+                ? "bg-white text-emerald-700 border-emerald-200" 
+                : "bg-white text-amber-700 border-amber-200"
             )}>
-              <div className={cn("h-1.5 w-1.5 rounded-full", activeSnapshot.status === 'Mapped' ? "bg-emerald-500" : "bg-amber-500")} />
+              <div className={cn("h-1.5 w-1.5 rounded-full", activeSnapshot.status === 'Mapped' ? "bg-emerald-500 animate-pulse" : "bg-amber-500 animate-pulse")} />
               {activeSnapshot.filename}
             </Badge>
           )}
         >
-          <div className="flex flex-col items-end gap-1">
+          <div className="flex flex-col items-end gap-2">
             <div className="flex gap-2">
               <Select value={filterYear} onValueChange={setFilterYear}>
-                <SelectTrigger className="w-[110px] h-10 bg-white border-slate-200 text-xs font-bold uppercase tracking-wider">
+                <SelectTrigger className="w-[110px] h-10 bg-white border-slate-200 text-xs font-bold uppercase tracking-wider shadow-sm">
                   <div className="flex items-center gap-2">
                     <Calendar className="h-3.5 w-3.5 text-slate-400" />
                     <SelectValue placeholder={t('common:placeholders.year')} />
@@ -136,24 +135,24 @@ export function ScopingPage() {
               </Select>
               <div {...getRootProps()}>
                 <input {...getInputProps()} />
-                <Button variant="outline" className="h-10 gap-2 border-slate-200 bg-white hover:bg-slate-50 transition-all font-bold text-xs uppercase tracking-wider">
+                <Button variant="outline" className="h-10 gap-2 border-slate-200 bg-white hover:bg-slate-50 transition-all font-bold text-xs uppercase tracking-wider shadow-sm">
                   <Upload className="h-3.5 w-3.5 text-slate-500" /> {t('scoping:uploadButton')}
                 </Button>
               </div>
               <Button 
                 onClick={() => setIsCreating(true)} 
-                className="h-10 gap-2 bg-slate-900 hover:bg-slate-800 shadow-lg shadow-slate-200 transition-all font-bold text-xs uppercase tracking-wider" 
+                className="h-10 gap-2 bg-slate-900 hover:bg-slate-800 shadow-md shadow-slate-200 transition-all font-bold text-xs uppercase tracking-wider" 
                 disabled={!activeSnapshot || activeSnapshot.status !== 'Mapped'}
               >
                 <Plus className="h-3.5 w-3.5" /> {t('scoping:simulation.createNew')}
               </Button>
             </div>
-            {!activeSnapshot && <p className="text-[10px] font-bold text-rose-500 uppercase tracking-tighter animate-pulse">{t('scoping:emptyState')}</p>}
+            {!activeSnapshot && <p className="text-[10px] font-bold text-rose-500 uppercase tracking-[0.1em]">{t('scoping:emptyState')}</p>}
           </div>
         </PageHeader>
 
         <Tabs defaultValue="simulations" className="w-full">
-          <TabsList className="grid w-full max-w-[440px] grid-cols-2 mb-8 bg-slate-100/50 p-1 border border-slate-200 rounded-xl">
+          <TabsList className="grid w-full max-w-[440px] grid-cols-2 mb-8 bg-slate-100/50 p-1 border border-slate-200 rounded-xl shadow-inner">
             <TabsTrigger value="simulations" className="gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest py-2">
               <LayoutGrid className="h-4 w-4" /> {t('scoping:simulation.title')}
             </TabsTrigger>
@@ -179,7 +178,7 @@ export function ScopingPage() {
                 <Button 
                   variant="destructive" 
                   size="sm" 
-                  className="gap-2 h-8 font-bold text-[10px] uppercase tracking-widest bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-100 transition-all shadow-none"
+                  className="gap-2 h-8 font-bold text-[10px] uppercase tracking-widest bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-100 transition-all shadow-none rounded-md"
                   onClick={() => {
                     if (confirm(t('scoping:purgeConfirm'))) {
                       api('/api/dev/purge-scoping', { method: 'DELETE' }).then(() => {
@@ -204,11 +203,11 @@ export function ScopingPage() {
         </Tabs>
 
         <Dialog open={isCreating} onOpenChange={setIsCreating}>
-          <DialogContent className="sm:max-w-[425px] border-none shadow-2xl rounded-2xl overflow-hidden p-0">
+          <DialogContent className="sm:max-w-[425px] border-none shadow-2xl rounded-2xl overflow-hidden p-0 ring-1 ring-slate-200">
             <div className="bg-slate-900 p-6 text-white">
               <DialogHeader>
-                <DialogTitle className="font-display text-2xl tracking-tight">{t('scoping:simulation.createNew')}</DialogTitle>
-                <DialogDescription className="text-slate-400 text-xs">
+                <DialogTitle className="font-display font-extrabold text-2xl tracking-tight uppercase">{t('scoping:simulation.createNew')}</DialogTitle>
+                <DialogDescription className="text-slate-400 text-xs font-bold uppercase tracking-wider">
                   {t('scoping:simulation.basisDescription', { filename: activeSnapshot?.filename })}
                 </DialogDescription>
               </DialogHeader>
@@ -276,10 +275,10 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
           <AnimatePresence initial={false}>
             {!isSidebarCollapsed && (
               <motion.div
-                initial={{ width: 0, opacity: 0, x: -50 }}
+                initial={{ width: 0, opacity: 0, x: -30 }}
                 animate={{ width: 300, opacity: 1, x: 0 }}
-                exit={{ width: 0, opacity: 0, x: -50 }}
-                transition={{ duration: 0.3, ease: "easeInOut" }}
+                exit={{ width: 0, opacity: 0, x: -30 }}
+                transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
                 className="shrink-0 space-y-6 overflow-hidden"
               >
                 <MaterialityParamsCard 
@@ -293,20 +292,19 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
                   onCollapse={() => setIsSidebarCollapsed(true)}
                 />
 
-                <Card className="relative group overflow-hidden bg-amber-50 border-amber-100 shadow-sm w-[300px] p-5">
-                   <div className="absolute top-0 right-0 w-20 h-20 bg-amber-200/20 rounded-full -mr-10 -mt-10" />
-                   <h3 className="text-[10px] uppercase font-bold text-amber-800 tracking-widest flex items-center gap-2 mb-3">
-                     <AlertTriangle className="h-3.5 w-3.5" /> {t('logic.title')}
+                <Card className="relative overflow-hidden bg-slate-50 border-slate-200 shadow-sm w-[300px] p-5 ring-1 ring-slate-100">
+                   <h3 className="text-[10px] uppercase font-black text-slate-800 tracking-widest flex items-center gap-2 mb-4">
+                     <AlertTriangle className="h-3.5 w-3.5 text-amber-500" /> {t('logic.title')}
                    </h3>
-                   <div className="text-[11px] text-amber-900 leading-relaxed space-y-3 font-medium">
+                   <div className="text-[11px] text-slate-600 leading-relaxed space-y-4 font-medium">
                     <p>{t('logic.description')}</p>
-                    <ol className="space-y-2">
-                      <li className="flex gap-2">
-                        <Badge variant="outline" className="h-4 w-4 p-0 flex items-center justify-center rounded-full bg-amber-100 border-amber-300 text-amber-800 text-[10px]">1</Badge>
+                    <ol className="space-y-3">
+                      <li className="flex gap-3">
+                        <Badge className="h-4 w-4 p-0 flex items-center justify-center rounded-full bg-slate-900 border-none text-white text-[9px] font-black">1</Badge>
                         <span>{t('logic.quant')}</span>
                       </li>
-                      <li className="flex gap-2">
-                        <Badge variant="outline" className="h-4 w-4 p-0 flex items-center justify-center rounded-full bg-amber-100 border-amber-300 text-amber-800 text-[10px]">2</Badge>
+                      <li className="flex gap-3">
+                        <Badge className="h-4 w-4 p-0 flex items-center justify-center rounded-full bg-slate-900 border-none text-white text-[9px] font-black">2</Badge>
                         <span>{t('logic.qual')}</span>
                       </li>
                     </ol>

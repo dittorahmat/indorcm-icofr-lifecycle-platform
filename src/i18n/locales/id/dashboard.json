@@ -55,5 +55,18 @@
     "new": "BARU",
     "report": "LAPORAN",
     "principles": "17 PRINSIP"
+  },
+  "charts": {
+    "controlsByProcess": {
+      "title": "Kontrol per Proses",
+      "description": "Jumlah kontrol yang didefinisikan untuk setiap proses bisnis utama."
+    },
+    "deficienciesBySeverity": {
+      "title": "Temuan berdasarkan Keparahan",
+      "description": "Rincian seluruh temuan defisiensi yang masih terbuka."
+    },
+    "noData": "Data tidak tersedia",
+    "noDeficiencies": "Tidak ada temuan dilaporkan",
+    "controls": "Kontrol"
   }
 }

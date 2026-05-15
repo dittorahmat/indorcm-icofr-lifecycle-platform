@@ -285,10 +285,79 @@ rcm.post('/rcm-matrix/:type/batch-update', rbac(['Line 2', 'Admin']), async (c) 
   try {
     for (const item of items) {
       if (!item.mappingId) continue;
-      await db.update(rcmControls).set(item).where(and(eq(rcmControls.id, item.mappingId), eq(rcmControls.organizationId, orgId)));
+
+      // 1. Update Risk Data (rcms table)
+      if (item.riskDescription !== undefined || item.riskRating !== undefined || item.isFraudRelated !== undefined) {
+        // Find the RCM ID from the mapping
+        const mapping = await db.select({ rcmId: rcmControls.rcmId })
+          .from(rcmControls)
+          .where(and(eq(rcmControls.id, item.mappingId), eq(rcmControls.organizationId, orgId)))
+          .then((rows: any[]) => rows[0]);
+
+        if (mapping?.rcmId) {
+          const riskUpdate: any = {};
+          if (item.riskDescription !== undefined) riskUpdate.riskDescription = item.riskDescription;
+          if (item.riskRating !== undefined) riskUpdate.riskRating = item.riskRating;
+          if (item.isFraudRelated !== undefined) riskUpdate.isFraudRelated = item.isFraudRelated;
+
+          console.log(`[RCM UPDATE] Updating Risk ${mapping.rcmId}:`, JSON.stringify(riskUpdate));
+          await db.update(rcms)
+            .set(riskUpdate)
+            .where(and(eq(rcms.id, mapping.rcmId), eq(rcms.organizationId, orgId)));
+        } else {
+          console.warn(`[RCM UPDATE] Mapping ${item.mappingId} not found or no associated RCM.`);
+        }
+      }
+
+      // 2. Update Control Mapping Data (rcm_controls table)
+      const mappingUpdate: any = {};
+      const controlFieldsMap: Record<string, string> = {
+        'controlName': 'controlName',
+        'controlDescription': 'controlDescription',
+        'supportingDocs': 'supportingDocs',
+        'isKeyControl': 'isKeyControl',
+        'controlType': 'controlType',
+        'controlNature': 'controlNature',
+        'frequency': 'frequency',
+        'supportingApp': 'supportingApp',
+        'applicationId': 'applicationId',
+        'executingFunction': 'executingFunction',
+        'executorRole': 'executorRole',
+        'affectedFsliItem': 'affectedFsliItem',
+        'effectivePeriod': 'effectivePeriod',
+        'ipoC': 'ipoC',
+        'ipoA': 'ipoA',
+        'ipoV': 'ipoV',
+        'ipoRa': 'ipoRa',
+        'assertionE': 'assertionE',
+        'assertionC': 'assertionC',
+        'assertionA': 'assertionA',
+        'assertionCo': 'assertionCo',
+        'assertionVa': 'assertionVa',
+        'assertionRo': 'assertionRo',
+        'assertionPd': 'assertionPd',
+        'itgcDomain': 'itgcDomain',
+        'automatedSubNature': 'automatedControlType', // Map frontend field to backend column
+        'automatedControlType': 'automatedControlType'
+      };
+
+      for (const [feKey, beKey] of Object.entries(controlFieldsMap)) {
+        if (item[feKey] !== undefined) {
+          mappingUpdate[beKey] = item[feKey];
+        }
+      }
+
+      if (Object.keys(mappingUpdate).length > 0) {
+        console.log(`[RCM UPDATE] Updating Mapping ${item.mappingId}:`, JSON.stringify(mappingUpdate));
+        await db.update(rcmControls)
+          .set(mappingUpdate)
+          .where(and(eq(rcmControls.id, item.mappingId), eq(rcmControls.organizationId, orgId)));
+      }
     }
+
     return ok(c, { success: true });
   } catch (e: any) {
+    console.error(`[RCM UPDATE ERROR] ${e.message}`, e.stack);
     return bad(c, `Batch update failed: ${e.message}`);
   }
 });

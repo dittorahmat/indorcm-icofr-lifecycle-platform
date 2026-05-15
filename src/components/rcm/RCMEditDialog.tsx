@@ -25,6 +25,7 @@ import { Info, ShieldAlert, CheckCircle2 } from 'lucide-react';
 
 const formSchema = z.object({
   // Identity
+  id: z.string().optional(),
   mappingId: z.string(),
   processName: z.string().nullable().optional(),
   subProcessName: z.string().nullable().optional(),
@@ -86,6 +87,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      id: '',
       mappingId: '',
       isFraudRelated: false,
       isKeyControl: false,
@@ -106,21 +108,23 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
   // Reset form when data changes
   React.useEffect(() => {
     if (data && open) {
+      const parseBool = (val: any) => val === 'Y' || val === true || val === 'true';
+
       form.reset({
         ...data,
-        isFraudRelated: !!data.isFraudRelated,
-        isKeyControl: !!data.isKeyControl,
-        ipoC: !!data.ipoC,
-        ipoA: !!data.ipoA,
-        ipoV: !!data.ipoV,
-        ipoRa: !!data.ipoRa,
-        assertionE: !!data.assertionE,
-        assertionC: !!data.assertionC,
-        assertionA: !!data.assertionA,
-        assertionCo: !!data.assertionCo,
-        assertionVa: !!data.assertionVa,
-        assertionRo: !!data.assertionRo,
-        assertionPd: !!data.assertionPd,
+        isFraudRelated: parseBool(data.isFraudRelated),
+        isKeyControl: parseBool(data.isKeyControl),
+        ipoC: parseBool(data.ipoC),
+        ipoA: parseBool(data.ipoA),
+        ipoV: parseBool(data.ipoV),
+        ipoRa: parseBool(data.ipoRa),
+        assertionE: parseBool(data.assertionE),
+        assertionC: parseBool(data.assertionC),
+        assertionA: parseBool(data.assertionA),
+        assertionCo: parseBool(data.assertionCo),
+        assertionVa: parseBool(data.assertionVa),
+        assertionRo: parseBool(data.assertionRo),
+        assertionPd: parseBool(data.assertionPd),
       });
     }
   }, [data, open, form]);

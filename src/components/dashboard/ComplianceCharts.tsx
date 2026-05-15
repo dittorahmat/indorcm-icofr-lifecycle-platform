@@ -3,13 +3,15 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pi
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BarChart3, PieChart as PieChartIcon } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
+// High-end Corporate Navy/Slate Palette
 const COLORS = [
+  '#0f172a', // Slate 900 (Navy)
   '#4f46e5', // Indigo 600
-  '#0ea5e9', // Sky 500
   '#10b981', // Emerald 500
   '#f59e0b', // Amber 500
-  '#ef4444', // Red 500
+  '#e11d48', // Rose 600
 ];
 
 interface ComplianceChartsProps {
@@ -21,14 +23,16 @@ interface ComplianceChartsProps {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white p-3 border border-slate-200 shadow-xl rounded-lg">
-        <p className="text-xs font-bold text-slate-900 mb-1">{label}</p>
-        <div className="flex items-center gap-2">
-          <div className="h-2 w-2 rounded-full" style={{ backgroundColor: payload[0].fill }} />
-          <p className="text-xs font-medium text-slate-600">
-            {payload[0].name}: <span className="font-bold text-slate-900">{payload[0].value}</span>
-          </p>
-        </div>
+      <div className="bg-white p-3 border-none shadow-2xl rounded-xl ring-1 ring-slate-200">
+        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">{label}</p>
+        {payload.map((item: any, i: number) => (
+          <div key={i} className="flex items-center gap-2">
+            <div className="h-2 w-2 rounded-full" style={{ backgroundColor: item.fill || item.color }} />
+            <p className="text-xs font-bold text-slate-900">
+              {item.name}: <span className="font-display font-extrabold ml-1">{item.value}</span>
+            </p>
+          </div>
+        ))}
       </div>
     );
   }
@@ -36,6 +40,8 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export function ComplianceCharts({ rcmData, deficiencyBySeverity, isLoading }: ComplianceChartsProps) {
+  const { t } = useTranslation('dashboard');
+  
   const barData = React.useMemo(() => {
     return (rcmData?.items || []).map((r: any) => ({ 
       name: r.process, 
@@ -43,47 +49,56 @@ export function ComplianceCharts({ rcmData, deficiencyBySeverity, isLoading }: C
     }));
   }, [rcmData]);
 
+  const totalDeficiencies = React.useMemo(() => {
+    if (!deficiencyBySeverity) return 0;
+    return deficiencyBySeverity.reduce((acc: number, curr: any) => acc + curr.value, 0);
+  }, [deficiencyBySeverity]);
+
   return (
     <div className="grid gap-8 lg:grid-cols-3">
-      <Card className="lg:col-span-2 border-slate-200 shadow-sm overflow-hidden">
-        <CardHeader className="bg-slate-50/50 border-b py-4 px-6">
+      {/* BAR CHART: CONTROLS BY PROCESS */}
+      <Card className="lg:col-span-2 border-slate-200 shadow-sm overflow-hidden bg-white">
+        <CardHeader className="bg-slate-50/50 border-b py-5 px-6">
           <div className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4 text-indigo-600" />
-            <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-900">Controls by Process</CardTitle>
+            <BarChart3 className="h-4 w-4 text-slate-900" />
+            <CardTitle className="text-xs font-bold uppercase tracking-[0.2em] text-slate-900">{t('charts.controlsByProcess.title')}</CardTitle>
           </div>
-          <CardDescription className="text-[11px] font-medium text-slate-500">Number of controls defined for each major process.</CardDescription>
+          <CardDescription className="text-[11px] font-medium text-slate-500 mt-1">{t('charts.controlsByProcess.description')}</CardDescription>
         </CardHeader>
         <CardContent className="pt-8 px-6 pb-6">
           <div className="h-[300px] w-full">
             {isLoading ? <Skeleton className="h-full w-full rounded-xl" /> : barData.length === 0 ? (
-              <div className="h-full flex items-center justify-center text-slate-400 text-xs font-medium">No data available</div>
+              <div className="h-full flex items-center justify-center text-slate-400 text-[10px] font-bold uppercase tracking-widest">{t('charts.noData')}</div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={barData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#f1f5f9" />
                   <XAxis 
                     dataKey="name" 
                     stroke="#94a3b8" 
-                    fontSize={10} 
-                    fontWeight={600}
+                    fontSize={9} 
+                    fontWeight={800}
                     tickLine={false} 
                     axisLine={false}
-                    dy={10}
+                    dy={12}
+                    textAnchor="middle"
                   />
                   <YAxis 
                     stroke="#94a3b8" 
-                    fontSize={10} 
-                    fontWeight={600}
+                    fontSize={9} 
+                    fontWeight={800}
                     tickLine={false} 
                     axisLine={false} 
                   />
-                  <Tooltip content={<CustomTooltip />} cursor={{ fill: '#f8fafc' }} />
+                  <Tooltip content={<CustomTooltip />} cursor={{ fill: '#f8fafc', radius: 4 }} />
                   <Bar 
                     dataKey="controls" 
-                    name="Controls"
-                    fill="#6366f1" 
-                    radius={[6, 6, 0, 0]} 
-                    barSize={40}
+                    name={t('charts.controls')}
+                    fill="#0f172a" 
+                    radius={[4, 4, 0, 0]} 
+                    barSize={32}
+                    animationDuration={1500}
+                    animationEasing="ease-out"
                   />
                 </BarChart>
               </ResponsiveContainer>
@@ -92,48 +107,63 @@ export function ComplianceCharts({ rcmData, deficiencyBySeverity, isLoading }: C
         </CardContent>
       </Card>
 
-      <Card className="border-slate-200 shadow-sm overflow-hidden">
-        <CardHeader className="bg-slate-50/50 border-b py-4 px-6">
+      {/* PIE CHART: DEFICIENCIES */}
+      <Card className="border-slate-200 shadow-sm overflow-hidden bg-white">
+        <CardHeader className="bg-slate-50/50 border-b py-5 px-6">
           <div className="flex items-center gap-2">
             <PieChartIcon className="h-4 w-4 text-rose-600" />
-            <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-900">Deficiencies by Severity</CardTitle>
+            <CardTitle className="text-xs font-bold uppercase tracking-[0.2em] text-slate-900">{t('charts.deficienciesBySeverity.title')}</CardTitle>
           </div>
-          <CardDescription className="text-[11px] font-medium text-slate-500">Breakdown of all open deficiencies.</CardDescription>
+          <CardDescription className="text-[11px] font-medium text-slate-500 mt-1">{t('charts.deficienciesBySeverity.description')}</CardDescription>
         </CardHeader>
         <CardContent className="pt-8 px-6 pb-6">
-          <div className="h-[300px] w-full flex flex-col items-center justify-center">
-            {isLoading ? <Skeleton className="h-full w-full rounded-full max-w-[200px] max-h-[200px]" /> : (!deficiencyBySeverity || deficiencyBySeverity.length === 0) ? (
-              <div className="h-full flex items-center justify-center text-slate-400 text-xs font-medium">No deficiencies reported</div>
+          <div className="h-[300px] w-full flex flex-col items-center justify-center relative">
+            {isLoading ? (
+              <div className="relative h-48 w-48 rounded-full border-8 border-slate-100 border-t-slate-900 animate-spin" />
+            ) : (!deficiencyBySeverity || deficiencyBySeverity.length === 0) ? (
+              <div className="h-full flex items-center justify-center text-slate-400 text-[10px] font-bold uppercase tracking-widest">{t('charts.noDeficiencies')}</div>
             ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie 
-                    data={deficiencyBySeverity} 
-                    dataKey="value" 
-                    nameKey="name" 
-                    cx="50%" 
-                    cy="50%" 
-                    innerRadius={60}
-                    outerRadius={85} 
-                    paddingAngle={5}
-                    stroke="none"
-                  >
-                    {deficiencyBySeverity.map((_entry: any, index: number) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip content={<CustomTooltip />} />
-                </PieChart>
-              </ResponsiveContainer>
+              <>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie 
+                      data={deficiencyBySeverity} 
+                      dataKey="value" 
+                      nameKey="name" 
+                      cx="50%" 
+                      cy="50%" 
+                      innerRadius={70}
+                      outerRadius={95} 
+                      paddingAngle={4}
+                      stroke="none"
+                      animationBegin={200}
+                      animationDuration={1200}
+                    >
+                      {deficiencyBySeverity.map((_entry: any, index: number) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip content={<CustomTooltip />} />
+                  </PieChart>
+                </ResponsiveContainer>
+                
+                {/* Center Total Text */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-4">
+                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('badges.new')}</span>
+                   <span className="text-4xl font-display font-extrabold text-slate-900 leading-none">{totalDeficiencies}</span>
+                </div>
+              </>
             )}
             
             {!isLoading && deficiencyBySeverity && deficiencyBySeverity.length > 0 && (
-              <div className="mt-4 grid grid-cols-2 gap-3 w-full">
+              <div className="mt-6 space-y-2.5 w-full border-t border-slate-100 pt-5">
                 {deficiencyBySeverity.map((entry: any, index: number) => (
-                  <div key={entry.name} className="flex items-center gap-2">
-                    <div className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
-                    <span className="text-[10px] font-bold text-slate-600 uppercase tracking-tight">{entry.name}</span>
-                    <span className="text-[10px] font-bold text-slate-900 ml-auto">{entry.value}</span>
+                  <div key={entry.name} className="flex items-center justify-between group">
+                    <div className="flex items-center gap-2.5">
+                      <div className="h-2 w-2 rounded-full transition-transform group-hover:scale-125" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight group-hover:text-slate-900 transition-colors">{entry.name}</span>
+                    </div>
+                    <span className="text-xs font-display font-extrabold text-slate-900 bg-slate-50 px-2 py-0.5 rounded group-hover:bg-slate-900 group-hover:text-white transition-all">{entry.value}</span>
                   </div>
                 ))}
               </div>

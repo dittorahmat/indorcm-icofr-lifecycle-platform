@@ -32,10 +32,21 @@ export function RCMELCPage({ embedded = false }: { embedded?: boolean }) {
   });
 
   const saveMutation = useMutation({
-    mutationFn: (values: any) => api(`/api/controls/${values.id}`, {
-      method: 'PATCH',
-      body: JSON.stringify(values)
-    }),
+    mutationFn: (values: any) => {
+      // Reverse mapping: standardized UI names -> backend DB names
+      const dbValues = {
+        ...values,
+        name: values.mappedControlName,
+        description: values.mappedControlDescription,
+      };
+      
+      const targetId = values.mappingId || values.id;
+      
+      return api(`/api/controls/${targetId}`, {
+        method: 'PUT',
+        body: JSON.stringify(dbValues)
+      });
+    },
     onSuccess: () => {
       toast.success(t('rcm:matrix.save_success'));
       queryClient.invalidateQueries({ queryKey: ['controls-elc'] });
