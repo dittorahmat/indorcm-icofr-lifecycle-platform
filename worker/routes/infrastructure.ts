@@ -60,7 +60,11 @@ infrastructure.post('/vendors', async (c) => {
   const body = await c.req.json<any>();
   const id = crypto.randomUUID();
   await db.insert(vendors).values({
-    id, organizationId: orgId, name: body.name, serviceType: body.serviceType, riskRating: body.riskRating || 'Medium'
+    id, 
+    organizationId: orgId, 
+    name: body.name, 
+    serviceType: body.serviceType, 
+    contactPerson: body.contactPerson
   });
   return ok(c, { id });
 });
@@ -76,9 +80,21 @@ infrastructure.post('/soc-reports', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const body = await c.req.json<any>();
+  
+  // Get vendor name for denormalization
+  const [vendor] = await db.select().from(vendors).where(eq(vendors.id, body.vendorId));
+  
   const id = crypto.randomUUID();
   await db.insert(socReports).values({
-    id, organizationId: orgId, vendorId: body.vendorId, reportType: body.reportType, period: body.period, status: 'Pending Review'
+    id, 
+    organizationId: orgId, 
+    vendorId: body.vendorId, 
+    vendorName: vendor?.name || 'Unknown',
+    reportType: body.reportType, 
+    periodStart: new Date(body.periodStart),
+    periodEnd: new Date(body.periodEnd),
+    fileUrl: body.fileUrl,
+    status: 'Pending Review'
   });
   return ok(c, { id });
 });

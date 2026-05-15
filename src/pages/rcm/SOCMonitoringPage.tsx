@@ -52,15 +52,17 @@ export function SOCMonitoringPage() {
     }
   });
 
-  const { data: socData, isLoading: isLoadingSOC } = useQuery({
+  const { data: socResponse, isLoading: isLoadingSOC } = useQuery({
     queryKey: ['soc-reports'],
-    queryFn: () => api<SOCReport[]>('/api/soc-reports'),
+    queryFn: () => api<{ items: SOCReport[] }>('/api/soc-reports'),
   });
+  const socData = socResponse?.items || [];
 
-  const { data: vendors } = useQuery({
+  const { data: vendorsData } = useQuery({
     queryKey: ['vendors'],
-    queryFn: () => api<Vendor[]>('/api/vendors'),
+    queryFn: () => api<{ items: Vendor[] }>('/api/vendors'),
   });
+  const vendors = vendorsData?.items || [];
 
   const validReportsCount = socData?.filter(s => s.status === 'Valid').length || 0;
   const expiredReportsCount = socData?.filter(s => s.status === 'Expired').length || 0;

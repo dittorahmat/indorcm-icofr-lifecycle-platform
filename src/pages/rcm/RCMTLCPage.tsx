@@ -127,7 +127,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId }: RCMTLCPageProps) {
           className: 'font-bold text-slate-800',
           render: (row) => (
             <div className="flex flex-col gap-0 leading-tight">
-              <span className="uppercase tracking-tighter text-indigo-600 text-xs font-black">
+              <span className="uppercase tracking-widest text-slate-900 text-xs font-black">
                 {row.fsliName} {row.bpmCode && `[${row.bpmCode}]`}
               </span>
               <span className="line-clamp-2 text-xs">{row.noGL} - {row.processName}</span>

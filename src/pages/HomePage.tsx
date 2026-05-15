@@ -4,21 +4,20 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { motion } from 'framer-motion';
 const StatCard = ({ icon, title, value }: { icon: React.ReactNode; title: string; value: string }) => (
-  <Card className="bg-background/50 backdrop-blur-sm">
+  <Card className="bg-card">
     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-      <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+      <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground">{title}</CardTitle>
       {icon}
     </CardHeader>
     <CardContent>
-      <div className="text-2xl font-bold">{value}</div>
+      <div className="text-3xl font-display font-black tracking-tight">{value}</div>
     </CardContent>
   </Card>
 );
 export function HomePage() {
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground">
-      <div className="absolute inset-0 -z-10 h-full w-full bg-background bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]">
-        <div className="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-primary/10 opacity-20 blur-[100px]"></div>
+    <div className="min-h-screen flex flex-col bg-slate-50 text-foreground">
+      <div className="absolute inset-0 -z-10 h-full w-full bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:24px_24px] opacity-40">
       </div>
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -28,14 +27,14 @@ export function HomePage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <div className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-sm font-medium mb-4">
-                <Shield className="h-4 w-4 mr-2 text-primary" />
+              <div className="inline-flex items-center rounded-full bg-slate-900 px-3 py-1 text-xs font-bold uppercase tracking-widest text-white mb-6 shadow-md shadow-slate-200">
+                <Shield className="h-4 w-4 mr-2" />
                 Compliance with SK-5/DKU.MBU/11/2024
               </div>
-              <h1 className="text-5xl md:text-7xl font-display font-bold text-balance leading-tight bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/70">
-                Enterprise ICOFR Lifecycle Platform for BUMN
+              <h1 className="text-5xl md:text-7xl font-display font-black tracking-tight text-slate-900 leading-[1.1]">
+                Enterprise ICOFR <br/>Lifecycle Platform
               </h1>
-              <p className="mt-6 max-w-2xl mx-auto text-lg md:text-xl text-muted-foreground text-pretty">
+              <p className="mt-8 max-w-2xl mx-auto text-lg md:text-xl text-slate-600 font-medium leading-relaxed">
                 IndoGRC Pro digitizes the internal control over financial reporting lifecycle—from planning and scoping to management assessment and audit reporting.
               </p>
               <div className="mt-10 flex justify-center gap-4">

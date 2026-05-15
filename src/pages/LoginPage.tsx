@@ -74,15 +74,15 @@ export function LoginPage() {
         transition={{ duration: 0.4 }}
         className="w-full max-w-md px-4"
       >
-        <Card className="border-slate-200 shadow-xl bg-white/80 backdrop-blur-sm">
+        <Card className="border-slate-200 shadow-lg bg-white">
           <CardHeader className="space-y-1 text-center pb-8 pt-10">
             <div className="flex justify-center mb-6">
-              <div className="h-16 w-16 bg-slate-900 rounded-2xl flex items-center justify-center shadow-lg shadow-slate-200">
+              <div className="h-16 w-16 bg-slate-900 rounded-xl flex items-center justify-center shadow-md shadow-slate-200">
                 <Shield className="h-8 w-8 text-white" />
               </div>
             </div>
             <CardTitle className="text-3xl font-display font-extrabold tracking-tight text-slate-900">IndoGRC Pro</CardTitle>
-            <CardDescription className="text-sm font-semibold text-slate-500 uppercase tracking-widest mt-2">
+            <CardDescription className="text-xs font-bold text-slate-500 uppercase tracking-wider mt-2">
               {t('subtitle')}
             </CardDescription>
           </CardHeader>

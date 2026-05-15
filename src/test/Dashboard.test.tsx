@@ -33,20 +33,26 @@ vi.mock('@/components/layout/PageHeader', () => ({
 }));
 
 // Mock Lucide icons to avoid rendering complexity
-vi.mock('lucide-react', () => ({
-  CheckCircle: () => <span>CheckCircle</span>,
-  AlertTriangle: () => <span>AlertTriangle</span>,
-  Clock: () => <span>Clock</span>,
-  ShieldCheck: () => <span>ShieldCheck</span>,
-  Zap: () => <span>Zap</span>,
-  ClipboardCheck: () => <span>ClipboardCheck</span>,
-  FileText: () => <span>FileText</span>,
-  LayoutDashboard: () => <span>LayoutDashboard</span>,
-  ChevronRight: () => <span>ChevronRight</span>,
-  Target: () => <span>Target</span>,
-  ShieldAlert: () => <span>ShieldAlert</span>,
-  TrendingUp: () => <span>TrendingUp</span>,
-}));
+vi.mock('lucide-react', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('lucide-react')>();
+  return {
+    ...actual,
+    CheckCircle: () => <span>CheckCircle</span>,
+    AlertTriangle: () => <span>AlertTriangle</span>,
+    Clock: () => <span>Clock</span>,
+    ShieldCheck: () => <span>ShieldCheck</span>,
+    Zap: () => <span>Zap</span>,
+    ClipboardCheck: () => <span>ClipboardCheck</span>,
+    FileText: () => <span>FileText</span>,
+    LayoutDashboard: () => <span>LayoutDashboard</span>,
+    ChevronRight: () => <span>ChevronRight</span>,
+    Target: () => <span>Target</span>,
+    ShieldAlert: () => <span>ShieldAlert</span>,
+    TrendingUp: () => <span>TrendingUp</span>,
+    Activity: () => <span>Activity</span>,
+    ArrowUpRight: () => <span>ArrowUpRight</span>,
+  };
+});
 
 const queryClient = new QueryClient({
   defaultOptions: {

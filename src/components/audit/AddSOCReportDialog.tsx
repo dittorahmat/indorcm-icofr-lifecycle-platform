@@ -24,10 +24,11 @@ export function AddSOCReportDialog({ isOpen, onOpenChange }: AddSOCReportDialogP
     fileUrl: '',
   });
 
-  const { data: vendors } = useQuery({
+  const { data: vendorsData } = useQuery({
     queryKey: ['vendors'],
-    queryFn: () => api<Vendor[]>('/api/vendors'),
+    queryFn: () => api<{ items: Vendor[] }>('/api/vendors'),
   });
+  const vendors = vendorsData?.items || [];
 
   const mutation = useMutation({
     mutationFn: (data: typeof formData) => api('/api/soc-reports', {
