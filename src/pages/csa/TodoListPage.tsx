@@ -47,6 +47,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { BPMModal } from '@/components/bpm/BPMModal';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -393,6 +394,116 @@ export function TodoListPage() {
             scheduleId={selectedHubProcess.scheduleId}
           />
         )}
+        
+        <Dialog open={isDialogOpen} onOpenChange={(open) => {
+          if (!open && isDirty) {
+            if (confirm(t('common:unsavedChanges.description'))) {
+              setIsDialogOpen(false);
+              resetForm();
+            }
+          } else {
+            setIsDialogOpen(open);
+            if (!open) resetForm();
+          }
+        }}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{isEditMode ? t('csa_hub:actions.execute') : t('csa_hub:scheduling.newEvent')}</DialogTitle>
+              <DialogDescription>{t('csa_hub:scheduling.description')}</DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label>{t('csa_hub:scheduling.activityType')}</Label>
+                <Select value={formData.type} onValueChange={(v) => updateFormData({ type: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="CSA">{t('csa_hub:scheduling.types.csa')}</SelectItem>
+                    <SelectItem value="TOD">{t('csa_hub:scheduling.types.tod')}</SelectItem>
+                    <SelectItem value="TOE">{t('csa_hub:scheduling.types.toe')}</SelectItem>
+                    <SelectItem value="REMEDIATION">{t('csa_hub:scheduling.types.remediation')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label>{t('csa_hub:scheduling.subProcess')}</Label>
+                <Select value={formData.bpmProcessId} onValueChange={(v) => updateFormData({ bpmProcessId: v })}>
+                  <SelectTrigger><SelectValue placeholder={t('common:placeholders.select') || "Select"} /></SelectTrigger>
+                  <SelectContent>
+                    {processes?.items.map(p => (
+                      <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label>{t('csa_hub:scheduling.targetDate')}</Label>
+                <Input type="date" value={formData.plannedDate} onChange={(e) => updateFormData({ plannedDate: e.target.value })} />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>{t('common:actions.cancel')}</Button>
+              <Button onClick={handleCreate}>{t('csa_hub:scheduling.save')}</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Reschedule Dialog */}
+        <Dialog open={isRescheduleOpen} onOpenChange={(open) => {
+          if (!open && isRescheduleDirty) {
+            if (confirm(t('common:unsavedChanges.description'))) {
+              setIsRescheduleOpen(false);
+              setIsRescheduleDirty(false);
+            }
+            return;
+          }
+          setIsRescheduleOpen(open);
+        }}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>{t('csa_hub:scheduling.reschedule.title')}</DialogTitle>
+              <DialogDescription>{t('csa_hub:scheduling.reschedule.description')}</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label>{t('csa_hub:scheduling.reschedule.newDate')}</Label>
+                <Input
+                  type="date"
+                  value={rescheduleData.newDate}
+                  onChange={e => {
+                    setRescheduleData(prev => ({ ...prev, newDate: e.target.value }));
+                    setIsRescheduleDirty(true);
+                  }}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>{t('csa_hub:scheduling.reschedule.justification')} <span className="text-red-500">*</span></Label>
+                <textarea
+                  className="w-full min-h-[100px] p-3 border rounded-md text-sm focus:ring-2 focus:ring-indigo-500"
+                  placeholder={t('csa_hub:scheduling.reschedule.placeholder')}
+                  value={rescheduleData.justification}
+                  onChange={e => {
+                    setRescheduleData(prev => ({ ...prev, justification: e.target.value }));
+                    setIsRescheduleDirty(true);
+                  }}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsRescheduleOpen(false)}>{t('common:actions.cancel')}</Button>
+              <Button
+                disabled={!rescheduleData.justification.trim() || !rescheduleData.newDate}
+                onClick={() => {
+                  toast.success(t('rcm:matrix.save_success'));
+                  setIsRescheduleOpen(false);
+                  setIsRescheduleDirty(false);
+                }}
+              >
+                {t('csa_hub:scheduling.reschedule.save')}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         <UnsavedChangesDialog blocker={blocker} />
       </div>
     </AppLayout>
