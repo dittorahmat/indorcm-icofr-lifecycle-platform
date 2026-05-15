@@ -484,6 +484,19 @@ export const actionPlans = pgTable("action_plans", {
 	rescheduleReason: text("reschedule_reason"),
 });
 
+export const wbsReports = pgTable("wbs_reports", {
+	id: text("id").primaryKey(),
+	organizationId: text("organization_id").notNull().references(() => organization.id),
+	reportDate: timestamp("report_date").notNull(),
+	category: text("category").notNull(), // Financial Reporting, Corruption, etc.
+	description: text("description").notNull(),
+	impactMagnitude: doublePrecision("impact_magnitude"),
+	status: text("status").notNull(), // Investigating, Confirmed, Closed
+	isFinancialImpact: boolean("is_financial_impact").default(false),
+	relatedDepartmentId: text("related_department_id"),
+	createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const notifications = pgTable("notifications", {
 	id: text("id").primaryKey(),
 	organizationId: text("organization_id").notNull().references(() => organization.id),

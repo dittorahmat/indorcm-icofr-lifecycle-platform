@@ -130,38 +130,46 @@ export function AppSidebar(): JSX.Element {
   const { toggleChat } = useAIChatStore();
 
   return (
-    <Sidebar variant="sidebar" collapsible="icon" className="w-64 border-r border-sidebar-border">
-      <SidebarContent className="pt-4">
+    <Sidebar variant="sidebar" collapsible="icon" className="w-64 border-r border-sidebar-border bg-sidebar">
+      <SidebarHeader className="h-16 flex items-center px-6 border-b border-sidebar-border/50">
+        <div className="flex items-center gap-3">
+          <div className="h-8 w-8 rounded bg-white flex items-center justify-center shadow-sm">
+             <Shield className="h-5 w-5 text-sidebar-background" />
+          </div>
+          <span className="font-display font-extrabold text-white tracking-tight text-sm truncate group-data-[collapsible=icon]:hidden">IndoGRC Pro</span>
+        </div>
+      </SidebarHeader>
+      <SidebarContent className="py-4">
         {/* MASTER */}
         <SidebarGroup className="py-2">
-          <SidebarGroupLabel className="font-bold text-slate-500 uppercase text-[11px] tracking-wider h-8 px-4">
+          <SidebarGroupLabel className="font-bold text-slate-400 uppercase text-[10px] tracking-[0.2em] h-8 px-6 mb-1">
             {t('groups.mainTasks')}
           </SidebarGroupLabel>
-          <SidebarMenu className="px-3">
+          <SidebarMenu className="px-3 gap-1">
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/dashboard")} className="h-10 text-sm" title={t('items.dashboard')}>
-                <Link to="/dashboard" className="font-medium"><LayoutDashboard className="h-4 w-4" /> <span>{t('items.dashboard')}</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/dashboard")} className="h-9 px-3 rounded-md transition-all hover:bg-white/5 active:scale-[0.98]" title={t('items.dashboard')}>
+                <Link to="/dashboard" className="font-semibold text-xs"><LayoutDashboard className="h-4 w-4" /> <span>{t('items.dashboard')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/scoping")} className="h-10 text-sm" title={t('items.scoping')}>
-                <Link to="/scoping" className="font-medium"><Target className="h-4 w-4" /> <span>{t('items.scoping')}</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/scoping")} className="h-9 px-3 rounded-md transition-all hover:bg-white/5 active:scale-[0.98]" title={t('items.scoping')}>
+                <Link to="/scoping" className="font-semibold text-xs"><Target className="h-4 w-4" /> <span>{t('items.scoping')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/bpm")} className="h-10 text-sm" title={t('items.bpm')}>
-                <Link to="/bpm" className="font-medium"><Workflow className="h-4 w-4" /> <span>{t('items.bpm')}</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/bpm")} className="h-9 px-3 rounded-md transition-all hover:bg-white/5 active:scale-[0.98]" title={t('items.bpm')}>
+                <Link to="/bpm" className="font-semibold text-xs"><Workflow className="h-4 w-4" /> <span>{t('items.bpm')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/todo")} className="h-10 text-sm" title={t('items.todo')}>
-                <Link to="/todo" className="font-medium"><ListTodo className="h-4 w-4" /> <span>{t('items.todo')}</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/todo")} className="h-9 px-3 rounded-md transition-all hover:bg-white/5 active:scale-[0.98]" title={t('items.todo')}>
+                <Link to="/todo" className="font-semibold text-xs"><ListTodo className="h-4 w-4" /> <span>{t('items.todo')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             {(userRole === 'Komisaris' || userRole === 'CFO' || userRole === 'Line 2' || userRole === 'Admin') && (
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive("/scoping/approval")} className="h-10 text-sm">
-                  <Link to="/scoping/approval" className="flex items-center justify-between w-full font-medium">
+                <SidebarMenuButton asChild isActive={isActive("/scoping/approval")} className="h-9 px-3 rounded-md transition-all hover:bg-white/5 active:scale-[0.98]">
+                  <Link to="/scoping/approval" className="flex items-center justify-between w-full font-semibold text-xs">
                     <div className="flex items-center gap-2">
                       <ShieldCheck className="h-4 w-4" /> <span>{t('items.approval')}</span>
                     </div>
@@ -171,8 +179,8 @@ export function AppSidebar(): JSX.Element {
               </SidebarMenuItem>
             )}
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/applications")} className="h-10 text-sm" title={t('items.applications')}>
-                <Link to="/applications" className="font-medium"><Cpu className="h-4 w-4" /> <span>{t('items.applications')}</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/applications")} className="h-9 px-3 rounded-md transition-all hover:bg-white/5 active:scale-[0.98]" title={t('items.applications')}>
+                <Link to="/applications" className="font-semibold text-xs"><Cpu className="h-4 w-4" /> <span>{t('items.applications')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -180,38 +188,38 @@ export function AppSidebar(): JSX.Element {
 
         {/* Report */}
         <SidebarGroup className="py-2">
-          <SidebarGroupLabel className="font-bold text-slate-500 uppercase text-[11px] tracking-wider h-8 px-4">
+          <SidebarGroupLabel className="font-bold text-slate-400 uppercase text-[10px] tracking-[0.2em] h-8 px-6 mb-1">
             {t('groups.reportingRcm')}
           </SidebarGroupLabel>
-          <SidebarMenu className="px-3">
+          <SidebarMenu className="px-3 gap-1">
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/rcm/elc")} className="h-10 text-sm">
-                <Link to="/rcm/elc" className="font-medium"><Shield className="h-4 w-4" /> <span>{t('items.rcmElc')}</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/rcm/elc")} className="h-9 px-3 rounded-md transition-all hover:bg-white/5 active:scale-[0.98]">
+                <Link to="/rcm/elc" className="font-semibold text-xs"><Shield className="h-4 w-4" /> <span>{t('items.rcmElc')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/rcm/tlc")} className="h-10 text-sm">
-                <Link to="/rcm/tlc" className="font-medium"><ListChecks className="h-4 w-4" /> <span>{t('items.rcmTlc')}</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/rcm/tlc")} className="h-9 px-3 rounded-md transition-all hover:bg-white/5 active:scale-[0.98]">
+                <Link to="/rcm/tlc" className="font-semibold text-xs"><ListChecks className="h-4 w-4" /> <span>{t('items.rcmTlc')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/rcm/itgc")} className="h-10 text-sm">
-                <Link to="/rcm/itgc" className="font-medium"><Database className="h-4 w-4" /> <span>{t('items.rcmItgc')}</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/rcm/itgc")} className="h-9 px-3 rounded-md transition-all hover:bg-white/5 active:scale-[0.98]">
+                <Link to="/rcm/itgc" className="font-semibold text-xs"><Database className="h-4 w-4" /> <span>{t('items.rcmItgc')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/csa")} className="h-10 text-sm" title={t('items.csaReports')}>
-                <Link to="/csa" className="font-medium"><ClipboardCheck className="h-4 w-4" /> <span>{t('items.csaReports')}</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/csa")} className="h-9 px-3 rounded-md transition-all hover:bg-white/5 active:scale-[0.98]" title={t('items.csaReports')}>
+                <Link to="/csa" className="font-semibold text-xs"><ClipboardCheck className="h-4 w-4" /> <span>{t('items.csaReports')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/wbs-recap")} className="h-10 text-sm">
-                <Link to="/wbs-recap" className="font-medium"><AlertTriangle className="h-4 w-4" /> <span>{t('items.wbs')}</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/wbs-recap")} className="h-9 px-3 rounded-md transition-all hover:bg-white/5 active:scale-[0.98]">
+                <Link to="/wbs-recap" className="font-semibold text-xs"><AlertTriangle className="h-4 w-4" /> <span>{t('items.wbs')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/reports")} className="h-10 text-sm">
-                <Link to="/reports" className="font-medium"><FileBarChart className="h-4 w-4" /> <span>{t('items.app11')}</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/reports")} className="h-9 px-3 rounded-md transition-all hover:bg-white/5 active:scale-[0.98]">
+                <Link to="/reports" className="font-semibold text-xs"><FileBarChart className="h-4 w-4" /> <span>{t('items.app11')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -219,23 +227,23 @@ export function AppSidebar(): JSX.Element {
 
         {/* TOD/TOE */}
         <SidebarGroup className="py-2">
-          <SidebarGroupLabel className="font-bold text-slate-500 uppercase text-[11px] tracking-wider h-8 px-4">
+          <SidebarGroupLabel className="font-bold text-slate-400 uppercase text-[10px] tracking-[0.2em] h-8 px-6 mb-1">
             {t('groups.testing')}
           </SidebarGroupLabel>
-          <SidebarMenu className="px-3">
+          <SidebarMenu className="px-3 gap-1">
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/testing?type=TOD")} className="h-10 text-sm">
-                <Link to="/testing?type=TOD" className="font-medium"><Search className="h-4 w-4" /> <span>{t('items.tod')}</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/testing?type=TOD")} className="h-9 px-3 rounded-md transition-all hover:bg-white/5 active:scale-[0.98]">
+                <Link to="/testing?type=TOD" className="font-semibold text-xs"><Search className="h-4 w-4" /> <span>{t('items.tod')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/testing?type=TOE")} className="h-10 text-sm">
-                <Link to="/testing?type=TOE" className="font-medium"><History className="h-4 w-4" /> <span>{t('items.toe')}</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/testing?type=TOE")} className="h-9 px-3 rounded-md transition-all hover:bg-white/5 active:scale-[0.98]">
+                <Link to="/testing?type=TOE" className="font-semibold text-xs"><History className="h-4 w-4" /> <span>{t('items.toe')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/deficiencies")} className="h-10 text-sm">
-                <Link to="/deficiencies" className="font-medium"><AlertTriangle className="h-4 w-4" /> <span>{t('items.deficiencies')}</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/deficiencies")} className="h-9 px-3 rounded-md transition-all hover:bg-white/5 active:scale-[0.98]">
+                <Link to="/deficiencies" className="font-semibold text-xs"><AlertTriangle className="h-4 w-4" /> <span>{t('items.deficiencies')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -243,19 +251,19 @@ export function AppSidebar(): JSX.Element {
 
         {/* Others */}
         <SidebarGroup className="py-2">
-          <SidebarGroupLabel className="font-bold text-slate-500 uppercase text-[11px] tracking-wider h-8 px-4">
+          <SidebarGroupLabel className="font-bold text-slate-400 uppercase text-[10px] tracking-[0.2em] h-8 px-6 mb-1">
             {t('groups.others')}
           </SidebarGroupLabel>
-          <SidebarMenu className="px-3">
+          <SidebarMenu className="px-3 gap-1">
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/ai-hub")} className="h-10 text-sm">
-                <Link to="/ai-hub" className="font-medium"><BrainCircuit className="h-4 w-4" /> <span>{t('items.aiAnalytics')}</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/ai-hub")} className="h-9 px-3 rounded-md transition-all hover:bg-white/5 active:scale-[0.98]">
+                <Link to="/ai-hub" className="font-semibold text-xs"><BrainCircuit className="h-4 w-4" /> <span>{t('items.aiAnalytics')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton 
                 onClick={toggleChat} 
-                className="h-10 text-sm font-medium"
+                className="h-9 px-3 rounded-md transition-all hover:bg-white/5 active:scale-[0.98] font-semibold text-xs"
                 title={t('items.aiAssistant')}
               >
                 <Bot className="h-4 w-4 text-primary" />
@@ -263,13 +271,13 @@ export function AppSidebar(): JSX.Element {
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/documents")} className="h-10 text-sm">
-                <Link to="/documents" className="font-medium"><FileText className="h-4 w-4" /> <span>{t('items.documents')}</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/documents")} className="h-9 px-3 rounded-md transition-all hover:bg-white/5 active:scale-[0.98]">
+                <Link to="/documents" className="font-semibold text-xs"><FileText className="h-4 w-4" /> <span>{t('items.documents')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/notifications")} className="h-10 text-sm">
-                <Link to="/notifications" className="flex items-center justify-between w-full font-medium">
+              <SidebarMenuButton asChild isActive={isActive("/notifications")} className="h-9 px-3 rounded-md transition-all hover:bg-white/5 active:scale-[0.98]">
+                <Link to="/notifications" className="flex items-center justify-between w-full font-semibold text-xs">
                   <div className="flex items-center gap-2">
                     <BellIcon className="h-4 w-4" /> <span>{t('items.notifications')}</span>
                   </div>
@@ -281,24 +289,24 @@ export function AppSidebar(): JSX.Element {
         </SidebarGroup>
 
         {/* User */}
-        <SidebarGroup className="mt-auto pt-2 pb-6">
-          <SidebarMenu className="px-3">
+        <SidebarGroup className="mt-auto pt-4 pb-6 border-t border-sidebar-border/30">
+          <SidebarMenu className="px-3 gap-1">
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/settings")} className="h-10 text-sm">
-                <Link to="/settings" className="font-medium"><Settings2 className="h-4 w-4" /> <span>{t('items.settings')}</span></Link>
+              <SidebarMenuButton asChild isActive={isActive("/settings")} className="h-9 px-3 rounded-md transition-all hover:bg-white/5 active:scale-[0.98]">
+                <Link to="/settings" className="font-semibold text-xs"><Settings2 className="h-4 w-4" /> <span>{t('items.settings')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             {userRole === 'Admin' && (
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive("/admin/users")} className="h-10 text-sm">
-                  <Link to="/admin/users" className="font-medium"><UserCog className="h-4 w-4" /> <span>{t('items.adminUsers')}</span></Link>
+                <SidebarMenuButton asChild isActive={isActive("/admin/users")} className="h-9 px-3 rounded-md transition-all hover:bg-white/5 active:scale-[0.98]">
+                  <Link to="/admin/users" className="font-semibold text-xs"><UserCog className="h-4 w-4" /> <span>{t('items.adminUsers')}</span></Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             )}
             <SidebarMenuItem>
               <SidebarMenuButton
                 onClick={handleLogout}
-                className="h-10 text-sm text-destructive hover:bg-destructive/5 hover:text-destructive font-medium"
+                className="h-9 px-3 rounded-md text-rose-400 hover:bg-rose-400/10 hover:text-rose-300 transition-all active:scale-[0.98] font-semibold text-xs"
               >
                 <LogOut className="h-4 w-4 shrink-0" />
                 <span>{t('items.logout')}</span>

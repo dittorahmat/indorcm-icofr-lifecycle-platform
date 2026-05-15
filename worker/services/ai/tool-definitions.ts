@@ -135,5 +135,82 @@ export const ICOFR_TOOLS: FunctionDeclaration[] = [
       },
       required: ["planId"]
     }
+  },
+  {
+    name: "get_icofr_executive_summary",
+    description: "Generates a high-level executive summary. Use this to answer questions about overall ICOFR health, materiality thresholds, deficiency counts, and to identify significant accounts that are missing controls.",
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {}
+    }
+  },
+  {
+    name: "check_year_end_readiness",
+    description: "Analyzes if all significant financial accounts have been covered by effective control testing.",
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {}
+    }
+  },
+  {
+    name: "calculate_deficiency_magnitude",
+    description: "Automatically evaluates the quantitative severity of a deficiency by comparing its exposure to the Performance Materiality (PM).",
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        deficiencyId: {
+          type: SchemaType.STRING,
+          description: "The ID of the deficiency to evaluate."
+        }
+      },
+      required: ["deficiencyId"]
+    }
+  },
+  {
+    name: "get_wbs_fraud_indicators",
+    description: "Retrieves whistleblowing reports and fraud indicators relevant to ICOFR risk assessment.",
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        departmentId: {
+          type: SchemaType.STRING,
+          description: "Optional department ID to filter indicators."
+        }
+      }
+    }
+  },
+  {
+    name: "draft_audit_narrative",
+    description: "Assists in drafting professional audit rationales for Ineffective controls or other findings.",
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        contextId: {
+          type: SchemaType.STRING,
+          description: "The ID of the control, test, or deficiency."
+        },
+        type: {
+          type: SchemaType.STRING,
+          description: "The type of narrative (e.g., 'ineffective_rationale', 'homogeneity_justification').",
+          enum: ["ineffective_rationale", "homogeneity_justification"],
+          format: "enum"
+        }
+      },
+      required: ["contextId", "type"]
+    }
+  },
+  {
+    name: "create_csa_schedule",
+    description: "Schedules a new CSA or testing activity. (Requires user confirmation).",
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        processId: { type: SchemaType.STRING, description: "ID of the sub-process." },
+        type: { type: SchemaType.STRING, enum: ["CSA", "TOD", "TOE"], format: "enum" },
+        plannedDate: { type: SchemaType.STRING, description: "Target date (ISO format)." },
+        assignedTo: { type: SchemaType.STRING, description: "User ID to assign the task." }
+      },
+      required: ["processId", "type", "plannedDate"]
+    }
   }
 ];

@@ -14,6 +14,7 @@ export default {
   				'sans-serif'
   			],
   			display: [
+  				'Plus Jakarta Sans',
   				'Inter',
   				'system-ui',
   				'sans-serif'

@@ -37,6 +37,7 @@ export function AIChatDrawer({ isOpen, onClose }: AIChatDrawerProps) {
   const [messages, setMessages] = React.useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
   const [conversationId, setConversationId] = React.useState<string | null>(null);
+  const [pendingAction, setPendingAction] = React.useState<any | null>(null);
   const location = useLocation();
 
   // Load chat history from localStorage on mount
@@ -107,17 +108,20 @@ export function AIChatDrawer({ isOpen, onClose }: AIChatDrawerProps) {
     }
   };
 
-  const handleSend = async (content: string) => {
+  const handleSend = async (content: string, actionConfirmation?: any) => {
+    if (!content.trim() && !actionConfirmation) return;
+
     const userMessage: ChatMessage = {
       id: crypto.randomUUID(),
       role: 'user',
-      content,
+      content: content || (actionConfirmation ? "Konfirmasi aksi" : ""),
       timestamp: Date.now(),
     };
 
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
     setIsLoading(true);
+    setPendingAction(null); // Clear pending action when sending a new message
 
     try {
       // Get conversation history for context (last 10 messages)
@@ -126,7 +130,7 @@ export function AIChatDrawer({ isOpen, onClose }: AIChatDrawerProps) {
         content: msg.content,
       }));
 
-      const response = await api<{ response: string }>('/api/ai/chat', {
+      const response = await api<{ response: string; pendingAction?: any }>('/api/ai/chat', {
         method: 'POST',
         body: JSON.stringify({
           message: content,
@@ -134,7 +138,8 @@ export function AIChatDrawer({ isOpen, onClose }: AIChatDrawerProps) {
           context: {
             path: location.pathname,
             timestamp: new Date().toISOString()
-          }
+          },
+          actionConfirmation
         }),
       });
 
@@ -144,6 +149,10 @@ export function AIChatDrawer({ isOpen, onClose }: AIChatDrawerProps) {
         content: response.response,
         timestamp: Date.now(),
       };
+
+      if (response.pendingAction) {
+        setPendingAction(response.pendingAction);
+      }
 
       const finalMessages = [...newMessages, aiMessage];
       setMessages(finalMessages);
@@ -161,6 +170,11 @@ export function AIChatDrawer({ isOpen, onClose }: AIChatDrawerProps) {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleConfirmAction = () => {
+    if (!pendingAction) return;
+    handleSend("Ya, setuju. Lanjutkan.", pendingAction);
   };
 
   const handleClearHistory = () => {
@@ -208,6 +222,33 @@ export function AIChatDrawer({ isOpen, onClose }: AIChatDrawerProps) {
         
         <div className="flex-1 overflow-hidden flex flex-col relative">
           <ChatMessageList messages={messages} isLoading={isLoading} />
+          
+          {pendingAction && (
+            <div className="absolute bottom-4 left-0 right-0 px-4 animate-in fade-in slide-in-from-bottom-2">
+              <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 flex flex-col gap-3 backdrop-blur-sm shadow-lg">
+                <p className="text-sm font-medium text-primary flex items-center gap-2">
+                  <Bot className="h-4 w-4" /> Konfirmasi Aksi
+                </p>
+                <div className="flex gap-2">
+                  <Button 
+                    size="sm" 
+                    className="flex-1" 
+                    onClick={handleConfirmAction}
+                  >
+                    Setuju & Jalankan
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="flex-1" 
+                    onClick={() => setPendingAction(null)}
+                  >
+                    Batal
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="p-4 border-t bg-background">

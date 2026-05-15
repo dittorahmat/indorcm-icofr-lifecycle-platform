@@ -8,8 +8,10 @@ import {
   csaSchedules, 
   testRecords, 
   actionPlans,
-  bpmProcesses
+  bpmProcesses,
+  csaRecords
 } from "../../db/schema";
+import { StrategicAnalystService } from "./strategic-analyst-service";
 
 export interface ToolContext {
   db: DrizzleDb;
@@ -20,6 +22,48 @@ export interface ToolContext {
 }
 
 export const AIToolExecutor = {
+  // --- Strategic Analyst Tools ---
+  async get_icofr_executive_summary(ctx: ToolContext) {
+    return await StrategicAnalystService.getExecutiveSummary(ctx);
+  },
+
+  async check_year_end_readiness(ctx: ToolContext) {
+    return await StrategicAnalystService.checkYearEndReadiness(ctx);
+  },
+
+  async calculate_deficiency_magnitude(ctx: ToolContext, args: { deficiencyId: string }) {
+    return await StrategicAnalystService.calculateDeficiencyMagnitude(ctx, args.deficiencyId);
+  },
+
+  async get_wbs_fraud_indicators(ctx: ToolContext, args: { departmentId?: string }) {
+    return await StrategicAnalystService.getWBSIndicators(ctx, args.departmentId);
+  },
+
+  async draft_audit_narrative(ctx: ToolContext, args: { contextId: string, type: string }) {
+    const db = ctx.db;
+    // This tool primarily gathers context data for the LLM to use in narrative generation
+    if (args.type === 'ineffective_rationale') {
+      const def = await db.select().from(testRecords).where(eq(testRecords.id, args.contextId)).limit(1);
+      return { 
+        type: "INEFFECTIVE_RATIONALE_CONTEXT",
+        findings: def[0]?.comments || "No comments found",
+        period: def[0]?.period,
+        testType: def[0]?.testType
+      };
+    } else if (args.type === 'homogeneity_justification') {
+      const ctrl = await db.select().from(controls).where(eq(controls.id, args.contextId)).limit(1);
+      return {
+        type: "HOMOGENEITY_JUSTIFICATION_CONTEXT",
+        controlName: ctrl[0]?.name,
+        nature: ctrl[0]?.nature,
+        frequency: ctrl[0]?.frequency,
+        standardProcedure: ctrl[0]?.description
+      };
+    }
+    return { error: "Unsupported narrative type" };
+  },
+
+  // --- Operational Tools ---
   async get_rcm_mapping(ctx: ToolContext, args: any) {
     const { subProcess, riskRating, isFraudRelated } = args;
     
@@ -217,5 +261,31 @@ export const AIToolExecutor = {
     if (plan.length === 0) return { error: "Action plan not found." };
 
     return plan[0];
+  },
+
+  async create_csa_schedule(ctx: ToolContext, args: any) {
+    const { processId, type, plannedDate, assignedTo } = args;
+    
+    // Safety check: only Admin/Line 2 can schedule for others
+    if (ctx.role !== 'Admin' && ctx.role !== 'Line 2' && assignedTo !== ctx.userId) {
+      return { error: "Permission denied. You can only schedule tasks for yourself." };
+    }
+
+    // In a real agentic flow, we would return a PENDING status first
+    // For this POC/MVP, we'll return the intent which the backend loop can handle
+    return {
+      requiresConfirmation: true,
+      action: "CREATE_SCHEDULE",
+      data: {
+        id: crypto.randomUUID(),
+        organizationId: ctx.orgId,
+        bpmProcessId: processId,
+        type,
+        plannedDate: new Date(plannedDate),
+        assignedTo: assignedTo || ctx.userId,
+        status: "Not Started"
+      },
+      message: `Saya akan membuat jadwal ${type} untuk sub-proses tersebut pada tanggal ${new Date(plannedDate).toLocaleDateString()}. Apakah Anda setuju?`
+    };
   }
 };

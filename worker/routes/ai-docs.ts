@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import type { HonoEnv } from '../app';
 import { ok, bad, notFound } from '../lib/utils';
 import { getDb } from '../db';
-import { documents, documentDepartments, documentGls, documentFslis, user, documentChunks } from '../db/schema';
+import { documents, documentDepartments, documentGls, documentFslis, user, documentChunks, csaSchedules } from '../db/schema';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { getDocumentProxy, extractText } from "unpdf";
 import { GoogleGenerativeAI } from "@google/generative-ai";
@@ -217,6 +217,16 @@ aiDocsApp.post('/ai/chat', async (c) => {
   const now = Date.now();
   const dayMs = 86400000;
 
+  // Handle direct action confirmation (Agentic Action)
+  if ((body as any).actionConfirmation) {
+    const { action, data } = (body as any).actionConfirmation;
+    const db = getDb(c.env.DATABASE_URL);
+    if (action === 'CREATE_SCHEDULE') {
+      await db.insert(csaSchedules).values(data);
+      return ok(c, { success: true, message: "Jadwal berhasil dibuat." });
+    }
+  }
+
   let rateLimitData = rateLimitStore.get(clientId);
   if (!rateLimitData || now > rateLimitData.resetDate) {
     rateLimitData = { count: 0, resetDate: now + dayMs };
@@ -259,21 +269,25 @@ aiDocsApp.post('/ai/chat', async (c) => {
     const model = genAI.getGenerativeModel({
       model: "gemini-2.5-flash-lite",
       tools: [{ functionDeclarations: ICOFR_TOOLS }],
-      systemInstruction: `Anda adalah Asisten AI & Spesialis Produk IndoGRC Pro. Tugas Anda adalah membantu pengguna memahami regulasi (SK-5) dan cara penggunaan aplikasi IndoGRC Pro.
+      systemInstruction: `Anda adalah Asisten AI & Analis Strategis IndoGRC Pro. Tugas Anda adalah membantu pengguna memahami regulasi (SK-5), cara penggunaan aplikasi, serta melakukan analisis data ICOFR lintas modul.
 
 Waktu saat ini: ${context?.timestamp || new Date().toISOString()}
 User: ${c.get('userId')} (Role: ${role}, Dept: ${userDeptId})
 Halaman saat ini: ${context?.path || 'Dashboard'}
 
-Anda memiliki akses ke data live aplikasi melalui fungsi-fungsi yang disediakan. Gunakan fungsi tersebut jika pertanyaan memerlukan data spesifik seperti task, jadwal, hasil test, atau rincian kontrol.
+Anda memiliki akses ke data live aplikasi melalui fungsi-fungsi yang disediakan. 
+
+STRATEGI ANALISIS:
+1. Top-Down Analysis: Jika ditanya tentang risiko, hubungkan akun signifikan (Scoping) dengan status pengujian (Testing).
+2. Quantitative Severity: Gunakan tool 'calculate_deficiency_magnitude' untuk menilai temuan secara objektif berdasarkan PM.
+3. Narrative Assistance: Bantu user menyusun narasi audit yang profesional untuk temuan Ineffective atau justifikasi sampling.
+4. Agentic Action: Anda dapat menjadwalkan CSA atau pengetesan. Tindakan ini memerlukan konfirmasi manual dari pengguna.
+
 Jika memanggil fungsi, gunakan data yang dikembalikan untuk merangkai jawaban. Sertakan link jika data menyertakan ID (format link: /modul/detail/ID).
 
-Strategi Jawaban:
-1. Operasional: Gunakan Tools untuk menjawab status data live.
-2. Panduan Penggunaan: Gunakan Knowledge Base untuk menjawab cara menggunakan fitur aplikasi (berdasarkan USAGE_GUIDE).
-3. Regulasi: Gunakan Knowledge Base untuk menjawab pertanyaan seputar kepatuhan SK-5.
-
-Jawablah dengan akurat, sopan, dan profesional. Jika dokumen menyebutkan nomor pasal atau bab, sertakan dalam jawaban.
+PENTING:
+- Jika role user adalah 'Line 1', Anda dilarang memberikan angka detil Materialitas (OM/PM). Katakan bahwa data tersebut bersifat konfidensial untuk Lini 1.
+- Setiap narasi yang Anda buat harus ditandai sebagai 'DRAFT' dan disarankan untuk direviu ulang oleh user.
 
 Bahasa: Bahasa Indonesia
 
@@ -292,6 +306,7 @@ ${knowledgeBase}
 
     let result = await chat.sendMessage(message);
     let response = await result.response;
+    let pendingAction = null;
     
     // Multi-turn tool execution loop (Max 3 turns for safety)
     let turns = 0;
@@ -312,6 +327,12 @@ ${knowledgeBase}
           const toolMethod = (AIToolExecutor as any)[call.name];
           if (toolMethod) {
             const toolOutput = await toolMethod(toolContext, call.args);
+            
+            // Capture agentic confirmation intent
+            if (toolOutput?.requiresConfirmation) {
+              pendingAction = toolOutput;
+            }
+
             functionResponses.push({
               functionResponse: {
                 name: call.name,
@@ -345,7 +366,8 @@ ${knowledgeBase}
 
     return ok(c, {
       response: responseText,
-      sources: sources
+      sources: sources,
+      pendingAction: pendingAction
     });
 
   } catch (error: any) {
