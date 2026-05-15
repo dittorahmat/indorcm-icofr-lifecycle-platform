@@ -30,3 +30,11 @@ The system SHALL retrieve and display controls in the CSA Assessment and Workshe
 - **THEN** it SHALL include controls associated with names like "Penerimaan Setoran Tunai" or "PENERIMAAN SETORAN TUNAI"
 - **AND** it SHALL prioritize matching by `bpmProcessId` if available, using the name match as a robust fallback
 
+### Requirement: AI-Enabled CSA Inquiries
+The system SHALL allow users to query the status, schedules, and evidence of CSA activities via the AI Assistant.
+
+#### Scenario: Querying overdue CSA via AI
+- **WHEN** user asks "What CSA tasks are overdue?"
+- **THEN** the AI SHALL call the relevant tool to retrieve past-due `csa_schedules` assigned to the user
+- **AND** provide a summarized list with links to the execution pages
+

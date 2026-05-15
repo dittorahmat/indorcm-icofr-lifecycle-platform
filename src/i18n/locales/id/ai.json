@@ -1,0 +1,13 @@
+{
+  "drawerTitle": "Asisten AI ICOFR",
+  "inputPlaceholder": "Tanyakan sesuatu tentang ICOFR...",
+  "disclaimer": "AI dapat memberikan informasi yang tidak akurat. Selalu verifikasi regulasi resmi.",
+  "clearHistory": "Hapus riwayat chat",
+  "clearHistorySuccess": "Riwayat chat dihapus",
+  "clearHistoryError": "Gagal menghapus riwayat",
+  "sendError": "Gagal mengirim pesan",
+  "defaultErrorMessage": "Maaf, terjadi kesalahan. Silakan coba lagi.",
+  "thinking": "AI sedang berpikir...",
+  "welcomeMessage": "Halo! Saya Asisten AI ICOFR.",
+  "welcomeSubtitle": "Tanyakan sesuatu tentang ICOFR"
+}

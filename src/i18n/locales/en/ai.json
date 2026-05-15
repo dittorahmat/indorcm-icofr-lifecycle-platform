@@ -1,0 +1,13 @@
+{
+  "drawerTitle": "ICOFR AI Assistant",
+  "inputPlaceholder": "Ask anything about ICOFR...",
+  "disclaimer": "AI can provide inaccurate information. Always verify with official regulations.",
+  "clearHistory": "Clear chat history",
+  "clearHistorySuccess": "Chat history cleared",
+  "clearHistoryError": "Failed to clear history",
+  "sendError": "Failed to send message",
+  "defaultErrorMessage": "Sorry, an error occurred. Please try again.",
+  "thinking": "AI is thinking...",
+  "welcomeMessage": "Hello! I am your ICOFR AI Assistant.",
+  "welcomeSubtitle": "Ask anything about ICOFR"
+}

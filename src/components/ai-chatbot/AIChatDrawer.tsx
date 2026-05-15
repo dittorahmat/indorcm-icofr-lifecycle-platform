@@ -13,6 +13,8 @@ import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { useLocation } from 'react-router-dom';
 
+import { useTranslation } from 'react-i18next';
+
 interface AIChatDrawerProps {
   isOpen: boolean;
   onClose: () => void;
@@ -31,6 +33,7 @@ interface ChatHistory {
 }
 
 export function AIChatDrawer({ isOpen, onClose }: AIChatDrawerProps) {
+  const { t } = useTranslation('ai');
   const [messages, setMessages] = React.useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
   const [conversationId, setConversationId] = React.useState<string | null>(null);
@@ -150,11 +153,11 @@ export function AIChatDrawer({ isOpen, onClose }: AIChatDrawerProps) {
       const errorMessage: ChatMessage = {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: error.message || 'Maaf, terjadi kesalahan. Silakan coba lagi.',
+        content: error.message || t('defaultErrorMessage'),
         timestamp: Date.now(),
       };
       setMessages([...newMessages, errorMessage]);
-      toast.error('Gagal mengirim pesan');
+      toast.error(t('sendError'));
     } finally {
       setIsLoading(false);
     }
@@ -165,10 +168,10 @@ export function AIChatDrawer({ isOpen, onClose }: AIChatDrawerProps) {
       localStorage.removeItem(STORAGE_KEY);
       setMessages([]);
       setConversationId(null);
-      toast.success('Riwayat chat dihapus');
+      toast.success(t('clearHistorySuccess'));
     } catch (error) {
       console.error('Failed to clear history:', error);
-      toast.error('Gagal menghapus riwayat');
+      toast.error(t('clearHistoryError'));
     }
   };
 
@@ -187,7 +190,7 @@ export function AIChatDrawer({ isOpen, onClose }: AIChatDrawerProps) {
                 <Bot className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <SheetTitle className="text-left">Asisten AI ICOFR</SheetTitle>
+                <SheetTitle className="text-left">{t('drawerTitle')}</SheetTitle>
               </div>
             </div>
             <Button
@@ -195,7 +198,7 @@ export function AIChatDrawer({ isOpen, onClose }: AIChatDrawerProps) {
               size="icon"
               onClick={handleClearHistory}
               disabled={messages.length === 0}
-              title="Hapus riwayat chat"
+              title={t('clearHistory')}
               className="h-8 w-8 text-muted-foreground hover:text-destructive"
             >
               <Trash2 className="h-4 w-4" />
@@ -211,10 +214,10 @@ export function AIChatDrawer({ isOpen, onClose }: AIChatDrawerProps) {
           <ChatInput
             onSend={handleSend}
             disabled={isLoading}
-            placeholder="Tanyakan sesuatu tentang ICOFR..."
+            placeholder={t('inputPlaceholder')}
           />
           <p className="mt-2 text-xs text-center text-muted-foreground italic">
-            AI dapat memberikan informasi yang tidak akurat. Selalu verifikasi regulasi resmi.
+            {t('disclaimer')}
           </p>
         </div>
       </SheetContent>

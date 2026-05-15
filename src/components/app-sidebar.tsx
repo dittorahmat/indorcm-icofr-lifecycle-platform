@@ -62,6 +62,7 @@ import { LanguageSwitcher } from "./LanguageSwitcher";
 import { NotificationBell } from "./layout/NotificationBell";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
+import { useAIChatStore } from "@/context/ai-chat-store";
 
 function PendingApprovalBadge({ role }: { role: string | null | undefined }) {
   const { data: simulations } = useQuery({
@@ -125,6 +126,8 @@ export function AppSidebar(): JSX.Element {
     await authClient.signOut();
     navigate("/");
   };
+
+  const { toggleChat } = useAIChatStore();
 
   return (
     <Sidebar variant="sidebar" collapsible="icon" className="w-64 border-r border-sidebar-border">
@@ -247,6 +250,16 @@ export function AppSidebar(): JSX.Element {
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/ai-hub")} className="h-10 text-sm">
                 <Link to="/ai-hub" className="font-medium"><BrainCircuit className="h-4 w-4" /> <span>{t('items.aiAnalytics')}</span></Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton 
+                onClick={toggleChat} 
+                className="h-10 text-sm font-medium"
+                title={t('items.aiAssistant')}
+              >
+                <Bot className="h-4 w-4 text-primary" />
+                <span>{t('items.aiAssistant')}</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>

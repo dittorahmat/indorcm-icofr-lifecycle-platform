@@ -4,9 +4,10 @@ import { MainHeader } from "@/components/layout/MainHeader";
 import { AIFabButton, AIChatDrawer } from "@/components/ai-chatbot";
 import { LicenseBanner, LicenseModal } from "@/components/LicenseNotifications";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { useAIChatStore } from "@/context/ai-chat-store";
 
 export function RootLayout(): JSX.Element {
-  const [isChatOpen, setIsChatOpen] = React.useState(false);
+  const { isChatOpen, setIsChatOpen, toggleChat } = useAIChatStore();
 
   return (
     <SidebarProvider className="min-h-screen flex flex-col bg-background text-foreground">
@@ -18,7 +19,7 @@ export function RootLayout(): JSX.Element {
 
       <LicenseModal />
       {/* Global AI Chatbot */}
-      <AIFabButton isOpen={isChatOpen} onToggle={() => setIsChatOpen(!isChatOpen)} />
+      <AIFabButton isOpen={isChatOpen} onToggle={toggleChat} />
       <AIChatDrawer isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
     </SidebarProvider>
   );

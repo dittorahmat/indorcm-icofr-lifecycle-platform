@@ -9,6 +9,9 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { ICOFR_KNOWLEDGE_BASE } from '../knowledge-base';
 import { AIService } from '../services/ai-service';
 
+import { ICOFR_TOOLS } from '../services/ai/tool-definitions';
+import { AIToolExecutor, ToolContext } from '../services/ai/tool-executor';
+
 const aiDocsApp = new Hono<HonoEnv>();
 
 const rateLimitStore = new Map<string, { count: number; resetDate: number }>();
@@ -255,14 +258,22 @@ aiDocsApp.post('/ai/chat', async (c) => {
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
       model: "gemini-2.5-flash-lite",
-      systemInstruction: `Anda adalah Asisten AI ICOFR yang membantu pengguna memahami regulasi Pengendalian Internal atas Pelaporan Keuangan (ICOFR) berdasarkan dokumen perusahaan dan regulasi pemerintah.
+      tools: [{ functionDeclarations: ICOFR_TOOLS }],
+      systemInstruction: `Anda adalah Asisten AI & Spesialis Produk IndoGRC Pro. Tugas Anda adalah membantu pengguna memahami regulasi (SK-5) dan cara penggunaan aplikasi IndoGRC Pro.
 
+Waktu saat ini: ${context?.timestamp || new Date().toISOString()}
+User: ${c.get('userId')} (Role: ${role}, Dept: ${userDeptId})
+Halaman saat ini: ${context?.path || 'Dashboard'}
 
-Jawablah pertanyaan dengan akurat berdasarkan potongan dokumen yang disediakan di bawah ini.
-Jika dokumen menyebutkan nomor pasal atau bab, sertakan dalam jawaban.
-${pageContext}
+Anda memiliki akses ke data live aplikasi melalui fungsi-fungsi yang disediakan. Gunakan fungsi tersebut jika pertanyaan memerlukan data spesifik seperti task, jadwal, hasil test, atau rincian kontrol.
+Jika memanggil fungsi, gunakan data yang dikembalikan untuk merangkai jawaban. Sertakan link jika data menyertakan ID (format link: /modul/detail/ID).
 
-Jika pertanyaan tidak terkait ICOFR atau dokumen yang disediakan, jawab dengan sopan bahwa Anda hanya dapat membantu pertanyaan terkait ICOFR sesuai dokumen yang Anda miliki.
+Strategi Jawaban:
+1. Operasional: Gunakan Tools untuk menjawab status data live.
+2. Panduan Penggunaan: Gunakan Knowledge Base untuk menjawab cara menggunakan fitur aplikasi (berdasarkan USAGE_GUIDE).
+3. Regulasi: Gunakan Knowledge Base untuk menjawab pertanyaan seputar kepatuhan SK-5.
+
+Jawablah dengan akurat, sopan, dan profesional. Jika dokumen menyebutkan nomor pasal atau bab, sertakan dalam jawaban.
 
 Bahasa: Bahasa Indonesia
 
@@ -279,8 +290,57 @@ ${knowledgeBase}
       }))
     });
 
-    const result = await chat.sendMessage(message);
-    const response = await result.response;
+    let result = await chat.sendMessage(message);
+    let response = await result.response;
+    
+    // Multi-turn tool execution loop (Max 3 turns for safety)
+    let turns = 0;
+    while (response.functionCalls()?.length && turns < 3) {
+      const toolCalls = response.functionCalls();
+      const functionResponses = [];
+
+      const toolContext: ToolContext = {
+        db,
+        orgId,
+        userId: c.get('userId'),
+        role,
+        departmentId: userDeptId
+      };
+
+      for (const call of toolCalls!) {
+        try {
+          const toolMethod = (AIToolExecutor as any)[call.name];
+          if (toolMethod) {
+            const toolOutput = await toolMethod(toolContext, call.args);
+            functionResponses.push({
+              functionResponse: {
+                name: call.name,
+                response: { content: toolOutput }
+              }
+            });
+          } else {
+            functionResponses.push({
+              functionResponse: {
+                name: call.name,
+                response: { error: `Tool ${call.name} not found.` }
+              }
+            });
+          }
+        } catch (err: any) {
+          functionResponses.push({
+            functionResponse: {
+              name: call.name,
+              response: { error: err.message }
+            }
+          });
+        }
+      }
+
+      result = await chat.sendMessage(functionResponses);
+      response = await result.response;
+      turns++;
+    }
+
     const responseText = response.text();
 
     return ok(c, {
