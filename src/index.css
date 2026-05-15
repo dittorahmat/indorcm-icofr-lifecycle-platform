@@ -33,14 +33,16 @@
     --chart-5: 222 47% 11%;
     --radius: 0.375rem;
     
-    /* BUMN Blue Branding for Sidebar */
-    --sidebar-background: 222 47% 11%;
+    /* Royal Blue Theme for Sidebar & Header */
+    --primary: 224 76% 40%; /* Royal Blue approx #1e40af in HSL */
+    --primary-foreground: 210 40% 98%;
+    --sidebar-background: 224 76% 40%;
     --sidebar-foreground: 210 40% 98%;
     --sidebar-primary: 217 91% 60%;
     --sidebar-primary-foreground: 210 40% 98%;
-    --sidebar-accent: 222 47% 15%;
+    --sidebar-accent: 224 76% 48%;
     --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 222 47% 15%;
+    --sidebar-border: 224 76% 45%;
     --sidebar-ring: 217 91% 60%;
   }
   

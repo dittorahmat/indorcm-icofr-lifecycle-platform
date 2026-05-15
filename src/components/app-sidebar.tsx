@@ -131,14 +131,6 @@ export function AppSidebar(): JSX.Element {
 
   return (
     <Sidebar variant="sidebar" collapsible="icon" className="w-64 border-r border-sidebar-border bg-sidebar">
-      <SidebarHeader className="h-16 flex items-center px-6 border-b border-sidebar-border/50">
-        <div className="flex items-center gap-3">
-          <div className="h-8 w-8 rounded bg-white flex items-center justify-center shadow-sm">
-             <Shield className="h-5 w-5 text-sidebar-background" />
-          </div>
-          <span className="font-display font-extrabold text-white tracking-tight text-sm truncate group-data-[collapsible=icon]:hidden">IndoGRC Pro</span>
-        </div>
-      </SidebarHeader>
       <SidebarContent className="py-4">
         {/* MASTER */}
         <SidebarGroup className="py-2">
