@@ -50,14 +50,14 @@ export function RCMTable({
 
   return (
     <TooltipProvider>
-      <div className="w-full border-t border-b bg-white border-slate-300 overflow-auto flex-1 custom-scrollbar">
+      <div className="w-full border-t border-b bg-white border-slate-300 overflow-auto flex-1 custom-scrollbar min-h-0 relative">
         <table 
           className="table-fixed border-separate border-spacing-0 mb-10 w-full"
           style={{ minWidth }}
         >
-          <thead className="sticky top-0 z-50">
+          <thead className="sticky top-0 z-30">
             {/* Level 1 Header: Groups */}
-            <tr className="h-10 bg-slate-800 text-white shadow-md">
+            <tr className="h-10 bg-slate-800 text-white shadow-md sticky top-0 z-30">
               {groups.map((group, gIdx) => (
                 <th 
                   key={`group-${gIdx}`}
@@ -65,7 +65,7 @@ export function RCMTable({
                   className={cn(
                     "text-center font-black uppercase text-xs tracking-widest border-r border-slate-700/50 py-2 px-2",
                     group.className,
-                    group.columns[0]?.sticky === 'left' && "sticky left-0 z-[70] bg-slate-900 shadow-[2px_0_5px_rgba(0,0,0,0.2)]"
+                    group.columns[0]?.sticky === 'left' && "sticky left-0 z-[40] bg-slate-900 shadow-[2px_0_5px_rgba(0,0,0,0.2)]"
                   )}
                   style={group.columns[0]?.sticky === 'left' ? { left: group.columns[0].stickyOffset || '0px' } : undefined}
                 >
@@ -75,7 +75,7 @@ export function RCMTable({
             </tr>
 
             {/* Level 2 Header: Columns */}
-            <tr className="h-12 bg-slate-100/95 backdrop-blur-md border-b-2 border-slate-300">
+            <tr className="h-12 bg-slate-100/95 backdrop-blur-md border-b-2 border-slate-300 sticky top-10 z-20">
               {allColumns.map((col, cIdx) => (
                 <th 
                   key={`col-${col.id}-${cIdx}`}

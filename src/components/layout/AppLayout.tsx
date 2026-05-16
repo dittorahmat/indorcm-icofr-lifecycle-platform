@@ -37,9 +37,9 @@ export function AppLayout({ children, container = false, className, contentClass
       }>
         <AppSidebar />
       </Suspense>
-      <SidebarInset className={cn("flex flex-col min-h-0 min-w-0 bg-background", className)}>
+      <SidebarInset className={cn("flex flex-col min-h-0 min-w-0 bg-background overflow-hidden", className)}>
         <div className={cn(
-          "flex-1 flex flex-col min-w-0",
+          "flex-1 flex flex-col min-h-0 min-w-0 overflow-y-auto custom-scrollbar",
           container && "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8",
           contentClassName
         )}>

@@ -35,7 +35,7 @@ export function MainHeader() {
 
   return (
     <header className={cn(
-      "sticky top-0 z-40 w-full border-b transition-colors duration-300",
+      "sticky top-0 z-[100] w-full border-b transition-colors duration-300",
       isDark
         ? "bg-slate-950 border-slate-800 text-slate-50"
         : "bg-primary border-primary/10 text-primary-foreground"
