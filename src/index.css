@@ -93,46 +93,82 @@
   }
 }
 
-@layer components {
+@layer utilities {
   /* Clean, Solid Button System */
   .btn {
     @apply inline-flex items-center justify-center px-4 py-2 text-sm font-semibold transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50;
   }
-  
+
   .btn-primary {
     @apply btn bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm active:scale-[0.98];
   }
-  
+
   /* Remove Gradients and AI Slop */
   .bg-primary-solid {
     @apply bg-primary text-primary-foreground;
   }
-  
+
   /* Text System - No Gradients */
   .text-pretty {
     text-wrap: pretty;
   }
-  
+
   /* Remove Glass Morphism for solid Professionalism */
   .card-formal {
     @apply bg-card border border-border shadow-sm rounded-md;
   }
-  
+
   /* Layout Utilities */
   .center {
     @apply flex items-center justify-center;
   }
-  
+
   .center-col {
     @apply flex flex-col items-center justify-center;
   }
-  
+
   /* Responsive Typography - Netral & Authoritative */
   .text-display {
     @apply text-3xl sm:text-4xl md:text-5xl font-display font-extrabold tracking-tight leading-none;
   }
-  
+
   .text-body {
     @apply text-base text-muted-foreground leading-relaxed;
+  }
+
+  /* On-Hover Scrollbar Utility */
+  .scrollbar-hover {
+    @apply overflow-auto;
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+    transition: scrollbar-color 0.3s ease;
+  }
+
+  .scrollbar-hover:hover {
+    scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
+  }
+
+  .scrollbar-hover::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-hover::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-hover::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 10px;
+    transition: background-color 0.3s ease;
+  }
+
+  .scrollbar-hover:hover::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.2);
+  }
+
+  .scrollbar-hover::-webkit-scrollbar-thumb:hover,
+  .scrollbar-hover::-webkit-scrollbar-thumb:active {
+    background: hsl(var(--muted-foreground) / 0.5);
   }
 }

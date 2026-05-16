@@ -50,7 +50,7 @@ export function RCMTable({
 
   return (
     <TooltipProvider>
-      <div className="w-full border-t border-b bg-white border-slate-300 overflow-auto flex-1 custom-scrollbar min-h-0 relative">
+      <div className="w-full border-t border-b bg-white border-slate-300 scrollbar-hover flex-1 min-h-0 relative">
         <table 
           className="table-fixed border-separate border-spacing-0 mb-10 w-full"
           style={{ minWidth }}
