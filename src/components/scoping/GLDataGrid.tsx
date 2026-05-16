@@ -521,11 +521,12 @@ export const GLDataGrid = React.memo(function GLDataGrid({
                         <div className="flex flex-col gap-1 h-full justify-center">
                           {flexRender(header.column.columnDef.header, header.getContext())}
                           {header.column.getCanFilter() ? (
-                            <div className="relative mt-1" onClick={e => e.stopPropagation()}>
+                            <div className="relative mt-1" onClick={e => e.stopPropagation()} onKeyDown={e => e.stopPropagation()}>
                               <Filter className="absolute left-1.5 top-1.5 h-2.5 w-2.5 text-slate-300" />
                               <input
                                 className="w-full pl-5 pr-1 py-1 text-xs font-normal border rounded"
                                 placeholder="Search..."
+                                aria-label={`Filter by ${header.column.columnDef.header?.toString() || 'column'}`}
                                 onChange={e => header.column.setFilterValue(e.target.value)}
                               />
                             </div>

@@ -154,9 +154,9 @@ export function BPMEditor({ diagramId, subProcess, workingYear }: BPMEditorProps
           type: MarkerType.ArrowClosed,
           width: 20,
           height: 20,
-          color: '#1e293b'
+          color: '#0f172a'
         },
-        style: { strokeWidth: 2, stroke: '#1e293b' }
+        style: { strokeWidth: 2, stroke: '#0f172a' }
       })));
     }
   }, [diagram, setNodes, setEdges, localizedInitialNodes]);
@@ -361,7 +361,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear }: BPMEditorProps
                       zoomOnScroll={false}
                       panOnDrag={false}
                    >
-                      <Background variant={BackgroundVariant.Dots} gap={20} color="#f1f5f9" />
+                      <Background variant={BackgroundVariant.Dots} gap={20} color="hsl(var(--muted))" />
                    </ReactFlow>
                 </div>
 
@@ -393,16 +393,16 @@ export function BPMEditor({ diagramId, subProcess, workingYear }: BPMEditorProps
             onConnect={isLocked ? undefined : (params) => setEdges((eds) => addEdge({ 
               ...params, 
               markerEnd: { 
-                type: MarkerType.ArrowClosed, width: 20, height: 20, color: '#1e293b'
+                type: MarkerType.ArrowClosed, width: 20, height: 20, color: '#0f172a'
               },
-              style: { strokeWidth: 2, stroke: '#1e293b' }
+              style: { strokeWidth: 2, stroke: '#0f172a' }
             }, eds))}
             onNodeClick={(_, node) => node.type !== 'risk-control-badge' && setSelectedNodeId(node.id)}
             onPaneClick={() => setSelectedNodeId(null)}
             nodeTypes={nodeTypes}
             fitView
           >
-            <Background gap={16} size={1} color="#cbd5e1" />
+            <Background gap={16} size={1} color="hsl(var(--border))" />
             <Controls />
             <MiniMap />
             

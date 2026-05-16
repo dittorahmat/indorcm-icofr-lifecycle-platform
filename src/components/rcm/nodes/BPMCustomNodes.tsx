@@ -104,7 +104,7 @@ export const ManualInputNode = ({ data, selected, type }: NodeProps) => (
     )}>
       <Handle type="target" position={Position.Top} className="z-10" />
       <svg width="100%" height="100%" viewBox="0 0 160 60" preserveAspectRatio="none">
-        <path d="M0 20 L160 0 L160 60 L0 60 Z" fill="white" stroke="#1e293b" strokeWidth="2" />
+        <path d="M0 20 L160 0 L160 60 L0 60 Z" fill="white" stroke="#0f172a" strokeWidth="2" />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center pt-2">
          <div className="text-xs font-black text-slate-400 uppercase leading-none mb-1">Manual Input</div>
@@ -178,7 +178,7 @@ export const DocumentNode = ({ data, selected, type }: NodeProps) => (
         <path 
           d="M0 0 L130 0 L130 40 Q110 48 97.5 40 T65 40 T32.5 40 T0 40 Z" 
           fill="white" 
-          stroke="#1e293b" 
+          stroke="#0f172a" 
           strokeWidth="2" 
         />
       </svg>
@@ -195,7 +195,7 @@ export const ArchiveNode = ({ data, selected, type }: NodeProps) => (
     <div className={cn("w-16 h-16 relative flex items-center justify-center transition-all", selected && "scale-105")}>
       <Handle type="target" position={Position.Top} className="z-10" />
       <svg width="64" height="64" viewBox="0 0 64 64">
-        <path d="M0 0 L64 0 L32 64 Z" fill="#f8fafc" stroke="#1e293b" strokeWidth="2" />
+        <path d="M0 0 L64 0 L32 64 Z" fill="#f8fafc" stroke="#0f172a" strokeWidth="2" />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center pt-2">
         <GitCommit className="h-4 w-4 text-slate-600 opacity-50" />
@@ -232,7 +232,7 @@ export const OffPageRefNode = ({ data, selected, type }: NodeProps) => (
     <div className={cn("w-14 h-14 relative flex items-center justify-center transition-all", selected && "scale-105")}>
       <Handle type="target" position={Position.Top} className="z-10" />
       <svg width="56" height="56" viewBox="0 0 56 56">
-        <path d="M0 0 L56 0 L56 30 L28 56 L0 30 Z" fill="white" stroke="#1e293b" strokeWidth="2" />
+        <path d="M0 0 L56 0 L56 30 L28 56 L0 30 Z" fill="white" stroke="#0f172a" strokeWidth="2" />
       </svg>
       <div className="absolute inset-0 flex items-center justify-center pb-4">
         <span className="text-xs font-black text-slate-700">{data.label}</span>

@@ -57,11 +57,11 @@ export function ComplianceCharts({ rcmData, deficiencyBySeverity, isLoading }: C
   return (
     <div className="grid gap-8 lg:grid-cols-3">
       {/* BAR CHART: CONTROLS BY PROCESS */}
-      <Card className="lg:col-span-2 border-slate-200 shadow-sm overflow-hidden bg-white">
-        <CardHeader className="bg-slate-50/50 border-b py-5 px-6">
+      <Card className="lg:col-span-2 border-slate-200 shadow-sm overflow-hidden bg-white rounded-xl">
+        <CardHeader className="bg-slate-50 border-b py-5 px-6">
           <div className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4 text-slate-900" />
-            <CardTitle className="text-xs font-bold uppercase tracking-[0.2em] text-slate-900">{t('charts.controlsByProcess.title')}</CardTitle>
+            <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-800">{t('charts.controlsByProcess.title')}</CardTitle>
           </div>
           <CardDescription className="text-[11px] font-medium text-slate-500 mt-1">{t('charts.controlsByProcess.description')}</CardDescription>
         </CardHeader>
@@ -72,10 +72,10 @@ export function ComplianceCharts({ rcmData, deficiencyBySeverity, isLoading }: C
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={barData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#f1f5f9" />
+                  <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="hsl(var(--muted))" />
                   <XAxis 
                     dataKey="name" 
-                    stroke="#94a3b8" 
+                    stroke="hsl(var(--muted-foreground))" 
                     fontSize={9} 
                     fontWeight={800}
                     tickLine={false} 
@@ -84,17 +84,17 @@ export function ComplianceCharts({ rcmData, deficiencyBySeverity, isLoading }: C
                     textAnchor="middle"
                   />
                   <YAxis 
-                    stroke="#94a3b8" 
+                    stroke="hsl(var(--muted-foreground))" 
                     fontSize={9} 
                     fontWeight={800}
                     tickLine={false} 
                     axisLine={false} 
                   />
-                  <Tooltip content={<CustomTooltip />} cursor={{ fill: '#f8fafc', radius: 4 }} />
+                  <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted)/0.3)', radius: 4 }} />
                   <Bar 
                     dataKey="controls" 
                     name={t('charts.controls')}
-                    fill="#0f172a" 
+                    fill="hsl(var(--primary))" 
                     radius={[4, 4, 0, 0]} 
                     barSize={32}
                     animationDuration={1500}
@@ -108,11 +108,11 @@ export function ComplianceCharts({ rcmData, deficiencyBySeverity, isLoading }: C
       </Card>
 
       {/* PIE CHART: DEFICIENCIES */}
-      <Card className="border-slate-200 shadow-sm overflow-hidden bg-white">
-        <CardHeader className="bg-slate-50/50 border-b py-5 px-6">
+      <Card className="border-slate-200 shadow-sm overflow-hidden bg-white rounded-xl">
+        <CardHeader className="bg-slate-50 border-b py-5 px-6">
           <div className="flex items-center gap-2">
             <PieChartIcon className="h-4 w-4 text-rose-600" />
-            <CardTitle className="text-xs font-bold uppercase tracking-[0.2em] text-slate-900">{t('charts.deficienciesBySeverity.title')}</CardTitle>
+            <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-800">{t('charts.deficienciesBySeverity.title')}</CardTitle>
           </div>
           <CardDescription className="text-[11px] font-medium text-slate-500 mt-1">{t('charts.deficienciesBySeverity.description')}</CardDescription>
         </CardHeader>
@@ -149,8 +149,8 @@ export function ComplianceCharts({ rcmData, deficiencyBySeverity, isLoading }: C
                 
                 {/* Center Total Text */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-4">
-                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('badges.new')}</span>
-                   <span className="text-4xl font-display font-extrabold text-slate-900 leading-none">{totalDeficiencies}</span>
+                   <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">{t('badges.new')}</span>
+                   <span className="text-4xl font-display font-black text-slate-900 leading-none">{totalDeficiencies}</span>
                 </div>
               </>
             )}
@@ -161,9 +161,9 @@ export function ComplianceCharts({ rcmData, deficiencyBySeverity, isLoading }: C
                   <div key={entry.name} className="flex items-center justify-between group">
                     <div className="flex items-center gap-2.5">
                       <div className="h-2 w-2 rounded-full transition-transform group-hover:scale-125" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
-                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight group-hover:text-slate-900 transition-colors">{entry.name}</span>
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter group-hover:text-slate-900 transition-colors">{entry.name}</span>
                     </div>
-                    <span className="text-xs font-display font-extrabold text-slate-900 bg-slate-50 px-2 py-0.5 rounded group-hover:bg-slate-900 group-hover:text-white transition-all">{entry.value}</span>
+                    <span className="text-xs font-display font-black text-slate-900 bg-slate-50 px-2 py-0.5 rounded group-hover:bg-slate-900 group-hover:text-white transition-all">{entry.value}</span>
                   </div>
                 ))}
               </div>

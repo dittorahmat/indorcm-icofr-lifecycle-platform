@@ -120,19 +120,21 @@ function AnalyticsTab() {
               <AreaChart data={stockpileData}>
                 <defs>
                   <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#2563eb" stopOpacity={0.1}/>
-                    <stop offset="95%" stopColor="#2563eb" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.1}/>
+                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
                   </linearGradient>
                   <linearGradient id="colorStock" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#10b981" stopOpacity={0.1}/>
                     <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="name" fontSize={10} axisLine={false} tickLine={false} />
-                <YAxis fontSize={10} axisLine={false} tickLine={false} />
-                <Tooltip />
-                <Area type="monotone" dataKey="sales" stroke="#2563eb" fillOpacity={1} fill="url(#colorSales)" strokeWidth={2} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" />
+                <XAxis dataKey="name" fontSize={10} axisLine={false} tickLine={false} stroke="hsl(var(--muted-foreground))" />
+                <YAxis fontSize={10} axisLine={false} tickLine={false} stroke="hsl(var(--muted-foreground))" />
+                <Tooltip 
+                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
+                />
+                <Area type="monotone" dataKey="sales" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorSales)" strokeWidth={2} />
                 <Area type="monotone" dataKey="stockpile" stroke="#10b981" fillOpacity={1} fill="url(#colorStock)" strokeWidth={2} />
               </AreaChart>
             </ResponsiveContainer>
@@ -295,15 +297,15 @@ function AIDrilldownView({ useCase, onBack }: { useCase: any, onBack: () => void
   const mainColorClass = useCase.color.split(' ')[0]; // e.g., "text-red-600"
   
   const colorMap: Record<string, string> = {
-    "text-red-600": "#dc2626",
-    "text-indigo-600": "#4f46e5",
-    "text-amber-600": "#d97706",
-    "text-blue-600": "#2563eb",
-    "text-purple-600": "#9333ea",
-    "text-orange-600": "#ea580c"
+    "text-red-600": "#e11d48", // Rose 600
+    "text-indigo-600": "#4f46e5", // Indigo 600
+    "text-amber-600": "#f59e0b", // Amber 500
+    "text-blue-600": "#2563eb", // Blue 600
+    "text-purple-600": "#9333ea", // Purple 600
+    "text-orange-600": "#ea580c" // Orange 600
   };
 
-  const activeColor = colorMap[mainColorClass] || "#6366f1";
+  const activeColor = colorMap[mainColorClass] || "#4f46e5";
 
   return (
     <motion.div layoutId={`card-${useCase.id}`} className="h-full">
@@ -363,9 +365,9 @@ function AIDrilldownView({ useCase, onBack }: { useCase: any, onBack: () => void
             <ResponsiveContainer width="100%" height="100%">
               {data.chart.type === 'bar' ? (
                 <BarChart data={data.chart.data}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                  <XAxis dataKey={Object.keys(data.chart.data[0])[0]} fontSize={10} axisLine={false} tickLine={false} />
-                  <YAxis fontSize={10} axisLine={false} tickLine={false} />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" />
+                  <XAxis dataKey={Object.keys(data.chart.data[0])[0]} fontSize={10} axisLine={false} tickLine={false} stroke="hsl(var(--muted-foreground))" />
+                  <YAxis fontSize={10} axisLine={false} tickLine={false} stroke="hsl(var(--muted-foreground))" />
                   <Tooltip 
                     contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
                   />
@@ -373,23 +375,23 @@ function AIDrilldownView({ useCase, onBack }: { useCase: any, onBack: () => void
                 </BarChart>
               ) : data.chart.type === 'line' ? (
                 <LineChart data={data.chart.data}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                  <XAxis dataKey={Object.keys(data.chart.data[0])[0]} fontSize={10} axisLine={false} tickLine={false} />
-                  <YAxis fontSize={10} axisLine={false} tickLine={false} />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" />
+                  <XAxis dataKey={Object.keys(data.chart.data[0])[0]} fontSize={10} axisLine={false} tickLine={false} stroke="hsl(var(--muted-foreground))" />
+                  <YAxis fontSize={10} axisLine={false} tickLine={false} stroke="hsl(var(--muted-foreground))" />
                   <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
                   <Line type="monotone" dataKey={Object.keys(data.chart.data[0])[1]} stroke={activeColor} strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
                 </LineChart>
               ) : data.chart.type === 'scatter' ? (
                 <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                  <XAxis type="number" dataKey={Object.keys(data.chart.data[0])[0]} fontSize={10} axisLine={false} tickLine={false} />
-                  <YAxis type="number" dataKey={Object.keys(data.chart.data[0])[1]} fontSize={10} axisLine={false} tickLine={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
+                  <XAxis type="number" dataKey={Object.keys(data.chart.data[0])[0]} fontSize={10} axisLine={false} tickLine={false} stroke="hsl(var(--muted-foreground))" />
+                  <YAxis type="number" dataKey={Object.keys(data.chart.data[0])[1]} fontSize={10} axisLine={false} tickLine={false} stroke="hsl(var(--muted-foreground))" />
                   <Tooltip cursor={{ strokeDasharray: '3 3' }} />
                   <Scatter name="Data" data={data.chart.data} fill={activeColor} />
                 </ScatterChart>
               ) : data.chart.type === 'radar' ? (
                 <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data.chart.data}>
-                  <PolarGrid stroke="#e2e8f0" />
+                  <PolarGrid stroke="hsl(var(--muted))" />
                   <PolarAngleAxis dataKey="subject" fontSize={10} />
                   <PolarRadiusAxis angle={30} domain={[0, 100]} fontSize={8} />
                   <Radar name="Score" dataKey="A" stroke={activeColor} fill={activeColor} fillOpacity={0.6} />

@@ -171,9 +171,9 @@ export function RCMList() {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="flex flex-col items-center justify-center py-20 bg-white border border-slate-200 rounded-[2.5rem] shadow-sm"
+                className="flex flex-col items-center justify-center py-20 bg-white border border-slate-200 rounded-2xl shadow-sm"
               >
-                <div className="h-16 w-16 bg-indigo-50 rounded-2xl flex items-center justify-center mb-4">
+                <div className="h-16 w-16 bg-indigo-50 rounded-xl flex items-center justify-center mb-4">
                   <ShieldAlert className="h-8 w-8 text-indigo-600" />
                 </div>
                 <h3 className="text-lg font-display font-bold text-slate-900">Whistleblowing Integration</h3>

@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { 
-  Plus, Search, Database, Loader2, Info, ChevronRight, 
+  Plus, Search, Database, Loader2, Info, ChevronRight, ArrowRight,
   Workflow as WorkflowIcon, ShieldCheck, ShieldAlert,
   Calendar, Layers, Filter, CheckCircle2, AlertTriangle,
   Target, Fingerprint, Lock, PlusCircle, X as XIcon
@@ -380,29 +380,29 @@ export function BPMPage() {
         initial="hidden"
         animate="visible"
         variants={containerVariants}
-        className="space-y-8 pb-10"
+        className="space-y-6 pb-10"
       >
         <motion.div variants={itemVariants}>
           <PageHeader 
-            title={<span className="font-display tracking-tight">{t('title')}</span>} 
+            title={<span className="font-display tracking-tight text-slate-900 font-extrabold">{t('title')}</span>} 
             description={t('description')}
             badge={
-              <Badge variant="outline" className="bg-indigo-50/50 text-indigo-700 border-indigo-200/60 gap-1.5 py-1 px-3 font-bold uppercase tracking-widest text-[10px]">
+              <Badge variant="outline" className="bg-slate-50 text-slate-700 border-slate-200 gap-1.5 py-1 px-3 font-bold uppercase tracking-widest text-[10px] rounded-md shadow-sm">
                 <ShieldCheck className="h-3.5 w-3.5" />
                 {t('common:cycles.cycleLabel', { year: viewYear })}
               </Badge>
             }
           >
             <div className="flex flex-col items-end gap-1.5">
-              <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">{t('common:cycles.complianceCycle')}</Label>
+              <Label htmlFor="cycle-year-select" className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">{t('common:cycles.complianceCycle')}</Label>
               <Select value={viewYear} onValueChange={handleYearChange}>
-                <SelectTrigger className="w-[150px] h-10 bg-white border-slate-200 text-xs font-bold uppercase tracking-wider rounded-xl">
+                <SelectTrigger id="cycle-year-select" className="w-[150px] h-10 bg-white border-slate-200 text-xs font-bold uppercase tracking-wider rounded-lg shadow-sm">
                   <div className="flex items-center gap-2">
                     <Calendar className="h-3.5 w-3.5 text-slate-400" />
                     <SelectValue placeholder={t('common:placeholders.year')} />
                   </div>
                 </SelectTrigger>
-                <SelectContent className="rounded-xl border-slate-200">
+                <SelectContent className="rounded-lg border-slate-200">
                   {dynamicYears.map(y => (
                     <SelectItem key={y} value={y} className="text-xs font-bold uppercase">{t('common:cycles.yearCycle', { year: y })}</SelectItem>
                   ))}
@@ -413,11 +413,11 @@ export function BPMPage() {
         </motion.div>
 
         <motion.div variants={itemVariants}>
-          <Card className="border-slate-200 shadow-xl shadow-slate-100 bg-white rounded-[2rem] overflow-hidden">
-            <CardContent className="p-8">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-8 items-end">
-                <div className="space-y-3">
-                  <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 flex items-center gap-2 px-1">
+          <Card className="border-slate-200 shadow-md bg-white rounded-xl overflow-hidden">
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
+                <div className="space-y-2">
+                  <Label htmlFor="fsli-select" className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 flex items-center gap-2 px-1">
                     <Database className="h-3.5 w-3.5 text-indigo-500" /> 1. {t('bpm:fsliLabel')}
                   </Label>
                   <Select 
@@ -429,10 +429,10 @@ export function BPMPage() {
                       setSelectedBpmId(null); 
                     }}
                   >
-                    <SelectTrigger className="bg-slate-50 border-slate-200 h-11 text-xs font-bold uppercase tracking-wider rounded-xl focus:bg-white transition-all">
+                    <SelectTrigger id="fsli-select" className="bg-slate-50 border-slate-200 h-10 text-xs font-bold uppercase tracking-wider rounded-lg focus:bg-white transition-all shadow-sm">
                       <SelectValue placeholder={t('common:placeholders.choose')} />
                     </SelectTrigger>
-                    <SelectContent className="rounded-xl border-slate-200">
+                    <SelectContent className="rounded-lg border-slate-200">
                       {significantFsliNames.map(f => (
                         <SelectItem key={f} value={f} className="text-xs font-bold uppercase">{f}</SelectItem>
                       ))}
@@ -440,8 +440,8 @@ export function BPMPage() {
                   </Select>
                 </div>
 
-                <div className="space-y-3">
-                  <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 flex items-center gap-2 px-1">
+                <div className="space-y-2">
+                  <Label htmlFor="account-select" className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 flex items-center gap-2 px-1">
                     <Search className="h-3.5 w-3.5 text-indigo-500" /> 2. {t('common:glAccount')}
                   </Label>
                   <Select 
@@ -452,10 +452,10 @@ export function BPMPage() {
                     }} 
                     disabled={!selectedFsli}
                   >
-                    <SelectTrigger className="bg-slate-50 border-slate-200 h-11 text-xs font-bold uppercase tracking-wider rounded-xl focus:bg-white transition-all">
+                    <SelectTrigger id="account-select" className="bg-slate-50 border-slate-200 h-10 text-xs font-bold uppercase tracking-wider rounded-lg focus:bg-white transition-all shadow-sm">
                       <SelectValue placeholder={t('common:placeholders.choose')} />
                     </SelectTrigger>
-                    <SelectContent className="rounded-xl border-slate-200">
+                    <SelectContent className="rounded-lg border-slate-200">
                       {glNumbers.map(g => (
                         <SelectItem key={g.key} value={g.key} className="text-xs font-bold uppercase">{g.noGL} • {g.glDesc}</SelectItem>
                       ))}
@@ -463,20 +463,20 @@ export function BPMPage() {
                   </Select>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 px-1 flex items-center gap-2">
                     <Layers className="h-3.5 w-3.5 text-slate-400" /> {t('common:icofr.category')}
                   </Label>
-                  <div className="h-11 px-4 flex items-center border border-slate-200 rounded-xl bg-slate-50 text-[10px] text-slate-600 font-bold uppercase tracking-widest overflow-hidden whitespace-nowrap">
+                  <div className="h-10 px-3 flex items-center border border-slate-200 rounded-lg bg-slate-50 text-[10px] text-slate-600 font-bold uppercase tracking-widest overflow-hidden whitespace-nowrap">
                     {selectedGLRow?.category || "-"}
                   </div>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 px-1 flex items-center gap-2">
                     <Filter className="h-3.5 w-3.5 text-slate-400" /> {t('common:icofr.subCategory')}
                   </Label>
-                  <div className="h-11 px-4 flex items-center border border-slate-200 rounded-xl bg-slate-50 text-[10px] text-slate-600 font-bold uppercase tracking-widest overflow-hidden whitespace-nowrap">
+                  <div className="h-10 px-3 flex items-center border border-slate-200 rounded-lg bg-slate-50 text-[10px] text-slate-600 font-bold uppercase tracking-widest overflow-hidden whitespace-nowrap">
                     {selectedGLRow?.subKategori || "-"}
                   </div>
                 </div>
@@ -489,13 +489,13 @@ export function BPMPage() {
           {activeSim && activeSim.status === 'Approved' ? (
             <motion.div 
               key="approved-banner"
-              initial={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-emerald-50/50 border border-emerald-100 rounded-[1.5rem] p-5 flex items-center gap-4 shadow-sm"
+              exit={{ opacity: 0, scale: 0.98 }}
+              className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 flex items-center gap-4 shadow-sm"
             >
-              <div className="h-12 w-12 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 shadow-sm shadow-emerald-100">
-                <ShieldCheck className="h-7 w-7" />
+              <div className="h-10 w-10 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                <ShieldCheck className="h-6 w-6" />
               </div>
               <div className="space-y-0.5">
                 <p className="text-[10px] font-bold text-emerald-900 uppercase tracking-widest">{t('bpm:baseline.status')}</p>
@@ -505,16 +505,16 @@ export function BPMPage() {
           ) : !snapLoading && (
             <motion.div 
               key="rejected-banner"
-              initial={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="py-16 text-center border-2 border-dashed rounded-[2.5rem] bg-slate-50/50 border-slate-200"
+              exit={{ opacity: 0, scale: 0.98 }}
+              className="py-12 text-center border-2 border-dashed rounded-2xl bg-slate-50/50 border-slate-200"
             >
-              <div className="h-16 w-16 bg-slate-100 text-slate-300 rounded-[2rem] flex items-center justify-center mx-auto mb-4 border-2 border-white shadow-sm">
-                <ShieldAlert className="h-8 w-8" />
+              <div className="h-14 w-14 bg-slate-100 text-slate-300 rounded-xl flex items-center justify-center mx-auto mb-4 border border-white shadow-sm">
+                <ShieldAlert className="h-7 w-7" />
               </div>
-              <h3 className="text-lg font-display font-bold text-slate-600 uppercase tracking-tight">{t('bpm:baseline.status')} {t('common:status.rejected')}</h3>
-              <p className="text-slate-500 text-sm max-w-sm mx-auto mt-2 font-medium leading-relaxed px-6">
+              <h3 className="text-md font-display font-bold text-slate-600 uppercase tracking-tight">{t('bpm:baseline.status')} {t('common:status.rejected')}</h3>
+              <p className="text-slate-500 text-xs max-w-sm mx-auto mt-2 font-medium leading-relaxed px-6">
                 {t('bpm:baseline.empty', { year: viewYear })}
               </p>
             </motion.div>
@@ -524,29 +524,37 @@ export function BPMPage() {
         {!activeSim ? null : !selectedAccountKey ? (
           <motion.div 
             variants={itemVariants}
-            className="py-24 text-center border-2 border-dashed rounded-[3rem] bg-white border-slate-200 shadow-sm"
+            className="py-24 text-center border-2 border-dashed rounded-2xl bg-white border-slate-200 shadow-sm"
           >
-            <div className="h-20 w-20 bg-indigo-50 text-indigo-200 rounded-[2.5rem] flex items-center justify-center mx-auto mb-6">
-              <Info className="h-10 w-10" />
+            <div className="h-20 w-20 bg-indigo-50/50 text-indigo-400 rounded-2xl flex items-center justify-center mx-auto mb-6 ring-8 ring-indigo-50/30">
+              <Search className="h-10 w-10" />
             </div>
-            <p className="text-slate-400 text-base font-display font-bold uppercase tracking-widest">{t('bpm:emptyState')}</p>
+            <h3 className="text-lg font-display font-black text-slate-900 uppercase tracking-tight mb-2">Ready to Map Process</h3>
+            <p className="text-slate-500 text-sm max-w-sm mx-auto mb-8 font-medium leading-relaxed">
+              Select an FSLI and GL Account from the selection panel above to begin mapping business processes, risks, and controls.
+            </p>
+            <div className="flex items-center justify-center gap-3">
+              <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-400 border border-slate-200">1</div>
+              <ArrowRight className="h-4 w-4 text-slate-300" />
+              <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-400 border border-slate-200">2</div>
+            </div>
           </motion.div>
         ) : !hasAccess ? (
           <motion.div 
             variants={itemVariants}
-            className="py-16 text-center border-2 border-rose-100 rounded-[2.5rem] bg-rose-50/30"
+            className="py-12 text-center border-2 border-rose-100 rounded-2xl bg-rose-50/30"
           >
-            <div className="h-16 w-16 bg-rose-100 text-rose-300 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-rose-100">
-              <AlertTriangle className="h-8 w-8" />
+            <div className="h-14 w-14 bg-rose-100 text-rose-300 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+              <AlertTriangle className="h-7 w-7" />
             </div>
-            <h3 className="text-xl font-display font-bold text-rose-900">{t('common:access.restricted')}</h3>
-            <p className="text-rose-700/70 text-sm max-w-md mx-auto mt-2 leading-relaxed font-medium px-6">
+            <h3 className="text-lg font-display font-bold text-rose-900">{t('common:access.restricted')}</h3>
+            <p className="text-rose-700/70 text-xs max-w-md mx-auto mt-2 leading-relaxed font-medium px-6">
               {t('common:access.assignedTo')} <strong className="text-rose-900 underline decoration-rose-200">{departmentName || "Departemen Lain"}</strong>. 
               {t('common:access.lini1Restricted')}
             </p>
           </motion.div>
         ) : (
-          <motion.div variants={containerVariants} className="space-y-10">
+          <motion.div variants={containerVariants} className="space-y-8">
             <motion.div variants={itemVariants}>
               <BPMAccountAssertion 
                 localAssertion={localAssertion}
@@ -559,27 +567,29 @@ export function BPMPage() {
             </motion.div>
 
             <motion.div variants={itemVariants} className="space-y-6">
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white p-6 rounded-[2rem] border border-slate-200 shadow-xl shadow-slate-100">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
                 <div className="flex-1 w-full md:max-w-md relative group">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+                  <Label htmlFor="bpm-search" className="sr-only">Search BPM Processes</Label>
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
                   <Input 
+                    id="bpm-search"
                     placeholder={t('searchPlaceholder')} 
-                    className="pl-11 h-11 bg-slate-50 border-slate-200 text-sm font-medium rounded-xl focus:bg-white transition-all"
+                    className="pl-10 h-10 bg-slate-50 border-slate-200 text-sm font-medium rounded-lg focus:bg-white transition-all shadow-sm"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
                 </div>
-                <div className="flex items-center gap-6 w-full md:w-auto">
+                <div className="flex items-center gap-4 w-full md:w-auto">
                   <div className="hidden md:block text-right">
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">{t('bpm:modal.owner')}</p>
-                    <p className="text-xs font-bold text-slate-900 flex items-center gap-2 justify-end">
-                      <Target className="h-3.5 w-3.5 text-indigo-500" />
+                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-[0.2em]">{t('bpm:modal.owner')}</p>
+                    <p className="text-xs font-bold text-slate-900 flex items-center gap-1.5 justify-end">
+                      <Target className="h-3 w-3 text-indigo-500" />
                       {departmentName || "Finance & Accounting"}
                     </p>
                   </div>
-                  <div className="h-10 w-px bg-slate-100" />
-                  <Button onClick={() => setIsCreatingBPM(true)} className="h-11 gap-3 bg-slate-900 hover:bg-slate-800 shadow-lg shadow-slate-200 transition-all font-bold text-xs uppercase tracking-widest px-8 rounded-xl">
-                    <PlusCircle className="h-4 w-4" /> {t('createButton')}
+                  <div className="h-8 w-px bg-slate-100" />
+                  <Button onClick={() => setIsCreatingBPM(true)} className="h-10 gap-2 bg-slate-900 hover:bg-slate-800 shadow-sm transition-all font-bold text-[10px] uppercase tracking-widest px-6 rounded-lg">
+                    <PlusCircle className="h-3.5 w-3.5" /> {t('createButton')}
                   </Button>
                 </div>
               </div>
@@ -622,19 +632,19 @@ export function BPMPage() {
         )}
 
         <Dialog open={isBpmEditorOpen} onOpenChange={(open) => !open && handleCloseDiagram()}>
-          <DialogContent className="max-w-[95vw] w-[1500px] h-[95vh] flex flex-col p-0 overflow-hidden border-none shadow-2xl rounded-[2.5rem]">
-            <div className="bg-slate-900 p-8 flex justify-between items-center text-white">
+          <DialogContent className="max-w-[98vw] w-[1600px] h-[98vh] flex flex-col p-0 overflow-hidden border-none shadow-2xl rounded-2xl">
+            <div className="bg-slate-900 p-6 flex justify-between items-center text-white">
               <div className="space-y-1">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-2xl bg-indigo-500/20 flex items-center justify-center text-indigo-400 border border-indigo-500/30">
-                    <WorkflowIcon className="h-6 w-6" />
+                  <div className="h-9 w-9 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400 border border-indigo-500/30">
+                    <WorkflowIcon className="h-5 w-5" />
                   </div>
-                  <h2 className="font-display text-3xl font-bold tracking-tight">BPM Workflow Editor: {currentSubProcess}</h2>
+                  <h2 className="font-display text-2xl font-bold tracking-tight">BPM Workflow Editor: {currentSubProcess}</h2>
                 </div>
-                <p className="text-slate-400 text-xs font-medium uppercase tracking-[0.2em] ml-[52px]">Mapping business processes, risks, and controls visually.</p>
+                <p className="text-slate-400 text-[10px] font-medium uppercase tracking-[0.2em] ml-[48px]">Mapping business processes, risks, and controls visually.</p>
               </div>
-              <Button variant="ghost" size="icon" onClick={handleCloseDiagram} className="text-slate-400 hover:text-white hover:bg-white/10 rounded-full h-12 w-12">
-                 <X className="h-6 w-6" />
+              <Button variant="ghost" size="icon" onClick={handleCloseDiagram} className="text-slate-400 hover:text-white hover:bg-white/10 rounded-full h-10 w-10">
+                 <X className="h-5 w-5" />
               </Button>
             </div>
             <div className="flex-1 min-h-0 bg-slate-50">
@@ -644,23 +654,23 @@ export function BPMPage() {
         </Dialog>
 
         <Dialog open={isCreatingBPM} onOpenChange={setIsCreatingBPM}>
-          <DialogContent className="sm:max-w-[425px] border-none shadow-2xl rounded-[2rem] overflow-hidden p-0">
-            <div className="bg-slate-900 p-8 text-white">
+          <DialogContent className="sm:max-w-[425px] border-none shadow-2xl rounded-xl overflow-hidden p-0">
+            <div className="bg-slate-900 p-6 text-white">
               <DialogHeader>
-                <DialogTitle className="font-display text-2xl tracking-tight">{t('bpm:createModalTitle')}</DialogTitle>
-                <DialogDescription className="text-slate-400 text-xs mt-2">
+                <DialogTitle className="font-display text-xl tracking-tight">{t('bpm:createModalTitle')}</DialogTitle>
+                <DialogDescription className="text-slate-400 text-[10px] uppercase tracking-wider mt-1">
                   Define a major process heading for <strong>{selectedGLRow?.noGL}</strong>.
                 </DialogDescription>
               </DialogHeader>
             </div>
-            <div className="p-8 space-y-6">
-              <div className="space-y-2.5">
+            <div className="p-6 space-y-6">
+              <div className="space-y-2">
                 <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 px-1">{t('bpm:processNameLabel')}</Label>
                 <Input 
                   placeholder="e.g. Penerimaan setoran tunai" 
                   value={bpmName} 
                   onChange={e => setBpmName(e.target.value)} 
-                  className="h-11 bg-slate-50 border-slate-200 focus:bg-white transition-all rounded-xl font-bold"
+                  className="h-10 bg-slate-50 border-slate-200 focus:bg-white transition-all rounded-lg font-bold"
                 />
               </div>
               <DialogFooter className="gap-2">
@@ -668,7 +678,7 @@ export function BPMPage() {
                 <Button 
                   disabled={!bpmName || createBPMMutation.isPending} 
                   onClick={() => createBPMMutation.mutate({ name: bpmName, noGL: selectedGLRow?.noGL || "", fsliName: selectedFsli })}
-                  className="h-10 px-6 bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-100 rounded-xl font-bold text-[10px] uppercase tracking-widest text-white"
+                  className="h-10 px-6 bg-slate-900 hover:bg-slate-800 shadow-sm rounded-lg font-bold text-[10px] uppercase tracking-widest text-white"
                 >
                   {createBPMMutation.isPending && <Loader2 className="h-3 w-3 animate-spin mr-2" />}
                   {t('bpm:createProcessButton')}

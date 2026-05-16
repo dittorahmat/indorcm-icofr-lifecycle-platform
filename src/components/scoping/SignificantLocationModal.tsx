@@ -92,7 +92,7 @@ export function SignificantLocationModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[800px] max-h-[90vh] flex flex-col p-0 overflow-hidden border-none shadow-2xl">
-        <DialogHeader className="p-6 bg-[#417dc1] text-white">
+        <DialogHeader className="p-6 bg-primary text-primary-foreground">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-white/20 rounded-lg">
               <Calculator className="h-6 w-6 text-white" />
@@ -113,7 +113,7 @@ export function SignificantLocationModal({
               <div className="flex items-center gap-3">
                 <Input 
                   type="number" 
-                  className="w-24 h-9 font-bold text-lg border-blue-200 focus:ring-[#417dc1]" 
+                  className="w-24 h-9 font-bold text-lg border-blue-200 focus:ring-primary" 
                   value={threshold}
                   onChange={(e) => setThreshold(Number(e.target.value))}
                 />
@@ -124,7 +124,7 @@ export function SignificantLocationModal({
             </div>
             <div className="text-right">
               <p className="text-xs text-blue-500 uppercase font-bold tracking-tight">Total Basis Value</p>
-              <p className="text-xl font-black text-[#417dc1]">
+              <p className="text-xl font-black text-primary">
                 Rp {analysisResults.reduce((sum, r) => sum + r.balance, 0).toLocaleString('id-ID')}
               </p>
             </div>
@@ -161,7 +161,7 @@ export function SignificantLocationModal({
                       <TableCell className="text-right text-slate-600">
                         {row.contributionPercentage.toFixed(2)}%
                       </TableCell>
-                      <TableCell className="text-right font-bold text-[#417dc1]">
+                      <TableCell className="text-right font-bold text-primary">
                         {row.cumulativePercentage.toFixed(2)}%
                       </TableCell>
                       <TableCell className="text-center">
@@ -186,7 +186,7 @@ export function SignificantLocationModal({
         <DialogFooter className="p-6 bg-slate-50 border-t">
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button 
-            className="bg-[#417dc1] hover:bg-[#356ab0] gap-2 font-bold px-8"
+            className="bg-primary hover:bg-primary/90 gap-2 font-bold px-8"
             disabled={analysisResults.length === 0 || updateMutation.isPending}
             onClick={handleSave}
           >

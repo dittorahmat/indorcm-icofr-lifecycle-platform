@@ -145,20 +145,20 @@ export function Dashboard() {
             </motion.div>
 
             {/* SECONDARY METRICS (Optimized grid) */}
-            <motion.div variants={itemVariants} className="grid grid-cols-2 gap-3">
+            <motion.div variants={itemVariants} className="grid grid-cols-2 gap-4">
                {[
                  { label: t('kpis.remediationVelocity'), value: t('kpis.remediationAvgDays'), icon: TrendingUp, color: 'text-blue-600', bg: 'bg-blue-50' },
                  { label: t('kpis.line2Validation'), value: t('kpis.line2Percent'), icon: ShieldCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' }
                ].map((metric, i) => (
-                 <div key={i} className="group p-3 bg-white border border-slate-100 rounded-lg shadow-sm hover:shadow-md hover:border-slate-200 transition-all duration-300 cursor-pointer flex flex-col gap-2 ring-1 ring-slate-100/50">
-                    <div className={cn("h-7 w-7 rounded flex items-center justify-center transition-all group-hover:bg-slate-900 group-hover:text-white shrink-0 shadow-sm", metric.bg)}>
-                        <metric.icon className="h-3.5 w-3.5" />
+                 <div key={i} className="group p-4 bg-white border border-slate-100 rounded-xl shadow-sm hover:shadow-md hover:border-slate-200 transition-all duration-300 cursor-pointer flex flex-col gap-3 ring-1 ring-slate-100/50">
+                    <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center transition-all group-hover:bg-slate-900 group-hover:text-white shrink-0 shadow-sm", metric.bg)}>
+                        <metric.icon className="h-4 w-4" />
                     </div>
                     <div>
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest leading-none mb-1 line-clamp-1">{metric.label}</p>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5 line-clamp-1">{metric.label}</p>
                         <div className="flex items-center justify-between">
-                          <p className="text-lg font-display font-extrabold text-slate-900 leading-none">{metric.value}</p>
-                          <Target className="h-3 w-3 text-slate-300 group-hover:text-slate-900 transition-all duration-300 translate-x-0 group-hover:translate-x-1" />
+                          <p className="text-xl font-display font-black text-slate-900 leading-none tracking-tight">{metric.value}</p>
+                          <Target className="h-3.5 w-3.5 text-slate-300 group-hover:text-slate-900 transition-all duration-300 translate-x-0 group-hover:translate-x-1" />
                         </div>
                     </div>
                  </div>

@@ -145,7 +145,7 @@ export function TestWorkbench() {
                   variants={itemVariants}
                   layout
                   className={cn(
-                    "group relative bg-white border-2 rounded-[1.5rem] transition-all duration-300",
+                    "group relative bg-white border-2 rounded-2xl transition-all duration-300",
                     isExpanded ? "border-indigo-200 shadow-xl shadow-indigo-100/50" : "border-slate-100 hover:border-indigo-100 hover:shadow-lg hover:shadow-slate-100",
                     violation && "border-rose-100 bg-rose-50/20 opacity-80"
                   )}
@@ -157,7 +157,7 @@ export function TestWorkbench() {
                   >
                     <div className="flex items-center gap-5">
                       <div className={cn(
-                        "h-12 w-12 rounded-2xl flex items-center justify-center shrink-0 border-2 transition-all duration-300",
+                        "h-12 w-12 rounded-xl flex items-center justify-center shrink-0 border-2 transition-all duration-300",
                         isExpanded ? "bg-indigo-600 border-indigo-400 text-white rotate-6" : "bg-indigo-50 border-indigo-100 text-indigo-600 group-hover:bg-indigo-100"
                       )}>
                         {violation ? <AlertTriangle className="h-6 w-6" /> : <Fingerprint className="h-6 w-6" />}
@@ -226,7 +226,7 @@ export function TestWorkbench() {
                       >
                         <div className="px-6 pb-8 border-t border-slate-100 pt-8">
                           {violation ? (
-                            <div className="p-10 bg-rose-50/50 border border-rose-100 rounded-[2rem] text-center space-y-4 max-w-2xl mx-auto">
+                            <div className="p-10 bg-rose-50/50 border border-rose-100 rounded-2xl text-center space-y-4 max-w-2xl mx-auto">
                               <div className="h-16 w-16 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto shadow-lg shadow-rose-200">
                                 <AlertTriangle className="h-8 w-8" />
                               </div>
@@ -257,9 +257,9 @@ export function TestWorkbench() {
           ) : (
             <motion.div 
               variants={itemVariants}
-              className="text-center py-24 bg-white rounded-[2.5rem] border-2 border-dashed border-slate-200 shadow-sm"
+              className="text-center py-24 bg-white rounded-2xl border-2 border-dashed border-slate-200 shadow-sm"
             >
-              <div className="h-20 w-20 bg-slate-50 text-slate-300 rounded-[2rem] flex items-center justify-center mx-auto mb-6">
+              <div className="h-20 w-20 bg-slate-50 text-slate-300 rounded-xl flex items-center justify-center mx-auto mb-6">
                 <ListFilter className="h-10 w-10" />
               </div>
               <h3 className="text-xl font-display font-bold text-slate-900">{t('noControls')}</h3>

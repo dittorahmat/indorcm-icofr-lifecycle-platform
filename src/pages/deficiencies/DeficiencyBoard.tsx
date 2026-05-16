@@ -101,7 +101,7 @@ function KanbanColumn({
         </Badge>
       </div>
 
-      <div className="flex-1 min-h-[500px] bg-slate-50/50 rounded-[2rem] border-2 border-dashed border-slate-200/60 p-3 group-hover/column:bg-slate-50/80 group-hover/column:border-slate-300 transition-all duration-300">
+      <div className="flex-1 min-h-[500px] bg-slate-50/50 rounded-2xl border-2 border-dashed border-slate-200/60 p-3 group-hover/column:bg-slate-50/80 group-hover/column:border-slate-300 transition-all duration-300">
         <SortableContext id={status} items={plansInColumn.map(ap => ap.id)} strategy={verticalListSortingStrategy}>
           <div className="space-y-4">
             {plansInColumn.map(ap => {
@@ -424,8 +424,8 @@ export function DeficiencyBoard() {
               {KANBAN_COLUMNS.map(status => (
                 <div key={status} className="w-80 flex-shrink-0 space-y-4">
                   <Skeleton className="h-10 w-3/4 rounded-xl" />
-                  <Skeleton className="h-32 w-full rounded-[2rem]" />
-                  <Skeleton className="h-32 w-full rounded-[2rem]" />
+                  <Skeleton className="h-32 w-full rounded-2xl" />
+                  <Skeleton className="h-32 w-full rounded-2xl" />
                 </div>
               ))}
             </div>
