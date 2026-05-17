@@ -14,9 +14,16 @@ type AppLayoutProps = {
   container?: boolean;
   className?: string;
   contentClassName?: string;
+  noScroll?: boolean;
 };
 
-export function AppLayout({ children, container = false, className, contentClassName }: AppLayoutProps): JSX.Element {
+export function AppLayout({ 
+  children, 
+  container = false, 
+  className, 
+  contentClassName,
+  noScroll = false
+}: AppLayoutProps): JSX.Element {
   return (
     <div className="flex flex-1 min-h-0 relative min-w-0">
       {/* Fixed Sidebar Background Strip */}
@@ -39,7 +46,8 @@ export function AppLayout({ children, container = false, className, contentClass
       </Suspense>
       <SidebarInset className={cn("flex flex-col min-h-0 min-w-0 bg-background overflow-hidden", className)}>
         <div className={cn(
-          "flex-1 flex flex-col min-h-0 min-w-0 scrollbar-hover",
+          "flex-1 flex flex-col min-h-0 min-w-0",
+          !noScroll && "scrollbar-hover",
           container && "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8",
           contentClassName
         )}>          {children}

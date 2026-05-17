@@ -13,7 +13,7 @@ interface RCMGroupRowProps {
 export function RCMGroupRow({ title, colSpan, className, depth = 0 }: RCMGroupRowProps) {
   return (
     <TableRow className={cn(
-      "h-9 border-b border-slate-400 select-none sticky z-40",
+      "h-9 border-b border-slate-400 select-none sticky top-[88px] z-40",
       depth === 0 ? "bg-slate-800 text-white" : "bg-slate-200 text-slate-900 shadow-inner",
       className
     )}>

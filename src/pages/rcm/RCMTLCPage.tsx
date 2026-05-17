@@ -105,7 +105,6 @@ export function RCMTLCPage({ embedded = false, filterBpmId }: RCMTLCPageProps) {
           id: 'action',
           header: 'Action',
           width: '50px',
-          sticky: 'left',
           render: (row) => (
             <Button 
               variant="ghost" 
@@ -117,13 +116,11 @@ export function RCMTLCPage({ embedded = false, filterBpmId }: RCMTLCPageProps) {
             </Button>
           )
         },
-        { id: 'no', header: 'No', width: '50px', sticky: 'left', stickyOffset: '50px', className: 'text-center font-mono text-xs text-slate-400', render: (_, idx) => idx + 1 },
+        { id: 'no', header: 'No', width: '50px', className: 'text-center font-mono text-xs text-slate-400', render: (_, idx) => idx + 1 },
         { 
           id: 'process_info', 
           header: t('matrix.process_info'), 
           width: '260px', 
-          sticky: 'left', 
-          stickyOffset: '100px',
           className: 'font-bold text-slate-800',
           render: (row) => (
             <div className="flex flex-col gap-0 leading-tight">
@@ -236,7 +233,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId }: RCMTLCPageProps) {
   };
 
   const content = (
-    <div className="flex flex-col min-w-0 flex-1">
+    <div className="flex flex-col min-w-0 flex-1 min-h-0">
       {!embedded && (
         <RCMPageHeader 
           title={t('rcm:matrix.title_tlc')}
@@ -272,7 +269,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId }: RCMTLCPageProps) {
   if (embedded) return content;
 
   return (
-    <AppLayout container={false} className="bg-slate-100/30">
+    <AppLayout container={false} noScroll className="bg-slate-100/30">
       {content}
     </AppLayout>
   );

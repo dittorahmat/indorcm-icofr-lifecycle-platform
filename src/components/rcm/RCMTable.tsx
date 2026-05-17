@@ -11,8 +11,6 @@ export interface RCMColumn {
   header: string;
   accessorKey?: string;
   width: string;
-  sticky?: 'left' | 'right';
-  stickyOffset?: string;
   className?: string;
   headerClassName?: string;
   tooltip?: string;
@@ -50,12 +48,16 @@ export function RCMTable({
 
   return (
     <TooltipProvider>
-      <div className="w-full border-t border-b bg-white border-slate-300 scrollbar-hover flex-1 min-h-0 relative">
+      {/* 
+          Wrapper div must have overflow-auto and a defined height (via flex-1 min-h-0 in a flex-col parent)
+          to enable vertical sticky headers. 
+      */}
+      <div className="w-full border-t border-b bg-white border-slate-300 scrollbar-hover flex-1 min-h-0 relative overflow-auto">
         <table 
           className="table-fixed border-separate border-spacing-0 mb-10 w-full"
           style={{ minWidth }}
         >
-          <thead className="sticky top-0 z-30">
+          <thead className="z-30">
             {/* Level 1 Header: Groups */}
             <tr className="h-10 bg-slate-800 text-white shadow-md sticky top-0 z-30">
               {groups.map((group, gIdx) => (
@@ -64,10 +66,8 @@ export function RCMTable({
                   colSpan={group.columns.length}
                   className={cn(
                     "text-center font-black uppercase text-xs tracking-widest border-r border-slate-700/50 py-2 px-2",
-                    group.className,
-                    group.columns[0]?.sticky === 'left' && "sticky left-0 z-[40] bg-slate-900 shadow-[2px_0_5px_rgba(0,0,0,0.2)]"
+                    group.className
                   )}
-                  style={group.columns[0]?.sticky === 'left' ? { left: group.columns[0].stickyOffset || '0px' } : undefined}
                 >
                   {group.title}
                 </th>
@@ -75,19 +75,16 @@ export function RCMTable({
             </tr>
 
             {/* Level 2 Header: Columns */}
-            <tr className="h-12 bg-slate-100/95 backdrop-blur-md border-b-2 border-slate-300 sticky top-10 z-20">
+            <tr className="h-12 bg-slate-100/95 backdrop-blur-md border-b-2 border-slate-300 sticky top-[40px] z-20">
               {allColumns.map((col, cIdx) => (
                 <th 
                   key={`col-${col.id}-${cIdx}`}
                   className={cn(
-                    "font-black uppercase text-xs px-3 border-r border-slate-300 text-slate-600 align-middle",
-                    col.sticky === 'left' && "sticky z-[70] bg-slate-100 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]",
-                    col.sticky === 'right' && "sticky right-0 z-[70] bg-slate-100",
+                    "font-black uppercase text-xs px-3 border-r border-slate-300 text-slate-600 align-middle bg-slate-100/90",
                     col.headerClassName
                   )}
                   style={{ 
-                    width: col.width,
-                    left: col.sticky === 'left' ? col.stickyOffset || '0px' : undefined 
+                    width: col.width
                   }}
                 >
                   <div className="flex flex-col items-center justify-center gap-1">
@@ -135,13 +132,8 @@ export function RCMTable({
                           className={cn(
                             "px-3 border-r border-slate-100 py-2 text-xs transition-colors duration-200",
                             "group-hover:bg-indigo-50/70 group-hover:border-indigo-100/50",
-                            col.sticky === 'left' && cn("sticky z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]", rowBg),
-                            col.sticky === 'right' && cn("sticky right-0 z-30 border-l shadow-[-2px_0_5px_-2px_rgba(0,0,0,0.05)]", rowBg),
                             col.className
                           )}
-                          style={{ 
-                            left: col.sticky === 'left' ? col.stickyOffset || '0px' : undefined 
-                          }}
                         >
                           {col.render ? col.render(row, idx) : (row[col.accessorKey as string] || '-')}
                           {/* Row Indicator Accent */}
@@ -160,11 +152,4 @@ export function RCMTable({
       </div>
     </TooltipProvider>
   );
-}
-
-function classNameForMinWidth(width: string) {
-  if (width === "2000px") return "min-w-[2000px]";
-  if (width === "3800px") return "min-w-[3800px]";
-  if (width === "4800px") return "min-w-[4800px]";
-  return `min-w-[${width}]`;
 }

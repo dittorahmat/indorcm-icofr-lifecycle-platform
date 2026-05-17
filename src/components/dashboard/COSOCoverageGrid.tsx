@@ -24,41 +24,42 @@ export function COSOCoverageGrid({ cosoCoverage, isLoading }: COSOCoverageGridPr
 
   return (
     <Card className="border-slate-200 overflow-hidden shadow-sm bg-white rounded-xl">
-      <CardHeader className="bg-slate-50 border-b py-5 px-6">
+      <CardHeader className="bg-slate-50/50 border-b py-5 px-6">
         <div className="flex justify-between items-center">
           <div>
-            <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 text-slate-800">
+            <CardTitle className="text-[11px] font-bold uppercase tracking-wider flex items-center gap-2 text-slate-800">
               <LayoutDashboard className="h-4 w-4 text-slate-900" /> {t('coso.title')}
             </CardTitle>
-            <CardDescription className="text-[11px] font-medium text-slate-500 mt-1">{t('coso.description')}</CardDescription>
+            <CardDescription className="text-xs font-medium text-slate-500 mt-1">{t('coso.description')}</CardDescription>
           </div>
         </div>
       </CardHeader>
       <CardContent className="p-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8">
           {isLoading ? Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-32 w-full rounded-xl" />) : (
             COSO_COMPONENTS.map((comp) => (
-              <div key={comp.name} className="space-y-3">
+              <div key={comp.name} className="space-y-4">
                 <div className="flex items-center gap-2 px-1">
-                  <div className={cn("h-1.5 w-1.5 rounded-full", comp.color)} />
-                  <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 truncate leading-none">{comp.name}</span>
+                  <div className={cn("h-2 w-2 rounded-full", comp.color)} />
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 truncate leading-none">{comp.name}</span>
                 </div>
                 <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                   {comp.principles.map(pNum => {
                     const c = cosoCoverage.find(cov => cov.principle === pNum);
+                    const isCovered = (c?.count ?? 0) > 0;
                     return (
                       <div 
                         key={pNum} 
                         className={cn(
-                          "h-10 flex flex-col items-center justify-center rounded-lg transition-all duration-300 cursor-default",
-                          (c?.count ?? 0) > 0 
-                            ? 'bg-slate-900 border border-slate-900 text-white shadow-sm ring-1 ring-slate-900/5' 
-                            : 'bg-white border border-dashed border-slate-200 text-slate-300 opacity-60'
+                          "h-12 flex flex-col items-center justify-center rounded-lg transition-all duration-300 cursor-default border",
+                          isCovered
+                            ? 'bg-slate-900 border-slate-900 text-white shadow-sm' 
+                            : 'bg-white border-dashed border-slate-200 text-slate-300'
                         )}
                         title={`${c?.count || 0} controls mapped to Principle ${pNum}`}
                       >
-                        <span className={cn("text-[9px] font-black tracking-tighter uppercase", (c?.count ?? 0) > 0 ? "text-slate-400" : "text-slate-200")}>P{pNum}</span>
-                        <span className="text-xs font-display font-black leading-none mt-0.5">{c?.count || 0}</span>
+                        <span className={cn("text-[8px] font-bold uppercase tracking-tighter", isCovered ? "text-slate-400" : "text-slate-300")}>P{pNum}</span>
+                        <span className="text-sm font-bold leading-none mt-1">{c?.count || 0}</span>
                       </div>
                     );
                   })}
@@ -67,9 +68,15 @@ export function COSOCoverageGrid({ cosoCoverage, isLoading }: COSOCoverageGridPr
             ))
           )}
         </div>
-        <div className="mt-8 flex gap-6 text-[10px] uppercase font-black tracking-widest text-slate-400 border-t pt-5">
-          <div className="flex items-center gap-2"><div className="h-2 w-2 bg-slate-900 rounded-full" /> {t('coso.covered')}</div>
-          <div className="flex items-center gap-2"><div className="h-2 w-2 bg-white border border-dashed border-slate-200 rounded-full" /> {t('coso.zeroCoverage')}</div>
+        <div className="mt-8 flex gap-6 text-[10px] uppercase font-bold tracking-widest text-slate-400 border-t border-slate-100 pt-6">
+          <div className="flex items-center gap-2.5">
+            <div className="h-2.5 w-2.5 bg-slate-900 rounded-sm" /> 
+            {t('coso.covered')}
+          </div>
+          <div className="flex items-center gap-2.5">
+            <div className="h-2.5 w-2.5 bg-white border border-dashed border-slate-300 rounded-sm" /> 
+            {t('coso.zeroCoverage')}
+          </div>
         </div>
       </CardContent>
     </Card>

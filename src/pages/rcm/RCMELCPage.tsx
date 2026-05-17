@@ -76,7 +76,6 @@ export function RCMELCPage({ embedded = false }: { embedded?: boolean }) {
           id: 'action',
           header: 'Action',
           width: '50px',
-          sticky: 'left',
           render: (row) => (
             <Button 
               variant="ghost" 
@@ -88,8 +87,8 @@ export function RCMELCPage({ embedded = false }: { embedded?: boolean }) {
             </Button>
           )
         },
-        { id: 'no', header: 'No', accessorKey: 'no', width: '50px', sticky: 'left', stickyOffset: '50px', className: 'text-center font-mono text-xs text-slate-400' },
-        { id: 'code', header: t('matrix.control_ref'), accessorKey: 'code', width: '110px', sticky: 'left', stickyOffset: '100px', className: 'font-mono font-bold text-indigo-700' },
+        { id: 'no', header: 'No', accessorKey: 'no', width: '50px', className: 'text-center font-mono text-xs text-slate-400' },
+        { id: 'code', header: t('matrix.control_ref'), accessorKey: 'code', width: '110px', className: 'font-mono font-bold text-indigo-700' },
         { id: 'name', header: t('matrix.control_name'), accessorKey: 'name', width: '250px', className: 'font-bold text-slate-800' },
         { id: 'description', header: t('matrix.control_description'), accessorKey: 'description', width: '350px', className: 'italic text-slate-500 text-xs leading-tight line-clamp-2' },
       ]
@@ -132,7 +131,7 @@ export function RCMELCPage({ embedded = false }: { embedded?: boolean }) {
   ];
 
   const content = (
-    <div className="flex flex-col min-w-0 flex-1">
+    <div className="flex flex-col min-w-0 flex-1 min-h-0">
       {!embedded && (
         <RCMPageHeader 
           title={t('rcm:matrix.title_elc')}
@@ -160,7 +159,7 @@ export function RCMELCPage({ embedded = false }: { embedded?: boolean }) {
   );
 
   return (
-    <AppLayout container={false} className="bg-slate-100/30">
+    <AppLayout container={false} noScroll className="bg-slate-100/30">
       {content}
     </AppLayout>
   );

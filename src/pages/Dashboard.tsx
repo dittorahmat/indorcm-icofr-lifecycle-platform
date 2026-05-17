@@ -6,7 +6,7 @@ import { api } from '@/lib/api-client';
 import { useNavigate } from 'react-router-dom';
 import type { RCM, Deficiency, Control } from '@shared/types';
 import { 
-  ShieldCheck, TrendingUp, Target, ClipboardCheck
+  ShieldCheck, TrendingUp, Target, ClipboardCheck, ArrowRight
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -17,6 +17,7 @@ import { motion, Variants } from 'framer-motion';
 import { DashboardKPIs } from '@/components/dashboard/DashboardKPIs';
 import { COSOCoverageGrid } from '@/components/dashboard/COSOCoverageGrid';
 import { ActionCenter } from '@/components/dashboard/ActionCenter';
+import { LifecycleProgress } from '@/components/dashboard/LifecycleProgress';
 
 const ComplianceCharts = React.lazy(() => import('@/components/dashboard/ComplianceCharts').then(m => ({ default: m.ComplianceCharts })));
 
@@ -31,13 +32,13 @@ const containerVariants: Variants = {
 };
 
 const itemVariants: Variants = {
-  hidden: { y: 8, opacity: 0 },
+  hidden: { y: 10, opacity: 0 },
   visible: {
     y: 0,
     opacity: 1,
     transition: {
-      duration: 0.35,
-      ease: [0.16, 1, 0.3, 1] // ease-out-expo
+      duration: 0.4,
+      ease: [0.25, 0.1, 0.25, 1] // professional cubic-bezier
     }
   }
 };
@@ -87,24 +88,28 @@ export function Dashboard() {
   return (
     <AppLayout container>
       <motion.div 
-        className="space-y-8 pb-10"
+        className="space-y-6 pb-12"
         initial="hidden"
         animate="visible"
         variants={containerVariants}
       >
         <PageHeader 
-          title={<span className="font-display font-extrabold tracking-tight text-slate-900">{t('title')}</span>} 
+          title={<span className="font-semibold text-slate-900 tracking-normal">{t('title')}</span>} 
           description={t('description')} 
         >
-          <div className="flex gap-3">
-             <Button variant="outline" className="h-10 gap-2 border-slate-200 hover:bg-slate-50 hover:text-slate-900 transition-all rounded-md px-4" onClick={() => navigate('/rcm')}>
-                <Target className="h-4 w-4 text-slate-500" /> {t('actions.manageRcm')}
+          <div className="flex gap-2">
+             <Button variant="outline" className="h-9 gap-2 border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors px-3 text-sm" onClick={() => navigate('/rcm')}>
+                <Target className="h-3.5 w-3.5" /> {t('actions.manageRcm')}
              </Button>
-             <Button className="h-10 gap-2 bg-slate-900 hover:bg-slate-800 transition-all rounded-md px-4 shadow-sm" onClick={() => navigate('/csa')}>
-                <ClipboardCheck className="h-4 w-4" /> {t('actions.startAssessment')}
+             <Button className="h-9 gap-2 bg-slate-900 hover:bg-slate-800 transition-colors px-3 text-sm shadow-sm" onClick={() => navigate('/csa')}>
+                <ClipboardCheck className="h-3.5 w-3.5" /> {t('actions.startAssessment')}
              </Button>
           </div>
         </PageHeader>
+
+        <motion.div variants={itemVariants}>
+          <LifecycleProgress currentStage="execution" />
+        </motion.div>
 
         <DashboardKPIs 
           controlsCount={controlsData?.items.length || 0}
@@ -113,12 +118,12 @@ export function Dashboard() {
         />
 
         {/* MAIN DASHBOARD GRID */}
-        <div className="grid gap-8 lg:grid-cols-12">
+        <div className="grid gap-6 lg:grid-cols-12">
           
           {/* LEFT CONTENT AREA (Span 8) */}
-          <div className="lg:col-span-8 space-y-8">
+          <div className="lg:col-span-8 space-y-6">
             <motion.div variants={itemVariants}>
-              <React.Suspense fallback={<Skeleton className="h-[350px] w-full" />}>
+              <React.Suspense fallback={<Skeleton className="h-[380px] w-full rounded-xl" />}>
                 <ComplianceCharts 
                   rcmData={rcmData} 
                   deficiencyBySeverity={deficiencyBySeverity} 
@@ -145,24 +150,30 @@ export function Dashboard() {
             </motion.div>
 
             {/* SECONDARY METRICS (Optimized grid) */}
-            <motion.div variants={itemVariants} className="grid grid-cols-2 gap-4">
+            <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
                {[
                  { label: t('kpis.remediationVelocity'), value: t('kpis.remediationAvgDays'), icon: TrendingUp, color: 'text-blue-600', bg: 'bg-blue-50' },
                  { label: t('kpis.line2Validation'), value: t('kpis.line2Percent'), icon: ShieldCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' }
                ].map((metric, i) => (
-                 <div key={i} className="group p-4 bg-white border border-slate-100 rounded-xl shadow-sm hover:shadow-md hover:border-slate-200 transition-all duration-300 cursor-pointer flex flex-col gap-3 ring-1 ring-slate-100/50">
-                    <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center transition-all group-hover:bg-slate-900 group-hover:text-white shrink-0 shadow-sm", metric.bg)}>
-                        <metric.icon className="h-4 w-4" />
+                 <div key={i} className="group p-5 bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer flex items-center gap-4">
+                    <div className={cn("h-10 w-10 rounded-lg flex items-center justify-center transition-colors group-hover:bg-slate-900 group-hover:text-white shrink-0 shadow-sm border border-slate-100", metric.bg)}>
+                        <metric.icon className="h-5 w-5" />
                     </div>
-                    <div>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5 line-clamp-1">{metric.label}</p>
+                    <div className="flex-1">
+                        <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">{metric.label}</p>
                         <div className="flex items-center justify-between">
-                          <p className="text-xl font-display font-black text-slate-900 leading-none tracking-tight">{metric.value}</p>
-                          <Target className="h-3.5 w-3.5 text-slate-300 group-hover:text-slate-900 transition-all duration-300 translate-x-0 group-hover:translate-x-1" />
+                          <p className="text-xl font-bold text-slate-900 leading-tight">{metric.value}</p>
+                          <ArrowRight className="h-4 w-4 text-slate-300 group-hover:text-slate-900 group-hover:translate-x-1 transition-all" />
                         </div>
                     </div>
                  </div>
                ))}
+            </motion.div>
+
+            <motion.div variants={itemVariants} className="p-4 bg-slate-50 rounded-xl border border-slate-200 border-dashed">
+              <p className="text-[10px] text-slate-400 font-medium uppercase tracking-widest text-center">
+                Compliance Engine v2.4.0 — BUMN Standard
+              </p>
             </motion.div>
 
           </div>
