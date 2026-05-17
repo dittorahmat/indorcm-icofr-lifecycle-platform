@@ -124,7 +124,7 @@ export function BPMDiagramList({
                     <span className="font-display font-bold text-slate-900 text-sm group-hover/name:text-indigo-600 transition-colors">
                       {bpm.name}
                     </span>
-                    {bpm.bpmCode && <Badge className="h-5 px-2 text-[9px] bg-slate-900 text-white font-bold tracking-widest rounded-lg">{bpm.bpmCode}</Badge>}
+                    {bpm.bpmCode && <Badge className="h-5 px-2 text-[9px] bg-slate-900 text-white font-bold tracking-widest rounded-lg shrink-0 whitespace-nowrap">{bpm.bpmCode}</Badge>}
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest flex items-center gap-1">

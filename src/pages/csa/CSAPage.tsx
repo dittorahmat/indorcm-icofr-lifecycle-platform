@@ -9,7 +9,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
-import { FileText, Printer, Search, Download, History, ShieldCheck, ChevronDown, ChevronRight } from 'lucide-react';
+import { FileText, Printer, Search, Download, History, ShieldCheck, ChevronDown, ChevronRight, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -22,6 +22,8 @@ import { useTranslation } from 'react-i18next';
 function CSARecordRow({ record: initialRecord, process }: { record: CSARecord, process?: BPMProcess }) {
   const [isExpanded, setIsExpanded] = React.useState(false);
   const [selectedControl, setSelectedControl] = React.useState<Control | null>(null);
+  const [isExportingPDF, setIsExportingPDF] = React.useState(false);
+  const [isExportingXLS, setIsExportingXLS] = React.useState(false);
   const { t } = useTranslation(['csa_hub', 'common']);
   
   const { evaluations, saveMutation } = useTOD(initialRecord.id);
@@ -43,6 +45,73 @@ function CSARecordRow({ record: initialRecord, process }: { record: CSARecord, p
   });
 
   const controls = matrixData?.items || [];
+
+  const handleExportPDF = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsExportingPDF(true);
+    const toastId = toast.loading("Generating PDF Report...");
+    try {
+      const response = await fetch(`/api/csa/${initialRecord.id}/export-pdf`, {
+        headers: {
+          'X-Mock-Role': localStorage.getItem('mockRole') || 'Line 2'
+        }
+      });
+      if (!response.ok) throw new Error("Failed to generate PDF");
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `CSA_${process?.name || 'Report'}_${initialRecord.period}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      toast.success("PDF exported successfully", { id: toastId });
+    } catch (err: any) {
+      toast.error(err.message, { id: toastId });
+    } finally {
+      setIsExportingPDF(false);
+    }
+  };
+
+  const handleExportXLS = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsExportingXLS(true);
+    const toastId = toast.loading("Generating Excel Report...");
+    try {
+      const XLSX = await import('xlsx');
+      
+      // Prepare Data
+      const summaryData = [
+        { "Field": "Process Name", "Value": process?.name },
+        { "Field": "Period", "Value": initialRecord.period },
+        { "Field": "Assessment Date", "Value": format(new Date(initialRecord.assessmentDate), 'yyyy-MM-dd HH:mm') },
+        { "Field": "Overall Result", "Value": initialRecord.result },
+        { "Field": "Comments", "Value": initialRecord.comments || "" }
+      ];
+
+      const samplesData = (record.samples || []).map((s, idx) => ({
+        "No": idx + 1,
+        "Sample Ref": s.sampleRef,
+        "Result": s.controlResults ? "Mapped" : "Empty",
+        "ITAC Match": s.itacMatch ? "Yes" : "N/A"
+      }));
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summaryData), 'Summary');
+      if (samplesData.length > 0) {
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(samplesData), 'Samples');
+      }
+
+      XLSX.writeFile(wb, `CSA_Report_${process?.name || 'Export'}_${initialRecord.period}.xlsx`);
+      toast.success("Excel exported successfully", { id: toastId });
+    } catch (err: any) {
+      toast.error("Failed to generate Excel", { id: toastId });
+    } finally {
+      setIsExportingXLS(false);
+    }
+  };
 
   return (
     <>
@@ -84,11 +153,23 @@ function CSARecordRow({ record: initialRecord, process }: { record: CSARecord, p
         </TableCell>
         <TableCell className="text-right" onClick={e => e.stopPropagation()}>
           <div className="flex justify-end gap-2 pr-2">
-            <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5 border-slate-200 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 font-bold shadow-sm">
-              <Printer className="h-3.5 w-3.5" /> PDF
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleExportPDF}
+              disabled={isExportingPDF}
+              className="h-8 text-xs gap-1.5 border-slate-200 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 font-bold shadow-sm"
+            >
+              {isExportingPDF ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Printer className="h-3.5 w-3.5" />} PDF
             </Button>
-            <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5 border-slate-200 font-bold shadow-sm">
-              <Download className="h-3.5 w-3.5" /> XLS
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleExportXLS}
+              disabled={isExportingXLS}
+              className="h-8 text-xs gap-1.5 border-slate-200 font-bold shadow-sm"
+            >
+              {isExportingXLS ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />} XLS
             </Button>
           </div>
         </TableCell>

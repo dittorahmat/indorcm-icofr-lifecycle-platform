@@ -143,32 +143,32 @@ export function LoginPage() {
               <p className="font-medium text-xs uppercase tracking-wider text-slate-400">{t('demo.title')}</p>
               <div className="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-2 rounded-lg border border-slate-100 max-h-[120px] overflow-y-auto text-left">
                 <div>
-                  <p className="font-bold text-slate-500 mb-0.5">Mining Ops (.ops)</p>
+                  <p className="font-bold text-slate-500 mb-0.5">{t('demo.departments.mining')}</p>
                   <p>staff.ops@bumn.go.id</p>
                   <p className="mb-1">manager.ops@bumn.go.id</p>
                   
-                  <p className="font-bold text-slate-500 mb-0.5">Finance (.fin)</p>
+                  <p className="font-bold text-slate-500 mb-0.5">{t('demo.departments.finance')}</p>
                   <p>staff.fin@bumn.go.id</p>
                   <p className="mb-1">manager.fin@bumn.go.id</p>
 
-                  <p className="font-bold text-slate-500 mb-0.5">Logistics (.log)</p>
+                  <p className="font-bold text-slate-500 mb-0.5">{t('demo.departments.logistics')}</p>
                   <p>staff.log@bumn.go.id</p>
                   <p>manager.log@bumn.go.id</p>
                 </div>
                 <div>
-                  <p className="font-bold text-slate-500 mb-0.5">IT (.it)</p>
+                  <p className="font-bold text-slate-500 mb-0.5">{t('demo.departments.it')}</p>
                   <p>staff.it@bumn.go.id</p>
                   <p className="mb-1">manager.it@bumn.go.id</p>
 
-                  <p className="font-bold text-slate-500 mb-0.5">HR (.hr)</p>
+                  <p className="font-bold text-slate-500 mb-0.5">{t('demo.departments.hr')}</p>
                   <p>staff.hr@bumn.go.id</p>
                   <p className="mb-1">manager.hr@bumn.go.id</p>
 
                   <p className="font-bold text-slate-500 mb-0.5 border-t pt-1">{t('demo.coreAccess')}</p>
-                  <p>line2@bumn.go.id (L2)</p>
-                  <p>cfo@bumn.go.id (CFO)</p>
-                  <p>komisaris@bumn.go.id (Commissioner)</p>
-                  <p>admin@bumn.go.id (Admin)</p>
+                  <p>line2@bumn.go.id {t('demo.roles.l2')}</p>
+                  <p>cfo@bumn.go.id {t('demo.roles.cfo')}</p>
+                  <p>komisaris@bumn.go.id {t('demo.roles.commissioner')}</p>
+                  <p>admin@bumn.go.id {t('demo.roles.admin')}</p>
                 </div>
               </div>
               <p className="pt-1 text-xs">{t('demo.password')}: <code className="bg-muted px-1 rounded">password</code></p>

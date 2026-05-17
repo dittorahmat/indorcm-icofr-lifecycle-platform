@@ -589,7 +589,7 @@ export function BPMPage() {
                   </div>
                   <div className="h-8 w-px bg-slate-100" />
                   <Button onClick={() => setIsCreatingBPM(true)} className="h-10 gap-2 bg-slate-900 hover:bg-slate-800 shadow-sm transition-all font-bold text-[10px] uppercase tracking-widest px-6 rounded-lg">
-                    <PlusCircle className="h-3.5 w-3.5" /> {t('createButton')}
+                    <PlusCircle className="h-3.5 w-3.5" /> {t('createProcessButton')}
                   </Button>
                 </div>
               </div>
