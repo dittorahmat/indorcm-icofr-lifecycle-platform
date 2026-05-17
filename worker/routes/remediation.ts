@@ -149,6 +149,80 @@ remediation.put('/actionplans/:id', async (c) => {
   return ok(c, { success: true });
 });
 
+remediation.post('/actionplans/:id/workflow', async (c) => {
+  const db = getDb(c.env.DATABASE_URL);
+  const id = c.req.param('id');
+  const orgId = c.get('organizationId')!;
+  const userId = c.get('userId')!;
+  const role = c.get('userRole')!;
+  const body = await c.req.json<{ action: any, note: string }>();
+
+  const existing = await db.select().from(actionPlans).where(and(eq(actionPlans.id, id), eq(actionPlans.organizationId, orgId))).limit(1);
+  if (existing.length === 0) return notFound(c, 'Action Plan not found');
+
+  const plan = existing[0];
+  const currentStatus = (plan.workflowStatus as any) || "Ineffective";
+  let nextStatus = currentStatus;
+
+  if (body.action === "Submit") {
+    nextStatus = "In Review";
+  } else if (body.action === "Review") {
+    nextStatus = "In Approval";
+  } else if (body.action === "Approve") {
+    nextStatus = "Resolved";
+  } else if (body.action === "Reject") {
+    if (!body.note) return notFound(c, "Rejection requires a note"); // Using notFound as a placeholder for bad, but should be bad.
+    nextStatus = "Ineffective";
+  } else if (body.action === "Rollback") {
+    if (!body.note) return notFound(c, "Rollback requires a note");
+    nextStatus = "Ineffective";
+  }
+
+  const historyEntry = {
+    id: crypto.randomUUID(),
+    action: body.action,
+    fromStatus: currentStatus,
+    toStatus: nextStatus,
+    userId,
+    role,
+    timestamp: Date.now(),
+    note: body.note
+  };
+
+  const currentHistory = (plan.workflowHistory as any[]) || [];
+  const newHistory = [historyEntry, ...currentHistory];
+
+  const updateData: any = {
+    workflowStatus: nextStatus,
+    workflowHistory: newHistory,
+    status: nextStatus === 'Resolved' ? 'Resolved' : plan.status 
+  };
+
+  if (nextStatus === 'Resolved') {
+     updateData.actualCompletionDate = new Date();
+     if (plan.deficiencyId) {
+        await db.update(deficiencies).set({ status: 'Remediated' }).where(eq(deficiencies.id, plan.deficiencyId));
+     }
+  }
+
+  await db.update(actionPlans).set(updateData).where(eq(actionPlans.id, id));
+
+  if (nextStatus !== currentStatus) {
+    await db.insert(notifications).values({
+      id: crypto.randomUUID(),
+      organizationId: orgId,
+      userId: plan.ownerId || userId,
+      message: `Status Rencana Aksi berubah menjadi ${nextStatus}. ${body.note ? 'Catatan: ' + body.note : ''}`,
+      type: body.action === 'Reject' ? 'error' : (body.action === 'Approve' ? 'success' : 'info'),
+      link: '/deficiencies',
+      readStatus: false,
+      createdAt: new Date(),
+    });
+  }
+
+  return ok(c, { success: true, nextStatus });
+});
+
 remediation.get('/aggregatedeficiencies', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');

@@ -4,7 +4,7 @@ import { ok, bad, notFound } from '../lib/utils';
 import { getDb, type DrizzleDb } from '../db';
 import { 
   rcms, controls, rcmControls, bpmProcesses, bpmDiagrams, bpmNodeRcms, 
-  organization, accountAssertions
+  organization, accountAssertions, todEvaluations
 } from '../db/schema';
 import { eq, and, sql } from 'drizzle-orm';
 import { RcmService } from "../services/rcm-service";
@@ -226,6 +226,146 @@ rcm.get('/rcm-matrix/itgc', async (c) => {
       locationCode: org?.entityCode || "N/A"
     }))
   });
+});
+
+rcm.get('/rcm-matrix/verification-design', async (c) => {
+  const db = getDb(c.env.DATABASE_URL);
+  const orgId = c.get('organizationId');
+  const bpmProcessId = c.req.query('bpmProcessId');
+
+  const org = await db.select().from(organization).where(eq(organization.id, orgId)).then((rows: any) => rows[0]);
+
+  // Lampiran 8 requires a join of RCM Mapping (Lini 1 data) and TOD Evaluation (Lini 2 data)
+  const results = await db.query.rcmControls.findMany({
+    where: and(
+      eq(rcmControls.organizationId, orgId),
+      bpmProcessId && bpmProcessId !== 'undefined' ? sql`${rcmControls.rcmId} IN (SELECT id FROM ${rcms} WHERE ${rcms.process} = (SELECT name FROM ${bpmProcesses} WHERE id = ${bpmProcessId}))` : undefined
+    ),
+    with: {
+      rcm: true,
+      control: {
+        with: {
+          todEvaluations: true
+        }
+      }
+    }
+  });
+
+  // Flatten and map to Lampiran 8 structure
+  const items = results.map((m: any) => {
+    const tod = m.control?.todEvaluations?.[0] || {};
+    return {
+      id: m.id,
+      controlId: m.controlId,
+      mappingId: m.id,
+      companyName: org?.name || "N/A",
+      locationCode: org?.entityCode || "N/A",
+      // Lini 1 Data (from rcmControls)
+      controlCode: m.control?.code,
+      controlName: m.controlName,
+      controlDescription: m.controlDescription,
+      supportingDocs: m.supportingDocs,
+      isKeyControl: m.isKeyControl,
+      ipoC: m.ipoC,
+      ipoA: m.ipoA,
+      ipoV: m.ipoV,
+      ipoRa: m.ipoRa,
+      assertionE: m.assertionE,
+      assertionC: m.assertionC,
+      assertionA: m.assertionA,
+      assertionCo: m.assertionCo,
+      assertionVa: m.assertionVa,
+      assertionRo: m.assertionRo,
+      assertionPd: m.assertionPd,
+      controlType: m.controlType,
+      controlNature: m.controlNature,
+      automatedControlType: m.automatedControlType,
+      frequency: m.frequency,
+      supportingApp: m.supportingApp,
+      applicationId: m.applicationId,
+      executingFunction: m.executingFunction,
+      executorRole: m.executorRole,
+      affectedFsliItem: m.affectedFsliItem,
+      effectivePeriod: m.effectivePeriod,
+      // Lini 2 Data (from tod_evaluations)
+      todId: tod.id,
+      pilarObjective: tod.pilarObjective,
+      pilarTiming: tod.pilarTiming,
+      pilarAuthority: tod.pilarAuthority,
+      pilarReliability: tod.pilarReliability,
+      pilarCoverage: tod.pilarCoverage,
+      pilarEvidence: tod.pilarEvidence,
+      kkReference: tod.kkReference,
+      conclusion: tod.conclusion,
+      comment: tod.comment,
+    };
+  });
+
+  return ok(c, { items });
+});
+
+rcm.patch('/rcm-matrix/verification-design/:mappingId', rbac(['Line 2', 'Admin']), async (c) => {
+  const db = getDb(c.env.DATABASE_URL);
+  const orgId = c.get('organizationId');
+  const userId = c.get('userId');
+  const mappingId = c.req.param('mappingId');
+  const body = await c.req.json();
+
+  if (!mappingId) return bad(c, 'Mapping ID is required');
+
+  const mapping = await db.query.rcmControls.findFirst({
+    where: and(eq(rcmControls.id, mappingId), eq(rcmControls.organizationId, orgId))
+  });
+
+  if (!mapping) return notFound(c);
+
+  // 1. Update Lini 1 Data in rcm_controls if provided
+  const lini1Fields = [
+    'controlName', 'controlDescription', 'supportingDocs', 'isKeyControl',
+    'ipoC', 'ipoA', 'ipoV', 'ipoRa', 'assertionE', 'assertionC', 'assertionA',
+    'assertionCo', 'assertionVa', 'assertionRo', 'assertionPd', 'controlType',
+    'controlNature', 'automatedControlType', 'frequency', 'supportingApp',
+    'applicationId', 'executingFunction', 'executorRole', 'affectedFsliItem',
+    'effectivePeriod'
+  ];
+
+  const updateMapping: any = {};
+  lini1Fields.forEach(f => { if (body[f] !== undefined) updateMapping[f] = body[f]; });
+
+  if (Object.keys(updateMapping).length > 0) {
+    await db.update(rcmControls).set(updateMapping).where(eq(rcmControls.id, mappingId));
+  }
+
+  // 2. Update Lini 2 Data in tod_evaluations
+  const lini2Fields = [
+    'pilarObjective', 'pilarTiming', 'pilarAuthority', 'pilarReliability',
+    'pilarCoverage', 'pilarEvidence', 'kkReference', 'conclusion', 'comment'
+  ];
+
+  const todData: any = {
+    organizationId: orgId,
+    controlId: mapping.controlId,
+    evaluatorId: userId,
+    updatedAt: new Date(),
+  };
+  lini2Fields.forEach(f => { if (body[f] !== undefined) todData[f] = body[f]; });
+
+  const existingTod = await db.query.todEvaluations.findFirst({
+    where: and(eq(todEvaluations.controlId, mapping.controlId), eq(todEvaluations.organizationId, orgId))
+  });
+
+  if (existingTod) {
+    await db.update(todEvaluations).set(todData).where(eq(todEvaluations.id, existingTod.id));
+  } else {
+    await db.insert(todEvaluations).values({
+      ...todData,
+      id: crypto.randomUUID(),
+      csaId: null, // Explicitly null as it's a design verification not tied to a CSA record yet
+      createdAt: new Date(),
+    });
+  }
+
+  return ok(c, { success: true });
 });
 
 rcm.get('/rcm-matrix/tlc/mapping/:id', async (c) => {

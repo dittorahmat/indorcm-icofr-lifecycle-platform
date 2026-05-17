@@ -54,7 +54,7 @@ import {
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
-import { MaterialitySimulation } from "@shared/types";
+import { MaterialitySimulation, BPMProcess, ActionPlan } from "@shared/types";
 
 import { authClient } from "@/lib/auth-client";
 import { useTranslation } from "react-i18next";
@@ -84,6 +84,43 @@ function PendingApprovalBadge({ role }: { role: string | null | undefined }) {
   return (
     <div className="h-5 w-5 rounded-full bg-red-500 text-xs font-bold text-white flex items-center justify-center animate-pulse shadow-sm shadow-red-200">
       {count}
+    </div>
+  );
+}
+
+function WorkflowPendingBadge({ role }: { role: string | null | undefined }) {
+  const { data: bpmProcesses } = useQuery({
+    queryKey: ['bpm-processes-pending-badge'],
+    queryFn: () => api<{ items: BPMProcess[] }>('/api/bpm-processes'),
+    enabled: !!role && (role === 'Line 2' || role === 'Admin' || role === 'CFO'),
+    refetchInterval: 60000,
+  });
+
+  const { data: actionPlans } = useQuery({
+    queryKey: ['action-plans-pending-badge'],
+    queryFn: () => api<{ items: ActionPlan[] }>('/api/actionplans'),
+    enabled: !!role && (role === 'Line 2' || role === 'Admin' || role === 'CFO'),
+    refetchInterval: 60000,
+  });
+
+  const bpmCount = bpmProcesses?.items.filter(p => {
+    if (role === 'Line 2' || role === 'Admin') return p.workflowStatus === 'Pending Review';
+    if (role === 'CFO' || role === 'Admin') return p.workflowStatus === 'Pending Approval';
+    return false;
+  }).length || 0;
+
+  const apCount = actionPlans?.items.filter(p => {
+    if (role === 'Line 2' || role === 'Admin') return p.workflowStatus === 'In Review';
+    if (role === 'CFO' || role === 'Admin') return p.workflowStatus === 'In Approval';
+    return false;
+  }).length || 0;
+
+  const total = bpmCount + apCount;
+  if (total === 0) return null;
+
+  return (
+    <div className="h-5 w-5 rounded-full bg-indigo-600 text-[10px] font-black text-white flex items-center justify-center animate-pulse shadow-sm shadow-indigo-200">
+      {total}
     </div>
   );
 }
@@ -150,7 +187,12 @@ export function AppSidebar(): JSX.Element {
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/bpm")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight" title={t('items.bpm')}>
-                <Link to="/bpm" className="font-semibold text-sm"><Workflow className="h-4 w-4" /> <span>{t('items.bpm')}</span></Link>
+                <Link to="/bpm" className="flex items-center justify-between w-full font-semibold text-sm">
+                  <div className="flex items-center gap-2">
+                    <Workflow className="h-4 w-4" /> <span>{t('items.bpm')}</span>
+                  </div>
+                  {(userRole === 'Line 2' || userRole === 'Admin' || userRole === 'CFO') && <WorkflowPendingBadge role={userRole} />}
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
@@ -200,6 +242,11 @@ export function AppSidebar(): JSX.Element {
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={isActive("/rcm/verification-design")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
+                <Link to="/rcm/verification-design" className="font-semibold text-sm"><ClipboardCheck className="h-4 w-4" /> <span>{t('items.verificationDesign')}</span></Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/csa")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight" title={t('items.csaReports')}>
                 <Link to="/csa" className="font-semibold text-sm"><ClipboardCheck className="h-4 w-4" /> <span>{t('items.csaReports')}</span></Link>
               </SidebarMenuButton>
@@ -235,7 +282,11 @@ export function AppSidebar(): JSX.Element {
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/deficiencies")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
-                <Link to="/deficiencies" className="font-semibold text-sm"><AlertTriangle className="h-4 w-4" /> <span>{t('items.deficiencies')}</span></Link>
+                <Link to="/deficiencies" className="flex items-center justify-between w-full font-semibold text-sm">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4" /> <span>{t('items.deficiencies')}</span>
+                  </div>
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

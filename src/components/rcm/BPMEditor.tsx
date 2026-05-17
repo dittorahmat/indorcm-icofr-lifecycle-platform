@@ -27,7 +27,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import type { RCM, Control, QualitativeLevel, Settings, BPMNode } from '@shared/types';
+import type { RCM, Control, QualitativeLevel, Settings, BPMNode, BPMProcess } from '@shared/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -119,11 +119,27 @@ export function BPMEditor({ diagramId, subProcess, workingYear }: BPMEditorProps
     queryFn: () => api<Settings>('/api/settings')
   });
 
+  const { data: bpmProcess } = useQuery({
+    queryKey: ['bpm-processes', subProcess],
+    queryFn: async () => {
+      const res = await api<{ items: BPMProcess[] }>('/api/bpm-processes');
+      return res.items.find(p => p.name === subProcess);
+    },
+    enabled: !!subProcess
+  });
+
+  const isWorkflowLocked = React.useMemo(() => {
+    if (!bpmProcess) return false;
+    const status = bpmProcess.workflowStatus || 'Draft';
+    return status !== 'Draft' && status !== 'Rejected';
+  }, [bpmProcess]);
+
   const isLocked = React.useMemo(() => {
+    if (isWorkflowLocked) return true;
     if (!diagram || !workingYear) return false;
     const diagramYear = diagram.year || parseInt(workingYear);
     return diagramYear < parseInt(workingYear) || settings?.isPeriodLocked === true;
-  }, [diagram, workingYear, settings?.isPeriodLocked]);
+  }, [isWorkflowLocked, diagram, workingYear, settings?.isPeriodLocked]);
 
   const localizedInitialNodes = useMemo(() => [
     { ...initialNodes[0], data: { ...initialNodes[0].data, label: t('bpm:editor.nodes.start') } },

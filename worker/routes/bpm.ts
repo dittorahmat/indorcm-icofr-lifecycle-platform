@@ -127,6 +127,26 @@ bpm.patch('/bpm-processes/:id', rbac(['Line 2', 'Admin']), async (c) => {
   }
 });
 
+bpm.post('/bpm-processes/:id/workflow', async (c) => {
+  const db = getDb(c.env.DATABASE_URL);
+  const bpmService = new BpmService(db);
+  const id = c.req.param('id');
+  const body = await c.req.json();
+
+  try {
+    const result = await bpmService.handleWorkflowAction(
+      c.get('organizationId')!,
+      c.get('userId')!,
+      c.get('userRole')!,
+      id!,
+      body
+    );
+    return ok(c, result);
+  } catch (e: any) {
+    return bad(c, e.message);
+  }
+});
+
 bpm.delete('/bpm-processes/:id', rbac(['Line 2', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const bpmService = new BpmService(db);

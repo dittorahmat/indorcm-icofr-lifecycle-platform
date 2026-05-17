@@ -16,6 +16,7 @@ import riskLibraryEn from './locales/en/risklibrary.json';
 import rcmEn from './locales/en/rcm.json';
 import csaHubEn from './locales/en/csa_hub.json';
 import aiEn from './locales/en/ai.json';
+import workflowEn from './locales/en/workflow.json';
 
 import commonId from './locales/id/common.json';
 import sidebarId from './locales/id/sidebar.json';
@@ -30,6 +31,7 @@ import riskLibraryId from './locales/id/risklibrary.json';
 import rcmId from './locales/id/rcm.json';
 import csaHubId from './locales/id/csa_hub.json';
 import aiId from './locales/id/ai.json';
+import workflowId from './locales/id/workflow.json';
 
 i18n
   .use(LanguageDetector)
@@ -50,6 +52,7 @@ i18n
         rcm: rcmEn,
         csa_hub: csaHubEn,
         ai: aiEn,
+        workflow: workflowEn,
       },
       id: {
         common: commonId,
@@ -65,10 +68,11 @@ i18n
         rcm: rcmId,
         csa_hub: csaHubId,
         ai: aiId,
+        workflow: workflowId,
       },
     },
     fallbackLng: 'en',
-    ns: ['common', 'sidebar', 'scoping', 'dashboard', 'reports', 'knowledge', 'bpm', 'deficiency', 'testing', 'risklibrary', 'rcm', 'csa_hub', 'ai'],
+    ns: ['common', 'sidebar', 'scoping', 'dashboard', 'reports', 'knowledge', 'bpm', 'deficiency', 'testing', 'risklibrary', 'rcm', 'csa_hub', 'ai', 'workflow'],
     defaultNS: 'common',
     interpolation: {
       escapeValue: false, // react already safes from xss

@@ -36,6 +36,7 @@ const ExternalAuditPortal = lazy(() => import('@/pages/audit/ExternalAuditPortal
 const WBSPage = lazy(() => import('@/pages/reports/WBSPage').then(module => ({ default: module.WBSPage })));
 const ChangeLogPage = lazy(() => import('@/pages/rcm/ChangeLogPage').then(module => ({ default: module.ChangeLogPage })));
 const SOCMonitoringPage = lazy(() => import('@/pages/rcm/SOCMonitoringPage').then(module => ({ default: module.SOCMonitoringPage })));
+const VerificationDesignPage = lazy(() => import('@/pages/rcm/VerificationDesignPage').then(module => ({ default: module.VerificationDesignPage })));
 const BPMPage = lazy(() => import('@/pages/bpm/BPMPage').then(module => ({ default: module.BPMPage })));
 const CSAPage = lazy(() => import('@/pages/csa/CSAPage').then(module => ({ default: module.CSAPage })));
 const TodoListPage = lazy(() => import('@/pages/csa/TodoListPage').then(module => ({ default: module.TodoListPage })));
@@ -94,6 +95,7 @@ const router = createBrowserRouter([
                   { path: "/rcm/tlc", element: <PageSuspense><RCMTLCPage /></PageSuspense> },
                   { path: "/rcm/elc", element: <PageSuspense><RCMELCPage /></PageSuspense> },
                   { path: "/rcm/itgc", element: <PageSuspense><RCMITGCPage /></PageSuspense> },
+                  { path: "/rcm/verification-design", element: <PageSuspense><VerificationDesignPage /></PageSuspense> },
                   { path: "/change-log", element: <PageSuspense><ChangeLogPage /></PageSuspense> },
                   { path: "/soc-monitoring", element: <PageSuspense><SOCMonitoringPage /></PageSuspense> },
                   { path: "/applications", element: <PageSuspense><SOCMonitoringPage /></PageSuspense> },

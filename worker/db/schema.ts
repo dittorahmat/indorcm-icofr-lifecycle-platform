@@ -480,6 +480,8 @@ export const actionPlans = pgTable("action_plans", {
 	actualCompletionDate: timestamp("actual_completion_date"),
 	isApprovedByLine2: boolean("is_approved_by_line2").default(false),
 	isBeforeYearEnd: boolean("is_before_year_end").default(false),
+	workflowStatus: text("workflow_status"), // DeficiencyWorkflowStatus
+	workflowHistory: jsonb("workflow_history").$type<any[]>().default([]),
 	severity: text("severity"), // CD, SD, MW
 	rescheduleReason: text("reschedule_reason"),
 });
@@ -529,6 +531,8 @@ export const bpmProcesses = pgTable("bpm_processes", {
 	riskCount: integer("risk_count").default(0),
 	controlCount: integer("control_count").default(0),
 	standardTestProcedure: text("standard_test_procedure"), // Master template for CSA
+	workflowStatus: text("workflow_status"), // BPMWorkflowStatus
+	workflowHistory: jsonb("workflow_history").$type<any[]>().default([]),
 	createdAt: timestamp("created_at").notNull(),
 	createdBy: text("created_by").references(() => user.id),
 }, (table) => {
@@ -729,7 +733,7 @@ export const bpmExports = pgTable("bpm_exports", {
 export const todEvaluations = pgTable("tod_evaluations", {
 	id: text("id").primaryKey(),
 	organizationId: text("organization_id").notNull().references(() => organization.id),
-	csaId: text("csa_id").notNull().references(() => csaRecords.id, { onDelete: 'cascade' }),
+	csaId: text("csa_id").references(() => csaRecords.id, { onDelete: 'cascade' }),
 	controlId: text("control_id").notNull().references(() => controls.id),
 	evaluatorId: text("evaluator_id").references(() => user.id),
 	
@@ -816,4 +820,18 @@ export const todEvaluationRelations = relations(todEvaluations, ({ one }) => ({
 	csaRecord: one(csaRecords, { fields: [todEvaluations.csaId], references: [csaRecords.id] }),
 	control: one(controls, { fields: [todEvaluations.controlId], references: [controls.id] }),
 	evaluator: one(user, { fields: [todEvaluations.evaluatorId], references: [user.id] }),
+}));
+
+export const rcmRelations = relations(rcms, ({ many }) => ({
+	mappings: many(rcmControls),
+}));
+
+export const rcmControlRelations = relations(rcmControls, ({ one }) => ({
+	rcm: one(rcms, { fields: [rcmControls.rcmId], references: [rcms.id] }),
+	control: one(controls, { fields: [rcmControls.controlId], references: [controls.id] }),
+}));
+
+export const controlRelations = relations(controls, ({ many }) => ({
+	rcmMappings: many(rcmControls),
+	todEvaluations: many(todEvaluations),
 }));

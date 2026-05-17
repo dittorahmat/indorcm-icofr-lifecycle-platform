@@ -107,5 +107,29 @@
         "operations": "Pengendalian untuk memastikan bahwa sistem/aplikasi memproses data secara lengkap dan akurat, serta memastikan bahwa insiden dan masalah yang teridentifikasi telah diselesaikan secara lengkap dan akurat."
       }
     }
+  },
+  "verification": {
+    "title": "Verifikasi Rancangan Pengendalian (Lampiran 8)",
+    "subtitle": "Fungsi ICOFR memvalidasi desain pengendalian untuk memitigasi risiko",
+    "groups": {
+      "info": "Informasi Pengendalian (Lini 1)",
+      "tod": "Pengujian Rancangan (TOD) - Lini 2"
+    },
+    "columns": {
+      "control_ref": "Ref. Pengendalian",
+      "control_name": "Nama Pengendalian",
+      "is_key": "Utama (Y/T)",
+      "p_obj": "Pencapaian Objektif",
+      "p_time": "Ketepatan Waktu",
+      "p_auth": "Wewenang & Kompetensi",
+      "p_rel": "Keandalan Informasi",
+      "p_cov": "Periode Cakupan",
+      "p_evid": "Bukti yang Tersedia",
+      "kk_ref": "Ref. KK",
+      "conclusion": "Kesimpulan TOD",
+      "actions": "Aksi & Informasi",
+      "entity": "Entitas",
+      "location": "Kode Lokasi"
+    }
   }
 }

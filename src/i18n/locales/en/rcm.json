@@ -107,5 +107,29 @@
         "operations": "Controls to ensure that systems/applications process data completely and accurately, and ensure that identified incidents and problems have been resolved completely and accurately."
       }
     }
+  },
+  "verification": {
+    "title": "Control Design Verification (Appendix 8)",
+    "subtitle": "ICOFR Function validates control design to mitigate risks",
+    "groups": {
+      "info": "Control Information (Line 1)",
+      "tod": "Design Testing (TOD) - Line 2"
+    },
+    "columns": {
+      "control_ref": "Control Ref",
+      "control_name": "Control Name",
+      "is_key": "Key (Y/N)",
+      "p_obj": "Objective Achievement",
+      "p_time": "Timing Accuracy",
+      "p_auth": "Authority & Competence",
+      "p_rel": "Information Reliability",
+      "p_cov": "Period Coverage",
+      "p_evid": "Evidence Availability",
+      "kk_ref": "Workpaper Ref",
+      "conclusion": "TOD Conclusion",
+      "actions": "Action & Information",
+      "entity": "Entity",
+      "location": "Location Code"
+    }
   }
 }

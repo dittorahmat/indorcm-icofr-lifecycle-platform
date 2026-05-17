@@ -55,7 +55,21 @@ export interface GLSnapshot extends Omit<InferSelectModel<typeof schema.glSnapsh
 }
 
 export type SimulationStatus = "Draft" | "Pending CFO" | "Pending Komut" | "Approved" | "Rejected";
-export type BPMWorkflowStatus = "Draft" | "Pending Approval" | "Approved" | "Rejected";
+export type WorkflowAction = "Submit" | "Review" | "Approve" | "Reject" | "Rollback" | "Update";
+
+export type BPMWorkflowStatus = "Draft" | "Pending Review" | "Pending Approval" | "Approved" | "Rejected";
+export type DeficiencyWorkflowStatus = "Ineffective" | "In Review" | "In Approval" | "Resolved";
+
+export interface WorkflowHistoryEntry {
+  id: string;
+  action: WorkflowAction;
+  fromStatus: string;
+  toStatus: string;
+  userId: string;
+  role: string;
+  timestamp: number;
+  note: string;
+}
 
 export interface ApprovalHistoryEntry {
   id: string;
@@ -170,8 +184,10 @@ export interface Control extends Omit<InferSelectModel<typeof schema.controls>, 
   lastCsaDate: number | null;
 }
 
-export type BPMProcess = Omit<InferSelectModel<typeof schema.bpmProcesses>, 'createdAt'> & {
+export type BPMProcess = Omit<InferSelectModel<typeof schema.bpmProcesses>, 'createdAt' | 'workflowHistory'> & {
   createdAt: number;
+  workflowStatus: BPMWorkflowStatus;
+  workflowHistory: WorkflowHistoryEntry[];
 };
 
 export interface BPMNode {
@@ -295,8 +311,10 @@ export interface Deficiency extends Omit<InferSelectModel<typeof schema.deficien
   identifiedDate: number | null;
 }
 
-export interface ActionPlan extends Omit<InferSelectModel<typeof schema.actionPlans>, 'dueDate' | 'targetDate' | 'actualCompletionDate'> {
+export interface ActionPlan extends Omit<InferSelectModel<typeof schema.actionPlans>, 'dueDate' | 'targetDate' | 'actualCompletionDate' | 'workflowHistory'> {
   status: ActionPlanStatus;
+  workflowStatus: DeficiencyWorkflowStatus;
+  workflowHistory: WorkflowHistoryEntry[];
   dueDate: number | null;
   targetDate: number | null;
   actualCompletionDate: number | null;

@@ -22,10 +22,12 @@ import { RCMTLCPage } from '@/pages/rcm/RCMTLCPage';
 import { RCMITGCPage } from '@/pages/rcm/RCMITGCPage';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
-import { Control, User, TransactionDetail } from '@shared/types';
+import { Control, User, TransactionDetail, BPMProcess } from '@shared/types';
 import { useTranslation } from 'react-i18next';
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
+import { WorkflowPanel } from '../workflow/WorkflowPanel';
+import { useUnsavedChangesContext } from '@/context/UnsavedChangesContext';
 
 interface BPMModalProps {
   isOpen: boolean;
@@ -51,9 +53,19 @@ export function BPMModal({
   scheduleId
 }: BPMModalProps) {
   const { t } = useTranslation(['bpm', 'common']);
-  // Default to CSA tab as the primary entry point for Execution Hub
+  const queryClient = useQueryClient();
+  const { isDirty: globalDirty } = useUnsavedChangesContext();
   const [activeTab, setActiveTab] = React.useState("csa");
   const [selectedSamples, setSelectedSamples] = React.useState<TransactionDetail[]>([]);
+
+  const { data: processData } = useQuery({
+    queryKey: ['bpm-process', bpmProcessId],
+    queryFn: async () => {
+      const res = await api<{ items: BPMProcess[] }>(`/api/bpm-processes?id=${bpmProcessId}`);
+      return res.items[0];
+    },
+    enabled: !!bpmProcessId && isOpen
+  });
 
   // Maintain tab sync if opened/re-opened with a schedule
   React.useEffect(() => {
@@ -65,7 +77,7 @@ export function BPMModal({
   }, [isOpen, scheduleId]);
 
   // Safety guard for modal closing
-  const blocker = useUnsavedChanges(isOpen && selectedSamples.length > 0 && activeTab === 'sampling');
+  const blocker = useUnsavedChanges(isOpen && (selectedSamples.length > 0 && activeTab === 'sampling' || globalDirty));
 
   const { data: currentUser } = useQuery({
     queryKey: ['auth-me'],
@@ -136,7 +148,7 @@ export function BPMModal({
           </div>
         </DialogHeader>
 
-        <div className="flex-1 flex flex-col min-h-0 overflow-hidden bg-slate-50">
+        <div className="flex-1 flex min-h-0 overflow-hidden bg-slate-50">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
             <div className="px-6 border-b bg-white shrink-0 shadow-sm z-10">
               <TabsList className="h-14 bg-transparent gap-8 p-0">
@@ -219,6 +231,23 @@ export function BPMModal({
               </TabsContent>
             </div>
           </Tabs>
+
+          <div className="w-[350px] border-l bg-white flex flex-col shrink-0">
+            {processData && (
+              <WorkflowPanel 
+                entityType="BPM"
+                entityId={processData.id}
+                currentStatus={processData.workflowStatus || 'Draft'}
+                history={processData.workflowHistory || []}
+                className="h-full border-none shadow-none rounded-none"
+                isDirty={globalDirty}
+                onStatusChange={() => {
+                  queryClient.invalidateQueries({ queryKey: ['bpm-process', bpmProcessId] });
+                  queryClient.invalidateQueries({ queryKey: ['bpm-processes'] });
+                }}
+              />
+            )}
+          </div>
         </div>
         <UnsavedChangesDialog blocker={blocker} />
       </DialogContent>
