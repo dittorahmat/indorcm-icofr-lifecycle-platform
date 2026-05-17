@@ -33,10 +33,10 @@ export function MainHeader() {
 
   return (
     <header className={cn(
-      "sticky top-0 z-[100] w-full border-b transition-colors duration-300",
+      "sticky top-0 z-[100] w-full border-b transition-colors duration-300 shadow-md",
       isDark
         ? "bg-slate-950 border-slate-800 text-slate-50"
-        : "bg-primary border-primary/10 text-primary-foreground"
+        : "bg-mancity-pattern border-primary/20 text-primary-foreground"
     )}>
       <div className="flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-6">
@@ -44,9 +44,12 @@ export function MainHeader() {
             <Link to="/dashboard" className="flex items-center gap-2 group">
               <Shield className={cn(
                 "h-7 w-7 transition-transform group-hover:scale-110",
-                isDark ? "text-emerald-400" : "text-white"
+                isDark ? "text-emerald-400" : "text-primary-foreground"
               )} />
-              <span className="font-display tracking-tight text-white text-lg font-bold hidden sm:inline-block">IndoGRC Pro</span>
+              <span className={cn(
+                "font-display tracking-tight text-lg font-bold hidden sm:inline-block",
+                isDark ? "text-white" : "text-primary-foreground"
+              )}>IndoGRC Pro</span>
             </Link>
           </div>
         </div>

@@ -23,9 +23,89 @@ import { WorkflowHistoryTimeline } from './WorkflowHistoryTimeline';
 import { useWorkflow } from '@/hooks/use-workflow';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '@/lib/api-client';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+
+// --- Workflow Blueprints Definition ---
+
+interface ActionConfig {
+  id: WorkflowAction;
+  labelKey: string;
+  variant?: 'default' | 'outline' | 'destructive' | 'indigo' | 'emerald' | 'amber';
+  icon: any;
+  needsAssignee?: boolean;
+  needsNote?: boolean;
+}
+
+interface WorkflowBlueprint {
+  steps: Record<string, {
+    actions: ActionConfig[];
+  }>;
+}
+
+const WORKFLOW_BLUEPRINTS: Record<string, WorkflowBlueprint> = {
+  BPM: {
+    steps: {
+      'Draft': { actions: [{ id: 'Submit', labelKey: 'workflow:submitForReview', icon: Send, needsAssignee: true }] },
+      'Rejected': { actions: [{ id: 'Submit', labelKey: 'workflow:submitForReview', icon: Send, needsAssignee: true }] },
+      'Pending Review': { 
+        actions: [
+          { id: 'Reject', labelKey: 'common:status.rejected', icon: XCircle, variant: 'outline', needsNote: true },
+          { id: 'Review', labelKey: 'workflow:passReview', icon: Search, variant: 'indigo', needsAssignee: true }
+        ] 
+      },
+      'Pending Approval': { 
+        actions: [
+          { id: 'Reject', labelKey: 'common:status.rejected', icon: XCircle, variant: 'outline', needsNote: true },
+          { id: 'Approve', labelKey: 'workflow:approveAndSave', icon: CheckCircle2, variant: 'emerald' }
+        ] 
+      },
+      'Approved': { actions: [{ id: 'Rollback', labelKey: 'workflow:rollback', icon: RotateCcw, variant: 'outline', needsNote: true }] },
+    }
+  },
+  ACTION_PLAN: {
+    steps: {
+      'Ineffective': { actions: [{ id: 'Submit', labelKey: 'workflow:submitPlan', icon: Send, needsAssignee: true }] },
+      'In Review': { 
+        actions: [
+          { id: 'Reject', labelKey: 'workflow:rejectPlan', icon: XCircle, variant: 'outline', needsNote: true },
+          { id: 'Review', labelKey: 'workflow:approvePlan', icon: CheckCircle2, variant: 'indigo', needsAssignee: true }
+        ] 
+      },
+      'In Approval': { 
+        actions: [
+          { id: 'Reject', labelKey: 'workflow:rejectFinal', icon: XCircle, variant: 'outline', needsNote: true },
+          { id: 'Approve', labelKey: 'workflow:finalApprove', icon: CheckCircle2, variant: 'emerald' }
+        ] 
+      },
+      'Resolved': { actions: [{ id: 'Rollback', labelKey: 'workflow:rollbackIneffective', icon: RotateCcw, variant: 'outline', needsNote: true }] },
+    }
+  },
+  // Ready for Scoping extension
+  SCOPING: {
+    steps: {
+      'Draft': { actions: [{ id: 'Submit', labelKey: 'workflow:submitForReview', icon: Send, needsAssignee: true }] },
+      'Pending CFO': { 
+        actions: [
+          { id: 'Reject', labelKey: 'common:status.rejected', icon: XCircle, variant: 'outline', needsNote: true },
+          { id: 'Review', labelKey: 'workflow:passReview', icon: Search, variant: 'indigo', needsAssignee: true }
+        ] 
+      },
+      'Pending Komut': { 
+        actions: [
+          { id: 'Reject', labelKey: 'common:status.rejected', icon: XCircle, variant: 'outline', needsNote: true },
+          { id: 'Approve', labelKey: 'workflow:finalApprove', icon: CheckCircle2, variant: 'emerald' }
+        ] 
+      },
+      'Approved': { actions: [{ id: 'Rollback', labelKey: 'workflow:rollback', icon: RotateCcw, variant: 'outline', needsNote: true }] },
+    }
+  }
+};
 
 interface WorkflowPanelProps {
-  entityType: 'BPM' | 'ACTION_PLAN';
+  entityType: 'BPM' | 'ACTION_PLAN' | 'SCOPING';
   entityId: string;
   currentStatus: string;
   history: WorkflowHistoryEntry[];
@@ -41,17 +121,34 @@ export function WorkflowPanel({
   const { executeAction, isPending } = useWorkflow(entityType, entityId);
   
   const [note, setNote] = useState('');
-  const [pendingAction, setPendingAction] = useState<WorkflowAction | null>(null);
+  const [pendingActionId, setPendingActionId] = useState<WorkflowAction | null>(null);
   const [isNoteDialogOpen, setIsNoteDialogOpen] = useState(false);
+  const [selectedAssigneeId, setSelectedAssigneeId] = useState<string>('');
+
+  const blueprint = WORKFLOW_BLUEPRINTS[entityType];
+  const currentStep = blueprint?.steps[currentStatus] || { actions: [] };
+
+  const findActionConfig = (actionId: WorkflowAction) => {
+    return currentStep.actions.find(a => a.id === actionId);
+  };
+
+  const pendingActionConfig = pendingActionId ? findActionConfig(pendingActionId) : null;
+
+  const { data: users } = useQuery({
+    queryKey: ['users-for-workflow'],
+    queryFn: () => api<{ items: { id: string, name: string, role: string }[] }>('/api/admin/users'),
+  });
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Draft':
       case 'Ineffective': return 'bg-slate-100 text-slate-700 border-slate-200';
       case 'Pending Review':
-      case 'In Review': return 'bg-blue-50 text-blue-700 border-blue-200';
+      case 'In Review':
+      case 'Pending CFO': return 'bg-blue-50 text-blue-700 border-blue-200';
       case 'Pending Approval':
-      case 'In Approval': return 'bg-amber-50 text-amber-700 border-amber-200';
+      case 'In Approval':
+      case 'Pending Komut': return 'bg-amber-50 text-amber-700 border-amber-200';
       case 'Approved':
       case 'Resolved': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
       case 'Rejected': return 'bg-rose-50 text-rose-700 border-rose-200';
@@ -61,7 +158,7 @@ export function WorkflowPanel({
 
   const isLocked = currentStatus !== 'Draft' && currentStatus !== 'Rejected' && currentStatus !== 'Ineffective';
 
-  const handleActionClick = (action: WorkflowAction) => {
+  const handleActionClick = (actionId: WorkflowAction) => {
     if (isDirty) {
       toast.warning(t('common:unsavedChanges.title'), {
         description: t('common:unsavedChanges.description')
@@ -69,11 +166,14 @@ export function WorkflowPanel({
       return;
     }
 
-    if (action === 'Reject' || action === 'Rollback') {
-      setPendingAction(action);
+    const config = findActionConfig(actionId);
+    if (!config) return;
+
+    if (config.needsNote || config.needsAssignee) {
+      setPendingActionId(actionId);
       setIsNoteDialogOpen(true);
     } else {
-      executeAction({ action, note: '' }, {
+      executeAction({ action: actionId, note: '' }, {
         onSuccess: (data: any) => {
           onStatusChange?.(data.nextStatus);
         }
@@ -82,97 +182,52 @@ export function WorkflowPanel({
   };
 
   const confirmActionWithNote = () => {
-    if (!note.trim()) return;
-    if (!pendingAction) return;
+    if (!pendingActionId) return;
+    const config = findActionConfig(pendingActionId);
+    if (!config) return;
 
-    executeAction({ action: pendingAction, note }, {
+    if (config.needsNote && !note.trim()) return;
+
+    executeAction({ action: pendingActionId, note, assigneeId: selectedAssigneeId || undefined }, {
       onSuccess: (data: any) => {
         onStatusChange?.(data.nextStatus);
         setIsNoteDialogOpen(false);
         setNote('');
-        setPendingAction(null);
+        setSelectedAssigneeId('');
+        setPendingActionId(null);
       }
     });
   };
 
   const renderButtons = () => {
-    if (entityType === 'BPM') {
-      switch (currentStatus) {
-        case 'Draft':
-        case 'Rejected':
-          return (
-            <Button className="w-full gap-2" onClick={() => handleActionClick('Submit')} disabled={isPending}>
-              <Send className="h-4 w-4" /> {t('workflow:submitForReview')}
-            </Button>
-          );
-        case 'Pending Review':
-          return (
-            <div className="grid grid-cols-2 gap-2 w-full">
-              <Button variant="outline" className="text-rose-600 border-rose-200 hover:bg-rose-50 gap-2" onClick={() => handleActionClick('Reject')} disabled={isPending}>
-                <XCircle className="h-4 w-4" /> {t('common:status.rejected')}
-              </Button>
-              <Button className="bg-indigo-600 hover:bg-indigo-700 gap-2" onClick={() => handleActionClick('Review')} disabled={isPending}>
-                <Search className="h-4 w-4" /> {t('workflow:passReview')}
-              </Button>
-            </div>
-          );
-        case 'Pending Approval':
-          return (
-            <div className="grid grid-cols-2 gap-2 w-full">
-              <Button variant="outline" className="text-rose-600 border-rose-200 hover:bg-rose-50 gap-2" onClick={() => handleActionClick('Reject')} disabled={isPending}>
-                <XCircle className="h-4 w-4" /> {t('common:status.rejected')}
-              </Button>
-              <Button className="bg-emerald-600 hover:bg-emerald-700 gap-2" onClick={() => handleActionClick('Approve')} disabled={isPending}>
-                <CheckCircle2 className="h-4 w-4" /> {t('workflow:approveAndSave')}
-              </Button>
-            </div>
-          );
-        case 'Approved':
-          return (
-            <Button variant="outline" className="w-full gap-2 text-amber-600 border-amber-200" onClick={() => handleActionClick('Rollback')} disabled={isPending}>
-              <RotateCcw className="h-4 w-4" /> {t('workflow:rollback')}
-            </Button>
-          );
-      }
-    } else if (entityType === 'ACTION_PLAN') {
-        switch (currentStatus) {
-            case 'Ineffective':
-              return (
-                <Button className="w-full gap-2" onClick={() => handleActionClick('Submit')} disabled={isPending}>
-                  <Send className="h-4 w-4" /> {t('workflow:submitPlan')}
-                </Button>
-              );
-            case 'In Review':
-              return (
-                <div className="grid grid-cols-2 gap-2 w-full">
-                  <Button variant="outline" className="text-rose-600 border-rose-200 hover:bg-rose-50 gap-2" onClick={() => handleActionClick('Reject')} disabled={isPending}>
-                    <XCircle className="h-4 w-4" /> {t('workflow:rejectPlan')}
-                  </Button>
-                  <Button className="bg-indigo-600 hover:bg-indigo-700 gap-2" onClick={() => handleActionClick('Review')} disabled={isPending}>
-                    <CheckCircle2 className="h-4 w-4" /> {t('workflow:approvePlan')}
-                  </Button>
-                </div>
-              );
-            case 'In Approval':
-                return (
-                  <div className="grid grid-cols-2 gap-2 w-full">
-                    <Button variant="outline" className="text-rose-600 border-rose-200 hover:bg-rose-50 gap-2" onClick={() => handleActionClick('Reject')} disabled={isPending}>
-                      <XCircle className="h-4 w-4" /> {t('workflow:rejectFinal')}
-                    </Button>
-                    <Button className="bg-emerald-600 hover:bg-emerald-700 gap-2" onClick={() => handleActionClick('Approve')} disabled={isPending}>
-                      <CheckCircle2 className="h-4 w-4" /> {t('workflow:finalApprove')}
-                    </Button>
-                  </div>
-                );
-            case 'Resolved':
-                return (
-                  <Button variant="outline" className="w-full gap-2 text-amber-600 border-amber-200" onClick={() => handleActionClick('Rollback')} disabled={isPending}>
-                    <RotateCcw className="h-4 w-4" /> {t('workflow:rollbackIneffective')}
-                  </Button>
-                );
-          }
-    }
-    return null;
+    return currentStep.actions.map((action) => {
+      const Icon = action.icon;
+      
+      // Map custom variants to Shadcn Button variants
+      const shadcnVariant = (action.variant === 'outline' || action.variant === 'destructive') ? action.variant : 'default';
+      
+      // Custom classes for special colors
+      const customClass = cn(
+        "w-full gap-2 font-bold text-[10px] uppercase tracking-widest h-9",
+        action.variant === 'indigo' && "bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-100",
+        action.variant === 'emerald' && "bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-100",
+        action.variant === 'amber' && "bg-amber-500 hover:bg-amber-600 shadow-md shadow-amber-100",
+        action.variant === 'outline' && "border-slate-200 text-slate-600 hover:bg-slate-50"
+      );
+
+      return (
+        <Button 
+          key={action.id}
+          variant={shadcnVariant} 
+          className={customClass}
+          onClick={() => handleActionClick(action.id)}
+          disabled={isPending}
+        >
+          <Icon className="h-3.5 w-3.5" />
+          {t(action.labelKey)}
+        </Button>
+      );
+    });
   };
 
   return (
@@ -231,30 +286,48 @@ export function WorkflowPanel({
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-               {pendingAction === 'Reject' ? <AlertCircle className="text-rose-500 h-5 w-5" /> : <RotateCcw className="text-amber-500 h-5 w-5" />}
-               {t('workflow:reasonRequired', { action: pendingAction })}
+               {pendingActionId === 'Reject' ? <AlertCircle className="text-rose-500 h-5 w-5" /> : (pendingActionId === 'Rollback' ? <RotateCcw className="text-amber-500 h-5 w-5" /> : <Send className="text-indigo-500 h-5 w-5" />)}
+               {t('workflow:confirmAction', { action: pendingActionId })}
             </DialogTitle>
             <DialogDescription>
-              {t('workflow:reasonDescription')}
+              {pendingActionId === 'Reject' || pendingActionId === 'Rollback' ? t('workflow:reasonDescription') : "Please confirm your action and optionally assign it."}
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4">
-            <Textarea 
-              placeholder={t('workflow:reasonPlaceholder')}
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              className="min-h-[120px]"
-            />
+          <div className="py-4 space-y-4">
+            {pendingActionId && pendingActionConfig?.needsAssignee && (
+              <div className="space-y-2">
+                <Label className="text-xs uppercase font-bold text-slate-500 tracking-widest">Assignee</Label>
+                <Select value={selectedAssigneeId} onValueChange={setSelectedAssigneeId}>
+                  <SelectTrigger className="h-10 bg-slate-50 border-slate-200">
+                    <SelectValue placeholder="Select an assignee (optional)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {users?.items.map(u => (
+                      <SelectItem key={u.id} value={u.id}>{u.name} ({u.role})</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label className="text-xs uppercase font-bold text-slate-500 tracking-widest">Notes {(pendingActionId === 'Reject' || pendingActionId === 'Rollback') && <span className="text-rose-500">*</span>}</Label>
+              <Textarea 
+                placeholder={t('workflow:reasonPlaceholder')}
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                className="min-h-[100px] bg-slate-50 border-slate-200"
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsNoteDialogOpen(false)}>{t('common:actions.cancel')}</Button>
             <Button 
-                variant={pendingAction === 'Reject' ? 'destructive' : 'default'} 
-                disabled={!note.trim() || isPending}
+                variant={pendingActionId === 'Reject' ? 'destructive' : 'default'} 
+                disabled={((pendingActionId === 'Reject' || pendingActionId === 'Rollback') && !note.trim()) || isPending}
                 onClick={confirmActionWithNote}
             >
               {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {t('workflow:confirmAction', { action: pendingAction })}
+              {t('workflow:confirmAction', { action: pendingActionId })}
             </Button>
           </DialogFooter>
         </DialogContent>

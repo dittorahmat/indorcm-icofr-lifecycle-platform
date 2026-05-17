@@ -7,11 +7,13 @@ Currently, approval workflows in the IndoGRC Pro application are fragmented or h
 - Introduce a unified `WorkflowAction` type and `WorkflowHistoryEntry` interface in `shared/types.ts`.
 - Expand and standardize status types for `BPMWorkflowStatus` and `DeficiencyWorkflowStatus`.
 - Add `workflow_status` and `workflow_history` fields to the `bpm_processes` and `action_plans` tables via Drizzle schema updates and migrations.
-- Create a highly reusable `WorkflowPanel` React component that adapts its available actions (Submit, Review, Approve, Reject, Rollback) based on the entity's current status and type.
+- Create a highly reusable, configuration-driven `WorkflowPanel` React component. It uses a `WORKFLOW_BLUEPRINTS` object to map statuses to available actions, making it instantly extensible to new modules (e.g., Scoping) without changing the core component logic.
 - Implement mandatory notes validation for `Reject` and `Rollback` actions within the `WorkflowPanel`.
 - Integrate the `ApprovalHistoryTimeline` directly into the `WorkflowPanel` for a consolidated view of the entity's audit trail.
 - Update `BPMPage.tsx` and related RCM editors to utilize the new `WorkflowPanel` and enforce read-only states when a BPM process is not in a `Draft` or `Rejected` state.
 - Implement the `useUnsavedChanges` pattern within the `WorkflowPanel` and associated forms to prevent accidental data loss during state transitions.
+- Integrate assignee selection during forward state transitions (e.g., Submit for Review, Approve to next level) so users can specifically assign a reviewer/approver.
+- Update backend services to capture the `assigneeId` and route notifications directly to the assigned user.
 - Integrate critical workflow notifications (e.g., "Pending Approval") into the global `NotificationBell`.
 - Ensure the `WorkflowPanel` is accessible and linked from relevant sidebar/navigation contexts where necessary.
 - Update `RemediationForm.tsx` and `DeficiencyBoard.tsx` to handle the multi-stage remediation workflow (Ineffective -> In Review -> In Approval -> Resolved) using the `WorkflowPanel`.

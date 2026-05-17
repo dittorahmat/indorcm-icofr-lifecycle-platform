@@ -11,6 +11,7 @@
 - [x] 2.2 Create a new API route/handler for Remediation action plans status updates and history appends.
 - [x] 2.3 Implement the `useWorkflow` custom hook to centralize the API calls (fetch history, mutate status) on the frontend.
 - [x] 2.4 Integrate workflow actions with the existing Notification system to trigger bell alerts.
+- [x] 2.5 Update API routes to accept `assigneeId` and target notifications to the specific assigned user.
 
 ## 3. UI Components and Localization
 
@@ -20,6 +21,7 @@
 - [x] 3.4 Implement the mandatory notes validation modal/form for "Reject" and "Rollback" actions within `<WorkflowPanel />`.
 - [x] 3.5 Add all new UI strings to `src/i18n/locales/en/*.json` and `src/i18n/locales/id/*.json`.
 - [x] 3.6 Implement the `useUnsavedChanges` hook in `WorkflowPanel` to prevent data loss during transitions.
+- [x] 3.7 Add user fetching and assignee dropdown selection to `<WorkflowPanel />` for forward transitions (Submit, Review).
 
 ## 4. Module Integration and Sidebar
 

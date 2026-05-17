@@ -155,7 +155,7 @@ remediation.post('/actionplans/:id/workflow', async (c) => {
   const orgId = c.get('organizationId')!;
   const userId = c.get('userId')!;
   const role = c.get('userRole')!;
-  const body = await c.req.json<{ action: any, note: string }>();
+  const body = await c.req.json<{ action: any, note: string, assigneeId?: string }>();
 
   const existing = await db.select().from(actionPlans).where(and(eq(actionPlans.id, id), eq(actionPlans.organizationId, orgId))).limit(1);
   if (existing.length === 0) return notFound(c, 'Action Plan not found');
@@ -208,10 +208,11 @@ remediation.post('/actionplans/:id/workflow', async (c) => {
   await db.update(actionPlans).set(updateData).where(eq(actionPlans.id, id));
 
   if (nextStatus !== currentStatus) {
+    const targetUserId = body.assigneeId || plan.ownerId || userId;
     await db.insert(notifications).values({
       id: crypto.randomUUID(),
       organizationId: orgId,
-      userId: plan.ownerId || userId,
+      userId: targetUserId,
       message: `Status Rencana Aksi berubah menjadi ${nextStatus}. ${body.note ? 'Catatan: ' + body.note : ''}`,
       type: body.action === 'Reject' ? 'error' : (body.action === 'Approve' ? 'success' : 'info'),
       link: '/deficiencies',

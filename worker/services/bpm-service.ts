@@ -568,7 +568,7 @@ export class BpmService {
     .where(conditions);
   }
 
-  async handleWorkflowAction(orgId: string, userId: string, role: string, id: string, body: { action: any, note: string }) {
+  async handleWorkflowAction(orgId: string, userId: string, role: string, id: string, body: { action: any, note: string, assigneeId?: string }) {
     const processes = await this.db.select().from(bpmProcesses).where(and(eq(bpmProcesses.id, id), eq(bpmProcesses.organizationId, orgId))).limit(1);
     if (processes.length === 0) throw new Error("Process not found");
 
@@ -612,10 +612,11 @@ export class BpmService {
       .where(and(eq(bpmProcesses.id, id), eq(bpmProcesses.organizationId, orgId)));
 
     if (nextStatus !== currentStatus) {
+      const targetUserId = body.assigneeId || process.createdBy || userId;
       await this.db.insert(notifications).values({
         id: crypto.randomUUID(),
         organizationId: orgId,
-        userId: process.createdBy || userId,
+        userId: targetUserId,
         message: `Status BPM "${process.name}" berubah menjadi ${nextStatus}. ${body.note ? 'Catatan: ' + body.note : ''}`,
         type: body.action === 'Reject' ? 'error' : (body.action === 'Approve' ? 'success' : 'info'),
         link: `/bpm?id=${id}`,

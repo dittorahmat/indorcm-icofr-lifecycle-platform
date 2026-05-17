@@ -8,13 +8,13 @@
   :root {
     /* Core Colors - Clean & Sharp BUMN Standard */
     --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
-    --primary: 222 47% 11%;
-    --primary-foreground: 210 40% 98%;
+    /* Manchester City Sky Blue Theme */
+    --primary: 202 60% 65%; /* Sky Blue #6CABDD */
+    --primary-foreground: 222 47% 11%; /* Dark Navy for contrast */
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
     --border: 214.3 31.8% 91.4%;
-    --ring: 222 47% 11%;
+    --ring: 202 60% 65%;
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
@@ -26,16 +26,14 @@
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     --input: 214 32% 91%;
-    --chart-1: 222 47% 11%;
+    --chart-1: 202 60% 65%;
     --chart-2: 215 20% 65%;
     --chart-3: 210 40% 96.1%;
     --chart-4: 215 16% 47%;
-    --chart-5: 222 47% 11%;
+    --chart-5: 202 60% 65%;
     --radius: 0.375rem;
-    
-    /* Navy Header & Light Gray Sidebar Theme */
-    --primary: 222 47% 11%; /* Navy Blue #0f172a */
-    --primary-foreground: 210 40% 98%;
+
+    /* Layout Theme */
     --sidebar-background: 210 40% 98%; /* Light Gray #f8fafc */
     --sidebar-foreground: 222 47% 11%; /* Dark Slate #0f172a */
     --sidebar-primary: 222 47% 11%;
@@ -101,6 +99,18 @@
 
   .btn-primary {
     @apply btn bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm active:scale-[0.98];
+  }
+
+  /* Manchester City Patterned Blue (Corak) */
+  .bg-mancity-pattern {
+    background-color: hsl(var(--primary));
+    background-image: repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 20px,
+      rgba(255, 255, 255, 0.05) 20px,
+      rgba(255, 255, 255, 0.05) 40px
+    );
   }
 
   /* Remove Gradients and AI Slop */

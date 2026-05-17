@@ -93,7 +93,7 @@ export function VerificationDesignPage() {
     }
   });
 
-  const items = data?.items || [];
+  const items = React.useMemo(() => data?.items || [], [data?.items]);
   const filteredItems = React.useMemo(() => {
     const search = searchTerm.toLowerCase();
     return items.filter(item => 
