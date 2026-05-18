@@ -106,13 +106,15 @@ export function VerificationDesignPage() {
   const columnGroups: RCMColumnGroup[] = React.useMemo(() => [
     {
       title: t('rcm:verification.columns.actions'),
-      className: 'bg-slate-200/50',
+      className: 'bg-slate-200/50 print:hidden',
       columns: [
         {
           id: 'action',
           header: t('common:actions.edit'),
           width: '60px',
           sticky: 'left',
+          className: 'print:hidden',
+          headerClassName: 'print:hidden',
           render: (row) => canEdit && (
             <Button 
               variant="ghost" 
@@ -174,6 +176,11 @@ export function VerificationDesignPage() {
         { id: 'nature', header: t('rcm:matrix.nature'), accessorKey: 'controlNature', width: '150px' },
         { id: 'auto_type', header: t('rcm:matrix.automated_type'), accessorKey: 'automatedControlType', width: '150px' },
         { id: 'frequency', header: t('rcm:matrix.frequency'), accessorKey: 'frequency', width: '100px', className: 'text-center' },
+        { id: 'app', header: t('rcm:matrix.supporting_app'), accessorKey: 'supportingApp', width: '150px' },
+        { id: 'function', header: t('rcm:matrix.executing_function'), accessorKey: 'executingFunction', width: '150px' },
+        { id: 'role', header: t('rcm:matrix.executor_role'), accessorKey: 'executorRole', width: '150px' },
+        { id: 'fsli', header: t('rcm:matrix.affected_fsli_item'), accessorKey: 'affectedFsliItem', width: '150px' },
+        { id: 'period', header: t('rcm:matrix.effective_period'), accessorKey: 'effectivePeriod', width: '120px' },
       ]
     },
     {
@@ -213,6 +220,7 @@ export function VerificationDesignPage() {
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
           onRefresh={() => queryClient.invalidateQueries({ queryKey: ['verification-design-matrix'] })}
+          onPrint={() => window.print()}
           metadata={[
             { label: t('rcm:verification.columns.entity'), value: items[0]?.companyName || "N/A" },
             { label: t('rcm:verification.columns.location'), value: items[0]?.locationCode || "N/A" }

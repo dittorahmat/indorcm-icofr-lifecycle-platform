@@ -182,3 +182,75 @@
     background: hsl(var(--muted-foreground) / 0.5);
   }
 }
+
+@media print {
+  @page {
+    size: landscape;
+    margin: 10mm;
+  }
+  
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    background-color: white !important;
+  }
+
+  /* Hide UI elements that shouldn't be printed */
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* Force table to fit */
+  table {
+    min-width: 0 !important;
+    width: 100% !important;
+    table-layout: auto !important; /* Allow columns to shrink more naturally in print */
+  }
+
+  /* Prevent containers from clipping */
+  div, main, section, .flex-1, .overflow-auto, .scrollbar-hover {
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+  }
+
+  /* Target RCMTable specifically if it has min-width from props */
+  [style*="minWidth"], [style*="min-width"] {
+    min-width: 0 !important;
+  }
+
+  /* Scale down the entire content if it's still too wide */
+  /* This is a aggressive fix for very wide tables */
+  main, .flex-1, .w-full {
+    zoom: 0.65; /* Scale down to 65% for print */
+  }
+
+  /* Ensure tables can expand and break nicely if needed */
+
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+  thead {
+    display: table-header-group;
+  }
+  tfoot {
+    display: table-footer-group;
+  }
+
+  /* Prevent sidebars or fixed elements from breaking layout */
+  [data-sidebar="sidebar"] {
+    display: none !important;
+  }
+  [data-sidebar="inset"] {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+
+  /* Force background colors to print for table headers/badges */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}

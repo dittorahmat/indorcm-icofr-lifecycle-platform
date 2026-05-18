@@ -101,7 +101,7 @@ export function Dashboard() {
              <Button variant="outline" className="h-9 gap-2 border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors px-3 text-sm" onClick={() => navigate('/rcm')}>
                 <Target className="h-3.5 w-3.5" /> {t('actions.manageRcm')}
              </Button>
-             <Button className="h-9 gap-2 bg-slate-900 hover:bg-slate-800 transition-colors px-3 text-sm shadow-sm" onClick={() => navigate('/csa')}>
+             <Button className="h-9 gap-2 bg-mancity-pattern text-primary-foreground hover:opacity-90 transition-all px-3 text-sm shadow-sm border-none font-bold" onClick={() => navigate('/csa')}>
                 <ClipboardCheck className="h-3.5 w-3.5" /> {t('actions.startAssessment')}
              </Button>
           </div>

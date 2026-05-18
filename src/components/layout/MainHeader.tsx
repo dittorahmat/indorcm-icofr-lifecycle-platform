@@ -33,7 +33,7 @@ export function MainHeader() {
 
   return (
     <header className={cn(
-      "sticky top-0 z-[100] w-full border-b transition-colors duration-300 shadow-md",
+      "sticky top-0 z-[100] w-full border-b transition-colors duration-300 shadow-md print:hidden",
       isDark
         ? "bg-slate-950 border-slate-800 text-slate-50"
         : "bg-mancity-pattern border-primary/20 text-primary-foreground"

@@ -23,11 +23,10 @@
     }
   },
   "status": {
-    "draft": "Draft",
+    "ineffective": "Ineffective",
     "review": "In Review",
-    "progress": "In Progress",
-    "resolved": "Resolved (Lini 1)",
-    "verified": "Verified (Lini 2)"
+    "approval": "In Approval",
+    "resolved": "Resolved"
   },
   "dod": {
     "title": "Degree of Deficiency (DoD)",

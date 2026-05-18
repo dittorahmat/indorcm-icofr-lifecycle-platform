@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Filter, Save, Loader2 } from 'lucide-react';
+import { Search, Filter, Save, Loader2, Printer } from 'lucide-react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 
 interface RCMPageHeaderProps {
@@ -12,6 +12,7 @@ interface RCMPageHeaderProps {
   onSave?: () => void;
   isSaving?: boolean;
   onRefresh?: () => void;
+  onPrint?: () => void;
   metadata?: { label: string; value: string }[];
 }
 
@@ -23,10 +24,11 @@ export function RCMPageHeader({
   onSave, 
   isSaving, 
   onRefresh,
+  onPrint,
   metadata 
 }: RCMPageHeaderProps) {
   return (
-    <div className="p-4 pb-2 space-y-3 shrink-0 bg-white/80 backdrop-blur-md border-b z-10">
+    <div className="p-4 pb-2 space-y-3 shrink-0 bg-white/80 backdrop-blur-md border-b z-10 print:hidden">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <SidebarTrigger className="h-8 w-8 text-slate-700" />
@@ -36,6 +38,11 @@ export function RCMPageHeader({
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {onPrint && (
+            <Button variant="outline" size="xs" onClick={onPrint} className="bg-white h-7 text-xs font-bold text-slate-600 border-slate-200">
+              <Printer className="h-3 w-3 mr-1.5" /> Print
+            </Button>
+          )}
           {onRefresh && (
             <Button variant="outline" size="xs" onClick={onRefresh} className="bg-white h-7 text-xs font-bold">
               <Filter className="h-3 w-3 mr-1.5" /> Refresh

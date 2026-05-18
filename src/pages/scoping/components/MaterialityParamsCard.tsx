@@ -109,23 +109,23 @@ export function MaterialityParamsCard({
 
         <Separator className="bg-slate-100" />
         
-        <div className="space-y-4 bg-slate-900 rounded-xl p-5 text-white shadow-md relative overflow-hidden">
+        <div className="space-y-4 bg-mancity-pattern rounded-xl p-5 text-primary-foreground shadow-md relative overflow-hidden">
           <div className="space-y-1 relative z-10">
-            <p className="text-[9px] text-slate-500 uppercase font-bold tracking-[0.15em] flex justify-between items-center">
+            <p className="text-[9px] text-primary-foreground/60 uppercase font-bold tracking-[0.15em] flex justify-between items-center">
               {t('params.benchmarkValue', { basis: simState.basis })} 
               <Info className="h-2.5 w-2.5 opacity-40" />
             </p>
-            <p className="text-sm font-display font-bold text-white text-right">Rp {benchmarkValue.toLocaleString('id-ID')}</p>
+            <p className="text-sm font-display font-bold text-primary-foreground text-right">Rp {benchmarkValue.toLocaleString('id-ID')}</p>
           </div>
 
-          <div className="space-y-1 pt-3 border-t border-white/10 relative z-10">
-            <p className="text-[9px] text-slate-400 uppercase font-bold tracking-[0.15em]">{t('params.omValue')}</p>
-            <p className="text-xl font-display font-bold text-white text-right tracking-tight leading-none mt-1">Rp {omValue.toLocaleString('id-ID')}</p>
+          <div className="space-y-1 pt-3 border-t border-primary-foreground/10 relative z-10">
+            <p className="text-[9px] text-primary-foreground/50 uppercase font-bold tracking-[0.15em]">{t('params.omValue')}</p>
+            <p className="text-xl font-display font-bold text-primary-foreground text-right tracking-tight leading-none mt-1">Rp {omValue.toLocaleString('id-ID')}</p>
           </div>
 
           <div className="space-y-1 relative z-10">
-            <p className="text-[9px] text-slate-400 uppercase font-bold tracking-[0.15em]">{t('params.pmValue')}</p>
-            <p className="text-xl font-display font-bold text-slate-200 text-right tracking-tight leading-none mt-1">Rp {pmValue.toLocaleString('id-ID')}</p>
+            <p className="text-[9px] text-primary-foreground/50 uppercase font-bold tracking-[0.15em]">{t('params.pmValue')}</p>
+            <p className="text-xl font-display font-bold text-primary-foreground text-right tracking-tight leading-none mt-1">Rp {pmValue.toLocaleString('id-ID')}</p>
           </div>
         </div>
       </CardContent>

@@ -480,7 +480,7 @@ export const actionPlans = pgTable("action_plans", {
 	actualCompletionDate: timestamp("actual_completion_date"),
 	isApprovedByLine2: boolean("is_approved_by_line2").default(false),
 	isBeforeYearEnd: boolean("is_before_year_end").default(false),
-	workflowStatus: text("workflow_status"), // DeficiencyWorkflowStatus
+	workflowStatus: text("workflow_status").default("Ineffective"), // DeficiencyWorkflowStatus
 	workflowHistory: jsonb("workflow_history").$type<any[]>().default([]),
 	severity: text("severity"), // CD, SD, MW
 	rescheduleReason: text("reschedule_reason"),

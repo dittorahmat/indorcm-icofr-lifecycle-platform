@@ -141,7 +141,7 @@ export function ScopingPage() {
               </div>
               <Button 
                 onClick={() => setIsCreating(true)} 
-                className="h-10 gap-2 bg-slate-900 hover:bg-slate-800 shadow-md shadow-slate-200 transition-all font-bold text-xs uppercase tracking-wider" 
+                className="h-10 gap-2 bg-mancity-pattern text-primary-foreground hover:opacity-90 shadow-md shadow-blue-100 transition-all font-bold text-xs uppercase tracking-wider border-none" 
                 disabled={!activeSnapshot || activeSnapshot.status !== 'Mapped'}
               >
                 <Plus className="h-3.5 w-3.5" /> {t('scoping:simulation.createNew')}
@@ -203,11 +203,11 @@ export function ScopingPage() {
         </Tabs>
 
         <Dialog open={isCreating} onOpenChange={setIsCreating}>
-          <DialogContent className="sm:max-w-[425px] border-none shadow-2xl rounded-2xl overflow-hidden p-0 ring-1 ring-slate-200">
-            <div className="bg-slate-900 p-6 text-white">
+          <DialogContent className="sm:max-w-[425px] border-none shadow-2xl rounded-2xl overflow-hidden p-0 ring-1 ring-primary/20">
+            <div className="bg-mancity-pattern p-6 text-primary-foreground">
               <DialogHeader>
                 <DialogTitle className="font-display font-extrabold text-2xl tracking-tight uppercase">{t('scoping:simulation.createNew')}</DialogTitle>
-                <DialogDescription className="text-slate-400 text-xs font-bold uppercase tracking-wider">
+                <DialogDescription className="text-primary-foreground/70 text-xs font-bold uppercase tracking-wider">
                   {t('scoping:simulation.basisDescription', { filename: activeSnapshot?.filename })}
                 </DialogDescription>
               </DialogHeader>

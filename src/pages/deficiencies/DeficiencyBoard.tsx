@@ -12,7 +12,7 @@ import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { 
   AlertTriangle, ShieldAlert, Layers, Plus, CheckCircle2, 
   Search, Kanban, Filter, UserCheck, ChevronRight, Settings2,
-  Clock, AlertCircle, FileText, Zap, ShieldCheck
+  Clock, AlertCircle, FileText, Zap, ShieldCheck, Send, XCircle
 } from 'lucide-react';
 import { DoDWizard } from '@/components/deficiencies/DoDWizard';
 import { RemediationForm } from '@/components/deficiencies/RemediationForm';
@@ -23,7 +23,7 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 
-const KANBAN_COLUMNS: ActionPlanStatus[] = ["Draft", "In Review", "In Progress", "Resolved", "Verified"];
+const KANBAN_COLUMNS: string[] = ["Ineffective", "In Review", "In Approval", "Resolved"];
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -60,7 +60,7 @@ function KanbanColumn({
   role,
   onStatusChange
 }: { 
-  status: ActionPlanStatus; 
+  status: string; 
   deficiencies: Deficiency[]; 
   actionPlans: ActionPlan[], 
   onAssess: (dId: string) => void,
@@ -69,18 +69,17 @@ function KanbanColumn({
   selectedIds: string[],
   onToggleSelect: (id: string) => void,
   role: string,
-  onStatusChange: (apId: string, newStatus: ActionPlanStatus) => void
+  onStatusChange: (apId: string, action: string) => void
 }) {
   const { t } = useTranslation('deficiency');
-  const plansInColumn = actionPlans.filter(ap => ap.status === status);
+  const plansInColumn = actionPlans.filter(ap => (ap.workflowStatus || ap.status) === status);
 
-  const getColumnConfig = (s: ActionPlanStatus) => {
+  const getColumnConfig = (s: string) => {
     switch (s) {
-      case 'Draft': return { title: t('status.draft'), color: 'text-slate-400', bg: 'bg-slate-100', icon: FileText };
-      case 'In Review': return { title: t('status.review'), color: 'text-amber-500', bg: 'bg-amber-50', icon: Clock };
-      case 'In Progress': return { title: t('status.progress'), color: 'text-blue-500', bg: 'bg-blue-50', icon: Zap };
-      case 'Resolved': return { title: t('status.resolved'), color: 'text-emerald-500', bg: 'bg-emerald-50', icon: CheckCircle2 };
-      case 'Verified': return { title: t('status.verified'), color: 'text-indigo-600', bg: 'bg-indigo-50', icon: ShieldCheck };
+      case 'Ineffective': return { title: "Ineffective", color: 'text-slate-400', bg: 'bg-slate-100', icon: FileText };
+      case 'In Review': return { title: "In Review", color: 'text-amber-500', bg: 'bg-amber-50', icon: Clock };
+      case 'In Approval': return { title: "In Approval", color: 'text-blue-500', bg: 'bg-blue-50', icon: Zap };
+      case 'Resolved': return { title: "Resolved", color: 'text-emerald-500', bg: 'bg-emerald-50', icon: CheckCircle2 };
       default: return { title: s, color: 'text-slate-400', bg: 'bg-slate-100', icon: FileText };
     }
   };
@@ -125,8 +124,9 @@ function KanbanColumn({
                     <DeficiencyCard deficiency={deficiency} actionPlan={ap} />
                   </div>
 
-                  <div className="flex gap-2 mt-2 px-1 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-[-5px] group-hover:translate-y-0">
-                    {(status === "Draft" || role === 'Admin') && (
+                  <div className="flex flex-col gap-2 mt-2 px-1 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-[-5px] group-hover:translate-y-0">
+                    <div className="flex gap-2">
+                    {(status === "Ineffective" || role === 'Admin') && (
                       <Button 
                         size="sm" 
                         variant="outline" 
@@ -136,33 +136,55 @@ function KanbanColumn({
                         Edit Plan
                       </Button>
                     )}
-                    {status === "Draft" && ['Line 1', 'Admin'].includes(role) && (
+                    {status === "Ineffective" && ['Line 1', 'Admin'].includes(role) && (
                       <Button 
                         size="sm" 
-                        className="flex-1 h-8 text-[10px] font-bold uppercase tracking-widest bg-slate-900 hover:bg-slate-800 rounded-xl"
-                        onClick={() => onStatusChange(ap.id, "In Review")}
+                        className="flex-1 h-8 text-[10px] font-bold uppercase tracking-widest bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl"
+                        onClick={() => onStatusChange(ap.id, "Submit")}
                       >
-                        Submit
+                        <Send className="h-3 w-3 mr-1" /> {t('workflow:submitPlan', { ns: 'workflow' })}
                       </Button>
                     )}
+                    </div>
+
                     {status === "In Review" && ['Line 2', 'Admin'].includes(role) && (
-                      <>
+                      <div className="flex gap-2">
                         <Button 
                           size="sm" 
-                          className="flex-1 h-8 text-[10px] font-bold uppercase tracking-widest bg-emerald-600 hover:bg-emerald-700 rounded-xl"
-                          onClick={() => onStatusChange(ap.id, "In Progress")}
+                          className="flex-1 h-8 text-[10px] font-bold uppercase tracking-widest bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl"
+                          onClick={() => onStatusChange(ap.id, "Review")}
                         >
-                          Approve
+                          <Zap className="h-3 w-3 mr-1" /> Pass Review
                         </Button>
                         <Button 
                           size="sm" 
                           variant="outline" 
                           className="flex-1 h-8 text-[10px] font-bold uppercase tracking-widest text-rose-600 border-rose-200 hover:bg-rose-50 rounded-xl"
-                          onClick={() => onStatusChange(ap.id, "Draft")}
+                          onClick={() => onStatusChange(ap.id, "Reject")}
                         >
-                          Reject
+                          <XCircle className="h-3 w-3 mr-1" /> Reject
                         </Button>
-                      </>
+                      </div>
+                    )}
+
+                    {status === "In Approval" && ['Admin'].includes(role) && (
+                       <div className="flex gap-2">
+                        <Button 
+                          size="sm" 
+                          className="flex-1 h-8 text-[10px] font-bold uppercase tracking-widest bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl"
+                          onClick={() => onStatusChange(ap.id, "Approve")}
+                        >
+                          <CheckCircle2 className="h-3 w-3 mr-1" /> Approve
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="flex-1 h-8 text-[10px] font-bold uppercase tracking-widest text-rose-600 border-rose-200 hover:bg-rose-50 rounded-xl"
+                          onClick={() => onStatusChange(ap.id, "Reject")}
+                        >
+                          <XCircle className="h-3 w-3 mr-1" /> Reject
+                        </Button>
+                      </div>
                     )}
                   </div>
 
@@ -273,6 +295,23 @@ export function DeficiencyBoard() {
       setAggregateMode(false);
       setSelectedDeficiencies([]);
     },
+  });
+
+  const workflowMutation = useMutation({
+    mutationFn: async ({ id, action, note }: { id: string, action: string, note: string }) => {
+      return await api(`/api/actionplans/${id}/workflow`, {
+        method: 'POST',
+        body: JSON.stringify({ action, note })
+      });
+    },
+    onSuccess: () => {
+      toast.success("Workflow status updated.");
+      queryClient.invalidateQueries({ queryKey: ['actionplans'] });
+      queryClient.invalidateQueries({ queryKey: ['deficiencies'] });
+    },
+    onError: (error: any) => {
+      toast.error(error.message);
+    }
   });
 
   const handleAssess = (id: string) => {
@@ -447,15 +486,12 @@ export function DeficiencyBoard() {
                       setActivePlan(plan);
                       setRemediationOpen(true);
                     }}
-                    onStatusChange={(apId, newStatus) => {
-                      const plan = actionPlans.find(p => p.id === apId);
-                      if (plan) {
-                        planMutation.mutate({ 
-                          id: apId, 
-                          status: newStatus, 
-                          deficiencyId: plan.deficiencyId 
-                        });
-                      }
+                    onStatusChange={(apId, action) => {
+                      workflowMutation.mutate({
+                        id: apId,
+                        action,
+                        note: `Transitioned from board: ${action}`
+                      });
                     }}
                   />
                 ))}

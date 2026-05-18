@@ -5,7 +5,7 @@ import { getDb } from '../db';
 import { 
   csaRecords, csaSamples, csaSchedules, testRecords, auditLogs, 
   controls, rcms, rcmControls, deficiencies, testSamples, notifications,
-  todEvaluations, user, member
+  todEvaluations, user, member, actionPlans
 } from '../db/schema';
 import { eq, and, sql, desc, SQL } from 'drizzle-orm';
 import type { CSARecord, TestRecord, Deficiency } from "@shared/types";
@@ -124,6 +124,43 @@ csa.put('/csa/:id', async (c) => {
       archiveLocation: body.archiveLocation,
     })
     .where(and(eq(csaRecords.id, id), eq(csaRecords.organizationId, orgId)));
+
+  // 1.1 Auto-Deficiency & Action Plan logic for UPDATES
+  const isDraft = body.isDraft ?? false;
+  if (!isDraft && body.result === 'Ineffective') {
+    // Check if deficiency already exists to avoid duplicates
+    const existingDef = await db.select().from(deficiencies).where(and(
+      eq(deficiencies.controlId, body.controlId),
+      eq(deficiencies.organizationId, orgId),
+      sql`description LIKE ${`%${body.period}%`}`
+    )).limit(1);
+
+    if (existingDef.length === 0) {
+      const deficiencyId = crypto.randomUUID();
+      const userId = c.get('userId');
+      await db.insert(deficiencies).values({
+        id: deficiencyId,
+        organizationId: orgId,
+        controlId: body.controlId,
+        description: `CSA result for ${body.period} is Ineffective. Comments: ${body.comments || 'No comments provided.'}`,
+        severity: 'Control Deficiency',
+        identifiedDate: new Date(),
+        identifiedBy: userId,
+        status: 'Open'
+      });
+
+      await db.insert(actionPlans).values({
+        id: crypto.randomUUID(),
+        organizationId: orgId,
+        deficiencyId: deficiencyId,
+        description: `Remediasi temuan CSA ${body.period}`,
+        status: 'Draft',
+        workflowStatus: 'Ineffective',
+        ownerId: userId,
+        createdAt: new Date(),
+      } as any);
+    }
+  }
 
   // 2. Resync Samples: Delete and re-insert sequentially
   await db.delete(csaSamples).where(eq(csaSamples.csaRecordId, id));
@@ -295,10 +332,11 @@ csa.post('/csa', async (c) => {
     }
   }
 
-  // 5. Auto-Deficiency logic
+  // 5. Auto-Deficiency & Action Plan logic
   if (!isDraft && newCsa.result === 'Ineffective') {
+    const deficiencyId = crypto.randomUUID();
     await db.insert(deficiencies).values({
-      id: crypto.randomUUID(),
+      id: deficiencyId,
       organizationId: orgId,
       controlId: newCsa.controlId,
       description: `CSA result for ${newCsa.period} is Ineffective. Comments: ${newCsa.comments || 'No comments provided.'}`,
@@ -307,6 +345,18 @@ csa.post('/csa', async (c) => {
       identifiedBy: userId,
       status: 'Open'
     });
+
+    // Create Action Plan automatically so it appears on the Deficiency Board
+    await db.insert(actionPlans).values({
+      id: crypto.randomUUID(),
+      organizationId: orgId,
+      deficiencyId: deficiencyId,
+      description: `Remediasi temuan CSA ${newCsa.period}`,
+      status: 'Draft',
+      workflowStatus: 'Ineffective',
+      ownerId: userId,
+      createdAt: new Date(),
+    } as any);
   }
 
   // 6. Audit Log

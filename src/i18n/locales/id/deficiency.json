@@ -23,11 +23,10 @@
     }
   },
   "status": {
-    "draft": "Draft",
+    "ineffective": "Ineffective",
     "review": "Dalam Review",
-    "progress": "Dalam Proses",
-    "resolved": "Selesai (Lini 1)",
-    "verified": "Terverifikasi (Lini 2)"
+    "approval": "Dalam Approval",
+    "resolved": "Selesai"
   },
   "dod": {
     "title": "Tingkat Defisiensi (DoD)",

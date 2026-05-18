@@ -80,7 +80,7 @@ export function ScopingEditorHeader({
               </Button>
               <Button 
                 onClick={onSubmit} 
-                className="h-10 bg-slate-900 hover:bg-slate-800 shadow-lg shadow-slate-200 transition-all" 
+                className="h-10 bg-mancity-pattern text-primary-foreground hover:opacity-90 shadow-lg shadow-blue-100 transition-all font-bold border-none" 
                 disabled={isSubmitting}
               >
                 <Send className="h-4 w-4 mr-2" /> {simState.status === 'Rejected' ? t('editor.resubmitToCfo') : t('editor.submitToCfo')}
@@ -97,14 +97,14 @@ export function ScopingEditorHeader({
 
       {/* HERO STATS BAR */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="relative group overflow-hidden bg-slate-900 rounded-2xl p-4 text-white shadow-xl shadow-slate-200">
-           <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -mr-12 -mt-12 group-hover:scale-110 transition-transform" />
-           <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1 flex items-center gap-1.5">
-             <Target className="h-3 w-3 text-indigo-400" /> Overall Materiality (OM)
+        <div className="relative group overflow-hidden bg-mancity-pattern rounded-2xl p-4 text-primary-foreground shadow-xl shadow-blue-100">
+           <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12 group-hover:scale-110 transition-transform" />
+           <p className="text-[10px] font-bold uppercase tracking-widest text-primary-foreground/70 mb-1 flex items-center gap-1.5">
+             <Target className="h-3 w-3 text-primary-foreground/60" /> Overall Materiality (OM)
            </p>
            <div className="flex items-baseline gap-2">
               <span className="text-2xl font-display font-bold tracking-tight">Rp {omValue.toLocaleString('id-ID')}</span>
-              <Badge variant="outline" className="bg-white/10 border-white/20 text-indigo-300 text-[10px] font-mono">
+              <Badge variant="outline" className="bg-primary-foreground/10 border-primary-foreground/20 text-primary-foreground text-[10px] font-mono">
                 {simState.omPercentage}%
               </Badge>
            </div>
