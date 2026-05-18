@@ -1,15 +1,17 @@
 ## Why
 
-Penerapan Degree of Deficiency (DoD) saat ini memiliki "mata rantai yang terputus" di mana temuan CSA yang dinilai **Ineffective** hanya tersimpan di tabel defisiensi tanpa otomatis membuat **Action Plan**, sehingga tidak muncul di papan Kanban. Selain itu, status Kanban saat ini belum selaras dengan blueprint **WorkflowPanel** formal (Ineffective -> In Review -> In Approval -> Resolved) dan kurangnya proteksi data melalui **Unsaved Changes Warning** pada form-form kritikal.
+Penerapan Degree of Deficiency (DoD) saat ini memiliki "mata rantai yang terputus" di mana temuan CSA yang dinilai **Ineffective** hanya tersimpan di tabel defisiensi tanpa otomatis membuat **Action Plan**, sehingga tidak muncul di papan Kanban. Selain itu, temuan yang berasal dari **Lini 2 (Review CSA/TOD)** dan **Lini 3 (Audit)** belum terintegrasi secara otomatis. Sistem juga memerlukan standarisasi status Kanban agar selaras dengan blueprint **WorkflowPanel** formal dan proteksi data melalui **Unsaved Changes Warning**.
 
 ## What Changes
 
-- **Otomatisasi Defisiensi**: Integrasi pembuatan `action_plans` secara otomatis saat sign-off CSA dengan hasil `Ineffective`.
+- **Otomatisasi Defisiensi Multi-Lini**: Integrasi pembuatan `action_plans` secara otomatis dari Lini 1 (CSA), Lini 2 (Review), dan Lini 3 (Audit).
+- **Metadata Sumber (Source Tracking)**: Penambahan atribut `source` pada defisiensi untuk membedakan asal temuan.
 - **Penyelarasan Status Kanban**: Mengubah kolom `DeficiencyBoard` agar sesuai dengan tahapan formal `WorkflowPanel`.
 - **Integrasi Workflow**: Menggantikan tombol aksi manual di Kanban dengan pemanggilan rute `/api/actionplans/:id/workflow`.
 - **Proteksi Data**: Implementasi `UnSavedChanges` warning pada `RemediationForm` dan integrasi di seluruh modul terkait.
-- **Backend Integrity**: Penanganan rute `PUT /api/csa/:id` agar tetap memicu pembuatan defisiensi jika status berubah menjadi Ineffective.
-- **Notification System**: Penambahan notifikasi bell untuk memberi tahu Lini 2/Admin saat ada temuan baru.
+- **Grouping & Filtering**: Penambahan visual badge dan filter sumber pada Deficiency Board.
+- **Backend Integrity**: Refactoring logika pembuatan defisiensi menjadi terpusat (DRY) untuk menangani berbagai pintu masuk data.
+
 
 ## Capabilities
 

@@ -69,7 +69,11 @@
     "saveDraft": "Save Draft",
     "submitToCfo": "Submit to CFO",
     "resubmitToCfo": "Re-submit to CFO",
-    "lockedMessage": "This baseline is officially approved and locked."
+    "lockedMessage": "This baseline is officially approved and locked.",
+    "activeSnapshot": "Active Snapshot",
+    "multiplierApplied": "Multiplier Applied",
+    "unitSuffix": "UNIT",
+    "creating": "Creating..."
   },
   "table": {
     "account": "Account",
@@ -79,5 +83,113 @@
     "significantApp": "Significant Application",
     "assignDept": "Assign Lini 1 Owners",
     "addAppOnTheFly": "Add New Application"
+  },
+  "benchmarkModal": {
+    "title": "Set Benchmark Basis",
+    "description": "Select which FSLI accounts should be available as materiality benchmark bases.",
+    "colSelect": "Select",
+    "colFsli": "FSLI Name",
+    "colBalance": "Total Balance (|Balance|)",
+    "summaryTitle": "Selection Summary",
+    "selectedCount": "Selected Benchmarks",
+    "totalValue": "Total Benchmark Value",
+    "tip": "Only the selected FSLIs will appear in the 'Basis' dropdown when creating a new simulation.",
+    "selectedList": "Selected List",
+    "cancel": "Cancel",
+    "save": "Save Selection & Enable Simulations",
+    "loading": "Loading GL data...",
+    "saveSuccess": "Benchmark selection saved successfully",
+    "unsavedConfirm": "You have unsaved changes. Are you sure you want to discard them?"
+  },
+  "intake": {
+    "title": "Upload General Ledger",
+    "dropzone": {
+      "main": "Drag & drop your GL Excel or CSV file here",
+      "support": "Support: .csv, .xlsx, .xls",
+      "button": "Select File"
+    },
+    "results": {
+      "title": "Imported GL Data",
+      "description": "Reviewing {{count}} accounts from {{filename}}",
+      "detected": "Detected: {{mapping}}",
+      "filtered": "Filtered {{count}} empty rows",
+      "reset": "Reset"
+    },
+    "table": {
+      "code": "Code",
+      "name": "Account Name",
+      "balance": "Balance",
+      "fsliCode": "FSLI Code",
+      "significance": "Significance",
+      "abovePm": "Above PM",
+      "belowPm": "Below PM",
+      "showingFirst50": "Showing first 50 of {{count}} accounts..."
+    },
+    "integrity": {
+      "title": "Integrity Check",
+      "balanceCheck": "Balance Check:",
+      "balanced": "Balanced",
+      "unbalanced": "Unbalanced",
+      "total": "Total:"
+    },
+    "benford": {
+      "title": "Benford's Law Analysis",
+      "description": "Statistical audit for data manipulation detection.",
+      "actual": "Actual Distribution",
+      "standard": "Benford Standard",
+      "tip": "Large deviations from the red line may indicate artificial data entry or fraud risks (SK-5 Principle 8)."
+    },
+    "notifications": {
+      "filtered": "Filtered {{count}} empty rows",
+      "missingColumns": "Missing required columns: {{columns}}",
+      "expectedColumns": "Expected columns: {{expected}}",
+      "invalidBalance": "Invalid balance for {{account}}: {{value}}",
+      "unbalanced": "GL Data is not balanced!",
+      "deviation": "Total deviation: {{deviation}}",
+    "success": "Successfully processed {{count}} GL accounts",
+      "parseError": "Failed to parse CSV: {{error}}",
+      "submitted": "Simulation submitted for approval",
+      "ownerUpdated": "Owner acceptance updated to {{acceptance}}",
+      "ownerUpdateFailed": "Failed to update owner acceptance",
+      "exported": "Excel exported successfully"
+    }
+  },
+  "health": {
+    "title": "Data Integrity (SK-5 P13)",
+    "balanceCheck": "Balance Check:",
+    "netBalance": "Total Net Balance",
+    "unbalancedWarning": "* WARNING: GL data should sum to zero. Check for missing journal entries.",
+    "benfordTitle": "Benford's Law Analysis (Fraud Risk - P8)",
+    "benfordDesc": "Digit distribution analysis for anomaly detection.",
+    "forensicView": "Forensic View",
+    "guidance": "Deviations from the red line (Standard) may indicate numeric manipulation. Consider rating HIGH on Rule 1 if significant variances are found."
+  },
+  "history": {
+    "empty": "No activity recorded yet.",
+    "title": "Approval History & Feedback",
+    "description": "Track all actions and comments for this materiality baseline.",
+    "noComments": "No comments provided.",
+    "userId": "User ID:"
+  },
+  "grid": {
+    "entityCode": "Entity Code",
+    "fsli": "FSLI",
+    "accountCode": "Account Code",
+    "accountDesc": "Account Description",
+    "lini1Owner": "Line 1 Owner",
+    "ownerAcceptance": "Owner Acceptance",
+    "balance": "Balance",
+    "quantHeader": "Quantitative",
+    "scope": "Scope",
+    "significant": "Significant",
+    "notSignificant": "Not Significant",
+    "inScope": "In Scope",
+    "outScope": "Out Scope",
+    "selectApp": "Select application...",
+    "showingRows": "Showing {{count}} rows",
+    "exportExcel": "Export as Excel",
+    "standardCompliance": "Standard: SK-5/2024 Table 5 Compliance Engine",
+    "fsliGuidance": "FSLI level assessment affects all child accounts.",
+    "pending": "Pending"
   }
 }

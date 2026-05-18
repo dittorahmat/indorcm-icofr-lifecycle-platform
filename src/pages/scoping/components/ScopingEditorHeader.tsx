@@ -61,7 +61,7 @@ export function ScopingEditorHeader({
               <span className="opacity-40">•</span>
               <span className="flex items-center gap-1">
                 <FileSpreadsheet className="h-3.5 w-3.5 text-slate-400" />
-                {snapshotFilename || 'Active Snapshot'}
+                {snapshotFilename || t('editor.activeSnapshot')}
               </span>
             </p>
           </div>
@@ -100,7 +100,7 @@ export function ScopingEditorHeader({
         <div className="relative group overflow-hidden bg-mancity-pattern rounded-2xl p-4 text-primary-foreground shadow-xl shadow-blue-100">
            <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12 group-hover:scale-110 transition-transform" />
            <p className="text-[10px] font-bold uppercase tracking-widest text-primary-foreground/70 mb-1 flex items-center gap-1.5">
-             <Target className="h-3 w-3 text-primary-foreground/60" /> Overall Materiality (OM)
+             <Target className="h-3 w-3 text-primary-foreground/60" /> {t('params.omValue')} (OM)
            </p>
            <div className="flex items-baseline gap-2">
               <span className="text-2xl font-display font-bold tracking-tight">Rp {omValue.toLocaleString('id-ID')}</span>
@@ -113,7 +113,7 @@ export function ScopingEditorHeader({
         <div className="relative group overflow-hidden bg-white border border-slate-200 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all">
            <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50/50 rounded-full -mr-12 -mt-12 group-hover:scale-110 transition-transform" />
            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1 flex items-center gap-1.5">
-             <TrendingUp className="h-3 w-3 text-blue-500" /> Performance Materiality (PM)
+             <TrendingUp className="h-3 w-3 text-blue-500" /> {t('params.pmValue')} (PM)
            </p>
            <div className="flex items-baseline gap-2">
               <span className="text-2xl font-display font-bold tracking-tight text-slate-900">Rp {pmValue.toLocaleString('id-ID')}</span>
@@ -126,11 +126,11 @@ export function ScopingEditorHeader({
         <div className="relative group overflow-hidden bg-white border border-slate-200 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all">
            <div className="absolute top-0 right-0 w-24 h-24 bg-rose-50/50 rounded-full -mr-12 -mt-12 group-hover:scale-110 transition-transform" />
            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1 flex items-center gap-1.5">
-             <ShieldAlert className="h-3 w-3 text-rose-500" /> Significant Locations
+             <ShieldAlert className="h-3 w-3 text-rose-500" /> {t('params.locations')}
            </p>
            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-display font-bold tracking-tight text-slate-900">{simState.locationCount || 1} UNIT</span>
-              <span className="text-[10px] font-bold text-rose-600 uppercase tracking-tighter">Multiplier Applied</span>
+              <span className="text-2xl font-display font-bold tracking-tight text-slate-900">{simState.locationCount || 1} {t('editor.unitSuffix')}</span>
+              <span className="text-[10px] font-bold text-rose-600 uppercase tracking-tighter">{t('editor.multiplierApplied')}</span>
            </div>
         </div>
       </div>

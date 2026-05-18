@@ -50,19 +50,19 @@ const WORKFLOW_BLUEPRINTS: Record<string, WorkflowBlueprint> = {
     steps: {
       'Draft': { actions: [{ id: 'Submit', labelKey: 'workflow:submitForReview', icon: Send, needsAssignee: true }] },
       'Rejected': { actions: [{ id: 'Submit', labelKey: 'workflow:submitForReview', icon: Send, needsAssignee: true }] },
-      'Pending Review': { 
+      'In Review': { 
         actions: [
           { id: 'Reject', labelKey: 'common:status.rejected', icon: XCircle, variant: 'outline', needsNote: true },
           { id: 'Review', labelKey: 'workflow:passReview', icon: Search, variant: 'indigo', needsAssignee: true }
         ] 
       },
-      'Pending Approval': { 
+      'In Approval': { 
         actions: [
           { id: 'Reject', labelKey: 'common:status.rejected', icon: XCircle, variant: 'outline', needsNote: true },
           { id: 'Approve', labelKey: 'workflow:approveAndSave', icon: CheckCircle2, variant: 'emerald' }
         ] 
       },
-      'Approved': { actions: [{ id: 'Rollback', labelKey: 'workflow:rollback', icon: RotateCcw, variant: 'outline', needsNote: true }] },
+      'Resolved': { actions: [{ id: 'Rollback', labelKey: 'workflow:rollback', icon: RotateCcw, variant: 'outline', needsNote: true }] },
     }
   },
   ACTION_PLAN: {

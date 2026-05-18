@@ -232,22 +232,6 @@ export function BPMModal({
             </div>
           </Tabs>
 
-          <div className="w-[350px] border-l bg-white flex flex-col shrink-0">
-            {processData && (
-              <WorkflowPanel 
-                entityType="BPM"
-                entityId={processData.id}
-                currentStatus={processData.workflowStatus || 'Draft'}
-                history={processData.workflowHistory || []}
-                className="h-full border-none shadow-none rounded-none"
-                isDirty={globalDirty}
-                onStatusChange={() => {
-                  queryClient.invalidateQueries({ queryKey: ['bpm-process', bpmProcessId] });
-                  queryClient.invalidateQueries({ queryKey: ['bpm-processes'] });
-                }}
-              />
-            )}
-          </div>
         </div>
         <UnsavedChangesDialog blocker={blocker} />
       </DialogContent>

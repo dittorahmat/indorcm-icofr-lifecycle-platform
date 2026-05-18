@@ -56,6 +56,12 @@ export function DeficiencyCard({ deficiency, actionPlan }: DeficiencyCardProps) 
                 <Badge className={cn("text-[8px] font-bold uppercase tracking-widest px-2 h-4 border-none shadow-sm", config.color)}>
                    {deficiency.severity}
                 </Badge>
+                <Badge variant="outline" className={cn(
+                  "text-[8px] font-bold uppercase tracking-widest px-2 h-4 border-slate-200 bg-white",
+                  deficiency.source?.startsWith('Lini 2') ? "text-amber-600 border-amber-200" : "text-indigo-600 border-indigo-200"
+                )}>
+                   {deficiency.source || 'Manual'}
+                </Badge>
                 {isOverdue && (
                   <Badge variant="outline" className="text-[8px] font-bold uppercase tracking-widest px-2 h-4 border-rose-200 bg-rose-50 text-rose-600 animate-pulse">
                     OVERDUE

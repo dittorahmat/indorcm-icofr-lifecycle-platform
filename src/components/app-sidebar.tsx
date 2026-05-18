@@ -104,12 +104,13 @@ function WorkflowPendingBadge({ role }: { role: string | null | undefined }) {
   });
 
   const bpmCount = bpmProcesses?.items.filter(p => {
-    if (role === 'Line 2' || role === 'Admin') return p.workflowStatus === 'Pending Review';
-    if (role === 'CFO' || role === 'Admin') return p.workflowStatus === 'Pending Approval';
+    if (role === 'Line 2' || role === 'Admin') return p.workflowStatus === 'In Review';
+    if (role === 'CFO' || role === 'Admin') return p.workflowStatus === 'In Approval';
     return false;
   }).length || 0;
 
   const apCount = actionPlans?.items.filter(p => {
+    if (p.workflowStatus === 'Ineffective' && (role === 'Line 1' || role === 'Admin')) return true;
     if (role === 'Line 2' || role === 'Admin') return p.workflowStatus === 'In Review';
     if (role === 'CFO' || role === 'Admin') return p.workflowStatus === 'In Approval';
     return false;

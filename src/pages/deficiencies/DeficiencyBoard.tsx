@@ -211,18 +211,27 @@ function KanbanColumn({
 
 export function DeficiencyBoard() {
   const queryClient = useQueryClient();
-  const { t } = useTranslation('deficiency');
+  const { t } = useTranslation(['deficiency', 'workflow', 'common']);
   const [isWizardOpen, setWizardOpen] = React.useState(false);
   const [isRemediationOpen, setRemediationOpen] = React.useState(false);
   const [isAggregateMode, setAggregateMode] = React.useState(false);
   const [selectedDeficiencies, setSelectedDeficiencies] = React.useState<string[]>([]);
   const [activeDeficiencyId, setActiveDeficiencyId] = React.useState<string | null>(null);
   const [activePlan, setActivePlan] = React.useState<ActionPlan | null>(null);
+  const [sourceFilter, setSourceFilter] = React.useState<string>("all");
 
   const { data: deficienciesData, isLoading: deficienciesLoading } = useQuery({
     queryKey: ['deficiencies'],
     queryFn: () => api<{ items: Deficiency[] }>('/api/deficiencies'),
   });
+
+  const filteredDeficiencies = React.useMemo(() => {
+    if (!deficienciesData?.items) return [];
+    if (sourceFilter === "all") return deficienciesData.items;
+    if (sourceFilter === "lini1") return deficienciesData.items.filter(d => d.source === "Lini 1 - CSA");
+    if (sourceFilter === "lini23") return deficienciesData.items.filter(d => d.source?.startsWith("Lini 2") || d.source === "Lini 3 - Audit");
+    return deficienciesData.items;
+  }, [deficienciesData, sourceFilter]);
 
   const { data: actionPlansData, isLoading: actionPlansLoading } = useQuery({
     queryKey: ['actionplans'],
@@ -408,36 +417,65 @@ export function DeficiencyBoard() {
                </Badge>
             )}
           >
-            <div className="flex items-center gap-4">
-              <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-inner">
-                {['Line 1', 'Line 2', 'Admin'].map(r => (
-                  <Button 
-                    key={r}
-                    variant={mockRole === r ? "default" : "ghost"} 
-                    size="sm" 
-                    className={cn(
-                      "h-8 text-[10px] font-bold uppercase tracking-widest px-3 rounded-lg transition-all",
-                      mockRole === r ? "bg-white text-indigo-600 shadow-sm border border-slate-200 hover:bg-white" : "text-slate-400"
-                    )}
-                    onClick={() => handleRoleChange(r)}
-                  >
-                    {r}
-                  </Button>
-                ))}
+            <div className="flex flex-col md:flex-row items-end md:items-center gap-4">
+              <div className="flex flex-col gap-1.5">
+                <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest ml-1">{t('sources.label')}</span>
+                <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-inner">
+                  {[
+                    { id: 'all', label: t('sources.all') },
+                    { id: 'lini1', label: t('sources.l1_csa') },
+                    { id: 'lini23', label: 'Lini 2/3' }
+                  ].map(s => (
+                    <Button 
+                      key={s.id}
+                      variant={sourceFilter === s.id ? "default" : "ghost"} 
+                      size="sm" 
+                      className={cn(
+                        "h-8 text-[10px] font-bold uppercase tracking-widest px-3 rounded-lg transition-all",
+                        sourceFilter === s.id ? "bg-white text-indigo-600 shadow-sm border border-slate-200 hover:bg-white" : "text-slate-400"
+                      )}
+                      onClick={() => setSourceFilter(s.id)}
+                    >
+                      {s.label}
+                    </Button>
+                  ))}
+                </div>
               </div>
 
-              <div className="h-8 w-px bg-slate-200 mx-1" />
+              <div className="h-8 w-px bg-slate-200 mx-1 hidden md:block" />
+
+              <div className="flex flex-col gap-1.5">
+                <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest ml-1">Mock Role</span>
+                <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-inner">
+                  {['Line 1', 'Line 2', 'Admin'].map(r => (
+                    <Button 
+                      key={r}
+                      variant={mockRole === r ? "default" : "ghost"} 
+                      size="sm" 
+                      className={cn(
+                        "h-8 text-[10px] font-bold uppercase tracking-widest px-3 rounded-lg transition-all",
+                        mockRole === r ? "bg-white text-indigo-600 shadow-sm border border-slate-200 hover:bg-white" : "text-slate-400"
+                      )}
+                      onClick={() => handleRoleChange(r)}
+                    >
+                      {r}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="h-8 w-px bg-slate-200 mx-1 hidden md:block" />
 
               {!isAggregateMode ? (
                 <Button 
                   variant="outline" 
                   onClick={() => setAggregateMode(true)} 
-                  className="h-10 gap-2 border-slate-200 bg-white hover:bg-slate-50 transition-all font-bold text-[10px] uppercase tracking-widest px-5 rounded-xl shadow-sm"
+                  className="h-10 gap-2 border-slate-200 bg-white hover:bg-slate-50 transition-all font-bold text-[10px] uppercase tracking-widest px-5 rounded-xl shadow-sm self-end"
                 >
                   <Layers className="h-4 w-4 text-indigo-500" /> Aggregate Analysis
                 </Button>
               ) : (
-                <div className="flex gap-2">
+                <div className="flex gap-2 self-end">
                   <Button 
                     variant="ghost" 
                     onClick={() => { setAggregateMode(false); setSelectedDeficiencies([]); }}
@@ -475,7 +513,7 @@ export function DeficiencyBoard() {
                   <KanbanColumn
                     key={status}
                     status={status}
-                    deficiencies={deficienciesData?.items || []}
+                    deficiencies={filteredDeficiencies}
                     actionPlans={actionPlans}
                     onAssess={handleAssess}
                     isSelectionMode={isAggregateMode}

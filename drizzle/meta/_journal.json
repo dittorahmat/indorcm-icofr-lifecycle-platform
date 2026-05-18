@@ -309,6 +309,13 @@
       "when": 1778636564882,
       "tag": "0043_sad_madame_web",
       "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1779079574665,
+      "tag": "0044_many_galactus",
+      "breakpoints": true
     }
   ]
 }

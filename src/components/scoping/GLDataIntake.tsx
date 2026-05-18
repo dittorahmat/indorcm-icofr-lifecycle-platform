@@ -12,6 +12,7 @@ import { calculateBenfordDistribution, BENFORD_STANDARD, parseBalance, detectGLC
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Line, ComposedChart } from 'recharts';
 import * as XLSX from 'xlsx';
 import Papa from 'papaparse';
+import { useTranslation } from 'react-i18next';
 
 interface GLRow {
   accountCode: string;
@@ -28,6 +29,7 @@ interface GLDataIntakeProps {
 }
 
 export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps) {
+  const { t } = useTranslation('scoping');
   const [data, setData] = useState<GLRow[]>([]);
   const [fileName, setFileName] = useState<string | null>(null);
   const [benfordData, setBenfordData] = useState<{ digit: number; actual: number; standard: number }[]>([]);
@@ -42,7 +44,7 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
     
     setEmptyRowCount(emptyCount);
     if (emptyCount > 0) {
-      toast.info(`Filtered ${emptyCount} empty rows`);
+      toast.info(t('intake.notifications.filtered', { count: emptyCount }));
     }
 
     // 2. Auto-detect column mapping
@@ -58,8 +60,10 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
     // 3. Validate mapping
     const validation = validateGLMapping(mapping);
     if (!validation.valid) {
-      toast.error(`Missing required columns: ${validation.missing.join(', ')}`, {
-        description: `Expected columns: ${validation.missing.map(m => Object.keys(GL_COLUMN_MAPPING).find(k => (GL_COLUMN_MAPPING[k as keyof typeof GL_COLUMN_MAPPING] as unknown as string[]).includes(m)) || m).join(', ')}`
+      toast.error(t('intake.notifications.missingColumns', { columns: validation.missing.join(', ') }), {
+        description: t('intake.notifications.expectedColumns', { 
+          expected: validation.missing.map(m => Object.keys(GL_COLUMN_MAPPING).find(k => (GL_COLUMN_MAPPING[k as keyof typeof GL_COLUMN_MAPPING] as unknown as string[]).includes(m)) || m).join(', ') 
+        })
       });
       return;
     }
@@ -83,7 +87,7 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
       const parsedBalance = parseBalance(balanceRaw);
       
       if (!parsedBalance.success) {
-        toast.warning(`Invalid balance for ${row[mapping.accountName] || 'Unknown'}: ${balanceRaw}`);
+        toast.warning(t('intake.notifications.invalidBalance', { account: row[mapping.accountName] || 'Unknown', value: balanceRaw }));
       }
 
       return {
@@ -93,9 +97,11 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
         fsliCode: mapping.fsliCode ? (row[mapping.fsliCode] || row[mapping.fsliCode?.toLowerCase()]) : undefined,
         entityCode: mapping.entityCode ? (row[mapping.entityCode] || row[mapping.entityCode?.toLowerCase()]) : undefined,
         currency: mapping.currency ? (row[mapping.currency] || row[mapping.currency?.toLowerCase()]) : undefined,
+        fsliName: (mapping as any).fsliName ? (row[(mapping as any).fsliName] || row[(mapping as any).fsliName?.toLowerCase()]) : undefined,
+        noUrut: (mapping as any).noUrut ? parseInt(row[(mapping as any).noUrut] || row[(mapping as any).noUrut?.toLowerCase()] || '0') : 0,
       };
     }).filter(row => {
-      return row.accountName && row.balance !== undefined;
+      return (row.accountName || (row as any).fsliName) && row.balance !== undefined;
     });
     
     // 5. Balance Check
@@ -104,8 +110,10 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
     setBalanceStatus({ total: totalBalance, isBalanced });
 
     if (!isBalanced) {
-      toast.error("GL Data is not balanced!", {
-        description: `Total deviation: ${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(totalBalance)}`,
+      toast.error(t('intake.notifications.unbalanced'), {
+        description: t('intake.notifications.deviation', { 
+          deviation: new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(totalBalance) 
+        }),
       });
     }
 
@@ -120,8 +128,8 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
 
     setData(glRows);
     onDataImported(glRows, pmThreshold);
-    toast.success(`Successfully processed ${glRows.length} GL accounts`);
-  }, [pmThreshold, onDataImported]);
+    toast.success(t('intake.notifications.success', { count: glRows.length }));
+  }, [pmThreshold, onDataImported, t]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
@@ -140,7 +148,7 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
           processData(results.data, headers);
         },
         error: (error) => {
-          toast.error(`Failed to parse CSV: ${error.message}`);
+          toast.error(t('intake.notifications.parseError', { error: error.message }));
         }
       });
     } else {
@@ -168,7 +176,7 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
       };
       reader.readAsBinaryString(file);
     }
-  }, [processData]);
+  }, [processData, t]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -193,11 +201,11 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
                 <UploadCloud className="h-10 w-10 text-primary" />
               </div>
               <div className="text-center">
-                <h3 className="text-lg font-semibold">Upload General Ledger</h3>
-                <p className="text-sm text-muted-foreground">Drag & drop your GL Excel or CSV file here</p>
-                <p className="text-xs text-muted-foreground mt-1">Support: .csv, .xlsx, .xls</p>
+                <h3 className="text-lg font-semibold">{t('intake.title')}</h3>
+                <p className="text-sm text-muted-foreground">{t('intake.dropzone.main')}</p>
+                <p className="text-xs text-muted-foreground mt-1">{t('intake.dropzone.support')}</p>
               </div>
-              <Button variant="outline" size="sm">Select File</Button>
+              <Button variant="outline" size="sm">{t('intake.dropzone.button')}</Button>
             </div>
           </CardContent>
         </Card>
@@ -206,23 +214,23 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
           <Card className="lg:col-span-3">
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <div>
-                <CardTitle className="text-xl">Imported GL Data</CardTitle>
+                <CardTitle className="text-xl">{t('intake.results.title')}</CardTitle>
                 <CardDescription>
-                  Reviewing {data.length} accounts from {fileName}
+                  {t('intake.results.description', { count: data.length, filename: fileName })}
                   {detectedMapping && (
                     <div className="text-xs mt-1 text-muted-foreground">
-                      Detected: {Object.entries(detectedMapping).map(([k, v]) => `${k}: ${v}`).join(', ')}
+                      {t('intake.results.detected', { mapping: Object.entries(detectedMapping).map(([k, v]) => `${k}: ${v}`).join(', ') })}
                     </div>
                   )}
                   {emptyRowCount > 0 && (
                     <div className="text-xs mt-1 text-orange-600">
-                      Filtered {emptyRowCount} empty rows
+                      {t('intake.results.filtered', { count: emptyRowCount })}
                     </div>
                   )}
                 </CardDescription>
               </div>
               <Button variant="ghost" size="sm" onClick={() => { setData([]); setFileName(null); setBenfordData([]); setDetectedMapping(null); setEmptyRowCount(0); }}>
-                <X className="h-4 w-4 mr-2" /> Reset
+                <X className="h-4 w-4 mr-2" /> {t('intake.results.reset')}
               </Button>
             </CardHeader>
             <CardContent>
@@ -230,11 +238,11 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
                 <Table>
                   <TableHeader className="sticky top-0 bg-background z-10">
                     <TableRow>
-                      <TableHead>Code</TableHead>
-                      <TableHead>Account Name</TableHead>
-                      <TableHead className="text-right">Balance</TableHead>
-                      {data[0]?.fsliCode && <TableHead>FSLI Code</TableHead>}
-                      <TableHead>Significance</TableHead>
+                      <TableHead>{t('intake.table.code')}</TableHead>
+                      <TableHead>{t('intake.table.name')}</TableHead>
+                      <TableHead className="text-right">{t('intake.table.balance')}</TableHead>
+                      {data[0]?.fsliCode && <TableHead>{t('intake.table.fsliCode')}</TableHead>}
+                      <TableHead>{t('intake.table.significance')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -248,9 +256,9 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
                         {row.fsliCode && <TableCell className="font-mono text-xs">{row.fsliCode}</TableCell>}
                         <TableCell>
                           {Math.abs(row.balance) >= pmThreshold ? (
-                            <Badge className="bg-orange-500">Above PM</Badge>
+                            <Badge className="bg-orange-500">{t('intake.table.abovePm')}</Badge>
                           ) : (
-                            <Badge variant="outline" className="text-muted-foreground opacity-50">Below PM</Badge>
+                            <Badge variant="outline" className="text-muted-foreground opacity-50">{t('intake.table.belowPm')}</Badge>
                           )}
                         </TableCell>
                       </TableRow>
@@ -258,7 +266,7 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
                     {data.length > 50 && (
                       <TableRow>
                         <TableCell colSpan={data[0]?.fsliCode ? 5 : 4} className="text-center text-muted-foreground italic py-4">
-                          Showing first 50 of {data.length} accounts...
+                          {t('intake.table.showingFirst50', { count: data.length })}
                         </TableCell>
                       </TableRow>
                     )}
@@ -273,20 +281,20 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-bold uppercase flex items-center gap-2">
                   <ShieldCheck className={cn("h-4 w-4", balanceStatus?.isBalanced ? "text-green-600" : "text-destructive")} />
-                  Integrity Check
+                  {t('intake.integrity.title')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex justify-between items-center">
-                  <span className="text-xs">Balance Check:</span>
+                  <span className="text-xs">{t('intake.integrity.balanceCheck')}</span>
                   {balanceStatus?.isBalanced ? (
-                    <Badge className="bg-green-600">Balanced</Badge>
+                    <Badge className="bg-green-600">{t('intake.integrity.balanced')}</Badge>
                   ) : (
-                    <Badge variant="destructive">Unbalanced</Badge>
+                    <Badge variant="destructive">{t('intake.integrity.unbalanced')}</Badge>
                   )}
                 </div>
                 <div className="mt-2 text-xs font-mono text-right">
-                  Total: {new Intl.NumberFormat('id-ID').format(balanceStatus?.total || 0)}
+                  {t('intake.integrity.total')} {new Intl.NumberFormat('id-ID').format(balanceStatus?.total || 0)}
                 </div>
               </CardContent>
             </Card>
@@ -295,9 +303,9 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-bold uppercase flex items-center gap-2">
                   <BarChart3 className="h-4 w-4 text-primary" />
-                  Benford's Law Analysis
+                  {t('intake.benford.title')}
                 </CardTitle>
-                <CardDescription className="text-xs">Statistical audit for data manipulation detection.</CardDescription>
+                <CardDescription className="text-xs">{t('intake.benford.description')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="h-[300px] w-full mt-4">
@@ -311,14 +319,14 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
                         formatter={(val: number) => [`${val}%`]}
                       />
                       <Legend iconSize={8} wrapperStyle={{ fontSize: '10px' }} />
-                      <Bar dataKey="actual" name="Actual Distribution" fill="#3b82f6" radius={[2, 2, 0, 0]} />
-                      <Line type="monotone" dataKey="standard" name="Benford Standard" stroke="#ef4444" strokeWidth={2} dot={{ r: 2 }} />
+                      <Bar dataKey="actual" name={t('intake.benford.actual')} fill="#3b82f6" radius={[2, 2, 0, 0]} />
+                      <Line type="monotone" dataKey="standard" name={t('intake.benford.standard')} stroke="#ef4444" strokeWidth={2} dot={{ r: 2 }} />
                     </ComposedChart>
                   </ResponsiveContainer>
                 </div>
                 <div className="mt-4 p-3 rounded bg-muted/30 border text-xs italic flex gap-2">
                   <AlertCircle className="h-4 w-4 shrink-0 text-muted-foreground" />
-                  <span>Large deviations from the red line may indicate artificial data entry or fraud risks (SK-5 Principle 8).</span>
+                  <span>{t('intake.benford.tip')}</span>
                 </div>
               </CardContent>
             </Card>

@@ -28,6 +28,14 @@
     "approval": "Dalam Approval",
     "resolved": "Selesai"
   },
+  "sources": {
+    "label": "Sumber",
+    "l1_csa": "Lini 1 - CSA",
+    "l2_csa": "Lini 2 - Review CSA",
+    "l2_tod": "Lini 2 - Review TOD",
+    "l3_audit": "Lini 3 - Audit",
+    "all": "Semua Sumber"
+  },
   "dod": {
     "title": "Tingkat Defisiensi (DoD)",
     "rootCause": "Akar Masalah",

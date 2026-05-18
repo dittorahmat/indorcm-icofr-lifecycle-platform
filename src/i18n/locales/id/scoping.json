@@ -69,7 +69,11 @@
     "saveDraft": "Simpan Draft",
     "submitToCfo": "Kirim ke CFO",
     "resubmitToCfo": "Kirim Ulang ke CFO",
-    "lockedMessage": "Baseline ini telah disetujui secara resmi dan dikunci."
+    "lockedMessage": "Baseline ini telah disetujui secara resmi dan dikunci.",
+    "activeSnapshot": "Snapshot Aktif",
+    "multiplierApplied": "Multiplier Diterapkan",
+    "unitSuffix": "UNIT",
+    "creating": "Membuat..."
   },
   "table": {
     "account": "Akun",
@@ -79,5 +83,113 @@
     "significantApp": "Aplikasi Signifikan",
     "assignDept": "Atur Pemilik Lini 1",
     "addAppOnTheFly": "Tambah Aplikasi Baru"
+  },
+  "benchmarkModal": {
+    "title": "Atur Basis Benchmark",
+    "description": "Pilih akun FSLI mana yang harus tersedia sebagai basis benchmark materialitas.",
+    "colSelect": "Pilih",
+    "colFsli": "Nama FSLI",
+    "colBalance": "Total Saldo (|Saldo|)",
+    "summaryTitle": "Ringkasan Pilihan",
+    "selectedCount": "Benchmark Terpilih",
+    "totalValue": "Total Nilai Benchmark",
+    "tip": "Hanya FSLI terpilih yang akan muncul di dropdown 'Basis' saat membuat simulasi baru.",
+    "selectedList": "Daftar Terpilih",
+    "cancel": "Batal",
+    "save": "Simpan Pilihan & Aktifkan Simulasi",
+    "loading": "Memuat data GL...",
+    "saveSuccess": "Pilihan benchmark berhasil disimpan",
+    "unsavedConfirm": "Anda memiliki perubahan yang belum disimpan. Apakah Anda yakin ingin membuangnya?"
+  },
+  "intake": {
+    "title": "Unggah General Ledger",
+    "dropzone": {
+      "main": "Tarik & lepas file Excel atau CSV GL Anda di sini",
+      "support": "Mendukung: .csv, .xlsx, .xls",
+      "button": "Pilih File"
+    },
+    "results": {
+      "title": "Data GL yang Diimpor",
+      "description": "Meninjau {{count}} akun dari {{filename}}",
+      "detected": "Terdeteksi: {{mapping}}",
+      "filtered": "Memfilter {{count}} baris kosong",
+      "reset": "Reset"
+    },
+    "table": {
+      "code": "Kode",
+      "name": "Nama Akun",
+      "balance": "Saldo",
+      "fsliCode": "Kode FSLI",
+      "significance": "Signifikansi",
+      "abovePm": "Di Atas PM",
+      "belowPm": "Di Bawah PM",
+      "showingFirst50": "Menampilkan 50 dari {{count}} akun pertama..."
+    },
+    "integrity": {
+      "title": "Pemeriksaan Integritas",
+      "balanceCheck": "Pemeriksaan Saldo:",
+      "balanced": "Seimbang",
+      "unbalanced": "Tidak Seimbang",
+      "total": "Total:"
+    },
+    "benford": {
+      "title": "Analisis Hukum Benford",
+      "description": "Audit statistik untuk deteksi manipulasi data.",
+      "actual": "Distribusi Aktual",
+      "standard": "Standar Benford",
+      "tip": "Penyimpangan besar dari garis merah dapat mengindikasikan entri data buatan atau risiko kecurangan (SK-5 Prinsip 8)."
+    },
+    "notifications": {
+      "filtered": "Memfilter {{count}} baris kosong",
+      "missingColumns": "Kolom wajib hilang: {{columns}}",
+      "expectedColumns": "Kolom yang diharapkan: {{expected}}",
+      "invalidBalance": "Saldo tidak valid untuk {{account}}: {{value}}",
+      "unbalanced": "Data GL tidak seimbang!",
+      "deviation": "Total deviasi: {{deviation}}",
+    "success": "Berhasil memproses {{count}} akun GL",
+      "parseError": "Gagal memproses CSV: {{error}}",
+      "submitted": "Simulasi telah dikirim untuk persetujuan",
+      "ownerUpdated": "Persetujuan pemilik diperbarui ke {{acceptance}}",
+      "ownerUpdateFailed": "Gagal memperbarui persetujuan pemilik",
+      "exported": "Excel berhasil diekspor"
+    }
+  },
+  "health": {
+    "title": "Integritas Data (SK-5 P13)",
+    "balanceCheck": "Pemeriksaan Saldo:",
+    "netBalance": "Total Saldo Bersih",
+    "unbalancedWarning": "* PERINGATAN: Data GL harus berjumlah nol. Periksa entri jurnal yang hilang.",
+    "benfordTitle": "Analisis Hukum Benford (Risiko Kecurangan - P8)",
+    "benfordDesc": "Analisis distribusi digit untuk deteksi anomali.",
+    "forensicView": "Tampilan Forensik",
+    "guidance": "Penyimpangan dari garis merah (Standar) dapat mengindikasikan manipulasi angka. Pertimbangkan memberi nilai TINGGI pada Aturan 1 jika ditemukan varians signifikan."
+  },
+  "history": {
+    "empty": "Belum ada aktivitas yang tercatat.",
+    "title": "Riwayat Persetujuan & Umpan Balik",
+    "description": "Lacak semua tindakan dan komentar untuk basis materialitas ini.",
+    "noComments": "Tidak ada komentar yang diberikan.",
+    "userId": "ID Pengguna:"
+  },
+  "grid": {
+    "entityCode": "Kode Entitas",
+    "fsli": "FSLI",
+    "accountCode": "Kode Akun",
+    "accountDesc": "Deskripsi Akun",
+    "lini1Owner": "Pemilik Lini 1",
+    "ownerAcceptance": "Penerimaan Pemilik",
+    "balance": "Saldo",
+    "quantHeader": "Kuantitatif",
+    "scope": "Ruang Lingkup",
+    "significant": "Signifikan",
+    "notSignificant": "Tidak Signifikan",
+    "inScope": "Masuk Lingkup",
+    "outScope": "Luar Lingkup",
+    "selectApp": "Pilih aplikasi...",
+    "showingRows": "Menampilkan {{count}} baris",
+    "exportExcel": "Ekspor Excel",
+    "standardCompliance": "Standar: SK-5/2024 Table 5 Compliance Engine",
+    "fsliGuidance": "Penilaian tingkat FSLI mempengaruhi semua akun anak.",
+    "pending": "Pending"
   }
 }

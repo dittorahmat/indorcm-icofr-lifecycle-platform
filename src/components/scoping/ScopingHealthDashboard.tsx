@@ -12,12 +12,14 @@ import {
   ResponsiveContainer, Line, ComposedChart 
 } from 'recharts';
 import { GLRow } from '@shared/types';
+import { useTranslation } from 'react-i18next';
 
 interface ScopingHealthDashboardProps {
   glData: GLRow[];
 }
 
 export function ScopingHealthDashboard({ glData }: ScopingHealthDashboardProps) {
+  const { t } = useTranslation('scoping');
   const benfordData = React.useMemo(() => {
     if (glData.length === 0) return [];
     const distribution = calculateBenfordDistribution(glData.map(r => Math.abs(r.balance)));
@@ -46,12 +48,12 @@ export function ScopingHealthDashboard({ glData }: ScopingHealthDashboardProps) 
         <CardHeader className="pb-2">
           <CardTitle className="text-xs font-bold uppercase flex items-center gap-2">
             <ShieldCheck className={cn("h-4 w-4", balanceStatus.isBalanced ? "text-green-600" : "text-destructive")} />
-            Data Integrity (SK-5 P13)
+            {t('health.title')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex justify-between items-center mb-2">
-            <span className="text-xs text-muted-foreground">Balance Check:</span>
+            <span className="text-xs text-muted-foreground">{t('health.balanceCheck')}</span>
             {balanceStatus.isBalanced ? (
               <Badge className="bg-green-600 text-xs">BALANCED</Badge>
             ) : (
@@ -59,14 +61,14 @@ export function ScopingHealthDashboard({ glData }: ScopingHealthDashboardProps) 
             )}
           </div>
           <div className="text-right">
-            <p className="text-xs text-muted-foreground uppercase">Total Net Balance</p>
+            <p className="text-xs text-muted-foreground uppercase">{t('health.netBalance')}</p>
             <p className={cn("font-mono font-bold", balanceStatus.isBalanced ? "text-green-700" : "text-destructive")}>
               Rp {balanceStatus.total.toLocaleString('id-ID')}
             </p>
           </div>
           {!balanceStatus.isBalanced && (
             <p className="text-xs text-destructive mt-2 italic">
-              * WARNING: GL data should sum to zero. Check for missing journal entries.
+              {t('health.unbalancedWarning')}
             </p>
           )}
         </CardContent>
@@ -79,12 +81,12 @@ export function ScopingHealthDashboard({ glData }: ScopingHealthDashboardProps) 
             <div>
               <CardTitle className="text-xs font-bold uppercase flex items-center gap-2 text-primary">
                 <BarChart3 className="h-4 w-4" />
-                Benford's Law Analysis (Fraud Risk - P8)
+                {t('health.benfordTitle')}
               </CardTitle>
-              <CardDescription className="text-xs">Digit distribution analysis for anomaly detection.</CardDescription>
+              <CardDescription className="text-xs">{t('health.benfordDesc')}</CardDescription>
             </div>
             <Badge variant="outline" className="text-xs bg-slate-50 text-slate-500 border-slate-200">
-              Forensic View
+              {t('health.forensicView')}
             </Badge>
           </div>
         </CardHeader>
@@ -100,8 +102,8 @@ export function ScopingHealthDashboard({ glData }: ScopingHealthDashboardProps) 
                     contentStyle={{ fontSize: '10px', borderRadius: '8px' }}
                     formatter={(val: number) => [`${val}%`]}
                   />
-                  <Bar dataKey="actual" name="Actual" fill="#3b82f6" radius={[2, 2, 0, 0]} barSize={12} />
-                  <Line type="monotone" dataKey="standard" name="Standard" stroke="#ef4444" strokeWidth={1.5} dot={false} />
+                  <Bar dataKey="actual" name={t('intake.benford.actual')} fill="#3b82f6" radius={[2, 2, 0, 0]} barSize={12} />
+                  <Line type="monotone" dataKey="standard" name={t('intake.benford.standard')} stroke="#ef4444" strokeWidth={1.5} dot={false} />
                 </ComposedChart>
               </ResponsiveContainer>
             </div>
@@ -109,7 +111,7 @@ export function ScopingHealthDashboard({ glData }: ScopingHealthDashboardProps) 
               <div className="flex items-center gap-1 font-bold text-amber-700 mb-1">
                 <AlertCircle className="h-3 w-3" /> GUIDANCE
               </div>
-              Deviations from the red line (Standard) may indicate numeric manipulation. Consider rating <strong>HIGH</strong> on <strong>Rule 1</strong> if significant variances are found.
+              {t('health.guidance')}
             </div>
           </div>
         </CardContent>

@@ -108,13 +108,13 @@ export const GLDataGrid = React.memo(function GLDataGrid({
       },
       {
         accessorKey: 'entityCode',
-        header: 'Entity Code',
+        header: t('grid.entityCode'),
         cell: info => <span className="font-mono text-xs">{info.getValue<string>()}</span>,
         size: 80,
       },
       {
         accessorKey: 'fsliName',
-        header: 'FSLI',
+        header: t('grid.fsli'),
         cell: ({ row, getValue }) => (
           <div className="flex items-center gap-2 font-bold text-xs text-slate-700">
             {row.getCanExpand() && (
@@ -128,13 +128,13 @@ export const GLDataGrid = React.memo(function GLDataGrid({
       },
       {
         accessorKey: 'noGL',
-        header: 'Account Code',
+        header: t('grid.accountCode'),
         cell: info => <span className="font-mono text-xs text-slate-500">{info.getValue<string>()}</span>,
         size: 100,
       },
       {
         accessorKey: 'glDesc',
-        header: 'Account Description',
+        header: t('grid.accountDesc'),
         cell: ({ row, getValue }) => {
           const glDesc = getValue<string>();
           if (row.getIsGrouped()) return <span className="text-xs">{glDesc}</span>;
@@ -190,7 +190,7 @@ export const GLDataGrid = React.memo(function GLDataGrid({
       },
       {
         id: 'departmentOwner',
-        header: 'Lini 1 Owner',
+        header: t('grid.lini1Owner'),
         size: 200,
         cell: ({ row }) => {
           if (row.getIsGrouped()) return null;
@@ -208,7 +208,7 @@ export const GLDataGrid = React.memo(function GLDataGrid({
                 options={deptOptions}
                 selected={currentDeptIds}
                 onChange={(ids) => onAssignDepartments?.(row.original.noGL, ids)}
-                placeholder={t('table.assignDept', 'Assign Dept...')}
+                placeholder={t('grid.lini1Owner')}
                 disabled={isDisabled}
                 className="min-h-7 py-1 text-xs"
               />
@@ -218,7 +218,7 @@ export const GLDataGrid = React.memo(function GLDataGrid({
       },
       {
         id: 'ownerAcceptance',
-        header: 'Owner Acceptance',
+        header: t('grid.ownerAcceptance'),
         size: 140,
         cell: ({ row }) => {
           if (row.getIsGrouped()) return null;
@@ -252,7 +252,7 @@ export const GLDataGrid = React.memo(function GLDataGrid({
                 currentAcceptance === 'Rejected' ? "text-red-600 font-bold bg-red-50" :
                 "text-slate-300 italic"
               )}>
-                <SelectValue placeholder="Pending" />
+                <SelectValue placeholder={t('grid.pending')} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="Accepted" className="text-xs text-green-600 font-bold">✓ Accepted</SelectItem>
@@ -264,7 +264,7 @@ export const GLDataGrid = React.memo(function GLDataGrid({
       },
       {
         accessorKey: 'balance',
-        header: () => <div className="text-right">Balance</div>,
+        header: () => <div className="text-right">{t('grid.balance')}</div>,
         cell: info => {
           const val = info.getValue<number>();
           return (
@@ -279,7 +279,7 @@ export const GLDataGrid = React.memo(function GLDataGrid({
       },
       {
         id: 'quantFlag',
-        header: () => <div className="text-center bg-orange-50/50 -mx-2 py-1 text-xs">Quantitative</div>,
+        header: () => <div className="text-center bg-orange-50/50 -mx-2 py-1 text-xs">{t('grid.quantHeader')}</div>,
         cell: ({ row }) => {
           const balance = row.getIsGrouped() 
             ? row.getLeafRows().reduce((sum, r) => sum + Math.abs(r.original.balance), 0)
@@ -288,9 +288,9 @@ export const GLDataGrid = React.memo(function GLDataGrid({
           return (
             <div className="text-center">
               {isSignificant ? (
-                <Badge className="bg-red-600 h-4 px-1.5 text-xs uppercase tracking-tighter">Significant</Badge>
+                <Badge className="bg-red-600 h-4 px-1.5 text-xs uppercase tracking-tighter">{t('grid.significant')}</Badge>
               ) : (
-                <span className="text-slate-300 text-xs font-medium italic">Not Significant</span>
+                <span className="text-slate-300 text-xs font-medium italic">{t('grid.notSignificant')}</span>
               )}
             </div>
           );
@@ -334,7 +334,7 @@ export const GLDataGrid = React.memo(function GLDataGrid({
       })),
       {
         id: 'finalStatus',
-        header: 'Scope',
+        header: t('grid.scope'),
         size: 130,
         cell: ({ row }) => {
           const isGrouped = row.getIsGrouped();
@@ -349,11 +349,11 @@ export const GLDataGrid = React.memo(function GLDataGrid({
             const isInScope = isKuanSignificant || isQualSignificant;
             return isInScope ? (
               <Badge className="bg-indigo-600 text-xs h-5 px-3 uppercase font-extrabold shadow-sm border-2 border-indigo-200 whitespace-nowrap">
-                In Scope
+                {t('grid.inScope')}
               </Badge>
             ) : (
               <Badge variant="outline" className="text-xs h-4 px-1.5 opacity-40 whitespace-nowrap">
-                Out Scope
+                {t('grid.outScope')}
               </Badge>
             );
           }
@@ -362,9 +362,9 @@ export const GLDataGrid = React.memo(function GLDataGrid({
           const isInScope = isQualSignificant || isKuanSignificant;
 
           if (isInScope) {
-            return <Badge className="text-xs h-5 px-2 font-bold bg-indigo-600 whitespace-nowrap uppercase">In Scope</Badge>;
+            return <Badge className="text-xs h-5 px-2 font-bold bg-indigo-600 whitespace-nowrap uppercase">{t('grid.inScope')}</Badge>;
           }
-          return <Badge variant="outline" className="text-xs h-4 px-1.5 opacity-40 text-slate-400 whitespace-nowrap uppercase">Out Scope</Badge>;
+          return <Badge variant="outline" className="text-xs h-4 px-1.5 opacity-40 text-slate-400 whitespace-nowrap uppercase">{t('grid.outScope')}</Badge>;
         }
       },
       {
@@ -393,7 +393,7 @@ export const GLDataGrid = React.memo(function GLDataGrid({
           return (
             <div className="py-1 px-1">
               <MultiSelect
-                placeholder={t('table.selectApp', 'Select application...')}
+                placeholder={t('grid.selectApp')}
                 options={options}
                 selected={currentSelected}
                 onChange={(ids) => onAppsChange(noGL, ids)}
@@ -443,15 +443,15 @@ export const GLDataGrid = React.memo(function GLDataGrid({
 
         // Add a separator row for FSLI
         exportData.push({
-          'Entity Code': '',
-          'FSLI': `[FSLI] ${fsliName}`,
-          'Account Code': '',
-          'Account Description': '',
-          'Balance': balance,
-          'Quantitative': Math.abs(balance) >= pmValue ? 'Significant' : 'Not Significant',
-          'Department Owner': '',
-          'Owner Acceptance': '',
-          'Scope': 'In Scope' // Summary scope
+          [t('grid.entityCode')]: '',
+          [t('grid.fsli')]: `[FSLI] ${fsliName}`,
+          [t('grid.accountCode')]: '',
+          [t('grid.accountDesc')]: '',
+          [t('grid.balance')]: balance,
+          [t('grid.quantHeader')]: Math.abs(balance) >= pmValue ? t('grid.significant') : t('grid.notSignificant'),
+          [t('grid.lini1Owner')]: '',
+          [t('grid.ownerAcceptance')]: '',
+          [t('grid.scope')]: t('grid.inScope') // Summary scope
         });
 
         // Add accounts under this FSLI
@@ -462,18 +462,18 @@ export const GLDataGrid = React.memo(function GLDataGrid({
           const isInScope = isKuanSignificant || isQualSignificant;
           const assignedDeptIds = leaf.original.assignedDepartmentIds || [];
           const depts = assignedDeptIds.map(id => departments.find(d => d.id === id)?.name).filter(Boolean).join(", ");
-          const acceptance = leaf.original.ownerAcceptance || 'Pending';
+          const acceptance = leaf.original.ownerAcceptance || t('grid.pending');
 
           exportData.push({
-            'Entity Code': leaf.original.entityCode,
-            'FSLI': leaf.original.fsliName,
-            'Account Code': leaf.original.noGL,
-            'Account Description': leaf.original.glDesc,
-            'Balance': leaf.original.balance,
-            'Quantitative': isKuanSignificant ? 'Significant' : 'Not Significant',
-            'Department Owner': depts || 'Unassigned',
-            'Owner Acceptance': acceptance,
-            'Scope': isInScope ? 'In Scope' : 'Out Scope'
+            [t('grid.entityCode')]: leaf.original.entityCode,
+            [t('grid.fsli')]: leaf.original.fsliName,
+            [t('grid.accountCode')]: leaf.original.noGL,
+            [t('grid.accountDesc')]: leaf.original.glDesc,
+            [t('grid.balance')]: leaf.original.balance,
+            [t('grid.quantHeader')]: isKuanSignificant ? t('grid.significant') : t('grid.notSignificant'),
+            [t('grid.lini1Owner')]: depts || 'Unassigned',
+            [t('grid.ownerAcceptance')]: acceptance,
+            [t('grid.scope')]: isInScope ? t('grid.inScope') : t('grid.outScope')
           });
         });
       }
@@ -485,7 +485,7 @@ export const GLDataGrid = React.memo(function GLDataGrid({
     
     // Save file
     XLSX.writeFile(workbook, `Significant_Account_Identification_${new Date().toISOString().split('T')[0]}.xlsx`);
-    toast.success("Excel exported successfully");
+    toast.success(t('intake.notifications.exported'));
   };
 
   return (
@@ -493,7 +493,7 @@ export const GLDataGrid = React.memo(function GLDataGrid({
       <div className="flex justify-between items-center">
         <div className="flex gap-2 items-center text-xs text-muted-foreground">
           <Info className="h-3 w-3" />
-          <span>FSLI level assessment affects all child accounts.</span>
+          <span>{t('grid.fsliGuidance')}</span>
         </div>
         <Button 
           variant="outline" 
@@ -501,7 +501,7 @@ export const GLDataGrid = React.memo(function GLDataGrid({
           onClick={handleExportExcel}
           className="gap-2 text-green-700 hover:text-green-800 hover:bg-green-50 border-green-200"
         >
-          <FileSpreadsheet className="h-4 w-4" /> Export as Excel
+          <FileSpreadsheet className="h-4 w-4" /> {t('grid.exportExcel')}
         </Button>
       </div>
 
@@ -570,8 +570,8 @@ export const GLDataGrid = React.memo(function GLDataGrid({
           </Table>
         </div>
         <div className="p-2 border-t bg-slate-50 text-xs text-slate-400 italic flex justify-between">
-          <span>Showing {table.getRowModel().rows.length} rows</span>
-          <span>Standard: SK-5/2024 Table 5 Compliance Engine</span>
+          <span>{t('grid.showingRows', { count: table.getRowModel().rows.length })}</span>
+          <span>{t('grid.standardCompliance')}</span>
         </div>
       </div>
     </div>

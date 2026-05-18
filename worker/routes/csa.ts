@@ -11,15 +11,14 @@ import { eq, and, sql, desc, SQL } from 'drizzle-orm';
 import type { CSARecord, TestRecord, Deficiency } from "@shared/types";
 import { generateCsaPdf } from "../lib/csa-pdf";
 import { AuditService } from "../services/audit-service";
+import { DeficiencyService } from "../services/deficiency-service";
 
 const csa = new Hono<HonoEnv>();
 
-// --- CSA Schedules (Todo List) ---
-
-csa.get('/csa/schedules', async (c) => {
+csa.get('/csa', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
-  const orgId = c.get('organizationId');
-  const items = await db.select().from(csaSchedules).where(eq(csaSchedules.organizationId, orgId));
+  const organizationId = c.get('organizationId');
+  const items = await db.select().from(csaRecords).where(eq(csaRecords.organizationId, organizationId));
   return ok(c, { items });
 });
 
@@ -109,7 +108,9 @@ csa.put('/csa/:id', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const id = c.req.param('id');
   const orgId = c.get('organizationId');
+  const userId = c.get('userId');
   const body = await c.req.json();
+  const defService = new DeficiencyService(db);
 
   // 1. Update CSA Record
   await db.update(csaRecords)
@@ -122,44 +123,25 @@ csa.put('/csa/:id', async (c) => {
       documentList: body.documentList,
       testProcedure: body.testProcedure,
       archiveLocation: body.archiveLocation,
+      line2Status: body.line2Status,
+      line2Comments: body.line2Comments,
+      line2ValidatedBy: body.line2ValidatedBy,
+      line2ValidatedDate: body.line2ValidatedDate ? new Date(body.line2ValidatedDate) : undefined,
     })
     .where(and(eq(csaRecords.id, id), eq(csaRecords.organizationId, orgId)));
 
-  // 1.1 Auto-Deficiency & Action Plan logic for UPDATES
+  // 1.1 Auto-Deficiency & Action Plan logic for UPDATES / Lini 2 Review
   const isDraft = body.isDraft ?? false;
   if (!isDraft && body.result === 'Ineffective') {
-    // Check if deficiency already exists to avoid duplicates
-    const existingDef = await db.select().from(deficiencies).where(and(
-      eq(deficiencies.controlId, body.controlId),
-      eq(deficiencies.organizationId, orgId),
-      sql`description LIKE ${`%${body.period}%`}`
-    )).limit(1);
-
-    if (existingDef.length === 0) {
-      const deficiencyId = crypto.randomUUID();
-      const userId = c.get('userId');
-      await db.insert(deficiencies).values({
-        id: deficiencyId,
-        organizationId: orgId,
-        controlId: body.controlId,
-        description: `CSA result for ${body.period} is Ineffective. Comments: ${body.comments || 'No comments provided.'}`,
-        severity: 'Control Deficiency',
-        identifiedDate: new Date(),
-        identifiedBy: userId,
-        status: 'Open'
-      });
-
-      await db.insert(actionPlans).values({
-        id: crypto.randomUUID(),
-        organizationId: orgId,
-        deficiencyId: deficiencyId,
-        description: `Remediasi temuan CSA ${body.period}`,
-        status: 'Draft',
-        workflowStatus: 'Ineffective',
-        ownerId: userId,
-        createdAt: new Date(),
-      } as any);
-    }
+    const isLine2Review = body.line2Status === 'Validated' || !!body.line2ValidatedBy;
+    await defService.createAutoDeficiency({
+      organizationId: orgId,
+      controlId: body.controlId,
+      description: `[${isLine2Review ? 'Review L2' : 'Update L1'}] Hasil CSA Ineffective untuk periode ${body.period}.`,
+      source: isLine2Review ? 'Lini 2 - CSA Review' : 'Lini 1 - CSA',
+      userId,
+      period: body.period
+    });
   }
 
   // 2. Resync Samples: Delete and re-insert sequentially
@@ -334,29 +316,15 @@ csa.post('/csa', async (c) => {
 
   // 5. Auto-Deficiency & Action Plan logic
   if (!isDraft && newCsa.result === 'Ineffective') {
-    const deficiencyId = crypto.randomUUID();
-    await db.insert(deficiencies).values({
-      id: deficiencyId,
+    const defService = new DeficiencyService(db);
+    await defService.createAutoDeficiency({
       organizationId: orgId,
       controlId: newCsa.controlId,
-      description: `CSA result for ${newCsa.period} is Ineffective. Comments: ${newCsa.comments || 'No comments provided.'}`,
-      severity: 'Control Deficiency',
-      identifiedDate: assessmentDate,
-      identifiedBy: userId,
-      status: 'Open'
+      description: `Hasil CSA Ineffective untuk periode ${newCsa.period}.`,
+      source: 'Lini 1 - CSA',
+      userId,
+      period: newCsa.period
     });
-
-    // Create Action Plan automatically so it appears on the Deficiency Board
-    await db.insert(actionPlans).values({
-      id: crypto.randomUUID(),
-      organizationId: orgId,
-      deficiencyId: deficiencyId,
-      description: `Remediasi temuan CSA ${newCsa.period}`,
-      status: 'Draft',
-      workflowStatus: 'Ineffective',
-      ownerId: userId,
-      createdAt: new Date(),
-    } as any);
   }
 
   // 6. Audit Log
@@ -558,10 +526,36 @@ csa.post('/tod-evaluations', async (c) => {
     await db.update(todEvaluations)
       .set(values)
       .where(eq(todEvaluations.id, existing[0].id));
+    
+    // Auto-Deficiency for TOD Ineffective
+    if (body.conclusion === 'Ineffective') {
+       const defService = new DeficiencyService(db);
+       await defService.createAutoDeficiency({
+         organizationId: orgId,
+         controlId: body.controlId,
+         description: `Hasil Verifikasi Desain (TOD) Ineffective.`,
+         source: 'Lini 2 - TOD Review',
+         userId,
+         period: 'TOD-Evaluation'
+       });
+    }
     return ok(c, { ...existing[0], ...values });
   } else {
     const newId = crypto.randomUUID();
     await db.insert(todEvaluations).values({ id: newId, ...values, createdAt: new Date() });
+    
+    // Auto-Deficiency for TOD Ineffective
+    if (body.conclusion === 'Ineffective') {
+       const defService = new DeficiencyService(db);
+       await defService.createAutoDeficiency({
+         organizationId: orgId,
+         controlId: body.controlId,
+         description: `Hasil Verifikasi Desain (TOD) Ineffective.`,
+         source: 'Lini 2 - TOD Review',
+         userId,
+         period: 'TOD-Evaluation'
+       });
+    }
     return ok(c, { id: newId, ...values });
   }
 });
@@ -614,6 +608,19 @@ csa.post('/tests', async (c) => {
   };
 
   await db.insert(testRecords).values(newRecord as any);
+
+  // Auto-Deficiency for Test Workbench Ineffective
+  if (body.result === 'Ineffective') {
+     const defService = new DeficiencyService(db);
+     await defService.createAutoDeficiency({
+       organizationId: orgId,
+       controlId: body.controlId!,
+       description: `Hasil Pengujian ${body.testType} Ineffective: ${body.comments || 'No comments.'}`,
+       source: 'Lini 3 - Audit',
+       userId,
+       period: body.period || new Date().getFullYear().toString()
+     });
+  }
 
   // Insert Samples if any
   if (body.samples && Array.isArray(body.samples) && body.samples.length > 0) {

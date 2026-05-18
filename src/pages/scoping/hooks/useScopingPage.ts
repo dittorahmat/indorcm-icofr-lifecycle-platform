@@ -291,7 +291,7 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
     onSuccess: (updated) => {
       queryClient.invalidateQueries();
       setSimState(updated);
-      toast.success("Simulation submitted for approval");
+      toast.success(t('intake.notifications.submitted'));
     }
   });
 

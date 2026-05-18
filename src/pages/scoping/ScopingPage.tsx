@@ -245,9 +245,9 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
     if (isLocked) return;
     try {
       await api(`/api/gl-rows/${noGL}/owner-acceptance`, { method: 'PUT', body: JSON.stringify({ ownerAcceptance: acceptance }) });
-      toast.success(`Owner acceptance updated to ${acceptance}`);
+      toast.success(t('intake.notifications.ownerUpdated', { acceptance }));
     } catch (error) {
-      toast.error("Failed to update owner acceptance");
+      toast.error(t('intake.notifications.ownerUpdateFailed'));
     }
   };
 

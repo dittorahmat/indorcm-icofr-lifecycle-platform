@@ -7,17 +7,19 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { useTranslation } from 'react-i18next';
 
 interface ApprovalHistoryTimelineProps {
   history: ApprovalHistoryEntry[];
 }
 
 export function ApprovalHistoryTimeline({ history }: ApprovalHistoryTimelineProps) {
+  const { t } = useTranslation('scoping');
   if (!history || history.length === 0) {
     return (
       <div className="py-10 text-center border-2 border-dashed rounded-lg bg-slate-50/50">
         <History className="h-8 w-8 text-slate-300 mx-auto mb-2" />
-        <p className="text-sm text-slate-400 font-medium">No activity recorded yet.</p>
+        <p className="text-sm text-slate-400 font-medium">{t('history.empty')}</p>
       </div>
     );
   }
@@ -77,12 +79,12 @@ export function ApprovalHistoryTimeline({ history }: ApprovalHistoryTimelineProp
                   <User className="h-3 w-3 text-slate-400" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-xs text-slate-500 font-medium mb-1">User ID: {entry.userId}</p>
+                  <p className="text-xs text-slate-500 font-medium mb-1">{t('history.userId')} {entry.userId}</p>
                   <p className={cn(
                     "text-xs leading-relaxed",
                     entry.action === 'Reject' ? "text-red-700 font-medium italic" : "text-slate-600"
                   )}>
-                    {entry.note || "No comments provided."}
+                    {entry.note || t('history.noComments')}
                   </p>
                 </div>
               </div>

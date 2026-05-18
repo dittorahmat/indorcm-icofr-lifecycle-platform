@@ -577,11 +577,11 @@ export class BpmService {
     let nextStatus = currentStatus;
 
     if (body.action === "Submit") {
-      nextStatus = "Pending Review";
+      nextStatus = "In Review";
     } else if (body.action === "Review") {
-      nextStatus = "Pending Approval";
+      nextStatus = "In Approval";
     } else if (body.action === "Approve") {
-      nextStatus = "Approved";
+      nextStatus = "Resolved";
     } else if (body.action === "Reject") {
       if (!body.note) throw new Error("Rejection requires a note");
       nextStatus = "Rejected";

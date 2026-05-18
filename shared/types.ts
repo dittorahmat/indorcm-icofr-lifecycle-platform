@@ -57,7 +57,7 @@ export interface GLSnapshot extends Omit<InferSelectModel<typeof schema.glSnapsh
 export type SimulationStatus = "Draft" | "Pending CFO" | "Pending Komut" | "Approved" | "Rejected";
 export type WorkflowAction = "Submit" | "Review" | "Approve" | "Reject" | "Rollback" | "Update";
 
-export type BPMWorkflowStatus = "Draft" | "Pending Review" | "Pending Approval" | "Approved" | "Rejected";
+export type BPMWorkflowStatus = "Draft" | "In Review" | "In Approval" | "Resolved" | "Rejected";
 export type DeficiencyWorkflowStatus = "Ineffective" | "In Review" | "In Approval" | "Resolved";
 
 export interface WorkflowHistoryEntry {
@@ -294,9 +294,10 @@ export type Notification = Omit<InferSelectModel<typeof schema.notifications>, '
   createdAt: number;
 };
 
-export interface Deficiency extends Omit<InferSelectModel<typeof schema.deficiencies>, 'assertions' | 'flowchartPath' | 'identifiedDate' | 'compensatingControlIds'> {
+export interface Deficiency extends Omit<InferSelectModel<typeof schema.deficiencies>, 'assertions' | 'flowchartPath' | 'identifiedDate' | 'compensatingControlIds' | 'source'> {
   severity: DeficiencySeverity;
   status: "Open" | "Remediated" | "Verified" | "Closed";
+  source: "Lini 1 - CSA" | "Lini 2 - CSA Review" | "Lini 2 - TOD Review" | "Lini 3 - Audit";
   relatedAssertions: ControlAssertion[];
   compensatingControlIds: string[];
   assertions?: string[];

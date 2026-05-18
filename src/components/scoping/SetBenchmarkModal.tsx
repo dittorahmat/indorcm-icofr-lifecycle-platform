@@ -13,8 +13,13 @@ import { GLSnapshot } from '@shared/types';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
-import { Calculator, Save, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { Calculator, Save, AlertCircle, CheckCircle2, Loader2, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
+
+import { useTranslation } from 'react-i18next';
+import { useNotification } from '@/hooks/useNotification';
+import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 
 interface SetBenchmarkModalProps {
   snapshot: GLSnapshot | null;
@@ -23,6 +28,8 @@ interface SetBenchmarkModalProps {
 }
 
 export function SetBenchmarkModal({ snapshot: initialSnapshot, isOpen, onOpenChange }: SetBenchmarkModalProps) {
+  const { t } = useTranslation('scoping');
+  const { notify } = useNotification();
   const queryClient = useQueryClient();
   const [selectedFsliNames, setSelectedFsliNames] = React.useState<string[]>([]);
 
@@ -39,18 +46,56 @@ export function SetBenchmarkModal({ snapshot: initialSnapshot, isOpen, onOpenCha
     }
   }, [snapshot]);
 
+  // Track unsaved changes
+  const isDirty = React.useMemo(() => {
+    if (!snapshot) return false;
+    const initial = snapshot.benchmarkFsliNames || [];
+    if (initial.length !== selectedFsliNames.length) return true;
+    return !initial.every(name => selectedFsliNames.includes(name));
+  }, [snapshot, selectedFsliNames]);
+
+  const blocker = useUnsavedChanges(isDirty && isOpen);
+
+  const handleOpenChange = (open: boolean) => {
+    if (!open && isDirty) {
+      if (confirm(t('benchmarkModal.unsavedConfirm'))) {
+        onOpenChange(false);
+      }
+      return;
+    }
+    onOpenChange(open);
+  };
+
   const uniqueFsliData = React.useMemo(() => {
     if (!snapshot || !snapshot.rows) return [];
-    const fsliMap = new Map<string, number>();
+    
+    // Group by fsliName and track total balance + min noUrut
+    const fsliMap = new Map<string, { total: number, minNoUrut: number }>();
+    
     snapshot.rows.forEach(r => {
       if (r.fsliName) {
-        const current = fsliMap.get(r.fsliName) || 0;
-        fsliMap.set(r.fsliName, current + Math.abs(r.balance));
+        const current = fsliMap.get(r.fsliName) || { total: 0, minNoUrut: Infinity };
+        fsliMap.set(r.fsliName, {
+          total: current.total + Math.abs(r.balance),
+          minNoUrut: Math.min(current.minNoUrut, r.noUrut ?? Infinity)
+        });
       }
     });
+
     return Array.from(fsliMap.entries())
-      .map(([name, total]) => ({ name, total }))
-      .sort((a, b) => a.name.localeCompare(b.name));
+      .map(([name, data]) => ({ 
+        name, 
+        total: data.total, 
+        minNoUrut: data.minNoUrut === Infinity ? 999999 : data.minNoUrut 
+      }))
+      .sort((a, b) => {
+        // Primary sort: minNoUrut
+        if (a.minNoUrut !== b.minNoUrut) {
+          return a.minNoUrut - b.minNoUrut;
+        }
+        // Secondary sort: Alphabetical (backup)
+        return a.name.localeCompare(b.name);
+      });
   }, [snapshot]);
 
   const mappingMutation = useMutation({
@@ -61,7 +106,10 @@ export function SetBenchmarkModal({ snapshot: initialSnapshot, isOpen, onOpenCha
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gl-snapshots'] });
-      toast.success("Benchmark selection saved successfully");
+      notify({
+        message: t('benchmarkModal.saveSuccess'),
+        type: 'success'
+      });
       onOpenChange(false);
     }
   });
@@ -79,15 +127,15 @@ export function SetBenchmarkModal({ snapshot: initialSnapshot, isOpen, onOpenCha
     .reduce((sum, d) => sum + d.total, 0);
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl font-bold">
             <Calculator className="h-6 w-6 text-indigo-600" />
-            Set Benchmark Basis
+            {t('benchmarkModal.title')}
           </DialogTitle>
           <DialogDescription>
-            Select which FSLI accounts should be available as materiality benchmark bases.
+            {t('benchmarkModal.description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -96,15 +144,15 @@ export function SetBenchmarkModal({ snapshot: initialSnapshot, isOpen, onOpenCha
             {isLoading ? (
               <div className="h-full w-full flex flex-col items-center justify-center gap-2 text-muted-foreground">
                 <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
-                <p className="text-sm font-medium">Loading GL data...</p>
+                <p className="text-sm font-medium">{t('benchmarkModal.loading')}</p>
               </div>
             ) : (
               <Table>
                 <TableHeader className="sticky top-0 bg-white z-10 shadow-sm border-b">
                   <TableRow>
-                    <TableHead className="w-[50px] text-center">Select</TableHead>
-                    <TableHead>FSLI Name</TableHead>
-                    <TableHead className="text-right">Total Balance (|Saldo|)</TableHead>
+                    <TableHead className="w-[50px] text-center">{t('benchmarkModal.colSelect')}</TableHead>
+                    <TableHead>{t('benchmarkModal.colFsli')}</TableHead>
+                    <TableHead className="text-right">{t('benchmarkModal.colBalance')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -137,14 +185,14 @@ export function SetBenchmarkModal({ snapshot: initialSnapshot, isOpen, onOpenCha
 
           <div className="space-y-6">
             <div className="p-4 rounded-xl bg-white border border-slate-200 shadow-sm space-y-4">
-              <h4 className="text-xs font-bold uppercase tracking-widest text-slate-400">Selection Summary</h4>
+              <h4 className="text-xs font-bold uppercase tracking-widest text-slate-400">{t('benchmarkModal.summaryTitle')}</h4>
               <div className="space-y-1">
-                <p className="text-xs text-slate-500 font-medium">Selected Benchmarks:</p>
+                <p className="text-xs text-slate-500 font-medium">{t('benchmarkModal.selectedCount')}:</p>
                 <p className="text-2xl font-bold text-indigo-600">{selectedFsliNames.length}</p>
               </div>
               <Separator />
               <div className="space-y-1">
-                <p className="text-xs text-slate-500 font-medium">Total Benchmark Value:</p>
+                <p className="text-xs text-slate-500 font-medium">{t('benchmarkModal.totalValue')}:</p>
                 <p className="text-lg font-mono font-bold text-slate-800">
                   Rp {totalSelectedValue.toLocaleString('id-ID')}
                 </p>
@@ -154,13 +202,13 @@ export function SetBenchmarkModal({ snapshot: initialSnapshot, isOpen, onOpenCha
             <div className="p-4 rounded-xl bg-indigo-50 border border-indigo-100 flex gap-3 shadow-sm">
               <AlertCircle className="h-5 w-5 text-indigo-500 shrink-0" />
               <p className="text-xs text-indigo-700 leading-relaxed italic">
-                Only the selected FSLIs will appear in the "Basis" dropdown when creating a new simulation.
+                {t('benchmarkModal.tip')}
               </p>
             </div>
 
             {selectedFsliNames.length > 0 && (
               <div className="space-y-2">
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Selected List:</p>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('benchmarkModal.selectedList')}:</p>
                 <div className="flex flex-wrap gap-1.5">
                   {selectedFsliNames.map(name => (
                     <Badge key={name} variant="secondary" className="text-xs bg-indigo-100 text-indigo-700 border-indigo-200">
@@ -174,15 +222,16 @@ export function SetBenchmarkModal({ snapshot: initialSnapshot, isOpen, onOpenCha
         </div>
 
         <DialogFooter className="border-t pt-4">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>{t('benchmarkModal.cancel')}</Button>
           <Button 
             className="bg-indigo-600 hover:bg-indigo-700 gap-2 h-10 px-6 font-bold shadow-lg shadow-indigo-200"
             onClick={() => mappingMutation.mutate(selectedFsliNames)}
             disabled={mappingMutation.isPending || selectedFsliNames.length === 0}
           >
-            <Save className="h-4 w-4" /> Save Selection & Enable Simulations
+            <Save className="h-4 w-4" /> {t('benchmarkModal.save')}
           </Button>
         </DialogFooter>
+        <UnsavedChangesDialog blocker={blocker} />
       </DialogContent>
     </Dialog>
   );

@@ -26,6 +26,8 @@ interface BPMDiagramListProps {
   onCreateDiagram: (subProcess: string) => void;
   onOpenWorksheet: (bpmId: string, bpmName: string) => void;
   onDeleteProcess: (bpmId: string, bpmName: string) => void;
+  onSelectProcess?: (bpm: BPMProcess) => void;
+  selectedProcessId?: string | null;
   searchTerm: string;
 }
 
@@ -39,6 +41,8 @@ export function BPMDiagramList({
   onCreateDiagram,
   onOpenWorksheet,
   onDeleteProcess,
+  onSelectProcess,
+  selectedProcessId,
   searchTerm
 }: BPMDiagramListProps) {
   const { t } = useTranslation(['bpm', 'common']);
@@ -54,13 +58,14 @@ export function BPMDiagramList({
             <TableHead className="w-[120px] font-bold text-[10px] uppercase tracking-[0.2em] text-slate-400 py-6">{t('table.location')}</TableHead>
             <TableHead className="w-[100px] text-center font-bold text-[10px] uppercase tracking-[0.2em] text-slate-400 py-6">{t('table.risks')}</TableHead>
             <TableHead className="w-[100px] text-center font-bold text-[10px] uppercase tracking-[0.2em] text-slate-400 py-6">{t('table.controls')}</TableHead>
+            <TableHead className="w-[80px] text-center font-bold text-[10px] uppercase tracking-[0.2em] text-slate-400 py-6">Status</TableHead>
             <TableHead className="w-[80px] py-6"></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {bpmLoading ? (
             <TableRow>
-              <TableCell colSpan={7} className="h-48 text-center">
+              <TableCell colSpan={8} className="h-48 text-center">
                 <div className="flex flex-col items-center gap-3">
                   <Loader2 className="h-10 w-10 animate-spin text-indigo-500" />
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('bpm:loading')}</p>
@@ -69,7 +74,7 @@ export function BPMDiagramList({
             </TableRow>
           ) : filteredBpmProcesses.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={7} className="h-48 text-center">
+              <TableCell colSpan={8} className="h-48 text-center">
                 <div className="flex flex-col items-center gap-3">
                   <div className="h-12 w-12 bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100">
                     <Info className="h-6 w-6 text-slate-300" />
@@ -79,7 +84,15 @@ export function BPMDiagramList({
               </TableCell>
             </TableRow>
           ) : filteredBpmProcesses.map((bpm, i) => (
-            <TableRow key={bpm.id} className={cn("group hover:bg-slate-50 transition-colors", i % 2 === 1 && "bg-slate-50/30")}>
+            <TableRow 
+              key={bpm.id} 
+              className={cn(
+                "group cursor-pointer transition-colors", 
+                i % 2 === 1 && "bg-slate-50/30",
+                selectedProcessId === bpm.id ? "bg-indigo-50/50 hover:bg-indigo-50" : "hover:bg-slate-50"
+              )}
+              onClick={() => onSelectProcess?.(bpm)}
+            >
               <TableCell className="py-6 px-4">
                 <div className="flex items-center justify-center gap-2">
                   <TooltipProvider>
@@ -87,7 +100,8 @@ export function BPMDiagramList({
                       <TooltipTrigger asChild>
                         <Button
                           variant="ghost" size="icon" className="h-9 w-9 text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
                             const diagram = diagrams?.items.find(d => d.subProcess === bpm.name);
                             if (diagram) onOpenDiagram(diagram.id, bpm.name);
                             else onCreateDiagram(bpm.name);
@@ -105,7 +119,10 @@ export function BPMDiagramList({
                       <TooltipTrigger asChild>
                         <Button
                           variant="ghost" size="icon" className="h-9 w-9 text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all"
-                          onClick={() => onOpenWorksheet(bpm.id, bpm.name)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onOpenWorksheet(bpm.id, bpm.name);
+                          }}
                         >
                           <FileSpreadsheet className="h-4 w-4" />
                         </Button>
@@ -117,8 +134,7 @@ export function BPMDiagramList({
               </TableCell>
               <TableCell className="py-6">
                 <div 
-                  className="flex flex-col cursor-pointer group/name" 
-                  onClick={() => onOpenWorksheet(bpm.id, bpm.name)}
+                  className="flex flex-col group/name" 
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <span className="font-display font-bold text-slate-900 text-sm group-hover/name:text-indigo-600 transition-colors">
@@ -129,9 +145,6 @@ export function BPMDiagramList({
                   <div className="flex items-center gap-3">
                     <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest flex items-center gap-1">
                       <Activity className="h-2.5 w-2.5" /> ID: {bpm.id.substring(0,8)}
-                    </span>
-                    <span className="text-[9px] text-indigo-500 font-bold uppercase tracking-widest opacity-0 group-hover/name:opacity-100 transform translate-x-[-10px] group-hover:translate-x-0 transition-all flex items-center gap-1">
-                      Open worksheet <ChevronRight className="h-2.5 w-2.5" />
                     </span>
                   </div>
                 </div>
@@ -153,6 +166,11 @@ export function BPMDiagramList({
               <TableCell className="text-center py-6">
                 <Badge className="bg-emerald-100 text-emerald-700 border-none font-bold text-[10px] h-6 px-3 rounded-xl shadow-sm shadow-emerald-50">
                   {bpm.controlCount || 0} CONTROLS
+                </Badge>
+              </TableCell>
+              <TableCell className="text-center py-6">
+                <Badge variant="outline" className="text-[9px] font-black uppercase tracking-tight px-2 py-0.5 rounded-md border-slate-200 text-slate-500">
+                  {bpm.workflowStatus || 'Draft'}
                 </Badge>
               </TableCell>
               <TableCell className="py-6 px-6 text-right">

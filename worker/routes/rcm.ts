@@ -9,6 +9,7 @@ import {
 import { eq, and, sql } from 'drizzle-orm';
 import { RcmService } from "../services/rcm-service";
 import { ControlService } from "../services/control-service";
+import { DeficiencyService } from "../services/deficiency-service";
 import { rbac } from "../lib/guard";
 
 const rcm = new Hono<HonoEnv>();
@@ -362,6 +363,19 @@ rcm.patch('/rcm-matrix/verification-design/:mappingId', rbac(['Line 2', 'Admin']
       id: crypto.randomUUID(),
       csaId: null, // Explicitly null as it's a design verification not tied to a CSA record yet
       createdAt: new Date(),
+    });
+  }
+
+  // 3. Auto-Deficiency logic for TOD Ineffective
+  if (body.conclusion === 'Ineffective') {
+    const defService = new DeficiencyService(db);
+    await defService.createAutoDeficiency({
+      organizationId: orgId,
+      controlId: mapping.controlId,
+      description: `Hasil Verifikasi Desain (TOD) Ineffective: ${body.comment || 'No justification provided.'}`,
+      source: 'Lini 2 - TOD Review',
+      userId,
+      period: 'TOD-Evaluation'
     });
   }
 

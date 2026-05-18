@@ -16,6 +16,7 @@ const remediation = new Hono<HonoEnv>();
 
 remediation.get('/deficiencies', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
+  console.log('📡 [DEBUG] Querying deficiencies from:', c.env.DATABASE_URL?.substring(0, 50) + '...');
   const orgId = c.get('organizationId');
   const items = await db.select().from(deficiencies).where(eq(deficiencies.organizationId, orgId));
   return ok(c, { items });

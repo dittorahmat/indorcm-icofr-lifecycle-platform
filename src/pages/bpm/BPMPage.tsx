@@ -37,6 +37,12 @@ import { cn } from '@/lib/utils';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 
 import { PageHeader } from '@/components/layout/PageHeader';
+import { 
+  ResizableHandle, 
+  ResizablePanel, 
+  ResizablePanelGroup 
+} from "@/components/ui/resizable";
+import { WorkflowPanel } from "@/components/workflow/WorkflowPanel";
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -93,6 +99,7 @@ export function BPMPage() {
   const [isCreatingBPM, setIsCreatingBPM] = React.useState(false);
   const [bpmName, setBpmName] = React.useState("");
   const [searchTerm, setSearchTerm] = React.useState("");
+  const [selectedProcess, setSelectedProcess] = React.useState<BPMProcess | null>(null);
 
   const [localAssertion, setLocalAssertion] = React.useState<Partial<AccountAssertion>>({});
 
@@ -594,26 +601,62 @@ export function BPMPage() {
                 </div>
               </div>
 
-              <BPMDiagramList 
-                bpmLoading={bpmLoading}
-                filteredBpmProcesses={filteredBpmProcesses}
-                diagrams={diagrams}
-                settings={settings}
-                selectedGLRow={selectedGLRow}
-                onOpenDiagram={handleOpenDiagram}
-                onCreateDiagram={(name) => createDiagramMutation.mutate(name)}
-                onOpenWorksheet={(id, name) => {
-                  setSelectedBpmId(id);
-                  setSelectedBpmName(name);
-                  setIsModalOpen(true);
-                }}
-                onDeleteProcess={(id, name) => {
-                  if (confirm(t('bpm:deleteConfirm', { name }))) {
-                    deleteBPMMutation.mutate(id);
-                  }
-                }}
-                searchTerm={searchTerm}
-              />
+              <ResizablePanelGroup direction="horizontal" className="min-h-[600px] border border-slate-200 rounded-[2.5rem] bg-white overflow-hidden shadow-xl shadow-slate-100">
+                <ResizablePanel defaultSize={selectedProcess ? 70 : 100} minSize={30}>
+                  <BPMDiagramList 
+                    bpmLoading={bpmLoading}
+                    filteredBpmProcesses={filteredBpmProcesses}
+                    diagrams={diagrams}
+                    settings={settings}
+                    selectedGLRow={selectedGLRow}
+                    onOpenDiagram={handleOpenDiagram}
+                    onCreateDiagram={(name) => createDiagramMutation.mutate(name)}
+                    onOpenWorksheet={(id, name) => {
+                      setSelectedBpmId(id);
+                      setSelectedBpmName(name);
+                      setIsModalOpen(true);
+                    }}
+                    onDeleteProcess={(id, name) => {
+                      if (confirm(t('bpm:deleteConfirm', { name }))) {
+                        deleteBPMMutation.mutate(id);
+                      }
+                    }}
+                    onSelectProcess={setSelectedProcess}
+                    selectedProcessId={selectedProcess?.id}
+                    searchTerm={searchTerm}
+                  />
+                </ResizablePanel>
+                
+                {selectedProcess && (
+                  <>
+                    <ResizableHandle withHandle />
+                    <ResizablePanel defaultSize={30} minSize={20} className="bg-slate-50/30">
+                      <div className="h-full flex flex-col">
+                        <div className="p-4 border-b bg-white flex items-center justify-between">
+                           <div className="flex flex-col">
+                              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Selected Process</span>
+                              <span className="text-sm font-bold text-slate-900 truncate max-w-[200px]">{selectedProcess.name}</span>
+                           </div>
+                           <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => setSelectedProcess(null)}>
+                              <XIcon className="h-4 w-4" />
+                           </Button>
+                        </div>
+                        <WorkflowPanel 
+                          entityType="BPM"
+                          entityId={selectedProcess.id}
+                          currentStatus={selectedProcess.workflowStatus || 'Draft'}
+                          history={selectedProcess.workflowHistory || []}
+                          className="flex-1 border-none shadow-none rounded-none"
+                          onStatusChange={(newStatus) => {
+                            queryClient.invalidateQueries({ queryKey: ['bpm-processes'] });
+                            setSelectedProcess(prev => prev ? { ...prev, workflowStatus: newStatus as any } : null);
+                          }}
+                        />
+                      </div>
+                    </ResizablePanel>
+                  </>
+                )}
+              </ResizablePanelGroup>
             </motion.div>
           </motion.div>
         )}

@@ -112,7 +112,7 @@ export const ownerAcceptanceEnum = pgEnum("owner_acceptance", ["Accepted", "Reje
 
 export const glRows = pgTable("gl_rows", {
 	id: text("id").primaryKey(),
-	snapshotId: text("snapshot_id").notNull().references(() => glSnapshots.id),
+	snapshotId: text("snapshot_id").notNull().references(() => glSnapshots.id, { onDelete: 'cascade' }),
 	organizationId: text("organization_id").notNull().references(() => organization.id),
 	ymd: text("ymd"),
 	entityCode: text("entity_code"),
@@ -174,7 +174,7 @@ export const simulations = pgTable("simulations", {
 	name: text("name").notNull(),
 	year: integer("year").notNull(),
 	status: text("status").notNull(), // Draft, Approved, Rejected
-	glSnapshotId: text("gl_snapshot_id").references(() => glSnapshots.id),
+	glSnapshotId: text("gl_snapshot_id").references(() => glSnapshots.id, { onDelete: 'set null' }),
 	omValue: doublePrecision("om_value"),
 	pmValue: doublePrecision("pm_value"),
 	locationCount: integer("location_count"),
@@ -461,6 +461,7 @@ export const deficiencies = pgTable("deficiencies", {
 	correctiveActionTaken: text("corrective_action_taken"),
 	remediationEvidence: text("remediation_evidence"),
 	compensatingControlIds: jsonb("compensating_control_ids").$type<string[]>().default([]),
+	source: text("source").default("Lini 1 - CSA"), // Lini 1 - CSA, Lini 2 - TOD Review, Lini 3 - Audit, etc
 });
 
 export const actionPlans = pgTable("action_plans", {
@@ -494,6 +495,7 @@ export const wbsReports = pgTable("wbs_reports", {
 	description: text("description").notNull(),
 	impactMagnitude: doublePrecision("impact_magnitude"),
 	status: text("status").notNull(), // Investigating, Confirmed, Closed
+	source: text("source").default("Lini 1 - CSA"), // Lini 1 - CSA, Lini 2 - TOD Review, Lini 3 - Audit, etc
 	isFinancialImpact: boolean("is_financial_impact").default(false),
 	relatedDepartmentId: text("related_department_id"),
 	createdAt: timestamp("created_at").notNull().defaultNow(),

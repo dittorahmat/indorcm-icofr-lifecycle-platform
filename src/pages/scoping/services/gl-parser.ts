@@ -84,7 +84,7 @@ export async function parseGLFile(file: File): Promise<ParseResult> {
             assignedDepartmentIds: [],
             ownerAcceptance: null
           };
-        }).filter(r => r.glDesc);
+        }).filter(r => r.glDesc || r.fsliName);
 
         if (rows.length === 0) {
           resolve({ success: false, rows: [], error: 'No valid data rows found' });
