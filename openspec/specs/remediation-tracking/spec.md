@@ -25,3 +25,10 @@ The system SHALL allow users to query action plans, deadlines, and deficiency st
 - **THEN** the AI SHALL call the relevant tool to retrieve `action_plans` with `dueDate` in the following month
 - **AND** return a list of plans with their current status and severity
 
+### Requirement: Lifecycle Phase Alignment
+The system SHALL associate remediation activities primarily with the 'Remediasi' lifecycle stage.
+
+#### Scenario: Remediation status influence on lifecycle
+- **WHEN** the system evaluates the overall ICOFR progress
+- **THEN** it SHALL use the status of action_plans to determine progress within the 'Remediasi' stage
+

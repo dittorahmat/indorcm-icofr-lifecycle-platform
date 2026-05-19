@@ -55,5 +55,26 @@
     "new": "NEW",
     "report": "REPORT",
     "principles": "17 PRINCIPLES"
+  },
+  "lifecycle": {
+    "perancangan": "Planning",
+    "implementasi": "Implementation & Monitoring",
+    "evaluasi": "Evaluation",
+    "remediasi": "Remediation",
+    "pelaporan": "Reporting",
+    "asurans": "External Assurance"
+  },
+  "charts": {
+    "controlsByProcess": {
+      "title": "Controls per Process",
+      "description": "Number of controls defined for each major business process."
+    },
+    "deficienciesBySeverity": {
+      "title": "Findings by Severity",
+      "description": "Breakdown of all currently open deficiency findings."
+    },
+    "noData": "No data available",
+    "noDeficiencies": "No findings reported",
+    "controls": "Controls"
   }
 }

@@ -108,7 +108,7 @@ export function Dashboard() {
         </PageHeader>
 
         <motion.div variants={itemVariants}>
-          <LifecycleProgress currentStage="execution" />
+          <LifecycleProgress currentStage="evaluasi" />
         </motion.div>
 
         <DashboardKPIs 

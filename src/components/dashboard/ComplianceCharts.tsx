@@ -117,56 +117,58 @@ export function ComplianceCharts({ rcmData, deficiencyBySeverity, isLoading }: C
           <CardDescription className="text-[11px] font-medium text-slate-500 mt-1">{t('charts.deficienciesBySeverity.description')}</CardDescription>
         </CardHeader>
         <CardContent className="pt-8 px-6 pb-6">
-          <div className="h-[300px] w-full flex flex-col items-center justify-center relative">
+          <div className="min-h-[400px] w-full flex flex-col items-center justify-between relative">
             {isLoading ? (
-              <div className="relative h-48 w-48 rounded-full border-8 border-slate-100 border-t-slate-900 animate-spin" />
+              <div className="flex-1 flex items-center justify-center">
+                <div className="relative h-48 w-48 rounded-full border-8 border-slate-100 border-t-slate-900 animate-spin" />
+              </div>
             ) : (!deficiencyBySeverity || deficiencyBySeverity.length === 0) ? (
-              <div className="h-full flex items-center justify-center text-slate-400 text-[10px] font-bold uppercase tracking-widest">{t('charts.noDeficiencies')}</div>
+              <div className="flex-1 flex items-center justify-center text-slate-400 text-[10px] font-bold uppercase tracking-widest">{t('charts.noDeficiencies')}</div>
             ) : (
               <>
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie 
-                      data={deficiencyBySeverity} 
-                      dataKey="value" 
-                      nameKey="name" 
-                      cx="50%" 
-                      cy="50%" 
-                      innerRadius={70}
-                      outerRadius={95} 
-                      paddingAngle={4}
-                      stroke="none"
-                      animationBegin={200}
-                      animationDuration={1200}
-                    >
-                      {deficiencyBySeverity.map((_entry: any, index: number) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip content={<CustomTooltip />} />
-                  </PieChart>
-                </ResponsiveContainer>
+                <div className="w-full h-[240px] relative shrink-0">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie 
+                        data={deficiencyBySeverity} 
+                        dataKey="value" 
+                        nameKey="name" 
+                        cx="50%" 
+                        cy="50%" 
+                        innerRadius={70}
+                        outerRadius={95} 
+                        paddingAngle={4}
+                        stroke="none"
+                        animationBegin={200}
+                        animationDuration={1200}
+                      >
+                        {deficiencyBySeverity.map((_entry: any, index: number) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip content={<CustomTooltip />} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  
+                  {/* Center Total Text */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-0">
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">{t('badges.new')}</span>
+                    <span className="text-4xl font-display font-black text-slate-900 leading-none">{totalDeficiencies}</span>
+                  </div>
+                </div>
                 
-                {/* Center Total Text */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-4">
-                   <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">{t('badges.new')}</span>
-                   <span className="text-4xl font-display font-black text-slate-900 leading-none">{totalDeficiencies}</span>
+                <div className="mt-8 space-y-2.5 w-full border-t border-slate-100 pt-6">
+                  {deficiencyBySeverity.map((entry: any, index: number) => (
+                    <div key={entry.name} className="flex items-center justify-between group">
+                      <div className="flex items-center gap-2.5">
+                        <div className="h-2 w-2 rounded-full transition-transform group-hover:scale-125" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter group-hover:text-slate-900 transition-colors">{entry.name}</span>
+                      </div>
+                      <span className="text-xs font-display font-black text-slate-900 bg-slate-50 px-2 py-0.5 rounded group-hover:bg-slate-900 group-hover:text-white transition-all">{entry.value}</span>
+                    </div>
+                  ))}
                 </div>
               </>
-            )}
-            
-            {!isLoading && deficiencyBySeverity && deficiencyBySeverity.length > 0 && (
-              <div className="mt-6 space-y-2.5 w-full border-t border-slate-100 pt-5">
-                {deficiencyBySeverity.map((entry: any, index: number) => (
-                  <div key={entry.name} className="flex items-center justify-between group">
-                    <div className="flex items-center gap-2.5">
-                      <div className="h-2 w-2 rounded-full transition-transform group-hover:scale-125" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter group-hover:text-slate-900 transition-colors">{entry.name}</span>
-                    </div>
-                    <span className="text-xs font-display font-black text-slate-900 bg-slate-50 px-2 py-0.5 rounded group-hover:bg-slate-900 group-hover:text-white transition-all">{entry.value}</span>
-                  </div>
-                ))}
-              </div>
             )}
           </div>
         </CardContent>

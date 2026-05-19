@@ -56,6 +56,14 @@
     "report": "LAPORAN",
     "principles": "17 PRINSIP"
   },
+  "lifecycle": {
+    "perancangan": "Perancangan",
+    "implementasi": "Implementasi & Pemantauan",
+    "evaluasi": "Evaluasi",
+    "remediasi": "Remediasi",
+    "pelaporan": "Pelaporan",
+    "asurans": "Asurans Eksternal"
+  },
   "charts": {
     "controlsByProcess": {
       "title": "Kontrol per Proses",

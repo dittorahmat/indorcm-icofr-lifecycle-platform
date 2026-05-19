@@ -38,3 +38,10 @@ The system SHALL allow users to query the status, schedules, and evidence of CSA
 - **THEN** the AI SHALL call the relevant tool to retrieve past-due `csa_schedules` assigned to the user
 - **AND** provide a summarized list with links to the execution pages
 
+### Requirement: Lifecycle Phase Alignment
+The system SHALL associate CSA activities primarily with the 'Implementasi & Pemantauan' lifecycle stage.
+
+#### Scenario: CSA status influence on lifecycle
+- **WHEN** the system evaluates the overall ICOFR progress
+- **THEN** it SHALL use the status of csa_schedules to determine progress within the 'Implementasi & Pemantauan' stage
+

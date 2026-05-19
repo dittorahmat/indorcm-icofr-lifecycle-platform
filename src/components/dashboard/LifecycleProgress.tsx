@@ -5,18 +5,19 @@ import { Check, Circle, ArrowRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 const stages = [
-  { id: 'scoping', label: 'Scoping', icon: Circle },
-  { id: 'design', label: 'Design Effectiveness', icon: Circle },
-  { id: 'execution', label: 'Operating Effectiveness', icon: Circle },
-  { id: 'reporting', label: 'Management Assessment', icon: Circle },
-  { id: 'monitoring', label: 'Remediation Monitoring', icon: Circle },
+  { id: 'perancangan', label: 'lifecycle.perancangan', icon: Circle },
+  { id: 'implementasi', label: 'lifecycle.implementasi', icon: Circle },
+  { id: 'evaluasi', label: 'lifecycle.evaluasi', icon: Circle },
+  { id: 'remediasi', label: 'lifecycle.remediasi', icon: Circle },
+  { id: 'pelaporan', label: 'lifecycle.pelaporan', icon: Circle },
+  { id: 'asurans', label: 'lifecycle.asurans', icon: Circle },
 ];
 
 interface LifecycleProgressProps {
   currentStage?: string;
 }
 
-export function LifecycleProgress({ currentStage = 'execution' }: LifecycleProgressProps) {
+export function LifecycleProgress({ currentStage = 'evaluasi' }: LifecycleProgressProps) {
   const { t } = useTranslation('dashboard');
   
   const currentIdx = stages.findIndex(s => s.id === currentStage);
@@ -66,7 +67,7 @@ export function LifecycleProgress({ currentStage = 'execution' }: LifecycleProgr
                   "text-[10px] font-bold uppercase tracking-tight",
                   isCurrent ? "text-slate-900" : "text-slate-400"
                 )}>
-                  {stage.label}
+                  {t(stage.label)}
                 </p>
                 {isCurrent && (
                   <motion.div 
