@@ -308,10 +308,9 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
     localAppMappings,
     localDeptMappings,
     isDirty,
-    isLocked: simState.status === 'Approved' || simState.status === 'Pending CFO' || simState.status === 'Pending Komut',
+    isLocked: simState.workflowStatus !== 'Draft' && simState.workflowStatus !== 'Rejected',
     mutations: {
       save: updateSimMutation,
-      submit: submitSimMutation
     },
     handlers: {
       onAssignDepartments: (accountName: string, departmentIds: string[]) => {

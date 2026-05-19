@@ -80,9 +80,9 @@ export interface ApprovalHistoryEntry {
   note: string;
 }
 
-export interface MaterialitySimulation extends Omit<InferSelectModel<typeof schema.simulations>, 'history' | 'significantAccounts' | 'assessmentData' | 'createdAt' | 'updatedAt'> {
-  status: SimulationStatus;
-  history: ApprovalHistoryEntry[];
+export interface MaterialitySimulation extends Omit<InferSelectModel<typeof schema.simulations>, 'workflowHistory' | 'significantAccounts' | 'assessmentData' | 'createdAt' | 'updatedAt'> {
+  workflowStatus: SimulationStatus;
+  workflowHistory: WorkflowHistoryEntry[];
   significantAccounts?: SignificantAccount[];
   assessmentData: Record<string, Record<number, QualitativeLevel>>;
   createdAt: number;

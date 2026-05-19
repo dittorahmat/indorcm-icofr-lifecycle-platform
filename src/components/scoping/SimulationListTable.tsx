@@ -82,7 +82,7 @@ export function SimulationListTable({ data, onSelect, onDelete, isLoading }: Sim
                 {sim.name}
               </TableCell>
               <TableCell>
-                {getStatusBadge(sim.status)}
+                {getStatusBadge((sim.workflowStatus || sim.status) as SimulationStatus)}
               </TableCell>
               <TableCell>
                 <Badge variant="outline" className="text-xs font-black uppercase tracking-widest border-slate-300">

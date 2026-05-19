@@ -8,7 +8,12 @@
     "pendingCfo": "Pending CFO Review",
     "pendingKomut": "Pending Chairman Review",
     "approved": "Approved (Baseline)",
-    "rejected": "Rejected / Needs Revision"
+    "rejected": "Rejected / Needs Revision",
+    "Draft": "Draft",
+    "Pending CFO": "Pending CFO Review",
+    "Pending Komut": "Pending Chairman Review",
+    "Approved": "Approved (Baseline)",
+    "Rejected": "Rejected / Needs Revision"
   },
   "simulation": {
     "title": "Materiality Simulation",

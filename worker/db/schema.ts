@@ -181,6 +181,8 @@ export const simulations = pgTable("simulations", {
 	omPercentage: doublePrecision("om_percentage"),
 	haircutPercentage: doublePrecision("haircut_percentage"),
 	basis: text("basis"),
+	workflowStatus: text("workflow_status").default("Draft"), // SimulationStatus
+	workflowHistory: jsonb("workflow_history").$type<any[]>().default([]),
 	significantAccounts: jsonb("significant_accounts"), // Added to store identified accounts
 	assessmentData: jsonb("assessment_data"),
 	history: jsonb("history").$type<any[]>().default([]),

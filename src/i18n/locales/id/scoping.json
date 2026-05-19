@@ -8,7 +8,12 @@
     "pendingCfo": "Menunggu Review CFO",
     "pendingKomut": "Menunggu Review Komut",
     "approved": "Disetujui (Baseline)",
-    "rejected": "Ditolak / Butuh Revisi"
+    "rejected": "Ditolak / Butuh Revisi",
+    "Draft": "Draft",
+    "Pending CFO": "Menunggu Review CFO",
+    "Pending Komut": "Menunggu Review Komut",
+    "Approved": "Disetujui (Baseline)",
+    "Rejected": "Ditolak / Butuh Revisi"
   },
   "simulation": {
     "title": "Simulasi Materialitas",

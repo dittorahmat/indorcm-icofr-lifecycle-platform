@@ -15,9 +15,7 @@ interface ScopingEditorHeaderProps {
   isLocked: boolean;
   onBack: () => void;
   onSave: () => void;
-  onSubmit: () => void;
   isSaving: boolean;
-  isSubmitting: boolean;
   snapshotFilename?: string;
   omValue?: number;
   pmValue?: number;
@@ -28,9 +26,7 @@ export function ScopingEditorHeader({
   isLocked,
   onBack,
   onSave,
-  onSubmit,
   isSaving,
-  isSubmitting,
   snapshotFilename,
   omValue = 0,
   pmValue = 0
@@ -52,7 +48,7 @@ export function ScopingEditorHeader({
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-3xl font-display font-bold tracking-tight">{simState.name}</h1>
-              <StatusBadge status={simState.status} />
+              <StatusBadge status={(simState.workflowStatus || simState.status) as SimulationStatus} />
             </div>
             <p className="text-xs font-medium text-slate-500 flex items-center gap-2 mt-1">
               <Badge variant="outline" className="bg-indigo-50/50 border-indigo-100 text-indigo-700 font-bold px-2 py-0">
@@ -77,13 +73,6 @@ export function ScopingEditorHeader({
                 className="h-10 border-slate-200 bg-white hover:bg-slate-50 transition-all"
               >
                 <Save className="h-4 w-4 mr-2 text-slate-500" /> {t('editor.saveDraft')}
-              </Button>
-              <Button 
-                onClick={onSubmit} 
-                className="h-10 bg-mancity-pattern text-primary-foreground hover:opacity-90 shadow-lg shadow-blue-100 transition-all font-bold border-none" 
-                disabled={isSubmitting}
-              >
-                <Send className="h-4 w-4 mr-2" /> {simState.status === 'Rejected' ? t('editor.resubmitToCfo') : t('editor.submitToCfo')}
               </Button>
             </div>
           )}
