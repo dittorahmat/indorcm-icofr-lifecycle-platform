@@ -354,6 +354,9 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
         <Dialog open={isWorkflowOpen} onOpenChange={setIsWorkflowOpen}>
           <DialogContent className="sm:max-w-[500px] p-0 border-none overflow-hidden bg-transparent">
              <DialogTitle className="sr-only">Workflow Actions</DialogTitle>
+             <DialogDescription className="sr-only">
+               Manage simulation lifecycle states and approvals.
+             </DialogDescription>
              <WorkflowPanel 
                 entityType="SCOPING"
                 entityId={simulation.id}

@@ -485,4 +485,74 @@ scoping.put('/gl-rows/:noGL/owner-acceptance', async (c) => {
   return ok(c, { success: true });
 });
 
+scoping.post('/simulations/:id/workflow', async (c) => {
+  const db = getDb(c.env.DATABASE_URL);
+  const orgId = c.get('organizationId');
+  const userId = c.get('userId');
+  const userRole = c.get('userRole');
+  const id = c.req.param('id');
+  const { action, note, assigneeId } = await c.req.json<{ action: string, note?: string, assigneeId?: string }>();
+
+  const [sim] = await db.select().from(simulations).where(and(eq(simulations.id, id), eq(simulations.organizationId, orgId))).limit(1);
+  if (!sim) return notFound(c, 'Simulation not found');
+
+  const history = (sim.workflowHistory as any[]) || [];
+  const currentStatus = sim.workflowStatus || 'Draft';
+  let nextStatus = currentStatus;
+
+  // Simple State Machine for Scoping
+  if (action === 'Submit') nextStatus = 'Pending CFO';
+  else if (action === 'Review') nextStatus = 'Pending Komut';
+  else if (action === 'Approve') nextStatus = 'Approved';
+  else if (action === 'Reject') nextStatus = 'Rejected';
+  else if (action === 'Rollback') nextStatus = 'Draft';
+
+  const newHistoryEntry = {
+    id: crypto.randomUUID(),
+    fromStatus: currentStatus,
+    toStatus: nextStatus,
+    action,
+    role: userRole,
+    userId,
+    assigneeId,
+    timestamp: Date.now(),
+    note: note || `${action} action performed`
+  };
+
+  await db.update(simulations)
+    .set({
+      workflowStatus: nextStatus,
+      workflowHistory: [...history, newHistoryEntry],
+      updatedAt: new Date() as any,
+      // Keep legacy status synced for now
+      status: nextStatus as any
+    })
+    .where(and(eq(simulations.id, id), eq(simulations.organizationId, orgId)));
+
+  // Notifications
+  if (nextStatus === 'Approved') {
+      await db.insert(notifications).values({
+        id: crypto.randomUUID(),
+        organizationId: orgId,
+        userId: sim.createdBy!,
+        message: `Your scoping simulation "${sim.name}" has been fully approved.`,
+        type: 'success',
+        link: `/scoping?id=${id}`,
+        createdAt: new Date(),
+      });
+  } else if (nextStatus === 'Rejected') {
+      await db.insert(notifications).values({
+        id: crypto.randomUUID(),
+        organizationId: orgId,
+        userId: sim.createdBy!,
+        message: `Scoping simulation "${sim.name}" was rejected: ${note}`,
+        type: 'error',
+        link: `/scoping?id=${id}`,
+        createdAt: new Date(),
+      });
+  }
+
+  return ok(c, { nextStatus });
+});
+
 export default scoping;
