@@ -85,6 +85,7 @@ export interface MaterialitySimulation extends Omit<InferSelectModel<typeof sche
   workflowHistory: WorkflowHistoryEntry[];
   significantAccounts?: SignificantAccount[];
   assessmentData: Record<string, Record<number, QualitativeLevel>>;
+  glSnapshotId: string | null;
   createdAt: number;
   updatedAt: number | null;
 }

@@ -14,6 +14,8 @@ import { SignificantLocationModal } from './SignificantLocationModal';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 
+import { useSimulationSnapshot } from '@/hooks/use-bpm';
+
 interface SimulationListTableProps {
   data: MaterialitySimulation[];
   onSelect: (id: string) => void;
@@ -25,14 +27,8 @@ export function SimulationListTable({ data, onSelect, onDelete, isLoading }: Sim
   const [locModalOpen, setLocModalOpen] = React.useState(false);
   const [selectedSim, setSelectedSim] = React.useState<MaterialitySimulation | null>(null);
 
-  // Fetch Active Snapshot for the modal
-  const { data: activeSnap } = useQuery({
-    queryKey: ['gl-snapshots-active'],
-    queryFn: async () => {
-      const list = await api<{ items: GLSnapshot[] }>('/api/gl-snapshots');
-      return list.items.find(s => s.isActive) || null;
-    }
-  });
+  // Fetch Snapshot linked to the selected simulation (for the modal)
+  const { data: linkedSnap } = useSimulationSnapshot(selectedSim?.glSnapshotId);
 
   if (isLoading) {
     return (
@@ -145,7 +141,7 @@ export function SimulationListTable({ data, onSelect, onDelete, isLoading }: Sim
       {selectedSim && (
         <SignificantLocationModal 
           simulation={selectedSim}
-          activeSnapshot={activeSnap || null}
+          activeSnapshot={linkedSnap || null}
           open={locModalOpen}
           onOpenChange={setLocModalOpen}
         />

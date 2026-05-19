@@ -101,6 +101,24 @@ export function useActiveSnapshot() {
   });
 }
 
+export function useSimulationSnapshot(snapshotId?: string | null) {
+  return useQuery({
+    queryKey: ['gl-snapshot', snapshotId],
+    queryFn: async () => {
+      if (!snapshotId) {
+        // Fallback to active snapshot if no snapshotId is provided (legacy data)
+        const list = await api<{ items: GLSnapshot[] }>('/api/gl-snapshots');
+        const active = list.items.find(s => s.isActive);
+        if (!active) return null;
+        return api<GLSnapshot>(`/api/gl-snapshots/${active.id}`);
+      }
+      // Fetch specific snapshot
+      return api<GLSnapshot>(`/api/gl-snapshots/${snapshotId}`);
+    },
+    enabled: snapshotId !== undefined // Allow null to trigger the fallback logic
+  });
+}
+
 export function useActiveSimulation(year: string) {
   return useQuery({
     queryKey: ['active-simulation', year],

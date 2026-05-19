@@ -31,7 +31,7 @@ bpm.get('/bpm-diagrams/:id', async (c) => {
   return ok(c, diagram);
 });
 
-bpm.post('/bpm-diagrams', rbac(['Line 2', 'Admin']), async (c) => {
+bpm.post('/bpm-diagrams', rbac(['Line 1', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const bpmService = new BpmService(db);
   const body = await c.req.json<any>();
@@ -39,7 +39,7 @@ bpm.post('/bpm-diagrams', rbac(['Line 2', 'Admin']), async (c) => {
   return ok(c, newItem);
 });
 
-bpm.put('/bpm-diagrams/:id', rbac(['Line 2', 'Admin']), async (c) => {
+bpm.put('/bpm-diagrams/:id', rbac(['Line 1', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const bpmService = new BpmService(db);
   const id = c.req.param('id');
@@ -49,7 +49,7 @@ bpm.put('/bpm-diagrams/:id', rbac(['Line 2', 'Admin']), async (c) => {
   return ok(c, result);
 });
 
-bpm.delete('/bpm-diagrams/:id', rbac(['Line 2', 'Admin']), async (c) => {
+bpm.delete('/bpm-diagrams/:id', rbac(['Line 1', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const bpmService = new BpmService(db);
   const id = c.req.param('id');
@@ -105,7 +105,7 @@ bpm.get('/bpm-processes/:id/controls', async (c) => {
   return ok(c, { items });
 });
 
-bpm.post('/bpm-processes', rbac(['Line 2', 'Admin']), async (c) => {
+bpm.post('/bpm-processes', rbac(['Line 1', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const bpmService = new BpmService(db);
   const body = await c.req.json();
@@ -113,7 +113,7 @@ bpm.post('/bpm-processes', rbac(['Line 2', 'Admin']), async (c) => {
   return ok(c, newItem);
 });
 
-bpm.patch('/bpm-processes/:id', rbac(['Line 2', 'Admin']), async (c) => {
+bpm.patch('/bpm-processes/:id', rbac(['Line 1', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const bpmService = new BpmService(db);
   const id = c.req.param('id');
@@ -147,7 +147,7 @@ bpm.post('/bpm-processes/:id/workflow', async (c) => {
   }
 });
 
-bpm.delete('/bpm-processes/:id', rbac(['Line 2', 'Admin']), async (c) => {
+bpm.delete('/bpm-processes/:id', rbac(['Line 1', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const bpmService = new BpmService(db);
   const id = c.req.param('id');

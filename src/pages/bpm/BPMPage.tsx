@@ -31,7 +31,7 @@ import {
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
-import { useAccountAssertions } from '@/hooks/use-bpm';
+import { useAccountAssertions, useActiveSimulation, useSimulationSnapshot } from '@/hooks/use-bpm';
 import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
@@ -154,30 +154,11 @@ export function BPMPage() {
     if (year) setViewYear(year);
   }, [searchParams]);
 
-  // 1. Fetch Active Snapshot
-  const { data: activeSnap, isLoading: snapLoading } = useQuery({
-    queryKey: ['gl-snapshots-active'],
-    queryFn: async () => {
-      const list = await api<{ items: GLSnapshot[] }>('/api/gl-snapshots');
-      const active = list.items.find(s => s.isActive);
-      if (!active) return null;
-      return api<GLSnapshot>(`/api/gl-snapshots/${active.id}`);
-    }
-  });
+  // 1. Fetch Active Simulation for Account Assignments - Filtered by viewYear
+  const { data: activeSim, isLoading: simLoading } = useActiveSimulation(viewYear);
 
-  // 1b. Fetch Active Simulation for Account Assignments - Filtered by viewYear
-  const { data: activeSim } = useQuery({
-    queryKey: ['active-simulation', viewYear],
-    queryFn: async () => {
-      const list = await api<{ items: MaterialitySimulation[] }>(`/api/simulations?year=${viewYear}`);
-      if (list.items.length === 0) return null;
-      const approved = [...list.items]
-        .filter(s => s.status === 'Approved')
-        .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))[0];
-      if (approved) return approved;
-      return [...list.items].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))[0];
-    }
-  });
+  // 2. Fetch Snapshot linked to the simulation (or fallback to active)
+  const { data: activeSnap, isLoading: snapLoading } = useSimulationSnapshot(activeSim?.glSnapshotId);
 
   const { data: currentUser } = useQuery({
     queryKey: ['auth-me'],
@@ -297,7 +278,7 @@ export function BPMPage() {
     const accounts: { key: string, noGL: string, glDesc: string }[] = [];
     const seen = new Set<string>();
     activeSnap.rows
-      .filter(r => r.fsliName === selectedFsli)
+      .filter(r => (r.fsliName || "").trim().toLowerCase() === selectedFsli.trim().toLowerCase())
       .forEach(r => {
         const key = `${r.noGL} ||| ${r.glDesc}`;
         if (!seen.has(key)) {
@@ -435,8 +416,10 @@ export function BPMPage() {
                       setSelectedAccountKey(""); 
                       setSelectedBpmId(null); 
                     }}
+                    disabled={snapLoading || simLoading}
                   >
                     <SelectTrigger id="fsli-select" className="bg-slate-50 border-slate-200 h-10 text-xs font-bold uppercase tracking-wider rounded-lg focus:bg-white transition-all shadow-sm">
+                      {snapLoading ? <Loader2 className="h-3 w-3 animate-spin mr-2" /> : null}
                       <SelectValue placeholder={t('common:placeholders.choose')} />
                     </SelectTrigger>
                     <SelectContent className="rounded-lg border-slate-200">
@@ -457,9 +440,10 @@ export function BPMPage() {
                       if (isAssertionDirty && !window.confirm(t('bpm:unsavedChanges.description'))) return;
                       setSelectedAccountKey(v);
                     }} 
-                    disabled={!selectedFsli}
+                    disabled={!selectedFsli || snapLoading}
                   >
                     <SelectTrigger id="account-select" className="bg-slate-50 border-slate-200 h-10 text-xs font-bold uppercase tracking-wider rounded-lg focus:bg-white transition-all shadow-sm">
+                      {snapLoading ? <Loader2 className="h-3 w-3 animate-spin mr-2" /> : null}
                       <SelectValue placeholder={t('common:placeholders.choose')} />
                     </SelectTrigger>
                     <SelectContent className="rounded-lg border-slate-200">
@@ -507,6 +491,22 @@ export function BPMPage() {
               <div className="space-y-0.5">
                 <p className="text-[10px] font-bold text-emerald-900 uppercase tracking-widest">{t('bpm:baseline.status')}</p>
                 <p className="text-xs font-medium text-emerald-700/80 leading-relaxed">{t('bpm:baseline.description', { year: viewYear })}</p>
+              </div>
+            </motion.div>
+          ) : !activeSnap && !snapLoading && activeSim?.glSnapshotId ? (
+            <motion.div 
+              key="missing-snapshot-banner"
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.98 }}
+              className="bg-rose-50 border border-rose-100 rounded-xl p-4 flex items-center gap-4 shadow-sm"
+            >
+              <div className="h-10 w-10 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+                <ShieldAlert className="h-6 w-6" />
+              </div>
+              <div className="space-y-0.5">
+                <p className="text-[10px] font-bold text-rose-900 uppercase tracking-widest">Source Data Missing</p>
+                <p className="text-xs font-medium text-rose-700/80 leading-relaxed">The GL Snapshot used for this simulation was not found. Please re-perform scoping for this cycle.</p>
               </div>
             </motion.div>
           ) : !snapLoading && (
@@ -595,7 +595,7 @@ export function BPMPage() {
                     </p>
                   </div>
                   <div className="h-8 w-px bg-slate-100" />
-                  <Button onClick={() => setIsCreatingBPM(true)} className="h-10 gap-2 bg-slate-900 hover:bg-slate-800 shadow-sm transition-all font-bold text-[10px] uppercase tracking-widest px-6 rounded-lg">
+                  <Button onClick={() => setIsCreatingBPM(true)} className="h-10 gap-2 bg-slate-900 hover:bg-slate-800 text-white shadow-sm transition-all font-bold text-[10px] uppercase tracking-widest px-6 rounded-lg">
                     <PlusCircle className="h-3.5 w-3.5" /> {t('createProcessButton')}
                   </Button>
                 </div>
