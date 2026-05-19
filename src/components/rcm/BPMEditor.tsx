@@ -161,24 +161,6 @@ export function BPMEditor({ diagramId, subProcess, workingYear }: BPMEditorProps
     return () => resetDirty();
   }, [isDirty, isExporting, setDirty, resetDirty]);
 
-  useEffect(() => {
-    if (diagram) {
-      setNodes(diagram.nodes?.length > 0 ? diagram.nodes : localizedInitialNodes);
-      setEdges((diagram.edges || []).map((edge: any) => ({
-        ...edge,
-        markerEnd: { 
-          type: MarkerType.ArrowClosed,
-          width: 20,
-          height: 20,
-          color: '#0f172a'
-        },
-        style: { strokeWidth: 2, stroke: '#0f172a' }
-      })));
-    }
-  }, [diagram, setNodes, setEdges, localizedInitialNodes]);
-
-  const selectedNode = useMemo(() => nodes.find(n => n.id === selectedNodeId), [nodes, selectedNodeId]);
-
   const updateNodeData = useCallback((nodeId: string, partialData: any) => {
     setNodes(nds => {
       const updatedNodes = nds.map(node => 
@@ -214,6 +196,37 @@ export function BPMEditor({ diagramId, subProcess, workingYear }: BPMEditorProps
       return finalNodes;
     });
   }, [setNodes]);
+
+  useEffect(() => {
+    if (diagram) {
+      const initialNodesWithHandlers = (diagram.nodes?.length > 0 ? diagram.nodes : localizedInitialNodes).map((node: any) => {
+        if (node.type === 'swimlane') {
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              onChangeDepartment: (v: string) => updateNodeData(node.id, { department: v }),
+              onChangeFunction: (v: string) => updateNodeData(node.id, { function: v })
+            }
+          };
+        }
+        return node;
+      });
+      setNodes(initialNodesWithHandlers);
+      setEdges((diagram.edges || []).map((edge: any) => ({
+        ...edge,
+        markerEnd: { 
+          type: MarkerType.ArrowClosed,
+          width: 20,
+          height: 20,
+          color: '#0f172a'
+        },
+        style: { strokeWidth: 2, stroke: '#0f172a' }
+      })));
+    }
+  }, [diagram, setNodes, setEdges, localizedInitialNodes, updateNodeData]);
+
+  const selectedNode = useMemo(() => nodes.find(n => n.id === selectedNodeId), [nodes, selectedNodeId]);
 
   const createActivityNode = useCallback((type: string) => {
     const id = `node_${Date.now()}`;
@@ -413,7 +426,12 @@ export function BPMEditor({ diagramId, subProcess, workingYear }: BPMEditorProps
               },
               style: { strokeWidth: 2, stroke: '#0f172a' }
             }, eds))}
-            onNodeClick={(_, node) => node.type !== 'risk-control-badge' && setSelectedNodeId(node.id)}
+            onNodeClick={(_, node) => {
+              if (node.type === 'swimlane') return;
+              if (node.type !== 'risk-control-badge') {
+                setSelectedNodeId(node.id);
+              }
+            }}
             onPaneClick={() => setSelectedNodeId(null)}
             nodeTypes={nodeTypes}
             fitView
@@ -441,7 +459,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear }: BPMEditorProps
               )}
               <Button 
                 size="sm" 
-                className="h-9 gap-2 bg-slate-900 hover:bg-slate-800 shadow-sm transition-all font-bold text-[10px] uppercase tracking-widest px-6 rounded-xl" 
+                className="h-9 gap-2 bg-slate-900 hover:bg-slate-800 text-white shadow-sm transition-all font-bold text-[10px] uppercase tracking-widest px-6 rounded-xl" 
                 onClick={() => saveMutation.mutate({ 
                   nodes, edges, name: `Flow: ${subProcess}`, subProcess, year: diagram?.year || parseInt(workingYear) 
                 })} 

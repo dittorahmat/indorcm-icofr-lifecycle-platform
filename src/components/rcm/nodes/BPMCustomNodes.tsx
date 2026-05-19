@@ -12,6 +12,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Input } from '@/components/ui/input';
+import { useTranslation } from 'react-i18next';
 
 // --- Tooltip Component ---
 
@@ -277,29 +278,33 @@ export const RiskControlBadge = ({ data, selected }: NodeProps) => (
 );
 
 export const SwimlaneNode = ({ data, selected }: NodeProps) => {
+  const { t } = useTranslation(['bpm']);
+
   return (
     <div className={cn(
       "h-full w-full border-2 border-slate-300 bg-slate-50/20 relative group transition-all",
       selected && "border-indigo-500 bg-indigo-50/10 shadow-inner"
     )}>
       {/* Swimlane Header */}
-      <div className="absolute top-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-sm border-b-2 border-slate-300 p-2 flex flex-col justify-center">
+      <div className="absolute top-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-sm border-b-2 border-slate-300 p-2 flex flex-col justify-center nodrag">
          <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Department</span>
+            <span className="text-xs font-black text-slate-400 uppercase tracking-widest">{t('bpm:editor.swimlane.labels.department')}</span>
             <Input 
               value={data.department || ''} 
-              placeholder="e.g. Finance"
+              placeholder={t('bpm:editor.swimlane.placeholders.department')}
               onChange={(e) => data.onChangeDepartment?.(e.target.value)}
-              className="h-5 text-xs font-bold uppercase bg-transparent border-none focus-visible:ring-0 p-0"
+              onKeyDown={(e) => e.stopPropagation()}
+              className="h-6 text-xs font-bold uppercase bg-transparent border-none focus-visible:ring-0 p-0 hover:bg-slate-100/50 focus:bg-white focus:px-2 rounded transition-all"
             />
          </div>
          <div className="flex items-center gap-2">
-            <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Function</span>
+            <span className="text-xs font-black text-slate-400 uppercase tracking-widest">{t('bpm:editor.swimlane.labels.function')}</span>
             <Input 
               value={data.function || ''} 
-              placeholder="e.g. AP Process"
+              placeholder={t('bpm:editor.swimlane.placeholders.function')}
               onChange={(e) => data.onChangeFunction?.(e.target.value)}
-              className="h-5 text-xs italic bg-transparent border-none focus-visible:ring-0 p-0 text-slate-600"
+              onKeyDown={(e) => e.stopPropagation()}
+              className="h-6 text-xs italic bg-transparent border-none focus-visible:ring-0 p-0 text-slate-600 hover:bg-slate-100/50 focus:bg-white focus:px-2 rounded transition-all"
             />
          </div>
       </div>

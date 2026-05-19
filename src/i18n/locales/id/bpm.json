@@ -178,6 +178,14 @@
       "department": "Departemen",
       "function": "Fungsi / Function",
       "add": "Tambah Swimlane",
+      "labels": {
+        "department": "Departemen",
+        "function": "Fungsi"
+      },
+      "placeholders": {
+        "department": "misal: Keuangan",
+        "function": "misal: Proses Hutang"
+      },
       "defaults": {
         "lane": "Swimlane Baru",
         "dept": "Departemen Baru",

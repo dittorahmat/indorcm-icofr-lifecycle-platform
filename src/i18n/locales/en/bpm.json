@@ -175,6 +175,14 @@
       "department": "Department",
       "function": "Fungsi / Function",
       "add": "Add Swimlane",
+      "labels": {
+        "department": "Department",
+        "function": "Function"
+      },
+      "placeholders": {
+        "department": "e.g. Finance",
+        "function": "e.g. AP Process"
+      },
       "defaults": {
         "lane": "New Swimlane",
         "dept": "New Department",
