@@ -158,6 +158,8 @@ export function RCMELCPage({ embedded = false }: { embedded?: boolean }) {
     </div>
   );
 
+  if (embedded) return content;
+
   return (
     <AppLayout container={false} noScroll className="bg-slate-100/30">
       {content}
