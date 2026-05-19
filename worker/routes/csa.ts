@@ -15,10 +15,12 @@ import { DeficiencyService } from "../services/deficiency-service";
 
 const csa = new Hono<HonoEnv>();
 
-csa.get('/csa', async (c) => {
+csa.get('/csa/schedules', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
-  const organizationId = c.get('organizationId');
-  const items = await db.select().from(csaRecords).where(eq(csaRecords.organizationId, organizationId));
+  const orgId = c.get('organizationId');
+  const items = await db.select().from(csaSchedules)
+    .where(eq(csaSchedules.organizationId, orgId))
+    .orderBy(desc(csaSchedules.plannedDate));
   return ok(c, { items });
 });
 
