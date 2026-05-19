@@ -169,24 +169,6 @@ export function AppSidebar(): JSX.Element {
 
   return (
     <Sidebar variant="sidebar" collapsible="icon" className="w-64 border-r border-sidebar-border bg-sidebar">
-      <SidebarHeader className="h-14 border-b border-sidebar-border/50 px-4 flex flex-row items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-black text-xs">
-            GRC
-          </div>
-          {state !== 'collapsed' && (
-            <span className="font-display font-black text-sm tracking-tight text-slate-900 dark:text-white uppercase">
-              IndoGRC <span className="text-primary">Pro</span>
-            </span>
-          )}
-        </div>
-        {state !== 'collapsed' && (
-          <div className="flex items-center gap-1">
-            <NotificationBell />
-            <LanguageSwitcher />
-          </div>
-        )}
-      </SidebarHeader>
       <SidebarContent className="py-4">
         {/* MASTER */}
         <SidebarGroup className="py-2">
