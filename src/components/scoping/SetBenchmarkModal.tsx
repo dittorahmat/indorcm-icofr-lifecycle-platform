@@ -89,7 +89,7 @@ export function SetBenchmarkModal({ snapshot: initialSnapshot, isOpen, onOpenCha
         minNoUrut: data.minNoUrut === Infinity ? 999999 : data.minNoUrut 
       }))
       .sort((a, b) => {
-        // Primary sort: minNoUrut
+        // Primary sort: minNoUrut (handles 0, 1, 2... correctly)
         if (a.minNoUrut !== b.minNoUrut) {
           return a.minNoUrut - b.minNoUrut;
         }

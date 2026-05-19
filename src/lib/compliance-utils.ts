@@ -286,7 +286,7 @@ export const GL_COLUMN_MAPPING = {
   subKategori: ['Sub_Kategori', 'SubKategori', 'Sub-Category'],
   fsliName: ['FSLI', 'FSLI_Name', 'FSLIName'],
   fsliBalance: ['FSLI_Balance', 'FSLIBalance'],
-  noUrut: ['No_Urut', 'NoUrut', 'SortOrder'],
+  noUrut: ['No_Urut', 'No_U', 'NoUrut', 'SortOrder'],
 } as const;
 
 export type GLField = keyof typeof GL_COLUMN_MAPPING;
