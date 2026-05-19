@@ -41,6 +41,14 @@ export function GLSourceTable({ data, onSetActive, onSetBenchmark, onDelete, isL
     );
   }
 
+  const sortedData = React.useMemo(() => {
+    return [...data].sort((a, b) => {
+      const dateA = a.uploadDate ? new Date(a.uploadDate).getTime() : 0;
+      const dateB = b.uploadDate ? new Date(b.uploadDate).getTime() : 0;
+      return dateB - dateA; // Newest first
+    });
+  }, [data]);
+
   return (
     <div className="border rounded-lg overflow-hidden shadow-sm bg-white">
       <Table>
@@ -55,7 +63,7 @@ export function GLSourceTable({ data, onSetActive, onSetBenchmark, onDelete, isL
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.map((snap) => (
+          {sortedData.map((snap) => (
             <TableRow key={snap.id} className={cn(snap.isActive && "bg-green-50/30")}>
               <TableCell className="text-center">
                 <Button 
