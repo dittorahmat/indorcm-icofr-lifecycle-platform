@@ -136,8 +136,13 @@ export function WorkflowPanel({
 
   const { data: users } = useQuery({
     queryKey: ['users-for-workflow'],
-    queryFn: () => api<{ items: { id: string, name: string, role: string }[] }>('/api/admin/users'),
+    queryFn: () => api<{ items: { id: string, name: string, role: string }[] }>('/api/users'),
   });
+
+  const uniqueUsers = React.useMemo(() => {
+    if (!users?.items) return [];
+    return Array.from(new Map(users.items.map(item => [item.id, item])).values());
+  }, [users?.items]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -282,8 +287,8 @@ export function WorkflowPanel({
         </CardFooter>
       </Card>
 
-      <Dialog open={isNoteDialogOpen} onOpenChange={setIsNoteDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+      <Dialog open={isNoteDialogOpen} onOpenChange={setIsNoteDialogOpen} modal={false}>
+        <DialogContent className="sm:max-w-[425px] shadow-2xl border-slate-200">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
                {pendingActionId === 'Reject' ? <AlertCircle className="text-rose-500 h-5 w-5" /> : (pendingActionId === 'Rollback' ? <RotateCcw className="text-amber-500 h-5 w-5" /> : <Send className="text-indigo-500 h-5 w-5" />)}
@@ -301,8 +306,8 @@ export function WorkflowPanel({
                   <SelectTrigger className="h-10 bg-slate-50 border-slate-200">
                     <SelectValue placeholder="Select an assignee (optional)" />
                   </SelectTrigger>
-                  <SelectContent>
-                    {users?.items.map(u => (
+                  <SelectContent position="popper" sideOffset={5} className="z-[100] max-h-[200px]">
+                    {uniqueUsers.map(u => (
                       <SelectItem key={u.id} value={u.id}>{u.name} ({u.role})</SelectItem>
                     ))}
                   </SelectContent>
