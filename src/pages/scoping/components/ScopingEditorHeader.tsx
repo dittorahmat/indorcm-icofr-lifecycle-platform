@@ -3,12 +3,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
   ArrowLeft, Save, Send, ShieldCheck, FileSpreadsheet, 
-  Target, TrendingUp, ShieldAlert, ChevronRight
+  Target, TrendingUp, ShieldAlert, ChevronRight, Menu
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { MaterialitySimulation, SimulationStatus } from '@shared/types';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 
 interface ScopingEditorHeaderProps {
   simState: MaterialitySimulation;
@@ -37,15 +38,16 @@ export function ScopingEditorHeader({
     <div className="space-y-6">
       <div className="flex justify-between items-start text-slate-900 dark:text-white">
         <div className="flex items-center gap-4">
+          <SidebarTrigger className="h-10 w-10 text-slate-700 bg-white border border-slate-200 shadow-sm" />
           <Button 
             variant="ghost" 
             size="icon" 
             onClick={onBack}
-            className="h-10 w-10 rounded-full hover:bg-slate-100 transition-colors"
+            className="h-10 w-10 rounded-full hover:bg-slate-100 transition-colors shrink-0"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div>
+          <div className="min-w-0">
             <div className="flex items-center gap-3">
               <h1 className="text-3xl font-display font-bold tracking-tight">{simState.name}</h1>
               <StatusBadge status={(simState.workflowStatus || simState.status) as SimulationStatus} />
