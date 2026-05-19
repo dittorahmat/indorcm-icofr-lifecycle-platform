@@ -193,6 +193,7 @@
     "selectApp": "Pilih aplikasi...",
     "showingRows": "Menampilkan {{count}} baris",
     "exportExcel": "Ekspor Excel",
+    "submitForReview": "Kirim untuk Review",
     "standardCompliance": "Standar: SK-5/2024 Table 5 Compliance Engine",
     "fsliGuidance": "Penilaian tingkat FSLI mempengaruhi semua akun anak.",
     "pending": "Pending"

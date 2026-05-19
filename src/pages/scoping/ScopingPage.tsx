@@ -37,11 +37,6 @@ import { ScopingEditorHeader } from './components/ScopingEditorHeader';
 import { ScopingEditorContent } from './components/ScopingEditorContent';
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
-import { 
-  ResizableHandle, 
-  ResizablePanel, 
-  ResizablePanelGroup 
-} from "@/components/ui/resizable";
 import { WorkflowPanel } from "@/components/workflow/WorkflowPanel";
 
 import type { MaterialitySimulation } from '@shared/types';
@@ -245,6 +240,8 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
   const { t } = useTranslation('scoping');
   const queryClient = useQueryClient();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
+  const [isWorkflowOpen, setIsWorkflowOpen] = React.useState(false);
+
   const {
     simState, setSimState, mergedGlData, omValue, pmValue, multiplier, benchmarkValue,
     departments, applications, localAppMappings, isLocked, mutations, handlers, isDirty
@@ -269,114 +266,109 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
 
   return (
     <AppLayout container>
-      <div className="h-[calc(100vh-120px)]">
-        <ResizablePanelGroup direction="horizontal" className="h-full items-stretch">
-          <ResizablePanel defaultSize={75} minSize={50}>
-            <div className="h-full overflow-y-auto pr-6 pb-20 space-y-6">
-              <ScopingEditorHeader 
-                simState={simState}
-                isLocked={isLocked}
-                onBack={onBack}
-                onSave={() => mutations.save.mutate(simState)}
-                isSaving={mutations.save.isPending}
-                omValue={omValue}
-                pmValue={pmValue}
-              />
+      <div className="space-y-6 pb-20">
+        <ScopingEditorHeader 
+          simState={simState}
+          isLocked={isLocked}
+          onBack={onBack}
+          onSave={() => mutations.save.mutate(simState)}
+          isSaving={mutations.save.isPending}
+          omValue={omValue}
+          pmValue={pmValue}
+        />
 
-              <div className="flex gap-6 items-start">
-                <AnimatePresence initial={false}>
-                  {!isSidebarCollapsed && (
-                    <motion.div
-                      initial={{ width: 0, opacity: 0, x: -30 }}
-                      animate={{ width: 300, opacity: 1, x: 0 }}
-                      exit={{ width: 0, opacity: 0, x: -30 }}
-                      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                      className="shrink-0 space-y-6 overflow-hidden"
-                    >
-                      <MaterialityParamsCard 
-                        simState={simState}
-                        setSimState={setSimState}
-                        multiplier={multiplier}
-                        benchmarkValue={benchmarkValue}
-                        omValue={omValue}
-                        pmValue={pmValue}
-                        isLocked={isLocked}
-                        onCollapse={() => setIsSidebarCollapsed(true)}
-                      />
+        <div className="flex gap-6 items-start">
+          <AnimatePresence initial={false}>
+            {!isSidebarCollapsed && (
+              <motion.div
+                initial={{ width: 0, opacity: 0, x: -30 }}
+                animate={{ width: 300, opacity: 1, x: 0 }}
+                exit={{ width: 0, opacity: 0, x: -30 }}
+                transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                className="shrink-0 space-y-6 overflow-hidden"
+              >
+                <MaterialityParamsCard 
+                  simState={simState}
+                  setSimState={setSimState}
+                  multiplier={multiplier}
+                  benchmarkValue={benchmarkValue}
+                  omValue={omValue}
+                  pmValue={pmValue}
+                  isLocked={isLocked}
+                  onCollapse={() => setIsSidebarCollapsed(true)}
+                />
 
-                      <Card className="relative overflow-hidden bg-slate-50 border-slate-200 shadow-sm w-[300px] p-5 ring-1 ring-slate-100">
-                         <h3 className="text-[10px] uppercase font-black text-slate-800 tracking-widest flex items-center gap-2 mb-4">
-                           <AlertTriangle className="h-3.5 w-3.5 text-amber-500" /> {t('logic.title')}
-                         </h3>
-                         <div className="text-[11px] text-slate-600 leading-relaxed space-y-4 font-medium">
-                          <p>{t('logic.description')}</p>
-                          <ol className="space-y-3">
-                            <li className="flex gap-3">
-                              <Badge className="h-4 w-4 p-0 flex items-center justify-center rounded-full bg-slate-900 border-none text-white text-[9px] font-black">1</Badge>
-                              <span>{t('logic.quant')}</span>
-                            </li>
-                            <li className="flex gap-3">
-                              <Badge className="h-4 w-4 p-0 flex items-center justify-center rounded-full bg-slate-900 border-none text-white text-[9px] font-black">2</Badge>
-                              <span>{t('logic.qual')}</span>
-                            </li>
-                          </ol>
-                        </div>
-                      </Card>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                <Card className="relative overflow-hidden bg-slate-50 border-slate-200 shadow-sm w-[300px] p-5 ring-1 ring-slate-100">
+                   <h3 className="text-[10px] uppercase font-black text-slate-800 tracking-widest flex items-center gap-2 mb-4">
+                     <AlertTriangle className="h-3.5 w-3.5 text-amber-500" /> {t('logic.title')}
+                   </h3>
+                   <div className="text-[11px] text-slate-600 leading-relaxed space-y-4 font-medium">
+                    <p>{t('logic.description')}</p>
+                    <ol className="space-y-3">
+                      <li className="flex gap-3">
+                        <Badge className="h-4 w-4 p-0 flex items-center justify-center rounded-full bg-slate-900 border-none text-white text-[9px] font-black">1</Badge>
+                        <span>{t('logic.quant')}</span>
+                      </li>
+                      <li className="flex gap-3">
+                        <Badge className="h-4 w-4 p-0 flex items-center justify-center rounded-full bg-slate-900 border-none text-white text-[9px] font-black">2</Badge>
+                        <span>{t('logic.qual')}</span>
+                      </li>
+                    </ol>
+                  </div>
+                </Card>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-                {isSidebarCollapsed && (
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="mt-2 shrink-0 h-10 w-10 bg-white shadow-md border-indigo-100 text-indigo-600 hover:bg-indigo-50 transition-all rounded-xl"
-                    onClick={() => setIsSidebarCollapsed(false)}
-                  >
-                    <PanelLeftOpen className="h-5 w-5" />
-                  </Button>
-                )}
+          {isSidebarCollapsed && (
+            <Button
+              variant="outline"
+              size="icon"
+              className="mt-2 shrink-0 h-10 w-10 bg-white shadow-md border-indigo-100 text-indigo-600 hover:bg-indigo-50 transition-all rounded-xl"
+              onClick={() => setIsSidebarCollapsed(false)}
+            >
+              <PanelLeftOpen className="h-5 w-5" />
+            </Button>
+          )}
 
-                <div className="flex-1 overflow-hidden">
-                  <ScopingEditorContent 
-                    simState={simState}
-                    mergedGlData={mergedGlData}
-                    omValue={omValue}
-                    pmValue={pmValue}
-                    isLocked={isLocked}
-                    departments={departments}
-                    applications={applications}
-                    selectedApps={localAppMappings}
-                    onAssessmentChange={handlers.onAssessmentChange}
-                    onOwnerAcceptanceChange={handleOwnerAcceptanceChange}
-                    onAssignDepartments={handlers.onAssignDepartments}
-                    onAppsChange={handlers.onAppsChange}
-                    onQuickAddApp={handleQuickAddApp}
-                  />
-                </div>
-              </div>
-            </div>
-          </ResizablePanel>
+          <div className="flex-1 overflow-hidden">
+            <ScopingEditorContent 
+              simState={simState}
+              mergedGlData={mergedGlData}
+              omValue={omValue}
+              pmValue={pmValue}
+              isLocked={isLocked}
+              departments={departments}
+              applications={applications}
+              selectedApps={localAppMappings}
+              onAssessmentChange={handlers.onAssessmentChange}
+              onOwnerAcceptanceChange={handleOwnerAcceptanceChange}
+              onAssignDepartments={handlers.onAssignDepartments}
+              onAppsChange={handlers.onAppsChange}
+              onQuickAddApp={handleQuickAddApp}
+              onOpenWorkflow={() => setIsWorkflowOpen(true)}
+            />
+          </div>
+        </div>
 
-          <ResizableHandle withHandle />
-
-          <ResizablePanel defaultSize={25} minSize={20}>
-            <div className="h-full border-l bg-slate-50/30">
-              <WorkflowPanel 
+        <Dialog open={isWorkflowOpen} onOpenChange={setIsWorkflowOpen}>
+          <DialogContent className="sm:max-w-[500px] p-0 border-none overflow-hidden bg-transparent">
+             <WorkflowPanel 
                 entityType="SCOPING"
                 entityId={simulation.id}
                 currentStatus={simState.workflowStatus || 'Draft'}
                 history={simState.workflowHistory || []}
-                className="h-full border-none shadow-none rounded-none"
+                className="w-full border-none shadow-2xl"
                 isDirty={isDirty}
                 onStatusChange={(newStatus) => {
                   queryClient.invalidateQueries({ queryKey: ['simulations'] });
                   setSimState(prev => ({ ...prev, workflowStatus: newStatus as any }));
+                  setIsWorkflowOpen(false);
                 }}
               />
-            </div>
-          </ResizablePanel>
-        </ResizablePanelGroup>
+          </DialogContent>
+        </Dialog>
+
         <UnsavedChangesDialog blocker={blocker} />
       </div>
     </AppLayout>

@@ -193,6 +193,7 @@
     "selectApp": "Select application...",
     "showingRows": "Showing {{count}} rows",
     "exportExcel": "Export as Excel",
+    "submitForReview": "Submit for Review",
     "standardCompliance": "Standard: SK-5/2024 Table 5 Compliance Engine",
     "fsliGuidance": "FSLI level assessment affects all child accounts.",
     "pending": "Pending"

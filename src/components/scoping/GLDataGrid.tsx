@@ -17,7 +17,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronRight, Filter, FileSpreadsheet, Info, ExternalLink, Lock, Building2, Monitor } from 'lucide-react';
+import { ChevronDown, ChevronRight, Filter, FileSpreadsheet, Info, ExternalLink, Lock, Building2, Monitor, Send } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import * as XLSX from 'xlsx';
 import { Link } from 'react-router-dom';
@@ -45,6 +45,7 @@ interface GLDataGridProps {
   selectedApps?: Record<string, string[]>; // accountCode -> appIds
   onAppsChange?: (accountCode: string, appIds: string[]) => void;
   onQuickAddApp?: (name: string, accountCode: string) => Promise<void>;
+  onOpenWorkflow?: () => void;
 }
 
 const QUALITATIVE_RULES = [
@@ -70,7 +71,8 @@ export const GLDataGrid = React.memo(function GLDataGrid({
   applications = [],
   selectedApps = {},
   onAppsChange,
-  onQuickAddApp
+  onQuickAddApp,
+  onOpenWorkflow
 }: GLDataGridProps) {
   const { t } = useTranslation('scoping');
   
@@ -495,14 +497,24 @@ export const GLDataGrid = React.memo(function GLDataGrid({
           <Info className="h-3 w-3" />
           <span>{t('grid.fsliGuidance')}</span>
         </div>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={handleExportExcel}
-          className="gap-2 text-green-700 hover:text-green-800 hover:bg-green-50 border-green-200"
-        >
-          <FileSpreadsheet className="h-4 w-4" /> {t('grid.exportExcel')}
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleExportExcel}
+            className="gap-2 text-green-700 hover:text-green-800 hover:bg-green-50 border-green-200"
+          >
+            <FileSpreadsheet className="h-4 w-4" /> {t('grid.exportExcel')}
+          </Button>
+          <Button 
+            variant="default" 
+            size="sm" 
+            onClick={onOpenWorkflow}
+            className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white border-none shadow-md shadow-indigo-100 uppercase tracking-widest font-bold text-[10px]"
+          >
+            <Send className="h-3.5 w-3.5" /> {t('grid.submitForReview')}
+          </Button>
+        </div>
       </div>
 
       <div className="rounded-md border bg-white shadow-sm overflow-hidden w-full">

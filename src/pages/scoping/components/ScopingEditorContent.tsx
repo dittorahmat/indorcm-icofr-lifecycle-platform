@@ -23,6 +23,7 @@ interface ScopingEditorContentProps {
   onAssignDepartments: (accountName: string, departmentIds: string[]) => void;
   onAppsChange: (accountCode: string, appIds: string[]) => void;
   onQuickAddApp: (name: string, accountCode: string) => Promise<void>;
+  onOpenWorkflow?: () => void;
 }
 
 export function ScopingEditorContent({
@@ -38,7 +39,8 @@ export function ScopingEditorContent({
   onOwnerAcceptanceChange,
   onAssignDepartments,
   onAppsChange,
-  onQuickAddApp
+  onQuickAddApp,
+  onOpenWorkflow
 }: ScopingEditorContentProps) {
   const { t } = useTranslation('scoping');
 
@@ -75,6 +77,7 @@ export function ScopingEditorContent({
             selectedApps={selectedApps}
             onAppsChange={onAppsChange}
             onQuickAddApp={onQuickAddApp}
+            onOpenWorkflow={onOpenWorkflow}
           />
         </TabsContent>
         

@@ -4,7 +4,7 @@ Users have reported losing data when accidentally navigating away from pages lik
 
 ## What Changes
 
-- **Centralized Scoping Workflow**: Integrate the `WorkflowPanel` into the Scoping module. This requires updating the `MaterialitySimulation` model to support standardized `workflowStatus` and `workflowHistory` fields.
+- **Centralized Scoping Workflow**: Integrate the `WorkflowPanel` into the Scoping module. Instead of a persistent side-panel, the workflow logic will be accessible via a **Popup Dialog** triggered by a "Submit For Review" button in the table toolbar. This requires updating the `MaterialitySimulation` model to support standardized `workflowStatus` and `workflowHistory` fields.
 - **Internal Navigation Guard**: Implementation of a React Router `useBlocker` mechanism to intercept internal route changes and show the `UnsavedChangesDialog`.
 - **External Navigation Guard**: Implementation of a `beforeunload` event listener to catch browser-level events (tab close, refresh).
 - **Global `useUnsavedChanges` Hook**: Refine and standardize the usage of the safety hook across all critical editors.

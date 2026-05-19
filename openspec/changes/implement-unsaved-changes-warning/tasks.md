@@ -7,7 +7,7 @@
 
 ## 2. Centralized Workflow Integration (Scoping)
 
-- [x] 2.1 Integrate `WorkflowPanel` into `ScopingPage.tsx` (suggested as a side-panel like in BPMPage).
+- [x] 2.1 Integrate `WorkflowPanel` into `ScopingPage.tsx` as a **Popup Dialog** triggered by a "Submit For Review" button next to "Export As Excel".
 - [x] 2.2 Update `useScopingEditor` hook to handle the new workflow status mutations via `useWorkflow`.
 - [x] 2.3 Refactor `ScopingEditorHeader.tsx` to remove old hardcoded `Submit` buttons.
 - [x] 2.4 Ensure the `isLocked` logic in Scoping is fully driven by the `workflowStatus`.
