@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/dialog';
 import { 
   CheckCircle2, XCircle, Send, Search, RotateCcw, 
-  History, AlertCircle, Lock, Unlock, Loader2 
+  History, AlertCircle, Lock, Unlock, Loader2, Check, ChevronsUpDown
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
@@ -25,8 +25,20 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { 
+  Popover, 
+  PopoverContent, 
+  PopoverTrigger 
+} from '@/components/ui/popover';
+import { 
+  Command, 
+  CommandEmpty, 
+  CommandGroup, 
+  CommandInput, 
+  CommandItem, 
+  CommandList 
+} from '@/components/ui/command';
 
 // --- Workflow Blueprints Definition ---
 
@@ -124,6 +136,7 @@ export function WorkflowPanel({
   const [pendingActionId, setPendingActionId] = useState<WorkflowAction | null>(null);
   const [isNoteDialogOpen, setIsNoteDialogOpen] = useState(false);
   const [selectedAssigneeId, setSelectedAssigneeId] = useState<string>('');
+  const [isAssigneePickerOpen, setIsAssigneePickerOpen] = useState(false);
 
   const blueprint = WORKFLOW_BLUEPRINTS[entityType];
   const currentStep = blueprint?.steps[currentStatus] || { actions: [] };
@@ -302,20 +315,55 @@ export function WorkflowPanel({
             {pendingActionId && pendingActionConfig?.needsAssignee && (
               <div className="space-y-2">
                 <Label className="text-xs uppercase font-bold text-slate-500 tracking-widest">Assignee</Label>
-                <Select value={selectedAssigneeId} onValueChange={setSelectedAssigneeId}>
-                  <SelectTrigger className="h-10 bg-slate-50 border-slate-200">
-                    <SelectValue placeholder="Select an assignee (optional)" />
-                  </SelectTrigger>
-                  <SelectContent position="popper" sideOffset={5} className="max-h-[200px]">
-                    {uniqueUsers.length > 0 ? (
-                      uniqueUsers.map(u => (
-                        <SelectItem key={u.id} value={u.id}>{u.name} ({u.role})</SelectItem>
-                      ))
-                    ) : (
-                      <div className="p-2 text-xs text-slate-400 italic text-center">No users available</div>
-                    )}
-                  </SelectContent>
-                </Select>
+                <Popover open={isAssigneePickerOpen} onOpenChange={setIsAssigneePickerOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={isAssigneePickerOpen}
+                      className="w-full justify-between h-10 bg-slate-50 border-slate-200 font-normal hover:bg-slate-100 transition-colors"
+                    >
+                      <span className="truncate">
+                        {selectedAssigneeId
+                          ? uniqueUsers.find((u) => u.id === selectedAssigneeId)?.name
+                          : "Select an assignee (optional)"}
+                      </span>
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[375px] p-0 shadow-2xl border-slate-200" align="start" side="bottom" sideOffset={5}>
+                    <Command className="border-none">
+                      <CommandInput placeholder="Search by name or role..." className="h-11" />
+                      <CommandList className="max-h-[250px] overflow-y-auto">
+                        <CommandEmpty className="py-6 text-center text-xs text-slate-400 italic">No users found.</CommandEmpty>
+                        <CommandGroup heading="Available Users">
+                          {uniqueUsers.map((u) => (
+                            <CommandItem
+                              key={u.id}
+                              value={`${u.name} ${u.role}`}
+                              onSelect={() => {
+                                setSelectedAssigneeId(u.id);
+                                setIsAssigneePickerOpen(false);
+                              }}
+                              className="flex items-center gap-2 px-3 py-2 cursor-pointer"
+                            >
+                              <Check
+                                className={cn(
+                                  "h-4 w-4 text-indigo-600 shrink-0",
+                                  selectedAssigneeId === u.id ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              <div className="flex flex-col min-w-0">
+                                <span className="font-bold text-xs text-slate-700 truncate">{u.name}</span>
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate">{u.role}</span>
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
             )}
             <div className="space-y-2">
