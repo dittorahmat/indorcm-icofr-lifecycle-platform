@@ -24,6 +24,14 @@ interface GLSourceTableProps {
 }
 
 export function GLSourceTable({ data, onSetActive, onSetBenchmark, onDelete, isLoading }: GLSourceTableProps) {
+  const sortedData = React.useMemo(() => {
+    return [...data].sort((a, b) => {
+      const dateA = a.uploadDate ? new Date(a.uploadDate).getTime() : 0;
+      const dateB = b.uploadDate ? new Date(b.uploadDate).getTime() : 0;
+      return dateB - dateA; // Newest first
+    });
+  }, [data]);
+
   if (isLoading) {
     return (
       <div className="flex justify-center py-20">
@@ -40,14 +48,6 @@ export function GLSourceTable({ data, onSetActive, onSetBenchmark, onDelete, isL
       </div>
     );
   }
-
-  const sortedData = React.useMemo(() => {
-    return [...data].sort((a, b) => {
-      const dateA = a.uploadDate ? new Date(a.uploadDate).getTime() : 0;
-      const dateB = b.uploadDate ? new Date(b.uploadDate).getTime() : 0;
-      return dateB - dateA; // Newest first
-    });
-  }, [data]);
 
   return (
     <div className="border rounded-lg overflow-hidden shadow-sm bg-white">

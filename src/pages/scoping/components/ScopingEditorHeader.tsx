@@ -50,7 +50,7 @@ export function ScopingEditorHeader({
               <h1 className="text-3xl font-display font-bold tracking-tight">{simState.name}</h1>
               <StatusBadge status={(simState.workflowStatus || simState.status) as SimulationStatus} />
             </div>
-            <p className="text-xs font-medium text-slate-500 flex items-center gap-2 mt-1">
+            <div className="text-xs font-medium text-slate-500 flex items-center gap-2 mt-1">
               <Badge variant="outline" className="bg-indigo-50/50 border-indigo-100 text-indigo-700 font-bold px-2 py-0">
                 {simState.basis}
               </Badge>
@@ -59,7 +59,7 @@ export function ScopingEditorHeader({
                 <FileSpreadsheet className="h-3.5 w-3.5 text-slate-400" />
                 {snapshotFilename || t('editor.activeSnapshot')}
               </span>
-            </p>
+            </div>
           </div>
         </div>
 

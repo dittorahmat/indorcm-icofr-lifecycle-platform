@@ -287,7 +287,7 @@ export function WorkflowPanel({
         </CardFooter>
       </Card>
 
-      <Dialog open={isNoteDialogOpen} onOpenChange={setIsNoteDialogOpen} modal={false}>
+      <Dialog open={isNoteDialogOpen} onOpenChange={setIsNoteDialogOpen}>
         <DialogContent className="sm:max-w-[425px] shadow-2xl border-slate-200">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -306,10 +306,14 @@ export function WorkflowPanel({
                   <SelectTrigger className="h-10 bg-slate-50 border-slate-200">
                     <SelectValue placeholder="Select an assignee (optional)" />
                   </SelectTrigger>
-                  <SelectContent position="popper" sideOffset={5} className="z-[100] max-h-[200px]">
-                    {uniqueUsers.map(u => (
-                      <SelectItem key={u.id} value={u.id}>{u.name} ({u.role})</SelectItem>
-                    ))}
+                  <SelectContent position="popper" sideOffset={5} className="max-h-[200px]">
+                    {uniqueUsers.length > 0 ? (
+                      uniqueUsers.map(u => (
+                        <SelectItem key={u.id} value={u.id}>{u.name} ({u.role})</SelectItem>
+                      ))
+                    ) : (
+                      <div className="p-2 text-xs text-slate-400 italic text-center">No users available</div>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
