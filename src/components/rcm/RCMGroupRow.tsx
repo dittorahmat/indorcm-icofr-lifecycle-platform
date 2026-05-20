@@ -1,5 +1,5 @@
 import React from 'react';
-import { TableCell, TableRow } from '@/components/ui/table';
+import { TableCell } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
 import { ChevronRight } from 'lucide-react';
 
@@ -12,7 +12,7 @@ interface RCMGroupRowProps {
 
 export function RCMGroupRow({ title, colSpan, className, depth = 0 }: RCMGroupRowProps) {
   return (
-    <TableRow className={cn(
+    <tr className={cn(
       "h-9 select-none sticky top-[88px] z-40 border-none",
       depth === 0 ? "bg-mancity-pattern text-primary-foreground" : "bg-slate-200 text-slate-900 shadow-inner",
       className
@@ -30,6 +30,6 @@ export function RCMGroupRow({ title, colSpan, className, depth = 0 }: RCMGroupRo
           {title}
         </div>
       </TableCell>
-    </TableRow>
+    </tr>
   );
 }
