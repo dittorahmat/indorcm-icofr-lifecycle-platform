@@ -6,6 +6,7 @@ import {
   getGroupedRowModel,
   getExpandedRowModel,
   getSortedRowModel,
+  getPaginationRowModel,
   flexRender,
   ColumnDef,
   GroupingState,
@@ -91,6 +92,10 @@ export const GLDataGrid = React.memo(function GLDataGrid({
   ]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({
     noUrut: false
+  });
+  const [pagination, setPagination] = React.useState({
+    pageIndex: 0,
+    pageSize: 15,
   });
 
   const deptOptions: Option[] = React.useMemo(() => 
@@ -419,16 +424,19 @@ export const GLDataGrid = React.memo(function GLDataGrid({
       expanded,
       columnVisibility,
       sorting,
+      pagination,
     },
     onGroupingChange: setGrouping,
     onExpandedChange: setExpanded,
     onColumnVisibilityChange: setColumnVisibility,
     onSortingChange: setSorting,
+    onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getGroupedRowModel: getGroupedRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
     autoResetExpanded: false, // CRITICAL: Prevent collapse on update
     getRowId: (row) => row.id, // Stable UUID from database
   });
@@ -581,9 +589,40 @@ export const GLDataGrid = React.memo(function GLDataGrid({
             </TableBody>
           </Table>
         </div>
-        <div className="p-2 border-t bg-slate-50 text-xs text-slate-400 italic flex justify-between">
-          <span>{t('grid.showingRows', { count: table.getRowModel().rows.length })}</span>
-          <span>{t('grid.standardCompliance')}</span>
+        <div className="p-2 border-t bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => table.previousPage()}
+                disabled={!table.getCanPreviousPage()}
+                className="h-7 px-3 text-[10px] font-bold uppercase tracking-widest border-slate-200 bg-white hover:bg-slate-50 transition-all shadow-sm disabled:opacity-30"
+              >
+                {t('grid.previous')}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => table.nextPage()}
+                disabled={!table.getCanNextPage()}
+                className="h-7 px-3 text-[10px] font-bold uppercase tracking-widest border-slate-200 bg-white hover:bg-slate-50 transition-all shadow-sm disabled:opacity-30"
+              >
+                {t('grid.next')}
+              </Button>
+            </div>
+            <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] bg-slate-200/50 px-2 py-1 rounded">
+              {t('grid.pageOf', { 
+                current: table.getState().pagination.pageIndex + 1, 
+                total: table.getPageCount() 
+              })}
+            </span>
+          </div>
+          <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest flex items-center gap-4 italic">
+            <span>{t('grid.showingRows', { count: table.getRowModel().rows.length })}</span>
+            <span className="h-3 w-px bg-slate-200" />
+            <span>{t('grid.standardCompliance')}</span>
+          </div>
         </div>
       </div>
     </div>

@@ -196,6 +196,9 @@
     "submitForReview": "Kirim untuk Review",
     "standardCompliance": "Standar: SK-5/2024 Table 5 Compliance Engine",
     "fsliGuidance": "Penilaian tingkat FSLI mempengaruhi semua akun anak.",
-    "pending": "Pending"
+    "pending": "Pending",
+    "previous": "Sebelumnya",
+    "next": "Berikutnya",
+    "pageOf": "Halaman {{current}} dari {{total}}"
   }
 }
