@@ -137,12 +137,6 @@ export function RegulatoryPropertySheet({
       if (!match) return p;
 
       const updated = { ...p, [field]: value };
-
-      // SMART ID ASSIGNMENT: If this was a pending risk and user entered description
-      if (!updated.riskId && field === 'riskDescription' && value.trim().length > 0) {
-        updated.riskId = `R-${crypto.randomUUID().substring(0, 8)}`;
-      }
-
       return updated;
     });
     onUpdateNodeData(selectedNode.id, { regulatoryPairs: nextPairs });
@@ -151,23 +145,18 @@ export function RegulatoryPropertySheet({
   const updateSpecificControl = (pairIndex: number, field: string, value: any) => {
     const nextPairs = [...pairs];
     const updated = { ...nextPairs[pairIndex], [field]: value };
-
-    // SMART ID ASSIGNMENT for Control
-    if (!updated.controlId && field === 'controlDescription' && value.trim().length > 0) {
-        updated.controlId = `C-${crypto.randomUUID().substring(0, 8)}`;
-    }
-
     nextPairs[pairIndex] = updated;
     onUpdateNodeData(selectedNode.id, { regulatoryPairs: nextPairs });
   };
 
   const addNewRisk = () => {
-    const tempId = crypto.randomUUID();
+    const tempId = `R-${crypto.randomUUID().substring(0, 8)}`;
+    const ctrlId = `C-${crypto.randomUUID().substring(0, 8)}`;
     const nextPairs = [...pairs, {
-      _tempRiskId: tempId,
-      _tempControlId: `c_${tempId}`,
-      riskId: null,
-      controlId: null,
+      _tempRiskId: tempId, // Keeping for backward compatibility if needed temporarily
+      _tempControlId: ctrlId,
+      riskId: tempId,
+      controlId: ctrlId,
       riskDescription: '',
       controlDescription: '',
       isFraudRelated: false,
