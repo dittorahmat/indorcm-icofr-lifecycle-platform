@@ -110,26 +110,26 @@ export function BPMModal({
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[98vw] w-[1600px] h-[95vh] flex flex-col p-0 overflow-hidden border-none shadow-2xl">
-        <DialogHeader className="p-4 border-b bg-indigo-900 text-white shrink-0">
+        <DialogHeader className="p-4 border-b bg-mancity-pattern text-primary-foreground shrink-0">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
-              <div className="bg-white/20 p-2 rounded-lg">
+              <div className="bg-primary-foreground/10 p-2 rounded-lg">
                 <Network className="h-5 w-5" />
               </div>
               <div>
                 <DialogTitle className="text-xl font-black tracking-tight flex items-center gap-2">
-                  <span className="text-yellow-400">Execution Hub:</span>
+                  <span className="text-indigo-900">Execution Hub:</span>
                   {subProcessName || glDesc}
                 </DialogTitle>
                 <div className="flex items-center gap-2 mt-0.5 opacity-80">
-                  <Badge className="bg-white/20 text-white border-none font-mono text-xs">
+                  <Badge className="bg-primary-foreground/10 text-primary-foreground border-none font-mono text-xs">
                     BPM-REF: {noGL}
                   </Badge>
                   <span className="text-xs uppercase font-bold tracking-widest">{fsliName}</span>
                   {subProcessName && glDesc && (
                     <>
-                      <div className="h-3 w-[1px] bg-white/30 mx-1" />
-                      <span className="text-xs uppercase font-medium text-indigo-200 tracking-tight italic">
+                      <div className="h-3 w-[1px] bg-primary-foreground/20 mx-1" />
+                      <span className="text-xs uppercase font-medium text-primary-foreground/70 tracking-tight italic">
                         Account: {glDesc}
                       </span>
                     </>
@@ -138,10 +138,10 @@ export function BPMModal({
               </div>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" className="h-8 text-xs font-bold bg-white/10 border-white/20 hover:bg-white/20 text-white">
+              <Button variant="outline" size="sm" className="h-8 text-xs font-bold bg-primary-foreground/5 border-primary-foreground/10 hover:bg-primary-foreground/10 text-primary-foreground">
                 <Printer className="h-3.5 w-3.5 mr-1.5" /> {t('common:actions.printPdf')}
               </Button>
-              <Button variant="ghost" size="icon" onClick={() => onOpenChange(false)} className="text-white hover:bg-white/10">
+              <Button variant="ghost" size="icon" onClick={() => onOpenChange(false)} className="text-primary-foreground hover:bg-primary-foreground/5">
                 <XCircle className="h-5 w-5" />
               </Button>
             </div>
