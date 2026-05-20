@@ -62,14 +62,14 @@ export function TodoListGrid({
                         "text-xs px-1.5 py-0.5 rounded border flex items-center gap-1 truncate shadow-sm",
                         event.eventType === 'REMEDIATION' 
                           ? "bg-amber-50 border-amber-100 text-amber-700" 
-                          : "bg-indigo-50 border-indigo-100 text-indigo-700"
+                          : "bg-indigo- border-indigo-100 text-indigo-700"
                       )}
                     >
                       <div className={cn(
                         "w-1 h-1 rounded-full",
                         event.eventType === 'REMEDIATION' ? "bg-amber-500" : "bg-indigo-500"
                       )} />
-                      <span className="truncate font-medium">{event.type || 'REMEDIATION'}</span>
+                      <span className="truncate font-medium">{event.displayTitle || event.type || 'REMEDIATION'}</span>
                     </div>
                   ))}
                   {dayEvents.length > 3 && (

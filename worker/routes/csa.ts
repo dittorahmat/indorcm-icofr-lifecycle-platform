@@ -51,7 +51,8 @@ csa.post('/csa/schedules', async (c) => {
     schedulesToInsert.push({
       id: crypto.randomUUID(),
       organizationId: orgId,
-      bpmProcessId: body.bpmProcessId,
+      bpmProcessId: body.bpmProcessId || null,
+      description: body.description, // Store the free-text description
       plannedDate,
       type: body.type || 'CSA',
       assignedTo: body.assignedTo,
@@ -85,14 +86,18 @@ csa.post('/csa/schedules', async (c) => {
 });
 
 
-csa.put('/csa/schedules/:id', async (c) => {
+csa.patch('/csa/schedules/:id', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const id = c.req.param('id');
   const orgId = c.get('organizationId');
   const body = await c.req.json<any>();
 
+  const updateData = { ...body };
+  if (updateData.bpmProcessId === '') updateData.bpmProcessId = null;
+  if (updateData.plannedDate) updateData.plannedDate = new Date(updateData.plannedDate);
+
   await db.update(csaSchedules)
-    .set({ ...body, plannedDate: body.plannedDate ? new Date(body.plannedDate) : undefined })
+    .set(updateData)
     .where(and(eq(csaSchedules.id, id), eq(csaSchedules.organizationId, orgId)));
   return ok(c, { success: true });
 });
@@ -245,9 +250,9 @@ csa.post('/csa', async (c) => {
   const newCsa = {
     id,
     organizationId: orgId,
-    controlId: body.controlId,
-    bpmProcessId: body.bpmProcessId,
-    scheduleId: body.scheduleId,
+    controlId: body.controlId || null,
+    bpmProcessId: body.bpmProcessId || null,
+    scheduleId: body.scheduleId || null,
     period: body.period || "2024-Q1",
     assessmentDate,
     assessedBy: userId,

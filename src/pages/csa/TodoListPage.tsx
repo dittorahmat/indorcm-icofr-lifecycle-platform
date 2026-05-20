@@ -73,6 +73,7 @@ export function TodoListPage() {
 
   const [formData, setFormData] = useState({
     bpmProcessId: '',
+    description: '',
     type: 'CSA',
     plannedDate: format(new Date(), 'yyyy-MM-dd'),
     reminderConfig: { value: 30, unit: 'minute' }
@@ -156,7 +157,7 @@ export function TodoListPage() {
 
   const handleCreate = () => {
     const needsProcess = ['CSA', 'TOD', 'TOE', 'RCM', 'REMEDIATION'].includes(formData.type);
-    if ((needsProcess && !formData.bpmProcessId) || !formData.plannedDate) {
+    if ((needsProcess && !formData.description) || !formData.plannedDate) {
       toast.error(t('common:notifications.missingData'));
       return;
     }
@@ -173,6 +174,7 @@ export function TodoListPage() {
     setIsEditMode(true);
     setFormData({
       bpmProcessId: event.bpmProcessId || '',
+      description: event.description || '',
       type: event.type,
       plannedDate: format(new Date(event.plannedDate), 'yyyy-MM-dd'),
       reminderConfig: event.reminderConfig || { value: 30, unit: 'minute' }
@@ -192,6 +194,7 @@ export function TodoListPage() {
     setEditingId(null);
     setFormData({
       bpmProcessId: '',
+      description: '',
       type: 'CSA',
       plannedDate: format(new Date(), 'yyyy-MM-dd'),
       reminderConfig: { value: 30, unit: 'minute' }
@@ -217,7 +220,13 @@ export function TodoListPage() {
     if (schedules?.items) {
       schedules.items.forEach(s => {
         if (isSameDay(new Date(s.plannedDate), day)) {
-          events.push({ ...s, eventType: 'SCHEDULE' });
+          const process = processes?.items.find(p => p.id === s.bpmProcessId);
+          events.push({ 
+            ...s, 
+            eventType: 'SCHEDULE',
+            // Pre-resolve the title for consistency across all views
+            displayTitle: s.description || process?.name || s.type
+          });
         }
       });
     }
@@ -226,13 +235,17 @@ export function TodoListPage() {
     if (remediations?.items) {
       remediations.items.forEach(r => {
         if (r.targetDate && isSameDay(new Date(r.targetDate), day)) {
-          events.push({ ...r, eventType: 'REMEDIATION' });
+          events.push({ 
+            ...r, 
+            eventType: 'REMEDIATION',
+            displayTitle: r.description || 'Remediation Activity'
+          });
         }
       });
     }
 
     return events;
-  }, [schedules, remediations]);
+  }, [schedules, remediations, processes]);
 
   const monthlyTaskSummary = useMemo(() => {
     return calendarDays
@@ -304,7 +317,7 @@ export function TodoListPage() {
                                         e.eventType === 'REMEDIATION' ? "bg-amber-500" : "bg-indigo-500"
                                       )} />
                                       <span className="truncate font-medium">
-                                        {e.description || process?.name || t('common:status.active')}
+                                        {e.displayTitle || t('common:status.active')}
                                       </span>
                                     </div>
                                     <ChevronRight className="h-3 w-3 text-slate-300 opacity-0 group-hover/item:opacity-100 transition-opacity" />
@@ -324,21 +337,23 @@ export function TodoListPage() {
                                       </Badge>
                                     </div>
                                     <h4 className="text-xs font-black text-slate-800 leading-snug">
-                                      {process?.name || e.description || 'Activity Detail'}
+                                      {e.displayTitle || 'Activity Detail'}
                                     </h4>
                                     <p className="text-xs text-slate-500 font-medium mt-1 flex items-center gap-1">
                                       <Clock className="h-3 w-3" /> {format(new Date(e.plannedDate || e.targetDate), 'EEEE, d MMMM yyyy', { locale: i18n.language === 'id' ? idLocale : enUS })}
                                     </p>
                                   </div>
                                   <div className="p-2 grid grid-cols-1 gap-1">
-                                    <Button 
-                                      variant="ghost" 
-                                      size="sm" 
-                                      className="justify-start gap-2 h-8 text-xs font-bold text-indigo-600 hover:bg-indigo-50"
-                                      onClick={() => handleOpenHub(e)}
-                                    >
-                                      <CheckCircle2 className="h-3.5 w-3.5" /> {t('csa_hub:actions.execute')}
-                                    </Button>
+                                    {e.bpmProcessId && (
+                                      <Button 
+                                        variant="ghost" 
+                                        size="sm" 
+                                        className="justify-start gap-2 h-8 text-xs font-bold text-indigo-600 hover:bg-indigo-50"
+                                        onClick={() => handleOpenHub(e)}
+                                      >
+                                        <CheckCircle2 className="h-3.5 w-3.5" /> {t('csa_hub:actions.execute')}
+                                      </Button>
+                                    )}
                                     {e.eventType === 'SCHEDULE' && (
                                       <>
                                         <Button 
@@ -425,15 +440,12 @@ export function TodoListPage() {
                 </Select>
               </div>
               <div className="grid gap-2">
-                <Label>{t('csa_hub:scheduling.subProcess')}</Label>
-                <Select value={formData.bpmProcessId} onValueChange={(v) => updateFormData({ bpmProcessId: v })}>
-                  <SelectTrigger><SelectValue placeholder={t('common:placeholders.select') || "Select"} /></SelectTrigger>
-                  <SelectContent>
-                    {processes?.items.map(p => (
-                      <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label>Detail Activity</Label>
+                <Input 
+                  placeholder="e.g. Weekly Review, Monthly Closing" 
+                  value={formData.description} 
+                  onChange={(e) => updateFormData({ description: e.target.value })} 
+                />
               </div>
               <div className="grid gap-2">
                 <Label>{t('csa_hub:scheduling.targetDate')}</Label>

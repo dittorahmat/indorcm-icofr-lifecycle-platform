@@ -15,7 +15,7 @@ const COLORS = [
 ];
 
 interface ComplianceChartsProps {
-  rcmData: any;
+  barData: any[];
   deficiencyBySeverity: any;
   isLoading: boolean;
 }
@@ -39,16 +39,9 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-export function ComplianceCharts({ rcmData, deficiencyBySeverity, isLoading }: ComplianceChartsProps) {
+export function ComplianceCharts({ barData, deficiencyBySeverity, isLoading }: ComplianceChartsProps) {
   const { t } = useTranslation('dashboard');
   
-  const barData = React.useMemo(() => {
-    return (rcmData?.items || []).map((r: any) => ({ 
-      name: r.process, 
-      controls: Array.isArray(r.controls) ? r.controls.length : 0 
-    }));
-  }, [rcmData]);
-
   const totalDeficiencies = React.useMemo(() => {
     if (!deficiencyBySeverity) return 0;
     return deficiencyBySeverity.reduce((acc: number, curr: any) => acc + curr.value, 0);

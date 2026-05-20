@@ -716,6 +716,7 @@ export const csaSchedules = pgTable("csa_schedules", {
 	id: text("id").primaryKey(),
 	organizationId: text("organization_id").notNull().references(() => organization.id),
 	bpmProcessId: text("bpm_process_id").references(() => bpmProcesses.id, { onDelete: 'cascade' }),
+	description: text("description"), // Detail Activity (free-text)
 	plannedDate: timestamp("planned_date").notNull(),
 	type: text("type").notNull(), // CSA, TOD, TOE, SCOPING, etc.
 	status: text("status").notNull().default("Not Started"), // Not Started, In Progress, Completed

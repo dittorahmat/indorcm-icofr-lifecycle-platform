@@ -72,12 +72,36 @@ export function Dashboard() {
 
   const deficiencyBySeverity = React.useMemo(() => {
     if (!deficienciesData) return [];
-    const counts = deficienciesData.items.reduce((acc, def) => {
+    // ONLY count Open deficiencies to match KPI card and regulatory description
+    const openItems = deficienciesData.items.filter(d => d.status === 'Open');
+    const counts = openItems.reduce((acc, def) => {
       acc[def.severity] = (acc[def.severity] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
     return Object.entries(counts).map(([name, value]) => ({ name, value }));
   }, [deficienciesData]);
+
+  const barData = React.useMemo(() => {
+    if (!controlsData || !rcmData) return [];
+    
+    // Create a stable map of process names from RCM to ensure all processes appear
+    const processCounts = (rcmData.items || []).reduce((acc, rcm) => {
+      acc[rcm.process] = 0;
+      return acc;
+    }, {} as Record<string, number>);
+
+    // Group controls by their associated business process
+    (controlsData.items || []).forEach(control => {
+      if (control.businessProcess && control.businessProcess in processCounts) {
+        processCounts[control.businessProcess]++;
+      }
+    });
+
+    return Object.entries(processCounts).map(([name, controls]) => ({ 
+      name, 
+      controls 
+    }));
+  }, [controlsData, rcmData]);
 
   const isLoading = rcmLoading || deficienciesLoading || controlsLoading;
 
@@ -125,7 +149,7 @@ export function Dashboard() {
             <motion.div variants={itemVariants}>
               <React.Suspense fallback={<Skeleton className="h-[380px] w-full rounded-xl" />}>
                 <ComplianceCharts 
-                  rcmData={rcmData} 
+                  barData={barData} 
                   deficiencyBySeverity={deficiencyBySeverity} 
                   isLoading={isLoading} 
                 />
