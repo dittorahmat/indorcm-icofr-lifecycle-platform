@@ -131,5 +131,51 @@
       "entity": "Entitas",
       "location": "Kode Lokasi"
     }
+  },
+  "migration": {
+    "title": "Migrasi Cerdas",
+    "description": "Ingesti data ICOFR brownfield dengan asisten AI. Rekonstruksi hierarki dan buat baseline kepatuhan dari file Excel lama.",
+    "steps": {
+      "ingestion": "Ingesti Data",
+      "normalization": "Normalisasi",
+      "baselining": "Baseline"
+    },
+    "ingestion": {
+      "upload_tb": "Unggah Neraca Saldo (TB)",
+      "upload_tb_desc": "Tarik & lepas file Excel/CSV GL lokal Anda",
+      "upload_rcm": "Unggah Matriks RCM",
+      "upload_rcm_desc": "Tarik & lepas data legacy RCM Anda",
+      "ai_ready": "AI siap memproses data entitas Anda yang terfragmentasi.",
+      "process_btn": "Proses dengan AI"
+    },
+    "normalization": {
+      "ai_thinking": "AI sedang berpikir...",
+      "ai_suggestion": "Saran AI (Tingkat Keyakinan: {{confidence}}%)",
+      "cross_check_title": "Cakupan Finansial-Kontrol",
+      "unmitigated": "Tanpa Mitigasi",
+      "qual_candidate": "Kandidat Kualitatif"
+    },
+    "intelligence": {
+      "title": "Intelijen Migrasi",
+      "analysis_complete": "Analisis Selesai",
+      "subsidiaries": "Anak Perusahaan",
+      "processes": "Proses",
+      "risks": "Risiko",
+      "controls": "Kontrol",
+      "confidence_label": "Keyakinan Mapping AI",
+      "unmitigated_label": "Akun Signifikan Tanpa Mitigasi"
+    },
+    "baselining": {
+      "ready_title": "Siap untuk Baseline",
+      "ready_desc": "Seluruh entitas telah direkonstruksi dan saran AI telah ditinjau. Dengan melakukan finalisasi, Anda menetapkan baseline hukum sesuai SK-5/2024.",
+      "finalize_btn": "Finalisasi & Tetapkan Baseline",
+      "processing": "Menetapkan Baseline Regulatif...",
+      "success": "Baseline Migrasi berhasil ditetapkan!",
+      "notification": "Baseline Migrasi Korporat telah ditetapkan. Data historis kini aktif."
+    },
+    "backlog": {
+      "title": "Backlog Migrasi",
+      "drag_hint": "Tarik item untuk diletakkan di kanvas"
+    }
   }
 }

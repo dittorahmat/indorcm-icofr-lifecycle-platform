@@ -127,6 +127,7 @@ export const glRows = pgTable("gl_rows", {
 	assignedDepartmentIds: jsonb("assigned_department_ids").$type<string[]>().default([]),
 	ownerAcceptance: ownerAcceptanceEnum("owner_acceptance"), // Accepted, Rejected, or null (Pending)
 	noUrut: integer("no_urut"),
+	mappingConfidence: doublePrecision("mapping_confidence"), // 0.0 to 1.0
 });
 
 export const transactionDetails = pgTable("transaction_details", {
@@ -326,13 +327,16 @@ export const controls = pgTable("controls", {
 	// ITGC Specific Columns
 	itgcDomain: text("itgc_domain"),	
     itgcAssertions: jsonb("itgc_assertions"),
-	automatedSubNature: text("automated_sub_nature"),
-	supportingApp: text("supporting_app"),
+    automatedSubNature: text("automated_sub_nature"),
+    supportingApp: text("supporting_app"),
     itApplication: text("it_application"), // Match legacy field name
     eucComplexity: text("euc_complexity"),
     ipeType: text("ipe_type"),
-});
 
+    // Migration Metadata
+    isMigrated: boolean("is_migrated").default(false),
+    aiGuessedFields: jsonb("ai_guessed_fields").$type<string[]>().default([]),
+    });
 export const csaRecords = pgTable("csa_records", {
 	id: text("id").primaryKey(),
 	organizationId: text("organization_id").notNull().references(() => organization.id),
@@ -586,8 +590,8 @@ export const auditLogs = pgTable("audit_logs", {
 	id: text("id").primaryKey(),
 	organizationId: text("organizationId").references(() => organization.id),
 	userId: text("user_id").references(() => user.id),
-	action: text("action").notNull(), // CREATE, UPDATE, DELETE, LOGIN
-	entityType: text("entity_type").notNull(), // Control, RCM, GL
+	action: text("action").notNull(), // CREATE, UPDATE, DELETE, LOGIN, MIGRATION_BASELINE
+	entityType: text("entity_type").notNull(), // Control, RCM, GL, MigrationSession
 	entityId: text("entity_id"),
 	descriptionBefore: text("description_before"),
 	descriptionAfter: text("description_after"),
@@ -753,6 +757,19 @@ export const todEvaluations = pgTable("tod_evaluations", {
 	kkReference: text("kk_reference"),
 	conclusion: text("conclusion"), // Effective, Ineffective
 	comment: text("comment"),
+	createdAt: timestamp("created_at").notNull().defaultNow(),
+	updatedAt: timestamp("updated_at"),
+});
+
+export const migrationSessions = pgTable("migration_sessions", {
+	id: text("id").primaryKey(),
+	organizationId: text("organization_id").notNull().references(() => organization.id),
+	userId: text("user_id").notNull().references(() => user.id),
+	year: integer("year").notNull(),
+	status: text("status").notNull(), // Started, InProgress, Finalized, Cancelled
+	type: text("type").notNull(), // TB, RCM, BOTH
+	data: jsonb("data").$type<any>(), // Temporary storage for parsed Excel data
+	reconstructionMetadata: jsonb("reconstruction_metadata").$type<any>(), // AI-guessed fields and scores
 	createdAt: timestamp("created_at").notNull().defaultNow(),
 	updatedAt: timestamp("updated_at"),
 });

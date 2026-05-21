@@ -131,5 +131,51 @@
       "entity": "Entity",
       "location": "Location Code"
     }
+  },
+  "migration": {
+    "title": "Smart Migration Workspace",
+    "description": "AI-assisted ingestion for brownfield ICOFR data. Reconstruct your hierarchies and establish a compliant baseline from legacy Excel files.",
+    "steps": {
+      "ingestion": "Ingestion",
+      "normalization": "Normalization",
+      "baselining": "Baselining"
+    },
+    "ingestion": {
+      "upload_tb": "Upload Trial Balance",
+      "upload_tb_desc": "Drop your local GL Excel or CSV file",
+      "upload_rcm": "Upload Risk Control Matrix",
+      "upload_rcm_desc": "Drop your existing RCM legacy data",
+      "ai_ready": "AI is ready to process your fragmented entity data.",
+      "process_btn": "Process with AI"
+    },
+    "normalization": {
+      "ai_thinking": "AI is thinking...",
+      "ai_suggestion": "AI Suggestion (Confidence: {{confidence}}%)",
+      "cross_check_title": "Financial-Control Coverage",
+      "unmitigated": "Unmitigated",
+      "qual_candidate": "Qual. Candidate"
+    },
+    "intelligence": {
+      "title": "Migration Intelligence",
+      "analysis_complete": "Analysis Complete",
+      "subsidiaries": "Subsidiaries",
+      "processes": "Processes",
+      "risks": "Risks",
+      "controls": "Controls",
+      "confidence_label": "AI Mapping Confidence",
+      "unmitigated_label": "Unmitigated Significant Accounts"
+    },
+    "baselining": {
+      "ready_title": "Ready for Baselining",
+      "ready_desc": "All entities have been reconstructed and AI suggestions have been reviewed. By finalising, you are establishing a legal baseline as per SK-5/2024.",
+      "finalize_btn": "Finalize & Set Baseline",
+      "processing": "Establishing Regulatory Baseline...",
+      "success": "Migration Baseline established successfully!",
+      "notification": "Corporate Migration Baseline established. Historical data is now live."
+    },
+    "backlog": {
+      "title": "Migration Backlog",
+      "drag_hint": "Drag items to place onto canvas"
+    }
   }
 }

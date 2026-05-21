@@ -506,6 +506,27 @@ export function BPMEditor({ diagramId, subProcess, workingYear }: BPMEditorProps
                        </div>
                     </div>
 
+                    {/* Migration Backlog Section */}
+                    <div className="space-y-3 pt-4 border-t border-slate-100">
+                       <p className="text-[9px] font-bold text-indigo-500 uppercase tracking-widest px-1 flex items-center gap-2">
+                          <RefreshCw className="h-3 w-3" /> {t('rcm:migration.backlog.title')}
+                       </p>
+                       <ScrollArea className="h-[120px] pr-2">
+                          <div className="space-y-2">
+                             {/* Placeholder for Migrated Controls */}
+                             <div className="p-2 rounded-lg bg-indigo-50/50 border border-indigo-100 text-[10px] font-bold text-indigo-700 flex items-center gap-2 cursor-grab active:cursor-grabbing hover:bg-indigo-100 transition-colors group">
+                                <GripVertical className="h-3 w-3 text-indigo-300 group-hover:text-indigo-500" />
+                                <span>[PRC-001] Otorisasi PO</span>
+                             </div>
+                             <div className="p-2 rounded-lg bg-indigo-50/50 border border-indigo-100 text-[10px] font-bold text-indigo-700 flex items-center gap-2 cursor-grab active:cursor-grabbing hover:bg-indigo-100 transition-colors group">
+                                <GripVertical className="h-3 w-3 text-indigo-300 group-hover:text-indigo-500" />
+                                <span>[FIN-002] Rekonsiliasi Bank</span>
+                             </div>
+                          </div>
+                       </ScrollArea>
+                       <p className="text-[8px] text-slate-400 italic">{t('rcm:migration.backlog.drag_hint')}</p>
+                    </div>
+
                     <div className="pt-2">
                       <Button variant="secondary" className="w-full h-10 gap-2 text-[10px] font-bold uppercase tracking-widest rounded-xl bg-slate-900 text-white hover:bg-slate-800 shadow-sm transition-all" onClick={() => {
                         const id = `lane_${Date.now()}`;

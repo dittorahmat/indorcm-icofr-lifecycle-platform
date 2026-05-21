@@ -157,7 +157,7 @@ export type AggregateDeficiency = Omit<InferSelectModel<typeof schema.aggregateD
 
 export type ControlLevel = "ELC" | "TLC" | "ITGC";
 
-export interface Control extends Omit<InferSelectModel<typeof schema.controls>, 'relatedControlIds' | 'ipos' | 'assertions' | 'fsliCodes' | 'attributeQuestions' | 'effectiveDate' | 'lastCsaDate'> {
+export interface Control extends Omit<InferSelectModel<typeof schema.controls>, 'relatedControlIds' | 'ipos' | 'assertions' | 'fsliCodes' | 'attributeQuestions' | 'effectiveDate' | 'lastCsaDate' | 'isMigrated' | 'aiGuessedFields'> {
   assertions: ControlAssertion[];
   ipos: InformationProcessingObjective[];
   cosoPrinciples: COSOPrinciple[];
@@ -183,6 +183,8 @@ export interface Control extends Omit<InferSelectModel<typeof schema.controls>, 
   };
   effectiveDate: number | null;
   lastCsaDate: number | null;
+  isMigrated?: boolean | null;
+  aiGuessedFields?: string[] | null;
 }
 
 export type BPMProcess = Omit<InferSelectModel<typeof schema.bpmProcesses>, 'createdAt' | 'workflowHistory'> & {

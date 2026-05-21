@@ -82,7 +82,8 @@ export async function parseGLFile(file: File): Promise<ParseResult> {
             subKategori: String(r[mapping.subKategori] || ''),
             noUrut: parseInt(String(r[mapping.noUrut] || '0')) || 0,
             assignedDepartmentIds: [],
-            ownerAcceptance: null
+            ownerAcceptance: null,
+            mappingConfidence: 1.0
           };
         }).filter(r => r.glDesc || r.fsliName);
 

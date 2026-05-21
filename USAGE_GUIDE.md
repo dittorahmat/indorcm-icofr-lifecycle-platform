@@ -4,11 +4,12 @@ Selamat datang di **IndoGRC Pro**, platform digital yang dirancang khusus untuk 
 
 ## Daftar Isi
 1. [Peran Pengguna (RBAC)](#peran-pengguna-rbac)
-2. [Tahap 1: Perancangan (Planning & Scoping)](#tahap-1-perancangan-planning--scoping)
-3. [Tahap 2: Implementasi (CSA & Validation)](#tahap-2-implementasi-csa--validation)
-4. [Tahap 3: Evaluasi (Testing Workbench)](#tahap-3-evaluasi-testing-workbench)
-5. [Tahap 4: Remediasi (Deficiency Board)](#tahap-4-remediasi-deficiency-board)
-6. [Tahap 5: Pelaporan & Atestasi Eksternal](#tahap-5-pelaporan--atestasi-eksternal)
+2. [Migrasi Data Historis (Smart Migration)](#migrasi-data-historis-smart-migration)
+3. [Tahap 1: Perancangan (Planning & Scoping)](#tahap-1-perancangan-planning--scoping)
+4. [Tahap 2: Implementasi (CSA & Validation)](#tahap-2-implementasi-csa--validation)
+5. [Tahap 3: Evaluasi (Testing Workbench)](#tahap-3-evaluasi-testing-workbench)
+6. [Tahap 4: Remediasi (Deficiency Board)](#tahap-4-remediasi-deficiency-board)
+7. [Tahap 5: Pelaporan & Atestasi Eksternal](#tahap-5-pelaporan--atestasi-eksternal)
 
 ---
 
@@ -19,6 +20,31 @@ Aplikasi ini menggunakan sistem *Role-Based Access Control* (RBAC) yang ketat:
 *   **Line 3 (Internal Audit):** Melakukan pengujian independen (TOD & TOE) secara objektif.
 *   **Admin/Executive:** Meninjau dashboard kepatuhan dan melakukan Digital Sign-off (CEO/CFO).
 *   **External Auditor (KAP):** Melakukan reviu independen atas kertas kerja Lini 3 dan memberikan opini atestasi.
+
+---
+
+## Migrasi Data Historis (Smart Migration)
+Fitur ini ditujukan bagi Perusahaan BUMN atau Grup (Holding) yang sudah memiliki data RCM dan Neraca Saldo (TB) dalam format Excel dan ingin memigrasikannya ke dalam sistem IndoGRC Pro secara otomatis.
+
+1. **Setup Master COA (Khusus Admin Holding)**
+   * Sebelum anak perusahaan melakukan migrasi, Admin Holding harus mengunggah *Master Chart of Accounts* korporat di menu **Master Data**. AI akan menggunakan master ini sebagai acuan pemetaan (*Level 1 Mapping*).
+2. **Akses Migration Workspace**
+   * Navigasi ke menu **Sidebar > Setup / Master Data > Smart Migration**.
+3. **Tahap 1: Ingestion (Unggah Dokumen)**
+   * Sistem mendukung mode *Multi-Entity*. Tarik & Lepas (Drag & Drop) file Excel **Trial Balance (TB)** dan **Risk Control Matrix (RCM)** Anda ke area yang disediakan.
+   * Klik **Process with AI** untuk memulai mesin ekstraksi cerdas.
+4. **Tahap 2: Normalization & Cross-Check (Washing Machine)**
+   * **Staging Table:** Tinjau hasil ekstraksi AI. Sistem akan secara otomatis memetakan teks Excel Anda ke format standar Enum (misal: "Tiap Bulan" menjadi `Monthly`).
+   * **AI Guesses:** Kolom yang ditebak oleh AI (seperti Asersi atau Tipe Kontrol yang mungkin tidak ada di Excel asli) akan ditandai dengan **highlight warna oranye** (⚠️). Anda dapat mengklik untuk mengoreksinya.
+   * **Corporate COA Mapping:** AI akan otomatis memetakan akun lokal dari anak perusahaan ke *Master Chart of Accounts* korporat yang telah diatur oleh Holding (*Level 2 Mapping*).
+   * **Financial-Control Cross-Check:** Periksa panel peringatan. Sistem akan mendeteksi jika ada akun bernilai material (*Signifikan*) di TB namun tidak memiliki satupun kontrol mitigasi di RCM (Unmitigated Risk).
+5. **Tahap 3: Corporate Baselining (Sign-off)**
+   * Setelah data dirasa akurat, klik tombol **Finalize & Set Baseline**.
+   * Ini adalah persetujuan massal (*Bulk Approval*) oleh CFO atau Lini 2 yang akan secara resmi mengunci data tersebut sebagai Baseline di database.
+   * Aksi ini akan tercatat dalam **Log Perubahan (Audit Trail Lampiran 6)** sebagai `MIGRATION_BASELINE`, memenuhi syarat historis SK-5.
+6. **Deferred Drawing (Menggambar Flowchart Belakangan)**
+   * Untuk proses bisnis hasil migrasi, Anda tidak perlu menggambar flowchart dari awal. 
+   * Buka **BPM Editor**. Di panel kiri, buka *tab* **Migration Backlog**. Anda cukup menarik (*drag-and-drop*) risiko dan kontrol hasil impor tersebut langsung ke atas kanvas.
 
 ---
 
@@ -137,6 +163,14 @@ Aplikasi ini menggunakan sistem *Role-Based Access Control* (RBAC) yang ketat:
 ### C. Lokalisasi & Antarmuka
 *   Gunakan tombol **Language Switcher** di bagian bawah sidebar untuk beralih antara Bahasa Indonesia dan English.
 *   Seluruh laporan dan ekspor akan menyesuaikan bahasa yang dipilih.
+
+### D. Pusat Notifikasi (Notification Bell)
+*   Klik ikon **Lonceng** di sudut kanan atas layar untuk melihat pembaruan terkini.
+*   Sistem akan memberi tahu Anda secara *real-time* tentang aktivitas penting, seperti keberhasilan migrasi data historis, status *sign-off* CEO/CFO, dan jadwal *Control Self-Assessment* (CSA) yang mendekati tenggat waktu.
+
+### E. Proteksi Kehilangan Data (Unsaved Changes Guard)
+*   Sebagai langkah pencegahan, sistem akan mengunci navigasi jika Anda memiliki pekerjaan yang belum disimpan di modul-modul kritis (seperti *BPM Editor*, *Scoping*, atau *Migration Staging*).
+*   Anda akan menerima peringatan *pop-up* (baik saat berpindah halaman di dalam aplikasi maupun saat mencoba menutup *tab* peramban) untuk memastikan draf kerja Anda tidak hilang secara tidak sengaja.
 
 ---
 ## Dashboard & Akuntabilitas (Prinsip 5)
