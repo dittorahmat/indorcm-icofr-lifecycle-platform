@@ -10,6 +10,10 @@ export interface HeaderMapping {
 export class HeaderMapperService {
     static SYSTEM_FIELDS = [
         "entityCode",
+        "accountCode",
+        "accountName",
+        "balance",
+        "noUrut", // Added for ordering consistency
         "processName",
         "subProcessName",
         "riskDescription",

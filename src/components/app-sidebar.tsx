@@ -315,11 +315,6 @@ export function AppSidebar(): JSX.Element {
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/rcm/migration")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight" title={t('items.migration')}>
-                <Link to="/rcm/migration" className="font-semibold text-sm"><RefreshCw className="h-4 w-4 text-indigo-500" /> <span>{t('items.migration')}</span></Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/documents")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
                 <Link to="/documents" className="font-semibold text-sm"><FileText className="h-4 w-4" /> <span>{t('items.documents')}</span></Link>
               </SidebarMenuButton>

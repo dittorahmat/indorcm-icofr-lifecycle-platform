@@ -63,7 +63,7 @@ export function ComplianceCharts({ barData, deficiencyBySeverity, isLoading }: C
             {isLoading ? <Skeleton className="h-full w-full rounded-xl" /> : barData.length === 0 ? (
               <div className="h-full flex items-center justify-center text-slate-400 text-[10px] font-bold uppercase tracking-widest">{t('charts.noData')}</div>
             ) : (
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                 <BarChart data={barData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="hsl(var(--muted))" />
                   <XAxis 
@@ -120,7 +120,7 @@ export function ComplianceCharts({ barData, deficiencyBySeverity, isLoading }: C
             ) : (
               <>
                 <div className="w-full h-[240px] relative shrink-0">
-                  <ResponsiveContainer width="100%" height="100%">
+                  <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                     <PieChart>
                       <Pie 
                         data={deficiencyBySeverity} 

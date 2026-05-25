@@ -32,6 +32,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 import { useAccountAssertions, useActiveSimulation, useSimulationSnapshot } from '@/hooks/use-bpm';
+import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
@@ -69,6 +70,7 @@ const itemVariants: Variants = {
 
 export function BPMPage() {
   const { t } = useTranslation(['bpm', 'common', 'rcm']);
+  const { workingYear } = useFiscalYearStore();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -79,12 +81,13 @@ export function BPMPage() {
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [isCsaModalOpen, setIsCsaModalOpen] = React.useState(false);
   const [selectedBpmName, setSelectedBpmName] = React.useState("");
-  const [viewYear, setViewYear] = React.useState<string>(searchParams.get('year') || "2025");
+  
+  const viewYear = workingYear;
 
   const currentYear = new Date().getFullYear();
   const dynamicYears = React.useMemo(() => {
     const years = [];
-    const startYear = 2024;
+    const startYear = currentYear - 3;
     const endYear = currentYear + 1;
     for (let y = startYear; y <= endYear; y++) {
       years.push(y.toString());
@@ -122,24 +125,6 @@ export function BPMPage() {
     });
   };
 
-  // Sync viewYear with search params
-  React.useEffect(() => {
-    const yearParam = searchParams.get('year');
-    if (yearParam && yearParam !== viewYear) {
-      setViewYear(yearParam);
-    }
-  }, [searchParams, viewYear]);
-
-  // Update URL when viewYear changes
-  const handleYearChange = (year: string) => {
-    setViewYear(year);
-    setSearchParams(prev => {
-      const next = new URLSearchParams(prev);
-      next.set('year', year);
-      return next;
-    });
-  };
-
   // Handle Deep Linking from Scoping
   React.useEffect(() => {
     const fsli = searchParams.get('fsli');
@@ -151,7 +136,6 @@ export function BPMPage() {
     if (noGL && glDesc) {
       setSelectedAccountKey(`${noGL} ||| ${glDesc}`);
     }
-    if (year) setViewYear(year);
   }, [searchParams]);
 
   // 1. Fetch Active Simulation for Account Assignments - Filtered by viewYear
@@ -380,24 +364,7 @@ export function BPMPage() {
                 {t('common:cycles.cycleLabel', { year: viewYear })}
               </Badge>
             }
-          >
-            <div className="flex flex-col items-end gap-1.5">
-              <Label htmlFor="cycle-year-select" className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">{t('common:cycles.complianceCycle')}</Label>
-              <Select value={viewYear} onValueChange={handleYearChange}>
-                <SelectTrigger id="cycle-year-select" className="w-[150px] h-10 bg-white border-slate-200 text-xs font-bold uppercase tracking-wider rounded-lg shadow-sm">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-3.5 w-3.5 text-slate-400" />
-                    <SelectValue placeholder={t('common:placeholders.year')} />
-                  </div>
-                </SelectTrigger>
-                <SelectContent className="rounded-lg border-slate-200">
-                  {dynamicYears.map(y => (
-                    <SelectItem key={y} value={y} className="text-xs font-bold uppercase">{t('common:cycles.yearCycle', { year: y })}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </PageHeader>
+          />
         </motion.div>
 
         <motion.div variants={itemVariants}>

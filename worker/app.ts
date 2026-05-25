@@ -16,6 +16,7 @@ import infrastructure from './routes/infrastructure';
 import reporting from './routes/reporting';
 import transactions from './routes/transactions';
 import csa from './routes/csa';
+import migration from './routes/migration';
 import { getAuth } from './auth';
 import { getDb } from './db';
 import * as schema from './db/schema';
@@ -253,6 +254,7 @@ export const createApp = () => {
   app.route('/api', reporting);
   app.route('/api', transactions);
   app.route('/api', csa);
+  app.route('/api', migration);
   app.route('/api', aiDocs);
     
   // Legacy function routes

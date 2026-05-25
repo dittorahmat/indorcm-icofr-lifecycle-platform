@@ -536,6 +536,7 @@ export const bpmProcesses = pgTable("bpm_processes", {
 	bpmCode: text("bpm_code"), // Free-text human readable ID (e.g. BPM-FIN-01)
 	fsliName: text("fsli_name"),
 	name: text("name").notNull(),
+	year: integer("year"),
 	riskCount: integer("risk_count").default(0),
 	controlCount: integer("control_count").default(0),
 	standardTestProcedure: text("standard_test_procedure"), // Master template for CSA
@@ -547,6 +548,7 @@ export const bpmProcesses = pgTable("bpm_processes", {
 	return {
 		orgBpmCodeIdx: index("bpm_processes_org_code_idx").on(table.organizationId, table.bpmCode),
 		noGLIdx: index("bpm_processes_no_gl_idx").on(table.noGL),
+		yearIdx: index("bpm_processes_year_idx").on(table.year),
 	};
 });
 

@@ -1,28 +1,44 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Upload, ChevronRight, CheckCircle2, ShieldCheck, Zap, Loader2 as LucideLoader2 } from 'lucide-react';
+import { ChevronRight, ShieldCheck, Zap, Loader2 as LucideLoader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUnsavedChangesContext } from '@/context/UnsavedChangesContext';
+import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 import { toast } from 'sonner';
 import { api } from '@/lib/api-client';
-import { FileUploadZone } from './components/FileUploadZone';
-import { StagingTable } from './components/StagingTable';
-import { CrossCheckPanel } from './components/CrossCheckPanel';
-import { IntelligenceDashboard } from './components/IntelligenceDashboard';
+import { FileUploadZone } from '../import/FileUploadZone';
+import { StagingTable } from '../import/StagingTable';
+import { CrossCheckPanel } from '../import/CrossCheckPanel';
+import { IntelligenceDashboard } from '../import/IntelligenceDashboard';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AppLayout } from '@/components/layout/AppLayout';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 
-export function MigrationPage() {
+interface SmartImportWizardProps {
+    isOpen: boolean;
+    onOpenChange: (open: boolean) => void;
+    onSuccess?: () => void;
+}
+
+export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImportWizardProps) {
     const { t } = useTranslation(['rcm', 'common', 'scoping']);
     const { setDirty, resetDirty } = useUnsavedChangesContext();
+    const { workingYear } = useFiscalYearStore();
     const [isModified, setIsDirtyLocal] = useState(false);
     const [step, setStep] = useState(1); // 1: Ingestion, 2: Normalization, 3: Baselining
-    const [fiscalYear, setFiscalYear] = useState(new Date().getFullYear().toString());
+    const [fiscalYear, setFiscalYear] = useState(workingYear);
+
+    // Sync local state with global store
+    useEffect(() => {
+        setFiscalYear(workingYear);
+    }, [workingYear]);
 
     // File States
     const [tbFile, setTbFile] = useState<File | null>(null);
@@ -34,9 +50,13 @@ export function MigrationPage() {
 
     // Sync dirty state
     useEffect(() => {
-        setDirty(isModified);
-        return () => resetDirty();
-    }, [isModified, setDirty, resetDirty]);
+        if (isOpen) {
+            setDirty(isModified);
+        }
+        return () => {
+            if (!isOpen) resetDirty();
+        };
+    }, [isModified, setDirty, resetDirty, isOpen]);
 
     const handleProcessAI = async () => {
         if (!tbFile && !rcmFile) {
@@ -84,6 +104,17 @@ export function MigrationPage() {
         toast.promise(
             (async () => {
                 await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Call real backend API to finalize migration
+                await api('/api/migration/finalize', {
+                    method: 'POST',
+                    body: JSON.stringify({ 
+                        year: fiscalYear,
+                        rcmData: stagingData,
+                        tbData: [] // Mock: In a real scenario, this would be parsed TB data
+                    })
+                });
+
                 await api('/api/notifications', {
                     method: 'POST',
                     body: JSON.stringify({
@@ -101,45 +132,49 @@ export function MigrationPage() {
         );
         resetDirty();
         setIsDirtyLocal(false);
-        setStep(1);
-        setTbFile(null);
-        setRcmFile(null);
+        onOpenChange(false);
+        if (onSuccess) onSuccess();
     };
 
     return (
-        <AppLayout noScroll className="bg-slate-50/50">
-            <div className="flex flex-col h-full">
-                {/* Header Section - More Compact */}
-                <div className="px-8 py-6 bg-white border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <Dialog open={isOpen} onOpenChange={(open) => {
+            if (!open && isModified) {
+                if (window.confirm(t('common:unsavedChanges.description'))) {
+                    onOpenChange(false);
+                    setIsDirtyLocal(false);
+                    setStep(1);
+                    setTbFile(null);
+                    setRcmFile(null);
+                }
+            } else {
+                onOpenChange(open);
+                if (!open) {
+                    setStep(1);
+                    setTbFile(null);
+                    setRcmFile(null);
+                }
+            }
+        }}>
+            <DialogContent className="max-w-[90vw] w-[1200px] h-[85vh] flex flex-col p-0 overflow-hidden border-none shadow-2xl rounded-[2.5rem]">
+                <DialogHeader className="px-8 py-6 bg-slate-900 text-white flex flex-row items-center justify-between">
                     <div className="space-y-1">
-                        <h1 className="text-2xl font-black tracking-tight text-slate-900 uppercase">
+                        <DialogTitle className="text-2xl font-black uppercase tracking-tight flex items-center gap-3">
+                            <Zap className="h-6 w-6 text-indigo-400" />
                             {t('rcm:migration.title')}
-                        </h1>
-                        <p className="text-xs text-slate-500 font-medium max-w-2xl">
-                            {t('rcm:migration.description')}
-                        </p>
+                        </DialogTitle>
+                        <p className="text-xs text-slate-400 font-medium">{t('rcm:migration.description')}</p>
                     </div>
-                    
-                    <div className="flex items-center gap-4">
-                        <div className="flex flex-col gap-1 min-w-[140px]">
-                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest px-1">Target Fiscal Year</span>
-                            <Select value={fiscalYear} onValueChange={setFiscalYear}>
-                                <SelectTrigger className="rounded-xl border border-slate-200 bg-white h-9 text-xs font-bold text-slate-700 shadow-sm">
-                                    <SelectValue placeholder="Year" />
-                                </SelectTrigger>
-                                <SelectContent className="rounded-xl">
-                                    {[2023, 2024, 2025, 2026, 2027].map(year => (
-                                        <SelectItem key={year} value={year.toString()} className="text-xs">{year}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                    <div className="flex items-center gap-6 mr-8">
+                        <div className="flex flex-col items-end gap-1">
+                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Import for Cycle</span>
+                            <span className="text-xs font-bold text-indigo-300">{fiscalYear}</span>
                         </div>
                     </div>
-                </div>
+                </DialogHeader>
 
-                <div className="flex-1 overflow-y-auto p-8">
-                    <div className="max-w-7xl mx-auto space-y-6">
-                        {/* Stepper - Horizontal & Compact */}
+                <div className="flex-1 overflow-y-auto bg-slate-50/50 p-8">
+                    <div className="max-w-5xl mx-auto space-y-8">
+                         {/* Stepper */}
                         <div className="flex items-center justify-center gap-8 py-2">
                             {[1, 2, 3].map((s) => (
                                 <React.Fragment key={s}>
@@ -247,8 +282,8 @@ export function MigrationPage() {
                         </Card>
                     </div>
                 </div>
-            </div>
-        </AppLayout>
+            </DialogContent>
+        </Dialog>
     );
 }
 

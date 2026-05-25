@@ -5,6 +5,7 @@ import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { useUnsavedChangesContext } from '@/context/UnsavedChangesContext';
+import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 import type { 
   MaterialitySimulation, GLRow, GLSnapshot, QualitativeLevel, Department, Application, SignificantAccount 
 } from '@shared/types';
@@ -22,8 +23,9 @@ export function useScopingPage() {
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedSimId = searchParams.get('id');
+  const { workingYear } = useFiscalYearStore();
 
-  const [filterYear, setFilterYear] = React.useState<string>("2025");
+  const filterYear = workingYear;
   const [isCreating, setIsCreating] = React.useState(false);
   const [benchmarkModalSnap, setBenchmarkModalSnap] = React.useState<GLSnapshot | null>(null);
 
@@ -40,8 +42,8 @@ export function useScopingPage() {
   });
 
   const { data: snapshots, isLoading: snapsLoading } = useQuery({
-    queryKey: ['gl-snapshots'],
-    queryFn: () => api<{ items: GLSnapshot[] }>('/api/gl-snapshots'),
+    queryKey: ['gl-snapshots', filterYear],
+    queryFn: () => api<{ items: GLSnapshot[] }>(`/api/gl-snapshots?year=${filterYear}`),
   });
 
   const activeSnapshot = snapshots?.items.find(s => s.isActive);
@@ -94,7 +96,6 @@ export function useScopingPage() {
     selectedSimId,
     setSearchParams,
     filterYear,
-    setFilterYear,
     isCreating,
     setIsCreating,
     benchmarkModalSnap,

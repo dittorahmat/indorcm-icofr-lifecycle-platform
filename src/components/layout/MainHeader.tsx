@@ -1,23 +1,22 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Shield, LogOut, Languages } from 'lucide-react';
+import { Shield, LogOut } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { UserRole } from '@shared/types';
 import { toast } from 'sonner';
 import { useTheme } from '@/hooks/use-theme';
 import { NotificationBell } from './NotificationBell';
 import { LanguageSwitcher } from './LanguageSwitcher';
+import { FiscalYearSelector } from './FiscalYearSelector';
 import { useTranslation } from 'react-i18next';
 
 
 export function MainHeader() {
   const currentRole = (localStorage.getItem('mockRole') as UserRole) || 'Line 1';
-  const location = useLocation();
   const navigate = useNavigate();
   const { isDark } = useTheme();
 
@@ -54,6 +53,7 @@ export function MainHeader() {
           </div>
         </div>
         <div className="flex items-center gap-4">
+          <FiscalYearSelector />
           <LanguageSwitcher />
           <NotificationBell />
           <DropdownMenu>

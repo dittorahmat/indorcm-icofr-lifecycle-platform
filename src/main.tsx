@@ -37,7 +37,6 @@ const WBSPage = lazy(() => import('@/pages/reports/WBSPage').then(module => ({ d
 const ChangeLogPage = lazy(() => import('@/pages/rcm/ChangeLogPage').then(module => ({ default: module.ChangeLogPage })));
 const SOCMonitoringPage = lazy(() => import('@/pages/rcm/SOCMonitoringPage').then(module => ({ default: module.SOCMonitoringPage })));
 const VerificationDesignPage = lazy(() => import('@/pages/rcm/VerificationDesignPage').then(module => ({ default: module.VerificationDesignPage })));
-const MigrationPage = lazy(() => import('@/pages/migration/MigrationPage').then(module => ({ default: module.MigrationPage })));
 const BPMPage = lazy(() => import('@/pages/bpm/BPMPage').then(module => ({ default: module.BPMPage })));
 const CSAPage = lazy(() => import('@/pages/csa/CSAPage').then(module => ({ default: module.CSAPage })));
 const TodoListPage = lazy(() => import('@/pages/csa/TodoListPage').then(module => ({ default: module.TodoListPage })));
@@ -96,8 +95,6 @@ const router = createBrowserRouter([
                   { path: "/rcm/tlc", element: <PageSuspense><RCMTLCPage /></PageSuspense> },
                   { path: "/rcm/elc", element: <PageSuspense><RCMELCPage /></PageSuspense> },
                   { path: "/rcm/itgc", element: <PageSuspense><RCMITGCPage /></PageSuspense> },
-                  { path: "/rcm/itgc", element: <PageSuspense><RCMITGCPage /></PageSuspense> },
-                  { path: "/rcm/migration", element: <PageSuspense><MigrationPage /></PageSuspense> },
                   { path: "/rcm/verification-design", element: <PageSuspense><VerificationDesignPage /></PageSuspense> },
 
                   { path: "/change-log", element: <PageSuspense><ChangeLogPage /></PageSuspense> },
@@ -126,16 +123,36 @@ const router = createBrowserRouter([
     ]
   },
   { path: "*", element: <Navigate to="/" replace /> },
-]);
+], {
+  future: {
+    v7_relativeSplatPath: true,
+    v7_fetcherPersist: true,
+    v7_normalizeFormMethod: true,
+    v7_partialHydration: true,
+    v7_skipActionErrorRevalidation: true,
+  },
+});
 
-createRoot(document.getElementById('root')!).render(
+const rootElement = document.getElementById('root')!;
+// Avoid calling createRoot multiple times on the same element
+const root = (rootElement as any)._reactRoot || createRoot(rootElement);
+if (!(rootElement as any)._reactRoot) {
+  (rootElement as any)._reactRoot = root;
+}
+
+root.render(
     <QueryClientProvider client={queryClient}>
       <LicenseProvider>
         <UnsavedChangesProvider>
           <I18nextProvider i18n={i18n}>
             <ErrorBoundary>
               <Suspense fallback={<div className="h-screen w-full flex items-center justify-center"><Skeleton className="h-12 w-12 rounded-full" /></div>}>
-                <RouterProvider router={router} />
+                <RouterProvider 
+                  router={router} 
+                  future={{
+                    v7_startTransition: true,
+                  }}
+                />
               </Suspense>
               <Toaster richColors closeButton />
             </ErrorBoundary>

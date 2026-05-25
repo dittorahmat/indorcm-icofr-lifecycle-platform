@@ -76,7 +76,8 @@
   "cycles": {
     "yearCycle": "Siklus {{year}}",
     "complianceCycle": "Siklus Kepatuhan",
-    "cycleLabel": "Siklus: {{year}}"
+    "cycleLabel": "Siklus: {{year}}",
+    "targetFiscalYear": "Tahun Fiskal Target"
   },
   "calendar": {
     "today": "Hari Ini",

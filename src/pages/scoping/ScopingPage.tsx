@@ -13,7 +13,6 @@ import { SimulationListTable } from '@/components/scoping/SimulationListTable';
 import { SetBenchmarkModal } from '@/components/scoping/SetBenchmarkModal';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { useDropzone } from 'react-dropzone';
 import {
   Dialog,
   DialogContent,
@@ -27,6 +26,10 @@ import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { api } from '@/lib/api-client';
 import { useQueryClient } from '@tanstack/react-query';
+import { useFiscalYearStore } from '@/store/useFiscalYearStore';
+
+// New Components
+import { SmartImportWizard } from '@/components/scoping/SmartImportWizard';
 
 // New Decomposed Parts
 import { useScopingPage, useScopingEditor } from './hooks/useScopingPage';
@@ -65,33 +68,25 @@ const itemVariants: Variants = {
 
 export function ScopingPage() {
   const { t } = useTranslation(['scoping', 'common']);
+  const { workingYear } = useFiscalYearStore();
   const queryClient = useQueryClient();
   const {
-    selectedSimId, setSearchParams, filterYear, setFilterYear,
+    selectedSimId, setSearchParams,
     isCreating, setIsCreating, benchmarkModalSnap, setBenchmarkModalSnap,
     simulations, snapshots, activeSnapshot, isLoading,
     mutations
   } = useScopingPage();
 
+  const [isImportWizardOpen, setIsImportWizardOpen] = React.useState(false);
+
+  const filterYear = workingYear;
+
   const currentYear = new Date().getFullYear();
   const dynamicYears = React.useMemo(() => {
     const years = [];
-    for (let y = 2024; y <= currentYear + 1; y++) years.push(y.toString());
+    for (let y = currentYear - 3; y <= currentYear + 1; y++) years.push(y.toString());
     return years;
   }, [currentYear]);
-
-  const onDrop = React.useCallback(async (acceptedFiles: File[]) => {
-    const file = acceptedFiles[0];
-    if (!file) return;
-    const result = await parseGLFile(file);
-    if (result.success) {
-      mutations.uploadSnap.mutate({ filename: file.name, rows: result.rows });
-    } else {
-      toast.error(result.error || t('common:notifications.error'));
-    }
-  }, [mutations.uploadSnap, t]);
-
-  const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
   if (selectedSimId) {
     const sim = simulations.find(s => s.id === selectedSimId);
@@ -123,25 +118,13 @@ export function ScopingPage() {
         >
           <div className="flex flex-col items-end gap-2">
             <div className="flex gap-2">
-              <Select value={filterYear} onValueChange={setFilterYear}>
-                <SelectTrigger className="w-[110px] h-10 bg-white border-slate-200 text-xs font-bold uppercase tracking-wider shadow-sm">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-3.5 w-3.5 text-slate-400" />
-                    <SelectValue placeholder={t('common:placeholders.year')} />
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  {dynamicYears.map(y => (
-                    <SelectItem key={y} value={y} className="text-xs font-bold uppercase">{y}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <div {...getRootProps()}>
-                <input {...getInputProps()} />
-                <Button variant="outline" className="h-10 gap-2 border-slate-200 bg-white hover:bg-slate-50 transition-all font-bold text-xs uppercase tracking-wider shadow-sm">
-                  <Upload className="h-3.5 w-3.5 text-slate-500" /> {t('scoping:uploadButton')}
-                </Button>
-              </div>
+              <Button 
+                variant="outline" 
+                className="h-10 gap-2 border-slate-200 bg-white hover:bg-slate-50 transition-all font-bold text-xs uppercase tracking-wider shadow-sm"
+                onClick={() => setIsImportWizardOpen(true)}
+              >
+                <Upload className="h-3.5 w-3.5 text-slate-500" /> {t('scoping:uploadButton')}
+              </Button>
               <Button 
                 onClick={() => setIsCreating(true)} 
                 className="h-10 gap-2 bg-mancity-pattern text-primary-foreground hover:opacity-90 shadow-md shadow-blue-100 transition-all font-bold text-xs uppercase tracking-wider border-none" 
@@ -230,6 +213,15 @@ export function ScopingPage() {
           snapshot={benchmarkModalSnap} 
           isOpen={!!benchmarkModalSnap} 
           onOpenChange={(open) => !open && setBenchmarkModalSnap(null)} 
+        />
+
+        <SmartImportWizard 
+          isOpen={isImportWizardOpen} 
+          onOpenChange={setIsImportWizardOpen}
+          onSuccess={() => {
+              queryClient.invalidateQueries({ queryKey: ['simulations'] });
+              queryClient.invalidateQueries({ queryKey: ['gl-snapshots'] });
+          }}
         />
       </motion.div>
     </AppLayout>

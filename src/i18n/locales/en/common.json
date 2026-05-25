@@ -76,7 +76,8 @@
   "cycles": {
     "yearCycle": "{{year}} Cycle",
     "complianceCycle": "Compliance Cycle",
-    "cycleLabel": "Cycle: {{year}}"
+    "cycleLabel": "Cycle: {{year}}",
+    "targetFiscalYear": "Target Fiscal Year"
   },
   "calendar": {
     "today": "Today",
