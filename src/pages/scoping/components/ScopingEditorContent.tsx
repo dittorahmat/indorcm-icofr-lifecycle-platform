@@ -7,11 +7,16 @@ import { GLDataGrid } from '@/components/scoping/GLDataGrid';
 import { ApprovalHistoryTimeline } from '@/components/scoping/ApprovalHistoryTimeline';
 import { ScopingHealthDashboard } from '@/components/scoping/ScopingHealthDashboard';
 import { useTranslation } from 'react-i18next';
+import { EntityTreeFilter } from './EntityTreeFilter';
+import type { EntityNode } from '../utils/hierarchy-utils';
 import type { GLRow, MaterialitySimulation, QualitativeLevel, Department, Application } from '@shared/types';
 
 interface ScopingEditorContentProps {
   simState: MaterialitySimulation;
   mergedGlData: GLRow[];
+  entityHierarchy: EntityNode[];
+  selectedEntityCodes: string[];
+  onEntitySelectionChange: (codes: string[]) => void;
   omValue: number;
   pmValue: number;
   isLocked: boolean;
@@ -29,6 +34,9 @@ interface ScopingEditorContentProps {
 export function ScopingEditorContent({
   simState,
   mergedGlData,
+  entityHierarchy,
+  selectedEntityCodes,
+  onEntitySelectionChange,
   omValue,
   pmValue,
   isLocked,
@@ -47,22 +55,52 @@ export function ScopingEditorContent({
   return (
     <div className="flex-1 min-w-0 space-y-6">
       <Tabs defaultValue="worksheet" className="w-full">
-        <TabsList className="grid w-full max-w-[550px] grid-cols-3 mb-4">
-          <TabsTrigger value="worksheet">{t('approval.tabWorksheet')}</TabsTrigger>
-          <TabsTrigger value="history" className="flex items-center gap-2">
-            <History className="h-3 w-3" /> {t('approval.tabHistory')}
-            {simState.history && simState.history.length > 0 && (
-              <Badge variant="secondary" className="ml-1 h-4 px-1 text-xs">
-                {simState.history.length}
+        <div className="flex justify-between items-center mb-6">
+          <TabsList className="grid w-full max-w-[550px] grid-cols-3 bg-slate-100/50 p-1 border border-slate-200 rounded-xl">
+            <TabsTrigger value="worksheet" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest">{t('approval.tabWorksheet')}</TabsTrigger>
+            <TabsTrigger value="history" className="flex items-center gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest">
+              <History className="h-3 w-3" /> {t('approval.tabHistory')}
+              {simState.history && simState.history.length > 0 && (
+                <Badge variant="secondary" className="ml-1 h-4 px-1 text-[10px] font-black">
+                  {simState.history.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="integrity" className="flex items-center gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest">
+              <ShieldCheck className="h-3 w-3" /> {t('approval.tabIntegrity')}
+            </TabsTrigger>
+          </TabsList>
+
+          <EntityTreeFilter 
+            hierarchy={entityHierarchy}
+            selectedCodes={selectedEntityCodes}
+            onSelectionChange={onEntitySelectionChange}
+          />
+        </div>
+
+        {selectedEntityCodes.length > 0 && (
+          <div className="mb-6 bg-indigo-50 border border-indigo-100 rounded-lg p-3 flex items-center justify-between shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="flex items-center gap-3">
+              <div className="bg-indigo-100 p-2 rounded-full">
+                <ShieldCheck className="h-4 w-4 text-indigo-600" />
+              </div>
+              <div>
+                <p className="text-[11px] font-black uppercase tracking-widest text-indigo-900">Roll-up Context Active</p>
+                <p className="text-xs text-indigo-700 font-medium">
+                  Aggregating balances from <span className="font-bold">{selectedEntityCodes.length}</span> entities. 
+                  Materiality (OM/PM) is dynamically recalculated.
+                </p>
+              </div>
+            </div>
+            {selectedEntityCodes.length < (mergedGlData.length > 0 ? Array.from(new Set(mergedGlData.map(r => r.entityCode))).length : 0) && (
+              <Badge variant="outline" className="bg-white text-indigo-600 border-indigo-200 text-[10px] font-bold uppercase tracking-widest">
+                Slicing Simulation
               </Badge>
             )}
-          </TabsTrigger>
-          <TabsTrigger value="integrity" className="flex items-center gap-2">
-            <ShieldCheck className="h-3 w-3" /> {t('approval.tabIntegrity')}
-          </TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="worksheet" className="space-y-6">
+          </div>
+        )}
+
+        <TabsContent value="worksheet" className="space-y-6 mt-0">
           <GLDataGrid
             data={mergedGlData}
             assessmentData={simState.assessmentData || {}}

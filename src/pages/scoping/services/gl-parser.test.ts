@@ -56,4 +56,25 @@ describe('gl-parser', () => {
     expect(result.rows).toHaveLength(1);
     expect(result.rows[0].glDesc).toBe('Kas di Bank');
   });
+
+  it('should parse hierarchical columns (Kode_Entity, Parent_Entity)', async () => {
+    const csvContent = `Kode_Entity,Parent_Entity,No_GL,GL_Desc,GL_Balance,FSLI,No_Urut
+A,,101,Kas Induk,1000,Kas,1
+D,A,201,Kas Anak,500,Kas,2`;
+
+    const file = new File([csvContent], 'test.csv', { type: 'text/csv' });
+    // @ts-expect-error - injecting content for mock
+    file.content = csvContent;
+
+    const result = await parseGLFile(file);
+
+    expect(result.success).toBe(true);
+    expect(result.rows).toHaveLength(2);
+    
+    expect(result.rows[0].entityCode).toBe('A');
+    expect(result.rows[0].parentEntityCode).toBe('');
+    
+    expect(result.rows[1].entityCode).toBe('D');
+    expect(result.rows[1].parentEntityCode).toBe('A');
+  });
 });

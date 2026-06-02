@@ -203,7 +203,7 @@ export function ScopingPage() {
                 activeSnap={activeSnapshot || null}
                 onSubmit={(data) => mutations.createSim.mutate({ ...data, glSnapshotId: activeSnapshot?.id })} 
                 isPending={mutations.createSim.isPending}
-                yearOptions={dynamicYears}
+                defaultYear={workingYear}
               />
             </div>
           </DialogContent>
@@ -235,11 +235,10 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
   const [isWorkflowOpen, setIsWorkflowOpen] = React.useState(false);
 
   const {
-    simState, setSimState, mergedGlData, omValue, pmValue, multiplier, benchmarkValue,
+    simState, setSimState, mergedGlData, entityHierarchy, selectedEntityCodes, setSelectedEntityCodes,
+    omValue, pmValue, multiplier, benchmarkValue,
     departments, applications, localAppMappings, isLocked, mutations, handlers, isDirty
   } = useScopingEditor(simulation);
-
-  const blocker = useUnsavedChanges(isDirty);
 
   const handleOwnerAcceptanceChange = async (noGL: string, acceptance: "Accepted" | "Rejected") => {
     if (isLocked) return;
@@ -327,6 +326,9 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
             <ScopingEditorContent 
               simState={simState}
               mergedGlData={mergedGlData}
+              entityHierarchy={entityHierarchy}
+              selectedEntityCodes={selectedEntityCodes}
+              onEntitySelectionChange={setSelectedEntityCodes}
               omValue={omValue}
               pmValue={pmValue}
               isLocked={isLocked}
@@ -364,8 +366,6 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
               />
           </DialogContent>
         </Dialog>
-
-        <UnsavedChangesDialog blocker={blocker} />
       </div>
     </AppLayout>
   );

@@ -438,6 +438,7 @@ export const GLDataGrid = React.memo(function GLDataGrid({
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     autoResetExpanded: false, // CRITICAL: Prevent collapse on update
+    autoResetPageIndex: false, // CRITICAL: Prevent state update on unmounted component
     getRowId: (row) => row.id, // Stable UUID from database
   });
 

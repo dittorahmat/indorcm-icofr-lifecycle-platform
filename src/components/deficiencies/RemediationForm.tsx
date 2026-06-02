@@ -12,7 +12,6 @@ import { ShieldCheck, Calendar, Lock } from 'lucide-react';
 import type { ActionPlan } from '@shared/types';
 
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
-import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 import { WorkflowPanel } from '../workflow/WorkflowPanel';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -53,7 +52,7 @@ export function RemediationForm({ isOpen, setIsOpen, actionPlan, onSubmit, isLoa
 
   // Track unsaved changes
   const isDirty = form.formState.isDirty;
-  const blocker = useUnsavedChanges(isOpen && isDirty);
+  useUnsavedChanges(isOpen && isDirty);
 
   const isWorkflowLocked = React.useMemo(() => {
     if (!actionPlan) return false;
@@ -225,7 +224,6 @@ export function RemediationForm({ isOpen, setIsOpen, actionPlan, onSubmit, isLoa
               )}
            </div>
         </div>
-        <UnsavedChangesDialog blocker={blocker} />
       </DialogContent>
     </Dialog>
   );

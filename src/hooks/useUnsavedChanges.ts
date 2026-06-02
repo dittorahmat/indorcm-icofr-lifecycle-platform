@@ -1,14 +1,16 @@
-import { useEffect, useCallback } from 'react';
-import { useBlocker } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useUnsavedChangesContext } from '@/context/UnsavedChangesContext';
 
 /**
  * Hook to warn users about unsaved changes before navigating away.
- * Handles both browser-level events (beforeunload) and internal routing (useBlocker).
+ * Syncs the local "dirty" state to the global UnsavedChangesContext.
+ * Handles browser-level events (beforeunload).
  * 
  * @param isDirty - Boolean flag indicating if there are unsaved changes
- * @returns React Router blocker object for internal navigation management
  */
 export function useUnsavedChanges(isDirty: boolean) {
+  const { setDirty, resetDirty } = useUnsavedChangesContext();
+
   // 1. External navigation guard (Refresh, Tab Close, Back/Forward Browser)
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -22,18 +24,13 @@ export function useUnsavedChanges(isDirty: boolean) {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [isDirty]);
 
-  // 2. Internal navigation guard (Sidebar, Links, Programmatic navigation)
-  // Memoize the blocker function to prevent React Router state issues
-  const blockerCallback = useCallback(
-    ({ currentLocation, nextLocation }: any) =>
-      isDirty && (
-        currentLocation.pathname !== nextLocation.pathname || 
-        currentLocation.search !== nextLocation.search
-      ),
-    [isDirty]
-  );
-
-  const blocker = useBlocker(blockerCallback);
-
-  return blocker;
+  // 2. Sync local dirty state to global context
+  useEffect(() => {
+    setDirty(isDirty);
+    
+    // Cleanup on unmount: mark as not dirty
+    return () => {
+      resetDirty();
+    };
+  }, [isDirty, setDirty, resetDirty]);
 }

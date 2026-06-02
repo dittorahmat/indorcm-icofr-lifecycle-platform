@@ -200,5 +200,11 @@
     "previous": "Sebelumnya",
     "next": "Berikutnya",
     "pageOf": "Halaman {{current}} dari {{total}}"
+  },
+  "filter": {
+    "entityLabel": "Filter Entitas",
+    "selectTitle": "Pilih Entitas",
+    "allEntities": "Semua Entitas",
+    "clearAll": "Bersihkan"
   }
 }

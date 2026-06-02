@@ -15,7 +15,12 @@ export { app };
 
 // Durable Object stub for Cloudflare template compatibility
 export class GlobalDurableObject {
-  constructor(public ctx: any, public env: any) {}
+  ctx: any;
+  env: any;
+  constructor(ctx: any, env: any) {
+    this.ctx = ctx;
+    this.env = env;
+  }
 
   async fetch(request: Request): Promise<Response> {
     return new Response('GlobalDurableObject stub', { status: 200 });

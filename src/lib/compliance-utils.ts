@@ -279,6 +279,7 @@ export const GL_COLUMN_MAPPING = {
   balance: ['GL_Balance', 'GLBalance', 'Balance', 'Amount', 'EndingBalance', 'Saldo'],
   fsliCode: ['Kode_FSLI', 'FSLICode', 'FSLI_Code'],
   entityCode: ['Kode_Entity', 'EntityCode', 'Entity_Code', 'Kode_Cabang'],
+  parentEntityCode: ['Parent_Entity', 'ParentEntity', 'Parent_Code', 'Induk_Entitas'],
   currency: ['Kode_Valuta', 'Currency', 'Valuta', 'Curr'],
   period: ['YMD', 'Date', 'Period', 'Tanggal'],
   // New Mappings for SK-5/2024 Template

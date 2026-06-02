@@ -12,13 +12,12 @@ interface ScopingSimulationFormProps {
   activeSnap: GLSnapshot | null;
   onSubmit: (data: any) => void;
   isPending: boolean;
-  yearOptions: string[];
+  defaultYear: string;
 }
 
-export function ScopingSimulationForm({ activeSnap, onSubmit, isPending, yearOptions }: ScopingSimulationFormProps) {
+export function ScopingSimulationForm({ activeSnap, onSubmit, isPending, defaultYear }: ScopingSimulationFormProps) {
   const { t } = useTranslation('scoping');
   const [name, setName] = React.useState("");
-  const [year, setYear] = React.useState<string>(new Date().getFullYear().toString());
   const [basis, setBasis] = React.useState<string>("");
   const [locations, setLocations] = React.useState(1);
 
@@ -39,14 +38,7 @@ export function ScopingSimulationForm({ activeSnap, onSubmit, isPending, yearOpt
         </div>
         <div className="space-y-2">
           <Label className="text-xs uppercase font-bold text-slate-500 tracking-wider">{t('form.year')}</Label>
-          <Select value={year} onValueChange={setYear}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {yearOptions.map(y => (
-                <SelectItem key={y} value={y}>{y}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Input value={defaultYear} readOnly className="bg-slate-100 font-bold text-slate-600 border-slate-200" />
         </div>
       </div>
       <div className="grid grid-cols-2 gap-4">
@@ -81,10 +73,10 @@ export function ScopingSimulationForm({ activeSnap, onSubmit, isPending, yearOpt
       </div>
       <Button 
         className="w-full mt-2" 
-        disabled={!name || !basis || !year || isPending} 
+        disabled={!name || !basis || isPending} 
         onClick={() => onSubmit({ 
           name, 
-          year: parseInt(year), 
+          year: parseInt(defaultYear), 
           basis, 
           omPercentage: defaultOm, 
           haircutPercentage: 25, 

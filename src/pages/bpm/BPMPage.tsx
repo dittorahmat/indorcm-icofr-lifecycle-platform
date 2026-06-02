@@ -203,7 +203,7 @@ export function BPMPage() {
     );
   }, [localAssertion, accountAssertion]);
 
-  const blocker = useUnsavedChanges(isAssertionDirty);
+  useUnsavedChanges(isAssertionDirty);
 
   const handleAssertionChange = (field: keyof AccountAssertion, value: string) => {
     setLocalAssertion(prev => ({ ...prev, [field]: value }));
@@ -697,7 +697,6 @@ export function BPMPage() {
             </div>
           </DialogContent>
         </Dialog>
-        <UnsavedChangesDialog blocker={blocker} />
 
         {selectedGLRow && (
           <CSAModal

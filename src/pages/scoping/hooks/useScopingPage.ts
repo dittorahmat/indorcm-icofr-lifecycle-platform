@@ -16,6 +16,7 @@ import {
   calculatePM, 
   identifySignificantAccounts 
 } from '../services/materiality-calc';
+import { buildEntityHierarchy, calculateRollupBalances } from '../utils/hierarchy-utils';
 
 export function useScopingPage() {
   const { t } = useTranslation(['scoping', 'common']);
@@ -120,6 +121,7 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
   const queryClient = useQueryClient();
   const [simState, setSimState] = React.useState(initialSimulation);
   const [glData, setGlData] = React.useState<GLRow[]>([]);
+  const [selectedEntityCodes, setSelectedEntityCodes] = React.useState<string[]>([]);
   const [localAppMappings, setLocalAppMappings] = React.useState<Record<string, string[]>>({});
   const [localDeptMappings, setLocalDeptMappings] = React.useState<Record<string, string[]>>({});
 
@@ -153,7 +155,12 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
 
   // Effects
   React.useEffect(() => {
-    if (snapshot) setGlData(snapshot.rows);
+    if (snapshot) {
+      setGlData(snapshot.rows);
+      // Default: select all entities
+      const allCodes = Array.from(new Set(snapshot.rows.map(r => r.entityCode || 'UNKNOWN')));
+      setSelectedEntityCodes(allCodes);
+    }
   }, [snapshot]);
 
   React.useEffect(() => {
@@ -179,24 +186,35 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
     }
   }, [initialSimulation]);
 
+  // Hierarchy and Filtering
+  const entityHierarchy = React.useMemo(() => {
+    const tree = buildEntityHierarchy(glData);
+    return tree;
+  }, [glData]);
+
+  const filteredGlData = React.useMemo(() => {
+    if (selectedEntityCodes.length === 0) return glData;
+    return glData.filter(row => selectedEntityCodes.includes(row.entityCode || 'UNKNOWN'));
+  }, [glData, selectedEntityCodes]);
+
   // Calculations
   const calculateValues = React.useMemo(() => {
-    if (glData.length === 0 || !snapshot) return { omValue: 0, pmValue: 0, multiplier: 1, benchmarkValue: 0 };
-    const benchmarkValue = calculateBenchmarkValue(glData, simState.basis);
-    const multiplier = getGroupMultiplier(simState.locationCount || 1);
+    if (filteredGlData.length === 0 || !snapshot) return { omValue: 0, pmValue: 0, multiplier: 1, benchmarkValue: 0 };
+    const benchmarkValue = calculateBenchmarkValue(filteredGlData, simState.basis);
+    const multiplier = 1; // getGroupMultiplier(simState.locationCount || 1) - DEFERRED
     const omValue = calculateOM(benchmarkValue, simState.omPercentage, multiplier);
     const pmValue = calculatePM(omValue, simState.haircutPercentage);
     return { omValue, pmValue, multiplier, benchmarkValue };
-  }, [glData, snapshot, simState.basis, simState.omPercentage, simState.haircutPercentage, simState.locationCount]);
+  }, [filteredGlData, snapshot, simState.basis, simState.omPercentage, simState.haircutPercentage]);
 
   const { omValue, pmValue, multiplier, benchmarkValue } = calculateValues;
 
   const mergedGlData = React.useMemo(() => {
-    return glData.map(row => ({
+    return filteredGlData.map(row => ({
       ...row,
       assignedDepartmentIds: localDeptMappings[row.noGL] || []
     }));
-  }, [glData, localDeptMappings]);
+  }, [filteredGlData, localDeptMappings]);
 
   const significantAccounts = React.useMemo(() => {
     return identifySignificantAccounts({
@@ -283,23 +301,13 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
     }
   });
 
-  const submitSimMutation = useMutation({
-    mutationFn: () => 
-      api<MaterialitySimulation>(`/api/simulations/${simState.id}/submit`, { 
-        method: 'POST',
-        body: JSON.stringify({ ...simState, omValue, pmValue, significantAccounts })
-      }),
-    onSuccess: (updated) => {
-      queryClient.invalidateQueries();
-      setSimState(updated);
-      toast.success(t('intake.notifications.submitted'));
-    }
-  });
-
   return {
     simState,
     setSimState,
     mergedGlData,
+    entityHierarchy,
+    selectedEntityCodes,
+    setSelectedEntityCodes,
     omValue,
     pmValue,
     multiplier,

@@ -200,5 +200,11 @@
     "previous": "Previous",
     "next": "Next",
     "pageOf": "Page {{current}} of {{total}}"
+  },
+  "filter": {
+    "entityLabel": "Entity Filter",
+    "selectTitle": "Select Entities",
+    "allEntities": "All Entities",
+    "clearAll": "Clear All"
   }
 }

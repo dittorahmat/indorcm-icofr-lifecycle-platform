@@ -21,7 +21,6 @@ import { useCSA } from '@/hooks/useCSA';
 import { CSAList } from './CSAList';
 import { CSAForm } from './CSAForm';
 import { CSADiagramView } from './CSADiagramView';
-import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 
 // --- Simplified Read-only Nodes ---
@@ -149,7 +148,7 @@ export function CSATabContent({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isDirty = form.formState.isDirty && view === 'form';
-  const blocker = useUnsavedChanges(isDirty);
+  useUnsavedChanges(isDirty);
 
   const handlePrint = (layout: 'detailed' | 'summary') => {
     setPrintLayout(layout);
@@ -284,7 +283,6 @@ export function CSATabContent({
           <CSADiagramView diagram={diagram} nodeTypes={nodeTypes} />
         </ResizablePanel>
       </ResizablePanelGroup>
-      <UnsavedChangesDialog blocker={blocker} />
     </div>
   );
 }

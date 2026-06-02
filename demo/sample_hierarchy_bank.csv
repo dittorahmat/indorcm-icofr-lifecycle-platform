@@ -1,0 +1,9 @@
+YMD;Kode_Entity;Parent_Entity;No_GL;GL_Desc;Kode_Valuta;GL_Balance;Kode_FSLI;FSLI;Kategori;Sub_Kategori;FSLI_Balance;No_Urut
+2023-12-31;HOLDING;;1000-001;Giro BI Holding;IDR;1500000000;01.02.00;Penempatan pada Bank Indonesia;Neraca;Aset;1500000000;1
+2023-12-31;SUBSIDIARY_A;HOLDING;1000-001;Giro BI Sub A;IDR;800000000;01.02.00;Penempatan pada Bank Indonesia;Neraca;Aset;800000000;2
+2023-12-31;BRANCH_X;SUBSIDIARY_A;1000-001;Giro BI Branch X;IDR;200000000;01.02.00;Penempatan pada Bank Indonesia;Neraca;Aset;200000000;3
+2023-12-31;BRANCH_Y;SUBSIDIARY_A;1000-001;Giro BI Branch Y;IDR;300000000;01.02.00;Penempatan pada Bank Indonesia;Neraca;Aset;300000000;4
+2023-12-31;SUBSIDIARY_B;HOLDING;1000-001;Giro BI Sub B;IDR;500000000;01.02.00;Penempatan pada Bank Indonesia;Neraca;Aset;500000000;5
+2023-12-31;HOLDING;;2000-050;Tabungan Masyarakat;IDR;2000000000;02.01.00;Dana Pihak Ketiga;Neraca;Liabilitas;2000000000;6
+2023-12-31;SUBSIDIARY_A;HOLDING;2000-050;Tabungan Sub A;IDR;1000000000;02.01.00;Dana Pihak Ketiga;Neraca;Liabilitas;1000000000;7
+2023-12-31;BRANCH_X;SUBSIDIARY_A;2000-050;Tabungan Branch X;IDR;400000000;02.01.00;Dana Pihak Ketiga;Neraca;Liabilitas;400000000;8

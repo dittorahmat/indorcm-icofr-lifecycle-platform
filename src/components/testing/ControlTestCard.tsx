@@ -23,7 +23,7 @@ import { promptBiometricAuth } from '@/lib/forensic-utils';
 import { ControlHistory } from './ControlHistory';
 import { TODSixPillarForm } from './TODSixPillarForm';
 import { RegulatorySamplingTable } from './RegulatorySamplingTable';
-import { useBlocker } from 'react-router-dom';
+import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 
 import { testSchema, TestFormValues } from './test-schema';
@@ -64,10 +64,7 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
   });
 
   const { isDirty } = form.formState;
-  const blocker = useBlocker(
-    ({ currentLocation, nextLocation }) =>
-      isDirty && currentLocation.pathname !== nextLocation.pathname
-  );
+  useUnsavedChanges(isDirty);
 
   const suggestion = getSuggestedSampleRange(control.frequency as any, control.riskRating as any, control.nature as any);
 
@@ -471,8 +468,6 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
       <div className="lg:col-span-1">
         <ControlHistory history={history} />
       </div>
-      
-      <UnsavedChangesDialog blocker={blocker as any} />
     </div>
   );
 }

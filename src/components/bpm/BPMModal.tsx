@@ -25,7 +25,6 @@ import { api } from '@/lib/api-client';
 import { Control, User, TransactionDetail, BPMProcess } from '@shared/types';
 import { useTranslation } from 'react-i18next';
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
-import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 import { WorkflowPanel } from '../workflow/WorkflowPanel';
 import { useUnsavedChangesContext } from '@/context/UnsavedChangesContext';
 
@@ -77,7 +76,7 @@ export function BPMModal({
   }, [isOpen, scheduleId]);
 
   // Safety guard for modal closing
-  const blocker = useUnsavedChanges(isOpen && (selectedSamples.length > 0 && activeTab === 'sampling' || globalDirty));
+  useUnsavedChanges(isOpen && (selectedSamples.length > 0 && activeTab === 'sampling' || globalDirty));
 
   const { data: currentUser } = useQuery({
     queryKey: ['auth-me'],
@@ -233,7 +232,6 @@ export function BPMModal({
           </Tabs>
 
         </div>
-        <UnsavedChangesDialog blocker={blocker} />
       </DialogContent>
     </Dialog>
   );

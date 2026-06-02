@@ -130,7 +130,7 @@ export function ControlEditor({ isOpen, setIsOpen, control }: ControlEditorProps
   });
 
   const isDirty = form.formState.isDirty;
-  const blocker = useUnsavedChanges(isOpen && isDirty);
+  useUnsavedChanges(isOpen && isDirty);
 
   const mutation = useMutation({
     mutationFn: (data: ControlFormValues) => {
@@ -265,7 +265,6 @@ export function ControlEditor({ isOpen, setIsOpen, control }: ControlEditorProps
           </form>
         </Form>
         </motion.div>
-        <UnsavedChangesDialog blocker={blocker} />
       </SheetContent>
     </Sheet>
   );

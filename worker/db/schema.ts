@@ -81,6 +81,15 @@ export const organization = pgTable("organization", {
     entityCode: text("entityCode"), // Kode_Entity dari CSV (misal: 0101)
 });
 
+export const businessEntities = pgTable("business_entities", {
+	id: text("id").primaryKey(),
+	organizationId: text("organization_id").notNull().references(() => organization.id),
+	code: text("code").notNull(),
+	name: text("name").notNull(),
+	parentId: text("parent_id").references((): any => businessEntities.id), // Self-referencing
+	levelType: text("level_type"), // Holding, Subsidiary, Branch
+});
+
 export const member = pgTable("member", {
 	id: text("id").primaryKey(),
 	organizationId: text("organization_id").notNull().references(() => organization.id),
@@ -116,6 +125,8 @@ export const glRows = pgTable("gl_rows", {
 	organizationId: text("organization_id").notNull().references(() => organization.id),
 	ymd: text("ymd"),
 	entityCode: text("entity_code"),
+	parentEntityCode: text("parent_entity_code"),
+	entityId: text("entity_id").references(() => businessEntities.id),
 	noGL: text("no_gl"),
 	glDesc: text("gl_desc"),
 	currency: text("currency"),
@@ -786,10 +797,23 @@ export const userRelations = relations(user, ({ many }) => ({
 export const organizationRelations = relations(organization, ({ many }) => ({
 	members: many(member),
 	glSnapshots: many(glSnapshots),
+    businessEntities: many(businessEntities),
+}));
+
+export const businessEntityRelations = relations(businessEntities, ({ one, many }) => ({
+	organization: one(organization, { fields: [businessEntities.organizationId], references: [organization.id] }),
+	parent: one(businessEntities, { fields: [businessEntities.parentId], references: [businessEntities.id], relationName: "subEntities" }),
+	children: many(businessEntities, { relationName: "subEntities" }),
+	glRows: many(glRows),
 }));
 
 export const glSnapshotRelations = relations(glSnapshots, ({ many }) => ({
 	rows: many(glRows),
+}));
+
+export const glRowRelations = relations(glRows, ({ one }) => ({
+	snapshot: one(glSnapshots, { fields: [glRows.snapshotId], references: [glSnapshots.id] }),
+	businessEntity: one(businessEntities, { fields: [glRows.entityId], references: [businessEntities.id] }),
 }));
 
 export const bpmProcessRelations = relations(bpmProcesses, ({ many }) => ({

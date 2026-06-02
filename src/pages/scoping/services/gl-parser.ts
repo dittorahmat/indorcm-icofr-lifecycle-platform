@@ -72,6 +72,8 @@ export async function parseGLFile(file: File): Promise<ParseResult> {
             snapshotId: 'temp',
             ymd: String(r[mapping.period] || ''), 
             entityCode: String(r[mapping.entityCode] || ''),
+            parentEntityCode: String(r[mapping.parentEntityCode] || ''),
+            entityId: null,
             noGL: String(r[mapping.accountCode] || ''), 
             glDesc: String(r[mapping.accountName] || ''),
             currency: String(r[mapping.currency] || 'IDR'), 

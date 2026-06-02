@@ -129,24 +129,14 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
     }
   }, [data, open, form]);
 
-  const blocker = useUnsavedChanges(form.formState.isDirty && open);
+  useUnsavedChanges(form.formState.isDirty && open);
 
   const handleSubmit = (values: FormValues) => {
     onSave(values);
   };
 
   return (
-    <Dialog open={open} onOpenChange={(val) => {
-       if (!val && form.formState.isDirty) {
-         // Blocker will handle this via UnsavedChangesDialog usually
-         // but we respect the Dialog's own close behavior
-         if (confirm(t('matrix.properties.warnings.unsaved_changes'))) {
-           onOpenChange(false);
-         }
-       } else {
-         onOpenChange(val);
-       }
-    }}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0 overflow-hidden border-slate-300 shadow-2xl">
         <DialogHeader className="p-6 pb-2 bg-slate-50 border-b border-slate-200">
           <div className="flex items-center gap-3">

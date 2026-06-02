@@ -26,6 +26,9 @@ export type NewDepartment = InferInsertModel<typeof schema.departments>;
 export type Organization = InferSelectModel<typeof schema.organization>;
 export type NewOrganization = InferInsertModel<typeof schema.organization>;
 
+export type BusinessEntity = InferSelectModel<typeof schema.businessEntities>;
+export type NewBusinessEntity = InferInsertModel<typeof schema.businessEntities>;
+
 export type QualitativeLevel = "Low" | "Medium" | "High";
 
 export interface QualitativeEntry {

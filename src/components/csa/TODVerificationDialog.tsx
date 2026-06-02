@@ -33,7 +33,6 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
-import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
@@ -193,7 +192,7 @@ export function TODVerificationDialog({
     }
   }, [initialData, rcmMapping, open, form]);
 
-  const blocker = useUnsavedChanges(isDirty && open);
+  useUnsavedChanges(isDirty && open);
 
   const onSubmit: SubmitHandler<CombinedFormValues> = (values) => {
     onSave(values);
@@ -585,7 +584,6 @@ export function TODVerificationDialog({
           </Form>
         </DialogContent>
       </Dialog>
-      <UnsavedChangesDialog blocker={blocker} />
 
       <AlertDialog open={isConfirmDiscardOpen} onOpenChange={setIsConfirmDiscardOpen}>
         <AlertDialogContent>

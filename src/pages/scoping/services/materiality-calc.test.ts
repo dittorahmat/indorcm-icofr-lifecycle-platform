@@ -29,9 +29,9 @@ describe('materiality-calc service', () => {
 
   describe('calculateBenchmarkValue', () => {
     const mockData: GLRow[] = [
-      { noGL: '1', glDesc: 'A', balance: 1000, fsliName: 'Revenue', id: '1', organizationId: 'o', snapshotId: 's', ymd: 'y', entityCode: 'e', currency: 'IDR', fsliCode: 'f', category: 'c', subKategori: 'sk', noUrut: 1, assignedDepartmentIds: [], ownerAcceptance: null, mappingConfidence: 1.0 },
-      { noGL: '2', glDesc: 'B', balance: -500, fsliName: 'Revenue', id: '2', organizationId: 'o', snapshotId: 's', ymd: 'y', entityCode: 'e', currency: 'IDR', fsliCode: 'f', category: 'c', subKategori: 'sk', noUrut: 2, assignedDepartmentIds: [], ownerAcceptance: null, mappingConfidence: 1.0 },
-      { noGL: '3', glDesc: 'C', balance: 200, fsliName: 'Asset', id: '3', organizationId: 'o', snapshotId: 's', ymd: 'y', entityCode: 'e', currency: 'IDR', fsliCode: 'f', category: 'c', subKategori: 'sk', noUrut: 3, assignedDepartmentIds: [], ownerAcceptance: null, mappingConfidence: 1.0 },
+      { noGL: '1', glDesc: 'A', balance: 1000, fsliName: 'Revenue', id: '1', organizationId: 'o', snapshotId: 's', ymd: 'y', entityCode: 'e', parentEntityCode: null, entityId: null, currency: 'IDR', fsliCode: 'f', category: 'c', subKategori: 'sk', noUrut: 1, assignedDepartmentIds: [], ownerAcceptance: null, mappingConfidence: 1.0 },
+      { noGL: '2', glDesc: 'B', balance: -500, fsliName: 'Revenue', id: '2', organizationId: 'o', snapshotId: 's', ymd: 'y', entityCode: 'e', parentEntityCode: null, entityId: null, currency: 'IDR', fsliCode: 'f', category: 'c', subKategori: 'sk', noUrut: 2, assignedDepartmentIds: [], ownerAcceptance: null, mappingConfidence: 1.0 },
+      { noGL: '3', glDesc: 'C', balance: 200, fsliName: 'Asset', id: '3', organizationId: 'o', snapshotId: 's', ymd: 'y', entityCode: 'e', parentEntityCode: null, entityId: null, currency: 'IDR', fsliCode: 'f', category: 'c', subKategori: 'sk', noUrut: 3, assignedDepartmentIds: [], ownerAcceptance: null, mappingConfidence: 1.0 },
     ];
 
     it('should sum absolute values for the selected basis', () => {

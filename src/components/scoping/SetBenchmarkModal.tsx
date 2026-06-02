@@ -12,14 +12,11 @@ import { Badge } from '@/components/ui/badge';
 import { GLSnapshot } from '@shared/types';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
-import { toast } from 'sonner';
-import { Calculator, Save, AlertCircle, CheckCircle2, Loader2, AlertTriangle } from 'lucide-react';
+import { Calculator, Save, AlertCircle, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
-
 import { useTranslation } from 'react-i18next';
 import { useNotification } from '@/hooks/useNotification';
-import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 
 interface SetBenchmarkModalProps {
   snapshot: GLSnapshot | null;
@@ -54,15 +51,10 @@ export function SetBenchmarkModal({ snapshot: initialSnapshot, isOpen, onOpenCha
     return !initial.every(name => selectedFsliNames.includes(name));
   }, [snapshot, selectedFsliNames]);
 
-  const blocker = useUnsavedChanges(isDirty && isOpen);
+  // Sync with global guard
+  useUnsavedChanges(isDirty && isOpen);
 
   const handleOpenChange = (open: boolean) => {
-    if (!open && isDirty) {
-      if (confirm(t('benchmarkModal.unsavedConfirm'))) {
-        onOpenChange(false);
-      }
-      return;
-    }
     onOpenChange(open);
   };
 
@@ -89,11 +81,9 @@ export function SetBenchmarkModal({ snapshot: initialSnapshot, isOpen, onOpenCha
         minNoUrut: data.minNoUrut === Infinity ? 999999 : data.minNoUrut 
       }))
       .sort((a, b) => {
-        // Primary sort: minNoUrut (handles 0, 1, 2... correctly)
         if (a.minNoUrut !== b.minNoUrut) {
           return a.minNoUrut - b.minNoUrut;
         }
-        // Secondary sort: Alphabetical (backup)
         return a.name.localeCompare(b.name);
       });
   }, [snapshot]);
@@ -128,31 +118,31 @@ export function SetBenchmarkModal({ snapshot: initialSnapshot, isOpen, onOpenCha
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-xl font-bold">
-            <Calculator className="h-6 w-6 text-indigo-600" />
+      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col rounded-3xl overflow-hidden border-none shadow-2xl p-0">
+        <DialogHeader className="p-6 bg-slate-900 text-white">
+          <DialogTitle className="flex items-center gap-3 text-2xl font-black uppercase tracking-tight">
+            <Calculator className="h-6 w-6 text-indigo-400" />
             {t('benchmarkModal.title')}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-slate-400 font-medium">
             {t('benchmarkModal.description')}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-4 flex-1 overflow-hidden">
-          <div className="md:col-span-2 overflow-auto border rounded-xl shadow-inner bg-slate-50/30">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6 flex-1 overflow-hidden bg-slate-50/50">
+          <div className="md:col-span-2 overflow-auto border border-slate-200 rounded-2xl shadow-sm bg-white">
             {isLoading ? (
-              <div className="h-full w-full flex flex-col items-center justify-center gap-2 text-muted-foreground">
+              <div className="h-full w-full flex flex-col items-center justify-center gap-2 text-muted-foreground py-20">
                 <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
                 <p className="text-sm font-medium">{t('benchmarkModal.loading')}</p>
               </div>
             ) : (
               <Table>
-                <TableHeader className="sticky top-0 bg-white z-10 shadow-sm border-b">
+                <TableHeader className="sticky top-0 bg-slate-50 z-10 border-b border-slate-200 shadow-sm">
                   <TableRow>
-                    <TableHead className="w-[50px] text-center">{t('benchmarkModal.colSelect')}</TableHead>
-                    <TableHead>{t('benchmarkModal.colFsli')}</TableHead>
-                    <TableHead className="text-right">{t('benchmarkModal.colBalance')}</TableHead>
+                    <TableHead className="w-[60px] text-center font-black uppercase text-[10px] tracking-widest">{t('benchmarkModal.colSelect')}</TableHead>
+                    <TableHead className="font-black uppercase text-[10px] tracking-widest">{t('benchmarkModal.colFsli')}</TableHead>
+                    <TableHead className="text-right font-black uppercase text-[10px] tracking-widest">{t('benchmarkModal.colBalance')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -160,7 +150,7 @@ export function SetBenchmarkModal({ snapshot: initialSnapshot, isOpen, onOpenCha
                     <TableRow 
                       key={item.name} 
                       className={cn(
-                        "hover:bg-slate-100/50 transition-colors cursor-pointer",
+                        "hover:bg-indigo-50/30 transition-colors cursor-pointer group",
                         selectedFsliNames.includes(item.name) && "bg-indigo-50/50"
                       )}
                       onClick={() => handleToggle(item.name)}
@@ -169,11 +159,11 @@ export function SetBenchmarkModal({ snapshot: initialSnapshot, isOpen, onOpenCha
                         <Checkbox 
                           checked={selectedFsliNames.includes(item.name)}
                           onCheckedChange={() => handleToggle(item.name)}
-                          className="data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
+                          className="rounded-md border-slate-300 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
                         />
                       </TableCell>
-                      <TableCell className="text-xs font-bold text-slate-700">{item.name}</TableCell>
-                      <TableCell className="text-right font-mono text-xs text-slate-500">
+                      <TableCell className="text-xs font-bold text-slate-700 uppercase tracking-tight">{item.name}</TableCell>
+                      <TableCell className="text-right font-mono text-xs text-slate-600 font-medium">
                         Rp {item.total.toLocaleString('id-ID')}
                       </TableCell>
                     </TableRow>
@@ -184,34 +174,34 @@ export function SetBenchmarkModal({ snapshot: initialSnapshot, isOpen, onOpenCha
           </div>
 
           <div className="space-y-6">
-            <div className="p-4 rounded-xl bg-white border border-slate-200 shadow-sm space-y-4">
-              <h4 className="text-xs font-bold uppercase tracking-widest text-slate-400">{t('benchmarkModal.summaryTitle')}</h4>
+            <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-md space-y-4">
+              <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t('benchmarkModal.summaryTitle')}</h4>
               <div className="space-y-1">
-                <p className="text-xs text-slate-500 font-medium">{t('benchmarkModal.selectedCount')}:</p>
-                <p className="text-2xl font-bold text-indigo-600">{selectedFsliNames.length}</p>
+                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{t('benchmarkModal.selectedCount')}</p>
+                <p className="text-3xl font-black text-indigo-600 leading-none">{selectedFsliNames.length}</p>
               </div>
-              <Separator />
+              <div className="h-px bg-slate-100" />
               <div className="space-y-1">
-                <p className="text-xs text-slate-500 font-medium">{t('benchmarkModal.totalValue')}:</p>
-                <p className="text-lg font-mono font-bold text-slate-800">
+                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{t('benchmarkModal.totalValue')}</p>
+                <p className="text-xl font-mono font-black text-slate-900 tracking-tighter">
                   Rp {totalSelectedValue.toLocaleString('id-ID')}
                 </p>
               </div>
             </div>
 
-            <div className="p-4 rounded-xl bg-indigo-50 border border-indigo-100 flex gap-3 shadow-sm">
+            <div className="p-4 rounded-2xl bg-indigo-50 border border-indigo-100 flex gap-3 shadow-inner">
               <AlertCircle className="h-5 w-5 text-indigo-500 shrink-0" />
-              <p className="text-xs text-indigo-700 leading-relaxed italic">
+              <p className="text-[11px] text-indigo-700 leading-relaxed font-medium">
                 {t('benchmarkModal.tip')}
               </p>
             </div>
 
             {selectedFsliNames.length > 0 && (
-              <div className="space-y-2">
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('benchmarkModal.selectedList')}:</p>
+              <div className="space-y-3">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{t('benchmarkModal.selectedList')}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {selectedFsliNames.map(name => (
-                    <Badge key={name} variant="secondary" className="text-xs bg-indigo-100 text-indigo-700 border-indigo-200">
+                    <Badge key={name} variant="secondary" className="text-[10px] font-bold bg-indigo-100/50 text-indigo-700 border-indigo-200 py-0.5 px-2.5 rounded-full">
                       {name}
                     </Badge>
                   ))}
@@ -221,20 +211,18 @@ export function SetBenchmarkModal({ snapshot: initialSnapshot, isOpen, onOpenCha
           </div>
         </div>
 
-        <DialogFooter className="border-t pt-4">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>{t('benchmarkModal.cancel')}</Button>
+        <DialogFooter className="p-6 bg-white border-t border-slate-100 flex gap-3">
+          <Button variant="ghost" onClick={() => onOpenChange(false)} className="rounded-xl font-bold text-xs uppercase tracking-widest text-slate-400 hover:text-slate-600 hover:bg-slate-50">{t('benchmarkModal.cancel')}</Button>
           <Button 
-            className="bg-indigo-600 hover:bg-indigo-700 gap-2 h-10 px-6 font-bold shadow-lg shadow-indigo-200"
+            className="bg-indigo-600 hover:bg-indigo-700 gap-2 h-12 px-10 rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-indigo-100 text-xs transition-all active:scale-95"
             onClick={() => mappingMutation.mutate(selectedFsliNames)}
             disabled={mappingMutation.isPending || selectedFsliNames.length === 0}
           >
-            <Save className="h-4 w-4" /> {t('benchmarkModal.save')}
+            {mappingMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+            {t('benchmarkModal.save')}
           </Button>
         </DialogFooter>
-        <UnsavedChangesDialog blocker={blocker} />
       </DialogContent>
     </Dialog>
   );
 }
-
-const Separator = () => <div className="h-px bg-slate-100 w-full" />;

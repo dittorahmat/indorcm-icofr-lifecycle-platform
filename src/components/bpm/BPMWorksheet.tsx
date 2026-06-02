@@ -169,7 +169,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
            bpmCode !== (bpmProcess?.bpmCode || "");
   }, [standardProcedure, bpmCode, bpmProcess]);
 
-  const metadataBlocker = useUnsavedChanges(isMetadataDirty && isProcedureOpen);
+  useUnsavedChanges(isMetadataDirty && isProcedureOpen);
 
   React.useEffect(() => {
     if (bpmProcess) {

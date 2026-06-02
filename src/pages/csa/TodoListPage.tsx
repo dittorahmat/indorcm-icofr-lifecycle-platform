@@ -87,7 +87,7 @@ export function TodoListPage() {
   const [isDirty, setIsDirty] = useState(false);
   const [isRescheduleDirty, setIsRescheduleDirty] = useState(false);
   
-  const blocker = useUnsavedChanges((isDirty && isDialogOpen) || (isRescheduleDirty && isRescheduleOpen));
+  useUnsavedChanges((isDirty && isDialogOpen) || (isRescheduleDirty && isRescheduleOpen));
 
   const { data: schedules } = useQuery({
     queryKey: ['csa-schedules'],
@@ -515,8 +515,6 @@ export function TodoListPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-
-        <UnsavedChangesDialog blocker={blocker} />
       </div>
     </AppLayout>
   );

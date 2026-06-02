@@ -3,6 +3,7 @@ import { getDb } from '../db';
 import * as schema from '../db/schema';
 import { eq, and } from 'drizzle-orm';
 import { HonoEnv } from '../app';
+import { ok } from '../lib/utils';
 
 const migration = new Hono<HonoEnv>();
 
@@ -30,23 +31,34 @@ migration.post('/migration/finalize', async (c) => {
         isActive: true,
       });
 
-      // Insert GL Rows
-      const glRows = tbData.map((row: any, idx: number) => ({
+      // Prepare GL Rows for Batch Insert
+      const glRowsToInsert = tbData.map((row: any, idx: number) => ({
         id: generateId(),
         snapshotId: snapshotId,
         organizationId: orgId,
+        ymd: row.ymd || String(year),
+        entityCode: row.entityCode,
+        parentEntityCode: row.parentEntityCode,
+        entityId: null,
         noGL: row.accountCode,
         glDesc: row.accountName,
-        balance: parseFloat(row.balance),
-        entityCode: row.entityCode,
+        currency: row.currency || 'IDR',
+        balance: parseFloat(row.balance) || 0,
+        fsliCode: row.fsliCode,
         fsliName: row.suggestedFsli,
-        noUrut: row.noUrut || (idx + 1), // Use file value if available, else fallback
-        mappingConfidence: row.confidence
+        category: row.category,
+        subKategori: row.subKategori,
+        noUrut: row.noUrut || (idx + 1),
+        mappingConfidence: row.confidence,
+        assignedDepartmentIds: [],
+        ownerAcceptance: null
       }));
 
-      // Batch insert if needed, but for small demo data it's fine
-      for (const row of glRows) {
-          await db.insert(schema.glRows).values(row);
+      // Batch insert rows (chunks of 100)
+      const batchSize = 100;
+      for (let i = 0; i < glRowsToInsert.length; i += batchSize) {
+        const batch = glRowsToInsert.slice(i, i + batchSize);
+        await db.insert(schema.glRows).values(batch);
       }
 
       // Create Approved Materiality Simulation
@@ -60,13 +72,12 @@ migration.post('/migration/finalize', async (c) => {
         workflowStatus: 'Approved',
         createdBy: userId,
         createdAt: new Date(),
-        significantAccounts: [] // ensure this field exists
+        significantAccounts: []
       });
     }
 
     // 2. Process RCM Data
     if (rcmData && rcmData.length > 0) {
-      // Group by Process
       const processes = Array.from(new Set(rcmData.map((r: any) => r.processName)));
       
       for (const procName of processes) {
@@ -77,9 +88,8 @@ migration.post('/migration/finalize', async (c) => {
         await db.insert(schema.bpmProcesses).values({
           id: processId,
           organizationId: orgId,
+          noGL: procRows[0].accountCode || "",
           name: procName as string,
-          noGL: procRows[0].accountCode || "", // Link to first found account if any
-          fsliName: procRows[0].suggestedFsli || "",
           year: parseInt(year),
           workflowStatus: 'Draft',
           createdAt: new Date(),
@@ -93,32 +103,34 @@ migration.post('/migration/finalize', async (c) => {
           subProcess: procName as string,
           year: parseInt(year),
           nodes: [],
-          edges: []
+          edges: [],
+          createdAt: new Date(),
         });
 
-        // Group by Risk within Process
         const risks = Array.from(new Set(procRows.map((r: any) => r.riskDescription)));
         
         for (const riskDesc of risks) {
           const riskId = `risk_${generateId()}`;
           const riskRows = procRows.filter((r: any) => r.riskDescription === riskDesc);
           
-          // Create Risk
           await db.insert(schema.rcms).values({
             id: riskId,
             organizationId: orgId,
-            bpmProcessId: processId,
+            process: procName as string,
+            subProcess: procName as string,
+            year: parseInt(year),
             riskDescription: riskDesc as string,
             status: 'Active'
           });
 
-          // Create Controls
           for (const row of riskRows) {
             const controlId = `ctrl_${generateId()}`;
             await db.insert(schema.controls).values({
               id: controlId,
               organizationId: orgId,
               bpmProcessId: processId,
+              year: parseInt(year),
+              code: `CTRL-${generateId().substring(0, 8).toUpperCase()}`,
               name: row.controlName || "Migrated Control",
               description: row.controlDescription,
               nature: row.nature,
@@ -129,7 +141,6 @@ migration.post('/migration/finalize', async (c) => {
               aiGuessedFields: row.guessedFields || []
             });
 
-            // Link RCM to Control
             await db.insert(schema.rcmControls).values({
               id: generateId(),
               organizationId: orgId,
@@ -141,7 +152,7 @@ migration.post('/migration/finalize', async (c) => {
       }
     }
 
-    return c.json({ success: true });
+    return ok(c, { success: true });
   } catch (err: any) {
     console.error('[MIGRATION ERROR]', err);
     return c.json({ success: false, error: err.message }, 500);
