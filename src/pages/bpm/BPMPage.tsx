@@ -294,10 +294,10 @@ export function BPMPage() {
   }, [selectedGLRow, activeSim, currentUser]);
 
   const { data: bpmProcesses, isLoading: bpmLoading } = useQuery({
-    queryKey: ['bpm-processes', selectedAccountKey],
+    queryKey: ['bpm-processes', selectedAccountKey, viewYear],
     queryFn: () => {
       const noGL = selectedAccountKey.split(' ||| ')[0];
-      return api<{ items: BPMProcess[] }>(`/api/bpm-processes?noGL=${noGL}`);
+      return api<{ items: BPMProcess[] }>(`/api/bpm-processes?noGL=${noGL}&year=${viewYear}`);
     },
     enabled: !!selectedAccountKey
   });

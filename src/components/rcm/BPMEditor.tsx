@@ -120,13 +120,52 @@ export function BPMEditor({ diagramId, subProcess, workingYear }: BPMEditorProps
   });
 
   const { data: bpmProcess } = useQuery({
-    queryKey: ['bpm-processes', subProcess],
+    queryKey: ['bpm-processes', subProcess, workingYear],
     queryFn: async () => {
       const res = await api<{ items: BPMProcess[] }>('/api/bpm-processes');
-      return res.items.find(p => p.name === subProcess);
+      return res.items.find(p => p.name === subProcess && p.year === parseInt(workingYear));
     },
     enabled: !!subProcess
   });
+
+  // Fetch matrix data for the dynamic backlog
+  const { data: matrixData } = useQuery({
+    queryKey: ['rcm-matrix-tlc', bpmProcess?.id, workingYear],
+    queryFn: async () => {
+      let url = `/api/rcm-matrix/tlc?year=${workingYear}`;
+      if (bpmProcess?.id) url += `&bpmProcessId=${bpmProcess.id}`;
+      return api<{ items: any[] }>(url);
+    },
+    enabled: !!bpmProcess?.id && !!workingYear
+  });
+
+  // Calculate unmapped controls by checking which matrix items are NOT in any node's regulatoryPairs
+  const unmappedControls = useMemo(() => {
+    if (!matrixData?.items) return [];
+    
+    const mappedRiskIds = new Set<string>();
+    nodes.forEach(node => {
+      const nodePairs = node.data?.regulatoryPairs || 
+                       (node.data?.regulatoryData ? [node.data.regulatoryData] : []);
+      nodePairs.forEach((pair: any) => {
+        if (pair.riskId) mappedRiskIds.add(pair.riskId);
+      });
+      
+      // Legacy support check
+      if (node.data?.risks && !node.data?.regulatoryPairs && !node.data?.regulatoryData) {
+         node.data.risks.forEach((r: any) => mappedRiskIds.add(r.rcmId));
+      }
+    });
+
+    const filtered = matrixData.items.filter(item => !mappedRiskIds.has(item.rcmId || item.mappingId?.split(':')[0] || item.riskId || item.id));
+    console.log("[BPMEditor] unmappedControls calculated:", {
+       matrixItemsCount: matrixData.items.length,
+       mappedRiskIds: Array.from(mappedRiskIds),
+       unmappedCount: filtered.length,
+       bpmProcessId: bpmProcess?.id
+    });
+    return filtered;
+  }, [matrixData, nodes, bpmProcess]);
 
   const isWorkflowLocked = React.useMemo(() => {
     if (!bpmProcess) return false;
@@ -359,6 +398,76 @@ export function BPMEditor({ diagramId, subProcess, workingYear }: BPMEditorProps
     if (deleted.length > 0) toast.info(`Deleted ${deleted.length} connection(s)`);
   }, []);
 
+  const onDragOver = useCallback((event: React.DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+  }, []);
+
+  const onDrop = useCallback((event: React.DragEvent) => {
+    event.preventDefault();
+
+    const type = event.dataTransfer.getData('application/reactflow');
+    if (typeof type === 'undefined' || !type || !rfInstance) {
+      return;
+    }
+
+    const reactFlowBounds = (event.target as Element).closest('.react-flow')?.getBoundingClientRect();
+    if (!reactFlowBounds) return;
+
+    const position = rfInstance.project({
+      x: event.clientX - reactFlowBounds.left,
+      y: event.clientY - reactFlowBounds.top,
+    });
+
+    try {
+      const parsedData = JSON.parse(type);
+      const newNodeId = `node_${Date.now()}`;
+      
+      const newNode = {
+        id: newNodeId,
+        type: 'activity',
+        position,
+        data: { 
+          label: parsedData.mappedControlName || parsedData.riskDescription || t('bpm:editor.nodes.activity'),
+          role: t('bpm:editor.roles.default'),
+          regulatoryPairs: [{ 
+             riskId: parsedData.rcmId || parsedData.riskId || parsedData.mappingId?.split(':')[0], 
+             riskDescription: parsedData.riskDescription,
+             isFraudRelated: parsedData.isFraudRelated,
+             riskRating: parsedData.riskRating,
+             controlId: parsedData.controlId,
+             controlDescription: parsedData.mappedControlDescription || parsedData.baseControlDescription,
+             isKeyControl: parsedData.isKeyControl,
+             classification: parsedData.controlType || 'TLC',
+             ipoC: parsedData.ipoC, ipoA: parsedData.ipoA, ipoV: parsedData.ipoV, ipoRa: parsedData.ipoRa,
+             cosoPrinciples: parsedData.cosoPrinciples,
+             itgcDomain: parsedData.itgcDomain,
+             itgcAssertions: parsedData.itgcAssertions
+          }]
+        },
+      };
+      
+      setNodes((nds) => {
+         const updated = nds.concat(newNode);
+         // Instantly add the badge
+         return updated.concat({
+            id: `badge_${newNodeId}`, type: 'risk-control-badge', parentId: newNodeId, extent: 'parent', draggable: false,
+            position: { x: 140, y: -10 }, 
+            data: { 
+               riskIds: [parsedData.rcmId || parsedData.riskId || parsedData.mappingId?.split(':')[0]].filter(Boolean), 
+               controlIds: [parsedData.controlId].filter(Boolean), 
+               label: 'RCM' 
+            }
+         });
+      });
+      
+      setDirty(true);
+      toast.success(t('rcm:migration.backlog.mapped_success', { defaultValue: 'Successfully mapped control to canvas' }));
+    } catch (e) {
+      console.error("Failed to parse dropped data", e);
+    }
+  }, [rfInstance, setNodes, setDirty, t]);
+
   if (isDiagramLoading) return <div className="flex h-full items-center justify-center"><RefreshCw className="h-8 w-8 animate-spin text-slate-300" /></div>;
 
   return (
@@ -419,6 +528,8 @@ export function BPMEditor({ diagramId, subProcess, workingYear }: BPMEditorProps
             nodesDraggable={!isLocked}
             nodesConnectable={!isLocked}
             elementsSelectable={true}
+            onDragOver={onDragOver}
+            onDrop={onDrop}
             onConnect={isLocked ? undefined : (params) => setEdges((eds) => addEdge({ 
               ...params, 
               markerEnd: { 
@@ -513,15 +624,25 @@ export function BPMEditor({ diagramId, subProcess, workingYear }: BPMEditorProps
                        </p>
                        <ScrollArea className="h-[120px] pr-2">
                           <div className="space-y-2">
-                             {/* Placeholder for Migrated Controls */}
-                             <div className="p-2 rounded-lg bg-indigo-50/50 border border-indigo-100 text-[10px] font-bold text-indigo-700 flex items-center gap-2 cursor-grab active:cursor-grabbing hover:bg-indigo-100 transition-colors group">
-                                <GripVertical className="h-3 w-3 text-indigo-300 group-hover:text-indigo-500" />
-                                <span>[PRC-001] Otorisasi PO</span>
-                             </div>
-                             <div className="p-2 rounded-lg bg-indigo-50/50 border border-indigo-100 text-[10px] font-bold text-indigo-700 flex items-center gap-2 cursor-grab active:cursor-grabbing hover:bg-indigo-100 transition-colors group">
-                                <GripVertical className="h-3 w-3 text-indigo-300 group-hover:text-indigo-500" />
-                                <span>[FIN-002] Rekonsiliasi Bank</span>
-                             </div>
+                             {unmappedControls.length === 0 ? (
+                                <p className="text-[10px] text-slate-400 italic text-center py-4">No pending items</p>
+                             ) : (
+                                unmappedControls.map(ctrl => (
+                                   <div 
+                                      key={ctrl.mappingId}
+                                      draggable
+                                      onDragStart={(e) => {
+                                        e.dataTransfer.setData('application/reactflow', JSON.stringify(ctrl));
+                                        e.dataTransfer.effectAllowed = 'move';
+                                      }}
+                                      className="p-2 rounded-lg bg-indigo-50/50 border border-indigo-100 text-[10px] font-bold text-indigo-700 flex items-center gap-2 cursor-grab active:cursor-grabbing hover:bg-indigo-100 transition-colors group"
+                                      title={ctrl.mappedControlDescription || ctrl.riskDescription}
+                                   >
+                                      <GripVertical className="h-3 w-3 text-indigo-300 group-hover:text-indigo-500 shrink-0" />
+                                      <span className="truncate">[{ctrl.controlCode || 'N/A'}] {ctrl.mappedControlName || ctrl.riskDescription}</span>
+                                   </div>
+                                ))
+                             )}
                           </div>
                        </ScrollArea>
                        <p className="text-[8px] text-slate-400 italic">{t('rcm:migration.backlog.drag_hint')}</p>

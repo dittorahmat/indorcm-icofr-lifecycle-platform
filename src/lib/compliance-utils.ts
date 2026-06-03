@@ -326,7 +326,64 @@ export function detectGLColumns(headers: string[]): Record<string, string> {
 export function validateGLMapping(mapping: Record<string, string>): { valid: boolean; missing: string[] } {
   const required = ['accountName', 'balance'];
   const missing = required.filter(field => !mapping[field]);
-  
+
+  return {
+    valid: missing.length === 0,
+    missing
+  };
+}
+
+// --- RCM AUTO MAPPING ---
+
+export const RCM_COLUMN_MAPPING = {
+  // Relational Keys (Required)
+  entityCode: ['Entity_Code', 'Kode_Entity', 'Entity Code', 'Kode Entitas'],
+  noGL: ['No_GL', 'Kode_GL', 'Account Code', 'Kode Akun', 'FSLI', 'Kode FSLI'],
+
+  // RCM Data
+  processName: ['Proses_Bisnis', 'Proses Bisnis', 'Process', 'Business Process'],
+  riskDescription: ['Risiko', 'Risk', 'Risk Description', 'Deskripsi Risiko'],
+  controlDescription: ['Kontrol', 'Control', 'Aktivitas Pengendalian', 'Control Description'],
+
+  // Additional Data (Optional)
+  controlName: ['Nama_Kontrol', 'Control Name', 'Judul Kontrol'],
+  frequency: ['Frekuensi', 'Frequency', 'Control Frequency'],
+  nature: ['Sifat', 'Nature', 'Control Nature'], 
+  type: ['Tipe', 'Type', 'Control Type'] 
+} as const;
+
+export type RCMField = keyof typeof RCM_COLUMN_MAPPING;
+
+/**
+ * Auto-detect column mapping from CSV headers for RCM
+ */
+export function detectRCMColumns(headers: string[]): Record<string, string> {
+  const mapping: Record<string, string> = {};
+
+  headers.forEach(header => {
+    const trimmedHeader = header.trim().toLowerCase();
+
+    (Object.keys(RCM_COLUMN_MAPPING) as RCMField[]).forEach(field => {
+      if (mapping[field]) return;
+
+      const variations = RCM_COLUMN_MAPPING[field] as readonly string[];
+      const match = variations.find(v => v.toLowerCase() === trimmedHeader);
+
+      if (match) {
+        mapping[field] = header.trim();
+      }
+    });
+  });
+
+  return mapping;
+}
+
+/**
+ * Validate that minimum required columns are present to link RCM to Scoping
+ */
+export function validateRCMMapping(mapping: Record<string, string>): { valid: boolean; missing: string[] } {
+  const requiredFields = ['entityCode', 'noGL', 'processName', 'riskDescription', 'controlDescription'];
+  const missing = requiredFields.filter(f => !mapping[f]);
   return {
     valid: missing.length === 0,
     missing

@@ -15,6 +15,7 @@ import { RCMPageHeader } from '@/components/rcm/RCMPageHeader';
 import { RCMTable, RCMColumnGroup } from '@/components/rcm/RCMTable';
 import { RCMGroupRow } from '@/components/rcm/RCMGroupRow';
 import { RCMEditDialog } from '@/components/rcm/RCMEditDialog';
+import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 
 interface RCMMatrixItem extends RCMControlMapping {
   mappingId: string;
@@ -39,18 +40,23 @@ interface RCMMatrixItem extends RCMControlMapping {
 interface RCMTLCPageProps {
   embedded?: boolean;
   filterBpmId?: string;
+  workingYearOverride?: string;
 }
 
-export function RCMTLCPage({ embedded = false, filterBpmId }: RCMTLCPageProps) {
+export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride }: RCMTLCPageProps) {
   const { t } = useTranslation(['rcm', 'common']);
   const queryClient = useQueryClient();
+  const { workingYear: globalWorkingYear } = useFiscalYearStore();
+  const workingYear = workingYearOverride || globalWorkingYear;
+  
   const [searchTerm, setSearchTerm] = React.useState('');
   const [editingItem, setEditingItem] = React.useState<RCMMatrixItem | null>(null);
 
   const { data: matrixData, isLoading } = useQuery({
-    queryKey: ['rcm-matrix-tlc', filterBpmId],
+    queryKey: ['rcm-matrix-tlc', filterBpmId, workingYear],
     queryFn: async () => {
-      const url = filterBpmId ? `/api/rcm-matrix/tlc?bpmProcessId=${filterBpmId}` : '/api/rcm-matrix/tlc';
+      let url = `/api/rcm-matrix/tlc?year=${workingYear}`;
+      if (filterBpmId) url += `&bpmProcessId=${filterBpmId}`;
       const res = await api<{ items: RCMMatrixItem[] }>(url);
       return res;
     },

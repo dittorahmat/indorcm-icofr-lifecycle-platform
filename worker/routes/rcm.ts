@@ -78,16 +78,18 @@ rcm.get('/rcm-matrix/tlc', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const bpmProcessId = c.req.query('bpmProcessId');
+  const year = c.req.query('year');
 
   const org = await db.select().from(organization).where(eq(organization.id, orgId)).then((rows: any) => rows[0]);
 
   let query = db.select({
     mappingId: rcmControls.id,
+    rcmId: rcms.id,
     controlId: controls.id,
-    processName: bpmProcesses.name,
+    processName: sql<string>`COALESCE(${bpmProcesses.name}, ${rcms.process})`,
     fsliName: bpmProcesses.fsliName,
     noGL: bpmProcesses.noGL,
-    subProcessName: bpmDiagrams.name,
+    subProcessName: sql<string>`COALESCE(${bpmDiagrams.name}, ${rcms.subProcess})`,
     riskDescription: rcms.riskDescription,
     isFraudRelated: rcms.isFraudRelated,
     riskRating: rcms.riskRating,
@@ -130,9 +132,9 @@ rcm.get('/rcm-matrix/tlc', async (c) => {
   .from(rcmControls)
   .innerJoin(rcms, eq(rcmControls.rcmId, rcms.id))
   .innerJoin(controls, eq(rcmControls.controlId, controls.id))
-  .innerJoin(bpmNodeRcms, eq(rcms.id, bpmNodeRcms.rcmId))
-  .innerJoin(bpmDiagrams, eq(bpmNodeRcms.diagramId, bpmDiagrams.id))
-  .innerJoin(bpmProcesses, eq(bpmDiagrams.subProcess, bpmProcesses.name))
+  .leftJoin(bpmNodeRcms, eq(rcms.id, bpmNodeRcms.rcmId))
+  .leftJoin(bpmDiagrams, eq(bpmNodeRcms.diagramId, bpmDiagrams.id))
+  .leftJoin(bpmProcesses, eq(bpmDiagrams.subProcess, bpmProcesses.name))
   .leftJoin(accountAssertions, and(
     eq(bpmProcesses.fsliName, accountAssertions.fsliName),
     eq(bpmProcesses.noGL, accountAssertions.noGL),
@@ -145,7 +147,13 @@ rcm.get('/rcm-matrix/tlc', async (c) => {
   );
 
   if (bpmProcessId && bpmProcessId !== 'undefined') {
-    finalConditions = and(finalConditions, eq(bpmProcesses.id, bpmProcessId)) as any;
+    // Filter using controls.bpmProcessId which is set directly during migration,
+    // rather than bpmProcesses.id which depends on the leftJoin to bpmNodeRcms
+    finalConditions = and(finalConditions, eq(controls.bpmProcessId, bpmProcessId)) as any;
+  }
+  
+  if (year) {
+    finalConditions = and(finalConditions, eq(rcms.year, parseInt(year))) as any;
   }
 
   const results = await query.where(finalConditions);
@@ -170,16 +178,18 @@ rcm.get('/rcm-matrix/itgc', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const bpmProcessId = c.req.query('bpmProcessId');
+  const year = c.req.query('year');
 
   const org = await db.select().from(organization).where(eq(organization.id, orgId)).then((rows: any) => rows[0]);
 
   let query = db.select({
     mappingId: rcmControls.id,
+    rcmId: rcms.id,
     controlId: controls.id,
-    processName: bpmProcesses.name,
+    processName: sql<string>`COALESCE(${bpmProcesses.name}, ${rcms.process})`,
     fsliName: bpmProcesses.fsliName,
     noGL: bpmProcesses.noGL,
-    subProcessName: bpmDiagrams.name,
+    subProcessName: sql<string>`COALESCE(${bpmDiagrams.name}, ${rcms.subProcess})`,
     riskDescription: rcms.riskDescription,
     isFraudRelated: rcms.isFraudRelated,
     riskRating: rcms.riskRating,
@@ -205,9 +215,9 @@ rcm.get('/rcm-matrix/itgc', async (c) => {
   .from(rcmControls)
   .innerJoin(rcms, eq(rcmControls.rcmId, rcms.id))
   .innerJoin(controls, eq(rcmControls.controlId, controls.id))
-  .innerJoin(bpmNodeRcms, eq(rcms.id, bpmNodeRcms.rcmId))
-  .innerJoin(bpmDiagrams, eq(bpmNodeRcms.diagramId, bpmDiagrams.id))
-  .innerJoin(bpmProcesses, eq(bpmDiagrams.subProcess, bpmProcesses.name));
+  .leftJoin(bpmNodeRcms, eq(rcms.id, bpmNodeRcms.rcmId))
+  .leftJoin(bpmDiagrams, eq(bpmNodeRcms.diagramId, bpmDiagrams.id))
+  .leftJoin(bpmProcesses, eq(bpmDiagrams.subProcess, bpmProcesses.name));
 
   let finalConditions = and(
     eq(rcmControls.organizationId, orgId),
@@ -216,6 +226,10 @@ rcm.get('/rcm-matrix/itgc', async (c) => {
 
   if (bpmProcessId && bpmProcessId !== 'undefined') {
     finalConditions = and(finalConditions, eq(bpmProcesses.id, bpmProcessId)) as any;
+  }
+  
+  if (year) {
+    finalConditions = and(finalConditions, eq(rcms.year, parseInt(year))) as any;
   }
 
   const results = await query.where(finalConditions);
@@ -521,7 +535,12 @@ rcm.post('/rcm-matrix/:type/batch-update', rbac(['Line 2', 'Admin']), async (c) 
 rcm.get('/controls', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const controlService = new ControlService(db);
-  const items = await controlService.getAll(c.get('organizationId'), c.req.query('level'));
+  const year = c.req.query('year');
+  const items = await controlService.getAll(
+    c.get('organizationId'), 
+    c.req.query('level'),
+    year ? parseInt(year) : undefined
+  );
   return ok(c, { items });
 });
 

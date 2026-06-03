@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dialog";
 
 import { parseGLFile } from '@/pages/scoping/services/gl-parser';
+import { parseRCMFile } from '@/pages/scoping/services/rcm-parser';
 
 interface SmartImportWizardProps {
     isOpen: boolean;
@@ -98,40 +99,22 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
                 }
             }
 
-            // 2. Process RCM (Mock for now, but real parsing could be added)
-            await new Promise(resolve => setTimeout(resolve, 1500));
-
-            setStagingData([
-                {
-                    id: '1',
-                    entityCode: 'BSN-01',
-                    processName: 'Pengadaan Barang & Jasa',
-                    riskDescription: 'Vendor fiktif atau mark-up harga',
-                    controlDescription: 'Manajer menyetujui nota pembelian dan membandingkan dengan 3 vendor',
-                    nature: 'Manual',
-                    type: 'Preventive',
-                    frequency: 'Ad-hoc',
-                    guessedFields: ['type', 'nature'],
-                    confidence: { type: 0.95, nature: 0.92 }
-                },
-                {
-                    id: '2',
-                    entityCode: 'BSN-01',
-                    processName: 'Pengadaan Barang & Jasa',
-                    riskDescription: 'Pembayaran ganda',
-                    controlDescription: 'Rekonsiliasi invoice dengan bukti bayar setiap akhir bulan',
-                    nature: 'Manual',
-                    type: 'Detective',
-                    frequency: 'Monthly',
-                    guessedFields: ['type'],
-                    confidence: { type: 0.88 }
+            // 2. Process RCM if exists
+            if (rcmFile) {
+                const rcmResult = await parseRCMFile(rcmFile);
+                if (rcmResult.success) {
+                    setStagingData(rcmResult.rows);
+                } else {
+                    toast.error(`RCM Parse Error: ${rcmResult.error}`);
+                    setIsProcessing(false);
+                    return;
                 }
-            ]);
+            }
 
             setIsProcessing(false);
             setIsDirtyLocal(true);
             setStep(2);
-            toast.success("AI extraction complete!");
+            toast.success("Extraction complete!");
         } catch (error: any) {
             console.error("AI Processing failed:", error);
             toast.error("Processing failed: " + error.message);

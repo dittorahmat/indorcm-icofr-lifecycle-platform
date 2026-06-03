@@ -544,10 +544,11 @@ export class BpmService {
     return diagrams[0];
   }
 
-  async getAllProcesses(orgId: string, noGL?: string, id?: string) {
-    let conditions = eq(bpmProcesses.organizationId, orgId);
+  async getAllProcesses(orgId: string, noGL?: string, id?: string, year?: number) {
+    let conditions: SQL = eq(bpmProcesses.organizationId, orgId);
     if (id) conditions = and(conditions, eq(bpmProcesses.id, id)) as SQL;
     if (noGL) conditions = and(conditions, eq(bpmProcesses.noGL, noGL)) as SQL;
+    if (year) conditions = and(conditions, eq(bpmProcesses.year, year)) as SQL;
 
     return await this.db.select({
       id: bpmProcesses.id,
@@ -555,6 +556,7 @@ export class BpmService {
       noGL: bpmProcesses.noGL,
       fsliName: bpmProcesses.fsliName,
       name: bpmProcesses.name,
+      year: bpmProcesses.year,
       createdAt: bpmProcesses.createdAt,
       createdBy: bpmProcesses.createdBy,
       controlCount: bpmProcesses.controlCount,

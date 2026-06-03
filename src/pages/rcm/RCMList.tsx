@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next';
 import { TLCTabContent } from '@/components/rcm/TLCTabContent';
 import { ITGCTabContent } from '@/components/rcm/ITGCTabContent';
 import { ELCTabContent } from '@/components/rcm/ELCTabContent';
+import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -43,7 +44,8 @@ export function RCMList() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = React.useState('');
-  
+  const { workingYear } = useFiscalYearStore();
+
   const editingControlId = searchParams.get('controlId');
   const isEditorOpen = !!editingControlId || searchParams.get('new') === 'true';
   const [selectedControl, setSelectedControl] = React.useState<Partial<Control> | null>(null);
@@ -63,10 +65,10 @@ export function RCMList() {
     setSelectedControl(null);
   };
 
-  // 1. Fetch Controls
+  // 1. Fetch Controls (with year filtering if needed, though list might show all or be filtered by tab)
   const { data: controlsData, isLoading: controlsLoading } = useQuery({
-    queryKey: ['controls'],
-    queryFn: () => api<{ items: Control[] }>('/api/controls'),
+    queryKey: ['controls', workingYear],
+    queryFn: () => api<{ items: Control[] }>(`/api/controls?year=${workingYear}`),
   });
 
   const { data: currentUser } = useQuery({

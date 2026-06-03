@@ -11,10 +11,13 @@ export class ControlService {
     this.audit = new AuditService(db);
   }
 
-  async getAll(orgId: string, level?: string) {
+  async getAll(orgId: string, level?: string, year?: number) {
     let conditions = eq(controls.organizationId, orgId);
     if (level) {
       conditions = and(conditions, eq(controls.level, level as any)) as any;
+    }
+    if (year) {
+      conditions = and(conditions, eq(controls.year, year)) as any;
     }
     return this.db.select().from(controls).where(conditions);
   }

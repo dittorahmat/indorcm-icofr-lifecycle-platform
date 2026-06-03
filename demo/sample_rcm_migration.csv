@@ -1,6 +1,5 @@
-Entity Code,Proses Bisnis,Risiko (Risk),Aktivitas Pengendalian (Control),Frekuensi
-BSN-01,Pengadaan Barang & Jasa,Vendor fiktif atau mark-up harga,Manajer menyetujui nota pembelian dan membandingkan dengan 3 vendor,Tiap ada transaksi
-BSN-01,Pengadaan Barang & Jasa,Pembayaran ganda,Rekonsiliasi invoice dengan bukti bayar setiap akhir bulan,Bulanan
-BSN-01,Pengelolaan Persediaan,Persediaan hilang atau rusak,Opname stok fisik batubara di gudang secara periodik,Setiap 6 bulan
-BSN-02,Siklus Pendapatan,Piutang tidak tertagih,Review umur piutang dan konfirmasi saldo ke pelanggan,Quarterly
-BSN-02,Siklus Pendapatan,Kesalahan pencatatan nilai jual,Pengecekan otomatis antara sistem timbangan dengan invoice,Setiap transaksi
+Entity_Code;No_GL;Proses_Bisnis;Risiko;Kontrol;Frekuensi;Sifat;Tipe
+HOLDING;10001;Pengelolaan Kas;Pembayaran ganda atau tidak sah;Rekonsiliasi invoice dengan bukti bayar setiap akhir bulan;Bulanan;Manual;Detective
+HOLDING;10001;Pengelolaan Kas;Akses tidak sah ke rekening;Approval berjenjang di sistem perbankan untuk transaksi > 1M;Tiap Transaksi;Automated;Preventive
+SUBSIDIARY_A;40001;Siklus Pendapatan;Piutang tidak tertagih;Review umur piutang dan konfirmasi saldo ke pelanggan;Quarterly;Manual;Detective
+SUBSIDIARY_A;40001;Siklus Pendapatan;Kesalahan pencatatan nilai jual;Pengecekan otomatis antara sistem timbangan dengan invoice;Tiap Transaksi;Automated;Preventive
