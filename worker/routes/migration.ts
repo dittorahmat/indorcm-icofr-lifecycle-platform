@@ -128,16 +128,35 @@ migration.post('/migration/finalize', async (c) => {
             await db.insert(schema.controls).values({
               id: controlId,
               organizationId: orgId,
-              bpmProcessId: processId,
+              bpmProcessId: row.level === 'ELC' ? null : processId,
               year: parseInt(year),
-              code: `CTRL-${generateId().substring(0, 8).toUpperCase()}`,
+              code: row.controlCode || `CTRL-${generateId().substring(0, 8).toUpperCase()}`,
               name: row.controlName || "Migrated Control",
               description: row.controlDescription,
-              nature: row.nature,
-              type: row.type,
+              nature: row.controlNature || row.nature,
+              type: row.controlType || row.type,
               frequency: row.frequency,
-              isKey: true,
+              level: row.level || 'TLC',
+              isKeyControl: row.isKeyControl ?? true,
               isMigrated: true,
+              supportingApp: row.supportingApp,
+              executorRole: row.executorRole,
+              cosoPrinciples: row.cosoPrinciples || [],
+              ipos: row.level === 'TLC' ? [
+                { type: 'C', value: !!row.ipoC },
+                { type: 'A', value: !!row.ipoA },
+                { type: 'V', value: !!row.ipoV },
+                { type: 'RA', value: !!row.ipoRa }
+              ] : [],
+              assertions: row.level === 'TLC' ? [
+                { type: 'C', value: !!row.assertionC },
+                { type: 'A', value: !!row.assertionA },
+                { type: 'E', value: !!row.assertionE },
+                { type: 'CO', value: !!row.assertionCo },
+                { type: 'RO', value: !!row.assertionRo },
+                { type: 'VA', value: !!row.assertionVa },
+                { type: 'PD', value: !!row.assertionPd }
+              ] : [],
               aiGuessedFields: row.guessedFields || []
             });
 
@@ -145,7 +164,30 @@ migration.post('/migration/finalize', async (c) => {
               id: generateId(),
               organizationId: orgId,
               rcmId: riskId,
-              controlId: controlId
+              controlId: controlId,
+              year: parseInt(year),
+              controlName: row.controlName,
+              controlDescription: row.controlDescription,
+              isKeyControl: row.isKeyControl ?? true,
+              ipoC: row.ipoC ? 'Y' : 'N',
+              ipoA: row.ipoA ? 'Y' : 'N',
+              ipoV: row.ipoV ? 'Y' : 'N',
+              ipoRa: row.ipoRa ? 'Y' : 'N',
+              assertionE: row.assertionE ? 'Y' : 'N',
+              assertionC: row.assertionC ? 'Y' : 'N',
+              assertionA: row.assertionA ? 'Y' : 'N',
+              assertionCo: row.assertionCo ? 'Y' : 'N',
+              assertionVa: row.assertionVa ? 'Y' : 'N',
+              assertionRo: row.assertionRo ? 'Y' : 'N',
+              assertionPd: row.assertionPd ? 'Y' : 'N',
+              controlType: row.controlType || row.type,
+              controlNature: row.controlNature || row.nature,
+              frequency: row.frequency,
+              supportingApp: row.supportingApp,
+              executorRole: row.executorRole,
+              affectedFsliItem: row.affectedFsliItem,
+              effectivePeriod: row.effectivePeriod,
+              cosoPrinciples: row.cosoPrinciples || []
             });
           }
         }

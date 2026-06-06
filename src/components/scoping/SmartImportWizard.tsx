@@ -2,8 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ChevronRight, ShieldCheck, Zap, Loader2 as LucideLoader2 } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { 
+    ChevronRight, 
+    ShieldCheck, 
+    Zap, 
+    Download,
+    Loader2 as LucideLoader2 
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUnsavedChangesContext } from '@/context/UnsavedChangesContext';
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
@@ -22,7 +29,7 @@ import {
 } from "@/components/ui/dialog";
 
 import { parseGLFile } from '@/pages/scoping/services/gl-parser';
-import { parseRCMFile } from '@/pages/scoping/services/rcm-parser';
+import { parseRCMFile, RCMType } from '@/pages/scoping/services/rcm-parser';
 
 interface SmartImportWizardProps {
     isOpen: boolean;
@@ -37,6 +44,7 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
     const [isModified, setIsDirtyLocal] = useState(false);
     const [step, setStep] = useState(1); // 1: Ingestion, 2: Normalization, 3: Baselining
     const [fiscalYear, setFiscalYear] = useState(workingYear);
+    const [rcmType, setRcmType] = useState<RCMType>('TLC');
 
     // File States
     const [tbFile, setTbFile] = useState<File | null>(null);
@@ -101,7 +109,7 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
 
             // 2. Process RCM if exists
             if (rcmFile) {
-                const rcmResult = await parseRCMFile(rcmFile);
+                const rcmResult = await parseRCMFile(rcmFile, rcmType);
                 if (rcmResult.success) {
                     setStagingData(rcmResult.rows);
                 } else {
@@ -122,7 +130,31 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
         }
     };
 
+    const downloadTemplate = () => {
+        const templates: Record<RCMType, string> = {
+            TLC: "No;Informasi_Proses_Bisnis;Informasi_Sub_proses_Bisnis;Perusahaan_Pelaksana_Proses_Bisnis;Lokasi_Dilaksanakannya_Proses_Bisnis;Risiko_Aktivitas_Pengendalian;Risiko_Terkait_Fraud;Penilaian_Risiko;Referensi_Pengendalian;Nama_Aktivitas_Pengendalian;Deskripsi_Aktivitas_Pengendalian;Dokumen_Pendukung;Pengendalian_Utama;IPO_C;IPO_A;IPO_V;IPO_RA;Asersi_C;Asersi_A;Asersi_E_O;Asersi_CO;Asersi_R_O;Asersi_V_A;Asersi_PD;Preventif_Detektif;Sifat_Pelaksanaan_Pengendalian;Jenis_Pengendalian_Otomatis;Frekuensi_Pelaksanaan_Aktivitas;Aplikasi_Pendukung;Fungsi_Pelaksana_Aktivitas;Pelaku_Pengendalian;Item_Laporan_Keuangan_yang_Terdampak;Periode_Efektif",
+            ELC: "Referensi_Pengendalian;Aktivitas_Pengendalian;Frekuensi_Pengendalian;Dokumen_Pengendalian;Fungsi_Pelaksana_Aktivitas_Pengendalian;Pelaku_Pengendalian;Periode_Efektif;Prinsip_COSO",
+            ITGC: "No;Informasi_Proses_Bisnis;Informasi_Sub_proses_Bisnis;Perusahaan_Pelaksana_Proses_Bisnis;Lokasi_Dilaksanakannya_Proses_Bisnis;Risiko_Aktivitas_Pengendalian;Referensi_Pengendalian;Nama_Aktivitas_Pengendalian;Deskripsi_Aktivitas_Pengendalian;Dokumen_Pendukung;Pengendalian_Utama;Preventif_Detektif;Sifat_Pelaksanaan_Pengendalian;Jenis_Pengendalian_Otomatis;Frekuensi_Pelaksanaan_Aktivitas;Aplikasi_Pendukung;Fungsi_Pelaksana_Aktivitas;Pelaku_Pengendalian;Periode_Efektif"
+        };
+        const content = templates[rcmType];
+        const blob = new Blob([content], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.setAttribute('hidden', '');
+        a.setAttribute('href', url);
+        a.setAttribute('download', `Template_RCM_${rcmType}.csv`);
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    };
+
     const handleFinalize = async () => {
+        const invalidCount = stagingData.filter(r => !r.isValid).length;
+        if (invalidCount > 0) {
+            toast.error(t('rcm:migration.normalization.fix_errors_first', { count: invalidCount }));
+            return;
+        }
+
         const finalizePromise = (async () => {
             // Added slight delay for better UX as per previous pattern
             await new Promise(resolve => setTimeout(resolve, 2000));
@@ -233,6 +265,29 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
                                             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
                                             className="space-y-8"
                                         >
+                                            <div className="bg-slate-50 p-6 rounded-3xl border border-slate-200 space-y-4">
+                                                <div className="flex items-center justify-between">
+                                                    <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Pilih Tipe RCM</h4>
+                                                    <Button variant="outline" size="sm" onClick={downloadTemplate} className="h-7 text-[9px] font-bold gap-2 uppercase tracking-widest rounded-full">
+                                                        <Download className="h-3 w-3" /> Template {rcmType}
+                                                    </Button>
+                                                </div>
+                                                <RadioGroup value={rcmType} onValueChange={(v) => setRcmType(v as RCMType)} className="flex gap-6">
+                                                    <div className="flex items-center space-x-2">
+                                                        <RadioGroupItem value="TLC" id="tlc" />
+                                                        <Label htmlFor="tlc" className="text-xs font-bold text-slate-700">TLC (Transactional)</Label>
+                                                    </div>
+                                                    <div className="flex items-center space-x-2">
+                                                        <RadioGroupItem value="ELC" id="elc" />
+                                                        <Label htmlFor="elc" className="text-xs font-bold text-slate-700">ELC (Entity Level)</Label>
+                                                    </div>
+                                                    <div className="flex items-center space-x-2">
+                                                        <RadioGroupItem value="ITGC" id="itgc" />
+                                                        <Label htmlFor="itgc" className="text-xs font-bold text-slate-700">ITGC (IT General)</Label>
+                                                    </div>
+                                                </RadioGroup>
+                                            </div>
+
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                 <FileUploadZone 
                                                     type="TB" onFileSelect={(file) => { setTbFile(file); setIsDirtyLocal(true); }} 
