@@ -116,10 +116,12 @@
     "tabs": {
       "worksheet": "Lembar Kerja",
       "sampling": "Detail Transaksi",
-      "csa": "Asesmen CSA",
       "rcm": "Matriks RCM (5a,b,c)",
+      "csa": "Asesmen CSA",
+      "verification": "Desain Verifikasi",
       "logs": "Log Perubahan (Lampiran 6)"
     }
+
   },
   "csa": {
     "history": "Riwayat Asesmen",

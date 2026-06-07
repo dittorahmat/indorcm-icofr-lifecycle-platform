@@ -65,7 +65,12 @@ interface VerificationMatrixItem {
   subProcessName?: string;
 }
 
-export function VerificationDesignPage() {
+export interface VerificationDesignPageProps {
+  embedded?: boolean;
+  filterBpmId?: string;
+}
+
+export function VerificationDesignPage({ embedded, filterBpmId }: VerificationDesignPageProps) {
   const { t } = useTranslation(['rcm', 'common', 'sidebar']);
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = React.useState('');
@@ -75,8 +80,13 @@ export function VerificationDesignPage() {
   const canEdit = userRole === 'Admin' || userRole === 'Line 2';
 
   const { data, isLoading } = useQuery({
-    queryKey: ['verification-design-matrix'],
-    queryFn: () => api<{ items: VerificationMatrixItem[] }>('/api/rcm-matrix/verification-design'),
+    queryKey: ['verification-design-matrix', filterBpmId],
+    queryFn: () => {
+      const url = filterBpmId 
+        ? `/api/rcm-matrix/verification-design?bpmId=${filterBpmId}` 
+        : '/api/rcm-matrix/verification-design';
+      return api<{ items: VerificationMatrixItem[] }>(url);
+    },
   });
 
   const saveMutation = useMutation({
@@ -211,9 +221,9 @@ export function VerificationDesignPage() {
     }
   ], [t, canEdit]);
 
-  return (
-    <AppLayout container={false} className="bg-slate-100/30">
-      <div className="flex flex-col min-w-0 flex-1">
+  const content = (
+    <div className={cn("flex flex-col min-w-0 flex-1", embedded && "h-full")}>
+      {!embedded && (
         <RCMPageHeader 
           title={t('rcm:verification.title')}
           subtitle={t('rcm:verification.subtitle')}
@@ -226,24 +236,34 @@ export function VerificationDesignPage() {
             { label: t('rcm:verification.columns.location'), value: items[0]?.locationCode || "N/A" }
           ]}
         />
+      )}
 
-        <RCMTable 
-          groups={columnGroups}
-          data={filteredItems}
-          isLoading={isLoading}
-          minWidth="4200px"
+      <RCMTable 
+        groups={columnGroups}
+        data={filteredItems}
+        isLoading={isLoading}
+        minWidth="4200px"
+      />
+
+      {editingItem && (
+        <VerificationEditDialog 
+          open={!!editingItem}
+          onOpenChange={(open) => !open && setEditingItem(null)}
+          data={editingItem}
+          onSave={(values) => saveMutation.mutate(values)}
+          isSaving={saveMutation.isPending}
         />
+      )}
+    </div>
+  );
 
-        {editingItem && (
-          <VerificationEditDialog 
-            open={!!editingItem}
-            onOpenChange={(open) => !open && setEditingItem(null)}
-            data={editingItem}
-            onSave={(values) => saveMutation.mutate(values)}
-            isSaving={saveMutation.isPending}
-          />
-        )}
-      </div>
+  if (embedded) {
+    return <div className="h-full bg-white overflow-auto p-4">{content}</div>;
+  }
+
+  return (
+    <AppLayout container={false} className="bg-slate-100/30">
+      {content}
     </AppLayout>
   );
 }

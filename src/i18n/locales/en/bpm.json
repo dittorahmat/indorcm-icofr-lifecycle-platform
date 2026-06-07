@@ -112,11 +112,13 @@
     "undoWarning": "This cannot be undone.",
     "tabs": {
       "worksheet": "Worksheet",
-      "sampling": "Transaction Detail",
-      "csa": "CSA Assessment",
+      "sampling": "Transaction Details",
       "rcm": "RCM Matrix (5a,b,c)",
-      "logs": "Change Logs (Appx 6)"
+      "csa": "CSA Assessment",
+      "verification": "Verification Design",
+      "logs": "Change Log (Appendix 6)"
     }
+
   },
   "csa": {
     "history": "Assessment History",

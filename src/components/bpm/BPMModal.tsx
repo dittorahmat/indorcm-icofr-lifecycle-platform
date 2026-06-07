@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { 
   FileSpreadsheet, Network, History, Printer, XCircle, 
   Database, ListChecks, ShieldCheck, FileText, Workflow as WorkflowIcon,
-  LayoutDashboard, Activity
+  LayoutDashboard, Activity, ClipboardCheck
 } from 'lucide-react';
 import { BPMWorksheet } from './BPMWorksheet';
 import { Lampiran6LogView } from './Lampiran6LogView';
@@ -20,6 +20,7 @@ import { TransactionSamplingTab } from './TransactionSamplingTab';
 import { RCMELCPage } from '@/pages/rcm/RCMELCPage';
 import { RCMTLCPage } from '@/pages/rcm/RCMTLCPage';
 import { RCMITGCPage } from '@/pages/rcm/RCMITGCPage';
+import { VerificationDesignPage } from '@/pages/rcm/VerificationDesignPage';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { Control, User, TransactionDetail, BPMProcess } from '@shared/types';
@@ -157,11 +158,14 @@ export function BPMModal({
                 <TabsTrigger value="sampling" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-xs uppercase text-slate-500 tracking-wider">
                   <Database className="h-4 w-4" /> {t('modal.tabs.sampling')}
                 </TabsTrigger>
+                <TabsTrigger value="rcm" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-xs uppercase text-slate-500 tracking-wider">
+                  <ListChecks className="h-4 w-4" /> {t('modal.tabs.rcm')}
+                </TabsTrigger>
                 <TabsTrigger value="csa" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-xs uppercase text-slate-500 tracking-wider">
                   <ShieldCheck className="h-4 w-4" /> {t('modal.tabs.csa')}
                 </TabsTrigger>
-                <TabsTrigger value="rcm" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-xs uppercase text-slate-500 tracking-wider">
-                  <ListChecks className="h-4 w-4" /> {t('modal.tabs.rcm')}
+                <TabsTrigger value="verification" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-xs uppercase text-slate-500 tracking-wider">
+                  <ClipboardCheck className="h-4 w-4" /> {t('modal.tabs.verification')}
                 </TabsTrigger>
                 <TabsTrigger value="logs" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-xs uppercase text-slate-500 tracking-wider">
                   <History className="h-4 w-4" /> {t('modal.tabs.logs')}
@@ -191,17 +195,6 @@ export function BPMModal({
                 />
               </TabsContent>
 
-              <TabsContent value="csa" className="m-0 focus-visible:ring-0 h-full overflow-hidden">
-                <CSATabContent 
-                  noGL={noGL} 
-                  controls={controls || []} 
-                  initialSamples={selectedSamples}
-                  bpmProcessId={bpmProcessId}
-                  subProcessName={subProcessName}
-                  scheduleId={scheduleId}
-                />
-              </TabsContent>
-
               <TabsContent value="rcm" className="m-0 focus-visible:ring-0 h-full overflow-auto p-4">
                 <div className="space-y-8 max-w-full">
                    <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
@@ -223,6 +216,24 @@ export function BPMModal({
                       <RCMITGCPage embedded={true} filterBpmId={bpmProcessId} />
                    </div>
                 </div>
+              </TabsContent>
+
+              <TabsContent value="csa" className="m-0 focus-visible:ring-0 h-full overflow-hidden">
+                <CSATabContent 
+                  noGL={noGL} 
+                  controls={controls || []} 
+                  initialSamples={selectedSamples}
+                  bpmProcessId={bpmProcessId}
+                  subProcessName={subProcessName}
+                  scheduleId={scheduleId}
+                />
+              </TabsContent>
+
+              <TabsContent value="verification" className="m-0 focus-visible:ring-0 h-full overflow-hidden">
+                <VerificationDesignPage 
+                  embedded={true} 
+                  filterBpmId={bpmProcessId} 
+                />
               </TabsContent>
 
               <TabsContent value="logs" className="m-0 focus-visible:ring-0 h-full overflow-auto p-6">
