@@ -173,6 +173,7 @@ users.get('/settings', async (c) => {
   const settings: Settings = {
     id: org.id,
     companyName: org.name,
+    logoUrl: org.logo || undefined,
     ceoName: meta.ceoName || "Direktur Utama",
     cfoName: meta.cfoName || "Direktur Keuangan",
     fiscalYear: meta.fiscalYear || meta.periodYear || new Date().getFullYear(),
@@ -184,7 +185,7 @@ users.get('/settings', async (c) => {
   return ok(c, settings);
 });
 
-users.post('/settings', async (c) => {
+users.put('/settings', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const body = await c.req.json<Partial<Settings>>();
@@ -200,9 +201,17 @@ users.post('/settings', async (c) => {
     ceoName: body.ceoName,
     cfoName: body.cfoName,
     fiscalYear: body.fiscalYear,
+    isPeriodLocked: body.isPeriodLocked,
   };
 
-  await db.update(organization).set({ name: body.companyName, metadata: updatedMeta }).where(eq(organization.id, orgId));
+  await db.update(organization)
+    .set({ 
+      name: body.companyName, 
+      logo: body.logoUrl,
+      metadata: updatedMeta 
+    })
+    .where(eq(organization.id, orgId));
+    
   return ok(c, { success: true });
 });
 

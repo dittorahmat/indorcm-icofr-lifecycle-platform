@@ -449,3 +449,5 @@ export interface AIUseCaseDrilldown {
   };
   findings: any[]; // Table-friendly data
 }
+
+export type AIBankingData = Record<string, AIUseCaseDrilldown>;

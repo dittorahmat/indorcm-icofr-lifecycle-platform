@@ -11,7 +11,7 @@ const migration = new Hono<HonoEnv>();
 const generateId = () => Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
 migration.post('/migration/finalize', async (c) => {
-  const { sessionId, year, tbData, rcmData } = await c.req.json();
+  const { sessionId, year, tbData, rcmData, simulationParams } = await c.req.json();
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const userId = c.get('userId');
@@ -70,6 +70,12 @@ migration.post('/migration/finalize', async (c) => {
         year: parseInt(year),
         status: 'Approved',
         workflowStatus: 'Approved',
+        basis: simulationParams?.basis || null,
+        omPercentage: simulationParams?.omPercentage || 0,
+        haircutPercentage: simulationParams?.haircutPercentage || 0,
+        locationCount: simulationParams?.locationCount || 1,
+        omValue: simulationParams?.omValue || 0,
+        pmValue: simulationParams?.pmValue || 0,
         createdBy: userId,
         createdAt: new Date(),
         significantAccounts: []

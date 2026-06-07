@@ -12,8 +12,8 @@ import { ChatInput } from './ChatInput';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { useLocation } from 'react-router-dom';
-
 import { useTranslation } from 'react-i18next';
+import { useOrganizationBranding } from '@/hooks/use-organization-branding';
 
 interface AIChatDrawerProps {
   isOpen: boolean;
@@ -39,6 +39,7 @@ export function AIChatDrawer({ isOpen, onClose }: AIChatDrawerProps) {
   const [conversationId, setConversationId] = React.useState<string | null>(null);
   const [pendingAction, setPendingAction] = React.useState<any | null>(null);
   const location = useLocation();
+  const { companyName } = useOrganizationBranding();
 
   // Load chat history from localStorage on mount
   React.useEffect(() => {
@@ -137,7 +138,9 @@ export function AIChatDrawer({ isOpen, onClose }: AIChatDrawerProps) {
           conversationHistory,
           context: {
             path: location.pathname,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            organization: companyName,
+            sector: 'Financial/Banking'
           },
           actionConfirmation
         }),

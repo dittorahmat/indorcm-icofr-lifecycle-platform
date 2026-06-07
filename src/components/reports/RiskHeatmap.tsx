@@ -5,6 +5,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import { MOCK_HEATMAP_DATA } from './mock-regulatory-data';
 import { Info, ExternalLink } from 'lucide-react';
+import { useOrganizationBranding } from '@/hooks/use-organization-branding';
 
 type RiskLevel = 'High' | 'Medium' | 'Low';
 
@@ -30,6 +31,7 @@ const getOutcome = (qn: RiskLevel, ql: RiskLevel): { label: string, color: strin
 
 export function RiskHeatmap() {
   const levels: RiskLevel[] = ['High', 'Medium', 'Low'];
+  const { companyName } = useOrganizationBranding();
 
   return (
     <Card className="overflow-hidden border-slate-200 shadow-sm">
@@ -39,7 +41,7 @@ export function RiskHeatmap() {
             <CardTitle className="text-lg flex items-center gap-2">
               Heatmap Risiko (SK-5/2024)
             </CardTitle>
-            <CardDescription>Kombinasi Faktor Kuantitatif vs Kualitatif - PT BATUBARA NUSANTARA SEJAHTERA</CardDescription>
+            <CardDescription>Kombinasi Faktor Kuantitatif vs Kualitatif - {companyName}</CardDescription>
           </div>
           <Badge variant="outline" className="bg-white gap-1 text-xs font-bold">
             <Info className="h-3 w-3" /> Tabel 12 Juknis

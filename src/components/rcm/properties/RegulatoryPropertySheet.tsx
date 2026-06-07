@@ -153,7 +153,7 @@ export function RegulatoryPropertySheet({
     const tempId = `R-${crypto.randomUUID().substring(0, 8)}`;
     const ctrlId = `C-${crypto.randomUUID().substring(0, 8)}`;
     const nextPairs = [...pairs, {
-      _tempRiskId: tempId, // Keeping for backward compatibility if needed temporarily
+      _tempRiskId: tempId,
       _tempControlId: ctrlId,
       riskId: tempId,
       controlId: ctrlId,
@@ -170,10 +170,11 @@ export function RegulatoryPropertySheet({
 
   const addControlToRisk = (riskKey: string) => {
     const template = pairs.find((p: any) => (p.riskId === riskKey || p._tempRiskId === riskKey));
+    const ctrlId = `C-${crypto.randomUUID().substring(0, 8)}`;
     const nextPairs = [...pairs, {
       ...template,
-      controlId: null,
-      _tempControlId: `c_${crypto.randomUUID()}`,
+      controlId: ctrlId,
+      _tempControlId: ctrlId,
       controlDescription: '',
       isKeyControl: false,
       ipoC: 'N', ipoA: 'N', ipoV: 'N', ipoRa: 'N',

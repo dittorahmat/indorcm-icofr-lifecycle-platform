@@ -1,4 +1,4 @@
-export const MOCK_COMPANY = "PT BATUBARA NUSANTARA SEJAHTERA";
+export const MOCK_COMPANY = "Bank Artha Mandiri (BAM)";
 
 export const MOCK_ELC = [
   {

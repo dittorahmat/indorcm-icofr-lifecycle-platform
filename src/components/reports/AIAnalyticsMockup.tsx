@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   LineChart, Line, AreaChart, Area, PieChart, Pie, Cell,
@@ -20,14 +21,17 @@ import {
   AlertTriangle,
   CheckCircle2,
   Clock,
-  ArrowLeft
+  ArrowLeft,
+  BarChart3
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AI_DRILLDOWN_DATA } from '@shared/ai-mock-data';
-
-const MOCK_COMPANY = "PT BATUBARA NUSANTARA SEJAHTERA";
+import { AI_BANKING_DRILLDOWN_DATA } from '@shared/ai-banking-data';
+import { useOrganizationBranding } from '@/hooks/use-organization-branding';
 
 export function AIAnalyticsMockup() {
+  const { companyName } = useOrganizationBranding();
+  
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between p-6 bg-gradient-to-r from-indigo-900 via-slate-900 to-indigo-950 rounded-xl border border-indigo-500/30 shadow-2xl overflow-hidden relative group">
@@ -44,7 +48,7 @@ export function AIAnalyticsMockup() {
           </div>
           <h2 className="text-3xl font-black text-white tracking-tighter">Digital Analytics Hub</h2>
           <p className="text-slate-400 text-sm max-w-md leading-relaxed">
-            Advanced Predictive Analytics & Continuous Control Monitoring for <strong>{MOCK_COMPANY}</strong> mining operations.
+            Advanced Predictive Analytics & Continuous Control Monitoring for <strong>{companyName}</strong>.
           </p>
         </div>
 
@@ -96,13 +100,13 @@ export function AIAnalyticsMockup() {
 // --- SUB-COMPONENTS ---
 
 function AnalyticsTab() {
-  const stockpileData = [
-    { name: 'Jan', sales: 400, stockpile: 450 },
-    { name: 'Feb', sales: 300, stockpile: 320 },
-    { name: 'Mar', sales: 500, stockpile: 480 },
-    { name: 'Apr', sales: 450, stockpile: 510 },
-    { name: 'May', sales: 600, stockpile: 590 },
-    { name: 'Jun', sales: 550, stockpile: 620 },
+  const bankingTrendData = [
+    { name: 'Jan', loans: 400, casa: 450 },
+    { name: 'Feb', loans: 420, casa: 460 },
+    { name: 'Mar', loans: 450, casa: 480 },
+    { name: 'Apr', loans: 480, casa: 510 },
+    { name: 'May', loans: 520, casa: 540 },
+    { name: 'Jun', loans: 550, casa: 580 },
   ];
 
   return (
@@ -110,20 +114,20 @@ function AnalyticsTab() {
       <Card className="col-span-2">
         <CardHeader>
           <CardTitle className="text-sm font-bold flex items-center gap-2">
-            <Activity className="h-4 w-4 text-blue-600" /> Analisis Pergerakan Stockpile vs Penjualan
+            <Activity className="h-4 w-4 text-blue-600" /> Loan Disbursement vs CASA Growth
           </CardTitle>
-          <CardDescription>Correlation between mine output, sales, and inventory balance (Tonnes).</CardDescription>
+          <CardDescription>Correlation between credit expansion and stable funding mix (Billion IDR).</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={stockpileData}>
+              <AreaChart data={bankingTrendData}>
                 <defs>
-                  <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient id="colorLoans" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.1}/>
                     <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
                   </linearGradient>
-                  <linearGradient id="colorStock" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient id="colorCasa" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#10b981" stopOpacity={0.1}/>
                     <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
                   </linearGradient>
@@ -134,8 +138,8 @@ function AnalyticsTab() {
                 <Tooltip 
                   contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
                 />
-                <Area type="monotone" dataKey="sales" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorSales)" strokeWidth={2} />
-                <Area type="monotone" dataKey="stockpile" stroke="#10b981" fillOpacity={1} fill="url(#colorStock)" strokeWidth={2} />
+                <Area type="monotone" dataKey="loans" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorLoans)" strokeWidth={2} />
+                <Area type="monotone" dataKey="casa" stroke="#10b981" fillOpacity={1} fill="url(#colorCasa)" strokeWidth={2} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -145,73 +149,73 @@ function AnalyticsTab() {
       <div className="space-y-6">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-bold">Deteksi Selisih Timbang</CardTitle>
-            <CardDescription>Weighbridge vs Stockpile Survey Variance.</CardDescription>
+            <CardTitle className="text-sm font-bold">Non-Performing Loan (NPL)</CardTitle>
+            <CardDescription>Aggregate credit risk status.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-black text-red-600">3.2% Variance</div>
+            <div className="text-2xl font-black text-red-600">2.14% Gross</div>
             <div className="mt-2 space-y-1">
               <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                <div className="h-full bg-red-500 w-[32%]"></div>
+                <div className="h-full bg-red-500 w-[42%]"></div>
               </div>
-              <p className="text-xs text-muted-foreground">Threshold limit: 2.0%</p>
+              <p className="text-xs text-muted-foreground">OJK Threshold: 5.0%</p>
             </div>
           </CardContent>
         </Card>
 
         <Card className="bg-indigo-50 border-indigo-100">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-bold text-indigo-900">Abnormal Journal Entries</CardTitle>
-            <CardDescription>Detected by AI Pattern Matching.</CardDescription>
+            <CardTitle className="text-sm font-bold text-indigo-900">Suspense Account Aging</CardTitle>
+            <CardDescription>Items &gt; 3 days requiring resolution.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-black text-indigo-700">14</div>
-            <p className="text-xs font-medium text-indigo-600 mt-1">Flagged for manual review</p>
+            <div className="text-3xl font-black text-indigo-700">142</div>
+            <p className="text-xs font-medium text-indigo-600 mt-1">Pending items flagged by AI</p>
           </CardContent>
         </Card>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-bold">Analisis Cost per Ton</CardTitle>
+          <CardTitle className="text-sm font-bold">LDR (Loan to Deposit Ratio)</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-[150px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={stockpileData.slice(0, 4)}>
-                <Bar dataKey="stockpile" fill="#6366f1" radius={[4, 4, 0, 0]} />
+              <BarChart data={bankingTrendData.slice(0, 4)}>
+                <Bar dataKey="loans" fill="#6366f1" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <p className="text-center text-xs mt-4 font-mono text-slate-500 uppercase tracking-widest">Efficiency Baseline: $42.50/ton</p>
+          <p className="text-center text-xs mt-4 font-mono text-slate-500 uppercase tracking-widest">Baseline: 85% - 92%</p>
         </CardContent>
       </Card>
 
       <Card className="col-span-2">
         <CardHeader>
-          <CardTitle className="text-sm font-bold italic">Enterprise Risk Indicators (Mining)</CardTitle>
+          <CardTitle className="text-sm font-bold italic">Enterprise Risk Indicators (Banking)</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-4">
             <div className="p-3 border rounded-lg bg-slate-50">
-              <p className="text-xs font-bold text-slate-500 uppercase">Ghost Employee Check</p>
+              <p className="text-xs font-bold text-slate-500 uppercase">Dormant Account Reactivations</p>
               <div className="flex items-center justify-between mt-1">
-                <span className="text-lg font-bold">0 Active</span>
-                <CheckCircle2 className="h-4 w-4 text-green-500" />
+                <span className="text-lg font-bold">12 Flagged</span>
+                <ShieldAlert className="h-4 w-4 text-amber-500" />
               </div>
             </div>
             <div className="p-3 border rounded-lg bg-slate-50">
-              <p className="text-xs font-bold text-slate-500 uppercase">Duplicate Vendor Payment</p>
+              <p className="text-xs font-bold text-slate-500 uppercase">Unauthorized Rate Overrides</p>
               <div className="flex items-center justify-between mt-1">
-                <span className="text-lg font-bold">1 Flagged</span>
+                <span className="text-lg font-bold">2 Critical</span>
                 <ShieldAlert className="h-4 w-4 text-red-500" />
               </div>
             </div>
             <div className="p-3 border rounded-lg bg-slate-50">
-              <p className="text-xs font-bold text-slate-500 uppercase">Procurement Split PO</p>
+              <p className="text-xs font-bold text-slate-500 uppercase">AML Smurfing Patterns</p>
               <div className="flex items-center justify-between mt-1">
-                <span className="text-lg font-bold">2 Potential</span>
-                <AlertTriangle className="h-4 w-4 text-amber-500" />
+                <span className="text-lg font-bold">5 Clusters</span>
+                <AlertTriangle className="h-4 w-4 text-red-500" />
               </div>
             </div>
           </div>
@@ -225,12 +229,12 @@ function AICasesTab() {
   const [selectedCaseId, setSelectedCaseId] = React.useState<string | null>(null);
 
   const useCases = [
-    { id: "fraud-detection", title: "Fraud Detection", icon: <ShieldAlert className="h-6 w-6" />, desc: "Anomali pada pengadaan jasa kontraktor dan klaim lembur.", status: "LIVE", color: "text-red-600 bg-red-50 border-red-100" },
-    { id: "anomaly-journal", title: "Anomaly Journal Entry", icon: <FileSearch className="h-6 w-6" />, desc: "Pattern matching untuk mendeteksi 'Unusual Description' dan 'Account Mismatch'.", status: "LIVE", color: "text-indigo-600 bg-indigo-50 border-indigo-100" },
-    { id: "predictive-control", title: "Predictive Control Failure", icon: <AlertTriangle className="h-6 w-6" />, desc: "Forecasting kegagalan kontrol berdasarkan tren historis (Early Warning).", status: "BETA", color: "text-amber-600 bg-amber-50 border-amber-100" },
-    { id: "nlp-contracts", title: "NLP Contract Review", icon: <Search className="h-6 w-6" />, desc: "Review otomatis klausul 'Penalty' dan 'Escalation' pada kontrak PKP2B.", status: "LIVE", color: "text-blue-600 bg-blue-50 border-blue-100" },
-    { id: "vendor-risk", title: "Vendor Risk Scoring", icon: <UserCheck className="h-6 w-6" />, desc: "Scoring otomatis performa dan kepatuhan vendor kontraktor tambang.", status: "BETA", color: "text-purple-600 bg-purple-50 border-purple-100" },
-    { id: "predictive-maintenance", title: "Predictive Maintenance", icon: <Zap className="h-6 w-6" />, desc: "Korelasi biaya maintenance alat berat vs umur operasional.", status: "POC", color: "text-orange-600 bg-orange-50 border-orange-100" },
+    { id: "aml-detection", title: "AML Pattern Engine", icon: <ShieldAlert className="h-6 w-6" />, desc: "Detects structured money laundering patterns using high-velocity scatter analysis.", status: "LIVE", color: "text-red-600 bg-red-50 border-red-100" },
+    { id: "credit-portfolio", title: "Loan Portfolio Predictor", icon: <BarChart3 className="h-6 w-6" />, desc: "Multi-dimensional risk assessment of loan clusters using radar variance.", status: "BETA", color: "text-amber-600 bg-amber-50 border-amber-100" },
+    { id: "suspense-monitoring", title: "Suspense Account NLP", icon: <Search className="h-6 w-6" />, desc: "Automated reconciliation of suspense items using semantic mismatch detection.", status: "LIVE", color: "text-indigo-600 bg-indigo-50 border-indigo-100" },
+    { id: "fraud-transactions", title: "Internal Fraud Detection", icon: <FileSearch className="h-6 w-6" />, desc: "Identifies unauthorized overrides and journal description anomalies.", status: "LIVE", color: "text-blue-600 bg-blue-50 border-blue-100" },
+    { id: "kyc-onboarding", title: "KYC Sentiment Score", icon: <UserCheck className="h-6 w-6" />, desc: "Automated scoring of customer onboarding risk using open-source intelligence.", status: "BETA", color: "text-purple-600 bg-purple-50 border-purple-100" },
+    { id: "liquidity-forecast", title: "Predictive Liquidity", icon: <Zap className="h-6 w-6" />, desc: "Forecasting ATM cash requirements and data center operational health.", status: "POC", color: "text-orange-600 bg-orange-50 border-orange-100" },
   ];
 
   return (
@@ -290,9 +294,14 @@ function AICasesTab() {
 }
 
 function AIDrilldownView({ useCase, onBack }: { useCase: any, onBack: () => void }) {
-  const data = AI_DRILLDOWN_DATA[useCase.id];
+  const data = AI_BANKING_DRILLDOWN_DATA[useCase.id];
 
-  if (!data) return null;
+  if (!data) return (
+    <div className="p-20 text-center">
+      <CardTitle className="text-slate-300">Data for {useCase.title} not available in Banking Mockup</CardTitle>
+      <Button variant="ghost" onClick={onBack} className="mt-4">Back to Cases</Button>
+    </div>
+  );
 
   const mainColorClass = useCase.color.split(' ')[0]; // e.g., "text-red-600"
   
@@ -322,12 +331,12 @@ function AIDrilldownView({ useCase, onBack }: { useCase: any, onBack: () => void
               <div className="p-2 bg-white rounded-lg shadow-sm">{useCase.icon}</div>
               <div>
                 <CardTitle className="text-2xl font-black tracking-tighter">{useCase.title}</CardTitle>
-                <CardDescription className="text-current opacity-70">Analytical Workbench & Pattern Discovery</CardDescription>
+                <CardDescription className="text-current opacity-70">Banking Analytical Workbench</CardDescription>
               </div>
             </div>
             <div className="flex gap-2">
               <Badge className="bg-white text-slate-900 font-bold uppercase tracking-tighter px-2 py-0.5">{useCase.status}</Badge>
-              <Badge variant="outline" className="border-white/30 text-white bg-white/10 uppercase tracking-tighter">Mining Cluster</Badge>
+              <Badge variant="outline" className="border-white/30 text-white bg-white/10 uppercase tracking-tighter">Financial Cluster</Badge>
             </div>
           </div>
         </CardHeader>
@@ -448,13 +457,13 @@ function AIDrilldownView({ useCase, onBack }: { useCase: any, onBack: () => void
 
 function CCMTab() {
   const alerts = [
-    { time: '10:42 AM', type: 'ALERT', msg: 'Potential PO Split detected: Vendor CV MAKMUR JAYA (3 POs < 100M in 24h).', severity: 'HIGH' },
-    { time: '10:15 AM', type: 'ALERT', msg: 'Manual Price Override: Contract price $45.00 changed to $48.50 by User ADMIN_OPS.', severity: 'MEDIUM' },
-    { time: '09:15 AM', type: 'LOG', msg: 'Daily Weighbridge variance check completed. Within tolerance (1.1%).', severity: 'INFO' },
-    { time: '08:30 AM', type: 'ALERT', msg: 'New Vendor Quick Payment: PT BARU SUKSES (created today, paid in < 2h).', severity: 'HIGH' },
-    { time: 'Yesterday', type: 'ALERT', msg: 'Backdated journal entry detected in R2R (30 days delay). Ref: JV-9921.', severity: 'MEDIUM' },
-    { time: 'Yesterday', type: 'ALERT', msg: 'Negative stock detected in Warehouse 02 (Fuel/Diesel inventory).', severity: 'HIGH' },
-    { time: '2 days ago', type: 'LOG', msg: 'Vendor master data change: Bank Account updated for PT ALAT BERAT.', severity: 'MEDIUM' },
+    { time: '10:42 AM', type: 'ALERT', msg: 'Potential Smurfing detected: Account #8821-XX (5 deposits < 10M in 4h).', severity: 'HIGH' },
+    { time: '10:15 AM', type: 'ALERT', msg: 'Unauthorized Rate Override: SME Loan #992 changed from 8.5% to 6.0% by User ADMIN_OPS.', severity: 'HIGH' },
+    { time: '09:15 AM', type: 'LOG', msg: 'Daily Suspense Account variance check completed. Within tolerance (0.4%).', severity: 'INFO' },
+    { time: '08:30 AM', type: 'ALERT', msg: 'Dormant Account Reactivation: Account #1029-XX (Inactive 2 yrs) rapid debit: 500M.', severity: 'HIGH' },
+    { time: 'Yesterday', type: 'ALERT', msg: 'Backdated GL entry detected in Treasury (15 days delay). Ref: TR-9921.', severity: 'MEDIUM' },
+    { time: 'Yesterday', type: 'ALERT', msg: 'Duplicate CIF detected: Same KTP found for 2 different Customer IDs.', severity: 'MEDIUM' },
+    { time: '2 days ago', type: 'LOG', msg: 'Customer master data change: Limit increase for Corporate Client ID-001.', severity: 'INFO' },
   ];
 
   return (

@@ -7,6 +7,7 @@ import {
 } from 'recharts';
 import { COSOHeatmap } from './COSOHeatmap';
 import { useTranslation } from 'react-i18next';
+import { useOrganizationBranding } from '@/hooks/use-organization-branding';
 
 interface ReportDashboardProps {
   summaryData: any;
@@ -15,6 +16,9 @@ interface ReportDashboardProps {
 
 export function ReportDashboard({ summaryData, isEffective }: ReportDashboardProps) {
   const { t } = useTranslation('reports');
+  const { companyName } = useOrganizationBranding();
+
+  const clusterName = companyName.toLowerCase().includes('bank') ? "Financial (BUMN Cluster)" : "Mining & Energy";
 
   return (
     <div className="space-y-6 pt-4">
@@ -26,7 +30,7 @@ export function ReportDashboard({ summaryData, isEffective }: ReportDashboardPro
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="space-y-1">
                   <p className="text-xs text-muted-foreground font-medium uppercase">Entity Cluster</p>
-                  <p className="text-lg font-bold">Mining & Energy</p>
+                  <p className="text-lg font-bold">{clusterName}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs text-muted-foreground font-medium uppercase">Last Review</p>

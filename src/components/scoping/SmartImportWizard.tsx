@@ -9,7 +9,9 @@ import {
     ShieldCheck, 
     Zap, 
     Download,
-    Loader2 as LucideLoader2 
+    Loader2 as LucideLoader2,
+    AlertCircle,
+    Calculator 
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUnsavedChangesContext } from '@/context/UnsavedChangesContext';
@@ -27,9 +29,22 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 
 import { parseGLFile } from '@/pages/scoping/services/gl-parser';
 import { parseRCMFile, RCMType } from '@/pages/scoping/services/rcm-parser';
+import { 
+    getGroupMultiplier, 
+    calculateOM, 
+    calculatePM 
+} from '@/pages/scoping/services/materiality-calc';
 
 interface SmartImportWizardProps {
     isOpen: boolean;
@@ -54,6 +69,44 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
     // Data States
     const [stagingData, setStagingData] = useState<any[]>([]);
     const [parsedTbData, setParsedTbData] = useState<any[]>([]);
+
+    // Materiality States
+    const [selectedBasis, setSelectedBasis] = useState<string>('');
+    const [omPercentage, setOmPercentage] = useState<number>(5);
+    const [haircutPercentage, setHaircutPercentage] = useState<number>(25);
+    const [locationCount, setLocationCount] = useState<number>(1);
+
+    // Aggregate FSLI candidates for benchmark selection
+    const uniqueFsliData = React.useMemo(() => {
+        if (!parsedTbData || parsedTbData.length === 0) return [];
+        
+        const fsliMap = new Map<string, { total: number, minNoUrut: number }>();
+        
+        parsedTbData.forEach(r => {
+            if (r.suggestedFsli) {
+                const current = fsliMap.get(r.suggestedFsli) || { total: 0, minNoUrut: Infinity };
+                fsliMap.set(r.suggestedFsli, {
+                    total: current.total + Math.abs(r.balance),
+                    minNoUrut: Math.min(current.minNoUrut, r.noUrut ?? Infinity)
+                });
+            }
+        });
+
+        return Array.from(fsliMap.entries())
+            .map(([name, data]) => ({ 
+                name, 
+                total: data.total, 
+                minNoUrut: data.minNoUrut === Infinity ? 999999 : data.minNoUrut 
+            }))
+            .sort((a, b) => b.total - a.total); // Sort by balance descending for candidates
+    }, [parsedTbData]);
+
+    // Set default basis when data is loaded
+    useEffect(() => {
+        if (uniqueFsliData.length > 0 && !selectedBasis) {
+            setSelectedBasis(uniqueFsliData[0].name);
+        }
+    }, [uniqueFsliData, selectedBasis]);
 
     // Sync local state with global store
     useEffect(() => {
@@ -159,13 +212,25 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
             // Added slight delay for better UX as per previous pattern
             await new Promise(resolve => setTimeout(resolve, 2000));
             
+            const benchmarkValue = uniqueFsliData.find(f => f.name === selectedBasis)?.total || 0;
+            const omValue = calculateOM(benchmarkValue, omPercentage, getGroupMultiplier(locationCount));
+            const pmValue = calculatePM(omValue, haircutPercentage);
+
             // Call real backend API to finalize migration
             await api('/api/migration/finalize', {
                 method: 'POST',
                 body: JSON.stringify({ 
                     year: fiscalYear,
                     rcmData: stagingData,
-                    tbData: parsedTbData
+                    tbData: parsedTbData,
+                    simulationParams: parsedTbData.length > 0 ? {
+                        basis: selectedBasis,
+                        omPercentage,
+                        haircutPercentage,
+                        locationCount,
+                        omValue,
+                        pmValue
+                    } : null
                 })
             });
 
@@ -353,6 +418,94 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
                                                 totalEntities: 2, processesCreated: 3, risksMapped: 5,
                                                 controlsIdentified: stagingData.length, confidenceScore: 0.91, unmitigatedRisks: 2
                                             }} />
+
+                                            {parsedTbData.length > 0 && (
+                                                <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-xl space-y-6">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="h-10 w-10 rounded-2xl bg-indigo-50 flex items-center justify-center">
+                                                            <Calculator className="h-5 w-5 text-indigo-600" />
+                                                        </div>
+                                                        <div className="space-y-0.5">
+                                                            <h4 className="text-sm font-black uppercase tracking-tight text-slate-900">Materiality Configuration</h4>
+                                                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Set baseline parameters for quantitative scoping</p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                                        <div className="space-y-4">
+                                                            <div className="space-y-2">
+                                                                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">{t('scoping:form.benchmark')}</Label>
+                                                                <Select value={selectedBasis} onValueChange={setSelectedBasis}>
+                                                                    <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-slate-50/50 font-bold text-slate-700">
+                                                                        <SelectValue placeholder="Select Benchmark Basis" />
+                                                                    </SelectTrigger>
+                                                                    <SelectContent>
+                                                                        {uniqueFsliData.map(item => (
+                                                                            <SelectItem key={item.name} value={item.name} className="font-bold">
+                                                                                <div className="flex items-center justify-between w-full gap-4">
+                                                                                    <span>{item.name}</span>
+                                                                                    <span className="text-[10px] text-slate-400 font-mono">Rp {item.total.toLocaleString()}</span>
+                                                                                </div>
+                                                                            </SelectItem>
+                                                                        ))}
+                                                                    </SelectContent>
+                                                                </Select>
+                                                            </div>
+
+                                                            <div className="grid grid-cols-2 gap-4">
+                                                                <div className="space-y-2">
+                                                                    <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Overall Materiality %</Label>
+                                                                    <div className="relative">
+                                                                        <Input 
+                                                                            type="number" step="0.1" value={omPercentage} 
+                                                                            onChange={e => setOmPercentage(parseFloat(e.target.value) || 0)}
+                                                                            className="h-12 rounded-xl border-slate-200 bg-slate-50/50 font-black text-indigo-600 pr-8"
+                                                                        />
+                                                                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-400">%</span>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="space-y-2">
+                                                                    <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Haircut %</Label>
+                                                                    <div className="relative">
+                                                                        <Input 
+                                                                            type="number" step="0.1" value={haircutPercentage} 
+                                                                            onChange={e => setHaircutPercentage(parseFloat(e.target.value) || 0)}
+                                                                            className="h-12 rounded-xl border-slate-200 bg-slate-50/50 font-black text-amber-600 pr-8"
+                                                                        />
+                                                                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-400">%</span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="bg-slate-900 rounded-[2rem] p-6 text-white space-y-6 flex flex-col justify-center border-4 border-slate-800 shadow-2xl relative overflow-hidden group">
+                                                            <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+                                                                <Calculator className="h-32 w-32 -rotate-12" />
+                                                            </div>
+                                                            <div className="space-y-4 relative z-10">
+                                                                <div className="space-y-1">
+                                                                    <p className="text-[9px] font-black uppercase tracking-[0.2em] text-indigo-400">Calculated OM</p>
+                                                                    <p className="text-2xl font-mono font-black tracking-tighter">
+                                                                        Rp {calculateOM(uniqueFsliData.find(f => f.name === selectedBasis)?.total || 0, omPercentage, getGroupMultiplier(locationCount)).toLocaleString()}
+                                                                    </p>
+                                                                </div>
+                                                                <div className="h-px bg-slate-800" />
+                                                                <div className="space-y-1">
+                                                                    <p className="text-[9px] font-black uppercase tracking-[0.2em] text-amber-400">Performance Materiality (PM)</p>
+                                                                    <p className="text-2xl font-mono font-black tracking-tighter text-amber-50">
+                                                                        Rp {calculatePM(calculateOM(uniqueFsliData.find(f => f.name === selectedBasis)?.total || 0, omPercentage, getGroupMultiplier(locationCount)), haircutPercentage).toLocaleString()}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex items-center gap-2 text-[9px] font-bold text-slate-500 uppercase tracking-widest relative z-10">
+                                                                <AlertCircle className="h-3 w-3" />
+                                                                Based on {getGroupMultiplier(locationCount)}x Group Multiplier
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+
                                             <div className="flex flex-col items-center justify-center py-10 text-center gap-6 bg-indigo-50/30 rounded-[3rem] border-2 border-dashed border-indigo-100">
                                                 <div className="h-16 w-16 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg"><ShieldCheck className="h-8 w-8" /></div>
                                                 <div className="space-y-1"><h2 className="text-xl font-black text-slate-900 uppercase">{t('rcm:migration.baselining.ready_title')}</h2><p className="text-xs text-slate-500 max-w-sm mx-auto">{t('rcm:migration.baselining.ready_desc')}</p></div>
