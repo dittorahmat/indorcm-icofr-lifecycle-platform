@@ -16,7 +16,7 @@ import { useUnsavedChangesContext } from '@/context/UnsavedChangesContext';
 export function FiscalYearSelector() {
   const { workingYear, setWorkingYear } = useFiscalYearStore();
   const { isDirty } = useUnsavedChangesContext();
-  const { t } = useTranslation(['common', 'bpm']);
+  const { t: translate } = useTranslation(['common', 'bpm']);
   const { isDark } = useTheme();
 
   const currentYear = new Date().getFullYear();
@@ -32,9 +32,9 @@ export function FiscalYearSelector() {
     <div className="flex items-center gap-2 mr-2">
       <Select 
         value={workingYear} 
-        onValueChange={(v) => {
-          if (isDirty && !window.confirm(t('bpm:unsavedChanges.description'))) return;
-          setWorkingYear(v);
+        onValueChange={(val) => {
+          if (isDirty && !window.confirm(translate('bpm:unsavedChanges.description'))) return;
+          setWorkingYear(val);
         }}
       >
         <SelectTrigger className={cn(
@@ -51,7 +51,7 @@ export function FiscalYearSelector() {
         <SelectContent className="rounded-xl border-slate-200">
           {years.map((y) => (
             <SelectItem key={y} value={y} className="text-xs font-bold uppercase">
-              {t('common:cycles.yearCycle', { year: y })}
+              {translate('common:cycles.yearCycle', { year: y })}
             </SelectItem>
           ))}
         </SelectContent>
