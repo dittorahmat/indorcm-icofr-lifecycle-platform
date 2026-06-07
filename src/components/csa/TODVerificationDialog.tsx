@@ -223,18 +223,17 @@ export function TODVerificationDialog({
                     {t('csa_hub:tod.title')}
                   </DialogTitle>
                   <div className="flex items-center gap-2 mt-1">
-                     <Badge variant="outline" className="bg-slate-100 border-slate-200 text-slate-700 font-bold text-xs py-0">LINE 2 REVIEW & DESIGN SYNC</Badge>
+                     <Badge variant="outline" className="bg-slate-100 border-slate-200 text-slate-700 font-bold text-xs py-0">{t('csa_hub:tod.badgeSync')}</Badge>
                      <p className="text-slate-400 text-xs font-medium tracking-wide uppercase">{t('csa_hub:tod.subtitle')}</p>
                   </div>
-                </div>
-              </div>
-              <div className="text-right hidden md:block">
-                 <div className="text-xs font-black text-slate-500 uppercase tracking-widest">Control Reference</div>
-                 <div className="text-xl font-black tracking-tighter text-primary">{rcmMapping?.controlCode || '-'}</div>
-              </div>
-            </div>
-          </DialogHeader>
-
+                  </div>
+                  </div>
+                  <div className="text-right hidden md:block">
+                  <div className="text-xs font-black text-slate-500 uppercase tracking-widest">{t('csa_hub:tod.controlReference')}</div>
+                  <div className="text-xl font-black tracking-tighter text-primary">{rcmMapping?.controlCode || '-'}</div>
+                  </div>
+                  </div>
+                  </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 overflow-hidden flex flex-col md:flex-row">
               {/* Left Column: Editable Design Context (RCM) */}
@@ -242,7 +241,7 @@ export function TODVerificationDialog({
                 <div className="p-8 space-y-8">
                   <div className="flex items-center gap-2 text-primary font-black text-xs uppercase tracking-widest mb-6">
                     <Target className="h-4 w-4" />
-                    DESIGN CONTEXT (EDITABLE RCM)
+                    {t('csa_hub:tod.designContext')}
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
@@ -255,9 +254,9 @@ export function TODVerificationDialog({
                           <Select onValueChange={field.onChange} value={field.value || undefined}>
                             <FormControl><SelectTrigger className="h-9 text-xs border-slate-200"><SelectValue /></SelectTrigger></FormControl>
                             <SelectContent>
-                              <SelectItem value="High" className="text-rose-600 font-bold">High</SelectItem>
-                              <SelectItem value="Medium" className="text-amber-600 font-bold">Medium</SelectItem>
-                              <SelectItem value="Low" className="text-emerald-600 font-bold">Low</SelectItem>
+                              <SelectItem value="High" className="text-rose-600 font-bold">{t('risklibrary:form.high')}</SelectItem>
+                              <SelectItem value="Medium" className="text-amber-600 font-bold">{t('risklibrary:form.medium')}</SelectItem>
+                              <SelectItem value="Low" className="text-emerald-600 font-bold">{t('risklibrary:form.low')}</SelectItem>
                             </SelectContent>
                           </Select>
                         </FormItem>
@@ -268,7 +267,7 @@ export function TODVerificationDialog({
                       name="isFraudRelated"
                       render={({ field }) => (
                         <FormItem className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-3 h-9 mt-auto">
-                          <FormLabel className="text-xs font-black uppercase text-slate-400 mb-0">Fraud Related?</FormLabel>
+                          <FormLabel className="text-xs font-black uppercase text-slate-400 mb-0">{t('rcm:matrix.properties.fraud_related_q')}</FormLabel>
                           <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                         </FormItem>
                       )}
@@ -443,7 +442,7 @@ export function TODVerificationDialog({
 
                   <div className="space-y-6 pt-4 border-t border-slate-200">
                     <div>
-                      <h4 className="text-xs font-black uppercase text-slate-400 mb-3 tracking-widest">Compliance Markers</h4>
+                      <h4 className="text-xs font-black uppercase text-slate-400 mb-3 tracking-widest">{t('csa_hub:tod.complianceMarkers')}</h4>
                       <div className="grid grid-cols-4 gap-2">
                         {['ipoC', 'ipoA', 'ipoV', 'ipoRa'].map(f => (
                           <FormField
@@ -484,16 +483,16 @@ export function TODVerificationDialog({
                 <div className="p-8 space-y-8">
                   <div className="flex items-center gap-2 text-primary font-black text-xs uppercase tracking-widest mb-6">
                      <Target className="h-4 w-4" />
-                     EVALUASI RANCANGAN (LAMPIRAN 8)
+                     {t('csa_hub:tod.evaluationTitle')}
                   </div>
                   
                   {[
-                    { id: 'pilarObjective', label: t('csa_hub:tod.pillars.objective'), placeholder: 'Jelaskan bagaimana kontrol ini memitigasi risiko di samping...' },
-                    { id: 'pilarTiming', label: t('csa_hub:tod.pillars.timing'), placeholder: 'Analisis ketepatan waktu/frekuensi dibandingkan volume transaksi...' },
-                    { id: 'pilarAuthority', label: t('csa_hub:tod.pillars.authority'), placeholder: 'Verifikasi kompetensi dan pemisahan tugas pelaksana...' },
-                    { id: 'pilarReliability', label: t('csa_hub:tod.pillars.reliability'), placeholder: 'Evaluasi keandalan sumber data/laporan yang digunakan...' },
-                    { id: 'pilarCoverage', label: t('csa_hub:tod.pillars.coverage'), placeholder: 'Pastikan periode cakupan sudah sesuai dengan tahun buku...' },
-                    { id: 'pilarEvidence', label: t('csa_hub:tod.pillars.evidence'), placeholder: 'Ketersediaan audit trail untuk dilakukan pengujian TOE nantinya...' },
+                    { id: 'pilarObjective', label: t('csa_hub:tod.pillars.objective'), placeholder: t('csa_hub:tod.pillars.objectivePlaceholder') },
+                    { id: 'pilarTiming', label: t('csa_hub:tod.pillars.timing'), placeholder: t('csa_hub:tod.pillars.timingPlaceholder') },
+                    { id: 'pilarAuthority', label: t('csa_hub:tod.pillars.authority'), placeholder: t('csa_hub:tod.pillars.authorityPlaceholder') },
+                    { id: 'pilarReliability', label: t('csa_hub:tod.pillars.reliability'), placeholder: t('csa_hub:tod.pillars.reliabilityPlaceholder') },
+                    { id: 'pilarCoverage', label: t('csa_hub:tod.pillars.coverage'), placeholder: t('csa_hub:tod.pillars.coveragePlaceholder') },
+                    { id: 'pilarEvidence', label: t('csa_hub:tod.pillars.evidence'), placeholder: t('csa_hub:tod.pillars.evidencePlaceholder') },
                   ].map((pilar) => (
                     <div key={pilar.id} className="space-y-2 group">
                       <div className="flex justify-between items-center">
@@ -523,7 +522,7 @@ export function TODVerificationDialog({
                        </Label>
                        <Input 
                          {...form.register('kkReference')} 
-                         placeholder="Misal: KK-TOD-FIN-01" 
+                         placeholder={t('csa_hub:tod.kkRefPlaceholder')} 
                          className="h-11 font-mono text-xs border-slate-200 rounded-xl focus:ring-slate-400/10"
                        />
                     </div>
@@ -542,7 +541,7 @@ export function TODVerificationDialog({
                             )}
                             onClick={() => form.setValue('conclusion', 'Effective', { shouldDirty: true })}
                           >
-                            <CheckCircle2 className="h-4 w-4" /> Effective
+                            <CheckCircle2 className="h-4 w-4" /> {t('common:status.effective')}
                           </Button>
                           <Button
                             type="button"
@@ -553,7 +552,7 @@ export function TODVerificationDialog({
                             )}
                             onClick={() => form.setValue('conclusion', 'Ineffective', { shouldDirty: true })}
                           >
-                            <XCircle className="h-4 w-4" /> Ineffective
+                            <XCircle className="h-4 w-4" /> {t('common:status.ineffective')}
                           </Button>
                        </div>
                     </div>
@@ -561,11 +560,11 @@ export function TODVerificationDialog({
 
                   <div className="space-y-2">
                      <Label className="text-xs font-black uppercase text-slate-500">
-                       Overall Assessment Comment
+                       {t('csa_hub:tod.overallComment')}
                      </Label>
                      <Textarea 
                        {...form.register('comment')}
-                       placeholder="Berikan kesimpulan akhir mengenai rancangan kontrol ini..."
+                       placeholder={t('csa_hub:tod.overallCommentPlaceholder')}
                        className="min-h-[80px] text-xs resize-none border-slate-200 rounded-xl focus:ring-slate-400/10"
                      />
                   </div>
@@ -575,7 +574,7 @@ export function TODVerificationDialog({
                       {t('common:actions.cancel')}
                     </Button>
                     <Button type="submit" className="bg-slate-900 hover:bg-slate-800 shadow-md px-8 py-6 rounded-2xl font-black uppercase tracking-widest text-xs" disabled={isPending}>
-                      {isPending ? "Syncing..." : t('csa_hub:tod.saveEvaluation')}
+                      {isPending ? t('common:actions.save') + "..." : t('csa_hub:tod.saveEvaluation')}
                     </Button>
                   </div>
                 </div>

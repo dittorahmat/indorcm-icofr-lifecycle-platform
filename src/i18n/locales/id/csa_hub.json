@@ -141,7 +141,7 @@
     }
   },
   "tod": {
-    "title": "Lampiran 8: Verifikasi Rancangan Pengendalian (TOD)",
+    "title": "LAMPIRAN 8 – Ilustrasi Verifikasi Rancangan Pengendalian",
     "subtitle": "Alur Kerja Evaluasi Lini 2",
     "matrixTitle": "Matriks Verifikasi Desain & Bukti Transaksi",
     "rcmAttributes": "Atribut Pengendalian (RCM)",
@@ -150,13 +150,27 @@
     "conclusion": "Kesimpulan Desain",
     "justification": "Catatan / Justifikasi",
     "kkRef": "Referensi Kertas Kerja",
+    "designContext": "KONTEKS DESAIN (EDITABLE RCM)",
+    "evaluationTitle": "EVALUASI RANCANGAN (LAMPIRAN 8)",
+    "controlReference": "Referensi Kontrol",
+    "kkRefPlaceholder": "Misal: KK-TOD-FIN-01",
+    "overallComment": "Komentar Asesmen Keseluruhan",
+    "overallCommentPlaceholder": "Berikan kesimpulan akhir mengenai rancangan kontrol ini...",
+    "badgeSync": "SINGKRONISASI DESAIN & REVIEW LINI 2",
+    "complianceMarkers": "Marker Kepatuhan",
     "pillars": {
       "objective": "Pencapaian Objektif",
       "timing": "Ketepatan Waktu",
       "authority": "Wewenang & Kompetensi",
       "reliability": "Keandalan Informasi",
       "coverage": "Periode Cakupan",
-      "evidence": "Bukti yang Tersedia"
+      "evidence": "Bukti yang Tersedia",
+      "objectivePlaceholder": "Jelaskan bagaimana kontrol ini memitigasi risiko di samping...",
+      "timingPlaceholder": "Analisis ketepatan waktu/frekuensi dibandingkan volume transaksi...",
+      "authorityPlaceholder": "Verifikasi kompetensi dan pemisahan tugas pelaksana...",
+      "reliabilityPlaceholder": "Evaluasi keandalan sumber data/laporan yang digunakan...",
+      "coveragePlaceholder": "Pastikan periode cakupan sudah sesuai dengan tahun buku...",
+      "evidencePlaceholder": "Ketersediaan audit trail untuk dilakukan pengujian TOE nantinya..."
     }
   },
   "page": {

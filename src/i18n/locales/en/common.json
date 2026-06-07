@@ -25,7 +25,9 @@
     "approved": "Approved",
     "rejected": "Rejected",
     "active": "Active",
-    "mapped": "Mapped"
+    "mapped": "Mapped",
+    "effective": "Effective",
+    "ineffective": "Ineffective"
   },
   "notifications": {
     "success": "Success",

@@ -25,7 +25,9 @@
     "approved": "Disetujui",
     "rejected": "Ditolak",
     "active": "Aktif",
-    "mapped": "Terpetakan"
+    "mapped": "Terpetakan",
+    "effective": "Efektif",
+    "ineffective": "Tidak Efektif"
   },
   "notifications": {
     "success": "Sukses",

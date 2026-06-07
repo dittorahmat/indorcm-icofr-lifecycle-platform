@@ -141,7 +141,7 @@
     }
   },
   "tod": {
-    "title": "Lampiran 8: Control Design Verification (TOD)",
+    "title": "APPENDIX 8 – Control Design Verification Illustration",
     "subtitle": "Line 2 Evaluation Workflow",
     "matrixTitle": "Design Verification & Evidence Matrix",
     "rcmAttributes": "Control Attributes (RCM)",
@@ -150,13 +150,27 @@
     "conclusion": "Design Conclusion",
     "justification": "Notes / Justification",
     "kkRef": "Workpaper Reference",
+    "designContext": "DESIGN CONTEXT (EDITABLE RCM)",
+    "evaluationTitle": "DESIGN EVALUATION (APPENDIX 8)",
+    "controlReference": "Control Reference",
+    "kkRefPlaceholder": "e.g., KK-TOD-FIN-01",
+    "overallComment": "Overall Assessment Comment",
+    "overallCommentPlaceholder": "Provide a final conclusion regarding this control design...",
+    "badgeSync": "LINE 2 REVIEW & DESIGN SYNC",
+    "complianceMarkers": "Compliance Markers",
     "pillars": {
       "objective": "Objective Achievement",
       "timing": "Timing Accuracy",
       "authority": "Authority & Competence",
       "reliability": "Information Reliability",
       "coverage": "Period Coverage",
-      "evidence": "Evidence Availability"
+      "evidence": "Evidence Availability",
+      "objectivePlaceholder": "Explain how this control mitigates the risk on the left...",
+      "timingPlaceholder": "Analyze timing/frequency accuracy compared to transaction volume...",
+      "authorityPlaceholder": "Verify competence and separation of duties for the performer...",
+      "reliabilityPlaceholder": "Evaluate the reliability of data sources/reports used...",
+      "coveragePlaceholder": "Ensure the coverage period matches the fiscal year...",
+      "evidencePlaceholder": "Availability of audit trail for subsequent TOE testing..."
     }
   },
   "page": {
