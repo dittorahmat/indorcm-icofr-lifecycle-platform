@@ -18,6 +18,7 @@ import { DashboardKPIs } from '@/components/dashboard/DashboardKPIs';
 import { COSOCoverageGrid } from '@/components/dashboard/COSOCoverageGrid';
 import { ActionCenter } from '@/components/dashboard/ActionCenter';
 import { LifecycleProgress } from '@/components/dashboard/LifecycleProgress';
+import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 
 const ComplianceCharts = React.lazy(() => import('@/components/dashboard/ComplianceCharts').then(m => ({ default: m.ComplianceCharts })));
 
@@ -46,20 +47,21 @@ const itemVariants: Variants = {
 export function Dashboard() {
   const { t } = useTranslation('dashboard');
   const navigate = useNavigate();
+  const { workingYear } = useFiscalYearStore();
 
   const { data: rcmData, isLoading: rcmLoading } = useQuery({
-    queryKey: ['rcm'],
-    queryFn: () => api<{ items: RCM[] }>('/api/rcm'),
+    queryKey: ['rcm', workingYear],
+    queryFn: () => api<{ items: RCM[] }>(`/api/rcm?year=${workingYear}`),
   });
 
   const { data: controlsData, isLoading: controlsLoading } = useQuery({
-    queryKey: ['controls'],
-    queryFn: () => api<{ items: Control[] }>('/api/controls'),
+    queryKey: ['controls', workingYear],
+    queryFn: () => api<{ items: Control[] }>(`/api/controls?year=${workingYear}`),
   });
 
   const { data: deficienciesData, isLoading: deficienciesLoading } = useQuery({
-    queryKey: ['deficiencies'],
-    queryFn: () => api<{ items: Deficiency[] }>('/api/deficiencies'),
+    queryKey: ['deficiencies', workingYear],
+    queryFn: () => api<{ items: Deficiency[] }>(`/api/deficiencies?year=${workingYear}`),
   });
 
   const cosoCoverage = React.useMemo(() => {
@@ -132,13 +134,14 @@ export function Dashboard() {
         </PageHeader>
 
         <motion.div variants={itemVariants}>
-          <LifecycleProgress currentStage="evaluasi" />
+          <LifecycleProgress currentStage="evaluasi" workingYear={workingYear} />
         </motion.div>
 
         <DashboardKPIs 
           controlsCount={controlsData?.items.length || 0}
           openDeficienciesCount={openDeficiencies.length}
           cosoPercentage={cosoPercentage}
+          workingYear={workingYear}
         />
 
         {/* MAIN DASHBOARD GRID */}

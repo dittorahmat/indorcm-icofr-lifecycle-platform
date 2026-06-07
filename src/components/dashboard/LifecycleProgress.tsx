@@ -15,9 +15,10 @@ const stages = [
 
 interface LifecycleProgressProps {
   currentStage?: string;
+  workingYear?: string;
 }
 
-export function LifecycleProgress({ currentStage = 'evaluasi' }: LifecycleProgressProps) {
+export function LifecycleProgress({ currentStage = 'evaluasi', workingYear = '2026' }: LifecycleProgressProps) {
   const { t } = useTranslation('dashboard');
   
   const currentIdx = stages.findIndex(s => s.id === currentStage);
@@ -30,7 +31,7 @@ export function LifecycleProgress({ currentStage = 'evaluasi' }: LifecycleProgre
           <p className="text-xs text-slate-500">Regulation SK-5/DKU.MBU/11/2024 Compliance Path</p>
         </div>
         <div className="px-3 py-1 bg-slate-100 rounded-full text-[10px] font-bold text-slate-600 uppercase tracking-wider border border-slate-200">
-          FY 2026 Cycle
+          FY {workingYear} Cycle
         </div>
       </div>
 

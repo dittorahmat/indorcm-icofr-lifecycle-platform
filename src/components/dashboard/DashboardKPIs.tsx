@@ -21,9 +21,10 @@ interface DashboardKPIsProps {
   controlsCount: number;
   openDeficienciesCount: number;
   cosoPercentage: string;
+  workingYear?: string;
 }
 
-export function DashboardKPIs({ controlsCount, openDeficienciesCount, cosoPercentage }: DashboardKPIsProps) {
+export function DashboardKPIs({ controlsCount, openDeficienciesCount, cosoPercentage, workingYear = '2026' }: DashboardKPIsProps) {
   const { t } = useTranslation('dashboard');
 
   return (
@@ -37,7 +38,7 @@ export function DashboardKPIs({ controlsCount, openDeficienciesCount, cosoPercen
           </CardHeader>
           <CardContent>
             <div className="text-4xl font-bold tracking-tight">{t('kpis.ready')}</div>
-            <p className="text-[11px] text-primary-foreground/60 mt-1.5 font-bold uppercase tracking-wide">{t('kpis.reportingCycle', { year: '2026' })}</p>
+            <p className="text-[11px] text-primary-foreground/60 mt-1.5 font-bold uppercase tracking-wide">{t('kpis.reportingCycle', { year: workingYear })}</p>
             <div className="mt-6 h-1.5 w-full bg-primary-foreground/10 rounded-full overflow-hidden relative">
                <motion.div 
                 initial={{ scaleX: 0 }}
