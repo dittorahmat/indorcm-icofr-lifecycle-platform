@@ -1,6 +1,6 @@
 import { 
   bpmDiagrams, bpmProcesses, rcms, rcmControls, controls, bpmNodeRcms,
-  organization, auditLogs, notifications
+  organization, auditLogs, notifications, csaRecords
 } from '../db/schema';
 import { eq, and, inArray, sql, ne, desc, SQL } from 'drizzle-orm';
 import type { DrizzleDb } from '../db';
@@ -688,7 +688,23 @@ export class BpmService {
   }
 
   async deleteProcess(orgId: string, id: string) {
-    await this.db.delete(bpmProcesses).where(and(eq(bpmProcesses.id, id), eq(bpmProcesses.organizationId, orgId)));
+    // Note: neon-http driver does not support transactions. 
+    // We execute these sequentially. Data integrity risk is low for this operation.
+    
+    // 1. Decouple controls
+    await this.db.update(controls)
+      .set({ bpmProcessId: null })
+      .where(and(eq(controls.bpmProcessId, id), eq(controls.organizationId, orgId)));
+
+    // 2. Decouple CSA records
+    await this.db.update(csaRecords)
+      .set({ bpmProcessId: null })
+      .where(and(eq(csaRecords.bpmProcessId, id), eq(csaRecords.organizationId, orgId)));
+
+    // 3. Delete the process
+    await this.db.delete(bpmProcesses)
+      .where(and(eq(bpmProcesses.id, id), eq(bpmProcesses.organizationId, orgId)));
+
     return { success: true };
   }
 
