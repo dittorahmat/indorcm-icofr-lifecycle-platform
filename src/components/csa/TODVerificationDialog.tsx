@@ -212,19 +212,19 @@ export function TODVerificationDialog({
     <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="max-w-[1200px] max-h-[95vh] overflow-hidden p-0 flex flex-col border-none shadow-2xl">
-          <DialogHeader className="p-6 bg-slate-900 text-white shrink-0">
+          <DialogHeader className="p-6 bg-mancity-pattern text-primary-foreground shrink-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="p-2.5 bg-slate-800 rounded-2xl shadow-md">
-                  <ShieldCheck className="h-7 w-7 text-white" />
+                <div className="p-2.5 bg-primary/20 backdrop-blur-md rounded-2xl shadow-md border border-white/20">
+                  <ShieldCheck className="h-7 w-7 text-primary-foreground" />
                 </div>
                 <div>
-                  <DialogTitle className="text-2xl font-black tracking-tighter uppercase italic">
+                  <DialogTitle className="text-2xl font-black tracking-tighter uppercase italic text-primary-foreground">
                     {t('csa_hub:tod.title')}
                   </DialogTitle>
                   <div className="flex items-center gap-2 mt-1">
-                     <Badge variant="outline" className="bg-slate-100 border-slate-200 text-slate-700 font-bold text-xs py-0">{t('csa_hub:tod.badgeSync')}</Badge>
-                     <p className="text-slate-400 text-xs font-medium tracking-wide uppercase">{t('csa_hub:tod.subtitle')}</p>
+                     <Badge variant="outline" className="bg-white/90 border-transparent text-primary-foreground font-bold text-xs py-0">{t('csa_hub:tod.badgeSync')}</Badge>
+                     <p className="text-primary-foreground/60 text-xs font-medium tracking-wide uppercase">{t('csa_hub:tod.subtitle')}</p>
                   </div>
                   </div>
                   </div>
@@ -573,7 +573,7 @@ export function TODVerificationDialog({
                     <Button type="button" variant="ghost" onClick={() => handleOpenChange(false)} className="font-black uppercase text-xs tracking-widest text-slate-400">
                       {t('common:actions.cancel')}
                     </Button>
-                    <Button type="submit" className="bg-slate-900 hover:bg-slate-800 shadow-md px-8 py-6 rounded-2xl font-black uppercase tracking-widest text-xs" disabled={isPending}>
+                    <Button type="submit" className="bg-mancity-pattern hover:opacity-90 shadow-md px-8 py-6 rounded-2xl font-black uppercase tracking-widest text-xs text-primary-foreground" disabled={isPending}>
                       {isPending ? t('common:actions.save') + "..." : t('csa_hub:tod.saveEvaluation')}
                     </Button>
                   </div>

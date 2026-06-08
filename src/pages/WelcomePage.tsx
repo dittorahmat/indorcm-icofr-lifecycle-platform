@@ -26,8 +26,8 @@ export function WelcomePage() {
           transition={{ duration: 0.4, delay: 0.1 }}
           className="flex justify-center mb-10"
         >
-          <div className="h-24 w-24 bg-slate-900 rounded-3xl flex items-center justify-center shadow-2xl shadow-slate-200">
-            <Shield className="h-12 w-12 text-white" />
+          <div className="h-24 w-24 bg-mancity-pattern rounded-3xl flex items-center justify-center shadow-2xl shadow-blue-100">
+            <Shield className="h-12 w-12 text-primary-foreground" />
           </div>
         </motion.div>
 
@@ -62,7 +62,7 @@ export function WelcomePage() {
           <Button
             size="lg"
             onClick={() => navigate('/dashboard')}
-            className="bg-slate-900 hover:bg-slate-800 text-white shadow-xl shadow-slate-200 transition-all px-10 h-14 text-base font-bold rounded-xl"
+            className="bg-mancity-pattern hover:opacity-90 text-primary-foreground shadow-xl shadow-blue-100 transition-all px-10 h-14 text-base font-bold rounded-xl"
           >
             {t('getStarted')}
             <ArrowRight className="ml-2 h-5 w-5" />

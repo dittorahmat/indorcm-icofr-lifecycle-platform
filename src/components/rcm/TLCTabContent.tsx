@@ -46,7 +46,7 @@ export function TLCTabContent({
             onChange={(e) => onSearchChange(e.target.value)} 
           />
         </div>
-        <Button onClick={() => navigate('/rcm/tlc')} className="h-11 gap-3 bg-slate-900 hover:bg-slate-800 shadow-lg shadow-slate-200 transition-all font-bold text-xs uppercase tracking-widest px-6 rounded-xl">
+        <Button onClick={() => navigate('/rcm/tlc')} className="h-11 gap-3 bg-mancity-pattern hover:opacity-90 shadow-lg shadow-blue-100 transition-all font-bold text-xs uppercase tracking-widest px-6 rounded-xl text-primary-foreground">
           <LayoutDashboard className="h-4 w-4" /> Buka Matriks Horizontal
         </Button>
       </div>

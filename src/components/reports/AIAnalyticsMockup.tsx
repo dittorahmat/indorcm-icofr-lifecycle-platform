@@ -34,20 +34,20 @@ export function AIAnalyticsMockup() {
   
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between p-6 bg-gradient-to-r from-indigo-900 via-slate-900 to-indigo-950 rounded-xl border border-indigo-500/30 shadow-2xl overflow-hidden relative group">
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20 pointer-events-none"></div>
+      <div className="flex items-center justify-between p-6 bg-mancity-pattern text-primary-foreground rounded-xl shadow-2xl overflow-hidden relative group">
+        <div className="absolute inset-0 bg-black/5 pointer-events-none"></div>
         <div className="absolute top-0 right-0 p-10 opacity-10 group-hover:opacity-20 transition-opacity">
-          <BrainCircuit className="h-40 w-40 text-white" />
+          <BrainCircuit className="h-40 w-40 text-primary-foreground" />
         </div>
         
         <div className="relative z-10 space-y-2">
           <div className="flex items-center gap-2">
-            <Badge className="bg-indigo-500 hover:bg-indigo-600 text-xs font-black tracking-tighter uppercase">Enterprise AI</Badge>
-            <div className="h-1 w-1 rounded-full bg-slate-500"></div>
-            <span className="text-indigo-200 text-xs font-bold uppercase tracking-widest">Digital Audit Core</span>
+            <Badge className="bg-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/30 text-xs font-black tracking-tighter uppercase border-none">Enterprise AI</Badge>
+            <div className="h-1 w-1 rounded-full bg-primary-foreground/50"></div>
+            <span className="text-primary-foreground/80 text-xs font-bold uppercase tracking-widest">Digital Audit Core</span>
           </div>
-          <h2 className="text-3xl font-black text-white tracking-tighter">Digital Analytics Hub</h2>
-          <p className="text-slate-400 text-sm max-w-md leading-relaxed">
+          <h2 className="text-3xl font-black text-primary-foreground tracking-tighter">Digital Analytics Hub</h2>
+          <p className="text-primary-foreground/70 text-sm max-w-md leading-relaxed">
             Advanced Predictive Analytics & Continuous Control Monitoring for <strong>{companyName}</strong>.
           </p>
         </div>

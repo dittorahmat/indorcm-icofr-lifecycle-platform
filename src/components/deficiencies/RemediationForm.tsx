@@ -93,13 +93,13 @@ export function RemediationForm({ isOpen, setIsOpen, actionPlan, onSubmit, isLoa
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="sm:max-w-4xl overflow-y-auto max-h-[90vh] flex flex-col p-0 border-none">
-        <div className="bg-indigo-900 p-6 text-white shrink-0">
+        <div className="bg-mancity-pattern p-6 text-primary-foreground shrink-0">
            <DialogHeader>
-             <DialogTitle className="flex items-center gap-2 text-white font-display text-xl uppercase tracking-tight">
-               <ShieldCheck className="h-6 w-6 text-yellow-400" />
+             <DialogTitle className="flex items-center gap-2 text-primary-foreground font-display text-xl uppercase tracking-tight">
+               <ShieldCheck className="h-6 w-6 text-primary-foreground" />
                {t('form.title')}
              </DialogTitle>
-             <DialogDescription className="text-indigo-200 text-xs font-medium">
+             <DialogDescription className="text-primary-foreground/60 text-xs font-medium">
                {t('form.description')}
              </DialogDescription>
            </DialogHeader>

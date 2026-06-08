@@ -281,18 +281,18 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
             }
         }}>
             <DialogContent className="max-w-[90vw] w-[1200px] h-[85vh] flex flex-col p-0 overflow-hidden border-none shadow-2xl rounded-[2.5rem]">
-                <DialogHeader className="px-8 py-6 bg-slate-900 text-white flex flex-row items-center justify-between">
+                <DialogHeader className="px-8 py-6 bg-mancity-pattern text-primary-foreground flex flex-row items-center justify-between">
                     <div className="space-y-1">
-                        <DialogTitle className="text-2xl font-black uppercase tracking-tight flex items-center gap-3">
-                            <Zap className="h-6 w-6 text-indigo-400" />
+                        <DialogTitle className="text-2xl font-black uppercase tracking-tight flex items-center gap-3 text-primary-foreground">
+                            <Zap className="h-6 w-6 text-primary-foreground" />
                             {t('rcm:migration.title')}
                         </DialogTitle>
-                        <p className="text-xs text-slate-400 font-medium">{t('rcm:migration.description')}</p>
+                        <p className="text-xs text-primary-foreground/60 font-medium">{t('rcm:migration.description')}</p>
                     </div>
                     <div className="flex items-center gap-6 mr-8">
                         <div className="flex flex-col items-end gap-1">
-                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Import for Cycle</span>
-                            <span className="text-xs font-bold text-indigo-300">{fiscalYear}</span>
+                            <span className="text-[9px] font-black text-primary-foreground/60 uppercase tracking-widest">Import for Cycle</span>
+                            <span className="text-xs font-bold text-primary-foreground">{fiscalYear}</span>
                         </div>
                     </div>
                 </DialogHeader>
@@ -404,7 +404,7 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
                                             </div>
                                             <div className="flex justify-end gap-3 pt-4">
                                                 <Button variant="ghost" onClick={() => setStep(1)} className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Back to Upload</Button>
-                                                <Button onClick={() => setStep(3)} className="rounded-xl px-10 h-11 font-black uppercase tracking-widest bg-slate-900 text-white shadow-lg text-[10px]">Next: View Summary</Button>
+                                                <Button onClick={() => setStep(3)} className="rounded-xl px-10 h-11 font-black uppercase tracking-widest bg-mancity-pattern text-primary-foreground hover:opacity-90 shadow-lg text-[10px]">Next: View Summary</Button>
                                             </div>
                                         </motion.div>
                                     )}
@@ -478,7 +478,7 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
                                                             </div>
                                                         </div>
 
-                                                        <div className="bg-slate-900 rounded-[2rem] p-6 text-white space-y-6 flex flex-col justify-center border-4 border-slate-800 shadow-2xl relative overflow-hidden group">
+                                                        <div className="bg-mancity-pattern rounded-[2rem] p-6 text-primary-foreground space-y-6 flex flex-col justify-center border-4 border-white/20 shadow-2xl relative overflow-hidden group">
                                                             <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
                                                                 <Calculator className="h-32 w-32 -rotate-12" />
                                                             </div>

@@ -27,7 +27,7 @@ export function HomePage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <div className="inline-flex items-center rounded-full bg-slate-900 px-3 py-1 text-xs font-bold uppercase tracking-widest text-white mb-6 shadow-md shadow-slate-200">
+              <div className="inline-flex items-center rounded-full bg-mancity-pattern px-3 py-1 text-xs font-bold uppercase tracking-widest text-primary-foreground mb-6 shadow-md shadow-blue-100">
                 <Shield className="h-4 w-4 mr-2" />
                 Compliance with SK-5/DKU.MBU/11/2024
               </div>
@@ -38,7 +38,7 @@ export function HomePage() {
                 IndoGRC Pro digitizes the internal control over financial reporting lifecycle—from planning and scoping to management assessment and audit reporting.
               </p>
               <div className="mt-10 flex justify-center gap-4">
-                <Button size="lg" asChild className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-primary/40 transition-all duration-300 transform hover:-translate-y-0.5">
+                <Button size="lg" asChild className="bg-mancity-pattern hover:opacity-90 text-primary-foreground shadow-lg shadow-blue-100 transition-all duration-300 transform hover:-translate-y-0.5">
                   <Link to="/dashboard">Get Started</Link>
                 </Button>
                 <Button size="lg" variant="outline" asChild>

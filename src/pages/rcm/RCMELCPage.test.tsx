@@ -6,6 +6,7 @@ import { I18nextProvider } from 'react-i18next';
 import i18n from '@/i18n/config';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { SidebarProvider } from '@/components/ui/sidebar';
+import { UnsavedChangesProvider } from '@/context/UnsavedChangesContext';
 import React from 'react';
 
 // Create a wrapper with all necessary providers
@@ -22,9 +23,11 @@ const createWrapper = () => {
     {
       path: "/",
       element: (
-        <SidebarProvider>
-          <RCMELCPage />
-        </SidebarProvider>
+        <UnsavedChangesProvider>
+          <SidebarProvider>
+            <RCMELCPage />
+          </SidebarProvider>
+        </UnsavedChangesProvider>
       ),
     },
   ];

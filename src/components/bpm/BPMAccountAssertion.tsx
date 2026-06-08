@@ -66,7 +66,7 @@ export function BPMAccountAssertion({
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 10 }}
                 >
-                  <Button size="sm" onClick={onSave} disabled={isSaving} className="h-9 px-6 rounded-xl text-[10px] font-bold uppercase tracking-widest gap-2 bg-slate-900 hover:bg-slate-800 shadow-md">
+                  <Button size="sm" onClick={onSave} disabled={isSaving} className="h-9 px-6 rounded-xl text-[10px] font-bold uppercase tracking-widest gap-2 bg-mancity-pattern hover:opacity-90 text-primary-foreground shadow-md">
                     {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
                     {t('common:actions.save')}
                   </Button>

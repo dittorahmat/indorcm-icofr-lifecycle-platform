@@ -81,15 +81,15 @@ export const ReportHeader = ({
 
       {/* Meta Bar */}
       {subProcess && (
-        <div className="bg-slate-900 text-white p-3 rounded-lg flex justify-between items-center px-6 shadow-md">
+        <div className="bg-mancity-pattern text-primary-foreground p-3 rounded-lg flex justify-between items-center px-6 shadow-md">
            <div className="flex items-center gap-3">
-              <span className="text-xs font-black text-white/40 uppercase tracking-widest">Sub-Proses:</span>
-              <span className="text-sm font-black uppercase tracking-tight">{subProcess}</span>
+              <span className="text-xs font-black text-primary-foreground/40 uppercase tracking-widest">Sub-Proses:</span>
+              <span className="text-sm font-black uppercase tracking-tight text-primary-foreground">{subProcess}</span>
            </div>
            <div className="flex items-center gap-3">
-              <div className="h-6 w-[1px] bg-white/10" />
-              <ShieldCheck className="h-4 w-4 text-emerald-400" />
-              <span className="text-xs font-black uppercase tracking-widest">Regulatory Aligned SK-5/2024</span>
+              <div className="h-6 w-[1px] bg-primary-foreground/10" />
+              <ShieldCheck className="h-4 w-4 text-emerald-600" />
+              <span className="text-xs font-black uppercase tracking-widest text-primary-foreground">Regulatory Aligned SK-5/2024</span>
            </div>
         </div>
       )}

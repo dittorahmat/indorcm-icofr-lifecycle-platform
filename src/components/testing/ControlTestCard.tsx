@@ -258,7 +258,7 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
                           type="submit" 
                           disabled={isAuthenticating || mutation.isPending} 
                           onClick={() => { form.setValue('testType', 'TOD'); form.setValue('result', 'Effective'); }} 
-                          className="h-11 px-8 rounded-xl font-bold text-xs uppercase tracking-widest bg-slate-900 hover:bg-slate-800 shadow-lg shadow-slate-200 transition-all"
+                          className="h-11 px-8 rounded-xl font-bold text-xs uppercase tracking-widest bg-mancity-pattern hover:opacity-90 shadow-lg shadow-blue-100 transition-all text-primary-foreground"
                         >
                           {isAuthenticating ? <Loader2 className="h-4 w-4 animate-spin mr-2"/> : <ShieldCheck className="h-4 w-4 mr-2"/>} 
                           {t('actions.effective')}
@@ -449,7 +449,7 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
                           type="submit" 
                           disabled={isAuthenticating || mutation.isPending} 
                           onClick={() => { form.setValue('testType', 'TOE'); form.setValue('result', 'Effective'); }} 
-                          className="h-11 px-8 rounded-xl font-bold text-xs uppercase tracking-widest bg-slate-900 hover:bg-slate-800 shadow-lg shadow-slate-200 transition-all"
+                          className="h-11 px-8 rounded-xl font-bold text-xs uppercase tracking-widest bg-mancity-pattern hover:opacity-90 shadow-lg shadow-blue-100 transition-all text-primary-foreground"
                         >
                           {isAuthenticating ? <Loader2 className="h-4 w-4 animate-spin mr-2"/> : <ShieldCheck className="h-4 w-4 mr-2"/>} 
                           {t('actions.effective')}

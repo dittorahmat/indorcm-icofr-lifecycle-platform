@@ -76,7 +76,7 @@ export function ELCForm({ data, onChange }: ELCFormProps) {
                         <span className="text-xs font-medium text-slate-700 underline decoration-dotted decoration-slate-300 underline-offset-2">{p.desc}</span>
                       </div>
                     </TooltipTrigger>
-                    <TooltipContent side="right" className="max-w-[250px] bg-slate-900 text-white p-3">
+                    <TooltipContent side="right" className="max-w-[250px] bg-mancity-pattern text-primary-foreground p-3">
                        <p className="text-xs leading-relaxed">{t(`matrix.coso_tooltips.p${p.id}`)}</p>
                     </TooltipContent>
                   </Tooltip>

@@ -82,7 +82,7 @@ export function ITGCTabContent({
                   </div>
                 </TableCell>
                 <TableCell className="text-center py-4">
-                  <Badge className="bg-slate-900 text-white border-none text-[9px] font-bold uppercase tracking-widest px-2.5 h-6">
+                  <Badge className="bg-mancity-pattern text-primary-foreground border-none text-[9px] font-bold uppercase tracking-widest px-2.5 h-6">
                     {ctrl.automatedSubNature || 'Manual'}
                   </Badge>
                 </TableCell>

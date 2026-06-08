@@ -23,4 +23,26 @@ describe('useFiscalYearStore', () => {
     const params = new URLSearchParams(window.location.search);
     expect(params.get('year')).toBe('2024');
   });
+
+  it('should preserve setWorkingYear after merging with URL year', () => {
+    const merge = useFiscalYearStore.persist.getOptions().merge;
+    if (!merge) throw new Error('Merge function not found');
+
+    const currentState = useFiscalYearStore.getState();
+    const persistedState = { workingYear: '2023' };
+    
+    // Simulate URL with year
+    const originalSearch = window.location.search;
+    const url = new URL(window.location.href);
+    url.searchParams.set('year', '2025');
+    window.history.replaceState({}, '', url.toString());
+
+    const mergedState = merge(persistedState, currentState) as any;
+    
+    expect(mergedState.workingYear).toBe('2025');
+    expect(typeof mergedState.setWorkingYear).toBe('function');
+
+    // Cleanup
+    window.history.replaceState({}, '', originalSearch || '?');
+  });
 });

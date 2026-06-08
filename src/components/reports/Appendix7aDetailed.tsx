@@ -78,12 +78,12 @@ export const Appendix7aDetailed = React.forwardRef<HTMLDivElement, Appendix7aDet
             <h2 className="text-xs font-black uppercase tracking-widest text-slate-400 border-b pb-1">II. Rincian Hasil Pengujian Sampel</h2>
             <div className="border-2 border-slate-900 overflow-hidden rounded-lg">
               <Table>
-                <TableHeader className="bg-slate-900">
+                <TableHeader className="bg-mancity-pattern">
                   <TableRow className="hover:bg-transparent">
-                    <TableHead className="text-xs font-black text-white w-10 text-center">NO</TableHead>
-                    <TableHead className="text-xs font-black text-white min-w-[150px]">REFERENSI SAMPEL / TRANSAKSI</TableHead>
+                    <TableHead className="text-xs font-black text-primary-foreground w-10 text-center">NO</TableHead>
+                    <TableHead className="text-xs font-black text-primary-foreground min-w-[150px]">REFERENSI SAMPEL / TRANSAKSI</TableHead>
                     {controlIds.map(id => (
-                      <TableHead key={id} className="text-xs font-black text-white text-center border-l border-white/10 uppercase py-4">
+                      <TableHead key={id} className="text-xs font-black text-primary-foreground text-center border-l border-white/10 uppercase py-4">
                         <div className="flex flex-col gap-1">
                           <span>{controlMap[id]?.code || id}</span>
                           <span className="text-xs opacity-60 font-normal leading-tight line-clamp-2">{controlMap[id]?.name}</span>
@@ -129,14 +129,14 @@ export const Appendix7aDetailed = React.forwardRef<HTMLDivElement, Appendix7aDet
 
           {/* Section III: Kesimpulan & Sign-off */}
           <div className="space-y-6 pt-8">
-             <div className="p-6 bg-slate-900 text-white rounded-xl shadow-xl flex justify-between items-center">
+             <div className="p-6 bg-mancity-pattern text-primary-foreground rounded-xl shadow-xl flex justify-between items-center">
                 <div className="space-y-1">
-                   <p className="text-xs font-black text-indigo-300 uppercase tracking-widest">Simpulan Akhir Efektivitas</p>
-                   <h3 className="text-2xl font-black uppercase italic italic">{record.result}</h3>
+                   <p className="text-xs font-black text-primary-foreground/60 uppercase tracking-widest">Simpulan Akhir Efektivitas</p>
+                   <h3 className="text-2xl font-black uppercase italic italic text-primary-foreground">{record.result}</h3>
                 </div>
                 <div className="text-right">
-                   <ShieldCheck className="h-10 w-10 text-emerald-400 mb-1 ml-auto" />
-                   <p className="text-xs font-bold opacity-50 uppercase leading-none text-white">Verified by IndoGRC Forensic Engine</p>
+                   <ShieldCheck className="h-10 w-10 text-primary-foreground/80 mb-1 ml-auto" />
+                   <p className="text-xs font-bold opacity-50 uppercase leading-none text-primary-foreground">Verified by IndoGRC Forensic Engine</p>
                 </div>
              </div>
 

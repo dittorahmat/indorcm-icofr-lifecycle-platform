@@ -118,10 +118,13 @@ export class BpmService {
     // 1. Update Diagram Metadata & Log Action
     await this.updateDiagramMetadata(orgId, userId, id, body, oldDiagram);
 
+    const diagramYear = body.year ? parseInt(body.year.toString()) : (oldDiagram?.year || null);
+
     // 2. Resolve BPM Process & NoGL
     const matchedProcesses = await this.db.select().from(bpmProcesses)
       .where(and(
         eq(bpmProcesses.organizationId, orgId),
+        diagramYear ? eq(bpmProcesses.year, diagramYear) : sql`1=1`,
         sql`TRIM(LOWER(${bpmProcesses.name})) = TRIM(LOWER(${body.subProcess}))`
       )).limit(1);
     
@@ -136,7 +139,7 @@ export class BpmService {
 
     // 4. Sync Risks and Controls from Nodes
     const { activeRiskControlPairs, activeRiskIds, activeControlIds } = 
-      await this.syncRisksAndControlsFromNodes(orgId, id, nodes, bpmProcessId, noGL, body.name, body.subProcess);
+      await this.syncRisksAndControlsFromNodes(orgId, id, nodes, bpmProcessId, noGL, body.name, body.subProcess, diagramYear);
 
     // 5. Sync from Edges (Risk -> Control)
     await this.syncMappingsFromEdges(orgId, edges, nodes, activeRiskControlPairs);
@@ -183,7 +186,8 @@ export class BpmService {
     bpmProcessId: string | null, 
     noGL: string | null, 
     processName: string, 
-    subProcessName: string
+    subProcessName: string,
+    year: number | null
   ) {
     const activeRiskControlPairs = new Set<string>();
     const activeRiskIds = new Set<string>();
@@ -204,8 +208,8 @@ export class BpmService {
             activeControlIds.add(ctrlId);
             activeRiskControlPairs.add(`${riskId}:${ctrlId}`);
             
-            await this.syncRisk(orgId, diagramId, riskId, reg, processName, subProcessName);
-            await this.syncControl(orgId, ctrlId, riskId, reg, bpmProcessId, noGL, processName, subProcessName, node.data?.label);
+            await this.syncRisk(orgId, diagramId, riskId, reg, processName, subProcessName, year);
+            await this.syncControl(orgId, ctrlId, riskId, reg, bpmProcessId, noGL, processName, subProcessName, year, node.data?.label);
             await this.syncRcmControlMapping(orgId, riskId, ctrlId, reg, node.data?.label);
 
             if (!insertedRiskIdsForNode.has(riskId)) {
@@ -250,7 +254,7 @@ export class BpmService {
     return { activeRiskControlPairs, activeRiskIds, activeControlIds };
   }
 
-  private async syncRisk(orgId: string, diagramId: string, riskId: string, reg: any, processName: string, subProcessName: string) {
+  private async syncRisk(orgId: string, diagramId: string, riskId: string, reg: any, processName: string, subProcessName: string, year: number | null) {
     const existingRisk = await this.db.select().from(rcms).where(and(eq(rcms.id, riskId), eq(rcms.organizationId, orgId))).limit(1);
     if (existingRisk.length === 0) {
       await this.db.insert(rcms).values({
@@ -262,13 +266,15 @@ export class BpmService {
         isFraudRelated: reg.isFraudRelated || false,
         riskRating: reg.riskRating || "Low",
         status: "Draft",
-        diagramId
+        diagramId,
+        year
       });
     } else {
       await this.db.update(rcms).set({
         riskDescription: reg.riskDescription,
         isFraudRelated: reg.isFraudRelated,
         riskRating: reg.riskRating,
+        year: (existingRisk[0].year === null && year !== null) ? year : existingRisk[0].year
       }).where(eq(rcms.id, riskId));
     }
   }
@@ -282,10 +288,11 @@ export class BpmService {
     noGL: string | null, 
     processName: string, 
     subProcessName: string,
+    year: number | null,
     nodeLabel?: string
   ) {
     const existingCtrl = await this.db.select().from(controls).where(and(eq(controls.id, ctrlId), eq(controls.organizationId, orgId))).limit(1);
-    const controlData = {
+    const controlData: any = {
       name: reg.controlDescription || nodeLabel || "Draft Control",
       level: reg.classification || 'TLC',
       cosoPrinciples: reg.cosoPrinciples || [],
@@ -301,9 +308,14 @@ export class BpmService {
         organizationId: orgId,
         code: ctrlId,
         rcmId: riskId,
+        year,
         ...controlData
       });
     } else {
+      // Backfill year if missing
+      if (existingCtrl[0].year === null && year !== null) {
+        controlData.year = year;
+      }
       await this.db.update(controls).set(controlData).where(eq(controls.id, ctrlId));
     }
   }

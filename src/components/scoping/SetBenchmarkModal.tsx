@@ -119,12 +119,12 @@ export function SetBenchmarkModal({ snapshot: initialSnapshot, isOpen, onOpenCha
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col rounded-3xl overflow-hidden border-none shadow-2xl p-0">
-        <DialogHeader className="p-6 bg-slate-900 text-white">
-          <DialogTitle className="flex items-center gap-3 text-2xl font-black uppercase tracking-tight">
-            <Calculator className="h-6 w-6 text-indigo-400" />
+        <DialogHeader className="p-6 bg-mancity-pattern text-primary-foreground">
+          <DialogTitle className="flex items-center gap-3 text-2xl font-black uppercase tracking-tight text-primary-foreground">
+            <Calculator className="h-6 w-6 text-primary-foreground" />
             {t('benchmarkModal.title')}
           </DialogTitle>
-          <DialogDescription className="text-slate-400 font-medium">
+          <DialogDescription className="text-primary-foreground/60 font-medium">
             {t('benchmarkModal.description')}
           </DialogDescription>
         </DialogHeader>

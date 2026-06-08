@@ -297,11 +297,11 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
                     <p>{t('logic.description')}</p>
                     <ol className="space-y-3">
                       <li className="flex gap-3">
-                        <Badge className="h-4 w-4 p-0 flex items-center justify-center rounded-full bg-slate-900 border-none text-white text-[9px] font-black">1</Badge>
+                        <Badge className="h-4 w-4 p-0 flex items-center justify-center rounded-full bg-mancity-pattern border-none text-primary-foreground text-[9px] font-black">1</Badge>
                         <span>{t('logic.quant')}</span>
                       </li>
                       <li className="flex gap-3">
-                        <Badge className="h-4 w-4 p-0 flex items-center justify-center rounded-full bg-slate-900 border-none text-white text-[9px] font-black">2</Badge>
+                        <Badge className="h-4 w-4 p-0 flex items-center justify-center rounded-full bg-mancity-pattern border-none text-primary-foreground text-[9px] font-black">2</Badge>
                         <span>{t('logic.qual')}</span>
                       </li>
                     </ol>

@@ -570,7 +570,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear }: BPMEditorProps
               )}
               <Button 
                 size="sm" 
-                className="h-9 gap-2 bg-slate-900 hover:bg-slate-800 text-white shadow-sm transition-all font-bold text-[10px] uppercase tracking-widest px-6 rounded-xl" 
+                className="h-9 gap-2 bg-mancity-pattern hover:opacity-90 text-primary-foreground shadow-sm transition-all font-bold text-[10px] uppercase tracking-widest px-6 rounded-xl" 
                 onClick={() => saveMutation.mutate({ 
                   nodes, edges, name: `Flow: ${subProcess}`, subProcess, year: diagram?.year || parseInt(workingYear) 
                 })} 
@@ -649,7 +649,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear }: BPMEditorProps
                     </div>
 
                     <div className="pt-2">
-                      <Button variant="secondary" className="w-full h-10 gap-2 text-[10px] font-bold uppercase tracking-widest rounded-xl bg-slate-900 text-white hover:bg-slate-800 shadow-sm transition-all" onClick={() => {
+                      <Button variant="secondary" className="w-full h-10 gap-2 text-[10px] font-bold uppercase tracking-widest rounded-xl bg-mancity-pattern text-primary-foreground hover:opacity-90 shadow-sm transition-all" onClick={() => {
                         const id = `lane_${Date.now()}`;
                         setNodes(nds => [...nds, { 
                           id, type: 'swimlane', position: { x: 0, y: 0 }, zIndex: -1,

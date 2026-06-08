@@ -110,7 +110,7 @@ export function BPMDiagramList({
                           <Map className="h-4 w-4" />
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent className="bg-slate-900 text-white border-none rounded-lg text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 shadow-xl">Open Visual Workflow Editor</TooltipContent>
+                      <TooltipContent className="bg-mancity-pattern text-primary-foreground border-none rounded-lg text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 shadow-xl">Open Visual Workflow Editor</TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
 
@@ -127,7 +127,7 @@ export function BPMDiagramList({
                           <FileSpreadsheet className="h-4 w-4" />
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent className="bg-slate-900 text-white border-none rounded-lg text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 shadow-xl">Open RCM Worksheet</TooltipContent>
+                      <TooltipContent className="bg-mancity-pattern text-primary-foreground border-none rounded-lg text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 shadow-xl">Open RCM Worksheet</TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                 </div>
@@ -140,7 +140,7 @@ export function BPMDiagramList({
                     <span className="font-display font-bold text-slate-900 text-sm group-hover/name:text-indigo-600 transition-colors">
                       {bpm.name}
                     </span>
-                    {bpm.bpmCode && <Badge className="h-5 px-2 text-[9px] bg-slate-900 text-white font-bold tracking-widest rounded-lg shrink-0 whitespace-nowrap">{bpm.bpmCode}</Badge>}
+                    {bpm.bpmCode && <Badge className="h-5 px-2 text-[9px] bg-mancity-pattern text-primary-foreground font-bold tracking-widest rounded-lg shrink-0 whitespace-nowrap">{bpm.bpmCode}</Badge>}
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest flex items-center gap-1">

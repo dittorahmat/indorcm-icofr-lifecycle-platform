@@ -69,10 +69,10 @@ export const Appendix7aSummary = React.forwardRef<HTMLDivElement, Appendix7aSumm
                    </p>
                 </div>
              </div>
-             <div className="p-6 bg-indigo-900 text-white rounded-xl shadow-lg flex flex-col items-center justify-center text-center">
-                <ShieldCheck className="h-12 w-12 text-indigo-300 mb-4" />
+             <div className="p-6 bg-mancity-pattern text-primary-foreground rounded-xl shadow-lg flex flex-col items-center justify-center text-center">
+                <ShieldCheck className="h-12 w-12 text-primary-foreground/80 mb-4" />
                 <p className="text-xs font-bold uppercase opacity-60">Total Verification Points</p>
-                <p className="text-4xl font-black tracking-tighter">
+                <p className="text-4xl font-black tracking-tighter text-primary-foreground">
                    {summaryRows.reduce((acc, [_, stats]) => acc + stats.total, 0)}
                 </p>
                 <div className="mt-4 flex gap-4 text-xs font-black uppercase">
@@ -87,14 +87,14 @@ export const Appendix7aSummary = React.forwardRef<HTMLDivElement, Appendix7aSumm
             <h2 className="text-xs font-black uppercase tracking-widest text-slate-400 border-b pb-1">II. Ringkasan Efektivitas Per Aktivitas Kontrol</h2>
             <div className="border-2 border-slate-900 overflow-hidden rounded-lg">
               <Table>
-                <TableHeader className="bg-slate-900">
+                <TableHeader className="bg-mancity-pattern">
                   <TableRow className="hover:bg-transparent">
-                    <TableHead className="text-xs font-black text-white w-10 text-center">NO</TableHead>
-                    <TableHead className="text-xs font-black text-white">KODE & NAMA KONTROL</TableHead>
-                    <TableHead className="text-xs font-black text-white text-center">TOTAL SAMPEL</TableHead>
-                    <TableHead className="text-xs font-black text-white text-center">PASS</TableHead>
-                    <TableHead className="text-xs font-black text-white text-center">FAIL</TableHead>
-                    <TableHead className="text-xs font-black text-white text-center">STATUS</TableHead>
+                    <TableHead className="text-xs font-black text-primary-foreground w-10 text-center">NO</TableHead>
+                    <TableHead className="text-xs font-black text-primary-foreground">KODE & NAMA KONTROL</TableHead>
+                    <TableHead className="text-xs font-black text-primary-foreground text-center">TOTAL SAMPEL</TableHead>
+                    <TableHead className="text-xs font-black text-primary-foreground text-center">PASS</TableHead>
+                    <TableHead className="text-xs font-black text-primary-foreground text-center">FAIL</TableHead>
+                    <TableHead className="text-xs font-black text-primary-foreground text-center">STATUS</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

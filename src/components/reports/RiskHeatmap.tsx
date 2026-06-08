@@ -75,7 +75,7 @@ export function RiskHeatmap() {
                             <span className="text-xs font-black opacity-60 uppercase tracking-tighter">{qn}-{ql}</span>
                             <span className="text-xs font-black mt-1">{outcome.label}</span>
                             {risks.length > 0 && (
-                              <Badge className="absolute -top-2 -right-2 bg-slate-900 text-white border-white border-2 h-5 w-5 flex items-center justify-center p-0 text-xs">
+                              <Badge className="absolute -top-2 -right-2 bg-mancity-pattern text-primary-foreground border-white border-2 h-5 w-5 flex items-center justify-center p-0 text-xs">
                                 {risks.length}
                               </Badge>
                             )}

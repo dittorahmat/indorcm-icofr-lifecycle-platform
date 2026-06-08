@@ -19,6 +19,11 @@ export const useFiscalYearStore = create<FiscalYearState>()(
       workingYear: getInitialYear(),
       setWorkingYear: (year: string) => {
         set({ workingYear: year });
+        if (typeof window !== 'undefined') {
+          const url = new URL(window.location.href);
+          url.searchParams.set('year', year);
+          window.history.replaceState({}, '', url.toString());
+        }
       },
     }),
     {
@@ -33,6 +38,7 @@ export const useFiscalYearStore = create<FiscalYearState>()(
         // If URL has a year, it ALWAYS wins
         if (urlYear) {
           return {
+            ...currentState,
             ...(persistedState as any),
             workingYear: urlYear
           };

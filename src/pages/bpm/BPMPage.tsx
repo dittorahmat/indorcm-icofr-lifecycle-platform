@@ -562,7 +562,7 @@ export function BPMPage() {
                     </p>
                   </div>
                   <div className="h-8 w-px bg-slate-100" />
-                  <Button onClick={() => setIsCreatingBPM(true)} className="h-10 gap-2 bg-slate-900 hover:bg-slate-800 text-white shadow-sm transition-all font-bold text-[10px] uppercase tracking-widest px-6 rounded-lg">
+                  <Button onClick={() => setIsCreatingBPM(true)} className="h-10 gap-2 bg-mancity-pattern hover:opacity-90 text-primary-foreground shadow-sm transition-all font-bold text-[10px] uppercase tracking-widest px-6 rounded-lg">
                     <PlusCircle className="h-3.5 w-3.5" /> {t('createProcessButton')}
                   </Button>
                 </div>
@@ -643,17 +643,17 @@ export function BPMPage() {
 
         <Dialog open={isBpmEditorOpen} onOpenChange={(open) => !open && handleCloseDiagram()}>
           <DialogContent className="max-w-[98vw] w-[1600px] h-[98vh] flex flex-col p-0 overflow-hidden border-none shadow-2xl rounded-2xl">
-            <div className="bg-slate-900 p-6 flex justify-between items-center text-white">
+            <div className="bg-mancity-pattern p-6 flex justify-between items-center text-primary-foreground">
               <div className="space-y-1">
                 <div className="flex items-center gap-3">
-                  <div className="h-9 w-9 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400 border border-indigo-500/30">
+                  <div className="h-9 w-9 rounded-lg bg-white/20 backdrop-blur-md flex items-center justify-center text-primary-foreground border border-white/30">
                     <WorkflowIcon className="h-5 w-5" />
                   </div>
-                  <h2 className="font-display text-2xl font-bold tracking-tight">BPM Workflow Editor: {currentSubProcess}</h2>
+                  <h2 className="font-display text-2xl font-bold tracking-tight text-primary-foreground">BPM Workflow Editor: {currentSubProcess}</h2>
                 </div>
-                <p className="text-slate-400 text-[10px] font-medium uppercase tracking-[0.2em] ml-[48px]">Mapping business processes, risks, and controls visually.</p>
+                <p className="text-primary-foreground/60 text-[10px] font-medium uppercase tracking-[0.2em] ml-[48px]">Mapping business processes, risks, and controls visually.</p>
               </div>
-              <Button variant="ghost" size="icon" onClick={handleCloseDiagram} className="text-slate-400 hover:text-white hover:bg-white/10 rounded-full h-10 w-10">
+              <Button variant="ghost" size="icon" onClick={handleCloseDiagram} className="text-primary-foreground/60 hover:text-primary-foreground hover:bg-white/10 rounded-full h-10 w-10">
                  <X className="h-5 w-5" />
               </Button>
             </div>
@@ -665,10 +665,10 @@ export function BPMPage() {
 
         <Dialog open={isCreatingBPM} onOpenChange={setIsCreatingBPM}>
           <DialogContent className="sm:max-w-[425px] border-none shadow-2xl rounded-xl overflow-hidden p-0">
-            <div className="bg-slate-900 p-6 text-white">
+            <div className="bg-mancity-pattern p-6 text-primary-foreground">
               <DialogHeader>
-                <DialogTitle className="font-display text-xl tracking-tight">{t('bpm:createModalTitle')}</DialogTitle>
-                <DialogDescription className="text-slate-400 text-[10px] uppercase tracking-wider mt-1">
+                <DialogTitle className="font-display text-xl tracking-tight text-primary-foreground">{t('bpm:createModalTitle')}</DialogTitle>
+                <DialogDescription className="text-primary-foreground/60 text-[10px] uppercase tracking-wider mt-1">
                   Define a major process heading for <strong>{selectedGLRow?.noGL}</strong>.
                 </DialogDescription>
               </DialogHeader>
@@ -688,7 +688,7 @@ export function BPMPage() {
                 <Button 
                   disabled={!bpmName || createBPMMutation.isPending} 
                   onClick={() => createBPMMutation.mutate({ name: bpmName, noGL: selectedGLRow?.noGL || "", fsliName: selectedFsli })}
-                  className="h-10 px-6 bg-slate-900 hover:bg-slate-800 shadow-sm rounded-lg font-bold text-[10px] uppercase tracking-widest text-white"
+                  className="h-10 px-6 bg-mancity-pattern hover:opacity-90 shadow-sm rounded-lg font-bold text-[10px] uppercase tracking-widest text-primary-foreground"
                 >
                   {createBPMMutation.isPending && <Loader2 className="h-3 w-3 animate-spin mr-2" />}
                   {t('bpm:createProcessButton')}

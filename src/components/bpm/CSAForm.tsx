@@ -163,7 +163,7 @@ export function CSAForm({
                         <TooltipTrigger className="w-full h-full cursor-help line-clamp-2 text-left leading-tight">
                           {ctrl.name}
                         </TooltipTrigger>
-                        <TooltipContent className="bg-slate-900 text-white p-2 text-xs max-w-xs">
+                        <TooltipContent className="bg-mancity-pattern text-primary-foreground p-2 text-xs max-w-xs">
                           <p className="font-bold">[{ctrl.code}] {ctrl.name}</p>
                           <p className="opacity-80 mt-1 italic">{ctrl.description}</p>
                         </TooltipContent>
@@ -226,14 +226,14 @@ export function CSAForm({
 
                 <div className="border rounded-xl overflow-hidden shadow-md">
                 <Table>
-                <TableHeader className="bg-slate-900 text-white">
+                <TableHeader className="bg-mancity-pattern text-primary-foreground">
                 <TableRow className="divide-x divide-white/10 hover:bg-transparent">
-                <TableHead className="text-xs font-black text-white py-4 px-4 min-w-[200px]">{t('csa_hub:form.table.transactionDetail')}</TableHead>
-                <TableHead className="text-xs font-black text-white">{t('csa_hub:form.table.riskName')}</TableHead>
-                <TableHead className="text-xs font-black text-white">{t('csa_hub:form.table.controlName')}</TableHead>
-                <TableHead className="text-xs font-black text-white text-center w-32">{t('csa_hub:form.table.evidence')}</TableHead>
-                <TableHead className="text-xs font-black text-white min-w-[200px]">{t('csa_hub:form.table.notes')}</TableHead>
-                <TableHead className="text-xs font-black text-white text-center w-24">{t('csa_hub:form.table.pass')}</TableHead>
+                <TableHead className="text-xs font-black text-primary-foreground py-4 px-4 min-w-[200px]">{t('csa_hub:form.table.transactionDetail')}</TableHead>
+                <TableHead className="text-xs font-black text-primary-foreground">{t('csa_hub:form.table.riskName')}</TableHead>
+                <TableHead className="text-xs font-black text-primary-foreground">{t('csa_hub:form.table.controlName')}</TableHead>
+                <TableHead className="text-xs font-black text-primary-foreground text-center w-32">{t('csa_hub:form.table.evidence')}</TableHead>
+                <TableHead className="text-xs font-black text-primary-foreground min-w-[200px]">{t('csa_hub:form.table.notes')}</TableHead>
+                <TableHead className="text-xs font-black text-primary-foreground text-center w-24">{t('csa_hub:form.table.pass')}</TableHead>
                 </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -336,7 +336,7 @@ export function CSAForm({
                                         type="button"
                                         variant="default" 
                                         size="icon" 
-                                        className="h-8 w-8 rounded-lg bg-slate-900 hover:bg-slate-800 shadow-sm"
+                                        className="h-8 w-8 rounded-lg bg-mancity-pattern hover:opacity-90 text-primary-foreground shadow-sm"
                                         onClick={() => window.open(res.evidenceUrl, '_blank')}
                                       >
                                         <Eye className="h-4 w-4" />
@@ -440,7 +440,7 @@ export function CSAForm({
                 {(isReadOnly || watchSamples.length > 0) && (
                 <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button type="button" className="bg-slate-800 hover:bg-slate-900 text-white font-black px-8 h-12 gap-2 shadow-xl uppercase tracking-widest">
+                  <Button type="button" className="bg-mancity-pattern hover:opacity-90 text-primary-foreground font-black px-8 h-12 gap-2 shadow-xl uppercase tracking-widest">
                     <Printer className="h-5 w-5" /> {t('csa_hub:actions.exportApp7a')} <ChevronDown className="h-4 w-4 ml-1" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -461,12 +461,12 @@ export function CSAForm({
                   type="button"
                   disabled={isPending || isAuthenticating} 
                   onClick={onSaveDraft}
-                  className="bg-amber-500 hover:bg-amber-600 text-white font-black px-8 h-12 gap-2 shadow-xl shadow-amber-100 uppercase tracking-widest"
+                  className="bg-mancity-pattern hover:opacity-90 text-primary-foreground font-black px-8 h-12 gap-2 shadow-xl shadow-blue-100 uppercase tracking-widest"
                 >
                    {isPending ? <RefreshCw className="h-5 w-5 animate-spin" /> : <FileText className="h-5 w-5" />}
                    {t('csa_hub:actions.saveDraft')}
                 </Button>
-                <Button disabled={isPending || isAuthenticating} type="submit" className="bg-slate-900 hover:bg-slate-800 font-black px-12 h-12 gap-2 shadow-md uppercase tracking-widest">
+                <Button disabled={isPending || isAuthenticating} type="submit" className="bg-mancity-pattern hover:opacity-90 text-primary-foreground font-black px-12 h-12 gap-2 shadow-md uppercase tracking-widest">
                    {isAuthenticating ? <RefreshCw className="h-5 w-5 animate-spin" /> : <UserCheck className="h-5 w-5" />}
                    {t('csa_hub:actions.save')}
                 </Button>

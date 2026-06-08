@@ -34,7 +34,7 @@ export function ActionCenter({ csaCompletion, openDeficienciesCount }: ActionCen
           className="w-full flex items-center gap-4 p-5 hover:bg-slate-50 transition-colors text-left group relative overflow-hidden"
           onClick={() => navigate('/csa')}
         >
-          <div className="h-10 w-10 shrink-0 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center group-hover:bg-slate-900 group-hover:text-white transition-all duration-300 shadow-sm border border-slate-200">
+          <div className="h-10 w-10 shrink-0 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center group-hover:bg-mancity-pattern group-hover:text-primary-foreground transition-all duration-300 shadow-sm border border-slate-200">
             <ClipboardCheck className="h-5 w-5" />
           </div>
           <div className="flex-1 min-w-0">
@@ -71,7 +71,7 @@ export function ActionCenter({ csaCompletion, openDeficienciesCount }: ActionCen
           className="w-full flex items-center gap-4 p-5 hover:bg-slate-50 transition-colors text-left group relative overflow-hidden"
           onClick={() => navigate('/reports')}
         >
-          <div className="h-10 w-10 shrink-0 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center group-hover:bg-slate-900 group-hover:text-white transition-all duration-300 shadow-sm border border-slate-200">
+          <div className="h-10 w-10 shrink-0 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center group-hover:bg-mancity-pattern group-hover:text-primary-foreground transition-all duration-300 shadow-sm border border-slate-200">
             <FileText className="h-5 w-5" />
           </div>
           <div className="flex-1 min-w-0">

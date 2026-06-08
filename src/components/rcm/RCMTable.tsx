@@ -95,7 +95,7 @@ export function RCMTable({
                             {col.header}
                           </div>
                         </TooltipTrigger>
-                        <TooltipContent side="top" className="max-w-[300px] bg-slate-900 text-white p-3 border-none shadow-2xl rounded-xl z-[100]">
+                        <TooltipContent side="top" className="max-w-[300px] bg-mancity-pattern text-primary-foreground p-3 border-none shadow-2xl rounded-xl z-[100]">
                            <div className="text-xs leading-relaxed font-medium">
                               {col.tooltip}
                            </div>

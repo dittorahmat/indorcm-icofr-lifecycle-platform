@@ -26,16 +26,16 @@ export function ELCTabContent({ elcControls, onEditControl, onCreateControl }: E
       exit={{ opacity: 0, x: -20 }}
       className="space-y-8"
     >
-      <div className="flex items-center justify-between gap-6 bg-slate-900 p-8 rounded-[2.5rem] text-white shadow-2xl shadow-indigo-200 overflow-hidden relative group">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full -mr-32 -mt-32 blur-3xl group-hover:bg-indigo-500/20 transition-all duration-700" />
+      <div className="flex items-center justify-between gap-6 bg-mancity-pattern p-8 rounded-[2.5rem] text-primary-foreground shadow-2xl shadow-indigo-200 overflow-hidden relative group">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl group-hover:bg-white/20 transition-all duration-700" />
         <div className="space-y-2 relative z-10">
-          <h3 className="text-2xl font-display font-bold tracking-tight">{t('matrix.title_elc')}</h3>
-          <p className="text-slate-400 text-sm font-medium leading-relaxed max-w-xl">
+          <h3 className="text-2xl font-display font-bold tracking-tight text-primary-foreground">{t('matrix.title_elc')}</h3>
+          <p className="text-primary-foreground/60 text-sm font-medium leading-relaxed max-w-xl">
             {t('matrix.subtitle_elc')}
           </p>
         </div>
-        <Button onClick={() => onCreateControl({ level: 'ELC' })} className="h-12 gap-3 bg-white text-slate-900 hover:bg-slate-100 shadow-xl transition-all font-bold text-xs uppercase tracking-widest px-8 rounded-2xl relative z-10 shrink-0">
-           <PlusCircle className="h-4 w-4 text-indigo-600" /> {t('matrix.properties.tambah_risiko_baru')}
+        <Button onClick={() => onCreateControl({ level: 'ELC' })} className="h-12 gap-3 bg-white text-primary-foreground hover:bg-slate-100 shadow-xl transition-all font-bold text-xs uppercase tracking-widest px-8 rounded-2xl relative z-10 shrink-0">
+           <PlusCircle className="h-4 w-4 text-primary" /> {t('matrix.properties.tambah_risiko_baru')}
         </Button>
       </div>
 
