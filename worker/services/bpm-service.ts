@@ -2,7 +2,7 @@ import {
   bpmDiagrams, bpmProcesses, rcms, rcmControls, controls, bpmNodeRcms,
   organization, auditLogs, notifications, csaRecords
 } from '../db/schema';
-import { eq, and, inArray, sql, ne, desc, SQL } from 'drizzle-orm';
+import { eq, and, inArray, sql, ne, desc, SQL, isNull } from 'drizzle-orm';
 import type { DrizzleDb } from '../db';
 import type { BPMProcess, BPMDiagram } from "@shared/types";
 import { AuditService } from './audit-service';
@@ -124,7 +124,7 @@ export class BpmService {
     const matchedProcesses = await this.db.select().from(bpmProcesses)
       .where(and(
         eq(bpmProcesses.organizationId, orgId),
-        diagramYear ? eq(bpmProcesses.year, diagramYear) : sql`1=1`,
+        diagramYear ? eq(bpmProcesses.year, diagramYear) : isNull(bpmProcesses.year),
         sql`TRIM(LOWER(${bpmProcesses.name})) = TRIM(LOWER(${body.subProcess}))`
       )).limit(1);
     
@@ -271,10 +271,12 @@ export class BpmService {
       });
     } else {
       await this.db.update(rcms).set({
+        process: processName,
+        subProcess: subProcessName,
         riskDescription: reg.riskDescription,
         isFraudRelated: reg.isFraudRelated,
         riskRating: reg.riskRating,
-        year: (existingRisk[0].year === null && year !== null) ? year : existingRisk[0].year
+        year: year
       }).where(eq(rcms.id, riskId));
     }
   }
@@ -312,11 +314,12 @@ export class BpmService {
         ...controlData
       });
     } else {
-      // Backfill year if missing
-      if (existingCtrl[0].year === null && year !== null) {
-        controlData.year = year;
-      }
-      await this.db.update(controls).set(controlData).where(eq(controls.id, ctrlId));
+      await this.db.update(controls).set({
+        ...controlData,
+        year: year,
+        businessProcess: processName,
+        subProcess: subProcessName
+      }).where(eq(controls.id, ctrlId));
     }
   }
 

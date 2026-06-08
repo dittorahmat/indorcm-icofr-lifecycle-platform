@@ -56,10 +56,12 @@ import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 import { TodoListFilters } from '@/components/csa/TodoListFilters';
 import { TodoListGrid } from '@/components/csa/TodoListGrid';
+import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 
 export function TodoListPage() {
   const { t, i18n } = useTranslation(['csa', 'common', 'rcm', 'csa_hub']);
   const queryClient = useQueryClient();
+  const { workingYear } = useFiscalYearStore();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [isDialogOpen, setIsDialogOpen] = useState(false);

@@ -226,7 +226,7 @@ aiDocsApp.post('/ai/chat', async (c) => {
         data.plannedDate = new Date(data.plannedDate);
       }
       await db.insert(csaSchedules).values(data);
-      return ok(c, { success: true, message: "Jadwal berhasil dibuat." });
+      return ok(c, { success: true, response: "Jadwal berhasil dibuat." });
     }
   }
 

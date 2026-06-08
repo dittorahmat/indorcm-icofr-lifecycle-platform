@@ -80,6 +80,10 @@ rcm.get('/rcm-matrix/tlc', async (c) => {
   const bpmProcessId = c.req.query('bpmProcessId');
   const year = c.req.query('year');
 
+  if (!year) {
+    return c.json({ success: false, error: 'Year parameter is required' }, 400);
+  }
+
   const org = await db.select().from(organization).where(eq(organization.id, orgId)).then((rows: any) => rows[0]);
 
   let query = db.select({

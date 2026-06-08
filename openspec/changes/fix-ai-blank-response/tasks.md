@@ -1,0 +1,1 @@
+- [x] 1. Update `worker/routes/ai-docs.ts` to return `response` instead of `message`.

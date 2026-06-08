@@ -18,6 +18,7 @@ import { CSAReviewMatrix } from '@/components/csa/CSAReviewMatrix';
 import { TODVerificationDialog } from '@/components/csa/TODVerificationDialog';
 import { useTOD } from '@/hooks/useTOD';
 import { useTranslation } from 'react-i18next';
+import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 
 function CSARecordRow({ record: initialRecord, process }: { record: CSARecord, process?: BPMProcess }) {
   const [isExpanded, setIsExpanded] = React.useState(false);
@@ -25,6 +26,7 @@ function CSARecordRow({ record: initialRecord, process }: { record: CSARecord, p
   const [isExportingPDF, setIsExportingPDF] = React.useState(false);
   const [isExportingXLS, setIsExportingXLS] = React.useState(false);
   const { t } = useTranslation(['csa_hub', 'common']);
+  const { workingYear } = useFiscalYearStore();
   
   const { evaluations, saveMutation } = useTOD(initialRecord.id);
 
@@ -39,8 +41,8 @@ function CSARecordRow({ record: initialRecord, process }: { record: CSARecord, p
 
   // Fetch all control mappings for this process to build the matrix
   const { data: matrixData } = useQuery({
-    queryKey: ['rcm-matrix-tlc-process', initialRecord.bpmProcessId],
-    queryFn: () => api<{ items: any[] }>(`/api/rcm-matrix/tlc?bpmProcessId=${initialRecord.bpmProcessId}`),
+    queryKey: ['rcm-matrix-tlc-process', initialRecord.bpmProcessId, workingYear],
+    queryFn: () => api<{ items: any[] }>(`/api/rcm-matrix/tlc?bpmProcessId=${initialRecord.bpmProcessId}&year=${workingYear}`),
     enabled: isExpanded && !!initialRecord.bpmProcessId
   });
 
@@ -277,6 +279,7 @@ function CSARecordRow({ record: initialRecord, process }: { record: CSARecord, p
 export function CSAPage() {
   const [searchTerm, setSearchTerm] = React.useState("");
   const { t } = useTranslation(['csa_hub', 'common']);
+  const { workingYear } = useFiscalYearStore();
 
   const { data: records, isLoading } = useQuery({
     queryKey: ['csa-records-all'],
@@ -284,8 +287,8 @@ export function CSAPage() {
   });
 
   const { data: processes } = useQuery({
-    queryKey: ['bpm-processes-all'],
-    queryFn: () => api<{ items: BPMProcess[] }>('/api/bpm-processes'),
+    queryKey: ['bpm-processes-all', workingYear],
+    queryFn: () => api<{ items: BPMProcess[] }>(`/api/bpm-processes?year=${workingYear}`),
   });
 
   const filteredRecords = React.useMemo(() => {

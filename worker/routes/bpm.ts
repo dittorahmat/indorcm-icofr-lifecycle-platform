@@ -87,10 +87,18 @@ bpm.get('/bpm-diagrams/by-gl/:noGL', async (c) => {
 bpm.get('/bpm-processes', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const bpmService = new BpmService(db);
+  const orgId = c.get('organizationId')!;
+  const yearStr = c.req.query('year');
+  
+  if (!yearStr) {
+    return c.json({ success: false, error: 'Year parameter is required' }, 400);
+  }
+
   const items = await bpmService.getAllProcesses(
-    c.get('organizationId')!, 
+    orgId, 
     c.req.query('noGL'), 
-    c.req.query('id')
+    c.req.query('id'),
+    parseInt(yearStr)
   );
   return ok(c, { items });
 });
