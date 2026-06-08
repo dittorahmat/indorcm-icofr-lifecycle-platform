@@ -96,6 +96,25 @@ export const AIToolExecutor = {
     return results;
   },
 
+  async search_bpm_processes(ctx: ToolContext, args: { query: string }) {
+    const { query } = args;
+    const results = await ctx.db.select({
+      id: bpmProcesses.id,
+      name: bpmProcesses.name,
+      noGL: bpmProcesses.noGL,
+      year: bpmProcesses.year,
+      fsliName: bpmProcesses.fsliName,
+    })
+    .from(bpmProcesses)
+    .where(and(
+      eq(bpmProcesses.organizationId, ctx.orgId),
+      sql`LOWER(${bpmProcesses.name}) LIKE LOWER(${`%${query}%`})`
+    ))
+    .limit(10);
+
+    return results;
+  },
+
   async analyze_bpm_flow(ctx: ToolContext, args: any) {
     const { processId } = args;
     

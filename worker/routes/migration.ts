@@ -61,6 +61,33 @@ migration.post('/migration/finalize', async (c) => {
         await db.insert(schema.glRows).values(batch);
       }
 
+      // Calculate significant accounts based on PM threshold (aggregated by FSLI)
+      const pmValue = simulationParams?.pmValue || 0;
+      const fsliAggregation = new Map<string, { name: string, balance: number, fsliCode?: string }>();
+      
+      tbData.forEach((row: any) => {
+        const name = row.suggestedFsli || row.accountName;
+        const balance = Math.abs(parseFloat(row.balance)) || 0;
+        const existing = fsliAggregation.get(name);
+        if (existing) {
+          existing.balance += balance;
+        } else {
+          fsliAggregation.set(name, {
+            name,
+            balance,
+            fsliCode: row.fsliCode
+          });
+        }
+      });
+
+      const significantAccounts = Array.from(fsliAggregation.values())
+        .filter(item => item.balance >= pmValue)
+        .map(item => ({
+          ...item,
+          isQuantitative: true,
+          assignedDepartmentIds: []
+        }));
+
       // Create Approved Materiality Simulation
       await db.insert(schema.simulations).values({
         id: `sim_${generateId()}`,
@@ -78,7 +105,7 @@ migration.post('/migration/finalize', async (c) => {
         pmValue: simulationParams?.pmValue || 0,
         createdBy: userId,
         createdAt: new Date(),
-        significantAccounts: []
+        significantAccounts: significantAccounts
       });
     }
 

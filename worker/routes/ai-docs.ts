@@ -222,6 +222,9 @@ aiDocsApp.post('/ai/chat', async (c) => {
     const { action, data } = (body as any).actionConfirmation;
     const db = getDb(c.env.DATABASE_URL);
     if (action === 'CREATE_SCHEDULE') {
+      if (data.plannedDate && typeof data.plannedDate === 'string') {
+        data.plannedDate = new Date(data.plannedDate);
+      }
       await db.insert(csaSchedules).values(data);
       return ok(c, { success: true, message: "Jadwal berhasil dibuat." });
     }

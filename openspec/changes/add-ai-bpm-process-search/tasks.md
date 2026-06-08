@@ -1,0 +1,2 @@
+- [ ] 1. Define `search_bpm_processes` tool in `worker/services/ai/tool-definitions.ts`.
+- [ ] 2. Implement `search_bpm_processes` in `worker/services/ai/tool-executor.ts`.

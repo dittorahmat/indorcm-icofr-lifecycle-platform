@@ -1,0 +1,1 @@
+- [x] 1. Update `worker/routes/ai-docs.ts` to parse `data.plannedDate` as a `Date` object before passing it to `db.insert(csaSchedules)`.

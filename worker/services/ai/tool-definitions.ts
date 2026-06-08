@@ -200,6 +200,20 @@ export const ICOFR_TOOLS: FunctionDeclaration[] = [
     }
   },
   {
+    name: "search_bpm_processes",
+    description: "Searches for BPM processes by name to find their unique IDs. Use this when a user refers to a process by name but you need the processId for other actions.",
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        query: {
+          type: SchemaType.STRING,
+          description: "The name or keyword of the process to search for (e.g., 'Payroll', 'Setoran Tunai')."
+        }
+      },
+      required: ["query"]
+    }
+  },
+  {
     name: "create_csa_schedule",
     description: "Schedules a new CSA or testing activity. (Requires user confirmation).",
     parameters: {
