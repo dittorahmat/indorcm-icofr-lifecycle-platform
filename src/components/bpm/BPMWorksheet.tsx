@@ -309,7 +309,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
             size="sm" 
             className={cn(
               "h-7 text-xs gap-1.5 uppercase font-bold mx-2",
-              diagram ? "bg-slate-900 hover:bg-slate-800" : "text-slate-400 border-slate-200"
+              diagram ? "bg-mancity-pattern hover:opacity-90 text-primary-foreground shadow-sm" : "text-slate-400 border-slate-200"
             )}
             onClick={() => {
               if (diagram) {
