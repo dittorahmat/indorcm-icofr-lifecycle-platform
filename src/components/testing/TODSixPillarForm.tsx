@@ -140,18 +140,18 @@ export function TODSixPillarForm({ form, t, isReadOnly }: TODSixPillarFormProps)
         ))}
       </div>
 
-      <div className="p-5 bg-slate-900 rounded-2xl shadow-xl shadow-slate-100 relative overflow-hidden group">
+      <div className="p-5 bg-mancity-pattern rounded-2xl shadow-xl shadow-blue-100 relative overflow-hidden group">
         <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-2xl group-hover:bg-white/10 transition-all duration-700" />
         <div className="flex gap-4 relative z-10">
-           <div className="h-10 w-10 rounded-xl bg-white/10 text-indigo-300 flex items-center justify-center shrink-0 border border-white/10">
+           <div className="h-10 w-10 rounded-xl bg-primary/20 text-primary-foreground flex items-center justify-center shrink-0 border border-white/20">
               <Info className="h-5 w-5" />
            </div>
            <div className="space-y-1">
-              <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest flex items-center gap-2">
+              <p className="text-[10px] font-bold text-primary-foreground uppercase tracking-widest flex items-center gap-2">
                 Regulatory Compliance Note
                 <ChevronRight className="h-3 w-3" />
               </p>
-              <p className="text-xs text-slate-300 leading-relaxed font-medium">
+              <p className="text-xs text-primary-foreground/90 leading-relaxed font-medium">
                 Evaluasi rancangan harus mempertimbangkan apakah kontrol secara individual atau kombinasi cukup presisi untuk mencegah atau mendeteksi salah saji material secara tepat waktu.
               </p>
            </div>

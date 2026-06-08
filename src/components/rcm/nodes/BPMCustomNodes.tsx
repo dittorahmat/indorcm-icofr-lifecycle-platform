@@ -23,26 +23,26 @@ export const NodeTooltip = ({ children, data, type }: { children: React.ReactNod
         <TooltipTrigger asChild>
           <div className="relative">{children}</div>
         </TooltipTrigger>
-        <TooltipContent side="right" className="max-w-[250px] p-2 bg-slate-900 border-slate-700 shadow-2xl z-[100]">
+        <TooltipContent side="right" className="max-w-[250px] p-2 bg-mancity-pattern text-primary-foreground border-none shadow-2xl z-[100]">
           <div className="space-y-1.5">
-            <div className="flex justify-between items-center border-b border-slate-700 pb-1 mb-1">
-              <p className="font-bold text-xs uppercase text-slate-400">
+            <div className="flex justify-between items-center border-b border-white/20 pb-1 mb-1">
+              <p className="font-bold text-xs uppercase text-primary-foreground/70">
                 {type} Preview
               </p>
               {(data.relatedElcNames && data.relatedElcNames.length > 0) && (
-                <ShieldCheck className="h-3 w-3 text-indigo-400" />
+                <ShieldCheck className="h-3 w-3 text-primary-foreground" />
               )}
             </div>
-            <p className="text-xs font-bold leading-tight text-white">{data.label}</p>
-            {data.description && <p className="text-xs text-slate-400 line-clamp-3 italic leading-relaxed">{data.description}</p>}
+            <p className="text-xs font-bold leading-tight text-primary-foreground">{data.label}</p>
+            {data.description && <p className="text-xs text-primary-foreground/80 line-clamp-3 italic leading-relaxed">{data.description}</p>}
             
             {data.relatedElcNames && data.relatedElcNames.length > 0 && (
-              <div className="mt-2 pt-2 border-t border-slate-700">
-                <p className="text-xs font-black text-indigo-400 uppercase tracking-wider mb-1">Payung Kebijakan (ELC):</p>
+              <div className="mt-2 pt-2 border-t border-white/20">
+                <p className="text-xs font-black text-primary-foreground uppercase tracking-wider mb-1">Payung Kebijakan (ELC):</p>
                 <ul className="space-y-0.5">
                   {data.relatedElcNames.map((name: string, i: number) => (
-                    <li key={i} className="text-xs text-slate-300 flex items-start gap-1">
-                      <div className="h-1 w-1 rounded-full bg-indigo-500 mt-1 shrink-0" />
+                    <li key={i} className="text-xs text-primary-foreground flex items-start gap-1">
+                      <div className="h-1 w-1 rounded-full bg-primary-foreground mt-1 shrink-0" />
                       {name}
                     </li>
                   ))}
@@ -51,8 +51,8 @@ export const NodeTooltip = ({ children, data, type }: { children: React.ReactNod
             )}
 
             <div className="flex flex-wrap gap-2 mt-2 pt-1">
-              {data.role && <p className="text-xs text-blue-400 font-bold uppercase">Role: {data.role}</p>}
-              {data.code && <p className="text-xs text-green-400 font-mono font-bold">Code: {data.code}</p>}
+              {data.role && <p className="text-xs text-primary-foreground font-bold uppercase">Role: {data.role}</p>}
+              {data.code && <p className="text-xs text-primary-foreground font-mono font-bold">Code: {data.code}</p>}
             </div>
           </div>
         </TooltipContent>

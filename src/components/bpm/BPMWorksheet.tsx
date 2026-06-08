@@ -638,7 +638,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
                   </div>
                   <Button 
                     size="sm" 
-                    className="h-7 text-xs gap-1.5 bg-slate-900 hover:bg-slate-800" 
+                    className="h-7 text-xs gap-1.5 bg-mancity-pattern hover:opacity-90 text-primary-foreground" 
                     onClick={handleSaveMetadata}
                     disabled={updateProcessMutation.isPending}
                   >

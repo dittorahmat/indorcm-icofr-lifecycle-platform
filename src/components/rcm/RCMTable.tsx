@@ -59,7 +59,7 @@ export function RCMTable({
         >
           <thead className="z-30">
             {/* Level 1 Header: Groups */}
-            <tr className="h-10 bg-slate-800 text-white shadow-md sticky top-0 z-30">
+            <tr className="h-10 bg-mancity-pattern text-primary-foreground shadow-md sticky top-0 z-30">
               {groups.map((group, gIdx) => (
                 <th 
                   key={`group-${gIdx}`}

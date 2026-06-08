@@ -73,7 +73,7 @@ export const BPMCanvasHeader = ({ subProcess, year, version = '1.0', isDraft, no
       </div>
 
       {/* Second Row: Lifecycle Detail */}
-      <div className="grid grid-cols-12 bg-slate-900 text-white py-2 px-4">
+      <div className="grid grid-cols-12 bg-mancity-pattern text-primary-foreground py-2 px-4">
          <div className="col-span-4 flex items-center gap-3">
             <span className="text-xs font-black opacity-60 uppercase tracking-widest">Siklus:</span>
             <span className="text-xs font-bold truncate">ICOFR LIFECYCLE</span>
