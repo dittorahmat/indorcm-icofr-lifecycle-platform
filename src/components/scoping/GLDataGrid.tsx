@@ -50,14 +50,14 @@ interface GLDataGridProps {
 }
 
 const QUALITATIVE_RULES = [
-  { id: 1, label: "Fraud Risk" },
-  { id: 2, label: "Transaction Volume" },
-  { id: 3, label: "Complexity" },
-  { id: 4, label: "Account Characteristics" },
-  { id: 5, label: "Estimation Complexity" },
-  { id: 6, label: "Significant Contingent Liabilities" },
-  { id: 7, label: "Related Party Transactions" },
-  { id: 8, label: "Volatility" },
+  { id: 1, key: "qualitativeRules.1" },
+  { id: 2, key: "qualitativeRules.2" },
+  { id: 3, key: "qualitativeRules.3" },
+  { id: 4, key: "qualitativeRules.4" },
+  { id: 5, key: "qualitativeRules.5" },
+  { id: 6, key: "qualitativeRules.6" },
+  { id: 7, key: "qualitativeRules.7" },
+  { id: 8, key: "qualitativeRules.8" },
 ];
 
 export const GLDataGrid = React.memo(function GLDataGrid({
@@ -307,7 +307,7 @@ export const GLDataGrid = React.memo(function GLDataGrid({
         id: `rule-${rule.id}`,
         header: () => (
           <div className="text-xs uppercase tracking-tighter text-slate-400 text-center leading-tight max-w-[60px] mx-auto whitespace-normal">
-            {rule.label}
+            {t(rule.key)}
           </div>
         ),
         cell: ({ row }) => {

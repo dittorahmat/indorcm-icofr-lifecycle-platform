@@ -206,5 +206,15 @@
     "selectTitle": "Select Entities",
     "allEntities": "All Entities",
     "clearAll": "Clear All"
+  },
+  "qualitativeRules": {
+    "1": "Susceptibility to Error/Fraud",
+    "2": "Activity Volume",
+    "3": "Complexity of Activity",
+    "4": "Account Characteristics & Exposure",
+    "5": "Accounting & Reporting Complexity",
+    "6": "Significant Contingent Liabilities",
+    "7": "Related Party Transactions",
+    "8": "Changes in Components/Presentation"
   }
 }

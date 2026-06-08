@@ -14,6 +14,7 @@ import type {
 } from "@shared/types";
 import { ScopingService } from '../services/scoping-service';
 import { AuditService } from "../services/audit-service";
+import { getQualitativeDefaults } from '../services/scoping-defaults';
 
 
 import { rbac } from "../lib/guard";
@@ -69,6 +70,22 @@ scoping.post('/simulations', rbac(['Line 2', 'Admin']), async (c) => {
   }
 
   const id = crypto.randomUUID();
+  const glSnapshotId = body.glSnapshotId || '';
+  let assessmentData: Record<string, any> = {};
+
+  // Auto-populate qualitative factors from library
+  if (glSnapshotId) {
+    const rows = await db.select({ fsliName: glRows.fsliName })
+      .from(glRows)
+      .where(eq(glRows.snapshotId, glSnapshotId));
+    
+    const uniqueFslis = Array.from(new Set(rows.map((r: any) => r.fsliName).filter(Boolean) as string[]));
+    
+    uniqueFslis.forEach(fsli => {
+      assessmentData[fsli] = getQualitativeDefaults(fsli);
+    });
+  }
+
   const newSim = {
     id, organizationId: orgId,
     name: body.name || "New Simulation",
@@ -76,11 +93,12 @@ scoping.post('/simulations', rbac(['Line 2', 'Admin']), async (c) => {
     status: "Draft" as any,
     omValue: body.omValue || 0,
     pmValue: body.pmValue || 0,
-    glSnapshotId: body.glSnapshotId || '',
+    glSnapshotId,
     locationCount: body.locationCount || 1,
     omPercentage: body.omPercentage ?? 5,
     haircutPercentage: body.haircutPercentage ?? 25,
     basis: (body.basis as any) || "Revenue",
+    assessmentData,
     createdAt: new Date() as any,
     createdBy: userId,
   };

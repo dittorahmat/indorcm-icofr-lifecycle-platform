@@ -40,8 +40,8 @@ export function BPMAccountAssertion({
     { key: 'assertionC', label: t('assertions.tooltip.c.label'), desc: t('assertions.tooltip.c.desc'), color: 'text-blue-600' },
     { key: 'assertionA', label: t('assertions.tooltip.a.label'), desc: t('assertions.tooltip.a.desc'), color: 'text-emerald-600' },
     { key: 'assertionCo', label: t('assertions.tooltip.co.label'), desc: t('assertions.tooltip.co.desc'), color: 'text-amber-600' },
-    { key: 'assertionRo', label: t('assertions.tooltip.ro.label'), desc: t('assertions.tooltip.ro.desc'), color: 'text-rose-600' },
     { key: 'assertionVa', label: t('assertions.tooltip.va.label'), desc: t('assertions.tooltip.va.desc'), color: 'text-purple-600' },
+    { key: 'assertionRo', label: t('assertions.tooltip.ro.label'), desc: t('assertions.tooltip.ro.desc'), color: 'text-rose-600' },
     { key: 'assertionPd', label: t('assertions.tooltip.pd.label'), desc: t('assertions.tooltip.pd.desc'), color: 'text-slate-600' },
   ] as const;
 

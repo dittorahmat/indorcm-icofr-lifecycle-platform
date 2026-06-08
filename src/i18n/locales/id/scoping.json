@@ -206,5 +206,15 @@
     "selectTitle": "Pilih Entitas",
     "allEntities": "Semua Entitas",
     "clearAll": "Bersihkan"
+  },
+  "qualitativeRules": {
+    "1": "Kerentanan Akun (Kesalahan/Fraud)",
+    "2": "Volume Aktivitas",
+    "3": "Kompleksitas Aktivitas",
+    "4": "Karakteristik Akun & Eksposur",
+    "5": "Kerumitan Akuntansi & Pelaporan",
+    "6": "Kewajiban Kontingensi Signifikan",
+    "7": "Transaksi Pihak Berelasi",
+    "8": "Perubahan Komponen/Penyajian"
   }
 }

@@ -47,13 +47,13 @@
         "label": "Cut-Off",
         "desc": "Ensuring transactions and events have been recorded in the correct accounting period."
       },
-      "ro": {
-        "label": "Rights & Obligation",
-        "desc": "Rights: ensuring the company has rights to an asset at a certain time. Obligation: ensuring the company has obligations that are the responsibility of the company at a certain time."
-      },
       "va": {
         "label": "Valuation & Allocation",
         "desc": "Valuation: ensuring assets, liabilities, and equity are valued appropriately in accordance with generally accepted accounting principles. Allocation: ensuring balances have been appropriately allocated between the statement of financial position and the statement of profit or loss and other comprehensive income."
+      },
+      "ro": {
+        "label": "Rights & Obligation",
+        "desc": "Rights: ensuring the company has rights to an asset at a certain time. Obligation: ensuring the company has obligations that are the responsibility of the company at a certain time."
       },
       "pd": {
         "label": "Presentation & Disclosure",
