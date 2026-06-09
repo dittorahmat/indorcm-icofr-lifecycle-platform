@@ -415,6 +415,7 @@ scoping.post('/gl-snapshots', async (c) => {
       glDesc: r.glDesc,
       currency: r.currency,
       balance: r.balance,
+      fsliBalance: r.fsliBalance,
       fsliCode: r.fsliCode,
       fsliName: r.fsliName,
       category: r.category,

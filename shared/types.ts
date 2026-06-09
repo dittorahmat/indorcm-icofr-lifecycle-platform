@@ -36,7 +36,9 @@ export interface QualitativeEntry {
   level: QualitativeLevel;
 }
 
-export type GLRow = InferSelectModel<typeof schema.glRows>;
+export type GLRow = InferSelectModel<typeof schema.glRows> & {
+  fsliBalance?: number | null;
+};
 export type NewGLRow = InferInsertModel<typeof schema.glRows>;
 
 export interface TransactionDetail extends Omit<InferSelectModel<typeof schema.transactionDetails>, 'transDate'> {

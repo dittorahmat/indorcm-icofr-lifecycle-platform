@@ -135,6 +135,7 @@ export const glRows = pgTable("gl_rows", {
 	fsliName: text("fsli_name"),
 	category: text("category"),
 	subKategori: text("sub_kategori"),
+	fsliBalance: doublePrecision("fsli_balance"),
 	assignedDepartmentIds: jsonb("assigned_department_ids").$type<string[]>().default([]),
 	ownerAcceptance: ownerAcceptanceEnum("owner_acceptance"), // Accepted, Rejected, or null (Pending)
 	noUrut: integer("no_urut"),

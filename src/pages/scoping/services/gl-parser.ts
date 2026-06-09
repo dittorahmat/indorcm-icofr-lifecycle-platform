@@ -66,6 +66,8 @@ export async function parseGLFile(file: File): Promise<ParseResult> {
 
         const rows: GLRow[] = filteredRaw.map((r: any) => {
           const parsedBal = parseBalance(r[mapping.balance]);
+          const parsedFsliBal = mapping.fsliBalance ? parseBalance(r[mapping.fsliBalance]) : { success: false, value: 0 };
+          
           return {
             id: crypto.randomUUID(),
             organizationId: 'org-1', // Placeholder, set by backend usually
@@ -78,6 +80,7 @@ export async function parseGLFile(file: File): Promise<ParseResult> {
             glDesc: String(r[mapping.accountName] || ''),
             currency: String(r[mapping.currency] || 'IDR'), 
             balance: parsedBal.success ? parsedBal.value : 0,
+            fsliBalance: parsedFsliBal.success ? parsedFsliBal.value : null,
             fsliCode: String(r[mapping.fsliCode] || ''), 
             fsliName: String(r[mapping.fsliName] || ''),
             category: String(r[mapping.kategori] || ''), 

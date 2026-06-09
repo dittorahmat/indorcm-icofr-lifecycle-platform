@@ -286,7 +286,7 @@ export const GL_COLUMN_MAPPING = {
   kategori: ['Kategori', 'Category'],
   subKategori: ['Sub_Kategori', 'SubKategori', 'Sub-Category'],
   fsliName: ['FSLI', 'FSLI_Name', 'FSLIName'],
-  fsliBalance: ['FSLI_Balance', 'FSLIBalance'],
+  fsliBalance: ['FSLI_Balance', 'FSLIBalance', 'Saldo_FSLI', 'Saldo FSLI'],
   noUrut: ['No_Urut', 'No_U', 'NoUrut', 'SortOrder'],
 } as const;
 

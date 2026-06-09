@@ -62,14 +62,15 @@ export function SetBenchmarkModal({ snapshot: initialSnapshot, isOpen, onOpenCha
     if (!snapshot || !snapshot.rows) return [];
     
     // Group by fsliName and track total balance + min noUrut
-    const fsliMap = new Map<string, { total: number, minNoUrut: number }>();
+    const fsliMap = new Map<string, { total: number, minNoUrut: number, explicitlyProvidedTotal: number | null }>();
     
     snapshot.rows.forEach(r => {
       if (r.fsliName) {
-        const current = fsliMap.get(r.fsliName) || { total: 0, minNoUrut: Infinity };
+        const current = fsliMap.get(r.fsliName) || { total: 0, minNoUrut: Infinity, explicitlyProvidedTotal: null };
         fsliMap.set(r.fsliName, {
-          total: current.total + Math.abs(r.balance),
-          minNoUrut: Math.min(current.minNoUrut, r.noUrut ?? Infinity)
+          total: current.total + Math.abs(r.balance || 0),
+          minNoUrut: Math.min(current.minNoUrut, r.noUrut ?? Infinity),
+          explicitlyProvidedTotal: r.fsliBalance !== undefined && r.fsliBalance !== null ? r.fsliBalance : current.explicitlyProvidedTotal
         });
       }
     });
@@ -77,7 +78,7 @@ export function SetBenchmarkModal({ snapshot: initialSnapshot, isOpen, onOpenCha
     return Array.from(fsliMap.entries())
       .map(([name, data]) => ({ 
         name, 
-        total: data.total, 
+        total: (data.explicitlyProvidedTotal !== null && data.explicitlyProvidedTotal !== 0) ? data.explicitlyProvidedTotal : data.total, 
         minNoUrut: data.minNoUrut === Infinity ? 999999 : data.minNoUrut 
       }))
       .sort((a, b) => {

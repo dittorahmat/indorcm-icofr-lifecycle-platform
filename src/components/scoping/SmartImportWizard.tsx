@@ -80,14 +80,15 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
     const uniqueFsliData = React.useMemo(() => {
         if (!parsedTbData || parsedTbData.length === 0) return [];
         
-        const fsliMap = new Map<string, { total: number, minNoUrut: number }>();
+        const fsliMap = new Map<string, { total: number, minNoUrut: number, explicitlyProvidedTotal: number | null }>();
         
         parsedTbData.forEach(r => {
             if (r.suggestedFsli) {
-                const current = fsliMap.get(r.suggestedFsli) || { total: 0, minNoUrut: Infinity };
+                const current = fsliMap.get(r.suggestedFsli) || { total: 0, minNoUrut: Infinity, explicitlyProvidedTotal: null };
                 fsliMap.set(r.suggestedFsli, {
                     total: current.total + Math.abs(r.balance),
-                    minNoUrut: Math.min(current.minNoUrut, r.noUrut ?? Infinity)
+                    minNoUrut: Math.min(current.minNoUrut, r.noUrut ?? Infinity),
+                    explicitlyProvidedTotal: r.fsliBalance !== undefined && r.fsliBalance !== null ? r.fsliBalance : current.explicitlyProvidedTotal
                 });
             }
         });
@@ -95,7 +96,7 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
         return Array.from(fsliMap.entries())
             .map(([name, data]) => ({ 
                 name, 
-                total: data.total, 
+                total: (data.explicitlyProvidedTotal !== null && data.explicitlyProvidedTotal !== 0) ? data.explicitlyProvidedTotal : data.total, 
                 minNoUrut: data.minNoUrut === Infinity ? 999999 : data.minNoUrut 
             }))
             .sort((a, b) => b.total - a.total); // Sort by balance descending for candidates
@@ -141,6 +142,7 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
                         accountCode: r.noGL,
                         accountName: r.glDesc,
                         balance: r.balance,
+                        fsliBalance: r.fsliBalance,
                         entityCode: r.entityCode,
                         parentEntityCode: r.parentEntityCode,
                         suggestedFsli: r.fsliName,
@@ -223,6 +225,7 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
                     year: fiscalYear,
                     rcmData: stagingData,
                     tbData: parsedTbData,
+                    tbFileName: tbFile?.name,
                     simulationParams: parsedTbData.length > 0 ? {
                         basis: selectedBasis,
                         omPercentage,

@@ -11,7 +11,7 @@ const migration = new Hono<HonoEnv>();
 const generateId = () => Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
 migration.post('/migration/finalize', async (c) => {
-  const { sessionId, year, tbData, rcmData, simulationParams } = await c.req.json();
+  const { sessionId, year, tbData, rcmData, simulationParams, tbFileName } = await c.req.json();
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const userId = c.get('userId');
@@ -25,7 +25,7 @@ migration.post('/migration/finalize', async (c) => {
       await db.insert(schema.glSnapshots).values({
         id: snapshotId,
         organizationId: orgId,
-        filename: `Migration_${year}_TB`,
+        filename: tbFileName || `Migration_${year}_TB`,
         uploadDate: new Date(),
         status: 'Mapped',
         isActive: true,
@@ -44,6 +44,7 @@ migration.post('/migration/finalize', async (c) => {
         glDesc: row.accountName,
         currency: row.currency || 'IDR',
         balance: parseFloat(row.balance) || 0,
+        fsliBalance: parseFloat(row.fsliBalance) || 0,
         fsliCode: row.fsliCode,
         fsliName: row.suggestedFsli,
         category: row.category,
@@ -63,30 +64,39 @@ migration.post('/migration/finalize', async (c) => {
 
       // Calculate significant accounts based on PM threshold (aggregated by FSLI)
       const pmValue = simulationParams?.pmValue || 0;
-      const fsliAggregation = new Map<string, { name: string, balance: number, fsliCode?: string }>();
+      const fsliAggregation = new Map<string, { name: string, balance: number, fsliBalance: number, fsliCode?: string }>();
       
       tbData.forEach((row: any) => {
         const name = row.suggestedFsli || row.accountName;
         const balance = Math.abs(parseFloat(row.balance)) || 0;
+        const fBal = Math.abs(parseFloat(row.fsliBalance)) || 0;
+        
         const existing = fsliAggregation.get(name);
         if (existing) {
           existing.balance += balance;
+          if (fBal > 0) existing.fsliBalance = fBal;
         } else {
           fsliAggregation.set(name, {
             name,
             balance,
+            fsliBalance: fBal,
             fsliCode: row.fsliCode
           });
         }
       });
 
       const significantAccounts = Array.from(fsliAggregation.values())
-        .filter(item => item.balance >= pmValue)
-        .map(item => ({
-          ...item,
-          isQuantitative: true,
-          assignedDepartmentIds: []
-        }));
+        .map(item => {
+          const finalBalance = (item.fsliBalance > 0) ? item.fsliBalance : item.balance;
+          return {
+            name: item.name,
+            balance: finalBalance,
+            fsliCode: item.fsliCode,
+            isQuantitative: finalBalance >= pmValue,
+            assignedDepartmentIds: []
+          };
+        })
+        .filter(item => item.isQuantitative);
 
       // Create Approved Materiality Simulation
       await db.insert(schema.simulations).values({
