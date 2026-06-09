@@ -283,7 +283,7 @@ export const AIToolExecutor = {
   },
 
   async create_csa_schedule(ctx: ToolContext, args: any) {
-    const { processId, type, plannedDate, assignedTo } = args;
+    const { processId, description, type, plannedDate, assignedTo } = args;
     
     // Safety check: only Admin/Line 2 can schedule for others
     if (ctx.role !== 'Admin' && ctx.role !== 'Line 2' && assignedTo !== ctx.userId) {
@@ -299,12 +299,13 @@ export const AIToolExecutor = {
         id: crypto.randomUUID(),
         organizationId: ctx.orgId,
         bpmProcessId: processId,
+        description,
         type,
         plannedDate: new Date(plannedDate),
         assignedTo: assignedTo || ctx.userId,
         status: "Not Started"
       },
-      message: `Saya akan membuat jadwal ${type} untuk sub-proses tersebut pada tanggal ${new Date(plannedDate).toLocaleDateString()}. Apakah Anda setuju?`
+      message: `Saya akan membuat jadwal ${type} untuk ${description || 'sub-proses tersebut'} pada tanggal ${new Date(plannedDate).toLocaleDateString()}. Apakah Anda setuju?`
     };
   }
 };

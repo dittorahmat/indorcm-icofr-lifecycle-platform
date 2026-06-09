@@ -102,8 +102,8 @@ export function TodoListPage() {
   });
 
   const { data: processes } = useQuery({
-    queryKey: ['bpm-processes-all'],
-    queryFn: () => api<{ items: BPMProcess[] }>('/api/bpm-processes'),
+    queryKey: ['bpm-processes-all', workingYear],
+    queryFn: () => api<{ items: BPMProcess[] }>(`/api/bpm-processes?year=${workingYear}`),
   });
 
   const deleteScheduleMutation = useMutation({

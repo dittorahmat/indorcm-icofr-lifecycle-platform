@@ -122,7 +122,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear }: BPMEditorProps
   const { data: bpmProcess } = useQuery({
     queryKey: ['bpm-processes', subProcess, workingYear],
     queryFn: async () => {
-      const res = await api<{ items: BPMProcess[] }>('/api/bpm-processes');
+      const res = await api<{ items: BPMProcess[] }>(`/api/bpm-processes?year=${workingYear}`);
       return res.items.find(p => p.name === subProcess && p.year === parseInt(workingYear));
     },
     enabled: !!subProcess

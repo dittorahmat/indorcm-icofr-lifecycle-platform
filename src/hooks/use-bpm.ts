@@ -3,13 +3,13 @@ import { api } from '@/lib/api-client';
 import type { BPMProcess, BPMDiagram, AccountAssertion, MaterialitySimulation, GLSnapshot } from '@shared/types';
 import { toast } from 'sonner';
 
-export function useBpmProcesses(noGL?: string) {
+export function useBpmProcesses(year: string, noGL?: string) {
   const queryClient = useQueryClient();
 
   const query = useQuery({
-    queryKey: ['bpm-processes', noGL],
-    queryFn: () => api<{ items: BPMProcess[] }>(`/api/bpm-processes${noGL ? `?noGL=${noGL}` : ''}`),
-    enabled: noGL !== undefined
+    queryKey: ['bpm-processes', year, noGL],
+    queryFn: () => api<{ items: BPMProcess[] }>(`/api/bpm-processes?year=${year}${noGL ? `&noGL=${noGL}` : ''}`),
+    enabled: year !== undefined
   });
 
   const createBPMMutation = useMutation({

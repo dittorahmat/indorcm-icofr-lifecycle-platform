@@ -57,6 +57,7 @@ import { api } from "@/lib/api-client";
 import { MaterialitySimulation, BPMProcess, ActionPlan } from "@shared/types";
 
 import { authClient } from "@/lib/auth-client";
+import { useFiscalYearStore } from "@/store/useFiscalYearStore";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { NotificationBell } from "./layout/NotificationBell";
@@ -89,9 +90,10 @@ function PendingApprovalBadge({ role }: { role: string | null | undefined }) {
 }
 
 function WorkflowPendingBadge({ role }: { role: string | null | undefined }) {
+  const { workingYear } = useFiscalYearStore();
   const { data: bpmProcesses } = useQuery({
-    queryKey: ['bpm-processes-pending-badge'],
-    queryFn: () => api<{ items: BPMProcess[] }>('/api/bpm-processes'),
+    queryKey: ['bpm-processes-pending-badge', workingYear],
+    queryFn: () => api<{ items: BPMProcess[] }>(`/api/bpm-processes?year=${workingYear}`),
     enabled: !!role && (role === 'Line 2' || role === 'Admin' || role === 'CFO'),
     refetchInterval: 60000,
   });

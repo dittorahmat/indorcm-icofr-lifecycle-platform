@@ -220,6 +220,7 @@ export const ICOFR_TOOLS: FunctionDeclaration[] = [
       type: SchemaType.OBJECT,
       properties: {
         processId: { type: SchemaType.STRING, description: "ID of the sub-process." },
+        description: { type: SchemaType.STRING, description: "Detailed description of the activity (e.g., process name)." },
         type: { type: SchemaType.STRING, enum: ["CSA", "TOD", "TOE"], format: "enum" },
         plannedDate: { type: SchemaType.STRING, description: "Target date (ISO format)." },
         assignedTo: { type: SchemaType.STRING, description: "User ID to assign the task." }

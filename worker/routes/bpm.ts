@@ -89,16 +89,17 @@ bpm.get('/bpm-processes', async (c) => {
   const bpmService = new BpmService(db);
   const orgId = c.get('organizationId')!;
   const yearStr = c.req.query('year');
+  const idStr = c.req.query('id');
   
-  if (!yearStr) {
+  if (!yearStr && !idStr) {
     return c.json({ success: false, error: 'Year parameter is required' }, 400);
   }
 
   const items = await bpmService.getAllProcesses(
     orgId, 
     c.req.query('noGL'), 
-    c.req.query('id'),
-    parseInt(yearStr)
+    idStr,
+    yearStr ? parseInt(yearStr) : undefined
   );
   return ok(c, { items });
 });
