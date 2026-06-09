@@ -31,8 +31,28 @@ export function calculateBenchmarkValue(
   basis: string
 ): number {
   if (!basis) return 0;
-  const matchingRows = glData.filter(row => row.fsliName === basis);
-  return matchingRows.reduce((sum, row) => sum + Math.abs(row.balance), 0);
+  
+  // Use a map to handle multiple identical FSLIs correctly and pick up fsliBalance
+  const fsliTotals = new Map<string, { total: number, explicitlyProvidedTotal: number | null }>();
+  
+  glData.forEach(r => {
+    if (r.fsliName) {
+      const current = fsliTotals.get(r.fsliName) || { total: 0, explicitlyProvidedTotal: null };
+      fsliTotals.set(r.fsliName, {
+        total: current.total + Math.abs(r.balance || 0),
+        explicitlyProvidedTotal: r.fsliBalance !== undefined && r.fsliBalance !== null ? r.fsliBalance : current.explicitlyProvidedTotal
+      });
+    }
+  });
+
+  if (fsliTotals.has(basis)) {
+    const data = fsliTotals.get(basis)!;
+    return (data.explicitlyProvidedTotal !== null && data.explicitlyProvidedTotal !== 0) 
+      ? data.explicitlyProvidedTotal 
+      : data.total;
+  }
+  
+  return 0;
 }
 
 /**
@@ -106,14 +126,21 @@ export function identifySignificantAccounts(params: {
     const assessments = safeAssessmentData[fsliName] || {};
     const isQualSignificant = Object.values(assessments).some(v => v === 'High') || safeMandatoryFslis.includes(fsliName);
     
+    const groupExplicitTotal = rows[0]?.fsliBalance || null;
+    const isGroupKuanSignificant = groupExplicitTotal !== null 
+      ? Math.abs(groupExplicitTotal) >= pmValue 
+      : rows.some(r => Math.abs(r.balance) >= pmValue);
+
     rows.forEach(row => {
-      const isKuanSignificant = Math.abs(row.balance) >= pmValue;
+      // Individual row might be zero, but we consider the group's FSLI balance if provided
+      const effectiveBalance = (groupExplicitTotal !== null && row.balance === 0) ? groupExplicitTotal : Math.abs(row.balance);
+      const isKuanSignificant = isGroupKuanSignificant || Math.abs(row.balance) >= pmValue;
       
-      // Include if FSLI group is qualitatively significant OR this specific account is quantitatively significant
+      // Include if FSLI group is qualitatively significant OR quantitatively significant
       if (isQualSignificant || isKuanSignificant) {
         result.push({
           name: fsliName,
-          balance: row.balance,
+          balance: effectiveBalance,
           isQuantitative: isKuanSignificant,
           fsliCode: row.fsliCode || row.noGL,
           assignedDepartmentIds: row.assignedDepartmentIds || []
