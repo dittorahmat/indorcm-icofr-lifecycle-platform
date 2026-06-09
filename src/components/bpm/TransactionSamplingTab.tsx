@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import { TransactionUploadModal } from './TransactionUploadModal';
 import { toast } from 'sonner';
+import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -36,14 +37,15 @@ interface TransactionSamplingTabProps {
 export function TransactionSamplingTab({ noGL, bpmProcessId, onSamplesSelected }: TransactionSamplingTabProps) {
   const { t } = useTranslation(['bpm', 'csa_hub', 'common']);
   const queryClient = useQueryClient();
+  const { workingYear } = useFiscalYearStore();
   const [searchTerm, setSearchTerm] = React.useState('');
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
   const [isUploadModalOpen, setIsUploadModalOpen] = React.useState(false);
 
   const { data: rowsData, isLoading, refetch } = useQuery({
-    queryKey: ['transaction-details-sampling', noGL, bpmProcessId],
+    queryKey: ['transaction-details-sampling', noGL, bpmProcessId, workingYear],
     queryFn: () => {
-      let url = `/api/transaction-details?noGL=${noGL}`;
+      let url = `/api/transaction-details?noGL=${noGL}&year=${workingYear}`;
       // Robustness: only add if truthy and not 'null'/'undefined' strings
       if (bpmProcessId && bpmProcessId !== 'null' && bpmProcessId !== 'undefined') {
         url += `&bpmProcessId=${bpmProcessId}`;
@@ -54,12 +56,17 @@ export function TransactionSamplingTab({ noGL, bpmProcessId, onSamplesSelected }
 
   const filteredRows = React.useMemo(() => {
     if (!rowsData?.items) return [];
-    return rowsData.items.filter(row => 
-      (row.description?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-      (row.refNo?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-      (row.bpmCode?.toLowerCase().includes(searchTerm.toLowerCase()) || '')
-    );
-  }, [rowsData, searchTerm]);
+    return rowsData.items.filter(row => {
+      const transYear = row.transDate ? new Date(row.transDate).getFullYear() : null;
+      const matchesYear = transYear === parseInt(workingYear);
+      const matchesSearch = 
+        (row.description?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+        (row.refNo?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+        (row.bpmCode?.toLowerCase().includes(searchTerm.toLowerCase()) || '');
+      
+      return matchesYear && matchesSearch;
+    });
+  }, [rowsData, searchTerm, workingYear]);
 
   const toggleSelect = (id: string) => {
     const next = new Set(selectedIds);

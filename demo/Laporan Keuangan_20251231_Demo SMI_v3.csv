@@ -1,0 +1,226 @@
+﻿YMD,Kode_Entity,Parent_Entity,No_GL,GL_Desc,Kode_Valuta,GL_Balance,Kode_FSLI,FSLI,Kategori,Sub_Kategori,FSLI_Balance,No_Urut
+2025-12-31,0101,0101,,,, -   ,101000,Kas dan Setara Kas ,Neraca,Aset," 13,456,082,010,658.00 ",1
+2025-12-31,0101,0101,10008-000318,Kas,IDR," 3,364,020,502,665 ",101100,a.   Kas ,Neraca,Aset," 13,456,082,010,658.00 ",2
+2025-12-31,0101,0101,10008-000319,Kas Kecil,IDR, -   ,101100,a.   Kas ,Neraca,Aset," 13,456,082,010,658.00 ",3
+2025-12-31,0101,0101,,,, -   ,101200,b.   Simpanan pada Bank Dalam Negeri,Neraca,Aset," 13,456,082,010,658.00 ",4
+2025-12-31,0101,0101,10008-000321,Giro Bank,IDR," 4,709,628,703,730 ",101210,1)    Giro ,Neraca,Aset," 13,456,082,010,658.00 ",5
+2025-12-31,0101,0101,10008-000320,Deposito Bank,IDR," 5,382,432,804,263 ",101220,2)    Simpanan Lainnya ,Neraca,Aset," 13,456,082,010,658.00 ",6
+2025-12-31,0101,0101,,,, -   ,101300,c.    Simpanan pada Bank Luar Negeri,Neraca,Aset," 13,456,082,010,658.00 ",7
+2025-12-31,0101,0101,10008-000322,Giro Bank LN,IDR, -   ,101310,1)    Giro ,Neraca,Aset," 13,456,082,010,658.00 ",8
+2025-12-31,0101,0101,10008-000323,Deposito Bank LN,IDR, -   ,101320,2)    Simpanan Lainnya ,Neraca,Aset," 13,456,082,010,658.00 ",9
+2025-12-31,0101,0101,10008-000324,Dana Dibatasi,IDR, -   ,101400,d. Dana yang Dibatasi Penggunaannya (Restricted Fund),Neraca,Aset,"1,281,022,045,336",10
+2025-12-31,0101,0101,10008-000325,Investasi Surat Berharga,IDR, -   ,102000,Investasi dalam Surat Berharga/Surat Berharga Syariah,Neraca,Aset,"12,499,516,453,430",11
+2025-12-31,0101,0101,10023-000030,Tagihan Spot,IDR, -   ,103000,Aset Tagihan Derivatif,Neraca,Aset, -   ,12
+2025-12-31,0101,0101,,,, -   ,104000,Piutang Pembiayaan Neto,Neraca,Aset,"87,620,846,598,509",13
+2025-12-31,0101,0101,,,, -   ,104100,a.    Pemberian Pinjaman Langsung (Direct Lending) untuk Pembiayaan Infrastruktur Neto,Neraca,Aset,"87,620,846,598,509",14
+2025-12-31,0101,0101,18544-000318,Pinjaman Langsung,IDR," 17,524,169,319,702 ",104110,1)    Pemberian Pinjaman Langsung (Direct Lending) untuk Pembiayaan Infrastruktur Bruto,Neraca,Aset,"87,620,846,598,509",15
+2025-12-31,0101,0101,12023-000155,Akrual Bunga Pinjaman Langsung,IDR," 21,029,003,184 ",104170,2)    Pendapatan Bunga yang Belum Diakui (Unearned Interest Income) ,Neraca,Aset,"87,620,846,598,509",16
+2025-12-31,0101,0101,12001-000155,Amortisasi Biaya Pinjaman Langsung,IDR," 227,814,201,156 ",104180,3)    Pendapatan dan Biaya Lainnya sehubungan Transaksi Pembiayaan yang Diamortisasi,Neraca,Aset,"87,620,846,598,509",17
+2025-12-31,0101,0101,10001-000020,Cadangan Pinjaman Langsung,IDR," 248,843,204,340 ",104190,4)    Cadangan Penyisihan Penghapusan Piutang Pembiayaan Pemberian Pinjaman Langsung (Direct Lending) untuk Pembiayaan Infrastruktur,Neraca,Aset,"87,620,846,598,509",18
+2025-12-31,0101,0101,18001-000265,,, -   ,104200,b.    Refinancing atas Infrastruktur yang Telah Dibiayai Pihak Lain Neto,Neraca,Aset,"87,620,846,598,509",19
+2025-12-31,0101,0101,18094-000318,Refinancing,IDR," 26,286,253,979,553 ",104210,1)    Refinancing atas Infrastruktur yang Telah Dibiayai Pihak Lain Bruto,Neraca,Aset,"87,620,846,598,509",20
+2025-12-31,0101,0101,12070-000008,Akrual Bunga Refinancing,IDR," 31,543,504,775 ",104270,2)    Pendapatan Bunga yang Belum Diakui (Unearned Interest Income) ,Neraca,Aset,"87,620,846,598,509",21
+2025-12-31,0101,0101,12071-000008,Amortisasi Biaya Refinancing,IDR," 341,721,301,734 ",104280,3)    Pendapatan dan Biaya Lainnya sehubungan Transaksi Pembiayaan yang Diamortisasi,Neraca,Aset,"87,620,846,598,509",22
+2025-12-31,0101,0101,12071-000040,Cadangan Refinancing,IDR," 373,264,806,510 ",104290,4)    Cadangan Penyisihan Penghapusan Piutang Pembiayaan Refinancing atas Infrastruktur yang Telah Dibiayai Pihak Lain,Neraca,Aset,"87,620,846,598,509",23
+2025-12-31,0101,0101,,,, -   ,104300,c.    Pemberian Pembiayaan Subordinasi yang Berkaitan dengan Pembiayaan Infrastruktur Neto ,Neraca,Aset,"87,620,846,598,509",24
+2025-12-31,0101,0101,12071-000076,Pembiayaan Subordinasi,IDR," 21,905,211,649,627 ",104310,1)    Pemberian Pembiayaan Subordinasi yang Berkaitan dengan Pembiayaan Infrastruktur Bruto,Neraca,Aset,"87,620,846,598,509",25
+2025-12-31,0101,0101,12071-000077,Akrual Bunga Pembiayaan Subordinasi,IDR," 26,286,253,980 ",104370,2)    Pendapatan Bunga yang Belum Diakui (Unearned Interest Income) ,Neraca,Aset,"87,620,846,598,509",26
+2025-12-31,0101,0101,18507-001718,Amortisasi Biaya Pembiayaan Subordinasi,IDR," 284,767,751,445 ",104380,3)    Pendapatan dan Biaya Lainnya sehubungan Transaksi Pembiayaan yang Diamortisasi,Neraca,Aset,"87,620,846,598,509",27
+2025-12-31,0101,0101,12070-000318,Cadangan Pembiayaan Subordinasi,IDR," 311,054,005,425 ",104390,4)    Cadangan Penyisihan Penghapusan Piutang Pembiayaan Pemberian Pembiayaan Subordinasi yang Berkaitan dengan Pembiayaan Infrastruktur,Neraca,Aset,"87,620,846,598,509",28
+2025-12-31,0101,0101,,,, -   ,104400,d.    Kegiatan atau Pemberian Fasilitas Pembiayaan Lain yang Berkaitan dengan Pembiayaan Infrastruktur Setelah Memperoleh Persetujuan Otoritas Jasa Keuangan Neto ,Neraca,Aset,"87,620,846,598,509",29
+2025-12-31,0101,0101,12071-000078,Pembiayaan Lain,IDR," 13,143,126,989,776 ",104410,1)    Kegiatan atau Pemberian Fasilitas Pembiayaan Lain yang Berkaitan dengan Pembiayaan Infrastruktur Setelah Memperoleh Persetujuan Otoritas Jasa Keuangan Bruto,Neraca,Aset,"87,620,846,598,509",30
+2025-12-31,0101,0101,12071-000079,Akrual Bunga Pembiayaan Lain,IDR," 15,771,752,388 ",104470,2)    Pendapatan Bunga yang Belum Diakui (Unearned Interest Income) ,Neraca,Aset,"87,620,846,598,509",31
+2025-12-31,0101,0101,12071-000080,Amortisasi Biaya Pembiayaan Lain,IDR," 170,860,650,867 ",104480,3)    Pendapatan dan Biaya Lainnya sehubungan Transaksi Pembiayaan yang Diamortisasi,Neraca,Aset,"87,620,846,598,509",32
+2025-12-31,0101,0101,12071-000081,Cadangan Pembiayaan Lain,IDR," 186,632,403,255 ",104490,4)    Cadangan Penyisihan Penghapusan Piutang Pembiayaan Kegiatan atau Pemberian Fasilitas Pembiayaan Lain yang Berkaitan dengan Pembiayaan Infrastruktur Setelah Memperoleh Persetujuan Otoritas Jasa Keuangan,Neraca,Aset,"87,620,846,598,509",33
+2025-12-31,0101,0101,,,, -   ,104500,e.    Kegiatan atau Pemberian Fasilitas Pembiayaan Lain yang Tidak Berkaitan dengan Pembiayaan Infrastruktur Berdasarkan Penugasan Pemerintah Neto ,Neraca,Aset,"87,620,846,598,509",34
+2025-12-31,0101,0101,12071-000082,Pembiayaan Lain-Lain,IDR," 8,762,084,659,851 ",104510,1)    Kegiatan atau Pemberian Fasilitas Pembiayaan Lain yang Tidak Berkaitan dengan Pembiayaan Infrastruktur Berdasarkan Penugasan Pemerintah Bruto,Neraca,Aset,"87,620,846,598,509",35
+2025-12-31,0101,0101,12071-000083,Akrual Bunga Pembiayaan Lain-Lain,IDR," 10,514,501,592 ",104570,2)    Pendapatan Bunga yang Belum Diakui (Unearned Interest Income) ,Neraca,Aset,"87,620,846,598,509",36
+2025-12-31,0101,0101,12071-000084,Amortisasi Biaya Pembiayaan Lain-Lain,IDR," 113,907,100,578 ",104580,3)    Pendapatan dan Biaya Lainnya sehubungan Transaksi Pembiayaan yang Diamortisasi,Neraca,Aset,"87,620,846,598,509",37
+2025-12-31,0101,0101,12071-000085,Cadangan Pembiayaan Lain-Lain,IDR," 124,421,602,170 ",104590,4)    Cadangan Penyisihan Penghapusan Piutang Pembiayaan Kegiatan atau Pemberian Fasilitas Pembiayaan Lain yang Tidak Berkaitan dengan Pembiayaan Infrastruktur Berdasarkan Penugasan Pemerintah  ,Neraca,Aset,"87,620,846,598,509",38
+2025-12-31,0101,0101,,,, -   ,105000,Piutang Pembiayaan Berdasarkan Prinsip Syariah Neto,Neraca,Aset,"2,940,484,655,102",39
+2025-12-31,0101,0101,,,, -   ,105100,a.    Pemberian Pembiayaan Langsung (Direct Lending) untuk Pembiayaan Infrastruktur Berdasarkan Prinsip Syariah Neto,Neraca,Aset,"2,940,484,655,102",40
+2025-12-31,0101,0101,,,, -   ,105110,1)    Pemberian Pembiayaan Langsung (Direct Lending) untuk Pembiayaan Infrastruktur Berdasarkan Prinsip Syariah Bruto,Neraca,Aset,"2,940,484,655,102",41
+2025-12-31,0101,0101,12071-000086,Pembiayaan Murabahah,IDR," 294,048,465,510 ",105111,a)    Pembiayaan Murabahah,Neraca,Aset,"2,940,484,655,102",42
+2025-12-31,0101,0101,12071-000087,Pembiayaan Mudharabah,IDR," 588,096,931,020 ",105112,b)    Pembiayaan Mudharabah,Neraca,Aset,"2,940,484,655,102",43
+2025-12-31,0101,0101,12071-000088,Pembiayaan Musyarakah,IDR," 882,145,396,531 ",105113,c)    Pembiayaan Musyarakah,Neraca,Aset,"2,940,484,655,102",44
+2025-12-31,0101,0101,12071-000089,Pembiayaan MMQ,IDR," 441,072,698,265 ",105114,d) Pembiayaan MMQ,Neraca,Aset,"2,940,484,655,102",45
+2025-12-31,0101,0101,12071-000090,Pembiayaan Ijarah,IDR," 147,024,232,755 ",105115,e) Pembiayaan Ijarah,Neraca,Aset,"2,940,484,655,102",46
+2025-12-31,0101,0101,12071-000091,Pembiayaan IMBT,IDR," 88,214,539,653 ",105116,f) Pembiayaan IMBT,Neraca,Aset,"2,940,484,655,102",47
+2025-12-31,0101,0101,12071-000092,Pembiayaan Lainnya,IDR," 205,833,925,857 ",105117,g) Pembiayaan Lainnya,Neraca,Aset,"2,940,484,655,102",48
+2025-12-31,0101,0101,12071-000093,Pendapatan Bagi Hasil Tangguhan,IDR," 29,404,846,551 ",105170,2) Pendapatan Bagi Hasil Tangguhan,Neraca,Aset,"2,940,484,655,102",49
+2025-12-31,0101,0101,12071-000094,Transaksi Pembiayaan yang Diamortisasi,IDR," 58,809,693,102 ",105180,3)    Pendapatan dan Biaya Lainnya sehubungan Transaksi Pembiayaan yang Diamortisasi,Neraca,Aset,"2,940,484,655,102",50
+2025-12-31,0101,0101,12071-000095,Cadangan Pembiayaan Syariah,IDR," 35,285,815,861 ",105190,4)    Cadangan Penyisihan Penghapusan Piutang Pembiayaan Pemberian Pembiayaan Langsung (Direct Lending) untuk Pembiayaan Infrastruktur Berdasarkan Prinsip Syariah,Neraca,Aset,"2,940,484,655,102",51
+2025-12-31,0101,0101,,,, -   ,105200,b.    Refinancing atas Infrastruktur yang Telah Dibiayai Pihak Lain Berdasarkan Prinsip Syariah Neto,Neraca,Aset,"2,940,484,655,102",52
+2025-12-31,0101,0101,,,, -   ,105210,1)    Refinancing atas Infrastruktur yang Telah Dibiayai Pihak Lain Berdasarkan Prinsip Syariah Bruto,Neraca,Aset,"2,940,484,655,102",53
+2025-12-31,0101,0101,12071-000100, Refinancing  Pembiayaan IMBT ,IDR, -   ,105211,a)    Pembiayaan IMBT,Neraca,Aset,"2,940,484,655,102",54
+2025-12-31,0101,0101,12071-000101, Refinancing Pembiayaan MMQ ,IDR, -   ,105212,b)    Pembiayaan MMQ,Neraca,Aset,"2,940,484,655,102",55
+2025-12-31,0101,0101,12071-000102, Refinancing  Pembiayaan Lainnya ,IDR, -   ,105213,c)    Pembiayaan Lainnya,Neraca,Aset,"2,940,484,655,102",56
+2025-12-31,0101,0101,12071-000103,Transaksi Pembiayaan yang Diamortisasi Refinancing,IDR, -   ,105280,2)    Pendapatan dan Biaya Lainnya sehubungan Transaksi Pembiayaan yang Diamortisasi,Neraca,Aset,"2,940,484,655,102",57
+2025-12-31,0101,0101,12071-000104,Cadangan Pembiayaan Syariah Refinancing,IDR, -   ,105290,3)    Cadangan Penyisihan Penghapusan Piutang Pembiayaan Refinancing atas Infrastruktur yang Telah Dibiayai Pihak Lain Berdasarkan Prinsip Syariah,Neraca,Aset,"2,940,484,655,102",58
+2025-12-31,0101,0101,,,, -   ,105300,c.    Pemberian Pembiayaan Subordinasi yang Berkaitan dengan Pembiayaan Infrastruktur Berdasarkan Prinsip Syariah Neto ,Neraca,Aset,"2,940,484,655,102",59
+2025-12-31,0101,0101,12071-000200,Pembiayaan Syariah Subordinasi,IDR, -   ,105310,1)    Pemberian Pembiayaan Subordinasi yang Berkaitan dengan Pembiayaan Infrastruktur Berdasarkan Prinsip Syariah Bruto,Neraca,Aset,"2,940,484,655,102",60
+2025-12-31,0101,0101,12071-000201,Biaya Amortisasi Pembiayaan Syariah Subordinasi,IDR, -   ,105380,2)    Pendapatan dan Biaya Lainnya sehubungan Transaksi Pembiayaan yang Diamortisasi,Neraca,Aset,"2,940,484,655,102",61
+2025-12-31,0101,0101,12071-000202,Cadangan Pembiayaan Syariah Subordinasi,IDR, -   ,105390,3)    Cadangan Penyisihan Penghapusan Piutang Pembiayaan Pemberian Pembiayaan Subordinasi yang Berkaitan dengan Pembiayaan Infrastruktur Berdasarkan Prinsip Syariah,Neraca,Aset,"2,940,484,655,102",62
+2025-12-31,0101,0101,,,, -   ,105400,d.    Kegiatan atau Pemberian Fasilitas Pembiayaan Lain yang Berkaitan dengan Pembiayaan Infrastruktur Setelah Memperoleh Persetujuan Otoritas Jasa Keuangan Berdasarkan Prinsip Syariah Neto ,Neraca,Aset,"2,940,484,655,102",63
+2025-12-31,0101,0101,12071-000300,Pembiayaan Lainnya Syariah Subordinasi,IDR, -   ,105410,1)    Kegiatan atau Pemberian Fasilitas Pembiayaan Lain yang Berkaitan dengan Pembiayaan Infrastruktur Setelah Memperoleh Persetujuan Otoritas Jasa Keuangan Berdasarkan Prinsip Syariah Bruto,Neraca,Aset,"2,940,484,655,102",64
+2025-12-31,0101,0101,12071-000301,Biaya Amortisasi Pembiayaan Lainnya Syariah Subordinasi,IDR, -   ,105480,2)    Pendapatan dan Biaya Lainnya sehubungan Transaksi Pembiayaan yang Diamortisasi,Neraca,Aset,"2,940,484,655,102",65
+2025-12-31,0101,0101,12071-000302,Cadangan Pembiayaan Lainnya Syariah Subordinasi,IDR, -   ,105490,3)    Cadangan Penyisihan Penghapusan Piutang Pembiayaan Kegiatan atau Pemberian Fasilitas Pembiayaan Lain yang Berkaitan dengan Pembiayaan Infrastruktur Setelah Memperoleh Persetujuan Otoritas Jasa Keuangan Berdasarkan Prinsip Syariah,Neraca,Aset,"2,940,484,655,102",66
+2025-12-31,0101,0101,,,, -   ,105500,e.    Kegiatan atau Pemberian Fasilitas Pembiayaan Lain yang Tidak Berkaitan dengan Pembiayaan Infrastruktur Berdasarkan Penugasan Pemerintah Berdasarkan Prinsip Syariah Neto ,Neraca,Aset,"2,940,484,655,102",67
+2025-12-31,0101,0101,12071-000400,Pembiayaan Lain-Lain Syariah Subordinasi,IDR, -   ,105510,1)    Kegiatan atau Pemberian Fasilitas Pembiayaan Lain yang Tidak Berkaitan dengan Pembiayaan Infrastruktur Berdasarkan Penugasan Pemerintah Berdasarkan Prinsip Syariah Bruto,Neraca,Aset,"2,940,484,655,102",68
+2025-12-31,0101,0101,12071-000401,Biaya Amortisasi Pembiayaan Lain-Lain Syariah Subordinasi,IDR, -   ,105580,2)    Pendapatan dan Biaya Lainnya sehubungan Transaksi Pembiayaan yang Diamortisasi,Neraca,Aset,"2,940,484,655,102",69
+2025-12-31,0101,0101,12071-000402,Cadangan Pembiayaan Lain-Lain Syariah Subordinasi,IDR, -   ,105590,3)    Cadangan Penyisihan Penghapusan Piutang Pembiayaan Kegiatan atau Pemberian Fasilitas Pembiayaan Lain yang Tidak Berkaitan dengan Pembiayaan Infrastruktur Berdasarkan Penugasan Pemerintah Berdasarkan Prinsip Syariah,Neraca,Aset,"2,940,484,655,102",70
+2025-12-31,,0101,,,, -   ,106000,Penyertaan Modal,Neraca,Aset,"3,894,733,135,286",71
+2025-12-31,0101,0101,12081-000100,Penyertaan Modal ,IDR, -   ,106100,a.    Penyertaan Modal pada Perusahaan di Sektor Jasa Keuangan,Neraca,Aset,"3,894,733,135,286",72
+2025-12-31,0101,0101,12081-000102,Penyertaan Modal  Pembiayaan Macet,IDR, -   ,106200,b.    Penyertaan Modal pada Perusahaan yang Bergerak dalam Proyek Infrastruktur,Neraca,Aset,"3,894,733,135,286",73
+2025-12-31,,0101,,,, -   ,107000,Tagihan terkait Kegiatan Usaha Lain:,Neraca,Aset,0,74
+2025-12-31,0101,0101,12082-000100,Tagihan Dukungan Pembiayaan,IDR, -   ,107100,a.    Tagihan terkait Pemberian Dukungan Kredit/Pembiayaan,Neraca,Aset,0,75
+2025-12-31,0101,0101,12082-000102,Tagihan Jasa Konsultasi,IDR, -   ,107200,b.    Tagihan terkait Pemberian Jasa Konsultasi,Neraca,Aset,0,76
+2025-12-31,0101,0101,12082-000103,Tagihan Lainnya,IDR, -   ,107300,c.    Tagihan terkait Upaya Mencarikan Pasar Swap yang Berkaitan dengan Pembiayaan Infrastruktur,Neraca,Aset,0,77
+2025-12-31,,0101,,,, -   ,108000,Aset Tetap dan Inventaris Neto,Neraca,Aset,"339,585,405,580",78
+2025-12-31,0101,0101,12090-000100,Aset Tetap,IDR, -   ,108100,a. Aset Tetap dan Inventaris Bruto,Neraca,Aset,"339,585,405,580",79
+2025-12-31,0101,0101,12090-000101,Penyusutan Aset Tetap,IDR, -   ,108900,b. Akumulasi Penyusutan Aset Tetap dan Inventaris,Neraca,Aset,"339,585,405,580",80
+2025-12-31,,0101,,,, -   ,109000,Aset Tidak Berwujud Neto,Neraca,Aset,"37,135,103,330",81
+2025-12-31,0101,0101,12091-000100,Aset Tidak Berwujud,IDR, -   ,109100,a.    Aset Tidak Berwujud Bruto,Neraca,Aset,"37,135,103,330",82
+2025-12-31,0101,0101,12091-000101,Penyusutan Aset Tidak Berwujud,IDR, -   ,109900,b.    Akumulasi Penyusutan Aset Tidak Berwujud,Neraca,Aset,"37,135,103,330",83
+2025-12-31,0101,0101,10020-000100,Aset Pajak Tangguhan,IDR, -   ,110000,Aset Pajak Tangguhan,Neraca,Aset,"57,178,472,219",84
+2025-12-31,0101,0101,10099-000100,Rupa-Rupa Aset,IDR, -   ,111000,Rupa-Rupa Aset,Neraca,Aset,"14,053,126,520",85
+2025-12-31,,0101,,,, -   ,100000,Jumlah Aset,Neraca,Aset,"121,325,658,336,717",86
+2025-12-31,,0101,,,, -   ,201000,Liabilitas Segera ,Neraca,Liabilitas,"23,256,754,229",87
+2025-12-31,0101,0101,20002-000100, Liabilitas kepada Pemerintah ,IDR, -   ,201100,a.    Liabilitas kepada Pemerintah,Neraca,Liabilitas,"23,256,754,229",88
+2025-12-31,0101,0101,20002-000101, Liabilitas kepada Organisasi Multilateral ,IDR, -   ,201200,b.    Liabilitas kepada Organisasi Multilateral,Neraca,Liabilitas,"23,256,754,229",89
+2025-12-31,0101,0101,20002-000102, Liabilitas kepada Bank ,IDR, -   ,201300,c.    Liabilitas kepada Bank,Neraca,Liabilitas,"23,256,754,229",90
+2025-12-31,0101,0101,20002-000103, Liabilitas kepada Lembaga Keuangan ,IDR, -   ,201300,d.    Liabilitas kepada Lembaga Keuangan,Neraca,Liabilitas,"23,256,754,229",91
+2025-12-31,0101,0101,20002-000104, Liabilitas Segera Lainnya ,IDR, -   ,201900,e.    Liabilitas Segera Lainnya,Neraca,Liabilitas,"23,256,754,229",92
+2025-12-31,0101,0101,20002-000105, Liabilitas Derivatif ,IDR, -   ,202000,Liabilitas Derivatif,Neraca,Liabilitas,0,93
+2025-12-31,0101,0101,20002-000106, Utang Pajak ,IDR, -   ,203000,Utang Pajak,Neraca,Liabilitas,"261,109,670,453",94
+2025-12-31,0101,0101,,,, -   ,204000,Pinjaman/Pendanaan yang Diterima,Neraca,Liabilitas,"48,173,284,492,643",95
+2025-12-31,0101,0101,,,, -   ,204100,a.    Pinjaman/Pendanaan yang Diterima dari Pemerintah,Neraca,Liabilitas,"48,173,284,492,643",96
+2025-12-31,0101,0101,20003-000100,Pinjaman dari Pemerintah Pusat,IDR, -   ,204110,1) Pinjaman/Pendanaan yang Diterima dari Pemerintah Pusat,Neraca,Liabilitas,"48,173,284,492,643",97
+2025-12-31,0101,0101,20003-000101,Pinjaman dari Pemerintah Daerah,IDR, -   ,204120,2) Pinjaman/Pendanaan yang Diterima dari Pemerintah Daerah,Neraca,Liabilitas,"48,173,284,492,643",98
+2025-12-31,0101,0101,20003-000102,Pinjaman dari Pemerintah Lain,IDR, -   ,204130,3) Pinjaman/Pendanaan yang Diterima dari Pemerintah Asing,Neraca,Liabilitas,"48,173,284,492,643",99
+2025-12-31,0101,0101,20003-000103,Pinjaman dari Lembaga Lain,, -   ,204200,b.    Pinjaman/Pendanaan yang Diterima dari Organisasi Multilateral,Neraca,Liabilitas,"48,173,284,492,643",100
+2025-12-31,0101,0101,,,, -   ,204300,c.    Pinjaman/Pendanaan yang Diterima dari Bank ,Neraca,Liabilitas,"48,173,284,492,643",101
+2025-12-31,0101,0101,20004-000100,Pinjaman dari Bank DN,IDR, -   ,204310,1)    Pinjaman/Pendanaan yang Diterima dari Bank Dalam Negeri,Neraca,Liabilitas,"48,173,284,492,643",102
+2025-12-31,0101,0101,20004-000101,Pinjaman dari Bank LN,IDR, -   ,204320,2)    Pinjaman/Pendanaan yang Diterima dari Bank Luar Negeri,Neraca,Liabilitas,"48,173,284,492,643",103
+2025-12-31,0101,0101,,,, -   ,204400,d.    Pinjaman/Pendanaan yang Diterima dari Lembaga Keuangan non Bank,Neraca,Liabilitas,"48,173,284,492,643",104
+2025-12-31,0101,0101,20005-000100,Pinjaman dari Non Bank DN,IDR, -   ,204410,1)    Pinjaman/Pendanaan yang Diterima dari Lembaga Keuangan non Bank Dalam Negeri,Neraca,Liabilitas,"48,173,284,492,643",105
+2025-12-31,0101,0101,20005-000101,Pinjaman dari Non Bank LN,IDR, -   ,204420,2)    Pinjaman/Pendanaan yang Diterima dari Lembaga Keuangan non Bank Luar Negeri,Neraca,Liabilitas,"48,173,284,492,643",106
+2025-12-31,0101,0101,20005-000102,Surat Berharga Diterbitkan,IDR, -   ,205000,Surat Berharga/Surat Berharga Syariah yang Diterbitkan,Neraca,Liabilitas,"22,843,068,553,286",107
+2025-12-31,0101,0101,20005-000103, Liabilitas Imbalan Pasca Kerja ,IDR, -   ,206000,Liabilitas Imbalan Pasca Kerja,Neraca,Liabilitas,0,108
+2025-12-31,0101,0101,20005-000104, Liabilitas Pajak Tangguhan ,IDR, -   ,207000,Liabilitas Pajak Tangguhan,Neraca,Liabilitas,0,109
+2025-12-31,0101,0101,,,, -   ,208000,Pinjaman/Pendanaan Subordinasi,Neraca,Liabilitas,0,110
+2025-12-31,0101,0101,20010-000100,Pinjaman Subordiasi DN,IDR, -   ,208100,a.    Pinjaman/Pendanaan Subordinasi Dalam Negeri,Neraca,Liabilitas,0,111
+2025-12-31,0101,0101,20010-000101,Pinjaman Subordiasi LN,IDR, -   ,208200,b.    Pinjaman/Pendanaan Subordinasi Luar Negeri,Neraca,Liabilitas,0,112
+2025-12-31,0101,0101,20010-000102,Rupa-Rupa Liabilitas,IDR, -   ,209000,Rupa-Rupa Liabilitas,Neraca,Liabilitas,"23,256,754,229",113
+2025-12-31,0101,0101,,,, -   ,301000,Modal ,Neraca,Ekuitas,"46,413,886,319,513",114
+2025-12-31,0101,0101,,,, -   ,301100,a.    Modal Disetor ,Neraca,Ekuitas,"30,516,600,000,000",115
+2025-12-31,0101,0101,30010-000100,Modal Dasar,IDR, -   ,301110,1)     Modal Dasar,Neraca,Ekuitas,"30,516,600,000,000",116
+2025-12-31,0101,0101,30010-000101,Modal yang Belum Disetor ,IDR, -   ,301120,2)     Modal yang Belum Disetor ,Neraca,Ekuitas,"30,516,600,000,000",117
+2025-12-31,0101,0101,,,, -   ,301200,b.    Tambahan Modal Disetor,Neraca,Ekuitas,0,118
+2025-12-31,0101,0101,30011-000100,Agio,IDR, -   ,301210,1)    Agio,Neraca,Ekuitas,0,119
+2025-12-31,0101,0101,30011-000101,Modal Hibah,IDR, -   ,301220,2)    Modal Hibah,Neraca,Ekuitas,0,120
+2025-12-31,0101,0101,30011-000102,Selisih Nilai Transaksi Restrukturisasi Entitas Sepengendali,IDR, -   ,301230,3)    Selisih Nilai Transaksi Restrukturisasi Entitas Sepengendali,Neraca,Ekuitas,0,121
+2025-12-31,0101,0101,30011-000103,Tambahan Modal Disetor Lainnya,IDR, -   ,301240,4)    Tambahan Modal Disetor Lainnya,Neraca,Ekuitas,0,122
+2025-12-31,0101,0101,30011-000104,Disagio ,IDR, -   ,301300,c.    Disagio ,Neraca,Ekuitas,0,123
+2025-12-31,0101,0101,30011-000105,Modal Saham yang Diperoleh Kembali,IDR, -   ,301400,d.    Modal Saham yang Diperoleh Kembali,Neraca,Ekuitas,0,124
+2025-12-31,0101,0101,30011-000106,Biaya Emisi Efek Ekuitas,IDR, -   ,301500,e.    Biaya Emisi Efek Ekuitas,Neraca,Ekuitas,0,125
+2025-12-31,0101,0101,,,, -   ,302000,Cadangan ,Neraca,Ekuitas,0,126
+2025-12-31,0101,0101,30100-000100,Cadangan Umum,IDR, -   ,302100,a.    Cadangan Umum,Neraca,Ekuitas,0,127
+2025-12-31,0101,0101,30100-000101,Cadangan Tujuan,IDR, -   ,302200,b.    Cadangan Tujuan,Neraca,Ekuitas,0,128
+2025-12-31,0101,0101,30100-000102,Saldo Laba (Rugi) yang Ditahan,IDR, -   ,303000,Saldo Laba (Rugi) yang Ditahan,Neraca,Ekuitas,0,129
+2025-12-31,0101,0101,30100-000103,Laba (Rugi) Bersih Setelah Pajak,IDR, -   ,304000,Laba (Rugi) Bersih Setelah Pajak,Neraca,Ekuitas,0,130
+2025-12-31,0101,0101,,,, -   ,305000,Komponen Ekuitas Lainnya,Neraca,Ekuitas,"302,472,696,931",131
+2025-12-31,0101,0101,,,, -   ,305100,a.    Saldo Komponen Ekuitas Lainnya ,Neraca,Ekuitas,"302,472,696,931",132
+2025-12-31,0101,0101,30101-000100,Ekuitas Surplus Revaluasi Aset Tetap,IDR, -   ,305110,1)    Saldo Keuntungan (Kerugian) Akibat Perubahan dalam Surplus Revaluasi Aset Tetap,Neraca,Ekuitas,"302,472,696,931",133
+2025-12-31,0101,0101,30101-000101,Ekuitas Penjabaran Laporan Keuangan dalam Mata Uang Asing,IDR, -   ,305120,2)    Saldo Keuntungan (Kerugian) Akibat Selisih Kurs Karena Penjabaran Laporan Keuangan dalam Mata Uang Asing,Neraca,Ekuitas,"302,472,696,931",134
+2025-12-31,0101,0101,30101-000102,Ekuitas Pengukuran Kembali Aset Keuangan Tersedia untuk Dijual,IDR, -   ,305130,3)    Saldo Keuntungan (Kerugian) Akibat Pengukuran Kembali Aset Keuangan Tersedia untuk Dijual,Neraca,Ekuitas,"302,472,696,931",135
+2025-12-31,0101,0101,30101-000103,Ekuitas dalam Rangka Lindung Nilai Arus Kas,IDR, -   ,305140,4)    Saldo Keuntungan (Kerugian) Akibat Bagian Efektif Instrumen Keuangan Lindung Nilai dalam Rangka Lindung Nilai Arus Kas,Neraca,Ekuitas,"302,472,696,931",136
+2025-12-31,0101,0101,30101-000104,Ekuitas Lainnya Sesuai Prinsip Standar Akuntansi Keuangan,IDR, -   ,305150,5)    Saldo Keuntungan (Kerugian) atas Komponen Ekuitas Lainnya Sesuai Prinsip Standar Akuntansi Keuangan,Neraca,Ekuitas,"302,472,696,931",137
+2025-12-31,0101,0101,30101-000105,Ekuitas Komprehensif Lainnya Periode Berjalan,IDR, -   ,305200,b.    Keuntungan (Kerugian) Komprehensif Lainnya Periode Berjalan,Neraca,Ekuitas,"302,472,696,931",138
+2025-12-31,0101,0101,,,, -   ,200000,Jumlah Liabilitas dan Ekuitas,Neraca,Ekuitas,"121,325,658,336,717",139
+2025-12-31,0101,0101,,,, -   ,,(1)  PENDAPATAN,Laba Rugi,Pendapatan,"8,910,795,779,934",140
+2025-12-31,0101,0101,,,, -   ,,1.    Pendapatan Operasional,Laba Rugi,Pendapatan,"8,910,795,779,934",141
+2025-12-31,0101,0101,,,, -   ,,a.   Pendapatan dari Kegiatan Operasi,Laba Rugi,Pendapatan,"8,910,795,779,934",142
+2025-12-31,0101,0101,,,, -   ,,1)    Pendapatan Bunga Pinjaman yang Diberikan,Laba Rugi,Pendapatan,"8,910,795,779,934",143
+2025-12-31,0101,0101,40010-000100,Pendapatan Bunga Pembiayaan Langsung,IDR, -   ,1010100,a.    Pemberian Pinjaman Langsung (Direct Lending) untuk Pembiayaan Infrastruktur,Laba Rugi,Pendapatan,"8,910,795,779,934",144
+2025-12-31,0101,0101,40010-000101,Pendapatan Bunga Refinancing,IDR, -   ,1010100,b.    Refinancing atas Infrastruktur yang Telah Dibiayai Pihak Lain,Laba Rugi,Pendapatan,"8,910,795,779,934",145
+2025-12-31,0101,0101,40010-000102,Pendapatan Bunga Pembiayaan Subordinasi,IDR, -   ,1010100,c.    Pemberian Pembiayaan Subordinasi yang Berkaitan dengan Pembiayaan Infrastruktur,Laba Rugi,Pendapatan,"8,910,795,779,934",146
+2025-12-31,0101,0101,40010-000103,Pendapatan Bunga Pembiayaan Lain,IDR, -   ,1010100,d.    Kegiatan atau Pemberian Fasilitas Pembiayaan Lain yang Berkaitan dengan Pembiayaan Infrastruktur Setelah Memperoleh Persetujuan Otoritas Jasa Keuangan,Laba Rugi,Pendapatan,"8,910,795,779,934",147
+2025-12-31,0101,0101,40010-000104,Pendapatan Bunga Pembiayaan Lain-lain,IDR, -   ,1010100,e.    Kegiatan atau Pemberian Fasilitas Pembiayaan Lain yang Tidak Berkaitan dengan Pembiayaan Infrastruktur Berdasarkan Penugasan Pemerintah,Laba Rugi,Pendapatan,"8,910,795,779,934",148
+2025-12-31,0101,0101,,,, -   ,,2)    Pendapatan Pembiayaan yang Diberikan Berdasarkan Prinsip Syariah,Laba Rugi,Pendapatan,"8,910,795,779,934",149
+2025-12-31,0101,0101,,,, -   ,,a.    Pemberian Pembiayaan Langsung (Direct Lending) untuk Pembiayaan Infrastruktur,Laba Rugi,Pendapatan,"8,910,795,779,934",150
+2025-12-31,0101,0101,40011-000100,Marjin Murabahah,IDR, -   ,1010100,1) Marjin Murabahah,Laba Rugi,Pendapatan,"8,910,795,779,934",151
+2025-12-31,0101,0101,40011-000101,Bagi Hasil Mudharabah,IDR, -   ,1010100,2) Bagi Hasil Mudharabah,Laba Rugi,Pendapatan,"8,910,795,779,934",152
+2025-12-31,0101,0101,40011-000102,Bagi Hasil Musyarakah,IDR, -   ,1010100,3) Bagi Hasil Musyarakah,Laba Rugi,Pendapatan,"8,910,795,779,934",153
+2025-12-31,0101,0101,40011-000103,Bagi Hasil MMQ,IDR, -   ,1010100,4) Bagi Hasil MMQ,Laba Rugi,Pendapatan,"8,910,795,779,934",154
+2025-12-31,0101,0101,40011-000104,Pendapatan Ijarah,IDR, -   ,1010100,5) Pendapatan Ijarah,Laba Rugi,Pendapatan,"8,910,795,779,934",155
+2025-12-31,0101,0101,40011-000105,Pendapatan IMBT,IDR, -   ,1010100,6) Pendapatan IMBT,Laba Rugi,Pendapatan,"8,910,795,779,934",156
+2025-12-31,0101,0101,40011-000106,Pendapatan/Bagi Hasil Lainnya,IDR, -   ,1010100,7) Pendapatan/Bagi Hasil Lainnya,Laba Rugi,Pendapatan,"8,910,795,779,934",157
+2025-12-31,0101,0101,,,, -   ,,b.    Refinancing atas Infrastruktur yang Telah Dibiayai Pihak Lain,Laba Rugi,Pendapatan,"8,910,795,779,934",158
+2025-12-31,0101,0101,40012-000100,Pendapatan Refinancing  Akad IMBT,IDR, -   ,1010100,1)    Akad IMBT,Laba Rugi,Pendapatan,"8,910,795,779,934",159
+2025-12-31,0101,0101,40012-000101,Pendapatan Refinancing Akad MMQ,IDR, -   ,1010100,2)    Akad MMQ,Laba Rugi,Pendapatan,"8,910,795,779,934",160
+2025-12-31,0101,0101,40012-000102,Pendapatan Refinancing Pendapatan/Bagi Hasil Lainnya,IDR, -   ,1010100,3)    Pendapatan/Bagi Hasil Lainnya,Laba Rugi,Pendapatan,"8,910,795,779,934",161
+2025-12-31,0101,0101,40012-000103,Pendapatan Pembiayaan Subordinasi,IDR, -   ,1010100,c.    Pemberian Pembiayaan Subordinasi yang Berkaitan dengan Pembiayaan Infrastruktur,Laba Rugi,Pendapatan,"8,910,795,779,934",162
+2025-12-31,0101,0101,40012-000104,Pendapatan Pembiayaan Lain,IDR, -   ,1010100,d.    Kegiatan atau Pemberian Fasilitas Pembiayaan Lain yang Berkaitan dengan Pembiayaan Infrastruktur setelah memperoleh Persetujuan Otoritas Jasa Keuangan,Laba Rugi,Pendapatan,"8,910,795,779,934",163
+2025-12-31,0101,0101,40012-000105,Pendapatan Pembiayaan Lain-lain,IDR, -   ,1010100,e.    Kegiatan atau Pemberian Fasilitas Pembiayaan Lain yang Tidak Berkaitan dengan Pembiayaan Infrastruktur Berdasarkan Penugasan Pemerintah,Laba Rugi,Pendapatan,"8,910,795,779,934",164
+2025-12-31,0101,0101,,,, -   ,,b.   Pendapatan dari Kegiatan Usaha Lain,Laba Rugi,Pendapatan,"8,910,795,779,934",165
+2025-12-31,0101,0101,40013-000100,Pendapatan dari Pemberian Dukungan Kredit/Pembiayaan,IDR, -   ,1010100,1)    Pendapatan dari Pemberian Dukungan Kredit/Pembiayaan,Laba Rugi,Pendapatan,"8,910,795,779,934",166
+2025-12-31,0101,0101,40013-000101,Pendapatan dari Pemberian Jasa Konsultasi,IDR, -   ,1010100,2)    Pendapatan dari Pemberian Jasa Konsultasi,Laba Rugi,Pendapatan,"8,910,795,779,934",167
+2025-12-31,0101,0101,40013-000102,Pendapatan Dividen dari Penyertaan Modal,IDR, -   ,1010100,3)    Pendapatan Dividen dari Penyertaan Modal,Laba Rugi,Pendapatan,"8,910,795,779,934",168
+2025-12-31,0101,0101,40013-000103,Pendapatan dari Upaya Mencarikan Pasar Swap yang Berkaitan dengan Pembiayaan Infrastruktur,IDR, -   ,1010100,4)    Pendapatan dari Upaya Mencarikan Pasar Swap yang Berkaitan dengan Pembiayaan Infrastruktur,Laba Rugi,Pendapatan,"8,910,795,779,934",169
+2025-12-31,0101,0101,40013-000104,Keuntungan dari Penyertaan Modal dengan Metode Ekuitas,IDR, -   ,1010100,5)    Keuntungan dari Penyertaan Modal dengan Metode Ekuitas,Laba Rugi,Pendapatan,"8,910,795,779,934",170
+2025-12-31,0101,0101,,,, -   ,,c.    Pendapatan Operasional Lain terkait Pembiayaan,Laba Rugi,Pendapatan,"8,910,795,779,934",171
+2025-12-31,0101,0101,40014-000100,Pendapatan Administrasi,IDR, -   ,1010100,1)    Pendapatan Administrasi,Laba Rugi,Pendapatan,"8,910,795,779,934",172
+2025-12-31,0101,0101,40014-000101,Pendapatan Provisi,IDR, -   ,1010100,2)    Pendapatan Provisi,Laba Rugi,Pendapatan,"8,910,795,779,934",173
+2025-12-31,0101,0101,40014-000102,Pendapatan Denda/Ganti Rugi (Ta’zir),IDR, -   ,1010100,3)    Pendapatan Denda/Ganti Rugi (Ta’zir),Laba Rugi,Pendapatan,"8,910,795,779,934",174
+2025-12-31,0101,0101,40014-000104,Pendapatan Operasional Lain terkait Pembiayaan Lainnya,IDR, -   ,1010100,4)    Pendapatan Operasional Lain terkait Pembiayaan Lainnya,Laba Rugi,Pendapatan,"8,910,795,779,934",175
+2025-12-31,0101,0101,40014-000105,Pendapatan Operasional Lainnya,IDR, -   ,1010100,d.   Pendapatan Operasional Lainnya,Laba Rugi,Pendapatan,"8,910,795,779,934",176
+2025-12-31,0101,0101,,,, -   ,1010100,2.    Pendapatan Non Operasional,Laba Rugi,Pendapatan,"8,910,795,779,934",177
+2025-12-31,0101,0101,40015-000100,Pendapatan Bunga/Jasa Giro/Ujrah/Bagi Hasil ,IDR, -   ,1010100,a.   Pendapatan Bunga/Jasa Giro/Ujrah/Bagi Hasil ,Laba Rugi,Pendapatan,"8,910,795,779,934",178
+2025-12-31,0101,0101,40015-000101,Pendapatan Bunga/Imbal Hasil Investasi,IDR, -   ,1010100,b.   Pendapatan Bunga/Imbal Hasil Investasi,Laba Rugi,Pendapatan,"8,910,795,779,934",179
+2025-12-31,0101,0101,40015-000102,Pendapatan Non Operasional Lainnya,IDR, -   ,1010100,c.   Pendapatan Non Operasional Lainnya,Laba Rugi,Pendapatan,"8,910,795,779,934",180
+2025-12-31,0101,0101,,,, -   ,,(2)  BEBAN,Laba Rugi,Biaya,"5,446,778,243,201",181
+2025-12-31,0101,0101,,,, -   ,,1.    Beban Operasional ,Laba Rugi,Biaya,"5,446,778,243,201",182
+2025-12-31,0101,0101,,,, -   ,,"a.   Beban Bunga, Imbal Hasil, Provisi, dan Fee",Laba Rugi,Biaya,"5,446,778,243,201",183
+2025-12-31,0101,0101,50010-000100,  Beban Bunga dari Pinjaman yang Diterima,IDR, -   ,1010100,1)    Beban Bunga dari Pinjaman yang Diterima,Laba Rugi,Biaya,"5,446,778,243,201",184
+2025-12-31,0101,0101,50010-000101,  Beban Bunga dari Surat Berharga yang Diterbitkan,IDR, -   ,1010100,2)    Beban Bunga dari Surat Berharga yang Diterbitkan,Laba Rugi,Biaya,"5,446,778,243,201",185
+2025-12-31,0101,0101,50010-000102,  Beban Ujrah/Imbal Hasil atas Pendanaan yang Diterima Berdasarkan Prinsip Syariah,IDR, -   ,1010100,3)    Beban Ujrah/Imbal Hasil atas Pendanaan yang Diterima Berdasarkan Prinsip Syariah,Laba Rugi,Biaya,"5,446,778,243,201",186
+2025-12-31,0101,0101,50010-000103,  Beban Provisi dan Fee,IDR, -   ,1010100,4)    Beban Provisi dan Fee,Laba Rugi,Biaya,"5,446,778,243,201",187
+2025-12-31,0101,0101,50010-000104, Beban Premi atas Transaksi Swap,IDR, -   ,1010100,b.   Beban Premi atas Transaksi Swap,Laba Rugi,Biaya,"5,446,778,243,201",188
+2025-12-31,0101,0101,,,, -   ,,c.    Beban Tenaga Kerja,Laba Rugi,Biaya,"5,446,778,243,201",189
+2025-12-31,0101,0101,50010-000106,"  Beban Gaji, Upah, dan Tunjangan",IDR, -   ,1010100,"1)    Beban Gaji, Upah, dan Tunjangan",Laba Rugi,Biaya,"5,446,778,243,201",190
+2025-12-31,0101,0101,50010-000107,  Beban Pengembangan dan Pelatihan Tenaga Kerja,IDR, -   ,1010100,2)    Beban Pengembangan dan Pelatihan Tenaga Kerja,Laba Rugi,Biaya,"5,446,778,243,201",191
+2025-12-31,0101,0101,50010-000108,  Beban Tenaga Kerja Lainnya,IDR, -   ,1010100,3)    Beban Tenaga Kerja Lainnya,Laba Rugi,Biaya,"5,446,778,243,201",192
+2025-12-31,0101,0101,50010-000109, Beban Pemasaran,IDR, -   ,1010100,d.   Beban Pemasaran,Laba Rugi,Biaya,"5,446,778,243,201",193
+2025-12-31,0101,0101,,,, -   ,,e.    Beban Penyisihan/Penyusutan,Laba Rugi,Biaya,"5,446,778,243,201",194
+2025-12-31,0101,0101,,,, -   ,,1)    Beban Penyisihan Penghapusan Piutang Pembiayaan,Laba Rugi,Biaya,"5,446,778,243,201",195
+2025-12-31,0101,0101,50011-000100,Biaya Bunga Pembiayaan Langsung,IDR, -   ,1010100,i)     Beban Penyisihan Penghapusan Piutang Pembiayaan Pemberian Pinjaman Langsung (Direct Lending) untuk Pembiayaan Infrastruktur,Laba Rugi,Biaya,"5,446,778,243,201",196
+2025-12-31,0101,0101,50011-000101,Biaya Bunga Refinancing,IDR, -   ,1010100,ii)    Beban Penyisihan Penghapusan Piutang Pembiayaan Refinancing atas Infrastruktur yang Telah Dibiayai Pihak Lain,Laba Rugi,Biaya,"5,446,778,243,201",197
+2025-12-31,0101,0101,50011-000102,Biaya Bunga Pembiayaan Subordinasi,IDR, -   ,1010100,iii)  Beban Penyisihan Penghapusan Piutang Pembiayaan Pemberian Pembiayaan Subordinasi yang Berkaitan dengan Pembiayaan Infrastruktur,Laba Rugi,Biaya,"5,446,778,243,201",198
+2025-12-31,0101,0101,50011-000103,Biaya Bunga Pembiayaan Lain,IDR, -   ,1010100,iv)   Beban Penyisihan Penghapusan Piutang Pembiayaan Kegiatan atau Pemberian Fasilitas Pembiayaan Lain yang Berkaitan dengan Pembiayaan Infrastruktur Setelah Memperoleh Persetujuan Otoritas Jasa Keuangan,Laba Rugi,Biaya,"5,446,778,243,201",199
+2025-12-31,0101,0101,50011-000104,Biaya Bunga Pembiayaan Lain-lain,IDR, -   ,1010100,v)    Beban Penyisihan Penghapusan Piutang Pembiayaan Kegiatan atau Pemberian Fasilitas Pembiayaan Lain yang Tidak Berkaitan dengan Pembiayaan Infrastruktur Berdasarkan Penugasan Pemerintah,Laba Rugi,Biaya,"5,446,778,243,201",200
+2025-12-31,0101,0101,,,, -   ,,2)    Beban Penyisihan Penghapusan Piutang Pembiayaan Berdasarkan Prinsip Syariah,Laba Rugi,Biaya,"5,446,778,243,201",201
+2025-12-31,0101,0101,50011-000106,Biaya Cadangan Pembiayaan Langsung,IDR, -   ,1010100,i)     Beban Penyisihan Penghapusan Piutang Pembiayaan Pemberian Pembiayaan Langsung (Direct Lending) untuk Pembiayaan Infrastruktur Berdasarkan Prinsip Syariah,Laba Rugi,Biaya,"5,446,778,243,201",202
+2025-12-31,0101,0101,50011-000107,Biaya Cadangan Refinancing,IDR, -   ,1010100,ii)    Beban Penyisihan Penghapusan Piutang Pembiayaan Refinancing atas Infrastruktur yang Telah Dibiayai Pihak Lain Berdasarkan Prinsip Syariah,Laba Rugi,Biaya,"5,446,778,243,201",203
+2025-12-31,0101,0101,50011-000108,Biaya Cadangan Pembiayaan Subordinasi,IDR, -   ,1010100,iii)  Beban Penyisihan Penghapusan Piutang Pembiayaan Pemberian Pembiayaan Subordinasi yang Berkaitan dengan Pembiayaan Infrastruktur Berdasarkan Prinsip Syariah,Laba Rugi,Biaya,"5,446,778,243,201",204
+2025-12-31,0101,0101,50011-000109,Biaya Cadangan Pembiayaan Lain,IDR, -   ,1010100,iv)   Beban Penyisihan Penghapusan Piutang Pembiayaan Kegiatan atau Pemberian Fasilitas Pembiayaan Lain yang Berkaitan dengan Pembiayaan Infrastruktur Setelah Memperoleh Persetujuan Otoritas Jasa Keuangan Berdasarkan Prinsip Syariah,Laba Rugi,Biaya,"5,446,778,243,201",205
+2025-12-31,0101,0101,50011-000110,Biaya Cadangan Pembiayaan Lain-lain,IDR, -   ,1010100,v)    Beban Penyisihan Penghapusan Piutang Pembiayaan Kegiatan atau Pemberian Fasilitas Pembiayaan Lain yang Tidak Berkaitan dengan Pembiayaan Infrastruktur Berdasarkan Penugasan Pemerintah Berdasarkan Prinsip Syariah  ,Laba Rugi,Biaya,"5,446,778,243,201",206
+2025-12-31,0101,0101,50011-000111,Beban Penyusutan Aset Tetap dan Inventaris,IDR, -   ,1010100,3)    Beban Penyusutan Aset Tetap dan Inventaris,Laba Rugi,Biaya,"5,446,778,243,201",207
+2025-12-31,0101,0101,50011-000112, Beban Penurunan Nilai Aset Keuangan,IDR, -   ,1010100,f.     Beban Penurunan Nilai Aset Keuangan,Laba Rugi,Biaya,"5,446,778,243,201",208
+2025-12-31,0101,0101,50011-000113, Beban Sewa,IDR, -   ,1010100,g.     Beban Sewa,Laba Rugi,Biaya,"5,446,778,243,201",209
+2025-12-31,0101,0101,50011-000114,Beban Pemeliharaan dan Perbaikan,IDR, -   ,1010100,h.    Beban Pemeliharaan dan Perbaikan,Laba Rugi,Biaya,"5,446,778,243,201",210
+2025-12-31,0101,0101,50011-000115,Beban Administrasi dan Umum,IDR, -   ,1010100,i.   Beban Administrasi dan Umum,Laba Rugi,Biaya,"5,446,778,243,201",211
+2025-12-31,0101,0101,50011-000116, Beban Operasional Lainnya,IDR, -   ,1010100,j.     Beban Operasional Lainnya,Laba Rugi,Biaya,"5,446,778,243,201",212
+2025-12-31,0101,0101,50011-000117,Beban Non Operasional,IDR, -   ,1010100,2.    Beban Non Operasional,Laba Rugi,Biaya,"5,446,778,243,201",213
+2025-12-31,0101,0101,,,, -   ,,(3)  LABA (RUGI) SEBELUM PAJAK,Laba Rugi,,"3,375,798,130,324",214
+2025-12-31,0101,0101,,,, -   ,,(4)  TAKSIRAN PAJAK PENGHASILAN,Laba Rugi,,"474,774,264,170",215
+2025-12-31,0101,0101,50020-000100,Pajak Tahun Berjalan,IDR, -   ,1010100,1.    Pajak Tahun Berjalan,Laba Rugi,Biaya,0,216
+2025-12-31,0101,0101,50020-000101,Pendapatan (Beban) Pajak Tangguhan,IDR, -   ,1010100,2.    Pendapatan (Beban) Pajak Tangguhan,Laba Rugi,Biaya,"474,774,264,170",217
+2025-12-31,0101,0101,,,, -   ,1010100,(5)  LABA (RUGI) BERSIH SETELAH PAJAK,Laba Rugi,,"2,901,023,866,154",218
+2025-12-31,0101,0101,,,, -   ,,(6)  KEUNTUNGAN (KERUGIAN) PENDAPATAN KOMPREHENSIF LAINNYA PERIODE BERJALAN,Laba Rugi,,"259,642,098,612",219
+2025-12-31,0101,0101,40020-000100,Pend Kompre Surplus Revaluasi Aset Tetap,IDR, -   ,1010100,1.    Keuntungan (Kerugian) Akibat Perubahan dalam Surplus Revaluasi Aset Tetap,Laba Rugi,Pendapatan,"259,642,098,612",220
+2025-12-31,0101,0101,40020-000101,Pend Kompre Penjabaran Laporan Keuangan dalam Mata Uang Asing,IDR, -   ,1010100,2.    Selisih Kurs Karena Penjabaran Laporan Keuangan dalam Mata Uang Asing,Laba Rugi,Pendapatan,"259,642,098,612",221
+2025-12-31,0101,0101,40020-000102,Pend Kompre Pengukuran Kembali Aset Keuangan Tersedia untuk Dijual,IDR, -   ,1010100,3.    Keuntungan (Kerugian) Akibat Pengukuran Kembali Aset Keuangan Tersedia untuk Dijual,Laba Rugi,Pendapatan,"259,642,098,612",222
+2025-12-31,0101,0101,40020-000103,Pend Kompre dalam Rangka Lindung Nilai Arus Kas,IDR, -   ,1010100,4.    Keuntungan (Kerugian) Akibat Bagian Efektif Instrumen Keuangan Lindung Nilai dalam Rangka Lindung Nilai Arus Kas,Laba Rugi,Pendapatan,"259,642,098,612",223
+2025-12-31,0101,0101,40020-000104,Pend Kompre Lainnya Sesuai Prinsip Standar Akuntansi Keuangan,IDR, -   ,1010100,5.    Keuntungan (Kerugian) atas Komponen Ekuitas Lainnya Sesuai Prinsip Standar Akuntansi Keuangan,Laba Rugi,Pendapatan,"259,642,098,612",224
+2025-12-31,0101,0101,,,, -   ,,(7)  LABA (RUGI) BERSIH KOMPREHENSIF TAHUN BERJALAN,Laba Rugi,,"3,160,665,964,766",225

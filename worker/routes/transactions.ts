@@ -5,7 +5,7 @@ import { getDb } from '../db';
 import { 
   transactionDetails, transactionUploads
 } from '../db/schema';
-import { eq, and, sql } from 'drizzle-orm';
+import { eq, and, sql, gte, lte } from 'drizzle-orm';
 
 const transactions = new Hono<HonoEnv>();
 
@@ -15,12 +15,22 @@ transactions.get('/transaction-details', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const noGL = c.req.query('noGL');
+  const year = c.req.query('year');
 
   let conditions = eq(transactionDetails.organizationId, orgId);
 
   // --- STRICT ISOLATION LOGIC ---
   if (noGL) {
     conditions = and(conditions, eq(transactionDetails.noGL, noGL)) as any;
+  }
+
+  if (year) {
+    const targetYear = parseInt(year);
+    if (!isNaN(targetYear)) {
+      const startDate = new Date(`${targetYear}-01-01T00:00:00.000Z`);
+      const endDate = new Date(`${targetYear}-12-31T23:59:59.999Z`);
+      conditions = and(conditions, gte(transactionDetails.transDate, startDate), lte(transactionDetails.transDate, endDate)) as any;
+    }
   }
 
   const items = await db.select().from(transactionDetails).where(conditions).limit(1000);
@@ -30,10 +40,60 @@ transactions.get('/transaction-details', async (c) => {
 transactions.post('/transaction-details', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
-  const body = await c.req.json<any>();
-  const id = crypto.randomUUID();
-  await db.insert(transactionDetails).values({ id, organizationId: orgId, ...body });
-  return ok(c, { id });
+  const body = await c.req.json<{ 
+    rows: any[], 
+    noGL: string, 
+    mode?: 'replace' | 'append',
+    filename?: string,
+    bpmProcessId?: string
+  }>();
+
+  if (!body.rows || !Array.isArray(body.rows)) {
+    return bad(c, 'Rows must be an array');
+  }
+
+  // Handle Replace mode
+  if (body.mode === 'replace' && body.noGL) {
+    await db.delete(transactionDetails)
+      .where(and(
+        eq(transactionDetails.noGL, body.noGL),
+        eq(transactionDetails.organizationId, orgId)
+      ));
+  }
+
+  // Batch Insert
+  if (body.rows.length > 0) {
+    // Process rows to ensure UUIDs and orgId
+    const toInsert = body.rows.map(row => ({
+      ...row,
+      id: crypto.randomUUID(),
+      organizationId: orgId,
+      // Ensure date objects for timestamp columns
+      transDate: row.transDate ? new Date(row.transDate) : null
+    }));
+
+    // Chunking to avoid parameter limits if necessary (though D1 handles large batches fairly well)
+    // We'll insert in chunks of 100
+    for (let i = 0; i < toInsert.length; i += 100) {
+      const chunk = toInsert.slice(i, i + 100);
+      await db.insert(transactionDetails).values(chunk);
+    }
+  }
+
+  // Log to uploads if filename provided
+  if (body.filename && body.noGL) {
+    await db.insert(transactionUploads).values({
+      id: crypto.randomUUID(),
+      organizationId: orgId,
+      noGL: body.noGL,
+      filename: body.filename,
+      rowCount: body.rows.length,
+      uploadedBy: c.get('userId'),
+      createdAt: new Date(),
+    });
+  }
+
+  return ok(c, { count: body.rows.length });
 });
 
 transactions.delete('/transaction-details/:noGL', async (c) => {
