@@ -289,7 +289,7 @@ export const GLDataGrid = React.memo(function GLDataGrid({
         header: () => <div className="text-center bg-orange-50/50 -mx-2 py-1 text-xs">{t('grid.quantHeader')}</div>,
         cell: ({ row }) => {
           const balance = row.getIsGrouped() 
-            ? row.getLeafRows().reduce((sum, r) => sum + Math.abs(r.original.balance), 0)
+            ? (row.getLeafRows()[0]?.original.fsliBalance || row.getLeafRows().reduce((sum, r) => sum + Math.abs(r.original.balance), 0))
             : Math.abs(row.original.balance);
           const isSignificant = balance >= pmValue;
           return (
@@ -352,7 +352,8 @@ export const GLDataGrid = React.memo(function GLDataGrid({
 
           if (isGrouped) {
             const leaves = row.getLeafRows();
-            const isKuanSignificant = leaves.some(lr => Math.abs(lr.original.balance) >= pmValue);
+            const groupBalance = leaves[0]?.original.fsliBalance || leaves.reduce((sum, r) => sum + Math.abs(r.original.balance), 0);
+            const isKuanSignificant = Math.abs(groupBalance) >= pmValue;
             const isInScope = isKuanSignificant || isQualSignificant;
             return isInScope ? (
               <Badge className="bg-indigo-600 text-xs h-5 px-3 uppercase font-extrabold shadow-sm border-2 border-indigo-200 whitespace-nowrap">
