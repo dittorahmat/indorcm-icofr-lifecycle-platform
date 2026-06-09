@@ -687,7 +687,12 @@ export function BPMPage() {
                 <Button variant="ghost" onClick={() => setIsCreatingBPM(false)} className="font-bold text-[10px] uppercase tracking-widest text-slate-400 hover:text-slate-600">{t('common:actions.cancel')}</Button>
                 <Button 
                   disabled={!bpmName || createBPMMutation.isPending} 
-                  onClick={() => createBPMMutation.mutate({ name: bpmName, noGL: selectedGLRow?.noGL || "", fsliName: selectedFsli })}
+                  onClick={() => createBPMMutation.mutate({ 
+                    name: bpmName, 
+                    noGL: selectedGLRow?.noGL || "", 
+                    fsliName: selectedFsli,
+                    year: parseInt(viewYear)
+                  })}
                   className="h-10 px-6 bg-mancity-pattern hover:opacity-90 shadow-sm rounded-lg font-bold text-[10px] uppercase tracking-widest text-primary-foreground"
                 >
                   {createBPMMutation.isPending && <Loader2 className="h-3 w-3 animate-spin mr-2" />}

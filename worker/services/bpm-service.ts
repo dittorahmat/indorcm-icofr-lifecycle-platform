@@ -210,7 +210,7 @@ export class BpmService {
             
             await this.syncRisk(orgId, diagramId, riskId, reg, processName, subProcessName, year);
             await this.syncControl(orgId, ctrlId, riskId, reg, bpmProcessId, noGL, processName, subProcessName, year, node.data?.label);
-            await this.syncRcmControlMapping(orgId, riskId, ctrlId, reg, node.data?.label);
+            await this.syncRcmControlMapping(orgId, riskId, ctrlId, reg, year, node.data?.label);
 
             if (!insertedRiskIdsForNode.has(riskId)) {
               await this.db.insert(bpmNodeRcms).values({
@@ -323,7 +323,7 @@ export class BpmService {
     }
   }
 
-  private async syncRcmControlMapping(orgId: string, riskId: string, ctrlId: string, reg: any, nodeLabel?: string) {
+  private async syncRcmControlMapping(orgId: string, riskId: string, ctrlId: string, reg: any, year: number | null, nodeLabel?: string) {
     const existingMap = await this.db.select().from(rcmControls).where(and(
       eq(rcmControls.rcmId, riskId),
       eq(rcmControls.controlId, ctrlId),
@@ -334,6 +334,7 @@ export class BpmService {
       controlName: reg.controlDescription || nodeLabel,
       controlDescription: reg.controlDescription,
       isKeyControl: reg.isKeyControl,
+      year: year,
       ipoC: reg.ipoC,
       ipoA: reg.ipoA,
       ipoV: reg.ipoV,
@@ -653,6 +654,7 @@ export class BpmService {
       noGL: body.noGL || "",
       fsliName: body.fsliName || "",
       name: body.name || "New Process",
+      year: body.year ? parseInt(body.year.toString()) : null,
       createdAt: new Date(),
       createdBy: userId,
     };
