@@ -22,6 +22,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { Info, ShieldAlert, CheckCircle2 } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const formSchema = z.object({
   // Identity
@@ -82,7 +83,7 @@ interface RCMEditDialogProps {
 }
 
 export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RCMEditDialogProps) {
-  const { t } = useTranslation('rcm');
+  const { t } = useTranslation(['rcm', 'bpm']);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -398,69 +399,99 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                 </TabsContent>
 
                 {/* Compliance Tab */}
-                <TabsContent value="compliance" className="m-0 space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                   <div className="space-y-4">
-                      <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
-                         <Badge className="bg-blue-600 text-xs font-black">IPO</Badge>
-                         <h3 className="text-xs font-black uppercase tracking-widest text-slate-700">{t('matrix.ipo')}</h3>
-                      </div>
-                      <div className="grid grid-cols-4 gap-4">
-                         {[
-                           { name: 'ipoC', label: 'C', desc: 'Completeness' },
-                           { name: 'ipoA', label: 'A', desc: 'Accuracy' },
-                           { name: 'ipoV', label: 'V', desc: 'Validity' },
-                           { name: 'ipoRa', label: 'RA', desc: 'Restricted Access' }
-                         ].map(item => (
-                           <FormField
-                            key={item.name}
-                            control={form.control}
-                            name={item.name as any}
-                            render={({ field }) => (
-                              <FormItem className="flex items-center gap-3 space-y-0 rounded-xl border border-slate-100 bg-slate-50/50 p-3 hover:bg-blue-50/30 transition-colors">
-                                <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                                <div className="leading-none">
-                                   <FormLabel className="text-xs font-black text-blue-700">{item.label}</FormLabel>
-                                   <p className="text-xs text-slate-400 font-bold uppercase mt-1">{item.desc}</p>
-                                </div>
-                              </FormItem>
-                            )}
-                          />
-                         ))}
-                      </div>
-                   </div>
+                 <TabsContent value="compliance" className="m-0 space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    <div className="space-y-4">
+                       <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
+                          <Badge className="bg-blue-600 text-xs font-black">IPO</Badge>
+                          <h3 className="text-xs font-black uppercase tracking-widest text-slate-700">{t('matrix.ipo')}</h3>
+                       </div>
+                       <TooltipProvider>
+                          <div className="grid grid-cols-4 gap-4">
+                             {[
+                               { name: 'ipoC', label: 'C', desc: t('bpm:ipo.tooltip.c.label'), tooltip: t('bpm:ipo.tooltip.c.desc') },
+                               { name: 'ipoA', label: 'A', desc: t('bpm:ipo.tooltip.a.label'), tooltip: t('bpm:ipo.tooltip.a.desc') },
+                               { name: 'ipoV', label: 'V', desc: t('bpm:ipo.tooltip.v.label'), tooltip: t('bpm:ipo.tooltip.v.desc') },
+                               { name: 'ipoRa', label: 'RA', desc: t('bpm:ipo.tooltip.ra.label'), tooltip: t('bpm:ipo.tooltip.ra.desc') }
+                             ].map(item => (
+                               <FormField
+                                key={item.name}
+                                control={form.control}
+                                name={item.name as any}
+                                render={({ field }) => (
+                                  <FormItem className="flex items-center gap-3 space-y-0 rounded-xl border border-slate-100 bg-slate-50/50 p-3 hover:bg-blue-50/30 transition-colors">
+                                    <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                                    <div className="leading-none flex-1">
+                                       <div className="flex items-center gap-1.5">
+                                          <FormLabel className="text-xs font-black text-blue-700 cursor-default">{item.label}</FormLabel>
+                                          <Tooltip>
+                                             <TooltipTrigger asChild>
+                                                <button type="button" className="cursor-help text-slate-300 hover:text-blue-500 transition-colors focus:outline-none">
+                                                   <Info className="h-3 w-3" />
+                                                </button>
+                                             </TooltipTrigger>
+                                             <TooltipContent side="top" className="max-w-[280px] p-3 rounded-xl shadow-xl border-none bg-slate-900 text-white z-[1100]">
+                                                <p className="text-xs font-bold text-blue-400">{item.label} - {item.desc}</p>
+                                                <p className="text-[11px] mt-1 text-slate-300 leading-relaxed italic">"{item.tooltip}"</p>
+                                             </TooltipContent>
+                                          </Tooltip>
+                                       </div>
+                                       <p className="text-[10px] text-slate-400 font-bold uppercase mt-1 line-clamp-1">{item.desc}</p>
+                                    </div>
+                                  </FormItem>
+                                )}
+                              />
+                             ))}
+                          </div>
+                       </TooltipProvider>
+                    </div>
 
                    <div className="space-y-4">
-                      <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
-                         <Badge className="bg-indigo-600 text-xs font-black">ASERSi</Badge>
-                         <h3 className="text-xs font-black uppercase tracking-widest text-slate-700">{t('matrix.assertions')}</h3>
-                      </div>
-                      <div className="grid grid-cols-4 gap-4">
-                         {[
-                           { name: 'assertionE', label: 'E/O', desc: 'Existence' },
-                           { name: 'assertionC', label: 'C', desc: 'Completeness' },
-                           { name: 'assertionA', label: 'A', desc: 'Accuracy' },
-                           { name: 'assertionCo', label: 'CO', desc: 'Cut-off' },
-                           { name: 'assertionVa', label: 'V/A', desc: 'Valuation' },
-                           { name: 'assertionRo', label: 'R&O', desc: 'Rights & Oblig.' },
-                           { name: 'assertionPd', label: 'PD', desc: 'Presentation' }
-                         ].map(item => (
-                           <FormField
-                            key={item.name}
-                            control={form.control}
-                            name={item.name as any}
-                            render={({ field }) => (
-                              <FormItem className="flex items-center gap-3 space-y-0 rounded-xl border border-slate-100 bg-slate-50/50 p-3 hover:bg-indigo-50/30 transition-colors">
-                                <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                                <div className="leading-none">
-                                   <FormLabel className="text-xs font-black text-indigo-700">{item.label}</FormLabel>
-                                   <p className="text-xs text-slate-400 font-bold uppercase mt-1">{item.desc}</p>
-                                </div>
-                              </FormItem>
-                            )}
-                          />
-                         ))}
-                      </div>
-                   </div>
+                       <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
+                          <Badge className="bg-indigo-600 text-xs font-black">ASERSi</Badge>
+                          <h3 className="text-xs font-black uppercase tracking-widest text-slate-700">{t('matrix.assertions')}</h3>
+                       </div>
+                       <TooltipProvider>
+                          <div className="grid grid-cols-4 gap-4">
+                             {[
+                               { name: 'assertionE', label: 'E/O', desc: t('bpm:assertions.tooltip.eo.label'), tooltip: t('bpm:assertions.tooltip.eo.desc') },
+                               { name: 'assertionC', label: 'C', desc: t('bpm:assertions.tooltip.c.label'), tooltip: t('bpm:assertions.tooltip.c.desc') },
+                               { name: 'assertionA', label: 'A', desc: t('bpm:assertions.tooltip.a.label'), tooltip: t('bpm:assertions.tooltip.a.desc') },
+                               { name: 'assertionCo', label: 'CO', desc: t('bpm:assertions.tooltip.co.label'), tooltip: t('bpm:assertions.tooltip.co.desc') },
+                               { name: 'assertionVa', label: 'V/A', desc: t('bpm:assertions.tooltip.va.label'), tooltip: t('bpm:assertions.tooltip.va.desc') },
+                               { name: 'assertionRo', label: 'R&O', desc: t('bpm:assertions.tooltip.ro.label'), tooltip: t('bpm:assertions.tooltip.ro.desc') },
+                               { name: 'assertionPd', label: 'PD', desc: t('bpm:assertions.tooltip.pd.label'), tooltip: t('bpm:assertions.tooltip.pd.desc') }
+                             ].map(item => (
+                               <FormField
+                                key={item.name}
+                                control={form.control}
+                                name={item.name as any}
+                                render={({ field }) => (
+                                  <FormItem className="flex items-center gap-3 space-y-0 rounded-xl border border-slate-100 bg-slate-50/50 p-3 hover:bg-indigo-50/30 transition-colors">
+                                    <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                                    <div className="leading-none flex-1">
+                                       <div className="flex items-center gap-1.5">
+                                          <FormLabel className="text-xs font-black text-indigo-700 cursor-default">{item.label}</FormLabel>
+                                          <Tooltip>
+                                             <TooltipTrigger asChild>
+                                                <button type="button" className="cursor-help text-slate-300 hover:text-indigo-500 transition-colors focus:outline-none">
+                                                   <Info className="h-3 w-3" />
+                                                </button>
+                                             </TooltipTrigger>
+                                             <TooltipContent side="top" className="max-w-[280px] p-3 rounded-xl shadow-xl border-none bg-slate-900 text-white z-[1100]">
+                                                <p className="text-xs font-bold text-indigo-400">{item.label} - {item.desc}</p>
+                                                <p className="text-[11px] mt-1 text-slate-300 leading-relaxed italic">"{item.tooltip}"</p>
+                                             </TooltipContent>
+                                          </Tooltip>
+                                       </div>
+                                       <p className="text-[10px] text-slate-400 font-bold uppercase mt-1 line-clamp-1">{item.desc}</p>
+                                    </div>
+                                  </FormItem>
+                                )}
+                              />
+                             ))}
+                          </div>
+                       </TooltipProvider>
+                    </div>
                 </TabsContent>
               </ScrollArea>
             </Tabs>

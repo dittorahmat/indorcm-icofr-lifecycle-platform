@@ -27,7 +27,12 @@ async function sync() {
   const hash = crypto.createHash("sha256").update(content).digest("hex");
 
   const db = getDb(DATABASE_URL);
-  const aiService = new AIService(GEMINI_API_KEY);
+  const aiService = new AIService({
+    provider: (process.env.AI_PROVIDER as any) || "gemini",
+    apiKey: GEMINI_API_KEY,
+    baseUrl: process.env.AI_BASE_URL,
+    embeddingModel: process.env.AI_EMBEDDING_MODEL,
+  });
 
   // 1. Ensure SYSTEM organization exists (for RBAC consistency)
   await db.insert(organization).values({

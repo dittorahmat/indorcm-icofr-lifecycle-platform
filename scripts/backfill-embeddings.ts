@@ -13,7 +13,12 @@ async function backfill() {
   console.log("🚀 Starting granular embedding backfill...");
   
   const db = getDb(DATABASE_URL);
-  const aiService = new AIService(GEMINI_API_KEY);
+  const aiService = new AIService({
+    provider: (process.env.AI_PROVIDER as any) || "gemini",
+    apiKey: GEMINI_API_KEY,
+    baseUrl: process.env.AI_BASE_URL,
+    embeddingModel: process.env.AI_EMBEDDING_MODEL,
+  });
 
   // 1. Get all documents
   const allDocs = await db.select().from(documents);

@@ -98,16 +98,28 @@ IndoGRC Pro includes an AI-powered chatbot assistant to help you understand ICOF
    - Sign in with your Google account
    - Create a new API key
 
-2. **Configure API Key**:
-   - Open `wrangler.jsonc`
-   - Replace `YOUR_GEMINI_API_KEY_HERE` with your actual API key:
-   ```jsonc
-   {
-     "vars": {
-       "GEMINI_API_KEY": "your-actual-api-key-here"
+2. **Configure AI Settings**:
+   - Open `wrangler.jsonc` (or `.dev.vars` for local development).
+   - **Gemini (Default)**: You only need to set your API key.
+     ```jsonc
+     {
+       "vars": {
+         "GEMINI_API_KEY": "your-actual-api-key-here",
+         "AI_PROVIDER": "gemini" // Optional, defaults to gemini
+       }
      }
-   }
-   ```
+     ```
+   - **On-Premise (OpenAI-Compatible)**: Set the provider to `openai-compatible` and point to your local server (e.g., Ollama or vLLM).
+     ```jsonc
+     {
+       "vars": {
+         "AI_PROVIDER": "openai-compatible",
+         "AI_BASE_URL": "http://your-server-ip:11434/v1",
+         "AI_CHAT_MODEL": "gemma2",
+         "AI_EMBEDDING_MODEL": "nomic-embed-text"
+       }
+     }
+     ```
 
 3. **Deploy**:
    ```bash

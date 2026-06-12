@@ -49,6 +49,10 @@ export interface HonoEnv {
     BETTER_AUTH_SECRET: string;
     BETTER_AUTH_URL?: string;
     GEMINI_API_KEY: string;
+    AI_PROVIDER?: string;
+    AI_BASE_URL?: string;
+    AI_EMBEDDING_MODEL?: string;
+    AI_CHAT_MODEL?: string;
     DOCUMENTS_BUCKET: R2Bucket;
     LICENSE_PUBLIC_KEY?: string;
     SKIP_LICENSE?: string;
@@ -186,13 +190,28 @@ export const createApp = () => {
 
     const auth = getAuth(c.env);
     let session;
-    try {
-      session = await auth.api.getSession({
-        headers: c.req.raw.headers
-      });
-    } catch (e: any) {
-      console.error('[AUTH ERROR] getSession failed:', e.message, e.stack);
-      return c.json({ success: false, error: 'Internal Auth Error', message: e.message }, 500);
+    let retries = 2;
+    
+    while (retries > 0) {
+      try {
+        session = await auth.api.getSession({
+          headers: c.req.raw.headers
+        });
+        break; // Success, exit loop
+      } catch (e: any) {
+        retries--;
+        const isNetworkError = e.message?.includes('Network connection lost') || e.message?.includes('fetch failed');
+        
+        if (retries > 0 && isNetworkError) {
+          console.warn(`[AUTH] getSession failed (retrying... ${retries} left):`, e.message);
+          // Wait a bit before retrying
+          await new Promise(resolve => setTimeout(resolve, 500));
+          continue;
+        }
+        
+        console.error('[AUTH ERROR] getSession failed:', e.message, e.stack);
+        return c.json({ success: false, error: 'Internal Auth Error', message: e.message }, 500);
+      }
     }
 
     if (!session) {

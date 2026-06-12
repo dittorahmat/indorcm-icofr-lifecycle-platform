@@ -107,7 +107,13 @@ aiDocsApp.post('/documents', async (c) => {
     // Granular RAG Chunking
     if (apiKey && extractedText) {
       try {
-        const aiService = new AIService(apiKey);
+        const aiService = new AIService({
+          provider: (c.env.AI_PROVIDER as any) || "gemini",
+          apiKey: apiKey,
+          baseUrl: c.env.AI_BASE_URL,
+          embeddingModel: c.env.AI_EMBEDDING_MODEL,
+          chatModel: c.env.AI_CHAT_MODEL,
+        });
         const chunks = AIService.splitIntoChunks(extractedText);
         
         for (let i = 0; i < chunks.length; i++) {
@@ -251,11 +257,16 @@ aiDocsApp.post('/ai/chat', async (c) => {
   const orgId = c.get('organizationId');
 
   let retrievalResults: any[] = [];
+  const aiService = new AIService({
+    provider: (c.env.AI_PROVIDER as any) || "gemini",
+    apiKey: apiKey,
+    baseUrl: c.env.AI_BASE_URL,
+    embeddingModel: c.env.AI_EMBEDDING_MODEL,
+    chatModel: c.env.AI_CHAT_MODEL,
+  });
+
   try {
-    const aiService = new AIService(apiKey);
     const queryVector = await aiService.generateEmbedding(message);
-    
-    // In a real 2026 production app, we would add filtering by role/dept inside hybridSearch
     retrievalResults = await aiService.hybridSearch(db, orgId, message, queryVector, 10);
   } catch (e: any) {
     console.error('Retrieval failed, falling back to basic prompt:', e.message);
@@ -268,11 +279,7 @@ aiDocsApp.post('/ai/chat', async (c) => {
   const sources = retrievalResults.map(r => ({ title: r.title, score: r.score }));
 
   try {
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash-lite",
-      tools: [{ functionDeclarations: ICOFR_TOOLS }],
-      systemInstruction: `Anda adalah Asisten AI & Analis Strategis IndoGRC Pro. Tugas Anda adalah membantu pengguna memahami regulasi (SK-5), cara penggunaan aplikasi, serta melakukan analisis data ICOFR lintas modul.
+    const systemInstruction = `Anda adalah Asisten AI & Analis Strategis IndoGRC Pro. Tugas Anda adalah membantu pengguna memahami regulasi (SK-5), cara penggunaan aplikasi, serta melakukan analisis data ICOFR lintas modul.
 
 Waktu saat ini: ${context?.timestamp || new Date().toISOString()}
 User: ${c.get('userId')} (Role: ${role}, Dept: ${userDeptId})
@@ -296,27 +303,27 @@ Bahasa: Bahasa Indonesia
 
 --- KNOWLEDGE BASE ---
 ${knowledgeBase}
---- END KNOWLEDGE BASE ---`
-    });
+--- END KNOWLEDGE BASE ---`;
 
     const recentHistory = conversationHistory.slice(-10);
-    const chat = model.startChat({
-      history: recentHistory.map(msg => ({
-        role: msg.role === 'user' ? 'user' : 'model',
-        parts: [{ text: msg.content }]
-      }))
+    const messages = [
+      ...recentHistory,
+      { role: 'user', content: message }
+    ];
+
+    let result = await aiService.generateChatResponse({
+      systemInstruction,
+      messages,
+      tools: ICOFR_TOOLS,
     });
 
-    let result = await chat.sendMessage(message);
-    let response = await result.response;
+    let responseText = result.content;
     let pendingAction = null;
     
     // Multi-turn tool execution loop (Max 3 turns for safety)
     let turns = 0;
-    while (response.functionCalls()?.length && turns < 3) {
-      const toolCalls = response.functionCalls();
-      const functionResponses = [];
-
+    while (result.toolCalls?.length && turns < 3) {
+      const toolCalls = result.toolCalls;
       const toolContext: ToolContext = {
         db,
         orgId,
@@ -325,47 +332,34 @@ ${knowledgeBase}
         departmentId: userDeptId
       };
 
-      for (const call of toolCalls!) {
+      const functionResponses = [];
+      for (const call of toolCalls) {
         try {
           const toolMethod = (AIToolExecutor as any)[call.name];
           if (toolMethod) {
             const toolOutput = await toolMethod(toolContext, call.args);
-            
-            // Capture agentic confirmation intent
             if (toolOutput?.requiresConfirmation) {
               pendingAction = toolOutput;
             }
-
-            functionResponses.push({
-              functionResponse: {
-                name: call.name,
-                response: { content: toolOutput }
-              }
-            });
-          } else {
-            functionResponses.push({
-              functionResponse: {
-                name: call.name,
-                response: { error: `Tool ${call.name} not found.` }
-              }
-            });
+            functionResponses.push({ role: 'function', name: call.name, content: JSON.stringify(toolOutput) });
           }
         } catch (err: any) {
-          functionResponses.push({
-            functionResponse: {
-              name: call.name,
-              response: { error: err.message }
-            }
-          });
+          functionResponses.push({ role: 'function', name: call.name, content: JSON.stringify({ error: err.message }) });
         }
       }
 
-      result = await chat.sendMessage(functionResponses);
-      response = await result.response;
+      // Add tool results to message history
+      messages.push({ role: 'assistant', content: responseText });
+      messages.push(...functionResponses.map(f => ({ role: 'system', content: f.content }))); // Map to system/assistant role depending on provider
+
+      result = await aiService.generateChatResponse({
+        systemInstruction,
+        messages,
+        tools: ICOFR_TOOLS,
+      });
+      responseText = result.content;
       turns++;
     }
-
-    const responseText = response.text();
 
     return ok(c, {
       response: responseText,
@@ -423,3 +417,4 @@ aiDocsApp.get('/files/*', async (c) => {
 });
 
 export default aiDocsApp;
+

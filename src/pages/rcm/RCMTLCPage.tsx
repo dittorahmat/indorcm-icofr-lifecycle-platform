@@ -44,7 +44,7 @@ interface RCMTLCPageProps {
 }
 
 export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride }: RCMTLCPageProps) {
-  const { t } = useTranslation(['rcm', 'common']);
+  const { t } = useTranslation(['rcm', 'common', 'bpm']);
   const queryClient = useQueryClient();
   const { workingYear: globalWorkingYear } = useFiscalYearStore();
   const workingYear = workingYearOverride || globalWorkingYear;
@@ -190,23 +190,23 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride 
       title: 'IPO',
       className: 'bg-blue-600 text-white',
       columns: [
-        { id: 'ipoC', header: 'C', width: '50px', className: 'text-center', render: (row) => row.ipoC ? '✓' : '—' },
-        { id: 'ipoA', header: 'A', width: '50px', className: 'text-center', render: (row) => row.ipoA ? '✓' : '—' },
-        { id: 'ipoV', header: 'V', width: '50px', className: 'text-center', render: (row) => row.ipoV ? '✓' : '—' },
-        { id: 'ipoRa', header: 'RA', width: '50px', className: 'text-center', render: (row) => row.ipoRa ? '✓' : '—' },
+        { id: 'ipoC', header: 'C', tooltip: t('bpm:ipo.tooltip.c.desc'), width: '50px', className: 'text-center', render: (row) => row.ipoC === 'Y' ? 'Y' : 'N' },
+        { id: 'ipoA', header: 'A', tooltip: t('bpm:ipo.tooltip.a.desc'), width: '50px', className: 'text-center', render: (row) => row.ipoA === 'Y' ? 'Y' : 'N' },
+        { id: 'ipoV', header: 'V', tooltip: t('bpm:ipo.tooltip.v.desc'), width: '50px', className: 'text-center', render: (row) => row.ipoV === 'Y' ? 'Y' : 'N' },
+        { id: 'ipoRa', header: 'RA', tooltip: t('bpm:ipo.tooltip.ra.desc'), width: '50px', className: 'text-center', render: (row) => row.ipoRa === 'Y' ? 'Y' : 'N' },
       ]
     },
     {
       title: t('matrix.assertions'),
       className: 'bg-indigo-600 text-white',
       columns: [
-        { id: 'ae', header: 'E/O', width: '50px', className: 'text-center', render: (row) => row.assertionE ? '✓' : '—' },
-        { id: 'ac', header: 'C', width: '50px', className: 'text-center', render: (row) => row.assertionC ? '✓' : '—' },
-        { id: 'aa', header: 'A', width: '50px', className: 'text-center', render: (row) => row.assertionA ? '✓' : '—' },
-        { id: 'aco', header: 'CO', width: '50px', className: 'text-center', render: (row) => row.assertionCo ? '✓' : '—' },
-        { id: 'aro', header: 'R&O', width: '50px', className: 'text-center', render: (row) => row.assertionRo ? '✓' : '—' },
-        { id: 'ava', header: 'V/A', width: '50px', className: 'text-center', render: (row) => row.assertionVa ? '✓' : '—' },
-        { id: 'apd', header: 'PD', width: '50px', className: 'text-center', render: (row) => row.assertionPd ? '✓' : '—' },
+        { id: 'ae', header: 'E/O', tooltip: t('bpm:assertions.tooltip.eo.desc'), width: '50px', className: 'text-center', render: (row) => row.assertionE === 'Y' ? 'Y' : 'N' },
+        { id: 'ac', header: 'C', tooltip: t('bpm:assertions.tooltip.c.desc'), width: '50px', className: 'text-center', render: (row) => row.assertionC === 'Y' ? 'Y' : 'N' },
+        { id: 'aa', header: 'A', tooltip: t('bpm:assertions.tooltip.a.desc'), width: '50px', className: 'text-center', render: (row) => row.assertionA === 'Y' ? 'Y' : 'N' },
+        { id: 'aco', header: 'CO', tooltip: t('bpm:assertions.tooltip.co.desc'), width: '50px', className: 'text-center', render: (row) => row.assertionCo === 'Y' ? 'Y' : 'N' },
+        { id: 'aro', header: 'R&O', tooltip: t('bpm:assertions.tooltip.ro.desc'), width: '50px', className: 'text-center', render: (row) => row.assertionRo === 'Y' ? 'Y' : 'N' },
+        { id: 'ava', header: 'V/A', tooltip: t('bpm:assertions.tooltip.va.desc'), width: '50px', className: 'text-center', render: (row) => row.assertionVa === 'Y' ? 'Y' : 'N' },
+        { id: 'apd', header: 'PD', tooltip: t('bpm:assertions.tooltip.pd.desc'), width: '50px', className: 'text-center', render: (row) => row.assertionPd === 'Y' ? 'Y' : 'N' },
       ]
     },
     {

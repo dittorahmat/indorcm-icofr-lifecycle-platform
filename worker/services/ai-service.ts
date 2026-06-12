@@ -3,19 +3,32 @@ import { sql } from "drizzle-orm";
 import { documentChunks, documents } from "../db/schema";
 import type { DrizzleDb } from "../db";
 
-export class AIService {
-  private genAI: GoogleGenerativeAI;
+export type AIProvider = "gemini" | "openai-compatible";
 
-  constructor(apiKey: string) {
-    this.genAI = new GoogleGenerativeAI(apiKey);
+export interface AIConfig {
+  provider: AIProvider;
+  apiKey: string;
+  baseUrl?: string;
+  embeddingModel?: string;
+  chatModel?: string;
+}
+
+export class AIService {
+  private config: AIConfig;
+  private genAI?: GoogleGenerativeAI;
+
+  constructor(config: AIConfig) {
+    this.config = config;
+    if (config.provider === "gemini") {
+      this.genAI = new GoogleGenerativeAI(config.apiKey);
+    }
   }
 
   /**
    * Utility to call a function with exponential backoff and jitter.
-   * Target: 429 (Rate Limit) and 500+ errors.
    */
   async callWithRetry<T>(fn: () => Promise<T>, maxRetries = 5): Promise<T> {
-    let delay = 2000; // Start with 2s
+    let delay = 2000;
     for (let i = 0; i < maxRetries; i++) {
       try {
         return await fn();
@@ -24,11 +37,10 @@ export class AIService {
         const isRetryableError = isRateLimit || err.status >= 500;
         
         if (isRetryableError && i < maxRetries - 1) {
-          const jitter = Math.random() * 1000;
-          const waitTime = delay + jitter;
-          console.warn(`[AI Service] Rate limited or error. Retrying in ${Math.round(waitTime)}ms... (Attempt ${i + 1}/${maxRetries})`);
+          const waitTime = delay + (Math.random() * 1000);
+          console.warn(`[AI Service] Retryable error. Retrying in ${Math.round(waitTime)}ms... (${i + 1}/${maxRetries})`);
           await new Promise(resolve => setTimeout(resolve, waitTime));
-          delay *= 2; // Exponential backoff
+          delay *= 2;
           continue;
         }
         throw err;
@@ -38,24 +50,125 @@ export class AIService {
   }
 
   /**
-   * Generates a vector embedding for a given text using Gemini.
-   * Model: gemini-embedding-2 (Configured to 768 dimensions)
+   * Generates a vector embedding.
    */
   async generateEmbedding(text: string): Promise<number[]> {
-    return this.callWithRetry(async () => {
-      const model = this.genAI.getGenerativeModel({ model: "gemini-embedding-2" });
-      const result = await model.embedContent({
-        content: { role: "user", parts: [{ text }] },
-        outputDimensionality: 768,
-      } as any);
-      return result.embedding.values;
-    });
+    if (this.config.provider === "gemini") {
+      return this.callWithRetry(async () => {
+        const model = this.genAI!.getGenerativeModel({ 
+          model: this.config.embeddingModel || "gemini-embedding-2" 
+        });
+        const result = await model.embedContent({
+          content: { role: "user", parts: [{ text }] },
+          outputDimensionality: 768,
+        } as any);
+        return result.embedding.values;
+      });
+    } else {
+      // OpenAI-compatible (Ollama, vLLM, etc.)
+      return this.callWithRetry(async () => {
+        const response = await fetch(`${this.config.baseUrl}/embeddings`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${this.config.apiKey}`,
+          },
+          body: JSON.stringify({
+            model: this.config.embeddingModel || "nomic-embed-text",
+            input: text,
+          }),
+        });
+
+        if (!response.ok) {
+          const error = await response.text();
+          throw new Error(`OpenAI Embedding Error: ${response.status} - ${error}`);
+        }
+
+        const data: any = await response.json();
+        // Support both OpenAI and Ollama formats
+        const embedding = data.data?.[0]?.embedding || data.embedding;
+        
+        if (!embedding) throw new Error("No embedding found in response");
+        
+        // Basic validation for pgvector dimensions (768)
+        if (embedding.length !== 768) {
+          console.warn(`[AI Service] Warning: Received embedding with ${embedding.length} dims, expected 768. Search may fail.`);
+        }
+        
+        return embedding;
+      });
+    }
   }
 
   /**
-   * Splits a long text into smaller chunks.
-   * Target: ~3000 characters per chunk with some overlap.
+   * Generates a chat response.
    */
+  async generateChatResponse(params: {
+    systemInstruction?: string;
+    messages: Array<{ role: string; content: string }>;
+    tools?: any[];
+  }): Promise<{ content: string; toolCalls?: any[] }> {
+    if (this.config.provider === "gemini") {
+      const model = this.genAI!.getGenerativeModel({
+        model: this.config.chatModel || "gemini-2.5-flash-lite",
+        systemInstruction: params.systemInstruction,
+        tools: params.tools ? [{ functionDeclarations: params.tools }] : undefined,
+      });
+
+      const chat = model.startChat({
+        history: params.messages.slice(0, -1).map(m => ({
+          role: m.role === "user" ? "user" : "model",
+          parts: [{ text: m.content }],
+        })),
+      });
+
+      const lastMessage = params.messages[params.messages.length - 1].content;
+      const result = await chat.sendMessage(lastMessage);
+      const response = await result.response;
+      
+      return {
+        content: response.text(),
+        toolCalls: response.functionCalls(),
+      };
+    } else {
+      // OpenAI-compatible
+      const messages = [];
+      if (params.systemInstruction) {
+        messages.push({ role: "system", content: params.systemInstruction });
+      }
+      messages.push(...params.messages);
+
+      const response = await fetch(`${this.config.baseUrl}/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${this.config.apiKey}`,
+        },
+        body: JSON.stringify({
+          model: this.config.chatModel || "gemma2",
+          messages,
+          tools: params.tools?.map(t => ({ type: "function", function: t })),
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(`OpenAI Chat Error: ${response.status} - ${error}`);
+      }
+
+      const data: any = await response.json();
+      const choice = data.choices[0];
+      
+      return {
+        content: choice.message.content || "",
+        toolCalls: choice.message.tool_calls?.map((tc: any) => ({
+          name: tc.function.name,
+          args: JSON.parse(tc.function.arguments),
+        })),
+      };
+    }
+  }
+
   static splitIntoChunks(text: string, chunkSize = 3000, overlap = 300): string[] {
     const chunks: string[] = [];
     let start = 0;
@@ -67,10 +180,6 @@ export class AIService {
     return chunks;
   }
 
-  /**
-   * Performs a Hybrid Search (Semantic + Keyword) using Reciprocal Rank Fusion (RRF)
-   * on the granular chunks table.
-   */
   async hybridSearch(
     db: DrizzleDb,
     orgId: string,
@@ -119,9 +228,6 @@ export class AIService {
     }[];
   }
 
-  /**
-   * Prepend situational context to a text chunk.
-   */
   static situationalChunking(content: string, metadata: { title: string; category?: string }): string {
     const header = `--- SOURCE: ${metadata.title} ${metadata.category ? `(${metadata.category})` : ""} ---\n`;
     return `${header}${content}`;

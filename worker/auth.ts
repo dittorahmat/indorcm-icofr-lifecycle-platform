@@ -5,10 +5,17 @@ import { getDb } from "./db";
 import * as schema from "./db/schema";
 import crypto from "node:crypto";
 
+let authInstance: any = null;
+let lastDbUrl: string | null = null;
+
 export const getAuth = (env: { DATABASE_URL: string; BETTER_AUTH_SECRET: string; BETTER_AUTH_URL?: string; SKIP_LICENSE?: string }) => {
+    if (authInstance && lastDbUrl === env.DATABASE_URL) {
+        return authInstance;
+    }
+
     const db = getDb(env.DATABASE_URL);
 
-    return betterAuth({
+    authInstance = betterAuth({
         database: drizzleAdapter(db, {
             provider: "pg",
             schema: {
@@ -66,4 +73,7 @@ export const getAuth = (env: { DATABASE_URL: string; BETTER_AUTH_SECRET: string;
             trustedProxyHeaders: true,
         }
     });
+
+    lastDbUrl = env.DATABASE_URL;
+    return authInstance;
 };
