@@ -78,27 +78,6 @@ export function ScopingEditorContent({
           />
         </div>
 
-        {selectedEntityCodes.length > 0 && (
-          <div className="mb-6 bg-indigo-50 border border-indigo-100 rounded-lg p-3 flex items-center justify-between shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
-            <div className="flex items-center gap-3">
-              <div className="bg-indigo-100 p-2 rounded-full">
-                <ShieldCheck className="h-4 w-4 text-indigo-600" />
-              </div>
-              <div>
-                <p className="text-[11px] font-black uppercase tracking-widest text-indigo-900">Roll-up Context Active</p>
-                <p className="text-xs text-indigo-700 font-medium">
-                  Aggregating balances from <span className="font-bold">{selectedEntityCodes.length}</span> entities. 
-                  Materiality (OM/PM) is dynamically recalculated.
-                </p>
-              </div>
-            </div>
-            {selectedEntityCodes.length < (mergedGlData.length > 0 ? Array.from(new Set(mergedGlData.map(r => r.entityCode))).length : 0) && (
-              <Badge variant="outline" className="bg-white text-indigo-600 border-indigo-200 text-[10px] font-bold uppercase tracking-widest">
-                Slicing Simulation
-              </Badge>
-            )}
-          </div>
-        )}
 
         <TabsContent value="worksheet" className="space-y-6 mt-0">
           <GLDataGrid

@@ -646,6 +646,7 @@ export const documents = pgTable("documents", {
 	type: text("type").notNull(), // Internal, External
 	category: text("category"), // SOP, Regulation, etc.
 	content: text("content"), // Extracted text
+	metadata: jsonb("metadata"),
 	embedding: vector("embedding", { dimensions: 768 }), // Vector for AI semantic search
 	ftsTokens: tsvector("fts_tokens"), // tsvector for full-text keyword search
 	fileUrl: text("file_url"), // R2 path/URL

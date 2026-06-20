@@ -3,8 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { Settings2, PanelLeftClose, Info, Calculator, Percent, Layers } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Settings2, Info, Calculator, Percent, Layers, AlertTriangle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { MaterialitySimulation } from '@shared/types';
 import { cn } from '@/lib/utils';
@@ -17,7 +18,6 @@ interface MaterialityParamsCardProps {
   omValue: number;
   pmValue: number;
   isLocked: boolean;
-  onCollapse: () => void;
 }
 
 export function MaterialityParamsCard({
@@ -27,105 +27,121 @@ export function MaterialityParamsCard({
   benchmarkValue,
   omValue,
   pmValue,
-  isLocked,
-  onCollapse
+  isLocked
 }: MaterialityParamsCardProps) {
   const { t } = useTranslation('scoping');
 
   return (
-    <Card className="border-slate-200 shadow-sm overflow-hidden w-[300px] bg-white flex flex-col h-full">
-      <CardHeader className="pb-3 border-b border-slate-100 bg-slate-50/50 flex flex-row items-center justify-between px-5">
+    <Card className="border-slate-200 shadow-sm overflow-hidden w-full bg-white">
+      <CardHeader className="py-2 border-b border-slate-100 bg-slate-50/50 flex flex-row items-center justify-between px-4">
         <CardTitle className="text-[10px] uppercase font-bold text-slate-500 tracking-[0.2em] flex items-center gap-2">
           <Settings2 className="h-3.5 w-3.5 text-slate-900" /> {t('params.title')}
         </CardTitle>
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="h-7 w-7 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-all" 
-          onClick={onCollapse}
-        >
-          <PanelLeftClose className="h-4 w-4" />
-        </Button>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-6 gap-1 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-md px-2 transition-all text-[9px] font-bold uppercase tracking-wider"
+            >
+              <Info className="h-3 w-3 text-indigo-500" /> {t('logic.title')}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[320px] p-4 border-slate-200 shadow-xl" align="end" side="bottom" sideOffset={5}>
+            <h3 className="text-[10px] uppercase font-black text-slate-800 tracking-widest flex items-center gap-2 mb-2">
+              <AlertTriangle className="h-3.5 w-3.5 text-amber-500" /> {t('logic.title')}
+            </h3>
+            <div className="text-[11px] text-slate-600 leading-relaxed space-y-2.5 font-medium">
+              <p>{t('logic.description')}</p>
+              <ol className="space-y-2">
+                <li className="flex gap-2">
+                  <Badge className="h-3.5 w-3.5 p-0 flex items-center justify-center rounded-full bg-blue-600 border-none text-white text-[8px] font-black shrink-0">1</Badge>
+                  <span>{t('logic.quant')}</span>
+                </li>
+                <li className="flex gap-2">
+                  <Badge className="h-3.5 w-3.5 p-0 flex items-center justify-center rounded-full bg-blue-600 border-none text-white text-[8px] font-black shrink-0">2</Badge>
+                  <span>{t('logic.qual')}</span>
+                </li>
+              </ol>
+            </div>
+          </PopoverContent>
+        </Popover>
       </CardHeader>
-      <CardContent className="space-y-6 pt-6 px-5 flex-1">
-        <div className="space-y-2.5">
-          <Label className="text-[10px] font-bold uppercase text-slate-500 tracking-wider flex items-center gap-2">
-             <Layers className="h-3 w-3" /> {t('params.locations')}
-          </Label>
-          <div className="relative">
-            <Input 
-              type="number" 
-              min={1} 
-              disabled={isLocked} 
-              value={simState.locationCount ?? 1} 
-              onChange={e => setSimState(s => ({ ...s, locationCount: Number(e.target.value) }))} 
-              className="h-10 font-bold bg-slate-50 border-slate-200 focus:bg-white transition-all pr-12 text-slate-900"
-            />
-            <div className="absolute inset-y-0 right-3 flex items-center text-[10px] font-bold text-slate-400 uppercase">
-              {t('params.unit')}
+      <CardContent className="py-2.5 px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 flex-1">
+          {/* Significant Locations */}
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <Label className="text-[9px] font-bold uppercase text-slate-500 tracking-wider flex items-center gap-1">
+                <Layers className="h-3 w-3 text-slate-400" /> {t('params.locations')}
+              </Label>
+              <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter flex items-center gap-0.5">
+                <Calculator className="h-2.5 w-2.5" /> {multiplier}x
+              </span>
+            </div>
+            <div className="relative">
+              <Input 
+                type="number" 
+                min={1} 
+                disabled={isLocked} 
+                value={simState.locationCount ?? 1} 
+                onChange={e => setSimState(s => ({ ...s, locationCount: Number(e.target.value) }))} 
+                className="h-8 font-bold bg-slate-50 border-slate-200 focus:bg-white transition-all pr-10 text-slate-900 text-xs rounded-lg"
+              />
+              <div className="absolute inset-y-0 right-2.5 flex items-center text-[9px] font-bold text-slate-400 uppercase">
+                {t('params.unit')}
+              </div>
             </div>
           </div>
-          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter flex items-center gap-1.5 px-1">
-             <Calculator className="h-3 w-3" /> {t('params.multiplier')}: <span className="text-slate-900">{multiplier}x</span>
-          </p>
-        </div>
 
-        <div className="space-y-2.5">
-          <Label className="text-[10px] font-bold uppercase text-slate-500 tracking-wider flex items-center gap-2">
-             <Percent className="h-3 w-3" /> {t('params.omLabel')}
-          </Label>
-          <div className="relative">
-            <Input 
-              type="number" 
-              step={0.1} 
-              disabled={isLocked} 
-              value={simState.omPercentage ?? 0} 
-              onChange={e => setSimState(s => ({ ...s, omPercentage: Number(e.target.value) }))} 
-              className="h-10 font-bold bg-slate-50 border-slate-200 focus:bg-white transition-all pr-10 text-slate-900"
-            />
-            <div className="absolute inset-y-0 right-3 flex items-center text-slate-400">
-              %
+          {/* % OM Percentage */}
+          <div className="space-y-1">
+            <Label className="text-[9px] font-bold uppercase text-slate-500 tracking-wider flex items-center gap-1">
+              <Percent className="h-3 w-3 text-slate-400" /> {t('params.omLabel')}
+            </Label>
+            <div className="relative">
+              <Input 
+                type="number" 
+                step={0.1} 
+                disabled={isLocked} 
+                value={simState.omPercentage ?? 0} 
+                onChange={e => setSimState(s => ({ ...s, omPercentage: Number(e.target.value) }))} 
+                className="h-8 font-bold bg-slate-50 border-slate-200 focus:bg-white transition-all pr-8 text-slate-900 text-xs rounded-lg"
+              />
+              <div className="absolute inset-y-0 right-2.5 flex items-center text-slate-400 text-xs font-bold">
+                %
+              </div>
+            </div>
+          </div>
+
+          {/* % Haircut */}
+          <div className="space-y-1">
+            <Label className="text-[9px] font-bold uppercase text-slate-500 tracking-wider flex items-center gap-1">
+              <ShieldAlert className="h-3 w-3 text-rose-500" /> {t('params.haircutLabel')}
+            </Label>
+            <div className="relative">
+              <Input 
+                type="number" 
+                disabled={isLocked} 
+                value={simState.haircutPercentage ?? 0} 
+                onChange={e => setSimState(s => ({ ...s, haircutPercentage: Number(e.target.value) }))} 
+                className="h-8 font-bold bg-slate-50 border-slate-200 focus:bg-white transition-all pr-8 text-slate-900 text-xs rounded-lg"
+              />
+              <div className="absolute inset-y-0 right-2.5 flex items-center text-slate-400 text-xs font-bold">
+                %
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="space-y-2.5">
-          <Label className="text-[10px] font-bold uppercase text-slate-500 tracking-wider flex items-center gap-2">
-             <ShieldAlert className="h-3 w-3 text-red-500" /> {t('params.haircutLabel')}
-          </Label>
-          <div className="relative">
-            <Input 
-              type="number" 
-              disabled={isLocked} 
-              value={simState.haircutPercentage ?? 0} 
-              onChange={e => setSimState(s => ({ ...s, haircutPercentage: Number(e.target.value) }))} 
-              className="h-10 font-bold bg-slate-50 border-slate-200 focus:bg-white transition-all pr-10 text-slate-900"
-            />
-            <div className="absolute inset-y-0 right-3 flex items-center text-slate-400">
-              %
-            </div>
-          </div>
-        </div>
-
-        <Separator className="bg-slate-100" />
-        
-        <div className="space-y-4 bg-mancity-pattern rounded-xl p-5 text-primary-foreground shadow-md relative overflow-hidden">
-          <div className="space-y-1 relative z-10">
-            <p className="text-[9px] text-primary-foreground/60 uppercase font-bold tracking-[0.15em] flex justify-between items-center">
+        {/* Benchmark Details Block */}
+        <div className="flex items-center gap-3 bg-slate-50 border border-slate-100 rounded-lg p-2 sm:self-stretch justify-between sm:justify-end shrink-0 sm:min-w-[200px]">
+          <div className="space-y-0.5 text-right">
+            <p className="text-[8px] text-slate-400 uppercase font-black tracking-wider flex items-center justify-end gap-0.5">
               {t('params.benchmarkValue', { basis: simState.basis })} 
               <Info className="h-2.5 w-2.5 opacity-40" />
             </p>
-            <p className="text-sm font-display font-bold text-primary-foreground text-right">Rp {benchmarkValue.toLocaleString('id-ID')}</p>
-          </div>
-
-          <div className="space-y-1 pt-3 border-t border-primary-foreground/10 relative z-10">
-            <p className="text-[9px] text-primary-foreground/50 uppercase font-bold tracking-[0.15em]">{t('params.omValue')}</p>
-            <p className="text-xl font-display font-bold text-primary-foreground text-right tracking-tight leading-none mt-1">Rp {omValue.toLocaleString('id-ID')}</p>
-          </div>
-
-          <div className="space-y-1 relative z-10">
-            <p className="text-[9px] text-primary-foreground/50 uppercase font-bold tracking-[0.15em]">{t('params.pmValue')}</p>
-            <p className="text-xl font-display font-bold text-primary-foreground text-right tracking-tight leading-none mt-1">Rp {pmValue.toLocaleString('id-ID')}</p>
+            <p className="text-xs font-display font-black text-slate-700">Rp {benchmarkValue.toLocaleString('id-ID')}</p>
           </div>
         </div>
       </CardContent>

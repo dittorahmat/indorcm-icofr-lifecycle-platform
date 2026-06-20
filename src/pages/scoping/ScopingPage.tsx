@@ -1,13 +1,9 @@
 import React from 'react';
-import { motion, AnimatePresence, Variants } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
-import { 
-  Plus, Trash2, Upload, Database, LayoutGrid, CheckCircle2, AlertTriangle, PanelLeftOpen,
-  Calendar, ArrowRight
-} from 'lucide-react';
+import { Plus, Trash2, Upload, Database, LayoutGrid } from 'lucide-react';
 import { GLSourceTable } from '@/components/scoping/GLSourceTable';
 import { SimulationListTable } from '@/components/scoping/SimulationListTable';
 import { SetBenchmarkModal } from '@/components/scoping/SetBenchmarkModal';
@@ -21,7 +17,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { api } from '@/lib/api-client';
@@ -231,7 +226,6 @@ export function ScopingPage() {
 function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulation, onBack: () => void }) {
   const { t } = useTranslation('scoping');
   const queryClient = useQueryClient();
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
   const [isWorkflowOpen, setIsWorkflowOpen] = React.useState(false);
 
   const {
@@ -257,7 +251,7 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
 
   return (
     <AppLayout container>
-      <div className="space-y-6 pb-20">
+      <div className="space-y-4 pb-20">
         <ScopingEditorHeader 
           simState={simState}
           isLocked={isLocked}
@@ -268,81 +262,36 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
           pmValue={pmValue}
         />
 
-        <div className="flex gap-6 items-start">
-          <AnimatePresence initial={false}>
-            {!isSidebarCollapsed && (
-              <motion.div
-                initial={{ width: 0, opacity: 0, x: -30 }}
-                animate={{ width: 300, opacity: 1, x: 0 }}
-                exit={{ width: 0, opacity: 0, x: -30 }}
-                transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                className="shrink-0 space-y-6 overflow-hidden"
-              >
-                <MaterialityParamsCard 
-                  simState={simState}
-                  setSimState={setSimState}
-                  multiplier={multiplier}
-                  benchmarkValue={benchmarkValue}
-                  omValue={omValue}
-                  pmValue={pmValue}
-                  isLocked={isLocked}
-                  onCollapse={() => setIsSidebarCollapsed(true)}
-                />
+        <MaterialityParamsCard 
+          simState={simState}
+          setSimState={setSimState}
+          multiplier={multiplier}
+          benchmarkValue={benchmarkValue}
+          omValue={omValue}
+          pmValue={pmValue}
+          isLocked={isLocked}
+        />
 
-                <Card className="relative overflow-hidden bg-slate-50 border-slate-200 shadow-sm w-[300px] p-5 ring-1 ring-slate-100">
-                   <h3 className="text-[10px] uppercase font-black text-slate-800 tracking-widest flex items-center gap-2 mb-4">
-                     <AlertTriangle className="h-3.5 w-3.5 text-amber-500" /> {t('logic.title')}
-                   </h3>
-                   <div className="text-[11px] text-slate-600 leading-relaxed space-y-4 font-medium">
-                    <p>{t('logic.description')}</p>
-                    <ol className="space-y-3">
-                      <li className="flex gap-3">
-                        <Badge className="h-4 w-4 p-0 flex items-center justify-center rounded-full bg-mancity-pattern border-none text-primary-foreground text-[9px] font-black">1</Badge>
-                        <span>{t('logic.quant')}</span>
-                      </li>
-                      <li className="flex gap-3">
-                        <Badge className="h-4 w-4 p-0 flex items-center justify-center rounded-full bg-mancity-pattern border-none text-primary-foreground text-[9px] font-black">2</Badge>
-                        <span>{t('logic.qual')}</span>
-                      </li>
-                    </ol>
-                  </div>
-                </Card>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {isSidebarCollapsed && (
-            <Button
-              variant="outline"
-              size="icon"
-              className="mt-2 shrink-0 h-10 w-10 bg-white shadow-md border-indigo-100 text-indigo-600 hover:bg-indigo-50 transition-all rounded-xl"
-              onClick={() => setIsSidebarCollapsed(false)}
-            >
-              <PanelLeftOpen className="h-5 w-5" />
-            </Button>
-          )}
-
-          <div className="flex-1 overflow-hidden">
-            <ScopingEditorContent 
-              simState={simState}
-              mergedGlData={mergedGlData}
-              entityHierarchy={entityHierarchy}
-              selectedEntityCodes={selectedEntityCodes}
-              onEntitySelectionChange={setSelectedEntityCodes}
-              omValue={omValue}
-              pmValue={pmValue}
-              isLocked={isLocked}
-              departments={departments}
-              applications={applications}
-              selectedApps={localAppMappings}
-              onAssessmentChange={handlers.onAssessmentChange}
-              onOwnerAcceptanceChange={handleOwnerAcceptanceChange}
-              onAssignDepartments={handlers.onAssignDepartments}
-              onAppsChange={handlers.onAppsChange}
-              onQuickAddApp={handleQuickAddApp}
-              onOpenWorkflow={() => setIsWorkflowOpen(true)}
-            />
-          </div>
+        <div className="w-full overflow-hidden">
+          <ScopingEditorContent 
+            simState={simState}
+            mergedGlData={mergedGlData}
+            entityHierarchy={entityHierarchy}
+            selectedEntityCodes={selectedEntityCodes}
+            onEntitySelectionChange={setSelectedEntityCodes}
+            omValue={omValue}
+            pmValue={pmValue}
+            isLocked={isLocked}
+            departments={departments}
+            applications={applications}
+            selectedApps={localAppMappings}
+            onAssessmentChange={handlers.onAssessmentChange}
+            onOwnerAcceptanceChange={handleOwnerAcceptanceChange}
+            onAssignDepartments={handlers.onAssignDepartments}
+            onAppsChange={handlers.onAppsChange}
+            onQuickAddApp={handleQuickAddApp}
+            onOpenWorkflow={() => setIsWorkflowOpen(true)}
+          />
         </div>
 
         <Dialog open={isWorkflowOpen} onOpenChange={setIsWorkflowOpen}>
