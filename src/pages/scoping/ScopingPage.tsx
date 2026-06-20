@@ -251,7 +251,7 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
 
   return (
     <AppLayout container>
-      <div className="space-y-4 pb-20">
+      <div className="space-y-4 pb-6">
         <ScopingEditorHeader 
           simState={simState}
           isLocked={isLocked}
