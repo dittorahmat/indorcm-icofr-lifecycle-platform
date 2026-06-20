@@ -200,7 +200,7 @@ export type BPMProcess = Omit<InferSelectModel<typeof schema.bpmProcesses>, 'cre
 
 export interface BPMNode {
   id: string;
-  type: "start" | "end" | "activity" | "automated-activity" | "decision" | "document" | "system" | "risk" | "control" | "archive" | "swimlane" | "docked-risk" | "docked-control" | "reference" | "manual-input" | "external-process" | "off-page-ref" | "data-media";
+  type: "start" | "end" | "activity" | "automated-activity" | "decision" | "document" | "system" | "risk" | "control" | "archive" | "swimlane" | "docked-risk" | "docked-control" | "reference" | "manual-input" | "external-process" | "off-page-ref" | "data-media" | "alternate-process" | "data" | "predefined-process" | "internal-storage" | "multi-document" | "preparation" | "manual-operation" | "card" | "punched-tape" | "summing-junction" | "or" | "collate" | "sort" | "extract" | "merge" | "stored-data" | "delay" | "sequential-access" | "direct-access" | "display" | "loop-limit" | "annotation";
   position: { x: number; y: number };
   parentId?: string; // For React Flow grouping/docking
   extent?: 'parent'; // For React Flow docking

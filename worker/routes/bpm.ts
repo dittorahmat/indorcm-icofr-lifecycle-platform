@@ -117,6 +117,28 @@ PANDUAN KLASIFIKASI BENTUK VISUAL:
 - Inverted Triangle -> Tipe: "archive" (Arsip)
 - Cylinder Shape -> Tipe: "data-media" (System/Data Media)
 - Small Circle / Reference -> Tipe: "reference"
+- Rounded Rectangle / Alternate Process -> Tipe: "alternate-process"
+- Parallelogram -> Tipe: "data"
+- Rectangle with Double Vertical Bars -> Tipe: "predefined-process"
+- Rectangle with Top/Left Borders -> Tipe: "internal-storage"
+- Stacked Document -> Tipe: "multi-document"
+- Hexagon -> Tipe: "preparation"
+- Narrow-bottom Trapezoid -> Tipe: "manual-operation"
+- Rectangle with Cut Corner -> Tipe: "card"
+- Wavy Top and Bottom -> Tipe: "punched-tape"
+- Circle with X -> Tipe: "summing-junction"
+- Circle with + -> Tipe: "or"
+- Hourglass -> Tipe: "collate"
+- Split Hourglass -> Tipe: "sort"
+- Triangle Pointing Up -> Tipe: "extract"
+- Triangle Pointing Down -> Tipe: "merge"
+- Cylinder on Side -> Tipe: "stored-data"
+- Bullet Pointing Right -> Tipe: "delay"
+- Reel with Tail -> Tipe: "sequential-access"
+- Side Cylinder with Flat Face -> Tipe: "direct-access"
+- Bullet Pointing Left -> Tipe: "display"
+- Flat-topped Trapezoid -> Tipe: "loop-limit"
+- Dashed Three-sided Bracket -> Tipe: "annotation"
 
 Instruksi Koordinat:
 - Koordinat x dan y harus berada dalam rentang 0 s.d. 1000.
@@ -155,7 +177,15 @@ Format keluaran WAJIB berupa JSON objek yang memenuhi skema data yang diminta.`;
             id: { type: SchemaType.STRING },
             type: {
               type: SchemaType.STRING,
-              enum: ["start", "end", "activity", "manual-input", "external-process", "automated-activity", "decision", "document", "archive", "data-media", "reference"]
+              enum: [
+                "start", "end", "activity", "manual-input", "external-process", 
+                "automated-activity", "decision", "document", "archive", "data-media", 
+                "reference", "alternate-process", "data", "predefined-process", 
+                "internal-storage", "multi-document", "preparation", "manual-operation", 
+                "card", "punched-tape", "summing-junction", "or", "collate", "sort", 
+                "extract", "merge", "stored-data", "delay", "sequential-access", 
+                "direct-access", "display", "loop-limit", "annotation"
+              ]
             },
             label: { type: SchemaType.STRING },
             position: {

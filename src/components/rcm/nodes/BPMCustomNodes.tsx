@@ -314,3 +314,434 @@ export const SwimlaneNode = ({ data, selected }: NodeProps) => {
     </div>
   );
 };
+
+export const AlternateProcessNode = ({ data, selected, type }: NodeProps) => (
+  <NodeTooltip data={data} type={type}>
+    <div className={cn(
+      "relative group transition-all min-w-[160px] h-14",
+      selected && "scale-105 shadow-xl"
+    )}>
+      <Handle type="target" position={Position.Top} className="z-10" />
+      <svg width="100%" height="100%" viewBox="0 0 160 56" preserveAspectRatio="none">
+        <rect x="2" y="2" width="156" height="52" rx="12" ry="12" fill="white" stroke="#0f172a" strokeWidth="2" />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+         <div className="text-[9px] font-black text-slate-400 uppercase leading-none mb-0.5">Alt Process</div>
+         <div className="text-xs font-bold text-slate-800 px-4 text-center leading-tight line-clamp-2">{data.label}</div>
+      </div>
+      <Handle type="source" position={Position.Bottom} className="z-10" />
+    </div>
+  </NodeTooltip>
+);
+
+export const DataNode = ({ data, selected, type }: NodeProps) => (
+  <NodeTooltip data={data} type={type}>
+    <div className={cn(
+      "relative group transition-all min-w-[160px] h-14",
+      selected && "scale-105 shadow-xl"
+    )}>
+      <Handle type="target" position={Position.Top} className="z-10" />
+      <svg width="100%" height="100%" viewBox="0 0 160 56" preserveAspectRatio="none">
+        <path d="M20 2 L158 2 L138 54 L2 54 Z" fill="white" stroke="#0f172a" strokeWidth="2" />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+         <div className="text-[9px] font-black text-slate-400 uppercase leading-none mb-0.5">Data</div>
+         <div className="text-xs font-bold text-slate-800 px-6 text-center leading-tight line-clamp-2">{data.label}</div>
+      </div>
+      <Handle type="source" position={Position.Bottom} className="z-10" />
+    </div>
+  </NodeTooltip>
+);
+
+export const PredefinedProcessNode = ({ data, selected, type }: NodeProps) => (
+  <NodeTooltip data={data} type={type}>
+    <div className={cn(
+      "relative group transition-all min-w-[160px] h-14",
+      selected && "scale-105 shadow-xl"
+    )}>
+      <Handle type="target" position={Position.Top} className="z-10" />
+      <svg width="100%" height="100%" viewBox="0 0 160 56" preserveAspectRatio="none">
+        <rect x="2" y="2" width="156" height="52" fill="white" stroke="#0f172a" strokeWidth="2" />
+        <line x1="16" y1="2" x2="16" y2="54" stroke="#0f172a" strokeWidth="2" />
+        <line x1="144" y1="2" x2="144" y2="54" stroke="#0f172a" strokeWidth="2" />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+         <div className="text-[9px] font-black text-slate-400 uppercase leading-none mb-0.5">Predefined</div>
+         <div className="text-xs font-bold text-slate-800 px-6 text-center leading-tight line-clamp-2">{data.label}</div>
+      </div>
+      <Handle type="source" position={Position.Bottom} className="z-10" />
+    </div>
+  </NodeTooltip>
+);
+
+export const InternalStorageNode = ({ data, selected, type }: NodeProps) => (
+  <NodeTooltip data={data} type={type}>
+    <div className={cn(
+      "relative group transition-all min-w-[160px] h-14",
+      selected && "scale-105 shadow-xl"
+    )}>
+      <Handle type="target" position={Position.Top} className="z-10" />
+      <svg width="100%" height="100%" viewBox="0 0 160 56" preserveAspectRatio="none">
+        <rect x="2" y="2" width="156" height="52" fill="white" stroke="#0f172a" strokeWidth="2" />
+        <line x1="16" y1="2" x2="16" y2="54" stroke="#0f172a" strokeWidth="2" />
+        <line x1="2" y1="14" x2="158" y2="14" stroke="#0f172a" strokeWidth="2" />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center pt-2">
+         <div className="text-[9px] font-black text-slate-400 uppercase leading-none mb-0.5">Internal Storage</div>
+         <div className="text-xs font-bold text-slate-800 px-6 text-center leading-tight line-clamp-2">{data.label}</div>
+      </div>
+      <Handle type="source" position={Position.Bottom} className="z-10" />
+    </div>
+  </NodeTooltip>
+);
+
+export const MultiDocumentNode = ({ data, selected, type }: NodeProps) => (
+  <NodeTooltip data={data} type={type}>
+    <div className={cn(
+      "relative group transition-all min-w-[140px] h-14",
+      selected && "scale-105"
+    )}>
+      <Handle type="target" position={Position.Top} className="z-10" />
+      <svg width="100%" height="100%" viewBox="0 0 140 56" preserveAspectRatio="none">
+        <path d="M12 2 L138 2 L138 38 Q118 46 105.5 38 T73 38 T40.5 38 T12 38 Z" fill="white" stroke="#94a3b8" strokeWidth="2" />
+        <path d="M6 7 L132 7 L132 43 Q112 51 99.5 43 T67 43 T34.5 43 T6 43 Z" fill="white" stroke="#64748b" strokeWidth="2" />
+        <path d="M0 12 L126 12 L126 48 Q106 56 93.5 48 T61 48 T28.5 48 T0 48 Z" fill="white" stroke="#0f172a" strokeWidth="2" />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center pt-3 pb-1">
+        <span className="text-xs font-bold uppercase tracking-tight text-slate-700 px-4 text-center leading-tight line-clamp-2">{data.label}</span>
+      </div>
+      <Handle type="source" position={Position.Bottom} className="z-10" />
+    </div>
+  </NodeTooltip>
+);
+
+export const PreparationNode = ({ data, selected, type }: NodeProps) => (
+  <NodeTooltip data={data} type={type}>
+    <div className={cn(
+      "relative group transition-all min-w-[160px] h-14",
+      selected && "scale-105 shadow-xl"
+    )}>
+      <Handle type="target" position={Position.Top} className="z-10" />
+      <svg width="100%" height="100%" viewBox="0 0 160 56" preserveAspectRatio="none">
+        <path d="M15 2 L145 2 L158 28 L145 54 L15 54 L2 28 Z" fill="white" stroke="#0f172a" strokeWidth="2" />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+         <div className="text-[9px] font-black text-slate-400 uppercase leading-none mb-0.5">Preparation</div>
+         <div className="text-xs font-bold text-slate-800 px-6 text-center leading-tight line-clamp-2">{data.label}</div>
+      </div>
+      <Handle type="source" position={Position.Bottom} className="z-10" />
+    </div>
+  </NodeTooltip>
+);
+
+export const ManualOperationNode = ({ data, selected, type }: NodeProps) => (
+  <NodeTooltip data={data} type={type}>
+    <div className={cn(
+      "relative group transition-all min-w-[160px] h-14",
+      selected && "scale-105 shadow-xl"
+    )}>
+      <Handle type="target" position={Position.Top} className="z-10" />
+      <svg width="100%" height="100%" viewBox="0 0 160 56" preserveAspectRatio="none">
+        <path d="M2 2 L158 2 L138 54 L22 54 Z" fill="white" stroke="#0f172a" strokeWidth="2" />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+         <div className="text-[9px] font-black text-slate-400 uppercase leading-none mb-0.5">Manual Op</div>
+         <div className="text-xs font-bold text-slate-800 px-6 text-center leading-tight line-clamp-2">{data.label}</div>
+      </div>
+      <Handle type="source" position={Position.Bottom} className="z-10" />
+    </div>
+  </NodeTooltip>
+);
+
+export const CardNode = ({ data, selected, type }: NodeProps) => (
+  <NodeTooltip data={data} type={type}>
+    <div className={cn(
+      "relative group transition-all min-w-[160px] h-14",
+      selected && "scale-105 shadow-xl"
+    )}>
+      <Handle type="target" position={Position.Top} className="z-10" />
+      <svg width="100%" height="100%" viewBox="0 0 160 56" preserveAspectRatio="none">
+        <path d="M20 2 L158 2 L158 54 L2 54 L2 20 Z" fill="white" stroke="#0f172a" strokeWidth="2" />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center pt-2">
+         <div className="text-[9px] font-black text-slate-400 uppercase leading-none mb-0.5">Card</div>
+         <div className="text-xs font-bold text-slate-800 px-6 text-center leading-tight line-clamp-2">{data.label}</div>
+      </div>
+      <Handle type="source" position={Position.Bottom} className="z-10" />
+    </div>
+  </NodeTooltip>
+);
+
+export const PunchedTapeNode = ({ data, selected, type }: NodeProps) => (
+  <NodeTooltip data={data} type={type}>
+    <div className={cn(
+      "relative group transition-all min-w-[160px] h-14",
+      selected && "scale-105 shadow-xl"
+    )}>
+      <Handle type="target" position={Position.Top} className="z-10" />
+      <svg width="100%" height="100%" viewBox="0 0 160 56" preserveAspectRatio="none">
+        <path d="M2 10 Q40 0 80 10 T158 10 L158 46 Q120 56 80 46 T2 46 Z" fill="white" stroke="#0f172a" strokeWidth="2" />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+         <div className="text-[9px] font-black text-slate-400 uppercase leading-none mb-0.5">Punched Tape</div>
+         <div className="text-xs font-bold text-slate-800 px-6 text-center leading-tight line-clamp-2">{data.label}</div>
+      </div>
+      <Handle type="source" position={Position.Bottom} className="z-10" />
+    </div>
+  </NodeTooltip>
+);
+
+export const SummingJunctionNode = ({ data, selected, type }: NodeProps) => (
+  <NodeTooltip data={data} type={type}>
+    <div className={cn(
+      "relative group transition-all w-12 h-12 flex items-center justify-center",
+      selected && "scale-105"
+    )}>
+      <Handle type="target" position={Position.Top} className="z-10" />
+      <svg width="48" height="48" viewBox="0 0 48 48">
+        <circle cx="24" cy="24" r="21" fill="white" stroke="#0f172a" strokeWidth="2" />
+        <line x1="9" y1="9" x2="39" y2="39" stroke="#0f172a" strokeWidth="2" />
+        <line x1="9" y1="39" x2="39" y2="9" stroke="#0f172a" strokeWidth="2" />
+      </svg>
+      <div className={cn(
+        "absolute -bottom-6 left-1/2 -translate-x-1/2 w-28 text-center text-[10px] font-bold uppercase py-0.5 px-1 rounded transition-colors",
+        selected ? "bg-slate-800 text-white" : "text-slate-700"
+      )}>{data.label}</div>
+      <Handle type="source" position={Position.Bottom} className="z-10" />
+    </div>
+  </NodeTooltip>
+);
+
+export const OrNode = ({ data, selected, type }: NodeProps) => (
+  <NodeTooltip data={data} type={type}>
+    <div className={cn(
+      "relative group transition-all w-12 h-12 flex items-center justify-center",
+      selected && "scale-105"
+    )}>
+      <Handle type="target" position={Position.Top} className="z-10" />
+      <svg width="48" height="48" viewBox="0 0 48 48">
+        <circle cx="24" cy="24" r="21" fill="white" stroke="#0f172a" strokeWidth="2" />
+        <line x1="24" y1="3" x2="24" y2="45" stroke="#0f172a" strokeWidth="2" />
+        <line x1="3" y1="24" x2="45" y2="24" stroke="#0f172a" strokeWidth="2" />
+      </svg>
+      <div className={cn(
+        "absolute -bottom-6 left-1/2 -translate-x-1/2 w-28 text-center text-[10px] font-bold uppercase py-0.5 px-1 rounded transition-colors",
+        selected ? "bg-slate-800 text-white" : "text-slate-700"
+      )}>{data.label}</div>
+      <Handle type="source" position={Position.Bottom} className="z-10" />
+    </div>
+  </NodeTooltip>
+);
+
+export const CollateNode = ({ data, selected, type }: NodeProps) => (
+  <NodeTooltip data={data} type={type}>
+    <div className={cn(
+      "relative group transition-all min-w-[120px] h-14",
+      selected && "scale-105"
+    )}>
+      <Handle type="target" position={Position.Top} className="z-10" />
+      <svg width="100%" height="100%" viewBox="0 0 120 56" preserveAspectRatio="none">
+        <path d="M2 2 L118 2 L2 54 L118 54 Z" fill="white" stroke="#0f172a" strokeWidth="2" />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center pt-1.5">
+         <div className="text-[9px] font-black text-slate-400 uppercase leading-none mb-0.5">Collate</div>
+         <div className="text-xs font-bold text-slate-800 px-6 text-center leading-tight line-clamp-2">{data.label}</div>
+      </div>
+      <Handle type="source" position={Position.Bottom} className="z-10" />
+    </div>
+  </NodeTooltip>
+);
+
+export const SortNode = ({ data, selected, type }: NodeProps) => (
+  <NodeTooltip data={data} type={type}>
+    <div className={cn(
+      "relative group transition-all min-w-[120px] h-14",
+      selected && "scale-105"
+    )}>
+      <Handle type="target" position={Position.Top} className="z-10" />
+      <svg width="100%" height="100%" viewBox="0 0 120 56" preserveAspectRatio="none">
+        <path d="M2 2 L118 2 L2 54 L118 54 Z" fill="white" stroke="#0f172a" strokeWidth="2" />
+        <line x1="2" y1="28" x2="118" y2="28" stroke="#0f172a" strokeWidth="2" />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center pt-2">
+         <div className="text-[9px] font-black text-slate-400 uppercase leading-none mb-0.5">Sort</div>
+         <div className="text-xs font-bold text-slate-800 px-6 text-center leading-tight line-clamp-2">{data.label}</div>
+      </div>
+      <Handle type="source" position={Position.Bottom} className="z-10" />
+    </div>
+  </NodeTooltip>
+);
+
+export const ExtractNode = ({ data, selected, type }: NodeProps) => (
+  <NodeTooltip data={data} type={type}>
+    <div className={cn(
+      "relative group transition-all min-w-[120px] h-14",
+      selected && "scale-105"
+    )}>
+      <Handle type="target" position={Position.Top} className="z-10" />
+      <svg width="100%" height="100%" viewBox="0 0 120 56" preserveAspectRatio="none">
+        <path d="M60 2 L118 54 L2 54 Z" fill="white" stroke="#0f172a" strokeWidth="2" />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-end pb-2">
+         <div className="text-[8px] font-black text-slate-400 uppercase leading-none mb-0.5">Extract</div>
+         <div className="text-xs font-bold text-slate-800 px-4 text-center leading-tight line-clamp-2">{data.label}</div>
+      </div>
+      <Handle type="source" position={Position.Bottom} className="z-10" />
+    </div>
+  </NodeTooltip>
+);
+
+export const MergeNode = ({ data, selected, type }: NodeProps) => (
+  <NodeTooltip data={data} type={type}>
+    <div className={cn(
+      "relative group transition-all min-w-[120px] h-14",
+      selected && "scale-105"
+    )}>
+      <Handle type="target" position={Position.Top} className="z-10" />
+      <svg width="100%" height="100%" viewBox="0 0 120 56" preserveAspectRatio="none">
+        <path d="M2 2 L118 2 L60 54 Z" fill="white" stroke="#0f172a" strokeWidth="2" />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-start pt-2">
+         <div className="text-[8px] font-black text-slate-400 uppercase leading-none mb-0.5">Merge</div>
+         <div className="text-xs font-bold text-slate-800 px-4 text-center leading-tight line-clamp-2">{data.label}</div>
+      </div>
+      <Handle type="source" position={Position.Bottom} className="z-10" />
+    </div>
+  </NodeTooltip>
+);
+
+export const StoredDataNode = ({ data, selected, type }: NodeProps) => (
+  <NodeTooltip data={data} type={type}>
+    <div className={cn(
+      "relative group transition-all min-w-[160px] h-14",
+      selected && "scale-105 shadow-xl"
+    )}>
+      <Handle type="target" position={Position.Top} className="z-10" />
+      <svg width="100%" height="100%" viewBox="0 0 160 56" preserveAspectRatio="none">
+        <path d="M12 2 L148 2 A 12 26 0 0 1 148 54 L12 54 A 12 26 0 0 1 12 2" fill="white" stroke="#0f172a" strokeWidth="2" />
+        <path d="M12 2 A 12 26 0 0 0 12 54" fill="none" stroke="#0f172a" strokeWidth="2" />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+         <div className="text-[9px] font-black text-slate-400 uppercase leading-none mb-0.5">Stored Data</div>
+         <div className="text-xs font-bold text-slate-800 px-6 text-center leading-tight line-clamp-2">{data.label}</div>
+      </div>
+      <Handle type="source" position={Position.Bottom} className="z-10" />
+    </div>
+  </NodeTooltip>
+);
+
+export const DelayNode = ({ data, selected, type }: NodeProps) => (
+  <NodeTooltip data={data} type={type}>
+    <div className={cn(
+      "relative group transition-all min-w-[160px] h-14",
+      selected && "scale-105 shadow-xl"
+    )}>
+      <Handle type="target" position={Position.Top} className="z-10" />
+      <svg width="100%" height="100%" viewBox="0 0 160 56" preserveAspectRatio="none">
+        <path d="M2 2 L134 2 A 26 26 0 0 1 134 54 L2 54 Z" fill="white" stroke="#0f172a" strokeWidth="2" />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+         <div className="text-[9px] font-black text-slate-400 uppercase leading-none mb-0.5">Delay</div>
+         <div className="text-xs font-bold text-slate-800 px-6 text-center leading-tight line-clamp-2">{data.label}</div>
+      </div>
+      <Handle type="source" position={Position.Bottom} className="z-10" />
+    </div>
+  </NodeTooltip>
+);
+
+export const SequentialAccessNode = ({ data, selected, type }: NodeProps) => (
+  <NodeTooltip data={data} type={type}>
+    <div className={cn(
+      "relative group transition-all w-14 h-14 flex items-center justify-center",
+      selected && "scale-105"
+    )}>
+      <Handle type="target" position={Position.Top} className="z-10" />
+      <svg width="56" height="56" viewBox="0 0 56 56">
+        <circle cx="28" cy="24" r="20" fill="white" stroke="#0f172a" strokeWidth="2" />
+        <line x1="28" y1="44" x2="52" y2="44" stroke="#0f172a" strokeWidth="2" />
+      </svg>
+      <div className={cn(
+        "absolute -bottom-6 left-1/2 -translate-x-1/2 w-28 text-center text-[10px] font-bold uppercase py-0.5 px-1 rounded transition-colors",
+        selected ? "bg-slate-800 text-white" : "text-slate-700"
+      )}>{data.label}</div>
+      <Handle type="source" position={Position.Bottom} className="z-10" />
+    </div>
+  </NodeTooltip>
+);
+
+export const DirectAccessNode = ({ data, selected, type }: NodeProps) => (
+  <NodeTooltip data={data} type={type}>
+    <div className={cn(
+      "relative group transition-all min-w-[160px] h-14",
+      selected && "scale-105 shadow-xl"
+    )}>
+      <Handle type="target" position={Position.Top} className="z-10" />
+      <svg width="100%" height="100%" viewBox="0 0 160 56" preserveAspectRatio="none">
+        <path d="M2 2 L146 2 A 12 26 0 0 1 146 54 L2 54 A 12 26 0 0 1 2 2 Z" fill="white" stroke="#0f172a" strokeWidth="2" />
+        <ellipse cx="146" cy="28" rx="12" ry="26" fill="white" stroke="#0f172a" strokeWidth="2" />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center pr-4">
+         <div className="text-[9px] font-black text-slate-400 uppercase leading-none mb-0.5">Direct Access</div>
+         <div className="text-xs font-bold text-slate-800 px-6 text-center leading-tight line-clamp-2">{data.label}</div>
+      </div>
+      <Handle type="source" position={Position.Bottom} className="z-10" />
+    </div>
+  </NodeTooltip>
+);
+
+export const DisplayNode = ({ data, selected, type }: NodeProps) => (
+  <NodeTooltip data={data} type={type}>
+    <div className={cn(
+      "relative group transition-all min-w-[160px] h-14",
+      selected && "scale-105 shadow-xl"
+    )}>
+      <Handle type="target" position={Position.Top} className="z-10" />
+      <svg width="100%" height="100%" viewBox="0 0 160 56" preserveAspectRatio="none">
+        <path d="M20 2 L158 2 L158 54 L20 54 L2 28 Z" fill="white" stroke="#0f172a" strokeWidth="2" />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center pl-4">
+         <div className="text-[9px] font-black text-slate-400 uppercase leading-none mb-0.5">Display</div>
+         <div className="text-xs font-bold text-slate-800 px-6 text-center leading-tight line-clamp-2">{data.label}</div>
+      </div>
+      <Handle type="source" position={Position.Bottom} className="z-10" />
+    </div>
+  </NodeTooltip>
+);
+
+export const LoopLimitNode = ({ data, selected, type }: NodeProps) => (
+  <NodeTooltip data={data} type={type}>
+    <div className={cn(
+      "relative group transition-all min-w-[160px] h-14",
+      selected && "scale-105 shadow-xl"
+    )}>
+      <Handle type="target" position={Position.Top} className="z-10" />
+      <svg width="100%" height="100%" viewBox="0 0 160 56" preserveAspectRatio="none">
+        <path d="M20 2 L140 2 L158 15 L158 54 L2 54 L2 15 Z" fill="white" stroke="#0f172a" strokeWidth="2" />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center pt-2">
+         <div className="text-[9px] font-black text-slate-400 uppercase leading-none mb-0.5">Loop Limit</div>
+         <div className="text-xs font-bold text-slate-800 px-6 text-center leading-tight line-clamp-2">{data.label}</div>
+      </div>
+      <Handle type="source" position={Position.Bottom} className="z-10" />
+    </div>
+  </NodeTooltip>
+);
+
+export const AnnotationNode = ({ data, selected, type }: NodeProps) => (
+  <NodeTooltip data={data} type={type}>
+    <div className={cn(
+      "relative group transition-all min-w-[140px] h-14",
+      selected && "scale-105"
+    )}>
+      <Handle type="target" position={Position.Top} className="z-10" />
+      <svg width="100%" height="100%" viewBox="0 0 140 56" preserveAspectRatio="none">
+        <path d="M40 2 L2 2 L2 54 L40 54" fill="none" stroke="#64748b" strokeWidth="2" strokeDasharray="4 4" />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-start justify-center pl-4 pr-2">
+         <div className="text-[8px] font-black text-slate-400 uppercase leading-none mb-0.5">Annotation</div>
+         <div className="text-xs italic text-slate-600 leading-tight line-clamp-2 text-left">{data.label}</div>
+      </div>
+      <Handle type="source" position={Position.Bottom} className="z-10" />
+    </div>
+  </NodeTooltip>
+);

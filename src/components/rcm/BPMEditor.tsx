@@ -21,7 +21,7 @@ import {
   FileText, Database, Activity, GitCommit, PlayCircle, StopCircle, 
   Save, AlertTriangle, ShieldCheck, Info, X, RefreshCw, Link as LinkIcon, Workflow, Trash2, 
   Search, PlusCircle, LayoutDashboard, ChevronRight, GripVertical, Check, ChevronsUpDown,
-  Layout
+  Layout, Layers, Hexagon, Monitor, Clock, HardDrive, Columns, CreditCard, Sliders, ArrowUp, ArrowDown, HelpCircle, Hash
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
@@ -51,7 +51,12 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { 
   StartEndNode, ActivityNode, ManualInputNode, ExternalProcessNode, 
   AutomatedActivityNode, DecisionNode, DocumentNode, ArchiveNode, 
-  DataMediaNode, OffPageRefNode, ReferenceNode, RiskControlBadge, SwimlaneNode 
+  DataMediaNode, OffPageRefNode, ReferenceNode, RiskControlBadge, SwimlaneNode,
+  AlternateProcessNode, DataNode, PredefinedProcessNode, InternalStorageNode,
+  MultiDocumentNode, PreparationNode, ManualOperationNode, CardNode,
+  PunchedTapeNode, SummingJunctionNode, OrNode, CollateNode, SortNode,
+  ExtractNode, MergeNode, StoredDataNode, DelayNode, SequentialAccessNode,
+  DirectAccessNode, DisplayNode, LoopLimitNode, AnnotationNode
 } from './nodes/BPMCustomNodes';
 import { BPMCanvasHeader, BPMCanvasFooter } from './nodes/BPMCanvasLayout';
 
@@ -92,6 +97,28 @@ const nodeTypes = {
   reference: ReferenceNode,
   'risk-control-badge': RiskControlBadge,
   swimlane: SwimlaneNode,
+  'alternate-process': AlternateProcessNode,
+  data: DataNode,
+  'predefined-process': PredefinedProcessNode,
+  'internal-storage': InternalStorageNode,
+  'multi-document': MultiDocumentNode,
+  preparation: PreparationNode,
+  'manual-operation': ManualOperationNode,
+  card: CardNode,
+  'punched-tape': PunchedTapeNode,
+  'summing-junction': SummingJunctionNode,
+  or: OrNode,
+  collate: CollateNode,
+  sort: SortNode,
+  extract: ExtractNode,
+  merge: MergeNode,
+  'stored-data': StoredDataNode,
+  delay: DelayNode,
+  'sequential-access': SequentialAccessNode,
+  'direct-access': DirectAccessNode,
+  display: DisplayNode,
+  'loop-limit': LoopLimitNode,
+  annotation: AnnotationNode,
   // Legacy / Helper types
   system: AutomatedActivityNode,
   'docked-risk': RiskControlBadge,
@@ -801,20 +828,124 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
                           }}><StopCircle className="h-5 w-5 text-rose-600" /></Button>
                        </div>
                     </div>
+                     <div className="space-y-3">
+                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest px-1">Process Elements</p>
+                        <ScrollArea className="h-[200px] pr-2 border border-slate-100 rounded-lg p-2 bg-slate-50/50">
+                           <div className="grid grid-cols-4 gap-2">
+                              {/* Row 1 */}
+                              <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100 bg-white text-slate-600 hover:text-slate-800" title={t('bpm:editor.nodes.activity')} onClick={() => createActivityNode('activity')}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><rect x="2" y="5" width="20" height="14" /></svg>
+                              </Button>
+                              <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100 bg-white text-slate-600 hover:text-slate-800" title={t('bpm:editor.nodes.alternateProcess')} onClick={() => createActivityNode('alternate-process')}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><rect x="2" y="5" width="20" height="14" rx="4" ry="4" /></svg>
+                              </Button>
+                              <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100 bg-white text-slate-600 hover:text-slate-800" title={t('bpm:editor.nodes.decision')} onClick={() => createActivityNode('decision')}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><path d="M12 2 L22 12 L12 22 L2 12 Z" /></svg>
+                              </Button>
+                              <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100 bg-white text-slate-600 hover:text-slate-800" title={t('bpm:editor.nodes.data')} onClick={() => createActivityNode('data')}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><path d="M5 5 L22 5 L19 19 L2 19 Z" /></svg>
+                              </Button>
 
-                    <div className="space-y-3">
-                       <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest px-1">Process Elements</p>
-                       <div className="grid grid-cols-4 gap-2">
-                          <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100" title={t('bpm:editor.nodes.activity')} onClick={() => createActivityNode('activity')}><Activity className="h-4 w-4 text-slate-600" /></Button>
-                          <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100" title={t('bpm:editor.nodes.manualInput')} onClick={() => createActivityNode('manual-input')}><Workflow className="h-4 w-4 text-slate-600" /></Button>
-                          <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg bg-slate-50 hover:bg-slate-100 border-slate-200" title={t('bpm:editor.nodes.automated')} onClick={() => createActivityNode('automated-activity')}><Database className="h-4 w-4 text-slate-700" /></Button>
-                          <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100" title={t('bpm:editor.nodes.decision')} onClick={() => createActivityNode('decision')}><GitCommit className="h-4 w-4 text-slate-600 rotate-90" /></Button>
-                          <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100" title={t('bpm:editor.nodes.output')} onClick={() => createActivityNode('output')}><LayoutDashboard className="h-4 w-4 text-slate-600" /></Button>
-                          <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100" title={t('bpm:editor.nodes.physical')} onClick={() => createActivityNode('document')}><FileText className="h-4 w-4 text-slate-600" /></Button>
-                          <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100" title={t('bpm:editor.nodes.archive')} onClick={() => createActivityNode('archive')}><Trash2 className="h-4 w-4 text-slate-600" /></Button>
-                          <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg bg-slate-50 hover:bg-slate-100 border-slate-200" title={t('bpm:editor.nodes.dataMedia')} onClick={() => createActivityNode('data-media')}><Database className="h-4 w-4 text-slate-700" /></Button>
-                       </div>
-                    </div>
+                              {/* Row 2 */}
+                              <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100 bg-white text-slate-600 hover:text-slate-800" title={t('bpm:editor.nodes.predefinedProcess')} onClick={() => createActivityNode('predefined-process')}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><rect x="2" y="5" width="20" height="14" /><line x1="6" y1="5" x2="6" y2="19" /><line x1="18" y1="5" x2="18" y2="19" /></svg>
+                              </Button>
+                              <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100 bg-white text-slate-600 hover:text-slate-800" title={t('bpm:editor.nodes.internalStorage')} onClick={() => createActivityNode('internal-storage')}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><rect x="2" y="5" width="20" height="14" /><line x1="6" y1="5" x2="6" y2="19" /><line x1="2" y1="9" x2="22" y2="9" /></svg>
+                              </Button>
+                              <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100 bg-white text-slate-600 hover:text-slate-800" title={t('bpm:editor.nodes.physical')} onClick={() => createActivityNode('document')}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><path d="M2 4 L22 4 L22 16 Q18 20 15 16 T8 16 T2 16 Z" /></svg>
+                              </Button>
+                              <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100 bg-white text-slate-600 hover:text-slate-800" title={t('bpm:editor.nodes.multiDocument')} onClick={() => createActivityNode('multi-document')}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><path d="M5 2 L21 2 L21 11 Q18 14 16 11 T11 11 T5 11 Z" stroke="#94a3b8" /><path d="M3 5 L19 5 L19 14 Q16 17 14 14 T9 14 T3 14 Z" stroke="#64748b" /><path d="M1 8 L17 8 L17 17 Q14 20 12 17 T7 17 T1 17 Z" /></svg>
+                              </Button>
+
+                              {/* Row 3 */}
+                              <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100 bg-white text-slate-600 hover:text-slate-800" title={t('bpm:editor.nodes.preparation')} onClick={() => createActivityNode('preparation')}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><path d="M6 5 L18 5 L22 12 L18 19 L6 19 L2 12 Z" /></svg>
+                              </Button>
+                              <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100 bg-white text-slate-600 hover:text-slate-800" title={t('bpm:editor.nodes.manualInput')} onClick={() => createActivityNode('manual-input')}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><path d="M2 8 L22 4 L22 19 L2 19 Z" /></svg>
+                              </Button>
+                              <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100 bg-white text-slate-600 hover:text-slate-800" title={t('bpm:editor.nodes.manualOperation')} onClick={() => createActivityNode('manual-operation')}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><path d="M2 5 L22 5 L18 19 L6 19 Z" /></svg>
+                              </Button>
+                              <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100 bg-white text-slate-600 hover:text-slate-800" title={t('bpm:editor.nodes.reference')} onClick={() => createActivityNode('reference')}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><circle cx="12" cy="12" r="8" /></svg>
+                              </Button>
+
+                              {/* Row 4 */}
+                              <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100 bg-white text-slate-600 hover:text-slate-800" title={t('bpm:editor.nodes.offPageRef')} onClick={() => createActivityNode('off-page-ref')}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><path d="M2 4 L22 4 L22 13 L12 20 L2 13 Z" /></svg>
+                              </Button>
+                              <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100 bg-white text-slate-600 hover:text-slate-800" title={t('bpm:editor.nodes.card')} onClick={() => createActivityNode('card')}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><path d="M6 5 L22 5 L22 19 L2 19 L2 9 Z" /></svg>
+                              </Button>
+                              <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100 bg-white text-slate-600 hover:text-slate-800" title={t('bpm:editor.nodes.punchedTape')} onClick={() => createActivityNode('punched-tape')}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><path d="M2 7 Q7 4 12 7 T22 7 L22 17 Q17 20 12 17 T2 17 Z" /></svg>
+                              </Button>
+                              <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100 bg-white text-slate-600 hover:text-slate-800" title={t('bpm:editor.nodes.summingJunction')} onClick={() => createActivityNode('summing-junction')}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><circle cx="12" cy="12" r="8" /><line x1="6.5" y1="6.5" x2="17.5" y2="17.5" /><line x1="6.5" y1="17.5" x2="17.5" y2="6.5" /></svg>
+                              </Button>
+
+                              {/* Row 5 */}
+                              <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100 bg-white text-slate-600 hover:text-slate-800" title={t('bpm:editor.nodes.or')} onClick={() => createActivityNode('or')}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><circle cx="12" cy="12" r="8" /><line x1="12" y1="4" x2="12" y2="20" /><line x1="4" y1="12" x2="20" y2="12" /></svg>
+                              </Button>
+                              <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100 bg-white text-slate-600 hover:text-slate-800" title={t('bpm:editor.nodes.collate')} onClick={() => createActivityNode('collate')}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><path d="M4 5 L20 5 L4 19 L20 19 Z" /></svg>
+                              </Button>
+                              <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100 bg-white text-slate-600 hover:text-slate-800" title={t('bpm:editor.nodes.sort')} onClick={() => createActivityNode('sort')}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><path d="M4 5 L20 5 L4 19 L20 19 Z" /><line x1="4" y1="12" x2="20" y2="12" /></svg>
+                              </Button>
+                              <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100 bg-white text-slate-600 hover:text-slate-800" title={t('bpm:editor.nodes.extract')} onClick={() => createActivityNode('extract')}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><path d="M12 4 L21 19 L3 19 Z" /></svg>
+                              </Button>
+
+                              {/* Row 6 */}
+                              <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100 bg-white text-slate-600 hover:text-slate-800" title={t('bpm:editor.nodes.merge')} onClick={() => createActivityNode('merge')}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><path d="M3 5 L21 5 L12 20 Z" /></svg>
+                              </Button>
+                              <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100 bg-white text-slate-600 hover:text-slate-800" title={t('bpm:editor.nodes.storedData')} onClick={() => createActivityNode('stored-data')}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><path d="M4 5 L17 5 A 3 7 0 0 1 17 19 L4 19 A 3 7 0 0 1 4 5 Z" /><path d="M4 5 A 3 7 0 0 0 4 19" /></svg>
+                              </Button>
+                              <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100 bg-white text-slate-600 hover:text-slate-800" title={t('bpm:editor.nodes.delay')} onClick={() => createActivityNode('delay')}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><path d="M3 5 L13 5 A 7 7 0 0 1 13 19 L3 19 Z" /></svg>
+                              </Button>
+                              <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100 bg-white text-slate-600 hover:text-slate-800" title={t('bpm:editor.nodes.sequentialAccess')} onClick={() => createActivityNode('sequential-access')}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><circle cx="10" cy="11" r="6" /><line x1="10" y1="17" x2="20" y2="17" /></svg>
+                              </Button>
+
+                              {/* Row 7 */}
+                              <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100 bg-white text-slate-600 hover:text-slate-800" title={t('bpm:editor.nodes.directAccess')} onClick={() => createActivityNode('direct-access')}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><path d="M2 5 L16 5 A 3 7 0 0 1 16 19 L2 19 A 3 7 0 0 1 2 5 Z" /><ellipse cx="16" cy="12" rx="3" ry="7" /></svg>
+                              </Button>
+                              <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100 bg-white text-slate-600 hover:text-slate-800" title={t('bpm:editor.nodes.display')} onClick={() => createActivityNode('display')}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><path d="M18 5 L4 5 L2 12 L4 19 L18 19 Z" /></svg>
+                              </Button>
+                              <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100 bg-white text-slate-600 hover:text-slate-800" title={t('bpm:editor.nodes.loopLimit')} onClick={() => createActivityNode('loop-limit')}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><path d="M5 5 L19 5 L22 9 L22 19 L2 19 L2 9 Z" /></svg>
+                              </Button>
+                              <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100 bg-white text-slate-600 hover:text-slate-800" title={t('bpm:editor.nodes.annotation')} onClick={() => createActivityNode('annotation')}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4" strokeDasharray="2 2"><path d="M12 4 L4 4 L4 20 L12 20" /></svg>
+                              </Button>
+
+                              {/* Standard System & Archive nodes */}
+                              <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700" title={t('bpm:editor.nodes.automated')} onClick={() => createActivityNode('automated-activity')}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><rect x="2" y="5" width="20" height="14" rx="2" ry="2" /></svg>
+                              </Button>
+                              <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100 bg-white text-slate-600 hover:text-slate-800" title={t('bpm:editor.nodes.archive')} onClick={() => createActivityNode('archive')}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><path d="M2 5 L22 5 L12 20 Z" /></svg>
+                              </Button>
+                              <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700" title={t('bpm:editor.nodes.dataMedia')} onClick={() => createActivityNode('data-media')}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><ellipse cx="12" cy="7" rx="8" ry="3" /><path d="M4 7 L4 17 A 8 3 0 0 0 20 17 L20 7" /></svg>
+                              </Button>
+                              <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100 bg-white text-slate-600 hover:text-slate-800" title={t('bpm:editor.nodes.output')} onClick={() => createActivityNode('output')}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><rect x="2" y="4" width="20" height="11" /><rect x="6" y="15" width="12" height="5" /></svg>
+                              </Button>
+                           </div>
+                        </ScrollArea>
+                     </div>
 
                     {/* Migration Backlog Section */}
                     <div className="space-y-3 pt-4 border-t border-slate-100">
@@ -986,6 +1117,72 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
                         } else if (node.type === 'document') {
                           shapeName = t('bpm:ocr.shapes.document');
                           iconBg = "bg-slate-50 border-slate-400 text-slate-600 rounded-b-xl";
+                        } else if (node.type === 'alternate-process') {
+                          shapeName = t('bpm:ocr.shapes.alternateProcess');
+                          iconBg = "bg-slate-50 border-slate-300 text-slate-700 rounded-lg";
+                        } else if (node.type === 'data') {
+                          shapeName = t('bpm:ocr.shapes.data');
+                          iconBg = "bg-slate-50 border-slate-300 text-slate-700 rounded-sm";
+                        } else if (node.type === 'predefined-process') {
+                          shapeName = t('bpm:ocr.shapes.predefinedProcess');
+                          iconBg = "bg-slate-50 border-slate-300 text-slate-700 border-l-4 border-r-4";
+                        } else if (node.type === 'internal-storage') {
+                          shapeName = t('bpm:ocr.shapes.internalStorage');
+                          iconBg = "bg-slate-50 border-slate-300 text-slate-700";
+                        } else if (node.type === 'multi-document') {
+                          shapeName = t('bpm:ocr.shapes.multiDocument');
+                          iconBg = "bg-slate-50 border-slate-300 text-slate-700 shadow-sm";
+                        } else if (node.type === 'preparation') {
+                          shapeName = t('bpm:ocr.shapes.preparation');
+                          iconBg = "bg-slate-50 border-slate-300 text-slate-700 rounded-[50%]";
+                        } else if (node.type === 'manual-operation') {
+                          shapeName = t('bpm:ocr.shapes.manualOperation');
+                          iconBg = "bg-slate-50 border-slate-300 text-slate-700";
+                        } else if (node.type === 'card') {
+                          shapeName = t('bpm:ocr.shapes.card');
+                          iconBg = "bg-slate-50 border-slate-300 text-slate-700 rounded-tl-none";
+                        } else if (node.type === 'punched-tape') {
+                          shapeName = t('bpm:ocr.shapes.punchedTape');
+                          iconBg = "bg-slate-50 border-slate-300 text-slate-700";
+                        } else if (node.type === 'summing-junction') {
+                          shapeName = t('bpm:ocr.shapes.summingJunction');
+                          iconBg = "bg-slate-50 border-slate-300 text-slate-700 rounded-full";
+                        } else if (node.type === 'or') {
+                          shapeName = t('bpm:ocr.shapes.or');
+                          iconBg = "bg-slate-50 border-slate-300 text-slate-700 rounded-full";
+                        } else if (node.type === 'collate') {
+                          shapeName = t('bpm:ocr.shapes.collate');
+                          iconBg = "bg-slate-50 border-slate-300 text-slate-700";
+                        } else if (node.type === 'sort') {
+                          shapeName = t('bpm:ocr.shapes.sort');
+                          iconBg = "bg-slate-50 border-slate-300 text-slate-700";
+                        } else if (node.type === 'extract') {
+                          shapeName = t('bpm:ocr.shapes.extract');
+                          iconBg = "bg-slate-50 border-slate-300 text-slate-700";
+                        } else if (node.type === 'merge') {
+                          shapeName = t('bpm:ocr.shapes.merge');
+                          iconBg = "bg-slate-50 border-slate-300 text-slate-700";
+                        } else if (node.type === 'stored-data') {
+                          shapeName = t('bpm:ocr.shapes.storedData');
+                          iconBg = "bg-slate-50 border-slate-300 text-slate-700 rounded-r-full";
+                        } else if (node.type === 'delay') {
+                          shapeName = t('bpm:ocr.shapes.delay');
+                          iconBg = "bg-slate-50 border-slate-300 text-slate-700 rounded-r-full";
+                        } else if (node.type === 'sequential-access') {
+                          shapeName = t('bpm:ocr.shapes.sequentialAccess');
+                          iconBg = "bg-slate-50 border-slate-300 text-slate-700 rounded-full";
+                        } else if (node.type === 'direct-access') {
+                          shapeName = t('bpm:ocr.shapes.directAccess');
+                          iconBg = "bg-slate-50 border-slate-300 text-slate-700 rounded-r-full";
+                        } else if (node.type === 'display') {
+                          shapeName = t('bpm:ocr.shapes.display');
+                          iconBg = "bg-slate-50 border-slate-300 text-slate-700 rounded-l-full";
+                        } else if (node.type === 'loop-limit') {
+                          shapeName = t('bpm:ocr.shapes.loopLimit');
+                          iconBg = "bg-slate-50 border-slate-300 text-slate-700";
+                        } else if (node.type === 'annotation') {
+                          shapeName = t('bpm:ocr.shapes.annotation');
+                          iconBg = "bg-slate-50 border-slate-300 text-slate-700 border-dashed";
                         }
 
                         return (
@@ -1015,6 +1212,28 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
                                   <option value="archive">{t('bpm:ocr.options.archive')}</option>
                                   <option value="data-media">{t('bpm:ocr.options.dataMedia')}</option>
                                   <option value="document">{t('bpm:ocr.options.document')}</option>
+                                  <option value="alternate-process">{t('bpm:ocr.options.alternate-process')}</option>
+                                  <option value="data">{t('bpm:ocr.options.data')}</option>
+                                  <option value="predefined-process">{t('bpm:ocr.options.predefined-process')}</option>
+                                  <option value="internal-storage">{t('bpm:ocr.options.internal-storage')}</option>
+                                  <option value="multi-document">{t('bpm:ocr.options.multi-document')}</option>
+                                  <option value="preparation">{t('bpm:ocr.options.preparation')}</option>
+                                  <option value="manual-operation">{t('bpm:ocr.options.manual-operation')}</option>
+                                  <option value="card">{t('bpm:ocr.options.card')}</option>
+                                  <option value="punched-tape">{t('bpm:ocr.options.punched-tape')}</option>
+                                  <option value="summing-junction">{t('bpm:ocr.options.summing-junction')}</option>
+                                  <option value="or">{t('bpm:ocr.options.or')}</option>
+                                  <option value="collate">{t('bpm:ocr.options.collate')}</option>
+                                  <option value="sort">{t('bpm:ocr.options.sort')}</option>
+                                  <option value="extract">{t('bpm:ocr.options.extract')}</option>
+                                  <option value="merge">{t('bpm:ocr.options.merge')}</option>
+                                  <option value="stored-data">{t('bpm:ocr.options.stored-data')}</option>
+                                  <option value="delay">{t('bpm:ocr.options.delay')}</option>
+                                  <option value="sequential-access">{t('bpm:ocr.options.sequential-access')}</option>
+                                  <option value="direct-access">{t('bpm:ocr.options.direct-access')}</option>
+                                  <option value="display">{t('bpm:ocr.options.display')}</option>
+                                  <option value="loop-limit">{t('bpm:ocr.options.loop-limit')}</option>
+                                  <option value="annotation">{t('bpm:ocr.options.annotation')}</option>
                                 </select>
                               </div>
                               <Input 
