@@ -242,5 +242,52 @@
       "error": "Gagal mengekspor diagram. Silahkan coba lagi.",
       "history": "Riwayat Ekspor"
     }
+  },
+  "ocr": {
+    "importButton": "Impor Alur (OCR)",
+    "importTitle": "Impor Diagram Alur Proses Bisnis (AI OCR)",
+    "reviewTitle": "Tinjau & Sesuaikan Alur Proses Bisnis",
+    "originalImage": "Gambar Asli",
+    "shapeDetection": "Deteksi Bentuk (SK-5)",
+    "nodesCount": "{{count}} Nodes",
+    "edgesCount": "{{count}} Edges",
+    "adjustmentInstructions": "Sesuaikan nama aktivitas, jenis bentuk diagram, atau hapus elemen jika terdeteksi kurang tepat.",
+    "analyzing": "Menganalisis Alur Diagram...",
+    "aiMapping": "AI sedang memetakan nodes, edges, dan koordinat.",
+    "uploadTitle": "Unggah file diagram alur proses",
+    "uploadDesc": "Mendukung format PDF, PNG, atau JPG. Halaman pertama PDF atau resolusi gambar akan disesuaikan secara otomatis.",
+    "shapes": {
+      "start": "Mulai (Oval)",
+      "end": "Selesai (Oval)",
+      "activity": "Aktivitas (Manual)",
+      "system": "Sistem (Otomatis)",
+      "decision": "Keputusan (Diamond)",
+      "archive": "Arsip (Segitiga Terbalik)",
+      "dataMedia": "Data Media (Silinder)",
+      "document": "Keluaran Dokumen"
+    },
+    "options": {
+      "start": "Oval (Mulai)",
+      "end": "Oval (Selesai)",
+      "activity": "Rectangle (Manual)",
+      "system": "Rectangle (Sistem)",
+      "decision": "Diamond (Keputusan)",
+      "archive": "Segitiga Terbalik (Arsip)",
+      "dataMedia": "Silinder (Media Data)",
+      "document": "Keluaran Dokumen"
+    },
+    "buttons": {
+      "retry": "Ulangi",
+      "process": "Proses OCR AI",
+      "chooseFile": "Pilih File",
+      "cancel": "Batal",
+      "saveApply": "Simpan & Terapkan"
+    },
+    "toast": {
+      "fileError": "Gagal memproses file: {{message}}",
+      "ocrSuccess": "Diagram berhasil diterjemahkan! Silakan tinjau hasilnya.",
+      "ocrError": "AI OCR Gagal: {{message}}",
+      "applySuccess": "Diagram berhasil diterapkan ke workspace canvas."
+    }
   }
 }

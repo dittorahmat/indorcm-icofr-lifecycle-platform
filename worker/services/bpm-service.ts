@@ -1,11 +1,33 @@
 import { 
   bpmDiagrams, bpmProcesses, rcms, rcmControls, controls, bpmNodeRcms,
-  organization, auditLogs, notifications, csaRecords
+  organization, auditLogs, notifications, csaRecords, bpmProcessGlCodes
 } from '../db/schema';
-import { eq, and, inArray, sql, ne, desc, SQL, isNull } from 'drizzle-orm';
+import { eq, and, or, inArray, sql, ne, desc, SQL, isNull, like } from 'drizzle-orm';
 import type { DrizzleDb } from '../db';
 import type { BPMProcess, BPMDiagram } from "@shared/types";
 import { AuditService } from './audit-service';
+
+export function extractBaseId(id: string): string {
+  if (!id) return id;
+  const match = id.match(/^([RC]-\d+)(?:-[\w]+)?$/i);
+  if (match) {
+    return match[1];
+  }
+  const parts = id.split('-');
+  if (parts.length > 1) {
+    const lastPart = parts[parts.length - 1];
+    if (/^\d+$/.test(lastPart) || lastPart.length >= 4) {
+      return parts.slice(0, -1).join('-');
+    }
+  }
+  return id;
+}
+
+export function makeGlSpecificId(baseId: string, glCode: string): string {
+  if (!glCode) return baseId;
+  const base = extractBaseId(baseId);
+  return `${base}-${glCode}`;
+}
 
 export class BpmService {
   private auditService: AuditService;
@@ -22,25 +44,46 @@ export class BpmService {
     return await this.db.select().from(bpmDiagrams).where(conditions);
   }
 
-  async getDiagramById(orgId: string, id: string) {
+  async getDiagramById(orgId: string, id: string, noGL?: string) {
     const diags = await this.db.select().from(bpmDiagrams).where(and(eq(bpmDiagrams.id, id), eq(bpmDiagrams.organizationId, orgId))).limit(1);
     if (diags.length === 0) return null;
     
     const diag = diags[0];
     const nodes = (diag.nodes as any[]) || [];
 
-    const hydratedNodes = await this.hydrateDiagramNodes(id, nodes);
+    const hydratedNodes = await this.hydrateDiagramNodes(id, nodes, noGL);
+
+    const matchedProcesses = await this.db.select().from(bpmProcesses)
+      .where(and(
+        eq(bpmProcesses.organizationId, orgId),
+        diag.year ? eq(bpmProcesses.year, diag.year) : isNull(bpmProcesses.year),
+        sql`TRIM(LOWER(${bpmProcesses.name})) = TRIM(LOWER(${diag.subProcess}))`
+      )).limit(1);
+
+    let noGLs: string[] = [];
+    if (matchedProcesses.length > 0) {
+      const bpmProcessId = matchedProcesses[0].id;
+      const gls = await this.db.select({ noGL: bpmProcessGlCodes.noGL })
+        .from(bpmProcessGlCodes)
+        .where(eq(bpmProcessGlCodes.bpmProcessId, bpmProcessId));
+      noGLs = gls.map(g => g.noGL);
+      
+      if (noGLs.length === 0 && matchedProcesses[0].noGL) {
+        noGLs = [matchedProcesses[0].noGL];
+      }
+    }
 
     return {
       ...diag,
-      nodes: hydratedNodes
+      nodes: hydratedNodes,
+      noGLs
     };
   }
 
-  private async hydrateDiagramNodes(diagramId: string, nodes: any[]) {
+  private async hydrateDiagramNodes(diagramId: string, nodes: any[], noGL?: string) {
     return await Promise.all(nodes.map(async (node: any) => {
       if (node.type === 'activity' || node.type === 'automated-activity') {
-        const mappings = await this.db.select({
+        const allMappings = await this.db.select({
           risk: rcms,
           map: rcmControls
         })
@@ -52,12 +95,37 @@ export class BpmService {
           eq(bpmNodeRcms.nodeId, node.id)
         ));
 
-        const regulatoryPairs = mappings.map((m: any) => ({
+        let selectedMappings = allMappings;
+        if (noGL && allMappings.length > 0) {
+          const glMappings = allMappings.filter(m => m.risk.id.endsWith(`-${noGL}`));
+          if (glMappings.length > 0) {
+            selectedMappings = glMappings;
+          } else {
+            selectedMappings = allMappings.map(m => {
+              const adaptedRiskId = makeGlSpecificId(m.risk.id, noGL);
+              const adaptedControlId = m.map?.controlId ? makeGlSpecificId(m.map.controlId, noGL) : `C-TBD-${noGL}`;
+              return {
+                ...m,
+                risk: {
+                  ...m.risk,
+                  id: adaptedRiskId
+                },
+                map: m.map ? {
+                  ...m.map,
+                  rcmId: adaptedRiskId,
+                  controlId: adaptedControlId
+                } : null
+              };
+            });
+          }
+        }
+
+        const regulatoryPairs = selectedMappings.map((m: any) => ({
           riskId: m.risk.id,
           riskDescription: m.risk.riskDescription,
           isFraudRelated: m.risk.isFraudRelated,
           riskRating: m.risk.riskRating,
-          controlId: m.map?.controlId || 'C-TBD',
+          controlId: m.map?.controlId || (noGL ? `C-TBD-${noGL}` : 'C-TBD'),
           controlDescription: m.map?.controlDescription || '',
           isKeyControl: m.map?.isKeyControl || false,
           classification: m.map?.controlType || 'TLC',
@@ -129,7 +197,35 @@ export class BpmService {
       )).limit(1);
     
     const bpmProcessId = matchedProcesses.length > 0 ? matchedProcesses[0].id : null;
-    const noGL = matchedProcesses.length > 0 ? matchedProcesses[0].noGL : null;
+    let noGL = matchedProcesses.length > 0 ? matchedProcesses[0].noGL : "";
+    let currentGLCodes: string[] = [];
+
+    if (bpmProcessId && body.noGLs !== undefined) {
+      await this.db.delete(bpmProcessGlCodes).where(eq(bpmProcessGlCodes.bpmProcessId, bpmProcessId));
+      if (Array.isArray(body.noGLs) && body.noGLs.length > 0) {
+        for (const glCode of body.noGLs) {
+          await this.db.insert(bpmProcessGlCodes).values({
+            id: crypto.randomUUID(),
+            organizationId: orgId,
+            bpmProcessId,
+            noGL: glCode
+          });
+        }
+        noGL = body.noGLs[0];
+        await this.db.update(bpmProcesses).set({ noGL }).where(eq(bpmProcesses.id, bpmProcessId));
+        currentGLCodes = body.noGLs;
+      }
+    } else if (bpmProcessId) {
+      const existingGLs = await this.db.select({ noGL: bpmProcessGlCodes.noGL })
+        .from(bpmProcessGlCodes)
+        .where(eq(bpmProcessGlCodes.bpmProcessId, bpmProcessId));
+      currentGLCodes = existingGLs.map(g => g.noGL);
+      if (currentGLCodes.length === 0 && noGL) {
+        currentGLCodes = [noGL];
+      }
+    }
+
+    const glCodesToSync = currentGLCodes.length > 0 ? currentGLCodes : [""];
 
     // 3. Clear existing node-RCM mappings for this diagram
     await this.db.delete(bpmNodeRcms).where(eq(bpmNodeRcms.diagramId, id));
@@ -139,10 +235,10 @@ export class BpmService {
 
     // 4. Sync Risks and Controls from Nodes
     const { activeRiskControlPairs, activeRiskIds, activeControlIds } = 
-      await this.syncRisksAndControlsFromNodes(orgId, id, nodes, bpmProcessId, noGL, body.name, body.subProcess, diagramYear);
+      await this.syncRisksAndControlsFromNodes(orgId, id, nodes, bpmProcessId, glCodesToSync, body.name, body.subProcess, diagramYear);
 
     // 5. Sync from Edges (Risk -> Control)
-    await this.syncMappingsFromEdges(orgId, edges, nodes, activeRiskControlPairs);
+    await this.syncMappingsFromEdges(orgId, edges, nodes, activeRiskControlPairs, glCodesToSync);
 
     // 6, 7, 8. Cleanup stale data
     await this.cleanupStaleData(orgId, id, activeRiskIds, activeControlIds, activeRiskControlPairs);
@@ -184,7 +280,7 @@ export class BpmService {
     diagramId: string, 
     nodes: any[], 
     bpmProcessId: string | null, 
-    noGL: string | null, 
+    glCodes: string[], 
     processName: string, 
     subProcessName: string,
     year: number | null
@@ -200,17 +296,46 @@ export class BpmService {
 
       if ((node.type === 'activity' || node.type === 'automated-activity') && nodePairs.length > 0) {
         for (const reg of nodePairs) {
-          const riskId = reg.riskId;
-          const ctrlId = reg.controlId;
+          const rawRiskId = reg.riskId;
+          const rawCtrlId = reg.controlId;
 
-          if (riskId && ctrlId) {
-            activeRiskIds.add(riskId);
-            activeControlIds.add(ctrlId);
-            activeRiskControlPairs.add(`${riskId}:${ctrlId}`);
-            
-            await this.syncRisk(orgId, diagramId, riskId, reg, processName, subProcessName, year);
-            await this.syncControl(orgId, ctrlId, riskId, reg, bpmProcessId, noGL, processName, subProcessName, year, node.data?.label);
-            await this.syncRcmControlMapping(orgId, riskId, ctrlId, reg, year, node.data?.label);
+          if (rawRiskId && rawCtrlId) {
+            const baseRiskId = extractBaseId(rawRiskId);
+            const baseCtrlId = extractBaseId(rawCtrlId);
+
+            for (const gl of glCodes) {
+              const riskId = makeGlSpecificId(baseRiskId, gl);
+              const ctrlId = makeGlSpecificId(baseCtrlId, gl);
+
+              activeRiskIds.add(riskId);
+              activeControlIds.add(ctrlId);
+              activeRiskControlPairs.add(`${riskId}:${ctrlId}`);
+              
+              await this.syncRisk(orgId, diagramId, riskId, reg, processName, subProcessName, year);
+              await this.syncControl(orgId, ctrlId, riskId, reg, bpmProcessId, gl || null, processName, subProcessName, year, node.data?.label);
+              await this.syncRcmControlMapping(orgId, riskId, ctrlId, reg, year, node.data?.label);
+
+              if (!insertedRiskIdsForNode.has(riskId)) {
+                await this.db.insert(bpmNodeRcms).values({
+                  id: crypto.randomUUID(),
+                  organizationId: orgId,
+                  diagramId,
+                  nodeId: node.id,
+                  rcmId: riskId
+                });
+                insertedRiskIdsForNode.add(riskId);
+              }
+            }
+          }
+        }
+      }
+
+      // Legacy support for nodes with only .risks
+      if ((node.type === 'activity' || node.type === 'automated-activity') && node.data?.risks && !node.data?.regulatoryPairs && !node.data?.regulatoryData) {
+        for (const riskEntry of node.data.risks) {
+          const baseRiskId = extractBaseId(riskEntry.rcmId);
+          for (const gl of glCodes) {
+            const riskId = makeGlSpecificId(baseRiskId, gl);
 
             if (!insertedRiskIdsForNode.has(riskId)) {
               await this.db.insert(bpmNodeRcms).values({
@@ -222,30 +347,15 @@ export class BpmService {
               });
               insertedRiskIdsForNode.add(riskId);
             }
-          }
-        }
-      }
 
-      // Legacy support for nodes with only .risks
-      if ((node.type === 'activity' || node.type === 'automated-activity') && node.data?.risks && !node.data?.regulatoryPairs && !node.data?.regulatoryData) {
-        for (const riskEntry of node.data.risks) {
-          if (!insertedRiskIdsForNode.has(riskEntry.rcmId)) {
-            await this.db.insert(bpmNodeRcms).values({
-              id: crypto.randomUUID(),
-              organizationId: orgId,
-              diagramId,
-              nodeId: node.id,
-              rcmId: riskEntry.rcmId
-            });
-            insertedRiskIdsForNode.add(riskEntry.rcmId);
-          }
-
-          if (riskEntry.controlIds) {
-            riskEntry.controlIds.forEach((ctrlId: string) => {
-              activeRiskControlPairs.add(`${riskEntry.rcmId}:${ctrlId}`);
-              activeRiskIds.add(riskEntry.rcmId);
-              activeControlIds.add(ctrlId);
-            });
+            if (riskEntry.controlIds) {
+              riskEntry.controlIds.forEach((ctrlIdEntry: string) => {
+                const ctrlId = makeGlSpecificId(extractBaseId(ctrlIdEntry), gl);
+                activeRiskControlPairs.add(`${riskId}:${ctrlId}`);
+                activeRiskIds.add(riskId);
+                activeControlIds.add(ctrlId);
+              });
+            }
           }
         }
       }
@@ -358,15 +468,21 @@ export class BpmService {
     }
   }
 
-  private async syncMappingsFromEdges(orgId: string, edges: any[], nodes: any[], activeRiskControlPairs: Set<string>) {
+  private async syncMappingsFromEdges(orgId: string, edges: any[], nodes: any[], activeRiskControlPairs: Set<string>, glCodes: string[]) {
     for (const edge of edges) {
       const sourceNode = nodes.find((n: any) => n.id === edge.source);
       const targetNode = nodes.find((n: any) => n.id === edge.target);
 
       if (sourceNode?.type === 'risk' && targetNode?.type === 'control') {
-        const rcmId = sourceNode.data?.rcmId;
-        const ctrlId = targetNode.data?.controlId;
-        if (rcmId && ctrlId) activeRiskControlPairs.add(`${rcmId}:${ctrlId}`);
+        const rawRcmId = sourceNode.data?.rcmId;
+        const rawCtrlId = targetNode.data?.controlId;
+        if (rawRcmId && rawCtrlId) {
+          const baseRiskId = extractBaseId(rawRcmId);
+          const baseCtrlId = extractBaseId(rawCtrlId);
+          for (const gl of glCodes) {
+            activeRiskControlPairs.add(`${makeGlSpecificId(baseRiskId, gl)}:${makeGlSpecificId(baseCtrlId, gl)}`);
+          }
+        }
       }
     }
 
@@ -458,7 +574,8 @@ export class BpmService {
       .where(eq(bpmNodeRcms.diagramId, diagramId))
       .groupBy(bpmNodeRcms.rcmId);
     
-    const riskCount = linkedRisks.length;
+    const uniqueBaseRiskIds = new Set(linkedRisks.map((r: any) => extractBaseId(r.id)));
+    const riskCount = uniqueBaseRiskIds.size;
     const uniqueRiskIds = linkedRisks.map((r: any) => r.id);
     
     let controlCount = 0;
@@ -470,7 +587,8 @@ export class BpmService {
           eq(rcmControls.organizationId, orgId)
         ))
         .groupBy(rcmControls.controlId);
-      controlCount = linkedCtrls.length;
+      const uniqueBaseControlIds = new Set(linkedCtrls.map((c: any) => extractBaseId(c.id)));
+      controlCount = uniqueBaseControlIds.size;
     }
 
     const diagResult = await this.db.select().from(bpmDiagrams).where(eq(bpmDiagrams.id, diagramId)).limit(1);
@@ -520,6 +638,7 @@ export class BpmService {
   }
 
   async getDiagramByGL(orgId: string, noGL: string, subProcessName?: string) {
+    let diag: any = null;
     if (subProcessName) {
       const diagrams = await this.db.select().from(bpmDiagrams)
         .where(and(
@@ -527,44 +646,73 @@ export class BpmService {
           eq(bpmDiagrams.subProcess, subProcessName)
         )).limit(1);
 
-      if (diagrams.length > 0) return diagrams[0];
+      if (diagrams.length > 0) {
+        diag = diagrams[0];
+      }
     }
 
-    const processes = await this.db.select().from(bpmProcesses)
-      .where(and(
-        eq(bpmProcesses.organizationId, orgId),
-        eq(bpmProcesses.noGL, noGL)
-      )).limit(1);
+    if (!diag) {
+      const processes = await this.db.select().from(bpmProcesses)
+        .where(and(
+          eq(bpmProcesses.organizationId, orgId),
+          eq(bpmProcesses.noGL, noGL)
+        )).limit(1);
 
-    if (processes.length === 0) return null;
+      if (processes.length > 0) {
+        const process = processes[0];
+        const diagrams = await this.db.select().from(bpmDiagrams)
+          .where(and(
+            eq(bpmDiagrams.organizationId, orgId),
+            eq(bpmDiagrams.subProcess, process.name)
+          )).limit(1);
 
-    const process = processes[0];
-
-    const diagrams = await this.db.select().from(bpmDiagrams)
-      .where(and(
-        eq(bpmDiagrams.organizationId, orgId),
-        eq(bpmDiagrams.subProcess, process.name)
-      )).limit(1);
-
-    if (diagrams.length === 0) {
-        const byName = await this.db.select().from(bpmDiagrams)
+        if (diagrams.length > 0) {
+          diag = diagrams[0];
+        } else {
+          const byName = await this.db.select().from(bpmDiagrams)
             .where(and(
-                eq(bpmDiagrams.organizationId, orgId),
-                eq(bpmDiagrams.name, process.name)
+              eq(bpmDiagrams.organizationId, orgId),
+              eq(bpmDiagrams.name, process.name)
             )).limit(1);
 
-        if (byName.length === 0) return null;
-        return byName[0];
+          if (byName.length > 0) diag = byName[0];
+        }
+      }
     }
 
-    return diagrams[0];
+    if (!diag) return null;
+
+    const nodes = (diag.nodes as any[]) || [];
+    const hydratedNodes = await this.hydrateDiagramNodes(diag.id, nodes, noGL);
+
+    return {
+      ...diag,
+      nodes: hydratedNodes
+    };
   }
 
   async getAllProcesses(orgId: string, noGL?: string, id?: string, year?: number) {
     let conditions: SQL = eq(bpmProcesses.organizationId, orgId);
     if (id) conditions = and(conditions, eq(bpmProcesses.id, id)) as SQL;
-    if (noGL) conditions = and(conditions, eq(bpmProcesses.noGL, noGL)) as SQL;
     if (year) conditions = and(conditions, eq(bpmProcesses.year, year)) as SQL;
+
+    if (noGL) {
+      const mappings = await this.db.select({ id: bpmProcessGlCodes.bpmProcessId })
+        .from(bpmProcessGlCodes)
+        .where(and(
+          eq(bpmProcessGlCodes.organizationId, orgId),
+          eq(bpmProcessGlCodes.noGL, noGL)
+        ));
+      const mappedIds = mappings.map(m => m.id);
+
+      conditions = and(
+        conditions,
+        or(
+          eq(bpmProcesses.noGL, noGL),
+          mappedIds.length > 0 ? inArray(bpmProcesses.id, mappedIds) : sql`false`
+        )
+      ) as SQL;
+    }
 
     return await this.db.select({
       id: bpmProcesses.id,

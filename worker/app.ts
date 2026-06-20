@@ -215,7 +215,9 @@ export const createApp = () => {
     }
 
     if (!session) {
-      return c.json({ success: false, error: 'Unauthorized' }, 401);
+      // Use 403 Forbidden instead of 401 in development to bypass the undici 401 POST proxy crash bug in Miniflare
+      const isDev = c.env.SKIP_LICENSE === 'true' || !c.env.LICENSE_PUBLIC_KEY;
+      return c.json({ success: false, error: 'Unauthorized' }, isDev ? 403 : 401);
     }
 
     let activeOrgId = (session.session as any).activeOrganizationId;

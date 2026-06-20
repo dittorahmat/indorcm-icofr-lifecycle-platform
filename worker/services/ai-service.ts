@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI, Part } from "@google/generative-ai";
 import { sql } from "drizzle-orm";
 import { documentChunks, documents } from "../db/schema";
 import type { DrizzleDb } from "../db";
@@ -101,29 +101,66 @@ export class AIService {
   }
 
   /**
-   * Generates a chat response.
+   * Generates a chat response. Supports multimodal messages and structured JSON output.
    */
   async generateChatResponse(params: {
     systemInstruction?: string;
-    messages: Array<{ role: string; content: string }>;
+    messages: Array<{ role: string; content: string | any[] }>;
     tools?: any[];
+    responseSchema?: any;
   }): Promise<{ content: string; toolCalls?: any[] }> {
+    // Helper to parse data URI into base64 data and mimeType
+    const parseDataUri = (dataUri: string) => {
+      const match = dataUri.match(/^data:([^;]+);base64,(.+)$/);
+      if (!match) throw new Error("Invalid image data URI format");
+      return { mimeType: match[1], data: match[2] };
+    };
+
+    // Helper to map content (string or array) to Gemini Parts format
+    const mapContentToGeminiParts = (content: string | any[]): Part[] => {
+      if (typeof content === "string") {
+        return [{ text: content }];
+      }
+      return content.map(part => {
+        if (part.type === "text") {
+          return { text: part.text };
+        }
+        if (part.type === "image_url" && part.image_url?.url) {
+          try {
+            const { mimeType, data } = parseDataUri(part.image_url.url);
+            return {
+              inlineData: { data, mimeType }
+            };
+          } catch (e: any) {
+            console.error("[AI Service] Failed to parse image URI:", e.message);
+            return { text: "[Image Parse Failed]" };
+          }
+        }
+        return { text: "" };
+      }) as Part[];
+    };
+
     if (this.config.provider === "gemini") {
       const model = this.genAI!.getGenerativeModel({
         model: this.config.chatModel || "gemini-2.5-flash-lite",
         systemInstruction: params.systemInstruction,
         tools: params.tools ? [{ functionDeclarations: params.tools }] : undefined,
+        generationConfig: params.responseSchema ? {
+          responseMimeType: "application/json",
+          responseSchema: params.responseSchema,
+        } : undefined,
       });
 
       const chat = model.startChat({
         history: params.messages.slice(0, -1).map(m => ({
           role: m.role === "user" ? "user" : "model",
-          parts: [{ text: m.content }],
+          parts: mapContentToGeminiParts(m.content),
         })),
       });
 
       const lastMessage = params.messages[params.messages.length - 1].content;
-      const result = await chat.sendMessage(lastMessage);
+      const lastMessageParts = mapContentToGeminiParts(lastMessage);
+      const result = await chat.sendMessage(lastMessageParts);
       const response = await result.response;
       
       return {
@@ -131,7 +168,7 @@ export class AIService {
         toolCalls: response.functionCalls(),
       };
     } else {
-      // OpenAI-compatible
+      // OpenAI-compatible (supports both text and multimodal content array formats)
       const messages = [];
       if (params.systemInstruction) {
         messages.push({ role: "system", content: params.systemInstruction });
@@ -148,6 +185,9 @@ export class AIService {
           model: this.config.chatModel || "gemma2",
           messages,
           tools: params.tools?.map(t => ({ type: "function", function: t })),
+          response_format: params.responseSchema ? {
+            type: "json_object"
+          } : undefined,
         }),
       });
 

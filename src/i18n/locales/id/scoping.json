@@ -178,6 +178,8 @@
   },
   "grid": {
     "entityCode": "Kode Entitas",
+    "parentEntity": "Entitas Induk",
+    "entity": "Entitas",
     "fsli": "FSLI",
     "accountCode": "Kode Akun",
     "accountDesc": "Deskripsi Akun",

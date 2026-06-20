@@ -178,6 +178,8 @@
   },
   "grid": {
     "entityCode": "Entity Code",
+    "parentEntity": "Parent Entity",
+    "entity": "Entity",
     "fsli": "FSLI",
     "accountCode": "Account Code",
     "accountDesc": "Account Description",

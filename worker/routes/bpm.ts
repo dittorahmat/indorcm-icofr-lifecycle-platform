@@ -4,6 +4,8 @@ import { ok, bad, notFound } from '../lib/utils';
 import { getDb } from '../db';
 import { BpmService } from "../services/bpm-service";
 import { rbac } from "../lib/guard";
+import { AIService } from "../services/ai-service";
+import { SchemaType } from "@google/generative-ai";
 
 const bpm = new Hono<HonoEnv>();
 
@@ -24,8 +26,9 @@ bpm.get('/bpm-diagrams/:id', async (c) => {
   const bpmService = new BpmService(db);
   const id = c.req.param('id');
   const orgId = c.get('organizationId')!;
+  const noGL = c.req.query('noGL');
   
-  const diagram = await bpmService.getDiagramById(orgId, id!);
+  const diagram = await bpmService.getDiagramById(orgId, id!, noGL);
   if (!diagram) return notFound(c);
   
   return ok(c, diagram);
@@ -80,6 +83,130 @@ bpm.get('/bpm-diagrams/by-gl/:noGL', async (c) => {
   if (!diagram) return notFound(c, 'Diagram not found');
 
   return ok(c, diagram);
+});
+
+bpm.post('/bpm-diagrams/ocr', rbac(['Line 1', 'Admin']), async (c) => {
+  const apiKey = c.env.GEMINI_API_KEY;
+  if (!apiKey || apiKey === 'YOUR_GEMINI_API_KEY_HERE') {
+    return bad(c, 'AI API Key is not configured.');
+  }
+
+  const body = await c.req.json<{ image: string }>();
+  if (!body.image) {
+    return bad(c, 'Image data is required');
+  }
+
+  const aiService = new AIService({
+    provider: (c.env.AI_PROVIDER as any) || "gemini",
+    apiKey: apiKey,
+    baseUrl: c.env.AI_BASE_URL,
+    embeddingModel: c.env.AI_EMBEDDING_MODEL,
+    chatModel: c.env.AI_CHAT_MODEL,
+  });
+
+  const systemInstruction = `Anda adalah sistem OCR Diagram dan Penterjemah Alur Proses Bisnis (BPMN) sesuai Regulasi SK-5/DKU.MBU/11/2024.
+Tugas Anda adalah mendeteksi semua simbol alur (nodes), label teks di dalamnya, koordinat letak relatif (x dan y, dinormalisasi ke range 0 - 1000), serta panah penghubung (edges) antara nodes tersebut.
+
+PANDUAN KLASIFIKASI BENTUK VISUAL:
+- Oval / Pill Shape -> Tipe: "start" atau "end"
+- Rectangle Standar -> Tipe: "activity"
+- Double-bordered Rectangle -> Tipe: "external-process"
+- Blue/System Icon/Database Rectangle -> Tipe: "automated-activity"
+- Diamond Shape -> Tipe: "decision"
+- Wavy-bottomed Rectangle -> Tipe: "document"
+- Inverted Triangle -> Tipe: "archive" (Arsip)
+- Cylinder Shape -> Tipe: "data-media" (System/Data Media)
+- Small Circle / Reference -> Tipe: "reference"
+
+Instruksi Koordinat:
+- Koordinat x dan y harus berada dalam rentang 0 s.d. 1000.
+- Koordinat x adalah sumbu horizontal (kiri ke kanan).
+- Koordinat y adalah sumbu vertikal (atas ke bawah).
+- Atur agar nodes tersusun rapi secara visual dan tidak menumpuk pada koordinat yang sama.
+
+Format keluaran WAJIB berupa JSON objek yang memenuhi skema data yang diminta.`;
+
+  const messages = [
+    {
+      role: "user",
+      content: [
+        {
+          type: "text",
+          text: "Mohon analisa gambar diagram alur proses bisnis ini. Identifikasi semua node, label, koordinat (x,y) relatif antara 0-1000, serta semua edge penghubung secara akurat."
+        },
+        {
+          type: "image_url",
+          image_url: {
+            url: body.image
+          }
+        }
+      ]
+    }
+  ];
+
+  const responseSchema = {
+    type: SchemaType.OBJECT,
+    properties: {
+      nodes: {
+        type: SchemaType.ARRAY,
+        items: {
+          type: SchemaType.OBJECT,
+          properties: {
+            id: { type: SchemaType.STRING },
+            type: {
+              type: SchemaType.STRING,
+              enum: ["start", "end", "activity", "manual-input", "external-process", "automated-activity", "decision", "document", "archive", "data-media", "reference"]
+            },
+            label: { type: SchemaType.STRING },
+            position: {
+              type: SchemaType.OBJECT,
+              properties: {
+                x: { type: SchemaType.NUMBER },
+                y: { type: SchemaType.NUMBER }
+              },
+              required: ["x", "y"]
+            }
+          },
+          required: ["id", "type", "label", "position"]
+        }
+      },
+      edges: {
+        type: SchemaType.ARRAY,
+        items: {
+          type: SchemaType.OBJECT,
+          properties: {
+            id: { type: SchemaType.STRING },
+            source: { type: SchemaType.STRING },
+            target: { type: SchemaType.STRING },
+            label: { type: SchemaType.STRING }
+          },
+          required: ["id", "source", "target"]
+        }
+      }
+    },
+    required: ["nodes", "edges"]
+  };
+
+  try {
+    const result = await aiService.generateChatResponse({
+      systemInstruction,
+      messages,
+      responseSchema
+    });
+
+    let parsedResult;
+    try {
+      parsedResult = JSON.parse(result.content);
+    } catch (e) {
+      const cleanJson = result.content.replace(/```json|```/g, "").trim();
+      parsedResult = JSON.parse(cleanJson);
+    }
+
+    return ok(c, parsedResult);
+  } catch (err: any) {
+    console.error("[BPM OCR API] Error:", err.message);
+    return bad(c, `AI parsing failed: ${err.message}`, 500);
+  }
 });
 
 // --- BPM Process Routes ---

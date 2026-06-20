@@ -6,7 +6,7 @@ import {
   rcms, controls, rcmControls, bpmProcesses, bpmDiagrams, bpmNodeRcms, 
   organization, accountAssertions, todEvaluations
 } from '../db/schema';
-import { eq, and, sql } from 'drizzle-orm';
+import { eq, and, sql, like } from 'drizzle-orm';
 import { RcmService } from "../services/rcm-service";
 import { ControlService } from "../services/control-service";
 import { DeficiencyService } from "../services/deficiency-service";
@@ -79,6 +79,7 @@ rcm.get('/rcm-matrix/tlc', async (c) => {
   const orgId = c.get('organizationId');
   const bpmProcessId = c.req.query('bpmProcessId');
   const year = c.req.query('year');
+  const noGL = c.req.query('noGL');
 
   if (!year) {
     return c.json({ success: false, error: 'Year parameter is required' }, 400);
@@ -92,7 +93,7 @@ rcm.get('/rcm-matrix/tlc', async (c) => {
     controlId: controls.id,
     processName: sql<string>`COALESCE(${bpmProcesses.name}, ${rcms.process})`,
     fsliName: bpmProcesses.fsliName,
-    noGL: bpmProcesses.noGL,
+    noGL: sql<string>`COALESCE(${noGL || null}, ${bpmProcesses.noGL})`,
     subProcessName: sql<string>`COALESCE(${bpmDiagrams.name}, ${rcms.subProcess})`,
     riskDescription: rcms.riskDescription,
     isFraudRelated: rcms.isFraudRelated,
@@ -141,7 +142,7 @@ rcm.get('/rcm-matrix/tlc', async (c) => {
   .leftJoin(bpmProcesses, eq(bpmDiagrams.subProcess, bpmProcesses.name))
   .leftJoin(accountAssertions, and(
     eq(bpmProcesses.fsliName, accountAssertions.fsliName),
-    eq(bpmProcesses.noGL, accountAssertions.noGL),
+    eq(accountAssertions.noGL, noGL ? noGL : bpmProcesses.noGL),
     eq(bpmProcesses.organizationId, accountAssertions.organizationId)
   ));
 
@@ -158,6 +159,10 @@ rcm.get('/rcm-matrix/tlc', async (c) => {
   
   if (year) {
     finalConditions = and(finalConditions, eq(rcms.year, parseInt(year))) as any;
+  }
+
+  if (noGL) {
+    finalConditions = and(finalConditions, like(rcms.id, `%-${noGL}`)) as any;
   }
 
   const results = await query.where(finalConditions);

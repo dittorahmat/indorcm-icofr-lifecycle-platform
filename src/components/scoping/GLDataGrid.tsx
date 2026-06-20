@@ -85,7 +85,29 @@ export const GLDataGrid = React.memo(function GLDataGrid({
   // Hierarchical sorting based on noUrut (Standard: SK-5/2024 Table 5)
   const sortedData = React.useMemo(() => sortGLHierarchically(data), [data]);
 
-  const [grouping, setGrouping] = React.useState<GroupingState>(['fsliName']);
+  const uniqueEntities = React.useMemo(() => {
+    return Array.from(new Set(data.map(r => r.entityCode).filter(Boolean)));
+  }, [data]);
+
+  const hasParentChild = React.useMemo(() => {
+    return data.some(r => r.parentEntityCode && r.parentEntityCode !== r.entityCode);
+  }, [data]);
+
+  const defaultGrouping = React.useMemo<GroupingState>(() => {
+    if (uniqueEntities.length <= 1) {
+      return ['fsliName'];
+    }
+    if (hasParentChild) {
+      return ['fsliName', 'parentEntityCode', 'entityCode'];
+    }
+    return ['fsliName', 'entityCode'];
+  }, [uniqueEntities, hasParentChild]);
+
+  const [grouping, setGrouping] = React.useState<GroupingState>(defaultGrouping);
+
+  React.useEffect(() => {
+    setGrouping(defaultGrouping);
+  }, [defaultGrouping]);
   const [expanded, setExpanded] = React.useState({});
   const [sorting, setSorting] = React.useState<SortingState>([
     { id: 'noUrut', desc: false }
@@ -122,16 +144,44 @@ export const GLDataGrid = React.memo(function GLDataGrid({
       {
         accessorKey: 'fsliName',
         header: t('grid.fsli'),
-        cell: ({ row, getValue }) => (
-          <div className="flex items-center gap-2 font-bold text-xs text-slate-700">
-            {row.getCanExpand() && (
-              <button onClick={row.getToggleExpandedHandler()} className="cursor-pointer">
-                {row.getIsExpanded() ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-              </button>
-            )}
-            <span className="truncate max-w-[150px]">{getValue<string>()}</span>
-          </div>
-        ),
+        cell: ({ row, getValue }) => {
+          const isGrouped = row.getIsGrouped();
+          if (isGrouped) {
+            const groupCol = row.groupingColumnId;
+            const groupVal = row.getValue(groupCol) as string;
+            
+            let displayVal = groupVal || '';
+            if (groupCol === 'parentEntityCode') {
+              displayVal = `${t('grid.parentEntity', 'Parent Entity')}: ${groupVal}`;
+            } else if (groupCol === 'entityCode') {
+              displayVal = `${t('grid.entity', 'Entity')}: ${groupVal}`;
+            } else if (groupCol === 'fsliName') {
+              displayVal = groupVal;
+            }
+
+            const depth = row.depth;
+            const mlClass = depth === 1 ? 'ml-4' : depth === 2 ? 'ml-8' : '';
+
+            return (
+              <div className={cn("flex items-center gap-2 font-bold text-xs text-slate-700", mlClass)}>
+                {row.getCanExpand() && (
+                  <button onClick={row.getToggleExpandedHandler()} className="cursor-pointer">
+                    {row.getIsExpanded() ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                  </button>
+                )}
+                <span className="truncate max-w-[250px]">{displayVal}</span>
+              </div>
+            );
+          }
+
+          const depth = row.depth;
+          const mlClass = depth === 1 ? 'ml-4' : depth === 2 ? 'ml-8' : depth === 3 ? 'ml-12' : '';
+          return (
+            <div className={cn("flex items-center gap-2 font-medium text-xs text-slate-500", mlClass)}>
+              <span className="truncate max-w-[150px]">{getValue<string>() || '-'}</span>
+            </div>
+          );
+        },
       },
       {
         accessorKey: 'noGL',
@@ -272,12 +322,20 @@ export const GLDataGrid = React.memo(function GLDataGrid({
       {
         accessorKey: 'balance',
         header: () => <div className="text-right">{t('grid.balance')}</div>,
-        cell: info => {
-          const val = info.getValue<number>();
+        aggregationFn: 'sum',
+        cell: ({ row, getValue }) => {
+          let val = getValue<number>() || 0;
+          if (row.getIsGrouped()) {
+            const leafRows = row.getLeafRows();
+            const groupExplicitTotal = leafRows[0]?.original.fsliBalance;
+            if (groupExplicitTotal !== undefined && groupExplicitTotal !== null && groupExplicitTotal !== 0) {
+              val = groupExplicitTotal;
+            }
+          }
           return (
             <div className={cn(
               "text-right font-mono text-xs",
-              Math.abs(val) >= pmValue ? "text-red-600 font-bold" : "text-slate-500"
+              row.getIsGrouped() ? "font-bold text-slate-700" : (Math.abs(val) >= pmValue ? "text-red-600 font-bold" : "text-slate-500")
             )}>
               {val.toLocaleString('id-ID')}
             </div>
@@ -287,11 +345,23 @@ export const GLDataGrid = React.memo(function GLDataGrid({
       {
         id: 'quantFlag',
         header: () => <div className="text-center bg-orange-50/50 -mx-2 py-1 text-xs">{t('grid.quantHeader')}</div>,
-        cell: ({ row }) => {
-          const balance = row.getIsGrouped() 
-            ? (row.getLeafRows()[0]?.original.fsliBalance || row.getLeafRows().reduce((sum, r) => sum + Math.abs(r.original.balance), 0))
-            : Math.abs(row.original.balance);
-          const isSignificant = balance >= pmValue;
+        aggregationFn: (columnId, leafRows) => {
+          const groupExplicitTotal = leafRows[0]?.original.fsliBalance;
+          if (groupExplicitTotal !== undefined && groupExplicitTotal !== null && groupExplicitTotal !== 0) {
+            return Math.abs(groupExplicitTotal) >= pmValue;
+          }
+          return leafRows.some(row => Math.abs(row.original.balance) >= pmValue);
+        },
+        cell: ({ row, getValue }) => {
+          const isSignificant = row.getIsGrouped()
+            ? getValue<boolean>()
+            : (() => {
+                const groupExplicitTotal = row.original.fsliBalance;
+                if (groupExplicitTotal !== undefined && groupExplicitTotal !== null && groupExplicitTotal !== 0) {
+                  return Math.abs(groupExplicitTotal) >= pmValue;
+                }
+                return Math.abs(row.original.balance) >= pmValue;
+              })();
           return (
             <div className="text-center">
               {isSignificant ? (
@@ -343,36 +413,43 @@ export const GLDataGrid = React.memo(function GLDataGrid({
         id: 'finalStatus',
         header: t('grid.scope'),
         size: 130,
-        cell: ({ row }) => {
-          const isGrouped = row.getIsGrouped();
-          const fsliName = isGrouped ? row.getValue('fsliName') as string : row.original.fsliName || "";
-
+        aggregationFn: (columnId, leafRows) => {
+          const groupExplicitTotal = leafRows[0]?.original.fsliBalance;
+          const isGroupKuanSignificant = (groupExplicitTotal !== undefined && groupExplicitTotal !== null && groupExplicitTotal !== 0)
+            ? Math.abs(groupExplicitTotal) >= pmValue
+            : leafRows.some(row => Math.abs(row.original.balance) >= pmValue);
+            
+          const fsliName = leafRows[0]?.original.fsliName || "";
           const assessments = assessmentData?.[fsliName] || {};
           const isQualSignificant = Object.values(assessments).some(v => v === 'High');
+          
+          return isQualSignificant || isGroupKuanSignificant;
+        },
+        cell: ({ row, getValue }) => {
+          const isInScope = row.getIsGrouped()
+            ? getValue<boolean>()
+            : (() => {
+                const fsliName = row.original.fsliName || "";
+                const assessments = assessmentData?.[fsliName] || {};
+                const isQualSignificant = Object.values(assessments).some(v => v === 'High');
+                
+                const groupExplicitTotal = row.original.fsliBalance;
+                const isKuanSignificant = (groupExplicitTotal !== undefined && groupExplicitTotal !== null && groupExplicitTotal !== 0)
+                  ? Math.abs(groupExplicitTotal) >= pmValue
+                  : Math.abs(row.original.balance) >= pmValue;
+                  
+                return isQualSignificant || isKuanSignificant;
+              })();
 
-          if (isGrouped) {
-            const leaves = row.getLeafRows();
-            const groupBalance = leaves[0]?.original.fsliBalance || leaves.reduce((sum, r) => sum + Math.abs(r.original.balance), 0);
-            const isKuanSignificant = Math.abs(groupBalance) >= pmValue;
-            const isInScope = isKuanSignificant || isQualSignificant;
-            return isInScope ? (
-              <Badge className="bg-indigo-600 text-xs h-5 px-3 uppercase font-extrabold shadow-sm border-2 border-indigo-200 whitespace-nowrap">
-                {t('grid.inScope')}
-              </Badge>
-            ) : (
-              <Badge variant="outline" className="text-xs h-4 px-1.5 opacity-40 whitespace-nowrap">
-                {t('grid.outScope')}
-              </Badge>
-            );
-          }
-
-          const isKuanSignificant = Math.abs(row.original.balance) >= pmValue;
-          const isInScope = isQualSignificant || isKuanSignificant;
-
-          if (isInScope) {
-            return <Badge className="text-xs h-5 px-2 font-bold bg-indigo-600 whitespace-nowrap uppercase">{t('grid.inScope')}</Badge>;
-          }
-          return <Badge variant="outline" className="text-xs h-4 px-1.5 opacity-40 text-slate-400 whitespace-nowrap uppercase">{t('grid.outScope')}</Badge>;
+          return isInScope ? (
+            <Badge className="bg-indigo-600 text-xs h-5 px-3 uppercase font-extrabold shadow-sm border-2 border-indigo-200 whitespace-nowrap">
+              {t('grid.inScope')}
+            </Badge>
+          ) : (
+            <Badge variant="outline" className="text-xs h-4 px-1.5 opacity-40 whitespace-nowrap">
+              {t('grid.outScope')}
+            </Badge>
+          );
         }
       },
       {
@@ -451,7 +528,16 @@ export const GLDataGrid = React.memo(function GLDataGrid({
       // Header FSLI
       if (row.getIsGrouped()) {
         const fsliName = row.getValue('fsliName');
-        const balance = row.getLeafRows().reduce((sum, r) => sum + r.original.balance, 0);
+        const leafRows = row.getLeafRows();
+        const groupExplicitTotal = leafRows[0]?.original.fsliBalance;
+        const balance = (groupExplicitTotal !== undefined && groupExplicitTotal !== null && groupExplicitTotal !== 0)
+          ? groupExplicitTotal
+          : leafRows.reduce((sum, r) => sum + r.original.balance, 0);
+
+        const assessments = assessmentData[String(fsliName) || ''] || {};
+        const isQualSignificant = Object.values(assessments).some(v => v === 'High');
+        const isKuanSignificant = Math.abs(balance) >= pmValue;
+        const isFSLIInScope = isQualSignificant || isKuanSignificant;
 
         // Add a separator row for FSLI
         exportData.push({
@@ -463,7 +549,7 @@ export const GLDataGrid = React.memo(function GLDataGrid({
           [t('grid.quantHeader')]: Math.abs(balance) >= pmValue ? t('grid.significant') : t('grid.notSignificant'),
           [t('grid.lini1Owner')]: '',
           [t('grid.ownerAcceptance')]: '',
-          [t('grid.scope')]: t('grid.inScope') // Summary scope
+          [t('grid.scope')]: isFSLIInScope ? t('grid.inScope') : t('grid.outScope')
         });
 
         // Add accounts under this FSLI
@@ -574,14 +660,14 @@ export const GLDataGrid = React.memo(function GLDataGrid({
                       key={cell.id} 
                       className="border-r last:border-r-0 py-0 px-2"
                     >
-                      {cell.getIsGrouped() ? (
+                      {cell.column.id === 'fsliName' && row.getIsGrouped() ? (
                         <div className="flex items-center gap-2">
                           {flexRender(cell.column.columnDef.cell, cell.getContext())}
                           <span className="text-xs text-slate-400 font-normal">
                             ({row.getLeafRows().length})
                           </span>
                         </div>
-                      ) : cell.getIsPlaceholder() ? null : (
+                      ) : cell.getIsPlaceholder() || (cell.getIsGrouped() && cell.column.id !== 'fsliName') ? null : (
                         flexRender(cell.column.columnDef.cell, cell.getContext())
                       )}
                     </TableCell>

@@ -564,6 +564,18 @@ export const bpmProcesses = pgTable("bpm_processes", {
 	};
 });
 
+export const bpmProcessGlCodes = pgTable("bpm_process_gl_codes", {
+	id: text("id").primaryKey(),
+	organizationId: text("organization_id").notNull().references(() => organization.id),
+	bpmProcessId: text("bpm_process_id").notNull().references(() => bpmProcesses.id, { onDelete: 'cascade' }),
+	noGL: text("no_gl").notNull(),
+}, (table) => {
+	return {
+		bpmProcessIdx: index("bpm_process_gl_codes_process_idx").on(table.bpmProcessId),
+		noGLIdx: index("bpm_process_gl_codes_no_gl_idx").on(table.noGL),
+	};
+});
+
 export const accountAssertions = pgTable("account_assertions", {
 	id: text("id").primaryKey(),
 	organizationId: text("organization_id").notNull().references(() => organization.id),

@@ -658,7 +658,14 @@ export function BPMPage() {
               </Button>
             </div>
             <div className="flex-1 min-h-0 bg-slate-50">
-              {selectedDiagramId && <BPMEditor diagramId={selectedDiagramId} subProcess={currentSubProcess} workingYear={viewYear} />}
+              {selectedDiagramId && (
+                <BPMEditor 
+                  diagramId={selectedDiagramId} 
+                  subProcess={currentSubProcess} 
+                  workingYear={viewYear} 
+                  currentGL={selectedGLRow?.noGL}
+                />
+              )}
             </div>
           </DialogContent>
         </Dialog>

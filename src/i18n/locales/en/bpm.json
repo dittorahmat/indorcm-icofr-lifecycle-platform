@@ -239,5 +239,52 @@
       "error": "Failed to export diagram. Please try again.",
       "history": "Export History"
     }
+  },
+  "ocr": {
+    "importButton": "Import Flow (OCR)",
+    "importTitle": "Import Business Process Diagram (AI OCR)",
+    "reviewTitle": "Review & Adjust Business Process Flow",
+    "originalImage": "Original Image",
+    "shapeDetection": "Shape Detection (SK-5)",
+    "nodesCount": "{{count}} Nodes",
+    "edgesCount": "{{count}} Edges",
+    "adjustmentInstructions": "Adjust activity names, diagram shape types, or delete elements if they are detected incorrectly.",
+    "analyzing": "Analyzing Diagram Flow...",
+    "aiMapping": "AI is mapping nodes, edges, and coordinates.",
+    "uploadTitle": "Upload process flow diagram file",
+    "uploadDesc": "Supports PDF, PNG, or JPG formats. The first page of the PDF or image resolution will be adjusted automatically.",
+    "shapes": {
+      "start": "Start (Oval)",
+      "end": "End (Oval)",
+      "activity": "Activity (Manual)",
+      "system": "System (Automated)",
+      "decision": "Decision (Diamond)",
+      "archive": "Archive (Inverted Triangle)",
+      "dataMedia": "Data Media (Cylinder)",
+      "document": "Document Output"
+    },
+    "options": {
+      "start": "Oval (Start)",
+      "end": "Oval (End)",
+      "activity": "Rectangle (Manual)",
+      "system": "Rectangle (System)",
+      "decision": "Diamond (Decision)",
+      "archive": "Inverted Triangle (Archive)",
+      "dataMedia": "Cylinder (Data Media)",
+      "document": "Document Output"
+    },
+    "buttons": {
+      "retry": "Retry",
+      "process": "Process AI OCR",
+      "chooseFile": "Choose File",
+      "cancel": "Cancel",
+      "saveApply": "Save & Apply"
+    },
+    "toast": {
+      "fileError": "Failed to process file: {{message}}",
+      "ocrSuccess": "Diagram successfully translated! Please review the results.",
+      "ocrError": "AI OCR Failed: {{message}}",
+      "applySuccess": "Diagram successfully applied to workspace canvas."
+    }
   }
 }
