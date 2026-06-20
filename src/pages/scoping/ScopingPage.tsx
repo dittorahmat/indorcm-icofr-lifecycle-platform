@@ -3,7 +3,7 @@ import { motion, Variants } from 'framer-motion';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Trash2, Upload, Database, LayoutGrid } from 'lucide-react';
+import { Plus, Trash2, Upload, Database, LayoutGrid, Settings2 } from 'lucide-react';
 import { GLSourceTable } from '@/components/scoping/GLSourceTable';
 import { SimulationListTable } from '@/components/scoping/SimulationListTable';
 import { SetBenchmarkModal } from '@/components/scoping/SetBenchmarkModal';
@@ -226,6 +226,7 @@ export function ScopingPage() {
 function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulation, onBack: () => void }) {
   const { t } = useTranslation('scoping');
   const queryClient = useQueryClient();
+  const [isParamsOpen, setIsParamsOpen] = React.useState(true);
   const [isWorkflowOpen, setIsWorkflowOpen] = React.useState(false);
 
   const {
@@ -250,48 +251,73 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
   };
 
   return (
-    <AppLayout container>
-      <div className="space-y-4 pb-6">
-        <ScopingEditorHeader 
-          simState={simState}
-          isLocked={isLocked}
-          onBack={onBack}
-          onSave={() => mutations.save.mutate(simState)}
-          isSaving={mutations.save.isPending}
-          omValue={omValue}
-          pmValue={pmValue}
-        />
-
-        <MaterialityParamsCard 
-          simState={simState}
-          setSimState={setSimState}
-          multiplier={multiplier}
-          benchmarkValue={benchmarkValue}
-          omValue={omValue}
-          pmValue={pmValue}
-          isLocked={isLocked}
-        />
-
-        <div className="w-full overflow-hidden">
-          <ScopingEditorContent 
+    <AppLayout container={false} noScroll className="bg-slate-100/30">
+      <div className="flex flex-col flex-1 min-h-0 min-w-0 p-4 md:p-6 space-y-4 overflow-hidden">
+        <div className="shrink-0">
+          <ScopingEditorHeader 
             simState={simState}
-            mergedGlData={mergedGlData}
-            entityHierarchy={entityHierarchy}
-            selectedEntityCodes={selectedEntityCodes}
-            onEntitySelectionChange={setSelectedEntityCodes}
+            isLocked={isLocked}
+            onBack={onBack}
+            onSave={() => mutations.save.mutate(simState)}
+            isSaving={mutations.save.isPending}
             omValue={omValue}
             pmValue={pmValue}
-            isLocked={isLocked}
-            departments={departments}
-            applications={applications}
-            selectedApps={localAppMappings}
-            onAssessmentChange={handlers.onAssessmentChange}
-            onOwnerAcceptanceChange={handleOwnerAcceptanceChange}
-            onAssignDepartments={handlers.onAssignDepartments}
-            onAppsChange={handlers.onAppsChange}
-            onQuickAddApp={handleQuickAddApp}
-            onOpenWorkflow={() => setIsWorkflowOpen(true)}
+            isParamsOpen={isParamsOpen}
+            onToggleParams={() => setIsParamsOpen(!isParamsOpen)}
           />
+        </div>
+
+        <div className="flex flex-row flex-1 min-h-0 min-w-0 gap-4 overflow-hidden w-full">
+          {isParamsOpen ? (
+            <div className="w-[280px] shrink-0 min-h-0">
+              <MaterialityParamsCard 
+                simState={simState}
+                setSimState={setSimState}
+                multiplier={multiplier}
+                benchmarkValue={benchmarkValue}
+                omValue={omValue}
+                pmValue={pmValue}
+                isLocked={isLocked}
+                onClose={() => setIsParamsOpen(false)}
+              />
+            </div>
+          ) : (
+            <div 
+              className="w-8 shrink-0 flex flex-col items-center py-6 border border-slate-200 bg-white hover:bg-slate-50 hover:border-indigo-200 rounded-xl cursor-pointer transition-all shadow-sm hover:shadow-md group min-h-0 justify-start gap-4 select-none"
+              onClick={() => setIsParamsOpen(true)}
+              title={t('params.show', 'Show Parameters')}
+            >
+              <Settings2 className="h-4 w-4 text-slate-400 group-hover:text-indigo-600 transition-colors duration-200" />
+              <span 
+                className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-indigo-600 transition-colors duration-200" 
+                style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
+              >
+                {t('params.title', 'Parameters')}
+              </span>
+            </div>
+          )}
+
+          <div className="flex-grow min-h-0 min-w-0 flex flex-col">
+            <ScopingEditorContent 
+              simState={simState}
+              mergedGlData={mergedGlData}
+              entityHierarchy={entityHierarchy}
+              selectedEntityCodes={selectedEntityCodes}
+              onEntitySelectionChange={setSelectedEntityCodes}
+              omValue={omValue}
+              pmValue={pmValue}
+              isLocked={isLocked}
+              departments={departments}
+              applications={applications}
+              selectedApps={localAppMappings}
+              onAssessmentChange={handlers.onAssessmentChange}
+              onOwnerAcceptanceChange={handleOwnerAcceptanceChange}
+              onAssignDepartments={handlers.onAssignDepartments}
+              onAppsChange={handlers.onAppsChange}
+              onQuickAddApp={handleQuickAddApp}
+              onOpenWorkflow={() => setIsWorkflowOpen(true)}
+            />
+          </div>
         </div>
 
         <Dialog open={isWorkflowOpen} onOpenChange={setIsWorkflowOpen}>

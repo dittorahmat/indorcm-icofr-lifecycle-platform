@@ -53,9 +53,9 @@ export function ScopingEditorContent({
   const { t } = useTranslation('scoping');
 
   return (
-    <div className="flex-1 min-w-0 space-y-6">
-      <Tabs defaultValue="worksheet" className="w-full">
-        <div className="flex justify-between items-center mb-6">
+    <div className="flex flex-col flex-1 min-h-0 min-w-0 space-y-4">
+      <Tabs defaultValue="worksheet" className="flex flex-col flex-1 min-h-0 w-full">
+        <div className="flex justify-between items-center mb-4 shrink-0">
           <TabsList className="grid w-full max-w-[550px] grid-cols-3 bg-slate-100/50 p-1 border border-slate-200 rounded-xl">
             <TabsTrigger value="worksheet" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest">{t('approval.tabWorksheet')}</TabsTrigger>
             <TabsTrigger value="history" className="flex items-center gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest">
@@ -79,7 +79,7 @@ export function ScopingEditorContent({
         </div>
 
 
-        <TabsContent value="worksheet" className="space-y-6 mt-0">
+        <TabsContent value="worksheet" className="flex-grow min-h-0 min-w-0 flex flex-col space-y-4 mt-0">
           <GLDataGrid
             data={mergedGlData}
             assessmentData={simState.assessmentData || {}}

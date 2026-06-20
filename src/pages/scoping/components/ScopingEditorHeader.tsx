@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
   ArrowLeft, Save, ShieldCheck, FileSpreadsheet, 
-  Target, TrendingUp, ShieldAlert
+  Target, TrendingUp, ShieldAlert, Settings2
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { MaterialitySimulation, SimulationStatus } from '@shared/types';
@@ -19,6 +19,8 @@ interface ScopingEditorHeaderProps {
   snapshotFilename?: string;
   omValue?: number;
   pmValue?: number;
+  isParamsOpen?: boolean;
+  onToggleParams?: () => void;
 }
 
 export function ScopingEditorHeader({
@@ -29,7 +31,9 @@ export function ScopingEditorHeader({
   isSaving,
   snapshotFilename,
   omValue = 0,
-  pmValue = 0
+  pmValue = 0,
+  isParamsOpen = false,
+  onToggleParams
 }: ScopingEditorHeaderProps) {
   const { t } = useTranslation('scoping');
 
@@ -38,6 +42,20 @@ export function ScopingEditorHeader({
       <div className="flex justify-between items-start text-slate-900 dark:text-white">
         <div className="flex items-center gap-3">
           <SidebarTrigger className="h-8 w-8 text-slate-700 bg-white border border-slate-200 shadow-sm" />
+          {onToggleParams && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onToggleParams}
+              className={cn(
+                "h-8 gap-1.5 text-slate-700 bg-white border border-slate-200 shadow-sm transition-all px-2.5 text-[10px] font-black uppercase tracking-widest",
+                isParamsOpen && "bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100 hover:text-indigo-800"
+              )}
+            >
+              <Settings2 className="h-3.5 w-3.5" />
+              {isParamsOpen ? t('params.hide', 'Hide Parameters') : t('params.show', 'Show Parameters')}
+            </Button>
+          )}
           <Button 
             variant="ghost" 
             size="icon" 

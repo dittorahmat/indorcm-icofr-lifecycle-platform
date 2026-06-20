@@ -163,14 +163,14 @@ export function ApprovalPage() {
               </DialogDescription>
             </DialogHeader>
 
-            <div className="flex-1 overflow-auto py-4">
-              <Tabs defaultValue="worksheet" className="w-full">
+            <div className="flex-1 min-h-0 flex flex-col py-4">
+              <Tabs defaultValue="worksheet" className="flex flex-col flex-1 min-h-0 w-full">
                 <TabsList className="grid w-full max-w-[400px] grid-cols-2 mb-4">
                   <TabsTrigger value="worksheet">{t('approval.tabWorksheet')}</TabsTrigger>
                   <TabsTrigger value="history">{t('approval.tabHistory')}</TabsTrigger>
                 </TabsList>
                 
-                <TabsContent value="worksheet" className="space-y-4">
+                <TabsContent value="worksheet" className="flex-grow min-h-0 min-w-0 flex flex-col space-y-4 mt-0">
                   {snapshot ? (
                     <GLDataGrid 
                       data={snapshot.rows} 

@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Settings2, Info, Calculator, Percent, Layers, AlertTriangle } from 'lucide-react';
+import { Settings2, Info, Calculator, Percent, Layers, AlertTriangle, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { MaterialitySimulation } from '@shared/types';
 import { cn } from '@/lib/utils';
@@ -18,6 +18,7 @@ interface MaterialityParamsCardProps {
   omValue: number;
   pmValue: number;
   isLocked: boolean;
+  onClose?: () => void;
 }
 
 export function MaterialityParamsCard({
@@ -27,56 +28,70 @@ export function MaterialityParamsCard({
   benchmarkValue,
   omValue,
   pmValue,
-  isLocked
+  isLocked,
+  onClose
 }: MaterialityParamsCardProps) {
   const { t } = useTranslation('scoping');
 
   return (
-    <Card className="border-slate-200 shadow-sm overflow-hidden w-full bg-white">
-      <CardHeader className="py-2 border-b border-slate-100 bg-slate-50/50 flex flex-row items-center justify-between px-4">
+    <Card className="border-slate-200 shadow-sm overflow-hidden w-full h-full bg-white flex flex-col">
+      <CardHeader className="py-3 border-b border-slate-100 bg-slate-50/50 flex flex-row items-center justify-between px-4 shrink-0">
         <CardTitle className="text-[10px] uppercase font-bold text-slate-500 tracking-[0.2em] flex items-center gap-2">
           <Settings2 className="h-3.5 w-3.5 text-slate-900" /> {t('params.title')}
         </CardTitle>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="h-6 gap-1 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-md px-2 transition-all text-[9px] font-bold uppercase tracking-wider"
+        <div className="flex items-center gap-1">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-6 gap-1 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-md px-2 transition-all text-[9px] font-bold uppercase tracking-wider"
+              >
+                <Info className="h-3 w-3 text-indigo-500" /> {t('logic.title')}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[300px] p-4 border-slate-200 shadow-xl" align="end" side="bottom" sideOffset={5}>
+              <h3 className="text-[10px] uppercase font-black text-slate-800 tracking-widest flex items-center gap-2 mb-2">
+                <AlertTriangle className="h-3.5 w-3.5 text-amber-500" /> {t('logic.title')}
+              </h3>
+              <div className="text-[11px] text-slate-600 leading-relaxed space-y-2.5 font-medium">
+                <p>{t('logic.description')}</p>
+                <ol className="space-y-2">
+                  <li className="flex gap-2">
+                    <Badge className="h-3.5 w-3.5 p-0 flex items-center justify-center rounded-full bg-blue-600 border-none text-white text-[8px] font-black shrink-0">1</Badge>
+                    <span>{t('logic.quant')}</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <Badge className="h-3.5 w-3.5 p-0 flex items-center justify-center rounded-full bg-blue-600 border-none text-white text-[8px] font-black shrink-0">2</Badge>
+                    <span>{t('logic.qual')}</span>
+                  </li>
+                </ol>
+              </div>
+            </PopoverContent>
+          </Popover>
+          {onClose && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+              className="h-6 w-6 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-md transition-all shrink-0"
+              title="Close panel"
             >
-              <Info className="h-3 w-3 text-indigo-500" /> {t('logic.title')}
+              <X className="h-3.5 w-3.5" />
             </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-[320px] p-4 border-slate-200 shadow-xl" align="end" side="bottom" sideOffset={5}>
-            <h3 className="text-[10px] uppercase font-black text-slate-800 tracking-widest flex items-center gap-2 mb-2">
-              <AlertTriangle className="h-3.5 w-3.5 text-amber-500" /> {t('logic.title')}
-            </h3>
-            <div className="text-[11px] text-slate-600 leading-relaxed space-y-2.5 font-medium">
-              <p>{t('logic.description')}</p>
-              <ol className="space-y-2">
-                <li className="flex gap-2">
-                  <Badge className="h-3.5 w-3.5 p-0 flex items-center justify-center rounded-full bg-blue-600 border-none text-white text-[8px] font-black shrink-0">1</Badge>
-                  <span>{t('logic.quant')}</span>
-                </li>
-                <li className="flex gap-2">
-                  <Badge className="h-3.5 w-3.5 p-0 flex items-center justify-center rounded-full bg-blue-600 border-none text-white text-[8px] font-black shrink-0">2</Badge>
-                  <span>{t('logic.qual')}</span>
-                </li>
-              </ol>
-            </div>
-          </PopoverContent>
-        </Popover>
+          )}
+        </div>
       </CardHeader>
-      <CardContent className="py-2.5 px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 flex-1">
+      <CardContent className="p-4 flex flex-col gap-4 flex-grow overflow-y-auto min-h-0 justify-between">
+        <div className="flex flex-col gap-4 w-full">
           {/* Significant Locations */}
           <div className="space-y-1">
             <div className="flex items-center justify-between">
-              <Label className="text-[9px] font-bold uppercase text-slate-500 tracking-wider flex items-center gap-1">
-                <Layers className="h-3 w-3 text-slate-400" /> {t('params.locations')}
+              <Label className="text-[10px] font-bold uppercase text-slate-500 tracking-wider flex items-center gap-1.5">
+                <Layers className="h-3.5 w-3.5 text-slate-400" /> {t('params.locations')}
               </Label>
-              <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter flex items-center gap-0.5">
-                <Calculator className="h-2.5 w-2.5" /> {multiplier}x
+              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter flex items-center gap-0.5">
+                <Calculator className="h-3 w-3" /> {multiplier}x
               </span>
             </div>
             <div className="relative">
@@ -86,9 +101,9 @@ export function MaterialityParamsCard({
                 disabled={isLocked} 
                 value={simState.locationCount ?? 1} 
                 onChange={e => setSimState(s => ({ ...s, locationCount: Number(e.target.value) }))} 
-                className="h-8 font-bold bg-slate-50 border-slate-200 focus:bg-white transition-all pr-10 text-slate-900 text-xs rounded-lg"
+                className="h-9 font-bold bg-slate-50 border-slate-200 focus:bg-white transition-all pr-12 text-slate-900 text-xs rounded-lg"
               />
-              <div className="absolute inset-y-0 right-2.5 flex items-center text-[9px] font-bold text-slate-400 uppercase">
+              <div className="absolute inset-y-0 right-3 flex items-center text-[10px] font-bold text-slate-400 uppercase">
                 {t('params.unit')}
               </div>
             </div>
@@ -96,8 +111,8 @@ export function MaterialityParamsCard({
 
           {/* % OM Percentage */}
           <div className="space-y-1">
-            <Label className="text-[9px] font-bold uppercase text-slate-500 tracking-wider flex items-center gap-1">
-              <Percent className="h-3 w-3 text-slate-400" /> {t('params.omLabel')}
+            <Label className="text-[10px] font-bold uppercase text-slate-500 tracking-wider flex items-center gap-1.5">
+              <Percent className="h-3.5 w-3.5 text-slate-400" /> {t('params.omLabel')}
             </Label>
             <div className="relative">
               <Input 
@@ -106,9 +121,9 @@ export function MaterialityParamsCard({
                 disabled={isLocked} 
                 value={simState.omPercentage ?? 0} 
                 onChange={e => setSimState(s => ({ ...s, omPercentage: Number(e.target.value) }))} 
-                className="h-8 font-bold bg-slate-50 border-slate-200 focus:bg-white transition-all pr-8 text-slate-900 text-xs rounded-lg"
+                className="h-9 font-bold bg-slate-50 border-slate-200 focus:bg-white transition-all pr-8 text-slate-900 text-xs rounded-lg"
               />
-              <div className="absolute inset-y-0 right-2.5 flex items-center text-slate-400 text-xs font-bold">
+              <div className="absolute inset-y-0 right-3 flex items-center text-slate-400 text-xs font-bold">
                 %
               </div>
             </div>
@@ -116,8 +131,8 @@ export function MaterialityParamsCard({
 
           {/* % Haircut */}
           <div className="space-y-1">
-            <Label className="text-[9px] font-bold uppercase text-slate-500 tracking-wider flex items-center gap-1">
-              <ShieldAlert className="h-3 w-3 text-rose-500" /> {t('params.haircutLabel')}
+            <Label className="text-[10px] font-bold uppercase text-slate-500 tracking-wider flex items-center gap-1.5">
+              <ShieldAlert className="h-3.5 w-3.5 text-rose-500" /> {t('params.haircutLabel')}
             </Label>
             <div className="relative">
               <Input 
@@ -125,9 +140,9 @@ export function MaterialityParamsCard({
                 disabled={isLocked} 
                 value={simState.haircutPercentage ?? 0} 
                 onChange={e => setSimState(s => ({ ...s, haircutPercentage: Number(e.target.value) }))} 
-                className="h-8 font-bold bg-slate-50 border-slate-200 focus:bg-white transition-all pr-8 text-slate-900 text-xs rounded-lg"
+                className="h-9 font-bold bg-slate-50 border-slate-200 focus:bg-white transition-all pr-8 text-slate-900 text-xs rounded-lg"
               />
-              <div className="absolute inset-y-0 right-2.5 flex items-center text-slate-400 text-xs font-bold">
+              <div className="absolute inset-y-0 right-3 flex items-center text-slate-400 text-xs font-bold">
                 %
               </div>
             </div>
@@ -135,11 +150,11 @@ export function MaterialityParamsCard({
         </div>
 
         {/* Benchmark Details Block */}
-        <div className="flex items-center gap-3 bg-slate-50 border border-slate-100 rounded-lg p-2 sm:self-stretch justify-between sm:justify-end shrink-0 sm:min-w-[200px]">
-          <div className="space-y-0.5 text-right">
-            <p className="text-[8px] text-slate-400 uppercase font-black tracking-wider flex items-center justify-end gap-0.5">
+        <div className="flex flex-col gap-2 bg-slate-50 border border-slate-100 rounded-lg p-3 shrink-0 w-full mt-4">
+          <div className="space-y-0.5 text-left">
+            <p className="text-[9px] text-slate-400 uppercase font-black tracking-wider flex items-center justify-start gap-1">
               {t('params.benchmarkValue', { basis: simState.basis })} 
-              <Info className="h-2.5 w-2.5 opacity-40" />
+              <Info className="h-3 w-3 opacity-40" />
             </p>
             <p className="text-xs font-display font-black text-slate-700">Rp {benchmarkValue.toLocaleString('id-ID')}</p>
           </div>
