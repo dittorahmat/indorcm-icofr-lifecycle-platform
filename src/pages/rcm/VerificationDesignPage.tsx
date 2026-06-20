@@ -213,7 +213,7 @@ export function VerificationDesignPage({ embedded, filterBpmId }: VerificationDe
             <Badge variant="outline" className={cn("text-[10px] uppercase font-bold", 
               row.conclusion === 'Effective' ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-rose-200 bg-rose-50 text-rose-700"
             )}>
-              {row.conclusion === 'Effective' ? t('rcm:matrix.properties.synced') : t('deficiency:status.resolved')}
+              {row.conclusion === 'Effective' ? t('common:status.effective') : t('common:status.ineffective')}
             </Badge>
           )
         },
@@ -262,7 +262,7 @@ export function VerificationDesignPage({ embedded, filterBpmId }: VerificationDe
   }
 
   return (
-    <AppLayout container={false} className="bg-slate-100/30">
+    <AppLayout container={false} noScroll className="bg-slate-100/30">
       {content}
     </AppLayout>
   );

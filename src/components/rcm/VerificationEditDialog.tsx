@@ -26,43 +26,44 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useUnsavedChangesContext } from '@/context/UnsavedChangesContext';
+import { toast } from 'sonner';
 
 const formSchema = z.object({
   mappingId: z.string(),
-  controlName: z.string().optional(),
-  controlDescription: z.string().optional(),
-  supportingDocs: z.string().optional(),
-  isKeyControl: z.boolean().optional(),
-  ipoC: z.string().optional(),
-  ipoA: z.string().optional(),
-  ipoV: z.string().optional(),
-  ipoRa: z.string().optional(),
-  assertionE: z.string().optional(),
-  assertionC: z.string().optional(),
-  assertionA: z.string().optional(),
-  assertionCo: z.string().optional(),
-  assertionVa: z.string().optional(),
-  assertionRo: z.string().optional(),
-  assertionPd: z.string().optional(),
-  controlType: z.string().optional(),
-  controlNature: z.string().optional(),
-  automatedControlType: z.string().optional(),
-  frequency: z.string().optional(),
-  supportingApp: z.string().optional(),
-  executingFunction: z.string().optional(),
-  executorRole: z.string().optional(),
-  affectedFsliItem: z.string().optional(),
-  effectivePeriod: z.string().optional(),
+  controlName: z.string().nullable().optional(),
+  controlDescription: z.string().nullable().optional(),
+  supportingDocs: z.string().nullable().optional(),
+  isKeyControl: z.boolean().nullable().optional(),
+  ipoC: z.string().nullable().optional(),
+  ipoA: z.string().nullable().optional(),
+  ipoV: z.string().nullable().optional(),
+  ipoRa: z.string().nullable().optional(),
+  assertionE: z.string().nullable().optional(),
+  assertionC: z.string().nullable().optional(),
+  assertionA: z.string().nullable().optional(),
+  assertionCo: z.string().nullable().optional(),
+  assertionVa: z.string().nullable().optional(),
+  assertionRo: z.string().nullable().optional(),
+  assertionPd: z.string().nullable().optional(),
+  controlType: z.string().nullable().optional(),
+  controlNature: z.string().nullable().optional(),
+  automatedControlType: z.string().nullable().optional(),
+  frequency: z.string().nullable().optional(),
+  supportingApp: z.string().nullable().optional(),
+  executingFunction: z.string().nullable().optional(),
+  executorRole: z.string().nullable().optional(),
+  affectedFsliItem: z.string().nullable().optional(),
+  effectivePeriod: z.string().nullable().optional(),
   // TOD Pilar
-  pilarObjective: z.string().optional(),
-  pilarTiming: z.string().optional(),
-  pilarAuthority: z.string().optional(),
-  pilarReliability: z.string().optional(),
-  pilarCoverage: z.string().optional(),
-  pilarEvidence: z.string().optional(),
-  kkReference: z.string().optional(),
-  conclusion: z.string().optional(),
-  comment: z.string().optional(),
+  pilarObjective: z.string().nullable().optional(),
+  pilarTiming: z.string().nullable().optional(),
+  pilarAuthority: z.string().nullable().optional(),
+  pilarReliability: z.string().nullable().optional(),
+  pilarCoverage: z.string().nullable().optional(),
+  pilarEvidence: z.string().nullable().optional(),
+  kkReference: z.string().nullable().optional(),
+  conclusion: z.string().nullable().optional(),
+  comment: z.string().nullable().optional(),
 });
 
 interface VerificationEditDialogProps {
@@ -124,15 +125,31 @@ export function VerificationEditDialog({
 
   React.useEffect(() => {
     if (data) {
+      const sanitizedData = { ...data };
+      Object.keys(sanitizedData).forEach((key) => {
+        if (sanitizedData[key] === null) {
+          if (key === 'isKeyControl') {
+            sanitizedData[key] = false;
+          } else {
+            sanitizedData[key] = '';
+          }
+        }
+      });
       form.reset({
-        ...data,
+        ...sanitizedData,
         isKeyControl: !!data.isKeyControl,
       });
     }
   }, [data, form]);
 
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
+    // Map empty string fields back to null if preferred, or pass as is
     onSave(values);
+  };
+
+  const handleError = (errors: any) => {
+    console.error('Form validation errors:', errors);
+    toast.error(t('common:notifications.error') || 'Validation Error');
   };
 
   const CheckboxField = ({ name, label }: { name: keyof z.infer<typeof formSchema>, label: string }) => (
@@ -166,7 +183,7 @@ export function VerificationEditDialog({
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(handleSubmit, handleError)} className="space-y-6">
             <Tabs defaultValue="tod" className="w-full">
               <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="tod">{t('rcm:verification.groups.tod')}</TabsTrigger>
@@ -269,8 +286,8 @@ export function VerificationEditDialog({
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="Effective">{t('common:yes')}</SelectItem>
-                            <SelectItem value="Ineffective">{t('common:no')}</SelectItem>
+                            <SelectItem value="Effective">{t('common:status.effective')}</SelectItem>
+                            <SelectItem value="Ineffective">{t('common:status.ineffective')}</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
