@@ -74,7 +74,9 @@ migration.post('/migration/finalize', async (c) => {
         const existing = fsliAggregation.get(name);
         if (existing) {
           existing.balance += balance;
-          if (fBal > 0) existing.fsliBalance = fBal;
+          if (existing.fsliBalance === 0 && fBal > 0) {
+            existing.fsliBalance = fBal;
+          }
         } else {
           fsliAggregation.set(name, {
             name,
