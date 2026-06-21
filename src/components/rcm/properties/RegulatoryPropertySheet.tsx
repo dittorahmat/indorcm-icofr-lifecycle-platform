@@ -14,13 +14,14 @@ import { Node } from 'reactflow';
 import { useTranslation } from 'react-i18next';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { X, ShieldAlert, ShieldCheck, Database, Trash2, PlusCircle, AlertTriangle, RefreshCw, History, Layout, AlertCircle } from 'lucide-react';
+import { X, ShieldAlert, ShieldCheck, Database, Trash2, PlusCircle, AlertTriangle, RefreshCw, History, Layout, AlertCircle, Lock, Unlock } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useQuery } from '@tanstack/react-query';
@@ -250,6 +251,27 @@ export function RegulatoryPropertySheet({
                         <Input value={selectedNode.data.role || ''} onChange={(e) => onUpdateNodeData(selectedNode.id, { role: e.target.value })} className="h-10 text-sm bg-white" />
                       </div>
                     )}
+                </div>
+                <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
+                  <div className="flex flex-col gap-0.5">
+                    <Label className="text-xs font-semibold text-slate-700 uppercase flex items-center gap-1.5">
+                      {selectedNode.data.isLocked ? (
+                        <Lock className="h-3.5 w-3.5 text-amber-600" />
+                      ) : (
+                        <Unlock className="h-3.5 w-3.5 text-slate-400" />
+                      )}
+                      {t('bpm:editor.lockPosition')}
+                    </Label>
+                    <span className="text-[10px] text-slate-400">
+                      {selectedNode.data.isLocked 
+                        ? t('bpm:editor.positionLocked') 
+                        : t('bpm:editor.lockPositionDesc')}
+                    </span>
+                  </div>
+                  <Switch 
+                    checked={!!selectedNode.data.isLocked} 
+                    onCheckedChange={(checked) => onUpdateNodeData(selectedNode.id, { isLocked: checked })} 
+                  />
                 </div>
               </section>
 

@@ -2,7 +2,7 @@ import React from 'react';
 import { Handle, Position, NodeProps } from 'reactflow';
 import { 
   Activity, Database, ShieldCheck, AlertTriangle, FileText, 
-  GitCommit, LayoutDashboard, Link as LinkIcon 
+  GitCommit, LayoutDashboard, Link as LinkIcon, GripVertical, Lock, Unlock 
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { 
@@ -92,6 +92,11 @@ export const ActivityNode = ({ data, selected, type }: NodeProps) => {
         </div>
         <div className="text-xs font-semibold text-slate-800 leading-tight">{data.label}</div>
         <Handle type="source" position={Position.Bottom} className="w-2 h-2" />
+        {data.isLocked && (
+          <div className="absolute -top-2.5 -right-2.5 bg-amber-50 border border-amber-200 text-amber-600 rounded-full p-0.5 shadow-sm z-20">
+            <Lock className="h-3 w-3" />
+          </div>
+        )}
       </div>
     </NodeTooltip>
   );
@@ -144,6 +149,11 @@ export const AutomatedActivityNode = ({ data, selected, type }: NodeProps) => {
         <div className="text-xs font-semibold text-blue-900 leading-tight mb-2">{data.label}</div>
         <div className="absolute bottom-1 left-2 right-1 h-0.5 bg-blue-800/30 rounded-full" />
         <Handle type="source" position={Position.Bottom} className="w-2 h-2" />
+        {data.isLocked && (
+          <div className="absolute -top-2.5 -right-2.5 bg-amber-50 border border-amber-200 text-amber-600 rounded-full p-0.5 shadow-sm z-20">
+            <Lock className="h-3 w-3" />
+          </div>
+        )}
       </div>
     </NodeTooltip>
   );
@@ -164,6 +174,11 @@ export const DecisionNode = ({ data, selected, type }: NodeProps) => (
       <Handle type="source" position={Position.Bottom} className="z-10" />
       <div className="absolute -left-8 top-1/2 -translate-y-1/2 text-xs font-black text-red-600 bg-white/80 px-1 rounded">NO</div>
       <div className="absolute -right-10 top-1/2 -translate-y-1/2 text-xs font-black text-green-600 bg-white/80 px-1 rounded">YES</div>
+      {data.isLocked && (
+        <div className="absolute top-0 right-0 bg-amber-50 border border-amber-200 text-amber-600 rounded-full p-0.5 shadow-sm z-20">
+          <Lock className="h-3 w-3" />
+        </div>
+      )}
     </div>
   </NodeTooltip>
 );
@@ -187,6 +202,11 @@ export const DocumentNode = ({ data, selected, type }: NodeProps) => (
         <span className="text-xs font-bold uppercase tracking-tight text-slate-700 px-4 text-center">{data.label}</span>
       </div>
       <Handle type="source" position={Position.Bottom} className="z-10" />
+      {data.isLocked && (
+        <div className="absolute -top-2 -right-2 bg-amber-50 border border-amber-200 text-amber-600 rounded-full p-0.5 shadow-sm z-20">
+          <Lock className="h-3 w-3" />
+        </div>
+      )}
     </div>
   </NodeTooltip>
 );
@@ -282,30 +302,65 @@ export const SwimlaneNode = ({ data, selected }: NodeProps) => {
 
   return (
     <div className={cn(
-      "h-full w-full border-2 border-slate-300 bg-slate-50/20 relative group transition-all",
-      selected && "border-indigo-500 bg-indigo-50/10 shadow-inner"
+      "h-full w-full border-2 bg-slate-50/20 relative group transition-all",
+      data.isLocked ? "border-amber-200/60 bg-slate-50/10" : "border-slate-300",
+      selected && !data.isLocked && "border-indigo-500 bg-indigo-50/10 shadow-inner",
+      selected && data.isLocked && "border-amber-500 bg-amber-50/5 shadow-inner"
     )}>
       {/* Swimlane Header */}
-      <div className="absolute top-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-sm border-b-2 border-slate-300 p-2 flex flex-col justify-center nodrag">
-         <div className="flex items-center gap-2 mb-1">
+      <div className="absolute top-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-sm border-b-2 border-slate-300 p-2 pr-20 flex flex-col justify-center relative">
+         <div className="flex items-center gap-2 mb-1 nodrag">
             <span className="text-xs font-black text-slate-400 uppercase tracking-widest">{t('bpm:editor.swimlane.labels.department')}</span>
             <Input 
               value={data.department || ''} 
               placeholder={t('bpm:editor.swimlane.placeholders.department')}
               onChange={(e) => data.onChangeDepartment?.(e.target.value)}
               onKeyDown={(e) => e.stopPropagation()}
+              disabled={data.isLocked}
               className="h-6 text-xs font-bold uppercase bg-transparent border-none focus-visible:ring-0 p-0 hover:bg-slate-100/50 focus:bg-white focus:px-2 rounded transition-all"
             />
          </div>
-         <div className="flex items-center gap-2">
+         <div className="flex items-center gap-2 nodrag">
             <span className="text-xs font-black text-slate-400 uppercase tracking-widest">{t('bpm:editor.swimlane.labels.function')}</span>
             <Input 
               value={data.function || ''} 
               placeholder={t('bpm:editor.swimlane.placeholders.function')}
               onChange={(e) => data.onChangeFunction?.(e.target.value)}
               onKeyDown={(e) => e.stopPropagation()}
+              disabled={data.isLocked}
               className="h-6 text-xs italic bg-transparent border-none focus-visible:ring-0 p-0 text-slate-600 hover:bg-slate-100/50 focus:bg-white focus:px-2 rounded transition-all"
             />
+         </div>
+
+         {/* Grip Handle and Lock Controls */}
+         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                data.onToggleLock?.();
+              }}
+              className={cn(
+                "nodrag p-1.5 rounded-lg border-none bg-transparent transition-colors hover:bg-slate-100 text-slate-400",
+                data.isLocked && "text-amber-600 hover:bg-amber-50"
+              )}
+              title={data.isLocked ? t('bpm:editor.unlockPosition') : t('bpm:editor.lockPosition')}
+            >
+              {data.isLocked ? (
+                <Lock className="h-4 w-4" />
+              ) : (
+                <Unlock className="h-4 w-4" />
+              )}
+            </button>
+
+            {!data.isLocked && (
+              <div 
+                className="swimlane-drag-handle cursor-grab active:cursor-grabbing p-1.5 hover:bg-slate-100 rounded-lg text-slate-400"
+                title={t('bpm:editor.dragHint')}
+              >
+                <GripVertical className="h-4 w-4" />
+              </div>
+            )}
          </div>
       </div>
       

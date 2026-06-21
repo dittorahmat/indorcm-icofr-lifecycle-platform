@@ -387,11 +387,37 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
     return () => resetDirty();
   }, [isDirty, isExporting, setDirty, resetDirty]);
 
+  const toggleNodeLock = useCallback((nodeId: string) => {
+    setNodes(nds => nds.map(node => {
+      if (node.id === nodeId) {
+        const nextLocked = !node.data?.isLocked;
+        return {
+          ...node,
+          draggable: !isLocked && !nextLocked,
+          data: {
+            ...node.data,
+            isLocked: nextLocked
+          }
+        };
+      }
+      return node;
+    }));
+    setDirty(true);
+  }, [setNodes, setDirty, isLocked]);
+
   const updateNodeData = useCallback((nodeId: string, partialData: any) => {
     setNodes(nds => {
-      const updatedNodes = nds.map(node => 
-        node.id === nodeId ? { ...node, data: { ...node.data, ...partialData } } : node
-      );
+      const updatedNodes = nds.map(node => {
+        if (node.id === nodeId) {
+          const isLockedNode = partialData.isLocked !== undefined ? partialData.isLocked : !!node.data?.isLocked;
+          return {
+            ...node,
+            draggable: !isLocked && !isLockedNode,
+            data: { ...node.data, ...partialData }
+          };
+        }
+        return node;
+      });
 
       const targetNode = updatedNodes.find(n => n.id === nodeId);
       if (!targetNode || targetNode.type === 'swimlane') return updatedNodes;
@@ -421,22 +447,35 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
 
       return finalNodes;
     });
-  }, [setNodes]);
+  }, [setNodes, isLocked]);
 
   useEffect(() => {
     if (diagram) {
       const initialNodesWithHandlers = (diagram.nodes?.length > 0 ? diagram.nodes : localizedInitialNodes).map((node: any) => {
-        if (node.type === 'swimlane') {
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              onChangeDepartment: (v: string) => updateNodeData(node.id, { department: v }),
-              onChangeFunction: (v: string) => updateNodeData(node.id, { function: v })
-            }
+        const isSwimlane = node.type === 'swimlane';
+        const isNodeLocked = !!node.data?.isLocked;
+        
+        const baseNode = {
+          ...node,
+          draggable: !isLocked && !isNodeLocked,
+          zIndex: isSwimlane ? -1 : (node.zIndex ?? (node.id.startsWith('badge_') ? 20 : 10)),
+          dragHandle: isSwimlane ? '.swimlane-drag-handle' : undefined,
+        };
+
+        if (isSwimlane) {
+          baseNode.data = {
+            ...node.data,
+            onToggleLock: () => toggleNodeLock(node.id),
+            onChangeDepartment: (v: string) => updateNodeData(node.id, { department: v }),
+            onChangeFunction: (v: string) => updateNodeData(node.id, { function: v })
+          };
+        } else {
+          baseNode.data = {
+            ...node.data,
+            onToggleLock: () => toggleNodeLock(node.id)
           };
         }
-        return node;
+        return baseNode;
       });
       setNodes(initialNodesWithHandlers);
       setEdges((diagram.edges || []).map((edge: any) => ({
@@ -450,7 +489,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
         style: { strokeWidth: 2, stroke: '#0f172a' }
       })));
     }
-  }, [diagram, setNodes, setEdges, localizedInitialNodes, updateNodeData]);
+  }, [diagram, setNodes, setEdges, localizedInitialNodes, updateNodeData, toggleNodeLock, isLocked]);
 
   const selectedNode = useMemo(() => nodes.find(n => n.id === selectedNodeId), [nodes, selectedNodeId]);
 
@@ -460,13 +499,17 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
       id,
       type,
       position: { x: 100, y: 100 },
+      draggable: !isLocked,
+      zIndex: 10,
       data: {
         label: t(`bpm:editor.nodes.${type.replace('-', '')}` as any) || type,
         role: t('bpm:editor.roles.default'),
-        regulatoryPairs: []
+        regulatoryPairs: [],
+        isLocked: false,
+        onToggleLock: () => toggleNodeLock(id)
       }
     }]);
-  }, [setNodes, t]);
+  }, [setNodes, t, isLocked, toggleNodeLock]);
 
   const saveMutation = useMutation({
     mutationFn: (data: any) => api(`/api/bpm-diagrams/${diagramId}`, { method: 'PUT', body: JSON.stringify(data) }),
@@ -614,9 +657,13 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
         id: newNodeId,
         type: 'activity',
         position,
+        draggable: !isLocked,
+        zIndex: 10,
         data: { 
           label: parsedData.mappedControlName || parsedData.riskDescription || t('bpm:editor.nodes.activity'),
           role: t('bpm:editor.roles.default'),
+          isLocked: false,
+          onToggleLock: () => toggleNodeLock(newNodeId),
           regulatoryPairs: [{ 
              riskId: parsedData.rcmId || parsedData.riskId || parsedData.mappingId?.split(':')[0], 
              riskDescription: parsedData.riskDescription,
@@ -653,7 +700,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
     } catch (e) {
       console.error("Failed to parse dropped data", e);
     }
-  }, [rfInstance, setNodes, setDirty, t]);
+  }, [rfInstance, setNodes, setDirty, t, isLocked, toggleNodeLock]);
 
   if (isDiagramLoading) return <div className="flex h-full items-center justify-center"><RefreshCw className="h-8 w-8 animate-spin text-slate-300" /></div>;
 
@@ -982,12 +1029,19 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
                       <Button variant="secondary" className="w-full h-10 gap-2 text-[10px] font-bold uppercase tracking-widest rounded-xl bg-mancity-pattern text-primary-foreground hover:opacity-90 shadow-sm transition-all" onClick={() => {
                         const id = `lane_${Date.now()}`;
                         setNodes(nds => [...nds, { 
-                          id, type: 'swimlane', position: { x: 0, y: 0 }, zIndex: -1,
+                          id, 
+                          type: 'swimlane', 
+                          position: { x: 0, y: 0 }, 
+                          zIndex: -1,
+                          draggable: !isLocked,
+                          dragHandle: '.swimlane-drag-handle',
                           style: { width: 400, height: 1000 },
                           data: { 
                             label: t('bpm:editor.swimlane.defaults.lane'), 
                             department: t('bpm:editor.swimlane.defaults.dept'), 
                             function: t('bpm:editor.swimlane.defaults.func'),
+                            isLocked: false,
+                            onToggleLock: () => toggleNodeLock(id),
                             onChangeDepartment: (v: string) => updateNodeData(id, { department: v }),
                             onChangeFunction: (v: string) => updateNodeData(id, { function: v })
                           } 

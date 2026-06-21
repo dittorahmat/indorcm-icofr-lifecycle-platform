@@ -159,6 +159,11 @@
     }
   },
   "editor": {
+    "lockPosition": "Lock Position",
+    "unlockPosition": "Unlock Position",
+    "positionLocked": "Position Locked",
+    "dragHint": "Drag to move swimlane",
+    "lockPositionDesc": "Lock coordinates to prevent accidental dragging",
     "nodes": {
       "start": "Start",
       "activity": "New Activity",

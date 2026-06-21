@@ -162,6 +162,11 @@
     }
   },
   "editor": {
+    "lockPosition": "Kunci Posisi",
+    "unlockPosition": "Buka Kunci Posisi",
+    "positionLocked": "Posisi Terkunci",
+    "dragHint": "Seret untuk menggeser swimlane",
+    "lockPositionDesc": "Kunci koordinat agar tidak sengaja tergeser",
     "nodes": {
       "start": "Mulai",
       "activity": "Aktivitas Baru",
