@@ -32,9 +32,10 @@ export const getDb = (url: string): DrizzleDb => {
   lastUrl = url;
 
   // 1. Detect Node.js runtime (On-Premise Node Server local hosting)
+  const isCloudflare = typeof navigator !== 'undefined' && navigator.userAgent === 'Cloudflare-Workers';
   const isNode = typeof process !== 'undefined' && process.release && process.release.name === 'node';
 
-  if (isNode) {
+  if (isNode && !isCloudflare) {
     console.log('📦 Database Driver: postgres.js (Direct TCP Connection - On-Premise)');
     const queryClient = postgres(url);
     dbInstance = drizzlePgJs(queryClient, { schema }) as any;
