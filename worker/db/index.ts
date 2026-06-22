@@ -25,15 +25,16 @@ export const getDb = (url: string): DrizzleDb => {
     } as any;
   }
 
-  if (dbInstance && lastUrl === url) {
+  // 1. Detect runtimes
+  const isCloudflare = typeof navigator !== 'undefined' && navigator.userAgent === 'Cloudflare-Workers';
+  const isNode = typeof process !== 'undefined' && process.release && process.release.name === 'node';
+
+  // 2. Only cache globally for Node.js (persistent on-premise processes)
+  if (!isCloudflare && dbInstance && lastUrl === url) {
     return dbInstance;
   }
 
   lastUrl = url;
-
-  // 1. Detect Node.js runtime (On-Premise Node Server local hosting)
-  const isCloudflare = typeof navigator !== 'undefined' && navigator.userAgent === 'Cloudflare-Workers';
-  const isNode = typeof process !== 'undefined' && process.release && process.release.name === 'node';
 
   if (isNode && !isCloudflare) {
     console.log('📦 Database Driver: postgres.js (Direct TCP Connection - On-Premise)');
@@ -42,17 +43,15 @@ export const getDb = (url: string): DrizzleDb => {
     return dbInstance!;
   }
 
-  // 2. Serverless/Edge Runtime (Cloudflare Workers demo)
+  // 3. Serverless/Edge Runtime (Cloudflare Workers - instantiate fresh to avoid terminated WebSocket pools)
   if (url.startsWith('http://') || url.startsWith('https://')) {
     console.log('📦 Database Driver: neon-http (HTTP Stateless - No Transaction support)');
     const client = neon(url);
-    dbInstance = drizzleHttp(client, { schema }) as any;
+    return drizzleHttp(client, { schema }) as any;
   } else {
     console.log('📦 Database Driver: neon-serverless (WebSocket Pool - Supports Transactions)');
     const pool = new Pool({ connectionString: url });
-    dbInstance = drizzleWs(pool, { schema }) as any;
+    return drizzleWs(pool, { schema }) as any;
   }
-
-  return dbInstance!;
 };
 
