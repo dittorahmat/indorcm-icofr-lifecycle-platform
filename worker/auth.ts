@@ -9,13 +9,15 @@ let authInstance: any = null;
 let lastDbUrl: string | null = null;
 
 export const getAuth = (env: { DATABASE_URL: string; BETTER_AUTH_SECRET: string; BETTER_AUTH_URL?: string; SKIP_LICENSE?: string }) => {
-    if (authInstance && lastDbUrl === env.DATABASE_URL) {
+    const isCloudflare = typeof navigator !== 'undefined' && navigator.userAgent === 'Cloudflare-Workers';
+
+    if (!isCloudflare && authInstance && lastDbUrl === env.DATABASE_URL) {
         return authInstance;
     }
 
     const db = getDb(env.DATABASE_URL);
 
-    authInstance = betterAuth({
+    const auth = betterAuth({
         database: drizzleAdapter(db, {
             provider: "pg",
             schema: {
@@ -74,6 +76,10 @@ export const getAuth = (env: { DATABASE_URL: string; BETTER_AUTH_SECRET: string;
         }
     });
 
-    lastDbUrl = env.DATABASE_URL;
-    return authInstance;
+    if (!isCloudflare) {
+        authInstance = auth;
+        lastDbUrl = env.DATABASE_URL;
+    }
+
+    return auth;
 };
