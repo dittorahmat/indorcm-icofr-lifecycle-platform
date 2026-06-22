@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { UseFormReturn, FieldValues } from 'react-hook-form';
-import { CSAFormValues } from '@/hooks/useCSA';
+import { CSAFormValues } from '@/hooks/use-csa';
 
 interface CSAFormProps {
   form: UseFormReturn<any>;

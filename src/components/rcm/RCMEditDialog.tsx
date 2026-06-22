@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { useTranslation } from 'react-i18next';
-import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
+import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';

@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
-import { CSARecord, BPMDiagram, BPMProcess, Control } from '@shared/types';
+import { CSARecord, BPMDiagram, BPMProcess } from '@shared/types';
 import { promptBiometricAuth } from '@/lib/forensic-utils';
 import { useSearchParams } from 'react-router-dom';
 import { useCSAForm, CSAFormValues } from './csa/use-csa-form';
@@ -183,8 +183,6 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
     }
   }, [view]);
 
-
-
   // 6. Mutations
   const createMutation = useMutation({
     mutationFn: (data: any) => {
@@ -193,7 +191,6 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
       return api<CSARecord>(url, { method, body: JSON.stringify(data) });
     },
     onSuccess: (response: any, variables: any) => {
-      // response might be { success: true } from PUT, or the record itself from POST
       toast.success(variables.isDraft ? "Draft saved successfully" : "CSA Sign-off successful");
       queryClient.invalidateQueries({ queryKey: ['csa-list'] });
       queryClient.invalidateQueries({ queryKey: ['csa-schedules'] });
@@ -204,7 +201,6 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
         setIsInitialized(true);
         manualViewOverride.current = 'list';
       } else {
-        // If it was a POST, we get the record back. If PUT, we might not.
         const id = response.id || activeCsaId;
         setActiveCsaId(id);
         form.reset(form.getValues(), { keepDirty: false });

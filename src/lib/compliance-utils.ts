@@ -11,6 +11,12 @@ export {
   calculateRiskRating 
 };
 
+// Module-level time constants (millisecond equivalents)
+export const DAY_MS = 86400000;
+export const WEEK_MS = DAY_MS * 7;
+export const MONTH_MS = DAY_MS * 30;
+export const QUARTER_MS = MONTH_MS * 3;
+
 /**
  * Panduan Penentuan Jumlah Sampel berdasarkan Tabel 22 (Hal 56)
  * Dipengaruhi oleh Frekuensi dan Tingkat Risiko
@@ -97,17 +103,12 @@ export function isReadyForRemediationTest(
   const min = getMinRemediationPeriod(frequency);
   const now = Date.now();
   const diff = now - remediationDate;
-  
-  const dayMs = 86400000;
-  const weekMs = dayMs * 7;
-  const monthMs = dayMs * 30;
-  const quarterMs = monthMs * 3;
 
   let requiredMs = 0;
-  if (min.unit === 'days') requiredMs = min.value * dayMs;
-  else if (min.unit === 'weeks') requiredMs = min.value * weekMs;
-  else if (min.unit === 'months') requiredMs = min.value * monthMs;
-  else if (min.unit === 'quarters') requiredMs = min.value * quarterMs;
+  if (min.unit === 'days') requiredMs = min.value * DAY_MS;
+  else if (min.unit === 'weeks') requiredMs = min.value * WEEK_MS;
+  else if (min.unit === 'months') requiredMs = min.value * MONTH_MS;
+  else if (min.unit === 'quarters') requiredMs = min.value * QUARTER_MS;
 
   const isReady = diff >= requiredMs;
   const waitText = `${min.value} ${min.unit}`;

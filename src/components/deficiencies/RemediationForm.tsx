@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { ShieldCheck, Calendar, Lock } from 'lucide-react';
 import type { ActionPlan } from '@shared/types';
 
-import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
+import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { WorkflowPanel } from '../workflow/WorkflowPanel';
 import { useQueryClient } from '@tanstack/react-query';
 

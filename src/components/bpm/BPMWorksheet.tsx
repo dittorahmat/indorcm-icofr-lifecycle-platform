@@ -47,7 +47,7 @@ import { useTranslation } from 'react-i18next';
 import { BPMEditor } from '../rcm/BPMEditor';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
+import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 
 interface BPMWorksheetProps {

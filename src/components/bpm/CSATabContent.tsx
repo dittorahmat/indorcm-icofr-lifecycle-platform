@@ -2,10 +2,10 @@ import React, { useState, useRef, useMemo } from 'react';
 import { Appendix7aDetailed } from '../reports/Appendix7aDetailed';
 import { Appendix7aSummary } from '../reports/Appendix7aSummary';
 import { Control, GLRow, TransactionDetail } from '@shared/types';
-import { useCSA } from '@/hooks/useCSA';
+import { useCSA } from '@/hooks/use-csa';
 import { CSAList } from './CSAList';
 import { CSAForm } from './CSAForm';
-import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
+import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 
 interface CSATabContentProps {
   noGL?: string;

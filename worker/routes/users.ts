@@ -58,6 +58,7 @@ users.post('/users', async (c) => {
     id,
     name: body.name,
     email: body.email,
+    emailVerified: false,
     level: body.level || 'Staff',
     departmentId: body.departmentId,
     createdAt: new Date(),

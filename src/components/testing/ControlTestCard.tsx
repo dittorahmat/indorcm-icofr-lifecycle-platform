@@ -23,7 +23,7 @@ import { promptBiometricAuth } from '@/lib/forensic-utils';
 import { ControlHistory } from './ControlHistory';
 import { TODSixPillarForm } from './TODSixPillarForm';
 import { RegulatorySamplingTable } from './RegulatorySamplingTable';
-import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
+import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 
 import { testSchema, TestFormValues } from './test-schema';

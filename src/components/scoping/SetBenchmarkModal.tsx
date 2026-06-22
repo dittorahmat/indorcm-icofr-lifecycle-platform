@@ -14,9 +14,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { Calculator, Save, AlertCircle, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
+import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { useTranslation } from 'react-i18next';
-import { useNotification } from '@/hooks/useNotification';
+import { useNotification } from '@/hooks/use-notification';
 
 interface SetBenchmarkModalProps {
   snapshot: GLSnapshot | null;

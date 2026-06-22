@@ -75,6 +75,8 @@ licenseApp.post('/license/activate', async (c) => {
     await db.update(systemLicenses).set({
       licenseKey,
       status: 'active',
+      machineCode: fingerprint,
+      expiresAt: new Date(payload.expiryDate),
       activatedAt: new Date(),
       lastHeartbeat: new Date()
     }).where(eq(systemLicenses.id, existing[0].id));
@@ -83,6 +85,8 @@ licenseApp.post('/license/activate', async (c) => {
       id: crypto.randomUUID(),
       licenseKey,
       status: 'active',
+      machineCode: fingerprint,
+      expiresAt: new Date(payload.expiryDate),
       activatedAt: new Date(),
       lastHeartbeat: new Date()
     });

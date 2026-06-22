@@ -180,73 +180,81 @@ export class BpmService {
   }
 
   async updateDiagram(orgId: string, userId: string, id: string, body: any) {
-    const oldDiagrams = await this.db.select().from(bpmDiagrams).where(and(eq(bpmDiagrams.id, id), eq(bpmDiagrams.organizationId, orgId))).limit(1);
-    const oldDiagram = oldDiagrams[0];
+    const originalDb = this.db;
+    return await originalDb.transaction(async (tx) => {
+      this.db = tx;
+      try {
+        const oldDiagrams = await this.db.select().from(bpmDiagrams).where(and(eq(bpmDiagrams.id, id), eq(bpmDiagrams.organizationId, orgId))).limit(1);
+        const oldDiagram = oldDiagrams[0];
 
-    // 1. Update Diagram Metadata & Log Action
-    await this.updateDiagramMetadata(orgId, userId, id, body, oldDiagram);
+        // 1. Update Diagram Metadata & Log Action
+        await this.updateDiagramMetadata(orgId, userId, id, body, oldDiagram);
 
-    const diagramYear = body.year ? parseInt(body.year.toString()) : (oldDiagram?.year || null);
+        const diagramYear = body.year ? parseInt(body.year.toString()) : (oldDiagram?.year || null);
 
-    // 2. Resolve BPM Process & NoGL
-    const matchedProcesses = await this.db.select().from(bpmProcesses)
-      .where(and(
-        eq(bpmProcesses.organizationId, orgId),
-        diagramYear ? eq(bpmProcesses.year, diagramYear) : isNull(bpmProcesses.year),
-        sql`TRIM(LOWER(${bpmProcesses.name})) = TRIM(LOWER(${body.subProcess}))`
-      )).limit(1);
-    
-    const bpmProcessId = matchedProcesses.length > 0 ? matchedProcesses[0].id : null;
-    let noGL = matchedProcesses.length > 0 ? matchedProcesses[0].noGL : "";
-    let currentGLCodes: string[] = [];
+        // 2. Resolve BPM Process & NoGL
+        const matchedProcesses = await this.db.select().from(bpmProcesses)
+          .where(and(
+            eq(bpmProcesses.organizationId, orgId),
+            diagramYear ? eq(bpmProcesses.year, diagramYear) : isNull(bpmProcesses.year),
+            sql`TRIM(LOWER(${bpmProcesses.name})) = TRIM(LOWER(${body.subProcess}))`
+          )).limit(1);
+        
+        const bpmProcessId = matchedProcesses.length > 0 ? matchedProcesses[0].id : null;
+        let noGL = matchedProcesses.length > 0 ? matchedProcesses[0].noGL : "";
+        let currentGLCodes: string[] = [];
 
-    if (bpmProcessId && body.noGLs !== undefined) {
-      await this.db.delete(bpmProcessGlCodes).where(eq(bpmProcessGlCodes.bpmProcessId, bpmProcessId));
-      if (Array.isArray(body.noGLs) && body.noGLs.length > 0) {
-        for (const glCode of body.noGLs) {
-          await this.db.insert(bpmProcessGlCodes).values({
-            id: crypto.randomUUID(),
-            organizationId: orgId,
-            bpmProcessId,
-            noGL: glCode
-          });
+        if (bpmProcessId && body.noGLs !== undefined) {
+          await this.db.delete(bpmProcessGlCodes).where(eq(bpmProcessGlCodes.bpmProcessId, bpmProcessId));
+          if (Array.isArray(body.noGLs) && body.noGLs.length > 0) {
+            for (const glCode of body.noGLs) {
+              await this.db.insert(bpmProcessGlCodes).values({
+                id: crypto.randomUUID(),
+                organizationId: orgId,
+                bpmProcessId,
+                noGL: glCode
+              });
+            }
+            noGL = body.noGLs[0];
+            await this.db.update(bpmProcesses).set({ noGL }).where(eq(bpmProcesses.id, bpmProcessId));
+            currentGLCodes = body.noGLs;
+          }
+        } else if (bpmProcessId) {
+          const existingGLs = await this.db.select({ noGL: bpmProcessGlCodes.noGL })
+            .from(bpmProcessGlCodes)
+            .where(eq(bpmProcessGlCodes.bpmProcessId, bpmProcessId));
+          currentGLCodes = existingGLs.map(g => g.noGL);
+          if (currentGLCodes.length === 0 && noGL) {
+            currentGLCodes = [noGL];
+          }
         }
-        noGL = body.noGLs[0];
-        await this.db.update(bpmProcesses).set({ noGL }).where(eq(bpmProcesses.id, bpmProcessId));
-        currentGLCodes = body.noGLs;
+
+        const glCodesToSync = currentGLCodes.length > 0 ? currentGLCodes : [""];
+
+        // 3. Clear existing node-RCM mappings for this diagram
+        await this.db.delete(bpmNodeRcms).where(eq(bpmNodeRcms.diagramId, id));
+
+        const nodes = body.nodes || [];
+        const edges = body.edges || [];
+
+        // 4. Sync Risks and Controls from Nodes
+        const { activeRiskControlPairs, activeRiskIds, activeControlIds } = 
+          await this.syncRisksAndControlsFromNodes(orgId, id, nodes, bpmProcessId, glCodesToSync, body.name, body.subProcess, diagramYear);
+
+        // 5. Sync from Edges (Risk -> Control)
+        await this.syncMappingsFromEdges(orgId, edges, nodes, activeRiskControlPairs, glCodesToSync);
+
+        // 6, 7, 8. Cleanup stale data
+        await this.cleanupStaleData(orgId, id, activeRiskIds, activeControlIds, activeRiskControlPairs);
+
+        // 9. Update Summary Counts in BPM Processes
+        await this.updateProcessSummaryCounts(orgId, id);
+
+        return { success: true };
+      } finally {
+        this.db = originalDb;
       }
-    } else if (bpmProcessId) {
-      const existingGLs = await this.db.select({ noGL: bpmProcessGlCodes.noGL })
-        .from(bpmProcessGlCodes)
-        .where(eq(bpmProcessGlCodes.bpmProcessId, bpmProcessId));
-      currentGLCodes = existingGLs.map(g => g.noGL);
-      if (currentGLCodes.length === 0 && noGL) {
-        currentGLCodes = [noGL];
-      }
-    }
-
-    const glCodesToSync = currentGLCodes.length > 0 ? currentGLCodes : [""];
-
-    // 3. Clear existing node-RCM mappings for this diagram
-    await this.db.delete(bpmNodeRcms).where(eq(bpmNodeRcms.diagramId, id));
-
-    const nodes = body.nodes || [];
-    const edges = body.edges || [];
-
-    // 4. Sync Risks and Controls from Nodes
-    const { activeRiskControlPairs, activeRiskIds, activeControlIds } = 
-      await this.syncRisksAndControlsFromNodes(orgId, id, nodes, bpmProcessId, glCodesToSync, body.name, body.subProcess, diagramYear);
-
-    // 5. Sync from Edges (Risk -> Control)
-    await this.syncMappingsFromEdges(orgId, edges, nodes, activeRiskControlPairs, glCodesToSync);
-
-    // 6, 7, 8. Cleanup stale data
-    await this.cleanupStaleData(orgId, id, activeRiskIds, activeControlIds, activeRiskControlPairs);
-
-    // 9. Update Summary Counts in BPM Processes
-    await this.updateProcessSummaryCounts(orgId, id);
-
-    return { success: true };
+    });
   }
 
   private async updateDiagramMetadata(orgId: string, userId: string, id: string, body: any, oldDiagram: any) {

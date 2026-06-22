@@ -32,7 +32,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
+import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';

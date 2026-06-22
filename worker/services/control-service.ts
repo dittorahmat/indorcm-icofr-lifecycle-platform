@@ -141,30 +141,38 @@ export class ControlService {
   }
 
   async delete(orgId: string, id: string, role: string) {
-    const [control] = await this.db.select().from(controls).where(and(eq(controls.id, id), eq(controls.organizationId, orgId))).limit(1);
-    if (!control) throw new Error('Control not found');
+    const originalDb = this.db;
+    return await originalDb.transaction(async (tx) => {
+      this.db = tx;
+      try {
+        const [control] = await this.db.select().from(controls).where(and(eq(controls.id, id), eq(controls.organizationId, orgId))).limit(1);
+        if (!control) throw new Error('Control not found');
 
-    if (control.level === 'ELC') {
-      if (role !== 'Admin' && role !== 'Line 2') {
-        throw new Error("Access Denied: Only Admin or Line 2 can delete ELC");
+        if (control.level === 'ELC') {
+          if (role !== 'Admin' && role !== 'Line 2') {
+            throw new Error("Access Denied: Only Admin or Line 2 can delete ELC");
+          }
+
+          const allControls = await this.db.select().from(controls).where(eq(controls.organizationId, orgId));
+          const isLinked = allControls.some((other: any) => 
+            other.id !== id && 
+            other.relatedControlIds && 
+            Array.isArray(other.relatedControlIds) && 
+            other.relatedControlIds.includes(id)
+          );
+
+          if (isLinked) {
+            throw new Error("Cannot delete ELC policy while it is still linked to active Transaction Level Controls.");
+          }
+        }
+
+        await this.db.delete(controls).where(eq(controls.id, id));
+        await this.db.delete(rcmControls).where(eq(rcmControls.controlId, id));
+
+        return { success: true };
+      } finally {
+        this.db = originalDb;
       }
-
-      const allControls = await this.db.select().from(controls).where(eq(controls.organizationId, orgId));
-      const isLinked = allControls.some((other: any) => 
-        other.id !== id && 
-        other.relatedControlIds && 
-        Array.isArray(other.relatedControlIds) && 
-        other.relatedControlIds.includes(id)
-      );
-
-      if (isLinked) {
-        throw new Error("Cannot delete ELC policy while it is still linked to active Transaction Level Controls.");
-      }
-    }
-
-    await this.db.delete(controls).where(eq(controls.id, id));
-    await this.db.delete(rcmControls).where(eq(rcmControls.controlId, id));
-
-    return { success: true };
+    });
   }
 }

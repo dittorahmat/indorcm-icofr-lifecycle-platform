@@ -130,11 +130,9 @@ reporting.post('/bpm-exports', async (c) => {
   await db.insert(bpmExports).values({
     id,
     organizationId: orgId,
+    userId: c.get('userId'),
     diagramId: body.diagramId,
-    format: body.format || 'pdf',
-    status: 'Success',
-    fileUrl: body.fileUrl || '',
-    fileName: body.fileName || 'export.pdf',
+    filename: body.fileName || 'export.pdf',
     createdAt: new Date()
   });
 

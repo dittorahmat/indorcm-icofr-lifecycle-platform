@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import type { HonoEnv } from '../app';
 import { ok, bad, notFound } from '../lib/utils';
 import { getDb } from '../db';
+import { getStorageBucket } from '../lib/storage';
 import { documents, documentDepartments, documentGls, documentFslis, user, documentChunks, csaSchedules } from '../db/schema';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { getDocumentProxy, extractText } from "unpdf";
@@ -83,7 +84,8 @@ aiDocsApp.post('/documents', async (c) => {
     }
 
     const key = `docs/${orgId}/${crypto.randomUUID()}-${file.name}`;
-    await c.env.DOCUMENTS_BUCKET.put(key, arrayBuffer, {
+    const bucket = getStorageBucket(c);
+    await bucket.put(key, arrayBuffer, {
       httpMetadata: { contentType: file.type }
     });
 
@@ -167,7 +169,8 @@ aiDocsApp.delete('/documents/:id', async (c) => {
   if (existing.length === 0) return notFound(c);
 
   if (existing[0].fileUrl) {
-    await c.env.DOCUMENTS_BUCKET.delete(existing[0].fileUrl);
+    const bucket = getStorageBucket(c);
+    await bucket.delete(existing[0].fileUrl);
   }
 
   await db.delete(documents).where(eq(documents.id, id));
@@ -186,7 +189,8 @@ aiDocsApp.get('/documents/download/:id', async (c) => {
 
   if (!existing[0].fileUrl) return bad(c, 'File not found');
 
-  const object = await c.env.DOCUMENTS_BUCKET.get(existing[0].fileUrl);
+  const bucket = getStorageBucket(c);
+  const object = await bucket.get(existing[0].fileUrl);
   if (!object) return notFound(c, 'File not found in storage');
 
   const headers = new Headers();
@@ -384,7 +388,8 @@ aiDocsApp.post('/upload', async (c) => {
     if (!file) return bad(c, 'File is required');
 
     const key = `uploads/${orgId}/${crypto.randomUUID()}-${file.name}`;
-    await c.env.DOCUMENTS_BUCKET.put(key, await file.arrayBuffer(), {
+    const bucket = getStorageBucket(c);
+    await bucket.put(key, await file.arrayBuffer(), {
       httpMetadata: { contentType: file.type }
     });
 
@@ -405,7 +410,8 @@ aiDocsApp.get('/files/*', async (c) => {
   // Ensure the key is decoded (e.g., %20 -> space) to match R2 storage keys
   key = decodeURIComponent(key);
 
-  const object = await c.env.DOCUMENTS_BUCKET.get(key);
+  const bucket = getStorageBucket(c);
+  const object = await bucket.get(key);
   if (!object) return notFound(c, 'File not found');
 
   const headers = new Headers();

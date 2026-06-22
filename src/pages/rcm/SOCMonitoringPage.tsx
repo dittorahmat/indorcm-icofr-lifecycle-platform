@@ -14,7 +14,7 @@ import { SOCReviewDialog } from '@/components/audit/SOCReviewDialog';
 import { AddApplicationDialog } from '@/components/rcm/AddApplicationDialog';
 import { AddVendorDialog } from '@/components/audit/AddVendorDialog';
 import { AddSOCReportDialog } from '@/components/audit/AddSOCReportDialog';
-import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
+import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { toast } from 'sonner';
 
 import { 

@@ -25,7 +25,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { Control, User, TransactionDetail, BPMProcess } from '@shared/types';
 import { useTranslation } from 'react-i18next';
-import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
+import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { WorkflowPanel } from '../workflow/WorkflowPanel';
 import { useUnsavedChangesContext } from '@/context/UnsavedChangesContext';
 

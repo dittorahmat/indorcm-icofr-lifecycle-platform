@@ -33,7 +33,7 @@ import { MaterialityParamsCard } from './components/MaterialityParamsCard';
 import { ScopingSimulationForm } from './components/ScopingSimulationForm';
 import { ScopingEditorHeader } from './components/ScopingEditorHeader';
 import { ScopingEditorContent } from './components/ScopingEditorContent';
-import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
+import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 import { WorkflowPanel } from "@/components/workflow/WorkflowPanel";
 

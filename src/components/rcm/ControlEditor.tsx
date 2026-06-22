@@ -20,7 +20,7 @@ import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 
 import { useTranslation } from 'react-i18next';
-import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
+import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 import { QualitativeRiskWizard } from './QualitativeRiskWizard';
 import { 

@@ -29,7 +29,6 @@ infrastructure.post('/applications', async (c) => {
     organizationId: orgId,
     name: body.name || "New Application",
     description: body.description,
-    category: body.category || "ERP",
     itgcAreas: body.itgcAreas || [],
     isSignificant: body.isSignificant || false,
   });
@@ -110,11 +109,16 @@ infrastructure.post('/soc-reports/:id/evaluate', async (c) => {
     id,
     organizationId: orgId,
     socReportId,
-    evaluatorId: c.get('userId'),
-    period: body.period,
-    conclusion: body.conclusion,
-    notes: body.notes,
-    createdAt: new Date(),
+    evaluatedBy: c.get('userId'),
+    attrA: body.attrA ?? false,
+    attrB: body.attrB ?? false,
+    attrC: body.attrC ?? false,
+    attrD: body.attrD ?? false,
+    attrE: body.attrE ?? false,
+    attrF: body.attrF ?? false,
+    attrG: body.attrG ?? false,
+    auditorOpinion: body.auditorOpinion || "",
+    evaluatedAt: new Date(),
   });
 
   return ok(c, { id });
@@ -130,11 +134,16 @@ infrastructure.post('/soc-evaluations', async (c) => {
     id,
     organizationId: orgId,
     socReportId: body.socReportId,
-    evaluatorId: c.get('userId'),
-    period: body.period,
-    conclusion: body.conclusion,
-    notes: body.notes,
-    createdAt: new Date(),
+    evaluatedBy: c.get('userId'),
+    attrA: body.attrA ?? false,
+    attrB: body.attrB ?? false,
+    attrC: body.attrC ?? false,
+    attrD: body.attrD ?? false,
+    attrE: body.attrE ?? false,
+    attrF: body.attrF ?? false,
+    attrG: body.attrG ?? false,
+    auditorOpinion: body.auditorOpinion || "",
+    evaluatedAt: new Date(),
   });
 
   return ok(c, { id });

@@ -266,9 +266,9 @@ scoping.post('/simulations/assign-department', async (c) => {
   if (!sim.glSnapshotId) return bad(c, 'Simulation has no associated snapshot');
 
   await db.update(glRows)
-    .set({ assignedDepartmentId: body.departmentId })
+    .set({ assignedDepartmentIds: [body.departmentId] })
     .where(and(
-      eq(glRows.snapshotId, sim.glSnapshotId),
+      eq(glRows.snapshotId, sim.glSnapshotId!),
       eq(glRows.noGL, body.accountName),
       eq(glRows.organizationId, orgId)
     ));

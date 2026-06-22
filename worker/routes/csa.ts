@@ -419,6 +419,7 @@ csa.get('/csa/:id/export-pdf', async (c) => {
   if (records.length === 0) return notFound(c, 'CSA Record not found');
   const record = records[0];
 
+  if (!record.controlId) return bad(c, 'CSA Record has no associated control');
   const controlRes = await db.select().from(controls).where(eq(controls.id, record.controlId)).limit(1);
   const control = controlRes[0];
   const samplesData = await db.select().from(csaSamples).where(eq(csaSamples.csaRecordId, id));

@@ -26,7 +26,6 @@ export function useTOD(csaId?: string) {
     }
   });
 
-
   const getControlDetails = async (controlId: string) => {
     return api<Control>(`/api/controls/${controlId}`);
   };

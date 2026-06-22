@@ -253,8 +253,14 @@ export const createApp = () => {
   
   app.post('/api/client-errors', async (c) => {
     try {
-      const e = await c.req.json<ClientErrorReport>();
-      console.error('[CLIENT ERROR]', JSON.stringify(e, null, 2));
+      const e = await c.req.json<ClientErrorReport | ClientErrorReport[]>();
+      if (Array.isArray(e)) {
+        for (const item of e) {
+          console.error('[CLIENT ERROR BATCH]', JSON.stringify(item, null, 2));
+        }
+      } else {
+        console.error('[CLIENT ERROR]', JSON.stringify(e, null, 2));
+      }
       return c.json({ success: true });
     } catch (error) {
       return c.json({ success: false, error: 'Failed to process' }, 500);

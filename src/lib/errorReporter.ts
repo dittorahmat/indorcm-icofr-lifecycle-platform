@@ -123,12 +123,13 @@ class ErrorReporter {
     this.queue = [];
 
     try {
-      // In a real app, this would be an API call
-      // await fetch('/api/logs', { method: 'POST', body: JSON.stringify(currentQueue) });
-      console.log("[ErrorReporter] Flushed errors:", currentQueue);
+      await fetch("/api/client-errors", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(currentQueue),
+      });
     } catch (e) {
-      console.error("[ErrorReporter] Failed to flush errors:", e);
-      // Put errors back in the queue if we failed
+      // Restore queue in case of network failure, avoiding console.error call to prevent potential circular log loops
       this.queue = [...currentQueue, ...this.queue].slice(0, this.maxQueueSize);
     }
   }
@@ -156,17 +157,8 @@ function formatConsoleArgs(args: unknown[]): string {
     .join(" ");
 }
 
-const sendImmediateError = async (payload: ImmediatePayload): Promise<void> => {
-  try {
-    await fetch("/api/client-errors", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-  } catch {
-    // Fail silently
-  }
-};
+// Create singleton instance first to ensure it is initialized before any intercepted logs are handled
+export const errorReporter = new ErrorReporter();
 
 // Intercept console methods IMMEDIATELY before React can cache them
 if (typeof window !== "undefined") {
@@ -184,18 +176,22 @@ if (typeof window !== "undefined") {
 
       try {
         const message = formatConsoleArgs(args);
+
+        // Skip internal vite/hmr noise and error reporter internal logs to prevent loops
+        if (
+          message.includes("[vite]") ||
+          message.includes("HMR") ||
+          message.includes("[ErrorReporter]")
+        ) {
+          return;
+        }
+
         const stack = new Error().stack;
 
-        // Skip internal vite/hmr noise
-        if (message.includes("[vite]") || message.includes("HMR")) return;
-
-        sendImmediateError({
-          message: `${prefix} ${message}`,
+        // Route directly to the batching queue
+        errorReporter.report(`${prefix} ${message}`, defaultLevel, {
           stack,
-          url: window.location.href,
-          timestamp: new Date().toISOString(),
-          level: defaultLevel,
-          category: "unknown",
+          category: "client",
         });
       } catch {
         // Safe fallback
@@ -216,12 +212,10 @@ if (typeof window !== "undefined") {
   (console.error as WrappedConsoleFn).__errorReporterWrapped = true;
 }
 
-// Create singleton instance
-export const errorReporter = new ErrorReporter();
-
 // Cleanup on page unload
 if (typeof window !== "undefined") {
   window.addEventListener("beforeunload", () => {
     errorReporter.dispose();
   });
 }
+

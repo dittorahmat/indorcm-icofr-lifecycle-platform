@@ -1,41 +1,26 @@
 import React from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { 
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
-} from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { 
-  Plus, Search, Database, Loader2, Info, ChevronRight, ArrowRight,
-  Workflow as WorkflowIcon, ShieldCheck, ShieldAlert,
-  Calendar, Layers, Filter, CheckCircle2, AlertTriangle,
-  Target, Fingerprint, Lock, PlusCircle, X as XIcon
+  Search, Loader2, ArrowRight,
+  Workflow as WorkflowIcon, ShieldCheck,
+  AlertTriangle, Target, PlusCircle, X as XIcon
 } from 'lucide-react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/lib/api-client';
-import { GLSnapshot, BPMProcess, User, BPMDiagram, Settings, AccountAssertion, MaterialitySimulation } from '@shared/types';
-import { MOCK_DEPARTMENTS } from '@shared/mock-data';
 import { BPMModal } from '@/components/bpm/BPMModal';
 import { CSAModal } from '@/components/bpm/CSAModal';
 import { BPMEditor } from '@/components/rcm/BPMEditor';
 import { BPMAccountAssertion } from '@/components/bpm/BPMAccountAssertion';
 import { BPMDiagramList } from '@/components/bpm/BPMDiagramList';
-import { toast } from 'sonner';
+import { BPMScopingFilters } from '@/components/bpm/BPMScopingFilters';
+import { BPMStatusBanner } from '@/components/bpm/BPMStatusBanner';
 import { 
   Dialog, DialogContent, DialogDescription, DialogHeader, 
   DialogTitle, DialogFooter 
 } from '@/components/ui/dialog';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
-import { useAccountAssertions, useActiveSimulation, useSimulationSnapshot } from '@/hooks/use-bpm';
-import { useFiscalYearStore } from '@/store/useFiscalYearStore';
-import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
-import { cn } from '@/lib/utils';
-import { motion, AnimatePresence, Variants } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 
 import { PageHeader } from '@/components/layout/PageHeader';
 import { 
@@ -44,6 +29,7 @@ import {
   ResizablePanelGroup 
 } from "@/components/ui/resizable";
 import { WorkflowPanel } from "@/components/workflow/WorkflowPanel";
+import { useBPMPage } from './hooks/useBPMPage';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -69,282 +55,66 @@ const itemVariants: Variants = {
 };
 
 export function BPMPage() {
-  const { t } = useTranslation(['bpm', 'common', 'rcm']);
-  const { workingYear } = useFiscalYearStore();
-  const queryClient = useQueryClient();
-  const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
-  
-  const [selectedFsli, setSelectedFsli] = React.useState<string>("");
-  const [selectedAccountKey, setSelectedAccountKey] = React.useState<string>("");
-  const [selectedBpmId, setSelectedBpmId] = React.useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = React.useState(false);
-  const [isCsaModalOpen, setIsCsaModalOpen] = React.useState(false);
-  const [selectedBpmName, setSelectedBpmName] = React.useState("");
-  
-  const viewYear = workingYear;
+  const {
+    t,
+    viewYear,
+    selectedFsli,
+    setSelectedFsli,
+    selectedAccountKey,
+    setSelectedAccountKey,
+    selectedBpmId,
+    setSelectedBpmId,
+    isModalOpen,
+    setIsModalOpen,
+    isCsaModalOpen,
+    setIsCsaModalOpen,
+    selectedBpmName,
+    setSelectedBpmName,
+    isBpmEditorOpen,
+    selectedDiagramId,
+    currentSubProcess,
+    isCreatingBPM,
+    setIsCreatingBPM,
+    bpmName,
+    setBpmName,
+    searchTerm,
+    setSearchTerm,
+    selectedProcess,
+    setSelectedProcess,
+    localAssertion,
+    handleOpenDiagram,
+    handleCloseDiagram,
+    queryClient,
 
-  const currentYear = new Date().getFullYear();
-  const dynamicYears = React.useMemo(() => {
-    const years = [];
-    const startYear = currentYear - 3;
-    const endYear = currentYear + 1;
-    for (let y = startYear; y <= endYear; y++) {
-      years.push(y.toString());
-    }
-    return years;
-  }, [currentYear]);
+    // Queries
+    activeSim,
+    activeSnap,
+    snapLoading,
+    simLoading,
+    settings,
+    assertionLoading,
+    bpmLoading,
+    diagrams,
 
-  const selectedDiagramId = searchParams.get('diagramId');
-  const isBpmEditorOpen = !!selectedDiagramId;
-  const currentSubProcess = searchParams.get('subProcess') || "";
+    // Derived properties
+    significantFsliNames,
+    glNumbers,
+    selectedGLRow,
+    departmentName,
+    hasAccess,
+    filteredBpmProcesses,
+    isAssertionDirty,
 
-  const [isCreatingBPM, setIsCreatingBPM] = React.useState(false);
-  const [bpmName, setBpmName] = React.useState("");
-  const [searchTerm, setSearchTerm] = React.useState("");
-  const [selectedProcess, setSelectedProcess] = React.useState<BPMProcess | null>(null);
+    // Mutations
+    updateAssertionMutation,
+    createDiagramMutation,
+    createBPMMutation,
+    deleteBPMMutation,
 
-  const [localAssertion, setLocalAssertion] = React.useState<Partial<AccountAssertion>>({});
-
-  const handleOpenDiagram = (diagramId: string, subProcess: string) => {
-    setSearchParams(prev => {
-      const next = new URLSearchParams(prev);
-      next.set('diagramId', diagramId);
-      next.set('subProcess', subProcess);
-      next.set('year', viewYear);
-      return next;
-    });
-  };
-
-  const handleCloseDiagram = () => {
-    setSearchParams(prev => {
-      const next = new URLSearchParams(prev);
-      next.delete('diagramId');
-      next.delete('subProcess');
-      return next;
-    });
-  };
-
-  // Handle Deep Linking from Scoping
-  React.useEffect(() => {
-    const fsli = searchParams.get('fsli');
-    const noGL = searchParams.get('noGL');
-    const glDesc = searchParams.get('glDesc');
-    const year = searchParams.get('year');
-
-    if (fsli) setSelectedFsli(fsli);
-    if (noGL && glDesc) {
-      setSelectedAccountKey(`${noGL} ||| ${glDesc}`);
-    }
-  }, [searchParams]);
-
-  // 1. Fetch Active Simulation for Account Assignments - Filtered by viewYear
-  const { data: activeSim, isLoading: simLoading } = useActiveSimulation(viewYear);
-
-  // 2. Fetch Snapshot linked to the simulation (or fallback to active)
-  const { data: activeSnap, isLoading: snapLoading } = useSimulationSnapshot(activeSim?.glSnapshotId);
-
-  const { data: currentUser } = useQuery({
-    queryKey: ['auth-me'],
-    queryFn: () => api<User>('/api/user/me'),
-  });
-
-  const { data: settings } = useQuery({
-    queryKey: ['settings'],
-    queryFn: () => api<Settings>('/api/settings'),
-  });
-
-  const { assertion: accountAssertion, isLoading: assertionLoading } = useAccountAssertions(
-    selectedFsli, 
-    selectedAccountKey.split(' ||| ')[0]
-  );
-
-  React.useEffect(() => {
-    if (accountAssertion !== undefined) {
-      if (accountAssertion === null) {
-        setLocalAssertion({ 
-          assertionE: 'N', assertionC: 'N', assertionA: 'N', 
-          assertionCo: 'N', assertionRo: 'N', assertionVa: 'N', 
-          assertionPd: 'N' 
-        });
-      } else {
-        setLocalAssertion(accountAssertion);
-      }
-    }
-  }, [accountAssertion]);
-
-  const updateAssertionMutation = useMutation({
-    mutationFn: (data: Partial<AccountAssertion>) => api('/api/account-assertions', {
-      method: 'POST',
-      body: JSON.stringify({
-        fsliName: selectedFsli,
-        noGL: selectedAccountKey.split(' ||| ')[0],
-        ...data
-      })
-    }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['account-assertions'] });
-      toast.success("Account assertions updated");
-    }
-  });
-
-  const isAssertionDirty = React.useMemo(() => {
-    if (!accountAssertion) {
-      return Object.values(localAssertion).some(v => v === 'Y');
-    }
-    return (
-      localAssertion.assertionE !== (accountAssertion.assertionE || 'N') ||
-      localAssertion.assertionC !== (accountAssertion.assertionC || 'N') ||
-      localAssertion.assertionA !== (accountAssertion.assertionA || 'N') ||
-      localAssertion.assertionCo !== (accountAssertion.assertionCo || 'N') ||
-      localAssertion.assertionRo !== (accountAssertion.assertionRo || 'N') ||
-      localAssertion.assertionVa !== (accountAssertion.assertionVa || 'N') ||
-      localAssertion.assertionPd !== (accountAssertion.assertionPd || 'N')
-    );
-  }, [localAssertion, accountAssertion]);
-
-  useUnsavedChanges(isAssertionDirty);
-
-  const handleAssertionChange = (field: keyof AccountAssertion, value: string) => {
-    setLocalAssertion(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleSaveAssertions = () => {
-    updateAssertionMutation.mutate(localAssertion);
-  };
-
-  const glLookupMap = React.useMemo(() => {
-    if (!activeSnap || !activeSnap.rows) return new Map<string, string>();
-    const map = new Map<string, string>();
-    activeSnap.rows.forEach(r => {
-      if (r.glDesc && r.fsliName) map.set(`desc:${r.glDesc}`, r.fsliName);
-      if (r.noGL && r.fsliName) map.set(`no:${r.noGL}`, r.fsliName);
-    });
-    return map;
-  }, [activeSnap]);
-
-  const fsliNoUrutMap = React.useMemo(() => {
-    const map = new Map<string, number>();
-    if (!activeSnap || !activeSnap.rows) return map;
-    activeSnap.rows.forEach(r => {
-      if (r.fsliName) {
-        const currentMin = map.get(r.fsliName) ?? 999999;
-        const rowNoUrut = r.noUrut ?? 999999;
-        if (rowNoUrut < currentMin) map.set(r.fsliName, rowNoUrut);
-      }
-    });
-    return map;
-  }, [activeSnap]);
-
-  const significantFsliNames = React.useMemo(() => {
-    const names = new Set<string>();
-    if (activeSim && activeSim.significantAccounts) {
-      activeSim.significantAccounts.forEach(sa => { 
-        if (sa.name) {
-          const fsliNameFromMap = glLookupMap.get(`desc:${sa.name}`) || glLookupMap.get(`no:${sa.fsliCode}`);
-          if (fsliNameFromMap) names.add(fsliNameFromMap);
-          else names.add(sa.name);
-        }
-      });
-    }
-    const urlFsli = searchParams.get('fsli');
-    if (urlFsli) names.add(urlFsli);
-    return Array.from(names).sort((a, b) => {
-      const orderA = fsliNoUrutMap.get(a) ?? 999999;
-      const orderB = fsliNoUrutMap.get(b) ?? 999999;
-      if (orderA !== orderB) return orderA - orderB;
-      return a.localeCompare(b);
-    });
-  }, [activeSim, glLookupMap, fsliNoUrutMap, searchParams]);
-
-  const glNumbers = React.useMemo(() => {
-    if (!activeSnap || !activeSnap.rows || !selectedFsli) return [];
-    const accounts: { key: string, noGL: string, glDesc: string }[] = [];
-    const seen = new Set<string>();
-    activeSnap.rows
-      .filter(r => (r.fsliName || "").trim().toLowerCase() === selectedFsli.trim().toLowerCase())
-      .forEach(r => {
-        const key = `${r.noGL} ||| ${r.glDesc}`;
-        if (!seen.has(key)) {
-          seen.add(key);
-          accounts.push({ key, noGL: r.noGL, glDesc: r.glDesc });
-        }
-      });
-    return accounts.sort((a, b) => a.noGL.localeCompare(b.noGL));
-  }, [activeSnap, selectedFsli]);
-
-  const selectedGLRow = React.useMemo(() => {
-    if (!selectedAccountKey || !activeSnap || !activeSnap.rows) return null;
-    const [noGL, glDesc] = selectedAccountKey.split(' ||| ');
-    return activeSnap.rows.find(r => r.noGL === noGL && r.glDesc === glDesc);
-  }, [selectedAccountKey, activeSnap]);
-
-  const { departmentName, hasAccess } = React.useMemo(() => {
-    if (!selectedGLRow || !activeSim || !currentUser) return { hasAccess: true, departmentName: "Finance & Accounting" };
-    const assignment = activeSim.significantAccounts?.find(sa => 
-      sa.name === selectedGLRow.fsliName || (sa.fsliCode && sa.fsliCode === selectedGLRow.fsliCode)
-    );
-    const deptIds = assignment?.assignedDepartmentIds || [];
-    const deptName = deptIds.length > 0 
-      ? deptIds.map(id => MOCK_DEPARTMENTS.find(d => d.id === id)?.name).filter(Boolean).join(", ")
-      : "Unassigned";
-    if (currentUser.role === 'Line 2' || currentUser.role === 'Admin') return { departmentName: deptName, hasAccess: true };
-    const match = !!currentUser.departmentId && deptIds.includes(currentUser.departmentId);
-    return { departmentName: deptName, hasAccess: match };
-  }, [selectedGLRow, activeSim, currentUser]);
-
-  const { data: bpmProcesses, isLoading: bpmLoading } = useQuery({
-    queryKey: ['bpm-processes', selectedAccountKey, viewYear],
-    queryFn: () => {
-      const noGL = selectedAccountKey.split(' ||| ')[0];
-      return api<{ items: BPMProcess[] }>(`/api/bpm-processes?noGL=${noGL}&year=${viewYear}`);
-    },
-    enabled: !!selectedAccountKey
-  });
-
-  const { data: diagrams } = useQuery({
-    queryKey: ['bpm-diagrams', viewYear],
-    queryFn: () => api<{ items: BPMDiagram[] }>(`/api/bpm-diagrams?year=${viewYear}`)
-  });
-
-  const createDiagramMutation = useMutation({
-    mutationFn: (subProcess: string) => api<{ id: string }>('/api/bpm-diagrams', {
-      method: 'POST',
-      body: JSON.stringify({ 
-        name: `Flow: ${subProcess}`, 
-        subProcess,
-        year: parseInt(viewYear)
-      })
-    }),
-    onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['bpm-diagrams'] });
-      handleOpenDiagram(data.id, variables);
-    }
-  });
-
-  const createBPMMutation = useMutation({
-    mutationFn: (data: Partial<BPMProcess>) => api('/api/bpm-processes', { method: 'POST', body: JSON.stringify(data) }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bpm-processes'] });
-      setIsCreatingBPM(false);
-      setBpmName("");
-      toast.success(t('common:notifications.created'));
-    }
-  });
-
-  const deleteBPMMutation = useMutation({
-    mutationFn: (id: string) => api(`/api/bpm-processes/${id}`, { method: 'DELETE' }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bpm-processes'] });
-      setSelectedBpmId(null);
-      toast.success(t('common:notifications.deleted'));
-    }
-  });
-
-  const filteredBpmProcesses = React.useMemo(() => {
-    if (!bpmProcesses?.items) return [];
-    return bpmProcesses.items.filter(bpm => bpm.name.toLowerCase().includes(searchTerm.toLowerCase()));
-  }, [bpmProcesses, searchTerm]);
+    // Actions
+    handleAssertionChange,
+    handleSaveAssertions,
+  } = useBPMPage();
 
   return (
     <AppLayout container>
@@ -368,132 +138,27 @@ export function BPMPage() {
         </motion.div>
 
         <motion.div variants={itemVariants}>
-          <Card className="border-slate-200 shadow-md bg-white rounded-xl overflow-hidden">
-            <CardContent className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
-                <div className="space-y-2">
-                  <Label htmlFor="fsli-select" className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 flex items-center gap-2 px-1">
-                    <Database className="h-3.5 w-3.5 text-indigo-500" /> 1. {t('bpm:fsliLabel')}
-                  </Label>
-                  <Select 
-                    value={selectedFsli} 
-                    onValueChange={(v) => { 
-                      if (isAssertionDirty && !window.confirm(t('bpm:unsavedChanges.description'))) return;
-                      setSelectedFsli(v); 
-                      setSelectedAccountKey(""); 
-                      setSelectedBpmId(null); 
-                    }}
-                    disabled={snapLoading || simLoading}
-                  >
-                    <SelectTrigger id="fsli-select" className="bg-slate-50 border-slate-200 h-10 text-xs font-bold uppercase tracking-wider rounded-lg focus:bg-white transition-all shadow-sm">
-                      {snapLoading ? <Loader2 className="h-3 w-3 animate-spin mr-2" /> : null}
-                      <SelectValue placeholder={t('common:placeholders.choose')} />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-lg border-slate-200">
-                      {significantFsliNames.map(f => (
-                        <SelectItem key={f} value={f} className="text-xs font-bold uppercase">{f}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="account-select" className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 flex items-center gap-2 px-1">
-                    <Search className="h-3.5 w-3.5 text-indigo-500" /> 2. {t('common:glAccount')}
-                  </Label>
-                  <Select 
-                    value={selectedAccountKey} 
-                    onValueChange={(v) => {
-                      if (isAssertionDirty && !window.confirm(t('bpm:unsavedChanges.description'))) return;
-                      setSelectedAccountKey(v);
-                    }} 
-                    disabled={!selectedFsli || snapLoading}
-                  >
-                    <SelectTrigger id="account-select" className="bg-slate-50 border-slate-200 h-10 text-xs font-bold uppercase tracking-wider rounded-lg focus:bg-white transition-all shadow-sm">
-                      {snapLoading ? <Loader2 className="h-3 w-3 animate-spin mr-2" /> : null}
-                      <SelectValue placeholder={t('common:placeholders.choose')} />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-lg border-slate-200">
-                      {glNumbers.map(g => (
-                        <SelectItem key={g.key} value={g.key} className="text-xs font-bold uppercase">{g.noGL} • {g.glDesc}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 px-1 flex items-center gap-2">
-                    <Layers className="h-3.5 w-3.5 text-slate-400" /> {t('common:icofr.category')}
-                  </Label>
-                  <div className="h-10 px-3 flex items-center border border-slate-200 rounded-lg bg-slate-50 text-[10px] text-slate-600 font-bold uppercase tracking-widest overflow-hidden whitespace-nowrap">
-                    {selectedGLRow?.category || "-"}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 px-1 flex items-center gap-2">
-                    <Filter className="h-3.5 w-3.5 text-slate-400" /> {t('common:icofr.subCategory')}
-                  </Label>
-                  <div className="h-10 px-3 flex items-center border border-slate-200 rounded-lg bg-slate-50 text-[10px] text-slate-600 font-bold uppercase tracking-widest overflow-hidden whitespace-nowrap">
-                    {selectedGLRow?.subKategori || "-"}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <BPMScopingFilters
+            selectedFsli={selectedFsli}
+            setSelectedFsli={setSelectedFsli}
+            selectedAccountKey={selectedAccountKey}
+            setSelectedAccountKey={setSelectedAccountKey}
+            setSelectedBpmId={setSelectedBpmId}
+            snapLoading={snapLoading}
+            simLoading={simLoading}
+            significantFsliNames={significantFsliNames}
+            glNumbers={glNumbers}
+            selectedGLRow={selectedGLRow}
+            isAssertionDirty={isAssertionDirty}
+          />
         </motion.div>
 
-        <AnimatePresence mode="wait">
-          {activeSim && activeSim.status === 'Approved' ? (
-            <motion.div 
-              key="approved-banner"
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.98 }}
-              className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 flex items-center gap-4 shadow-sm"
-            >
-              <div className="h-10 w-10 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
-                <ShieldCheck className="h-6 w-6" />
-              </div>
-              <div className="space-y-0.5">
-                <p className="text-[10px] font-bold text-emerald-900 uppercase tracking-widest">{t('bpm:baseline.status')}</p>
-                <p className="text-xs font-medium text-emerald-700/80 leading-relaxed">{t('bpm:baseline.description', { year: viewYear })}</p>
-              </div>
-            </motion.div>
-          ) : !activeSnap && !snapLoading && activeSim?.glSnapshotId ? (
-            <motion.div 
-              key="missing-snapshot-banner"
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.98 }}
-              className="bg-rose-50 border border-rose-100 rounded-xl p-4 flex items-center gap-4 shadow-sm"
-            >
-              <div className="h-10 w-10 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
-                <ShieldAlert className="h-6 w-6" />
-              </div>
-              <div className="space-y-0.5">
-                <p className="text-[10px] font-bold text-rose-900 uppercase tracking-widest">Source Data Missing</p>
-                <p className="text-xs font-medium text-rose-700/80 leading-relaxed">The GL Snapshot used for this simulation was not found. Please re-perform scoping for this cycle.</p>
-              </div>
-            </motion.div>
-          ) : !snapLoading && (
-            <motion.div 
-              key="rejected-banner"
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.98 }}
-              className="py-12 text-center border-2 border-dashed rounded-2xl bg-slate-50/50 border-slate-200"
-            >
-              <div className="h-14 w-14 bg-slate-100 text-slate-300 rounded-xl flex items-center justify-center mx-auto mb-4 border border-white shadow-sm">
-                <ShieldAlert className="h-7 w-7" />
-              </div>
-              <h3 className="text-md font-display font-bold text-slate-600 uppercase tracking-tight">{t('bpm:baseline.status')} {t('common:status.rejected')}</h3>
-              <p className="text-slate-500 text-xs max-w-sm mx-auto mt-2 font-medium leading-relaxed px-6">
-                {t('bpm:baseline.empty', { year: viewYear })}
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <BPMStatusBanner
+          activeSim={activeSim}
+          activeSnap={activeSnap}
+          snapLoading={snapLoading}
+          viewYear={viewYear}
+        />
 
         {!activeSim ? null : !selectedAccountKey ? (
           <motion.div 
@@ -609,15 +274,15 @@ export function BPMPage() {
                            </Button>
                         </div>
                         <WorkflowPanel 
-                          entityType="BPM"
-                          entityId={selectedProcess.id}
-                          currentStatus={selectedProcess.workflowStatus || 'Draft'}
-                          history={selectedProcess.workflowHistory || []}
-                          className="flex-1 border-none shadow-none rounded-none"
-                          onStatusChange={(newStatus) => {
-                            queryClient.invalidateQueries({ queryKey: ['bpm-processes'] });
-                            setSelectedProcess(prev => prev ? { ...prev, workflowStatus: newStatus as any } : null);
-                          }}
+                           entityType="BPM"
+                           entityId={selectedProcess.id}
+                           currentStatus={selectedProcess.workflowStatus || 'Draft'}
+                           history={selectedProcess.workflowHistory || []}
+                           className="flex-1 border-none shadow-none rounded-none"
+                           onStatusChange={(newStatus) => {
+                             queryClient.invalidateQueries({ queryKey: ['bpm-processes'] });
+                             setSelectedProcess(prev => prev ? { ...prev, workflowStatus: newStatus as any } : null);
+                           }}
                         />
                       </div>
                     </ResizablePanel>
@@ -643,6 +308,8 @@ export function BPMPage() {
 
         <Dialog open={isBpmEditorOpen} onOpenChange={(open) => !open && handleCloseDiagram()}>
           <DialogContent className="max-w-[98vw] w-[1600px] h-[98vh] flex flex-col p-0 overflow-hidden border-none shadow-2xl rounded-2xl">
+            <DialogTitle className="sr-only">BPM Workflow Editor: {currentSubProcess}</DialogTitle>
+            <DialogDescription className="sr-only">Visual editor for BPM workflow processes</DialogDescription>
             <div className="bg-mancity-pattern p-6 flex justify-between items-center text-primary-foreground">
               <div className="space-y-1">
                 <div className="flex items-center gap-3">
