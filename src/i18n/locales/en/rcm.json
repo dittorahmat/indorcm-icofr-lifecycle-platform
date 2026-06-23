@@ -111,6 +111,8 @@
   "verification": {
     "title": "Control Design Verification (Appendix 8)",
     "subtitle": "ICOFR Function validates control design to mitigate risks",
+    "add_new": "New Assessment",
+    "add_new_short": "New Assessment",
     "groups": {
       "info": "Control Information (Line 1)",
       "tod": "Design Testing (TOD) - Line 2"
@@ -130,8 +132,33 @@
       "actions": "Action & Information",
       "entity": "Entity",
       "location": "Location Code"
+    },
+    "add_dialog": {
+      "title": "Add New Verification Assessment",
+      "description": "Create a new control design assessment entry from scratch. All data must be reviewed by Line 2.",
+      "tab_rcm": "Select RCM",
+      "tab_info": "Control Info",
+      "tab_compliance": "IPO & Assertion Compliance",
+      "tab_metadata": "Metadata",
+      "tab_tod": "TOD Evaluation",
+      "rcm_select_label": "Existing RCM",
+      "rcm_select_placeholder": "Search by process / sub-process / risk...",
+      "create_new_rcm_label": "Create New RCM",
+      "create_new_rcm_desc": "Check if this control is not mapped to any existing RCM",
+      "process_label": "Process Name",
+      "subprocess_label": "Sub-Process Name",
+      "risk_desc_label": "Risk Description",
+      "risk_rating_label": "Risk Rating",
+      "fraud_related_label": "Fraud Related?",
+      "control_code_label": "Control Code (optional)",
+      "control_code_hint": "Leave blank for auto-generation",
+      "save_btn": "Save Assessment",
+      "saving_btn": "Saving...",
+      "success": "New verification assessment created successfully.",
+      "error": "Failed to create assessment. Please try again."
     }
   },
+
   "migration": {
     "title": "Smart Migration Workspace",
     "description": "AI-assisted ingestion for brownfield ICOFR data. Reconstruct your hierarchies and establish a compliant baseline from legacy Excel files.",

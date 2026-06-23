@@ -111,6 +111,8 @@
   "verification": {
     "title": "Verifikasi Rancangan Pengendalian (Lampiran 8)",
     "subtitle": "Fungsi ICOFR memvalidasi desain pengendalian untuk memitigasi risiko",
+    "add_new": "Tambah Asesmen Baru",
+    "add_new_short": "Asesmen Baru",
     "groups": {
       "info": "Informasi Pengendalian (Lini 1)",
       "tod": "Pengujian Rancangan (TOD) - Lini 2"
@@ -130,6 +132,30 @@
       "actions": "Aksi & Informasi",
       "entity": "Entitas",
       "location": "Kode Lokasi"
+    },
+    "add_dialog": {
+      "title": "Tambah Asesmen Verifikasi Baru",
+      "description": "Buat entri asesmen rancangan kontrol baru dari awal. Seluruh data wajib ditinjau oleh Lini 2.",
+      "tab_rcm": "Pilih RCM",
+      "tab_info": "Info Pengendalian",
+      "tab_compliance": "Kepatuhan IPO & Asersi",
+      "tab_metadata": "Metadata",
+      "tab_tod": "Evaluasi TOD",
+      "rcm_select_label": "RCM yang Ada",
+      "rcm_select_placeholder": "Cari proses / sub-proses / risiko...",
+      "create_new_rcm_label": "Buat RCM Baru",
+      "create_new_rcm_desc": "Centang jika kontrol ini tidak terpetakan di RCM manapun",
+      "process_label": "Nama Proses",
+      "subprocess_label": "Nama Sub-Proses",
+      "risk_desc_label": "Deskripsi Risiko",
+      "risk_rating_label": "Penilaian Risiko",
+      "fraud_related_label": "Terkait Fraud?",
+      "control_code_label": "Kode Kontrol (opsional)",
+      "control_code_hint": "Kosongkan untuk auto-generate",
+      "save_btn": "Simpan Asesmen",
+      "saving_btn": "Menyimpan...",
+      "success": "Asesmen verifikasi baru berhasil dibuat.",
+      "error": "Gagal membuat asesmen. Silakan coba lagi."
     }
   },
   "migration": {

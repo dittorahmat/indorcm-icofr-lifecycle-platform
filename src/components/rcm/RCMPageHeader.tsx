@@ -14,6 +14,7 @@ interface RCMPageHeaderProps {
   onRefresh?: () => void;
   onPrint?: () => void;
   metadata?: { label: string; value: string }[];
+  children?: React.ReactNode;
 }
 
 export function RCMPageHeader({ 
@@ -25,7 +26,8 @@ export function RCMPageHeader({
   isSaving, 
   onRefresh,
   onPrint,
-  metadata 
+  metadata,
+  children
 }: RCMPageHeaderProps) {
   return (
     <div className="p-4 pb-2 space-y-3 shrink-0 bg-white/80 backdrop-blur-md border-b z-10 print:hidden">
@@ -38,6 +40,7 @@ export function RCMPageHeader({
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {children}
           {onPrint && (
             <Button variant="outline" size="xs" onClick={onPrint} className="bg-white h-7 text-xs font-bold text-slate-600 border-slate-200">
               <Printer className="h-3 w-3 mr-1.5" /> Print
@@ -84,3 +87,4 @@ export function RCMPageHeader({
     </div>
   );
 }
+

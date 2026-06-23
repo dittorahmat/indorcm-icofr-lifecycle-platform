@@ -405,7 +405,132 @@ rcm.patch('/rcm-matrix/verification-design/:mappingId', rbac(['Line 2', 'Admin']
   return ok(c, { success: true });
 });
 
+rcm.post('/rcm-matrix/verification-design', rbac(['Line 2', 'Admin']), async (c) => {
+  const db = getDb(c.env.DATABASE_URL);
+  const orgId = c.get('organizationId');
+  const userId = c.get('userId');
+  const body = await c.req.json();
+
+  const {
+    // RCM related
+    createNewRcm,
+    rcmId: existingRcmId,
+    process,
+    subProcess,
+    riskDescription,
+    riskRating,
+    isFraudRelated,
+    // Control/Mapping fields (Lini 1)
+    controlCode,
+    controlName,
+    controlDescription,
+    supportingDocs,
+    isKeyControl,
+    ipoC, ipoA, ipoV, ipoRa,
+    assertionE, assertionC, assertionA, assertionCo, assertionVa, assertionRo, assertionPd,
+    controlType, controlNature, automatedControlType, frequency,
+    supportingApp, applicationId, executingFunction, executorRole, affectedFsliItem, effectivePeriod,
+    bpmProcessId,
+    // TOD fields (Lini 2)
+    pilarObjective, pilarTiming, pilarAuthority, pilarReliability, pilarCoverage, pilarEvidence,
+    kkReference, conclusion, comment,
+  } = body;
+
+  let finalRcmId = existingRcmId;
+
+  // 1. Create new RCM if requested
+  if (createNewRcm) {
+    if (!process || !subProcess || !riskDescription) {
+      return bad(c, 'Process, Sub-Process, and Risk Description are required when creating a new RCM.');
+    }
+    finalRcmId = crypto.randomUUID();
+    await db.insert(rcms).values({
+      id: finalRcmId,
+      organizationId: orgId,
+      process: process || 'New Process',
+      subProcess: subProcess || 'New Sub-Process',
+      riskDescription: riskDescription || 'New Risk',
+      isFraudRelated: isFraudRelated ?? false,
+      riskRating: riskRating || 'Medium',
+      status: 'Active',
+    } as any);
+  }
+
+  if (!finalRcmId) {
+    return bad(c, 'An existing RCM must be selected or a new one must be created.');
+  }
+
+  // 2. Create new control
+  const newControlId = crypto.randomUUID();
+  const generatedCode = controlCode || `C-${newControlId.substring(0, 8)}`;
+
+  await db.insert(controls).values({
+    id: newControlId,
+    organizationId: orgId,
+    rcmId: finalRcmId,
+    code: generatedCode,
+    name: controlName || 'New Control',
+    description: controlDescription,
+    level: 'TLC',
+    bpmProcessId: bpmProcessId || null,
+  } as any);
+
+  // 3. Create RCM Control mapping
+  const newMappingId = crypto.randomUUID();
+  await db.insert(rcmControls).values({
+    id: newMappingId,
+    organizationId: orgId,
+    rcmId: finalRcmId,
+    controlId: newControlId,
+    controlName,
+    controlDescription,
+    supportingDocs,
+    isKeyControl: isKeyControl ?? false,
+    ipoC: ipoC || 'N', ipoA: ipoA || 'N', ipoV: ipoV || 'N', ipoRa: ipoRa || 'N',
+    assertionE: assertionE || 'N', assertionC: assertionC || 'N', assertionA: assertionA || 'N',
+    assertionCo: assertionCo || 'N', assertionVa: assertionVa || 'N',
+    assertionRo: assertionRo || 'N', assertionPd: assertionPd || 'N',
+    controlType, controlNature, automatedControlType, frequency,
+    supportingApp, applicationId, executingFunction, executorRole, affectedFsliItem, effectivePeriod,
+  } as any);
+
+  // 4. Create TOD Evaluation
+  const newTodId = crypto.randomUUID();
+  await db.insert(todEvaluations).values({
+    id: newTodId,
+    organizationId: orgId,
+    controlId: newControlId,
+    evaluatorId: userId,
+    csaId: null,
+    pilarObjective, pilarTiming, pilarAuthority, pilarReliability, pilarCoverage, pilarEvidence,
+    kkReference, conclusion, comment,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  } as any);
+
+  // 5. Auto-Deficiency if Ineffective
+  if (conclusion === 'Ineffective') {
+    const defService = new DeficiencyService(db);
+    await defService.createAutoDeficiency({
+      organizationId: orgId,
+      controlId: newControlId,
+      description: `Hasil Verifikasi Desain (TOD) Ineffective untuk kontrol baru: ${comment || 'No justification provided.'}`,
+      source: 'Lini 2 - TOD Review',
+      userId,
+      period: 'TOD-Evaluation'
+    });
+  }
+
+  return ok(c, { 
+    success: true, 
+    mappingId: newMappingId,
+    controlId: newControlId,
+    rcmId: finalRcmId,
+  });
+});
+
 rcm.get('/rcm-matrix/tlc/mapping/:id', async (c) => {
+
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const id = c.req.param('id');

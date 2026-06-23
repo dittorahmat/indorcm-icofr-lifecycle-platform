@@ -3,9 +3,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { api } from '@/lib/api-client';
 import { 
-  Search, RefreshCw, Edit3, AlertTriangle, Check, Shield, ClipboardCheck
+  Edit3, Shield, PlusCircle, Search
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -14,6 +15,7 @@ import { RCMPageHeader } from '@/components/rcm/RCMPageHeader';
 import { RCMTable, RCMColumnGroup } from '@/components/rcm/RCMTable';
 import { RCMGroupRow } from '@/components/rcm/RCMGroupRow';
 import { VerificationEditDialog } from '@/components/rcm/VerificationEditDialog';
+import { AddAssessmentDialog } from '@/components/rcm/AddAssessmentDialog';
 import { authClient } from '@/lib/auth-client';
 
 interface VerificationMatrixItem {
@@ -75,6 +77,7 @@ export function VerificationDesignPage({ embedded, filterBpmId }: VerificationDe
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = React.useState('');
   const [editingItem, setEditingItem] = React.useState<VerificationMatrixItem | null>(null);
+  const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false);
   const { data: session } = authClient.useSession();
   const userRole = (session?.user as any)?.role;
   const canEdit = userRole === 'Admin' || userRole === 'Line 2';
@@ -221,6 +224,18 @@ export function VerificationDesignPage({ embedded, filterBpmId }: VerificationDe
     }
   ], [t, canEdit]);
 
+  const newAssessmentButton = canEdit ? (
+    <Button
+      id="btn-new-verification-assessment"
+      size="xs"
+      onClick={() => setIsAddDialogOpen(true)}
+      className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold h-7 text-xs flex items-center gap-1.5 px-3 shadow-sm"
+    >
+      <PlusCircle className="h-3.5 w-3.5" />
+      {t('rcm:verification.add_new_short')}
+    </Button>
+  ) : null;
+
   const content = (
     <div className={cn("flex flex-col min-w-0 flex-1", embedded && "h-full")}>
       {!embedded && (
@@ -235,7 +250,9 @@ export function VerificationDesignPage({ embedded, filterBpmId }: VerificationDe
             { label: t('rcm:verification.columns.entity'), value: items[0]?.companyName || "N/A" },
             { label: t('rcm:verification.columns.location'), value: items[0]?.locationCode || "N/A" }
           ]}
-        />
+        >
+          {newAssessmentButton}
+        </RCMPageHeader>
       )}
 
       <RCMTable 
@@ -254,11 +271,41 @@ export function VerificationDesignPage({ embedded, filterBpmId }: VerificationDe
           isSaving={saveMutation.isPending}
         />
       )}
+
+      <AddAssessmentDialog
+        open={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
+        filterBpmId={filterBpmId}
+        onSuccess={() => queryClient.invalidateQueries({ queryKey: ['verification-design-matrix'] })}
+      />
     </div>
   );
 
   if (embedded) {
-    return <div className="h-full bg-white overflow-auto p-4">{content}</div>;
+    return (
+      <div className="flex flex-col h-full bg-white">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 px-4 py-3 border-b bg-slate-50 shrink-0">
+          <div className="flex items-center gap-3 flex-1 max-w-md">
+            <div className="relative w-full">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Input 
+                placeholder="Search matrix..." 
+                className="pl-8 bg-white border-slate-200 h-8 text-xs font-medium" 
+                value={searchTerm} 
+                onChange={(e) => setSearchTerm(e.target.value)} 
+              />
+            </div>
+            {newAssessmentButton}
+          </div>
+          <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider hidden md:inline">
+            {t('rcm:verification.title')}
+          </span>
+        </div>
+        <div className="flex-1 overflow-auto">
+          {content}
+        </div>
+      </div>
+    );
   }
 
   return (
