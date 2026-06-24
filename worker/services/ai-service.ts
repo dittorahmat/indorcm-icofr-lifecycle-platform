@@ -160,7 +160,9 @@ export class AIService {
 
       const lastMessage = params.messages[params.messages.length - 1].content;
       const lastMessageParts = mapContentToGeminiParts(lastMessage);
-      const result = await chat.sendMessage(lastMessageParts);
+      const result = await this.callWithRetry(async () => {
+        return await chat.sendMessage(lastMessageParts);
+      });
       const response = await result.response;
       
       return {
@@ -182,7 +184,7 @@ export class AIService {
           "Authorization": `Bearer ${this.config.apiKey}`,
         },
         body: JSON.stringify({
-          model: this.config.chatModel || "gemma2",
+          model: this.config.chatModel || "gemma4",
           messages,
           tools: params.tools?.map(t => ({ type: "function", function: t })),
           response_format: params.responseSchema ? {

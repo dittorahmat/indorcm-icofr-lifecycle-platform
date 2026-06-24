@@ -26,7 +26,8 @@ async function sync() {
   const content = fs.readFileSync(GUIDE_PATH, "utf-8");
   const hash = crypto.createHash("sha256").update(content).digest("hex");
 
-  const db = getDb(DATABASE_URL);
+  const directUrl = DATABASE_URL.replace('-pooler', '');
+  const db = getDb(directUrl);
   const aiService = new AIService({
     provider: (process.env.AI_PROVIDER as any) || "gemini",
     apiKey: GEMINI_API_KEY,
@@ -108,7 +109,9 @@ async function sync() {
   console.log("🏁 Sync complete. AI is now updated with the latest USAGE_GUIDE.md.");
 }
 
-sync().catch(err => {
+sync().then(() => {
+  process.exit(0);
+}).catch(err => {
   console.error("❌ Fatal Sync Error:", err);
   process.exit(1);
 });

@@ -22,7 +22,8 @@ async function check() {
     WHERE table_name = 'deficiencies'
   `);
   
-  console.log('📊 Existing columns:', result.rows.map((r: any) => `${r.table_schema}.${r.column_name}`).join(', '));
+  const rows = Array.isArray(result) ? result : (result as any).rows || [];
+  console.log('📊 Existing columns:', rows.map((r: any) => `${r.table_schema}.${r.column_name}`).join(', '));
   process.exit(0);
 }
 

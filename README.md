@@ -115,7 +115,7 @@ IndoGRC Pro includes an AI-powered chatbot assistant to help you understand ICOF
        "vars": {
          "AI_PROVIDER": "openai-compatible",
          "AI_BASE_URL": "http://your-server-ip:11434/v1",
-         "AI_CHAT_MODEL": "gemma2",
+         "AI_CHAT_MODEL": "gemma4",
          "AI_EMBEDDING_MODEL": "nomic-embed-text"
        }
      }

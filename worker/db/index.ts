@@ -12,6 +12,7 @@ export type DrizzleDb = PgDatabase<any, typeof schema>;
 
 let dbInstance: DrizzleDb | null = null;
 let lastUrl: string | null = null;
+let hasLoggedDriver = false;
 
 export const getDb = (url: string): DrizzleDb => {
   if (!url) {
@@ -37,7 +38,10 @@ export const getDb = (url: string): DrizzleDb => {
   lastUrl = url;
 
   if (isNode && !isCloudflare) {
-    console.log('📦 Database Driver: postgres.js (Direct TCP Connection - On-Premise)');
+    if (!hasLoggedDriver) {
+      console.log('📦 Database Driver: postgres.js (Direct TCP Connection - On-Premise)');
+      hasLoggedDriver = true;
+    }
     const queryClient = postgres(url);
     dbInstance = drizzlePgJs(queryClient, { schema }) as any;
     return dbInstance!;
@@ -45,11 +49,17 @@ export const getDb = (url: string): DrizzleDb => {
 
   // 3. Serverless/Edge Runtime (Cloudflare Workers - instantiate fresh to avoid terminated WebSocket pools)
   if (url.startsWith('http://') || url.startsWith('https://')) {
-    console.log('📦 Database Driver: neon-http (HTTP Stateless - No Transaction support)');
+    if (!hasLoggedDriver) {
+      console.log('📦 Database Driver: neon-http (HTTP Stateless - No Transaction support)');
+      hasLoggedDriver = true;
+    }
     const client = neon(url);
     return drizzleHttp(client, { schema }) as any;
   } else {
-    console.log('📦 Database Driver: neon-serverless (WebSocket Pool - Supports Transactions)');
+    if (!hasLoggedDriver) {
+      console.log('📦 Database Driver: neon-serverless (WebSocket Pool - Supports Transactions)');
+      hasLoggedDriver = true;
+    }
     const pool = new Pool({ connectionString: url });
     return drizzleWs(pool, { schema }) as any;
   }
