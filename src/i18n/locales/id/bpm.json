@@ -232,6 +232,12 @@
       "backToEditor": "Kembali ke Editor",
       "printExport": "Cetak / Ekspor PDF",
       "documentView": "Tampilan Dokumen"
+    },
+    "signatures": {
+      "lini1NamePlaceholder": "Nama Penyusun",
+      "lini2NamePlaceholder": "Nama Pereview",
+      "cfoNamePlaceholder": "Nama CFO",
+      "datePlaceholder": "Tgl (Hari/Bulan/Tahun)"
     }
   },
   "sampling": {

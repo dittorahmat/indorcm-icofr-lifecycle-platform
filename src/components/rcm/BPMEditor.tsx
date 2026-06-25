@@ -261,6 +261,55 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
     enabled: !!subProcess
   });
 
+  const { data: users } = useQuery({
+    queryKey: ['users-for-workflow'],
+    queryFn: () => api<{ items: { id: string, name: string, role: string }[] }>('/api/users'),
+  });
+
+  const [signatures, setSignatures] = useState({
+    lini1Name: '',
+    lini1Date: '',
+    lini2Name: '',
+    lini2Date: '',
+    cfoName: '',
+    cfoDate: ''
+  });
+
+  const getUserName = useCallback((userId: string) => {
+    if (!users?.items || !userId) return userId;
+    const found = users.items.find(u => u.id === userId);
+    return found ? found.name : userId;
+  }, [users]);
+
+  // Hybrid default & override loading logic for signatures
+  useEffect(() => {
+    if (diagram) {
+      const savedSigs = diagram.metadata?.signatures || {};
+      
+      const history = bpmProcess?.workflowHistory || [];
+      const submitAction = history.find((h: any) => h.action === 'Submit');
+      const reviewAction = history.find((h: any) => h.action === 'Review');
+      const approveAction = history.find((h: any) => h.action === 'Approve');
+      
+      const formatTimestamp = (ts: number) => {
+        try {
+          return format(new Date(ts), 'dd/MM/yyyy');
+        } catch {
+          return '';
+        }
+      };
+
+      setSignatures({
+        lini1Name: savedSigs.lini1Name !== undefined ? savedSigs.lini1Name : (submitAction?.userId ? getUserName(submitAction.userId) : getUserName(diagram.createdBy || '')),
+        lini1Date: savedSigs.lini1Date !== undefined ? savedSigs.lini1Date : (submitAction ? formatTimestamp(submitAction.timestamp) : ''),
+        lini2Name: savedSigs.lini2Name !== undefined ? savedSigs.lini2Name : (reviewAction?.userId ? getUserName(reviewAction.userId) : ''),
+        lini2Date: savedSigs.lini2Date !== undefined ? savedSigs.lini2Date : (reviewAction ? formatTimestamp(reviewAction.timestamp) : ''),
+        cfoName: savedSigs.cfoName !== undefined ? savedSigs.cfoName : (approveAction?.userId ? getUserName(approveAction.userId) : ''),
+        cfoDate: savedSigs.cfoDate !== undefined ? savedSigs.cfoDate : (approveAction ? formatTimestamp(approveAction.timestamp) : '')
+      });
+    }
+  }, [diagram, bpmProcess, users, getUserName]);
+
   const { data: activeSim } = useActiveSimulation(workingYear);
   const { data: activeSnap } = useSimulationSnapshot(activeSim?.glSnapshotId);
 
@@ -378,8 +427,38 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
     const originalNodes = JSON.stringify((diagram.nodes || localizedInitialNodes).map((n: any) => ({ id: n.id, position: n.position, data: n.data })));
     const currentEdges = JSON.stringify(edges.map(e => ({ id: e.id, source: e.source, target: e.target })));
     const originalEdges = JSON.stringify((diagram.edges || []).map((e: any) => ({ id: e.id, source: e.source, target: e.target })));
-    return currentNodes !== originalNodes || currentEdges !== originalEdges;
-  }, [nodes, edges, diagram, isLocked, localizedInitialNodes]);
+    
+    // Compare signatures with what would be resolved initially
+    const savedSigs = diagram.metadata?.signatures || {};
+    const history = bpmProcess?.workflowHistory || [];
+    const submitAction = history.find((h: any) => h.action === 'Submit');
+    const reviewAction = history.find((h: any) => h.action === 'Review');
+    const approveAction = history.find((h: any) => h.action === 'Approve');
+    
+    const formatTimestamp = (ts: number) => {
+      try {
+        return format(new Date(ts), 'dd/MM/yyyy');
+      } catch {
+        return '';
+      }
+    };
+
+    const initialLini1Name = savedSigs.lini1Name !== undefined ? savedSigs.lini1Name : (submitAction?.userId ? getUserName(submitAction.userId) : getUserName(diagram.createdBy || ''));
+    const initialLini1Date = savedSigs.lini1Date !== undefined ? savedSigs.lini1Date : (submitAction ? formatTimestamp(submitAction.timestamp) : '');
+    const initialLini2Name = savedSigs.lini2Name !== undefined ? savedSigs.lini2Name : (reviewAction?.userId ? getUserName(reviewAction.userId) : '');
+    const initialLini2Date = savedSigs.lini2Date !== undefined ? savedSigs.lini2Date : (reviewAction ? formatTimestamp(reviewAction.timestamp) : '');
+    const initialCfoName = savedSigs.cfoName !== undefined ? savedSigs.cfoName : (approveAction?.userId ? getUserName(approveAction.userId) : '');
+    const initialCfoDate = savedSigs.cfoDate !== undefined ? savedSigs.cfoDate : (approveAction ? formatTimestamp(approveAction.timestamp) : '');
+
+    const sigsChanged = signatures.lini1Name !== initialLini1Name ||
+                        signatures.lini1Date !== initialLini1Date ||
+                        signatures.lini2Name !== initialLini2Name ||
+                        signatures.lini2Date !== initialLini2Date ||
+                        signatures.cfoName !== initialCfoName ||
+                        signatures.cfoDate !== initialCfoDate;
+
+    return currentNodes !== originalNodes || currentEdges !== originalEdges || sigsChanged;
+  }, [nodes, edges, diagram, isLocked, localizedInitialNodes, signatures, bpmProcess, getUserName]);
 
   // Sync isDirty with global context
   useEffect(() => {
@@ -737,7 +816,11 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
                    </ReactFlow>
                 </div>
 
-                <BPMCanvasFooter />
+                 <BPMCanvasFooter 
+                    signatures={signatures} 
+                    onChangeSignature={(key, val) => setSignatures(prev => ({ ...prev, [key]: val }))}
+                    isLocked={isLocked}
+                 />
              </div>
              
              <div className="fixed bottom-8 right-8 flex gap-2 print:hidden">
@@ -845,7 +928,8 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
                 size="sm" 
                 className="h-9 gap-2 bg-mancity-pattern hover:opacity-90 text-primary-foreground shadow-sm transition-all font-bold text-[10px] uppercase tracking-widest px-6 rounded-xl" 
                 onClick={() => saveMutation.mutate({ 
-                  nodes, edges, name: `Flow: ${subProcess}`, subProcess, year: diagram?.year || parseInt(workingYear), noGLs: selectedGLs
+                  nodes, edges, name: `Flow: ${subProcess}`, subProcess, year: diagram?.year || parseInt(workingYear), noGLs: selectedGLs,
+                  metadata: { ...diagram?.metadata, signatures }
                 })} 
                 disabled={saveMutation.isPending || isLocked}
               >
@@ -1067,7 +1151,8 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
             setSelectedNodeId(null);
           }}
           onSave={() => saveMutation.mutate({ 
-            nodes, edges, name: `Flow: ${subProcess}`, subProcess, year: diagram?.year || parseInt(workingYear), noGLs: selectedGLs 
+            nodes, edges, name: `Flow: ${subProcess}`, subProcess, year: diagram?.year || parseInt(workingYear), noGLs: selectedGLs,
+            metadata: { ...diagram?.metadata, signatures }
           })}
           isSaving={saveMutation.isPending}
           isDirty={isDirty}

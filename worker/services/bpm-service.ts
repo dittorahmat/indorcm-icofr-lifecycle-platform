@@ -267,6 +267,7 @@ export class BpmService {
         subProcess: body.subProcess,
         nodes: body.nodes,
         edges: body.edges,
+        metadata: body.metadata,
         updatedAt: new Date(),
       })
       .where(and(eq(bpmDiagrams.id, id), eq(bpmDiagrams.organizationId, orgId)));

@@ -91,20 +91,57 @@ export const BPMCanvasHeader = ({ subProcess, year, version = '1.0', isDraft, no
   );
 };
 
-export const BPMCanvasFooter = () => {
+interface BPMCanvasFooterProps {
+  signatures: {
+    lini1Name: string;
+    lini1Date: string;
+    lini2Name: string;
+    lini2Date: string;
+    cfoName: string;
+    cfoDate: string;
+  };
+  onChangeSignature?: (key: keyof BPMCanvasFooterProps['signatures'], val: string) => void;
+  isLocked?: boolean;
+}
+
+export const BPMCanvasFooter = ({ signatures, onChangeSignature, isLocked = false }: BPMCanvasFooterProps) => {
+  const { t } = useTranslation(['bpm', 'common']);
+
+  const inputClass = "w-32 text-right border-b border-slate-200 hover:border-slate-400 focus:border-indigo-500 focus:outline-none bg-transparent transition-colors text-xs font-bold text-slate-800 print:border-none print:bg-transparent print:placeholder-transparent";
+
+  const handleChange = (key: keyof BPMCanvasFooterProps['signatures'], value: string) => {
+    if (onChangeSignature) {
+      onChangeSignature(key, value);
+    }
+  };
+
   return (
     <div className="w-full mt-8 grid grid-cols-3 border-2 border-slate-800 bg-white">
        <div className="border-r-2 border-slate-800 p-4 min-h-[120px] flex flex-col">
           <span className="text-xs font-black uppercase text-slate-500 mb-4 border-b pb-1">Disusun Oleh (Lini 1)</span>
           <div className="flex-1" />
           <div className="space-y-1">
-             <div className="flex justify-between text-xs font-bold uppercase">
+             <div className="flex justify-between items-center text-xs font-bold uppercase">
                 <span className="text-slate-400">Nama:</span>
-                <span className="w-32 border-b border-slate-200" />
+                <input
+                   type="text"
+                   value={signatures.lini1Name || ""}
+                   onChange={(e) => handleChange('lini1Name', e.target.value)}
+                   disabled={isLocked}
+                   placeholder={t('bpm:editor.signatures.lini1NamePlaceholder')}
+                   className={inputClass}
+                />
              </div>
-             <div className="flex justify-between text-xs font-bold uppercase pt-1">
+             <div className="flex justify-between items-center text-xs font-bold uppercase pt-1">
                 <span className="text-slate-400">Tgl:</span>
-                <span className="w-32 border-b border-slate-200" />
+                <input
+                   type="text"
+                   value={signatures.lini1Date || ""}
+                   onChange={(e) => handleChange('lini1Date', e.target.value)}
+                   disabled={isLocked}
+                   placeholder={t('bpm:editor.signatures.datePlaceholder')}
+                   className={inputClass}
+                />
              </div>
           </div>
        </div>
@@ -112,13 +149,27 @@ export const BPMCanvasFooter = () => {
           <span className="text-xs font-black uppercase text-slate-500 mb-4 border-b pb-1">Direview Oleh (Lini 2)</span>
           <div className="flex-1" />
           <div className="space-y-1">
-             <div className="flex justify-between text-xs font-bold uppercase">
+             <div className="flex justify-between items-center text-xs font-bold uppercase">
                 <span className="text-slate-400">Nama:</span>
-                <span className="w-32 border-b border-slate-200" />
+                <input
+                   type="text"
+                   value={signatures.lini2Name || ""}
+                   onChange={(e) => handleChange('lini2Name', e.target.value)}
+                   disabled={isLocked}
+                   placeholder={t('bpm:editor.signatures.lini2NamePlaceholder')}
+                   className={inputClass}
+                />
              </div>
-             <div className="flex justify-between text-xs font-bold uppercase pt-1">
+             <div className="flex justify-between items-center text-xs font-bold uppercase pt-1">
                 <span className="text-slate-400">Tgl:</span>
-                <span className="w-32 border-b border-slate-200" />
+                <input
+                   type="text"
+                   value={signatures.lini2Date || ""}
+                   onChange={(e) => handleChange('lini2Date', e.target.value)}
+                   disabled={isLocked}
+                   placeholder={t('bpm:editor.signatures.datePlaceholder')}
+                   className={inputClass}
+                />
              </div>
           </div>
        </div>
@@ -128,13 +179,27 @@ export const BPMCanvasFooter = () => {
              <ShieldCheck className="h-10 w-10 text-slate-900" />
           </div>
           <div className="space-y-1 mt-auto">
-             <div className="flex justify-between text-xs font-bold uppercase">
+             <div className="flex justify-between items-center text-xs font-bold uppercase">
                 <span className="text-slate-400">Nama:</span>
-                <span className="w-32 border-b border-slate-200" />
+                <input
+                   type="text"
+                   value={signatures.cfoName || ""}
+                   onChange={(e) => handleChange('cfoName', e.target.value)}
+                   disabled={isLocked}
+                   placeholder={t('bpm:editor.signatures.cfoNamePlaceholder')}
+                   className={inputClass}
+                />
              </div>
-             <div className="flex justify-between text-xs font-bold uppercase pt-1">
+             <div className="flex justify-between items-center text-xs font-bold uppercase pt-1">
                 <span className="text-slate-400">Sign:</span>
-                <span className="w-32 border-b border-slate-200 font-mono italic text-xs flex items-center justify-center">DIGITALLY SIGNED</span>
+                <input
+                   type="text"
+                   value={signatures.cfoDate || "DIGITALLY SIGNED"}
+                   onChange={(e) => handleChange('cfoDate', e.target.value)}
+                   disabled={isLocked}
+                   placeholder={t('bpm:editor.signatures.datePlaceholder')}
+                   className={inputClass}
+                />
              </div>
           </div>
        </div>

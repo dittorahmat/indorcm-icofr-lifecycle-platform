@@ -229,6 +229,12 @@
       "backToEditor": "Back to Editor",
       "printExport": "Print / Export PDF",
       "documentView": "Document View"
+    },
+    "signatures": {
+      "lini1NamePlaceholder": "Preparer Name",
+      "lini2NamePlaceholder": "Reviewer Name",
+      "cfoNamePlaceholder": "CFO Name",
+      "datePlaceholder": "Date (DD/MM/YYYY)"
     }
   },
   "sampling": {
