@@ -29,6 +29,7 @@ interface ScopingEditorContentProps {
   onAppsChange: (accountCode: string, appIds: string[]) => void;
   onQuickAddApp: (name: string, accountCode: string) => Promise<void>;
   onOpenWorkflow?: () => void;
+  scopingCompliance?: any;
 }
 
 export function ScopingEditorContent({
@@ -48,7 +49,8 @@ export function ScopingEditorContent({
   onAssignDepartments,
   onAppsChange,
   onQuickAddApp,
-  onOpenWorkflow
+  onOpenWorkflow,
+  scopingCompliance
 }: ScopingEditorContentProps) {
   const { t } = useTranslation('scoping');
 
@@ -113,7 +115,7 @@ export function ScopingEditorContent({
         </TabsContent>
         
         <TabsContent value="integrity" className="space-y-6">
-          <ScopingHealthDashboard glData={mergedGlData} />
+          <ScopingHealthDashboard glData={mergedGlData} scopingCompliance={scopingCompliance} />
         </TabsContent>
       </Tabs>
     </div>

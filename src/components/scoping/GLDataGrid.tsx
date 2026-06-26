@@ -638,33 +638,50 @@ export const GLDataGrid = React.memo(function GLDataGrid({
               ))}
             </TableHeader>
             <TableBody>
-              {table.getRowModel().rows.map(row => (
-                <TableRow 
-                  key={row.id} 
-                  className={cn(
-                    "hover:bg-slate-50/50 transition-colors h-8",
-                    row.getIsGrouped() ? "bg-slate-100/50 font-bold" : "border-b"
-                  )}
-                >
-                  {row.getVisibleCells().map(cell => (
-                    <TableCell 
-                      key={cell.id} 
-                      className="border-r last:border-r-0 py-0 px-2"
-                    >
-                      {cell.column.id === 'fsliName' && row.getIsGrouped() ? (
-                        <div className="flex items-center gap-2">
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                          <span className="text-xs text-slate-400 font-normal">
-                            ({row.getLeafRows().length})
-                          </span>
-                        </div>
-                      ) : cell.getIsPlaceholder() || (cell.getIsGrouped() && cell.column.id !== 'fsliName') ? null : (
-                        flexRender(cell.column.columnDef.cell, cell.getContext())
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))}
+              {table.getRowModel().rows.map(row => {
+                const classification = !row.getIsGrouped() && row.original?.scopeClassification;
+                const rowBgClass = classification === 'above-pm'
+                  ? "bg-emerald-50/70 text-emerald-950 dark:bg-emerald-950/20 hover:bg-emerald-100/50"
+                  : classification === 'two-thirds'
+                  ? "bg-amber-50/70 text-amber-950 dark:bg-amber-950/20 hover:bg-amber-100/50"
+                  : classification === 'qualitative'
+                  ? "bg-yellow-50/70 text-yellow-950 dark:bg-yellow-950/20 hover:bg-yellow-100/50"
+                  : "";
+
+                return (
+                  <TableRow 
+                    key={row.id} 
+                    className={cn(
+                      "hover:bg-slate-50/50 transition-colors h-8",
+                      row.getIsGrouped() ? "bg-slate-100/50 font-bold" : "border-b",
+                      rowBgClass
+                    )}
+                  >
+                    {row.getVisibleCells().map((cell, index) => (
+                      <TableCell 
+                        key={cell.id} 
+                        className={cn(
+                          "border-r last:border-r-0 py-0 px-2",
+                          index === 0 && classification === 'above-pm' && "border-l-4 border-l-emerald-500",
+                          index === 0 && classification === 'two-thirds' && "border-l-4 border-l-amber-500",
+                          index === 0 && classification === 'qualitative' && "border-l-4 border-l-yellow-500"
+                        )}
+                      >
+                        {cell.column.id === 'fsliName' && row.getIsGrouped() ? (
+                          <div className="flex items-center gap-2">
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            <span className="text-xs text-slate-400 font-normal">
+                              ({row.getLeafRows().length})
+                            </span>
+                          </div>
+                        ) : cell.getIsPlaceholder() || (cell.getIsGrouped() && cell.column.id !== 'fsliName') ? null : (
+                          flexRender(cell.column.columnDef.cell, cell.getContext())
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </div>

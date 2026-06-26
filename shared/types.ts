@@ -38,6 +38,7 @@ export interface QualitativeEntry {
 
 export type GLRow = InferSelectModel<typeof schema.glRows> & {
   fsliBalance?: number | null;
+  scopeClassification?: 'above-pm' | 'two-thirds' | 'qualitative' | 'out-of-scope';
 };
 export type NewGLRow = InferInsertModel<typeof schema.glRows>;
 

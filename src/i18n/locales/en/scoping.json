@@ -167,7 +167,24 @@
     "benfordTitle": "Benford's Law Analysis (Fraud Risk - P8)",
     "benfordDesc": "Digit distribution analysis for anomaly detection.",
     "forensicView": "Forensic View",
-    "guidance": "Deviations from the red line (Standard) may indicate numeric manipulation. Consider rating HIGH on Rule 1 if significant variances are found."
+    "guidance": "Deviations from the red line (Standard) may indicate numeric manipulation. Consider rating HIGH on Rule 1 if significant variances are found.",
+    "complianceCheck": "2/3 Compliance Check (SK-5):",
+    "compliant": "COMPLIANT",
+    "nonCompliant": "NON-COMPLIANT",
+    "complianceDesc": "Selected entity coverage must meet a minimum of 2/3 (66.67%) of the consolidated totals.",
+    "assetsCoverage": "Assets Coverage:",
+    "liabilitiesCoverage": "Liabilities Coverage:",
+    "revenueCoverage": "Revenue Coverage:",
+    "expensesCoverage": "Expenses Coverage:",
+    "fsliCheck": "FSLI Coverage Breakdown",
+    "fsliName": "FSLI",
+    "fsliCoverage": "Coverage",
+    "status": "Status",
+    "nonCompliantFslis": "The following FSLIs do not meet 2/3 coverage:",
+    "legendTitle": "Scoping Legend (SK-5)",
+    "legendAbovePm": "Exceeds PM (Quantitative)",
+    "legendTwoThirds": "2/3 Scope Coverage Required",
+    "legendQualitative": "Qualitative Factor / Mandatory"
   },
   "history": {
     "empty": "No activity recorded yet.",
@@ -218,5 +235,20 @@
     "6": "Significant Contingent Liabilities",
     "7": "Related Party Transactions",
     "8": "Changes in Components/Presentation"
+  },
+  "locationModal": {
+    "title": "Significant Location Analysis",
+    "description": "Pareto scoping based on {{basis}}",
+    "thresholdLabel": "Location Scoping Threshold (%)",
+    "thresholdRecommendation": "* SK-5/2024 recommendation is 80%",
+    "totalBasisValue": "Total Basis Value",
+    "colEntityCode": "Entity Code",
+    "colValue": "Value ({{basis}})",
+    "colContribution": "% Contribution",
+    "colCumulative": "% Cumulative",
+    "colSignificant": "Significant",
+    "noData": "No data available for the selected basis.",
+    "saveResult": "Save Scoping Result",
+    "saveSuccess": "Location scoping saved successfully"
   }
 }

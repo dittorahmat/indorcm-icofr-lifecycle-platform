@@ -231,7 +231,7 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
 
   const {
     simState, setSimState, mergedGlData, entityHierarchy, selectedEntityCodes, setSelectedEntityCodes,
-    omValue, pmValue, multiplier, benchmarkValue,
+    omValue, pmValue, multiplier, benchmarkValue, scopingCompliance,
     departments, applications, localAppMappings, isLocked, mutations, handlers, isDirty
   } = useScopingEditor(simulation);
 
@@ -316,6 +316,7 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
               onAppsChange={handlers.onAppsChange}
               onQuickAddApp={handleQuickAddApp}
               onOpenWorkflow={() => setIsWorkflowOpen(true)}
+              scopingCompliance={scopingCompliance}
             />
           </div>
         </div>

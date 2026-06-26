@@ -14,7 +14,9 @@ import {
   calculateBenchmarkValue, 
   calculateOM, 
   calculatePM, 
-  identifySignificantAccounts 
+  identifySignificantAccounts,
+  calculateScopingCompliance,
+  getRowScopeClassification
 } from '../services/materiality-calc';
 import { buildEntityHierarchy, calculateRollupBalances } from '../utils/hierarchy-utils';
 
@@ -210,11 +212,21 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
   const { omValue, pmValue, multiplier, benchmarkValue } = calculateValues;
 
   const mergedGlData = React.useMemo(() => {
-    return filteredGlData.map(row => ({
-      ...row,
-      assignedDepartmentIds: localDeptMappings[row.noGL] || []
-    }));
-  }, [filteredGlData, localDeptMappings]);
+    return filteredGlData.map(row => {
+      const scopeClassification = getRowScopeClassification({
+        row,
+        pmValue,
+        assessmentData: simState.assessmentData,
+        selectedEntityCodes,
+        allGlRows: glData
+      });
+      return {
+        ...row,
+        assignedDepartmentIds: localDeptMappings[row.noGL] || [],
+        scopeClassification
+      };
+    });
+  }, [filteredGlData, localDeptMappings, pmValue, simState.assessmentData, selectedEntityCodes, glData]);
 
   const significantAccounts = React.useMemo(() => {
     return identifySignificantAccounts({
@@ -223,6 +235,11 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
       assessmentData: simState.assessmentData
     });
   }, [mergedGlData, simState.assessmentData, pmValue]);
+
+  const scopingCompliance = React.useMemo(() => {
+    if (glData.length === 0) return null;
+    return calculateScopingCompliance(glData, selectedEntityCodes);
+  }, [glData, selectedEntityCodes]);
 
   // Memoize initial app mappings for comparison
   const initialAppMappings = React.useMemo(() => {
@@ -312,6 +329,7 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
     pmValue,
     multiplier,
     benchmarkValue,
+    scopingCompliance,
     departments: departments?.items || [],
     applications: appsData?.items || [],
     localAppMappings,

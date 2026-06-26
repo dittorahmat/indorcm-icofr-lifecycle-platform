@@ -167,7 +167,24 @@
     "benfordTitle": "Analisis Hukum Benford (Risiko Kecurangan - P8)",
     "benfordDesc": "Analisis distribusi digit untuk deteksi anomali.",
     "forensicView": "Tampilan Forensik",
-    "guidance": "Penyimpangan dari garis merah (Standar) dapat mengindikasikan manipulasi angka. Pertimbangkan memberi nilai TINGGI pada Aturan 1 jika ditemukan varians signifikan."
+    "guidance": "Penyimpangan dari garis merah (Standar) dapat mengindikasikan manipulasi angka. Pertimbangkan memberi nilai TINGGI pada Aturan 1 jika ditemukan varians signifikan.",
+    "complianceCheck": "Pemeriksaan Kepatuhan 2/3 (SK-5):",
+    "compliant": "PATUH",
+    "nonCompliant": "TIDAK PATUH",
+    "complianceDesc": "Cakupan entitas terpilih harus memenuhi minimal 2/3 (66.67%) dari total nilai consolidated.",
+    "assetsCoverage": "Cakupan Aset:",
+    "liabilitiesCoverage": "Cakupan Liabilitas:",
+    "revenueCoverage": "Cakupan Pendapatan:",
+    "expensesCoverage": "Cakupan Beban:",
+    "fsliCheck": "Detail Cakupan per FSLI",
+    "fsliName": "FSLI",
+    "fsliCoverage": "Cakupan",
+    "status": "Status",
+    "nonCompliantFslis": "FSLI Berikut Belum Memenuhi 2/3 Cakupan:",
+    "legendTitle": "Legenda Cakupan (SK-5)",
+    "legendAbovePm": "Melebihi PM (Kuantitatif)",
+    "legendTwoThirds": "Pemenuhan Cakupan 2/3",
+    "legendQualitative": "Faktor Kualitatif / Mandatori"
   },
   "history": {
     "empty": "Belum ada aktivitas yang tercatat.",
@@ -218,5 +235,20 @@
     "6": "Kewajiban Kontingensi Signifikan",
     "7": "Transaksi Pihak Berelasi",
     "8": "Perubahan Komponen/Penyajian"
+  },
+  "locationModal": {
+    "title": "Analisis Lokasi Signifikan",
+    "description": "Scoping Pareto berdasarkan {{basis}}",
+    "thresholdLabel": "Ambang Batas Scoping Lokasi (%)",
+    "thresholdRecommendation": "* Rekomendasi SK-5/2024 adalah 80%",
+    "totalBasisValue": "Total Nilai Basis",
+    "colEntityCode": "Kode Entitas",
+    "colValue": "Nilai ({{basis}})",
+    "colContribution": "% Kontribusi",
+    "colCumulative": "% Kumulatif",
+    "colSignificant": "Signifikan",
+    "noData": "Tidak ada data yang tersedia untuk basis terpilih.",
+    "saveResult": "Simpan Hasil Scoping",
+    "saveSuccess": "Scoping lokasi berhasil disimpan"
   }
 }

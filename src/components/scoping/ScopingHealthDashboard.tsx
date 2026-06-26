@@ -13,12 +13,14 @@ import {
 } from 'recharts';
 import { GLRow } from '@shared/types';
 import { useTranslation } from 'react-i18next';
+import { ScopingComplianceResult } from '@/pages/scoping/services/materiality-calc';
 
 interface ScopingHealthDashboardProps {
   glData: GLRow[];
+  scopingCompliance?: ScopingComplianceResult | null;
 }
 
-export function ScopingHealthDashboard({ glData }: ScopingHealthDashboardProps) {
+export function ScopingHealthDashboard({ glData, scopingCompliance }: ScopingHealthDashboardProps) {
   const { t } = useTranslation('scoping');
   const benfordData = React.useMemo(() => {
     if (glData.length === 0) return [];
@@ -116,6 +118,87 @@ export function ScopingHealthDashboard({ glData }: ScopingHealthDashboardProps) 
           </div>
         </CardContent>
       </Card>
+
+      {/* 2/3 Scoping Compliance Card */}
+      {scopingCompliance && (
+        <Card className={cn(
+          "col-span-1 md:col-span-3 border-l-4",
+          scopingCompliance.isOverallCompliant ? "border-l-emerald-500 bg-emerald-50/10" : "border-l-amber-500 bg-amber-50/10"
+        )}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-bold uppercase flex items-center gap-2 text-primary">
+              <ShieldCheck className={cn("h-4 w-4", scopingCompliance.isOverallCompliant ? "text-emerald-600" : "text-amber-500")} />
+              {t('health.complianceCheck')}
+            </CardTitle>
+            <CardDescription className="text-xs">{t('health.complianceDesc')}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-slate-50 p-3 rounded-lg border border-slate-100">
+              <div className="space-y-0.5">
+                <span className="text-[10px] uppercase font-bold text-slate-400">{t('health.assetsCoverage')}</span>
+                <p className="text-xs font-black flex items-center gap-1.5 mt-0.5">
+                  <span className={scopingCompliance.aggregateCompliance.assets.isCompliant ? "text-emerald-600" : "text-amber-600"}>
+                    {scopingCompliance.aggregateCompliance.assets.percentage.toFixed(1)}%
+                  </span>
+                  <Badge variant={scopingCompliance.aggregateCompliance.assets.isCompliant ? "default" : "secondary"} className="text-[9px] font-bold h-4 px-1 bg-white border border-slate-200 shadow-none">
+                    {scopingCompliance.aggregateCompliance.assets.isCompliant ? t('health.compliant') : t('health.nonCompliant')}
+                  </Badge>
+                </p>
+              </div>
+              <div className="space-y-0.5">
+                <span className="text-[10px] uppercase font-bold text-slate-400">{t('health.liabilitiesCoverage')}</span>
+                <p className="text-xs font-black flex items-center gap-1.5 mt-0.5">
+                  <span className={scopingCompliance.aggregateCompliance.liabilities.isCompliant ? "text-emerald-600" : "text-amber-600"}>
+                    {scopingCompliance.aggregateCompliance.liabilities.percentage.toFixed(1)}%
+                  </span>
+                  <Badge variant={scopingCompliance.aggregateCompliance.liabilities.isCompliant ? "default" : "secondary"} className="text-[9px] font-bold h-4 px-1 bg-white border border-slate-200 shadow-none">
+                    {scopingCompliance.aggregateCompliance.liabilities.isCompliant ? t('health.compliant') : t('health.nonCompliant')}
+                  </Badge>
+                </p>
+              </div>
+              <div className="space-y-0.5">
+                <span className="text-[10px] uppercase font-bold text-slate-400">{t('health.revenueCoverage')}</span>
+                <p className="text-xs font-black flex items-center gap-1.5 mt-0.5">
+                  <span className={scopingCompliance.aggregateCompliance.revenue.isCompliant ? "text-emerald-600" : "text-amber-600"}>
+                    {scopingCompliance.aggregateCompliance.revenue.percentage.toFixed(1)}%
+                  </span>
+                  <Badge variant={scopingCompliance.aggregateCompliance.revenue.isCompliant ? "default" : "secondary"} className="text-[9px] font-bold h-4 px-1 bg-white border border-slate-200 shadow-none">
+                    {scopingCompliance.aggregateCompliance.revenue.isCompliant ? t('health.compliant') : t('health.nonCompliant')}
+                  </Badge>
+                </p>
+              </div>
+              <div className="space-y-0.5">
+                <span className="text-[10px] uppercase font-bold text-slate-400">{t('health.expensesCoverage')}</span>
+                <p className="text-xs font-black flex items-center gap-1.5 mt-0.5">
+                  <span className={scopingCompliance.aggregateCompliance.expenses.isCompliant ? "text-emerald-600" : "text-amber-600"}>
+                    {scopingCompliance.aggregateCompliance.expenses.percentage.toFixed(1)}%
+                  </span>
+                  <Badge variant={scopingCompliance.aggregateCompliance.expenses.isCompliant ? "default" : "secondary"} className="text-[9px] font-bold h-4 px-1 bg-white border border-slate-200 shadow-none">
+                    {scopingCompliance.aggregateCompliance.expenses.isCompliant ? t('health.compliant') : t('health.nonCompliant')}
+                  </Badge>
+                </p>
+              </div>
+            </div>
+
+            {/* Non-compliant FSLIs Alert */}
+            {!scopingCompliance.isOverallCompliant && (
+              <div className="p-3 bg-amber-50 border border-amber-100 rounded-xl text-xs text-amber-800 space-y-1">
+                <div className="font-bold flex items-center gap-1.5">
+                  <AlertCircle className="h-4 w-4 text-amber-500" />
+                  {t('health.nonCompliantFslis')}
+                </div>
+                <ul className="list-disc pl-5 font-medium space-y-0.5">
+                  {scopingCompliance.fsliCoverages.filter(c => !c.isCompliant).map(c => (
+                    <li key={c.fsliName}>
+                      {c.fsliName}: <span className="font-black">{c.coveragePercentage.toFixed(1)}%</span> (Consolidated: {c.consolidatedBalance.toLocaleString('id-ID')})
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
