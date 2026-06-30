@@ -127,11 +127,6 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
   const [localAppMappings, setLocalAppMappings] = React.useState<Record<string, string[]>>({});
   const [localDeptMappings, setLocalDeptMappings] = React.useState<Record<string, string[]>>({});
 
-  // Sync state with prop
-  React.useEffect(() => {
-    setSimState(initialSimulation);
-  }, [initialSimulation]);
-
   // Queries
   const { data: departments } = useQuery({
     queryKey: ['departments'],
@@ -155,6 +150,61 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
     enabled: !!simState.glSnapshotId
   });
 
+  // Memoize initial app mappings for comparison
+  const initialAppMappings = React.useMemo(() => {
+    if (!initialMappings?.items) return {};
+    const map: Record<string, string[]> = {};
+    initialMappings.items.forEach(m => {
+      if (!map[m.accountCode]) map[m.accountCode] = [];
+      map[m.accountCode].push(m.applicationId);
+    });
+    return map;
+  }, [initialMappings]);
+
+  // Dirty state tracking
+  const isDirty = React.useMemo(() => {
+    const initialDeptMappings: Record<string, string[]> = {};
+    initialSimulation.significantAccounts?.forEach(sa => {
+      if (sa.fsliCode && sa.assignedDepartmentIds) {
+        initialDeptMappings[sa.fsliCode] = sa.assignedDepartmentIds;
+      }
+    });
+
+    const currentState = {
+      assessmentData: simState.assessmentData,
+      locationCount: simState.locationCount,
+      omPercentage: simState.omPercentage,
+      haircutPercentage: simState.haircutPercentage,
+      basis: simState.basis,
+      appMappings: localAppMappings,
+      deptMappings: localDeptMappings
+    };
+
+    const originalState = {
+      assessmentData: initialSimulation.assessmentData,
+      locationCount: initialSimulation.locationCount,
+      omPercentage: initialSimulation.omPercentage,
+      haircutPercentage: initialSimulation.haircutPercentage,
+      basis: initialSimulation.basis,
+      appMappings: initialAppMappings,
+      deptMappings: initialDeptMappings
+    };
+
+    return JSON.stringify(currentState) !== JSON.stringify(originalState);
+  }, [simState, localAppMappings, localDeptMappings, initialSimulation, initialAppMappings]);
+
+  const lastSimIdRef = React.useRef(initialSimulation.id);
+
+  // Sync state with prop
+  React.useEffect(() => {
+    if (initialSimulation.id !== lastSimIdRef.current) {
+      lastSimIdRef.current = initialSimulation.id;
+      setSimState(initialSimulation);
+    } else if (!isDirty) {
+      setSimState(initialSimulation);
+    }
+  }, [initialSimulation, isDirty]);
+
   // Effects
   React.useEffect(() => {
     if (snapshot) {
@@ -166,27 +216,31 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
   }, [snapshot]);
 
   React.useEffect(() => {
-    if (initialMappings?.items) {
-      const map: Record<string, string[]> = {};
-      initialMappings.items.forEach(m => {
-        if (!map[m.accountCode]) map[m.accountCode] = [];
-        map[m.accountCode].push(m.applicationId);
-      });
-      setLocalAppMappings(map);
+    if (initialSimulation.id !== lastSimIdRef.current || !isDirty) {
+      if (initialMappings?.items) {
+        const map: Record<string, string[]> = {};
+        initialMappings.items.forEach(m => {
+          if (!map[m.accountCode]) map[m.accountCode] = [];
+          map[m.accountCode].push(m.applicationId);
+        });
+        setLocalAppMappings(map);
+      }
     }
-  }, [initialMappings]);
+  }, [initialMappings, isDirty, initialSimulation.id]);
 
   React.useEffect(() => {
-    if (initialSimulation.significantAccounts) {
-      const map: Record<string, string[]> = {};
-      initialSimulation.significantAccounts.forEach(sa => {
-        if (sa.fsliCode && sa.assignedDepartmentIds) {
-          map[sa.fsliCode] = sa.assignedDepartmentIds;
-        }
-      });
-      setLocalDeptMappings(map);
+    if (initialSimulation.id !== lastSimIdRef.current || !isDirty) {
+      if (initialSimulation.significantAccounts) {
+        const map: Record<string, string[]> = {};
+        initialSimulation.significantAccounts.forEach(sa => {
+          if (sa.fsliCode && sa.assignedDepartmentIds) {
+            map[sa.fsliCode] = sa.assignedDepartmentIds;
+          }
+        });
+        setLocalDeptMappings(map);
+      }
     }
-  }, [initialSimulation]);
+  }, [initialSimulation, isDirty]);
 
   // Hierarchy and Filtering
   const entityHierarchy = React.useMemo(() => {
@@ -240,49 +294,6 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
     if (glData.length === 0) return null;
     return calculateScopingCompliance(glData, selectedEntityCodes);
   }, [glData, selectedEntityCodes]);
-
-  // Memoize initial app mappings for comparison
-  const initialAppMappings = React.useMemo(() => {
-    if (!initialMappings?.items) return {};
-    const map: Record<string, string[]> = {};
-    initialMappings.items.forEach(m => {
-      if (!map[m.accountCode]) map[m.accountCode] = [];
-      map[m.accountCode].push(m.applicationId);
-    });
-    return map;
-  }, [initialMappings]);
-
-  // Dirty state tracking
-  const isDirty = React.useMemo(() => {
-    const initialDeptMappings: Record<string, string[]> = {};
-    initialSimulation.significantAccounts?.forEach(sa => {
-      if (sa.fsliCode && sa.assignedDepartmentIds) {
-        initialDeptMappings[sa.fsliCode] = sa.assignedDepartmentIds;
-      }
-    });
-
-    const currentState = {
-      assessmentData: simState.assessmentData,
-      locationCount: simState.locationCount,
-      omPercentage: simState.omPercentage,
-      haircutPercentage: simState.haircutPercentage,
-      basis: simState.basis,
-      appMappings: localAppMappings,
-      deptMappings: localDeptMappings
-    };
-
-    const originalState = {
-      assessmentData: initialSimulation.assessmentData,
-      locationCount: initialSimulation.locationCount,
-      omPercentage: initialSimulation.omPercentage,
-      haircutPercentage: initialSimulation.haircutPercentage,
-      basis: initialSimulation.basis,
-      appMappings: initialAppMappings,
-      deptMappings: initialDeptMappings
-    };
-
-    return JSON.stringify(currentState) !== JSON.stringify(originalState);
-  }, [simState, localAppMappings, localDeptMappings, initialSimulation, initialAppMappings]);
 
   React.useEffect(() => {
     setDirty(isDirty);

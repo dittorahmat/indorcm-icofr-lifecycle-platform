@@ -193,13 +193,10 @@ export const GLDataGrid = React.memo(function GLDataGrid({
 
           const fsliName = row.original.fsliName || "";
           const noGL = row.original.noGL || "";
-          const balance = Math.abs(row.original.balance);
           const assignedDeptIds = row.original.assignedDepartmentIds || [];
           
-          const assessments = assessmentData?.[fsliName] || {};
-          const isQualSignificant = Object.values(assessments).some(v => v === 'High');
-          const isKuanSignificant = balance >= pmValue;
-          const isInScope = isKuanSignificant || isQualSignificant;
+          const classification = row.original?.scopeClassification;
+          const isInScope = classification && classification !== 'out-of-scope';
 
           // Logic: Lini 1 can only access if they own the account or it's unassigned
           const userRole = currentUser?.role?.trim();
@@ -239,80 +236,6 @@ export const GLDataGrid = React.memo(function GLDataGrid({
             </span>
           );
         },
-      },
-      {
-        id: 'departmentOwner',
-        header: t('grid.lini1Owner'),
-        size: 200,
-        cell: ({ row }) => {
-          if (row.getIsGrouped()) return null;
-          const currentDeptIds = row.original.assignedDepartmentIds || [];
-
-          // Fix: Default to allowing assignment if user data is still loading
-          // or if the user is explicitly Admin/Line 2
-          const userRole = currentUser?.role?.trim();
-          const canAssign = !currentUser || userRole === 'Line 2' || userRole === 'Admin';
-          const isDisabled = isReadOnly || !canAssign;
-
-          return (
-            <div className="py-1">
-              <MultiSelect
-                options={deptOptions}
-                selected={currentDeptIds}
-                onChange={(ids) => onAssignDepartments?.(row.original.noGL, ids)}
-                placeholder={t('grid.lini1Owner')}
-                disabled={isDisabled}
-                className="min-h-7 py-1 text-xs"
-              />
-            </div>
-          );
-        }
-      },
-      {
-        id: 'ownerAcceptance',
-        header: t('grid.ownerAcceptance'),
-        size: 140,
-        cell: ({ row }) => {
-          if (row.getIsGrouped()) return null;
-          
-          const currentAcceptance = row.original.ownerAcceptance;
-          const noGL = row.original.noGL;
-          const assignedDeptIds = row.original.assignedDepartmentIds || [];
-
-          // Check if user can edit owner acceptance:
-          // 1. Lini 1 Manager with matching department
-          // 2. Admin (any department)
-          const userRole = currentUser?.role?.trim();
-          const userLevel = currentUser?.level?.trim();
-          const isLini1Manager = userRole === 'Line 1' && userLevel === 'Manager';
-          const isAdmin = userRole === 'Admin';
-          
-          const canEdit = !isReadOnly && (
-            (isLini1Manager && assignedDeptIds.includes(currentUser?.departmentId || "")) ||
-            isAdmin
-          );
-
-          return (
-            <Select
-              disabled={!canEdit}
-              value={currentAcceptance || ""}
-              onValueChange={(val: "Accepted" | "Rejected") => onOwnerAcceptanceChange?.(noGL, val)}
-            >
-              <SelectTrigger className={cn(
-                "h-7 w-full text-xs px-1 border-none bg-transparent hover:bg-slate-100 transition-colors",
-                currentAcceptance === 'Accepted' ? "text-green-600 font-bold bg-green-50" :
-                currentAcceptance === 'Rejected' ? "text-red-600 font-bold bg-red-50" :
-                "text-slate-300 italic"
-              )}>
-                <SelectValue placeholder={t('grid.pending')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Accepted" className="text-xs text-green-600 font-bold">✓ Accepted</SelectItem>
-                <SelectItem value="Rejected" className="text-xs text-red-600 font-bold">✗ Rejected</SelectItem>
-              </SelectContent>
-            </Select>
-          );
-        }
       },
       {
         accessorKey: 'balance',
@@ -424,16 +347,8 @@ export const GLDataGrid = React.memo(function GLDataGrid({
           const isInScope = row.getIsGrouped()
             ? getValue<boolean>()
             : (() => {
-                const fsliName = row.original.fsliName || "";
-                const assessments = assessmentData?.[fsliName] || {};
-                const isQualSignificant = Object.values(assessments).some(v => v === 'High');
-                
-                const groupExplicitTotal = row.original.fsliBalance;
-                const isKuanSignificant = (groupExplicitTotal !== undefined && groupExplicitTotal !== null && groupExplicitTotal !== 0)
-                  ? Math.abs(groupExplicitTotal) >= pmValue
-                  : Math.abs(row.original.balance) >= pmValue;
-                  
-                return isQualSignificant || isKuanSignificant;
+                const classification = row.original?.scopeClassification;
+                return classification && classification !== 'out-of-scope';
               })();
 
           return isInScope ? (
@@ -454,12 +369,9 @@ export const GLDataGrid = React.memo(function GLDataGrid({
         cell: ({ row }) => {
           if (row.getIsGrouped()) return null;
           const noGL = row.original.noGL || "";
-          const fsliName = row.original.fsliName || "";
           
-          const assessments = assessmentData?.[fsliName] || {};
-          const isQualSignificant = Object.values(assessments).some(v => v === 'High');
-          const isKuanSignificant = Math.abs(row.original.balance) >= pmValue;
-          const isInScope = isKuanSignificant || isQualSignificant;
+          const classification = row.original?.scopeClassification;
+          const isInScope = classification && classification !== 'out-of-scope';
 
           if (!isInScope) return null;
 
@@ -482,6 +394,80 @@ export const GLDataGrid = React.memo(function GLDataGrid({
                 className="min-h-7 py-1 text-xs"
               />
             </div>
+          );
+        }
+      },
+      {
+        id: 'departmentOwner',
+        header: t('grid.lini1Owner'),
+        size: 200,
+        cell: ({ row }) => {
+          if (row.getIsGrouped()) return null;
+          const currentDeptIds = row.original.assignedDepartmentIds || [];
+
+          // Fix: Default to allowing assignment if user data is still loading
+          // or if the user is explicitly Admin/Line 2
+          const userRole = currentUser?.role?.trim();
+          const canAssign = !currentUser || userRole === 'Line 2' || userRole === 'Admin';
+          const isDisabled = isReadOnly || !canAssign;
+
+          return (
+            <div className="py-1">
+              <MultiSelect
+                options={deptOptions}
+                selected={currentDeptIds}
+                onChange={(ids) => onAssignDepartments?.(row.original.noGL, ids)}
+                placeholder={t('grid.lini1Owner')}
+                disabled={isDisabled}
+                className="min-h-7 py-1 text-xs"
+              />
+            </div>
+          );
+        }
+      },
+      {
+        id: 'ownerAcceptance',
+        header: t('grid.ownerAcceptance'),
+        size: 140,
+        cell: ({ row }) => {
+          if (row.getIsGrouped()) return null;
+          
+          const currentAcceptance = row.original.ownerAcceptance;
+          const noGL = row.original.noGL;
+          const assignedDeptIds = row.original.assignedDepartmentIds || [];
+
+          // Check if user can edit owner acceptance:
+          // 1. Lini 1 Manager with matching department
+          // 2. Admin (any department)
+          const userRole = currentUser?.role?.trim();
+          const userLevel = currentUser?.level?.trim();
+          const isLini1Manager = userRole === 'Line 1' && userLevel === 'Manager';
+          const isAdmin = userRole === 'Admin';
+          
+          const canEdit = !isReadOnly && (
+            (isLini1Manager && assignedDeptIds.includes(currentUser?.departmentId || "")) ||
+            isAdmin
+          );
+
+          return (
+            <Select
+              disabled={!canEdit}
+              value={currentAcceptance || ""}
+              onValueChange={(val: "Accepted" | "Rejected") => onOwnerAcceptanceChange?.(noGL, val)}
+            >
+              <SelectTrigger className={cn(
+                "h-7 w-full text-xs px-1 border-none bg-transparent hover:bg-slate-100 transition-colors",
+                currentAcceptance === 'Accepted' ? "text-green-600 font-bold bg-green-50" :
+                currentAcceptance === 'Rejected' ? "text-red-600 font-bold bg-red-50" :
+                "text-slate-300 italic"
+              )}>
+                <SelectValue placeholder={t('grid.pending')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Accepted" className="text-xs text-green-600 font-bold">✓ Accepted</SelectItem>
+                <SelectItem value="Rejected" className="text-xs text-red-600 font-bold">✗ Rejected</SelectItem>
+              </SelectContent>
+            </Select>
           );
         }
       }
