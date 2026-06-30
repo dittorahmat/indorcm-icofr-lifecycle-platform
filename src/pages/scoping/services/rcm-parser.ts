@@ -45,6 +45,7 @@ const TLCSchema = z.object({
     'Risiko_Aktivitas_Pengendalian': z.string().min(1),
     'Referensi_Pengendalian': z.string().min(1),
     'Aplikasi_Pendukung': z.string().optional(),
+    'No_GL': z.string().optional(),
 });
 
 const ELCSchema = z.object({
@@ -210,6 +211,7 @@ export async function parseRCMFile(file: File, type: RCMType = 'TLC'): Promise<R
                     executorRole: String(r['Pelaku_Pengendalian'] || ''),
                     affectedFsliItem: String(r['Item_Laporan_Keuangan_yang_Terdampak'] || ''),
                     effectivePeriod: String(r['Periode_Efektif'] || ''),
+                    accountCode: String(r['No_GL'] || r['noGL'] || r['Kode_GL'] || r['Kode GL'] || r['Account Code'] || r['accountCode'] || ''),
                 };
             });
         }

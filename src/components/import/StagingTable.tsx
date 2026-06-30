@@ -32,6 +32,7 @@ export interface StagingRow {
     cosoPrinciples?: number[];
     guessedFields?: string[];
     confidence?: Record<string, number>;
+    accountCode?: string;
 }
 
 interface StagingTableProps {

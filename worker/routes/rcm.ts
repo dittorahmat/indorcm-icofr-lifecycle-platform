@@ -161,7 +161,7 @@ rcm.get('/rcm-matrix/tlc', async (c) => {
     finalConditions = and(finalConditions, eq(rcms.year, parseInt(year))) as any;
   }
 
-  if (noGL) {
+  if (noGL && (!bpmProcessId || bpmProcessId === 'undefined')) {
     finalConditions = and(finalConditions, like(rcms.id, `%-${noGL}`)) as any;
   }
 

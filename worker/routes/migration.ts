@@ -134,6 +134,7 @@ migration.post('/migration/finalize', async (c) => {
           id: processId,
           organizationId: orgId,
           noGL: procRows[0].accountCode || "",
+          fsliName: procRows[0].affectedFsliItem || null,
           name: procName as string,
           year: parseInt(year),
           workflowStatus: 'Draft',
