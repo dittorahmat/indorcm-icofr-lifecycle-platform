@@ -89,44 +89,6 @@ function PendingApprovalBadge({ role }: { role: string | null | undefined }) {
   );
 }
 
-function WorkflowPendingBadge({ role }: { role: string | null | undefined }) {
-  const { workingYear } = useFiscalYearStore();
-  const { data: bpmProcesses } = useQuery({
-    queryKey: ['bpm-processes-pending-badge', workingYear],
-    queryFn: () => api<{ items: BPMProcess[] }>(`/api/bpm-processes?year=${workingYear}`),
-    enabled: !!role && (role === 'Line 2' || role === 'Admin' || role === 'CFO'),
-    refetchInterval: 60000,
-  });
-
-  const { data: actionPlans } = useQuery({
-    queryKey: ['action-plans-pending-badge'],
-    queryFn: () => api<{ items: ActionPlan[] }>('/api/actionplans'),
-    enabled: !!role && (role === 'Line 2' || role === 'Admin' || role === 'CFO'),
-    refetchInterval: 60000,
-  });
-
-  const bpmCount = bpmProcesses?.items.filter(p => {
-    if (role === 'Line 2' || role === 'Admin') return p.workflowStatus === 'In Review';
-    if (role === 'CFO' || role === 'Admin') return p.workflowStatus === 'In Approval';
-    return false;
-  }).length || 0;
-
-  const apCount = actionPlans?.items.filter(p => {
-    if (p.workflowStatus === 'Ineffective' && (role === 'Line 1' || role === 'Admin')) return true;
-    if (role === 'Line 2' || role === 'Admin') return p.workflowStatus === 'In Review';
-    if (role === 'CFO' || role === 'Admin') return p.workflowStatus === 'In Approval';
-    return false;
-  }).length || 0;
-
-  const total = bpmCount + apCount;
-  if (total === 0) return null;
-
-  return (
-    <div className="h-5 w-5 rounded-full bg-indigo-600 text-[10px] font-black text-white flex items-center justify-center animate-pulse shadow-sm shadow-indigo-200">
-      {total}
-    </div>
-  );
-}
 
 function NotificationBadge() {
   const { data: notificationData } = useQuery({
@@ -194,7 +156,6 @@ export function AppSidebar(): JSX.Element {
                   <div className="flex items-center gap-2">
                     <Workflow className="h-4 w-4" /> <span>{t('items.bpm')}</span>
                   </div>
-                  {(userRole === 'Line 2' || userRole === 'Admin' || userRole === 'CFO') && <WorkflowPendingBadge role={userRole} />}
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
