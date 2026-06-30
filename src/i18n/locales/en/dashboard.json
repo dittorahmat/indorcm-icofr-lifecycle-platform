@@ -76,5 +76,27 @@
     "noData": "No data available",
     "noDeficiencies": "No findings reported",
     "controls": "Controls"
+  },
+  "realizationTable": {
+    "title": "CSA Testing & Realization Summary",
+    "subtitle": "SK-5 Table 22 Compliance Benchmarks",
+    "empty": "No controls configured",
+    "footnote": "Monthly and quarterly controls must include Q4/December samples.",
+    "controlsCount": "controls",
+    "columns": {
+      "frequency": "Frequency",
+      "population": "Population",
+      "target": "Target (Tab. 22)",
+      "realization": "Realization"
+    },
+    "frequencies": {
+      "Annual": "Annual",
+      "Semi-Annual": "Semi-Annual",
+      "Quarterly": "Quarterly",
+      "Monthly": "Monthly",
+      "Weekly": "Weekly",
+      "Daily": "Daily",
+      "Ad-hoc": "Ad-hoc"
+    }
   }
 }

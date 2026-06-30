@@ -7,6 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { ShieldCheck } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface Appendix7aDetailedProps {
   record: CSARecord;
@@ -16,6 +17,7 @@ interface Appendix7aDetailedProps {
 
 export const Appendix7aDetailed = React.forwardRef<HTMLDivElement, Appendix7aDetailedProps>(
   ({ record, bpmProcessName, noGL }, ref) => {
+    const { t } = useTranslation('reports');
     // Extract unique controls from all samples to build columns
     const allControlIds = new Set<string>();
     record.samples?.forEach(s => {
@@ -136,7 +138,7 @@ export const Appendix7aDetailed = React.forwardRef<HTMLDivElement, Appendix7aDet
                 </div>
                 <div className="text-right">
                    <ShieldCheck className="h-10 w-10 text-primary-foreground/80 mb-1 ml-auto" />
-                   <p className="text-xs font-bold opacity-50 uppercase leading-none text-primary-foreground">Verified by IndoGRC Forensic Engine</p>
+                   <p className="text-xs font-bold opacity-50 uppercase leading-none text-primary-foreground">{t('forensicVerified')}</p>
                 </div>
              </div>
 
@@ -170,7 +172,7 @@ export const Appendix7aDetailed = React.forwardRef<HTMLDivElement, Appendix7aDet
           </div>
 
           <div className="pt-8 text-center opacity-30">
-             <p className="text-xs font-bold uppercase tracking-widest">© 2026 IndoGRC Pro - Internal Control Over Financial Reporting Lifecycle Platform</p>
+             <p className="text-xs font-bold uppercase tracking-widest">{t('footerText')}</p>
           </div>
         </div>
       </div>

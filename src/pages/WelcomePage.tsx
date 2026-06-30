@@ -39,7 +39,7 @@ export function WelcomePage() {
           className="space-y-6"
         >
           <h1 className="text-4xl md:text-6xl font-display font-extrabold tracking-tighter text-slate-900 leading-none">
-            IndoGRC Pro
+            {t('appName')}
           </h1>
 
           <div className="space-y-3">

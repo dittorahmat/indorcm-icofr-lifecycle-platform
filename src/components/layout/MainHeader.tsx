@@ -48,7 +48,7 @@ export function MainHeader() {
               <span className={cn(
                 "font-display tracking-tight text-lg font-bold hidden sm:inline-block",
                 isDark ? "text-white" : "text-primary-foreground"
-              )}>IndoGRC Pro</span>
+              )}>{t('appName')}</span>
             </Link>
           </div>
         </div>

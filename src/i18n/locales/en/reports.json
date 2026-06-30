@@ -1,4 +1,6 @@
 {
+  "forensicVerified": "Verified by BALE GRC Forensic Engine",
+  "footerText": "© 2026 BALE GRC Integra - Internal Control Over Financial Reporting Lifecycle Platform",
   "title": "Reports & Exports",
   "description": "Standardized ICOFR reports for {{companyName}} compliance.",
   "pageTitle": "ICOFR Reporting & Management Assessment",

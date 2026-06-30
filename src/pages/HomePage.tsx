@@ -3,6 +3,7 @@ import { Shield, Zap, CheckCircle, BarChart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 const StatCard = ({ icon, title, value }: { icon: React.ReactNode; title: string; value: string }) => (
   <Card className="bg-card">
     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -15,6 +16,7 @@ const StatCard = ({ icon, title, value }: { icon: React.ReactNode; title: string
   </Card>
 );
 export function HomePage() {
+  const { t } = useTranslation('common');
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 text-foreground">
       <div className="absolute inset-0 -z-10 h-full w-full bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:24px_24px] opacity-40">
@@ -35,7 +37,7 @@ export function HomePage() {
                 Enterprise ICOFR <br/>Lifecycle Platform
               </h1>
               <p className="mt-8 max-w-2xl mx-auto text-lg md:text-xl text-slate-600 font-medium leading-relaxed">
-                IndoGRC Pro digitizes the internal control over financial reporting lifecycle—from planning and scoping to management assessment and audit reporting.
+                {t('appDescription')}
               </p>
               <div className="mt-10 flex justify-center gap-4">
                 <Button size="lg" asChild className="bg-mancity-pattern hover:opacity-90 text-primary-foreground shadow-lg shadow-blue-100 transition-all duration-300 transform hover:-translate-y-0.5">

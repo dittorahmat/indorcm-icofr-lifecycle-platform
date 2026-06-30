@@ -8,8 +8,10 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { LicenseStatus } from '@/context/LicenseContext';
+import { useTranslation } from 'react-i18next';
 
 export function ActivationPage() {
+  const { t } = useTranslation('common');
   const [licenseKey, setLicenseKey] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isFetchingStatus, setIsFetchingStatus] = useState(true);
@@ -178,7 +180,7 @@ export function ActivationPage() {
 
         {/* Footer */}
         <p className="text-center text-sm text-muted-foreground mt-6">
-          IndoGRC Pro &copy; 2026
+          {t('appName')} &copy; 2026
         </p>
       </motion.div>
     </div>

@@ -81,7 +81,7 @@ export function LoginPage() {
                 <Shield className="h-8 w-8 text-white" />
               </div>
             </div>
-            <CardTitle className="text-3xl font-display font-extrabold tracking-tight text-slate-900">IndoGRC Pro</CardTitle>
+            <CardTitle className="text-3xl font-display font-extrabold tracking-tight text-slate-900">{t('appName')}</CardTitle>
             <CardDescription className="text-xs font-bold text-slate-500 uppercase tracking-wider mt-2">
               {t('subtitle')}
             </CardDescription>

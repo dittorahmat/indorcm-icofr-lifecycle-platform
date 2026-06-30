@@ -277,12 +277,12 @@ export function getRowScopeClassification(params: {
     ? Math.abs(groupExplicitTotal) >= pmValue
     : fsliRows.some(r => Math.abs(r.balance || 0) >= pmValue);
 
-  const isInScope = isQualSignificant || isGroupKuanSignificant;
+  const isRowKuanSignificant = Math.abs(row.balance || 0) >= pmValue;
+  const isInScope = isQualSignificant || isGroupKuanSignificant || isRowKuanSignificant;
   if (!isInScope) {
     return 'out-of-scope';
   }
 
-  const isRowKuanSignificant = Math.abs(row.balance || 0) >= pmValue;
   if (isRowKuanSignificant) {
     return 'above-pm';
   }

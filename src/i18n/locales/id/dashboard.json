@@ -76,5 +76,27 @@
     "noData": "Data tidak tersedia",
     "noDeficiencies": "Tidak ada temuan dilaporkan",
     "controls": "Kontrol"
+  },
+  "realizationTable": {
+    "title": "Realisasi Pengujian & Kepatuhan Kontrol",
+    "subtitle": "Sesuai Standar Kepatuhan Tabel 22 SK-5",
+    "empty": "Belum ada kontrol terkonfigurasi",
+    "footnote": "Kontrol bulanan & kuartalan wajib menyertakan sampel K4/Desember.",
+    "controlsCount": "kontrol",
+    "columns": {
+      "frequency": "Frekuensi",
+      "population": "Populasi",
+      "target": "Target (Tab. 22)",
+      "realization": "Realisasi"
+    },
+    "frequencies": {
+      "Annual": "Tahunan",
+      "Semi-Annual": "Semesteran",
+      "Quarterly": "Kuartalan",
+      "Monthly": "Bulanan",
+      "Weekly": "Mingguan",
+      "Daily": "Harian",
+      "Ad-hoc": "Insidentil"
+    }
   }
 }

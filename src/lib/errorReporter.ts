@@ -1,5 +1,5 @@
 /**
- * Error Reporter for IndoGRC Pro
+ * Error Reporter for BALE GRC Integra
  * 
  * This module provides a robust error reporting mechanism for the frontend.
  * It intercepts console errors and warnings, and captures unhandled exceptions.

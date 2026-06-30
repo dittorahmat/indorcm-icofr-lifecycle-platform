@@ -18,6 +18,7 @@ import { DashboardKPIs } from '@/components/dashboard/DashboardKPIs';
 import { COSOCoverageGrid } from '@/components/dashboard/COSOCoverageGrid';
 import { ActionCenter } from '@/components/dashboard/ActionCenter';
 import { LifecycleProgress } from '@/components/dashboard/LifecycleProgress';
+import { CSARealizationTable } from '@/components/dashboard/CSARealizationTable';
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 
 const ComplianceCharts = React.lazy(() => import('@/components/dashboard/ComplianceCharts').then(m => ({ default: m.ComplianceCharts })));
@@ -201,6 +202,13 @@ export function Dashboard() {
               <p className="text-[10px] text-slate-400 font-medium uppercase tracking-widest text-center">
                 Compliance Engine v2.4.0 — BUMN Standard
               </p>
+            </motion.div>
+
+            <motion.div variants={itemVariants}>
+              <CSARealizationTable 
+                controls={controlsData?.items || []} 
+                isLoading={isLoading} 
+              />
             </motion.div>
 
           </div>

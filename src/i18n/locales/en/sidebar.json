@@ -44,7 +44,8 @@
   },
   "sections": {
     "rcmMatrix": "RCM Matrix",
-    "copyright": "© 2026 IndoGRC Pro",
+    "copyright": "© 2026 BALE GRC Integra",
+    "appName": "BALE GRC Integra",
     "auditPortal": "Audit Portal (KAP)"
   }
 }

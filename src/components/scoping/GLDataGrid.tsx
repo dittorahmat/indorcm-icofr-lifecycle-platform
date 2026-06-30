@@ -243,7 +243,7 @@ export const GLDataGrid = React.memo(function GLDataGrid({
         aggregationFn: 'sum',
         cell: ({ row, getValue }) => {
           let val = getValue<number>() || 0;
-          if (row.getIsGrouped()) {
+          if (row.getIsGrouped() && row.groupingColumnId === 'fsliName') {
             const leafRows = row.getLeafRows();
             const groupExplicitTotal = leafRows[0]?.original.fsliBalance;
             if (groupExplicitTotal !== undefined && groupExplicitTotal !== null && groupExplicitTotal !== 0) {
@@ -274,11 +274,12 @@ export const GLDataGrid = React.memo(function GLDataGrid({
           const isSignificant = row.getIsGrouped()
             ? getValue<boolean>()
             : (() => {
+                const isRowSignificant = Math.abs(row.original.balance || 0) >= pmValue;
                 const groupExplicitTotal = row.original.fsliBalance;
                 if (groupExplicitTotal !== undefined && groupExplicitTotal !== null && groupExplicitTotal !== 0) {
-                  return Math.abs(groupExplicitTotal) >= pmValue;
+                  return isRowSignificant || Math.abs(groupExplicitTotal) >= pmValue;
                 }
-                return Math.abs(row.original.balance) >= pmValue;
+                return isRowSignificant;
               })();
           return (
             <div className="text-center">
