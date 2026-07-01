@@ -124,4 +124,26 @@ describe('AIService - generateChatResponse Multimodal Routing', () => {
       })
     }));
   });
+
+  describe('Grounding and Scope Limitation', () => {
+    it('correctly handles empty RAG database results and falls back to a warning/rejection message', () => {
+      const retrievalResults: any[] = [];
+      const knowledgeBase = retrievalResults.length > 0
+        ? retrievalResults.map(r => AIService.situationalChunking(r.content, { title: r.title, category: r.category })).join('\n\n')
+        : "KOSONG: Tidak ada dokumen referensi/prosedur/regulasi yang relevan yang ditemukan untuk pertanyaan ini. Pengguna belum mengunggah dokumen yang sesuai atau sistem pencarian tidak menemukan hasil.";
+
+      expect(knowledgeBase).toContain("KOSONG: Tidak ada dokumen referensi");
+    });
+
+    it('validates that grounding rules are strictly specified in the system instructions', () => {
+      const systemInstruction = `Anda adalah Asisten AI & Analis Strategis IndoGRC Pro...
+PENTING:
+- Anda HANYA boleh menjawab pertanyaan berdasarkan data yang ada pada KNOWLEDGE BASE di atas, data live aplikasi melalui tool yang dipanggil, serta topik seputar platform IndoGRC Pro dan regulasi ICOFR (SK-5).
+- Jika pengguna menanyakan hal di luar cakupan aplikasi IndoGRC Pro, regulasi ICOFR (SK-5), atau di luar KNOWLEDGE BASE (seperti perihal cuti karyawan secara umum, resep masakan, pemrograman umum, dll), Anda WAJIB menolak menjawab secara sopan dan menjelaskan batas kemampuan Anda.`;
+
+      expect(systemInstruction).toContain('Anda HANYA boleh menjawab pertanyaan berdasarkan data yang ada pada KNOWLEDGE BASE');
+      expect(systemInstruction).toContain('menolak menjawab secara sopan');
+    });
+  });
 });
+

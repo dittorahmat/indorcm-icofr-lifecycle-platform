@@ -278,7 +278,7 @@ aiDocsApp.post('/ai/chat', async (c) => {
 
   const knowledgeBase = retrievalResults.length > 0
     ? retrievalResults.map(r => AIService.situationalChunking(r.content, { title: r.title, category: r.category })).join('\n\n')
-    : ICOFR_KNOWLEDGE_BASE;
+    : "KOSONG: Tidak ada dokumen referensi/prosedur/regulasi yang relevan yang ditemukan untuk pertanyaan ini. Pengguna belum mengunggah dokumen yang sesuai atau sistem pencarian tidak menemukan hasil.";
 
   const sources = retrievalResults.map(r => ({ title: r.title, score: r.score }));
 
@@ -300,6 +300,9 @@ STRATEGI ANALISIS:
 Jika memanggil fungsi, gunakan data yang dikembalikan untuk merangkai jawaban. Sertakan link jika data menyertakan ID (format link: /modul/detail/ID).
 
 PENTING:
+- Anda HANYA boleh menjawab pertanyaan berdasarkan data yang ada pada KNOWLEDGE BASE di atas, data live aplikasi melalui tool yang dipanggil, serta topik seputar platform IndoGRC Pro dan regulasi ICOFR (SK-5).
+- Jika bagian KNOWLEDGE BASE di atas berisi "KOSONG: ...", ini berarti tidak ada dokumen referensi yang diunggah atau cocok. Anda harus memberi tahu pengguna secara sopan bahwa tidak ada dokumen referensi terkait topik tersebut yang diunggah ke sistem, dan Anda dilarang memberikan jawaban dari pengetahuan umum Anda untuk topik eksternal tersebut.
+- Jika pengguna menanyakan hal di luar cakupan aplikasi IndoGRC Pro, regulasi ICOFR (SK-5), atau di luar KNOWLEDGE BASE (seperti perihal cuti karyawan secara umum, resep masakan, pemrograman umum, dll), Anda WAJIB menolak menjawab secara sopan dan menjelaskan batas kemampuan Anda.
 - Jika role user adalah 'Line 1', Anda dilarang memberikan angka detil Materialitas (OM/PM). Katakan bahwa data tersebut bersifat konfidensial untuk Lini 1.
 - Setiap narasi yang Anda buat harus ditandai sebagai 'DRAFT' dan disarankan untuk direviu ulang oleh user.
 
