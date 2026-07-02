@@ -10,12 +10,13 @@ import { Settings } from '@shared/types';
 import { toast } from 'sonner';
 import { 
   Building2, Save, Loader2, Image as ImageIcon, 
-  UserCircle, CalendarDays, Lock, ShieldCheck 
+  UserCircle, CalendarDays, Lock, ShieldCheck, Mail 
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export function SettingsPage() {
   const { t } = useTranslation(['common', 'sidebar']);
@@ -52,6 +53,22 @@ export function SettingsPage() {
     setLocalSettings(prev => ({ ...prev, [field]: value }));
   };
 
+  const [testingEmail, setTestingEmail] = React.useState(false);
+
+  const handleTestEmail = async () => {
+    setTestingEmail(true);
+    try {
+      await api('/api/settings/test-email', {
+        method: 'POST',
+        body: JSON.stringify(localSettings),
+      });
+      toast.success(t('emailSettings.testSuccess'));
+    } catch (err: any) {
+      toast.error(err.message || t('emailSettings.testError'));
+    } finally {
+      setTestingEmail(false);
+    }
+  };
   const handleSave = () => {
     updateSettingsMutation.mutate(localSettings);
   };
@@ -152,6 +169,129 @@ export function SettingsPage() {
                     />
                   </div>
                </div>
+            </CardContent>
+          </Card>
+
+          {/* Email Notification Settings */}
+          <Card className="border-slate-200 shadow-sm overflow-hidden">
+            <CardHeader className="bg-slate-50/50 border-b">
+               <div className="flex items-center justify-between flex-wrap gap-2">
+                 <div className="flex items-center gap-3">
+                    <div className="p-2 bg-emerald-100 rounded-lg text-emerald-600">
+                      <Mail className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <CardTitle>{t('emailSettings.title')}</CardTitle>
+                      <CardDescription>{t('emailSettings.description')}</CardDescription>
+                    </div>
+                 </div>
+                 {localSettings.emailProvider === 'smtp' && (
+                   <Button 
+                     type="button" 
+                     variant="outline" 
+                     size="sm" 
+                     disabled={testingEmail}
+                     onClick={handleTestEmail}
+                     className="gap-2 border-emerald-200 text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800"
+                   >
+                     {testingEmail ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
+                     {t('emailSettings.testConnection')}
+                   </Button>
+                 )}
+               </div>
+            </CardHeader>
+            <CardContent className="p-6 space-y-6">
+               <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label className="text-xs font-black uppercase text-slate-500 tracking-wider">{t('emailSettings.provider')}</Label>
+                    <Select 
+                      value={localSettings.emailProvider || 'system'} 
+                      onValueChange={(val) => handleChange('emailProvider', val)}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder={t('placeholders.choose')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="system">{t('emailSettings.systemDefault')}</SelectItem>
+                        <SelectItem value="smtp">{t('emailSettings.customSmtp')}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-black uppercase text-slate-500 tracking-wider">{t('emailSettings.senderName')}</Label>
+                    <Input 
+                      value={localSettings.senderName || ''} 
+                      onChange={(e) => handleChange('senderName', e.target.value)}
+                      placeholder="e.g. IndoGRC Pro Notifications"
+                      disabled={localSettings.emailProvider === 'system'}
+                    />
+                  </div>
+               </div>
+
+               {localSettings.emailProvider === 'smtp' && (
+                 <>
+                   <Separator className="my-4" />
+                   <div className="space-y-6">
+                     <div className="grid md:grid-cols-3 gap-6">
+                       <div className="space-y-2 md:col-span-2">
+                         <Label className="text-xs font-black uppercase text-slate-500 tracking-wider">{t('emailSettings.senderEmail')}</Label>
+                         <Input 
+                           type="email"
+                           value={localSettings.senderEmail || ''} 
+                           onChange={(e) => handleChange('senderEmail', e.target.value)}
+                           placeholder="info@dsintegra.co.id"
+                         />
+                       </div>
+                       <div className="space-y-2">
+                         <Label className="text-xs font-black uppercase text-slate-500 tracking-wider">{t('emailSettings.smtpPort')}</Label>
+                         <Input 
+                           type="number"
+                           value={localSettings.smtpPort || 587} 
+                           onChange={(e) => handleChange('smtpPort', parseInt(e.target.value) || 587)}
+                           placeholder="587"
+                         />
+                       </div>
+                     </div>
+
+                     <div className="grid md:grid-cols-3 gap-6">
+                       <div className="space-y-2 md:col-span-2">
+                         <Label className="text-xs font-black uppercase text-slate-500 tracking-wider">{t('emailSettings.smtpHost')}</Label>
+                         <Input 
+                           value={localSettings.smtpHost || ''} 
+                           onChange={(e) => handleChange('smtpHost', e.target.value)}
+                           placeholder="e.g. mail.dsintegra.co.id"
+                         />
+                       </div>
+                       <div className="space-y-2">
+                         <Label className="text-xs font-black uppercase text-slate-500 tracking-wider">{t('emailSettings.smtpSecurity')}</Label>
+                         <div className="text-sm font-semibold py-2.5 text-slate-600">
+                           {localSettings.smtpPort === 465 ? t('emailSettings.ssl') : (localSettings.smtpPort === 587 ? t('emailSettings.starttls') : t('emailSettings.unencrypted'))}
+                         </div>
+                       </div>
+                     </div>
+
+                     <div className="grid md:grid-cols-2 gap-6">
+                       <div className="space-y-2">
+                         <Label className="text-xs font-black uppercase text-slate-500 tracking-wider">{t('emailSettings.smtpUser')}</Label>
+                         <Input 
+                           value={localSettings.smtpUser || ''} 
+                           onChange={(e) => handleChange('smtpUser', e.target.value)}
+                           placeholder="e.g. SMTP username or full email address"
+                         />
+                       </div>
+                       <div className="space-y-2">
+                         <Label className="text-xs font-black uppercase text-slate-500 tracking-wider">{t('emailSettings.smtpPass')}</Label>
+                         <Input 
+                           type="password"
+                           value={localSettings.smtpPass || ''} 
+                           onChange={(e) => handleChange('smtpPass', e.target.value)}
+                           placeholder="••••••••••••"
+                         />
+                       </div>
+                     </div>
+                   </div>
+                 </>
+               )}
             </CardContent>
           </Card>
 

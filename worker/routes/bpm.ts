@@ -139,12 +139,18 @@ PANDUAN KLASIFIKASI BENTUK VISUAL:
 - Bullet Pointing Left -> Tipe: "display"
 - Flat-topped Trapezoid -> Tipe: "loop-limit"
 - Dashed Three-sided Bracket -> Tipe: "annotation"
+- Kolom / Lajur / Kotak pembatas vertikal atau horizontal (Lajur Fungsi) -> Tipe: "swimlane"
 
-Instruksi Koordinat:
+Instruksi Koordinat & Swimlane:
 - Koordinat x dan y harus berada dalam rentang 0 s.d. 1000.
 - Koordinat x adalah sumbu horizontal (kiri ke kanan).
 - Koordinat y adalah sumbu vertikal (atas ke bawah).
 - Atur agar nodes tersusun rapi secara visual dan tidak menumpuk pada koordinat yang sama.
+- Jika mendeteksi swimlane (kolom pembatas):
+  1. Buat node tipe "swimlane".
+  2. Ekstrak nama Departemen dan Fungsi yang tertulis di bagian header/judul swimlane tersebut, simpan ke properti "department" dan "function".
+  3. Tentukan ukuran "width" (lebar lajur, misal 350-450) dan "height" (tinggi lajur, misal 1000) yang sesuai.
+  4. Untuk setiap bentuk alur proses yang secara fisik berada di dalam area kolom swimlane tersebut, isi properti "parentId" dengan "id" dari swimlane bersangkutan.
 
 Format keluaran WAJIB berupa JSON objek yang memenuhi skema data yang diminta.`;
 
@@ -184,7 +190,7 @@ Format keluaran WAJIB berupa JSON objek yang memenuhi skema data yang diminta.`;
                 "internal-storage", "multi-document", "preparation", "manual-operation", 
                 "card", "punched-tape", "summing-junction", "or", "collate", "sort", 
                 "extract", "merge", "stored-data", "delay", "sequential-access", 
-                "direct-access", "display", "loop-limit", "annotation"
+                "direct-access", "display", "loop-limit", "annotation", "swimlane"
               ]
             },
             label: { type: SchemaType.STRING },
@@ -195,7 +201,12 @@ Format keluaran WAJIB berupa JSON objek yang memenuhi skema data yang diminta.`;
                 y: { type: SchemaType.NUMBER }
               },
               required: ["x", "y"]
-            }
+            },
+            parentId: { type: SchemaType.STRING },
+            department: { type: SchemaType.STRING },
+            function: { type: SchemaType.STRING },
+            width: { type: SchemaType.NUMBER },
+            height: { type: SchemaType.NUMBER }
           },
           required: ["id", "type", "label", "position"]
         }

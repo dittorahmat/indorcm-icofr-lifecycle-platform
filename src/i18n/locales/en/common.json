@@ -104,5 +104,25 @@
     "description": "You have unsaved changes that will be lost if you leave this page. Are you sure you want to continue?",
     "stay": "Stay on Page",
     "discard": "Discard Changes"
+  },
+  "emailSettings": {
+    "title": "Email Notification Settings",
+    "description": "Configure the email server and sender details for system notifications.",
+    "provider": "Email Provider",
+    "senderName": "Sender Display Name",
+    "senderEmail": "Sender Email Address",
+    "smtpPort": "SMTP Port",
+    "smtpHost": "SMTP Host",
+    "smtpSecurity": "SMTP Security",
+    "smtpUser": "SMTP Username",
+    "smtpPass": "SMTP Password",
+    "testConnection": "Test Connection",
+    "systemDefault": "System Default Fallback",
+    "customSmtp": "Custom SMTP Server",
+    "ssl": "SSL (Secure)",
+    "starttls": "STARTTLS (Secure)",
+    "unencrypted": "Unencrypted / Alternate",
+    "testSuccess": "Test email sent successfully! Check your inbox.",
+    "testError": "Failed to send test email"
   }
 }

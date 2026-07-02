@@ -426,6 +426,13 @@ export interface Settings {
   signedOffDate?: number;
   signedOffBy?: string;
   verificationHash?: string;
+  emailProvider?: 'system' | 'smtp';
+  senderEmail?: string;
+  senderName?: string;
+  smtpHost?: string;
+  smtpPort?: number;
+  smtpUser?: string;
+  smtpPass?: string;
 }
 
 export interface LoginCredentials {

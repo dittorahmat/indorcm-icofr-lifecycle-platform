@@ -12,6 +12,7 @@ import type { CSARecord, TestRecord, Deficiency } from "@shared/types";
 import { generateCsaPdf } from "../lib/csa-pdf";
 import { AuditService } from "../services/audit-service";
 import { DeficiencyService } from "../services/deficiency-service";
+import { createNotificationAndSendEmail } from "../services/email";
 
 const csa = new Hono<HonoEnv>();
 
@@ -69,15 +70,14 @@ csa.post('/csa/schedules', async (c) => {
     
     // Add Notification for the assigned user
     if (body.assignedTo) {
-        await db.insert(notifications).values({
-            id: crypto.randomUUID(),
-            organizationId: orgId,
+        await createNotificationAndSendEmail({
+            db,
+            orgId,
             userId: body.assignedTo,
             message: `Baru: ${schedulesToInsert.length} jadwal CSA telah ditugaskan kepada Anda.`,
             type: 'info',
             link: '/csa',
-            readStatus: false,
-            createdAt: new Date(),
+            env: c.env,
         });
     }
   }
@@ -363,17 +363,17 @@ csa.post('/csa', async (c) => {
       ));
       
       if (line2Users.length > 0) {
-          const notificationsToInsert = line2Users.map((u: any) => ({
-              id: crypto.randomUUID(),
-              organizationId: orgId,
-              userId: u.id,
-              message: `Pemberitahuan: Laporan CSA untuk periode ${newCsa.period} telah di-sign off oleh Lini 1. Segera lakukan verifikasi desain (Lampiran 8).`,
-              type: 'warning' as const,
-              link: '/csa',
-              readStatus: false,
-              createdAt: new Date(),
-          }));
-          await db.insert(notifications).values(notificationsToInsert);
+          for (const u of line2Users) {
+              await createNotificationAndSendEmail({
+                  db,
+                  orgId,
+                  userId: u.id,
+                  message: `Pemberitahuan: Laporan CSA untuk periode ${newCsa.period} telah di-sign off oleh Lini 1. Segera lakukan verifikasi desain (Lampiran 8).`,
+                  type: 'warning',
+                  link: '/csa',
+                  env: c.env,
+              });
+          }
       }
   }
 

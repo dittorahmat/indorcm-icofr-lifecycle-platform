@@ -9,6 +9,7 @@ import {
 import { eq, and, SQL } from 'drizzle-orm';
 import type { Deficiency, ActionPlan, AggregateDeficiency } from "@shared/types";
 import { AuditService } from "../services/audit-service";
+import { createNotificationAndSendEmail } from "../services/email";
 
 const remediation = new Hono<HonoEnv>();
 
@@ -59,15 +60,14 @@ remediation.post('/actionplans', async (c) => {
 
   // Trigger Notification for Action Plan Owner
   if (newPlan.ownerId && newPlan.ownerId !== userId) {
-    await db.insert(notifications).values({
-        id: crypto.randomUUID(),
-        organizationId: orgId,
+    await createNotificationAndSendEmail({
+        db,
+        orgId,
         userId: newPlan.ownerId,
         message: `Rencana Aksi baru telah ditugaskan kepada Anda: ${newPlan.description}`,
         type: 'warning',
         link: '/deficiencies',
-        readStatus: false,
-        createdAt: new Date(),
+        env: c.env,
     });
   }
 
@@ -210,15 +210,14 @@ remediation.post('/actionplans/:id/workflow', async (c) => {
 
   if (nextStatus !== currentStatus) {
     const targetUserId = body.assigneeId || plan.ownerId || userId;
-    await db.insert(notifications).values({
-      id: crypto.randomUUID(),
-      organizationId: orgId,
+    await createNotificationAndSendEmail({
+      db,
+      orgId,
       userId: targetUserId,
       message: `Status Rencana Aksi berubah menjadi ${nextStatus}. ${body.note ? 'Catatan: ' + body.note : ''}`,
       type: body.action === 'Reject' ? 'error' : (body.action === 'Approve' ? 'success' : 'info'),
       link: '/deficiencies',
-      readStatus: false,
-      createdAt: new Date(),
+      env: c.env,
     });
   }
 

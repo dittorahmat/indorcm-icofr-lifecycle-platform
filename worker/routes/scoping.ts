@@ -15,6 +15,7 @@ import type {
 import { ScopingService } from '../services/scoping-service';
 import { AuditService } from "../services/audit-service";
 import { getQualitativeDefaults } from '../services/scoping-defaults';
+import { createNotificationAndSendEmail } from '../services/email';
 
 
 import { rbac } from "../lib/guard";
@@ -59,13 +60,13 @@ scoping.post('/simulations', rbac(['Line 2', 'Admin']), async (c) => {
   const cloned = await scopingService.carryForward(orgId, userId, targetYear);
 
   if (cloned) {
-    await db.insert(notifications).values({
-      id: crypto.randomUUID(),
-      organizationId: orgId,
+    await createNotificationAndSendEmail({
+      db,
+      orgId,
       userId: userId,
       message: `Successfully carried forward RCM and BPM data from ${targetYear - 1} to ${targetYear}.`,
       type: 'success',
-      createdAt: new Date() as any,
+      env: c.env,
     });
   }
 
@@ -191,14 +192,14 @@ scoping.post('/simulations/:id/approve', async (c) => {
     .where(and(eq(simulations.id, id), eq(simulations.organizationId, orgId)));
 
   // Notify creator
-  await db.insert(notifications).values({
-    id: crypto.randomUUID(),
-    organizationId: orgId,
+  await createNotificationAndSendEmail({
+    db,
+    orgId,
     userId: sim.createdBy!,
     message: `Your scoping simulation "${sim.name}" has been ${nextStatus === 'Approved' ? 'approved' : 'moved to next approval stage'}.`,
     type: 'success',
     link: `/scoping?id=${id}`,
-    createdAt: new Date(),
+    env: c.env,
   });
 
   return ok(c, { success: true });
@@ -236,14 +237,14 @@ scoping.post('/simulations/:id/reject', async (c) => {
     .where(and(eq(simulations.id, id), eq(simulations.organizationId, orgId)));
 
   // Notify creator
-  await db.insert(notifications).values({
-    id: crypto.randomUUID(),
-    organizationId: orgId,
+  await createNotificationAndSendEmail({
+    db,
+    orgId,
     userId: sim.createdBy!,
     message: `Your scoping simulation "${sim.name}" has been rejected. Reason: ${body.note}`,
     type: 'error',
     link: `/scoping?id=${id}`,
-    createdAt: new Date(),
+    env: c.env,
   });
 
   return ok(c, { success: true });
@@ -550,24 +551,24 @@ scoping.post('/simulations/:id/workflow', async (c) => {
 
   // Notifications
   if (nextStatus === 'Approved') {
-      await db.insert(notifications).values({
-        id: crypto.randomUUID(),
-        organizationId: orgId,
+      await createNotificationAndSendEmail({
+        db,
+        orgId,
         userId: sim.createdBy!,
         message: `Your scoping simulation "${sim.name}" has been fully approved.`,
         type: 'success',
         link: `/scoping?id=${id}`,
-        createdAt: new Date(),
+        env: c.env,
       });
   } else if (nextStatus === 'Rejected') {
-      await db.insert(notifications).values({
-        id: crypto.randomUUID(),
-        organizationId: orgId,
+      await createNotificationAndSendEmail({
+        db,
+        orgId,
         userId: sim.createdBy!,
         message: `Scoping simulation "${sim.name}" was rejected: ${note}`,
         type: 'error',
         link: `/scoping?id=${id}`,
-        createdAt: new Date(),
+        env: c.env,
       });
   }
 

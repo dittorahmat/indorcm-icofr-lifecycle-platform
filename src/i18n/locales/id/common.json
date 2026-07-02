@@ -104,5 +104,25 @@
     "description": "Anda memiliki perubahan yang belum disimpan. Perubahan akan hilang jika Anda meninggalkan halaman ini. Apakah Anda yakin?",
     "stay": "Tetap di Halaman",
     "discard": "Buang Perubahan"
+  },
+  "emailSettings": {
+    "title": "Pengaturan Notifikasi Email",
+    "description": "Konfigurasikan server email dan detail pengirim untuk notifikasi sistem.",
+    "provider": "Penyedia Email",
+    "senderName": "Nama Tampilan Pengirim",
+    "senderEmail": "Alamat Email Pengirim",
+    "smtpPort": "Port SMTP",
+    "smtpHost": "Host SMTP",
+    "smtpSecurity": "Keamanan SMTP",
+    "smtpUser": "Username SMTP",
+    "smtpPass": "Password SMTP",
+    "testConnection": "Uji Koneksi",
+    "systemDefault": "Sistem Default Fallback",
+    "customSmtp": "Server SMTP Kustom",
+    "ssl": "SSL (Aman)",
+    "starttls": "STARTTLS (Aman)",
+    "unencrypted": "Tanpa Enkripsi / Alternatif",
+    "testSuccess": "Email uji berhasil dikirim! Silakan periksa kotak masuk Anda.",
+    "testError": "Gagal mengirim email uji"
   }
 }

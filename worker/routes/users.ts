@@ -10,6 +10,7 @@ import { eq, sql, and } from 'drizzle-orm';
 import type { Settings } from "@shared/types";
 import { seedDatabase } from '../db/seed';
 import { ScopingService } from '../services/scoping-service';
+import { sendEmail } from '../services/email';
 
 const users = new Hono<HonoEnv>();
 
@@ -181,6 +182,13 @@ users.get('/settings', async (c) => {
     isPeriodLocked: meta.isPeriodLocked || false,
     verificationHash: meta.verificationHash,
     signedOffDate: meta.signedOffDate ? (typeof meta.signedOffDate === 'string' ? new Date(meta.signedOffDate).getTime() : meta.signedOffDate) : undefined,
+    emailProvider: meta.emailProvider || 'system',
+    senderEmail: meta.senderEmail || '',
+    senderName: meta.senderName || '',
+    smtpHost: meta.smtpHost || '',
+    smtpPort: meta.smtpPort || 587,
+    smtpUser: meta.smtpUser || '',
+    smtpPass: meta.smtpPass || '',
   };
 
   return ok(c, settings);
@@ -203,6 +211,13 @@ users.put('/settings', async (c) => {
     cfoName: body.cfoName,
     fiscalYear: body.fiscalYear,
     isPeriodLocked: body.isPeriodLocked,
+    emailProvider: body.emailProvider,
+    senderEmail: body.senderEmail,
+    senderName: body.senderName,
+    smtpHost: body.smtpHost,
+    smtpPort: body.smtpPort,
+    smtpUser: body.smtpUser,
+    smtpPass: body.smtpPass,
   };
 
   await db.update(organization)
@@ -214,6 +229,41 @@ users.put('/settings', async (c) => {
     .where(eq(organization.id, orgId));
     
   return ok(c, { success: true });
+});
+
+users.post('/settings/test-email', async (c) => {
+  const db = getDb(c.env.DATABASE_URL);
+  const userId = c.get('userId');
+  const body = await c.req.json<Partial<Settings>>();
+
+  const currentUser = await db.select().from(user).where(eq(user.id, userId)).limit(1);
+  if (currentUser.length === 0) return notFound(c, 'User not found');
+
+  try {
+    await sendEmail({
+      to: currentUser[0].email,
+      subject: 'IndoGRC Pro - Test SMTP Connection',
+      html: `
+        <div style="font-family: sans-serif; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+          <h2 style="color: #1e293b; margin-top: 0; font-size: 20px; border-bottom: 2px solid #22c55e; padding-bottom: 8px;">SMTP Test Connection Successful</h2>
+          <p style="color: #475569; font-size: 15px; line-height: 1.5;">Congratulations! Your custom email server configuration is working perfectly on IndoGRC Pro.</p>
+          <div style="background-color: #f8fafc; padding: 12px; border-radius: 6px; margin: 16px 0; border: 1px solid #f1f5f9;">
+            <p style="margin: 4px 0; font-size: 13px; color: #64748b;"><strong>Sender Address:</strong> ${body.senderEmail || 'info@dsintegra.co.id'}</p>
+            <p style="margin: 4px 0; font-size: 13px; color: #64748b;"><strong>Sender Name:</strong> ${body.senderName || 'IndoGRC Pro'}</p>
+            <p style="margin: 4px 0; font-size: 13px; color: #64748b;"><strong>SMTP Host:</strong> ${body.smtpHost}</p>
+          </div>
+          <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
+          <p style="font-size: 12px; color: #94a3b8; margin-bottom: 0;">This is an automated test email. Please do not reply directly.</p>
+        </div>
+      `,
+      settings: body,
+      env: c.env,
+    });
+    return ok(c, { success: true });
+  } catch (error: any) {
+    console.error('SMTP Test Error:', error);
+    return bad(c, error.message || 'Failed to send test email');
+  }
 });
 
 // --- DEV TOOLS (Purge) ---

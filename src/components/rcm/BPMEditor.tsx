@@ -202,16 +202,83 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
   const handleApplyOcr = () => {
     if (!parsedDiagram) return;
 
-    const scaledNodes = parsedDiagram.nodes.map((n: any) => {
+    // 1. Separate swimlanes and regular shape nodes from OCR result
+    const rawSwimlanes = parsedDiagram.nodes.filter((n: any) => n.type === 'swimlane');
+    const rawShapes = parsedDiagram.nodes.filter((n: any) => n.type !== 'swimlane');
+
+    // 2. Preserve existing swimlanes from current state
+    const existingSwimlanes = nodes.filter((n: any) => n.type === 'swimlane');
+
+    // 3. Map new OCR swimlanes
+    const mappedSwimlanes = rawSwimlanes.map((lane: any) => ({
+      id: lane.id,
+      type: 'swimlane',
+      position: { x: lane.position.x, y: lane.position.y },
+      zIndex: -1,
+      style: { width: lane.width || 400, height: lane.height || 1000 },
+      data: {
+        label: lane.label || 'Lane',
+        department: lane.department || 'Dept',
+        function: lane.function || 'Func',
+        isLocked: false,
+      }
+    }));
+
+    // Combine all swimlanes to search for parent matches
+    const allSwimlanes = [...existingSwimlanes, ...mappedSwimlanes];
+
+    // 4. Map shapes, translating coordinates relative to parent swimlane if matched
+    const mappedShapes = rawShapes.map((n: any) => {
+      const parentLane = allSwimlanes.find((lane: any) => lane.id === n.parentId);
+      let posX = n.position.x;
+      let posY = n.position.y;
+      
+      if (parentLane) {
+        posX = Math.max(10, n.position.x - parentLane.position.x);
+        posY = Math.max(80, n.position.y - parentLane.position.y);
+      }
+
       return {
         id: n.id,
         type: n.type,
-        position: { x: n.position.x, y: n.position.y },
+        parentId: n.parentId || undefined,
+        extent: n.parentId ? 'parent' : undefined,
+        position: { x: posX, y: posY },
         data: {
           label: n.label,
           type: n.type,
         }
       };
+    });
+
+    // 5. Build final nodes list merging all swimlanes and new shapes
+    const combinedNodes = [...allSwimlanes, ...mappedShapes];
+
+    // 6. Inject event handlers
+    const finalNodes = combinedNodes.map((node: any) => {
+      const isSwimlane = node.type === 'swimlane';
+      const isNodeLocked = !!node.data?.isLocked;
+      const baseNode = {
+        ...node,
+        draggable: !isLocked && !isNodeLocked,
+        zIndex: isSwimlane ? -1 : (node.zIndex ?? (node.id.startsWith('badge_') ? 20 : 10)),
+        dragHandle: isSwimlane ? '.swimlane-drag-handle' : undefined,
+      };
+
+      if (isSwimlane) {
+        baseNode.data = {
+          ...node.data,
+          onToggleLock: () => toggleNodeLock(node.id),
+          onChangeDepartment: (v: string) => updateNodeData(node.id, { department: v }),
+          onChangeFunction: (v: string) => updateNodeData(node.id, { function: v })
+        };
+      } else {
+        baseNode.data = {
+          ...node.data,
+          onToggleLock: () => toggleNodeLock(node.id)
+        };
+      }
+      return baseNode;
     });
 
     const standardEdges = parsedDiagram.edges.map((e: any) => ({
@@ -228,7 +295,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
       style: { strokeWidth: 2, stroke: '#0f172a' }
     }));
 
-    setNodes(scaledNodes);
+    setNodes(finalNodes);
     setEdges(standardEdges);
     setDirty(true);
 
@@ -1074,6 +1141,29 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
                               <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100 bg-white text-slate-600 hover:text-slate-800" title={t('bpm:editor.nodes.output')} onClick={() => createActivityNode('output')}>
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><rect x="2" y="4" width="20" height="11" /><rect x="6" y="15" width="12" height="5" /></svg>
                               </Button>
+                              <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg bg-indigo-50 hover:bg-indigo-100 border-indigo-200 text-indigo-700" title={t('bpm:swimlane.add')} onClick={() => {
+                                const id = `lane_${Date.now()}`;
+                                setNodes(nds => [...nds, { 
+                                  id, 
+                                  type: 'swimlane', 
+                                  position: { x: 0, y: 0 }, 
+                                  zIndex: -1,
+                                  draggable: !isLocked,
+                                  dragHandle: '.swimlane-drag-handle',
+                                  style: { width: 400, height: 1000 },
+                                  data: { 
+                                    label: t('bpm:editor.swimlane.defaults.lane'), 
+                                    department: t('bpm:editor.swimlane.defaults.dept'), 
+                                    function: t('bpm:editor.swimlane.defaults.func'),
+                                    isLocked: false,
+                                    onToggleLock: () => toggleNodeLock(id),
+                                    onChangeDepartment: (v: string) => updateNodeData(id, { department: v }),
+                                    onChangeFunction: (v: string) => updateNodeData(id, { function: v })
+                                  } 
+                                }]);
+                              }}>
+                                <Columns className="h-4 w-4" />
+                              </Button>
                            </div>
                         </ScrollArea>
                      </div>
@@ -1109,31 +1199,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
                        <p className="text-[8px] text-slate-400 italic">{t('rcm:migration.backlog.drag_hint')}</p>
                     </div>
 
-                    <div className="pt-2">
-                      <Button variant="secondary" className="w-full h-10 gap-2 text-[10px] font-bold uppercase tracking-widest rounded-xl bg-mancity-pattern text-primary-foreground hover:opacity-90 shadow-sm transition-all" onClick={() => {
-                        const id = `lane_${Date.now()}`;
-                        setNodes(nds => [...nds, { 
-                          id, 
-                          type: 'swimlane', 
-                          position: { x: 0, y: 0 }, 
-                          zIndex: -1,
-                          draggable: !isLocked,
-                          dragHandle: '.swimlane-drag-handle',
-                          style: { width: 400, height: 1000 },
-                          data: { 
-                            label: t('bpm:editor.swimlane.defaults.lane'), 
-                            department: t('bpm:editor.swimlane.defaults.dept'), 
-                            function: t('bpm:editor.swimlane.defaults.func'),
-                            isLocked: false,
-                            onToggleLock: () => toggleNodeLock(id),
-                            onChangeDepartment: (v: string) => updateNodeData(id, { department: v }),
-                            onChangeFunction: (v: string) => updateNodeData(id, { function: v })
-                          } 
-                        }]);
-                      }}>
-                        <GripVertical className="h-3.5 w-3.5" /> {t('bpm:swimlane.add')}
-                      </Button>
-                    </div>
+
                  </div>
                )}
             </Panel>

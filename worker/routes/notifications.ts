@@ -4,6 +4,7 @@ import { ok } from '../lib/utils';
 import { getDb } from '../db';
 import { notifications } from '../db/schema';
 import { and, eq, desc, sql } from 'drizzle-orm';
+import { createNotificationAndSendEmail } from '../services/email';
 
 const notificationsApp = new Hono<HonoEnv>();
 
@@ -46,18 +47,18 @@ notificationsApp.post('/notifications', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const userId = c.get('userId');
-  const body = await c.req.json<{ message: string; type?: string; link?: string }>();
+  const body = await c.req.json<{ message: string; type?: string; link?: string; userId?: string }>();
 
-  const id = crypto.randomUUID();
-  await db.insert(notifications).values({
-    id,
-    organizationId: orgId,
-    userId: userId,
+  const targetUserId = body.userId || userId;
+
+  const id = await createNotificationAndSendEmail({
+    db,
+    orgId,
+    userId: targetUserId,
     message: body.message,
-    type: (body.type as any) || 'info',
+    type: body.type,
     link: body.link,
-    readStatus: false,
-    createdAt: new Date(),
+    env: c.env,
   });
 
   return ok(c, { id });
