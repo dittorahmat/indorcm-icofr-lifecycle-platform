@@ -1005,7 +1005,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
               </Button>
             </Panel>
 
-            <Panel position="top-left" className="bg-white/95 backdrop-blur-md p-5 rounded-[1.5rem] border border-slate-200 shadow-xl flex flex-col gap-5 max-w-[280px]">
+            <Panel position="top-left" className="bg-white/95 backdrop-blur-md p-5 rounded-[1.5rem] border border-slate-200 shadow-xl flex flex-col gap-5 max-w-[280px] max-h-[85vh] overflow-y-auto scrollbar-thin">
                <div className="flex flex-col border-b border-slate-100 pb-4">
                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">{t('bpm:modal.title')}</span>
                  <span className="text-sm font-display font-bold text-slate-900 leading-tight">{subProcess}</span>
