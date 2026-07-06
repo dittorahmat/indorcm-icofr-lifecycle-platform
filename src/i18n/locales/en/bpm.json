@@ -164,6 +164,7 @@
     "positionLocked": "Position Locked",
     "dragHint": "Drag to move swimlane",
     "lockPositionDesc": "Lock coordinates to prevent accidental dragging",
+    "lockedWarning": "This diagram is locked because the workflow has been submitted or the period is locked. Changes cannot be saved.",
     "nodes": {
       "start": "Start",
       "activity": "New Activity",

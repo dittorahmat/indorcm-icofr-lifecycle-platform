@@ -167,6 +167,7 @@
     "positionLocked": "Posisi Terkunci",
     "dragHint": "Seret untuk menggeser swimlane",
     "lockPositionDesc": "Kunci koordinat agar tidak sengaja tergeser",
+    "lockedWarning": "Diagram ini terkunci karena status alur kerja (workflow) atau periode telah dikunci. Perubahan tidak dapat disimpan.",
     "nodes": {
       "start": "Mulai",
       "activity": "Aktivitas Baru",

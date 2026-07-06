@@ -663,6 +663,9 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
       toast.success(t('common:notifications.success'));
       resetDirty();
       queryClient.invalidateQueries({ queryKey: ['bpm-diagrams'] });
+    },
+    onError: (err: any) => {
+      toast.error(err.message || t('common:notifications.error', { defaultValue: 'Failed to save diagram changes' }));
     }
   });
 
@@ -1222,6 +1225,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
           })}
           isSaving={saveMutation.isPending}
           isDirty={isDirty}
+          isLocked={isLocked}
         />
 
         <AlertDialog open={!!impactData} onOpenChange={(open) => !open && setImpactData(null)}>

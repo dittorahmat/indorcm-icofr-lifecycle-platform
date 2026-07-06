@@ -7,9 +7,10 @@ import { Info } from 'lucide-react';
 interface TLCFormProps {
   data: any;
   onChange: (field: string, value: any) => void;
+  disabled?: boolean;
 }
 
-export function TLCForm({ data, onChange }: TLCFormProps) {
+export function TLCForm({ data, onChange, disabled = false }: TLCFormProps) {
   const { t } = useTranslation(['bpm', 'common']);
 
   const ipoFields = [
@@ -43,6 +44,7 @@ export function TLCForm({ data, onChange }: TLCFormProps) {
                 </Tooltip>
               </div>
               <Select 
+                disabled={disabled}
                 value={data[field.key] || 'N'} 
                 onValueChange={(v) => onChange(field.key, v)}
               >

@@ -42,6 +42,7 @@ interface RegulatoryPropertySheetProps {
   onSave: () => void;
   isSaving?: boolean;
   isDirty?: boolean;
+  isLocked?: boolean;
 }
 
 function EntityHistoryList({ entityId }: { entityId: string }) {
@@ -86,7 +87,8 @@ export function RegulatoryPropertySheet({
   onDeleteNode,
   onSave,
   isSaving = false,
-  isDirty = false
+  isDirty = false,
+  isLocked = false
 }: RegulatoryPropertySheetProps) {
   const { t } = useTranslation(['bpm', 'rcm', 'common', 'risklibrary']);
   const [isConfirmDiscardOpen, setIsConfirmDiscardOpen] = React.useState(false);
@@ -237,18 +239,28 @@ export function RegulatoryPropertySheet({
 
           <ScrollArea className="flex-1">
             <TabsContent value="properties" className="m-0 p-6 space-y-10 pb-20 focus-visible:outline-none">
+              {isLocked && (
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3 text-amber-800 text-xs items-start">
+                  <Lock className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <p className="font-bold uppercase tracking-wider text-[10px]">{t('bpm:editor.actions.locked', { defaultValue: 'READ-ONLY MODE' })}</p>
+                    <p className="text-slate-600">{t('bpm:editor.lockedWarning', { defaultValue: 'Diagram ini terkunci karena status alur kerja (workflow) atau periode telah dikunci. Perubahan tidak dapat disimpan.' })}</p>
+                  </div>
+                </div>
+              )}
+
               {/* 1. Visual Info */}
               <section className="bg-slate-50/50 p-4 rounded-xl border border-slate-100">
                 <Label className="text-xs font-semibold uppercase text-slate-600 tracking-wide mb-3 block">{t('rcm:matrix.properties.visual_diagram_info')}</Label>
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label className="text-xs font-medium text-slate-700 uppercase">{t('rcm:matrix.properties.label')}</Label>
-                      <Input value={selectedNode.data.label} onChange={(e) => onUpdateNodeData(selectedNode.id, { label: e.target.value })} className="h-10 text-sm bg-white" />
+                      <Input disabled={isLocked} value={selectedNode.data.label} onChange={(e) => onUpdateNodeData(selectedNode.id, { label: e.target.value })} className="h-10 text-sm bg-white" />
                     </div>
                     {canHaveRcm && (
                       <div className="space-y-2">
                         <Label className="text-xs font-medium text-slate-700 uppercase">{t('rcm:matrix.properties.pelaksana')}</Label>
-                        <Input value={selectedNode.data.role || ''} onChange={(e) => onUpdateNodeData(selectedNode.id, { role: e.target.value })} className="h-10 text-sm bg-white" />
+                        <Input disabled={isLocked} value={selectedNode.data.role || ''} onChange={(e) => onUpdateNodeData(selectedNode.id, { role: e.target.value })} className="h-10 text-sm bg-white" />
                       </div>
                     )}
                 </div>
@@ -269,6 +281,7 @@ export function RegulatoryPropertySheet({
                     </span>
                   </div>
                   <Switch 
+                    disabled={isLocked}
                     checked={!!selectedNode.data.isLocked} 
                     onCheckedChange={(checked) => onUpdateNodeData(selectedNode.id, { isLocked: checked })} 
                   />
@@ -281,7 +294,7 @@ export function RegulatoryPropertySheet({
                     <div className="text-center py-12 border-2 border-dashed rounded-2xl bg-slate-50">
                       <AlertTriangle className="h-8 w-8 text-amber-400 mx-auto mb-3" />
                       <p className="text-sm text-slate-500 italic mb-4">{t('bpm:noSubProcesses')}</p>
-                      <Button onClick={addNewRisk} className="bg-indigo-600 hover:bg-indigo-700">
+                      <Button disabled={isLocked} onClick={addNewRisk} className="bg-indigo-600 hover:bg-indigo-700">
                         <PlusCircle className="h-4 w-4 mr-2" /> {t('rcm:matrix.properties.tambah_risiko_baru')}
                       </Button>
                     </div>
@@ -298,7 +311,7 @@ export function RegulatoryPropertySheet({
                           </div>
                           <div className="flex items-center gap-3">
                             <Badge className="bg-red-800 text-xs font-mono border-none">{group.risk.riskId || 'PENDING ID'}</Badge>
-                            <Button variant="ghost" size="icon" className="h-6 w-6 text-red-200 hover:text-white hover:bg-red-700" onClick={() => setDeleteConfirm({ type: 'risk', id: group.risk.riskId || group.risk._tempRiskId })}>
+                            <Button disabled={isLocked} variant="ghost" size="icon" className="h-6 w-6 text-red-200 hover:text-white hover:bg-red-700" onClick={() => setDeleteConfirm({ type: 'risk', id: group.risk.riskId || group.risk._tempRiskId })}>
                               <Trash2 className="h-3 w-3" />
                             </Button>
                           </div>
@@ -307,6 +320,7 @@ export function RegulatoryPropertySheet({
                           <div className="space-y-2">
                             <Label className="text-xs font-black uppercase text-red-900/50">{t('rcm:matrix.properties.deskripsi_risiko')}</Label>
                             <Textarea 
+                              disabled={isLocked}
                               value={group.risk.riskDescription || ''} 
                               onChange={(e) => updateAllPairsForRisk(group.risk.riskId || group.risk._tempRiskId, 'riskDescription', e.target.value)}
                               className="min-h-[80px] text-sm border-red-200 bg-white focus-visible:ring-red-500"
@@ -317,7 +331,7 @@ export function RegulatoryPropertySheet({
                           <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                               <Label className="text-xs font-black uppercase text-red-900/50">{t('rcm:matrix.properties.terkait_fraud')}</Label>
-                              <Select value={group.risk.isFraudRelated ? 'Yes' : 'No'} onValueChange={(v) => updateAllPairsForRisk(group.risk.riskId || group.risk._tempRiskId, 'isFraudRelated', v === 'Yes')}>
+                              <Select disabled={isLocked} value={group.risk.isFraudRelated ? 'Yes' : 'No'} onValueChange={(v) => updateAllPairsForRisk(group.risk.riskId || group.risk._tempRiskId, 'isFraudRelated', v === 'Yes')}>
                                 <SelectTrigger className="h-9 text-sm bg-white border-red-200"><SelectValue /></SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="Yes">{t('common:yes')}</SelectItem>
@@ -327,7 +341,7 @@ export function RegulatoryPropertySheet({
                             </div>
                             <div className="space-y-2">
                               <Label className="text-xs font-black uppercase text-red-900/50">{t('rcm:matrix.properties.risk_rating_label')}</Label>
-                              <Select value={group.risk.riskRating || 'Low'} onValueChange={(v: QualitativeLevel) => updateAllPairsForRisk(group.risk.riskId || group.risk._tempRiskId, 'riskRating', v)}>
+                              <Select disabled={isLocked} value={group.risk.riskRating || 'Low'} onValueChange={(v: QualitativeLevel) => updateAllPairsForRisk(group.risk.riskId || group.risk._tempRiskId, 'riskRating', v)}>
                                 <SelectTrigger className="h-9 text-sm bg-white border-red-200"><SelectValue /></SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="Low">Low</SelectItem>
@@ -340,6 +354,7 @@ export function RegulatoryPropertySheet({
 
                           <div className="pt-2">
                             <Button 
+                              disabled={isLocked}
                               variant="outline" 
                               className="w-full h-10 border-2 border-dashed border-indigo-200 bg-indigo-50/50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs gap-2" 
                               onClick={() => addControlToRisk(group.risk.riskId || group.risk._tempRiskId)}
@@ -357,7 +372,7 @@ export function RegulatoryPropertySheet({
                               <AccordionTrigger className="px-4 py-3 hover:no-underline bg-slate-50/50">
                                 <div className="flex items-center gap-4 flex-1">
                                     <div className="flex items-center gap-2">
-                                      <Select value={ctrl.data.classification || 'TLC'} onValueChange={(v: ControlLevel) => updateSpecificControl(ctrl.index, 'classification', v)}>
+                                      <Select disabled={isLocked} value={ctrl.data.classification || 'TLC'} onValueChange={(v: ControlLevel) => updateSpecificControl(ctrl.index, 'classification', v)}>
                                           <SelectTrigger className="h-7 w-[80px] text-xs font-bold uppercase shadow-sm">
                                             <SelectValue />
                                           </SelectTrigger>
@@ -372,6 +387,7 @@ export function RegulatoryPropertySheet({
                                     </div>
                                 </div>
                                 <Button 
+                                  disabled={isLocked}
                                   variant="ghost" size="sm" 
                                   className="h-7 w-7 text-slate-400 hover:text-rose-600 p-0 mr-2" 
                                   onClick={(e) => { e.stopPropagation(); setDeleteConfirm({ type: 'control', index: ctrl.index }); }}
@@ -383,6 +399,7 @@ export function RegulatoryPropertySheet({
                                 <div className="space-y-1.5">
                                   <Label className="text-xs font-medium text-slate-600">Deskripsi Prosedur Kontrol</Label>
                                   <Textarea 
+                                    disabled={isLocked}
                                     value={ctrl.data.controlDescription || ''} 
                                     onChange={(e) => updateSpecificControl(ctrl.index, 'controlDescription', e.target.value)}
                                     className="min-h-[80px] text-sm"
@@ -392,7 +409,7 @@ export function RegulatoryPropertySheet({
                                 <div className="flex items-center gap-6">
                                   <div className="space-y-1">
                                     <Label className="text-xs font-medium text-slate-600">Key Control?</Label>
-                                    <Select value={ctrl.data.isKeyControl ? 'Yes' : 'No'} onValueChange={(v) => updateSpecificControl(ctrl.index, 'isKeyControl', v === 'Yes')}>
+                                    <Select disabled={isLocked} value={ctrl.data.isKeyControl ? 'Yes' : 'No'} onValueChange={(v) => updateSpecificControl(ctrl.index, 'isKeyControl', v === 'Yes')}>
                                         <SelectTrigger className="h-9 text-sm w-[100px]"><SelectValue /></SelectTrigger>
                                         <SelectContent>
                                           <SelectItem value="Yes">Yes</SelectItem>
@@ -403,13 +420,13 @@ export function RegulatoryPropertySheet({
                                 </div>
                                 <div className="mt-4 pt-4 border-t border-slate-100">
                                     {(!ctrl.data.classification || ctrl.data.classification === 'TLC') && (
-                                      <TLCForm data={ctrl.data} onChange={(f, v) => updateSpecificControl(ctrl.index, f, v)} />
+                                      <TLCForm disabled={isLocked} data={ctrl.data} onChange={(f, v) => updateSpecificControl(ctrl.index, f, v)} />
                                     )}
                                     {ctrl.data.classification === 'ELC' && (
-                                      <ELCForm data={ctrl.data} onChange={(f, v) => updateSpecificControl(ctrl.index, f, v)} />
+                                      <ELCForm disabled={isLocked} data={ctrl.data} onChange={(f, v) => updateSpecificControl(ctrl.index, f, v)} />
                                     )}
                                     {ctrl.data.classification === 'ITGC' && (
-                                      <ITGCForm data={ctrl.data} onChange={(f, v) => updateSpecificControl(ctrl.index, f, v)} />
+                                      <ITGCForm disabled={isLocked} data={ctrl.data} onChange={(f, v) => updateSpecificControl(ctrl.index, f, v)} />
                                     )}
                                 </div>
                               </AccordionContent>
@@ -419,7 +436,7 @@ export function RegulatoryPropertySheet({
                     </div>
                   ))}
 
-                  <Button variant="outline" className="w-full h-14 border-dashed border-2 bg-indigo-50/30 hover:bg-indigo-50 hover:border-indigo-300 text-indigo-600 gap-2 font-black uppercase tracking-widest text-xs" onClick={addNewRisk}>
+                  <Button disabled={isLocked} variant="outline" className="w-full h-14 border-dashed border-2 bg-indigo-50/30 hover:bg-indigo-50 hover:border-indigo-300 text-indigo-600 gap-2 font-black uppercase tracking-widest text-xs" onClick={addNewRisk}>
                     <PlusCircle className="h-5 w-5" /> {t('rcm:matrix.properties.tambah_risiko_baru')}
                   </Button>
                 </div>
@@ -455,6 +472,7 @@ export function RegulatoryPropertySheet({
         {/* STICKY FOOTER */}
         <div className="p-4 border-t bg-slate-50 shadow-[0_-4px_12px_rgba(0,0,0,0.05)] flex items-center justify-between">
            <Button 
+             disabled={isLocked}
              variant="outline" 
              className="text-red-600 border-red-200 hover:bg-red-50 font-medium text-sm"
              onClick={() => onDeleteNode(selectedNode.id)}

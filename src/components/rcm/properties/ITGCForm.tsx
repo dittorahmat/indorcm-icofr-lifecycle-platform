@@ -10,9 +10,10 @@ import { cn } from '@/lib/utils';
 interface ITGCFormProps {
   data: any;
   onChange: (field: string, value: any) => void;
+  disabled?: boolean;
 }
 
-export function ITGCForm({ data, onChange }: ITGCFormProps) {
+export function ITGCForm({ data, onChange, disabled = false }: ITGCFormProps) {
   const { t } = useTranslation(['bpm', 'rcm', 'common']);
 
   const domains = [
@@ -56,6 +57,7 @@ export function ITGCForm({ data, onChange }: ITGCFormProps) {
         <Label className="text-xs font-black uppercase text-indigo-900 tracking-wider">Domain ITGC (Lampiran 5.c)</Label>
         <TooltipProvider>
           <Select 
+            disabled={disabled}
             value={data.itgcDomain || ''} 
             onValueChange={(v) => onChange('itgcDomain', v)}
           >
@@ -81,6 +83,7 @@ export function ITGCForm({ data, onChange }: ITGCFormProps) {
           <div className="space-y-2">
             <Label className="text-xs font-black uppercase text-indigo-900 tracking-wider">Jenis Pengendalian Otomatis</Label>
             <Select 
+              disabled={disabled}
               value={data.automatedControlType || ''} 
               onValueChange={(v) => onChange('automatedControlType', v)}
             >
@@ -97,6 +100,7 @@ export function ITGCForm({ data, onChange }: ITGCFormProps) {
           <div className="space-y-2">
             <Label className="text-xs font-black uppercase text-indigo-900 tracking-wider">Aplikasi Pendukung</Label>
             <Input 
+              disabled={disabled}
               value={data.supportingApp || ''}
               onChange={(e) => onChange('supportingApp', e.target.value)}
               placeholder="Misal: SAP, Oracle, dll"
@@ -140,6 +144,7 @@ export function ITGCForm({ data, onChange }: ITGCFormProps) {
                   </Tooltip>
                 </div>
                 <Select 
+                  disabled={disabled}
                   value={currentAssertions[a.key] || 'N'} 
                   onValueChange={(v) => handleAssertionChange(a.key, v)}
                 >

@@ -13,9 +13,10 @@ import {
 interface ELCFormProps {
   data: any;
   onChange: (field: string, value: any) => void;
+  disabled?: boolean;
 }
 
-export function ELCForm({ data, onChange }: ELCFormProps) {
+export function ELCForm({ data, onChange, disabled = false }: ELCFormProps) {
   const { t } = useTranslation(['rcm', 'bpm', 'common']);
 
   const cosoPrinciples = [
@@ -81,6 +82,7 @@ export function ELCForm({ data, onChange }: ELCFormProps) {
                     </TooltipContent>
                   </Tooltip>
                   <Select 
+                    disabled={disabled}
                     value={currentMapping.includes(p.id) ? 'Y' : 'N'} 
                     onValueChange={(v) => handleToggle(p.id, v)}
                   >
