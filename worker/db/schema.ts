@@ -581,6 +581,7 @@ export const accountAssertions = pgTable("account_assertions", {
 	organizationId: text("organization_id").notNull().references(() => organization.id),
 	fsliName: text("fsli_name").notNull(),
 	noGL: text("no_gl").notNull(),
+	year: integer("year"),
 	
 	assertionE: text("assertion_e"), // Y / N
 	assertionC: text("assertion_c"),

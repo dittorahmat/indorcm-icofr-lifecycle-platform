@@ -250,5 +250,14 @@
     "noData": "No data available for the selected basis.",
     "saveResult": "Save Scoping Result",
     "saveSuccess": "Location scoping saved successfully"
+  },
+  "rollover": {
+    "title": "Rollover Fiscal Year Data",
+    "description": "No data found for the selected fiscal year {{year}}. Would you like to copy scoping, RCM, ELC, and ITGC configurations from the previous year ({{prevYear}}) as a baseline?",
+    "confirm": "Carry Forward / Copy Data",
+    "cancel": "Cancel / Start Fresh",
+    "success": "Rollover completed successfully!",
+    "error": "Rollover failed: {{error}}",
+    "progress": "Copying data from {{prevYear}} to {{year}}..."
   }
 }

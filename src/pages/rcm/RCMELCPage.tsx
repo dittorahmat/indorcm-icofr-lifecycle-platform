@@ -3,25 +3,43 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { api } from '@/lib/api-client';
 import { Control, Organization } from '@shared/types';
-import { Check, Edit3 } from 'lucide-react';
+import { Check, Edit3, Settings2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { RCMPageHeader } from '@/components/rcm/RCMPageHeader';
 import { RCMTable, RCMColumnGroup } from '@/components/rcm/RCMTable';
 import { RCMEditDialog } from '@/components/rcm/RCMEditDialog';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { useFiscalYearStore } from '@/store/useFiscalYearStore';
+import { RolloverPrompt } from '@/components/layout/RolloverPrompt';
+import { Card, CardContent } from '@/components/ui/card';
 
 const COSO_PRINCIPLES = Array.from({ length: 17 }, (_, i) => i + 1);
 
 export function RCMELCPage({ embedded = false }: { embedded?: boolean }) {
   const { t } = useTranslation(['rcm', 'common']);
   const queryClient = useQueryClient();
+  const { workingYear } = useFiscalYearStore();
   const [selectedOrgId, setSelectedOrgId] = React.useState<string>('all');
   const [editingItem, setEditingItem] = React.useState<any | null>(null);
+  const [isRolloverOpen, setIsRolloverOpen] = React.useState(false);
+
+  const rolloverMutation = useMutation({
+    mutationFn: (data: { sourceYear: string, targetYear: string, force?: boolean }) => 
+      api('/api/migration/rollover', { method: 'POST', body: JSON.stringify(data) }),
+    onSuccess: () => {
+      queryClient.invalidateQueries();
+      toast.success(t('scoping:rollover.success'));
+      setIsRolloverOpen(false);
+    },
+    onError: (err: any) => {
+      toast.error(t('scoping:rollover.error', { error: err.message }));
+    }
+  });
 
   const { data: controlsData, isLoading: isLoadingControls } = useQuery({
-    queryKey: ['controls-elc'],
-    queryFn: () => api<{ items: Control[] }>(`/api/controls?level=ELC`),
+    queryKey: ['controls-elc', workingYear],
+    queryFn: () => api<{ items: Control[] }>(`/api/controls?level=ELC&year=${workingYear}`),
     staleTime: 30000,
   });
 
@@ -141,6 +159,32 @@ export function RCMELCPage({ embedded = false }: { embedded?: boolean }) {
           onRefresh={() => queryClient.invalidateQueries({ queryKey: ['controls-elc'] })}
         />
       )}
+      {elcItems.length === 0 && !isLoadingControls && (
+        <div className="p-6 pb-2">
+          <Card className="bg-teal-50/50 border-teal-200/60 shadow-sm rounded-2xl overflow-hidden">
+            <CardContent className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex gap-3">
+                <div className="bg-teal-500/10 p-2.5 rounded-xl h-10 w-10 flex items-center justify-center text-teal-600 shrink-0">
+                  <Settings2 className="h-5 w-5 animate-pulse" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-teal-900 text-sm">{t('scoping:rollover.title')}</h3>
+                  <p className="text-xs text-teal-700/80 mt-1 max-w-2xl leading-relaxed">
+                    {t('scoping:rollover.description', { year: workingYear, prevYear: (parseInt(workingYear) - 1).toString() })}
+                  </p>
+                </div>
+              </div>
+              <Button 
+                onClick={() => setIsRolloverOpen(true)}
+                className="bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs uppercase tracking-wider px-4 py-2 h-9 rounded-xl shrink-0"
+              >
+                {t('scoping:rollover.confirm')}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       <RCMTable 
         groups={columnGroups}
         data={elcItems}
@@ -154,6 +198,20 @@ export function RCMELCPage({ embedded = false }: { embedded?: boolean }) {
         data={editingItem}
         onSave={(values) => saveMutation.mutate(values)}
         isSaving={saveMutation.isPending}
+      />
+
+      <RolloverPrompt 
+        isOpen={isRolloverOpen}
+        onClose={() => setIsRolloverOpen(false)}
+        onConfirm={() => {
+          rolloverMutation.mutate({
+            sourceYear: (parseInt(workingYear) - 1).toString(),
+            targetYear: workingYear
+          });
+        }}
+        year={workingYear}
+        prevYear={(parseInt(workingYear) - 1).toString()}
+        isLoading={rolloverMutation.isPending}
       />
     </div>
   );

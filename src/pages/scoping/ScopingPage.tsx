@@ -23,8 +23,8 @@ import { api } from '@/lib/api-client';
 import { useQueryClient } from '@tanstack/react-query';
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 
-// New Components
 import { SmartImportWizard } from '@/components/scoping/SmartImportWizard';
+import { RolloverPrompt } from '@/components/layout/RolloverPrompt';
 
 // New Decomposed Parts
 import { useScopingPage, useScopingEditor } from './hooks/useScopingPage';
@@ -36,6 +36,7 @@ import { ScopingEditorContent } from './components/ScopingEditorContent';
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 import { WorkflowPanel } from "@/components/workflow/WorkflowPanel";
+import { Card, CardContent } from '@/components/ui/card';
 
 import type { MaterialitySimulation } from '@shared/types';
 
@@ -73,6 +74,7 @@ export function ScopingPage() {
   } = useScopingPage();
 
   const [isImportWizardOpen, setIsImportWizardOpen] = React.useState(false);
+  const [isRolloverOpen, setIsRolloverOpen] = React.useState(false);
 
   const filterYear = workingYear;
 
@@ -131,6 +133,32 @@ export function ScopingPage() {
             {!activeSnapshot && <p className="text-[10px] font-bold text-rose-500 uppercase tracking-[0.1em]">{t('scoping:emptyState')}</p>}
           </div>
         </PageHeader>
+
+        {simulations.length === 0 && snapshots.length === 0 && !isLoading && (
+          <motion.div variants={itemVariants}>
+            <Card className="bg-teal-50/50 border-teal-200/60 shadow-sm rounded-2xl overflow-hidden">
+              <CardContent className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex gap-3">
+                  <div className="bg-teal-500/10 p-2.5 rounded-xl h-10 w-10 flex items-center justify-center text-teal-600 shrink-0">
+                    <Settings2 className="h-5 w-5 animate-pulse" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-teal-900 text-sm">{t('scoping:rollover.title')}</h3>
+                    <p className="text-xs text-teal-700/80 mt-1 max-w-2xl leading-relaxed">
+                      {t('scoping:rollover.description', { year: workingYear, prevYear: (parseInt(workingYear) - 1).toString() })}
+                    </p>
+                  </div>
+                </div>
+                <Button 
+                  onClick={() => setIsRolloverOpen(true)}
+                  className="bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs uppercase tracking-wider px-4 py-2 h-9 rounded-xl shrink-0"
+                >
+                  {t('scoping:rollover.confirm')}
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
 
         <Tabs defaultValue="simulations" className="w-full">
           <TabsList className="grid w-full max-w-[440px] grid-cols-2 mb-8 bg-slate-100/50 p-1 border border-slate-200 rounded-xl shadow-inner">
@@ -217,6 +245,24 @@ export function ScopingPage() {
               queryClient.invalidateQueries({ queryKey: ['simulations'] });
               queryClient.invalidateQueries({ queryKey: ['gl-snapshots'] });
           }}
+        />
+
+        <RolloverPrompt 
+          isOpen={isRolloverOpen}
+          onClose={() => setIsRolloverOpen(false)}
+          onConfirm={() => {
+            mutations.rollover.mutate({
+              sourceYear: (parseInt(workingYear) - 1).toString(),
+              targetYear: workingYear
+            }, {
+              onSuccess: () => {
+                setIsRolloverOpen(false);
+              }
+            });
+          }}
+          year={workingYear}
+          prevYear={(parseInt(workingYear) - 1).toString()}
+          isLoading={mutations.rollover.isPending}
         />
       </motion.div>
     </AppLayout>

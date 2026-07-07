@@ -95,6 +95,18 @@ export function useScopingPage() {
     }
   });
 
+  const rolloverMutation = useMutation({
+    mutationFn: (data: { sourceYear: string, targetYear: string, force?: boolean }) => 
+      api('/api/migration/rollover', { method: 'POST', body: JSON.stringify(data) }),
+    onSuccess: () => {
+      queryClient.invalidateQueries();
+      toast.success(t('scoping:rollover.success'));
+    },
+    onError: (err: any) => {
+      toast.error(t('scoping:rollover.error', { error: err.message }));
+    }
+  });
+
   return {
     selectedSimId,
     setSearchParams,
@@ -112,7 +124,8 @@ export function useScopingPage() {
       deleteSim: deleteSimMutation,
       setActiveSnap: setActiveMutation,
       deleteSnap: deleteSnapMutation,
-      uploadSnap: uploadSnapMutation
+      uploadSnap: uploadSnapMutation,
+      rollover: rolloverMutation
     }
   };
 }

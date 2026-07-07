@@ -247,4 +247,305 @@ migration.post('/migration/finalize', async (c) => {
   }
 });
 
+migration.post('/migration/rollover', async (c) => {
+  const { sourceYear, targetYear, force } = await c.req.json();
+  const db = getDb(c.env.DATABASE_URL);
+  const orgId = c.get('organizationId');
+  const userId = c.get('userId');
+
+  const sYear = parseInt(sourceYear);
+  const tYear = parseInt(targetYear);
+
+  if (isNaN(sYear) || isNaN(tYear) || sYear === tYear) {
+    return c.json({ success: false, error: 'Invalid source or target year' }, 400);
+  }
+
+  try {
+    // 1. Check if target year already has data to prevent duplicate rollover
+    if (!force) {
+      const existingBpm = await db.select().from(schema.bpmProcesses)
+        .where(and(eq(schema.bpmProcesses.organizationId, orgId), eq(schema.bpmProcesses.year, tYear)))
+        .limit(1);
+      const existingRcm = await db.select().from(schema.rcms)
+        .where(and(eq(schema.rcms.organizationId, orgId), eq(schema.rcms.year, tYear)))
+        .limit(1);
+
+      if (existingBpm.length > 0 || existingRcm.length > 0) {
+        return c.json({ 
+          success: false, 
+          error: 'Data already exists in target year. Use force rollover to override.' 
+        }, 409);
+      }
+    }
+
+    // Run everything inside a transaction
+    await db.transaction(async (tx) => {
+      // Keep mapping tables
+      const processIdMap = new Map<string, string>();
+      const riskIdMap = new Map<string, string>();
+      const controlIdMap = new Map<string, string>();
+      const deficiencyIdMap = new Map<string, string>();
+
+      // 2. Clone Account Assertions
+      const sourceAssertions = await tx.select().from(schema.accountAssertions)
+        .where(and(eq(schema.accountAssertions.organizationId, orgId), eq(schema.accountAssertions.year, sYear)));
+      
+      for (const ass of sourceAssertions) {
+        const newId = `ass_${generateId()}`;
+        await tx.insert(schema.accountAssertions).values({
+          id: newId,
+          organizationId: orgId,
+          fsliName: ass.fsliName,
+          noGL: ass.noGL,
+          year: tYear,
+          assertionE: ass.assertionE,
+          assertionC: ass.assertionC,
+          assertionA: ass.assertionA,
+          assertionCo: ass.assertionCo,
+          assertionRo: ass.assertionRo,
+          assertionVa: ass.assertionVa,
+          assertionPd: ass.assertionPd,
+          updatedAt: new Date(),
+          updatedBy: userId
+        });
+      }
+
+      // 3. Clone BPM Processes
+      const sourceProcesses = await tx.select().from(schema.bpmProcesses)
+        .where(and(eq(schema.bpmProcesses.organizationId, orgId), eq(schema.bpmProcesses.year, sYear)));
+
+      for (const proc of sourceProcesses) {
+        const newId = `proc_${generateId()}`;
+        processIdMap.set(proc.id, newId);
+        await tx.insert(schema.bpmProcesses).values({
+          id: newId,
+          organizationId: orgId,
+          noGL: proc.noGL,
+          bpmCode: proc.bpmCode,
+          fsliName: proc.fsliName,
+          name: proc.name,
+          year: tYear,
+          riskCount: proc.riskCount,
+          controlCount: proc.controlCount,
+          standardTestProcedure: proc.standardTestProcedure,
+          workflowStatus: 'Draft',
+          createdAt: new Date(),
+          createdBy: userId
+        });
+      }
+
+      // 4. Clone BPM Diagrams
+      const sourceDiagrams = await tx.select().from(schema.bpmDiagrams)
+        .where(and(eq(schema.bpmDiagrams.organizationId, orgId), eq(schema.bpmDiagrams.year, sYear)));
+
+      for (const diag of sourceDiagrams) {
+        const newId = `diag_${generateId()}`;
+        await tx.insert(schema.bpmDiagrams).values({
+          id: newId,
+          organizationId: orgId,
+          name: diag.name,
+          subProcess: diag.subProcess,
+          year: tYear,
+          nodes: diag.nodes,
+          edges: diag.edges,
+          metadata: diag.metadata,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: userId
+        });
+      }
+
+      // 5. Clone RCMs
+      const sourceRcms = await tx.select().from(schema.rcms)
+        .where(and(eq(schema.rcms.organizationId, orgId), eq(schema.rcms.year, sYear)));
+
+      for (const r of sourceRcms) {
+        const newId = `risk_${generateId()}`;
+        riskIdMap.set(r.id, newId);
+        await tx.insert(schema.rcms).values({
+          id: newId,
+          organizationId: orgId,
+          year: tYear,
+          riskLibraryId: r.riskLibraryId,
+          process: r.process,
+          subProcess: r.subProcess,
+          riskDescription: r.riskDescription,
+          isFraudRelated: r.isFraudRelated,
+          riskRating: r.riskRating,
+          status: 'Active',
+          diagramId: r.diagramId
+        });
+      }
+
+      // 6. Clone Controls
+      const sourceControls = await tx.select().from(schema.controls)
+        .where(and(eq(schema.controls.organizationId, orgId), eq(schema.controls.year, sYear)));
+
+      for (const c of sourceControls) {
+        const newId = `ctrl_${generateId()}`;
+        controlIdMap.set(c.id, newId);
+        const mappedProcId = c.bpmProcessId ? processIdMap.get(c.bpmProcessId) || null : null;
+
+        await tx.insert(schema.controls).values({
+          id: newId,
+          organizationId: orgId,
+          bpmProcessId: mappedProcId,
+          year: tYear,
+          code: c.code,
+          name: c.name,
+          description: c.description,
+          ownerId: c.ownerId,
+          level: c.level,
+          type: c.type,
+          nature: c.nature,
+          frequency: c.frequency,
+          riskRating: c.riskRating,
+          riskAssessment: c.riskAssessment,
+          bpmStatus: c.bpmStatus,
+          fsliCodes: c.fsliCodes,
+          relatedControlIds: c.relatedControlIds,
+          attachmentUrl: c.attachmentUrl,
+          businessProcess: c.businessProcess,
+          subProcess: c.subProcess,
+          location: c.location,
+          isFraudRelated: c.isFraudRelated,
+          isKeyControl: c.isKeyControl,
+          ipos: c.ipos,
+          assertions: c.assertions,
+          cosoPrinciples: c.cosoPrinciples,
+          supportingDocs: c.supportingDocs,
+          reference: c.reference,
+          applicationId: c.applicationId,
+          attributeQuestions: c.attributeQuestions,
+          executorRole: c.executorRole,
+          effectiveDate: c.effectiveDate,
+          csaStatus: 'Not Assessed',
+          lastCsaDate: null,
+          itgcDomain: c.itgcDomain,
+          itgcAssertions: c.itgcAssertions,
+          automatedSubNature: c.automatedSubNature,
+          supportingApp: c.supportingApp,
+          itApplication: c.itApplication,
+          eucComplexity: c.eucComplexity,
+          ipeType: c.ipeType,
+          isMigrated: c.isMigrated,
+          aiGuessedFields: c.aiGuessedFields
+        });
+      }
+
+      // 7. Clone RCM Controls Mappings
+      const sourceRcmControls = await tx.select().from(schema.rcmControls)
+        .where(and(eq(schema.rcmControls.organizationId, orgId), eq(schema.rcmControls.year, sYear)));
+
+      for (const rc of sourceRcmControls) {
+        const newRcmId = riskIdMap.get(rc.rcmId);
+        const newControlId = controlIdMap.get(rc.controlId);
+
+        if (newRcmId && newControlId) {
+          await tx.insert(schema.rcmControls).values({
+            id: `map_${generateId()}`,
+            organizationId: orgId,
+            rcmId: newRcmId,
+            controlId: newControlId,
+            year: tYear,
+            controlName: rc.controlName,
+            controlDescription: rc.controlDescription,
+            supportingDocs: rc.supportingDocs,
+            isKeyControl: rc.isKeyControl,
+            ipoC: rc.ipoC,
+            ipoA: rc.ipoA,
+            ipoV: rc.ipoV,
+            ipoRa: rc.ipoRa,
+            assertionE: rc.assertionE,
+            assertionC: rc.assertionC,
+            assertionA: rc.assertionA,
+            assertionCo: rc.assertionCo,
+            assertionVa: rc.assertionVa,
+            assertionRo: rc.assertionRo,
+            assertionPd: rc.assertionPd,
+            controlType: rc.controlType,
+            controlNature: rc.controlNature,
+            frequency: rc.frequency,
+            supportingApp: rc.supportingApp,
+            applicationId: rc.applicationId,
+            executingFunction: rc.executingFunction,
+            executorRole: rc.executorRole,
+            affectedFsliItem: rc.affectedFsliItem,
+            effectivePeriod: rc.effectivePeriod,
+            cosoPrinciples: rc.cosoPrinciples,
+            itgcDomain: rc.itgcDomain,
+            itgcAssertions: rc.itgcAssertions,
+            automatedControlType: rc.automatedControlType
+          });
+        }
+      }
+
+      // 8. Carry Forward Open Deficiencies and their Action Plans
+      const openDeficiencies = await tx.select().from(schema.deficiencies)
+        .where(and(eq(schema.deficiencies.organizationId, orgId), eq(schema.deficiencies.status, 'Open')));
+
+      for (const def of openDeficiencies) {
+        const newId = `def_${generateId()}`;
+        deficiencyIdMap.set(def.id, newId);
+        const mappedControlId = def.controlId ? controlIdMap.get(def.controlId) || null : null;
+
+        await tx.insert(schema.deficiencies).values({
+          id: newId,
+          organizationId: orgId,
+          controlId: mappedControlId,
+          description: def.description,
+          severity: def.severity,
+          identifiedDate: def.identifiedDate,
+          identifiedBy: def.identifiedBy,
+          status: 'Open',
+          rootCause: def.rootCause,
+          magnitude: def.magnitude,
+          exposureValue: def.exposureValue,
+          likelihood: def.likelihood,
+          assertions: def.assertions,
+          flowchartPath: def.flowchartPath,
+          correctiveActionTaken: def.correctiveActionTaken,
+          remediationEvidence: def.remediationEvidence,
+          compensatingControlIds: def.compensatingControlIds,
+          source: def.source
+        });
+
+        // Clone linked Action Plans
+        const plans = await tx.select().from(schema.actionPlans)
+          .where(and(eq(schema.actionPlans.organizationId, orgId), eq(schema.actionPlans.deficiencyId, def.id)));
+
+        for (const plan of plans) {
+          await tx.insert(schema.actionPlans).values({
+            id: `plan_${generateId()}`,
+            organizationId: orgId,
+            deficiencyId: newId,
+            description: plan.description,
+            ownerId: plan.ownerId,
+            dueDate: plan.dueDate,
+            status: plan.status,
+            relatedFunction: plan.relatedFunction,
+            picName: plan.picName,
+            planDescription: plan.planDescription,
+            activityDetail: plan.activityDetail,
+            remediatedControlDescription: plan.remediatedControlDescription,
+            targetDate: plan.targetDate,
+            actualCompletionDate: plan.actualCompletionDate,
+            isApprovedByLine2: plan.isApprovedByLine2,
+            isBeforeYearEnd: plan.isBeforeYearEnd,
+            workflowStatus: plan.workflowStatus,
+            workflowHistory: plan.workflowHistory,
+            severity: plan.severity,
+            rescheduleReason: plan.rescheduleReason
+          });
+        }
+      }
+    });
+
+    return ok(c, { success: true });
+  } catch (err: any) {
+    console.error('[ROLLOVER ERROR]', err);
+    return c.json({ success: false, error: err.message }, 500);
+  }
+});
+
 export default migration;

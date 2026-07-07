@@ -250,5 +250,14 @@
     "noData": "Tidak ada data yang tersedia untuk basis terpilih.",
     "saveResult": "Simpan Hasil Scoping",
     "saveSuccess": "Scoping lokasi berhasil disimpan"
+  },
+  "rollover": {
+    "title": "Rollover Data Tahun Fiskal",
+    "description": "Tidak ada data ditemukan untuk tahun fiskal {{year}}. Apakah Anda ingin menyalin konfigurasi scoping, RCM, ELC, dan ITGC dari tahun sebelumnya ({{prevYear}}) sebagai acuan dasar?",
+    "confirm": "Salin Data Tahun Lalu",
+    "cancel": "Batal / Mulai Baru",
+    "success": "Rollover berhasil diselesaikan!",
+    "error": "Rollover gagal: {{error}}",
+    "progress": "Menyalin data dari {{prevYear}} ke {{year}}..."
   }
 }

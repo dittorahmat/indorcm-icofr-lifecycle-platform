@@ -4,7 +4,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { api } from '@/lib/api-client';
 import { RCMControlMapping } from '@shared/types';
 import { 
-  Search, RefreshCw, Edit3, AlertTriangle, Check, Shield
+  Search, RefreshCw, Edit3, AlertTriangle, Check, Shield, Settings2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,6 +16,8 @@ import { RCMTable, RCMColumnGroup } from '@/components/rcm/RCMTable';
 import { RCMGroupRow } from '@/components/rcm/RCMGroupRow';
 import { RCMEditDialog } from '@/components/rcm/RCMEditDialog';
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
+import { RolloverPrompt } from '@/components/layout/RolloverPrompt';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface RCMMatrixItem extends RCMControlMapping {
   mappingId: string;
@@ -51,6 +53,20 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride 
   
   const [searchTerm, setSearchTerm] = React.useState('');
   const [editingItem, setEditingItem] = React.useState<RCMMatrixItem | null>(null);
+  const [isRolloverOpen, setIsRolloverOpen] = React.useState(false);
+
+  const rolloverMutation = useMutation({
+    mutationFn: (data: { sourceYear: string, targetYear: string, force?: boolean }) => 
+      api('/api/migration/rollover', { method: 'POST', body: JSON.stringify(data) }),
+    onSuccess: () => {
+      queryClient.invalidateQueries();
+      toast.success(t('scoping:rollover.success'));
+      setIsRolloverOpen(false);
+    },
+    onError: (err: any) => {
+      toast.error(t('scoping:rollover.error', { error: err.message }));
+    }
+  });
 
   const { data: matrixData, isLoading } = useQuery({
     queryKey: ['rcm-matrix-tlc', filterBpmId, workingYear],
@@ -254,6 +270,32 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride 
         />
       )}
 
+      {items.length === 0 && !isLoading && (
+        <div className="p-6 pb-2">
+          <Card className="bg-teal-50/50 border-teal-200/60 shadow-sm rounded-2xl overflow-hidden">
+            <CardContent className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex gap-3">
+                <div className="bg-teal-500/10 p-2.5 rounded-xl h-10 w-10 flex items-center justify-center text-teal-600 shrink-0">
+                  <Settings2 className="h-5 w-5 animate-pulse" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-teal-900 text-sm">{t('scoping:rollover.title')}</h3>
+                  <p className="text-xs text-teal-700/80 mt-1 max-w-2xl leading-relaxed">
+                    {t('scoping:rollover.description', { year: workingYear, prevYear: (parseInt(workingYear) - 1).toString() })}
+                  </p>
+                </div>
+              </div>
+              <Button 
+                onClick={() => setIsRolloverOpen(true)}
+                className="bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs uppercase tracking-wider px-4 py-2 h-9 rounded-xl shrink-0"
+              >
+                {t('scoping:rollover.confirm')}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       <RCMTable 
         groups={columnGroups}
         data={filteredItems}
@@ -268,6 +310,20 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride 
         data={editingItem}
         onSave={(values) => saveMutation.mutate(values)}
         isSaving={saveMutation.isPending}
+      />
+
+      <RolloverPrompt 
+        isOpen={isRolloverOpen}
+        onClose={() => setIsRolloverOpen(false)}
+        onConfirm={() => {
+          rolloverMutation.mutate({
+            sourceYear: (parseInt(workingYear) - 1).toString(),
+            targetYear: workingYear
+          });
+        }}
+        year={workingYear}
+        prevYear={(parseInt(workingYear) - 1).toString()}
+        isLoading={rolloverMutation.isPending}
       />
     </div>
   );
