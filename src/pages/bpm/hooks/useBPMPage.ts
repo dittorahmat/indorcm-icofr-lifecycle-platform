@@ -6,6 +6,7 @@ import { MOCK_DEPARTMENTS } from '@shared/mock-data';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
+import { useUnsavedChangesContext } from '@/context/UnsavedChangesContext';
 import { useAccountAssertions, useActiveSimulation, useSimulationSnapshot } from '@/hooks/use-bpm';
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 import { toast } from 'sonner';
@@ -15,6 +16,7 @@ export function useBPMPage() {
   const { workingYear } = useFiscalYearStore();
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { isDirty } = useUnsavedChangesContext();
 
   const [selectedFsli, setSelectedFsli] = React.useState<string>("");
   const [selectedAccountKey, setSelectedAccountKey] = React.useState<string>("");
@@ -47,6 +49,9 @@ export function useBPMPage() {
   };
 
   const handleCloseDiagram = () => {
+    if (isDirty && !window.confirm(t('common:unsavedChanges.description'))) {
+      return;
+    }
     setSearchParams(prev => {
       const next = new URLSearchParams(prev);
       next.delete('diagramId');

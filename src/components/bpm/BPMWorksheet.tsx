@@ -49,6 +49,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
+import { useUnsavedChangesContext } from '@/context/UnsavedChangesContext';
 
 interface BPMWorksheetProps {
   bpmProcessId: string;
@@ -59,9 +60,10 @@ interface BPMWorksheetProps {
 }
 
 export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, workingYear }: BPMWorksheetProps) {
-  const { t } = useTranslation('bpm');
+  const { t } = useTranslation(['bpm', 'common']);
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { isDirty } = useUnsavedChangesContext();
   const selectedDiagramId = searchParams.get('diagramId');
   const isBpmModalOpen = !!selectedDiagramId;
   const currentSubProcess = searchParams.get('subProcess') || subProcessName || "";
@@ -79,6 +81,9 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
   }, [setSearchParams]);
 
   const handleCloseDiagram = () => {
+    if (isDirty && !window.confirm(t('common:unsavedChanges.description'))) {
+      return;
+    }
     setSearchParams(prev => {
       const next = new URLSearchParams(prev);
       next.delete('diagramId');

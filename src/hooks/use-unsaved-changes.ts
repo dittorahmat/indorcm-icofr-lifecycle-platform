@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useId } from 'react';
 import { useUnsavedChangesContext } from '@/context/UnsavedChangesContext';
 
 /**
@@ -10,6 +10,7 @@ import { useUnsavedChangesContext } from '@/context/UnsavedChangesContext';
  */
 export function useUnsavedChanges(isDirty: boolean) {
   const { setDirty, resetDirty } = useUnsavedChangesContext();
+  const id = useId();
 
   // 1. External navigation guard (Refresh, Tab Close, Back/Forward Browser)
   useEffect(() => {
@@ -26,11 +27,11 @@ export function useUnsavedChanges(isDirty: boolean) {
 
   // 2. Sync local dirty state to global context
   useEffect(() => {
-    setDirty(isDirty);
+    setDirty(id, isDirty);
     
     // Cleanup on unmount: mark as not dirty
     return () => {
-      resetDirty();
+      resetDirty(id);
     };
-  }, [isDirty, setDirty, resetDirty]);
+  }, [id, isDirty, setDirty, resetDirty]);
 }

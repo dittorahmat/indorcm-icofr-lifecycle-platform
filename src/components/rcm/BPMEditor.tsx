@@ -38,6 +38,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useUnsavedChangesContext } from '@/context/UnsavedChangesContext';
+import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import { toPng } from 'html-to-image';
@@ -527,11 +528,8 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
     return currentNodes !== originalNodes || currentEdges !== originalEdges || sigsChanged;
   }, [nodes, edges, diagram, isLocked, localizedInitialNodes, signatures, bpmProcess, getUserName]);
 
-  // Sync isDirty with global context
-  useEffect(() => {
-    setDirty(isDirty || isExporting);
-    return () => resetDirty();
-  }, [isDirty, isExporting, setDirty, resetDirty]);
+  // Sync isDirty with global context using the unique ID hook
+  useUnsavedChanges(isDirty || isExporting);
 
   const toggleNodeLock = useCallback((nodeId: string) => {
     setNodes(nds => nds.map(node => {

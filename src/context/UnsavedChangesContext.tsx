@@ -3,26 +3,47 @@ import React, { createContext, useContext, useState, useCallback } from 'react';
 
 interface UnsavedChangesContextType {
   isDirty: boolean;
-  setDirty: (dirty: boolean) => void;
-  resetDirty: () => void;
+  setDirty: (idOrDirty: string | boolean, dirty?: boolean) => void;
+  resetDirty: (id?: string) => void;
 }
 
 const UnsavedChangesContext = createContext<UnsavedChangesContextType | undefined>(undefined);
 
 /**
  * Provider to track "dirty" state (unsaved changes) globally.
- * Allows components to signal that they have unsaved data.
+ * Tracks dirty states per component/hook using keys to prevent conflicts.
  */
 export const UnsavedChangesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isDirty, setIsDirty] = useState(false);
+  const [dirtyKeys, setDirtyKeys] = useState<Record<string, boolean>>({});
 
-  const setDirty = useCallback((dirty: boolean) => {
-    setIsDirty(dirty);
+  const setDirty = useCallback((idOrDirty: string | boolean, dirty?: boolean) => {
+    setDirtyKeys(prev => {
+      let key = 'global';
+      let value = false;
+
+      if (typeof idOrDirty === 'boolean') {
+        value = idOrDirty;
+      } else {
+        key = idOrDirty;
+        value = !!dirty;
+      }
+
+      if (prev[key] === value) return prev;
+      return { ...prev, [key]: value };
+    });
   }, []);
 
-  const resetDirty = useCallback(() => {
-    setIsDirty(false);
+  const resetDirty = useCallback((id?: string) => {
+    setDirtyKeys(prev => {
+      const key = id || 'global';
+      if (!prev[key]) return prev;
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
   }, []);
+
+  const isDirty = Object.values(dirtyKeys).some(Boolean);
 
   return (
     <UnsavedChangesContext.Provider value={{ isDirty, setDirty, resetDirty }}>
