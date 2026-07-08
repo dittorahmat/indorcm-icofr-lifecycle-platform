@@ -79,7 +79,8 @@ export const createApp = () => {
 
   // License Guard Middleware
   app.use('/api/*', async (c, next) => {
-    if (c.env.SKIP_LICENSE === 'true') {
+    const skipLicense = c.env.SKIP_LICENSE || process.env.SKIP_LICENSE;
+    if (skipLicense === 'true') {
       c.set('licenseStatus', 'bypassed');
       return next();
     }

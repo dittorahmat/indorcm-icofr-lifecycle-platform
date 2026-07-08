@@ -9,7 +9,8 @@ import { getMachineFingerprint, verifyLicense, checkLicenseStatus } from '../lib
 const licenseApp = new Hono<HonoEnv>();
 
 licenseApp.get('/license/status', async (c) => {
-  if (c.env.SKIP_LICENSE === 'true') {
+  const skipLicense = c.env.SKIP_LICENSE || process.env.SKIP_LICENSE;
+  if (skipLicense === 'true') {
       return ok(c, {
         status: 'active',
         machineId: 'CLOUDFLARE-DEMO-BYPASS',

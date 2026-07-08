@@ -107,6 +107,7 @@ async function sync() {
   }
 
   console.log("🏁 Sync complete. AI is now updated with the latest USAGE_GUIDE.md.");
+  process.exit(0);
 }
 
 sync().then(() => {

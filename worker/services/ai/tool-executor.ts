@@ -196,7 +196,7 @@ export const AIToolExecutor = {
     .limit(10);
 
     if (testType) {
-      return results.filter(r => r.testType === testType);
+      return results.filter((r: any) => r.testType === testType);
     }
 
     return results;
