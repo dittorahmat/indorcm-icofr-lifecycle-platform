@@ -1,0 +1,51 @@
+{
+  "groups": {
+    "mainTasks": "Main Tasks",
+    "reportingRcm": "Reporting & RCM",
+    "testing": "Testing",
+    "others": "Others",
+    "user": "User",
+    "admin": "Administration"
+  },
+  "items": {
+    "dashboard": "Dashboard",
+    "sync": "Sync Financial Statement",
+    "bpm": "BPM & CSA",
+    "scoping": "Significant Account Identification",
+    "csa": "CSA Reports & TOE Process",
+    "notifications": "Notifications",
+    "applications": "Application Inventory",
+    "approval": "Materiality Approval",
+    "documents": "Related Documents",
+    "riskLibrary": "Risk Library",
+    "aiAssistant": "AI Assistant",
+    "migration": "Smart Migration",
+    "changelog": "Change Log",
+    "todo": "To-do List",
+    "csaReports": "CSA Reports & TOE Process",
+    "rcmTlc": "RCM TLC Matrix",
+    "rcmElc": "RCM ELC Matrix",
+    "rcmItgc": "RCM ITGC Matrix",
+    "verificationDesign": "Design Verification (Appendix 8)",
+    "soc": "SOC Monitoring",
+    "deficiencies": "Deficiency & Remediation",
+    "tod": "Test of Design (TOD)",
+    "toe": "Test of Operating Effectiveness (TOE)",
+    "wbs": "WBS Recap",
+    "app11": "Appendix 11 (Asesmen Manajemen)",
+    "aiAnalytics": "AI Analytics",
+    "anomaly": "Anomaly Check",
+    "journal": "Financial Journal Check",
+    "predictive": "Predictive Story Life",
+    "improvement": "Continuous Improvement",
+    "settings": "User Admin",
+    "adminUsers": "User Management",
+    "logout": "Logout"
+  },
+  "sections": {
+    "rcmMatrix": "RCM Matrix",
+    "copyright": "© 2026 GRC Integra",
+    "appName": "GRC Integra",
+    "auditPortal": "Audit Portal (KAP)"
+  }
+}

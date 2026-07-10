@@ -1,0 +1,128 @@
+{
+  "appName": "GRC Integra",
+  "appDescription": "GRC Integra digitizes the internal control over financial reporting lifecycle—from planning and scoping to management assessment and audit reporting.",
+  "account": {
+    "title": "My Account",
+    "profile": "Profile",
+    "settings": "Settings"
+  },
+  "actions": {
+    "add": "Add",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "cancel": "Cancel",
+    "search": "Search",
+    "select": "Select",
+    "all": "All",
+    "submit": "Submit",
+    "addSample": "Add Sample",
+    "printPdf": "Print PDF",
+    "logout": "Logout",
+    "deletePermanently": "Delete Permanently"
+  },
+  "status": {
+    "draft": "Draft",
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "active": "Active",
+    "mapped": "Mapped",
+    "effective": "Effective",
+    "ineffective": "Ineffective"
+  },
+  "notifications": {
+    "success": "Success",
+    "error": "Error",
+    "warning": "Warning",
+    "info": "Info",
+    "exportSuccess": "Report exported successfully.",
+    "created": "Created successfully",
+    "updated": "Updated successfully",
+    "deleted": "Deleted successfully",
+    "saved": "Saved successfully",
+    "purged": "All data successfully purged",
+    "logoutSuccess": "Logout successful",
+    "missingData": "Please complete the data (Date & Sub-Process)",
+    "processNotFound": "Process not found or not linked to BPM."
+  },
+  "placeholders": {
+    "search": "Search...",
+    "choose": "Choose...",
+    "select": "Select...",
+    "enter": "Enter...",
+    "year": "Year",
+    "link": "Link to document...",
+    "name": "Name...",
+    "email": "Email...",
+    "notes": "Enter notes here...",
+    "description": "Describe here...",
+    "app": "Application name...",
+    "control": "Control code..."
+  },
+  "yes": "Yes",
+  "no": "No",
+  "icofr": {
+    "elc": "Entity Level Control (ELC)",
+    "tlc": "Transaction Level Control (TLC)",
+    "policyUmbrella": "Policy Umbrella",
+    "linkedTo": "Linked to",
+    "elcTab": "RCM ELC (Strategic)",
+    "tlcTab": "RCM TLC (Operational)",
+    "category": "Category",
+    "subCategory": "Sub Category"
+  },
+  "access": {
+    "restricted": "Access Restricted",
+    "assignedTo": "This account is assigned to",
+    "lini1Restricted": "As Line 1, you can only manage business processes for accounts belonging to your own department."
+  },
+  "cycles": {
+    "yearCycle": "{{year}} Cycle",
+    "complianceCycle": "Compliance Cycle",
+    "cycleLabel": "Cycle: {{year}}",
+    "targetFiscalYear": "Target Fiscal Year"
+  },
+  "calendar": {
+    "today": "Today",
+    "day": "Day",
+    "week": "Week",
+    "month": "Month",
+    "workWeek": "Work Week",
+    "more": "more",
+    "noTasks": "No tasks this month.",
+    "todoTitle": "Monthly Todo List",
+    "frequencies": {
+      "monthly": "Monthly",
+      "quarterly": "Quarterly",
+      "semiAnnual": "Semi-Annual",
+      "annual": "Annual"
+    }
+  },
+  "unsavedChanges": {
+    "title": "Unsaved Changes",
+    "description": "You have unsaved changes that will be lost if you leave this page. Are you sure you want to continue?",
+    "stay": "Stay on Page",
+    "discard": "Discard Changes"
+  },
+  "emailSettings": {
+    "title": "Email Notification Settings",
+    "description": "Configure the email server and sender details for system notifications.",
+    "provider": "Email Provider",
+    "senderName": "Sender Display Name",
+    "senderEmail": "Sender Email Address",
+    "smtpPort": "SMTP Port",
+    "smtpHost": "SMTP Host",
+    "smtpSecurity": "SMTP Security",
+    "smtpUser": "SMTP Username",
+    "smtpPass": "SMTP Password",
+    "testConnection": "Test Connection",
+    "systemDefault": "System Default Fallback",
+    "customSmtp": "Custom SMTP Server",
+    "ssl": "SSL (Secure)",
+    "starttls": "STARTTLS (Secure)",
+    "unencrypted": "Unencrypted / Alternate",
+    "testSuccess": "Test email sent successfully! Check your inbox.",
+    "testError": "Failed to send test email"
+  }
+}

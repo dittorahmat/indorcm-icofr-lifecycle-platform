@@ -10,7 +10,7 @@ export function useOrganizationBranding() {
   });
 
   return {
-    companyName: settings?.companyName || "BALE GRC Integra",
+    companyName: settings?.companyName || "GRC Integra",
     logoUrl: settings?.logoUrl,
     isLoading
   };
