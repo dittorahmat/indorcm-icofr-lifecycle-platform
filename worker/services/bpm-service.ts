@@ -580,6 +580,9 @@ export class BpmService {
     
     for (const drId of riskIdsOfThisDiagram) {
        if (!activeRiskIdsInDiagram.has(drId) && drId.startsWith('R-')) {
+          await this.db.update(controls)
+            .set({ rcmId: null })
+            .where(and(eq(controls.rcmId, drId), eq(controls.organizationId, orgId)));
           await this.db.delete(rcms).where(and(eq(rcms.id, drId), eq(rcms.organizationId, orgId)));
        }
     }

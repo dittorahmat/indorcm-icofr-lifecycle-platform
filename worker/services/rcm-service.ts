@@ -90,22 +90,30 @@ export class RcmService {
     return { success: true };
   }
 
-  async approveChange(orgId: string, userId: string, id: string) {
+  async approveChange(orgId: string, userId: string, id: string, category?: string, effectiveDate?: Date) {
     await this.db.update(rcms).set({ status: 'Active' }).where(and(eq(rcms.id, id), eq(rcms.organizationId, orgId)));
+    const rcm = await this.db.select().from(rcms).where(and(eq(rcms.id, id), eq(rcms.organizationId, orgId))).then(rows => rows[0]);
+    
     await this.audit.logAction({
       organizationId: orgId,
       userId,
       action: 'APPROVE_CHANGE',
       entityType: 'RCM',
       entityId: id,
+      description: rcm ? `Approved change to RCM: ${rcm.process} - ${rcm.subProcess}` : "RCM Design Approved",
+      dataAfter: rcm ? rcm : undefined,
       isRegulatory: true,
-      effectiveDate: new Date(),
-      approvedBy: userId
+      effectiveDate: effectiveDate || new Date(),
+      approvedBy: userId,
+      changeCategory: category
     });
     return { success: true };
   }
 
   async delete(orgId: string, id: string) {
+    await this.db.update(controls)
+      .set({ rcmId: null })
+      .where(and(eq(controls.rcmId, id), eq(controls.organizationId, orgId)));
     await this.db.delete(rcms).where(and(eq(rcms.id, id), eq(rcms.organizationId, orgId)));
     return { success: true };
   }
