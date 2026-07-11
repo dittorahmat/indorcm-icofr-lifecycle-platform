@@ -194,6 +194,10 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
 
   // Dirty state tracking
   const isDirty = React.useMemo(() => {
+    if (simState.workflowStatus !== 'Draft' && simState.workflowStatus !== 'Rejected') {
+      return false;
+    }
+
     const initialDeptMappings: Record<string, string[]> = {};
     initialSimulation.significantAccounts?.forEach(sa => {
       if (sa.fsliCode && sa.assignedDepartmentIds) {
@@ -202,27 +206,28 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
     });
 
     const currentState = {
-      assessmentData: simState.assessmentData,
-      locationCount: simState.locationCount,
-      omPercentage: draftOmPercentage,
-      haircutPercentage: draftHaircutPercentage,
-      basis: draftBasis,
-      appMappings: localAppMappings,
-      deptMappings: localDeptMappings
+      assessmentData: simState.assessmentData || {},
+      locationCount: simState.locationCount || 0,
+      omPercentage: draftOmPercentage || 0,
+      haircutPercentage: draftHaircutPercentage || 0,
+      basis: draftBasis || '',
+      appMappings: localAppMappings || {},
+      deptMappings: localDeptMappings || {}
     };
 
     const originalState = {
-      assessmentData: initialSimulation.assessmentData,
-      locationCount: initialSimulation.locationCount,
-      omPercentage: initialSimulation.omPercentage,
-      haircutPercentage: initialSimulation.haircutPercentage,
-      basis: initialSimulation.basis,
-      appMappings: initialAppMappings,
-      deptMappings: initialDeptMappings
+      assessmentData: initialSimulation.assessmentData || {},
+      locationCount: initialSimulation.locationCount || 0,
+      omPercentage: initialSimulation.omPercentage || 0,
+      haircutPercentage: initialSimulation.haircutPercentage || 0,
+      basis: initialSimulation.basis || '',
+      appMappings: initialAppMappings || {},
+      deptMappings: initialDeptMappings || {}
     };
 
     return JSON.stringify(currentState) !== JSON.stringify(originalState);
   }, [simState, localAppMappings, localDeptMappings, initialSimulation, initialAppMappings, draftOmPercentage, draftHaircutPercentage, draftBasis]);
+
 
   const lastSimIdRef = React.useRef(initialSimulation.id);
 

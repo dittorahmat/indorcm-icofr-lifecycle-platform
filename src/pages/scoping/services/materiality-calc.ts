@@ -258,7 +258,8 @@ export function getRowScopeClassification(params: {
   selectedEntityCodes: string[];
   allGlRows: GLRow[];
 }): 'above-pm' | 'two-thirds' | 'qualitative' | 'out-of-scope' {
-  const { row, pmValue, assessmentData = {}, mandatoryFslis = ['Kas dan Setara Kas'], selectedEntityCodes, allGlRows } = params;
+  const { row, pmValue, assessmentData, mandatoryFslis = ['Kas dan Setara Kas'], selectedEntityCodes, allGlRows } = params;
+  const safeAssessmentData = assessmentData || {};
   
   const entityCode = row.entityCode || 'UNKNOWN';
   if (!selectedEntityCodes.includes(entityCode)) {
@@ -268,7 +269,7 @@ export function getRowScopeClassification(params: {
   const fsliName = row.fsliName || '';
   if (!fsliName) return 'out-of-scope';
 
-  const safeAssessments = assessmentData[fsliName] || {};
+  const safeAssessments = safeAssessmentData[fsliName] || {};
   const isQualSignificant = Object.values(safeAssessments).some(v => v === 'High') || mandatoryFslis.includes(fsliName);
 
   const fsliRows = allGlRows.filter(r => r.fsliName === fsliName);
