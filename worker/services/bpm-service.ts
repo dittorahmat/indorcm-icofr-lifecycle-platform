@@ -9,6 +9,10 @@ import { AuditService } from './audit-service';
 
 export function extractBaseId(id: string): string {
   if (!id) return id;
+  // Ensure the ID starts with R- or C- followed by digits (standard format)
+  if (!/^([RC]-\d+)/i.test(id)) {
+    return id;
+  }
   const match = id.match(/^([RC]-\d+)(?:-[\w]+)?$/i);
   if (match) {
     return match[1];
@@ -53,12 +57,14 @@ export class BpmService {
 
     const hydratedNodes = await this.hydrateDiagramNodes(id, nodes, noGL);
 
-    const matchedProcesses = await this.db.select().from(bpmProcesses)
-      .where(and(
-        eq(bpmProcesses.organizationId, orgId),
-        diag.year ? eq(bpmProcesses.year, diag.year) : isNull(bpmProcesses.year),
-        sql`TRIM(LOWER(${bpmProcesses.name})) = TRIM(LOWER(${diag.subProcess}))`
-      )).limit(1);
+    const matchedProcesses = diag.subProcess
+      ? await this.db.select().from(bpmProcesses)
+        .where(and(
+          eq(bpmProcesses.organizationId, orgId),
+          diag.year ? eq(bpmProcesses.year, diag.year) : isNull(bpmProcesses.year),
+          sql`TRIM(LOWER(${bpmProcesses.name})) = TRIM(LOWER(${diag.subProcess}))`
+        )).limit(1)
+      : [];
 
     let noGLs: string[] = [];
     if (matchedProcesses.length > 0) {
@@ -193,12 +199,14 @@ export class BpmService {
         const diagramYear = body.year ? parseInt(body.year.toString()) : (oldDiagram?.year || null);
 
         // 2. Resolve BPM Process & NoGL
-        const matchedProcesses = await this.db.select().from(bpmProcesses)
-          .where(and(
-            eq(bpmProcesses.organizationId, orgId),
-            diagramYear ? eq(bpmProcesses.year, diagramYear) : isNull(bpmProcesses.year),
-            sql`TRIM(LOWER(${bpmProcesses.name})) = TRIM(LOWER(${body.subProcess}))`
-          )).limit(1);
+        const matchedProcesses = body.subProcess
+          ? await this.db.select().from(bpmProcesses)
+            .where(and(
+              eq(bpmProcesses.organizationId, orgId),
+              diagramYear ? eq(bpmProcesses.year, diagramYear) : isNull(bpmProcesses.year),
+              sql`TRIM(LOWER(${bpmProcesses.name})) = TRIM(LOWER(${body.subProcess}))`
+            )).limit(1)
+          : [];
         
         const bpmProcessId = matchedProcesses.length > 0 ? matchedProcesses[0].id : null;
         let noGL = matchedProcesses.length > 0 ? matchedProcesses[0].noGL : "";
