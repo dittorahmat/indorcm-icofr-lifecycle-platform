@@ -62,7 +62,10 @@
     "omValue": "Materialitas Keseluruhan",
     "pmValue": "Materialitas Pelaksanaan",
     "unit": "Unit",
-    "multiplier": "Multiplier"
+    "multiplier": "Multiplier",
+    "staleWarning": "Parameter telah berubah. Silakan hitung ulang untuk memperbarui tabel.",
+    "recalculate": "Hitung Ulang",
+    "recalculating": "Menghitung Ulang..."
   },
   "logic": {
     "title": "Logika Scoping",

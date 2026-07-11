@@ -278,7 +278,9 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
   const {
     simState, setSimState, mergedGlData, entityHierarchy, selectedEntityCodes, setSelectedEntityCodes,
     omValue, pmValue, multiplier, benchmarkValue, scopingCompliance,
-    departments, applications, localAppMappings, isLocked, mutations, handlers, isDirty
+    departments, applications, localAppMappings, isLocked, mutations, handlers, isDirty,
+    draftBasis, setDraftBasis, draftOmPercentage, setDraftOmPercentage,
+    draftHaircutPercentage, setDraftHaircutPercentage, isStale, isRecalculating, handleRecalculate
   } = useScopingEditor(simulation);
 
   const handleOwnerAcceptanceChange = async (noGL: string, acceptance: "Accepted" | "Rejected") => {
@@ -325,6 +327,15 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
                 pmValue={pmValue}
                 isLocked={isLocked}
                 onClose={() => setIsParamsOpen(false)}
+                draftBasis={draftBasis}
+                setDraftBasis={setDraftBasis}
+                draftOmPercentage={draftOmPercentage}
+                setDraftOmPercentage={setDraftOmPercentage}
+                draftHaircutPercentage={draftHaircutPercentage}
+                setDraftHaircutPercentage={setDraftHaircutPercentage}
+                isStale={isStale}
+                isRecalculating={isRecalculating}
+                handleRecalculate={handleRecalculate}
               />
             </div>
           ) : (
@@ -363,6 +374,7 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
               onQuickAddApp={handleQuickAddApp}
               onOpenWorkflow={() => setIsWorkflowOpen(true)}
               scopingCompliance={scopingCompliance}
+              isRecalculating={isRecalculating}
             />
           </div>
         </div>

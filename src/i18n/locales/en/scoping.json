@@ -62,7 +62,10 @@
     "omValue": "Overall Materiality",
     "pmValue": "Performance Materiality",
     "unit": "Unit",
-    "multiplier": "Multiplier"
+    "multiplier": "Multiplier",
+    "staleWarning": "Parameters have changed. Please recalculate to update the matrix.",
+    "recalculate": "Recalculate",
+    "recalculating": "Recalculating..."
   },
   "logic": {
     "title": "Scoping Logic",

@@ -19,6 +19,15 @@ interface MaterialityParamsCardProps {
   pmValue: number;
   isLocked: boolean;
   onClose?: () => void;
+  draftBasis: string;
+  setDraftBasis: (val: string) => void;
+  draftOmPercentage: number;
+  setDraftOmPercentage: (val: number) => void;
+  draftHaircutPercentage: number;
+  setDraftHaircutPercentage: (val: number) => void;
+  isStale: boolean;
+  isRecalculating: boolean;
+  handleRecalculate: (om?: number, haircut?: number) => void;
 }
 
 export function MaterialityParamsCard({
@@ -29,9 +38,42 @@ export function MaterialityParamsCard({
   omValue,
   pmValue,
   isLocked,
-  onClose
+  onClose,
+  draftBasis,
+  setDraftBasis,
+  draftOmPercentage,
+  setDraftOmPercentage,
+  draftHaircutPercentage,
+  setDraftHaircutPercentage,
+  isStale,
+  isRecalculating,
+  handleRecalculate
 }: MaterialityParamsCardProps) {
   const { t } = useTranslation('scoping');
+
+  // Local state to keep typing fast and avoid parent re-renders on every keystroke
+  const [localOmPercentage, setLocalOmPercentage] = React.useState(draftOmPercentage);
+  const [localHaircutPercentage, setLocalHaircutPercentage] = React.useState(draftHaircutPercentage);
+
+  React.useEffect(() => {
+    setLocalOmPercentage(draftOmPercentage);
+  }, [draftOmPercentage]);
+
+  React.useEffect(() => {
+    setLocalHaircutPercentage(draftHaircutPercentage);
+  }, [draftHaircutPercentage]);
+
+  const localIsStale = localOmPercentage !== (simState.omPercentage ?? 0) ||
+                       localHaircutPercentage !== (simState.haircutPercentage ?? 0) ||
+                       draftBasis !== simState.basis;
+
+  const onRecalculateClick = () => {
+    // Propagate to parent draft states
+    setDraftOmPercentage(localOmPercentage);
+    setDraftHaircutPercentage(localHaircutPercentage);
+    // Trigger recalculation with local parameters
+    handleRecalculate(localOmPercentage, localHaircutPercentage);
+  };
 
   return (
     <Card className="border-slate-200 shadow-sm overflow-hidden w-full h-full bg-white flex flex-col">
@@ -119,8 +161,9 @@ export function MaterialityParamsCard({
                 type="number" 
                 step={0.1} 
                 disabled={isLocked} 
-                value={simState.omPercentage ?? 0} 
-                onChange={e => setSimState(s => ({ ...s, omPercentage: Number(e.target.value) }))} 
+                value={localOmPercentage} 
+                onChange={e => setLocalOmPercentage(Number(e.target.value))} 
+                onBlur={() => setDraftOmPercentage(localOmPercentage)}
                 className="h-9 font-bold bg-slate-50 border-slate-200 focus:bg-white transition-all pr-8 text-slate-900 text-xs rounded-lg"
               />
               <div className="absolute inset-y-0 right-3 flex items-center text-slate-400 text-xs font-bold">
@@ -138,8 +181,9 @@ export function MaterialityParamsCard({
               <Input 
                 type="number" 
                 disabled={isLocked} 
-                value={simState.haircutPercentage ?? 0} 
-                onChange={e => setSimState(s => ({ ...s, haircutPercentage: Number(e.target.value) }))} 
+                value={localHaircutPercentage} 
+                onChange={e => setLocalHaircutPercentage(Number(e.target.value))} 
+                onBlur={() => setDraftHaircutPercentage(localHaircutPercentage)}
                 className="h-9 font-bold bg-slate-50 border-slate-200 focus:bg-white transition-all pr-8 text-slate-900 text-xs rounded-lg"
               />
               <div className="absolute inset-y-0 right-3 flex items-center text-slate-400 text-xs font-bold">
@@ -149,14 +193,33 @@ export function MaterialityParamsCard({
           </div>
         </div>
 
-        {/* Benchmark Details Block */}
-        <div className="flex flex-col gap-2 bg-slate-50 border border-slate-100 rounded-lg p-3 shrink-0 w-full mt-4">
-          <div className="space-y-0.5 text-left">
-            <p className="text-[9px] text-slate-400 uppercase font-black tracking-wider flex items-center justify-start gap-1">
-              {t('params.benchmarkValue', { basis: simState.basis })} 
-              <Info className="h-3 w-3 opacity-40" />
-            </p>
-            <p className="text-xs font-display font-black text-slate-700">Rp {benchmarkValue.toLocaleString('id-ID')}</p>
+        {/* Warning & Recalculate Block */}
+        <div className="flex flex-col gap-3 w-full mt-4 shrink-0">
+          {localIsStale && (
+            <div className="bg-amber-50 border border-amber-100 rounded-lg p-2.5 flex items-start gap-2 text-amber-800 text-[11px] font-semibold leading-normal">
+              <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+              <span>{t('params.staleWarning', 'Parameter telah berubah. Silakan hitung ulang untuk memperbarui tabel.')}</span>
+            </div>
+          )}
+
+          <Button
+            onClick={onRecalculateClick}
+            disabled={!localIsStale || isRecalculating || isLocked}
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs uppercase tracking-wider h-10 rounded-xl gap-2 shadow-sm"
+          >
+            <Calculator className="h-4 w-4" />
+            {isRecalculating ? t('params.recalculating', 'Recalculating...') : t('params.recalculate', 'Recalculate')}
+          </Button>
+
+          {/* Benchmark Details Block */}
+          <div className="flex flex-col gap-2 bg-slate-50 border border-slate-100 rounded-lg p-3 w-full">
+            <div className="space-y-0.5 text-left">
+              <p className="text-[9px] text-slate-400 uppercase font-black tracking-wider flex items-center justify-start gap-1">
+                {t('params.benchmarkValue', { basis: simState.basis })} 
+                <Info className="h-3 w-3 opacity-40" />
+              </p>
+              <p className="text-xs font-display font-black text-slate-700">Rp {benchmarkValue.toLocaleString('id-ID')}</p>
+            </div>
           </div>
         </div>
       </CardContent>

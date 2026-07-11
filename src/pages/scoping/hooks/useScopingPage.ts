@@ -140,6 +140,24 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
   const [localAppMappings, setLocalAppMappings] = React.useState<Record<string, string[]>>({});
   const [localDeptMappings, setLocalDeptMappings] = React.useState<Record<string, string[]>>({});
 
+  // Draft parameter inputs for manual trigger
+  const [draftBasis, setDraftBasis] = React.useState(initialSimulation.basis || '');
+  const [draftOmPercentage, setDraftOmPercentage] = React.useState(initialSimulation.omPercentage || 0);
+  const [draftHaircutPercentage, setDraftHaircutPercentage] = React.useState(initialSimulation.haircutPercentage || 0);
+
+  // Active parameter values used for calculations
+  const [activeBasis, setActiveBasis] = React.useState(initialSimulation.basis || '');
+  const [activeOmPercentage, setActiveOmPercentage] = React.useState(initialSimulation.omPercentage || 0);
+  const [activeHaircutPercentage, setActiveHaircutPercentage] = React.useState(initialSimulation.haircutPercentage || 0);
+
+  const [isRecalculating, setIsRecalculating] = React.useState(false);
+
+  const isStale = React.useMemo(() => {
+    return draftBasis !== activeBasis ||
+           draftOmPercentage !== activeOmPercentage ||
+           draftHaircutPercentage !== activeHaircutPercentage;
+  }, [draftBasis, activeBasis, draftOmPercentage, activeOmPercentage, draftHaircutPercentage, activeHaircutPercentage]);
+
   // Queries
   const { data: departments } = useQuery({
     queryKey: ['departments'],
@@ -186,9 +204,9 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
     const currentState = {
       assessmentData: simState.assessmentData,
       locationCount: simState.locationCount,
-      omPercentage: simState.omPercentage,
-      haircutPercentage: simState.haircutPercentage,
-      basis: simState.basis,
+      omPercentage: draftOmPercentage,
+      haircutPercentage: draftHaircutPercentage,
+      basis: draftBasis,
       appMappings: localAppMappings,
       deptMappings: localDeptMappings
     };
@@ -204,7 +222,7 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
     };
 
     return JSON.stringify(currentState) !== JSON.stringify(originalState);
-  }, [simState, localAppMappings, localDeptMappings, initialSimulation, initialAppMappings]);
+  }, [simState, localAppMappings, localDeptMappings, initialSimulation, initialAppMappings, draftOmPercentage, draftHaircutPercentage, draftBasis]);
 
   const lastSimIdRef = React.useRef(initialSimulation.id);
 
@@ -213,8 +231,20 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
     if (initialSimulation.id !== lastSimIdRef.current) {
       lastSimIdRef.current = initialSimulation.id;
       setSimState(initialSimulation);
+      setDraftBasis(initialSimulation.basis || '');
+      setDraftOmPercentage(initialSimulation.omPercentage || 0);
+      setDraftHaircutPercentage(initialSimulation.haircutPercentage || 0);
+      setActiveBasis(initialSimulation.basis || '');
+      setActiveOmPercentage(initialSimulation.omPercentage || 0);
+      setActiveHaircutPercentage(initialSimulation.haircutPercentage || 0);
     } else if (!isDirty) {
       setSimState(initialSimulation);
+      setDraftBasis(initialSimulation.basis || '');
+      setDraftOmPercentage(initialSimulation.omPercentage || 0);
+      setDraftHaircutPercentage(initialSimulation.haircutPercentage || 0);
+      setActiveBasis(initialSimulation.basis || '');
+      setActiveOmPercentage(initialSimulation.omPercentage || 0);
+      setActiveHaircutPercentage(initialSimulation.haircutPercentage || 0);
     }
   }, [initialSimulation, isDirty]);
 
@@ -269,12 +299,12 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
   // Calculations
   const calculateValues = React.useMemo(() => {
     if (filteredGlData.length === 0 || !snapshot) return { omValue: 0, pmValue: 0, multiplier: 1, benchmarkValue: 0 };
-    const benchmarkValue = calculateBenchmarkValue(filteredGlData, simState.basis);
+    const benchmarkValue = calculateBenchmarkValue(filteredGlData, activeBasis);
     const multiplier = 1; // getGroupMultiplier(simState.locationCount || 1) - DEFERRED
-    const omValue = calculateOM(benchmarkValue, simState.omPercentage, multiplier);
-    const pmValue = calculatePM(omValue, simState.haircutPercentage);
+    const omValue = calculateOM(benchmarkValue, activeOmPercentage, multiplier);
+    const pmValue = calculatePM(omValue, activeHaircutPercentage);
     return { omValue, pmValue, multiplier, benchmarkValue };
-  }, [filteredGlData, snapshot, simState.basis, simState.omPercentage, simState.haircutPercentage]);
+  }, [filteredGlData, snapshot, activeBasis, activeOmPercentage, activeHaircutPercentage]);
 
   const { omValue, pmValue, multiplier, benchmarkValue } = calculateValues;
 
@@ -313,12 +343,89 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
     return () => resetDirty();
   }, [isDirty, setDirty, resetDirty]);
 
+  const handleRecalculate = React.useCallback((om?: number, haircut?: number) => {
+    setIsRecalculating(true);
+    const targetOm = om !== undefined ? om : draftOmPercentage;
+    const targetHaircut = haircut !== undefined ? haircut : draftHaircutPercentage;
+
+    setDraftOmPercentage(targetOm);
+    setDraftHaircutPercentage(targetHaircut);
+
+    setTimeout(() => {
+      setActiveBasis(draftBasis);
+      setActiveOmPercentage(targetOm);
+      setActiveHaircutPercentage(targetHaircut);
+      setSimState(prev => ({
+        ...prev,
+        basis: draftBasis,
+        omPercentage: targetOm,
+        haircutPercentage: targetHaircut
+      }));
+      setIsRecalculating(false);
+    }, 500);
+  }, [draftBasis, draftOmPercentage, draftHaircutPercentage]);
+
   // Mutations
   const updateSimMutation = useMutation({
     mutationFn: async (data: Partial<MaterialitySimulation>) => {
+      let finalOmValue = omValue;
+      let finalPmValue = pmValue;
+      let finalSignificantAccounts = significantAccounts;
+      let finalBasis = activeBasis;
+      let finalOmPct = activeOmPercentage;
+      let finalHaircutPct = activeHaircutPercentage;
+
+      if (draftBasis !== activeBasis || draftOmPercentage !== activeOmPercentage || draftHaircutPercentage !== activeHaircutPercentage) {
+        finalBasis = draftBasis;
+        finalOmPct = draftOmPercentage;
+        finalHaircutPct = draftHaircutPercentage;
+        const bVal = calculateBenchmarkValue(filteredGlData, draftBasis);
+        finalOmValue = calculateOM(bVal, draftOmPercentage, 1);
+        finalPmValue = calculatePM(finalOmValue, draftHaircutPercentage);
+
+        const tempMerged = filteredGlData.map(row => {
+          const scopeClassification = getRowScopeClassification({
+            row,
+            pmValue: finalPmValue,
+            assessmentData: simState.assessmentData,
+            selectedEntityCodes,
+            allGlRows: glData
+          });
+          return {
+            ...row,
+            assignedDepartmentIds: localDeptMappings[row.noGL] || [],
+            scopeClassification
+          };
+        });
+
+        finalSignificantAccounts = identifySignificantAccounts({
+          glData: tempMerged,
+          pmValue: finalPmValue,
+          assessmentData: simState.assessmentData
+        });
+
+        setActiveBasis(draftBasis);
+        setActiveOmPercentage(draftOmPercentage);
+        setActiveHaircutPercentage(draftHaircutPercentage);
+        setSimState(prev => ({
+          ...prev,
+          basis: draftBasis,
+          omPercentage: draftOmPercentage,
+          haircutPercentage: draftHaircutPercentage
+        }));
+      }
+
       await api(`/api/simulations/${simState.id}`, { 
         method: 'PUT', 
-        body: JSON.stringify({ ...data, omValue, pmValue, significantAccounts }) 
+        body: JSON.stringify({ 
+          ...data,
+          basis: finalBasis,
+          omPercentage: finalOmPct,
+          haircutPercentage: finalHaircutPct,
+          omValue: finalOmValue, 
+          pmValue: finalPmValue, 
+          significantAccounts: finalSignificantAccounts 
+        }) 
       });
 
       const appMappings = Object.entries(localAppMappings).map(([accountCode, applicationIds]) => ({
@@ -360,6 +467,15 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
     localDeptMappings,
     isDirty,
     isLocked: simState.workflowStatus !== 'Draft' && simState.workflowStatus !== 'Rejected',
+    draftBasis,
+    setDraftBasis,
+    draftOmPercentage,
+    setDraftOmPercentage,
+    draftHaircutPercentage,
+    setDraftHaircutPercentage,
+    isStale,
+    isRecalculating,
+    handleRecalculate,
     mutations: {
       save: updateSimMutation,
     },
