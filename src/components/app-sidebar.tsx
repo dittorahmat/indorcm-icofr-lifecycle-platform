@@ -64,6 +64,17 @@ import { NotificationBell } from "./layout/NotificationBell";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { useAIChatStore } from "@/context/ai-chat-store";
+import { registeredExtensions } from "@/extensions";
+import * as LucideIcons from "lucide-react";
+
+function DynamicIcon({ name, className }: { name: string; className?: string }) {
+  const IconComponent = (LucideIcons as any)[name];
+  if (!IconComponent) {
+    return <LucideIcons.HelpCircle className={className} />;
+  }
+  return <IconComponent className={className} />;
+}
+
 
 function PendingApprovalBadge({ role }: { role: string | null | undefined }) {
   const { data: simulations } = useQuery({
@@ -294,6 +305,39 @@ export function AppSidebar(): JSX.Element {
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
+
+        {/* Extensions */}
+        {registeredExtensions.some(ext => ext.navigation.length > 0) && (
+          <SidebarGroup className="py-2">
+            <SidebarGroupLabel className="font-bold text-slate-500 uppercase text-xs tracking-wider h-8 px-6 mb-1">
+              Extensions
+            </SidebarGroupLabel>
+            <SidebarMenu className="px-3 gap-1">
+              {registeredExtensions.flatMap(ext =>
+                ext.navigation.map((item, idx) => {
+                  if (item.roleRequired && !item.roleRequired.includes(userRole)) {
+                    return null;
+                  }
+                  return (
+                    <SidebarMenuItem key={`${ext.id}-${idx}`}>
+                      <SidebarMenuButton 
+                        asChild 
+                        isActive={isActive(item.path)} 
+                        className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight"
+                        title={item.label}
+                      >
+                        <Link to={item.path} className="font-semibold text-sm">
+                          <DynamicIcon name={item.iconName} className="h-4 w-4" />
+                          <span>{item.label}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })
+              )}
+            </SidebarMenu>
+          </SidebarGroup>
+        )}
 
         {/* User */}
         <SidebarGroup className="mt-auto pt-4 pb-6 border-t border-sidebar-border/30">

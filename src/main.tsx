@@ -53,9 +53,48 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { I18nextProvider } from 'react-i18next';
 
 
+import { registeredExtensions } from './extensions';
+
 enableMapSet();
 // Initialize query client
 const queryClient = new QueryClient();
+
+const coreRoutes = [
+  { path: "/dashboard", element: <PageSuspense><Dashboard /></PageSuspense> },
+  { path: "/scoping", element: <PageSuspense><ScopingPage /></PageSuspense> },
+  { path: "/scoping/approval", element: <PageSuspense><ApprovalPage /></PageSuspense> },
+  { path: "/rcm", element: <PageSuspense><RCMList /></PageSuspense> },
+  { path: "/rcm/tlc", element: <PageSuspense><RCMTLCPage /></PageSuspense> },
+  { path: "/rcm/elc", element: <PageSuspense><RCMELCPage /></PageSuspense> },
+  { path: "/rcm/itgc", element: <PageSuspense><RCMITGCPage /></PageSuspense> },
+  { path: "/rcm/verification-design", element: <PageSuspense><VerificationDesignPage /></PageSuspense> },
+
+  { path: "/change-log", element: <PageSuspense><ChangeLogPage /></PageSuspense> },
+  { path: "/soc-monitoring", element: <PageSuspense><SOCMonitoringPage /></PageSuspense> },
+  { path: "/applications", element: <PageSuspense><SOCMonitoringPage /></PageSuspense> },
+  { path: "/bpm", element: <PageSuspense><BPMPage /></PageSuspense> },
+  { path: "/todo", element: <PageSuspense><TodoListPage /></PageSuspense> },
+  { path: "/csa", element: <PageSuspense><CSAPage /></PageSuspense> },
+  { path: "/testing", element: <PageSuspense><TestWorkbench /></PageSuspense> },
+  { path: "/deficiencies", element: <PageSuspense><DeficiencyBoard /></PageSuspense> },
+  { path: "/reports", element: <PageSuspense><ReportsPage /></PageSuspense> },
+  { path: "/ai-hub", element: <PageSuspense><AIHubPage /></PageSuspense> },
+  { path: "/wbs-recap", element: <PageSuspense><WBSPage /></PageSuspense> },
+  { path: "/audit-portal", element: <PageSuspense><ExternalAuditPortal /></PageSuspense> },
+  { path: "/import", element: <PageSuspense><ImportPage /></PageSuspense> },
+  { path: "/settings", element: <PageSuspense><SettingsPage /></PageSuspense> },
+  { path: "/admin/users", element: <PageSuspense><UserManagementPage /></PageSuspense> },
+  { path: "/documents", element: <PageSuspense><DocumentsPage /></PageSuspense> },
+  { path: "/notifications", element: <PageSuspense><NotificationsPage /></PageSuspense> },
+];
+
+const extensionRoutes = registeredExtensions.flatMap(ext =>
+  ext.routes.map(route => ({
+    path: route.path,
+    element: <route.element />,
+    errorElement: <RouteErrorBoundary />
+  }))
+);
 
 const router = createBrowserRouter([
   {
@@ -88,32 +127,8 @@ const router = createBrowserRouter([
                 element: <RootLayout />,
                 errorElement: <RouteErrorBoundary />,
                 children: [
-                  { path: "/dashboard", element: <PageSuspense><Dashboard /></PageSuspense> },
-                  { path: "/scoping", element: <PageSuspense><ScopingPage /></PageSuspense> },
-                  { path: "/scoping/approval", element: <PageSuspense><ApprovalPage /></PageSuspense> },
-                  { path: "/rcm", element: <PageSuspense><RCMList /></PageSuspense> },
-                  { path: "/rcm/tlc", element: <PageSuspense><RCMTLCPage /></PageSuspense> },
-                  { path: "/rcm/elc", element: <PageSuspense><RCMELCPage /></PageSuspense> },
-                  { path: "/rcm/itgc", element: <PageSuspense><RCMITGCPage /></PageSuspense> },
-                  { path: "/rcm/verification-design", element: <PageSuspense><VerificationDesignPage /></PageSuspense> },
-
-                  { path: "/change-log", element: <PageSuspense><ChangeLogPage /></PageSuspense> },
-                  { path: "/soc-monitoring", element: <PageSuspense><SOCMonitoringPage /></PageSuspense> },
-                  { path: "/applications", element: <PageSuspense><SOCMonitoringPage /></PageSuspense> },
-                  { path: "/bpm", element: <PageSuspense><BPMPage /></PageSuspense> },
-                  { path: "/todo", element: <PageSuspense><TodoListPage /></PageSuspense> },
-                  { path: "/csa", element: <PageSuspense><CSAPage /></PageSuspense> },
-                  { path: "/testing", element: <PageSuspense><TestWorkbench /></PageSuspense> },
-                  { path: "/deficiencies", element: <PageSuspense><DeficiencyBoard /></PageSuspense> },
-                  { path: "/reports", element: <PageSuspense><ReportsPage /></PageSuspense> },
-                  { path: "/ai-hub", element: <PageSuspense><AIHubPage /></PageSuspense> },
-                  { path: "/wbs-recap", element: <PageSuspense><WBSPage /></PageSuspense> },
-                  { path: "/audit-portal", element: <PageSuspense><ExternalAuditPortal /></PageSuspense> },
-                  { path: "/import", element: <PageSuspense><ImportPage /></PageSuspense> },
-                  { path: "/settings", element: <PageSuspense><SettingsPage /></PageSuspense> },
-                  { path: "/admin/users", element: <PageSuspense><UserManagementPage /></PageSuspense> },
-                  { path: "/documents", element: <PageSuspense><DocumentsPage /></PageSuspense> },
-                  { path: "/notifications", element: <PageSuspense><NotificationsPage /></PageSuspense> },
+                  ...coreRoutes,
+                  ...extensionRoutes
                 ]
               },
             ]

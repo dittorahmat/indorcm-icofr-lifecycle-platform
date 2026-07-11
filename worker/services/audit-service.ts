@@ -19,10 +19,12 @@ export class AuditService {
     isRegulatory?: boolean;
     effectiveDate?: Date;
     approvedBy?: string;
+    changeCategory?: string;
   }) {
     const { 
       organizationId, userId, action, entityType, entityId, 
-      dataBefore, dataAfter, isRegulatory, effectiveDate, approvedBy 
+      dataBefore, dataAfter, isRegulatory, effectiveDate, approvedBy,
+      changeCategory 
     } = params;
 
     let description = params.description;
@@ -56,6 +58,7 @@ export class AuditService {
       effectiveDate: effectiveDate || null,
       isRegulatory: isRegulatory || false,
       approvedBy: approvedBy || null,
+      changeCategory: changeCategory || null,
     });
   }
 }

@@ -628,6 +628,7 @@ export const auditLogs = pgTable("audit_logs", {
 	effectiveDate: timestamp("effective_date"),
 	isRegulatory: boolean("is_regulatory").default(false), // Flag untuk Lampiran 6 SK-5
 	approvedBy: text("approved_by"),
+	changeCategory: text("change_category"),
 });
 
 export const simulationAccountApplications = pgTable("simulation_account_applications", {

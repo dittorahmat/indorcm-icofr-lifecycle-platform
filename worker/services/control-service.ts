@@ -94,18 +94,22 @@ export class ControlService {
     return { success: true };
   }
 
-  async approve(orgId: string, userId: string, id: string) {
+  async approve(orgId: string, userId: string, id: string, category?: string, effectiveDate?: Date) {
     await this.db.update(controls).set({ bpmStatus: 'Approved' }).where(and(eq(controls.id, id), eq(controls.organizationId, orgId)));
+    const ctrl = await this.db.select().from(controls).where(and(eq(controls.id, id), eq(controls.organizationId, orgId))).then(rows => rows[0]);
+    
     await this.audit.logAction({
       organizationId: orgId,
       userId,
       action: 'APPROVE_CHANGE',
       entityType: 'Control',
       entityId: id,
-      description: "Updated & Approved via Workflow",
+      description: ctrl ? `Approved change to Control: ${ctrl.name || id}` : "Updated & Approved via Workflow",
+      dataAfter: ctrl ? ctrl : undefined,
       isRegulatory: true,
-      effectiveDate: new Date(),
-      approvedBy: userId
+      effectiveDate: effectiveDate || new Date(),
+      approvedBy: userId,
+      changeCategory: category
     });
     return { success: true };
   }

@@ -60,7 +60,14 @@ rcm.post('/rcm/:id/approve-change', rbac(['Line 2', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const rcmService = new RcmService(db);
   const id = c.req.param('id') as string;
-  const result = await rcmService.approveChange(c.get('organizationId'), c.get('userId'), id);
+  let body: any = {};
+  try {
+    body = await c.req.json();
+  } catch (e) {
+    // empty
+  }
+  const effectiveDate = body.effectiveDate ? new Date(body.effectiveDate) : undefined;
+  const result = await rcmService.approveChange(c.get('organizationId'), c.get('userId'), id, body.category, effectiveDate);
   return ok(c, result);
 });
 
@@ -713,7 +720,14 @@ rcm.post('/controls/:id/approve', rbac(['Admin', 'Line 2']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const controlService = new ControlService(db);
   const id = c.req.param('id') as string;
-  const result = await controlService.approve(c.get('organizationId'), c.get('userId'), id);
+  let body: any = {};
+  try {
+    body = await c.req.json();
+  } catch (e) {
+    // empty
+  }
+  const effectiveDate = body.effectiveDate ? new Date(body.effectiveDate) : undefined;
+  const result = await controlService.approve(c.get('organizationId'), c.get('userId'), id, body.category, effectiveDate);
   return ok(c, result);
 });
 

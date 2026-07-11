@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
+import { registerBackendExtensions } from './extensions';
 import { userRoutes } from './user-routes';
 import notifications from './routes/notifications';
 import license from './routes/license';
@@ -55,6 +56,7 @@ export interface HonoEnv {
     AI_CHAT_MODEL?: string;
     DOCUMENTS_BUCKET: R2Bucket;
     LICENSE_PUBLIC_KEY?: string;
+    PARTNER_PUBLIC_KEY?: string;
     SKIP_LICENSE?: string;
   };
   Variables: {
@@ -135,7 +137,8 @@ export const createApp = () => {
     }
     
     const publicKey = c.env.LICENSE_PUBLIC_KEY || process.env.LICENSE_PUBLIC_KEY || '';
-    const payload = await verifyLicense(license.licenseKey, publicKey);
+    const partnerKey = c.env.PARTNER_PUBLIC_KEY || process.env.PARTNER_PUBLIC_KEY || '';
+    const payload = await verifyLicense(license.licenseKey, publicKey, partnerKey);
     
     if (!payload) {
         const err = 'LICENSE_INVALID';
@@ -292,6 +295,9 @@ export const createApp = () => {
     const auth = getAuth(c.env);
     return auth.handler(c.req.raw);
   });
+  
+  // Register backend extensions (Hono sub-apps)
+  registerBackendExtensions(app);
   
   return app;
 };

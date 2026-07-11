@@ -16,7 +16,8 @@
     "lint": "eslint --cache -f json --quiet .",
     "preview": "bun run build && vite preview --host 0.0.0.0 --port 4173",
     "deploy": "bun run build && wrangler deploy",
-    "cf-typegen": "wrangler types"
+    "cf-typegen": "wrangler types",
+    "release:whitelabel": "npx tsx scripts/release-whitelabel.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -128,7 +129,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
-    "javascript-obfuscator": "^5.4.1",
+    "javascript-obfuscator": "^5.4.4",
     "jsdom": "^29.1.1",
     "postcss": "^8.5.3",
     "rimraf": "^6.1.3",

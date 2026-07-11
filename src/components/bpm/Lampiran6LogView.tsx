@@ -6,7 +6,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, History, UserCircle, Calendar, CheckCircle2 } from 'lucide-react';
+import { Loader2, History, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface Lampiran6LogViewProps {
@@ -28,6 +28,21 @@ export function Lampiran6LogView({ entityId }: Lampiran6LogViewProps) {
   });
 
   const getUserName = (id?: string) => users?.items.find(u => u.id === id)?.name || id || "-";
+
+  const getRowMetadata = (log: ChangeLog) => {
+    const dataBefore = log.dataBefore as any;
+    const dataAfter = log.dataAfter as any;
+    
+    const process = dataAfter?.process || dataBefore?.process || "-";
+    const subProcess = dataAfter?.subProcess || dataBefore?.subProcess || "-";
+    const descBefore = dataBefore?.controlDescription || dataBefore?.riskDescription || log.descriptionBefore || "-";
+    const descAfter = dataAfter?.controlDescription || dataAfter?.riskDescription || log.descriptionAfter || "-";
+    const refBefore = dataBefore?.controlId || dataBefore?.id || "-";
+    const refAfter = dataAfter?.controlId || dataAfter?.id || "-";
+    const owner = dataAfter?.executingFunction || dataAfter?.executorRole || dataBefore?.executingFunction || "-";
+
+    return { process, subProcess, descBefore, descAfter, refBefore, refAfter, owner };
+  };
 
   if (isLoading) {
     return (
@@ -63,59 +78,55 @@ export function Lampiran6LogView({ entityId }: Lampiran6LogViewProps) {
       </div>
 
       <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
-        <Table>
-          <TableHeader className="bg-slate-50">
-            <TableRow>
-              <TableHead className="text-xs font-bold uppercase py-3">Tanggal & Waktu</TableHead>
-              <TableHead className="text-xs font-bold uppercase py-3">Pelaksana (Staff)</TableHead>
-              <TableHead className="text-xs font-bold uppercase py-3">Perubahan</TableHead>
-              <TableHead className="text-xs font-bold uppercase py-3 text-center">Approver (Manager)</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {logs.map((log) => (
-              <TableRow key={log.id} className="hover:bg-slate-50/50 transition-colors">
-                <TableCell className="py-4">
-                  <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
-                      <Calendar className="h-3 w-3 text-slate-400" />
-                      {format(log.timestamp, 'dd MMM yyyy')}
-                    </div>
-                    <span className="text-xs text-slate-400 font-mono ml-4.5">
-                      {format(log.timestamp, 'HH:mm:ss')}
-                    </span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <div className="h-7 w-7 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200">
-                      <UserCircle className="h-4 w-4 text-slate-400" />
-                    </div>
-                    <span className="text-xs font-semibold text-slate-600">{getUserName(log.userId)}</span>
-                  </div>
-                </TableCell>
-                <TableCell className="max-w-[300px]">
-                  <div className="space-y-1.5">
-                    <p className="text-xs text-slate-700 font-medium line-clamp-2">{log.descriptionAfter}</p>
-                    <Badge variant="secondary" className="text-xs h-4 px-1.5 bg-slate-100 text-slate-500 font-normal">
-                      Manual Update
-                    </Badge>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex flex-col items-center gap-1">
-                    <div className="flex items-center gap-1.5">
-                      <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
-                      <span className="text-xs font-bold text-slate-700">{getUserName(log.approvedBy)}</span>
-                    </div>
-                    <span className="text-xs text-slate-400 italic">Validated</span>
-                  </div>
-                </TableCell>
+        <div className="overflow-x-auto w-full">
+          <Table className="min-w-[1200px]">
+            <TableHeader className="bg-slate-50">
+              <TableRow>
+                <TableHead className="w-[50px] text-xs font-bold uppercase py-3 text-center">No (i)</TableHead>
+                <TableHead className="text-xs font-bold uppercase py-3">Perusahaan (ii)</TableHead>
+                <TableHead className="text-xs font-bold uppercase py-3">Proses Bisnis (iii)</TableHead>
+                <TableHead className="text-xs font-bold uppercase py-3">Sub-Proses (iv)</TableHead>
+                <TableHead className="text-xs font-bold uppercase py-3">Tanggal Laporan (v)</TableHead>
+                <TableHead className="text-xs font-bold uppercase py-3">Pemilik (vi)</TableHead>
+                <TableHead className="text-xs font-bold uppercase py-3">Deskripsi Sebelum (vii)</TableHead>
+                <TableHead className="text-xs font-bold uppercase py-3">Deskripsi Setelah (viii)</TableHead>
+                <TableHead className="text-xs font-bold uppercase py-3 text-center">Ref Sebelum (ix)</TableHead>
+                <TableHead className="text-xs font-bold uppercase py-3 text-center">Ref Setelah (x)</TableHead>
+                <TableHead className="text-xs font-bold uppercase py-3">Tgl Efektif (xi)</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {logs.map((log, index) => {
+                const meta = getRowMetadata(log);
+                return (
+                  <TableRow key={log.id} className="hover:bg-slate-50/50 transition-colors">
+                    <TableCell className="text-center font-medium text-xs text-slate-500 py-3">{index + 1}</TableCell>
+                    <TableCell className="text-xs font-semibold text-slate-700 py-3">PT Bukit Asam Tbk</TableCell>
+                    <TableCell className="text-xs text-slate-600 py-3">{meta.process}</TableCell>
+                    <TableCell className="text-xs text-slate-600 py-3">{meta.subProcess}</TableCell>
+                    <TableCell className="py-3">
+                      <span className="text-xs text-slate-500 font-mono">
+                        {log.timestamp ? format(log.timestamp, 'dd MMM yyyy HH:mm') : "-"}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-xs text-slate-600 py-3 font-medium">{meta.owner}</TableCell>
+                    <TableCell className="max-w-[200px] truncate text-xs text-slate-500 py-3" title={meta.descBefore}>{meta.descBefore}</TableCell>
+                    <TableCell className="max-w-[200px] truncate text-xs text-slate-800 py-3 font-medium" title={meta.descAfter}>{meta.descAfter}</TableCell>
+                    <TableCell className="text-center text-xs font-mono text-slate-500 py-3">{meta.refBefore}</TableCell>
+                    <TableCell className="text-center text-xs font-mono text-slate-800 py-3 font-semibold">{meta.refAfter}</TableCell>
+                    <TableCell className="py-3">
+                      <span className="text-xs font-bold text-indigo-600">
+                        {log.effectiveDate ? format(log.effectiveDate, 'dd MMM yyyy') : "-"}
+                      </span>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     </div>
   );
 }
+

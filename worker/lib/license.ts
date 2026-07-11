@@ -14,63 +14,101 @@ export interface LicensePayload {
 /**
  * Verifies a license key using WebCrypto (Standard for Cloudflare/Edge)
  */
-export async function verifyLicense(licenseKey: string, publicKeyBase64: string): Promise<LicensePayload | null> {
+export async function verifyLicense(
+  licenseKey: string,
+  developerPublicKeyBase64: string,
+  partnerPublicKeyBase64?: string
+): Promise<LicensePayload | null> {
   try {
     if (!licenseKey) {
         console.error('[LICENSE] Error: licenseKey is empty');
         return null;
     }
-    if (!publicKeyBase64) {
-        console.error('[LICENSE] Error: publicKeyBase64 is empty');
+    if (!developerPublicKeyBase64) {
+        console.error('[LICENSE] Error: developerPublicKeyBase64 is empty');
         return null;
     }
     
     const cleanLicenseKey = licenseKey.trim();
-    const cleanPublicKeyBase64 = publicKeyBase64.trim().replace(/\s/g, '');
-
-    const [payloadBase64, signatureBase64] = cleanLicenseKey.split('.');
-    if (!payloadBase64 || !signatureBase64) {
-        console.error('[LICENSE] Error: Invalid key format (missing dot)');
+    const parts = cleanLicenseKey.split('.');
+    
+    if (parts.length !== 2 && parts.length !== 3) {
+        console.error('[LICENSE] Error: Invalid key format (must have 2 or 3 parts)');
         return null;
     }
 
-    // IMPORTANT: Match the data that was signed in generate-license.ts
-    // We signed the ASCII characters of the Base64 string, so we verify that.
-    const dataToVerify = Buffer.from(payloadBase64); 
-    const signatureBuffer = Buffer.from(signatureBase64, 'base64');
-    const publicKeyBuffer = Buffer.from(cleanPublicKeyBase64, 'base64');
-
-    console.log('[LICENSE] Attempting verification...');
     const cryptoProvider = typeof crypto !== 'undefined' ? crypto : (await import('node:crypto')).webcrypto;
-    
-    try {
+    const cleanDeveloperPublicKey = developerPublicKeyBase64.trim().replace(/\s/g, '');
+
+    const helperVerify = async (data: Buffer, signatureBase64: string, spkiPublicKeyBase64: string): Promise<boolean> => {
+      try {
+        const signatureBuffer = Buffer.from(signatureBase64, 'base64');
+        const publicKeyBuffer = Buffer.from(spkiPublicKeyBase64, 'base64');
         const importedKey = await cryptoProvider.subtle.importKey(
             "spki",
-            publicKeyBuffer,
+            new Uint8Array(publicKeyBuffer),
             { name: "Ed25519", namedCurve: "Ed25519" },
             false,
             ["verify"]
         );
-
-        const isValid = await cryptoProvider.subtle.verify(
+        return await cryptoProvider.subtle.verify(
             "Ed25519",
             importedKey,
-            signatureBuffer,
-            dataToVerify
+            new Uint8Array(signatureBuffer),
+            new Uint8Array(data)
         );
+      } catch (e: any) {
+        console.error('[LICENSE] Cryptographic operation error:', e.message);
+        return false;
+      }
+    };
 
-        if (!isValid) {
-            console.error('[LICENSE] Signature verification FAILED (Cryptographic mismatch)');
-            return null;
-        }
-    } catch (cryptoErr: any) {
-        console.error('[LICENSE] Crypto API Error:', cryptoErr.message);
+    if (parts.length === 2) {
+      // Direct Sales: [Payload].[Developer Signature]
+      const [payloadBase64, developerSignature] = parts;
+      const dataToVerify = Buffer.from(payloadBase64);
+      const isDevValid = await helperVerify(dataToVerify, developerSignature, cleanDeveloperPublicKey);
+      if (!isDevValid) {
+        console.error('[LICENSE] Developer signature verification FAILED');
         return null;
+      }
+      
+      const payload = JSON.parse(Buffer.from(payloadBase64, 'base64').toString()) as LicensePayload;
+      console.log('[LICENSE] Direct Sales Verification SUCCESS for:', payload.clientName);
+      return payload;
+    } 
+    
+    if (parts.length === 3) {
+      // Whitelabel Sales: [Payload].[Partner Signature].[Developer Signature]
+      const [payloadBase64, partnerSignature, developerSignature] = parts;
+      const dataToVerify = Buffer.from(payloadBase64);
+
+      // Verify Developer Signature
+      const isDevValid = await helperVerify(dataToVerify, developerSignature, cleanDeveloperPublicKey);
+      if (!isDevValid) {
+        console.error('[LICENSE] Developer signature verification FAILED');
+        return null;
+      }
+
+      // Verify Partner Signature
+      const activePartnerPublicKey = (partnerPublicKeyBase64 || process.env.PARTNER_PUBLIC_KEY || '').trim().replace(/\s/g, '');
+      if (!activePartnerPublicKey) {
+        console.error('[LICENSE] Whitelabel Verification failed: PARTNER_PUBLIC_KEY is not configured.');
+        return null;
+      }
+
+      const isPartnerValid = await helperVerify(dataToVerify, partnerSignature, activePartnerPublicKey);
+      if (!isPartnerValid) {
+        console.error('[LICENSE] Partner signature verification FAILED');
+        return null;
+      }
+
+      const payload = JSON.parse(Buffer.from(payloadBase64, 'base64').toString()) as LicensePayload;
+      console.log('[LICENSE] Whitelabel Sales Verification SUCCESS for:', payload.clientName);
+      return payload;
     }
 
-    const payload = JSON.parse(Buffer.from(payloadBase64, 'base64').toString()) as LicensePayload;
-    console.log('[LICENSE] Verification SUCCESS for:', payload.clientName);
-    return payload;
+    return null;
   } catch (error: any) {
     console.error('[LICENSE] Fatal Verification error:', error.message);
     return null;

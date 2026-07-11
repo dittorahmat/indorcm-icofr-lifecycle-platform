@@ -3,34 +3,39 @@ import type { HonoEnv } from '../app';
 import { ok, notFound } from '../lib/utils';
 import { getDb } from '../db';
 import { auditLogs } from '../db/schema';
-import { eq, desc } from 'drizzle-orm';
+import { and, eq, desc } from 'drizzle-orm';
 import { rbac } from "../lib/guard";
 
 const audit = new Hono<HonoEnv>();
 
-audit.get('/changelogs', rbac(['Line 2', 'Admin']), async (c) => {
+const getChangelogsHandler = async (c: any) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const entityId = c.req.query('entityId');
   const entityType = c.req.query('entityType');
+  const isRegulatory = c.req.query('isRegulatory');
 
-  let query = db.select().from(auditLogs).where(eq(auditLogs.organizationId, orgId));
-
+  const conditions = [eq(auditLogs.organizationId, orgId)];
   if (entityId) {
-    query = db.select().from(auditLogs).where(eq(auditLogs.entityId, entityId)) as any;
+    conditions.push(eq(auditLogs.entityId, entityId));
   }
-  
   if (entityType) {
-    query = db.select().from(auditLogs).where(eq(auditLogs.entityType, entityType)) as any;
+    conditions.push(eq(auditLogs.entityType, entityType));
+  }
+  if (isRegulatory === 'true') {
+    conditions.push(eq(auditLogs.isRegulatory, true));
   }
 
   const items = await db.select()
     .from(auditLogs)
-    .where(eq(auditLogs.organizationId, orgId))
+    .where(and(...conditions))
     .orderBy(desc(auditLogs.timestamp))
     .limit(100);
 
   return ok(c, { items });
-});
+};
+
+audit.get('/changelogs', rbac(['Line 2', 'Admin']), getChangelogsHandler);
+audit.get('/change-logs', rbac(['Line 2', 'Admin', 'Line 1']), getChangelogsHandler);
 
 export default audit;

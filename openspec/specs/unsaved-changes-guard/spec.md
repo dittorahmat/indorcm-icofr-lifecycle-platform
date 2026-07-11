@@ -44,3 +44,7 @@ The system SHALL provide a standardized way to define the "dirty" state for vari
 - **WHEN** the BPM Editor is locked
 - **THEN** all property sheet inputs SHALL be read-only and no modifications can be made, preventing the isDirty state from becoming true
 
+#### Scenario: Locked scoping simulation prevents dirty state
+- **WHEN** the Scoping Editor is locked (the workflow status is not Draft or Rejected)
+- **THEN** all parameters and qualitative assessment inputs SHALL be read-only, and the isDirty state for the Scoping Editor SHALL remain false
+
