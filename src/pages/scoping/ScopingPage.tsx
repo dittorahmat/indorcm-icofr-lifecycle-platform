@@ -16,6 +16,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { PageHeader } from '@/components/layout/PageHeader';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
@@ -75,6 +85,8 @@ export function ScopingPage() {
 
   const [isImportWizardOpen, setIsImportWizardOpen] = React.useState(false);
   const [isRolloverOpen, setIsRolloverOpen] = React.useState(false);
+  const [deleteSimId, setDeleteSimId] = React.useState<string | null>(null);
+  const [deleteSnapId, setDeleteSnapId] = React.useState<string | null>(null);
 
   const filterYear = workingYear;
 
@@ -175,7 +187,7 @@ export function ScopingPage() {
               <SimulationListTable 
                 data={simulations} 
                 onSelect={(id) => setSearchParams({ id })} 
-                onDelete={mutations.deleteSim.mutate} 
+                onDelete={setDeleteSimId} 
                 isLoading={isLoading}
               />
             </motion.div>
@@ -204,7 +216,7 @@ export function ScopingPage() {
                 data={snapshots} 
                 onSetActive={mutations.setActiveSnap.mutate}
                 onSetBenchmark={setBenchmarkModalSnap}
-                onDelete={mutations.deleteSnap.mutate}
+                onDelete={setDeleteSnapId}
                 isLoading={isLoading}
               />
             </motion.div>
@@ -264,6 +276,60 @@ export function ScopingPage() {
           prevYear={(parseInt(workingYear) - 1).toString()}
           isLoading={mutations.rollover.isPending}
         />
+
+        <AlertDialog open={!!deleteSimId} onOpenChange={(open) => !open && setDeleteSimId(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-red-600">
+                {t('scoping:delete.simTitle')}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {t('scoping:delete.simDesc', { name: simulations.find(s => s.id === deleteSimId)?.name || '' })}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setDeleteSimId(null)}>{t('common:actions.cancel')}</AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={() => {
+                  if (deleteSimId) {
+                    mutations.deleteSim.mutate(deleteSimId);
+                    setDeleteSimId(null);
+                  }
+                }}
+                className="bg-red-600 hover:bg-red-700 text-white font-bold"
+              >
+                {t('common:actions.delete')}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog open={!!deleteSnapId} onOpenChange={(open) => !open && setDeleteSnapId(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-red-600">
+                {t('scoping:delete.snapTitle')}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {t('scoping:delete.snapDesc', { name: snapshots.find(s => s.id === deleteSnapId)?.filename || '' })}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setDeleteSnapId(null)}>{t('common:actions.cancel')}</AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={() => {
+                  if (deleteSnapId) {
+                    mutations.deleteSnap.mutate(deleteSnapId);
+                    setDeleteSnapId(null);
+                  }
+                }}
+                className="bg-red-600 hover:bg-red-700 text-white font-bold"
+              >
+                {t('common:actions.delete')}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </motion.div>
     </AppLayout>
   );

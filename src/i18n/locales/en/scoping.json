@@ -262,5 +262,11 @@
     "success": "Rollover completed successfully!",
     "error": "Rollover failed: {{error}}",
     "progress": "Copying data from {{prevYear}} to {{year}}..."
+  },
+  "delete": {
+    "simTitle": "Delete Materiality Simulation",
+    "simDesc": "Are you sure you want to delete simulation \"{{name}}\"? This action cannot be undone and will permanently remove all scoping and materiality allocations associated with this scenario.",
+    "snapTitle": "Delete GL Snapshot",
+    "snapDesc": "Are you sure you want to delete GL snapshot \"{{name}}\"? This will permanently remove the snapshot and all its account row mappings. This action cannot be undone."
   }
 }

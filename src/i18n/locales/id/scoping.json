@@ -262,5 +262,11 @@
     "success": "Rollover berhasil diselesaikan!",
     "error": "Rollover gagal: {{error}}",
     "progress": "Menyalin data dari {{prevYear}} ke {{year}}..."
+  },
+  "delete": {
+    "simTitle": "Hapus Simulasi Materialitas",
+    "simDesc": "Apakah Anda yakin ingin menghapus simulasi \"{{name}}\"? Tindakan ini tidak dapat dibatalkan dan akan menghapus semua scoping dan alokasi materialitas yang terkait dengan skenario ini secara permanen.",
+    "snapTitle": "Hapus Snapshot GL",
+    "snapDesc": "Apakah Anda yakin ingin menghapus snapshot GL \"{{name}}\"? Ini akan menghapus snapshot dan semua pemetaan baris akun secara permanen. Tindakan ini tidak dapat dibatalkan."
   }
 }
