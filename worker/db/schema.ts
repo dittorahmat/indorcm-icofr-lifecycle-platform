@@ -114,6 +114,7 @@ export const glSnapshots = pgTable("gl_snapshots", {
 	status: text("status").notNull(), // Draft, Mapped
 	isActive: boolean("isActive").default(false),
 	benchmarkFsliNames: jsonb("benchmarkFsliNames"),
+	year: integer("year"),
 });
 
 // Enum for owner acceptance status

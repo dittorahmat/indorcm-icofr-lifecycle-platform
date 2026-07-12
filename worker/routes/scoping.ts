@@ -380,15 +380,24 @@ scoping.post('/simulations/:id/account-applications/sync', async (c) => {
 scoping.get('/gl-snapshots', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
+  const yearStr = c.req.query('year');
   
-  const items = await db.select().from(glSnapshots).where(eq(glSnapshots.organizationId, orgId));
+  let conditions = eq(glSnapshots.organizationId, orgId);
+  if (yearStr) {
+    const yearVal = parseInt(yearStr);
+    if (!isNaN(yearVal)) {
+      conditions = and(eq(glSnapshots.organizationId, orgId), eq(glSnapshots.year, yearVal)) as any;
+    }
+  }
+
+  const items = await db.select().from(glSnapshots).where(conditions);
   return ok(c, { items });
 });
 
 scoping.post('/gl-snapshots', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
-  const { filename, rows } = await c.req.json<{ filename: string, rows: any[] }>();
+  const { filename, rows, year } = await c.req.json<{ filename: string, rows: any[], year?: number }>();
 
   const snapshotId = crypto.randomUUID();
   const now = new Date();
@@ -400,7 +409,8 @@ scoping.post('/gl-snapshots', async (c) => {
     filename,
     uploadDate: now,
     status: 'Draft',
-    isActive: false
+    isActive: false,
+    year: year ? parseInt(year as any) : undefined
   });
 
   // 2. Insert rows in batches to avoid overwhelming the DB

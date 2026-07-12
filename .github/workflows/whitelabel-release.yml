@@ -1,0 +1,45 @@
+name: Whitelabel Release Pipeline
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*.*.*-whitelabel'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Internal Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Whitelabel Build & Obfuscation
+        run: npm run release:whitelabel
+
+      - name: Setup SSH Deploy Key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.DSINTEGRA_DEPLOY_KEY }}
+
+      - name: Configure Git & Push to Whitelabel Repo
+        run: |
+          cd dist-whitelabel
+          git init
+          git config user.name "dsintegra-release-bot"
+          git config user.email "release-bot@dsintegra.com"
+          git add -A
+          git commit -m "chore: automated whitelabel release [skip ci]"
+          git remote add origin git@github.com:dsintegra/grc-platform-whitelabel.git
+          git branch -M main
+          git push -f origin main

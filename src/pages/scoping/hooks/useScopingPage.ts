@@ -87,7 +87,14 @@ export function useScopingPage() {
   });
 
   const uploadSnapMutation = useMutation({
-    mutationFn: (data: { filename: string, rows: GLRow[] }) => api<GLSnapshot>('/api/gl-snapshots', { method: 'POST', body: JSON.stringify(data) }),
+    mutationFn: (data: { filename: string, rows: GLRow[], year?: number }) => 
+      api<GLSnapshot>('/api/gl-snapshots', { 
+        method: 'POST', 
+        body: JSON.stringify({
+          ...data,
+          year: data.year ?? parseInt(filterYear)
+        }) 
+      }),
     onSuccess: (snap) => {
       queryClient.invalidateQueries({ queryKey: ['gl-snapshots'] });
       setBenchmarkModalSnap(snap);

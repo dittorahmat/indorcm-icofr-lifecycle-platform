@@ -67,9 +67,12 @@ export function useGLSnapshots(year?: number) {
   });
 
   const uploadMutation = useMutation({
-    mutationFn: (data: { filename: string, rows: any[] }) => api<{ id: string }>('/api/gl-snapshots', {
+    mutationFn: (data: { filename: string, rows: any[], year?: number }) => api<{ id: string }>('/api/gl-snapshots', {
       method: 'POST',
-      body: JSON.stringify(data)
+      body: JSON.stringify({
+        ...data,
+        year: data.year ?? year
+      })
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gl-snapshots'] });
