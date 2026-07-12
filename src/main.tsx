@@ -15,6 +15,7 @@ import i18n from './i18n/config';
 
 import { UnsavedChangesProvider } from '@/context/UnsavedChangesContext';
 import { UnsavedChangesGuard } from '@/components/UnsavedChangesGuard';
+import { ConfirmProvider } from '@/components/providers/ConfirmProvider';
 
 // Lazy load all pages for optimized bundle size
 const HomePage = lazy(() => import('@/pages/HomePage').then(module => ({ default: module.HomePage })));
@@ -159,19 +160,21 @@ root.render(
     <QueryClientProvider client={queryClient}>
       <LicenseProvider>
         <UnsavedChangesProvider>
-          <I18nextProvider i18n={i18n}>
-            <ErrorBoundary>
-              <Suspense fallback={<div className="h-screen w-full flex items-center justify-center"><Skeleton className="h-12 w-12 rounded-full" /></div>}>
-                <RouterProvider 
-                  router={router} 
-                  future={{
-                    v7_startTransition: true,
-                  }}
-                />
-              </Suspense>
-              <Toaster richColors closeButton />
-            </ErrorBoundary>
-          </I18nextProvider>
+          <ConfirmProvider>
+            <I18nextProvider i18n={i18n}>
+              <ErrorBoundary>
+                <Suspense fallback={<div className="h-screen w-full flex items-center justify-center"><Skeleton className="h-12 w-12 rounded-full" /></div>}>
+                  <RouterProvider 
+                    router={router} 
+                    future={{
+                      v7_startTransition: true,
+                    }}
+                  />
+                </Suspense>
+                <Toaster richColors closeButton />
+              </ErrorBoundary>
+            </I18nextProvider>
+          </ConfirmProvider>
         </UnsavedChangesProvider>
       </LicenseProvider>
     </QueryClientProvider>

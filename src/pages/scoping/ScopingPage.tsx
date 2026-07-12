@@ -16,16 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { useConfirm } from '@/hooks/use-confirm';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
@@ -83,10 +74,29 @@ export function ScopingPage() {
     mutations
   } = useScopingPage();
 
+  const confirm = useConfirm();
   const [isImportWizardOpen, setIsImportWizardOpen] = React.useState(false);
   const [isRolloverOpen, setIsRolloverOpen] = React.useState(false);
-  const [deleteSimId, setDeleteSimId] = React.useState<string | null>(null);
-  const [deleteSnapId, setDeleteSnapId] = React.useState<string | null>(null);
+
+  const handleDeleteSim = async (id: string) => {
+    const sim = simulations.find(s => s.id === id);
+    const ok = await confirm({
+      title: t('scoping:delete.simTitle'),
+      description: t('scoping:delete.simDesc', { name: sim?.name || '' }),
+      variant: 'destructive'
+    });
+    if (ok) mutations.deleteSim.mutate(id);
+  };
+
+  const handleDeleteSnap = async (id: string) => {
+    const snap = snapshots.find(s => s.id === id);
+    const ok = await confirm({
+      title: t('scoping:delete.snapTitle'),
+      description: t('scoping:delete.snapDesc', { name: snap?.filename || '' }),
+      variant: 'destructive'
+    });
+    if (ok) mutations.deleteSnap.mutate(id);
+  };
 
   const filterYear = workingYear;
 
@@ -187,7 +197,7 @@ export function ScopingPage() {
               <SimulationListTable 
                 data={simulations} 
                 onSelect={(id) => setSearchParams({ id })} 
-                onDelete={setDeleteSimId} 
+                onDelete={handleDeleteSim} 
                 isLoading={isLoading}
               />
             </motion.div>
@@ -200,8 +210,13 @@ export function ScopingPage() {
                   variant="destructive" 
                   size="sm" 
                   className="gap-2 h-8 font-bold text-[10px] uppercase tracking-widest bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-100 transition-all shadow-none rounded-md"
-                  onClick={() => {
-                    if (confirm(t('scoping:purgeConfirm'))) {
+                  onClick={async () => {
+                    const ok = await confirm({
+                      title: t('scoping:resetDataButton'),
+                      description: t('scoping:purgeConfirm'),
+                      variant: 'destructive'
+                    });
+                    if (ok) {
                       api('/api/dev/purge-scoping', { method: 'DELETE' }).then(() => {
                         queryClient.invalidateQueries();
                         toast.success(t('common:notifications.purged'));
@@ -216,7 +231,7 @@ export function ScopingPage() {
                 data={snapshots} 
                 onSetActive={mutations.setActiveSnap.mutate}
                 onSetBenchmark={setBenchmarkModalSnap}
-                onDelete={setDeleteSnapId}
+                onDelete={handleDeleteSnap}
                 isLoading={isLoading}
               />
             </motion.div>
@@ -277,59 +292,6 @@ export function ScopingPage() {
           isLoading={mutations.rollover.isPending}
         />
 
-        <AlertDialog open={!!deleteSimId} onOpenChange={(open) => !open && setDeleteSimId(null)}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle className="text-red-600">
-                {t('scoping:delete.simTitle')}
-              </AlertDialogTitle>
-              <AlertDialogDescription>
-                {t('scoping:delete.simDesc', { name: simulations.find(s => s.id === deleteSimId)?.name || '' })}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => setDeleteSimId(null)}>{t('common:actions.cancel')}</AlertDialogCancel>
-              <AlertDialogAction 
-                onClick={() => {
-                  if (deleteSimId) {
-                    mutations.deleteSim.mutate(deleteSimId);
-                    setDeleteSimId(null);
-                  }
-                }}
-                className="bg-red-600 hover:bg-red-700 text-white font-bold"
-              >
-                {t('common:actions.delete')}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-
-        <AlertDialog open={!!deleteSnapId} onOpenChange={(open) => !open && setDeleteSnapId(null)}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle className="text-red-600">
-                {t('scoping:delete.snapTitle')}
-              </AlertDialogTitle>
-              <AlertDialogDescription>
-                {t('scoping:delete.snapDesc', { name: snapshots.find(s => s.id === deleteSnapId)?.filename || '' })}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => setDeleteSnapId(null)}>{t('common:actions.cancel')}</AlertDialogCancel>
-              <AlertDialogAction 
-                onClick={() => {
-                  if (deleteSnapId) {
-                    mutations.deleteSnap.mutate(deleteSnapId);
-                    setDeleteSnapId(null);
-                  }
-                }}
-                className="bg-red-600 hover:bg-red-700 text-white font-bold"
-              >
-                {t('common:actions.delete')}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
       </motion.div>
     </AppLayout>
   );

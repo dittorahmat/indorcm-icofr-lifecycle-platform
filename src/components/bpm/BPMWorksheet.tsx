@@ -50,6 +50,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 import { useUnsavedChangesContext } from '@/context/UnsavedChangesContext';
+import { useConfirm } from '@/hooks/use-confirm';
 
 interface BPMWorksheetProps {
   bpmProcessId: string;
@@ -60,6 +61,7 @@ interface BPMWorksheetProps {
 }
 
 export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, workingYear }: BPMWorksheetProps) {
+  const confirm = useConfirm();
   const { t } = useTranslation(['bpm', 'common']);
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -80,9 +82,14 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
     });
   }, [setSearchParams]);
 
-  const handleCloseDiagram = () => {
-    if (isDirty && !window.confirm(t('common:unsavedChanges.description'))) {
-      return;
+  const handleCloseDiagram = async () => {
+    if (isDirty) {
+      const ok = await confirm({
+        title: t('common:unsavedChanges.title'),
+        description: t('common:unsavedChanges.description'),
+        variant: 'destructive'
+      });
+      if (!ok) return;
     }
     setSearchParams(prev => {
       const next = new URLSearchParams(prev);
@@ -271,8 +278,13 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
           variant="ghost"
           size="icon"
           className="h-7 w-7 text-slate-300 hover:text-red-600 transition-colors"
-          onClick={() => {
-            if (confirm("Delete this row?")) {
+          onClick={async () => {
+            const ok = await confirm({
+              title: t('common:actions.deletePermanently'),
+              description: "Delete this Risk-Control mapping row? All associated worksheet inputs for this row will be deleted permanently.",
+              variant: 'destructive'
+            });
+            if (ok) {
               deleteMutation.mutate(row.original.id);
             }
           }}
@@ -584,7 +596,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
         </Select>
       )
     }
-  ], [apps?.items, diagrams?.items, handleOpenDiagram, createDiagramMutation, debouncedUpdate, updateMutation, deleteMutation, elcControls, t]);
+  ], [apps?.items, diagrams?.items, handleOpenDiagram, createDiagramMutation, debouncedUpdate, updateMutation, deleteMutation, elcControls, t, confirm]);
 
   const table = useReactTable({
     data: controls || [],

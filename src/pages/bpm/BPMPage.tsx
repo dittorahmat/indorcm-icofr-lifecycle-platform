@@ -21,6 +21,7 @@ import {
   DialogTitle, DialogFooter 
 } from '@/components/ui/dialog';
 import { motion, Variants } from 'framer-motion';
+import { useConfirm } from '@/hooks/use-confirm';
 
 import { PageHeader } from '@/components/layout/PageHeader';
 import { 
@@ -55,6 +56,7 @@ const itemVariants: Variants = {
 };
 
 export function BPMPage() {
+  const confirm = useConfirm();
   const {
     t,
     viewYear,
@@ -248,8 +250,13 @@ export function BPMPage() {
                       setSelectedBpmName(name);
                       setIsModalOpen(true);
                     }}
-                    onDeleteProcess={(id, name) => {
-                      if (confirm(t('bpm:deleteConfirm', { name }))) {
+                    onDeleteProcess={async (id, name) => {
+                      const ok = await confirm({
+                        title: t('common:actions.deletePermanently'),
+                        description: t('bpm:deleteConfirm', { name }),
+                        variant: 'destructive'
+                      });
+                      if (ok) {
                         deleteBPMMutation.mutate(id);
                       }
                     }}

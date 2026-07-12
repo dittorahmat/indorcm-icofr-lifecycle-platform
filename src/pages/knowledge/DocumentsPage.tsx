@@ -19,8 +19,10 @@ import { UploadDocumentModal } from './UploadDocumentModal';
 import { authClient } from '@/lib/auth-client';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { useTranslation } from 'react-i18next';
+import { useConfirm } from '@/hooks/use-confirm';
 
 export const DocumentsPage = () => {
+  const confirm = useConfirm();
   const { t } = useTranslation(['knowledge', 'common']);
   const [activeTab, setActiveTab] = useState('internal');
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -152,8 +154,14 @@ export const DocumentsPage = () => {
                               className="text-red-500 hover:text-red-700 hover:bg-red-50" 
                               title={t('common:actions.delete')}
                               disabled={deleteMutation.isPending}
-                              onClick={() => {
-                                if (confirm(t('delete.confirm'))) {
+                              onClick={async () => {
+                                const ok = await confirm({
+                                  title: t('common:actions.deletePermanently'),
+                                  description: t('delete.confirm') || 'Delete this document?',
+                                  confirmText: t('common:actions.delete'),
+                                  variant: 'destructive'
+                                });
+                                if (ok) {
                                   deleteMutation.mutate(doc.id);
                                 }
                               }}

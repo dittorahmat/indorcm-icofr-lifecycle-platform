@@ -8,6 +8,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useCSAForm, CSAFormValues } from './csa/use-csa-form';
 export type { CSAFormValues };
 import { useCSADiagramLink } from './csa/use-csa-diagram-link';
+import { useConfirm } from './use-confirm';
 
 interface UseCSAProps {
   bpmProcessId: string;
@@ -17,6 +18,7 @@ interface UseCSAProps {
 }
 
 export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls: propControls = [] }: UseCSAProps) {
+  const confirm = useConfirm();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const [view, setView] = useState<'list' | 'form'>('list');
@@ -295,8 +297,13 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
     setIsInitialized(true);
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm("Hapus asesmen ini secara permanen? Data sampel dan bukti juga akan terhapus.")) {
+  const handleDelete = async (id: string) => {
+    const ok = await confirm({
+      title: "Hapus Asesmen",
+      description: "Hapus asesmen ini secara permanen? Data sampel dan bukti juga akan terhapus.",
+      variant: 'destructive'
+    });
+    if (ok) {
       deleteMutation.mutate(id);
     }
   };

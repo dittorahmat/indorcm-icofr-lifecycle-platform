@@ -16,6 +16,7 @@ import { AddVendorDialog } from '@/components/audit/AddVendorDialog';
 import { AddSOCReportDialog } from '@/components/audit/AddSOCReportDialog';
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { toast } from 'sonner';
+import { useConfirm } from '@/hooks/use-confirm';
 
 import { 
   Tooltip,
@@ -27,6 +28,7 @@ import {
 import { PageHeader } from '@/components/layout/PageHeader';
 
 export function SOCMonitoringPage() {
+  const confirm = useConfirm();
   const { t } = useTranslation(['sidebar', 'rcm', 'scoping', 'common']);
   const queryClient = useQueryClient();
   const [selectedReport, setSelectedReport] = React.useState<SOCReport | null>(null);
@@ -176,8 +178,14 @@ export function SOCMonitoringPage() {
                                 variant="ghost" 
                                 size="icon" 
                                 className="h-8 w-8 text-slate-400 hover:text-destructive" 
-                                onClick={() => {
-                                  if (confirm("Remove application from library?")) {
+                                onClick={async () => {
+                                  const ok = await confirm({
+                                    title: "Remove Application",
+                                    description: `Are you sure you want to remove application "${app.name}" from library? This will delete all scoping and RCM associations for this application.`,
+                                    confirmText: t('common:actions.delete'),
+                                    variant: 'destructive'
+                                  });
+                                  if (ok) {
                                     deleteAppMutation.mutate(app.id);
                                   }
                                 }}
