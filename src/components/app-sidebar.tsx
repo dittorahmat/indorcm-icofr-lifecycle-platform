@@ -246,16 +246,6 @@ export function AppSidebar(): JSX.Element {
           </SidebarGroupLabel>
           <SidebarMenu className="px-3 gap-1">
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/testing?type=TOD")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
-                <Link to="/testing?type=TOD" className="font-semibold text-sm"><Search className="h-4 w-4" /> <span>{t('items.tod')}</span></Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/testing?type=TOE")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
-                <Link to="/testing?type=TOE" className="font-semibold text-sm"><History className="h-4 w-4" /> <span>{t('items.toe')}</span></Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/deficiencies")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
                 <Link to="/deficiencies" className="flex items-center justify-between w-full font-semibold text-sm">
                   <div className="flex items-center gap-2">
