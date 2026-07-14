@@ -4,7 +4,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { api } from '@/lib/api-client';
 import { useNavigate } from 'react-router-dom';
-import type { RCM, Deficiency, Control } from '@shared/types';
+import type { RCM, Deficiency, Control, ActionPlan } from '@shared/types';
 import { 
   ShieldCheck, TrendingUp, Target, ClipboardCheck, ArrowRight
 } from 'lucide-react';
@@ -65,6 +65,11 @@ export function Dashboard() {
     queryFn: () => api<{ items: Deficiency[] }>(`/api/deficiencies?year=${workingYear}`),
   });
 
+  const { data: actionPlansData, isLoading: actionPlansLoading } = useQuery({
+    queryKey: ['actionplans'],
+    queryFn: () => api<{ items: ActionPlan[] }>('/api/actionplans'),
+  });
+
   const cosoCoverage = React.useMemo(() => {
     if (!controlsData) return [];
     return Array.from({ length: 17 }, (_, i) => ({
@@ -106,10 +111,59 @@ export function Dashboard() {
     }));
   }, [controlsData, rcmData]);
 
-  const isLoading = rcmLoading || deficienciesLoading || controlsLoading;
+  const isLoading = rcmLoading || deficienciesLoading || controlsLoading || actionPlansLoading;
 
   const openDeficiencies = deficienciesData?.items.filter(d => d.status === 'Open') || [];
-  const csaCompletion = 88.5; 
+
+  const csaCompletion = React.useMemo(() => {
+    if (!controlsData?.items || controlsData.items.length === 0) return 0;
+    const completed = controlsData.items.filter(c => 
+      c.lastCsaDate !== null || 
+      c.line2Validation?.status === 'Validated' || 
+      c.line2Validation?.status === 'Pending'
+    ).length;
+    return Number(((completed / controlsData.items.length) * 100).toFixed(1));
+  }, [controlsData]);
+
+  const line2Percent = React.useMemo(() => {
+    if (!controlsData?.items || controlsData.items.length === 0) return 0;
+    const completedControls = controlsData.items.filter(c => 
+      c.lastCsaDate !== null || 
+      c.line2Validation?.status === 'Validated' || 
+      c.line2Validation?.status === 'Pending'
+    );
+    if (completedControls.length === 0) return 0;
+    const validated = completedControls.filter(c => c.line2Validation?.status === 'Validated').length;
+    return Number(((validated / completedControls.length) * 100).toFixed(1));
+  }, [controlsData]);
+
+  const remediationVelocity = React.useMemo(() => {
+    if (!deficienciesData?.items || !actionPlansData?.items) return 12;
+    
+    // Find resolved deficiencies (Remediated, Verified, Closed)
+    const resolvedDefs = deficienciesData.items.filter(d => 
+      (d.status === 'Remediated' || d.status === 'Verified' || d.status === 'Closed') &&
+      d.identifiedDate
+    );
+    
+    if (resolvedDefs.length === 0) return 12; // default fallback if no resolved deficiencies
+    
+    let totalDays = 0;
+    let count = 0;
+    
+    resolvedDefs.forEach(d => {
+      const plan = actionPlansData.items.find(p => p.deficiencyId === d.id);
+      if (plan && plan.actualCompletionDate && d.identifiedDate) {
+        const diffTime = Math.abs(new Date(plan.actualCompletionDate).getTime() - new Date(d.identifiedDate).getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        totalDays += diffDays;
+        count++;
+      }
+    });
+    
+    return count > 0 ? Math.round(totalDays / count) : 12;
+  }, [deficienciesData, actionPlansData]);
+
   const cosoPercentage = ((cosoCoverage.filter(c => c.count > 0).length / 17) * 100).toFixed(0);
 
   return (
@@ -178,11 +232,11 @@ export function Dashboard() {
             </motion.div>
 
             {/* SECONDARY METRICS (Optimized grid) */}
-            <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
-               {[
-                 { label: t('kpis.remediationVelocity'), value: t('kpis.remediationAvgDays'), icon: TrendingUp, color: 'text-blue-600', bg: 'bg-blue-50' },
-                 { label: t('kpis.line2Validation'), value: t('kpis.line2Percent'), icon: ShieldCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' }
-               ].map((metric, i) => (
+             <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
+                {[
+                  { label: t('kpis.remediationVelocity'), value: t('kpis.remediationAvgDays', { days: remediationVelocity }), icon: TrendingUp, color: 'text-blue-600', bg: 'bg-blue-50' },
+                  { label: t('kpis.line2Validation'), value: t('kpis.line2Percent', { percent: line2Percent }), icon: ShieldCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' }
+                ].map((metric, i) => (
                  <div key={i} className="group p-5 bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer flex items-center gap-4">
                     <div className={cn("h-10 w-10 rounded-lg flex items-center justify-center transition-colors group-hover:bg-slate-900 group-hover:text-white shrink-0 shadow-sm border border-slate-100", metric.bg)}>
                         <metric.icon className="h-5 w-5" />

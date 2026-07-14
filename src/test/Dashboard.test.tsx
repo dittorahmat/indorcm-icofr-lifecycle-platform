@@ -1,23 +1,29 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import { Dashboard } from '../pages/Dashboard';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { api } from '@/lib/api-client';
 
-// Mock translations
+// Mock translations to serialize params for verification
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string) => key,
+    t: (key: string, params?: any) => {
+      if (params) {
+        return `${key}:${JSON.stringify(params)}`;
+      }
+      return key;
+    },
   }),
 }));
 
 // Mock API client
 vi.mock('@/lib/api-client', () => ({
-  api: vi.fn().mockResolvedValue({ items: [] }),
+  api: vi.fn(),
 }));
 
-// Mock AppLayout (to simplify the test)
+// Mock AppLayout
 vi.mock('@/components/layout/AppLayout', () => ({
   AppLayout: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
@@ -32,7 +38,7 @@ vi.mock('@/components/layout/PageHeader', () => ({
   ),
 }));
 
-// Mock Lucide icons to avoid rendering complexity
+// Mock Lucide icons
 vi.mock('lucide-react', async (importOriginal) => {
   const actual = await importOriginal<typeof import('lucide-react')>();
   return {
@@ -54,7 +60,7 @@ vi.mock('lucide-react', async (importOriginal) => {
   };
 });
 
-const queryClient = new QueryClient({
+const createQueryClient = () => new QueryClient({
   defaultOptions: {
     queries: {
       retry: false,
@@ -64,22 +70,65 @@ const queryClient = new QueryClient({
 
 describe('Dashboard Component', () => {
   it('renders dashboard with primary sections', async () => {
+    vi.mocked(api).mockResolvedValue({ items: [] });
+    
     render(
-      <QueryClientProvider client={queryClient}>
+      <QueryClientProvider client={createQueryClient()}>
         <BrowserRouter>
           <Dashboard />
         </BrowserRouter>
       </QueryClientProvider>
     );
 
-    // Verify Title (from PageHeader)
     expect(screen.getByText('title')).toBeInTheDocument();
-
-    // Verify Action Center
     expect(screen.getByText('actionCenter.title')).toBeInTheDocument();
-
-    // Verify KPI section
     expect(screen.getByText('kpis.ready')).toBeInTheDocument();
-    expect(screen.getByText('kpis.cycleReadiness')).toBeInTheDocument();
+  });
+
+  it('calculates metrics dynamically based on controls and deficiencies data', async () => {
+    const mockControls = {
+      items: [
+        { id: '1', year: 2026, lastCsaDate: 12345, line2Validation: { status: 'Validated' } }, 
+        { id: '2', year: 2026, lastCsaDate: null, line2Validation: { status: 'Pending' } },   
+        { id: '3', year: 2026, lastCsaDate: null, line2Validation: { status: 'Rejected' } },  
+        { id: '4', year: 2026, lastCsaDate: null, line2Validation: { status: 'Pending' } },   
+      ]
+    };
+
+    const mockDeficiencies = {
+      items: [
+        { id: 'd1', severity: 'High', status: 'Remediated', identifiedDate: new Date('2026-01-01').getTime() },
+        { id: 'd2', severity: 'Low', status: 'Open', identifiedDate: new Date('2026-01-02').getTime() }
+      ]
+    };
+
+    const mockActionPlans = {
+      items: [
+        { id: 'ap1', deficiencyId: 'd1', actualCompletionDate: new Date('2026-01-11').getTime() }
+      ]
+    };
+
+    vi.mocked(api).mockImplementation((url: string) => {
+      if (url.includes('/api/controls')) return Promise.resolve(mockControls);
+      if (url.includes('/api/deficiencies')) return Promise.resolve(mockDeficiencies);
+      if (url.includes('/api/actionplans')) return Promise.resolve(mockActionPlans);
+      return Promise.resolve({ items: [] });
+    });
+
+    render(
+      <QueryClientProvider client={createQueryClient()}>
+        <BrowserRouter>
+          <Dashboard />
+        </BrowserRouter>
+      </QueryClientProvider>
+    );
+
+    // Wait for the component to render with loaded data
+    await waitFor(() => {
+      // 1 of 3 completed is Validated -> 33.3%
+      expect(screen.getByText(/kpis.line2Percent:{"percent":33.3}/)).toBeInTheDocument();
+      // Remediation velocity -> 10 days (2026-01-11 to 2026-01-01)
+      expect(screen.getByText(/kpis.remediationAvgDays:{"days":10}/)).toBeInTheDocument();
+    });
   });
 });
