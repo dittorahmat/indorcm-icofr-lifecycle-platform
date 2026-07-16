@@ -21,7 +21,7 @@ import {
   FileText, Database, Activity, GitCommit, PlayCircle, StopCircle, 
   Save, AlertTriangle, ShieldCheck, Info, X, RefreshCw, Link as LinkIcon, Workflow, Trash2, 
   Search, PlusCircle, LayoutDashboard, ChevronRight, GripVertical, Check, ChevronsUpDown,
-  Layout, Layers, Hexagon, Monitor, Clock, HardDrive, Columns, CreditCard, Sliders, ArrowUp, ArrowDown, HelpCircle, Hash
+  Layout, Layers, Hexagon, Monitor, Clock, HardDrive, Columns, CreditCard, Sliders, ArrowUp, ArrowDown, HelpCircle, Hash, Upload
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
@@ -60,6 +60,7 @@ import {
   DirectAccessNode, DisplayNode, LoopLimitNode, AnnotationNode
 } from './nodes/BPMCustomNodes';
 import { BPMCanvasHeader, BPMCanvasFooter } from './nodes/BPMCanvasLayout';
+import { BridgeEdge } from './edges/BridgeEdge';
 
 import {
   AlertDialog,
@@ -79,7 +80,7 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Upload } from "lucide-react";
+
 
 
 // --- React Flow Node Types Mapping ---
@@ -124,6 +125,10 @@ const nodeTypes = {
   system: AutomatedActivityNode,
   'docked-risk': RiskControlBadge,
   'docked-control': RiskControlBadge,
+};
+
+const edgeTypes = {
+  bridge: BridgeEdge,
 };
 
 const initialNodes = [
@@ -287,6 +292,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
       source: e.source,
       target: e.target,
       label: e.label || '',
+      type: 'bridge',
       markerEnd: {
         type: MarkerType.ArrowClosed,
         width: 20,
@@ -382,9 +388,13 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
   const { data: activeSnap } = useSimulationSnapshot(activeSim?.glSnapshotId);
 
   const [selectedGLs, setSelectedGLs] = useState<string[]>([]);
+  const [globalScale, setGlobalScale] = useState<number>(100);
 
   useEffect(() => {
     if (diagram) {
+      if (diagram.metadata?.globalScale) {
+        setGlobalScale(diagram.metadata.globalScale);
+      }
       if (diagram.noGLs && diagram.noGLs.length > 0) {
         setSelectedGLs(diagram.noGLs);
       } else if (currentGL) {
@@ -525,8 +535,11 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
                         signatures.cfoName !== initialCfoName ||
                         signatures.cfoDate !== initialCfoDate;
 
-    return currentNodes !== originalNodes || currentEdges !== originalEdges || sigsChanged;
-  }, [nodes, edges, diagram, isLocked, localizedInitialNodes, signatures, bpmProcess, getUserName]);
+    const savedScale = diagram.metadata?.globalScale || 100;
+    const scaleChanged = globalScale !== savedScale;
+
+    return currentNodes !== originalNodes || currentEdges !== originalEdges || sigsChanged || scaleChanged;
+  }, [nodes, edges, diagram, isLocked, localizedInitialNodes, signatures, bpmProcess, getUserName, globalScale]);
 
   // Sync isDirty with global context using the unique ID hook
   useUnsavedChanges(isDirty || isExporting);
@@ -624,6 +637,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
       setNodes(initialNodesWithHandlers);
       setEdges((diagram.edges || []).map((edge: any) => ({
         ...edge,
+        type: 'bridge',
         markerEnd: { 
           type: MarkerType.ArrowClosed,
           width: 20,
@@ -868,6 +882,10 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
                    <ReactFlow
                       nodes={nodes}
                       edges={edges}
+                      style={{ 
+                        '--bpm-global-width-scale': globalScale / 100, 
+                        '--bpm-global-font-scale': globalScale / 100 
+                      } as React.CSSProperties}
                       onInit={(instance) => {
                          setRfInstance(instance);
                          // Auto fit on load
@@ -904,6 +922,10 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
           <ReactFlow
             nodes={nodes}
             edges={edges}
+            style={{ 
+              '--bpm-global-width-scale': globalScale / 100, 
+              '--bpm-global-font-scale': globalScale / 100 
+            } as React.CSSProperties}
             onInit={setRfInstance}
             onNodesChange={isLocked ? undefined : onNodesChange}
             onEdgesChange={isLocked ? undefined : onEdgesChange}
@@ -917,6 +939,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
             onDrop={onDrop}
             onConnect={isLocked ? undefined : (params) => setEdges((eds) => addEdge({ 
               ...params, 
+              type: 'bridge',
               markerEnd: { 
                 type: MarkerType.ArrowClosed, width: 20, height: 20, color: '#0f172a'
               },
@@ -930,6 +953,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
             }}
             onPaneClick={() => setSelectedNodeId(null)}
             nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
             fitView
           >
             <Background gap={16} size={1} color="hsl(var(--border))" />
@@ -974,6 +998,20 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
                 </PopoverContent>
               </Popover>
 
+              <div className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-xl px-2.5 h-9 shadow-sm">
+                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-0.5">Scale:</span>
+                <Select value={String(globalScale)} onValueChange={(val) => setGlobalScale(Number(val))}>
+                  <SelectTrigger className="h-7 w-[75px] text-xs font-bold border-none bg-transparent focus:ring-0 p-0 shadow-none">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="80" className="text-xs">80%</SelectItem>
+                    <SelectItem value="100" className="text-xs">100%</SelectItem>
+                    <SelectItem value="120" className="text-xs">120%</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               {!isLocked && (
                 <Button 
                   size="sm" 
@@ -997,7 +1035,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
                 className="h-9 gap-2 bg-mancity-pattern hover:opacity-90 text-primary-foreground shadow-sm transition-all font-bold text-[10px] uppercase tracking-widest px-6 rounded-xl" 
                 onClick={() => saveMutation.mutate({ 
                   nodes, edges, name: `Flow: ${subProcess}`, subProcess, year: diagram?.year || parseInt(workingYear), noGLs: selectedGLs,
-                  metadata: { ...diagram?.metadata, signatures }
+                  metadata: { ...diagram?.metadata, signatures, globalScale }
                 })} 
                 disabled={saveMutation.isPending || isLocked}
               >
@@ -1219,7 +1257,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
           }}
           onSave={() => saveMutation.mutate({ 
             nodes, edges, name: `Flow: ${subProcess}`, subProcess, year: diagram?.year || parseInt(workingYear), noGLs: selectedGLs,
-            metadata: { ...diagram?.metadata, signatures }
+            metadata: { ...diagram?.metadata, signatures, globalScale }
           })}
           isSaving={saveMutation.isPending}
           isDirty={isDirty}

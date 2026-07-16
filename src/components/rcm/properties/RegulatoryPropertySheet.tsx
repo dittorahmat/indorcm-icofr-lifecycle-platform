@@ -264,6 +264,38 @@ export function RegulatoryPropertySheet({
                       </div>
                     )}
                 </div>
+                <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-slate-100">
+                    <div className="space-y-2">
+                      <Label className="text-xs font-medium text-slate-700 uppercase">Node Scale Override</Label>
+                      <Select 
+                        disabled={isLocked} 
+                        value={selectedNode.data.nodeScaleOverride || 'md'} 
+                        onValueChange={(v) => onUpdateNodeData(selectedNode.id, { nodeScaleOverride: v })}
+                      >
+                        <SelectTrigger className="h-10 text-sm bg-white"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="sm">Small (Kecil)</SelectItem>
+                          <SelectItem value="md">Standard (Biasa)</SelectItem>
+                          <SelectItem value="lg">Large (Besar)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs font-medium text-slate-700 uppercase">Font Scale Override</Label>
+                      <Select 
+                        disabled={isLocked} 
+                        value={selectedNode.data.fontScaleOverride || 'md'} 
+                        onValueChange={(v) => onUpdateNodeData(selectedNode.id, { fontScaleOverride: v })}
+                      >
+                        <SelectTrigger className="h-10 text-sm bg-white"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="sm">Small (Kecil)</SelectItem>
+                          <SelectItem value="md">Standard (Biasa)</SelectItem>
+                          <SelectItem value="lg">Large (Besar)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                </div>
                 <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
                   <div className="flex flex-col gap-0.5">
                     <Label className="text-xs font-semibold text-slate-700 uppercase flex items-center gap-1.5">
