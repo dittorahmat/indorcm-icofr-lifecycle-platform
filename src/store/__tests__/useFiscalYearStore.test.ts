@@ -3,7 +3,29 @@ import { useFiscalYearStore } from '../useFiscalYearStore';
 
 describe('useFiscalYearStore', () => {
   beforeEach(() => {
-    useFiscalYearStore.setState({ workingYear: new Date().getFullYear().toString() });
+    useFiscalYearStore.setState({ 
+      workingYear: new Date().getFullYear().toString(),
+      customYears: []
+    });
+  });
+
+  it('should initialize with empty custom years', () => {
+    const { customYears } = useFiscalYearStore.getState();
+    expect(customYears).toEqual([]);
+  });
+
+  it('should add custom years without duplicates', () => {
+    const { addCustomYear } = useFiscalYearStore.getState();
+    addCustomYear('2028');
+    expect(useFiscalYearStore.getState().customYears).toEqual(['2028']);
+    
+    // Add duplicate
+    addCustomYear('2028');
+    expect(useFiscalYearStore.getState().customYears).toEqual(['2028']);
+
+    // Add another
+    addCustomYear('2029');
+    expect(useFiscalYearStore.getState().customYears).toEqual(['2028', '2029']);
   });
 
   it('should initialize with current year', () => {

@@ -81,7 +81,15 @@
     "yearCycle": "{{year}} Cycle",
     "complianceCycle": "Compliance Cycle",
     "cycleLabel": "Cycle: {{year}}",
-    "targetFiscalYear": "Target Fiscal Year"
+    "targetFiscalYear": "Target Fiscal Year",
+    "addNewYear": "Add New Year",
+    "addYearDialogTitle": "Add Fiscal Year",
+    "addYearDialogDescription": "Enter a 4-digit number to add a new fiscal year cycle.",
+    "addYearInputLabel": "Fiscal Year",
+    "addYearButton": "Add",
+    "cancelButton": "Cancel",
+    "errorInvalidYear": "Please enter a valid 4-digit year.",
+    "errorDuplicateYear": "This fiscal year already exists."
   },
   "calendar": {
     "today": "Today",

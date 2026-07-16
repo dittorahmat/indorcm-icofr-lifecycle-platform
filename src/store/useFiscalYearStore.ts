@@ -4,6 +4,8 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 interface FiscalYearState {
   workingYear: string;
   setWorkingYear: (year: string) => void;
+  customYears: string[];
+  addCustomYear: (year: string) => void;
 }
 
 // Helper to get initial year from URL or default to current year
@@ -24,6 +26,13 @@ export const useFiscalYearStore = create<FiscalYearState>()(
           url.searchParams.set('year', year);
           window.history.replaceState({}, '', url.toString());
         }
+      },
+      customYears: [],
+      addCustomYear: (year: string) => {
+        set((state) => {
+          if (state.customYears.includes(year)) return {};
+          return { customYears: [...state.customYears, year] };
+        });
       },
     }),
     {

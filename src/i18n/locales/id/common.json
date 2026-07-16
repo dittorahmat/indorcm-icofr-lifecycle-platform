@@ -81,7 +81,15 @@
     "yearCycle": "Siklus {{year}}",
     "complianceCycle": "Siklus Kepatuhan",
     "cycleLabel": "Siklus: {{year}}",
-    "targetFiscalYear": "Tahun Fiskal Target"
+    "targetFiscalYear": "Tahun Fiskal Target",
+    "addNewYear": "Tambah Tahun Baru",
+    "addYearDialogTitle": "Tambah Tahun Fiskal",
+    "addYearDialogDescription": "Masukkan 4 digit angka untuk menambahkan siklus tahun fiskal baru.",
+    "addYearInputLabel": "Tahun Fiskal",
+    "addYearButton": "Tambah",
+    "cancelButton": "Batal",
+    "errorInvalidYear": "Silakan masukkan digit tahun 4 angka yang valid.",
+    "errorDuplicateYear": "Tahun fiskal ini sudah ada."
   },
   "calendar": {
     "today": "Hari Ini",
