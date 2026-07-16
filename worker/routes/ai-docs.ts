@@ -98,47 +98,13 @@ aiDocsApp.post('/documents', async (c) => {
       title: title || file.name,
       type,
       category,
-      content: extractedText,
+      content: "",
       fileUrl: key,
       createdBy: userId,
       createdAt: new Date(),
     };
 
     await db.insert(documents).values(newDoc);
-
-    // Granular RAG Chunking
-    if (apiKey && extractedText) {
-      try {
-        const aiService = new AIService({
-          provider: (c.env.AI_PROVIDER as any) || "gemini",
-          apiKey: apiKey,
-          baseUrl: c.env.AI_BASE_URL,
-          embeddingModel: c.env.AI_EMBEDDING_MODEL,
-          chatModel: c.env.AI_CHAT_MODEL,
-        });
-        const chunks = AIService.splitIntoChunks(extractedText);
-        
-        for (let i = 0; i < chunks.length; i++) {
-          const chunkContent = chunks[i];
-          const embedding = await aiService.generateEmbedding(chunkContent);
-          
-          await db.insert(documentChunks).values({
-            id: crypto.randomUUID(),
-            organizationId: orgId,
-            documentId: docId,
-            content: chunkContent,
-            embedding,
-            ftsTokens: sql`to_tsvector('indonesian', ${chunkContent})`,
-            metadata: { pagePart: i + 1 }
-          });
-          
-          // Small delay for rate limits in 2026 free-tier if applicable
-          if (chunks.length > 1) await new Promise(r => setTimeout(r, 100));
-        }
-      } catch (err: any) {
-        console.error('[API] Granular RAG processing failed:', err.message);
-      }
-    }
 
     for (const dId of deptIds) {
       await db.insert(documentDepartments).values({ id: crypto.randomUUID(), organizationId: orgId, documentId: docId, departmentId: dId });
@@ -148,6 +114,71 @@ aiDocsApp.post('/documents', async (c) => {
     }
     for (const fCode of fsliCodes) {
       await db.insert(documentFslis).values({ id: crypto.randomUUID(), organizationId: orgId, documentId: docId, fsliCode: fCode });
+    }
+
+    const processDocumentAsync = async () => {
+      let extractedText = "";
+      try {
+        const pdf = await getDocumentProxy(uint8Array, {
+          cMapUrl: "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/cmaps/",
+          cMapPacked: true,
+          standardFontDataUrl: "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/standard_fonts/",
+        });
+        
+        const result = await extractText(pdf, { mergePages: true });
+        extractedText = result.text || "";
+      } catch (e: any) {
+        console.error('[API] PDF extraction failed:', e.message);
+      }
+
+      if (extractedText) {
+        try {
+          await db.update(documents).set({ content: extractedText }).where(eq(documents.id, docId));
+        } catch (dbErr: any) {
+          console.error('[API] Failed to update document content:', dbErr.message);
+        }
+      }
+
+      // Granular RAG Chunking
+      if (apiKey && extractedText) {
+        try {
+          const aiService = new AIService({
+            provider: (c.env.AI_PROVIDER as any) || "gemini",
+            apiKey: apiKey,
+            baseUrl: c.env.AI_BASE_URL,
+            embeddingModel: c.env.AI_EMBEDDING_MODEL,
+            chatModel: c.env.AI_CHAT_MODEL,
+          });
+          const chunks = AIService.splitIntoChunks(extractedText);
+          
+          for (let i = 0; i < chunks.length; i++) {
+            const chunkContent = chunks[i];
+            const embedding = await aiService.generateEmbedding(chunkContent);
+            
+            await db.insert(documentChunks).values({
+              id: crypto.randomUUID(),
+              organizationId: orgId,
+              documentId: docId,
+              content: chunkContent,
+              embedding,
+              ftsTokens: sql`to_tsvector('indonesian', ${chunkContent})`,
+              metadata: { pagePart: i + 1 }
+            });
+            
+            // Small delay for rate limits in 2026 free-tier if applicable
+            if (chunks.length > 1) await new Promise(r => setTimeout(r, 100));
+          }
+        } catch (err: any) {
+          console.error('[API] Granular RAG processing failed:', err.message);
+        }
+      }
+    };
+
+    if (c.executionCtx) {
+      c.executionCtx.waitUntil(processDocumentAsync());
+    } else {
+      // Fallback for environments where executionCtx is not present (like local testing)
+      await processDocumentAsync();
     }
 
     return ok(c, { ...newDoc, success: true });
