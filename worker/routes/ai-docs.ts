@@ -61,12 +61,12 @@ aiDocsApp.post('/documents', async (c) => {
     const title = formData.get('title') as string;
     const type = formData.get('type') as string;
     const category = formData.get('category') as string;
+    const content = formData.get('content') as string || '';
     const deptIds = JSON.parse(formData.get('departmentIds') as string || '[]');
     const glCodes = JSON.parse(formData.get('glCodes') as string || '[]');
     const fsliCodes = JSON.parse(formData.get('fsliCodes') as string || '[]');
 
     const arrayBuffer = await file.arrayBuffer();
-    const uint8Array = new Uint8Array(arrayBuffer);
 
     const key = `docs/${orgId}/${crypto.randomUUID()}-${file.name}`;
     const bucket = getStorageBucket(c);
@@ -83,7 +83,7 @@ aiDocsApp.post('/documents', async (c) => {
       title: title || file.name,
       type,
       category,
-      content: "",
+      content,
       fileUrl: key,
       createdBy: userId,
       createdAt: new Date(),
@@ -102,31 +102,8 @@ aiDocsApp.post('/documents', async (c) => {
     }
 
     const processDocumentAsync = async () => {
-      let extractedText = "";
-      try {
-        const { getDocumentProxy, extractText } = await import("unpdf");
-        const pdf = await getDocumentProxy(uint8Array, {
-          cMapUrl: "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/cmaps/",
-          cMapPacked: true,
-          standardFontDataUrl: "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/standard_fonts/",
-        });
-        
-        const result = await extractText(pdf, { mergePages: true });
-        extractedText = result.text || "";
-      } catch (e: any) {
-        console.error('[API] PDF extraction failed:', e.message);
-      }
-
-      if (extractedText) {
-        try {
-          await db.update(documents).set({ content: extractedText }).where(eq(documents.id, docId));
-        } catch (dbErr: any) {
-          console.error('[API] Failed to update document content:', dbErr.message);
-        }
-      }
-
       // Granular RAG Chunking
-      if (apiKey && extractedText) {
+      if (apiKey && content) {
         try {
           const aiService = new AIService({
             provider: (c.env.AI_PROVIDER as any) || "gemini",
@@ -135,7 +112,7 @@ aiDocsApp.post('/documents', async (c) => {
             embeddingModel: c.env.AI_EMBEDDING_MODEL,
             chatModel: c.env.AI_CHAT_MODEL,
           });
-          const chunks = AIService.splitIntoChunks(extractedText);
+          const chunks = AIService.splitIntoChunks(content);
           
           for (let i = 0; i < chunks.length; i++) {
             const chunkContent = chunks[i];

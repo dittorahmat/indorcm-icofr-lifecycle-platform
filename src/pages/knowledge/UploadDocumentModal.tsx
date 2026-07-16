@@ -24,6 +24,32 @@ interface UploadDocumentModalProps {
   onClose: () => void;
 }
 
+async function extractTextFromPdf(file: File): Promise<string> {
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdfjsLib = await import('pdfjs-dist');
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.worker.min.mjs`;
+    
+    const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+    const pdf = await loadingTask.promise;
+    let fullText = '';
+    
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items
+        .map((item: any) => item.str || '')
+        .join(' ');
+      fullText += pageText + '\n';
+    }
+    
+    return fullText;
+  } catch (error) {
+    console.error('Client-side PDF text extraction failed:', error);
+    return '';
+  }
+}
+
 export function UploadDocumentModal({ isOpen, onClose }: UploadDocumentModalProps) {
   const { t } = useTranslation(['knowledge', 'common']);
   const queryClient = useQueryClient();
@@ -32,6 +58,7 @@ export function UploadDocumentModal({ isOpen, onClose }: UploadDocumentModalProp
   const [type, setType] = useState('Internal');
   const [category, setCategory] = useState('SOP');
   const [selectedDepts, setSelectedDepts] = useState<string[]>([]);
+  const [isExtracting, setIsExtracting] = useState(false);
 
   const { data: depts } = useQuery({
     queryKey: ['departments'],
@@ -46,15 +73,28 @@ export function UploadDocumentModal({ isOpen, onClose }: UploadDocumentModalProp
         throw new Error(t('upload.labelFile') + ' is required');
       }
 
+      setIsExtracting(true);
+      let extractedText = '';
+      try {
+        console.log('[FRONTEND] Extracting text from PDF in browser...');
+        extractedText = await extractTextFromPdf(file);
+        console.log('[FRONTEND] PDF text extraction complete, length:', extractedText.length);
+      } catch (err) {
+        console.warn('[FRONTEND] Failed to extract text from PDF in browser:', err);
+      } finally {
+        setIsExtracting(false);
+      }
+
       const formData = new FormData();
       formData.append('file', file);
       formData.append('title', title);
       formData.append('type', type);
       formData.append('category', category);
+      formData.append('content', extractedText);
       formData.append('departmentIds', JSON.stringify(selectedDepts));
       
       console.log('[FRONTEND] Sending POST /api/documents with data:', {
-        title, type, category, departmentCount: selectedDepts.length
+        title, type, category, departmentCount: selectedDepts.length, contentSize: extractedText.length
       });
 
       const res = await fetch('/api/documents', {
@@ -179,10 +219,10 @@ export function UploadDocumentModal({ isOpen, onClose }: UploadDocumentModalProp
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={uploadMutation.isPending}>{t('common:actions.cancel')}</Button>
-          <Button onClick={() => uploadMutation.mutate()} disabled={!file || uploadMutation.isPending}>
-            {uploadMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
-            {t('upload.submit')}
+          <Button variant="outline" onClick={onClose} disabled={uploadMutation.isPending || isExtracting}>{t('common:actions.cancel')}</Button>
+          <Button onClick={() => uploadMutation.mutate()} disabled={!file || uploadMutation.isPending || isExtracting}>
+            {(uploadMutation.isPending || isExtracting) ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+            {isExtracting ? 'Extracting PDF...' : t('upload.submit')}
           </Button>
         </DialogFooter>
       </DialogContent>
