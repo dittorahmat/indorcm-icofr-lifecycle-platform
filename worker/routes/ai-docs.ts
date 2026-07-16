@@ -5,7 +5,6 @@ import { getDb } from '../db';
 import { getStorageBucket } from '../lib/storage';
 import { documents, documentDepartments, documentGls, documentFslis, user, documentChunks, csaSchedules } from '../db/schema';
 import { eq, and, desc, sql } from 'drizzle-orm';
-import { getDocumentProxy, extractText } from "unpdf";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { ICOFR_KNOWLEDGE_BASE } from '../knowledge-base';
 import { AIService } from '../services/ai-service';
@@ -69,20 +68,6 @@ aiDocsApp.post('/documents', async (c) => {
     const arrayBuffer = await file.arrayBuffer();
     const uint8Array = new Uint8Array(arrayBuffer);
 
-    let extractedText = "";
-    try {
-      const pdf = await getDocumentProxy(uint8Array, {
-        cMapUrl: "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/cmaps/",
-        cMapPacked: true,
-        standardFontDataUrl: "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/standard_fonts/",
-      });
-      
-      const result = await extractText(pdf, { mergePages: true });
-      extractedText = result.text || "";
-    } catch (e: any) {
-      console.error('[API] PDF extraction failed:', e.message);
-    }
-
     const key = `docs/${orgId}/${crypto.randomUUID()}-${file.name}`;
     const bucket = getStorageBucket(c);
     await bucket.put(key, arrayBuffer, {
@@ -119,6 +104,7 @@ aiDocsApp.post('/documents', async (c) => {
     const processDocumentAsync = async () => {
       let extractedText = "";
       try {
+        const { getDocumentProxy, extractText } = await import("unpdf");
         const pdf = await getDocumentProxy(uint8Array, {
           cMapUrl: "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/cmaps/",
           cMapPacked: true,
