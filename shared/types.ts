@@ -433,6 +433,7 @@ export interface Settings {
   smtpPort?: number;
   smtpUser?: string;
   smtpPass?: string;
+  customYears?: number[];
 }
 
 export interface LoginCredentials {

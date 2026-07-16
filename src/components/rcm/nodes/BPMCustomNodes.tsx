@@ -16,6 +16,30 @@ import { useTranslation } from 'react-i18next';
 
 // --- Tooltip Component ---
 
+// Utility helper to calculate custom nodes width and font classes dynamically
+export const getNodeStyles = (data: any, baseWidth: number = 160) => {
+  const nodeScale = data?.nodeScaleOverride || 'md';
+  const fontScale = data?.fontScaleOverride || 'md';
+
+  // Calculate width override
+  let nodeWidth = baseWidth;
+  if (nodeScale === 'sm') nodeWidth = Math.round(baseWidth * 0.8);
+  else if (nodeScale === 'lg') nodeWidth = Math.round(baseWidth * 1.25);
+
+  // Font size styles
+  let fontSizeClass = 'text-xs';
+  if (fontScale === 'sm') fontSizeClass = 'text-[10px]';
+  else if (fontScale === 'lg') fontSizeClass = 'text-sm';
+
+  return {
+    style: {
+      width: `${nodeWidth}px`,
+    },
+    fontClass: fontSizeClass
+  };
+};
+
+
 export const NodeTooltip = ({ children, data, type }: { children: React.ReactNode, data: any, type: string }) => {
   return (
     <TooltipProvider delayDuration={300}>

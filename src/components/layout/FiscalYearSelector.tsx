@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 import { useTranslation } from 'react-i18next';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '@/lib/api-client';
+import { Settings } from '@shared/types';
 import {
   Select,
   SelectContent,
@@ -33,13 +36,19 @@ export function FiscalYearSelector() {
   const [newYearInput, setNewYearInput] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
+  // Fetch settings to sync custom years with database
+  const { data: settings, refetch: refetchSettings } = useQuery<Settings>({
+    queryKey: ['settings'],
+    queryFn: () => api<Settings>('/api/settings'),
+  });
+
   const currentYear = new Date().getFullYear();
   const years = React.useMemo(() => {
     const list = [];
     for (let i = currentYear - 3; i <= currentYear + 1; i++) {
       list.push(i.toString());
     }
-    // Merge custom years that are not already in the list
+    // Merge custom years that are not already in the list (from local store)
     if (customYears) {
       customYears.forEach((y) => {
         if (!list.includes(y)) {
@@ -47,8 +56,17 @@ export function FiscalYearSelector() {
         }
       });
     }
+    // Merge custom years from database settings
+    if (settings?.customYears) {
+      settings.customYears.forEach((yNum) => {
+        const y = yNum.toString();
+        if (!list.includes(y)) {
+          list.push(y);
+        }
+      });
+    }
     return list.sort((a, b) => parseInt(a) - parseInt(b));
-  }, [currentYear, customYears]);
+  }, [currentYear, customYears, settings]);
 
   const handleOpenDialog = () => {
     // Propose the next logical year
@@ -58,7 +76,7 @@ export function FiscalYearSelector() {
     setIsDialogOpen(true);
   };
 
-  const handleAddYear = () => {
+  const handleAddYear = async () => {
     // Validate year format
     const yearNum = parseInt(newYearInput, 10);
     if (isNaN(yearNum) || newYearInput.trim().length !== 4 || !/^\d{4}$/.test(newYearInput.trim())) {
@@ -72,12 +90,32 @@ export function FiscalYearSelector() {
       return;
     }
 
-    // Success: add custom year and switch to it
+    // Success: add custom year locally and switch to it
     addCustomYear(yearStr);
     setWorkingYear(yearStr);
     setIsDialogOpen(false);
     setNewYearInput('');
     setErrorMessage('');
+
+    // Persist custom year to the database settings
+    if (settings) {
+      const dbCustomYears = settings.customYears || [];
+      if (!dbCustomYears.includes(yearNum)) {
+        try {
+          const updatedSettings = {
+            ...settings,
+            customYears: [...dbCustomYears, yearNum],
+          };
+          await api('/api/settings', {
+            method: 'PUT',
+            body: JSON.stringify(updatedSettings),
+          });
+          refetchSettings();
+        } catch (err) {
+          console.error('Failed to persist custom year to database:', err);
+        }
+      }
+    }
   };
 
   return (

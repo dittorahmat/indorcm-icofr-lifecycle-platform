@@ -189,6 +189,7 @@ users.get('/settings', async (c) => {
     smtpPort: meta.smtpPort || 587,
     smtpUser: meta.smtpUser || '',
     smtpPass: meta.smtpPass || '',
+    customYears: meta.customYears || [],
   };
 
   return ok(c, settings);
@@ -218,6 +219,7 @@ users.put('/settings', async (c) => {
     smtpPort: body.smtpPort,
     smtpUser: body.smtpUser,
     smtpPass: body.smtpPass,
+    customYears: body.customYears,
   };
 
   await db.update(organization)
