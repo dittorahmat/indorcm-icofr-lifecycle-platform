@@ -195,6 +195,12 @@ export function BridgeEdge({
   const edges = useStore((state) => state.edges);
   const nodeInternals = useStore((state) => state.nodeInternals);
 
+  // Subscribe to all node positions to force recalculating intersections in real-time during drags
+  useStore((state) => {
+    const nodeArray = Array.from(state.nodeInternals.values());
+    return nodeArray.map((n) => `${n.id}:${n.position.x},${n.position.y}`).join('|');
+  });
+
   // 1. Get base Bezier curve path for current edge
   const [basePath] = getBezierPath({
     sourceX,

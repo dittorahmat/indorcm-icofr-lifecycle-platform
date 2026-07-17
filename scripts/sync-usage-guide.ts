@@ -23,7 +23,8 @@ async function sync() {
     process.exit(1);
   }
 
-  const content = fs.readFileSync(GUIDE_PATH, "utf-8");
+  const rawContent = fs.readFileSync(GUIDE_PATH, "utf-8");
+  const content = rawContent.replace(/\r\n/g, "\n");
   const hash = crypto.createHash("sha256").update(content).digest("hex");
 
   const directUrl = DATABASE_URL.replace('-pooler', '');
