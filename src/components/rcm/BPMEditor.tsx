@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import ReactFlow, {
   addEdge,
   MiniMap,
@@ -144,6 +145,7 @@ interface BPMEditorProps {
 
 export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPMEditorProps) {
   const { t } = useTranslation(['risklibrary', 'common', 'bpm']);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [documentView, setDocumentView] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
@@ -543,6 +545,28 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
 
   // Sync isDirty with global context using the unique ID hook
   useUnsavedChanges(isDirty || isExporting);
+
+  const handleSwitchGLContext = useCallback((targetGL: string) => {
+    if (targetGL === currentGL) return;
+    
+    if (isDirty) {
+      if (!window.confirm(t('common:unsavedChanges.description'))) {
+        return;
+      }
+    }
+
+    const matchedRow = activeSnap?.rows?.find((r: any) => r.noGL === targetGL);
+    const glDesc = matchedRow?.glDesc || 'No Description';
+
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev);
+      next.set('noGL', targetGL);
+      next.set('glDesc', glDesc);
+      return next;
+    });
+
+    toast.success(t('bpm:editor.toast.contextSwitched', { defaultValue: `Switched context to ${targetGL}` }));
+  }, [currentGL, isDirty, activeSnap, setSearchParams, t]);
 
   const toggleNodeLock = useCallback((nodeId: string) => {
     setNodes(nds => nds.map(node => {
@@ -983,17 +1007,54 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[320px] p-4" align="end">
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     <div className="space-y-1">
                       <h4 className="font-bold text-xs uppercase tracking-wider text-slate-700">Link GL Codes</h4>
                       <p className="text-[10px] text-slate-400">Pilih akun GL yang menggunakan diagram alur proses ini.</p>
                     </div>
-                    <MultiSelect
-                      options={glOptions}
-                      selected={selectedGLs}
-                      onChange={setSelectedGLs}
-                      placeholder="Search and select GLs..."
-                    />
+
+                    {selectedGLs.length > 0 && (
+                      <div className="space-y-1.5 border-b border-slate-100 pb-3">
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Switch Context</span>
+                        <div className="flex flex-col gap-1 max-h-[120px] overflow-y-auto pr-1 scrollbar-thin">
+                          {selectedGLs.map(glCode => {
+                            const opt = glOptions.find(o => o.value === glCode);
+                            const label = opt ? opt.label : glCode;
+                            const isActive = glCode === currentGL;
+                            return (
+                              <button
+                                key={glCode}
+                                type="button"
+                                onClick={() => handleSwitchGLContext(glCode)}
+                                className={cn(
+                                  "w-full text-left px-2 py-1.5 rounded-lg text-xs transition-all flex items-center justify-between font-medium",
+                                  isActive 
+                                    ? "bg-emerald-50 text-emerald-700 font-bold border border-emerald-100" 
+                                    : "hover:bg-slate-50 text-slate-600 hover:text-slate-900"
+                                )}
+                              >
+                                <span className="truncate flex-1 pr-2">{label}</span>
+                                {isActive ? (
+                                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
+                                ) : (
+                                  <LinkIcon className="h-3 w-3 text-slate-400 hover:text-indigo-500 transition-colors shrink-0" />
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="space-y-2">
+                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Manage Link GLs</span>
+                      <MultiSelect
+                        options={glOptions}
+                        selected={selectedGLs}
+                        onChange={setSelectedGLs}
+                        placeholder="Search and select GLs..."
+                      />
+                    </div>
                   </div>
                 </PopoverContent>
               </Popover>
