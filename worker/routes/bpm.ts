@@ -282,6 +282,20 @@ bpm.get('/bpm-processes/:id/controls', async (c) => {
   return ok(c, { items });
 });
 
+bpm.get('/bpm-processes/:id/next-sequences', async (c) => {
+  const db = getDb(c.env.DATABASE_URL);
+  const bpmService = new BpmService(db);
+  const id = c.req.param('id');
+  const orgId = c.get('organizationId')!;
+
+  try {
+    const result = await bpmService.getNextSequences(orgId, id!);
+    return ok(c, result);
+  } catch (e: any) {
+    return bad(c, e.message);
+  }
+});
+
 bpm.post('/bpm-processes', rbac(['Line 1', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const bpmService = new BpmService(db);

@@ -33,6 +33,7 @@ export function useBPMPage() {
 
   const [isCreatingBPM, setIsCreatingBPM] = React.useState(false);
   const [bpmName, setBpmName] = React.useState("");
+  const [bpmCode, setBpmCode] = React.useState("");
   const [searchTerm, setSearchTerm] = React.useState("");
   const [selectedProcess, setSelectedProcess] = React.useState<BPMProcess | null>(null);
 
@@ -262,9 +263,33 @@ export function useBPMPage() {
       queryClient.invalidateQueries({ queryKey: ['bpm-processes'] });
       setIsCreatingBPM(false);
       setBpmName("");
+      setBpmCode("");
       toast.success(t('common:notifications.created'));
     }
   });
+
+  const setBpmNameWithFuzzy = (name: string) => {
+    setBpmName(name);
+    if (!bpmProcesses?.items) return;
+    
+    const searchStr = name.toLowerCase();
+    const exactMatch = bpmProcesses.items.find(p => p.name.toLowerCase() === searchStr);
+    
+    if (exactMatch?.bpmCode) {
+      setBpmCode(exactMatch.bpmCode);
+      return;
+    }
+    
+    const words = searchStr.split(' ').filter(w => w.length >= 3);
+    if (words.length > 0) {
+      const similar = bpmProcesses.items.find(p => 
+        p.bpmCode && words.some(w => p.name.toLowerCase().includes(w))
+      );
+      if (similar?.bpmCode) {
+        setBpmCode(similar.bpmCode);
+      }
+    }
+  };
 
   const deleteBPMMutation = useMutation({
     mutationFn: (id: string) => api(`/api/bpm-processes/${id}`, { method: 'DELETE' }),
@@ -301,7 +326,9 @@ export function useBPMPage() {
     isCreatingBPM,
     setIsCreatingBPM,
     bpmName,
-    setBpmName,
+    setBpmName: setBpmNameWithFuzzy,
+    bpmCode,
+    setBpmCode,
     searchTerm,
     setSearchTerm,
     selectedProcess,

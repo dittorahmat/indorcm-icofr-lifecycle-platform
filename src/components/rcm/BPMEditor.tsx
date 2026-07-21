@@ -1323,6 +1323,8 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
           isSaving={saveMutation.isPending}
           isDirty={isDirty}
           isLocked={isLocked}
+          bpmProcessId={bpmProcess?.id}
+          nodes={nodes}
         />
 
         <AlertDialog open={!!impactData} onOpenChange={(open) => !open && setImpactData(null)}>

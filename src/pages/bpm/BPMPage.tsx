@@ -79,6 +79,8 @@ export function BPMPage() {
     setIsCreatingBPM,
     bpmName,
     setBpmName,
+    bpmCode,
+    setBpmCode,
     searchTerm,
     setSearchTerm,
     selectedProcess,
@@ -364,12 +366,22 @@ export function BPMPage() {
                   className="h-10 bg-slate-50 border-slate-200 focus:bg-white transition-all rounded-lg font-bold"
                 />
               </div>
+              <div className="space-y-2">
+                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 px-1">BPM Code</Label>
+                <Input 
+                  placeholder="e.g. FIN-01" 
+                  value={bpmCode} 
+                  onChange={e => setBpmCode(e.target.value.toUpperCase())} 
+                  className="h-10 bg-slate-50 border-slate-200 focus:bg-white transition-all rounded-lg font-bold uppercase"
+                />
+              </div>
               <DialogFooter className="gap-2">
                 <Button variant="ghost" onClick={() => setIsCreatingBPM(false)} className="font-bold text-[10px] uppercase tracking-widest text-slate-400 hover:text-slate-600">{t('common:actions.cancel')}</Button>
                 <Button 
-                  disabled={!bpmName || createBPMMutation.isPending} 
+                  disabled={!bpmName || !bpmCode || createBPMMutation.isPending} 
                   onClick={() => createBPMMutation.mutate({ 
                     name: bpmName, 
+                    bpmCode,
                     noGL: selectedGLRow?.noGL || "", 
                     fsliName: selectedFsli,
                     year: parseInt(viewYear)

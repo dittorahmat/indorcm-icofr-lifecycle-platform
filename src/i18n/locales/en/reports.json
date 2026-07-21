@@ -59,5 +59,14 @@
       "result": "Result",
       "notes": "Walkthrough / Notes"
     }
+  },
+  "customizableDashboard": {
+    "title": "Workspace Customization",
+    "saving": "Saving changes...",
+    "widgetCatalog": "Widget Catalog",
+    "closeCatalog": "Close Catalog",
+    "resetLayout": "Reset Layout",
+    "addRemoveWidgets": "Add/Remove Widgets",
+    "active": "Active"
   }
 }

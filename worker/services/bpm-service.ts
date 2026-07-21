@@ -9,16 +9,29 @@ import { AuditService } from './audit-service';
 
 export function extractBaseId(id: string): string {
   if (!id) return id;
-  // Ensure the ID starts with R- or C- followed by digits (standard format)
-  if (!/^([RC]-\d+)/i.test(id)) {
-    return id;
+  
+  const legacyMatch = id.match(/^([RC]-\d+)(?:-(.+))?$/i);
+  if (legacyMatch) {
+    return legacyMatch[1];
   }
-  const match = id.match(/^([RC]-\d+)(?:-[\w]+)?$/i);
-  if (match) {
-    return match[1];
-  }
+
   const parts = id.split('-');
   if (parts.length > 1) {
+    let seqIndex = -1;
+    for (let i = 1; i < parts.length; i++) {
+      if (/^\d{3,}$/.test(parts[i])) { // Require at least 3 digits to be confident it's a seq
+        seqIndex = i;
+        break;
+      }
+    }
+    
+    if (seqIndex !== -1) {
+      if (seqIndex < parts.length - 1) {
+        return parts.slice(0, seqIndex + 1).join('-');
+      }
+      return id;
+    }
+
     const lastPart = parts[parts.length - 1];
     if (/^\d+$/.test(lastPart) || lastPart.length >= 4) {
       return parts.slice(0, -1).join('-');
@@ -127,11 +140,11 @@ export class BpmService {
         }
 
         const regulatoryPairs = selectedMappings.map((m: any) => ({
-          riskId: m.risk.id,
+          riskId: extractBaseId(m.risk.id),
           riskDescription: m.risk.riskDescription,
           isFraudRelated: m.risk.isFraudRelated,
           riskRating: m.risk.riskRating,
-          controlId: m.map?.controlId || (noGL ? `C-TBD-${noGL}` : 'C-TBD'),
+          controlId: m.map?.controlId ? extractBaseId(m.map.controlId) : (noGL ? `C-TBD-${noGL}` : 'C-TBD'),
           controlDescription: m.map?.controlDescription || '',
           isKeyControl: m.map?.isKeyControl || false,
           classification: m.map?.controlType || 'TLC',
@@ -752,6 +765,55 @@ export class BpmService {
     })
     .from(bpmProcesses)
     .where(conditions);
+  }
+
+  async getNextSequences(orgId: string, processId: string) {
+    const processes = await this.db.select().from(bpmProcesses).where(and(eq(bpmProcesses.id, processId), eq(bpmProcesses.organizationId, orgId))).limit(1);
+    if (processes.length === 0) throw new Error("Process not found");
+    const process = processes[0];
+    const bpmCode = process.bpmCode || 'DEFAULT';
+
+    const riskPrefix = `R-${bpmCode}-`;
+    const controlPrefix = `C-${bpmCode}-`;
+
+    const risks = await this.db.select({ id: rcms.id }).from(rcms).where(
+      and(
+        eq(rcms.organizationId, orgId),
+        like(rcms.id, `${riskPrefix}%`)
+      )
+    );
+    const ctrls = await this.db.select({ id: controls.id }).from(controls).where(
+      and(
+        eq(controls.organizationId, orgId),
+        like(controls.id, `${controlPrefix}%`)
+      )
+    );
+
+    const parseSeq = (id: string, prefix: string) => {
+      const remainder = id.substring(prefix.length);
+      const match = remainder.match(/^(\d+)/);
+      if (match) {
+        return parseInt(match[1], 10);
+      }
+      return 0;
+    };
+
+    let maxRisk = 0;
+    for (const r of risks) {
+      const seq = parseSeq(r.id, riskPrefix);
+      if (seq > maxRisk) maxRisk = seq;
+    }
+
+    let maxCtrl = 0;
+    for (const c of ctrls) {
+      const seq = parseSeq(c.id, controlPrefix);
+      if (seq > maxCtrl) maxCtrl = seq;
+    }
+
+    const nextRiskId = `${riskPrefix}${(maxRisk + 1).toString().padStart(4, '0')}`;
+    const nextControlId = `${controlPrefix}${(maxCtrl + 1).toString().padStart(4, '0')}`;
+
+    return { nextRiskId, nextControlId, bpmCode };
   }
 
   async handleWorkflowAction(orgId: string, userId: string, role: string, id: string, body: { action: any, note: string, assigneeId?: string }) {

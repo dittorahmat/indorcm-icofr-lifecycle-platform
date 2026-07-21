@@ -17,6 +17,7 @@ import { useTranslation } from 'react-i18next';
 // --- Tooltip Component ---
 
 // Utility helper to calculate custom nodes width and font classes dynamically
+// eslint-disable-next-line react-refresh/only-export-components
 export const getNodeStyles = (data: any, baseWidth: number = 160) => {
   const nodeScale = data?.nodeScaleOverride || 'md';
   const fontScale = data?.fontScaleOverride || 'md';

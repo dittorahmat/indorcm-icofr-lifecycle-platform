@@ -59,5 +59,14 @@
       "result": "Hasil",
       "notes": "Walkthrough / Catatan"
     }
+  },
+  "customizableDashboard": {
+    "title": "Kustomisasi Halaman",
+    "saving": "Menyimpan perubahan...",
+    "widgetCatalog": "Katalog Widget",
+    "closeCatalog": "Tutup Katalog",
+    "resetLayout": "Atur Ulang Layout",
+    "addRemoveWidgets": "Tambah/Hapus Widget",
+    "active": "Aktif"
   }
 }

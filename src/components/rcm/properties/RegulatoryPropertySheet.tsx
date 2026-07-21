@@ -43,6 +43,8 @@ interface RegulatoryPropertySheetProps {
   isSaving?: boolean;
   isDirty?: boolean;
   isLocked?: boolean;
+  bpmProcessId?: string;
+  nodes?: Node[];
 }
 
 function EntityHistoryList({ entityId }: { entityId: string }) {
@@ -88,7 +90,9 @@ export function RegulatoryPropertySheet({
   onSave,
   isSaving = false,
   isDirty = false,
-  isLocked = false
+  isLocked = false,
+  bpmProcessId,
+  nodes = []
 }: RegulatoryPropertySheetProps) {
   const { t } = useTranslation(['bpm', 'rcm', 'common', 'risklibrary']);
   const [isConfirmDiscardOpen, setIsConfirmDiscardOpen] = React.useState(false);
@@ -99,6 +103,12 @@ export function RegulatoryPropertySheet({
     const skipTypes = ['start', 'end', 'reference', 'swimlane'];
     return !skipTypes.includes(selectedNode.type);
   }, [selectedNode]);
+
+  const { data: sequenceData } = useQuery({
+    queryKey: ['bpm-next-sequences', bpmProcessId],
+    queryFn: () => api<{nextRiskSeq: number, nextControlSeq: number, bpmCode: string}>(`/api/bpm-processes/${bpmProcessId}/next-sequences`),
+    enabled: !!bpmProcessId
+  });
 
   // SUPPORT MULTIPLE PAIRS: Convert single legacy object or hydrated array
   const pairs = useMemo(() => {
@@ -112,8 +122,8 @@ export function RegulatoryPropertySheet({
     const groups: Record<string, { risk: any, controls: { data: any, index: number }[] }> = {};
     
     pairs.forEach((p: any, index: number) => {
-      // Use temporary internal ID for grouping if riskId is not yet assigned
-      const rId = p.riskId || p._tempRiskId || 'R-PENDING';
+      // Use stable internal ID for grouping so typing riskId doesn't re-key components
+      const rId = p._tempRiskId || p.riskId || `R-GROUP-${index}`;
       if (!groups[rId]) {
         groups[rId] = { risk: p, controls: [] };
       }
@@ -122,6 +132,17 @@ export function RegulatoryPropertySheet({
     
     return Object.values(groups);
   }, [pairs, selectedNode]);
+
+  // --- Duplicate ID Detection ---
+  const duplicateRiskIds = useMemo(() => {
+    const riskIds = pairs.map((p: any) => p.riskId?.trim()).filter(Boolean);
+    return new Set(riskIds.filter((id: string, idx: number) => riskIds.indexOf(id) !== idx));
+  }, [pairs]);
+
+  const duplicateControlIds = useMemo(() => {
+    const ctrlIds = pairs.map((p: any) => p.controlId?.trim()).filter(Boolean);
+    return new Set(ctrlIds.filter((id: string, idx: number) => ctrlIds.indexOf(id) !== idx));
+  }, [pairs]);
 
   const handleClose = () => {
     if (isDirty) {
@@ -152,9 +173,31 @@ export function RegulatoryPropertySheet({
     onUpdateNodeData(selectedNode.id, { regulatoryPairs: nextPairs });
   };
 
+  const generateNewIds = (type: 'risk' | 'control', offset: number = 0) => {
+    if (!sequenceData || !sequenceData.bpmCode) {
+       return `${type === 'risk' ? 'R' : 'C'}-${crypto.randomUUID().substring(0, 8)}`;
+    }
+    const bpmCode = sequenceData.bpmCode;
+    let maxVal = type === 'risk' ? sequenceData.nextRiskSeq - 1 : sequenceData.nextControlSeq - 1;
+
+    nodes.forEach(node => {
+        const nodePairs = node.data?.regulatoryPairs || (node.data?.regulatoryData ? [node.data.regulatoryData] : []);
+        nodePairs.forEach((p: any) => {
+           const id = type === 'risk' ? (p.riskId || p._tempRiskId) : (p.controlId || p._tempControlId);
+           if (id && typeof id === 'string' && id.startsWith(`${type === 'risk' ? 'R' : 'C'}-${bpmCode}-`)) {
+              const parts = id.split('-');
+              const seq = parseInt(parts[2], 10);
+              if (!isNaN(seq) && seq > maxVal) maxVal = seq;
+           }
+        });
+    });
+
+    return `${type === 'risk' ? 'R' : 'C'}-${bpmCode}-${(maxVal + 1 + offset).toString().padStart(4, '0')}`;
+  };
+
   const addNewRisk = () => {
-    const tempId = `R-${crypto.randomUUID().substring(0, 8)}`;
-    const ctrlId = `C-${crypto.randomUUID().substring(0, 8)}`;
+    const tempId = generateNewIds('risk');
+    const ctrlId = generateNewIds('control');
     const nextPairs = [...pairs, {
       _tempRiskId: tempId,
       _tempControlId: ctrlId,
@@ -173,7 +216,7 @@ export function RegulatoryPropertySheet({
 
   const addControlToRisk = (riskKey: string) => {
     const template = pairs.find((p: any) => (p.riskId === riskKey || p._tempRiskId === riskKey));
-    const ctrlId = `C-${crypto.randomUUID().substring(0, 8)}`;
+    const ctrlId = generateNewIds('control');
     const nextPairs = [...pairs, {
       ...template,
       controlId: ctrlId,
@@ -333,7 +376,7 @@ export function RegulatoryPropertySheet({
                   )}
 
                   {groupedRisks.map((group, gIdx) => (
-                    <div key={group.risk.riskId || group.risk._tempRiskId} className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+                    <div key={group.risk._tempRiskId || group.risk.riskId || `g-${gIdx}`} className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
                       {/* RISK HEADER CARD */}
                       <div className="bg-red-50/30 border-2 border-red-100 rounded-2xl overflow-hidden shadow-sm shadow-red-50">
                         <div className="bg-red-600 px-4 py-2 flex justify-between items-center text-white">
@@ -342,8 +385,24 @@ export function RegulatoryPropertySheet({
                             <h3 className="text-xs font-black uppercase tracking-widest">{t('rcm:matrix.properties.id_risiko')} #{gIdx + 1}</h3>
                           </div>
                           <div className="flex items-center gap-3">
-                            <Badge className="bg-red-800 text-xs font-mono border-none">{group.risk.riskId || 'PENDING ID'}</Badge>
-                            <Button disabled={isLocked} variant="ghost" size="icon" className="h-6 w-6 text-red-200 hover:text-white hover:bg-red-700" onClick={() => setDeleteConfirm({ type: 'risk', id: group.risk.riskId || group.risk._tempRiskId })}>
+                            <div className="flex items-center gap-2">
+                              {duplicateRiskIds.has(group.risk.riskId?.trim()) && (
+                                <Badge variant="destructive" className="h-5 px-1.5 text-[9px] font-black uppercase animate-pulse">
+                                  Duplikat ID!
+                                </Badge>
+                              )}
+                              <Input 
+                                disabled={isLocked}
+                                className={cn(
+                                  "h-7 w-40 bg-red-800 border-none text-xs font-mono text-white focus-visible:ring-red-400 placeholder:text-red-400",
+                                  duplicateRiskIds.has(group.risk.riskId?.trim()) && "ring-2 ring-amber-300 bg-red-950 font-black"
+                                )}
+                                value={group.risk.riskId || ''} 
+                                onChange={(e) => updateAllPairsForRisk(group.risk._tempRiskId || group.risk.riskId, 'riskId', e.target.value)}
+                                placeholder="PENDING ID"
+                              />
+                            </div>
+                            <Button disabled={isLocked} variant="ghost" size="icon" className="h-6 w-6 text-red-200 hover:text-white hover:bg-red-700" onClick={() => setDeleteConfirm({ type: 'risk', id: group.risk._tempRiskId || group.risk.riskId })}>
                               <Trash2 className="h-3 w-3" />
                             </Button>
                           </div>
@@ -354,7 +413,7 @@ export function RegulatoryPropertySheet({
                             <Textarea 
                               disabled={isLocked}
                               value={group.risk.riskDescription || ''} 
-                              onChange={(e) => updateAllPairsForRisk(group.risk.riskId || group.risk._tempRiskId, 'riskDescription', e.target.value)}
+                              onChange={(e) => updateAllPairsForRisk(group.risk._tempRiskId || group.risk.riskId, 'riskDescription', e.target.value)}
                               className="min-h-[80px] text-sm border-red-200 bg-white focus-visible:ring-red-500"
                               placeholder={t('common:placeholders.description')}
                             />
@@ -363,7 +422,7 @@ export function RegulatoryPropertySheet({
                           <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                               <Label className="text-xs font-black uppercase text-red-900/50">{t('rcm:matrix.properties.terkait_fraud')}</Label>
-                              <Select disabled={isLocked} value={group.risk.isFraudRelated ? 'Yes' : 'No'} onValueChange={(v) => updateAllPairsForRisk(group.risk.riskId || group.risk._tempRiskId, 'isFraudRelated', v === 'Yes')}>
+                              <Select disabled={isLocked} value={group.risk.isFraudRelated ? 'Yes' : 'No'} onValueChange={(v) => updateAllPairsForRisk(group.risk._tempRiskId || group.risk.riskId, 'isFraudRelated', v === 'Yes')}>
                                 <SelectTrigger className="h-9 text-sm bg-white border-red-200"><SelectValue /></SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="Yes">{t('common:yes')}</SelectItem>
@@ -373,7 +432,7 @@ export function RegulatoryPropertySheet({
                             </div>
                             <div className="space-y-2">
                               <Label className="text-xs font-black uppercase text-red-900/50">{t('rcm:matrix.properties.risk_rating_label')}</Label>
-                              <Select disabled={isLocked} value={group.risk.riskRating || 'Low'} onValueChange={(v: QualitativeLevel) => updateAllPairsForRisk(group.risk.riskId || group.risk._tempRiskId, 'riskRating', v)}>
+                              <Select disabled={isLocked} value={group.risk.riskRating || 'Low'} onValueChange={(v: QualitativeLevel) => updateAllPairsForRisk(group.risk._tempRiskId || group.risk.riskId, 'riskRating', v)}>
                                 <SelectTrigger className="h-9 text-sm bg-white border-red-200"><SelectValue /></SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="Low">Low</SelectItem>
@@ -389,7 +448,7 @@ export function RegulatoryPropertySheet({
                               disabled={isLocked}
                               variant="outline" 
                               className="w-full h-10 border-2 border-dashed border-indigo-200 bg-indigo-50/50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs gap-2" 
-                              onClick={() => addControlToRisk(group.risk.riskId || group.risk._tempRiskId)}
+                              onClick={() => addControlToRisk(group.risk._tempRiskId || group.risk.riskId)}
                             >
                               <PlusCircle className="h-4 w-4" /> {t('rcm:matrix.properties.add_control')}
                             </Button>
@@ -400,7 +459,7 @@ export function RegulatoryPropertySheet({
                       {/* CONTROLS LIST (Nested) */}
                       <Accordion type="single" collapsible className="ml-8 space-y-4">
                         {group.controls.map((ctrl, cIdx) => (
-                          <AccordionItem key={ctrl.data.controlId || ctrl.data._tempControlId} value={ctrl.data.controlId || ctrl.data._tempControlId} className="bg-white border rounded-xl shadow-sm overflow-hidden">
+                          <AccordionItem key={ctrl.data._tempControlId || `ctrl-${ctrl.index}`} value={ctrl.data._tempControlId || `ctrl-${ctrl.index}`} className="bg-white border rounded-xl shadow-sm overflow-hidden">
                               <AccordionTrigger className="px-4 py-3 hover:no-underline bg-slate-50/50">
                                 <div className="flex items-center gap-4 flex-1">
                                     <div className="flex items-center gap-2">
@@ -415,7 +474,21 @@ export function RegulatoryPropertySheet({
                                           </SelectContent>
                                       </Select>
                                       <span className="text-xs font-bold text-slate-700">Kontrol #{cIdx + 1}</span>
-                                      <Badge variant="outline" className="text-xs font-mono border-slate-200 bg-slate-50 text-slate-500 uppercase">{ctrl.data.controlId || 'PENDING'}</Badge>
+                                      <Input 
+                                        disabled={isLocked}
+                                        className={cn(
+                                          "h-7 w-40 text-xs font-mono border-slate-200 bg-slate-50 text-slate-700 uppercase focus-visible:ring-slate-300",
+                                          duplicateControlIds.has(ctrl.data.controlId?.trim()) && "border-rose-500 bg-rose-50 text-rose-900 font-black ring-2 ring-rose-200"
+                                        )}
+                                        value={ctrl.data.controlId || ''} 
+                                        onChange={(e) => updateSpecificControl(ctrl.index, 'controlId', e.target.value)}
+                                        placeholder="PENDING ID"
+                                      />
+                                      {duplicateControlIds.has(ctrl.data.controlId?.trim()) && (
+                                        <Badge variant="destructive" className="h-5 px-1.5 text-[9px] font-black uppercase animate-pulse">
+                                          Duplikat!
+                                        </Badge>
+                                      )}
                                     </div>
                                 </div>
                                 <Button 

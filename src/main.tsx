@@ -1,3 +1,6 @@
+if (typeof window !== 'undefined') {
+  (window as any).process = { env: { NODE_ENV: import.meta.env.MODE || 'development' } };
+}
 import React, { StrictMode, lazy, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider, Navigate, Outlet } from "react-router-dom";

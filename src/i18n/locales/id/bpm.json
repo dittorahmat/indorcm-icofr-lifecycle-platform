@@ -108,11 +108,13 @@
     }
   },
   "modal": {
-    "title": "Business Process Mapping",
+    "title": "Pemetaan Proses Bisnis",
+    "processCode": "Kode Proses",
+    "processCodePlaceholder": "Cth: AP",
     "owner": "Pemilik Departemen",
     "deleteTitle": "Hapus {{type}}?",
     "usedInCount": "Digunakan di <strong>{{count}}</strong> tempat.",
-    "undoWarning": "Tindakan ini tidak dapat dibatalkan.",
+    "undoWarning": "Ini tidak dapat dibatalkan.",
     "tabs": {
       "worksheet": "Lembar Kerja",
       "sampling": "Detail Transaksi",

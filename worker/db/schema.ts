@@ -900,3 +900,14 @@ export const controlRelations = relations(controls, ({ many }) => ({
 	rcmMappings: many(rcmControls),
 	todEvaluations: many(todEvaluations),
 }));
+
+export const userPreferences = pgTable("user_preferences", {
+	userId: text("user_id").primaryKey().references(() => user.id, { onDelete: "cascade" }),
+	layout: jsonb("layout").$type<any>(),
+	updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const userPreferencesRelations = relations(userPreferences, ({ one }) => ({
+	user: one(user, { fields: [userPreferences.userId], references: [user.id] }),
+}));
+

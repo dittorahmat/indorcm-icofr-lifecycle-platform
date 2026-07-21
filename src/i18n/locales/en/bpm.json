@@ -106,6 +106,8 @@
   },
   "modal": {
     "title": "Business Process Mapping",
+    "processCode": "Process Code",
+    "processCodePlaceholder": "e.g. AP",
     "owner": "Department Owner",
     "deleteTitle": "Delete {{type}}?",
     "usedInCount": "Used in <strong>{{count}}</strong> places.",

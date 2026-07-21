@@ -4,7 +4,7 @@ import { ok, bad, notFound } from '../lib/utils';
 import { getDb } from '../db';
 import { 
   user, organization, auditLogs, member, departments,
-  testRecords, testSamples
+  testRecords, testSamples, userPreferences
 } from '../db/schema';
 import { eq, sql, and } from 'drizzle-orm';
 import type { Settings } from "@shared/types";
@@ -28,6 +28,40 @@ users.get('/user/me', async (c) => {
     ...currentUser[0],
     organizationId: orgId
   });
+});
+
+users.get('/user/preferences', async (c) => {
+  const db = getDb(c.env.DATABASE_URL);
+  const userId = c.get('userId');
+
+  const pref = await db.select().from(userPreferences).where(eq(userPreferences.userId, userId)).limit(1);
+  if (pref.length === 0) {
+    return ok(c, { layout: null });
+  }
+
+  return ok(c, { layout: pref[0].layout });
+});
+
+users.put('/user/preferences', async (c) => {
+  const db = getDb(c.env.DATABASE_URL);
+  const userId = c.get('userId');
+  const body = await c.req.json<any>();
+
+  const existing = await db.select().from(userPreferences).where(eq(userPreferences.userId, userId)).limit(1);
+  if (existing.length === 0) {
+    await db.insert(userPreferences).values({
+      userId,
+      layout: body.layout,
+      updatedAt: new Date(),
+    });
+  } else {
+    await db.update(userPreferences).set({
+      layout: body.layout,
+      updatedAt: new Date(),
+    }).where(eq(userPreferences.userId, userId));
+  }
+
+  return ok(c, { success: true });
 });
 
 users.get('/users', async (c) => {
