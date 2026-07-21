@@ -14,6 +14,8 @@ let dbInstance: DrizzleDb | null = null;
 let lastUrl: string | null = null;
 let hasLoggedDriver = false;
 
+let poolInstance: Pool | null = null;
+
 export const getDb = (url?: string): DrizzleDb => {
   const dbUrl = url || (typeof process !== 'undefined' ? process.env.DATABASE_URL : undefined);
 
@@ -32,12 +34,20 @@ export const getDb = (url?: string): DrizzleDb => {
   const isCloudflare = typeof navigator !== 'undefined' && navigator.userAgent === 'Cloudflare-Workers';
   const isNode = typeof process !== 'undefined' && process.release && process.release.name === 'node';
 
-  // 2. Only cache globally for Node.js (persistent on-premise processes)
-  if (!isCloudflare && dbInstance && lastUrl === dbUrl) {
+  // If URL changed, reset cached instances
+  if (lastUrl && lastUrl !== dbUrl) {
+    dbInstance = null;
+    if (poolInstance) {
+      try { poolInstance.end(); } catch (_) {}
+      poolInstance = null;
+    }
+  }
+  lastUrl = dbUrl;
+
+  // 2. Cache globally for Node.js (persistent on-premise processes)
+  if (!isCloudflare && dbInstance) {
     return dbInstance;
   }
-
-  lastUrl = dbUrl;
 
   if (isNode && !isCloudflare) {
     if (!hasLoggedDriver) {
@@ -49,7 +59,7 @@ export const getDb = (url?: string): DrizzleDb => {
     return dbInstance!;
   }
 
-  // 3. Serverless/Edge Runtime (Cloudflare Workers - instantiate fresh to avoid terminated WebSocket pools)
+  // 3. Serverless/Edge Runtime (Cloudflare Workers)
   if (dbUrl.startsWith('http://') || dbUrl.startsWith('https://')) {
     if (!hasLoggedDriver) {
       console.log('📦 Database Driver: neon-http (HTTP Stateless - No Transaction support)');
@@ -62,7 +72,20 @@ export const getDb = (url?: string): DrizzleDb => {
       console.log('📦 Database Driver: neon-serverless (WebSocket Pool - Supports Transactions)');
       hasLoggedDriver = true;
     }
-    const pool = new Pool({ connectionString: dbUrl });
-    return drizzleWs(pool, { schema }) as any;
+
+    if (!poolInstance) {
+      poolInstance = new Pool({ connectionString: dbUrl });
+      poolInstance.on('error', (err) => {
+        console.warn('⚠️ Neon WebSocket Pool connection error, resetting pool:', err.message || err);
+        poolInstance = null;
+        dbInstance = null;
+      });
+    }
+
+    if (!dbInstance) {
+      dbInstance = drizzleWs(poolInstance, { schema }) as any;
+    }
+
+    return dbInstance!;
   }
 };
