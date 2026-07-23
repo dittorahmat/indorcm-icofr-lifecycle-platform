@@ -21,6 +21,12 @@ if [ "$LOCAL" != "$REMOTE" ]; then
     # Install dependencies baru jika ada
     bun install
     
+    # Jalankan migrasi database
+    if [ -f .env ]; then
+        export $(cat .env | grep -v '^#' | xargs)
+    fi
+    bunx drizzle-kit push --force
+    
     # Build ulang frontend untuk Apache
     bun run build
     
