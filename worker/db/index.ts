@@ -14,8 +14,6 @@ let dbInstance: DrizzleDb | null = null;
 let lastUrl: string | null = null;
 let hasLoggedDriver = false;
 
-let poolInstance: Pool | null = null;
-
 export const getDb = (url?: string): DrizzleDb => {
   const dbUrl = url || (typeof process !== 'undefined' ? process.env.DATABASE_URL : undefined);
 
@@ -37,10 +35,6 @@ export const getDb = (url?: string): DrizzleDb => {
   // If URL changed, reset cached instances
   if (lastUrl && lastUrl !== dbUrl) {
     dbInstance = null;
-    if (poolInstance) {
-      try { poolInstance.end(); } catch (_) {}
-      poolInstance = null;
-    }
   }
   lastUrl = dbUrl;
 
@@ -73,19 +67,13 @@ export const getDb = (url?: string): DrizzleDb => {
       hasLoggedDriver = true;
     }
 
-    if (!poolInstance) {
-      poolInstance = new Pool({ connectionString: dbUrl });
-      poolInstance.on('error', (err) => {
-        console.warn('⚠️ Neon WebSocket Pool connection error, resetting pool:', err.message || err);
-        poolInstance = null;
-        dbInstance = null;
+    const pool = new Pool({ connectionString: dbUrl });
+    if (typeof (pool as any).on === 'function') {
+      (pool as any).on('error', (err: any) => {
+        console.warn('⚠️ Neon WebSocket Pool connection error:', err.message || err);
       });
     }
 
-    if (!dbInstance) {
-      dbInstance = drizzleWs(poolInstance, { schema }) as any;
-    }
-
-    return dbInstance!;
+    return drizzleWs(pool, { schema }) as any;
   }
 };
