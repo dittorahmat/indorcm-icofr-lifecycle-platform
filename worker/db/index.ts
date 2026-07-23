@@ -6,6 +6,7 @@ import { drizzle as drizzlePgJs } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { PgDatabase } from 'drizzle-orm/pg-core';
 import * as schema from './schema';
+import { sql } from 'drizzle-orm';
 
 // Generic driver-agnostic type for Drizzle PostgreSQL clients
 export type DrizzleDb = PgDatabase<any, typeof schema>;
@@ -13,6 +14,27 @@ export type DrizzleDb = PgDatabase<any, typeof schema>;
 let dbInstance: DrizzleDb | null = null;
 let lastUrl: string | null = null;
 let hasLoggedDriver = false;
+let isDbFixed = false;
+
+export const fixDatabaseSchema = async (db: DrizzleDb) => {
+  if (isDbFixed) return;
+  try {
+    await db.execute(sql`ALTER TABLE gl_snapshots ADD COLUMN IF NOT EXISTS year integer;`);
+    await db.execute(sql`ALTER TABLE gl_snapshots ADD COLUMN IF NOT EXISTS "benchmarkFsliNames" jsonb;`);
+    await db.execute(sql`ALTER TABLE "account_assertions" ADD COLUMN IF NOT EXISTS "year" integer;`);
+    await db.execute(sql`ALTER TABLE "audit_logs" ADD COLUMN IF NOT EXISTS "change_category" text;`);
+    await db.execute(sql`ALTER TABLE "documents" ADD COLUMN IF NOT EXISTS "metadata" jsonb;`);
+    await db.execute(sql`CREATE TABLE IF NOT EXISTS "user_preferences" (
+      "user_id" text PRIMARY KEY NOT NULL,
+      "layout" jsonb,
+      "updated_at" timestamp DEFAULT now() NOT NULL
+    );`);
+    isDbFixed = true;
+    console.log('✅ On-premise database schema auto-migrations applied successfully.');
+  } catch (err) {
+    console.warn('⚠️ Auto schema fix failed:', err);
+  }
+};
 
 export const getDb = (url?: string): DrizzleDb => {
   const dbUrl = url || (typeof process !== 'undefined' ? process.env.DATABASE_URL : undefined);
@@ -38,29 +60,27 @@ export const getDb = (url?: string): DrizzleDb => {
   }
   lastUrl = dbUrl;
 
+  let db: DrizzleDb;
+
   // 2. Cache globally for Node.js (persistent on-premise processes)
   if (!isCloudflare && dbInstance) {
-    return dbInstance;
-  }
-
-  if (isNode && !isCloudflare) {
+    db = dbInstance;
+  } else if (isNode && !isCloudflare) {
     if (!hasLoggedDriver) {
       console.log('📦 Database Driver: postgres.js (Direct TCP Connection - On-Premise)');
       hasLoggedDriver = true;
     }
     const queryClient = postgres(dbUrl);
     dbInstance = drizzlePgJs(queryClient, { schema }) as any;
-    return dbInstance!;
-  }
-
-  // 3. Serverless/Edge Runtime (Cloudflare Workers)
-  if (dbUrl.startsWith('http://') || dbUrl.startsWith('https://')) {
+    db = dbInstance!;
+  } else if (dbUrl.startsWith('http://') || dbUrl.startsWith('https://')) {
+    // 3. Serverless/Edge Runtime (Cloudflare Workers)
     if (!hasLoggedDriver) {
       console.log('📦 Database Driver: neon-http (HTTP Stateless - No Transaction support)');
       hasLoggedDriver = true;
     }
     const client = neon(dbUrl);
-    return drizzleHttp(client, { schema }) as any;
+    db = drizzleHttp(client, { schema }) as any;
   } else {
     if (!hasLoggedDriver) {
       console.log('📦 Database Driver: neon-serverless (WebSocket Pool - Supports Transactions)');
@@ -74,6 +94,11 @@ export const getDb = (url?: string): DrizzleDb => {
       });
     }
 
-    return drizzleWs(pool, { schema }) as any;
+    db = drizzleWs(pool, { schema }) as any;
   }
+
+  // Trigger schema check/fix asynchronously
+  fixDatabaseSchema(db).catch(() => {});
+
+  return db;
 };

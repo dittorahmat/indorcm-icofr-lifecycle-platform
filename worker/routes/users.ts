@@ -311,6 +311,16 @@ users.get('/dev/fix-db', async (c) => {
     await db.execute(sql`ALTER TABLE "user" ADD COLUMN IF NOT EXISTS "language" text DEFAULT 'en';`);
     await db.execute(sql`ALTER TABLE applications ADD COLUMN IF NOT EXISTS itgc_areas jsonb DEFAULT '[]';`);
     await db.execute(sql`ALTER TABLE notifications ADD COLUMN IF NOT EXISTS type text DEFAULT 'info';`);
+    await db.execute(sql`ALTER TABLE gl_snapshots ADD COLUMN IF NOT EXISTS year integer;`);
+    await db.execute(sql`ALTER TABLE gl_snapshots ADD COLUMN IF NOT EXISTS "benchmarkFsliNames" jsonb;`);
+    await db.execute(sql`ALTER TABLE "account_assertions" ADD COLUMN IF NOT EXISTS "year" integer;`);
+    await db.execute(sql`ALTER TABLE "audit_logs" ADD COLUMN IF NOT EXISTS "change_category" text;`);
+    await db.execute(sql`ALTER TABLE "documents" ADD COLUMN IF NOT EXISTS "metadata" jsonb;`);
+    await db.execute(sql`CREATE TABLE IF NOT EXISTS "user_preferences" (
+      "user_id" text PRIMARY KEY NOT NULL,
+      "layout" jsonb,
+      "updated_at" timestamp DEFAULT now() NOT NULL
+    );`);
     
     // Task 3.4: Legacy Data Migration
     const legacyTests = await db.select().from(testRecords);
