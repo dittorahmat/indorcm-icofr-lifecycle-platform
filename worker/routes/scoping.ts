@@ -410,7 +410,8 @@ scoping.post('/gl-snapshots', async (c) => {
     uploadDate: now,
     status: 'Draft',
     isActive: false,
-    year: year ? parseInt(year as any) : undefined
+    year: year ? parseInt(year as any) : null,
+    benchmarkFsliNames: null,
   });
 
   // 2. Insert rows in batches to avoid overwhelming the DB

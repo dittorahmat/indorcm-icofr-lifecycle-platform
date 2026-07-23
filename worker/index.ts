@@ -8,7 +8,14 @@ app.get('/api/health', (c) => c.json({ success: true, data: { status: 'healthy',
 app.notFound((c) => c.json({ success: false, error: 'Not Found' }, 404));
 app.onError((err, c) => {
   console.error(`[WORKER ERROR] Path: ${c.req.path}`, err);
-  return c.json({ success: false, error: err.message || 'Internal Server Error' }, 500);
+  if (err.cause) {
+    console.error(`[WORKER ERROR CAUSE]`, err.cause);
+  }
+  return c.json({ 
+    success: false, 
+    error: err.message || 'Internal Server Error',
+    cause: err.cause ? (err.cause as any).message || String(err.cause) : undefined
+  }, 500);
 });
 
 export { app };

@@ -29,7 +29,8 @@ migration.post('/migration/finalize', async (c) => {
         uploadDate: new Date(),
         status: 'Mapped',
         isActive: true,
-        year: year ? parseInt(year) : undefined,
+        year: year ? parseInt(year) : null,
+        benchmarkFsliNames: null,
       });
 
       // Prepare GL Rows for Batch Insert

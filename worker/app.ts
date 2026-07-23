@@ -246,10 +246,14 @@ export const createApp = () => {
   // Global Error Handler
   app.onError((err, c) => {
     console.error(`[HONO ERROR] ${err.message}`, err.stack);
+    if (err.cause) {
+      console.error(`[HONO ERROR CAUSE]`, err.cause);
+    }
     return c.json({ 
       success: false, 
       error: err.name || 'Internal Server Error', 
-      message: err.message 
+      message: err.message,
+      cause: err.cause ? (err.cause as any).message || String(err.cause) : undefined
     }, 500);
   });
 
