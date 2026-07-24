@@ -61,23 +61,31 @@ export function useBPMPage() {
     });
   };
 
+  // 1. Fetch Active Simulation for Account Assignments - Filtered by viewYear
+  const { data: activeSim, isLoading: simLoading } = useActiveSimulation(viewYear);
+
+  // 2. Fetch Snapshot linked to the simulation (or fallback to active)
+  const { data: activeSnap, isLoading: snapLoading } = useSimulationSnapshot(activeSim?.glSnapshotId);
+
   // Handle Deep Linking from Scoping
   React.useEffect(() => {
     const fsli = searchParams.get('fsli');
     const noGL = searchParams.get('noGL');
     const glDesc = searchParams.get('glDesc');
 
-    if (fsli) setSelectedFsli(fsli);
+    let resolvedFsli = fsli;
+    if (noGL && activeSnap?.rows) {
+      const matchedRow = activeSnap.rows.find((r: any) => r.noGL === noGL);
+      if (matchedRow?.fsliName) {
+        resolvedFsli = matchedRow.fsliName;
+      }
+    }
+
+    if (resolvedFsli) setSelectedFsli(resolvedFsli);
     if (noGL && glDesc) {
       setSelectedAccountKey(`${noGL} ||| ${glDesc}`);
     }
-  }, [searchParams]);
-
-  // 1. Fetch Active Simulation for Account Assignments - Filtered by viewYear
-  const { data: activeSim, isLoading: simLoading } = useActiveSimulation(viewYear);
-
-  // 2. Fetch Snapshot linked to the simulation (or fallback to active)
-  const { data: activeSnap, isLoading: snapLoading } = useSimulationSnapshot(activeSim?.glSnapshotId);
+  }, [searchParams, activeSnap]);
 
   const { data: currentUser } = useQuery({
     queryKey: ['auth-me'],

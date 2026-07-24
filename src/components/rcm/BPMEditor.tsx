@@ -557,11 +557,15 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
 
     const matchedRow = activeSnap?.rows?.find((r: any) => r.noGL === targetGL);
     const glDesc = matchedRow?.glDesc || 'No Description';
+    const fsliName = matchedRow?.fsliName;
 
     setSearchParams(prev => {
       const next = new URLSearchParams(prev);
       next.set('noGL', targetGL);
       next.set('glDesc', glDesc);
+      if (fsliName) {
+        next.set('fsli', fsliName);
+      }
       return next;
     });
 
