@@ -8,6 +8,8 @@ import { PgDatabase } from 'drizzle-orm/pg-core';
 import * as schema from './schema';
 import { sql } from 'drizzle-orm';
 
+import { AsyncLocalStorage } from 'node:async_hooks';
+
 // Generic driver-agnostic type for Drizzle PostgreSQL clients
 export type DrizzleDb = PgDatabase<any, typeof schema>;
 
@@ -15,6 +17,9 @@ let dbInstance: DrizzleDb | null = null;
 let lastUrl: string | null = null;
 let hasLoggedDriver = false;
 let isDbFixed = false;
+
+// AsyncLocalStorage to share request-scoped DB instance and connection pool
+export const dbLocalStorage = new AsyncLocalStorage<{ db: DrizzleDb; pool?: Pool }>();
 
 export const fixDatabaseSchema = async (db: DrizzleDb) => {
   if (isDbFixed) return;
@@ -36,18 +41,19 @@ export const fixDatabaseSchema = async (db: DrizzleDb) => {
   }
 };
 
-export const getDb = (url?: string): DrizzleDb => {
+export const createDbAndPool = (url?: string): { db: DrizzleDb; pool?: Pool } => {
   const dbUrl = url || (typeof process !== 'undefined' ? process.env.DATABASE_URL : undefined);
 
   if (!dbUrl) {
     console.error('❌ DATABASE_URL is missing! Check your .dev.vars or .env file.');
     // Return a dummy object that throws a clearer error when used
-    return {
+    const dummyDb = {
       select: () => { throw new Error('DATABASE_URL_MISSING') },
       insert: () => { throw new Error('DATABASE_URL_MISSING') },
       update: () => { throw new Error('DATABASE_URL_MISSING') },
       delete: () => { throw new Error('DATABASE_URL_MISSING') },
     } as any;
+    return { db: dummyDb };
   }
 
   // 1. Detect runtimes
@@ -61,6 +67,7 @@ export const getDb = (url?: string): DrizzleDb => {
   lastUrl = dbUrl;
 
   let db: DrizzleDb;
+  let pool: Pool | undefined;
 
   // 2. Cache globally for Node.js (persistent on-premise processes)
   if (!isCloudflare && dbInstance) {
@@ -87,7 +94,7 @@ export const getDb = (url?: string): DrizzleDb => {
       hasLoggedDriver = true;
     }
 
-    const pool = new Pool({ connectionString: dbUrl });
+    pool = new Pool({ connectionString: dbUrl });
     if (typeof (pool as any).on === 'function') {
       (pool as any).on('error', (err: any) => {
         console.warn('⚠️ Neon WebSocket Pool connection error:', err.message || err);
@@ -100,5 +107,14 @@ export const getDb = (url?: string): DrizzleDb => {
   // Trigger schema check/fix asynchronously
   fixDatabaseSchema(db).catch(() => {});
 
-  return db;
+  return { db, pool };
 };
+
+export const getDb = (url?: string): DrizzleDb => {
+  const store = dbLocalStorage.getStore();
+  if (store) {
+    return store.db;
+  }
+  return createDbAndPool(url).db;
+};
+

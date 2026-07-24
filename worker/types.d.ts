@@ -18,3 +18,12 @@ declare module 'xlsx' {
   const content: any;
   export default content;
 }
+
+declare module 'node:async_hooks' {
+  export class AsyncLocalStorage<T> {
+    disable(): void;
+    getStore(): T | undefined;
+    run<R>(store: T, callback: (...args: any[]) => R, ...args: any[]): R;
+    enterWith(store: T): void;
+  }
+}

@@ -19,7 +19,7 @@ import transactions from './routes/transactions';
 import csa from './routes/csa';
 import migration from './routes/migration';
 import { getAuth } from './auth';
-import { getDb } from './db';
+import { getDb, dbLocalStorage, createDbAndPool } from './db';
 import * as schema from './db/schema';
 import { eq } from 'drizzle-orm';
 import type { UserRole } from '@shared/types';
@@ -73,6 +73,33 @@ export const createApp = () => {
   const app = new Hono<HonoEnv>();
 
   app.use('*', logger());
+
+  // Database Connection Pool Lifecycle Middleware
+  app.use('*', async (c, next) => {
+    // Only apply if DATABASE_URL env var is provided
+    if (!c.env.DATABASE_URL) {
+      return next();
+    }
+
+    const { db, pool } = createDbAndPool(c.env.DATABASE_URL);
+
+    try {
+      let nextResult: any;
+      await dbLocalStorage.run({ db, pool }, async () => {
+        nextResult = await next();
+      });
+      return nextResult;
+    } finally {
+      if (pool) {
+        if (c.executionCtx) {
+          c.executionCtx.waitUntil(pool.end());
+        } else {
+          await pool.end();
+        }
+      }
+    }
+  });
+
   app.use('/api/*', cors({ 
     origin: '*', 
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], 
