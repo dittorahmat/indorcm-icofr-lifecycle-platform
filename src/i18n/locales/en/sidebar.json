@@ -26,7 +26,7 @@
     "rcmTlc": "RCM TLC Matrix",
     "rcmElc": "RCM ELC Matrix",
     "rcmItgc": "RCM ITGC Matrix",
-    "verificationDesign": "Design Verification (Appendix 8)",
+    "verificationDesign": "TOD / Design Verification (Appendix 8)",
     "soc": "SOC Monitoring",
     "deficiencies": "Deficiency & Remediation",
     "tod": "Test of Design (TOD)",
