@@ -100,8 +100,9 @@ export class BpmService {
   }
 
   private async hydrateDiagramNodes(diagramId: string, nodes: any[], noGL?: string) {
+    const skipTypes = ['start', 'end', 'reference', 'swimlane'];
     return await Promise.all(nodes.map(async (node: any) => {
-      if (node.type === 'activity' || node.type === 'automated-activity') {
+      if (node.type && !skipTypes.includes(node.type)) {
         const allMappings = await this.db.select({
           risk: rcms,
           map: rcmControls
@@ -319,12 +320,13 @@ export class BpmService {
     const activeRiskIds = new Set<string>();
     const activeControlIds = new Set<string>();
 
+    const skipTypes = ['start', 'end', 'reference', 'swimlane'];
     for (const node of nodes) {
       const insertedRiskIdsForNode = new Set<string>();
       const nodePairs = node.data?.regulatoryPairs || 
                        (node.data?.regulatoryData ? [node.data.regulatoryData] : []);
 
-      if ((node.type === 'activity' || node.type === 'automated-activity') && nodePairs.length > 0) {
+      if (node.type && !skipTypes.includes(node.type) && nodePairs.length > 0) {
         for (const reg of nodePairs) {
           const rawRiskId = reg.riskId;
           const rawCtrlId = reg.controlId;
@@ -361,7 +363,7 @@ export class BpmService {
       }
 
       // Legacy support for nodes with only .risks
-      if ((node.type === 'activity' || node.type === 'automated-activity') && node.data?.risks && !node.data?.regulatoryPairs && !node.data?.regulatoryData) {
+      if (node.type && !skipTypes.includes(node.type) && node.data?.risks && !node.data?.regulatoryPairs && !node.data?.regulatoryData) {
         for (const riskEntry of node.data.risks) {
           const baseRiskId = extractBaseId(riskEntry.rcmId);
           for (const gl of glCodes) {
