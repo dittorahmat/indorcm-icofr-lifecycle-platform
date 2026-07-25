@@ -205,7 +205,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
   const createDiagramMutation = useMutation({
     mutationFn: (subProcess: string) => api<{ id: string }>('/api/bpm-diagrams', {
       method: 'POST',
-      body: JSON.stringify({ name: `Flow: ${subProcess}`, subProcess })
+      body: JSON.stringify({ name: subProcess, subProcess })
     }),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['bpm-diagrams'] });

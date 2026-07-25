@@ -254,7 +254,7 @@ export function useBPMPage() {
     mutationFn: (subProcess: string) => api<{ id: string }>('/api/bpm-diagrams', {
       method: 'POST',
       body: JSON.stringify({
-        name: `Flow: ${subProcess}`,
+        name: subProcess,
         subProcess,
         year: parseInt(viewYear)
       })

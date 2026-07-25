@@ -964,4 +964,22 @@ export class BpmService {
         eq(controls.bpmProcessId, bpmProcessId)
       ));
   }
+
+  async cleanupFlowPrefixes(orgId: string) {
+    const records = await this.db.select({ id: bpmDiagrams.id, name: bpmDiagrams.name })
+      .from(bpmDiagrams)
+      .where(and(eq(bpmDiagrams.organizationId, orgId), like(bpmDiagrams.name, 'Flow: %')));
+
+    let cleanedCount = 0;
+    for (const record of records) {
+      if (record.name && record.name.startsWith('Flow: ')) {
+        const cleanName = record.name.replace(/^Flow:\s*/, '');
+        await this.db.update(bpmDiagrams)
+          .set({ name: cleanName })
+          .where(and(eq(bpmDiagrams.id, record.id), eq(bpmDiagrams.organizationId, orgId)));
+        cleanedCount++;
+      }
+    }
+    return { cleanedCount };
+  }
 }

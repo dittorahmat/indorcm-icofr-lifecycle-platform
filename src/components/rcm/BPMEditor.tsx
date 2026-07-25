@@ -1099,7 +1099,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
                 size="sm" 
                 className="h-9 gap-2 bg-mancity-pattern hover:opacity-90 text-primary-foreground shadow-sm transition-all font-bold text-[10px] uppercase tracking-widest px-6 rounded-xl" 
                 onClick={() => saveMutation.mutate({ 
-                  nodes, edges, name: `Flow: ${subProcess}`, subProcess, year: diagram?.year || parseInt(workingYear), noGLs: selectedGLs,
+                  nodes, edges, name: subProcess, subProcess, year: diagram?.year || parseInt(workingYear), noGLs: selectedGLs,
                   metadata: { ...diagram?.metadata, signatures, globalScale }
                 })} 
                 disabled={saveMutation.isPending || isLocked}
@@ -1321,7 +1321,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
             setSelectedNodeId(null);
           }}
           onSave={() => saveMutation.mutate({ 
-            nodes, edges, name: `Flow: ${subProcess}`, subProcess, year: diagram?.year || parseInt(workingYear), noGLs: selectedGLs,
+            nodes, edges, name: subProcess, subProcess, year: diagram?.year || parseInt(workingYear), noGLs: selectedGLs,
             metadata: { ...diagram?.metadata, signatures, globalScale }
           })}
           isSaving={saveMutation.isPending}

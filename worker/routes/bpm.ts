@@ -21,6 +21,14 @@ bpm.get('/bpm-diagrams', async (c) => {
   return ok(c, { items });
 });
 
+bpm.all('/bpm-diagrams/cleanup-flow-prefix', async (c) => {
+  const db = getDb(c.env.DATABASE_URL);
+  const bpmService = new BpmService(db);
+  const orgId = c.get('organizationId') || 'org_default';
+  const result = await bpmService.cleanupFlowPrefixes(orgId);
+  return ok(c, result);
+});
+
 bpm.get('/bpm-diagrams/:id', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const bpmService = new BpmService(db);
