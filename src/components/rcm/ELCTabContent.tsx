@@ -95,14 +95,14 @@ export function ELCTabContent({ elcControls, onEditControl, onCreateControl }: E
                             <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-50/30 rounded-full -mr-12 -mt-12 opacity-0 group-hover/item:opacity-100 transition-opacity" />
                             <div className="flex justify-between items-start relative z-10">
                               <div className="flex items-center gap-3">
-                                 <Badge variant="outline" className="text-[9px] font-mono h-5 border-indigo-100 bg-indigo-50/30 text-indigo-600 font-bold">{ctrl.code || 'ELC'}</Badge>
-                                 <span className="text-sm font-bold text-slate-800">{ctrl.name}</span>
+                                 <Badge variant="outline" className="text-xs font-mono h-5 border-slate-200 bg-slate-50 text-slate-600 font-bold">{ctrl.code || 'ELC'}</Badge>
+                                 <span className="text-xs font-normal text-slate-800 leading-snug">{ctrl.name}</span>
                               </div>
                               <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover/item:opacity-100 group-hover:bg-slate-100 transition-all rounded-lg" onClick={() => onEditControl(ctrl)}>
                                 <Edit2 className="h-3.5 w-3.5 text-slate-400" />
                               </Button>
                             </div>
-                            <p className="text-[11px] text-slate-500 mt-2.5 line-clamp-2 leading-relaxed italic font-medium">"{ctrl.description}"</p>
+                            <p className="text-xs text-slate-600 mt-2 line-clamp-2 leading-relaxed italic font-normal">"{ctrl.description}"</p>
                             <div className="flex items-center gap-6 mt-5 relative z-10">
                                <div className="flex items-center gap-2">
                                   <Target className="h-3.5 w-3.5 text-slate-400" />

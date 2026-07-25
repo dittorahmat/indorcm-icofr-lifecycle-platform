@@ -140,16 +140,16 @@ export function VerificationDesignPage({ embedded, filterBpmId }: VerificationDe
           )
         },
         { id: 'no', header: t('rcm:matrix.no'), width: '50px', sticky: 'left', stickyOffset: '60px', className: 'text-center font-mono text-xs text-slate-400', render: (_, idx) => idx + 1 },
-        { id: 'control_ref', header: t('rcm:verification.columns.control_ref'), accessorKey: 'controlCode', width: '130px', sticky: 'left', stickyOffset: '110px', className: 'font-mono text-xs font-bold text-indigo-700 bg-white' },
+        { id: 'control_ref', header: t('rcm:verification.columns.control_ref'), accessorKey: 'controlCode', width: '130px', sticky: 'left', stickyOffset: '110px', className: 'font-mono text-xs font-bold text-slate-600 bg-white' },
       ]
     },
     {
       title: t('rcm:verification.groups.info'),
       className: 'bg-indigo-50/50',
       columns: [
-        { id: 'control_name', header: t('rcm:verification.columns.control_name'), accessorKey: 'controlName', width: '280px', className: 'text-xs text-slate-800 font-bold' },
-        { id: 'control_desc', header: t('rcm:matrix.control_description'), accessorKey: 'controlDescription', width: '350px', className: 'text-xs text-slate-600 italic' },
-        { id: 'docs', header: t('rcm:matrix.supporting_docs'), accessorKey: 'supportingDocs', width: '200px', className: 'text-xs text-slate-500' },
+        { id: 'control_name', header: t('rcm:verification.columns.control_name'), accessorKey: 'controlName', width: '280px', className: 'text-xs text-slate-800 font-normal' },
+        { id: 'control_desc', header: t('rcm:matrix.control_description'), accessorKey: 'controlDescription', width: '350px', className: 'text-xs text-slate-600 font-normal italic' },
+        { id: 'docs', header: t('rcm:matrix.supporting_docs'), accessorKey: 'supportingDocs', width: '200px', className: 'text-xs text-slate-800 font-normal' },
         { 
           id: 'is_key', 
           header: t('rcm:verification.columns.is_key'), 
@@ -163,37 +163,37 @@ export function VerificationDesignPage({ embedded, filterBpmId }: VerificationDe
       title: t('rcm:matrix.ipo'),
       className: 'bg-blue-600 text-white',
       columns: [
-        { id: 'ipoC', header: 'C', width: '40px', className: 'text-center', render: (row) => row.ipoC === 'Y' ? '✓' : '—' },
-        { id: 'ipoA', header: 'A', width: '40px', className: 'text-center', render: (row) => row.ipoA === 'Y' ? '✓' : '—' },
-        { id: 'ipoV', header: 'V', width: '40px', className: 'text-center', render: (row) => row.ipoV === 'Y' ? '✓' : '—' },
-        { id: 'ipoRa', header: 'RA', width: '40px', className: 'text-center', render: (row) => row.ipoRa === 'Y' ? '✓' : '—' },
+        { id: 'ipoC', header: 'C', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.ipoC === 'Y' ? '✓' : '—' },
+        { id: 'ipoA', header: 'A', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.ipoA === 'Y' ? '✓' : '—' },
+        { id: 'ipoV', header: 'V', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.ipoV === 'Y' ? '✓' : '—' },
+        { id: 'ipoRa', header: 'RA', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.ipoRa === 'Y' ? '✓' : '—' },
       ]
     },
     {
       title: t('rcm:matrix.assertions'),
       className: 'bg-indigo-600 text-white',
       columns: [
-        { id: 'ae', header: 'E/O', width: '40px', className: 'text-center', render: (row) => row.assertionE === 'Y' ? '✓' : '—' },
-        { id: 'ac', header: 'C', width: '40px', className: 'text-center', render: (row) => row.assertionC === 'Y' ? '✓' : '—' },
-        { id: 'aa', header: 'A', width: '40px', className: 'text-center', render: (row) => row.assertionA === 'Y' ? '✓' : '—' },
-        { id: 'aco', header: 'CO', width: '40px', className: 'text-center', render: (row) => row.assertionCo === 'Y' ? '✓' : '—' },
-        { id: 'aro', header: 'R&O', width: '40px', className: 'text-center', render: (row) => row.assertionRo === 'Y' ? '✓' : '—' },
-        { id: 'ava', header: 'V/A', width: '40px', className: 'text-center', render: (row) => row.assertionVa === 'Y' ? '✓' : '—' },
-        { id: 'apd', header: 'PD', width: '40px', className: 'text-center', render: (row) => row.assertionPd === 'Y' ? '✓' : '—' },
+        { id: 'ae', header: 'E/O', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.assertionE === 'Y' ? '✓' : '—' },
+        { id: 'ac', header: 'C', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.assertionC === 'Y' ? '✓' : '—' },
+        { id: 'aa', header: 'A', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.assertionA === 'Y' ? '✓' : '—' },
+        { id: 'aco', header: 'CO', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.assertionCo === 'Y' ? '✓' : '—' },
+        { id: 'aro', header: 'R&O', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.assertionRo === 'Y' ? '✓' : '—' },
+        { id: 'ava', header: 'V/A', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.assertionVa === 'Y' ? '✓' : '—' },
+        { id: 'apd', header: 'PD', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.assertionPd === 'Y' ? '✓' : '—' },
       ]
     },
     {
       title: t('rcm:matrix.groups.metadata'),
       columns: [
-        { id: 'type', header: t('rcm:matrix.type'), accessorKey: 'controlType', width: '120px' },
-        { id: 'nature', header: t('rcm:matrix.nature'), accessorKey: 'controlNature', width: '150px' },
-        { id: 'auto_type', header: t('rcm:matrix.automated_type'), accessorKey: 'automatedControlType', width: '150px' },
-        { id: 'frequency', header: t('rcm:matrix.frequency'), accessorKey: 'frequency', width: '100px', className: 'text-center' },
-        { id: 'app', header: t('rcm:matrix.supporting_app'), accessorKey: 'supportingApp', width: '150px' },
-        { id: 'function', header: t('rcm:matrix.executing_function'), accessorKey: 'executingFunction', width: '150px' },
-        { id: 'role', header: t('rcm:matrix.executor_role'), accessorKey: 'executorRole', width: '150px' },
-        { id: 'fsli', header: t('rcm:matrix.affected_fsli_item'), accessorKey: 'affectedFsliItem', width: '150px' },
-        { id: 'period', header: t('rcm:matrix.effective_period'), accessorKey: 'effectivePeriod', width: '120px' },
+        { id: 'type', header: t('rcm:matrix.type'), accessorKey: 'controlType', width: '120px', className: 'text-xs text-slate-800 font-normal' },
+        { id: 'nature', header: t('rcm:matrix.nature'), accessorKey: 'controlNature', width: '150px', className: 'text-xs text-slate-800 font-normal' },
+        { id: 'auto_type', header: t('rcm:matrix.automated_type'), accessorKey: 'automatedControlType', width: '150px', className: 'text-xs text-slate-800 font-normal' },
+        { id: 'frequency', header: t('rcm:matrix.frequency'), accessorKey: 'frequency', width: '100px', className: 'text-xs text-slate-800 font-normal text-center' },
+        { id: 'app', header: t('rcm:matrix.supporting_app'), accessorKey: 'supportingApp', width: '150px', className: 'text-xs text-slate-800 font-normal' },
+        { id: 'function', header: t('rcm:matrix.executing_function'), accessorKey: 'executingFunction', width: '150px', className: 'text-xs text-slate-800 font-normal' },
+        { id: 'role', header: t('rcm:matrix.executor_role'), accessorKey: 'executorRole', width: '150px', className: 'text-xs text-slate-800 font-normal' },
+        { id: 'fsli', header: t('rcm:matrix.affected_fsli_item'), accessorKey: 'affectedFsliItem', width: '150px', className: 'text-xs font-mono text-slate-600' },
+        { id: 'period', header: t('rcm:matrix.effective_period'), accessorKey: 'effectivePeriod', width: '120px', className: 'text-xs font-semibold text-indigo-700' },
       ]
     },
     {
@@ -237,7 +237,7 @@ export function VerificationDesignPage({ embedded, filterBpmId }: VerificationDe
   ) : null;
 
   const content = (
-    <div className={cn("flex flex-col min-w-0 flex-1", embedded && "h-full")}>
+    <div className={cn("flex flex-col min-w-0 flex-1 min-h-0", embedded && "h-full")}>
       {!embedded && (
         <RCMPageHeader 
           title={t('rcm:verification.title')}

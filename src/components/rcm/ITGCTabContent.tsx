@@ -74,11 +74,11 @@ export function ITGCTabContent({
                     {ctrl.itgcDomain || 'N/A'}
                   </Badge>
                 </TableCell>
-                <TableCell className="font-mono text-[11px] font-bold text-slate-500 py-4">{ctrl.code}</TableCell>
+                <TableCell className="font-mono text-xs font-bold text-slate-600 py-4">{ctrl.code}</TableCell>
                 <TableCell className="py-4">
                   <div className="flex flex-col space-y-1">
-                    <span className="text-sm font-display font-bold text-slate-900 leading-tight">{ctrl.name}</span>
-                    <span className="text-[11px] text-slate-500 line-clamp-1 italic">"{ctrl.description}"</span>
+                    <span className="text-xs text-slate-800 font-normal leading-snug">{ctrl.name}</span>
+                    <span className="text-xs text-slate-600 line-clamp-1 italic font-normal">"{ctrl.description}"</span>
                   </div>
                 </TableCell>
                 <TableCell className="text-center py-4">

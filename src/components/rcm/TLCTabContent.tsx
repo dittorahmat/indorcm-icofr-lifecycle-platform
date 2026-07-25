@@ -70,11 +70,11 @@ export function TLCTabContent({
               <TableRow><TableCell colSpan={6} className="h-40 text-center text-slate-400 italic">Tidak ada rekaman TLC ditemukan.</TableCell></TableRow>
             ) : filteredTlc.map((ctrl, i) => (
               <TableRow key={ctrl.id} className={cn("group hover:bg-slate-50 transition-colors", i % 2 === 1 && "bg-slate-50/30")}>
-                <TableCell className="font-mono text-[11px] font-bold text-slate-500 px-6 py-4">{ctrl.code}</TableCell>
+                <TableCell className="font-mono text-xs font-bold text-slate-600 px-6 py-4">{ctrl.code}</TableCell>
                 <TableCell className="py-4">
                   <div className="flex flex-col space-y-1">
-                    <span className="text-sm font-display font-bold text-slate-900 leading-tight">{ctrl.name}</span>
-                    <span className="text-[11px] text-slate-500 line-clamp-1 italic">"{ctrl.description}"</span>
+                    <span className="text-xs text-slate-800 font-normal leading-snug">{ctrl.name}</span>
+                    <span className="text-xs text-slate-600 line-clamp-1 italic font-normal">"{ctrl.description}"</span>
                   </div>
                 </TableCell>
                 <TableCell className="py-4">
