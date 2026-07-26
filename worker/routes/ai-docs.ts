@@ -265,16 +265,17 @@ aiDocsApp.post('/ai/chat', async (c) => {
 
   try {
     const queryVector = await aiService.generateEmbedding(message);
-    retrievalResults = await aiService.hybridSearch(db, orgId, message, queryVector, 10);
+    retrievalResults = (await aiService.hybridSearch(db, orgId, message, queryVector, 10)) || [];
   } catch (e: any) {
     console.error('Retrieval failed, falling back to basic prompt:', e.message);
+    retrievalResults = [];
   }
 
-  const knowledgeBase = retrievalResults.length > 0
+  const knowledgeBase = (retrievalResults && retrievalResults.length > 0)
     ? retrievalResults.map(r => AIService.situationalChunking(r.content, { title: r.title, category: r.category })).join('\n\n')
     : "KOSONG: Tidak ada dokumen referensi/prosedur/regulasi yang relevan yang ditemukan untuk pertanyaan ini. Pengguna belum mengunggah dokumen yang sesuai atau sistem pencarian tidak menemukan hasil.";
 
-  const sources = retrievalResults.map(r => ({ title: r.title, score: r.score }));
+  const sources = (retrievalResults || []).map(r => ({ title: r.title, score: r.score }));
 
   try {
     const systemInstruction = `Anda adalah Asisten AI & Analis Strategis IndoGRC Pro. Tugas Anda adalah membantu pengguna memahami regulasi (SK-5), cara penggunaan aplikasi, serta melakukan analisis data ICOFR lintas modul.
@@ -369,7 +370,8 @@ ${knowledgeBase}
     });
 
   } catch (error: any) {
-    return bad(c, `AI service error: ${error.message}`, 500);
+    console.error('[AI Chat Route Error]:', error);
+    return bad(c, `AI service error: ${error.message || String(error)}`, 500);
   }
 });
 

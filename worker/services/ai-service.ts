@@ -261,7 +261,7 @@ export class AIService {
       LIMIT ${limit}
     `);
 
-    return result.rows as unknown as {
+    return (result?.rows || []) as unknown as {
       id: string;
       content: string;
       title: string;
