@@ -80,13 +80,13 @@ function getNodeAbsolutePosition(node: any, nodeInternals: any): Point {
   let x = node.position?.x ?? 0;
   let y = node.position?.y ?? 0;
   
-  let parentId = node.parentNode;
+  let parentId = node.parentId || node.parentNode;
   while (parentId) {
     const parentNode = nodeInternals.get(parentId);
     if (parentNode) {
       x += parentNode.position?.x ?? 0;
       y += parentNode.position?.y ?? 0;
-      parentId = parentNode.parentNode;
+      parentId = parentNode.parentId || parentNode.parentNode;
     } else {
       break;
     }
