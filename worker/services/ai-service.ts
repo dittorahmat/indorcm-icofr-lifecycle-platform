@@ -145,10 +145,13 @@ export class AIService {
         model: this.config.chatModel || "gemini-2.5-flash-lite",
         systemInstruction: params.systemInstruction,
         tools: params.tools ? [{ functionDeclarations: params.tools }] : undefined,
-        generationConfig: params.responseSchema ? {
-          responseMimeType: "application/json",
-          responseSchema: params.responseSchema,
-        } : undefined,
+        generationConfig: {
+          maxOutputTokens: 65536,
+          ...(params.responseSchema ? {
+            responseMimeType: "application/json",
+            responseSchema: params.responseSchema,
+          } : {})
+        },
       });
 
       const chat = model.startChat({

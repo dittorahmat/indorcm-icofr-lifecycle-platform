@@ -1,5 +1,5 @@
 import React from 'react';
-import { EdgeProps, getBezierPath, useStore } from 'reactflow';
+import { EdgeProps, useStore, Position } from 'reactflow';
 
 interface Point {
   x: number;
@@ -11,62 +11,17 @@ interface Segment {
   p2: Point;
 }
 
-// Evaluate cubic bezier point at t (0 <= t <= 1)
-function getBezierPoint(t: number, p0: Point, p1: Point, p2: Point, p3: Point): Point {
-  const mt = 1 - t;
-  const mt2 = mt * mt;
-  const mt3 = mt2 * mt;
-  const t2 = t * t;
-  const t3 = t2 * t;
-
-  return {
-    x: mt3 * p0.x + 3 * mt2 * t * p1.x + 3 * mt * t2 * p2.x + t3 * p3.x,
-    y: mt3 * p0.y + 3 * mt2 * t * p1.y + 3 * mt * t2 * p2.y + t3 * p3.y,
-  };
-}
-
-// Parse SVG path "M x0 y0 C x1 y1, x2 y2, x3 y3"
-function parseBezierPath(pathStr: string): { p0: Point; p1: Point; p2: Point; p3: Point } | null {
-  const nums = pathStr.match(/-?\d+\.?\d*/g);
-  if (!nums || nums.length < 8) return null;
-  return {
-    p0: { x: parseFloat(nums[0]), y: parseFloat(nums[1]) },
-    p1: { x: parseFloat(nums[2]), y: parseFloat(nums[3]) },
-    p2: { x: parseFloat(nums[4]), y: parseFloat(nums[5]) },
-    p3: { x: parseFloat(nums[6]), y: parseFloat(nums[7]) },
-  };
-}
-
-// Sample a bezier curve into straight segments
-function getBezierSegments(p0: Point, p1: Point, p2: Point, p3: Point, numSamples = 40): Segment[] {
-  const points: Point[] = [];
-  for (let i = 0; i <= numSamples; i++) {
-    points.push(getBezierPoint(i / numSamples, p0, p1, p2, p3));
-  }
-  const segments: Segment[] = [];
-  for (let i = 0; i < points.length - 1; i++) {
-    segments.push({ p1: points[i], p2: points[i + 1] });
-  }
-  return segments;
-}
-
-// Calculate intersection of two line segments (p1->p2) and (p3->p4)
-function getLineIntersection(p1: Point, p2: Point, p3: Point, p4: Point): Point | null {
-  const denom = (p4.y - p3.y) * (p2.x - p1.x) - (p4.x - p3.x) * (p2.y - p1.y);
-  if (Math.abs(denom) < 0.0001) return null; // Parallel
-
-  const ua = ((p4.x - p3.x) * (p1.y - p3.y) - (p4.y - p3.y) * (p1.x - p3.x)) / denom;
-  const ub = ((p2.x - p1.x) * (p1.y - p3.y) - (p2.y - p1.y) * (p1.x - p3.x)) / denom;
-
-  // Keep intersection away from immediate start/end of paths to avoid clutter
-  if (ua >= 0.08 && ua <= 0.92 && ub >= 0.08 && ub <= 0.92) {
-    return {
-      x: p1.x + ua * (p2.x - p1.x),
-      y: p1.y + ua * (p2.y - p1.y),
-    };
-  }
-  return null;
-}
+// Nodes that must lock connection points at exact center/apex
+const FIXED_CENTER_TYPES = new Set([
+  'decision',
+  'start',
+  'end',
+  'reference',
+  'off-page-ref',
+  'summing-junction',
+  'or',
+  'archive'
+]);
 
 function getNodeDimensions(node: any) {
   if (node.width && node.height) {
@@ -140,53 +95,234 @@ function getNodeAbsolutePosition(node: any, nodeInternals: any): Point {
   return { x, y };
 }
 
-function getEdgeCoords(edge: any, nodeInternals: any) {
-  const sourceNode = nodeInternals.get(edge.source);
-  const targetNode = nodeInternals.get(edge.target);
-  if (!sourceNode || !targetNode) return null;
+function normalizeHandlePosition(
+  handleId?: string | null,
+  position?: Position,
+  sourceNode?: any,
+  targetNode?: any,
+  isSource?: boolean,
+  nodeInternals?: any
+): string {
+  if (handleId?.includes('left')) return 'left';
+  if (handleId?.includes('right')) return 'right';
+  if (handleId?.includes('top')) return 'top';
+  if (handleId?.includes('bottom')) return 'bottom';
 
-  const sDim = getNodeDimensions(sourceNode);
-  const tDim = getNodeDimensions(targetNode);
+  if (position === Position.Left) return 'left';
+  if (position === Position.Right) return 'right';
+  if (position === Position.Top) return 'top';
+  if (position === Position.Bottom) return 'bottom';
 
-  const sPos = edge.sourceHandle?.includes('left') ? 'left' : edge.sourceHandle?.includes('right') ? 'right' : 'bottom';
-  const tPos = edge.targetHandle?.includes('left') ? 'left' : edge.targetHandle?.includes('right') ? 'right' : 'top';
+  if (sourceNode && targetNode && nodeInternals) {
+    const sPos = getNodeAbsolutePosition(sourceNode, nodeInternals);
+    const tPos = getNodeAbsolutePosition(targetNode, nodeInternals);
+    const dx = tPos.x - sPos.x;
+    const dy = tPos.y - sPos.y;
 
-  const sAbs = getNodeAbsolutePosition(sourceNode, nodeInternals);
-  const tAbs = getNodeAbsolutePosition(targetNode, nodeInternals);
-
-  let sX = sAbs.x + sDim.width / 2;
-  let sY = sAbs.y + sDim.height;
-  if (sPos === 'left') {
-    sX = sAbs.x;
-    sY = sAbs.y + sDim.height / 2;
-  } else if (sPos === 'right') {
-    sX = sAbs.x + sDim.width;
-    sY = sAbs.y + sDim.height / 2;
+    if (isSource) {
+      if (Math.abs(dx) > Math.abs(dy)) {
+        return dx > 0 ? 'right' : 'left';
+      } else {
+        return dy > 0 ? 'bottom' : 'top';
+      }
+    } else {
+      if (Math.abs(dx) > Math.abs(dy)) {
+        return dx > 0 ? 'left' : 'right';
+      } else {
+        return dy > 0 ? 'top' : 'bottom';
+      }
+    }
   }
 
-  let tX = tAbs.x + tDim.width / 2;
-  let tY = tAbs.y;
-  if (tPos === 'left') {
-    tX = tAbs.x;
-    tY = tAbs.y + tDim.height / 2;
-  } else if (tPos === 'right') {
-    tX = tAbs.x + tDim.width;
-    tY = tAbs.y + tDim.height / 2;
+  return isSource ? 'bottom' : 'top';
+}
+
+function getDistributedPoint(
+  node: any,
+  side: string,
+  edgeId: string,
+  allEdges: any[],
+  isSource: boolean,
+  nodeInternals: any
+): Point {
+  const dim = getNodeDimensions(node);
+  const absPos = getNodeAbsolutePosition(node, nodeInternals);
+
+  // Locked center/apex for diamond/start/end/ref
+  if (FIXED_CENTER_TYPES.has(node.type)) {
+    let x = absPos.x + dim.width / 2;
+    let y = absPos.y + dim.height / 2;
+
+    if (side === 'top') y = absPos.y;
+    else if (side === 'bottom') y = absPos.y + dim.height;
+    else if (side === 'left') x = absPos.x;
+    else if (side === 'right') x = absPos.x + dim.width;
+    return { x, y };
   }
 
-  return { sX, sY, tX, tY, sPos, tPos };
+  // Find all edges connected to this node and side
+  const relevantEdges = allEdges.filter((e) => {
+    const srcNode = nodeInternals.get(e.source);
+    const tgtNode = nodeInternals.get(e.target);
+    if (isSource) {
+      if (e.source !== node.id) return false;
+      const eSide = normalizeHandlePosition(e.sourceHandle, e.sourcePosition, srcNode, tgtNode, true, nodeInternals);
+      return eSide === side;
+    } else {
+      if (e.target !== node.id) return false;
+      const eSide = normalizeHandlePosition(e.targetHandle, e.targetPosition, srcNode, tgtNode, false, nodeInternals);
+      return eSide === side;
+    }
+  });
+
+  relevantEdges.sort((a, b) => {
+    const oppNodeIdA = isSource ? a.target : a.source;
+    const oppNodeIdB = isSource ? b.target : b.source;
+    const oppNodeA = nodeInternals.get(oppNodeIdA);
+    const oppNodeB = nodeInternals.get(oppNodeIdB);
+
+    const posA = oppNodeA ? getNodeAbsolutePosition(oppNodeA, nodeInternals) : { x: 0, y: 0 };
+    const posB = oppNodeB ? getNodeAbsolutePosition(oppNodeB, nodeInternals) : { x: 0, y: 0 };
+
+    if (side === 'top' || side === 'bottom') {
+      return posA.x - posB.x;
+    } else {
+      return posA.y - posB.y;
+    }
+  });
+
+  const count = relevantEdges.length;
+  const index = relevantEdges.findIndex((e) => e.id === edgeId);
+
+  // If single edge or not found, center it
+  if (count <= 1 || index === -1) {
+    let x = absPos.x + dim.width / 2;
+    let y = absPos.y + dim.height / 2;
+
+    if (side === 'top') y = absPos.y;
+    else if (side === 'bottom') y = absPos.y + dim.height;
+    else if (side === 'left') x = absPos.x;
+    else if (side === 'right') x = absPos.x + dim.width;
+
+    return { x, y };
+  }
+
+  // Multi-edge connector distribution
+  if (side === 'top' || side === 'bottom') {
+    const padding = Math.min(24, dim.width * 0.2);
+    const usableWidth = dim.width - padding * 2;
+    const step = usableWidth / (count - 1);
+    const x = absPos.x + padding + index * step;
+    const y = side === 'top' ? absPos.y : absPos.y + dim.height;
+    return { x, y };
+  } else {
+    const padding = Math.min(16, dim.height * 0.2);
+    const usableHeight = dim.height - padding * 2;
+    const step = usableHeight / (count - 1);
+    const x = side === 'left' ? absPos.x : absPos.x + dim.width;
+    const y = absPos.y + padding + index * step;
+    return { x, y };
+  }
+}
+
+// Generate strict 90-degree Manhattan orthogonal step path (no diagonal lines ever)
+function getOrthogonalPath(
+  sPt: Point,
+  sSide: string,
+  tPt: Point,
+  tSide: string
+): { path: string; segments: Segment[] } {
+  const points: Point[] = [sPt];
+
+  const dx = tPt.x - sPt.x;
+  const dy = tPt.y - sPt.y;
+
+  // Compute 90-degree step points based on sides
+  if ((sSide === 'bottom' && tSide === 'top') || (sSide === 'top' && tSide === 'bottom')) {
+    const midY = sPt.y + dy / 2;
+    points.push({ x: sPt.x, y: midY });
+    points.push({ x: tPt.x, y: midY });
+  } else if ((sSide === 'right' && tSide === 'left') || (sSide === 'left' && tSide === 'right')) {
+    const midX = sPt.x + dx / 2;
+    points.push({ x: midX, y: sPt.y });
+    points.push({ x: midX, y: tPt.y });
+  } else if (sSide === 'bottom' || sSide === 'top') {
+    // Exit vertically, then move horizontally to target X, then vertically to target Y
+    points.push({ x: sPt.x, y: tPt.y });
+  } else if (sSide === 'left' || sSide === 'right') {
+    // Exit horizontally, then move vertically to target Y, then horizontally to target X
+    points.push({ x: tPt.x, y: sPt.y });
+  } else {
+    // Fallback step routing
+    points.push({ x: sPt.x, y: sPt.y + dy / 2 });
+    points.push({ x: tPt.x, y: sPt.y + dy / 2 });
+  }
+
+  points.push(tPt);
+
+  // Filter out redundant points that are collinear or too close
+  const cleaned: Point[] = [points[0]];
+  for (let i = 1; i < points.length; i++) {
+    const prev = cleaned[cleaned.length - 1];
+    const curr = points[i];
+    if (Math.abs(prev.x - curr.x) < 0.5 && Math.abs(prev.y - curr.y) < 0.5) {
+      continue;
+    }
+    cleaned.push(curr);
+  }
+
+  // Create intermediate step if there's any diagonal left between adjacent points
+  const orthogonalPoints: Point[] = [cleaned[0]];
+  for (let i = 1; i < cleaned.length; i++) {
+    const prev = orthogonalPoints[orthogonalPoints.length - 1];
+    const curr = cleaned[i];
+    if (Math.abs(prev.x - curr.x) > 0.5 && Math.abs(prev.y - curr.y) > 0.5) {
+      // Turn diagonal into a 90-degree step corner
+      orthogonalPoints.push({ x: prev.x, y: curr.y });
+    }
+    orthogonalPoints.push(curr);
+  }
+
+  let pathStr = `M ${orthogonalPoints[0].x} ${orthogonalPoints[0].y}`;
+  const segments: Segment[] = [];
+
+  for (let i = 1; i < orthogonalPoints.length; i++) {
+    pathStr += ` L ${orthogonalPoints[i].x} ${orthogonalPoints[i].y}`;
+    segments.push({ p1: orthogonalPoints[i - 1], p2: orthogonalPoints[i] });
+  }
+
+  return { path: pathStr, segments };
+}
+
+// Calculate intersection of two straight line segments
+function getLineIntersection(p1: Point, p2: Point, p3: Point, p4: Point): Point | null {
+  const denom = (p4.y - p3.y) * (p2.x - p1.x) - (p4.x - p3.x) * (p2.y - p1.y);
+  if (Math.abs(denom) < 0.0001) return null; // Parallel
+
+  const ua = ((p4.x - p3.x) * (p1.y - p3.y) - (p4.y - p3.y) * (p1.x - p3.x)) / denom;
+  const ub = ((p2.x - p1.x) * (p1.y - p3.y) - (p2.y - p1.y) * (p1.x - p3.x)) / denom;
+
+  if (ua >= 0.08 && ua <= 0.92 && ub >= 0.08 && ub <= 0.92) {
+    return {
+      x: p1.x + ua * (p2.x - p1.x),
+      y: p1.y + ua * (p2.y - p1.y),
+    };
+  }
+  return null;
 }
 
 interface BridgeEdgeProps extends EdgeProps {
   borderRadius?: number;
+  sourceHandleId?: string;
+  targetHandleId?: string;
 }
 
 export function BridgeEdge({
   id,
-  sourceX,
-  sourceY,
-  targetX,
-  targetY,
+  source,
+  target,
+  sourceHandleId,
+  targetHandleId,
   sourcePosition,
   targetPosition,
   style = {},
@@ -195,60 +331,64 @@ export function BridgeEdge({
   const edges = useStore((state) => state.edges);
   const nodeInternals = useStore((state) => state.nodeInternals);
 
-  // Subscribe to all node positions to force recalculating intersections in real-time during drags
+  // Force re-evaluation during node drags
   useStore((state) => {
     const nodeArray = Array.from(state.nodeInternals.values());
     return nodeArray.map((n) => `${n.id}:${n.position.x},${n.position.y}`).join('|');
   });
 
-  // 1. Get base Bezier curve path for current edge
-  const [basePath] = getBezierPath({
-    sourceX,
-    sourceY,
-    sourcePosition,
-    targetX,
-    targetY,
-    targetPosition,
-  });
+  const sourceNode = nodeInternals.get(source);
+  const targetNode = nodeInternals.get(target);
 
-  const bezierPoints = parseBezierPath(basePath);
-  if (!bezierPoints) {
+  const sSide = normalizeHandlePosition(sourceHandleId, sourcePosition, sourceNode, targetNode, true, nodeInternals);
+  const tSide = normalizeHandlePosition(targetHandleId, targetPosition, sourceNode, targetNode, false, nodeInternals);
+
+  const sourcePt = sourceNode
+    ? getDistributedPoint(sourceNode, sSide, id, edges, true, nodeInternals)
+    : { x: 0, y: 0 };
+  const targetPt = targetNode
+    ? getDistributedPoint(targetNode, tSide, id, edges, false, nodeInternals)
+    : { x: 0, y: 0 };
+
+  const { path: basePath, segments: currentSegments } = getOrthogonalPath(
+    sourcePt,
+    sSide,
+    targetPt,
+    tSide
+  );
+
+  if (currentSegments.length === 0) {
     return <path id={id} style={style} className="react-flow__edge-path" d={basePath} markerEnd={markerEnd} />;
   }
 
-  const currentSegments = getBezierSegments(bezierPoints.p0, bezierPoints.p1, bezierPoints.p2, bezierPoints.p3);
-
-  // 2. Get segments for all other edges (using their Bezier paths)
+  // Get segments for all other edges
   const otherEdgesSegments: { edgeId: string; segments: Segment[] }[] = [];
   edges.forEach((e) => {
     if (e.id === id) return;
-    const coords = getEdgeCoords(e, nodeInternals);
-    if (!coords) return;
+    const eSrcNode = nodeInternals.get(e.source);
+    const eTgtNode = nodeInternals.get(e.target);
+    if (!eSrcNode || !eTgtNode) return;
 
-    const [otherPath] = getBezierPath({
-      sourceX: coords.sX,
-      sourceY: coords.sY,
-      sourcePosition: coords.sPos as any,
-      targetX: coords.tX,
-      targetY: coords.tY,
-      targetPosition: coords.tPos as any,
-    });
+    const eSSide = normalizeHandlePosition(e.sourceHandle, undefined, eSrcNode, eTgtNode, true, nodeInternals);
+    const eTSide = normalizeHandlePosition(e.targetHandle, undefined, eSrcNode, eTgtNode, false, nodeInternals);
 
-    const otherBezier = parseBezierPath(otherPath);
-    if (otherBezier) {
+    const eSrcPt = getDistributedPoint(eSrcNode, eSSide, e.id, edges, true, nodeInternals);
+    const eTgtPt = getDistributedPoint(eTgtNode, eTSide, e.id, edges, false, nodeInternals);
+
+    const { segments: otherSegs } = getOrthogonalPath(eSrcPt, eSSide, eTgtPt, eTSide);
+    if (otherSegs.length > 0) {
       otherEdgesSegments.push({
         edgeId: e.id,
-        segments: getBezierSegments(otherBezier.p0, otherBezier.p1, otherBezier.p2, otherBezier.p3),
+        segments: otherSegs,
       });
     }
   });
 
-  // 3. Find intersections and construct the path with bridges (semi-circular humps)
+  // Construct final path with bridges on intersections
   const bridgeRadius = 6;
   let finalPath = `M ${currentSegments[0].p1.x} ${currentSegments[0].p1.y}`;
 
   currentSegments.forEach((seg) => {
-    // Find intersections on this specific segment
     const intersections: { pt: Point; otherEdgeId: string }[] = [];
     otherEdgesSegments.forEach((other) => {
       other.segments.forEach((otherSeg) => {
@@ -259,9 +399,7 @@ export function BridgeEdge({
       });
     });
 
-    // Draw the segment, inserting bridges if there are intersections
     if (intersections.length > 0) {
-      // Sort intersections by proximity to seg.p1 to draw them in order
       intersections.sort((a, b) => {
         const distA = Math.hypot(a.pt.x - seg.p1.x, a.pt.y - seg.p1.y);
         const distB = Math.hypot(b.pt.x - seg.p1.x, b.pt.y - seg.p1.y);
@@ -269,9 +407,7 @@ export function BridgeEdge({
       });
 
       intersections.forEach(({ pt, otherEdgeId }) => {
-        // Tie-breaker: only draw the bridge on the edge with the lexicographically larger ID
         if (id < otherEdgeId) {
-          // The other edge will draw the bridge, this edge goes straight through
           return;
         }
 
@@ -287,7 +423,6 @@ export function BridgeEdge({
           const endX = pt.x + ux * bridgeRadius;
           const endY = pt.y + uy * bridgeRadius;
 
-          // Hump sweep: Arch UP for horizontal lines, arch RIGHT for vertical lines
           let sweep = 1;
           if (Math.abs(ux) > Math.abs(uy)) {
             sweep = ux > 0 ? 1 : 0;
@@ -314,3 +449,5 @@ export function BridgeEdge({
     />
   );
 }
+
+
