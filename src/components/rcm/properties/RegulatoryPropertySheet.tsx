@@ -81,6 +81,33 @@ function EntityHistoryList({ entityId }: { entityId: string }) {
   );
 }
 
+const normalizeControlType = (val?: string) => {
+  if (!val) return 'Preventif';
+  const s = val.toLowerCase();
+  if (s.startsWith('prevent')) return 'Preventif';
+  if (s.startsWith('detect') || s.startsWith('detekt')) return 'Detektif';
+  return val;
+};
+
+const normalizeControlNature = (val?: string) => {
+  if (!val) return 'Manual';
+  const s = val.toLowerCase();
+  if (s === 'automated' || s === 'otomatis') return 'Otomatis';
+  return val;
+};
+
+const normalizeFrequency = (val?: string) => {
+  if (!val) return 'Bulanan';
+  const s = val.toLowerCase();
+  if (s === 'monthly' || s === 'bulanan') return 'Bulanan';
+  if (s === 'annual' || s === 'tahunan') return 'Tahunan';
+  if (s === 'semi-annual' || s === 'semesteran') return 'Semesteran';
+  if (s === 'quarterly' || s === 'kuartalan') return 'Kuartalan';
+  if (s === 'weekly' || s === 'mingguan') return 'Mingguan';
+  if (s === 'daily' || s === 'harian') return 'Harian';
+  return val;
+};
+
 export function RegulatoryPropertySheet({
   selectedNode,
   isOpen,
@@ -209,6 +236,9 @@ export function RegulatoryPropertySheet({
       riskRating: 'Low',
       isKeyControl: false,
       classification: 'TLC',
+      controlType: 'Preventif',
+      controlNature: 'Manual',
+      frequency: 'Bulanan',
       ipoC: 'N', ipoA: 'N', ipoV: 'N', ipoRa: 'N'
     }];
     onUpdateNodeData(selectedNode.id, { regulatoryPairs: nextPairs });
@@ -223,6 +253,9 @@ export function RegulatoryPropertySheet({
       _tempControlId: ctrlId,
       controlDescription: '',
       isKeyControl: false,
+      controlType: 'Preventif',
+      controlNature: 'Manual',
+      frequency: 'Bulanan',
       ipoC: 'N', ipoA: 'N', ipoV: 'N', ipoRa: 'N',
       cosoPrinciples: [],
       itgcAssertions: {}
@@ -502,26 +535,66 @@ export function RegulatoryPropertySheet({
                               </AccordionTrigger>
                               <AccordionContent className="p-4 space-y-4">
                                 <div className="space-y-1.5">
-                                  <Label className="text-xs font-medium text-slate-600">Deskripsi Prosedur Kontrol</Label>
+                                  <Label className="text-xs font-medium text-slate-600">{t('rcm:matrix.properties.deskripsi_prosedur')}</Label>
                                   <Textarea 
                                     disabled={isLocked}
                                     value={ctrl.data.controlDescription || ''} 
                                     onChange={(e) => updateSpecificControl(ctrl.index, 'controlDescription', e.target.value)}
                                     className="min-h-[80px] text-sm"
-                                    placeholder="Apa tindakan mitigasinya?"
+                                    placeholder={t('common:placeholders.description')}
                                   />
                                 </div>
-                                <div className="flex items-center gap-6">
+                                <div className="grid grid-cols-2 gap-4">
                                   <div className="space-y-1">
-                                    <Label className="text-xs font-medium text-slate-600">Key Control?</Label>
+                                    <Label className="text-xs font-medium text-slate-600">{t('rcm:matrix.properties.key_control_q')}</Label>
                                     <Select disabled={isLocked} value={ctrl.data.isKeyControl ? 'Yes' : 'No'} onValueChange={(v) => updateSpecificControl(ctrl.index, 'isKeyControl', v === 'Yes')}>
-                                        <SelectTrigger className="h-9 text-sm w-[100px]"><SelectValue /></SelectTrigger>
+                                        <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
                                         <SelectContent>
-                                          <SelectItem value="Yes">Yes</SelectItem>
-                                          <SelectItem value="No">No</SelectItem>
+                                          <SelectItem value="Yes">{t('common:yes')}</SelectItem>
+                                          <SelectItem value="No">{t('common:no')}</SelectItem>
                                         </SelectContent>
                                     </Select>
                                   </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div className="space-y-1">
+                                    <Label className="text-xs font-medium text-slate-600">{t('rcm:matrix.type')}</Label>
+                                    <Select disabled={isLocked} value={normalizeControlType(ctrl.data.controlType)} onValueChange={(v) => updateSpecificControl(ctrl.index, 'controlType', v)}>
+                                      <SelectTrigger className="h-9 text-sm bg-white"><SelectValue /></SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="Preventif">{t('rcm:matrix.options.type.preventive')}</SelectItem>
+                                        <SelectItem value="Detektif">{t('rcm:matrix.options.type.detective')}</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                  <div className="space-y-1">
+                                    <Label className="text-xs font-medium text-slate-600">{t('rcm:matrix.nature')}</Label>
+                                    <Select disabled={isLocked} value={normalizeControlNature(ctrl.data.controlNature)} onValueChange={(v) => updateSpecificControl(ctrl.index, 'controlNature', v)}>
+                                      <SelectTrigger className="h-9 text-sm bg-white"><SelectValue /></SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="Manual">{t('rcm:matrix.options.nature.manual')}</SelectItem>
+                                        <SelectItem value="Otomatis">{t('rcm:matrix.options.nature.automated')}</SelectItem>
+                                        <SelectItem value="ITDM - EUC">{t('rcm:matrix.options.nature.itdm_euc')}</SelectItem>
+                                        <SelectItem value="ITDM - IPE">{t('rcm:matrix.options.nature.itdm_ipe')}</SelectItem>
+                                        <SelectItem value="MRC">{t('rcm:matrix.options.nature.mrc')}</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                </div>
+                                <div className="space-y-1">
+                                  <Label className="text-xs font-medium text-slate-600">{t('rcm:matrix.frequency')}</Label>
+                                  <Select disabled={isLocked} value={normalizeFrequency(ctrl.data.frequency)} onValueChange={(v) => updateSpecificControl(ctrl.index, 'frequency', v)}>
+                                    <SelectTrigger className="h-9 text-sm bg-white"><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="Tahunan">{t('rcm:matrix.options.frequency.annual')}</SelectItem>
+                                      <SelectItem value="Semesteran">{t('rcm:matrix.options.frequency.semi_annual')}</SelectItem>
+                                      <SelectItem value="Kuartalan">{t('rcm:matrix.options.frequency.quarterly')}</SelectItem>
+                                      <SelectItem value="Bulanan">{t('rcm:matrix.options.frequency.monthly')}</SelectItem>
+                                      <SelectItem value="Mingguan">{t('rcm:matrix.options.frequency.weekly')}</SelectItem>
+                                      <SelectItem value="Harian">{t('rcm:matrix.options.frequency.daily')}</SelectItem>
+                                      <SelectItem value="Ad-hoc">{t('rcm:matrix.options.frequency.adhoc')}</SelectItem>
+                                    </SelectContent>
+                                  </Select>
                                 </div>
                                 <div className="mt-4 pt-4 border-t border-slate-100">
                                     {(!ctrl.data.classification || ctrl.data.classification === 'TLC') && (

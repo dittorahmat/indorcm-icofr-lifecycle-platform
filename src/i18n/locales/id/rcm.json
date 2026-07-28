@@ -34,6 +34,28 @@
     "filter_subsidiary": "Anak Perusahaan",
     "filter_all": "Semua",
     "is_key_control": "Kontrol Utama?",
+    "options": {
+      "type": {
+        "preventive": "Preventif",
+        "detective": "Detektif"
+      },
+      "nature": {
+        "manual": "Manual",
+        "automated": "Otomatis",
+        "itdm_euc": "ITDM - EUC",
+        "itdm_ipe": "ITDM - IPE",
+        "mrc": "MRC"
+      },
+      "frequency": {
+        "annual": "Tahunan",
+        "semi_annual": "Semesteran",
+        "quarterly": "Kuartalan",
+        "monthly": "Bulanan",
+        "weekly": "Mingguan",
+        "daily": "Harian",
+        "adhoc": "Ad-hoc"
+      }
+    },
     "groups": {
       "process": "Identitas Proses",
       "risk": "Penilaian Risiko",

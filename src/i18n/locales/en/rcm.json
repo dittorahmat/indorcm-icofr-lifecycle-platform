@@ -34,6 +34,28 @@
     "filter_subsidiary": "Subsidiary",
     "filter_all": "All",
     "is_key_control": "Key Control?",
+    "options": {
+      "type": {
+        "preventive": "Preventative",
+        "detective": "Detective"
+      },
+      "nature": {
+        "manual": "Manual",
+        "automated": "Automated",
+        "itdm_euc": "ITDM - EUC",
+        "itdm_ipe": "ITDM - IPE",
+        "mrc": "MRC"
+      },
+      "frequency": {
+        "annual": "Annual",
+        "semi_annual": "Semi-Annual",
+        "quarterly": "Quarterly",
+        "monthly": "Monthly",
+        "weekly": "Weekly",
+        "daily": "Daily",
+        "adhoc": "Ad-hoc"
+      }
+    },
     "groups": {
       "process": "Process Identity",
       "risk": "Risk Assessment",
