@@ -106,7 +106,7 @@ export function RCMELCPage({ embedded = false }: { embedded?: boolean }) {
           )
         },
         { id: 'no', header: 'No', accessorKey: 'no', width: '50px', className: 'text-center font-mono text-xs text-slate-400' },
-        { id: 'code', header: t('matrix.control_ref'), accessorKey: 'code', width: '110px', className: 'font-mono text-xs font-bold text-slate-600' },
+        { id: 'code', header: t('matrix.control_ref'), accessorKey: 'code', width: '110px', className: 'font-mono text-xs font-normal text-slate-600' },
         { id: 'name', header: t('matrix.control_name'), accessorKey: 'name', width: '250px', className: 'text-xs text-slate-800 font-normal' },
         { id: 'description', header: t('matrix.control_description'), accessorKey: 'description', width: '350px', className: 'italic text-slate-600 text-xs font-normal leading-normal line-clamp-2' },
       ]
@@ -139,8 +139,10 @@ export function RCMELCPage({ embedded = false }: { embedded?: boolean }) {
         render: (row) => {
           const isMapped = row.cosoPrinciples?.includes(p);
           return (
-            <div className="flex items-center justify-center h-full">
-              {isMapped ? <Check className="h-4 w-4 text-emerald-600 stroke-[3px]" /> : <span className="text-slate-200 text-xs">—</span>}
+            <div className="flex items-center justify-center h-full text-xs font-mono">
+              <span className={isMapped ? "font-bold text-emerald-700" : "text-slate-400 font-normal"}>
+                {isMapped ? 'Y' : 'N'}
+              </span>
             </div>
           );
         }

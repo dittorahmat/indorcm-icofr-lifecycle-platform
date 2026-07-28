@@ -154,8 +154,12 @@ export function VerificationDesignPage({ embedded, filterBpmId }: VerificationDe
           id: 'is_key', 
           header: t('rcm:verification.columns.is_key'), 
           width: '90px', 
-          className: 'text-center',
-          render: (row) => row.isKeyControl ? <Shield className="h-4 w-4 mx-auto text-indigo-600 fill-indigo-50" /> : 'T'
+          className: 'text-center text-xs font-mono',
+          render: (row) => (
+            <span className={cn(row.isKeyControl ? "font-bold text-indigo-700" : "text-slate-400 font-normal")}>
+              {row.isKeyControl ? 'Y' : 'N'}
+            </span>
+          )
         },
       ]
     },
@@ -163,23 +167,23 @@ export function VerificationDesignPage({ embedded, filterBpmId }: VerificationDe
       title: t('rcm:matrix.ipo'),
       className: 'bg-blue-600 text-white',
       columns: [
-        { id: 'ipoC', header: 'C', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.ipoC === 'Y' ? '✓' : '—' },
-        { id: 'ipoA', header: 'A', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.ipoA === 'Y' ? '✓' : '—' },
-        { id: 'ipoV', header: 'V', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.ipoV === 'Y' ? '✓' : '—' },
-        { id: 'ipoRa', header: 'RA', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.ipoRa === 'Y' ? '✓' : '—' },
+        { id: 'ipoC', header: 'C', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.ipoC === 'Y' ? 'Y' : 'N' },
+        { id: 'ipoA', header: 'A', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.ipoA === 'Y' ? 'Y' : 'N' },
+        { id: 'ipoV', header: 'V', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.ipoV === 'Y' ? 'Y' : 'N' },
+        { id: 'ipoRa', header: 'RA', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.ipoRa === 'Y' ? 'Y' : 'N' },
       ]
     },
     {
       title: t('rcm:matrix.assertions'),
       className: 'bg-indigo-600 text-white',
       columns: [
-        { id: 'ae', header: 'E/O', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.assertionE === 'Y' ? '✓' : '—' },
-        { id: 'ac', header: 'C', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.assertionC === 'Y' ? '✓' : '—' },
-        { id: 'aa', header: 'A', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.assertionA === 'Y' ? '✓' : '—' },
-        { id: 'aco', header: 'CO', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.assertionCo === 'Y' ? '✓' : '—' },
-        { id: 'aro', header: 'R&O', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.assertionRo === 'Y' ? '✓' : '—' },
-        { id: 'ava', header: 'V/A', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.assertionVa === 'Y' ? '✓' : '—' },
-        { id: 'apd', header: 'PD', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.assertionPd === 'Y' ? '✓' : '—' },
+        { id: 'ae', header: 'E/O', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.assertionE === 'Y' ? 'Y' : 'N' },
+        { id: 'ac', header: 'C', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.assertionC === 'Y' ? 'Y' : 'N' },
+        { id: 'aa', header: 'A', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.assertionA === 'Y' ? 'Y' : 'N' },
+        { id: 'aco', header: 'CO', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.assertionCo === 'Y' ? 'Y' : 'N' },
+        { id: 'aro', header: 'R&O', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.assertionRo === 'Y' ? 'Y' : 'N' },
+        { id: 'ava', header: 'V/A', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.assertionVa === 'Y' ? 'Y' : 'N' },
+        { id: 'apd', header: 'PD', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.assertionPd === 'Y' ? 'Y' : 'N' },
       ]
     },
     {

@@ -167,8 +167,12 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride 
           id: 'fraud', 
           header: 'Fraud', 
           width: '70px', 
-          className: 'text-center',
-          render: (row) => row.isFraudRelated && <AlertTriangle className="h-3.5 w-3.5 text-rose-500 mx-auto" />
+          className: 'text-center text-xs font-mono',
+          render: (row) => (
+            <span className={cn(row.isFraudRelated ? "font-bold text-rose-600" : "text-slate-400 font-normal")}>
+              {row.isFraudRelated ? 'Y' : 'N'}
+            </span>
+          )
         },
         { 
           id: 'risk_rating', 
@@ -176,7 +180,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride 
           width: '110px', 
           className: 'text-center',
           render: (row) => (
-            <Badge className={cn("text-xs font-bold px-2 h-5 leading-none uppercase", 
+            <Badge className={cn("text-xs font-bold px-2 h-5 leading-none uppercase shadow-none border", 
               row.riskRating === 'High' ? "bg-rose-50 text-rose-700 border-rose-200" : 
               row.riskRating === 'Medium' ? "bg-amber-50 text-amber-700 border-amber-200" : 
               "bg-emerald-50 text-emerald-700 border-emerald-200"
@@ -189,7 +193,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride 
       title: t('matrix.groups.control'),
       className: 'bg-indigo-50/50',
       columns: [
-        { id: 'control_ref', header: t('matrix.control_ref'), accessorKey: 'controlCode', width: '130px', className: 'font-mono text-xs font-bold text-slate-600' },
+        { id: 'control_ref', header: t('matrix.control_ref'), accessorKey: 'controlCode', width: '130px', className: 'font-mono text-xs font-normal text-slate-600' },
         { id: 'control_name', header: t('matrix.control_name'), accessorKey: 'mappedControlName', width: '320px', className: 'text-xs text-slate-800 font-normal' },
         { id: 'control_desc', header: t('matrix.control_description'), accessorKey: 'mappedControlDescription', width: '450px', className: 'text-xs text-slate-600 font-normal italic' },
         { id: 'docs', header: t('matrix.supporting_docs'), accessorKey: 'supportingDocs', width: '220px', className: 'text-xs text-slate-600 font-normal' },
@@ -197,8 +201,12 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride 
           id: 'is_key', 
           header: t('matrix.is_key_control'), 
           width: '90px', 
-          className: 'text-center',
-          render: (row) => row.isKeyControl ? <Shield className="h-4 w-4 mx-auto text-indigo-600 fill-indigo-50" /> : <span className="text-slate-200">—</span>
+          className: 'text-center text-xs font-mono',
+          render: (row) => (
+            <span className={cn(row.isKeyControl ? "font-bold text-indigo-700" : "text-slate-400 font-normal")}>
+              {row.isKeyControl ? 'Y' : 'N'}
+            </span>
+          )
         },
       ]
     },

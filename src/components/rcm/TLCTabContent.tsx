@@ -70,7 +70,7 @@ export function TLCTabContent({
               <TableRow><TableCell colSpan={6} className="h-40 text-center text-slate-400 italic">Tidak ada rekaman TLC ditemukan.</TableCell></TableRow>
             ) : filteredTlc.map((ctrl, i) => (
               <TableRow key={ctrl.id} className={cn("group hover:bg-slate-50 transition-colors", i % 2 === 1 && "bg-slate-50/30")}>
-                <TableCell className="font-mono text-xs font-bold text-slate-600 px-6 py-4">{ctrl.code}</TableCell>
+                <TableCell className="font-mono text-xs font-normal text-slate-600 px-6 py-4">{ctrl.code}</TableCell>
                 <TableCell className="py-4">
                   <div className="flex flex-col space-y-1">
                     <span className="text-xs text-slate-800 font-normal leading-snug">{ctrl.name}</span>
@@ -84,8 +84,10 @@ export function TLCTabContent({
                 </TableCell>
                 <TableCell className="text-center py-4">
                   <Badge className={cn(
-                    "text-[9px] font-bold h-6 px-2.5 border-none shadow-sm uppercase tracking-wider", 
-                    ctrl.riskRating === 'High' ? "bg-rose-500 text-white" : "bg-emerald-500 text-white"
+                    "text-[9px] font-bold h-6 px-2.5 uppercase tracking-wider shadow-none border", 
+                    ctrl.riskRating === 'High' ? "bg-rose-50 text-rose-700 border-rose-200" : 
+                    ctrl.riskRating === 'Medium' ? "bg-amber-50 text-amber-700 border-amber-200" :
+                    "bg-emerald-50 text-emerald-700 border-emerald-200"
                   )}>
                     {ctrl.riskRating}
                   </Badge>
