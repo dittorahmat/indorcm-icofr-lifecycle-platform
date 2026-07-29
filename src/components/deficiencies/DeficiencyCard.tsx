@@ -51,8 +51,8 @@ export function DeficiencyCard({ deficiency, actionPlan }: DeficiencyCardProps) 
         )}
         
         <CardHeader className="flex flex-row items-start justify-between p-5 pb-3">
-          <div className="space-y-2">
-             <div className="flex items-center gap-2">
+          <div className="space-y-2 w-full pr-2">
+             <div className="flex flex-wrap items-center gap-1.5">
                 <Badge className={cn("text-[8px] font-bold uppercase tracking-widest px-2 h-4 border-none shadow-sm", config.color)}>
                    {deficiency.severity}
                 </Badge>
@@ -62,14 +62,26 @@ export function DeficiencyCard({ deficiency, actionPlan }: DeficiencyCardProps) 
                 )}>
                    {deficiency.source || 'Manual'}
                 </Badge>
+                {deficiency.controlCode && (
+                  <Badge variant="secondary" className="text-[9px] font-mono font-bold uppercase tracking-wider px-2 h-4.5 bg-indigo-100/80 text-indigo-800 border border-indigo-300 shadow-xs">
+                    {deficiency.controlCode}
+                  </Badge>
+                )}
+                {deficiency.riskCode && (
+                  <Badge variant="secondary" className="text-[9px] font-mono font-bold uppercase tracking-wider px-2 h-4.5 bg-rose-100/80 text-rose-800 border border-rose-300 shadow-xs">
+                    {deficiency.riskCode}
+                  </Badge>
+                )}
                 {isOverdue && (
                   <Badge variant="outline" className="text-[8px] font-bold uppercase tracking-widest px-2 h-4 border-rose-200 bg-rose-50 text-rose-600 animate-pulse">
                     OVERDUE
                   </Badge>
                 )}
              </div>
-             <CardTitle className="text-sm font-display font-bold leading-tight text-slate-800 group-hover/card:text-indigo-600 transition-colors">
-               {deficiency.description}
+
+             {/* PROMINENT CONTROL HEADER */}
+             <CardTitle className="text-sm font-display font-extrabold leading-snug text-slate-900 group-hover/card:text-indigo-600 transition-colors">
+               {deficiency.controlName || deficiency.description}
              </CardTitle>
           </div>
           <div {...attributes} {...listeners} className="cursor-grab p-2 -m-2 text-slate-300 hover:text-indigo-500 transition-colors">
@@ -78,6 +90,13 @@ export function DeficiencyCard({ deficiency, actionPlan }: DeficiencyCardProps) 
         </CardHeader>
 
         <CardContent className="p-5 pt-0 space-y-4">
+          {/* FINDING / JUSTIFICATION NOTE BOX */}
+          {deficiency.controlName && (
+             <div className="p-3 bg-amber-50/60 border border-amber-200/80 rounded-lg text-slate-700 text-[11px] leading-relaxed">
+               <span className="font-bold text-amber-900 block text-[9px] uppercase tracking-wider mb-0.5">Catatan Evaluasi / Temuan Pengujian:</span>
+               {deficiency.description}
+             </div>
+          )}
           <div className="flex items-center justify-between">
              {actionPlan ? (
                 <div className={cn(

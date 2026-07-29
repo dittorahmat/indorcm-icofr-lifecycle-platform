@@ -4,7 +4,7 @@ import { ok, notFound } from '../lib/utils';
 import { getDb } from '../db';
 import { 
   deficiencies, actionPlans, auditLogs, aggregateDeficiencies, 
-  organization, notifications
+  organization, notifications, controls, rcms
 } from '../db/schema';
 import { eq, and, SQL } from 'drizzle-orm';
 import type { Deficiency, ActionPlan, AggregateDeficiency } from "@shared/types";
@@ -17,9 +17,27 @@ const remediation = new Hono<HonoEnv>();
 
 remediation.get('/deficiencies', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
-  console.log('📡 [DEBUG] Querying deficiencies from:', c.env.DATABASE_URL?.substring(0, 50) + '...');
+  console.log('📡 [DEBUG] Querying deficiencies with control & risk metadata from:', c.env.DATABASE_URL?.substring(0, 50) + '...');
   const orgId = c.get('organizationId');
-  const items = await db.select().from(deficiencies).where(eq(deficiencies.organizationId, orgId));
+  const rows = await db
+    .select({
+      deficiency: deficiencies,
+      controlCode: controls.code,
+      controlName: controls.name,
+      riskCode: rcms.riskLibraryId,
+    })
+    .from(deficiencies)
+    .leftJoin(controls, eq(deficiencies.controlId, controls.id))
+    .leftJoin(rcms, eq(controls.rcmId, rcms.id))
+    .where(eq(deficiencies.organizationId, orgId));
+
+  const items = rows.map(r => ({
+    ...r.deficiency,
+    controlCode: r.controlCode || undefined,
+    controlName: r.controlName || undefined,
+    riskCode: r.riskCode || undefined,
+  }));
+
   return ok(c, { items });
 });
 

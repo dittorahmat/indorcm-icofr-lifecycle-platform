@@ -1,5 +1,5 @@
 import { DrizzleDb } from '../db';
-import { deficiencies, actionPlans } from '../db/schema';
+import { deficiencies, actionPlans, controls } from '../db/schema';
 import { and, eq, sql } from 'drizzle-orm';
 
 export class DeficiencyService {
@@ -33,12 +33,26 @@ export class DeficiencyService {
 
     const deficiencyId = crypto.randomUUID();
 
+    // Fetch control metadata if controlId is provided
+    let controlPrefix = "";
+    if (controlId) {
+      const ctrl = await this.db.query.controls.findFirst({
+        where: eq(controls.id, controlId),
+        columns: { code: true, name: true }
+      });
+      if (ctrl) {
+        controlPrefix = `[${ctrl.code} - ${ctrl.name}] `;
+      }
+    }
+
+    const finalDescription = controlPrefix && !description.startsWith('[') ? `${controlPrefix}${description}` : description;
+
     // 2. Create Deficiency
     await this.db.insert(deficiencies).values({
       id: deficiencyId,
       organizationId,
       controlId,
-      description,
+      description: finalDescription,
       severity: 'Control Deficiency',
       identifiedDate: new Date(),
       identifiedBy: userId,

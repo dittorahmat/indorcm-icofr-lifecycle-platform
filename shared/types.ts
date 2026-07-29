@@ -319,6 +319,9 @@ export interface Deficiency extends Omit<InferSelectModel<typeof schema.deficien
     ineffectiveAuditCommittee: boolean;
   };
   identifiedDate: number | null;
+  controlCode?: string;
+  controlName?: string;
+  riskCode?: string;
 }
 
 export interface ActionPlan extends Omit<InferSelectModel<typeof schema.actionPlans>, 'dueDate' | 'targetDate' | 'actualCompletionDate' | 'workflowHistory'> {

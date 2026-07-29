@@ -8,12 +8,27 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ShieldCheck, Calendar, Lock } from 'lucide-react';
 import type { ActionPlan } from '@shared/types';
 
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { WorkflowPanel } from '../workflow/WorkflowPanel';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { api } from '@/lib/api-client';
+
+interface DepartmentItem {
+  id: string;
+  name: string;
+}
+
+interface UserItem {
+  id: string;
+  name: string;
+  email?: string;
+  role?: string;
+  departmentId?: string;
+}
 
 const remediationSchema = z.object({
   relatedFunction: z.string().min(1, 'Related Function is required'),
@@ -49,6 +64,50 @@ export function RemediationForm({ isOpen, setIsOpen, actionPlan, onSubmit, isLoa
       targetDate: actionPlan?.targetDate ? new Date(actionPlan.targetDate).toISOString().split('T')[0] : "",
     },
   });
+
+  const { data: departmentsData } = useQuery({
+    queryKey: ['departments'],
+    queryFn: () => api<{ items: DepartmentItem[] }>('/api/departments'),
+    enabled: isOpen,
+  });
+
+  const { data: usersData } = useQuery({
+    queryKey: ['users'],
+    queryFn: () => api<{ items: UserItem[] }>('/api/users'),
+    enabled: isOpen,
+  });
+
+  const departmentList = React.useMemo(() => {
+    const list = departmentsData?.items ? departmentsData.items.map(d => d.name) : [];
+    if (actionPlan?.relatedFunction && !list.includes(actionPlan.relatedFunction)) {
+      list.unshift(actionPlan.relatedFunction);
+    }
+    return Array.from(new Set(list));
+  }, [departmentsData, actionPlan?.relatedFunction]);
+
+  const selectedFunction = form.watch('relatedFunction');
+
+  const userList = React.useMemo(() => {
+    if (!usersData?.items) {
+      return actionPlan?.picName ? [actionPlan.picName] : [];
+    }
+
+    let filteredUsers = usersData.items;
+
+    // Cascading filter: Filter users belonging to the selected department
+    if (selectedFunction) {
+      const selectedDeptObj = departmentsData?.items?.find(d => d.name === selectedFunction);
+      if (selectedDeptObj) {
+        filteredUsers = usersData.items.filter(u => u.departmentId === selectedDeptObj.id);
+      }
+    }
+
+    const list = filteredUsers.map(u => u.name);
+    if (actionPlan?.picName && !list.includes(actionPlan.picName)) {
+      list.unshift(actionPlan.picName);
+    }
+    return Array.from(new Set(list));
+  }, [usersData, departmentsData, selectedFunction, actionPlan?.picName]);
 
   // Track unsaved changes
   const isDirty = form.formState.isDirty;
@@ -125,7 +184,20 @@ export function RemediationForm({ isOpen, setIsOpen, actionPlan, onSubmit, isLoa
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-[10px] uppercase font-black text-slate-400 tracking-widest">{t('form.fields.relatedFunction')}</FormLabel>
-                          <FormControl><Input placeholder={t('form.placeholders.relatedFunction')} {...field} className="h-10 bg-slate-50 border-slate-200 focus:bg-white transition-all rounded-lg font-bold" disabled={isWorkflowLocked} /></FormControl>
+                          <Select onValueChange={field.onChange} value={field.value} disabled={isWorkflowLocked}>
+                            <FormControl>
+                              <SelectTrigger className="h-10 bg-slate-50 border-slate-200 focus:bg-white transition-all rounded-lg font-bold">
+                                <SelectValue placeholder={t('form.placeholders.relatedFunction')} />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="z-[1100]">
+                              {departmentList.map((dept, i) => (
+                                <SelectItem key={i} value={dept} className="font-medium">
+                                  {dept}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                           <FormMessage className="text-xs text-rose-500 font-bold" />
                         </FormItem>
                       )}
@@ -136,7 +208,20 @@ export function RemediationForm({ isOpen, setIsOpen, actionPlan, onSubmit, isLoa
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-[10px] uppercase font-black text-slate-400 tracking-widest">{t('form.fields.picName')}</FormLabel>
-                          <FormControl><Input placeholder={t('form.placeholders.picName')} {...field} className="h-10 bg-slate-50 border-slate-200 focus:bg-white transition-all rounded-lg font-bold" disabled={isWorkflowLocked} /></FormControl>
+                          <Select onValueChange={field.onChange} value={field.value} disabled={isWorkflowLocked}>
+                            <FormControl>
+                              <SelectTrigger className="h-10 bg-slate-50 border-slate-200 focus:bg-white transition-all rounded-lg font-bold">
+                                <SelectValue placeholder={t('form.placeholders.picName')} />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="z-[1100]">
+                              {userList.map((usr, i) => (
+                                <SelectItem key={i} value={usr} className="font-medium">
+                                  {usr}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                           <FormMessage className="text-xs text-rose-500 font-bold" />
                         </FormItem>
                       )}
