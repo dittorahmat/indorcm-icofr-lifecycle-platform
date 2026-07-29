@@ -27,7 +27,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { tenant } = useTenant();
   const [user, setUser] = useState<UserProfile | null>(null);
 
-  const parseJwt = (token: string): UserProfile | null => {
+  const parseJwt = React.useCallback((token: string): UserProfile | null => {
     try {
       const base64Url = token.split('.')[1];
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -55,15 +55,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         tenantId: tenant.id,
       };
     }
-  };
+  }, [tenant.id]);
 
-  const loginWithJwt = (token: string) => {
+  const loginWithJwt = React.useCallback((token: string) => {
     const profile = parseJwt(token);
     if (profile) {
       setUser(profile);
       sessionStorage.setItem('sso_token', token);
     }
-  };
+  }, [parseJwt]);
 
   const logout = () => {
     setUser(null);
@@ -89,7 +89,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       window.addEventListener('message', handleMessage);
       return () => window.removeEventListener('message', handleMessage);
     }
-  }, [tenant]);
+  }, [tenant, loginWithJwt]);
 
   return (
     <AuthContext.Provider
@@ -105,4 +105,5 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => useContext(AuthContext);

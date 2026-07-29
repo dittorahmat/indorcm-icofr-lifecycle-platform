@@ -112,7 +112,8 @@ export const GLDataGrid = React.memo(function GLDataGrid({
     { id: 'noUrut', desc: false }
   ]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({
-    noUrut: false
+    noUrut: false,
+    parentEntityCode: false
   });
 
   const deptOptions: Option[] = React.useMemo(() => 
@@ -129,6 +130,12 @@ export const GLDataGrid = React.memo(function GLDataGrid({
         aggregatedCell: info => <span className="text-xs text-slate-500 font-bold">{info.getValue<number>()}</span>,
         aggregationFn: 'min',
         size: 40,
+      },
+      {
+        accessorKey: 'parentEntityCode',
+        header: t('grid.parentEntityCode', 'Parent Entity'),
+        cell: info => <span className="font-mono text-xs">{info.getValue<string>()}</span>,
+        size: 80,
       },
       {
         accessorKey: 'entityCode',

@@ -178,14 +178,8 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride 
           id: 'risk_rating', 
           header: t('matrix.risk_rating'), 
           width: '110px', 
-          className: 'text-center',
-          render: (row) => (
-            <Badge className={cn("text-xs font-bold px-2 h-5 leading-none uppercase shadow-none border", 
-              row.riskRating === 'High' ? "bg-rose-50 text-rose-700 border-rose-200" : 
-              row.riskRating === 'Medium' ? "bg-amber-50 text-amber-700 border-amber-200" : 
-              "bg-emerald-50 text-emerald-700 border-emerald-200"
-            )}>{row.riskRating}</Badge>
-          )
+          className: 'text-center text-xs font-normal text-slate-800',
+          accessorKey: 'riskRating'
         },
       ]
     },

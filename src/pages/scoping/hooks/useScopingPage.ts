@@ -146,6 +146,8 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
   const [selectedEntityCodes, setSelectedEntityCodes] = React.useState<string[]>([]);
   const [localAppMappings, setLocalAppMappings] = React.useState<Record<string, string[]>>({});
   const [localDeptMappings, setLocalDeptMappings] = React.useState<Record<string, string[]>>({});
+  const [isAppMappingsTouched, setIsAppMappingsTouched] = React.useState(false);
+  const [isDeptMappingsTouched, setIsDeptMappingsTouched] = React.useState(false);
 
   // Draft parameter inputs for manual trigger
   const [draftBasis, setDraftBasis] = React.useState(initialSimulation.basis || '');
@@ -249,6 +251,8 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
       setActiveBasis(initialSimulation.basis || '');
       setActiveOmPercentage(initialSimulation.omPercentage || 0);
       setActiveHaircutPercentage(initialSimulation.haircutPercentage || 0);
+      setIsAppMappingsTouched(false);
+      setIsDeptMappingsTouched(false);
     } else if (!isDirty) {
       setSimState(initialSimulation);
       setDraftBasis(initialSimulation.basis || '');
@@ -271,31 +275,27 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
   }, [snapshot]);
 
   React.useEffect(() => {
-    if (initialSimulation.id !== lastSimIdRef.current || !isDirty) {
-      if (initialMappings?.items) {
-        const map: Record<string, string[]> = {};
-        initialMappings.items.forEach(m => {
-          if (!map[m.accountCode]) map[m.accountCode] = [];
-          map[m.accountCode].push(m.applicationId);
-        });
-        setLocalAppMappings(map);
-      }
+    if (initialMappings?.items && !isAppMappingsTouched) {
+      const map: Record<string, string[]> = {};
+      initialMappings.items.forEach(m => {
+        if (!map[m.accountCode]) map[m.accountCode] = [];
+        map[m.accountCode].push(m.applicationId);
+      });
+      setLocalAppMappings(map);
     }
-  }, [initialMappings, isDirty, initialSimulation.id]);
+  }, [initialMappings, isAppMappingsTouched]);
 
   React.useEffect(() => {
-    if (initialSimulation.id !== lastSimIdRef.current || !isDirty) {
-      if (initialSimulation.significantAccounts) {
-        const map: Record<string, string[]> = {};
-        initialSimulation.significantAccounts.forEach(sa => {
-          if (sa.fsliCode && sa.assignedDepartmentIds) {
-            map[sa.fsliCode] = sa.assignedDepartmentIds;
-          }
-        });
-        setLocalDeptMappings(map);
-      }
+    if (initialSimulation.significantAccounts && !isDeptMappingsTouched) {
+      const map: Record<string, string[]> = {};
+      initialSimulation.significantAccounts.forEach(sa => {
+        if (sa.fsliCode && sa.assignedDepartmentIds) {
+          map[sa.fsliCode] = sa.assignedDepartmentIds;
+        }
+      });
+      setLocalDeptMappings(map);
     }
-  }, [initialSimulation, isDirty]);
+  }, [initialSimulation.significantAccounts, isDeptMappingsTouched]);
 
   // Hierarchy and Filtering
   const entityHierarchy = React.useMemo(() => {
@@ -456,6 +456,8 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries();
+      setIsAppMappingsTouched(false);
+      setIsDeptMappingsTouched(false);
       resetDirty();
       toast.success(t('common:notifications.saved'));
     }
@@ -493,9 +495,11 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
     },
     handlers: {
       onAssignDepartments: (accountName: string, departmentIds: string[]) => {
+        setIsDeptMappingsTouched(true);
         setLocalDeptMappings(prev => ({ ...prev, [accountName]: departmentIds }));
       },
       onAppsChange: (accountCode: string, appIds: string[]) => {
+        setIsAppMappingsTouched(true);
         setLocalAppMappings(prev => ({ ...prev, [accountCode]: appIds }));
       },
       onAssessmentChange: (fsliName: string, ruleId: number, level: QualitativeLevel) => {
