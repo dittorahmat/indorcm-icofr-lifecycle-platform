@@ -2,13 +2,18 @@ version: '3.8'
 
 services:
   db:
-    image: postgres:15-alpine
+    image: pgvector/pgvector:pg15
     container_name: indorcm-db
     restart: always
     environment:
       POSTGRES_USER: indouser
       POSTGRES_PASSWORD: indopassword
       POSTGRES_DB: indorcm_db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U indouser -d indorcm_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -29,7 +34,8 @@ services:
     volumes:
       - /etc/machine-id:/host_machine_id:ro
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - indorcm-network
 

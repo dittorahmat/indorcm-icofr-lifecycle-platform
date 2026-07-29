@@ -45,12 +45,17 @@ COPY --from=obfuscator /app/server.obfuscated.js ./server.js
 
 # Copy essential files
 COPY --from=builder /app/package.json .
+COPY --from=builder /app/drizzle ./drizzle
+COPY --from=builder /app/drizzle.config.ts ./drizzle.config.ts
+COPY --from=builder /app/scripts ./scripts
+COPY --from=builder /app/worker ./worker
+COPY --from=builder /app/shared ./shared
+COPY docker-entrypoint.sh ./entrypoint.sh
 
 # Install ONLY production dependencies needed for runtime
-# Note: Since we bundled, we mostly just need @hono/node-server and drizzle drivers
 RUN bun install --production
+RUN chmod +x ./entrypoint.sh
 
 EXPOSE 3001
 
-# Run the obfuscated server
-CMD ["bun", "run", "server.js"]
+ENTRYPOINT ["./entrypoint.sh"]
