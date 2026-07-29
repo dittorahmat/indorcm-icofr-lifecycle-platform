@@ -1,0 +1,18 @@
+/* Microsoft / Blazor Enterprise Theme for Company B */
+:root[data-tenant="company_b"] {
+  --primary: 211 100% 35%;          /* Microsoft Corporate Blue #0056b3 */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 210 20% 96%;
+  --secondary-foreground: 211 100% 25%;
+  --accent: 211 80% 90%;
+  --accent-foreground: 211 100% 20%;
+  --radius: 0.25rem;                 /* Crisp enterprise borders */
+  --sidebar: 215 25% 15%;
+  --sidebar-foreground: 210 20% 98%;
+}
+
+:root[data-tenant="company_a"] {
+  --primary: 158 64% 32%;           /* Whitelabel Emerald Green */
+  --primary-foreground: 0 0% 100%;
+  --radius: 0.5rem;
+}

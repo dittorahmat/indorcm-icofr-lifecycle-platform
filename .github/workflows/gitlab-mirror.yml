@@ -1,0 +1,23 @@
+name: Mirror to Company B GitLab
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Memungkinkan Anda men-trigger sync manual dari tab GitHub Actions
+
+jobs:
+  to_gitlab:
+    name: Sync Repository to GitLab BDO-KI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Ambil seluruh commit history agar mirror sempurna
+
+      - name: Push to BDO-KI GitLab Repository
+        uses: pixta-dev/repository-mirroring-action@v1
+        with:
+          target_repo_url: 'git@repo.bdo-ki.com:icofr/app.git'
+          ssh_private_key: ${{ secrets.GITLAB_COMPANY_B_SSH_PRIVATE_KEY }}

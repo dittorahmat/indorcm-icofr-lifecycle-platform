@@ -5,6 +5,7 @@ import React, { Suspense } from "react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { useTenant } from "@/context/TenantContext";
 
 // Lazy load the sidebar to split the bundle
 const AppSidebar = React.lazy(() => import("@/components/app-sidebar").then(module => ({ default: module.AppSidebar })));
@@ -24,6 +25,16 @@ export function AppLayout({
   contentClassName,
   noScroll = false
 }: AppLayoutProps): JSX.Element {
+  const { tenant } = useTenant();
+
+  if (tenant.isEmbedded) {
+    return (
+      <div className={cn("w-full h-full p-4 overflow-auto", className, contentClassName)}>
+        {children}
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-1 min-h-0 relative min-w-0">
       {/* Fixed Sidebar Background Strip */}
