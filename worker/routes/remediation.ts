@@ -25,6 +25,7 @@ remediation.get('/deficiencies', async (c) => {
       controlCode: controls.code,
       controlName: controls.name,
       riskCode: rcms.riskLibraryId,
+      riskDescription: rcms.riskDescription,
     })
     .from(deficiencies)
     .leftJoin(controls, eq(deficiencies.controlId, controls.id))
@@ -36,6 +37,7 @@ remediation.get('/deficiencies', async (c) => {
     controlCode: r.controlCode || undefined,
     controlName: r.controlName || undefined,
     riskCode: r.riskCode || undefined,
+    riskDescription: r.riskDescription || undefined,
   }));
 
   return ok(c, { items });

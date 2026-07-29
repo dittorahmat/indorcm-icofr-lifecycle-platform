@@ -90,6 +90,19 @@ export function DeficiencyCard({ deficiency, actionPlan }: DeficiencyCardProps) 
         </CardHeader>
 
         <CardContent className="p-5 pt-0 space-y-4">
+          {/* PROMINENT RISK DESCRIPTION BOX */}
+          {deficiency.riskDescription && (
+             <div className="p-2.5 bg-rose-50/70 border border-rose-200/80 rounded-lg text-rose-950 text-[11px] leading-relaxed flex items-start gap-2">
+               <AlertTriangle className="h-4 w-4 text-rose-500 shrink-0 mt-0.5" />
+               <div>
+                 <span className="font-bold text-rose-900 block text-[9px] uppercase tracking-wider mb-0.5">
+                   Risiko Terdampak {deficiency.riskCode ? `(${deficiency.riskCode})` : ''}:
+                 </span>
+                 {deficiency.riskDescription}
+               </div>
+             </div>
+          )}
+
           {/* FINDING / JUSTIFICATION NOTE BOX */}
           {deficiency.controlName && (
              <div className="p-3 bg-amber-50/60 border border-amber-200/80 rounded-lg text-slate-700 text-[11px] leading-relaxed">

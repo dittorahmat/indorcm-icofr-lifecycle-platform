@@ -8,9 +8,9 @@ Selain itu, pada formulir pengisian rencana remedi (`RemediationForm.tsx`), fiel
 
 **Goals:**
 - Menata ulang hirarki visual komponen `DeficiencyCard.tsx` agar Kode Kontrol (`controlCode`) dan Nama Kontrol (`controlName`) tampil prominent sebagai **Judul Utama Kartu**.
-- Menampilkan metadata Kode Risiko (`riskCode`) / Deskripsi Risiko secara eksplisit jika tersedia.
+- Menampilkan metadata Kode Risiko (`riskCode`) dan **Deskripsi Risiko (`riskDescription`)** secara eksplisit dalam kotak aksen peringatan (`bg-rose-50/border-rose-200`) dengan ikon `AlertTriangle`.
 - Mengubah status/catatan evaluasi TOD/CSA (seperti `"Hasil Verifikasi Desain (TOD) Ineffective..."`) menjadi subtext/keterangan pendukung (*Audit Finding / Justification Note Box*), bukan judul utama.
-- Memperbarui payload API `/api/deficiencies` agar turut menyertakan relasi risiko (`riskCode`).
+- Memperbarui payload API `/api/deficiencies` agar turut menyertakan relasi risiko (`riskCode`, `riskDescription`).
 - Mengubah field `Related Function` dan `Person In Charge (PIC)` pada `RemediationForm.tsx` dari teks input biasa menjadi komponen `<Select>` dropdown dinamis berbasis data terdaftar dari `/api/departments` dan `/api/users`.
 - Menambahkan **logika cascading interaktif** antara `Related Function` dan `PIC`, di mana daftar pilihan PIC tersaring hanya menampilkan personel dari fungsi/departemen yang terpilih.
 
@@ -22,10 +22,11 @@ Selain itu, pada formulir pengisian rencana remedi (`RemediationForm.tsx`), fiel
 1. **Restrukturisasi Hirarki Visual `DeficiencyCard.tsx`**:
    - **Judul Utama (`CardTitle`)**: Menampilkan Kode Kontrol & Nama Kontrol secara lengkap dan menonjol (menghapus `line-clamp-1` agar nama kontrol terbaca utuh).
    - **Badges Bar**: Badges keparahan (`Control Deficiency`, `Material Weakness`), Sumber (`Lini 2 - TOD Review`), dan Kode Risiko (`riskCode`) berada di header kartu.
-   - **Kotak Catatan Temuan/Evaluasi (`Finding / Justification Note Box`)**: Teks deskripsi pengujian/kesimpulan sistem seperti `"Hasil Verifikasi Desain (TOD) Ineffective: ..."` ditampilkan di bagian bawah kartu dalam kotak aksen tipis (`bg-slate-50/border-slate-200`) sebagai catatan latar belakang temuan.
+   - **Kotak Deskripsi Risiko (`Prominent Risk Description Box`)**: Teks deskripsi risiko dari RCM dirender secara eksplisit di bawah header kontrol dalam kotak aksen `rose-50` agar pengguna memahami konteks risiko yang terdampak secara transparan.
+   - **Kotak Catatan Temuan/Evaluasi (`Finding / Justification Note Box`)**: Teks deskripsi pengujian/kesimpulan sistem seperti `"Hasil Verifikasi Desain (TOD) Ineffective: ..."` ditampilkan di bagian bawah kartu dalam kotak aksen tipis (`bg-amber-50/border-amber-200`) sebagai catatan latar belakang temuan.
 
 2. **Backend Relation Query Enhancement (`remediation.ts`)**:
-   - `GET /api/deficiencies` melakukan JOIN tambahan ke tabel `rcms` / `risks` untuk mengembalikan `riskCode` sehingga informasi risiko terkait kontrol yang bermasalah bisa dirender di kartu.
+   - `GET /api/deficiencies` melakukan JOIN tambahan ke tabel `rcms` untuk mengembalikan `riskCode` (`riskLibraryId`) dan `riskDescription` sehingga informasi risiko terkait kontrol yang bermasalah dapat dipasok penuh ke frontend.
 
 3. **Penggunaan Dropdown Dinamis & Cascading untuk `Related Function` & `PIC` (`RemediationForm.tsx`)**:
    - Menggunakan `useQuery` TanStack Query untuk me-fetch daftar unit kerja dari `/api/departments` dan pengguna dari `/api/users`.
