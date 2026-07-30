@@ -24,12 +24,12 @@ export const dbLocalStorage = new AsyncLocalStorage<{ db: DrizzleDb; pool?: Pool
 export const fixDatabaseSchema = async (db: DrizzleDb) => {
   if (isDbFixed) return;
   try {
-    await db.execute(sql`ALTER TABLE gl_snapshots ADD COLUMN IF NOT EXISTS year integer;`);
-    await db.execute(sql`ALTER TABLE gl_snapshots ADD COLUMN IF NOT EXISTS "benchmarkFsliNames" jsonb;`);
-    await db.execute(sql`ALTER TABLE "account_assertions" ADD COLUMN IF NOT EXISTS "year" integer;`);
-    await db.execute(sql`ALTER TABLE "audit_logs" ADD COLUMN IF NOT EXISTS "change_category" text;`);
-    await db.execute(sql`ALTER TABLE "documents" ADD COLUMN IF NOT EXISTS "metadata" jsonb;`);
-    await db.execute(sql`CREATE TABLE IF NOT EXISTS "user_preferences" (
+    await db.execute(sql`ALTER TABLE icofr.gl_snapshots ADD COLUMN IF NOT EXISTS year integer;`);
+    await db.execute(sql`ALTER TABLE icofr.gl_snapshots ADD COLUMN IF NOT EXISTS "benchmarkFsliNames" jsonb;`);
+    await db.execute(sql`ALTER TABLE icofr."account_assertions" ADD COLUMN IF NOT EXISTS "year" integer;`);
+    await db.execute(sql`ALTER TABLE icofr."audit_logs" ADD COLUMN IF NOT EXISTS "change_category" text;`);
+    await db.execute(sql`ALTER TABLE icofr."documents" ADD COLUMN IF NOT EXISTS "metadata" jsonb;`);
+    await db.execute(sql`CREATE TABLE IF NOT EXISTS icofr."user_preferences" (
       "user_id" text PRIMARY KEY NOT NULL,
       "layout" jsonb,
       "updated_at" timestamp DEFAULT now() NOT NULL
