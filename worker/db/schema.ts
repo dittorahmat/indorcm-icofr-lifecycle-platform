@@ -1,5 +1,9 @@
-import { pgTable, text, integer, timestamp, boolean, doublePrecision, jsonb, pgEnum, index, customType } from "drizzle-orm/pg-core";
+import { text, integer, timestamp, boolean, doublePrecision, jsonb, index, customType, pgSchema } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
+
+export const icofrSchema = pgSchema("icofr");
+const pgTable = icofrSchema.table;
+const pgEnum = icofrSchema.enum;
 
 // Custom type for PostgreSQL tsvector and vector
 const tsvector = customType<{ data: string }>({
@@ -118,7 +122,7 @@ export const glSnapshots = pgTable("gl_snapshots", {
 });
 
 // Enum for owner acceptance status
-export const ownerAcceptanceEnum = pgEnum("owner_acceptance", ["Accepted", "Rejected"]);
+export const ownerAcceptanceEnum = icofrSchema.enum("owner_acceptance", ["Accepted", "Rejected"]);
 
 export const glRows = pgTable("gl_rows", {
 	id: text("id").primaryKey(),

@@ -4,6 +4,7 @@ export default defineConfig({
   schema: "./worker/db/schema.ts",
   out: "./drizzle",
   dialect: "postgresql",
+  schemaFilter: ["icofr"],
   dbCredentials: {
     url: process.env.DATABASE_URL!,
   },
