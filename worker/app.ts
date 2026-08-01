@@ -100,10 +100,24 @@ export const createApp = () => {
     }
   });
 
+  app.use('*', async (c, next) => {
+    await next();
+    c.header('X-Powered-By', '');
+  });
+
+  const trustedOrigins = [
+    'https://icofr.dsintegra.co.id',
+    'https://grc.dsintegra.co.id',
+    'https://icofr.tech1solusi.workers.dev',
+    'http://localhost:3000',
+    'http://localhost:5173'
+  ];
+
   app.use('/api/*', cors({ 
-    origin: '*', 
+    origin: (origin) => (origin && trustedOrigins.includes(origin) ? origin : trustedOrigins[0]), 
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], 
-    allowHeaders: ['Content-Type', 'Authorization', 'X-Mock-Role', 'X-License-Key'] 
+    allowHeaders: ['Content-Type', 'Authorization', 'X-Mock-Role', 'X-License-Key'],
+    credentials: true
   }));
 
   // License Guard Middleware

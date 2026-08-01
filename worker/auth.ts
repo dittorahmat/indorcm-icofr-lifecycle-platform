@@ -62,10 +62,10 @@ export const getAuth = (env: { DATABASE_URL: string; BETTER_AUTH_SECRET: string;
         ],
         user: {
             additionalFields: {
-                role: { type: "string" },
-                level: { type: "string" },
-                departmentId: { type: "string" },
-                language: { type: "string" },
+                role: { type: "string", input: false },
+                level: { type: "string", input: false },
+                departmentId: { type: "string", input: false },
+                language: { type: "string", input: false },
             }
         },
         advanced: {
