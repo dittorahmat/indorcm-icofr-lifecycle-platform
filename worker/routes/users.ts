@@ -84,7 +84,7 @@ users.get('/users', async (c) => {
   return ok(c, { items: results });
 });
 
-users.post('/users', async (c) => {
+users.post('/users', rbac(['Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const body = await c.req.json<any>();
@@ -112,9 +112,9 @@ users.post('/users', async (c) => {
   return ok(c, { id });
 });
 
-users.put('/users/:id', async (c) => {
+users.put('/users/:id', rbac(['Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
-  const id = c.req.param('id');
+  const id = c.req.param('id')!;
   const body = await c.req.json<any>();
   
   await db.update(user).set({
@@ -132,9 +132,9 @@ users.put('/users/:id', async (c) => {
   return ok(c, { success: true });
 });
 
-users.delete('/users/:id', async (c) => {
+users.delete('/users/:id', rbac(['Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
-  const id = c.req.param('id');
+  const id = c.req.param('id')!;
   await db.delete(member).where(eq(member.userId, id));
   await db.delete(user).where(eq(user.id, id));
   return ok(c, { success: true });
@@ -149,7 +149,7 @@ users.get('/departments', async (c) => {
   return ok(c, { items });
 });
 
-users.post('/departments', async (c) => {
+users.post('/departments', rbac(['Admin', 'Line 2']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const body = await c.req.json<any>();
@@ -164,18 +164,18 @@ users.post('/departments', async (c) => {
   return ok(c, { id });
 });
 
-users.put('/departments/:id', async (c) => {
+users.put('/departments/:id', rbac(['Admin', 'Line 2']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
-  const id = c.req.param('id');
+  const id = c.req.param('id')!;
   const body = await c.req.json<any>();
   
   await db.update(departments).set({ name: body.name }).where(eq(departments.id, id));
   return ok(c, { success: true });
 });
 
-users.delete('/departments/:id', async (c) => {
+users.delete('/departments/:id', rbac(['Admin', 'Line 2']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
-  const id = c.req.param('id');
+  const id = c.req.param('id')!;
   await db.delete(departments).where(eq(departments.id, id));
   return ok(c, { success: true });
 });
@@ -230,7 +230,7 @@ users.get('/settings', async (c) => {
   return ok(c, settings);
 });
 
-users.put('/settings', async (c) => {
+users.put('/settings', rbac(['Admin', 'Line 2']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const body = await c.req.json<Partial<Settings>>();
@@ -268,7 +268,7 @@ users.put('/settings', async (c) => {
   return ok(c, { success: true });
 });
 
-users.post('/settings/test-email', async (c) => {
+users.post('/settings/test-email', rbac(['Admin', 'Line 2']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const userId = c.get('userId');
   const body = await c.req.json<Partial<Settings>>();

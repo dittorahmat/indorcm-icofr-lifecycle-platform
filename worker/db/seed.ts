@@ -43,8 +43,9 @@ export const seedDatabase = async (databaseUrl: string, authSecret: string, skip
     // 3. SYNC USERS & ACCOUNTS
     console.log("🔐 Syncing Credentials...");
     const salt = crypto.randomBytes(16).toString('hex');
-    const hash = crypto.pbkdf2Sync('password', salt, 100, 32, 'sha256').toString('hex');
-    const passwordHash = `pbkdf2$100$${salt}$${hash}`;
+    const iterations = 600000;
+    const hash = crypto.pbkdf2Sync('password', salt, iterations, 32, 'sha256').toString('hex');
+    const passwordHash = `pbkdf2$${iterations}$${salt}$${hash}`;
 
     for (const u of MOCK_USERS) {
         const email = getFriendlyEmail(u);

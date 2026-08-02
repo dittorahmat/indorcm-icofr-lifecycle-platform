@@ -5,12 +5,14 @@ import { eq, and } from 'drizzle-orm';
 import { HonoEnv } from '../app';
 import { ok } from '../lib/utils';
 
+import { rbac } from '../lib/guard';
+
 const migration = new Hono<HonoEnv>();
 
 // Helper for generating IDs in worker context if needed
 const generateId = () => Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
-migration.post('/migration/finalize', async (c) => {
+migration.post('/migration/finalize', rbac(['Line 2', 'Admin']), async (c) => {
   const { sessionId, year, tbData, rcmData, simulationParams, tbFileName } = await c.req.json();
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');

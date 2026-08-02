@@ -54,7 +54,7 @@ export interface HonoEnv {
     AI_BASE_URL?: string;
     AI_EMBEDDING_MODEL?: string;
     AI_CHAT_MODEL?: string;
-    DOCUMENTS_BUCKET: R2Bucket;
+    DOCUMENTS_BUCKET: any;
     LICENSE_PUBLIC_KEY?: string;
     PARTNER_PUBLIC_KEY?: string;
     SKIP_LICENSE?: string;
@@ -103,6 +103,11 @@ export const createApp = () => {
   app.use('*', async (c, next) => {
     await next();
     c.header('X-Powered-By', '');
+    c.header('X-Content-Type-Options', 'nosniff');
+    c.header('X-Frame-Options', 'DENY');
+    c.header('X-XSS-Protection', '1; mode=block');
+    c.header('Referrer-Policy', 'strict-origin-when-cross-origin');
+    c.header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   });
 
   const trustedOrigins = [
@@ -114,9 +119,12 @@ export const createApp = () => {
   ];
 
   app.use('/api/*', cors({ 
-    origin: (origin) => (origin && trustedOrigins.includes(origin) ? origin : trustedOrigins[0]), 
+    origin: (origin) => {
+      if (!origin) return trustedOrigins[0];
+      return trustedOrigins.includes(origin) ? origin : null;
+    }, 
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], 
-    allowHeaders: ['Content-Type', 'Authorization', 'X-Mock-Role', 'X-License-Key'],
+    allowHeaders: ['Content-Type', 'Authorization', 'X-License-Key'],
     credentials: true
   }));
 
@@ -283,14 +291,15 @@ export const createApp = () => {
   // Global Error Handler
   app.onError((err, c) => {
     console.error(`[HONO ERROR] ${err.message}`, err.stack);
-    if (err.cause) {
-      console.error(`[HONO ERROR CAUSE]`, err.cause);
+    const cause = (err as any).cause;
+    if (cause) {
+      console.error(`[HONO ERROR CAUSE]`, cause);
     }
     return c.json({ 
       success: false, 
       error: err.name || 'Internal Server Error', 
       message: err.message,
-      cause: err.cause ? (err.cause as any).message || String(err.cause) : undefined
+      cause: cause ? cause.message || String(cause) : undefined
     }, 500);
   });
 

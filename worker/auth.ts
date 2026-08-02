@@ -42,16 +42,25 @@ export const getAuth = (env: { DATABASE_URL: string; BETTER_AUTH_SECRET: string;
                 // Logic Hashing PBKDF2 (Compatible with Cloudflare)
                 hash: async (password: string) => {
                     const salt = crypto.randomBytes(16).toString('hex');
-                    const hash = crypto.pbkdf2Sync(password, salt, 100, 32, 'sha256').toString('hex');
-                    return `pbkdf2$100$${salt}$${hash}`;
+                    const iterations = 600000;
+                    const hash = crypto.pbkdf2Sync(password, salt, iterations, 32, 'sha256').toString('hex');
+                    return `pbkdf2$${iterations}$${salt}$${hash}`;
                 },
                 verify: async ({ hash: storedHash, password }) => {
                     if (!storedHash) return false;
 
                     if (storedHash.startsWith('pbkdf2$')) {
-                        const [, iterations, salt, hash] = storedHash.split('$');
-                        const verifyHash = crypto.pbkdf2Sync(password, salt, parseInt(iterations), 32, 'sha256').toString('hex');
-                        return verifyHash === hash;
+                        const parts = storedHash.split('$');
+                        if (parts.length !== 4) return false;
+                        const [, iterationsStr, salt, hash] = parts;
+                        const iterations = parseInt(iterationsStr, 10);
+                        if (isNaN(iterations) || iterations < 1) return false;
+
+                        const verifyHashBuf = crypto.pbkdf2Sync(password, salt, iterations, 32, 'sha256');
+                        const hashBuf = Buffer.from(hash, 'hex');
+
+                        if (verifyHashBuf.length !== hashBuf.length) return false;
+                        return crypto.timingSafeEqual(verifyHashBuf, hashBuf);
                     }
                     return false;
                 }

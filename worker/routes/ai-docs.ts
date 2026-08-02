@@ -68,7 +68,8 @@ aiDocsApp.post('/documents', async (c) => {
 
     const arrayBuffer = await file.arrayBuffer();
 
-    const key = `docs/${orgId}/${crypto.randomUUID()}-${file.name}`;
+    const safeFileName = file.name.replace(/[^a-zA-Z0-9_.-]/g, '_');
+    const key = `docs/${orgId}/${crypto.randomUUID()}-${safeFileName}`;
     const bucket = getStorageBucket(c);
     await bucket.put(key, arrayBuffer, {
       httpMetadata: { contentType: file.type }
@@ -80,7 +81,7 @@ aiDocsApp.post('/documents', async (c) => {
     const newDoc = {
       id: docId,
       organizationId: orgId,
-      title: title || file.name,
+      title: title || safeFileName,
       type,
       category,
       content,
@@ -386,7 +387,8 @@ aiDocsApp.post('/upload', async (c) => {
     const file = formData.get('file') as File;
     if (!file) return bad(c, 'File is required');
 
-    const key = `uploads/${orgId}/${crypto.randomUUID()}-${file.name}`;
+    const safeFileName = file.name.replace(/[^a-zA-Z0-9_.-]/g, '_');
+    const key = `uploads/${orgId}/${crypto.randomUUID()}-${safeFileName}`;
     const bucket = getStorageBucket(c);
     await bucket.put(key, await file.arrayBuffer(), {
       httpMetadata: { contentType: file.type }

@@ -27,9 +27,19 @@ class LocalStorageBucket implements StorageBucket {
     return { fs, path, existsSync };
   }
 
+  private async getSanitizedPath(key: string): Promise<string> {
+    const { path } = await this.getFs();
+    const rootDir = path.resolve(process.cwd(), this.baseDir);
+    const resolvedPath = path.resolve(rootDir, key);
+    if (!resolvedPath.startsWith(rootDir + path.sep) && resolvedPath !== rootDir) {
+      throw new Error('Access denied: Path traversal detected');
+    }
+    return resolvedPath;
+  }
+
   async put(key: string, body: ArrayBuffer | ArrayBufferView | string, options?: any): Promise<any> {
     const { fs, path } = await this.getFs();
-    const filePath = path.resolve(process.cwd(), this.baseDir, key);
+    const filePath = await this.getSanitizedPath(key);
     const fileDir = path.dirname(filePath);
     
     await fs.mkdir(fileDir, { recursive: true });
@@ -48,8 +58,8 @@ class LocalStorageBucket implements StorageBucket {
   }
 
   async get(key: string): Promise<StorageObject | null> {
-    const { fs, path, existsSync } = await this.getFs();
-    const filePath = path.resolve(process.cwd(), this.baseDir, key);
+    const { fs, existsSync } = await this.getFs();
+    const filePath = await this.getSanitizedPath(key);
     if (!existsSync(filePath)) {
       return null;
     }
@@ -82,8 +92,8 @@ class LocalStorageBucket implements StorageBucket {
   }
 
   async delete(key: string): Promise<void> {
-    const { fs, path, existsSync } = await this.getFs();
-    const filePath = path.resolve(process.cwd(), this.baseDir, key);
+    const { fs, existsSync } = await this.getFs();
+    const filePath = await this.getSanitizedPath(key);
     if (existsSync(filePath)) {
       await fs.unlink(filePath);
     }
