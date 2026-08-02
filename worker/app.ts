@@ -337,6 +337,10 @@ export const createApp = () => {
   userRoutes(app);
 
   app.all('/api/auth/*', async (c) => {
+    // Remediation C-02: Disable open self-registration (sign-up) to prevent mass assignment / unverified account creation
+    if (c.req.path === '/api/auth/sign-up/email' && c.req.method === 'POST') {
+      return c.json({ success: false, error: 'FORBIDDEN', message: 'Self-registration is disabled. Account creation is by invitation/admin only.' }, 403);
+    }
     const auth = getAuth(c.env);
     return auth.handler(c.req.raw);
   });
