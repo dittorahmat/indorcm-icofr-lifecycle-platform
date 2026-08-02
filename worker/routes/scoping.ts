@@ -152,7 +152,7 @@ scoping.post('/simulations/:id/submit', rbac(['Line 2', 'Admin']), async (c) => 
   }
 });
 
-scoping.post('/simulations/:id/approve', async (c) => {
+scoping.post('/simulations/:id/approve', rbac(['CFO', 'Commissioner', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const id = c.req.param('id') as string;
   const orgId = c.get('organizationId');
@@ -205,7 +205,7 @@ scoping.post('/simulations/:id/approve', async (c) => {
   return ok(c, { success: true });
 });
 
-scoping.post('/simulations/:id/reject', async (c) => {
+scoping.post('/simulations/:id/reject', rbac(['CFO', 'Commissioner', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const id = c.req.param('id') as string;
   const orgId = c.get('organizationId');

@@ -13,6 +13,7 @@ import { generateCsaPdf } from "../lib/csa-pdf";
 import { AuditService } from "../services/audit-service";
 import { DeficiencyService } from "../services/deficiency-service";
 import { createNotificationAndSendEmail } from "../services/email";
+import { rbac } from "../lib/guard";
 
 const csa = new Hono<HonoEnv>();
 
@@ -498,7 +499,7 @@ csa.get('/tod-evaluations', async (c) => {
   return ok(c, { items });
 });
 
-csa.post('/tod-evaluations', async (c) => {
+csa.post('/tod-evaluations', rbac(['Line 2', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const userId = c.get('userId');

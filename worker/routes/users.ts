@@ -11,6 +11,7 @@ import type { Settings } from "@shared/types";
 import { seedDatabase } from '../db/seed';
 import { ScopingService } from '../services/scoping-service';
 import { sendEmail } from '../services/email';
+import { rbac } from '../lib/guard';
 
 const users = new Hono<HonoEnv>();
 
@@ -302,9 +303,9 @@ users.post('/settings/test-email', async (c) => {
   }
 });
 
-// --- DEV TOOLS (Purge) ---
+// --- DEV TOOLS (Admin Only) ---
 
-users.get('/dev/fix-db', async (c) => {
+users.get('/dev/fix-db', rbac(['Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   try {
     await db.execute(sql`ALTER TABLE simulations ADD COLUMN IF NOT EXISTS significant_accounts jsonb;`);
@@ -356,7 +357,7 @@ users.get('/dev/fix-db', async (c) => {
 });
 
 
-users.get('/dev/re-seed', async (c) => {
+users.get('/dev/re-seed', rbac(['Admin']), async (c) => {
   const mode = c.req.query('mode') || 'full';
   const isSyncOnly = mode === 'auth';
   
@@ -369,7 +370,7 @@ users.get('/dev/re-seed', async (c) => {
   }
 });
 
-users.get('/dev/purge-all', async (c) => {
+users.get('/dev/purge-all', rbac(['Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   try {
     await db.execute(sql`DELETE FROM bpm_diagrams`);
@@ -402,7 +403,7 @@ users.get('/dev/purge-all', async (c) => {
   }
 });
 
-users.delete('/dev/purge-scoping', async (c) => {
+users.delete('/dev/purge-scoping', rbac(['Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const scopingService = new ScopingService(db);
   try {

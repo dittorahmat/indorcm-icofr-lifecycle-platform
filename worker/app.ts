@@ -132,9 +132,7 @@ export const createApp = () => {
         '/api/health', 
         '/api/license/status', 
         '/api/license/activate', 
-        '/api/client-errors',
-        '/api/user/dev/re-seed',
-        '/api/user/dev/fix-db'
+        '/api/client-errors'
     ];
     
     if (publicPaths.includes(c.req.path) || (c.req.path.startsWith('/api/auth/') && c.req.path !== '/api/user/me')) {
@@ -224,9 +222,7 @@ export const createApp = () => {
         '/api/health', 
         '/api/license/status', 
         '/api/license/activate', 
-        '/api/client-errors', 
-        '/api/user/dev/re-seed',
-        '/api/user/dev/fix-db'
+        '/api/client-errors'
     ];
     
     if (publicPaths.includes(c.req.path)) {
