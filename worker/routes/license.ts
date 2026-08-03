@@ -13,9 +13,8 @@ licenseApp.get('/license/status', async (c) => {
   if (skipLicense === 'true') {
       return ok(c, {
         status: 'active',
-        machineId: 'CLOUDFLARE-DEMO-BYPASS',
         daysRemaining: 999,
-        clientName: 'Cloudflare Demo'
+        clientName: 'Enterprise License'
       });
   }
 
