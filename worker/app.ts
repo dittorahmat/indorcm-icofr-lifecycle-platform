@@ -281,14 +281,32 @@ export const createApp = () => {
 
     c.set('userId', session.user.id);
     c.set('organizationId', activeOrgId || '');
-    c.set('userRole', (session.user as any).role || 'Line 1');
+
+    // Fetch real member role for this organization from DB to prevent BFLA/BOLA
+    let realRole: UserRole = (session.user as any).role || 'Line 1';
+    if (activeOrgId) {
+      try {
+        const db = getDb(c.env.DATABASE_URL);
+        const mem = await db.select({ role: schema.member.role })
+          .from(schema.member)
+          .where(and(eq(schema.member.userId, session.user.id), eq(schema.member.organizationId, activeOrgId)))
+          .limit(1);
+        if (mem.length > 0 && mem[0].role) {
+          realRole = mem[0].role as UserRole;
+        }
+      } catch (e) {
+        // Fallback to session role
+      }
+    }
+
+    c.set('userRole', realRole);
     c.set('userLevel', (session.user as any).level || 'Staff');
     c.set('departmentId', (session.user as any).departmentId || '');
 
     await next();
   });
 
-  // Global Error Handler
+  // Global Error Handler (Sanitized to prevent SQL/internal schema leaks - M-05 fix)
   app.onError((err, c) => {
     console.error(`[HONO ERROR] ${err.message}`, err.stack);
     const cause = (err as any).cause;
@@ -297,9 +315,8 @@ export const createApp = () => {
     }
     return c.json({ 
       success: false, 
-      error: err.name || 'Internal Server Error', 
-      message: err.message,
-      cause: cause ? cause.message || String(cause) : undefined
+      error: 'Internal Error', 
+      message: 'An internal error occurred while processing the request.'
     }, 500);
   });
 

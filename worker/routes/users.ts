@@ -112,9 +112,10 @@ users.post('/users', rbac(['Admin']), async (c) => {
   return ok(c, { id });
 });
 
-users.put('/users/:id', rbac(['Admin']), async (c) => {
+users.put('/users/:id', rbac(['Admin', 'Superadmin', 'owner']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const id = c.req.param('id')!;
+  const orgId = c.get('organizationId');
   const body = await c.req.json<any>();
   
   await db.update(user).set({
@@ -126,16 +127,17 @@ users.put('/users/:id', rbac(['Admin']), async (c) => {
   }).where(eq(user.id, id));
 
   if (body.role) {
-    await db.update(member).set({ role: body.role }).where(eq(member.userId, id));
+    await db.update(member).set({ role: body.role }).where(and(eq(member.userId, id), eq(member.organizationId, orgId)));
   }
 
   return ok(c, { success: true });
 });
 
-users.delete('/users/:id', rbac(['Admin']), async (c) => {
+users.delete('/users/:id', rbac(['Admin', 'Superadmin', 'owner']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const id = c.req.param('id')!;
-  await db.delete(member).where(eq(member.userId, id));
+  const orgId = c.get('organizationId');
+  await db.delete(member).where(and(eq(member.userId, id), eq(member.organizationId, orgId)));
   await db.delete(user).where(eq(user.id, id));
   return ok(c, { success: true });
 });
