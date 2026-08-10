@@ -21,7 +21,7 @@ import migration from './routes/migration';
 import { getAuth } from './auth';
 import { getDb, dbLocalStorage, createDbAndPool } from './db';
 import * as schema from './db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import type { UserRole } from '@shared/types';
 import { getMachineFingerprint, verifyLicense, checkLicenseStatus } from './lib/license';
 
@@ -77,7 +77,7 @@ export const createApp = () => {
   // Database Connection Pool Lifecycle Middleware
   app.use('*', async (c, next) => {
     // Only apply if DATABASE_URL env var is provided
-    if (!c.env.DATABASE_URL) {
+    if (!c.env || !c.env.DATABASE_URL) {
       return next();
     }
 
@@ -150,7 +150,7 @@ export const createApp = () => {
 
   // License Guard Middleware
   app.use('/api/*', async (c, next) => {
-    const skipLicense = c.env.SKIP_LICENSE || process.env.SKIP_LICENSE;
+    const skipLicense = c.env?.SKIP_LICENSE || process.env.SKIP_LICENSE;
     if (skipLicense === 'true') {
       c.set('licenseStatus', 'bypassed');
       return next();

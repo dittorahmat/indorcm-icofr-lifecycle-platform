@@ -271,7 +271,6 @@ export function DeficiencyBoard() {
       toast.success("Action plan updated.");
       queryClient.invalidateQueries({ queryKey: ['actionplans'] });
       queryClient.invalidateQueries({ queryKey: ['deficiencies'] });
-      setRemediationOpen(false);
     },
     onError: (error) => {
       toast.error(`Update failed: ${error.message}`);

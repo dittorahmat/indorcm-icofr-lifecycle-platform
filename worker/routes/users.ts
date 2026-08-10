@@ -112,7 +112,7 @@ users.post('/users', rbac(['Admin']), async (c) => {
   return ok(c, { id });
 });
 
-users.put('/users/:id', rbac(['Admin', 'Superadmin', 'owner']), async (c) => {
+users.put('/users/:id', rbac(['Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const id = c.req.param('id')!;
   const orgId = c.get('organizationId');
@@ -133,7 +133,7 @@ users.put('/users/:id', rbac(['Admin', 'Superadmin', 'owner']), async (c) => {
   return ok(c, { success: true });
 });
 
-users.delete('/users/:id', rbac(['Admin', 'Superadmin', 'owner']), async (c) => {
+users.delete('/users/:id', rbac(['Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const id = c.req.param('id')!;
   const orgId = c.get('organizationId');

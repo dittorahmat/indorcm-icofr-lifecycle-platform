@@ -147,6 +147,7 @@ export function RemediationForm({ isOpen, setIsOpen, actionPlan, onSubmit, isLoa
     };
 
     onSubmit(updatedPlan);
+    form.reset(values);
   };
 
   return (
@@ -281,11 +282,19 @@ export function RemediationForm({ isOpen, setIsOpen, actionPlan, onSubmit, isLoa
                     )}
                   />
 
-                  {!isWorkflowLocked && (
-                    <DialogFooter className="pt-6 border-t">
-                      <Button type="button" variant="ghost" onClick={() => setIsOpen(false)} className="font-bold text-[10px] uppercase tracking-widest text-slate-400 hover:text-slate-600">Cancel</Button>
+                  {!isWorkflowLocked ? (
+                    <DialogFooter className="pt-6 border-t flex justify-between items-center">
+                      <Button type="button" variant="ghost" onClick={() => setIsOpen(false)} className="font-bold text-[10px] uppercase tracking-widest text-slate-400 hover:text-slate-600">
+                        {isDirty ? "Cancel" : "Close"}
+                      </Button>
                       <Button type="submit" disabled={isLoading} className="h-10 px-8 bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-100 rounded-lg font-bold text-[10px] uppercase tracking-widest text-white">
                         {isLoading ? "Saving..." : "Save Remediation Plan"}
+                      </Button>
+                    </DialogFooter>
+                  ) : (
+                    <DialogFooter className="pt-6 border-t flex justify-end">
+                      <Button type="button" variant="outline" onClick={() => setIsOpen(false)} className="font-bold text-[10px] uppercase tracking-widest">
+                        Close
                       </Button>
                     </DialogFooter>
                   )}
