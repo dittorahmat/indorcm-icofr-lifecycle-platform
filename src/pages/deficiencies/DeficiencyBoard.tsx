@@ -21,6 +21,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
 
 const KANBAN_COLUMNS: string[] = ["Ineffective", "In Review", "In Approval", "Resolved"];
@@ -382,7 +383,9 @@ export function DeficiencyBoard() {
   }, [actionPlans, planMutation]);
 
   const isLoading = deficienciesLoading || actionPlansLoading;
-  const mockRole = localStorage.getItem('mockRole') || 'Line 1';
+  const { user } = useAuth();
+  const mockRole = localStorage.getItem('mockRole');
+  const userRole = user?.role || mockRole || 'Admin';
 
   const handleToggleSelect = (id: string) => {
     setSelectedDeficiencies(prev => 
@@ -443,28 +446,6 @@ export function DeficiencyBoard() {
 
               <div className="h-8 w-px bg-slate-200 mx-1 hidden md:block" />
 
-              <div className="flex flex-col gap-1.5">
-                <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest ml-1">Mock Role</span>
-                <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-inner">
-                  {['Line 1', 'Line 2', 'Admin'].map(r => (
-                    <Button 
-                      key={r}
-                      variant={mockRole === r ? "default" : "ghost"} 
-                      size="sm" 
-                      className={cn(
-                        "h-8 text-[10px] font-bold uppercase tracking-widest px-3 rounded-lg transition-all",
-                        mockRole === r ? "bg-white text-indigo-600 shadow-sm border border-slate-200 hover:bg-white" : "text-slate-400"
-                      )}
-                      onClick={() => handleRoleChange(r)}
-                    >
-                      {r}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="h-8 w-px bg-slate-200 mx-1 hidden md:block" />
-
               {!isAggregateMode ? (
                 <Button 
                   variant="outline" 
@@ -518,7 +499,7 @@ export function DeficiencyBoard() {
                     isSelectionMode={isAggregateMode}
                     selectedIds={selectedDeficiencies}
                     onToggleSelect={handleToggleSelect}
-                    role={mockRole}
+                    role={userRole}
                     onEditPlan={(plan) => {
                       setActivePlan(plan);
                       setRemediationOpen(true);
