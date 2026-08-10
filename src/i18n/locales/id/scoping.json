@@ -107,7 +107,9 @@
     "save": "Simpan Pilihan & Aktifkan Simulasi",
     "loading": "Memuat data GL...",
     "saveSuccess": "Pilihan benchmark berhasil disimpan",
-    "unsavedConfirm": "Anda memiliki perubahan yang belum disimpan. Apakah Anda yakin ingin membuangnya?"
+    "unsavedConfirm": "Anda memiliki perubahan yang belum disimpan. Apakah Anda yakin ingin membuangnya?",
+    "searchPlaceholder": "Cari nama FSLI...",
+    "noResults": "Tidak ada FSLI yang cocok ditemukan"
   },
   "intake": {
     "title": "Unggah General Ledger",

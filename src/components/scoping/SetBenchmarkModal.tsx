@@ -9,10 +9,11 @@ import {
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { GLSnapshot } from '@shared/types';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
-import { Calculator, Save, AlertCircle, Loader2 } from 'lucide-react';
+import { Calculator, Save, AlertCircle, Loader2, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { useTranslation } from 'react-i18next';
@@ -29,6 +30,7 @@ export function SetBenchmarkModal({ snapshot: initialSnapshot, isOpen, onOpenCha
   const { notify } = useNotification();
   const queryClient = useQueryClient();
   const [selectedFsliNames, setSelectedFsliNames] = React.useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = React.useState<string>('');
 
   // Fetch full snapshot with rows
   const { data: snapshot, isLoading } = useQuery({
@@ -42,6 +44,12 @@ export function SetBenchmarkModal({ snapshot: initialSnapshot, isOpen, onOpenCha
       setSelectedFsliNames(snapshot.benchmarkFsliNames || []);
     }
   }, [snapshot]);
+
+  React.useEffect(() => {
+    if (!isOpen) {
+      setSearchQuery('');
+    }
+  }, [isOpen]);
 
   // Track unsaved changes
   const isDirty = React.useMemo(() => {
@@ -89,6 +97,12 @@ export function SetBenchmarkModal({ snapshot: initialSnapshot, isOpen, onOpenCha
       });
   }, [snapshot]);
 
+  const filteredFsliData = React.useMemo(() => {
+    if (!searchQuery.trim()) return uniqueFsliData;
+    const q = searchQuery.toLowerCase().trim();
+    return uniqueFsliData.filter(item => item.name.toLowerCase().includes(q));
+  }, [uniqueFsliData, searchQuery]);
+
   const mappingMutation = useMutation({
     mutationFn: (names: string[]) => 
       api(`/api/gl-snapshots/${snapshot?.id}/mapping`, {
@@ -131,47 +145,65 @@ export function SetBenchmarkModal({ snapshot: initialSnapshot, isOpen, onOpenCha
         </DialogHeader>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6 flex-1 overflow-hidden bg-slate-50/50">
-          <div className="md:col-span-2 overflow-auto border border-slate-200 rounded-2xl shadow-sm bg-white">
-            {isLoading ? (
-              <div className="h-full w-full flex flex-col items-center justify-center gap-2 text-muted-foreground py-20">
-                <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
-                <p className="text-sm font-medium">{t('benchmarkModal.loading')}</p>
+          <div className="md:col-span-2 flex flex-col border border-slate-200 rounded-2xl shadow-sm bg-white overflow-hidden">
+            <div className="p-3 border-b border-slate-100 bg-slate-50/80">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder={t('benchmarkModal.searchPlaceholder')}
+                  className="pl-9 bg-white border-slate-200 rounded-xl text-xs font-medium focus-visible:ring-indigo-500"
+                />
               </div>
-            ) : (
-              <Table>
-                <TableHeader className="sticky top-0 bg-slate-50 z-10 border-b border-slate-200 shadow-sm">
-                  <TableRow>
-                    <TableHead className="w-[60px] text-center font-black uppercase text-[10px] tracking-widest">{t('benchmarkModal.colSelect')}</TableHead>
-                    <TableHead className="font-black uppercase text-[10px] tracking-widest">{t('benchmarkModal.colFsli')}</TableHead>
-                    <TableHead className="text-right font-black uppercase text-[10px] tracking-widest">{t('benchmarkModal.colBalance')}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {uniqueFsliData.map(item => (
-                    <TableRow 
-                      key={item.name} 
-                      className={cn(
-                        "hover:bg-indigo-50/30 transition-colors cursor-pointer group",
-                        selectedFsliNames.includes(item.name) && "bg-indigo-50/50"
-                      )}
-                      onClick={() => handleToggle(item.name)}
-                    >
-                      <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
-                        <Checkbox 
-                          checked={selectedFsliNames.includes(item.name)}
-                          onCheckedChange={() => handleToggle(item.name)}
-                          className="rounded-md border-slate-300 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
-                        />
-                      </TableCell>
-                      <TableCell className="text-xs font-bold text-slate-700 uppercase tracking-tight">{item.name}</TableCell>
-                      <TableCell className="text-right font-mono text-xs text-slate-600 font-medium">
-                        Rp {item.total.toLocaleString('id-ID')}
-                      </TableCell>
+            </div>
+            <div className="overflow-auto flex-1">
+              {isLoading ? (
+                <div className="h-full w-full flex flex-col items-center justify-center gap-2 text-muted-foreground py-20">
+                  <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+                  <p className="text-sm font-medium">{t('benchmarkModal.loading')}</p>
+                </div>
+              ) : filteredFsliData.length === 0 ? (
+                <div className="h-full w-full flex flex-col items-center justify-center gap-2 text-slate-400 py-16">
+                  <Search className="h-8 w-8 text-slate-300" />
+                  <p className="text-xs font-medium">{t('benchmarkModal.noResults')}</p>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader className="sticky top-0 bg-slate-50 z-10 border-b border-slate-200 shadow-sm">
+                    <TableRow>
+                      <TableHead className="w-[60px] text-center font-black uppercase text-[10px] tracking-widest">{t('benchmarkModal.colSelect')}</TableHead>
+                      <TableHead className="font-black uppercase text-[10px] tracking-widest">{t('benchmarkModal.colFsli')}</TableHead>
+                      <TableHead className="text-right font-black uppercase text-[10px] tracking-widest">{t('benchmarkModal.colBalance')}</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
+                  </TableHeader>
+                  <TableBody>
+                    {filteredFsliData.map(item => (
+                      <TableRow 
+                        key={item.name} 
+                        className={cn(
+                          "hover:bg-indigo-50/30 transition-colors cursor-pointer group",
+                          selectedFsliNames.includes(item.name) && "bg-indigo-50/50"
+                        )}
+                        onClick={() => handleToggle(item.name)}
+                      >
+                        <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
+                          <Checkbox 
+                            checked={selectedFsliNames.includes(item.name)}
+                            onCheckedChange={() => handleToggle(item.name)}
+                            className="rounded-md border-slate-300 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
+                          />
+                        </TableCell>
+                        <TableCell className="text-xs font-bold text-slate-700 uppercase tracking-tight">{item.name}</TableCell>
+                        <TableCell className="text-right font-mono text-xs text-slate-600 font-medium">
+                          Rp {item.total.toLocaleString('id-ID')}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </div>
           </div>
 
           <div className="space-y-6">

@@ -107,7 +107,9 @@
     "save": "Save Selection & Enable Simulations",
     "loading": "Loading GL data...",
     "saveSuccess": "Benchmark selection saved successfully",
-    "unsavedConfirm": "You have unsaved changes. Are you sure you want to discard them?"
+    "unsavedConfirm": "You have unsaved changes. Are you sure you want to discard them?",
+    "searchPlaceholder": "Search FSLI name...",
+    "noResults": "No matching FSLIs found"
   },
   "intake": {
     "title": "Upload General Ledger",
