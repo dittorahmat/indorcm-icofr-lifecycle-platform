@@ -91,9 +91,13 @@ export const createApp = () => {
       return nextResult;
     } finally {
       if (pool) {
-        if (c.executionCtx) {
-          c.executionCtx.waitUntil(pool.end());
-        } else {
+        try {
+          if (c.executionCtx) {
+            c.executionCtx.waitUntil(pool.end());
+          } else {
+            await pool.end();
+          }
+        } catch {
           await pool.end();
         }
       }

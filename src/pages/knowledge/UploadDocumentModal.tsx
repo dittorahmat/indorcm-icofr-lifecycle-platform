@@ -45,7 +45,7 @@ async function extractTextFromPdf(file: File): Promise<string> {
     
     return fullText;
   } catch (error) {
-    console.error('Client-side PDF text extraction failed:', error);
+    console.warn('[FRONTEND] Client-side PDF text extraction failed (will rely on backend/content if available):', error);
     return '';
   }
 }

@@ -138,10 +138,14 @@ aiDocsApp.post('/documents', async (c) => {
       }
     };
 
-    if (c.executionCtx) {
-      c.executionCtx.waitUntil(processDocumentAsync());
-    } else {
-      // Fallback for environments where executionCtx is not present (like local testing)
+    try {
+      if (c.executionCtx) {
+        c.executionCtx.waitUntil(processDocumentAsync());
+      } else {
+        await processDocumentAsync();
+      }
+    } catch {
+      // Fallback for environments where c.executionCtx throws "This context has no ExecutionContext"
       await processDocumentAsync();
     }
 
