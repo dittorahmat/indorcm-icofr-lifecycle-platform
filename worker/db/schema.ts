@@ -657,6 +657,8 @@ export const documents = pgTable("documents", {
 	embedding: vector("embedding", { dimensions: 768 }), // Vector for AI semantic search
 	ftsTokens: tsvector("fts_tokens"), // tsvector for full-text keyword search
 	fileUrl: text("file_url"), // R2 path/URL
+	status: text("status").default("completed"), // processing, completed, failed
+	indexingProgress: integer("indexing_progress").default(100),
 	createdAt: timestamp("created_at").notNull().defaultNow(),
 	createdBy: text("created_by").references(() => user.id),
 }, (table) => ({

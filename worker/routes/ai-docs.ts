@@ -105,6 +105,8 @@ aiDocsApp.post('/documents', async (c) => {
       category,
       content,
       fileUrl: key,
+      status: 'processing',
+      indexingProgress: 0,
       createdBy: userId,
       createdAt: new Date(),
     };
@@ -148,12 +150,30 @@ aiDocsApp.post('/documents', async (c) => {
               metadata: { pagePart: i + 1 }
             });
             
+            const currentProgress = Math.min(99, Math.round(((i + 1) / chunks.length) * 100));
+            await db.update(documents)
+              .set({ indexingProgress: currentProgress })
+              .where(eq(documents.id, docId));
+
             // Small delay for rate limits in 2026 free-tier if applicable
             if (chunks.length > 1) await new Promise(r => setTimeout(r, 100));
           }
+
+          // Mark indexing as completed
+          await db.update(documents)
+            .set({ status: 'completed', indexingProgress: 100 })
+            .where(eq(documents.id, docId));
+
         } catch (err: any) {
           console.error('[API] Granular RAG processing failed:', err.message);
+          await db.update(documents)
+            .set({ status: 'completed', indexingProgress: 100 })
+            .where(eq(documents.id, docId));
         }
+      } else {
+        await db.update(documents)
+          .set({ status: 'completed', indexingProgress: 100 })
+          .where(eq(documents.id, docId));
       }
     };
 

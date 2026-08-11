@@ -12,7 +12,7 @@ import {
   Card, CardContent, CardDescription, CardHeader, CardTitle 
 } from "@/components/ui/card";
 import { 
-  Plus, FileText, Trash2, Download, Search, Info, Eye
+  Plus, FileText, Trash2, Download, Search, Info, Eye, Loader2, Sparkles, CheckCircle2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { UploadDocumentModal } from './UploadDocumentModal';
@@ -39,8 +39,12 @@ export const DocumentsPage = () => {
       if (!res.ok) throw new Error('Failed to fetch documents');
       const json = await res.json();
       console.log('[FRONTEND] Received documents data:', json);
-      // FIX: The items are inside json.data.items
       return json.data as { items: any[] };
+    },
+    refetchInterval: (query) => {
+      const data = query.state.data as { items: any[] } | undefined;
+      const hasProcessing = data?.items?.some(d => d.status === 'processing');
+      return hasProcessing ? 3000 : false;
     }
   });
 
@@ -59,11 +63,12 @@ export const DocumentsPage = () => {
     }
   });
 
-  // FIX: Make filtering case-insensitive and more robust
   const filteredDocs = docs?.items?.filter((d: any) => {
     const docType = (d.type || d.type_).toLowerCase();
     return activeTab === 'internal' ? docType === 'internal' : docType === 'external';
   }) || [];
+
+  const hasProcessingDocs = filteredDocs.some((d: any) => d.status === 'processing');
 
   return (
     <AppLayout container>
@@ -84,6 +89,16 @@ export const DocumentsPage = () => {
           isOpen={isUploadModalOpen} 
           onClose={() => setIsUploadModalOpen(false)} 
         />
+
+        {hasProcessingDocs && (
+          <div className="bg-amber-50/90 border border-amber-200 rounded-lg p-3.5 flex items-center gap-3 text-amber-900 text-sm shadow-sm animate-in fade-in duration-300">
+            <Loader2 className="h-4 w-4 animate-spin text-amber-600 shrink-0" />
+            <div>
+              <span className="font-semibold">AI sedang mempelajari dokumen baru di background...</span>
+              <span className="ml-1 text-amber-800">Persentase progress di bawah akan diperbarui secara otomatis tanpa perlu me-refresh halaman.</span>
+            </div>
+          </div>
+        )}
 
         <Tabs defaultValue="internal" value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full max-w-md grid-cols-2">
@@ -114,64 +129,91 @@ export const DocumentsPage = () => {
                       <TableHead>{t('table.title')}</TableHead>
                       <TableHead>{t('table.category')}</TableHead>
                       <TableHead>{t('table.uploadDate')}</TableHead>
+                      <TableHead>Status AI Indexing</TableHead>
                       <TableHead className="text-right">{t('table.actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {isLoading ? (
-                      <TableRow><TableCell colSpan={4} className="text-center">{t('table.loading')}</TableCell></TableRow>
+                      <TableRow><TableCell colSpan={5} className="text-center">{t('table.loading')}</TableCell></TableRow>
                     ) : filteredDocs.length === 0 ? (
-                      <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">{t('table.empty')}</TableCell></TableRow>
-                    ) : filteredDocs.map((doc) => (
-                      <TableRow key={doc.id}>
-                        <TableCell className="font-medium flex items-center">
-                          <FileText className="mr-2 h-4 w-4 text-blue-500" />
-                          {doc.title}
-                        </TableCell>
-                        <TableCell>{doc.category || '-'}</TableCell>
-                        <TableCell>{new Date(doc.createdAt).toLocaleDateString()}</TableCell>
-                        <TableCell className="text-right space-x-2">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            title={t('common:actions.view') || 'Lihat'}
-                            onClick={() => window.open(`/api/documents/download/${doc.id}?mode=view`, '_blank')}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            title={t('common:actions.download') || 'Download'}
-                            onClick={() => window.open(`/api/documents/download/${doc.id}`, '_blank')}
-                          >
-                            <Download className="h-4 w-4" />
-                          </Button>
-                          {canManage && (
+                      <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">{t('table.empty')}</TableCell></TableRow>
+                    ) : filteredDocs.map((doc) => {
+                      const isProcessing = doc.status === 'processing';
+                      const progress = doc.indexingProgress ?? (isProcessing ? 0 : 100);
+
+                      return (
+                        <TableRow key={doc.id}>
+                          <TableCell className="font-medium flex items-center">
+                            <FileText className="mr-2 h-4 w-4 text-blue-500 shrink-0" />
+                            <span className="truncate max-w-[280px]" title={doc.title}>{doc.title}</span>
+                          </TableCell>
+                          <TableCell>{doc.category || '-'}</TableCell>
+                          <TableCell>{new Date(doc.createdAt).toLocaleDateString()}</TableCell>
+                          <TableCell>
+                            {isProcessing ? (
+                              <div className="space-y-1">
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                                  <Loader2 className="h-3 w-3 animate-spin text-amber-600" />
+                                  Memproses {progress}%
+                                </span>
+                                <div className="w-28 bg-amber-100/80 rounded-full h-1.5 overflow-hidden">
+                                  <div 
+                                    className="bg-amber-500 h-1.5 rounded-full transition-all duration-500 ease-out" 
+                                    style={{ width: `${Math.max(5, progress)}%` }} 
+                                  />
+                                </div>
+                              </div>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                <Sparkles className="h-3 w-3 text-emerald-600" />
+                                Siap Ditanyakan
+                              </span>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right space-x-2">
                             <Button 
                               variant="ghost" 
                               size="icon" 
-                              className="text-red-500 hover:text-red-700 hover:bg-red-50" 
-                              title={t('common:actions.delete')}
-                              disabled={deleteMutation.isPending}
-                              onClick={async () => {
-                                const ok = await confirm({
-                                  title: t('common:actions.deletePermanently'),
-                                  description: t('delete.confirm') || 'Delete this document?',
-                                  confirmText: t('common:actions.delete'),
-                                  variant: 'destructive'
-                                });
-                                if (ok) {
-                                  deleteMutation.mutate(doc.id);
-                                }
-                              }}
+                              title={t('common:actions.view') || 'Lihat'}
+                              onClick={() => window.open(`/api/documents/download/${doc.id}?mode=view`, '_blank')}
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <Eye className="h-4 w-4" />
                             </Button>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              title={t('common:actions.download') || 'Download'}
+                              onClick={() => window.open(`/api/documents/download/${doc.id}`, '_blank')}
+                            >
+                              <Download className="h-4 w-4" />
+                            </Button>
+                            {canManage && (
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="text-red-500 hover:text-red-700 hover:bg-red-50" 
+                                title={t('common:actions.delete')}
+                                disabled={deleteMutation.isPending}
+                                onClick={async () => {
+                                  const ok = await confirm({
+                                    title: t('common:actions.deletePermanently'),
+                                    description: t('delete.confirm') || 'Delete this document?',
+                                    confirmText: t('common:actions.delete'),
+                                    variant: 'destructive'
+                                  });
+                                  if (ok) {
+                                    deleteMutation.mutate(doc.id);
+                                  }
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </CardContent>

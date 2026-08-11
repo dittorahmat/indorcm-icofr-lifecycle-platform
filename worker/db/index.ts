@@ -29,6 +29,8 @@ export const fixDatabaseSchema = async (db: DrizzleDb) => {
     await db.execute(sql`ALTER TABLE icofr."account_assertions" ADD COLUMN IF NOT EXISTS "year" integer;`);
     await db.execute(sql`ALTER TABLE icofr."audit_logs" ADD COLUMN IF NOT EXISTS "change_category" text;`);
     await db.execute(sql`ALTER TABLE icofr."documents" ADD COLUMN IF NOT EXISTS "metadata" jsonb;`);
+    await db.execute(sql`ALTER TABLE icofr."documents" ADD COLUMN IF NOT EXISTS "status" text DEFAULT 'completed';`);
+    await db.execute(sql`ALTER TABLE icofr."documents" ADD COLUMN IF NOT EXISTS "indexing_progress" integer DEFAULT 100;`);
     await db.execute(sql`CREATE TABLE IF NOT EXISTS icofr."user_preferences" (
       "user_id" text PRIMARY KEY NOT NULL,
       "layout" jsonb,
