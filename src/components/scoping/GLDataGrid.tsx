@@ -310,7 +310,7 @@ export const GLDataGrid = React.memo(function GLDataGrid({
           if (!row.getIsGrouped()) return <div className="text-center text-slate-200 text-xs">-</div>;
           
           const fsliName = row.getValue('fsliName') as string;
-          const currentLevel = assessmentData?.[fsliName]?.[rule.id] || "";
+          const currentLevel = assessmentData?.[fsliName]?.[rule.id] || "Low";
           
           return (
             <Select 

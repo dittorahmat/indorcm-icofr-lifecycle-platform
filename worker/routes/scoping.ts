@@ -113,6 +113,26 @@ scoping.put('/simulations/:id', rbac(['Line 2', 'Admin']), async (c) => {
   const orgId = c.get('organizationId');
   const body = await c.req.json<Partial<MaterialitySimulation>>();
   
+  const [existingSim] = await db.select({ assessmentData: simulations.assessmentData, glSnapshotId: simulations.glSnapshotId })
+    .from(simulations)
+    .where(and(eq(simulations.id, id), eq(simulations.organizationId, orgId)))
+    .limit(1);
+
+  let finalAssessment: Record<string, any> = body.assessmentData !== undefined 
+    ? { ...(body.assessmentData || {}) }
+    : { ...((existingSim?.assessmentData as Record<string, any>) || {}) };
+
+  const snapshotId = body.glSnapshotId || existingSim?.glSnapshotId;
+  if (snapshotId && Object.keys(finalAssessment).length === 0) {
+    const rows = await db.select({ fsliName: glRows.fsliName })
+      .from(glRows)
+      .where(eq(glRows.snapshotId, snapshotId));
+    const uniqueFslis = Array.from(new Set(rows.map((r: any) => r.fsliName).filter(Boolean) as string[]));
+    uniqueFslis.forEach(fsli => {
+      finalAssessment[fsli] = getQualitativeDefaults(fsli);
+    });
+  }
+
   await db.update(simulations)
     .set({
       name: body.name,
@@ -123,7 +143,7 @@ scoping.put('/simulations/:id', rbac(['Line 2', 'Admin']), async (c) => {
       omValue: body.omValue,
       pmValue: body.pmValue,
       significantAccounts: body.significantAccounts,
-      assessmentData: body.assessmentData,
+      assessmentData: finalAssessment,
       updatedAt: new Date() as any,
     })
     .where(and(eq(simulations.id, id), eq(simulations.organizationId, orgId)));
