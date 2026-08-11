@@ -303,8 +303,9 @@ export const createApp = () => {
     c.set('organizationId', activeOrgId || '');
 
     // Fetch real member role for this organization from DB to prevent BFLA/BOLA
-    let realRole: UserRole = (session.user as any).role || 'Line 1';
-    if (activeOrgId) {
+    const globalRole: UserRole = (session.user as any).role || 'Line 1';
+    let realRole: UserRole = globalRole;
+    if (globalRole !== 'Admin' && activeOrgId) {
       try {
         const db = getDb(c.env.DATABASE_URL);
         const mem = await db.select({ role: schema.member.role })
