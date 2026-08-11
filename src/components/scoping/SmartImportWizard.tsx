@@ -11,7 +11,10 @@ import {
     Download,
     Loader2 as LucideLoader2,
     AlertCircle,
-    Calculator 
+    Calculator,
+    Search,
+    Check,
+    ChevronsUpDown
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUnsavedChangesContext } from '@/context/UnsavedChangesContext';
@@ -30,12 +33,18 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
+} from "@/components/ui/command";
 import { Input } from "@/components/ui/input";
 
 import { parseGLFile } from '@/pages/scoping/services/gl-parser';
@@ -72,6 +81,7 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
 
     // Materiality States
     const [selectedBasis, setSelectedBasis] = useState<string>('');
+    const [benchmarkPopoverOpen, setBenchmarkPopoverOpen] = useState(false);
     const [omPercentage, setOmPercentage] = useState<number>(5);
     const [haircutPercentage, setHaircutPercentage] = useState<number>(25);
     const [locationCount, setLocationCount] = useState<number>(1);
@@ -99,7 +109,12 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
                 total: (data.explicitlyProvidedTotal !== null && data.explicitlyProvidedTotal !== 0) ? data.explicitlyProvidedTotal : data.total, 
                 minNoUrut: data.minNoUrut === Infinity ? 999999 : data.minNoUrut 
             }))
-            .sort((a, b) => b.total - a.total); // Sort by balance descending for candidates
+            .sort((a, b) => {
+                if (a.minNoUrut !== b.minNoUrut) {
+                    return a.minNoUrut - b.minNoUrut;
+                }
+                return a.name.localeCompare(b.name);
+            });
     }, [parsedTbData]);
 
     // Set default basis when data is loaded
@@ -438,21 +453,64 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
                                                         <div className="space-y-4">
                                                             <div className="space-y-2">
                                                                 <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">{t('scoping:form.benchmark')}</Label>
-                                                                <Select value={selectedBasis} onValueChange={setSelectedBasis}>
-                                                                    <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-slate-50/50 font-bold text-slate-700">
-                                                                        <SelectValue placeholder="Select Benchmark Basis" />
-                                                                    </SelectTrigger>
-                                                                    <SelectContent>
-                                                                        {uniqueFsliData.map(item => (
-                                                                            <SelectItem key={item.name} value={item.name} className="font-bold">
-                                                                                <div className="flex items-center justify-between w-full gap-4">
-                                                                                    <span>{item.name}</span>
-                                                                                    <span className="text-[10px] text-slate-400 font-mono">Rp {item.total.toLocaleString()}</span>
+                                                                <Popover open={benchmarkPopoverOpen} onOpenChange={setBenchmarkPopoverOpen}>
+                                                                    <PopoverTrigger asChild>
+                                                                        <Button
+                                                                            variant="outline"
+                                                                            role="combobox"
+                                                                            aria-expanded={benchmarkPopoverOpen}
+                                                                            className="w-full h-12 justify-between rounded-xl border-slate-200 bg-slate-50/50 font-bold text-slate-700 hover:bg-slate-100 px-4"
+                                                                        >
+                                                                            {selectedBasis ? (
+                                                                                <div className="flex items-center justify-between w-full pr-2 text-left truncate">
+                                                                                    <span className="truncate">{selectedBasis}</span>
+                                                                                    <span className="text-[10px] text-slate-400 font-mono ml-2 shrink-0">
+                                                                                        Rp {(uniqueFsliData.find(f => f.name === selectedBasis)?.total || 0).toLocaleString()}
+                                                                                    </span>
                                                                                 </div>
-                                                                            </SelectItem>
-                                                                        ))}
-                                                                    </SelectContent>
-                                                                </Select>
+                                                                            ) : (
+                                                                                <span className="text-slate-400 font-normal">Select Benchmark Basis</span>
+                                                                            )}
+                                                                            <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50 ml-2" />
+                                                                        </Button>
+                                                                    </PopoverTrigger>
+                                                                    <PopoverContent className="w-[420px] p-0 rounded-2xl border-slate-200 shadow-xl overflow-hidden" align="start">
+                                                                        <Command>
+                                                                            <CommandInput placeholder="Cari FSLI / GL Benchmark..." className="h-10 text-xs" />
+                                                                            <CommandList className="max-h-60 overflow-y-auto">
+                                                                                <CommandEmpty className="py-4 text-center text-xs text-slate-400">
+                                                                                    FSLI tidak ditemukan.
+                                                                                </CommandEmpty>
+                                                                                <CommandGroup>
+                                                                                    {uniqueFsliData.map((item) => (
+                                                                                        <CommandItem
+                                                                                            key={item.name}
+                                                                                            value={item.name}
+                                                                                            onSelect={(currentValue) => {
+                                                                                                setSelectedBasis(item.name);
+                                                                                                setBenchmarkPopoverOpen(false);
+                                                                                            }}
+                                                                                            className="flex items-center justify-between py-2.5 px-3 cursor-pointer text-xs font-bold text-slate-700 data-[selected=true]:bg-indigo-50 data-[selected=true]:text-indigo-900"
+                                                                                        >
+                                                                                            <div className="flex items-center gap-2 truncate">
+                                                                                                <Check
+                                                                                                    className={cn(
+                                                                                                        "h-4 w-4 shrink-0 text-indigo-600",
+                                                                                                        selectedBasis === item.name ? "opacity-100" : "opacity-0"
+                                                                                                    )}
+                                                                                                />
+                                                                                                <span className="truncate">{item.name}</span>
+                                                                                            </div>
+                                                                                            <span className="text-[10px] text-slate-400 font-mono shrink-0 ml-4">
+                                                                                                Rp {item.total.toLocaleString()}
+                                                                                            </span>
+                                                                                        </CommandItem>
+                                                                                    ))}
+                                                                                </CommandGroup>
+                                                                            </CommandList>
+                                                                        </Command>
+                                                                    </PopoverContent>
+                                                                </Popover>
                                                             </div>
 
                                                             <div className="grid grid-cols-2 gap-4">
