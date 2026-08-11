@@ -116,6 +116,69 @@ export const seedDatabase = async (databaseUrl: string, authSecret: string, skip
                 }
             });
         }
+        // 4. SYNC BPM & TRANSACTIONS FOR KUR
+        console.log("💳 Syncing BPM & Transaction Details for Pencairan Kredit KUR...");
+        for (const yr of [2026, 2025, 2024]) {
+            const bpmId = `bpm-kur-${orgId}-${yr}`;
+            await db.insert(schema.bpmProcesses).values({
+                id: bpmId,
+                organizationId: orgId,
+                noGL: '12071-000400 KUR',
+                bpmCode: 'BPM-KUR-01',
+                fsliName: 'Kredit',
+                name: 'Pencairan Kredit KUR',
+                year: yr,
+                riskCount: 2,
+                controlCount: 3,
+                workflowStatus: 'Approved',
+                createdAt: new Date(),
+            }).onConflictDoNothing();
+        }
+
+        const defaultBpmId = `bpm-kur-${orgId}-2026`;
+
+        const debtors = [
+            { name: 'Budi Santoso', business: 'Toko Kelontong Berkah' },
+            { name: 'Siti Aminah', business: 'Warung Makan Sederhana' },
+            { name: 'Ahmad Dahlan', business: 'Pertanian Padi & Palawija' },
+            { name: 'Dewi Lestari', business: 'Kerajinan Batik Tulis' },
+            { name: 'Eko Prasetyo', business: 'Bengkel Sepeda Motor' },
+            { name: 'Rina Wijaya', business: 'Usaha Olahan Makanan' },
+            { name: 'Hendra Gunawan', business: 'Budidaya Ikan Lele' },
+            { name: 'Sri Rahayu', business: 'Toko Pakaian & Tekstil' },
+        ];
+        const kTypes = ['KUR Mikro', 'KUR Ritel', 'KUR Super Mikro'];
+
+        for (const noGLCode of ['12071-000400 KUR', '12071-000400']) {
+            const existing = await db.select({ count: sql<number>`count(*)` }).from(schema.transactionDetails)
+                .where(and(eq(schema.transactionDetails.organizationId, orgId), eq(schema.transactionDetails.noGL, noGLCode)));
+            
+            if (Number(existing[0]?.count || 0) < 100) {
+                await db.delete(schema.transactionDetails).where(
+                    and(eq(schema.transactionDetails.organizationId, orgId), eq(schema.transactionDetails.noGL, noGLCode))
+                );
+                const batch = [];
+                for (let i = 1; i <= 100; i++) {
+                    const deb = debtors[i % debtors.length];
+                    const kType = kTypes[i % kTypes.length];
+                    const refSeq = String(i).padStart(4, '0');
+                    const isDebit = i % 7 !== 0;
+                    batch.push({
+                        id: `tx-kur-${orgId}-${noGLCode.replace(/\s+/g, '_')}-2026-${refSeq}`,
+                        organizationId: orgId,
+                        noGL: noGLCode,
+                        bpmProcessId: defaultBpmId,
+                        refNo: `PKUR-2026-${refSeq}`,
+                        transDate: new Date(2026, (i - 1) % 8, (i * 3) % 27 + 1, 10, 0),
+                        description: `${isDebit ? 'Pencairan' : 'Setoran/Angsuran'} ${kType} - ${deb.name} (${deb.business})`,
+                        currency: 'IDR',
+                        dcFlag: isDebit ? 'D' : 'C',
+                        amount: (i * 25000000) % 450000000 + 15000000,
+                    });
+                }
+                await db.insert(schema.transactionDetails).values(batch);
+            }
+        }
     }
 
     console.log("✨ ALL DONE! No data was deleted.");

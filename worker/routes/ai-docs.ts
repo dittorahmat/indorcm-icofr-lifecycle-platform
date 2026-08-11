@@ -61,12 +61,31 @@ aiDocsApp.post('/documents', async (c) => {
     const title = formData.get('title') as string;
     const type = formData.get('type') as string;
     const category = formData.get('category') as string;
-    const content = formData.get('content') as string || '';
+    let content = formData.get('content') as string || '';
     const deptIds = JSON.parse(formData.get('departmentIds') as string || '[]');
     const glCodes = JSON.parse(formData.get('glCodes') as string || '[]');
     const fsliCodes = JSON.parse(formData.get('fsliCodes') as string || '[]');
 
     const arrayBuffer = await file.arrayBuffer();
+
+    // Server-side PDF extraction fallback if content from frontend is empty
+    if (!content || content.trim().length === 0) {
+      if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+        try {
+          if (!(Promise as any).try) {
+            (Promise as any).try = function (fn: Function, ...args: any[]) {
+              return new Promise((resolve) => resolve(fn(...args)));
+            };
+          }
+          const { extractText } = await import('unpdf');
+          const extracted = await extractText(new Uint8Array(arrayBuffer));
+          content = Array.isArray(extracted.text) ? extracted.text.join('\n') : (extracted.text || '');
+          console.log('[API] Server-side PDF extraction fallback succeeded, extracted text length:', content.length);
+        } catch (pdfErr: any) {
+          console.warn('[API] Server-side PDF extraction fallback failed:', pdfErr.message);
+        }
+      }
+    }
 
     const safeFileName = file.name.replace(/[^a-zA-Z0-9_.-]/g, '_');
     const key = `docs/${orgId}/${crypto.randomUUID()}-${safeFileName}`;

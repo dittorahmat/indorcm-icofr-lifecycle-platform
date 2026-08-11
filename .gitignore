@@ -42,3 +42,4 @@ bun-debug.log*
 
 # Project specific
 .bootstrap-complete
+uploads/

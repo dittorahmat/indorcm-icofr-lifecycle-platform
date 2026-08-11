@@ -28,17 +28,25 @@ export class AIService {
    * Utility to call a function with exponential backoff and jitter.
    */
   async callWithRetry<T>(fn: () => Promise<T>, maxRetries = 5): Promise<T> {
-    let delay = 2000;
+    let delay = 2500;
     for (let i = 0; i < maxRetries; i++) {
       try {
         return await fn();
       } catch (err: any) {
-        const isRateLimit = err.message?.includes("429") || err.status === 429;
+        const isRateLimit = err.message?.includes("429") || err.status === 429 || err.message?.includes("Quota exceeded");
         const isRetryableError = isRateLimit || err.status >= 500;
         
         if (isRetryableError && i < maxRetries - 1) {
-          const waitTime = delay + (Math.random() * 1000);
-          console.warn(`[AI Service] Retryable error. Retrying in ${Math.round(waitTime)}ms... (${i + 1}/${maxRetries})`);
+          // Parse Google API retryDelay if available (e.g., "retryDelay":"2s" or "Please retry in 2.84s")
+          let waitTime = delay;
+          const match = err.message?.match(/Please retry in ([\d.]+)s/) || err.message?.match(/"retryDelay":"(\d+)s"/);
+          if (match && match[1]) {
+            waitTime = (parseFloat(match[1]) * 1000) + 500;
+          } else {
+            waitTime = delay + (Math.random() * 1000);
+          }
+
+          console.warn(`[AI Service] 429 Rate Limit / Retryable error detected. Waiting ${Math.round(waitTime)}ms before retry (${i + 1}/${maxRetries})...`);
           await new Promise(resolve => setTimeout(resolve, waitTime));
           delay *= 2;
           continue;
@@ -142,7 +150,7 @@ export class AIService {
 
     if (this.config.provider === "gemini") {
       const model = this.genAI!.getGenerativeModel({
-        model: this.config.chatModel || "gemini-2.5-flash-lite",
+        model: this.config.chatModel || "gemini-2.5-flash",
         systemInstruction: params.systemInstruction,
         tools: params.tools ? [{ functionDeclarations: params.tools }] : undefined,
         generationConfig: {
@@ -232,20 +240,38 @@ export class AIService {
     queryVector: number[],
     limit = 5
   ) {
+    // Extract keywords > 2 chars for title regex matching
+    const keywords = query
+      .replace(/[^a-zA-Z0-9\s]/g, ' ')
+      .split(/\s+/)
+      .filter(w => w.length > 2)
+      .join('|') || 'nomatch';
+
     const result = await db.execute(sql`
       WITH vector_search AS (
-        SELECT id, ROW_NUMBER() OVER (ORDER BY embedding <=> ${JSON.stringify(queryVector)}::vector) as rank
-        FROM document_chunks
+        SELECT id, ROW_NUMBER() OVER (ORDER BY embedding <=> ${sql.raw(`'${JSON.stringify(queryVector)}'::vector`)}) as rank
+        FROM icofr.document_chunks
         WHERE organization_id = ${orgId}
-        ORDER BY embedding <=> ${JSON.stringify(queryVector)}::vector
+        ORDER BY embedding <=> ${sql.raw(`'${JSON.stringify(queryVector)}'::vector`)}
         LIMIT 50
       ),
       text_search AS (
-        SELECT id, ROW_NUMBER() OVER (ORDER BY ts_rank_cd(fts_tokens, websearch_to_tsquery('indonesian', ${query})) DESC) as rank
-        FROM document_chunks
+        SELECT id, ROW_NUMBER() OVER (ORDER BY ts_rank_cd(fts_tokens, plainto_tsquery('indonesian', ${query})) DESC) as rank
+        FROM icofr.document_chunks
         WHERE organization_id = ${orgId}
-        AND fts_tokens @@ websearch_to_tsquery('indonesian', ${query})
+        AND fts_tokens @@ plainto_tsquery('indonesian', ${query})
         ORDER BY rank
+        LIMIT 50
+      ),
+      title_search AS (
+        SELECT c.id, 1 as rank
+        FROM icofr.document_chunks c
+        JOIN icofr.documents d ON c.document_id = d.id
+        WHERE c.organization_id = ${orgId}
+        AND (
+          d.title ILIKE ${'%' + query + '%'}
+          OR d.title ~* ${keywords}
+        )
         LIMIT 50
       )
       SELECT 
@@ -254,17 +280,20 @@ export class AIService {
         d.title,
         d.category,
         COALESCE(1.0 / (60 + v.rank), 0.0) + 
-        COALESCE(1.0 / (60 + t.rank), 0.0) AS score
-      FROM document_chunks c
-      JOIN documents d ON c.document_id = d.id
+        COALESCE(1.0 / (60 + t.rank), 0.0) +
+        COALESCE(1.0 / (30 + ts.rank), 0.0) AS score
+      FROM icofr.document_chunks c
+      JOIN icofr.documents d ON c.document_id = d.id
       LEFT JOIN vector_search v ON c.id = v.id
       LEFT JOIN text_search t ON c.id = t.id
-      WHERE v.id IS NOT NULL OR t.id IS NOT NULL
+      LEFT JOIN title_search ts ON c.id = ts.id
+      WHERE v.id IS NOT NULL OR t.id IS NOT NULL OR ts.id IS NOT NULL
       ORDER BY score DESC
       LIMIT ${limit}
     `);
 
-    return (result?.rows || []) as unknown as {
+    const rows = Array.isArray(result) ? result : (result as any)?.rows || [];
+    return rows as unknown as {
       id: string;
       content: string;
       title: string;
