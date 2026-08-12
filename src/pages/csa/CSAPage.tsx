@@ -294,6 +294,9 @@ export function CSAPage() {
   const filteredRecords = React.useMemo(() => {
     if (!records?.items) return [];
     return records.items.filter(r => {
+      // Logic requirement: Only Effective CSA records are eligible for TOE / regulatory review
+      if (r.result !== 'Effective') return false;
+
       const process = processes?.items.find(p => p.id === r.bpmProcessId);
       return process?.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
              r.period.toLowerCase().includes(searchTerm.toLowerCase());
