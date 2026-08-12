@@ -177,9 +177,18 @@ aiDocsApp.post('/documents', async (c) => {
       }
     };
 
-    if (c.executionCtx && typeof c.executionCtx.waitUntil === 'function') {
-      c.executionCtx.waitUntil(processDocumentAsync());
-    } else {
+    let executedInCtx = false;
+    try {
+      if (c.executionCtx && typeof c.executionCtx.waitUntil === 'function') {
+        c.executionCtx.waitUntil(processDocumentAsync());
+        executedInCtx = true;
+      }
+    } catch {
+      // In Node.js / on-premise runtime, accessing c.executionCtx throws "This context has no ExecutionContext"
+      executedInCtx = false;
+    }
+
+    if (!executedInCtx) {
       // Fire-and-forget background execution for Node.js on-premise runtime
       processDocumentAsync().catch((err: any) => {
         console.error('[API] Background document RAG processing failed:', err.message);
