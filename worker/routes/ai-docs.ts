@@ -95,7 +95,7 @@ aiDocsApp.post('/documents', async (c) => {
     });
 
     const docId = crypto.randomUUID();
-    const apiKey = c.env.GEMINI_API_KEY;
+    const apiKey = c.env?.GEMINI_API_KEY || (typeof process !== 'undefined' ? process.env.GEMINI_API_KEY : '');
     
     const newDoc = {
       id: docId,
