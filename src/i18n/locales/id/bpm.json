@@ -12,6 +12,8 @@
     "confirm": "Buang & Lanjutkan"
   },
   "fsliLabel": "FSLI",
+  "searchFsli": "Cari FSLI...",
+  "searchGl": "Cari Akun GL...",
   "searchPlaceholder": "Cari Sub Proses...",
   "emptyState": "Pilih FSLI dan Akun GL untuk memulai pemetaan.",
   "loading": "Memuat daftar BPM...",

@@ -12,6 +12,8 @@
     "confirm": "Discard & Continue"
   },
   "fsliLabel": "FSLI",
+  "searchFsli": "Search FSLI...",
+  "searchGl": "Search GL Account...",
   "searchPlaceholder": "Search Sub Process...",
   "emptyState": "Select an FSLI and GL Account to begin mapping.",
   "loading": "Loading BPM list...",
