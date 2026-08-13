@@ -83,25 +83,11 @@ export const createApp = () => {
 
     const { db, pool } = createDbAndPool(c.env.DATABASE_URL);
 
-    try {
-      let nextResult: any;
-      await dbLocalStorage.run({ db, pool }, async () => {
-        nextResult = await next();
-      });
-      return nextResult;
-    } finally {
-      if (pool) {
-        try {
-          if (c.executionCtx) {
-            c.executionCtx.waitUntil(pool.end());
-          } else {
-            await pool.end();
-          }
-        } catch {
-          await pool.end();
-        }
-      }
-    }
+    let nextResult: any;
+    await dbLocalStorage.run({ db, pool }, async () => {
+      nextResult = await next();
+    });
+    return nextResult;
   });
 
   app.use('*', async (c, next) => {
