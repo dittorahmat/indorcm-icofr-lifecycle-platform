@@ -544,6 +544,10 @@ export const applications = pgTable("applications", {
 	criticality: text("criticality"),
 	isSignificant: boolean("is_significant").default(false),
 	itgcAreas: jsonb("itgc_areas").$type<string[]>().default([]),
+	businessOwners: jsonb("business_owners").$type<string[]>().default([]),
+	applicationOwners: jsonb("application_owners").$type<string[]>().default([]),
+	architectureDocUrl: text("architecture_doc_url"),
+	architectureDocName: text("architecture_doc_name"),
 });
 
 export const bpmProcesses = pgTable("bpm_processes", {

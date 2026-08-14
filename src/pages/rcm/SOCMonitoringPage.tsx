@@ -105,6 +105,11 @@ export function SOCMonitoringPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Application Name</TableHead>
+                      <TableHead>ICOFR Scope (Y/N)</TableHead>
+                      <TableHead>Business Owner</TableHead>
+                      <TableHead>Application Owner</TableHead>
+
+                      <TableHead>Application Architecture</TableHead>
                       <TableHead>Criticality</TableHead>
                       <TableHead>ITGC Status</TableHead>
                       <TableHead>Linked Controls</TableHead>
@@ -114,22 +119,75 @@ export function SOCMonitoringPage() {
                   </TableHeader>
                   <TableBody>
                     {isLoadingApps ? (
-                      <TableRow><TableCell colSpan={6} className="h-24 text-center">Loading...</TableCell></TableRow>
+                      <TableRow><TableCell colSpan={10} className="h-24 text-center">Loading...</TableCell></TableRow>
                     ) : !appsData?.items.length ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="h-32 text-center text-slate-400 italic">
+                        <TableCell colSpan={10} className="h-32 text-center text-slate-400 italic">
                           No applications found. Click "Add Application" to start.
                         </TableCell>
                       </TableRow>
                     ) : appsData.items.map((app) => {
                       const mappedAreas = app.itgcAreas || [];
+                      const busOwners = app.businessOwners || [];
+                      const appOwners = app.applicationOwners || [];
                       
                       return (
                         <TableRow key={app.id} className="hover:bg-slate-50/50 transition-colors">
-                          <TableCell className="font-semibold text-slate-800">
+                          <TableCell className="font-semibold text-slate-800 whitespace-nowrap">
                             {app.name}
-                            {app.isSignificant && (
-                              <Badge variant="outline" className="ml-2 text-xs bg-indigo-50 text-indigo-600 border-indigo-200">SIGNIFICANT</Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge 
+                              variant="outline" 
+                              className={app.isSignificant 
+                                ? "bg-emerald-50 text-emerald-700 border-emerald-200 font-bold text-xs" 
+                                : "bg-slate-50 text-slate-500 border-slate-200 text-xs"
+                              }
+                            >
+                              {app.isSignificant ? "Yes" : "No"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-wrap gap-1">
+                              {busOwners.length > 0 ? (
+                                busOwners.map((owner) => (
+                                  <Badge key={owner} variant="secondary" className="text-xs bg-slate-100 text-slate-700 font-normal">
+                                    {owner}
+                                  </Badge>
+                                ))
+                              ) : (
+                                <span className="text-xs text-slate-400 italic">-</span>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-wrap gap-1">
+                              {appOwners.length > 0 ? (
+                                appOwners.map((owner) => (
+                                  <Badge key={owner} variant="secondary" className="text-xs bg-indigo-50 text-indigo-700 font-normal border border-indigo-100">
+                                    {owner}
+                                  </Badge>
+                                ))
+                              ) : (
+                                <span className="text-xs text-slate-400 italic">-</span>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {app.architectureDocUrl || app.architectureDocName ? (
+                              <a 
+                                href={app.architectureDocUrl || "#"} 
+                                target="_blank" 
+                                rel="noreferrer"
+                                download={app.architectureDocName || "Architecture.pdf"}
+                                className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors text-xs font-medium border border-blue-200 max-w-[160px] truncate"
+                                title={app.architectureDocName || "Architecture Document"}
+                              >
+                                <FileSearch className="h-3.5 w-3.5 flex-shrink-0 text-blue-600" />
+                                <span className="truncate">{app.architectureDocName || "Architecture.pdf"}</span>
+                              </a>
+                            ) : (
+                              <span className="text-xs text-slate-400 italic">No document</span>
                             )}
                           </TableCell>
                           <TableCell>

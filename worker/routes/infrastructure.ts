@@ -29,11 +29,41 @@ infrastructure.post('/applications', async (c) => {
     organizationId: orgId,
     name: body.name || "New Application",
     description: body.description,
+    criticality: body.criticality || "Medium",
     itgcAreas: body.itgcAreas || [],
-    isSignificant: body.isSignificant || false,
+    isSignificant: body.isSignificant ?? false,
+    businessOwners: body.businessOwners || [],
+    applicationOwners: body.applicationOwners || [],
+    architectureDocUrl: body.architectureDocUrl || null,
+    architectureDocName: body.architectureDocName || null,
   });
 
   return ok(c, { id });
+});
+
+infrastructure.patch('/applications/:id', async (c) => {
+  const db = getDb(c.env.DATABASE_URL);
+  const id = c.req.param('id');
+  const orgId = c.get('organizationId');
+  const body = await c.req.json<any>();
+
+  const updateData: Record<string, any> = {};
+  if (body.name !== undefined) updateData.name = body.name;
+  if (body.description !== undefined) updateData.description = body.description;
+  if (body.criticality !== undefined) updateData.criticality = body.criticality;
+  if (body.statusITGC !== undefined) updateData.statusITGC = body.statusITGC;
+  if (body.isSignificant !== undefined) updateData.isSignificant = body.isSignificant;
+  if (body.itgcAreas !== undefined) updateData.itgcAreas = body.itgcAreas;
+  if (body.businessOwners !== undefined) updateData.businessOwners = body.businessOwners;
+  if (body.applicationOwners !== undefined) updateData.applicationOwners = body.applicationOwners;
+  if (body.architectureDocUrl !== undefined) updateData.architectureDocUrl = body.architectureDocUrl;
+  if (body.architectureDocName !== undefined) updateData.architectureDocName = body.architectureDocName;
+
+  await db.update(applications)
+    .set(updateData)
+    .where(and(eq(applications.id, id), eq(applications.organizationId, orgId)));
+
+  return ok(c, { success: true });
 });
 
 infrastructure.delete('/applications/:id', async (c) => {

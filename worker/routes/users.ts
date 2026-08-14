@@ -313,6 +313,10 @@ users.get('/dev/fix-db', rbac(['Admin']), async (c) => {
     await db.execute(sql`ALTER TABLE simulations ADD COLUMN IF NOT EXISTS significant_accounts jsonb;`);
     await db.execute(sql`ALTER TABLE "user" ADD COLUMN IF NOT EXISTS "language" text DEFAULT 'en';`);
     await db.execute(sql`ALTER TABLE applications ADD COLUMN IF NOT EXISTS itgc_areas jsonb DEFAULT '[]';`);
+    await db.execute(sql`ALTER TABLE applications ADD COLUMN IF NOT EXISTS business_owners jsonb DEFAULT '[]';`);
+    await db.execute(sql`ALTER TABLE applications ADD COLUMN IF NOT EXISTS application_owners jsonb DEFAULT '[]';`);
+    await db.execute(sql`ALTER TABLE applications ADD COLUMN IF NOT EXISTS architecture_doc_url text;`);
+    await db.execute(sql`ALTER TABLE applications ADD COLUMN IF NOT EXISTS architecture_doc_name text;`);
     await db.execute(sql`ALTER TABLE notifications ADD COLUMN IF NOT EXISTS type text DEFAULT 'info';`);
     await db.execute(sql`ALTER TABLE gl_snapshots ADD COLUMN IF NOT EXISTS year integer;`);
     await db.execute(sql`ALTER TABLE gl_snapshots ADD COLUMN IF NOT EXISTS "benchmarkFsliNames" jsonb;`);

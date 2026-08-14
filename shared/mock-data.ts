@@ -1439,7 +1439,11 @@ export const MOCK_APPLICATIONS: Application[] = [
     statusITGC: 'Effective',
     criticality: 'High',
     isSignificant: true,
-    itgcAreas: ['Access to Program and Data', 'Program Changes', 'Computer Operations']
+    itgcAreas: ['Access to Program and Data', 'Program Changes', 'Computer Operations'],
+    businessOwners: ['Accounting', 'Procurement'],
+    applicationOwners: ['IT Enterprise Systems'],
+    architectureDocUrl: null,
+    architectureDocName: 'SAP_S4HANA_Arch_v2.pdf'
   },
   {
     id: 'app-002',
@@ -1449,7 +1453,11 @@ export const MOCK_APPLICATIONS: Application[] = [
     statusITGC: 'Effective',
     criticality: 'High',
     isSignificant: true,
-    itgcAreas: ['Access to Program and Data', 'Program Changes']
+    itgcAreas: ['Access to Program and Data', 'Program Changes'],
+    businessOwners: ['Logistics & Mining Ops'],
+    applicationOwners: ['IT Operations'],
+    architectureDocUrl: null,
+    architectureDocName: null
   },
   {
     id: 'app-003',
@@ -1459,7 +1467,11 @@ export const MOCK_APPLICATIONS: Application[] = [
     statusITGC: 'Not Tested',
     criticality: 'Medium',
     isSignificant: true,
-    itgcAreas: ['Access to Program and Data']
+    itgcAreas: ['Access to Program and Data'],
+    businessOwners: ['Quality Control'],
+    applicationOwners: ['IT Operations'],
+    architectureDocUrl: null,
+    architectureDocName: null
   },
   {
     id: 'app-004',
@@ -1469,7 +1481,11 @@ export const MOCK_APPLICATIONS: Application[] = [
     statusITGC: 'Ineffective',
     criticality: 'Medium',
     isSignificant: false,
-    itgcAreas: ['Computer Operations']
+    itgcAreas: ['Computer Operations'],
+    businessOwners: ['Mining Production'],
+    applicationOwners: ['OT Systems'],
+    architectureDocUrl: null,
+    architectureDocName: null
   }
 ];
 export const MOCK_RISK_LIBRARY: RiskLibrary[] = [
