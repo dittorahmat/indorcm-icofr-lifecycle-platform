@@ -23,6 +23,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { Info, ShieldAlert, CheckCircle2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { SignificantApplicationCombobox } from './SignificantApplicationCombobox';
 
 const formSchema = z.object({
   // Identity
@@ -45,6 +46,7 @@ const formSchema = z.object({
   isKeyControl: z.boolean(),
   controlType: z.string().nullable().optional(),
   controlNature: z.string().nullable().optional(),
+  applicationId: z.string().nullable().optional(),
   automatedSubNature: z.string().nullable().optional(),
   frequency: z.string().nullable().optional(),
   supportingApp: z.string().nullable().optional(),
@@ -370,6 +372,27 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                               )}
                             />
                          </div>
+
+                         <FormField
+                            control={form.control}
+                            name="applicationId"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.significant_application', { defaultValue: 'Significant Application' })}</FormLabel>
+                                <FormControl>
+                                  <SignificantApplicationCombobox
+                                    value={field.value}
+                                    appName={form.watch('supportingApp')}
+                                    onChange={(appId, appName) => {
+                                      field.onChange(appId);
+                                      form.setValue('supportingApp', appName || '', { shouldDirty: true });
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormMessage className="text-xs" />
+                              </FormItem>
+                            )}
+                          />
                          
                          <FormField
                             control={form.control}

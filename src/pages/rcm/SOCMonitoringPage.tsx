@@ -14,6 +14,7 @@ import { SOCReviewDialog } from '@/components/audit/SOCReviewDialog';
 import { AddApplicationDialog } from '@/components/rcm/AddApplicationDialog';
 import { AddVendorDialog } from '@/components/audit/AddVendorDialog';
 import { AddSOCReportDialog } from '@/components/audit/AddSOCReportDialog';
+import { ApplicationDetailDialog } from '@/components/rcm/ApplicationDetailDialog';
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { toast } from 'sonner';
 import { useConfirm } from '@/hooks/use-confirm';
@@ -33,12 +34,13 @@ export function SOCMonitoringPage() {
   const queryClient = useQueryClient();
   const [selectedReport, setSelectedReport] = React.useState<SOCReport | null>(null);
   const [editingApp, setEditingApp] = React.useState<Application | null>(null);
+  const [selectedAppDetail, setSelectedAppDetail] = React.useState<Application | null>(null);
   const [isAddAppModalOpen, setIsAddAppModalOpen] = React.useState(false);
   const [isAddVendorModalOpen, setIsAddVendorModalOpen] = React.useState(false);
   const [isAddSOCModalOpen, setIsAddSOCModalOpen] = React.useState(false);
 
   // Protected state if any modal is open
-  useUnsavedChanges(isAddAppModalOpen || isAddVendorModalOpen || isAddSOCModalOpen || !!selectedReport || !!editingApp);
+  useUnsavedChanges(isAddAppModalOpen || isAddVendorModalOpen || isAddSOCModalOpen || !!selectedReport || !!editingApp || !!selectedAppDetail);
 
   const { data: appsData, isLoading: isLoadingApps } = useQuery({
     queryKey: ['applications'],
@@ -132,9 +134,28 @@ export function SOCMonitoringPage() {
                       const appOwners = app.applicationOwners || [];
                       
                       return (
-                        <TableRow key={app.id} className="hover:bg-slate-50/50 transition-colors">
+                        <TableRow 
+                          key={app.id} 
+                          className="hover:bg-indigo-50/30 transition-colors cursor-pointer group"
+                          onClick={() => setSelectedAppDetail(app)}
+                        >
                           <TableCell className="font-semibold text-slate-800 whitespace-nowrap">
-                            {app.name}
+                            <div className="flex items-center gap-2">
+                              <span className="group-hover:text-indigo-600 group-hover:underline transition-colors">
+                                {app.name}
+                              </span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 px-1.5 text-[10px] text-indigo-600 hover:bg-indigo-50 opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedAppDetail(app);
+                                }}
+                              >
+                                {t('rcm:application_detail.title', { defaultValue: 'Details' })}
+                              </Button>
+                            </div>
                           </TableCell>
                           <TableCell>
                             <Badge 
@@ -173,7 +194,7 @@ export function SOCMonitoringPage() {
                               )}
                             </div>
                           </TableCell>
-                          <TableCell>
+                          <TableCell onClick={(e) => e.stopPropagation()}>
                             {app.architectureDocUrl || app.architectureDocName ? (
                               <a 
                                 href={app.architectureDocUrl || "#"} 
@@ -227,7 +248,7 @@ export function SOCMonitoringPage() {
                               </div>
                             </TooltipProvider>
                           </TableCell>
-                          <TableCell className="text-right">
+                          <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                             <div className="flex justify-end gap-1">
                               <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-indigo-600" onClick={() => setEditingApp(app)}>
                                 <Edit className="h-4 w-4" />
@@ -399,6 +420,18 @@ export function SOCMonitoringPage() {
         <AddSOCReportDialog 
           isOpen={isAddSOCModalOpen}
           onOpenChange={setIsAddSOCModalOpen}
+        />
+
+        <ApplicationDetailDialog
+          application={selectedAppDetail}
+          isOpen={!!selectedAppDetail}
+          onOpenChange={(open) => {
+            if (!open) setSelectedAppDetail(null);
+          }}
+          onEditApplication={(app) => {
+            setSelectedAppDetail(null);
+            setEditingApp(app);
+          }}
         />
       </div>
     </AppLayout>

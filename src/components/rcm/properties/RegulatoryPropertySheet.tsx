@@ -32,6 +32,7 @@ import type { QualitativeLevel, ControlLevel, ChangeLog } from '@shared/types';
 import { TLCForm } from './TLCForm';
 import { ELCForm } from './ELCForm';
 import { ITGCForm } from './ITGCForm';
+import { SignificantApplicationCombobox } from '../SignificantApplicationCombobox';
 
 interface RegulatoryPropertySheetProps {
   selectedNode: Node | null;
@@ -580,6 +581,24 @@ export function RegulatoryPropertySheet({
                                       </SelectContent>
                                     </Select>
                                   </div>
+                                </div>
+                                <div className="space-y-1">
+                                  <Label className="text-xs font-medium text-slate-600">{t('rcm:matrix.significant_application', { defaultValue: 'Aplikasi Signifikan' })}</Label>
+                                  <SignificantApplicationCombobox
+                                    disabled={isLocked}
+                                    value={ctrl.data.applicationId}
+                                    appName={ctrl.data.supportingApp}
+                                    onChange={(appId, appName) => {
+                                      const nextPairs = [...pairs];
+                                      const updated = { 
+                                        ...nextPairs[ctrl.index], 
+                                        applicationId: appId,
+                                        supportingApp: appName || ''
+                                      };
+                                      nextPairs[ctrl.index] = updated;
+                                      onUpdateNodeData(selectedNode.id, { regulatoryPairs: nextPairs });
+                                    }}
+                                  />
                                 </div>
                                 <div className="space-y-1">
                                   <Label className="text-xs font-medium text-slate-600">{t('rcm:matrix.frequency')}</Label>

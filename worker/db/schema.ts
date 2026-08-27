@@ -550,6 +550,25 @@ export const applications = pgTable("applications", {
 	architectureDocName: text("architecture_doc_name"),
 });
 
+export const applicationDocuments = pgTable("application_documents", {
+	id: text("id").primaryKey(),
+	organizationId: text("organization_id").notNull().references(() => organization.id),
+	applicationId: text("application_id").notNull().references(() => applications.id, { onDelete: 'cascade' }),
+	itgcArea: text("itgc_area").notNull(), // Access to Program and Data | Program Changes | Program Development | Computer Operations
+	fileName: text("file_name").notNull(),
+	fileUrl: text("file_url").notNull(),
+	fileSize: integer("file_size"),
+	mimeType: text("mime_type"),
+	uploadedBy: text("uploaded_by").references(() => user.id),
+	uploadedByName: text("uploaded_by_name"),
+	uploadedAt: timestamp("uploaded_at").notNull().defaultNow(),
+	notes: text("notes"),
+}, (table) => {
+	return {
+		appAreaIdx: index("app_docs_app_area_idx").on(table.organizationId, table.applicationId, table.itgcArea),
+	};
+});
+
 export const bpmProcesses = pgTable("bpm_processes", {
 	id: text("id").primaryKey(),
 	organizationId: text("organization_id").notNull().references(() => organization.id),

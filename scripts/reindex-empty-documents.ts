@@ -4,7 +4,7 @@ import path from 'node:path';
 import { existsSync } from 'node:fs';
 
 if (!(Promise as any).try) {
-  (Promise as any).try = function (fn: Function, ...args: any[]) {
+  (Promise as any).try = function (fn: (...args: any[]) => any, ...args: any[]) {
     return new Promise((resolve) => resolve(fn(...args)));
   };
 }

@@ -226,5 +226,55 @@
       "title": "Migration Backlog",
       "drag_hint": "Drag items to place onto canvas"
     }
+  },
+  "applications": {
+    "searchPlaceholder": "Search application...",
+    "library": "Application Library",
+    "none": "None (Pure Manual Control)",
+    "addNewApp": "+ Add \"{{name}}\"",
+    "quickAddTitle": "Add Significant Application",
+    "quickAddDesc": "Register a new IT asset to link with this control and track ITGC compliance.",
+    "nameLabel": "Application Name",
+    "descLabel": "Description / Scope",
+    "createdSuccess": "Application \"{{name}}\" created"
+  },
+  "application_detail": {
+    "title": "Application Details",
+    "subtitle": "IT Asset compliance, linked RCM controls, and ITGC evidence documentation.",
+    "tabs": {
+      "tlc": "RCM TLC",
+      "itgc": "RCM ITGC",
+      "access": "Access to Program & Data",
+      "changes": "Program Changes",
+      "development": "Program Development",
+      "operations": "Computer Operations"
+    },
+    "tlc_desc": "Transaction Level Controls (TLC) supported by this application.",
+    "itgc_desc": "Information Technology General Controls (ITGC) governing this application.",
+    "evidence_library_title": "Evidence & Documentation Library",
+    "upload_btn": "Upload Evidence",
+    "uploading": "Uploading file...",
+    "drop_file_hint": "Select PDF, Word, Excel, or Image file (max 25MB)",
+    "file_name": "File Name",
+    "file_size": "Size",
+    "uploader": "Uploaded By",
+    "upload_date": "Upload Date",
+    "notes": "Notes / Version",
+    "preview": "Preview",
+    "download": "Download",
+    "delete": "Delete",
+    "no_tlc_controls": "No TLC controls linked to this application yet.",
+    "no_itgc_controls": "No ITGC controls linked to this application yet.",
+    "no_documents": "No evidence documents uploaded for this ITGC area yet.",
+    "delete_doc_confirm": "Are you sure you want to delete this evidence document?",
+    "doc_deleted": "Document removed",
+    "doc_uploaded": "Document uploaded successfully",
+    "view_in_rcm": "View in RCM / BPM",
+    "criticality": "Criticality",
+    "itgc_status": "ITGC Status",
+    "significant_badge": "Significant App",
+    "business_owners": "Business Owners",
+    "app_owners": "Application Owners",
+    "edit_app": "Edit Application Info"
   }
 }

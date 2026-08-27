@@ -52,7 +52,7 @@ describe('AIService - generateChatResponse Multimodal Routing', () => {
 
     expect(result.content).toBe('{"nodes": [], "edges": []}');
     expect(mockGetModel).toHaveBeenCalledWith(expect.objectContaining({
-      model: 'gemini-2.5-flash-lite',
+      model: 'gemini-2.5-flash',
       systemInstruction: 'Test instructions',
     }));
 

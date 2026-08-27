@@ -225,5 +225,55 @@
       "title": "Backlog Migrasi",
       "drag_hint": "Tarik item untuk diletakkan di kanvas"
     }
+  },
+  "applications": {
+    "searchPlaceholder": "Cari aplikasi...",
+    "library": "Daftar Aplikasi",
+    "none": "Tidak Ada (Kontrol Manual Murni)",
+    "addNewApp": "+ Tambah \"{{name}}\"",
+    "quickAddTitle": "Tambah Aplikasi Signifikan",
+    "quickAddDesc": "Daftarkan aset IT baru untuk dihubungkan dengan kontrol ini dan pantau kepatuhan ITGC.",
+    "nameLabel": "Nama Aplikasi",
+    "descLabel": "Deskripsi / Cakupan",
+    "createdSuccess": "Aplikasi \"{{name}}\" berhasil ditambahkan"
+  },
+  "application_detail": {
+    "title": "Detail Aplikasi Signifikan",
+    "subtitle": "Kepatuhan aset TI, kontrol RCM terkait, dan dokumentasi bukti ITGC.",
+    "tabs": {
+      "tlc": "RCM TLC",
+      "itgc": "RCM ITGC",
+      "access": "Access to Program & Data",
+      "changes": "Program Changes",
+      "development": "Program Development",
+      "operations": "Computer Operations"
+    },
+    "tlc_desc": "Kontrol Tingkat Transaksi (TLC) yang didukung oleh aplikasi ini.",
+    "itgc_desc": "Kontrol Umum Teknologi Informasi (ITGC) yang mengatur aplikasi ini.",
+    "evidence_library_title": "Pustaka Bukti & Dokumentasi ITGC",
+    "upload_btn": "Unggah Bukti",
+    "uploading": "Mengunggah file...",
+    "drop_file_hint": "Pilih file PDF, Word, Excel, atau Gambar (maks 25MB)",
+    "file_name": "Nama File",
+    "file_size": "Ukuran",
+    "uploader": "Diupload Oleh",
+    "upload_date": "Waktu Unggah",
+    "notes": "Catatan / Versi",
+    "preview": "Lihat",
+    "download": "Unduh",
+    "delete": "Hapus",
+    "no_tlc_controls": "Belum ada kontrol TLC yang terhubung dengan aplikasi ini.",
+    "no_itgc_controls": "Belum ada kontrol ITGC yang terhubung dengan aplikasi ini.",
+    "no_documents": "Belum ada dokumen bukti yang diunggah untuk area ITGC ini.",
+    "delete_doc_confirm": "Apakah Anda yakin ingin menghapus dokumen bukti ini?",
+    "doc_deleted": "Dokumen berhasil dihapus",
+    "doc_uploaded": "Dokumen berhasil diunggah",
+    "view_in_rcm": "Buka di RCM / BPM",
+    "criticality": "Tingkat Kekritisan",
+    "itgc_status": "Status ITGC",
+    "significant_badge": "Aplikasi Signifikan",
+    "business_owners": "Pemilik Bisnis",
+    "app_owners": "Pemilik Aplikasi",
+    "edit_app": "Edit Informasi Aplikasi"
   }
 }

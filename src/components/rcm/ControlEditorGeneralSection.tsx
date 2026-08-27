@@ -6,8 +6,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTranslation } from 'react-i18next';
 import { CONTROL_NATURES, ALL_FREQUENCIES } from '@/lib/constants';
+import { SignificantApplicationCombobox } from './SignificantApplicationCombobox';
 
-export const ControlEditorGeneralSection = ({ form, applicationsData }: { form: any, applicationsData: any }) => {
+export const ControlEditorGeneralSection = ({ form, applicationsData }: { form: any, applicationsData?: any }) => {
   const { t } = useTranslation(['rcm', 'common']);
   const nature = form.watch('nature');
 
@@ -97,24 +98,25 @@ export const ControlEditorGeneralSection = ({ form, applicationsData }: { form: 
         )} />
       </div>
 
-      {(nature === 'Automated' || nature === 'ITDM - IPE' || nature === 'ITDM - EUC') && (
-        <FormField control={form.control} name="itApplication" render={({ field }) => (
-          <FormItem>
-            <FormLabel>{t('matrix.supporting_app')}</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder={t('common:placeholders.app')} />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                {applicationsData?.items.map((app: any) => <SelectItem key={app.id} value={app.id}>{app.name}</SelectItem>)}
-                <SelectItem value="Other">{t('common:actions.all')}</SelectItem>
-              </SelectContent>
-            </Select>
-          </FormItem>
-        )} />
-      )}
+      <FormField control={form.control} name="applicationId" render={({ field }) => (
+        <FormItem>
+          <FormLabel>{t('matrix.significant_application', { defaultValue: 'Significant Application' })}</FormLabel>
+          <FormControl>
+            <SignificantApplicationCombobox
+              value={field.value}
+              appName={form.watch('supportingApp') || form.watch('itApplication')}
+              onChange={(appId, appName) => {
+                field.onChange(appId);
+                if (form.setValue) {
+                  form.setValue('supportingApp', appName || '');
+                  form.setValue('itApplication', appName || '');
+                }
+              }}
+            />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField control={form.control} name="effectiveDate" render={({ field }) => (

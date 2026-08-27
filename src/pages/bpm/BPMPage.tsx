@@ -75,6 +75,7 @@ export function BPMPage() {
     isBpmEditorOpen,
     selectedDiagramId,
     currentSubProcess,
+    currentBpmProcessId,
     isCreatingBPM,
     setIsCreatingBPM,
     bpmName,
@@ -340,6 +341,7 @@ export function BPMPage() {
                   subProcess={currentSubProcess} 
                   workingYear={viewYear} 
                   currentGL={selectedGLRow?.noGL}
+                  bpmProcessId={currentBpmProcessId || selectedProcess?.id || undefined}
                 />
               )}
             </div>

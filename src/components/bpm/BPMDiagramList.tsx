@@ -22,7 +22,7 @@ interface BPMDiagramListProps {
   diagrams?: { items: BPMDiagram[] };
   settings?: Settings;
   selectedGLRow?: GLRow | null;
-  onOpenDiagram: (diagramId: string, subProcess: string) => void;
+  onOpenDiagram: (diagramId: string, subProcess: string, bpmProcessId?: string) => void;
   onCreateDiagram: (subProcess: string) => void;
   onOpenWorksheet: (bpmId: string, bpmName: string) => void;
   onDeleteProcess: (bpmId: string, bpmName: string) => void;
@@ -103,7 +103,7 @@ export function BPMDiagramList({
                           onClick={(e) => {
                             e.stopPropagation();
                             const diagram = diagrams?.items.find(d => d.subProcess === bpm.name);
-                            if (diagram) onOpenDiagram(diagram.id, bpm.name);
+                            if (diagram) onOpenDiagram(diagram.id, bpm.name, bpm.id);
                             else onCreateDiagram(bpm.name);
                           }}
                         >

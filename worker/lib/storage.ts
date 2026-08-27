@@ -69,16 +69,33 @@ class LocalStorageBucket implements StorageBucket {
 
     // Guess content-type based on key extension
     let contentType = 'application/octet-stream';
-    if (key.endsWith('.pdf')) {
+    const lowerKey = key.toLowerCase();
+    if (lowerKey.endsWith('.pdf')) {
       contentType = 'application/pdf';
-    } else if (key.endsWith('.png')) {
+    } else if (lowerKey.endsWith('.png')) {
       contentType = 'image/png';
-    } else if (key.endsWith('.jpg') || key.endsWith('.jpeg')) {
+    } else if (lowerKey.endsWith('.jpg') || lowerKey.endsWith('.jpeg')) {
       contentType = 'image/jpeg';
-    } else if (key.endsWith('.xlsx')) {
+    } else if (lowerKey.endsWith('.webp')) {
+      contentType = 'image/webp';
+    } else if (lowerKey.endsWith('.svg')) {
+      contentType = 'image/svg+xml';
+    } else if (lowerKey.endsWith('.gif')) {
+      contentType = 'image/gif';
+    } else if (lowerKey.endsWith('.docx')) {
+      contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+    } else if (lowerKey.endsWith('.doc')) {
+      contentType = 'application/msword';
+    } else if (lowerKey.endsWith('.xlsx')) {
       contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-    } else if (key.endsWith('.csv')) {
+    } else if (lowerKey.endsWith('.xls')) {
+      contentType = 'application/vnd.ms-excel';
+    } else if (lowerKey.endsWith('.csv')) {
       contentType = 'text/csv';
+    } else if (lowerKey.endsWith('.txt')) {
+      contentType = 'text/plain';
+    } else if (lowerKey.endsWith('.zip')) {
+      contentType = 'application/zip';
     }
 
     return {

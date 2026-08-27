@@ -115,6 +115,9 @@ export type Application = InferSelectModel<typeof schema.applications> & {
 };
 export type NewApplication = InferInsertModel<typeof schema.applications>;
 
+export type ApplicationDocument = InferSelectModel<typeof schema.applicationDocuments>;
+export type NewApplicationDocument = InferInsertModel<typeof schema.applicationDocuments>;
+
 export interface RiskLibrary {
   id: string;
   cluster: BUMNCluster;

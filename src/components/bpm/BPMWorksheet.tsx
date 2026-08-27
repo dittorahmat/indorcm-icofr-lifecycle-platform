@@ -78,9 +78,10 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
       const next = new URLSearchParams(prev);
       next.set('diagramId', diagramId);
       next.set('subProcess', subProcess);
+      next.set('bpmProcessId', bpmProcessId);
       return next;
     });
-  }, [setSearchParams]);
+  }, [setSearchParams, bpmProcessId]);
 
   const handleCloseDiagram = async () => {
     if (isDirty) {
@@ -769,6 +770,8 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
                 diagramId={selectedDiagramId} 
                 subProcess={currentSubProcess}
                 workingYear={workingYear}
+                currentGL={noGL}
+                bpmProcessId={bpmProcessId}
               />
             )}
           </div>

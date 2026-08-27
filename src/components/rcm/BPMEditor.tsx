@@ -141,9 +141,10 @@ interface BPMEditorProps {
   subProcess: string;
   workingYear: string;
   currentGL?: string;
+  bpmProcessId?: string;
 }
 
-export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPMEditorProps) {
+export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmProcessId: propBpmProcessId }: BPMEditorProps) {
   const { t } = useTranslation(['risklibrary', 'common', 'bpm']);
   const [searchParams, setSearchParams] = useSearchParams();
   const [documentView, setDocumentView] = useState(false);
@@ -328,10 +329,20 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL }: BPM
     queryFn: () => api<Settings>('/api/settings')
   });
 
+  const resolvedBpmProcessId = propBpmProcessId || searchParams.get('bpmProcessId') || undefined;
+
   const { data: bpmProcess } = useQuery({
-    queryKey: ['bpm-processes', subProcess, workingYear],
+    queryKey: ['bpm-processes', subProcess, workingYear, resolvedBpmProcessId, currentGL],
     queryFn: async () => {
       const res = await api<{ items: BPMProcess[] }>(`/api/bpm-processes?year=${workingYear}`);
+      if (resolvedBpmProcessId) {
+        const foundById = res.items.find(p => p.id === resolvedBpmProcessId);
+        if (foundById) return foundById;
+      }
+      if (currentGL) {
+        const foundByGL = res.items.find(p => p.name === subProcess && p.year === parseInt(workingYear) && p.noGL === currentGL);
+        if (foundByGL) return foundByGL;
+      }
       return res.items.find(p => p.name === subProcess && p.year === parseInt(workingYear));
     },
     enabled: !!subProcess

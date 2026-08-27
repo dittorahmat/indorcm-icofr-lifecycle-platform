@@ -30,6 +30,7 @@ export function useBPMPage() {
   const selectedDiagramId = searchParams.get('diagramId');
   const isBpmEditorOpen = !!selectedDiagramId;
   const currentSubProcess = searchParams.get('subProcess') || "";
+  const currentBpmProcessId = searchParams.get('bpmProcessId') || "";
 
   const [isCreatingBPM, setIsCreatingBPM] = React.useState(false);
   const [bpmName, setBpmName] = React.useState("");
@@ -39,11 +40,12 @@ export function useBPMPage() {
 
   const [localAssertion, setLocalAssertion] = React.useState<Partial<AccountAssertion>>({});
 
-  const handleOpenDiagram = (diagramId: string, subProcess: string) => {
+  const handleOpenDiagram = (diagramId: string, subProcess: string, bpmProcessId?: string) => {
     setSearchParams(prev => {
       const next = new URLSearchParams(prev);
       next.set('diagramId', diagramId);
       next.set('subProcess', subProcess);
+      if (bpmProcessId) next.set('bpmProcessId', bpmProcessId);
       next.set('year', viewYear);
       return next;
     });
@@ -57,6 +59,7 @@ export function useBPMPage() {
       const next = new URLSearchParams(prev);
       next.delete('diagramId');
       next.delete('subProcess');
+      next.delete('bpmProcessId');
       return next;
     });
   };
@@ -331,6 +334,7 @@ export function useBPMPage() {
     isBpmEditorOpen,
     selectedDiagramId,
     currentSubProcess,
+    currentBpmProcessId,
     isCreatingBPM,
     setIsCreatingBPM,
     bpmName,
