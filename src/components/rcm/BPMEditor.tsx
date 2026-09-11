@@ -220,7 +220,10 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
   const initializeStagingFromParsed = useCallback((parsed: { nodes: any[]; edges: any[] }) => {
     try {
       const result = layoutOcrDiagram(parsed);
-      setStagingWarnings(result.warnings || []);
+      // 'missing-dims' is handled cleanly by auto-layout (uniform height & minimum lane width calculations),
+      // so filter it out to prevent confusing benign warnings in the UI.
+      const actionableWarnings = (result.warnings || []).filter((w) => w.code !== 'missing-dims');
+      setStagingWarnings(actionableWarnings);
       setWarningsDismissed(false);
       const rfNodes = result.nodes.map((n) => ({
         id: n.id,
