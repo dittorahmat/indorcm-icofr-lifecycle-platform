@@ -725,7 +725,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
     setWarningsDismissed(false);
     setIsOcrDialogOpen(false);
     toast.success(t('bpm:ocr.toast.applySuccess'));
-    setTimeout(() => rfInstance?.fitView?.({ padding: { top: 90, bottom: 40, left: 40, right: 40 } as any }), 100);
+    setTimeout(() => rfInstance?.fitView?.({ padding: 0.15 }), 100);
   }, [stagingNodes, stagingEdges, parsedDiagram, isDirty, isLocked, t, setNodes, setEdges, setDirty, rfInstance, toggleNodeLock, updateNodeData]);
 
   useEffect(() => {
@@ -1077,7 +1077,6 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
             fitView
-            fitViewOptions={{ padding: { top: 90, bottom: 40, left: 40, right: 40 } as any }}
           >
             {/* Visio-like Smart Alignment Guide Lines */}
             {(alignmentLines.horizontal !== undefined || alignmentLines.vertical !== undefined) && (
