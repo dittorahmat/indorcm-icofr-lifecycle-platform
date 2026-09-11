@@ -375,6 +375,10 @@
     "warnings": {
       "title": "Peringatan Layout"
     },
+    "tabs": {
+      "elements": "Elemen Shape",
+      "connections": "Koneksi Edge"
+    },
     "edgeList": {
       "title": "Koneksi",
       "empty": "Tidak ada koneksi terdeteksi",

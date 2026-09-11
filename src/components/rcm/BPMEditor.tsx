@@ -38,6 +38,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useUnsavedChangesContext } from '@/context/UnsavedChangesContext';
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { useTranslation } from 'react-i18next';
@@ -1538,7 +1539,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
                   </div>
                 )}
 
-                <div className="h-[300px] border-b border-border relative bg-white mt-3 mx-3 rounded-lg overflow-hidden">
+                <div className="h-[230px] border-b border-border relative bg-white mt-3 mx-3 rounded-lg overflow-hidden shrink-0">
                   <ReactFlow
                     nodes={stagingNodes}
                     edges={stagingEdges}
@@ -1568,199 +1569,211 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
                   <p className="pointer-events-none absolute bottom-1 left-1/2 -translate-x-1/2 rounded-full border border-border bg-white/90 px-2 py-0.5 text-xs text-muted-foreground shadow-sm">{t('bpm:ocr.staging.canvasHint')}</p>
                 </div>
 
-                <div className="px-3 py-3 border-b border-border space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-widest text-foreground">{t('bpm:ocr.edgeList.title')}</span>
-                    <span className="text-xs text-muted-foreground">{t('bpm:ocr.edgesCount', { count: stagingEdges.length })}</span>
+                {/* Tabbed Inspector: Elements vs Connections */}
+                <Tabs defaultValue="elements" className="flex-1 flex flex-col min-h-0 overflow-hidden">
+                  <div className="px-3 pt-2 pb-0 border-b border-border bg-muted/10 shrink-0">
+                    <TabsList className="grid w-full grid-cols-2 h-8">
+                      <TabsTrigger value="elements" className="text-xs">
+                        {t('bpm:ocr.tabs.elements')} ({stagingNodes.length})
+                      </TabsTrigger>
+                      <TabsTrigger value="connections" className="text-xs">
+                        {t('bpm:ocr.tabs.connections')} ({stagingEdges.length})
+                      </TabsTrigger>
+                    </TabsList>
                   </div>
-                  <ScrollArea className="max-h-[120px] pr-2">
-                    {stagingEdges.length === 0 ? (
-                      <p className="py-2 text-xs italic text-muted-foreground">{t('bpm:ocr.edgeList.empty')}</p>
-                    ) : (
-                      <div className="space-y-1.5">
-                        {stagingEdges.map((edge) => (
-                          <div key={edge.id} className="flex items-center gap-2 rounded-lg border border-border bg-muted/20 p-1.5">
-                            <span className="flex-1 truncate font-mono text-xs">{String(edge.source)} → {String(edge.target)}</span>
-                            <Input
-                              value={(edge.label as string) || ''}
-                              placeholder={t('bpm:ocr.edgeList.labelPlaceholder')}
-                              onChange={(e) => setStagingEdges((eds) => eds.map((en) => en.id === edge.id ? { ...en, label: e.target.value } : en))}
-                              className="h-7 w-28 text-xs"
-                            />
-                            <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setStagingEdges((eds) => eds.filter((en) => en.id !== edge.id))}>
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </ScrollArea>
-                  <p className="text-xs italic text-muted-foreground">{t('bpm:ocr.staging.edgeHint')}</p>
-                </div>
 
-                <ScrollArea className="flex-1 p-3">
-                  <div className="space-y-4">
-                    <p className="text-xs italic text-muted-foreground">{t('bpm:ocr.adjustmentInstructions')}</p>
-                    <div className="space-y-3">
-                      {stagingNodes.map((node) => {
-                        let shapeName = t('bpm:ocr.shapes.activity');
-                        let iconBg = "bg-slate-50 border-slate-300 text-slate-700 rounded-md";
-                        if (node.type === 'start') {
-                          shapeName = t('bpm:ocr.shapes.start');
-                          iconBg = "bg-emerald-50 border-emerald-300 text-emerald-700 rounded-full";
-                        } else if (node.type === 'end') {
-                          shapeName = t('bpm:ocr.shapes.end');
-                          iconBg = "bg-rose-50 border-rose-300 text-rose-700 rounded-full";
-                        } else if (node.type === 'automated-activity') {
-                          shapeName = t('bpm:ocr.shapes.system');
-                          iconBg = "bg-blue-50 border-blue-300 text-blue-700 rounded-md";
-                        } else if (node.type === 'decision') {
-                          shapeName = t('bpm:ocr.shapes.decision');
-                          iconBg = "bg-amber-50 border-amber-300 text-amber-700 rotate-45 transform w-7 h-7";
-                        } else if (node.type === 'archive') {
-                          shapeName = t('bpm:ocr.shapes.archive');
-                          iconBg = "bg-slate-50 border-slate-800 text-slate-700 [clip-path:polygon(0%_0%,100%_0%,50%_100%)] w-8 h-8";
-                        } else if (node.type === 'data-media') {
-                          shapeName = t('bpm:ocr.shapes.dataMedia');
-                          iconBg = "bg-sky-50 border-sky-300 text-sky-700 rounded-t-lg rounded-b-lg";
-                        } else if (node.type === 'document') {
-                          shapeName = t('bpm:ocr.shapes.document');
-                          iconBg = "bg-slate-50 border-slate-400 text-slate-600 rounded-b-xl";
-                        } else if (node.type === 'alternate-process') {
-                          shapeName = t('bpm:ocr.shapes.alternateProcess');
-                          iconBg = "bg-slate-50 border-slate-300 text-slate-700 rounded-lg";
-                        } else if (node.type === 'data') {
-                          shapeName = t('bpm:ocr.shapes.data');
-                          iconBg = "bg-slate-50 border-slate-300 text-slate-700 rounded-sm";
-                        } else if (node.type === 'predefined-process') {
-                          shapeName = t('bpm:ocr.shapes.predefinedProcess');
-                          iconBg = "bg-slate-50 border-slate-300 text-slate-700 border-l-4 border-r-4";
-                        } else if (node.type === 'internal-storage') {
-                          shapeName = t('bpm:ocr.shapes.internalStorage');
-                          iconBg = "bg-slate-50 border-slate-300 text-slate-700";
-                        } else if (node.type === 'multi-document') {
-                          shapeName = t('bpm:ocr.shapes.multiDocument');
-                          iconBg = "bg-slate-50 border-slate-300 text-slate-700 shadow-sm";
-                        } else if (node.type === 'preparation') {
-                          shapeName = t('bpm:ocr.shapes.preparation');
-                          iconBg = "bg-slate-50 border-slate-300 text-slate-700 rounded-[50%]";
-                        } else if (node.type === 'manual-operation') {
-                          shapeName = t('bpm:ocr.shapes.manualOperation');
-                          iconBg = "bg-slate-50 border-slate-300 text-slate-700";
-                        } else if (node.type === 'card') {
-                          shapeName = t('bpm:ocr.shapes.card');
-                          iconBg = "bg-slate-50 border-slate-300 text-slate-700 rounded-tl-none";
-                        } else if (node.type === 'punched-tape') {
-                          shapeName = t('bpm:ocr.shapes.punchedTape');
-                          iconBg = "bg-slate-50 border-slate-300 text-slate-700";
-                        } else if (node.type === 'summing-junction') {
-                          shapeName = t('bpm:ocr.shapes.summingJunction');
-                          iconBg = "bg-slate-50 border-slate-300 text-slate-700 rounded-full";
-                        } else if (node.type === 'or') {
-                          shapeName = t('bpm:ocr.shapes.or');
-                          iconBg = "bg-slate-50 border-slate-300 text-slate-700 rounded-full";
-                        } else if (node.type === 'collate') {
-                          shapeName = t('bpm:ocr.shapes.collate');
-                          iconBg = "bg-slate-50 border-slate-300 text-slate-700";
-                        } else if (node.type === 'sort') {
-                          shapeName = t('bpm:ocr.shapes.sort');
-                          iconBg = "bg-slate-50 border-slate-300 text-slate-700";
-                        } else if (node.type === 'extract') {
-                          shapeName = t('bpm:ocr.shapes.extract');
-                          iconBg = "bg-slate-50 border-slate-300 text-slate-700";
-                        } else if (node.type === 'merge') {
-                          shapeName = t('bpm:ocr.shapes.merge');
-                          iconBg = "bg-slate-50 border-slate-300 text-slate-700";
-                        } else if (node.type === 'stored-data') {
-                          shapeName = t('bpm:ocr.shapes.storedData');
-                          iconBg = "bg-slate-50 border-slate-300 text-slate-700 rounded-r-full";
-                        } else if (node.type === 'delay') {
-                          shapeName = t('bpm:ocr.shapes.delay');
-                          iconBg = "bg-slate-50 border-slate-300 text-slate-700 rounded-r-full";
-                        } else if (node.type === 'sequential-access') {
-                          shapeName = t('bpm:ocr.shapes.sequentialAccess');
-                          iconBg = "bg-slate-50 border-slate-300 text-slate-700 rounded-full";
-                        } else if (node.type === 'direct-access') {
-                          shapeName = t('bpm:ocr.shapes.directAccess');
-                          iconBg = "bg-slate-50 border-slate-300 text-slate-700 rounded-r-full";
-                        } else if (node.type === 'display') {
-                          shapeName = t('bpm:ocr.shapes.display');
-                          iconBg = "bg-slate-50 border-slate-300 text-slate-700 rounded-l-full";
-                        } else if (node.type === 'loop-limit') {
-                          shapeName = t('bpm:ocr.shapes.loopLimit');
-                          iconBg = "bg-slate-50 border-slate-300 text-slate-700";
-                        } else if (node.type === 'annotation') {
-                          shapeName = t('bpm:ocr.shapes.annotation');
-                          iconBg = "bg-slate-50 border-slate-300 text-slate-700 border-dashed";
-                        } else if (node.type === 'swimlane') {
-                          shapeName = t('bpm:editor.nodes.swimlane');
-                          iconBg = "bg-indigo-50 border-indigo-300 text-indigo-700 rounded-md";
-                        }
-                        return (
-                          <div key={node.id} className="flex items-center gap-3 rounded-xl border border-border p-3 transition-all hover:bg-muted/50">
-                            <div className="flex h-8 w-8 shrink-0 items-center justify-center">
-                              <div className={cn("flex h-full w-full items-center justify-center border-2 text-[8px] font-bold uppercase tracking-tighter shadow-sm", iconBg)}>
-                                {node.type === 'decision' ? <span className="-rotate-45">DEC</span> : node.type === 'archive' ? <span className="text-[7px]">ARS</span> : node.type === 'swimlane' ? <span className="text-[7px]">LANE</span> : node.type.substring(0, 3)}
-                              </div>
-                            </div>
-                            <div className="flex-1 space-y-1">
-                              <div className="flex items-center justify-between gap-2">
-                                <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">{shapeName}</span>
-                                <div className="flex items-center gap-1">
-                                  <select
-                                    value={node.type}
-                                    onChange={(e) => setStagingNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, type: e.target.value, data: { ...n.data, type: e.target.value } } : n))}
-                                    className="rounded border border-border bg-white px-1.5 py-0.5 text-xs text-foreground focus:outline-none"
-                                  >
-                                    <option value="start">{t('bpm:ocr.options.start')}</option>
-                                    <option value="end">{t('bpm:ocr.options.end')}</option>
-                                    <option value="activity">{t('bpm:ocr.options.activity')}</option>
-                                    <option value="automated-activity">{t('bpm:ocr.options.system')}</option>
-                                    <option value="decision">{t('bpm:ocr.options.decision')}</option>
-                                    <option value="archive">{t('bpm:ocr.options.archive')}</option>
-                                    <option value="data-media">{t('bpm:ocr.options.dataMedia')}</option>
-                                    <option value="document">{t('bpm:ocr.options.document')}</option>
-                                    <option value="swimlane">{t('bpm:editor.nodes.swimlane')}</option>
-                                    <option value="alternate-process">{t('bpm:ocr.options.alternate-process')}</option>
-                                    <option value="data">{t('bpm:ocr.options.data')}</option>
-                                    <option value="predefined-process">{t('bpm:ocr.options.predefined-process')}</option>
-                                    <option value="internal-storage">{t('bpm:ocr.options.internal-storage')}</option>
-                                    <option value="multi-document">{t('bpm:ocr.options.multi-document')}</option>
-                                    <option value="preparation">{t('bpm:ocr.options.preparation')}</option>
-                                    <option value="manual-operation">{t('bpm:ocr.options.manual-operation')}</option>
-                                    <option value="card">{t('bpm:ocr.options.card')}</option>
-                                    <option value="punched-tape">{t('bpm:ocr.options.punched-tape')}</option>
-                                    <option value="summing-junction">{t('bpm:ocr.options.summing-junction')}</option>
-                                    <option value="or">{t('bpm:ocr.options.or')}</option>
-                                    <option value="collate">{t('bpm:ocr.options.collate')}</option>
-                                    <option value="sort">{t('bpm:ocr.options.sort')}</option>
-                                    <option value="extract">{t('bpm:ocr.options.extract')}</option>
-                                    <option value="merge">{t('bpm:ocr.options.merge')}</option>
-                                    <option value="stored-data">{t('bpm:ocr.options.stored-data')}</option>
-                                    <option value="delay">{t('bpm:ocr.options.delay')}</option>
-                                    <option value="sequential-access">{t('bpm:ocr.options.sequential-access')}</option>
-                                    <option value="direct-access">{t('bpm:ocr.options.direct-access')}</option>
-                                    <option value="display">{t('bpm:ocr.options.display')}</option>
-                                    <option value="loop-limit">{t('bpm:ocr.options.loop-limit')}</option>
-                                    <option value="annotation">{t('bpm:ocr.options.annotation')}</option>
-                                  </select>
-                                  <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setStagingNodes((nds) => nds.filter((n) => n.id !== node.id))}>
-                                    <Trash2 className="h-3.5 w-3.5" />
-                                  </Button>
+                  <TabsContent value="elements" className="flex-1 min-h-0 m-0 overflow-hidden data-[state=active]:flex data-[state=active]:flex-col">
+                    <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-4">
+                      <p className="text-xs italic text-muted-foreground">{t('bpm:ocr.adjustmentInstructions')}</p>
+                      <div className="space-y-3">
+                        {stagingNodes.map((node) => {
+                          let shapeName = t('bpm:ocr.shapes.activity');
+                          let iconBg = "bg-slate-50 border-slate-300 text-slate-700 rounded-md";
+                          if (node.type === 'start') {
+                            shapeName = t('bpm:ocr.shapes.start');
+                            iconBg = "bg-emerald-50 border-emerald-300 text-emerald-700 rounded-full";
+                          } else if (node.type === 'end') {
+                            shapeName = t('bpm:ocr.shapes.end');
+                            iconBg = "bg-rose-50 border-rose-300 text-rose-700 rounded-full";
+                          } else if (node.type === 'automated-activity') {
+                            shapeName = t('bpm:ocr.shapes.system');
+                            iconBg = "bg-blue-50 border-blue-300 text-blue-700 rounded-md";
+                          } else if (node.type === 'decision') {
+                            shapeName = t('bpm:ocr.shapes.decision');
+                            iconBg = "bg-amber-50 border-amber-300 text-amber-700 rotate-45 transform w-7 h-7";
+                          } else if (node.type === 'archive') {
+                            shapeName = t('bpm:ocr.shapes.archive');
+                            iconBg = "bg-slate-50 border-slate-800 text-slate-700 [clip-path:polygon(0%_0%,100%_0%,50%_100%)] w-8 h-8";
+                          } else if (node.type === 'data-media') {
+                            shapeName = t('bpm:ocr.shapes.dataMedia');
+                            iconBg = "bg-sky-50 border-sky-300 text-sky-700 rounded-t-lg rounded-b-lg";
+                          } else if (node.type === 'document') {
+                            shapeName = t('bpm:ocr.shapes.document');
+                            iconBg = "bg-slate-50 border-slate-400 text-slate-600 rounded-b-xl";
+                          } else if (node.type === 'alternate-process') {
+                            shapeName = t('bpm:ocr.shapes.alternateProcess');
+                            iconBg = "bg-slate-50 border-slate-300 text-slate-700 rounded-lg";
+                          } else if (node.type === 'data') {
+                            shapeName = t('bpm:ocr.shapes.data');
+                            iconBg = "bg-slate-50 border-slate-300 text-slate-700 rounded-sm";
+                          } else if (node.type === 'predefined-process') {
+                            shapeName = t('bpm:ocr.shapes.predefinedProcess');
+                            iconBg = "bg-slate-50 border-slate-300 text-slate-700 border-l-4 border-r-4";
+                          } else if (node.type === 'internal-storage') {
+                            shapeName = t('bpm:ocr.shapes.internalStorage');
+                            iconBg = "bg-slate-50 border-slate-300 text-slate-700";
+                          } else if (node.type === 'multi-document') {
+                            shapeName = t('bpm:ocr.shapes.multiDocument');
+                            iconBg = "bg-slate-50 border-slate-300 text-slate-700 shadow-sm";
+                          } else if (node.type === 'preparation') {
+                            shapeName = t('bpm:ocr.shapes.preparation');
+                            iconBg = "bg-slate-50 border-slate-300 text-slate-700 rounded-[50%]";
+                          } else if (node.type === 'manual-operation') {
+                            shapeName = t('bpm:ocr.shapes.manualOperation');
+                            iconBg = "bg-slate-50 border-slate-300 text-slate-700";
+                          } else if (node.type === 'card') {
+                            shapeName = t('bpm:ocr.shapes.card');
+                            iconBg = "bg-slate-50 border-slate-300 text-slate-700 rounded-tl-none";
+                          } else if (node.type === 'punched-tape') {
+                            shapeName = t('bpm:ocr.shapes.punchedTape');
+                            iconBg = "bg-slate-50 border-slate-300 text-slate-700";
+                          } else if (node.type === 'summing-junction') {
+                            shapeName = t('bpm:ocr.shapes.summingJunction');
+                            iconBg = "bg-slate-50 border-slate-300 text-slate-700 rounded-full";
+                          } else if (node.type === 'or') {
+                            shapeName = t('bpm:ocr.shapes.or');
+                            iconBg = "bg-slate-50 border-slate-300 text-slate-700 rounded-full";
+                          } else if (node.type === 'collate') {
+                            shapeName = t('bpm:ocr.shapes.collate');
+                            iconBg = "bg-slate-50 border-slate-300 text-slate-700";
+                          } else if (node.type === 'sort') {
+                            shapeName = t('bpm:ocr.shapes.sort');
+                            iconBg = "bg-slate-50 border-slate-300 text-slate-700";
+                          } else if (node.type === 'extract') {
+                            shapeName = t('bpm:ocr.shapes.extract');
+                            iconBg = "bg-slate-50 border-slate-300 text-slate-700";
+                          } else if (node.type === 'merge') {
+                            shapeName = t('bpm:ocr.shapes.merge');
+                            iconBg = "bg-slate-50 border-slate-300 text-slate-700";
+                          } else if (node.type === 'stored-data') {
+                            shapeName = t('bpm:ocr.shapes.storedData');
+                            iconBg = "bg-slate-50 border-slate-300 text-slate-700 rounded-r-full";
+                          } else if (node.type === 'delay') {
+                            shapeName = t('bpm:ocr.shapes.delay');
+                            iconBg = "bg-slate-50 border-slate-300 text-slate-700 rounded-r-full";
+                          } else if (node.type === 'sequential-access') {
+                            shapeName = t('bpm:ocr.shapes.sequentialAccess');
+                            iconBg = "bg-slate-50 border-slate-300 text-slate-700 rounded-full";
+                          } else if (node.type === 'direct-access') {
+                            shapeName = t('bpm:ocr.shapes.directAccess');
+                            iconBg = "bg-slate-50 border-slate-300 text-slate-700 rounded-r-full";
+                          } else if (node.type === 'display') {
+                            shapeName = t('bpm:ocr.shapes.display');
+                            iconBg = "bg-slate-50 border-slate-300 text-slate-700 rounded-l-full";
+                          } else if (node.type === 'loop-limit') {
+                            shapeName = t('bpm:ocr.shapes.loopLimit');
+                            iconBg = "bg-slate-50 border-slate-300 text-slate-700";
+                          } else if (node.type === 'annotation') {
+                            shapeName = t('bpm:ocr.shapes.annotation');
+                            iconBg = "bg-slate-50 border-slate-300 text-slate-700 border-dashed";
+                          } else if (node.type === 'swimlane') {
+                            shapeName = t('bpm:editor.nodes.swimlane');
+                            iconBg = "bg-indigo-50 border-indigo-300 text-indigo-700 rounded-md";
+                          }
+                          return (
+                            <div key={node.id} className="flex items-center gap-3 rounded-xl border border-border p-3 transition-all hover:bg-muted/50">
+                              <div className="flex h-8 w-8 shrink-0 items-center justify-center">
+                                <div className={cn("flex h-full w-full items-center justify-center border-2 text-[8px] font-bold uppercase tracking-tighter shadow-sm", iconBg)}>
+                                  {node.type === 'decision' ? <span className="-rotate-45">DEC</span> : node.type === 'archive' ? <span className="text-[7px]">ARS</span> : node.type === 'swimlane' ? <span className="text-[7px]">LANE</span> : node.type.substring(0, 3)}
                                 </div>
                               </div>
-                              <Input
-                                value={(node.data?.label as string) || ''}
-                                onChange={(e) => setStagingNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, data: { ...n.data, label: e.target.value } } : n))}
-                                className="h-8 text-xs font-semibold focus-visible:ring-1"
-                              />
+                              <div className="flex-1 space-y-1">
+                                <div className="flex items-center justify-between gap-2">
+                                  <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">{shapeName}</span>
+                                  <div className="flex items-center gap-1">
+                                    <select
+                                      value={node.type}
+                                      onChange={(e) => setStagingNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, type: e.target.value, data: { ...n.data, type: e.target.value } } : n))}
+                                      className="rounded border border-border bg-white px-1.5 py-0.5 text-xs text-foreground focus:outline-none"
+                                    >
+                                      <option value="start">{t('bpm:ocr.options.start')}</option>
+                                      <option value="end">{t('bpm:ocr.options.end')}</option>
+                                      <option value="activity">{t('bpm:ocr.options.activity')}</option>
+                                      <option value="automated-activity">{t('bpm:ocr.options.system')}</option>
+                                      <option value="decision">{t('bpm:ocr.options.decision')}</option>
+                                      <option value="archive">{t('bpm:ocr.options.archive')}</option>
+                                      <option value="data-media">{t('bpm:ocr.options.dataMedia')}</option>
+                                      <option value="document">{t('bpm:ocr.options.document')}</option>
+                                      <option value="swimlane">{t('bpm:editor.nodes.swimlane')}</option>
+                                      <option value="alternate-process">{t('bpm:ocr.options.alternate-process')}</option>
+                                      <option value="data">{t('bpm:ocr.options.data')}</option>
+                                      <option value="predefined-process">{t('bpm:ocr.options.predefined-process')}</option>
+                                      <option value="internal-storage">{t('bpm:ocr.options.internal-storage')}</option>
+                                      <option value="multi-document">{t('bpm:ocr.options.multi-document')}</option>
+                                      <option value="preparation">{t('bpm:ocr.options.preparation')}</option>
+                                      <option value="manual-operation">{t('bpm:ocr.options.manual-operation')}</option>
+                                      <option value="card">{t('bpm:ocr.options.card')}</option>
+                                      <option value="punched-tape">{t('bpm:ocr.options.punched-tape')}</option>
+                                      <option value="summing-junction">{t('bpm:ocr.options.summing-junction')}</option>
+                                      <option value="or">{t('bpm:ocr.options.or')}</option>
+                                      <option value="collate">{t('bpm:ocr.options.collate')}</option>
+                                      <option value="sort">{t('bpm:ocr.options.sort')}</option>
+                                      <option value="extract">{t('bpm:ocr.options.extract')}</option>
+                                      <option value="merge">{t('bpm:ocr.options.merge')}</option>
+                                      <option value="stored-data">{t('bpm:ocr.options.stored-data')}</option>
+                                      <option value="delay">{t('bpm:ocr.options.delay')}</option>
+                                      <option value="sequential-access">{t('bpm:ocr.options.sequential-access')}</option>
+                                      <option value="direct-access">{t('bpm:ocr.options.direct-access')}</option>
+                                      <option value="display">{t('bpm:ocr.options.display')}</option>
+                                      <option value="loop-limit">{t('bpm:ocr.options.loop-limit')}</option>
+                                      <option value="annotation">{t('bpm:ocr.options.annotation')}</option>
+                                    </select>
+                                    <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setStagingNodes((nds) => nds.filter((n) => n.id !== node.id))}>
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    </Button>
+                                  </div>
+                                </div>
+                                <Input
+                                  value={(node.data?.label as string) || ''}
+                                  onChange={(e) => setStagingNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, data: { ...n.data, label: e.target.value } } : n))}
+                                  className="h-8 text-xs font-semibold focus-visible:ring-1"
+                                />
+                              </div>
                             </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                </ScrollArea>
+                  </TabsContent>
+
+                  <TabsContent value="connections" className="flex-1 min-h-0 m-0 overflow-hidden data-[state=active]:flex data-[state=active]:flex-col">
+                    <div className="p-3 border-b border-border bg-muted/20 shrink-0">
+                      <p className="text-xs italic text-muted-foreground">{t('bpm:ocr.staging.edgeHint')}</p>
+                    </div>
+                    <div className="flex-1 min-h-0 overflow-y-auto p-3">
+                      {stagingEdges.length === 0 ? (
+                        <p className="py-4 text-center text-xs italic text-muted-foreground">{t('bpm:ocr.edgeList.empty')}</p>
+                      ) : (
+                        <div className="space-y-2">
+                          {stagingEdges.map((edge) => (
+                            <div key={edge.id} className="flex items-center gap-2 rounded-lg border border-border bg-muted/20 p-2">
+                              <span className="flex-1 truncate font-mono text-xs">{String(edge.source)} → {String(edge.target)}</span>
+                              <Input
+                                value={(edge.label as string) || ''}
+                                placeholder={t('bpm:ocr.edgeList.labelPlaceholder')}
+                                onChange={(e) => setStagingEdges((eds) => eds.map((en) => en.id === edge.id ? { ...en, label: e.target.value } : en))}
+                                className="h-7 w-32 text-xs"
+                              />
+                              <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setStagingEdges((eds) => eds.filter((en) => en.id !== edge.id))}>
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </TabsContent>
+                </Tabs>
               </div>
             </div>
           ) : (

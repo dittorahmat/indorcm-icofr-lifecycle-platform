@@ -372,6 +372,10 @@
     "warnings": {
       "title": "Layout Warnings"
     },
+    "tabs": {
+      "elements": "Shape Elements",
+      "connections": "Edge Connections"
+    },
     "edgeList": {
       "title": "Connections",
       "empty": "No connections detected",
