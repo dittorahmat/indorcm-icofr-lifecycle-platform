@@ -367,6 +367,20 @@
       "ocrSuccess": "Diagram successfully translated! Please review the results.",
       "ocrError": "AI OCR Failed: {{message}}",
       "applySuccess": "Diagram successfully applied to workspace canvas."
+    },
+    "confirmOverwrite": "The canvas has unsaved changes. Applying the OCR result will replace the entire diagram. Continue?",
+    "warnings": {
+      "title": "Layout Warnings"
+    },
+    "edgeList": {
+      "title": "Connections",
+      "empty": "No connections detected",
+      "labelPlaceholder": "Label"
+    },
+    "staging": {
+      "canvasHint": "Drag nodes, delete with Del, reconnect edges",
+      "thumbnailHint": "Original image for reference",
+      "edgeHint": "Edit labels or delete edges that are hard to select on canvas"
     }
   }
 }

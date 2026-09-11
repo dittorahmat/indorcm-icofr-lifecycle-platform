@@ -103,10 +103,14 @@ function normalizeHandlePosition(
   isSource?: boolean,
   nodeInternals?: any
 ): string {
-  if (handleId?.includes('left')) return 'left';
-  if (handleId?.includes('right')) return 'right';
-  if (handleId?.includes('top')) return 'top';
-  if (handleId?.includes('bottom')) return 'bottom';
+  if (handleId === 't-l') return 'top-left';
+  if (handleId === 't-r') return 'top-right';
+  if (handleId === 'b-l') return 'bottom-left';
+  if (handleId === 'b-r') return 'bottom-right';
+  if (handleId === 'm-l' || handleId === 'left' || handleId?.includes('left')) return 'left';
+  if (handleId === 'm-r' || handleId === 'right' || handleId?.includes('right')) return 'right';
+  if (handleId === 'top' || handleId?.includes('top') || handleId?.startsWith('t-')) return 'top';
+  if (handleId === 'bottom' || handleId?.includes('bottom') || handleId?.startsWith('b-')) return 'bottom';
 
   if (position === Position.Left) return 'left';
   if (position === Position.Right) return 'right';
@@ -203,6 +207,10 @@ function getDistributedPoint(
     else if (side === 'bottom') y = absPos.y + dim.height;
     else if (side === 'left') x = absPos.x;
     else if (side === 'right') x = absPos.x + dim.width;
+    else if (side === 'top-left') { x = absPos.x; y = absPos.y; }
+    else if (side === 'top-right') { x = absPos.x + dim.width; y = absPos.y; }
+    else if (side === 'bottom-left') { x = absPos.x; y = absPos.y + dim.height; }
+    else if (side === 'bottom-right') { x = absPos.x + dim.width; y = absPos.y + dim.height; }
 
     return { x, y };
   }
@@ -327,6 +335,7 @@ export function BridgeEdge({
   targetPosition,
   style = {},
   markerEnd,
+  selected: _selected,
 }: BridgeEdgeProps) {
   const edges = useStore((state) => state.edges);
   const nodeInternals = useStore((state) => state.nodeInternals);
@@ -358,7 +367,20 @@ export function BridgeEdge({
   );
 
   if (currentSegments.length === 0) {
-    return <path id={id} style={style} className="react-flow__edge-path" d={basePath} markerEnd={markerEnd} />;
+    return (
+      <>
+        <path
+          d={basePath}
+          fill="none"
+          stroke="transparent"
+          strokeWidth={20}
+          style={{ pointerEvents: 'stroke' }}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path id={id} style={style} className="react-flow__edge-path" d={basePath} markerEnd={markerEnd} />
+      </>
+    );
   }
 
   // Get segments for all other edges
@@ -440,13 +462,24 @@ export function BridgeEdge({
   });
 
   return (
-    <path
-      id={id}
-      style={style}
-      className="react-flow__edge-path"
-      d={finalPath}
-      markerEnd={markerEnd}
-    />
+    <>
+      <path
+        d={finalPath}
+        fill="none"
+        stroke="transparent"
+        strokeWidth={20}
+        style={{ pointerEvents: 'stroke' }}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        id={id}
+        style={style}
+        className="react-flow__edge-path"
+        d={finalPath}
+        markerEnd={markerEnd}
+      />
+    </>
   );
 }
 

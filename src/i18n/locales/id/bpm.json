@@ -370,6 +370,20 @@
       "ocrSuccess": "Diagram berhasil diterjemahkan! Silakan tinjau hasilnya.",
       "ocrError": "AI OCR Gagal: {{message}}",
       "applySuccess": "Diagram berhasil diterapkan ke workspace canvas."
+    },
+    "confirmOverwrite": "Kanvas memiliki perubahan yang belum disimpan. Menerapkan hasil OCR akan mengganti seluruh diagram. Lanjutkan?",
+    "warnings": {
+      "title": "Peringatan Layout"
+    },
+    "edgeList": {
+      "title": "Koneksi",
+      "empty": "Tidak ada koneksi terdeteksi",
+      "labelPlaceholder": "Label"
+    },
+    "staging": {
+      "canvasHint": "Geser node, hapus dengan Del, sambungkan ulang edge",
+      "thumbnailHint": "Gambar asli sebagai referensi",
+      "edgeHint": "Ubah label atau hapus edge yang sulit dipilih di canvas"
     }
   }
 }

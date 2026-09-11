@@ -149,16 +149,29 @@ PANDUAN KLASIFIKASI BENTUK VISUAL:
 - Dashed Three-sided Bracket -> Tipe: "annotation"
 - Kolom / Lajur / Kotak pembatas vertikal atau horizontal (Lajur Fungsi) -> Tipe: "swimlane"
 
+ATURAN NEGATIF — WAJIB ABAIKAN (JANGAN JADIKAN NODE):
+- Kop surat / letterhead / logo perusahaan di bagian atas halaman.
+- Blok judul dokumen (mis. "DIAGRAM ALUR", "BPM", nomor dokumen) di luar area flowchart.
+- Tabel versi / revisi / tahun / halaman dan kotak metadata dokumen.
+- Blok tanda tangan / persetujuan / footer (mis. "Disetujui oleh", "Mengetahui", stempel tanggal/paraf) di bagian bawah halaman.
+- Ikon badge kecil RCM risiko/kontrol (< ~40px) yang menempel di sudut atau tepi shape — ini BUKAN node terpisah; abaikan sepenuhnya.
+Hanya yang BOLEH menjadi node/edge: lajur swimlane, bentuk alur proses, label di dalam shape, header lajur (department/function), dan panah konektor beserta labelnya. Jika ragu, ABAIKAN — lebih baik melewatkan chrome daripada membuat node palsu.
+
 Instruksi Koordinat & Swimlane:
 - Koordinat x dan y harus berada dalam rentang 0 s.d. 1000.
 - Koordinat x adalah sumbu horizontal (kiri ke kanan).
 - Koordinat y adalah sumbu vertikal (atas ke bawah).
-- Atur agar nodes tersusun rapi secara visual dan tidak menumpuk pada koordinat yang sama.
+- PENTING — KOORDINAT HANYA HINT URUTAN RELATIF: nilai x/y yang Anda kembalikan TIDAK dipakai sebagai posisi piksel final. Layout final dihitung otomatis di frontend (lane diurutkan kiri-ke-kanan dari median x, node di dalam lane diurutkan atas-ke-bawah dari kedalaman alur/BFS, tie-break dari y). Fokus Anda adalah keanggotaan lane yang benar (parentId), topologi edge yang benar, label yang akurat, dan urutan relatif kasar — BUKAN presisi piksel. Tetap berikan x/y berbeda untuk setiap node agar urutan dapat disimpulkan, jangan menumpuk semua di koordinat sama.
 - Jika mendeteksi swimlane (kolom pembatas):
   1. Buat node tipe "swimlane".
-  2. Ekstrak nama Departemen dan Fungsi yang tertulis di bagian header/judul swimlane tersebut, simpan ke properti "department" dan "function".
+  2. Ekstrak nama Departemen dan Fungsi yang tertulis di bagian header/judul swimlane tersebut, simpan ke properti "department" dan "function". Aturan ekstraksi: ambil teks header lajur apa adanya; jika tertulis "DEPARTMENT DEBITUR" maka department = "DEBITUR"; jika tertulis "MARKETING", "KREDIT ADMIN", "PEJABAT BERWENANG" maka department = teks tersebut dan function = string kosong bila tidak ada fungsi terpisah; jika header memuat dua baris (departemen di baris 1, fungsi di baris 2) maka baris 1 -> department, baris 2 -> function. Jangan mengarang department/function yang tidak tertulis.
   3. Tentukan ukuran "width" (lebar lajur, misal 350-450) dan "height" (tinggi lajur, misal 1000) yang sesuai.
   4. Untuk setiap bentuk alur proses yang secara fisik berada di dalam area kolom swimlane tersebut, isi properti "parentId" dengan "id" dari swimlane bersangkutan.
+
+Instruksi Edge & Label:
+- Setiap panah penghubung WAJIB menjadi satu edge dengan source = id node asal, target = id node tujuan.
+- Jika panah pada gambar memiliki teks label (mis. "YA"/"YES", "TIDAK"/"NO" pada cabang decision, atau label lain di tengah panah), Anda WAJIB mengisi properti edge "label" dengan teks tersebut persis seperti tertulis. Jangan kosongkan label bila gambar menampilkannya.
+- Jika panah tidak memiliki label, biarkan properti edge "label" kosong.
 
 Format keluaran WAJIB berupa JSON objek yang memenuhi skema data yang diminta.`;
 

@@ -45,6 +45,8 @@ import { format } from 'date-fns';
 import { toPng } from 'html-to-image';
 import { jsPDF } from 'jspdf';
 import { RegulatoryPropertySheet } from './properties/RegulatoryPropertySheet';
+import { layoutOcrDiagram, type OcrLayoutWarning } from '@/utils/ocr-layout';
+import { getAlignmentGuides } from '@/utils/alignment-guides';
 
 import { useActiveSimulation, useSimulationSnapshot } from '@/hooks/use-bpm';
 import { MultiSelect } from '@/components/ui/multi-select';
@@ -155,6 +157,11 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
   const [isProcessingOcr, setIsProcessingOcr] = useState(false);
   const [ocrPreviewUrl, setOcrPreviewUrl] = useState<string | null>(null);
   const [parsedDiagram, setParsedDiagram] = useState<{ nodes: any[]; edges: any[] } | null>(null);
+  const [stagingWarnings, setStagingWarnings] = useState<OcrLayoutWarning[]>([]);
+  const [warningsDismissed, setWarningsDismissed] = useState(false);
+  const [stagingNodes, setStagingNodes, onStagingNodesChange] = useNodesState([]);
+  const [stagingEdges, setStagingEdges, onStagingEdgesChange] = useEdgesState([]);
+  const [stagingRfInstance, setStagingRfInstance] = useState<any>(null);
 
 
   const queryClient = useQueryClient();
@@ -163,6 +170,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [impactData, setImpactData] = useState<{ id: string, type: 'Risk' | 'Control', count: number, usage: any[] } | null>(null);
   const [rfInstance, setRfInstance] = useState<any>(null);
+  const [alignmentLines, setAlignmentLines] = useState<{ horizontal?: number; vertical?: number }>({});
 
   const { setDirty, resetDirty } = useUnsavedChangesContext();
 
@@ -208,115 +216,75 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
     }
   };
 
-  const handleApplyOcr = () => {
-    if (!parsedDiagram) return;
-
-    // 1. Separate swimlanes and regular shape nodes from OCR result
-    const rawSwimlanes = parsedDiagram.nodes.filter((n: any) => n.type === 'swimlane');
-    const rawShapes = parsedDiagram.nodes.filter((n: any) => n.type !== 'swimlane');
-
-    // 2. Preserve existing swimlanes from current state
-    const existingSwimlanes = nodes.filter((n: any) => n.type === 'swimlane');
-
-    // 3. Map new OCR swimlanes
-    const mappedSwimlanes = rawSwimlanes.map((lane: any) => ({
-      id: lane.id,
-      type: 'swimlane',
-      position: { x: lane.position.x, y: lane.position.y },
-      zIndex: -1,
-      style: { width: lane.width || 400, height: lane.height || 1000 },
-      data: {
-        label: lane.label || 'Lane',
-        department: lane.department || 'Dept',
-        function: lane.function || 'Func',
-        isLocked: false,
-      }
-    }));
-
-    // Combine all swimlanes to search for parent matches
-    const allSwimlanes = [...existingSwimlanes, ...mappedSwimlanes];
-
-    // 4. Map shapes, translating coordinates relative to parent swimlane if matched
-    const mappedShapes = rawShapes.map((n: any) => {
-      const parentLane = allSwimlanes.find((lane: any) => lane.id === n.parentId);
-      let posX = n.position.x;
-      let posY = n.position.y;
-      
-      if (parentLane) {
-        posX = Math.max(10, n.position.x - parentLane.position.x);
-        posY = Math.max(80, n.position.y - parentLane.position.y);
-      }
-
-      return {
+  const initializeStagingFromParsed = useCallback((parsed: { nodes: any[]; edges: any[] }) => {
+    try {
+      const result = layoutOcrDiagram(parsed);
+      setStagingWarnings(result.warnings || []);
+      setWarningsDismissed(false);
+      const rfNodes = result.nodes.map((n) => ({
         id: n.id,
         type: n.type,
-        parentId: n.parentId || undefined,
-        extent: n.parentId ? 'parent' : undefined,
-        position: { x: posX, y: posY },
-        data: {
-          label: n.label,
-          type: n.type,
-        }
-      };
-    });
+        position: { x: n.position.x, y: n.position.y },
+        parentId: n.parentId,
+        style: n.type === 'swimlane' ? { width: n.width || 400, height: n.height || 1000 } : undefined,
+        zIndex: n.type === 'swimlane' ? -1 : 10,
+        dragHandle: n.type === 'swimlane' ? '.swimlane-drag-handle' : undefined,
+        draggable: true,
+        data: n.type === 'swimlane'
+          ? { label: n.label || 'Lane', department: n.department || 'Dept', function: n.function || 'Func', isLocked: false }
+          : { label: n.label, type: n.type },
+      }));
+      const rfEdges = result.edges.map((e) => ({
+        id: e.id,
+        source: e.source,
+        target: e.target,
+        label: e.label || '',
+        type: 'bridge',
+        markerEnd: { type: MarkerType.ArrowClosed, width: 20, height: 20, color: '#0f172a' },
+        style: { strokeWidth: 2, stroke: '#0f172a' },
+      }));
+      setStagingNodes(rfNodes);
+      setStagingEdges(rfEdges);
+    } catch (err: any) {
+      setStagingWarnings([{ code: 'unknown-parent', message: err?.message || 'Layout failed' }]);
+      setStagingNodes(
+        (parsed.nodes || []).map((n: any) => ({
+          id: String(n.id),
+          type: String(n.type || 'activity'),
+          position: { x: Number(n.position?.x ?? 0), y: Number(n.position?.y ?? 0) },
+          parentId: n.parentId,
+          style: n.type === 'swimlane' ? { width: n.width || 400, height: n.height || 1000 } : undefined,
+          zIndex: n.type === 'swimlane' ? -1 : 10,
+          data: { label: n.label || '', type: n.type },
+        }))
+      );
+      setStagingEdges(
+        (parsed.edges || []).map((e: any) => ({
+          id: String(e.id),
+          source: String(e.source),
+          target: String(e.target),
+          label: e.label || '',
+          type: 'bridge',
+          markerEnd: { type: MarkerType.ArrowClosed, width: 20, height: 20, color: '#0f172a' },
+          style: { strokeWidth: 2, stroke: '#0f172a' },
+        }))
+      );
+    }
+  }, [setStagingNodes, setStagingEdges]);
 
-    // 5. Build final nodes list merging all swimlanes and new shapes
-    const combinedNodes = [...allSwimlanes, ...mappedShapes];
+  useEffect(() => {
+    if (parsedDiagram) {
+      initializeStagingFromParsed(parsedDiagram);
+      setTimeout(() => stagingRfInstance?.fitView?.({ padding: 0.15 }), 100);
+    }
+  }, [parsedDiagram, initializeStagingFromParsed, stagingRfInstance]);
 
-    // 6. Inject event handlers
-    const finalNodes = combinedNodes.map((node: any) => {
-      const isSwimlane = node.type === 'swimlane';
-      const isNodeLocked = !!node.data?.isLocked;
-      const baseNode = {
-        ...node,
-        draggable: !isLocked && !isNodeLocked,
-        zIndex: isSwimlane ? -1 : (node.zIndex ?? (node.id.startsWith('badge_') ? 20 : 10)),
-        dragHandle: isSwimlane ? '.swimlane-drag-handle' : undefined,
-      };
-
-      if (isSwimlane) {
-        baseNode.data = {
-          ...node.data,
-          onToggleLock: () => toggleNodeLock(node.id),
-          onChangeDepartment: (v: string) => updateNodeData(node.id, { department: v }),
-          onChangeFunction: (v: string) => updateNodeData(node.id, { function: v })
-        };
-      } else {
-        baseNode.data = {
-          ...node.data,
-          onToggleLock: () => toggleNodeLock(node.id)
-        };
-      }
-      return baseNode;
-    });
-
-    const standardEdges = parsedDiagram.edges.map((e: any) => ({
-      id: e.id,
-      source: e.source,
-      target: e.target,
-      label: e.label || '',
-      type: 'bridge',
-      markerEnd: {
-        type: MarkerType.ArrowClosed,
-        width: 20,
-        height: 20,
-        color: '#0f172a'
-      },
-      style: { strokeWidth: 2, stroke: '#0f172a' }
-    }));
-
-    setNodes(finalNodes);
-    setEdges(standardEdges);
-    setDirty(true);
-
-    // Reset and close
-    setParsedDiagram(null);
-    setOcrFile(null);
-    setOcrPreviewUrl(null);
-    setIsOcrDialogOpen(false);
-
-    toast.success(t('bpm:ocr.toast.applySuccess'));
-  };
+  useEffect(() => {
+    if (!isOcrDialogOpen) {
+      setStagingWarnings([]);
+      setWarningsDismissed(false);
+    }
+  }, [isOcrDialogOpen]);
 
   // 1. Fetch Diagram Data
   const { data: diagram, isLoading: isDiagramLoading } = useQuery({
@@ -644,6 +612,117 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
       return finalNodes;
     });
   }, [setNodes, isLocked]);
+
+  
+  const handleNodeDrag = useCallback((_: any, node: any) => {
+    if (isLocked || node.type === "swimlane") return;
+    const nodeW = node.width || 160;
+    const nodeH = node.height || 56;
+    const draggedRect = {
+      id: node.id,
+      x: node.position.x,
+      y: node.position.y,
+      width: nodeW,
+      height: nodeH,
+    };
+
+    const otherRects = nodes
+      .filter((n) => n.id !== node.id && n.type !== "swimlane" && n.type !== "risk-control-badge")
+      .map((n) => ({
+        id: n.id,
+        x: n.position.x,
+        y: n.position.y,
+        width: n.width || 160,
+        height: n.height || 56,
+      }));
+
+    const { guides, snappedX, snappedY } = getAlignmentGuides(draggedRect, otherRects);
+    setAlignmentLines(guides);
+
+    if (guides.horizontal !== undefined || guides.vertical !== undefined) {
+      setNodes((nds) =>
+        nds.map((n) =>
+          n.id === node.id
+            ? {
+                ...n,
+                position: {
+                  x: guides.vertical !== undefined ? snappedX : n.position.x,
+                  y: guides.horizontal !== undefined ? snappedY : n.position.y,
+                },
+              }
+            : n
+        )
+      );
+    }
+  }, [isLocked, nodes, setNodes]);
+
+  const handleNodeDragStop = useCallback(() => {
+    setAlignmentLines({});
+  }, []);
+
+  const handleApplyOcr = useCallback(() => {
+    if (stagingNodes.length === 0 && stagingEdges.length === 0 && !parsedDiagram) return;
+    if (isDirty) {
+      if (!window.confirm(t('bpm:ocr.confirmOverwrite'))) {
+        return;
+      }
+    }
+    const finalNodes = stagingNodes.map((node: any) => {
+      const isSwimlane = node.type === 'swimlane';
+      const isNodeLocked = !!node.data?.isLocked;
+      const baseNode: any = {
+        id: node.id,
+        type: node.type,
+        position: { x: node.position.x, y: node.position.y },
+        parentId: node.parentId,
+        draggable: !isLocked && !isNodeLocked,
+        zIndex: isSwimlane ? -1 : (node.zIndex ?? 10),
+        dragHandle: isSwimlane ? '.swimlane-drag-handle' : undefined,
+        style: isSwimlane ? node.style : undefined,
+        data: isSwimlane
+          ? {
+              label: node.data?.label || 'Lane',
+              department: node.data?.department || 'Dept',
+              function: node.data?.function || 'Func',
+              isLocked: false,
+              onToggleLock: () => toggleNodeLock(node.id),
+              onChangeDepartment: (v: string) => updateNodeData(node.id, { department: v }),
+              onChangeFunction: (v: string) => updateNodeData(node.id, { function: v }),
+            }
+          : {
+              label: node.data?.label || '',
+              type: node.type,
+              regulatoryPairs: [] as any[],
+              role: t('bpm:editor.roles.default'),
+              isLocked: false,
+              onToggleLock: () => toggleNodeLock(node.id),
+            },
+      };
+      return baseNode;
+    });
+
+    const standardEdges = stagingEdges.map((e: any) => ({
+      id: e.id,
+      source: e.source,
+      target: e.target,
+      label: e.label || '',
+      type: 'bridge',
+      markerEnd: { type: MarkerType.ArrowClosed, width: 20, height: 20, color: '#0f172a' },
+      style: { strokeWidth: 2, stroke: '#0f172a' },
+    }));
+
+    setNodes(finalNodes);
+    setEdges(standardEdges);
+    setDirty(true);
+    setParsedDiagram(null);
+    setOcrFile(null);
+    setOcrPreviewUrl(null);
+    setStagingWarnings([]);
+    setWarningsDismissed(false);
+    setIsOcrDialogOpen(false);
+    toast.success(t('bpm:ocr.toast.applySuccess'));
+    setTimeout(() => rfInstance?.fitView?.({ padding: 0.15 }), 100);
+  }, [stagingNodes, stagingEdges, parsedDiagram, isDirty, isLocked, t, setNodes, setEdges, setDirty, rfInstance, toggleNodeLock, updateNodeData]);
 
   useEffect(() => {
     if (diagram) {
@@ -995,6 +1074,33 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
             edgeTypes={edgeTypes}
             fitView
           >
+            {/* Visio-like Smart Alignment Guide Lines */}
+            {(alignmentLines.horizontal !== undefined || alignmentLines.vertical !== undefined) && (
+              <svg className="pointer-events-none absolute inset-0 z-50 h-full w-full overflow-visible">
+                {alignmentLines.horizontal !== undefined && (
+                  <line
+                    x1="-10000"
+                    x2="10000"
+                    y1={alignmentLines.horizontal}
+                    y2={alignmentLines.horizontal}
+                    stroke="#3b82f6"
+                    strokeWidth="1.5"
+                    strokeDasharray="4 4"
+                  />
+                )}
+                {alignmentLines.vertical !== undefined && (
+                  <line
+                    x1={alignmentLines.vertical}
+                    x2={alignmentLines.vertical}
+                    y1="-10000"
+                    y2="10000"
+                    stroke="#3b82f6"
+                    strokeWidth="1.5"
+                    strokeDasharray="4 4"
+                  />
+                )}
+              </svg>
+            )}
             <Background gap={16} size={1} color="hsl(var(--border))" />
             <Controls />
             <MiniMap />
@@ -1387,7 +1493,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
 
       {/* --- OCR Diagram Import & Review Dialog --- */}
       <Dialog open={isOcrDialogOpen} onOpenChange={(open) => !isProcessingOcr && setIsOcrDialogOpen(open)}>
-        <DialogContent className={cn("max-w-md transition-all duration-300", parsedDiagram && "max-w-4xl")}>
+        <DialogContent className={cn("max-w-md transition-all duration-300", parsedDiagram && "max-w-6xl")}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-slate-800">
               <Upload className="h-5 w-5 text-emerald-600" />
@@ -1396,29 +1502,109 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
           </DialogHeader>
 
           {parsedDiagram ? (
-            <div className="grid grid-cols-2 gap-6 h-[500px] mt-4">
+            <div className="grid grid-cols-2 gap-6 h-[640px] mt-4">
               {/* Left Column: Source image preview */}
-              <div className="border border-slate-200 rounded-xl overflow-hidden bg-slate-50 flex flex-col items-center justify-center p-4 relative shadow-inner">
-                <span className="absolute top-2 left-2 bg-slate-900/75 text-white text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md">{t('bpm:ocr.originalImage')}</span>
-                <img src={ocrPreviewUrl || ''} className="max-h-full max-w-full object-contain shadow-sm rounded-lg" alt="Source Diagram" />
+              <div className="border border-border rounded-xl overflow-hidden bg-muted/30 flex flex-col p-3 gap-3">
+                <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{t('bpm:ocr.originalImage')}</span>
+                <div className="flex-1 flex items-center justify-center rounded-lg border border-border bg-white p-2 overflow-hidden">
+                  <img src={ocrPreviewUrl || ''} className="max-h-full max-w-full object-contain shadow-sm rounded-lg" alt="Source Diagram" />
+                </div>
+                <p className="text-xs italic text-muted-foreground">{t('bpm:ocr.staging.thumbnailHint')}</p>
               </div>
 
-              {/* Right Column: parsed nodes edit table */}
-              <div className="flex flex-col border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
-                <div className="bg-slate-50 px-4 py-2 border-b border-slate-200 flex justify-between items-center">
-                  <span className="text-[10px] font-black text-slate-700 uppercase tracking-wider">{t('bpm:ocr.shapeDetection')}</span>
-                  <span className="text-[10px] text-slate-400 font-mono">
-                    {t('bpm:ocr.nodesCount', { count: parsedDiagram.nodes.length })} • {t('bpm:ocr.edgesCount', { count: parsedDiagram.edges.length })}
+              {/* Right Column: staging mini-canvas + edge list + node edits */}
+              <div className="flex flex-col border border-border rounded-xl overflow-hidden bg-card shadow-sm">
+                <div className="bg-muted px-4 py-2 border-b border-border flex justify-between items-center">
+                  <span className="text-xs font-black text-foreground uppercase tracking-wider">{t('bpm:ocr.shapeDetection')}</span>
+                  <span className="text-xs text-muted-foreground font-mono">
+                    {t('bpm:ocr.nodesCount', { count: stagingNodes.length })} • {t('bpm:ocr.edgesCount', { count: stagingEdges.length })}
                   </span>
                 </div>
-                <ScrollArea className="flex-1 p-4">
+
+                {stagingWarnings.length > 0 && !warningsDismissed && (
+                  <div className="mx-3 mt-3 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-amber-900">
+                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+                    <div className="flex-1 space-y-1">
+                      <p className="text-xs font-bold uppercase tracking-widest">{t('bpm:ocr.warnings.title')}</p>
+                      <ul className="list-disc pl-4 space-y-0.5">
+                        {stagingWarnings.map((w, idx) => (
+                          <li key={`${w.code}-${idx}`} className="text-xs leading-snug">{w.message}</li>
+                        ))}
+                      </ul>
+                    </div>
+                    <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={() => setWarningsDismissed(true)}>
+                      <X className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                )}
+
+                <div className="h-[300px] border-b border-border relative bg-white mt-3 mx-3 rounded-lg overflow-hidden">
+                  <ReactFlow
+                    nodes={stagingNodes}
+                    edges={stagingEdges}
+                    onNodesChange={onStagingNodesChange}
+                    onEdgesChange={onStagingEdgesChange}
+                    onNodesDelete={(deleted) => {
+                      const ids = new Set(deleted.map((d) => d.id));
+                      setStagingNodes((nds) => nds.filter((n) => !ids.has(n.id)));
+                    }}
+                    onEdgesDelete={(deleted) => {
+                      const ids = new Set(deleted.map((d) => d.id));
+                      setStagingEdges((eds) => eds.filter((e) => !ids.has(e.id)));
+                    }}
+                    onConnect={(params) => setStagingEdges((eds) => addEdge({ ...params, type: 'bridge', markerEnd: { type: MarkerType.ArrowClosed, width: 20, height: 20, color: '#0f172a' }, style: { strokeWidth: 2, stroke: '#0f172a' } }, eds))}
+                    nodeTypes={nodeTypes}
+                    edgeTypes={edgeTypes}
+                    fitView
+                    onInit={(instance) => {
+                      setStagingRfInstance(instance);
+                      setTimeout(() => instance.fitView({ padding: 0.15 }), 100);
+                    }}
+                    className="bg-white"
+                  >
+                    <Background variant={BackgroundVariant.Dots} gap={16} color="hsl(var(--muted))" />
+                    <Controls className="scale-75" />
+                  </ReactFlow>
+                  <p className="pointer-events-none absolute bottom-1 left-1/2 -translate-x-1/2 rounded-full border border-border bg-white/90 px-2 py-0.5 text-xs text-muted-foreground shadow-sm">{t('bpm:ocr.staging.canvasHint')}</p>
+                </div>
+
+                <div className="px-3 py-3 border-b border-border space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-widest text-foreground">{t('bpm:ocr.edgeList.title')}</span>
+                    <span className="text-xs text-muted-foreground">{t('bpm:ocr.edgesCount', { count: stagingEdges.length })}</span>
+                  </div>
+                  <ScrollArea className="max-h-[120px] pr-2">
+                    {stagingEdges.length === 0 ? (
+                      <p className="py-2 text-xs italic text-muted-foreground">{t('bpm:ocr.edgeList.empty')}</p>
+                    ) : (
+                      <div className="space-y-1.5">
+                        {stagingEdges.map((edge) => (
+                          <div key={edge.id} className="flex items-center gap-2 rounded-lg border border-border bg-muted/20 p-1.5">
+                            <span className="flex-1 truncate font-mono text-xs">{String(edge.source)} → {String(edge.target)}</span>
+                            <Input
+                              value={(edge.label as string) || ''}
+                              placeholder={t('bpm:ocr.edgeList.labelPlaceholder')}
+                              onChange={(e) => setStagingEdges((eds) => eds.map((en) => en.id === edge.id ? { ...en, label: e.target.value } : en))}
+                              className="h-7 w-28 text-xs"
+                            />
+                            <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setStagingEdges((eds) => eds.filter((en) => en.id !== edge.id))}>
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </ScrollArea>
+                  <p className="text-xs italic text-muted-foreground">{t('bpm:ocr.staging.edgeHint')}</p>
+                </div>
+
+                <ScrollArea className="flex-1 p-3">
                   <div className="space-y-4">
-                    <p className="text-[11px] text-slate-400 italic">{t('bpm:ocr.adjustmentInstructions')}</p>
+                    <p className="text-xs italic text-muted-foreground">{t('bpm:ocr.adjustmentInstructions')}</p>
                     <div className="space-y-3">
-                      {parsedDiagram.nodes.map((node, index) => {
+                      {stagingNodes.map((node) => {
                         let shapeName = t('bpm:ocr.shapes.activity');
                         let iconBg = "bg-slate-50 border-slate-300 text-slate-700 rounded-md";
-
                         if (node.type === 'start') {
                           shapeName = t('bpm:ocr.shapes.start');
                           iconBg = "bg-emerald-50 border-emerald-300 text-emerald-700 rounded-full";
@@ -1506,66 +1692,66 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
                         } else if (node.type === 'annotation') {
                           shapeName = t('bpm:ocr.shapes.annotation');
                           iconBg = "bg-slate-50 border-slate-300 text-slate-700 border-dashed";
+                        } else if (node.type === 'swimlane') {
+                          shapeName = t('bpm:editor.nodes.swimlane');
+                          iconBg = "bg-indigo-50 border-indigo-300 text-indigo-700 rounded-md";
                         }
-
                         return (
-                          <div key={node.id} className="flex items-center gap-3 p-3 border border-slate-100 rounded-xl hover:bg-slate-50/50 transition-all">
-                            <div className="w-8 h-8 flex items-center justify-center shrink-0">
-                              <div className={cn("w-full h-full border-2 flex items-center justify-center font-bold text-[8px] uppercase tracking-tighter shadow-sm", iconBg)}>
-                                {node.type === 'decision' ? <span className="-rotate-45">DEC</span> : (node.type === 'archive' ? <span className="text-[7px]">ARS</span> : node.type.substring(0, 3))}
+                          <div key={node.id} className="flex items-center gap-3 rounded-xl border border-border p-3 transition-all hover:bg-muted/50">
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center">
+                              <div className={cn("flex h-full w-full items-center justify-center border-2 text-[8px] font-bold uppercase tracking-tighter shadow-sm", iconBg)}>
+                                {node.type === 'decision' ? <span className="-rotate-45">DEC</span> : node.type === 'archive' ? <span className="text-[7px]">ARS</span> : node.type === 'swimlane' ? <span className="text-[7px]">LANE</span> : node.type.substring(0, 3)}
                               </div>
                             </div>
                             <div className="flex-1 space-y-1">
-                              <div className="flex justify-between items-center">
-                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{shapeName}</span>
-                                <select 
-                                  value={node.type} 
-                                  onChange={(e) => {
-                                    const updated = [...parsedDiagram.nodes];
-                                    updated[index].type = e.target.value;
-                                    setParsedDiagram({ ...parsedDiagram, nodes: updated });
-                                  }}
-                                  className="text-[10px] border border-slate-200 bg-white rounded px-1.5 py-0.5 text-slate-600 focus:outline-none"
-                                >
-                                  <option value="start">{t('bpm:ocr.options.start')}</option>
-                                  <option value="end">{t('bpm:ocr.options.end')}</option>
-                                  <option value="activity">{t('bpm:ocr.options.activity')}</option>
-                                  <option value="automated-activity">{t('bpm:ocr.options.system')}</option>
-                                  <option value="decision">{t('bpm:ocr.options.decision')}</option>
-                                  <option value="archive">{t('bpm:ocr.options.archive')}</option>
-                                  <option value="data-media">{t('bpm:ocr.options.dataMedia')}</option>
-                                  <option value="document">{t('bpm:ocr.options.document')}</option>
-                                  <option value="alternate-process">{t('bpm:ocr.options.alternate-process')}</option>
-                                  <option value="data">{t('bpm:ocr.options.data')}</option>
-                                  <option value="predefined-process">{t('bpm:ocr.options.predefined-process')}</option>
-                                  <option value="internal-storage">{t('bpm:ocr.options.internal-storage')}</option>
-                                  <option value="multi-document">{t('bpm:ocr.options.multi-document')}</option>
-                                  <option value="preparation">{t('bpm:ocr.options.preparation')}</option>
-                                  <option value="manual-operation">{t('bpm:ocr.options.manual-operation')}</option>
-                                  <option value="card">{t('bpm:ocr.options.card')}</option>
-                                  <option value="punched-tape">{t('bpm:ocr.options.punched-tape')}</option>
-                                  <option value="summing-junction">{t('bpm:ocr.options.summing-junction')}</option>
-                                  <option value="or">{t('bpm:ocr.options.or')}</option>
-                                  <option value="collate">{t('bpm:ocr.options.collate')}</option>
-                                  <option value="sort">{t('bpm:ocr.options.sort')}</option>
-                                  <option value="extract">{t('bpm:ocr.options.extract')}</option>
-                                  <option value="merge">{t('bpm:ocr.options.merge')}</option>
-                                  <option value="stored-data">{t('bpm:ocr.options.stored-data')}</option>
-                                  <option value="delay">{t('bpm:ocr.options.delay')}</option>
-                                  <option value="sequential-access">{t('bpm:ocr.options.sequential-access')}</option>
-                                  <option value="direct-access">{t('bpm:ocr.options.direct-access')}</option>
-                                  <option value="display">{t('bpm:ocr.options.display')}</option>
-                                  <option value="loop-limit">{t('bpm:ocr.options.loop-limit')}</option>
-                                  <option value="annotation">{t('bpm:ocr.options.annotation')}</option>
-                                </select>
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">{shapeName}</span>
+                                <div className="flex items-center gap-1">
+                                  <select
+                                    value={node.type}
+                                    onChange={(e) => setStagingNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, type: e.target.value, data: { ...n.data, type: e.target.value } } : n))}
+                                    className="rounded border border-border bg-white px-1.5 py-0.5 text-xs text-foreground focus:outline-none"
+                                  >
+                                    <option value="start">{t('bpm:ocr.options.start')}</option>
+                                    <option value="end">{t('bpm:ocr.options.end')}</option>
+                                    <option value="activity">{t('bpm:ocr.options.activity')}</option>
+                                    <option value="automated-activity">{t('bpm:ocr.options.system')}</option>
+                                    <option value="decision">{t('bpm:ocr.options.decision')}</option>
+                                    <option value="archive">{t('bpm:ocr.options.archive')}</option>
+                                    <option value="data-media">{t('bpm:ocr.options.dataMedia')}</option>
+                                    <option value="document">{t('bpm:ocr.options.document')}</option>
+                                    <option value="swimlane">{t('bpm:editor.nodes.swimlane')}</option>
+                                    <option value="alternate-process">{t('bpm:ocr.options.alternate-process')}</option>
+                                    <option value="data">{t('bpm:ocr.options.data')}</option>
+                                    <option value="predefined-process">{t('bpm:ocr.options.predefined-process')}</option>
+                                    <option value="internal-storage">{t('bpm:ocr.options.internal-storage')}</option>
+                                    <option value="multi-document">{t('bpm:ocr.options.multi-document')}</option>
+                                    <option value="preparation">{t('bpm:ocr.options.preparation')}</option>
+                                    <option value="manual-operation">{t('bpm:ocr.options.manual-operation')}</option>
+                                    <option value="card">{t('bpm:ocr.options.card')}</option>
+                                    <option value="punched-tape">{t('bpm:ocr.options.punched-tape')}</option>
+                                    <option value="summing-junction">{t('bpm:ocr.options.summing-junction')}</option>
+                                    <option value="or">{t('bpm:ocr.options.or')}</option>
+                                    <option value="collate">{t('bpm:ocr.options.collate')}</option>
+                                    <option value="sort">{t('bpm:ocr.options.sort')}</option>
+                                    <option value="extract">{t('bpm:ocr.options.extract')}</option>
+                                    <option value="merge">{t('bpm:ocr.options.merge')}</option>
+                                    <option value="stored-data">{t('bpm:ocr.options.stored-data')}</option>
+                                    <option value="delay">{t('bpm:ocr.options.delay')}</option>
+                                    <option value="sequential-access">{t('bpm:ocr.options.sequential-access')}</option>
+                                    <option value="direct-access">{t('bpm:ocr.options.direct-access')}</option>
+                                    <option value="display">{t('bpm:ocr.options.display')}</option>
+                                    <option value="loop-limit">{t('bpm:ocr.options.loop-limit')}</option>
+                                    <option value="annotation">{t('bpm:ocr.options.annotation')}</option>
+                                  </select>
+                                  <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setStagingNodes((nds) => nds.filter((n) => n.id !== node.id))}>
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </Button>
+                                </div>
                               </div>
-                              <Input 
-                                value={node.label} 
-                                onChange={(e) => {
-                                  const updated = [...parsedDiagram.nodes];
-                                  updated[index].label = e.target.value;
-                                  setParsedDiagram({ ...parsedDiagram, nodes: updated });
-                                }}
+                              <Input
+                                value={(node.data?.label as string) || ''}
+                                onChange={(e) => setStagingNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, data: { ...n.data, label: e.target.value } } : n))}
                                 className="h-8 text-xs font-semibold focus-visible:ring-1"
                               />
                             </div>
