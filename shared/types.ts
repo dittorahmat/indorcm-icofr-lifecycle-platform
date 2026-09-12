@@ -443,6 +443,20 @@ export interface Settings {
   smtpUser?: string;
   smtpPass?: string;
   customYears?: number[];
+  slackWebhookUrl?: string;
+  slackEnabled?: boolean;
+  msTeamsWebhookUrl?: string;
+  msTeamsEnabled?: boolean;
+  genericWebhookUrl?: string;
+  genericWebhookEnabled?: boolean;
+}
+
+export interface UserNotificationPreferences {
+  inApp: boolean;
+  email: boolean;
+  slack: boolean;
+  msTeams: boolean;
+  genericWebhook: boolean;
 }
 
 export interface LoginCredentials {

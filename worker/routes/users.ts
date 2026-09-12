@@ -227,6 +227,12 @@ users.get('/settings', async (c) => {
     smtpUser: meta.smtpUser || '',
     smtpPass: meta.smtpPass || '',
     customYears: meta.customYears || [],
+    slackWebhookUrl: meta.slackWebhookUrl || '',
+    slackEnabled: meta.slackEnabled ?? false,
+    msTeamsWebhookUrl: meta.msTeamsWebhookUrl || '',
+    msTeamsEnabled: meta.msTeamsEnabled ?? false,
+    genericWebhookUrl: meta.genericWebhookUrl || '',
+    genericWebhookEnabled: meta.genericWebhookEnabled ?? false,
   };
 
   return ok(c, settings);
@@ -257,6 +263,12 @@ users.put('/settings', rbac(['Admin', 'Line 2']), async (c) => {
     smtpUser: body.smtpUser,
     smtpPass: body.smtpPass,
     customYears: body.customYears,
+    slackWebhookUrl: body.slackWebhookUrl,
+    slackEnabled: body.slackEnabled,
+    msTeamsWebhookUrl: body.msTeamsWebhookUrl,
+    msTeamsEnabled: body.msTeamsEnabled,
+    genericWebhookUrl: body.genericWebhookUrl,
+    genericWebhookEnabled: body.genericWebhookEnabled,
   };
 
   await db.update(organization)
@@ -303,6 +315,145 @@ users.post('/settings/test-email', rbac(['Admin', 'Line 2']), async (c) => {
     console.error('SMTP Test Error:', error);
     return bad(c, error.message || 'Failed to send test email');
   }
+});
+
+users.post('/settings/test-webhook', rbac(['Admin', 'Line 2']), async (c) => {
+  const body = await c.req.json<{ provider: 'slack' | 'msTeams' | 'generic'; webhookUrl: string }>();
+  if (!body.webhookUrl) return bad(c, 'Webhook URL is required');
+
+  const appUrl = c.env.BETTER_AUTH_URL || 'http://localhost:3000';
+  const testPayload = {
+    title: 'IndoGRC Pro - Webhook Test Connection',
+    message: 'Selamat! Koneksi webhook notifikasi IndoGRC Pro berhasil terhubung dengan sukses.',
+    type: 'success',
+    link: '/notifications',
+  };
+
+  try {
+    let response: Response;
+    if (body.provider === 'slack') {
+      response = await fetch(body.webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: `[SUCCESS] ${testPayload.message}`,
+          blocks: [
+            {
+              type: 'header',
+              text: { type: 'plain_text', text: '✅ IndoGRC Pro - Webhook Test Connection' }
+            },
+            {
+              type: 'section',
+              text: { type: 'mrkdwn', text: testPayload.message }
+            }
+          ]
+        })
+      });
+    } else if (body.provider === 'msTeams') {
+      response = await fetch(body.webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          '@type': 'MessageCard',
+          '@context': 'https://schema.org/extensions',
+          summary: testPayload.title,
+          themeColor: '10B981',
+          title: '✅ IndoGRC Pro - Webhook Test Connection',
+          text: testPayload.message,
+          potentialAction: [
+            {
+              '@type': 'OpenURI',
+              name: 'Buka di IndoGRC Pro',
+              targets: [{ os: 'default', uri: `${appUrl}${testPayload.link}` }]
+            }
+          ]
+        })
+      });
+    } else {
+      response = await fetch(body.webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event: 'icorf.webhook.test',
+          timestamp: new Date().toISOString(),
+          type: 'success',
+          title: testPayload.title,
+          message: testPayload.message,
+          link: `${appUrl}${testPayload.link}`
+        })
+      });
+    }
+
+    if (!response.ok) {
+      return bad(c, `Webhook provider returned HTTP ${response.status}`);
+    }
+
+    return ok(c, { success: true });
+  } catch (err: any) {
+    console.error('Webhook Test Error:', err);
+    return bad(c, err.message || 'Failed to send test webhook');
+  }
+});
+
+// --- User Notification Preferences ---
+
+users.get('/users/me/notification-preferences', async (c) => {
+  const db = getDb(c.env.DATABASE_URL);
+  const userId = c.get('userId');
+
+  const rows = await db.select().from(userPreferences).where(eq(userPreferences.userId, userId)).limit(1);
+  const defaultPrefs = {
+    inApp: true,
+    email: true,
+    slack: true,
+    msTeams: true,
+    genericWebhook: true,
+  };
+
+  if (rows.length === 0 || !rows[0].notificationPreferences) {
+    return ok(c, defaultPrefs);
+  }
+
+  return ok(c, { ...defaultPrefs, ...(rows[0].notificationPreferences as any) });
+});
+
+users.put('/users/me/notification-preferences', async (c) => {
+  const db = getDb(c.env.DATABASE_URL);
+  const userId = c.get('userId');
+  const body = await c.req.json<{
+    inApp?: boolean;
+    email?: boolean;
+    slack?: boolean;
+    msTeams?: boolean;
+    genericWebhook?: boolean;
+  }>();
+
+  const existing = await db.select().from(userPreferences).where(eq(userPreferences.userId, userId)).limit(1);
+
+  const updatedPrefs = {
+    inApp: body.inApp ?? true,
+    email: body.email ?? true,
+    slack: body.slack ?? true,
+    msTeams: body.msTeams ?? true,
+    genericWebhook: body.genericWebhook ?? true,
+  };
+
+  if (existing.length === 0) {
+    await db.insert(userPreferences).values({
+      userId,
+      notificationPreferences: updatedPrefs,
+      updatedAt: new Date(),
+    });
+  } else {
+    await db.update(userPreferences)
+      .set({
+        notificationPreferences: updatedPrefs,
+        updatedAt: new Date(),
+      })
+      .where(eq(userPreferences.userId, userId));
+  }
+
+  return ok(c, { success: true, preferences: updatedPrefs });
 });
 
 // --- DEV TOOLS (Admin Only) ---

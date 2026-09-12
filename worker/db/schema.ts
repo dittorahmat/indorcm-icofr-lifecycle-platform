@@ -937,6 +937,13 @@ export const controlRelations = relations(controls, ({ many }) => ({
 export const userPreferences = pgTable("user_preferences", {
 	userId: text("user_id").primaryKey().references(() => user.id, { onDelete: "cascade" }),
 	layout: jsonb("layout").$type<any>(),
+	notificationPreferences: jsonb("notification_preferences").$type<{
+		inApp: boolean;
+		email: boolean;
+		slack: boolean;
+		msTeams: boolean;
+		genericWebhook: boolean;
+	}>(),
 	updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 

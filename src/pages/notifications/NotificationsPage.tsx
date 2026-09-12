@@ -14,16 +14,20 @@ import {
   Calendar,
   Clock,
   ExternalLink,
-  RefreshCw
+  RefreshCw,
+  Sliders,
+  Check
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Switch } from '@/components/ui/switch';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import type { UserNotificationPreferences } from '@shared/types';
 
 interface Notification {
   id: string;
@@ -39,6 +43,47 @@ export function NotificationsPage() {
   const { t } = useTranslation(['csa_hub', 'common']);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+
+  const [showPreferences, setShowPreferences] = React.useState(false);
+
+  const { data: userPreferences, isLoading: isPrefsLoading } = useQuery<UserNotificationPreferences>({
+    queryKey: ['user-notification-preferences'],
+    queryFn: () => api<UserNotificationPreferences>('/api/users/me/notification-preferences'),
+  });
+
+  const updatePreferencesMutation = useMutation({
+    mutationFn: (newPrefs: Partial<UserNotificationPreferences>) => api('/api/users/me/notification-preferences', {
+      method: 'PUT',
+      body: JSON.stringify(newPrefs),
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user-notification-preferences'] });
+      toast.success(t('common:webhookSettings.preferencesSaved'));
+    },
+    onError: () => {
+      toast.error("Failed to update notification preferences");
+    }
+  });
+
+  const [localPrefs, setLocalPrefs] = React.useState<UserNotificationPreferences>({
+    inApp: true,
+    email: true,
+    slack: true,
+    msTeams: true,
+    genericWebhook: true,
+  });
+
+  React.useEffect(() => {
+    if (userPreferences) {
+      setLocalPrefs(userPreferences);
+    }
+  }, [userPreferences]);
+
+  const handleTogglePref = (channel: keyof UserNotificationPreferences, value: boolean) => {
+    const updated = { ...localPrefs, [channel]: value };
+    setLocalPrefs(updated);
+    updatePreferencesMutation.mutate(updated);
+  };
 
   const { data: notifications = [], isLoading } = useQuery({
     queryKey: ['notifications-full'],
@@ -101,6 +146,18 @@ export function NotificationsPage() {
           </div>
           <div className="flex items-center gap-2">
             <Button 
+              variant={showPreferences ? "default" : "outline"}
+              size="sm" 
+              className={cn(
+                "font-bold text-xs uppercase tracking-wider gap-2 h-9",
+                showPreferences ? "bg-indigo-600 hover:bg-indigo-700" : ""
+              )}
+              onClick={() => setShowPreferences(!showPreferences)}
+            >
+              <Sliders className="h-3.5 w-3.5" />
+              {t('common:webhookSettings.userPreferencesTitle')}
+            </Button>
+            <Button 
               variant="outline" 
               size="sm" 
               className="font-bold text-xs uppercase tracking-wider gap-2 h-9"
@@ -122,6 +179,84 @@ export function NotificationsPage() {
             </Button>
           </div>
         </div>
+
+        {/* User Notification Channel Preferences Card */}
+        {showPreferences && (
+          <Card className="border-indigo-100 bg-indigo-50/20 shadow-md">
+            <CardHeader className="pb-3 border-b border-indigo-100/50">
+              <CardTitle className="text-base font-bold text-slate-800 flex items-center gap-2">
+                <Sliders className="h-4 w-4 text-indigo-600" />
+                {t('common:webhookSettings.userPreferencesTitle')}
+              </CardTitle>
+              <CardDescription className="text-xs text-slate-500">
+                {t('common:webhookSettings.userPreferencesDesc')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-4 space-y-3">
+              <div className="grid sm:grid-cols-2 gap-3">
+                {/* 1. In-App */}
+                <div className="flex items-center justify-between p-3 rounded-lg bg-white border border-slate-200">
+                  <div>
+                    <p className="text-xs font-bold text-slate-800">{t('common:webhookSettings.inApp')}</p>
+                    <p className="text-[11px] text-slate-500">{t('common:webhookSettings.inAppDesc')}</p>
+                  </div>
+                  <Switch 
+                    checked={localPrefs.inApp} 
+                    onCheckedChange={(val) => handleTogglePref('inApp', val)}
+                  />
+                </div>
+
+                {/* 2. Email */}
+                <div className="flex items-center justify-between p-3 rounded-lg bg-white border border-slate-200">
+                  <div>
+                    <p className="text-xs font-bold text-slate-800">{t('common:webhookSettings.email')}</p>
+                    <p className="text-[11px] text-slate-500">{t('common:webhookSettings.emailDesc')}</p>
+                  </div>
+                  <Switch 
+                    checked={localPrefs.email} 
+                    onCheckedChange={(val) => handleTogglePref('email', val)}
+                  />
+                </div>
+
+                {/* 3. Slack */}
+                <div className="flex items-center justify-between p-3 rounded-lg bg-white border border-slate-200">
+                  <div>
+                    <p className="text-xs font-bold text-slate-800">{t('common:webhookSettings.slack')}</p>
+                    <p className="text-[11px] text-slate-500">{t('common:webhookSettings.slackDesc')}</p>
+                  </div>
+                  <Switch 
+                    checked={localPrefs.slack} 
+                    onCheckedChange={(val) => handleTogglePref('slack', val)}
+                  />
+                </div>
+
+                {/* 4. MS Teams */}
+                <div className="flex items-center justify-between p-3 rounded-lg bg-white border border-slate-200">
+                  <div>
+                    <p className="text-xs font-bold text-slate-800">{t('common:webhookSettings.msTeams')}</p>
+                    <p className="text-[11px] text-slate-500">{t('common:webhookSettings.msTeamsDesc')}</p>
+                  </div>
+                  <Switch 
+                    checked={localPrefs.msTeams} 
+                    onCheckedChange={(val) => handleTogglePref('msTeams', val)}
+                  />
+                </div>
+
+                {/* 5. Generic Webhook */}
+                <div className="flex items-center justify-between p-3 rounded-lg bg-white border border-slate-200 sm:col-span-2">
+                  <div>
+                    <p className="text-xs font-bold text-slate-800">{t('common:webhookSettings.genericWebhook')}</p>
+                    <p className="text-[11px] text-slate-500">{t('common:webhookSettings.genericWebhookDesc')}</p>
+                  </div>
+                  <Switch 
+                    checked={localPrefs.genericWebhook} 
+                    onCheckedChange={(val) => handleTogglePref('genericWebhook', val)}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <Card className="border-none shadow-xl shadow-indigo-100/20 overflow-hidden">
           <CardContent className="p-0">

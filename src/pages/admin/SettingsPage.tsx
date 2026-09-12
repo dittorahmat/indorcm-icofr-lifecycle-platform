@@ -10,7 +10,8 @@ import { Settings } from '@shared/types';
 import { toast } from 'sonner';
 import { 
   Building2, Save, Loader2, Image as ImageIcon, 
-  UserCircle, CalendarDays, Lock, ShieldCheck, Mail 
+  UserCircle, CalendarDays, Lock, ShieldCheck, Mail,
+  Webhook, Send, Radio
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
@@ -54,6 +55,7 @@ export function SettingsPage() {
   };
 
   const [testingEmail, setTestingEmail] = React.useState(false);
+  const [testingWebhook, setTestingWebhook] = React.useState<string | null>(null);
 
   const handleTestEmail = async () => {
     setTestingEmail(true);
@@ -67,6 +69,25 @@ export function SettingsPage() {
       toast.error(err.message || t('emailSettings.testError'));
     } finally {
       setTestingEmail(false);
+    }
+  };
+
+  const handleTestWebhook = async (provider: 'slack' | 'msTeams' | 'generic', url?: string) => {
+    if (!url) {
+      toast.error(t('webhookSettings.testError') + ': URL is required');
+      return;
+    }
+    setTestingWebhook(provider);
+    try {
+      await api('/api/settings/test-webhook', {
+        method: 'POST',
+        body: JSON.stringify({ provider, webhookUrl: url }),
+      });
+      toast.success(t('webhookSettings.testSuccess'));
+    } catch (err: any) {
+      toast.error(err.message || t('webhookSettings.testError'));
+    } finally {
+      setTestingWebhook(null);
     }
   };
   const handleSave = () => {
@@ -292,6 +313,138 @@ export function SettingsPage() {
                    </div>
                  </>
                )}
+            </CardContent>
+          </Card>
+
+          {/* Webhook & Multi-Channel Integrations */}
+          <Card className="border-slate-200 shadow-sm overflow-hidden">
+            <CardHeader className="bg-slate-50/50 border-b">
+               <div className="flex items-center justify-between flex-wrap gap-2">
+                 <div className="flex items-center gap-3">
+                    <div className="p-2 bg-sky-100 rounded-lg text-sky-600">
+                      <Webhook className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <CardTitle>{t('webhookSettings.title')}</CardTitle>
+                      <CardDescription>{t('webhookSettings.description')}</CardDescription>
+                    </div>
+                 </div>
+               </div>
+            </CardHeader>
+            <CardContent className="p-6 space-y-6">
+               {/* 1. Slack Webhook */}
+               <div className="p-4 border rounded-xl bg-slate-50/30 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-bold text-sm text-slate-800">{t('webhookSettings.slackTitle')}</h4>
+                      <p className="text-xs text-slate-500">{t('webhookSettings.slackDesc')}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Switch 
+                        checked={localSettings.slackEnabled || false} 
+                        onCheckedChange={(val) => handleChange('slackEnabled', val)} 
+                      />
+                      <Badge variant={localSettings.slackEnabled ? "default" : "outline"} className="text-xs">
+                        {localSettings.slackEnabled ? t('webhookSettings.enabled') : t('webhookSettings.disabled')}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Input 
+                      value={localSettings.slackWebhookUrl || ''} 
+                      onChange={(e) => handleChange('slackWebhookUrl', e.target.value)}
+                      placeholder={t('webhookSettings.slackPlaceholder')}
+                      className="font-mono text-xs"
+                    />
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="sm"
+                      disabled={testingWebhook === 'slack' || !localSettings.slackWebhookUrl}
+                      onClick={() => handleTestWebhook('slack', localSettings.slackWebhookUrl)}
+                      className="gap-2 shrink-0 border-sky-200 text-sky-700 hover:bg-sky-50"
+                    >
+                      {testingWebhook === 'slack' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+                      {t('webhookSettings.testWebhook')}
+                    </Button>
+                  </div>
+               </div>
+
+               {/* 2. Microsoft Teams Webhook */}
+               <div className="p-4 border rounded-xl bg-slate-50/30 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-bold text-sm text-slate-800">{t('webhookSettings.teamsTitle')}</h4>
+                      <p className="text-xs text-slate-500">{t('webhookSettings.teamsDesc')}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Switch 
+                        checked={localSettings.msTeamsEnabled || false} 
+                        onCheckedChange={(val) => handleChange('msTeamsEnabled', val)} 
+                      />
+                      <Badge variant={localSettings.msTeamsEnabled ? "default" : "outline"} className="text-xs">
+                        {localSettings.msTeamsEnabled ? t('webhookSettings.enabled') : t('webhookSettings.disabled')}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Input 
+                      value={localSettings.msTeamsWebhookUrl || ''} 
+                      onChange={(e) => handleChange('msTeamsWebhookUrl', e.target.value)}
+                      placeholder={t('webhookSettings.teamsPlaceholder')}
+                      className="font-mono text-xs"
+                    />
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="sm"
+                      disabled={testingWebhook === 'msTeams' || !localSettings.msTeamsWebhookUrl}
+                      onClick={() => handleTestWebhook('msTeams', localSettings.msTeamsWebhookUrl)}
+                      className="gap-2 shrink-0 border-sky-200 text-sky-700 hover:bg-sky-50"
+                    >
+                      {testingWebhook === 'msTeams' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+                      {t('webhookSettings.testWebhook')}
+                    </Button>
+                  </div>
+               </div>
+
+               {/* 3. Generic Webhook */}
+               <div className="p-4 border rounded-xl bg-slate-50/30 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-bold text-sm text-slate-800">{t('webhookSettings.genericTitle')}</h4>
+                      <p className="text-xs text-slate-500">{t('webhookSettings.genericDesc')}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Switch 
+                        checked={localSettings.genericWebhookEnabled || false} 
+                        onCheckedChange={(val) => handleChange('genericWebhookEnabled', val)} 
+                      />
+                      <Badge variant={localSettings.genericWebhookEnabled ? "default" : "outline"} className="text-xs">
+                        {localSettings.genericWebhookEnabled ? t('webhookSettings.enabled') : t('webhookSettings.disabled')}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Input 
+                      value={localSettings.genericWebhookUrl || ''} 
+                      onChange={(e) => handleChange('genericWebhookUrl', e.target.value)}
+                      placeholder={t('webhookSettings.genericPlaceholder')}
+                      className="font-mono text-xs"
+                    />
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="sm"
+                      disabled={testingWebhook === 'generic' || !localSettings.genericWebhookUrl}
+                      onClick={() => handleTestWebhook('generic', localSettings.genericWebhookUrl)}
+                      className="gap-2 shrink-0 border-sky-200 text-sky-700 hover:bg-sky-50"
+                    >
+                      {testingWebhook === 'generic' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+                      {t('webhookSettings.testWebhook')}
+                    </Button>
+                  </div>
+               </div>
             </CardContent>
           </Card>
 
