@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { WorkflowAction } from '@shared/types';
 import { useTranslation } from 'react-i18next';
 
-export function useWorkflow(entityType: 'BPM' | 'ACTION_PLAN' | 'SCOPING', entityId: string) {
+export function useWorkflow(entityType: 'BPM' | 'ACTION_PLAN' | 'SCOPING' | 'RCM_CHANGE' | 'CSA', entityId: string) {
   const queryClient = useQueryClient();
   const { t } = useTranslation('common');
 
@@ -21,6 +21,12 @@ export function useWorkflow(entityType: 'BPM' | 'ACTION_PLAN' | 'SCOPING', entit
         case 'SCOPING':
           endpoint = `/api/simulations/${entityId}/workflow`;
           break;
+        case 'RCM_CHANGE':
+          endpoint = `/api/rcm/${entityId}/workflow`;
+          break;
+        case 'CSA':
+          endpoint = `/api/csa/${entityId}/workflow`;
+          break;
       }
         
       return await api<any>(endpoint, {
@@ -35,8 +41,15 @@ export function useWorkflow(entityType: 'BPM' | 'ACTION_PLAN' | 'SCOPING', entit
       } else if (entityType === 'ACTION_PLAN') {
         queryClient.invalidateQueries({ queryKey: ['actionplans'] });
         queryClient.invalidateQueries({ queryKey: ['deficiencies'] });
-      } else {
+      } else if (entityType === 'SCOPING') {
         queryClient.invalidateQueries({ queryKey: ['simulations'] });
+      } else if (entityType === 'RCM_CHANGE') {
+        queryClient.invalidateQueries({ queryKey: ['rcm-matrix-tlc'] });
+        queryClient.invalidateQueries({ queryKey: ['controls'] });
+        queryClient.invalidateQueries({ queryKey: ['changelogs'] });
+      } else if (entityType === 'CSA') {
+        queryClient.invalidateQueries({ queryKey: ['csa-records'] });
+        queryClient.invalidateQueries({ queryKey: ['csa-record-detail', entityId] });
       }
       toast.success(t('notifications.updated'));
     },

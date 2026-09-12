@@ -297,6 +297,8 @@ export const rcms = pgTable("rcms", {
 	status: text("status").notNull(), // Draft, Active, Pending Change Approval
 	diagramId: text("diagram_id").references(() => bpmDiagrams.id),
 	auditTrail: jsonb("audit_trail"), // Legacy support
+	workflowStatus: text("workflow_status").default("Draft"),
+	workflowHistory: jsonb("workflow_history").$type<any[]>().default([]),
 });
 
 export const controls = pgTable("controls", {
@@ -401,6 +403,8 @@ export const csaRecords = pgTable("csa_records", {
 	line2Comments: text("line2_comments"),
 	line2ValidatedBy: text("line2_validated_by").references(() => user.id),
 	line2ValidatedDate: timestamp("line2_validated_date"),
+	workflowStatus: text("workflow_status").default("Draft"),
+	workflowHistory: jsonb("workflow_history").$type<any[]>().default([]),
 });
 
 export const csaSamples = pgTable("csa_samples", {

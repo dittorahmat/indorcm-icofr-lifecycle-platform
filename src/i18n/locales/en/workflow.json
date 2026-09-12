@@ -21,5 +21,7 @@
   "rejectPlan": "Reject Plan",
   "approvePlan": "Approve Plan",
   "rejectFinal": "Reject Final",
-  "rollbackIneffective": "Rollback to Ineffective"
+  "rollbackIneffective": "Rollback to Ineffective",
+  "validateAndSignOff": "Validate & Sign Off",
+  "rollbackValidation": "Rollback Validation"
 }

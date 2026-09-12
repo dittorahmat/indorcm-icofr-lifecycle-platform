@@ -19,6 +19,7 @@ import { TODVerificationDialog } from '@/components/csa/TODVerificationDialog';
 import { useTOD } from '@/hooks/use-tod';
 import { useTranslation } from 'react-i18next';
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
+import { WorkflowPanel } from '@/components/workflow/WorkflowPanel';
 
 function CSARecordRow({ record: initialRecord, process }: { record: CSARecord, process?: BPMProcess }) {
   const [isExpanded, setIsExpanded] = React.useState(false);
@@ -189,15 +190,26 @@ function CSARecordRow({ record: initialRecord, process }: { record: CSARecord, p
                     </div>
                  </div>
                ) : (
-                 <div className="p-4">
-                    <CSAReviewMatrix 
-                      record={record} 
-                      controls={controls}
-                      todEvaluations={evaluations}
-                      onControlClick={setSelectedControl}
-                    />
-                 </div>
-               )}
+                  <div className="p-4 space-y-6">
+                     <CSAReviewMatrix 
+                       record={record} 
+                       controls={controls}
+                       todEvaluations={evaluations}
+                       onControlClick={setSelectedControl}
+                     />
+                     <div className="max-w-xl mx-2">
+                       <WorkflowPanel
+                         entityType="CSA"
+                         entityId={record.id}
+                         currentStatus={(record as any).workflowStatus || ((record as any).line2Status === 'Validated' ? 'Validated' : ((record as any).isDraft ? 'Draft' : 'In Review'))}
+                         history={(record as any).workflowHistory || []}
+                         onStatusChange={(newStatus) => {
+                           (record as any).workflowStatus = newStatus;
+                         }}
+                       />
+                     </div>
+                  </div>
+                )}
              </div>
           </TableCell>
         </TableRow>

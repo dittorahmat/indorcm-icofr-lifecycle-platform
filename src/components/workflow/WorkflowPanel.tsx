@@ -113,11 +113,35 @@ const WORKFLOW_BLUEPRINTS: Record<string, WorkflowBlueprint> = {
       },
       'Approved': { actions: [{ id: 'Rollback', labelKey: 'workflow:rollback', icon: RotateCcw, variant: 'outline', needsNote: true }] },
     }
+  },
+  RCM_CHANGE: {
+    steps: {
+      'Draft': { actions: [{ id: 'Submit', labelKey: 'workflow:submitForReview', icon: Send, needsAssignee: true }] },
+      'In Review': { 
+        actions: [
+          { id: 'Reject', labelKey: 'common:status.rejected', icon: XCircle, variant: 'outline', needsNote: true },
+          { id: 'Approve', labelKey: 'workflow:approveAndSave', icon: CheckCircle2, variant: 'emerald' }
+        ] 
+      },
+      'Approved': { actions: [{ id: 'Rollback', labelKey: 'workflow:rollback', icon: RotateCcw, variant: 'outline', needsNote: true }] },
+    }
+  },
+  CSA: {
+    steps: {
+      'Draft': { actions: [{ id: 'Submit', labelKey: 'workflow:submitForReview', icon: Send, needsAssignee: true }] },
+      'In Review': { 
+        actions: [
+          { id: 'Reject', labelKey: 'common:status.rejected', icon: XCircle, variant: 'outline', needsNote: true },
+          { id: 'Approve', labelKey: 'workflow:validateAndSignOff', icon: CheckCircle2, variant: 'emerald' }
+        ] 
+      },
+      'Validated': { actions: [{ id: 'Rollback', labelKey: 'workflow:rollbackValidation', icon: RotateCcw, variant: 'outline', needsNote: true }] },
+    }
   }
 };
 
 interface WorkflowPanelProps {
-  entityType: 'BPM' | 'ACTION_PLAN' | 'SCOPING';
+  entityType: 'BPM' | 'ACTION_PLAN' | 'SCOPING' | 'RCM_CHANGE' | 'CSA';
   entityId: string;
   currentStatus: string;
   history: WorkflowHistoryEntry[];
@@ -168,7 +192,8 @@ export function WorkflowPanel({
       case 'In Approval':
       case 'Pending Komut': return 'bg-amber-50 text-amber-700 border-amber-200';
       case 'Approved':
-      case 'Resolved': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      case 'Resolved':
+      case 'Validated': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
       case 'Rejected': return 'bg-rose-50 text-rose-700 border-rose-200';
       default: return 'bg-slate-50 text-slate-600';
     }
@@ -218,7 +243,7 @@ export function WorkflowPanel({
   };
 
   const isBypassMode = import.meta.env.VITE_ENABLE_WORKFLOW_APPROVAL === 'false';
-  const isAlreadyFinalized = currentStatus === 'Approved' || currentStatus === 'Resolved';
+  const isAlreadyFinalized = currentStatus === 'Approved' || currentStatus === 'Resolved' || currentStatus === 'Validated';
 
   const handleBypass = () => {
     if (isDirty) {

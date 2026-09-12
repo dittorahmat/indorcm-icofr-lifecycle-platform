@@ -23,16 +23,20 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
-vi.mock('lucide-react', () => ({
-  History: () => <div />,
-  Search: () => <div />,
-  ShieldCheck: () => <div />,
-  ChevronDown: () => <div />,
-  ChevronRight: () => <div />,
-  Printer: () => <div />,
-  Download: () => <div />,
-  FileText: () => <div />,
-}));
+vi.mock('lucide-react', async (importOriginal) => {
+  const actual = await importOriginal<any>();
+  return {
+    ...actual,
+    History: () => <div />,
+    Search: () => <div />,
+    ShieldCheck: () => <div />,
+    ChevronDown: () => <div />,
+    ChevronRight: () => <div />,
+    Printer: () => <div />,
+    Download: () => <div />,
+    FileText: () => <div />,
+  };
+});
 
 describe('CSAPage', () => {
   it('renders the page title correctly', () => {

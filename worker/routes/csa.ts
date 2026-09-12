@@ -381,6 +381,92 @@ csa.post('/csa', async (c) => {
   return ok(c, newCsa);
 });
 
+csa.post('/csa/:id/workflow', async (c) => {
+  const db = getDb(c.env.DATABASE_URL);
+  const id = c.req.param('id');
+  const orgId = c.get('organizationId')!;
+  const userId = c.get('userId')!;
+  const role = c.get('userRole')!;
+  const body = await c.req.json<{ action: any, note: string, assigneeId?: string }>();
+
+  const existing = await db.select().from(csaRecords).where(and(eq(csaRecords.id, id), eq(csaRecords.organizationId, orgId))).limit(1);
+  if (existing.length === 0) return notFound(c, 'CSA record not found');
+
+  const csaRecord = existing[0];
+  const currentStatus = csaRecord.workflowStatus || (csaRecord.line2Status === 'Validated' ? 'Validated' : (csaRecord.isDraft ? 'Draft' : 'In Review'));
+  let nextStatus = currentStatus;
+
+  if (body.action === "Submit") {
+    nextStatus = "In Review";
+  } else if (body.action === "Approve") {
+    nextStatus = "Validated";
+  } else if (body.action === "Reject") {
+    if (!body.note) return bad(c, "Rejection requires a note");
+    nextStatus = "Draft";
+  } else if (body.action === "Rollback") {
+    if (!body.note) return bad(c, "Rollback requires a note");
+    nextStatus = "In Review";
+  }
+
+  const historyEntry = {
+    id: crypto.randomUUID(),
+    action: body.action,
+    fromStatus: currentStatus,
+    toStatus: nextStatus,
+    userId,
+    role,
+    timestamp: Date.now(),
+    note: body.note || ''
+  };
+
+  const currentHistory = (csaRecord.workflowHistory as any[]) || [];
+  const newHistory = [historyEntry, ...currentHistory];
+
+  const updateData: any = {
+    workflowStatus: nextStatus,
+    workflowHistory: newHistory,
+    isDraft: nextStatus === 'Draft',
+    line2Status: nextStatus === 'Validated' ? 'Validated' : (nextStatus === 'Draft' ? 'Pending' : 'In Review')
+  };
+
+  if (nextStatus === 'Validated') {
+    updateData.line2ValidatedBy = userId;
+    updateData.line2ValidatedDate = new Date();
+
+    // If result was Ineffective, trigger auto-deficiency
+    if (csaRecord.result === 'Ineffective' && csaRecord.controlId) {
+      const defService = new DeficiencyService(db);
+      await defService.createAutoDeficiency({
+        organizationId: orgId,
+        controlId: csaRecord.controlId,
+        description: `Hasil CSA Ineffective untuk periode ${csaRecord.period}.`,
+        source: 'Lini 2 - CSA Validation',
+        userId,
+        period: csaRecord.period
+      });
+    }
+
+    // Audit log
+    const auditService = new AuditService(db);
+    await auditService.logAction({
+      organizationId: orgId,
+      userId,
+      action: 'SIGN_OFF_CSA',
+      entityType: 'Control',
+      entityId: csaRecord.controlId || csaRecord.id,
+      description: `Validated CSA for ${csaRecord.period} with result: ${csaRecord.result}`,
+      dataAfter: { csaId: id, ...csaRecord, ...updateData },
+      isRegulatory: true,
+      effectiveDate: new Date(),
+      approvedBy: userId
+    });
+  }
+
+  await db.update(csaRecords).set(updateData).where(eq(csaRecords.id, id));
+
+  return ok(c, { success: true, nextStatus });
+});
+
 csa.delete('/csa/:id', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const id = c.req.param('id');

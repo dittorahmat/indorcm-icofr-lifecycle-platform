@@ -21,9 +21,10 @@ import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-import { Info, ShieldAlert, CheckCircle2 } from 'lucide-react';
+import { Info, ShieldAlert, CheckCircle2, History } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { SignificantApplicationCombobox } from './SignificantApplicationCombobox';
+import { WorkflowPanel } from '../workflow/WorkflowPanel';
 
 const formSchema = z.object({
   // Identity
@@ -179,6 +180,12 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                     className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-indigo-600 data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none h-full px-0 font-black uppercase text-xs tracking-wider"
                   >
                     <CheckCircle2 className="h-3.5 w-3.5 mr-2" /> {t('matrix.sections.compliance')}
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="workflow" 
+                    className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-indigo-600 data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none h-full px-0 font-black uppercase text-xs tracking-wider"
+                  >
+                    <History className="h-3.5 w-3.5 mr-2" /> Approval & Workflow
                   </TabsTrigger>
                 </TabsList>
               </div>
@@ -515,6 +522,24 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                           </div>
                        </TooltipProvider>
                     </div>
+                </TabsContent>
+
+                {/* Workflow & Approval Tab */}
+                <TabsContent value="workflow" className="m-0 space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                   <div className="space-y-4">
+                      <WorkflowPanel
+                        entityType="RCM_CHANGE"
+                        entityId={data?.rcmId || data?.id || ''}
+                        currentStatus={data?.workflowStatus || (data?.status === 'Pending Change Approval' ? 'In Review' : (data?.status === 'Active' ? 'Approved' : 'Draft'))}
+                        history={data?.workflowHistory || []}
+                        onStatusChange={(newStatus) => {
+                          if (data) {
+                            data.workflowStatus = newStatus;
+                          }
+                        }}
+                        isDirty={form.formState.isDirty}
+                      />
+                   </div>
                 </TabsContent>
               </ScrollArea>
             </Tabs>

@@ -235,10 +235,12 @@ export interface BPMEdge {
 
 export type RCMControlMapping = InferSelectModel<typeof schema.rcmControls>;
 
-export interface RCM extends Omit<InferSelectModel<typeof schema.rcms>, 'auditTrail'> {
+export interface RCM extends Omit<InferSelectModel<typeof schema.rcms>, 'auditTrail' | 'workflowStatus' | 'workflowHistory'> {
   riskRating: QualitativeLevel;
   status: "Draft" | "Pending Validation" | "Active" | "Archived" | "Pending Change Approval";
   controls: string[]; // Array of Control IDs
+  workflowStatus?: string | null;
+  workflowHistory?: WorkflowHistoryEntry[] | null;
   bpmData?: {
     nodes: BPMNode[];
     edges: BPMEdge[];
