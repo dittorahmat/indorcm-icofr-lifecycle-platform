@@ -638,6 +638,16 @@ export class BpmService {
   }
 
   async deleteDiagram(orgId: string, id: string) {
+    // 1. Decouple rcms foreign key referencing this diagram
+    await this.db.update(rcms)
+      .set({ diagramId: null })
+      .where(and(eq(rcms.diagramId, id), eq(rcms.organizationId, orgId)));
+
+    // 2. Delete linked node-rcm mappings
+    await this.db.delete(bpmNodeRcms)
+      .where(and(eq(bpmNodeRcms.diagramId, id), eq(bpmNodeRcms.organizationId, orgId)));
+
+    // 3. Delete the diagram itself
     await this.db.delete(bpmDiagrams).where(and(eq(bpmDiagrams.id, id), eq(bpmDiagrams.organizationId, orgId)));
     return { success: true };
   }
@@ -940,6 +950,46 @@ export class BpmService {
     // Note: neon-http driver does not support transactions. 
     // We execute these sequentially. Data integrity risk is low for this operation.
     
+    // 0. Fetch the target process to know its name and year
+    const targetProcesses = await this.db.select()
+      .from(bpmProcesses)
+      .where(and(eq(bpmProcesses.id, id), eq(bpmProcesses.organizationId, orgId)))
+      .limit(1);
+
+    if (targetProcesses.length > 0) {
+      const target = targetProcesses[0];
+      const subProcessName = target.name?.trim();
+      const processYear = target.year;
+
+      if (subProcessName) {
+        // Check if any other BPM process in the same org and year shares this sub-process name
+        const otherProcesses = await this.db.select({ id: bpmProcesses.id })
+          .from(bpmProcesses)
+          .where(and(
+            eq(bpmProcesses.organizationId, orgId),
+            ne(bpmProcesses.id, id),
+            processYear ? eq(bpmProcesses.year, processYear) : isNull(bpmProcesses.year),
+            sql`TRIM(LOWER(${bpmProcesses.name})) = TRIM(LOWER(${subProcessName}))`
+          ))
+          .limit(1);
+
+        // If no other process uses this sub-process name, cascade delete associated diagrams
+        if (otherProcesses.length === 0) {
+          const associatedDiagrams = await this.db.select({ id: bpmDiagrams.id })
+            .from(bpmDiagrams)
+            .where(and(
+              eq(bpmDiagrams.organizationId, orgId),
+              processYear ? eq(bpmDiagrams.year, processYear) : isNull(bpmDiagrams.year),
+              sql`TRIM(LOWER(${bpmDiagrams.subProcess})) = TRIM(LOWER(${subProcessName}))`
+            ));
+
+          for (const diag of associatedDiagrams) {
+            await this.deleteDiagram(orgId, diag.id);
+          }
+        }
+      }
+    }
+
     // 1. Decouple controls
     await this.db.update(controls)
       .set({ bpmProcessId: null })
@@ -950,7 +1000,11 @@ export class BpmService {
       .set({ bpmProcessId: null })
       .where(and(eq(csaRecords.bpmProcessId, id), eq(csaRecords.organizationId, orgId)));
 
-    // 3. Delete the process
+    // 3. Delete BPM Process GL Codes
+    await this.db.delete(bpmProcessGlCodes)
+      .where(eq(bpmProcessGlCodes.bpmProcessId, id));
+
+    // 4. Delete the process
     await this.db.delete(bpmProcesses)
       .where(and(eq(bpmProcesses.id, id), eq(bpmProcesses.organizationId, orgId)));
 
