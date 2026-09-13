@@ -548,10 +548,10 @@ export const SwimlaneNode = ({ data, selected }: NodeProps) => {
 
             {!data.isLocked && (
               <div 
-                className="swimlane-drag-handle cursor-grab active:cursor-grabbing p-1.5 hover:bg-slate-100 rounded-lg text-slate-400"
+                className="swimlane-drag-handle cursor-grab active:cursor-grabbing p-2 hover:bg-slate-200/80 rounded-lg text-slate-500 hover:text-slate-800 transition-colors"
                 title={t('bpm:editor.dragHint')}
               >
-                <GripVertical className="h-4 w-4" />
+                <GripVertical className="h-5 w-5 pointer-events-none" />
               </div>
             )}
          </div>

@@ -264,9 +264,10 @@ export function layoutOcrDiagram(raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[]
 
   const lanePos = new Map<string, { x: number; y: number; width: number; height: number }>();
   let cumX = 0;
+  const TOP_OFFSET = 60;
   for (const lane of sortedLanes) {
     const w = laneWidthMap.get(lane.id) ?? LANE_MIN_W;
-    lanePos.set(lane.id, { x: cumX, y: 0, width: w, height: uniformHeight });
+    lanePos.set(lane.id, { x: cumX, y: TOP_OFFSET, width: w, height: uniformHeight });
     cumX += w + GAP_X;
   }
 
