@@ -118,25 +118,31 @@ export const createApp = () => {
     credentials: true
   }));
 
-  // Rate limiting for auth endpoints (brute force protection)
-  const authAttempts = new Map<string, { count: number; resetTime: number }>();
-  app.use('/api/auth/sign-in/*', async (c, next) => {
-    const ip = c.req.header('cf-connecting-ip') || c.req.header('x-forwarded-for') || 'unknown';
-    const now = Date.now();
-    const windowMs = 15 * 60 * 1000;
-    const maxAttempts = 5;
-
-    const record = authAttempts.get(ip);
-    if (record && now < record.resetTime) {
-      if (record.count >= maxAttempts) {
-        return c.json({ success: false, error: 'TOO_MANY_ATTEMPTS', message: 'Terlalu banyak percobaan login. Silakan coba lagi setelah 15 menit.' }, 429);
-      }
-      record.count++;
-    } else {
-      authAttempts.set(ip, { count: 1, resetTime: now + windowMs });
-    }
-    await next();
-  });
+  /**
+   * NOTE: Rate limiting for auth endpoints (brute force protection) has been temporarily disabled (commented out) 
+   * during the testing phase to prevent blocking testers during automated/manual login tests.
+   * 
+   * To re-enable in production:
+   * Uncomment the code block below.
+   */
+  // const authAttempts = new Map<string, { count: number; resetTime: number }>();
+  // app.use('/api/auth/sign-in/*', async (c, next) => {
+  //   const ip = c.req.header('cf-connecting-ip') || c.req.header('x-forwarded-for') || 'unknown';
+  //   const now = Date.now();
+  //   const windowMs = 15 * 60 * 1000;
+  //   const maxAttempts = 5;
+  // 
+  //   const record = authAttempts.get(ip);
+  //   if (record && now < record.resetTime) {
+  //     if (record.count >= maxAttempts) {
+  //       return c.json({ success: false, error: 'TOO_MANY_ATTEMPTS', message: 'Terlalu banyak percobaan login. Silakan coba lagi setelah 15 menit.' }, 429);
+  //     }
+  //     record.count++;
+  //   } else {
+  //     authAttempts.set(ip, { count: 1, resetTime: now + windowMs });
+  //   }
+  //   await next();
+  // });
 
   // License Guard Middleware
   app.use('/api/*', async (c, next) => {
