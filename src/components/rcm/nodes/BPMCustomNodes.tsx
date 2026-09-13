@@ -501,7 +501,10 @@ export const SwimlaneNode = ({ data, selected }: NodeProps) => {
         lineStyle={{ borderColor: '#6366f1', borderWidth: 1 }}
       />
       {/* Swimlane Header */}
-      <div className="absolute top-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-sm border-b-2 border-slate-300 p-2 pr-20 flex flex-col justify-center relative">
+      <div className={cn(
+        "absolute top-0 left-0 right-0 h-16 bg-white/90 backdrop-blur-sm border-b-2 border-slate-300 p-2 pr-20 flex flex-col justify-center select-none",
+        !data.isLocked && "swimlane-drag-handle cursor-grab active:cursor-grabbing hover:bg-slate-50/90"
+      )}>
          <div className="flex items-center gap-2 mb-1 nodrag">
             <span className="text-xs font-black text-slate-400 uppercase tracking-widest">{t('bpm:editor.swimlane.labels.department')}</span>
             <Input 

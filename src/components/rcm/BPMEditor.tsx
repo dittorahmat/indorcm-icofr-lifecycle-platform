@@ -1053,194 +1053,205 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
              </div>
           </div>
         ) : (
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            style={{ 
-              '--bpm-global-width-scale': globalScale / 100, 
-              '--bpm-global-font-scale': globalScale / 100 
-            } as React.CSSProperties}
-            onInit={setRfInstance}
-            onNodesChange={isLocked ? undefined : onNodesChange}
-            onEdgesChange={isLocked ? undefined : onEdgesChange}
-            onNodesDelete={isLocked ? undefined : onNodesDelete}
-            onEdgesDelete={isLocked ? undefined : onEdgesDelete}
-            deleteKeyCode={isLocked ? null : ["Delete", "Backspace"]}
-            nodesDraggable={!isLocked}
-            nodesConnectable={!isLocked}
-            elementsSelectable={true}
-            onDragOver={onDragOver}
-            onDrop={onDrop}
-            onConnect={isLocked ? undefined : (params) => setEdges((eds) => addEdge({ 
-              ...params, 
-              type: 'bridge',
-              markerEnd: { 
-                type: MarkerType.ArrowClosed, width: 20, height: 20, color: '#0f172a'
-              },
-              style: { strokeWidth: 2, stroke: '#0f172a' }
-            }, eds))}
-            onNodeClick={(_, node) => {
-              if (node.type === 'swimlane') return;
-              if (node.type !== 'risk-control-badge') {
-                setSelectedNodeId(node.id);
-              }
-            }}
-            onPaneClick={() => setSelectedNodeId(null)}
-            nodeTypes={nodeTypes}
-            edgeTypes={edgeTypes}
-            fitView
-          >
-            {/* Visio-like Smart Alignment Guide Lines */}
-            {(alignmentLines.horizontal !== undefined || alignmentLines.vertical !== undefined) && (
-              <svg className="pointer-events-none absolute inset-0 z-50 h-full w-full overflow-visible">
-                {alignmentLines.horizontal !== undefined && (
-                  <line
-                    x1="-10000"
-                    x2="10000"
-                    y1={alignmentLines.horizontal}
-                    y2={alignmentLines.horizontal}
-                    stroke="#3b82f6"
-                    strokeWidth="1.5"
-                    strokeDasharray="4 4"
-                  />
-                )}
-                {alignmentLines.vertical !== undefined && (
-                  <line
-                    x1={alignmentLines.vertical}
-                    x2={alignmentLines.vertical}
-                    y1="-10000"
-                    y2="10000"
-                    stroke="#3b82f6"
-                    strokeWidth="1.5"
-                    strokeDasharray="4 4"
-                  />
-                )}
-              </svg>
-            )}
-            <Background gap={16} size={1} color="hsl(var(--border))" />
-            <Controls />
-            <MiniMap />
-            
-            <Panel position="top-right" className="flex gap-3 print:hidden">
-              <Button 
-                size="sm" 
-                variant="outline" 
-                className="h-9 gap-2 bg-white border-slate-200 hover:bg-slate-50 transition-all font-bold text-[10px] uppercase tracking-widest px-4 rounded-xl shadow-sm"
-                onClick={() => setDocumentView(true)}
-              >
-                <Layout className="h-3.5 w-3.5 text-indigo-500" />
-                {t('bpm:editor.actions.documentView')}
-              </Button>
-
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    className="h-9 gap-2 bg-white border-slate-200 hover:bg-slate-50 transition-all font-bold text-[10px] uppercase tracking-widest px-4 rounded-xl shadow-sm"
-                  >
-                    <LinkIcon className="h-3.5 w-3.5 text-indigo-500" />
-                    Linked GLs ({selectedGLs.length})
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-[320px] p-4" align="end">
-                  <div className="space-y-4">
-                    <div className="space-y-1">
-                      <h4 className="font-bold text-xs uppercase tracking-wider text-slate-700">Link GL Codes</h4>
-                      <p className="text-[10px] text-slate-400">Pilih akun GL yang menggunakan diagram alur proses ini.</p>
-                    </div>
-
-                    {selectedGLs.length > 0 && (
-                      <div className="space-y-1.5 border-b border-slate-100 pb-3">
-                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Switch Context</span>
-                        <div className="flex flex-col gap-1 max-h-[120px] overflow-y-auto pr-1 scrollbar-thin">
-                          {selectedGLs.map(glCode => {
-                            const opt = glOptions.find(o => o.value === glCode);
-                            const label = opt ? opt.label : glCode;
-                            const isActive = glCode === currentGL;
-                            return (
-                              <button
-                                key={glCode}
-                                type="button"
-                                onClick={() => handleSwitchGLContext(glCode)}
-                                className={cn(
-                                  "w-full text-left px-2 py-1.5 rounded-lg text-xs transition-all flex items-center justify-between font-medium",
-                                  isActive 
-                                    ? "bg-emerald-50 text-emerald-700 font-bold border border-emerald-100" 
-                                    : "hover:bg-slate-50 text-slate-600 hover:text-slate-900"
-                                )}
-                              >
-                                <span className="truncate flex-1 pr-2">{label}</span>
-                                {isActive ? (
-                                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
-                                ) : (
-                                  <LinkIcon className="h-3 w-3 text-slate-400 hover:text-indigo-500 transition-colors shrink-0" />
-                                )}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="space-y-2">
-                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Manage Link GLs</span>
-                      <MultiSelect
-                        options={glOptions}
-                        selected={selectedGLs}
-                        onChange={setSelectedGLs}
-                        placeholder="Search and select GLs..."
-                      />
-                    </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
-
-              <div className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-xl px-2.5 h-9 shadow-sm">
-                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-0.5">Scale:</span>
-                <Select value={String(globalScale)} onValueChange={(val) => setGlobalScale(Number(val))}>
-                  <SelectTrigger className="h-7 w-[75px] text-xs font-bold border-none bg-transparent focus:ring-0 p-0 shadow-none">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="80" className="text-xs">80%</SelectItem>
-                    <SelectItem value="100" className="text-xs">100%</SelectItem>
-                    <SelectItem value="120" className="text-xs">120%</SelectItem>
-                  </SelectContent>
-                </Select>
+          <div className="flex-1 flex flex-col h-full overflow-hidden">
+            {/* Dedicated Top Canvas Toolbar */}
+            <div className="h-14 border-b border-slate-200 bg-white/95 backdrop-blur-sm px-6 flex items-center justify-between shrink-0 z-20 print:hidden">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('bpm:modal.title')}:</span>
+                <span className="text-xs font-bold text-slate-800">{subProcess}</span>
               </div>
-
-              {!isLocked && (
+              
+              <div className="flex items-center gap-3">
                 <Button 
                   size="sm" 
                   variant="outline" 
                   className="h-9 gap-2 bg-white border-slate-200 hover:bg-slate-50 transition-all font-bold text-[10px] uppercase tracking-widest px-4 rounded-xl shadow-sm"
-                  onClick={() => setIsOcrDialogOpen(true)}
+                  onClick={() => setDocumentView(true)}
                 >
-                  <Upload className="h-3.5 w-3.5 text-emerald-500" />
-                  {t('bpm:ocr.importButton')}
+                  <Layout className="h-3.5 w-3.5 text-indigo-500" />
+                  {t('bpm:editor.actions.documentView')}
                 </Button>
-              )}
 
-              {isLocked && (
-                <Badge variant="outline" className="h-9 bg-amber-50 text-amber-700 border-amber-200 gap-2 px-4 font-bold text-[10px] uppercase tracking-widest rounded-xl shadow-sm">
-                  <ShieldCheck className="h-3.5 w-3.5" />
-                  {t('bpm:editor.actions.locked')}
-                </Badge>
-              )}
-              <Button 
-                size="sm" 
-                className="h-9 gap-2 bg-mancity-pattern hover:opacity-90 text-primary-foreground shadow-sm transition-all font-bold text-[10px] uppercase tracking-widest px-6 rounded-xl" 
-                onClick={() => saveMutation.mutate({ 
-                  nodes, edges, name: subProcess, subProcess, year: diagram?.year || parseInt(workingYear), noGLs: selectedGLs,
-                  metadata: { ...diagram?.metadata, signatures, globalScale }
-                })} 
-                disabled={saveMutation.isPending || isLocked}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="h-9 gap-2 bg-white border-slate-200 hover:bg-slate-50 transition-all font-bold text-[10px] uppercase tracking-widest px-4 rounded-xl shadow-sm"
+                    >
+                      <LinkIcon className="h-3.5 w-3.5 text-indigo-500" />
+                      Linked GLs ({selectedGLs.length})
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[320px] p-4" align="end">
+                    <div className="space-y-4">
+                      <div className="space-y-1">
+                        <h4 className="font-bold text-xs uppercase tracking-wider text-slate-700">Link GL Codes</h4>
+                        <p className="text-[10px] text-slate-400">Pilih akun GL yang menggunakan diagram alur proses ini.</p>
+                      </div>
+
+                      {selectedGLs.length > 0 && (
+                        <div className="space-y-1.5 border-b border-slate-100 pb-3">
+                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Switch Context</span>
+                          <div className="flex flex-col gap-1 max-h-[120px] overflow-y-auto pr-1 scrollbar-thin">
+                            {selectedGLs.map(glCode => {
+                              const opt = glOptions.find(o => o.value === glCode);
+                              const label = opt ? opt.label : glCode;
+                              const isActive = glCode === currentGL;
+                              return (
+                                <button
+                                  key={glCode}
+                                  type="button"
+                                  onClick={() => handleSwitchGLContext(glCode)}
+                                  className={cn(
+                                    "w-full text-left px-2 py-1.5 rounded-lg text-xs transition-all flex items-center justify-between font-medium",
+                                    isActive 
+                                      ? "bg-emerald-50 text-emerald-700 font-bold border border-emerald-100" 
+                                      : "hover:bg-slate-50 text-slate-600 hover:text-slate-900"
+                                  )}
+                                >
+                                  <span className="truncate flex-1 pr-2">{label}</span>
+                                  {isActive ? (
+                                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
+                                  ) : (
+                                    <LinkIcon className="h-3 w-3 text-slate-400 hover:text-indigo-500 transition-colors shrink-0" />
+                                  )}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="space-y-2">
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Manage Link GLs</span>
+                        <MultiSelect
+                          options={glOptions}
+                          selected={selectedGLs}
+                          onChange={setSelectedGLs}
+                          placeholder="Search and select GLs..."
+                        />
+                      </div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+
+                <div className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-xl px-2.5 h-9 shadow-sm">
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-0.5">Scale:</span>
+                  <Select value={String(globalScale)} onValueChange={(val) => setGlobalScale(Number(val))}>
+                    <SelectTrigger className="h-7 w-[75px] text-xs font-bold border-none bg-transparent focus:ring-0 p-0 shadow-none">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="80" className="text-xs">80%</SelectItem>
+                      <SelectItem value="100" className="text-xs">100%</SelectItem>
+                      <SelectItem value="120" className="text-xs">120%</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {!isLocked && (
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="h-9 gap-2 bg-white border-slate-200 hover:bg-slate-50 transition-all font-bold text-[10px] uppercase tracking-widest px-4 rounded-xl shadow-sm"
+                    onClick={() => setIsOcrDialogOpen(true)}
+                  >
+                    <Upload className="h-3.5 w-3.5 text-emerald-500" />
+                    {t('bpm:ocr.importButton')}
+                  </Button>
+                )}
+
+                {isLocked && (
+                  <Badge variant="outline" className="h-9 bg-amber-50 text-amber-700 border-amber-200 gap-2 px-4 font-bold text-[10px] uppercase tracking-widest rounded-xl shadow-sm">
+                    <ShieldCheck className="h-3.5 w-3.5" />
+                    {t('bpm:editor.actions.locked')}
+                  </Badge>
+                )}
+                <Button 
+                  size="sm" 
+                  className="h-9 gap-2 bg-mancity-pattern hover:opacity-90 text-primary-foreground shadow-sm transition-all font-bold text-[10px] uppercase tracking-widest px-6 rounded-xl" 
+                  onClick={() => saveMutation.mutate({ 
+                    nodes, edges, name: subProcess, subProcess, year: diagram?.year || parseInt(workingYear), noGLs: selectedGLs,
+                    metadata: { ...diagram?.metadata, signatures, globalScale }
+                  })} 
+                  disabled={saveMutation.isPending || isLocked}
+                >
+                  {saveMutation.isPending ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                  {saveMutation.isPending ? t('bpm:editor.actions.saving') : t('bpm:editor.actions.save')}
+                </Button>
+              </div>
+            </div>
+
+            {/* ReactFlow Canvas Viewport */}
+            <div className="flex-1 relative h-full w-full overflow-hidden">
+              <ReactFlow
+                nodes={nodes}
+                edges={edges}
+                style={{ 
+                  '--bpm-global-width-scale': globalScale / 100, 
+                  '--bpm-global-font-scale': globalScale / 100 
+                } as React.CSSProperties}
+                onInit={setRfInstance}
+                onNodesChange={isLocked ? undefined : onNodesChange}
+                onEdgesChange={isLocked ? undefined : onEdgesChange}
+                onNodesDelete={isLocked ? undefined : onNodesDelete}
+                onEdgesDelete={isLocked ? undefined : onEdgesDelete}
+                deleteKeyCode={isLocked ? null : ["Delete", "Backspace"]}
+                nodesDraggable={!isLocked}
+                nodesConnectable={!isLocked}
+                elementsSelectable={true}
+                onDragOver={onDragOver}
+                onDrop={onDrop}
+                onConnect={isLocked ? undefined : (params) => setEdges((eds) => addEdge({ 
+                  ...params, 
+                  type: 'bridge',
+                  markerEnd: { 
+                    type: MarkerType.ArrowClosed, width: 20, height: 20, color: '#0f172a'
+                  },
+                  style: { strokeWidth: 2, stroke: '#0f172a' }
+                }, eds))}
+                onNodeClick={(_, node) => {
+                  if (node.type === 'swimlane') return;
+                  if (node.type !== 'risk-control-badge') {
+                    setSelectedNodeId(node.id);
+                  }
+                }}
+                onPaneClick={() => setSelectedNodeId(null)}
+                nodeTypes={nodeTypes}
+                edgeTypes={edgeTypes}
+                fitView
               >
-                {saveMutation.isPending ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
-                {saveMutation.isPending ? t('bpm:editor.actions.saving') : t('bpm:editor.actions.save')}
-              </Button>
-            </Panel>
+                {/* Visio-like Smart Alignment Guide Lines */}
+                {(alignmentLines.horizontal !== undefined || alignmentLines.vertical !== undefined) && (
+                  <svg className="pointer-events-none absolute inset-0 z-50 h-full w-full overflow-visible">
+                    {alignmentLines.horizontal !== undefined && (
+                      <line
+                        x1="-10000"
+                        x2="10000"
+                        y1={alignmentLines.horizontal}
+                        y2={alignmentLines.horizontal}
+                        stroke="#3b82f6"
+                        strokeWidth="1.5"
+                        strokeDasharray="4 4"
+                      />
+                    )}
+                    {alignmentLines.vertical !== undefined && (
+                      <line
+                        x1={alignmentLines.vertical}
+                        x2={alignmentLines.vertical}
+                        y1="-10000"
+                        y2="10000"
+                        stroke="#3b82f6"
+                        strokeWidth="1.5"
+                        strokeDasharray="4 4"
+                      />
+                    )}
+                  </svg>
+                )}
+                <Background gap={16} size={1} color="hsl(var(--border))" />
+                <Controls />
+                <MiniMap />
 
             <Panel position="top-left" className="bg-white/95 backdrop-blur-md p-5 rounded-[1.5rem] border border-slate-200 shadow-xl flex flex-col gap-5 max-w-[280px] max-h-[85vh] overflow-y-auto scrollbar-thin">
                <div className="flex flex-col border-b border-slate-100 pb-4">
@@ -1441,7 +1452,9 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
                )}
             </Panel>
           </ReactFlow>
-        )}
+        </div>
+      </div>
+    )}
 
         <RegulatoryPropertySheet
           selectedNode={selectedNode}
