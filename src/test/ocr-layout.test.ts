@@ -267,4 +267,26 @@ describe('ocr-layout — KUR BPM fidelity', () => {
     expect(laid.nodes.find((n) => n.id === 'dm')!).toMatchObject({ width: 100, height: 80 });
     expect(laid.nodes.find((n) => n.id === 'ref')!).toMatchObject({ width: 40, height: 40 });
   });
+
+  it('auto-derives swimlane label from department or id if empty and avoids false unlabeled-node warnings', () => {
+    const raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[] } = {
+      nodes: [
+        { id: 'swimlane_debitur', type: 'swimlane', label: '', position: { x: 0, y: 0 }, department: 'DEBITUR' },
+        { id: 'swimlane_kredit_admin', type: 'swimlane', label: '   ', position: { x: 400, y: 0 } },
+      ],
+      edges: [],
+    };
+    const warnings = validateOcrResponse(raw);
+    expect(warnings.filter((w) => w.code === 'unlabeled-node')).toHaveLength(0);
+
+    const laid = layoutOcrDiagram(raw);
+    const debitur = laid.nodes.find((n) => n.id === 'swimlane_debitur');
+    const kreditAdmin = laid.nodes.find((n) => n.id === 'swimlane_kredit_admin');
+
+    expect(debitur?.label).toBe('DEBITUR');
+    expect(debitur?.department).toBe('DEBITUR');
+    expect(kreditAdmin?.label).toBe('KREDIT ADMIN');
+    expect(kreditAdmin?.department).toBe('KREDIT ADMIN');
+  });
 });
+

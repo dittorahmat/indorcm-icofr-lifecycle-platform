@@ -51,6 +51,12 @@ const LANE_MIN_H = 1000;
 const V_STEP_DEFAULT = 126;
 const FOOTER_PAD = 120;
 
+export function deriveLabelFromId(id: string): string {
+  if (!id) return '';
+  const cleaned = id.replace(/^(swimlane|lane)[-_]/i, '').replace(/[-_]/g, ' ').trim();
+  return cleaned ? cleaned.toUpperCase() : '';
+}
+
 function getNodeDimensions(type: string): { width: number; height: number } {
   switch (type) {
     case 'start':
@@ -98,7 +104,12 @@ export function validateOcrResponse(raw: { nodes: OcrRawNode[]; edges: OcrRawEdg
   }
 
   for (const n of raw.nodes) {
-    if (n.label === undefined || n.label === null || n.label.trim() === '') {
+    const isSwimlane = n.type === 'swimlane';
+    const effectiveLabel = isSwimlane
+      ? (n.label?.trim() || n.department?.trim() || deriveLabelFromId(n.id))
+      : n.label?.trim();
+
+    if (!effectiveLabel) {
       warnings.push({
         code: 'unlabeled-node',
         message: `Node ${n.id} has empty label`,
@@ -279,16 +290,18 @@ export function layoutOcrDiagram(raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[]
   for (const lane of sortedLanes) {
     const pos = lanePos.get(lane.id);
     if (!pos) continue;
+    const resolvedDept = lane.department?.trim() || lane.label?.trim() || deriveLabelFromId(lane.id);
+    const resolvedLabel = lane.label?.trim() || resolvedDept;
     nodesOut.push({
       id: lane.id,
       type: lane.type,
-      label: lane.label,
+      label: resolvedLabel,
       position: { x: pos.x, y: pos.y },
       parentId: undefined,
       width: pos.width,
       height: pos.height,
-      department: lane.department,
-      function: lane.function,
+      department: resolvedDept,
+      function: lane.function?.trim() || '',
     });
   }
 

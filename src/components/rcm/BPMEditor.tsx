@@ -46,7 +46,7 @@ import { format } from 'date-fns';
 import { toPng } from 'html-to-image';
 import { jsPDF } from 'jspdf';
 import { RegulatoryPropertySheet } from './properties/RegulatoryPropertySheet';
-import { layoutOcrDiagram, type OcrLayoutWarning } from '@/utils/ocr-layout';
+import { layoutOcrDiagram, deriveLabelFromId, type OcrLayoutWarning } from '@/utils/ocr-layout';
 import { getAlignmentGuides } from '@/utils/alignment-guides';
 
 import { useActiveSimulation, useSimulationSnapshot } from '@/hooks/use-bpm';
@@ -225,19 +225,29 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
       const actionableWarnings = (result.warnings || []).filter((w) => w.code !== 'missing-dims');
       setStagingWarnings(actionableWarnings);
       setWarningsDismissed(false);
-      const rfNodes = result.nodes.map((n) => ({
-        id: n.id,
-        type: n.type,
-        position: { x: n.position.x, y: n.position.y },
-        parentId: n.parentId,
-        style: n.type === 'swimlane' ? { width: n.width || 400, height: n.height || 1000 } : undefined,
-        zIndex: n.type === 'swimlane' ? -1 : 10,
-        dragHandle: n.type === 'swimlane' ? '.swimlane-drag-handle' : undefined,
-        draggable: true,
-        data: n.type === 'swimlane'
-          ? { label: n.label || 'Lane', department: n.department || 'Dept', function: n.function || 'Func', isLocked: false }
-          : { label: n.label, type: n.type },
-      }));
+      const rfNodes = result.nodes.map((n) => {
+        const isSwimlane = n.type === 'swimlane';
+        const resolvedDept = n.department?.trim() || n.label?.trim() || deriveLabelFromId(n.id);
+        const resolvedLabel = n.label?.trim() || resolvedDept;
+        return {
+          id: n.id,
+          type: n.type,
+          position: { x: n.position.x, y: n.position.y },
+          parentId: n.parentId,
+          style: isSwimlane ? { width: n.width || 400, height: n.height || 1000 } : undefined,
+          zIndex: isSwimlane ? -1 : 10,
+          dragHandle: isSwimlane ? '.swimlane-drag-handle' : undefined,
+          draggable: true,
+          data: isSwimlane
+            ? {
+                label: resolvedLabel,
+                department: resolvedDept,
+                function: n.function?.trim() || '',
+                isLocked: false,
+              }
+            : { label: n.label, type: n.type },
+        };
+      });
       const rfEdges = result.edges.map((e) => ({
         id: e.id,
         source: e.source,
@@ -674,6 +684,8 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
     const finalNodes = stagingNodes.map((node: any) => {
       const isSwimlane = node.type === 'swimlane';
       const isNodeLocked = !!node.data?.isLocked;
+      const resolvedDept = node.data?.department?.trim() || node.data?.label?.trim() || deriveLabelFromId(node.id);
+      const resolvedLabel = node.data?.label?.trim() || resolvedDept;
       const baseNode: any = {
         id: node.id,
         type: node.type,
@@ -685,9 +697,9 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
         style: isSwimlane ? node.style : undefined,
         data: isSwimlane
           ? {
-              label: node.data?.label || 'Lane',
-              department: node.data?.department || 'Dept',
-              function: node.data?.function || 'Func',
+              label: resolvedLabel,
+              department: resolvedDept,
+              function: node.data?.function?.trim() || '',
               isLocked: false,
               onToggleLock: () => toggleNodeLock(node.id),
               onChangeDepartment: (v: string) => updateNodeData(node.id, { department: v }),
@@ -1738,7 +1750,18 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
                                 </div>
                                 <Input
                                   value={(node.data?.label as string) || ''}
-                                  onChange={(e) => setStagingNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, data: { ...n.data, label: e.target.value } } : n))}
+                                  onChange={(e) => setStagingNodes((nds) => nds.map((n) => {
+                                    if (n.id !== node.id) return n;
+                                    const nextLabel = e.target.value;
+                                    return {
+                                      ...n,
+                                      data: {
+                                        ...n.data,
+                                        label: nextLabel,
+                                        ...(n.type === 'swimlane' ? { department: nextLabel } : {}),
+                                      },
+                                    };
+                                  }))}
                                   className="h-8 text-xs font-semibold focus-visible:ring-1"
                                 />
                               </div>
