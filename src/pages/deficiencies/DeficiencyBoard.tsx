@@ -134,7 +134,7 @@ function KanbanColumn({
                         className="flex-1 h-8 text-[10px] font-bold uppercase tracking-widest bg-white border-slate-200 rounded-xl"
                         onClick={() => onEditPlan(ap)}
                       >
-                        Edit Plan
+                        {t('actions.actionPlan', 'Action Plan')}
                       </Button>
                     )}
                     {status === "Ineffective" && ['Line 1', 'Admin'].includes(role) && (

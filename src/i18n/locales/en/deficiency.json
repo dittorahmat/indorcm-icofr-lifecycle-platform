@@ -115,9 +115,13 @@
       "assertionsLabel": "Affected Financial Assertions",
       "rationaleLabel": "Management Rationale (Mandatory)",
       "rationalePlaceholder": "Explain the reasoning for this severity conclusion...",
-      "mwNote": "Material Weakness requires reporting to Audit Committee and Board of Commissioners (Table 24).",
-      "cdNote": "Control Deficiency requires remediation monitoring by Process Owner.",
+      "mwNote": "Material Weakness must be reported to Audit Committee and Board of Commissioners (Table 24).",
+      "cdNote": "Control Deficiency requires remediation tracking by Process Owner.",
       "applyButton": "Apply Assessment"
     }
+  },
+  "actions": {
+    "actionPlan": "Action Plan",
+    "submitPlan": "Submit Plan"
   }
 }

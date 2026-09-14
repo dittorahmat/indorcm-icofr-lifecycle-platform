@@ -119,5 +119,9 @@
       "cdNote": "Defisiensi Pengendalian memerlukan pemantauan remediasi oleh Process Owner.",
       "applyButton": "Terapkan Asesmen"
     }
+  },
+  "actions": {
+    "actionPlan": "Action Plan",
+    "submitPlan": "Submit Plan"
   }
 }

@@ -79,7 +79,12 @@
     "lowRisk": "LOW RISK",
     "openDeficiency": "OPEN DEFICIENCY",
     "tests": "TESTS",
-    "remediationReadiness": "Remediation Testing Readiness (Table 23)"
+    "remediationReadiness": "Remediation Testing Readiness (Table 23)",
+    "csaIneffective": "INEFFECTIVE IN CSA"
+  },
+  "gatekeeper": {
+    "csaIneffectiveTitle": "Line 3 Testing Suspended (SK-5 BAB V p. 54)",
+    "csaIneffectiveDescription": "Based on Line 1 CSA and/or Line 2 validation, this control was concluded as Ineffective. In accordance with Chapter V Point 1.2 Item 3, Line 3 does not perform testing until the control is declared Effective through remediation."
   },
   "sampling": {
     "title": "Regulatory Sampling Grid",

@@ -24,7 +24,16 @@ export function DeficiencyCard({ deficiency, actionPlan }: DeficiencyCardProps) 
     zIndex: isDragging ? 10 : 'auto',
   };
 
-  const isOverdue = actionPlan && new Date(actionPlan.dueDate) < new Date() && actionPlan.status !== 'Verified';
+  const rawDueDate = actionPlan?.dueDate || actionPlan?.targetDate;
+  const parsedDueDate = rawDueDate ? new Date(rawDueDate) : null;
+  const isValidDate = parsedDueDate !== null && !isNaN(parsedDueDate.getTime());
+  
+  // Year-end fallback (31 December of current year) if date is missing/null
+  const currentYear = new Date().getFullYear();
+  const fallbackDueDate = new Date(currentYear, 11, 31);
+  const displayDate = isValidDate ? parsedDueDate : fallbackDueDate;
+
+  const isOverdue = isValidDate && parsedDueDate < new Date() && actionPlan?.status !== 'Verified' && actionPlan?.workflowStatus !== 'Resolved';
 
   const severityConfig = {
     'Material Weakness': { color: 'bg-rose-500 text-white', icon: AlertTriangle, border: 'border-rose-100' },
@@ -111,15 +120,15 @@ export function DeficiencyCard({ deficiency, actionPlan }: DeficiencyCardProps) 
              </div>
           )}
           <div className="flex items-center justify-between">
-             {actionPlan ? (
-                <div className={cn(
-                  "flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest",
-                  isOverdue ? "text-rose-600" : "text-slate-400"
-                )}>
-                  <Calendar className="h-3 w-3" />
-                  Due: {new Date(actionPlan.dueDate).toLocaleDateString()}
-                </div>
-             ) : (
+              {actionPlan ? (
+                 <div className={cn(
+                   "flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest",
+                   isOverdue ? "text-rose-600" : "text-slate-400"
+                 )}>
+                   <Calendar className="h-3 w-3" />
+                   Due: {displayDate.toLocaleDateString()}
+                 </div>
+              ) : (
                 <div className="text-[10px] font-bold text-slate-300 uppercase tracking-widest italic">No Action Plan</div>
              )}
              

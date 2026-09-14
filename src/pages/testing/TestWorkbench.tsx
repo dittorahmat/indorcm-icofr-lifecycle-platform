@@ -13,7 +13,7 @@ import type { Control, TestRecord, Deficiency, User } from '@shared/types';
 import { 
   AlertTriangle, UserCheck, ListFilter, History, 
   ShieldCheck, ChevronDown, ChevronUp, Search,
-  Fingerprint, Clock, Lock
+  Fingerprint, Clock, Lock, ShieldAlert
 } from 'lucide-react';
 import { ControlTestCard } from '@/components/testing/ControlTestCard';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
@@ -136,6 +136,12 @@ export function TestWorkbench() {
                 .sort((a, b) => ((b.identifiedDate || 0) as number) - ((a.identifiedDate || 0) as number))[0];
 
               const violation = isCoolingOffViolation(control);
+              const isCsaIneffective = Boolean(
+                latestOpenDeficiency && (
+                  latestOpenDeficiency.source?.includes('CSA') || 
+                  latestOpenDeficiency.source?.includes('TOD')
+                )
+              );
               const controlHistory = testsData?.items.filter(t => t.controlId === control.id) || [];
               const isExpanded = expandedId === control.id;
 
@@ -147,7 +153,7 @@ export function TestWorkbench() {
                   className={cn(
                     "group relative bg-white border-2 rounded-2xl transition-all duration-300",
                     isExpanded ? "border-indigo-200 shadow-xl shadow-indigo-100/50" : "border-slate-100 hover:border-indigo-100 hover:shadow-lg hover:shadow-slate-100",
-                    violation && "border-rose-100 bg-rose-50/20 opacity-80"
+                    (violation || isCsaIneffective) && "border-amber-200 bg-amber-50/10"
                   )}
                 >
                   {/* CARD HEADER / TRIGGER */}
@@ -158,9 +164,10 @@ export function TestWorkbench() {
                     <div className="flex items-center gap-5">
                       <div className={cn(
                         "h-12 w-12 rounded-xl flex items-center justify-center shrink-0 border-2 transition-all duration-300",
-                        isExpanded ? "bg-indigo-600 border-indigo-400 text-white rotate-6" : "bg-indigo-50 border-indigo-100 text-indigo-600 group-hover:bg-indigo-100"
+                        isExpanded ? "bg-indigo-600 border-indigo-400 text-white rotate-6" : "bg-indigo-50 border-indigo-100 text-indigo-600 group-hover:bg-indigo-100",
+                        isCsaIneffective && !isExpanded && "bg-amber-50 border-amber-200 text-amber-600"
                       )}>
-                        {violation ? <AlertTriangle className="h-6 w-6" /> : <Fingerprint className="h-6 w-6" />}
+                        {violation ? <AlertTriangle className="h-6 w-6" /> : isCsaIneffective ? <ShieldAlert className="h-6 w-6" /> : <Fingerprint className="h-6 w-6" />}
                       </div>
                       
                       <div className="space-y-1">
@@ -188,7 +195,11 @@ export function TestWorkbench() {
 
                     <div className="flex items-center gap-3">
                       <div className="flex gap-2 mr-4">
-                        {latestOpenDeficiency && (
+                        {isCsaIneffective ? (
+                          <Badge className="bg-amber-500 text-white border-none text-[9px] font-bold uppercase tracking-widest px-2.5 h-6">
+                            {t('badges.csaIneffective', 'Inefektif CSA')}
+                          </Badge>
+                        ) : latestOpenDeficiency && (
                           <Badge className="bg-rose-500 text-white border-none text-[9px] font-bold uppercase tracking-widest px-2.5 h-6">
                             Open Deficiency
                           </Badge>
@@ -239,6 +250,25 @@ export function TestWorkbench() {
                               <Button variant="outline" className="border-rose-200 text-rose-700 hover:bg-rose-100 rounded-xl font-bold text-[10px] uppercase tracking-widest h-10 px-6">
                                 Contact Compliance Administrator
                               </Button>
+                            </div>
+                          ) : isCsaIneffective ? (
+                            <div className="p-10 bg-amber-50/50 border border-amber-200 rounded-2xl text-center space-y-4 max-w-2xl mx-auto">
+                              <div className="h-16 w-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto shadow-lg shadow-amber-200">
+                                <ShieldAlert className="h-8 w-8" />
+                              </div>
+                              <div className="space-y-2">
+                                <h4 className="text-lg font-display font-bold text-amber-900">
+                                  {t('gatekeeper.csaIneffectiveTitle')}
+                                </h4>
+                                <p className="text-sm text-amber-800/80 font-medium leading-relaxed">
+                                  {t('gatekeeper.csaIneffectiveDescription')}
+                                </p>
+                              </div>
+                              <div className="pt-2">
+                                <Badge variant="outline" className="bg-white border-amber-300 text-amber-700 font-mono text-xs px-3 py-1">
+                                  Status: Menunggu Remediasi Lini 1 & 2
+                                </Badge>
+                              </div>
                             </div>
                           ) : (
                             <ControlTestCard 

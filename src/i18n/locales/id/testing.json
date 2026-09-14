@@ -79,7 +79,12 @@
     "lowRisk": "RISIKO RENDAH",
     "openDeficiency": "DEFISIENSI TERBUKA",
     "tests": "PENGUJIAN",
-    "remediationReadiness": "Kesiapan Pengujian Remediasi (Tabel 23)"
+    "remediationReadiness": "Kesiapan Pengujian Remediasi (Tabel 23)",
+    "csaIneffective": "INEFEKTIF PADA CSA"
+  },
+  "gatekeeper": {
+    "csaIneffectiveTitle": "Pengujian Lini 3 Ditangguhkan (SK-5 BAB V Hal. 54)",
+    "csaIneffectiveDescription": "Berdasarkan hasil CSA Lini Pertama dan/atau validasi Lini Kedua, pengendalian ini disimpulkan Tidak Efektif. Sesuai ketentuan BAB V poin 1.2 butir 3, Lini Ketiga tidak perlu melakukan pengujian sampai pengendalian tersebut dinyatakan Efektif melalui tahap remediasi."
   },
   "sampling": {
     "title": "Grid Sampling Regulatif",

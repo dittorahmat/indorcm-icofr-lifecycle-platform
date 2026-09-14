@@ -61,6 +61,9 @@ export class DeficiencyService {
     });
 
     // 3. Create initial Action Plan
+    const currentYear = new Date().getFullYear();
+    const defaultYearEnd = new Date(currentYear, 11, 31, 23, 59, 59);
+
     await this.db.insert(actionPlans).values({
       id: crypto.randomUUID(),
       organizationId,
@@ -69,6 +72,8 @@ export class DeficiencyService {
       status: 'Draft',
       workflowStatus: 'Ineffective',
       ownerId: userId,
+      dueDate: defaultYearEnd,
+      targetDate: defaultYearEnd,
       createdAt: new Date(),
     } as any);
 
