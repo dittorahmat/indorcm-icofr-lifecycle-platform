@@ -76,11 +76,14 @@ export function CSAReviewMatrix({
                 <div className="text-xs font-black uppercase text-slate-400 py-1">TOD Lini 2</div>
               </TableHead>
               {record.samples?.map((sample, idx) => (
-                <TableHead key={sample.id || idx} className="min-w-[100px] text-center border-r">
-                   <div className="text-xs font-black text-slate-600 truncate max-w-[120px] mx-auto" title={sample.sampleRef || `Sample ${idx+1}`}>
-                     {sample.sampleRef || `Sample ${idx+1}`}
+                <TableHead key={sample.id || idx} className="min-w-[140px] max-w-[200px] text-center border-r px-2 py-2">
+                   <div 
+                     className="inline-flex items-center justify-center px-2 py-0.5 rounded-md bg-slate-100 border border-slate-200 text-xs font-black text-slate-700 max-w-full truncate shadow-2xs" 
+                     title={sample.sampleRef || `Sample ${idx + 1}`}
+                   >
+                     {sample.sampleRef || `Sample ${idx + 1}`}
                    </div>
-                   <div className="text-xs font-bold text-slate-400 uppercase mt-0.5">Evidence</div>
+                   <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Evidence</div>
                 </TableHead>
               ))}
             </TableRow>

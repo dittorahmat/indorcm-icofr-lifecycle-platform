@@ -47,7 +47,16 @@ function CSARecordRow({ record: initialRecord, process }: { record: CSARecord, p
     enabled: isExpanded && !!initialRecord.bpmProcessId
   });
 
-  const controls = matrixData?.items || [];
+  const controls = React.useMemo(() => {
+    if (!matrixData?.items) return [];
+    const seen = new Set<string>();
+    return matrixData.items.filter((item: any) => {
+      const id = item.controlId || item.id;
+      if (!id || seen.has(id)) return false;
+      seen.add(id);
+      return true;
+    });
+  }, [matrixData?.items]);
 
   const handleExportPDF = async (e: React.MouseEvent) => {
     e.stopPropagation();
