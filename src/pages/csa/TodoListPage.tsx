@@ -409,6 +409,7 @@ export function TodoListPage() {
             subProcessName={selectedHubProcess.name}
             year={format(new Date(), 'yyyy')}
             scheduleId={selectedHubProcess.scheduleId}
+            initialTab="csa"
           />
         )}
         

@@ -313,6 +313,7 @@ export function BPMPage() {
             bpmProcessId={selectedBpmId || undefined}
             subProcessName={selectedBpmName}
             year={viewYear}
+            initialTab="worksheet"
           />
         )}
 

@@ -6,6 +6,7 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { Eye, Printer, FileText, LayoutDashboard, Trash2, RefreshCw, Plus } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { CSARecord } from '@shared/types';
+import { formatCsaReference } from '@/lib/csa-utils';
 
 interface CSAListProps {
   items: CSARecord[];
@@ -14,9 +15,24 @@ interface CSAListProps {
   onDelete: (id: string) => void;
   onPrint: (id: string, layout: 'detailed' | 'summary') => void;
   onNewAssessment: () => void;
+  bpmCode?: string;
+  noGL?: string;
+  bpmProcessId?: string;
+  year?: string | number;
 }
 
-export function CSAList({ items, isLoading, onViewDetail, onDelete, onPrint, onNewAssessment }: CSAListProps) {
+export function CSAList({ 
+  items, 
+  isLoading, 
+  onViewDetail, 
+  onDelete, 
+  onPrint, 
+  onNewAssessment,
+  bpmCode,
+  noGL,
+  bpmProcessId,
+  year
+}: CSAListProps) {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -31,7 +47,7 @@ export function CSAList({ items, isLoading, onViewDetail, onDelete, onPrint, onN
       <Table>
         <TableHeader className="bg-slate-50">
           <TableRow>
-            <TableHead className="text-xs font-black uppercase">Period</TableHead>
+            <TableHead className="text-xs font-black uppercase">Reference & Period</TableHead>
             <TableHead className="text-xs font-black uppercase text-center">Result</TableHead>
             <TableHead className="text-xs font-black uppercase">Date</TableHead>
             <TableHead className="text-right text-xs font-black uppercase">Action</TableHead>
@@ -44,7 +60,20 @@ export function CSAList({ items, isLoading, onViewDetail, onDelete, onPrint, onN
             <TableRow><TableCell colSpan={4} className="h-24 text-center text-muted-foreground italic">No history found.</TableCell></TableRow>
           ) : items.map(item => (
             <TableRow key={item.id}>
-              <TableCell className="font-bold text-xs">{item.period}</TableCell>
+              <TableCell className="font-bold text-xs">
+                <div className="flex flex-col gap-1 items-start">
+                  <span className="font-mono text-[11px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-1.5 py-0.5 rounded shadow-2xs">
+                    {formatCsaReference({
+                      bpmCode,
+                      noGL,
+                      bpmProcessId: item.bpmProcessId || bpmProcessId,
+                      year: year || new Date(item.assessmentDate).getFullYear(),
+                      period: item.period
+                    })}
+                  </span>
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{item.period}</span>
+                </div>
+              </TableCell>
               <TableCell className="text-center">
                 <Badge className={cn(
                 "text-xs font-black uppercase",

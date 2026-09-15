@@ -16,6 +16,8 @@ import {
   UserCheck, Printer
 } from 'lucide-react';
 import { cn } from "@/lib/utils";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { formatCsaReference } from '@/lib/csa-utils';
 import { UseFormReturn, FieldValues } from 'react-hook-form';
 import { CSAFormValues } from '@/hooks/use-csa';
 
@@ -37,12 +39,17 @@ interface CSAFormProps {
   anyPointFailed: boolean;
   activeUploadRow: { sIdx: number; cId: string } | null;
   getFileNameFromUrl: (url: string) => string;
+  bpmCode?: string;
+  noGL?: string;
+  bpmProcessId?: string;
+  year?: string | number;
 }
 
 export function CSAForm({
   form, onSubmit, onSaveDraft, onBackToList, onPrint, onFileUpload,
   isReadOnly, isAuthenticating, isPending, activeControls, bpmRiskControlPairs,
-  watchSamples, fields, append, anyPointFailed, activeUploadRow, getFileNameFromUrl
+  watchSamples, fields, append, anyPointFailed, activeUploadRow, getFileNameFromUrl,
+  bpmCode, noGL, bpmProcessId, year
 }: CSAFormProps) {
   const { t } = useTranslation();
 
@@ -50,16 +57,66 @@ export function CSAForm({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-12">
         <div className="space-y-4">
-          <div className="grid grid-cols-3 gap-6 p-5 bg-slate-50 rounded-xl border border-slate-100 shadow-inner">
-            <FormField control={form.control} name="period" render={({ field: f }) => (
-              <FormItem><FormLabel className="text-xs font-black uppercase text-slate-400">{t('csa_hub:form.periodLabel')}</FormLabel><FormControl><Input {...f} disabled={isReadOnly} className="h-9 font-bold text-xs" /></FormControl></FormItem>
-            )} />
-            <div className="col-span-2">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-5 bg-slate-50 rounded-xl border border-slate-100 shadow-inner">
+            <div className="flex flex-col justify-center space-y-1">
+              <span className="text-xs font-black uppercase text-slate-400">
+                {t('csa_hub:form.referenceCodeLabel')}
+              </span>
+              <div className="flex items-center h-9 px-3 bg-white border border-slate-200 rounded-md font-mono text-xs font-bold text-indigo-700 shadow-xs truncate">
+                {formatCsaReference({
+                  bpmCode,
+                  noGL,
+                  bpmProcessId,
+                  year,
+                  period: form.watch('period')
+                })}
+              </div>
+            </div>
+
+            <FormField control={form.control} name="period" render={({ field: f }) => {
+              const currentYear = year || new Date().getFullYear().toString();
+              const q1Val = `${currentYear}-Q1`;
+              const q2Val = `${currentYear}-Q2`;
+              const q3Val = `${currentYear}-Q3`;
+              const q4Val = `${currentYear}-Q4`;
+              const standardVals = [q1Val, q2Val, q3Val, q4Val];
+              const isCustomVal = f.value && !standardVals.includes(f.value);
+
+              return (
+                <FormItem className="space-y-1">
+                  <FormLabel className="text-xs font-black uppercase text-slate-400">
+                    {t('csa_hub:form.periodLabel')}
+                  </FormLabel>
+                  <Select 
+                    value={f.value} 
+                    onValueChange={f.onChange} 
+                    disabled={isReadOnly}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="h-9 font-bold text-xs bg-white">
+                        <SelectValue placeholder={t('csa_hub:form.selectQuarter')} />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value={q1Val} className="text-xs font-bold">{t('csa_hub:form.quarters.q1')}</SelectItem>
+                      <SelectItem value={q2Val} className="text-xs font-bold">{t('csa_hub:form.quarters.q2')}</SelectItem>
+                      <SelectItem value={q3Val} className="text-xs font-bold">{t('csa_hub:form.quarters.q3')}</SelectItem>
+                      <SelectItem value={q4Val} className="text-xs font-bold">{t('csa_hub:form.quarters.q4')}</SelectItem>
+                      {isCustomVal && (
+                        <SelectItem value={f.value} className="text-xs font-bold">{f.value}</SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </FormItem>
+              );
+            }} />
+
+            <div className="col-span-1 md:col-span-2">
               <FormField control={form.control} name="result" render={({ field: f }) => (
                 <FormItem className="space-y-1">
                   <FormLabel className="text-xs font-black uppercase text-slate-400">{t('csa_hub:form.resultLabel')}</FormLabel>
                   <FormControl>
-                    <RadioGroup onValueChange={f.onChange} value={f.value} className="flex gap-4" disabled={isReadOnly}>
+                    <RadioGroup onValueChange={f.onChange} value={f.value} className="flex gap-4 pt-1" disabled={isReadOnly}>
                       {['Effective', 'Ineffective', 'No Transaction'].map(res => (
                         <div key={res} className="flex items-center space-x-2">
                           <RadioGroupItem value={res} id={res} disabled={res === 'Effective' && anyPointFailed} />

@@ -39,6 +39,7 @@ interface BPMModalProps {
   subProcessName?: string;
   year: string;
   scheduleId?: string; // New: link to task schedule
+  initialTab?: string;
 }
 
 export function BPMModal({ 
@@ -50,13 +51,22 @@ export function BPMModal({
   bpmProcessId,
   subProcessName,
   year,
-  scheduleId
+  scheduleId,
+  initialTab = "worksheet"
 }: BPMModalProps) {
   const { t } = useTranslation(['bpm', 'common']);
   const queryClient = useQueryClient();
   const { isDirty: globalDirty } = useUnsavedChangesContext();
-  const [activeTab, setActiveTab] = React.useState("csa");
+  const [activeTab, setActiveTab] = React.useState(initialTab);
   const [selectedSamples, setSelectedSamples] = React.useState<TransactionDetail[]>([]);
+
+  const handleOpenChange = React.useCallback((open: boolean) => {
+    if (!open) {
+      setSelectedSamples([]);
+      setActiveTab(initialTab);
+    }
+    onOpenChange(open);
+  }, [initialTab, onOpenChange]);
 
   const { data: processData } = useQuery({
     queryKey: ['bpm-process', bpmProcessId],
@@ -67,14 +77,19 @@ export function BPMModal({
     enabled: !!bpmProcessId && isOpen
   });
 
-  // Maintain tab sync if opened/re-opened with a schedule
+  // Maintain tab sync if opened/re-opened with a schedule or initialTab
   React.useEffect(() => {
     if (isOpen) {
       if (scheduleId) {
         setActiveTab("csa");
+      } else if (initialTab) {
+        setActiveTab(initialTab);
       }
+    } else {
+      setSelectedSamples([]);
+      setActiveTab(initialTab);
     }
-  }, [isOpen, scheduleId]);
+  }, [isOpen, scheduleId, initialTab]);
 
   // Safety guard for modal closing
   useUnsavedChanges(isOpen && (selectedSamples.length > 0 && activeTab === 'sampling' || globalDirty));
@@ -108,7 +123,7 @@ export function BPMModal({
   });
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-[98vw] w-[1600px] h-[95vh] flex flex-col p-0 overflow-hidden border-none shadow-2xl">
         <DialogHeader className="p-4 border-b bg-mancity-pattern text-primary-foreground shrink-0">
           <div className="flex justify-between items-center">
@@ -141,7 +156,7 @@ export function BPMModal({
               <Button variant="outline" size="sm" className="h-8 text-xs font-bold bg-primary-foreground/5 border-primary-foreground/10 hover:bg-primary-foreground/10 text-primary-foreground">
                 <Printer className="h-3.5 w-3.5 mr-1.5" /> {t('common:actions.printPdf')}
               </Button>
-              <Button variant="ghost" size="icon" onClick={() => onOpenChange(false)} className="text-primary-foreground hover:bg-primary-foreground/5">
+              <Button variant="ghost" size="icon" onClick={() => handleOpenChange(false)} className="text-primary-foreground hover:bg-primary-foreground/5">
                 <XCircle className="h-5 w-5" />
               </Button>
             </div>

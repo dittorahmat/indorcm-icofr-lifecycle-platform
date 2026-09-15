@@ -120,8 +120,10 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
   useEffect(() => {
     if (initialSamples.length > 0 && !isInitialized && view === 'list') {
       manualViewOverride.current = null;
+    } else if (initialSamples.length === 0 && !activeCsaId && manualViewOverride.current === null) {
+      setView('list');
     }
-  }, [initialSamples.length, isInitialized, view]);
+  }, [initialSamples.length, isInitialized, view, activeCsaId]);
 
   useEffect(() => {
     if (isInitialized || manualViewOverride.current === 'list') return;

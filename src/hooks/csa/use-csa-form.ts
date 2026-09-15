@@ -23,10 +23,14 @@ export const csaFormSchema = z.object({
 export type CSAFormValues = z.infer<typeof csaFormSchema>;
 
 export function useCSAForm() {
+  const defaultYear = typeof window !== 'undefined'
+    ? new URLSearchParams(window.location.search).get('year') || new Date().getFullYear().toString()
+    : new Date().getFullYear().toString();
+
   const form = useForm<CSAFormValues>({
     resolver: zodResolver(csaFormSchema),
     defaultValues: {
-      period: '2025-Q1',
+      period: `${defaultYear}-Q1`,
       result: 'Effective',
       comments: '',
       testProcedure: '',

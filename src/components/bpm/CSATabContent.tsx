@@ -6,6 +6,7 @@ import { useCSA } from '@/hooks/use-csa';
 import { CSAList } from './CSAList';
 import { CSAForm } from './CSAForm';
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
+import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 
 interface CSATabContentProps {
   noGL?: string;
@@ -26,6 +27,7 @@ export function CSATabContent({
   standalone = false,
   scheduleId
 }: CSATabContentProps) {
+  const { workingYear } = useFiscalYearStore();
   const {
     view, setView,
     activeCsa,
@@ -153,7 +155,7 @@ export function CSATabContent({
                 setView('form'); 
                 setActiveCsaId(null);
                 form.reset({
-                   period: '2025-Q1',
+                   period: `${workingYear}-Q1`,
                    result: 'Effective',
                    comments: '',
                    testProcedure: bpmProcess?.standardTestProcedure || '',
@@ -162,6 +164,10 @@ export function CSATabContent({
                    samples: []
                 });
               }}
+              bpmCode={bpmProcess?.bpmCode}
+              noGL={noGL || bpmProcess?.noGL}
+              bpmProcessId={bpmProcessId}
+              year={workingYear}
             />
           ) : (
             <CSAForm 
@@ -182,6 +188,10 @@ export function CSATabContent({
               anyPointFailed={anyPointFailed}
               activeUploadRow={activeUploadRow}
               getFileNameFromUrl={getFileNameFromUrl}
+              bpmCode={bpmProcess?.bpmCode}
+              noGL={noGL || bpmProcess?.noGL}
+              bpmProcessId={bpmProcessId}
+              year={workingYear}
             />
           )}
         </div>
