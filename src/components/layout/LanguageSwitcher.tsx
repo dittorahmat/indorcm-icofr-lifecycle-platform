@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
 import { useTheme } from '@/hooks/use-theme';
 
 export function LanguageSwitcher() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation('common');
   const { isDark } = useTheme();
 
   const toggleLanguage = (lng: string) => {
@@ -26,12 +26,13 @@ export function LanguageSwitcher() {
         <Button 
           variant="ghost" 
           size="icon" 
+          aria-label={t('common:actions.switchLanguage', { defaultValue: 'Switch language' })}
           className={cn(
             "h-9 w-9",
             !isDark && "text-white/70 hover:text-white hover:bg-white/10"
           )}
         >
-          <Languages className="h-4 w-4" />
+          <Languages className="h-4 w-4" aria-hidden="true" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

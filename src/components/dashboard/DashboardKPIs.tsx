@@ -32,13 +32,13 @@ export function DashboardKPIs({ controlsCount, openDeficienciesCount, cosoPercen
       <motion.div variants={itemVariants}>
         <Card className="bg-mancity-pattern text-primary-foreground border-none h-full shadow-lg ring-1 ring-primary/20 overflow-hidden relative group rounded-xl p-1">
           <CardHeader className="pb-2">
-            <CardTitle className="text-[11px] font-bold uppercase tracking-wider text-primary-foreground/70 flex items-center gap-2">
-              <Clock className="h-3.5 w-3.5" /> {t('kpis.cycleReadiness')}
+            <CardTitle className="text-xs font-bold uppercase tracking-wider text-primary-foreground/80 flex items-center gap-2">
+              <Clock className="h-3.5 w-3.5" aria-hidden="true" /> {t('kpis.cycleReadiness')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-4xl font-bold tracking-tight">{t('kpis.ready')}</div>
-            <p className="text-[11px] text-primary-foreground/60 mt-1.5 font-bold uppercase tracking-wide">{t('kpis.reportingCycle', { year: workingYear })}</p>
+            <p className="text-xs text-primary-foreground/70 mt-1.5 font-semibold uppercase tracking-wider">{t('kpis.reportingCycle', { year: workingYear })}</p>
             <div className="mt-6 h-1.5 w-full bg-primary-foreground/10 rounded-full overflow-hidden relative">
                <motion.div 
                 initial={{ scaleX: 0 }}
@@ -66,9 +66,9 @@ export function DashboardKPIs({ controlsCount, openDeficienciesCount, cosoPercen
           value: openDeficienciesCount, 
           subtitle: t('kpis.needRemediation'),
           icon: ShieldAlert,
-          color: 'text-rose-600',
-          bg: 'bg-rose-50',
-          valueColor: 'text-rose-600'
+          color: 'text-destructive',
+          bg: 'bg-destructive/10',
+          valueColor: 'text-destructive'
         },
         { 
           title: t('kpis.cosoCoverage'), 
@@ -82,13 +82,13 @@ export function DashboardKPIs({ controlsCount, openDeficienciesCount, cosoPercen
         <motion.div key={i} variants={itemVariants}>
           <Card className="border-slate-200 bg-white shadow-sm hover:shadow-md transition-all duration-300 h-full border-b-2 hover:border-b-slate-900 rounded-xl">
             <CardHeader className="pb-1">
-              <CardTitle className="text-[11px] font-bold uppercase text-slate-500 tracking-wide flex items-center gap-2">
-                <kpi.icon className={cn("h-3.5 w-3.5", kpi.color)} /> {kpi.title}
+              <CardTitle className="text-xs font-bold uppercase text-slate-500 tracking-wider flex items-center gap-2">
+                <kpi.icon className={cn("h-3.5 w-3.5", kpi.color)} aria-hidden="true" /> {kpi.title}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className={cn("text-3xl font-bold tracking-tight", kpi.valueColor || "text-slate-900")}>{kpi.value}</div>
-              <p className="text-[11px] text-slate-400 font-semibold uppercase tracking-tight mt-1">{kpi.subtitle}</p>
+              <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mt-1">{kpi.subtitle}</p>
             </CardContent>
           </Card>
         </motion.div>

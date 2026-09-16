@@ -3,6 +3,7 @@ import { Bot, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 interface AIFabButtonProps {
   isOpen: boolean;
@@ -10,6 +11,12 @@ interface AIFabButtonProps {
 }
 
 export function AIFabButton({ isOpen, onToggle }: AIFabButtonProps) {
+  const { t } = useTranslation('ai');
+
+  const label = isOpen 
+    ? t('fab.close', { defaultValue: 'Close chat' }) 
+    : t('fab.open', { defaultValue: 'Ask ICOFR AI' });
+
   return (
     <TooltipProvider>
       <Tooltip>
@@ -25,6 +32,8 @@ export function AIFabButton({ isOpen, onToggle }: AIFabButtonProps) {
             <Button
               onClick={onToggle}
               size="lg"
+              aria-label={label}
+              aria-expanded={isOpen}
               className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 bg-primary hover:bg-primary/90"
             >
               <AnimatePresence mode="wait">
@@ -36,7 +45,7 @@ export function AIFabButton({ isOpen, onToggle }: AIFabButtonProps) {
                     exit={{ rotate: 90, opacity: 0 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <X className="h-6 w-6" />
+                    <X className="h-6 w-6" aria-hidden="true" />
                   </motion.div>
                 ) : (
                   <motion.div
@@ -46,7 +55,7 @@ export function AIFabButton({ isOpen, onToggle }: AIFabButtonProps) {
                     exit={{ rotate: -90, opacity: 0 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <Bot className="h-6 w-6" />
+                    <Bot className="h-6 w-6" aria-hidden="true" />
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -54,7 +63,7 @@ export function AIFabButton({ isOpen, onToggle }: AIFabButtonProps) {
           </motion.div>
         </TooltipTrigger>
         <TooltipContent side="left" className="text-sm font-medium">
-          {isOpen ? 'Tutup Chat' : 'Tanya AI ICOFR'}
+          {label}
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

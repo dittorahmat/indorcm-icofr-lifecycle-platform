@@ -19,7 +19,9 @@
     "addSample": "Tambah Sampel",
     "printPdf": "Cetak PDF",
     "logout": "Keluar",
-    "deletePermanently": "Hapus Permanen"
+    "deletePermanently": "Hapus Permanen",
+    "switchLanguage": "Ganti bahasa",
+    "openAccountMenu": "Menu akun pengguna"
   },
   "status": {
     "draft": "Draft",

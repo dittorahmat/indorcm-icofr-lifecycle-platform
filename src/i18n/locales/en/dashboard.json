@@ -36,6 +36,12 @@
     "reports": {
       "title": "Management Assessment",
       "description": "Draft effectiveness report is ready for review."
+    },
+    "status": {
+      "systemLive": "System Live",
+      "complete": "Complete",
+      "auditTrailVerified": "Audit Trail Verified",
+      "sk5Compliant": "SK-5 Compliant"
     }
   },
   "coso": {

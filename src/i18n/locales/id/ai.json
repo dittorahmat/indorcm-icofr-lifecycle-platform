@@ -9,5 +9,11 @@
   "defaultErrorMessage": "Maaf, terjadi kesalahan. Silakan coba lagi.",
   "thinking": "AI sedang berpikir...",
   "welcomeMessage": "Halo! Saya Asisten AI ICOFR.",
-  "welcomeSubtitle": "Tanyakan sesuatu tentang ICOFR"
+  "welcomeSubtitle": "Tanyakan sesuatu tentang ICOFR",
+  "openChat": "Tanya AI ICOFR",
+  "closeChat": "Tutup chat",
+  "fab": {
+    "open": "Tanya AI ICOFR",
+    "close": "Tutup chat"
+  }
 }

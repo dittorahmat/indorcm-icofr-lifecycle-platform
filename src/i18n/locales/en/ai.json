@@ -9,5 +9,11 @@
   "defaultErrorMessage": "Sorry, an error occurred. Please try again.",
   "thinking": "AI is thinking...",
   "welcomeMessage": "Hello! I am your ICOFR AI Assistant.",
-  "welcomeSubtitle": "Ask anything about ICOFR"
+  "welcomeSubtitle": "Ask anything about ICOFR",
+  "openChat": "Ask ICOFR AI",
+  "closeChat": "Close chat",
+  "fab": {
+    "open": "Ask ICOFR AI",
+    "close": "Close chat"
+  }
 }

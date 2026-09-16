@@ -54,6 +54,8 @@
     "markAllRead": "Mark all as read",
     "clearAll": "Clear all",
     "delete": "Delete",
+    "ariaLabel": "Notifications",
+    "ariaLabelUnread": "Notifications, {{count}} unread",
     "empty": "No new notifications",
     "emptyDetail": "You're all caught up! New alerts will appear here.",
     "viewAll": "View all activities"

@@ -96,11 +96,21 @@ export function NotificationBell() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative hover:bg-white/10 text-inherit">
-          <Bell className="h-5 w-5" />
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="relative hover:bg-white/10 text-inherit"
+          aria-label={
+            unreadCount > 0
+              ? t('notifications.ariaLabelUnread', { count: unreadCount, defaultValue: `Notifications, ${unreadCount} unread` })
+              : t('notifications.ariaLabel', { defaultValue: 'Notifications' })
+          }
+        >
+          <Bell className="h-5 w-5" aria-hidden="true" />
           {unreadCount > 0 && (
             <Badge 
-              className="absolute -top-1 -right-1 h-4 min-w-[16px] px-1 flex items-center justify-center bg-red-500 text-white border-none text-xs"
+              aria-hidden="true"
+              className="absolute -top-1 -right-1 h-4 min-w-[16px] px-1 flex items-center justify-center bg-destructive text-destructive-foreground border-none text-xs"
             >
               {unreadCount}
             </Badge>
@@ -170,13 +180,14 @@ export function NotificationBell() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50 hover:text-red-600 -mr-2"
+                    aria-label={t('notifications.delete', { defaultValue: 'Delete notification' })}
+                    className="h-6 w-6 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity hover:bg-destructive/10 hover:text-destructive -mr-2"
                     onClick={(e) => {
                       e.stopPropagation();
                       deleteMutation.mutate(n.id);
                     }}
                   >
-                    <X className="h-3 w-3" />
+                    <X className="h-3 w-3" aria-hidden="true" />
                   </Button>
                 </DropdownMenuItem>
               ))}

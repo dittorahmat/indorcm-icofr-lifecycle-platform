@@ -19,7 +19,9 @@
     "addSample": "Add Sample",
     "printPdf": "Print PDF",
     "logout": "Logout",
-    "deletePermanently": "Delete Permanently"
+    "deletePermanently": "Delete Permanently",
+    "switchLanguage": "Switch language",
+    "openAccountMenu": "User account menu"
   },
   "status": {
     "draft": "Draft",

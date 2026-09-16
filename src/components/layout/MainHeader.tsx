@@ -58,7 +58,11 @@ export function MainHeader() {
           <NotificationBell />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <div className="relative cursor-pointer hover:opacity-80 transition-opacity ml-2">
+              <button 
+                type="button"
+                aria-label={t('actions.openAccountMenu', { defaultValue: 'User account menu' })}
+                className="relative cursor-pointer hover:opacity-80 transition-opacity ml-2 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
                 <Avatar className="h-9 w-9 border-2 border-white/10 shadow-sm">
                   <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
                   <AvatarFallback className="bg-slate-800 text-white font-bold">CN</AvatarFallback>
@@ -72,7 +76,7 @@ export function MainHeader() {
                 >
                   {currentRole.split(' ').pop()?.substring(0, 1)}
                 </Badge>
-              </div>
+              </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel className="font-bold">{t('account.title')}</DropdownMenuLabel>

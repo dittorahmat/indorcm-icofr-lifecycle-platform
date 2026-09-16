@@ -36,6 +36,12 @@
     "reports": {
       "title": "Asesmen Manajemen",
       "description": "Draf laporan efektivitas siap untuk ditinjau."
+    },
+    "status": {
+      "systemLive": "Sistem Aktif",
+      "complete": "Selesai",
+      "auditTrailVerified": "Jejak Audit Terverifikasi",
+      "sk5Compliant": "Patuh SK-5"
     }
   },
   "coso": {

@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { motion, Variants } from 'framer-motion';
+import { motion, Variants, useReducedMotion } from 'framer-motion';
 
 import { DashboardKPIs } from '@/components/dashboard/DashboardKPIs';
 import { COSOCoverageGrid } from '@/components/dashboard/COSOCoverageGrid';
@@ -165,14 +165,15 @@ export function Dashboard() {
   }, [deficienciesData, actionPlansData]);
 
   const cosoPercentage = ((cosoCoverage.filter(c => c.count > 0).length / 17) * 100).toFixed(0);
+  const shouldReduceMotion = useReducedMotion();
 
   return (
     <AppLayout container>
       <motion.div 
         className="space-y-6 pb-12"
-        initial="hidden"
+        initial={shouldReduceMotion ? false : "hidden"}
         animate="visible"
-        variants={containerVariants}
+        variants={shouldReduceMotion ? undefined : containerVariants}
       >
         <PageHeader 
           title={<span className="font-semibold text-slate-900 tracking-normal">{t('title')}</span>} 

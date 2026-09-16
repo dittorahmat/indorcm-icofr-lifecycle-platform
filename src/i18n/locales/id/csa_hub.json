@@ -54,6 +54,8 @@
     "markAllRead": "Tandai semua dibaca",
     "clearAll": "Bersihkan semua",
     "delete": "Hapus",
+    "ariaLabel": "Notifikasi",
+    "ariaLabelUnread": "Notifikasi, {{count}} belum dibaca",
     "empty": "Belum ada notifikasi baru",
     "emptyDetail": "Semua sudah beres! Notifikasi baru akan muncul di sini.",
     "viewAll": "Lihat semua aktivitas"
