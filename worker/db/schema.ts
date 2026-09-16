@@ -584,6 +584,8 @@ export const bpmProcesses = pgTable("bpm_processes", {
 	riskCount: integer("risk_count").default(0),
 	controlCount: integer("control_count").default(0),
 	standardTestProcedure: text("standard_test_procedure"), // Master template for CSA
+	parentId: text("parent_id").references((): any => bpmProcesses.id, { onDelete: 'set null' }),
+	level: text("level").default("process"), // 'process' | 'sub_process'
 	workflowStatus: text("workflow_status"), // BPMWorkflowStatus
 	workflowHistory: jsonb("workflow_history").$type<any[]>().default([]),
 	createdAt: timestamp("created_at").notNull(),
@@ -593,6 +595,7 @@ export const bpmProcesses = pgTable("bpm_processes", {
 		orgBpmCodeIdx: index("bpm_processes_org_code_idx").on(table.organizationId, table.bpmCode),
 		noGLIdx: index("bpm_processes_no_gl_idx").on(table.noGL),
 		yearIdx: index("bpm_processes_year_idx").on(table.year),
+		parentIdIdx: index("bpm_processes_parent_id_idx").on(table.parentId),
 	};
 });
 

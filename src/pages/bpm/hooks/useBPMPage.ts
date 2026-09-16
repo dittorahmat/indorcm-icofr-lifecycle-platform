@@ -1,7 +1,7 @@
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
-import { BPMProcess, User, BPMDiagram, Settings, AccountAssertion } from '@shared/types';
+import { BPMProcess, BPMProcessWithChildren, User, BPMDiagram, Settings, AccountAssertion } from '@shared/types';
 import { MOCK_DEPARTMENTS } from '@shared/mock-data';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -10,6 +10,62 @@ import { useUnsavedChangesContext } from '@/context/UnsavedChangesContext';
 import { useAccountAssertions, useActiveSimulation, useSimulationSnapshot } from '@/hooks/use-bpm';
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 import { toast } from 'sonner';
+
+export function buildProcessTree(
+  items: BPMProcess[],
+  searchTerm = ""
+): BPMProcessWithChildren[] {
+  const itemMap = new Map<string, BPMProcessWithChildren>();
+  const rootItems: BPMProcessWithChildren[] = [];
+
+  // Initialize map with copies and empty children arrays
+  items.forEach(item => {
+    itemMap.set(item.id, { ...item, children: [] });
+  });
+
+  // Build tree hierarchy
+  items.forEach(item => {
+    const current = itemMap.get(item.id)!;
+    if (item.parentId && itemMap.has(item.parentId)) {
+      const parent = itemMap.get(item.parentId)!;
+      parent.children = parent.children || [];
+      parent.children.push(current);
+    } else {
+      rootItems.push(current);
+    }
+  });
+
+  if (!searchTerm.trim()) {
+    return rootItems;
+  }
+
+  const query = searchTerm.toLowerCase().trim();
+  const filterNode = (node: BPMProcessWithChildren): BPMProcessWithChildren | null => {
+    const nameMatches = node.name.toLowerCase().includes(query) || (node.bpmCode && node.bpmCode.toLowerCase().includes(query));
+    const matchingChildren: BPMProcessWithChildren[] = [];
+
+    if (node.children) {
+      for (const child of node.children) {
+        const filteredChild = filterNode(child);
+        if (filteredChild) {
+          matchingChildren.push(filteredChild);
+        }
+      }
+    }
+
+    if (nameMatches || matchingChildren.length > 0) {
+      return {
+        ...node,
+        children: nameMatches ? (node.children || []) : matchingChildren
+      };
+    }
+    return null;
+  };
+
+  return rootItems
+    .map(filterNode)
+    .filter((node): node is BPMProcessWithChildren => node !== null);
+}
 
 export function useBPMPage() {
   const { t } = useTranslation(['bpm', 'common', 'rcm']);
@@ -302,12 +358,38 @@ export function useBPMPage() {
     }
   };
 
+  const [selectedProcessIds, setSelectedProcessIds] = React.useState<string[]>([]);
+  const [expandedProcessIds, setExpandedProcessIds] = React.useState<Set<string>>(new Set());
+  const [isMigrationModalOpen, setIsMigrationModalOpen] = React.useState(false);
+
   const deleteBPMMutation = useMutation({
     mutationFn: (id: string) => api(`/api/bpm-processes/${id}`, { method: 'DELETE' }),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['bpm-processes'] });
       setSelectedBpmId(null);
+      setSelectedProcessIds(prev => prev.filter(itemId => itemId !== variables));
       toast.success(t('common:notifications.deleted'));
+    }
+  });
+
+  const batchReorganizeMutation = useMutation({
+    mutationFn: (payload: { action: 'demote' | 'promote'; targetParentId?: string; processIds: string[] }) =>
+      api('/api/bpm-processes/batch-reorganize', {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      }),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['bpm-processes'] });
+      setSelectedProcessIds([]);
+      setIsMigrationModalOpen(false);
+      toast.success(
+        variables.action === 'demote'
+          ? t('bpm:migration.demoteSuccess', 'Sub-proses berhasil dikelompokkan ke proses induk')
+          : t('bpm:migration.promoteSuccess', 'Sub-proses berhasil diangkat menjadi proses mandiri')
+      );
+    },
+    onError: (err: any) => {
+      toast.error(err.message || t('bpm:migration.error', 'Gagal memproses reorganisasi proses'));
     }
   });
 
@@ -315,6 +397,58 @@ export function useBPMPage() {
     if (!bpmProcesses?.items) return [];
     return bpmProcesses.items.filter(bpm => bpm.name.toLowerCase().includes(searchTerm.toLowerCase()));
   }, [bpmProcesses, searchTerm]);
+
+  const hierarchicalProcesses = React.useMemo(() => {
+    if (!bpmProcesses?.items) return [];
+    return buildProcessTree(bpmProcesses.items, searchTerm);
+  }, [bpmProcesses, searchTerm]);
+
+  const candidateParentProcesses = React.useMemo(() => {
+    if (!bpmProcesses?.items) return [];
+    return bpmProcesses.items.filter(p => !p.parentId && !selectedProcessIds.includes(p.id));
+  }, [bpmProcesses, selectedProcessIds]);
+
+  const toggleSelectProcess = (id: string) => {
+    setSelectedProcessIds(prev =>
+      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (!bpmProcesses?.items) return;
+    const allIds = bpmProcesses.items.map(p => p.id);
+    if (selectedProcessIds.length === allIds.length) {
+      setSelectedProcessIds([]);
+    } else {
+      setSelectedProcessIds(allIds);
+    }
+  };
+
+  const clearSelection = () => {
+    setSelectedProcessIds([]);
+  };
+
+  const toggleExpandProcess = (id: string) => {
+    setExpandedProcessIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const expandAll = () => {
+    if (!bpmProcesses?.items) return;
+    const parentIds = bpmProcesses.items.filter(p => !p.parentId).map(p => p.id);
+    setExpandedProcessIds(new Set(parentIds));
+  };
+
+  const collapseAll = () => {
+    setExpandedProcessIds(new Set());
+  };
 
   return {
     t,
@@ -351,6 +485,19 @@ export function useBPMPage() {
     handleCloseDiagram,
     queryClient,
 
+    // Hierarchy & Selection States
+    selectedProcessIds,
+    setSelectedProcessIds,
+    toggleSelectProcess,
+    toggleSelectAll,
+    clearSelection,
+    expandedProcessIds,
+    toggleExpandProcess,
+    expandAll,
+    collapseAll,
+    isMigrationModalOpen,
+    setIsMigrationModalOpen,
+
     // Queries
     activeSim,
     simLoading,
@@ -371,6 +518,8 @@ export function useBPMPage() {
     departmentName,
     hasAccess,
     filteredBpmProcesses,
+    hierarchicalProcesses,
+    candidateParentProcesses,
     isAssertionDirty,
 
     // Mutations
@@ -378,6 +527,7 @@ export function useBPMPage() {
     createDiagramMutation,
     createBPMMutation,
     deleteBPMMutation,
+    batchReorganizeMutation,
 
     // Actions
     handleAssertionChange,

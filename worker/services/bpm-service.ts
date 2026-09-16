@@ -759,7 +759,7 @@ export class BpmService {
       ) as SQL;
     }
 
-    return await this.db.select({
+    const rawProcesses = await this.db.select({
       id: bpmProcesses.id,
       organizationId: bpmProcesses.organizationId,
       noGL: bpmProcesses.noGL,
@@ -773,10 +773,35 @@ export class BpmService {
       bpmCode: bpmProcesses.bpmCode,
       standardTestProcedure: bpmProcesses.standardTestProcedure,
       workflowStatus: bpmProcesses.workflowStatus,
-      workflowHistory: bpmProcesses.workflowHistory
+      workflowHistory: bpmProcesses.workflowHistory,
+      parentId: bpmProcesses.parentId,
+      level: bpmProcesses.level,
     })
     .from(bpmProcesses)
     .where(conditions);
+
+    // Compute aggregated risk and control counts for parent processes
+    const childCountsByParent = new Map<string, { risks: number; controls: number }>();
+    for (const p of rawProcesses) {
+      if (p.parentId) {
+        const current = childCountsByParent.get(p.parentId) || { risks: 0, controls: 0 };
+        current.risks += (p.riskCount || 0);
+        current.controls += (p.controlCount || 0);
+        childCountsByParent.set(p.parentId, current);
+      }
+    }
+
+    return rawProcesses.map(p => {
+      const childCounts = childCountsByParent.get(p.id);
+      if (childCounts) {
+        return {
+          ...p,
+          riskCount: (p.riskCount || 0) + childCounts.risks,
+          controlCount: (p.controlCount || 0) + childCounts.controls
+        };
+      }
+      return p;
+    });
   }
 
   async getNextSequences(orgId: string, processId: string) {
@@ -890,6 +915,9 @@ export class BpmService {
 
   async createProcess(orgId: string, userId: string, body: Partial<BPMProcess>) {
     const id = crypto.randomUUID();
+    const parentId = body.parentId || null;
+    const level = body.level || (parentId ? 'sub_process' : 'process');
+
     const newProcess = {
       id,
       organizationId: orgId,
@@ -897,6 +925,8 @@ export class BpmService {
       fsliName: body.fsliName || "",
       name: body.name || "New Process",
       year: body.year ? parseInt(body.year.toString()) : null,
+      parentId,
+      level,
       createdAt: new Date(),
       createdBy: userId,
     };
@@ -921,6 +951,8 @@ export class BpmService {
     if (body.bpmCode !== undefined && body.bpmCode !== null) updateData.bpmCode = body.bpmCode.trim().toUpperCase();
     if (body.fsliName !== undefined) updateData.fsliName = body.fsliName;
     if (body.standardTestProcedure !== undefined) updateData.standardTestProcedure = body.standardTestProcedure;
+    if (body.parentId !== undefined) updateData.parentId = body.parentId;
+    if (body.level !== undefined) updateData.level = body.level;
 
     if (updateData.bpmCode) {
       const existing = await this.db.select()
@@ -944,6 +976,98 @@ export class BpmService {
     }
 
     return { success: true };
+  }
+
+  async batchReorganizeProcesses(
+    orgId: string,
+    userId: string,
+    payload: {
+      action: 'demote' | 'promote';
+      targetParentId?: string;
+      processIds: string[];
+    }
+  ) {
+    const { action, targetParentId, processIds } = payload;
+    if (!processIds || processIds.length === 0) {
+      throw new Error("Tidak ada proses yang dipilih untuk reorganisasi");
+    }
+
+    if (action === 'demote') {
+      if (!targetParentId) {
+        throw new Error("Proses Induk tujuan wajib dipilih untuk demote");
+      }
+      if (processIds.includes(targetParentId)) {
+        throw new Error("Proses tidak dapat dijadikan sub-proses dari dirinya sendiri");
+      }
+
+      // Verify target parent exists and belongs to org
+      const targetParents = await this.db.select()
+        .from(bpmProcesses)
+        .where(and(eq(bpmProcesses.id, targetParentId), eq(bpmProcesses.organizationId, orgId)))
+        .limit(1);
+      
+      if (targetParents.length === 0) {
+        throw new Error("Proses Induk tujuan tidak ditemukan");
+      }
+
+      // Demote all selected processes under target parent
+      await this.db.update(bpmProcesses)
+        .set({
+          parentId: targetParentId,
+          level: 'sub_process'
+        })
+        .where(and(
+          eq(bpmProcesses.organizationId, orgId),
+          inArray(bpmProcesses.id, processIds)
+        ));
+
+      // Ensure target parent is marked as 'process'
+      await this.db.update(bpmProcesses)
+        .set({
+          level: 'process'
+        })
+        .where(and(
+          eq(bpmProcesses.organizationId, orgId),
+          eq(bpmProcesses.id, targetParentId)
+        ));
+
+      await this.auditService.logAction({
+        organizationId: orgId,
+        userId,
+        action: 'UPDATE',
+        entityType: 'BPMProcess',
+        entityId: targetParentId,
+        description: `Batch demoted ${processIds.length} processes to sub-processes under ${targetParentId}`,
+        dataAfter: { action: 'batch_demote', targetParentId, processIds }
+      });
+
+      return { success: true, count: processIds.length, action: 'demote', targetParentId };
+    } else if (action === 'promote') {
+      // Promote all selected sub-processes to independent root processes
+      await this.db.update(bpmProcesses)
+        .set({
+          parentId: null,
+          level: 'process'
+        })
+        .where(and(
+          eq(bpmProcesses.organizationId, orgId),
+          inArray(bpmProcesses.id, processIds)
+        ));
+
+      await this.auditService.logAction({
+        organizationId: orgId,
+        userId,
+        action: 'UPDATE',
+        entityType: 'BPMProcess',
+        entityId: processIds[0],
+        description: `Batch promoted ${processIds.length} sub-processes to independent processes`,
+        dataAfter: { action: 'batch_promote', processIds }
+      });
+
+      return { success: true, count: processIds.length, action: 'promote' };
+    } else {
+      throw new Error(`Aksi tidak valid: ${action}`);
+    }
   }
 
   async deleteProcess(orgId: string, id: string) {

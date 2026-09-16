@@ -196,11 +196,19 @@ export interface Control extends Omit<InferSelectModel<typeof schema.controls>, 
   aiGuessedFields?: string[] | null;
 }
 
-export type BPMProcess = Omit<InferSelectModel<typeof schema.bpmProcesses>, 'createdAt' | 'workflowHistory'> & {
+export type BPMProcessLevel = 'process' | 'sub_process';
+
+export type BPMProcess = Omit<InferSelectModel<typeof schema.bpmProcesses>, 'createdAt' | 'workflowHistory' | 'level'> & {
   createdAt: number;
   workflowStatus: BPMWorkflowStatus;
   workflowHistory: WorkflowHistoryEntry[];
+  level?: BPMProcessLevel | null;
+  parentId?: string | null;
 };
+
+export interface BPMProcessWithChildren extends BPMProcess {
+  children?: BPMProcessWithChildren[];
+}
 
 export interface BPMNode {
   id: string;

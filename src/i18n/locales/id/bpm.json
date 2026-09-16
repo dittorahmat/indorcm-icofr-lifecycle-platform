@@ -88,10 +88,48 @@
   "table": {
     "action": "Aksi",
     "subProcess": "Sub Proses",
+    "processAndSubProcess": "Proses & Sub-Proses",
+    "level": "Tingkatan",
     "company": "Perusahaan",
     "location": "Lokasi",
     "risks": "Risiko",
     "controls": "Kontrol"
+  },
+  "noProcessesFound": "Tidak ada proses yang sesuai dengan pencarian.",
+  "hierarchy": {
+    "expandAll": "Buka Semua",
+    "collapseAll": "Tutup Semua",
+    "macroProcess": "Proses Bisnis",
+    "subProcess": "Sub-Proses",
+    "subProcessesCount": "sub-proses",
+    "parentBadge": "Proses Induk",
+    "childBadge": "➔ Sub-Proses",
+    "standaloneBadge": "Mandiri (Root)"
+  },
+  "tooltips": {
+    "openMacroDiagram": "Buka Diagram Makro Proses",
+    "openMicroDiagram": "Buka Diagram Alir BPMN Mikro",
+    "openWorksheet": "Buka RCM Worksheet"
+  },
+  "migration": {
+    "modalTitle": "Reorganisasi & Migrasi Hierarki Proses",
+    "modalDesc": "Ubah struktur kedudukan {{count}} entitas yang dipilih secara dua arah.",
+    "chooseAction": "Pilih Arah Migrasi",
+    "demoteTitle": "Jadikan Sub-Proses (Child)",
+    "demoteDesc": "Kelompokkan entitas terpilih di bawah satu Proses Induk.",
+    "promoteTitle": "Jadikan Proses Mandiri (Parent)",
+    "promoteDesc": "Lepaskan dari induk dan angkat menjadi Proses Utama (Root).",
+    "targetParentLabel": "Pilih Proses Induk Tujuan",
+    "noCandidateParents": "Tidak ada proses induk mandiri yang tersedia sebagai tujuan.",
+    "selectParentPlaceholder": "Pilih Proses Induk...",
+    "previewLabel": "Pratinjau Hasil Struktur",
+    "unselectedParent": "(Pilih proses induk)",
+    "applyButton": "Terapkan Struktur",
+    "selectedCount": "{{count}} item dipilih",
+    "openModalButton": "Atur Hierarki / Migrasi",
+    "demoteSuccess": "Sub-proses berhasil dikelompokkan ke proses induk",
+    "promoteSuccess": "Sub-proses berhasil diangkat menjadi proses mandiri",
+    "error": "Gagal memproses reorganisasi proses"
   },
   "worksheet": {
     "title": "Matriks Aktivitas Pengendalian (RCM)",

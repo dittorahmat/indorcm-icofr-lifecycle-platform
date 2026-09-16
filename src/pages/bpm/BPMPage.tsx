@@ -14,6 +14,7 @@ import { CSAModal } from '@/components/bpm/CSAModal';
 import { BPMEditor } from '@/components/rcm/BPMEditor';
 import { BPMAccountAssertion } from '@/components/bpm/BPMAccountAssertion';
 import { BPMDiagramList } from '@/components/bpm/BPMDiagramList';
+import { BPMMigrationModal } from '@/components/bpm/BPMMigrationModal';
 import { BPMScopingFilters } from '@/components/bpm/BPMScopingFilters';
 import { BPMStatusBanner } from '@/components/bpm/BPMStatusBanner';
 import { 
@@ -108,13 +109,28 @@ export function BPMPage() {
     departmentName,
     hasAccess,
     filteredBpmProcesses,
+    hierarchicalProcesses,
+    candidateParentProcesses,
     isAssertionDirty,
+
+    // Hierarchy & Selection States
+    selectedProcessIds,
+    toggleSelectProcess,
+    toggleSelectAll,
+    expandedProcessIds,
+    toggleExpandProcess,
+    expandAll,
+    collapseAll,
+    isMigrationModalOpen,
+    setIsMigrationModalOpen,
+    bpmProcesses,
 
     // Mutations
     updateAssertionMutation,
     createDiagramMutation,
     createBPMMutation,
     deleteBPMMutation,
+    batchReorganizeMutation,
 
     // Actions
     handleAssertionChange,
@@ -242,10 +258,12 @@ export function BPMPage() {
                 <ResizablePanel defaultSize={selectedProcess ? 70 : 100} minSize={30}>
                   <BPMDiagramList 
                     bpmLoading={bpmLoading}
-                    filteredBpmProcesses={filteredBpmProcesses}
+                    hierarchicalProcesses={hierarchicalProcesses}
                     diagrams={diagrams}
                     settings={settings}
                     selectedGLRow={selectedGLRow}
+                    selectedProcessId={selectedProcess?.id}
+                    onSelectProcess={setSelectedProcess}
                     onOpenDiagram={handleOpenDiagram}
                     onCreateDiagram={(name) => createDiagramMutation.mutate(name)}
                     onOpenWorksheet={(id, name) => {
@@ -263,9 +281,15 @@ export function BPMPage() {
                         deleteBPMMutation.mutate(id);
                       }
                     }}
-                    onSelectProcess={setSelectedProcess}
-                    selectedProcessId={selectedProcess?.id}
                     searchTerm={searchTerm}
+                    selectedProcessIds={selectedProcessIds}
+                    onToggleSelect={toggleSelectProcess}
+                    onToggleSelectAll={toggleSelectAll}
+                    expandedProcessIds={expandedProcessIds}
+                    onToggleExpand={toggleExpandProcess}
+                    onExpandAll={expandAll}
+                    onCollapseAll={collapseAll}
+                    onOpenMigrationModal={() => setIsMigrationModalOpen(true)}
                   />
                 </ResizablePanel>
                 
@@ -316,6 +340,16 @@ export function BPMPage() {
             initialTab="worksheet"
           />
         )}
+
+        <BPMMigrationModal
+          isOpen={isMigrationModalOpen}
+          onClose={() => setIsMigrationModalOpen(false)}
+          selectedProcessIds={selectedProcessIds}
+          allProcesses={bpmProcesses?.items || []}
+          candidateParents={candidateParentProcesses}
+          onConfirm={(payload) => batchReorganizeMutation.mutate(payload)}
+          isPending={batchReorganizeMutation.isPending}
+        />
 
         <Dialog open={isBpmEditorOpen} onOpenChange={(open) => !open && handleCloseDiagram()}>
           <DialogContent className="max-w-[98vw] w-[1600px] h-[98vh] flex flex-col p-0 overflow-hidden border-none shadow-2xl rounded-2xl">

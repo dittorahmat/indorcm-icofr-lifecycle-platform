@@ -326,6 +326,23 @@ bpm.post('/bpm-processes', rbac(['Line 1', 'Admin']), async (c) => {
   return ok(c, newItem);
 });
 
+bpm.post('/bpm-processes/batch-reorganize', rbac(['Line 1', 'Admin']), async (c) => {
+  const db = getDb(c.env.DATABASE_URL);
+  const bpmService = new BpmService(db);
+  const body = await c.req.json();
+
+  try {
+    const result = await bpmService.batchReorganizeProcesses(
+      c.get('organizationId')!,
+      c.get('userId')!,
+      body
+    );
+    return ok(c, result);
+  } catch (e: any) {
+    return bad(c, e.message);
+  }
+});
+
 bpm.patch('/bpm-processes/:id', rbac(['Line 1', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const bpmService = new BpmService(db);

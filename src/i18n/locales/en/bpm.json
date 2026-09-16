@@ -88,10 +88,48 @@
   "table": {
     "action": "Action",
     "subProcess": "Sub Process",
+    "processAndSubProcess": "Process & Sub-Process",
+    "level": "Level",
     "company": "Company",
     "location": "Location",
     "risks": "Risks",
     "controls": "Controls"
+  },
+  "noProcessesFound": "No processes match the search query.",
+  "hierarchy": {
+    "expandAll": "Expand All",
+    "collapseAll": "Collapse All",
+    "macroProcess": "Business Process",
+    "subProcess": "Sub-Process",
+    "subProcessesCount": "sub-processes",
+    "parentBadge": "Parent Process",
+    "childBadge": "➔ Sub-Process",
+    "standaloneBadge": "Independent (Root)"
+  },
+  "tooltips": {
+    "openMacroDiagram": "Open Macro Process Diagram",
+    "openMicroDiagram": "Open Micro BPMN Workflow Diagram",
+    "openWorksheet": "Open RCM Worksheet"
+  },
+  "migration": {
+    "modalTitle": "Process Hierarchy Reorganization & Migration",
+    "modalDesc": "Reorganize the position of {{count}} selected entities bidirectionally.",
+    "chooseAction": "Choose Migration Direction",
+    "demoteTitle": "Make Sub-Process (Child)",
+    "demoteDesc": "Group selected entities under one Parent Process.",
+    "promoteTitle": "Make Independent Process (Parent)",
+    "promoteDesc": "Detach from parent and promote to standalone Root Process.",
+    "targetParentLabel": "Select Target Parent Process",
+    "noCandidateParents": "No standalone parent processes available as target.",
+    "selectParentPlaceholder": "Select Parent Process...",
+    "previewLabel": "Structure Preview",
+    "unselectedParent": "(Select a parent process)",
+    "applyButton": "Apply Structure",
+    "selectedCount": "{{count}} items selected",
+    "openModalButton": "Reorganize / Migrate",
+    "demoteSuccess": "Sub-processes successfully grouped under parent process",
+    "promoteSuccess": "Sub-processes successfully promoted to independent processes",
+    "error": "Failed to reorganize processes"
   },
   "worksheet": {
     "title": "Control Activity Matrix (RCM)",
