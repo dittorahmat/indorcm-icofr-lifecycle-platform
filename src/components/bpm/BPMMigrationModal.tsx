@@ -57,9 +57,10 @@ export function BPMMigrationModal({
 
   React.useEffect(() => {
     if (isOpen) {
-      // Default to the first candidate parent if available
-      if (candidateParents.length > 0 && !selectedParentId) {
-        setSelectedParentId(candidateParents[0].id);
+      // If current selectedParentId is not valid in candidateParents, pick the first candidate
+      const isValidParent = candidateParents.some((p) => p.id === selectedParentId);
+      if (!isValidParent) {
+        setSelectedParentId(candidateParents.length > 0 ? candidateParents[0].id : '');
       }
     }
   }, [isOpen, candidateParents, selectedParentId]);
@@ -109,47 +110,47 @@ export function BPMMigrationModal({
               onValueChange={(val) => setAction(val as 'demote' | 'promote')}
               className="grid grid-cols-1 sm:grid-cols-2 gap-3"
             >
-              <div
+              <label
+                htmlFor="mode-demote"
                 className={cn(
-                  'flex items-start gap-3 p-3.5 rounded-xl border-2 transition-all cursor-pointer',
+                  'flex items-start gap-3 p-3.5 rounded-xl border-2 transition-all cursor-pointer select-none',
                   action === 'demote'
                     ? 'border-indigo-600 bg-indigo-50/40 text-indigo-950 shadow-sm'
                     : 'border-slate-200 hover:border-slate-300 bg-white text-slate-700'
                 )}
-                onClick={() => setAction('demote')}
               >
-                <RadioGroupItem value="demote" id="mode-demote" className="mt-0.5" />
+                <RadioGroupItem value="demote" id="mode-demote" className="mt-0.5 pointer-events-none" />
                 <div className="space-y-1">
-                  <Label htmlFor="mode-demote" className="font-bold text-xs cursor-pointer flex items-center gap-1.5">
+                  <span className="font-bold text-xs flex items-center gap-1.5 text-slate-900">
                     <ArrowDownRight className="h-3.5 w-3.5 text-indigo-600" />
                     {t('bpm:migration.demoteTitle', 'Jadikan Sub-Proses (Child)')}
-                  </Label>
+                  </span>
                   <p className="text-[11px] text-slate-500 leading-snug">
                     {t('bpm:migration.demoteDesc', 'Kelompokkan entitas terpilih di bawah satu Proses Induk.')}
                   </p>
                 </div>
-              </div>
+              </label>
 
-              <div
+              <label
+                htmlFor="mode-promote"
                 className={cn(
-                  'flex items-start gap-3 p-3.5 rounded-xl border-2 transition-all cursor-pointer',
+                  'flex items-start gap-3 p-3.5 rounded-xl border-2 transition-all cursor-pointer select-none',
                   action === 'promote'
                     ? 'border-indigo-600 bg-indigo-50/40 text-indigo-950 shadow-sm'
                     : 'border-slate-200 hover:border-slate-300 bg-white text-slate-700'
                 )}
-                onClick={() => setAction('promote')}
               >
-                <RadioGroupItem value="promote" id="mode-promote" className="mt-0.5" />
+                <RadioGroupItem value="promote" id="mode-promote" className="mt-0.5 pointer-events-none" />
                 <div className="space-y-1">
-                  <Label htmlFor="mode-promote" className="font-bold text-xs cursor-pointer flex items-center gap-1.5">
+                  <span className="font-bold text-xs flex items-center gap-1.5 text-slate-900">
                     <ArrowUpRight className="h-3.5 w-3.5 text-indigo-600" />
                     {t('bpm:migration.promoteTitle', 'Jadikan Proses Mandiri (Parent)')}
-                  </Label>
+                  </span>
                   <p className="text-[11px] text-slate-500 leading-snug">
                     {t('bpm:migration.promoteDesc', 'Lepaskan dari induk dan angkat menjadi Proses Utama (Root).')}
                   </p>
                 </div>
-              </div>
+              </label>
             </RadioGroup>
           </div>
 
