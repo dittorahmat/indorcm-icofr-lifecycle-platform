@@ -275,5 +275,9 @@
     "business_owners": "Pemilik Bisnis",
     "app_owners": "Pemilik Aplikasi",
     "edit_app": "Edit Informasi Aplikasi"
+  },
+  "actions": {
+    "export_excel": "Export Excel",
+    "export_success": "File Excel berhasil diunduh"
   }
 }

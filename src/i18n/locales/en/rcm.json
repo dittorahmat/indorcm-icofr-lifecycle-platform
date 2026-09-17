@@ -276,5 +276,9 @@
     "business_owners": "Business Owners",
     "app_owners": "Application Owners",
     "edit_app": "Edit Application Info"
+  },
+  "actions": {
+    "export_excel": "Export Excel",
+    "export_success": "Excel file downloaded successfully"
   }
 }

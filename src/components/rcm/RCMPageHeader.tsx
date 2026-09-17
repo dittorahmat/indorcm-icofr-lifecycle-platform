@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Filter, Save, Loader2, Printer } from 'lucide-react';
+import { Search, Filter, Save, Loader2, Printer, Download } from 'lucide-react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 
 interface RCMPageHeaderProps {
@@ -13,6 +13,8 @@ interface RCMPageHeaderProps {
   isSaving?: boolean;
   onRefresh?: () => void;
   onPrint?: () => void;
+  onExport?: () => void;
+  exportLabel?: string;
   metadata?: { label: string; value: string }[];
   children?: React.ReactNode;
 }
@@ -26,6 +28,8 @@ export function RCMPageHeader({
   isSaving, 
   onRefresh,
   onPrint,
+  onExport,
+  exportLabel = "Export Excel",
   metadata,
   children
 }: RCMPageHeaderProps) {
@@ -41,6 +45,16 @@ export function RCMPageHeader({
         </div>
         <div className="flex items-center gap-2">
           {children}
+          {onExport && (
+            <Button 
+              variant="outline" 
+              size="xs" 
+              onClick={onExport} 
+              className="bg-emerald-50 hover:bg-emerald-100/80 text-emerald-800 border-emerald-300 h-7 text-xs font-bold shadow-sm"
+            >
+              <Download className="h-3 w-3 mr-1.5 text-emerald-600" /> {exportLabel}
+            </Button>
+          )}
           {onPrint && (
             <Button variant="outline" size="xs" onClick={onPrint} className="bg-white h-7 text-xs font-bold text-slate-600 border-slate-200">
               <Printer className="h-3 w-3 mr-1.5" /> Print

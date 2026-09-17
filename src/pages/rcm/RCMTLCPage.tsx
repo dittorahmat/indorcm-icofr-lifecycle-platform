@@ -18,11 +18,14 @@ import { RCMEditDialog } from '@/components/rcm/RCMEditDialog';
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 import { RolloverPrompt } from '@/components/layout/RolloverPrompt';
 import { Card, CardContent } from '@/components/ui/card';
+import { exportRCMToExcel } from '@/lib/rcm-excel-export';
 
 interface RCMMatrixItem extends RCMControlMapping {
   mappingId: string;
   processName: string;
   bpmCode?: string;
+  parentProcessName?: string;
+  parentBpmCode?: string;
   fsliName: string;
   noGL: string;
   subProcessName: string;
@@ -141,19 +144,37 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride 
         { id: 'no', header: 'No', width: '50px', className: 'text-center font-mono text-xs text-slate-400', render: (_, idx) => idx + 1 },
         { 
           id: 'process_info', 
-          header: t('matrix.process_info'), 
+          header: t('matrix.process_info', 'Proses Bisnis (Parent)'), 
           width: '260px', 
           className: 'text-xs text-slate-800 font-normal',
+          render: (row) => {
+            const displayName = row.parentProcessName || row.processName;
+            const code = row.parentBpmCode || row.bpmCode;
+            return (
+              <div className="flex flex-col gap-0.5 leading-tight">
+                <span className="font-bold text-xs text-slate-900 line-clamp-2">
+                  {displayName}
+                </span>
+                {code && (
+                  <span className="font-mono text-[10px] font-bold text-indigo-600 tracking-wider">
+                    [{code}]
+                  </span>
+                )}
+              </div>
+            );
+          }
+        },
+        { 
+          id: 'sub_process', 
+          header: t('matrix.sub_process', 'Sub-Proses (Child)'), 
+          width: '220px', 
+          className: 'text-xs text-slate-800 font-normal',
           render: (row) => (
-            <div className="flex flex-col gap-0.5 leading-tight">
-              <span className="font-mono text-[11px] font-bold text-slate-500 tracking-wider">
-                {row.fsliName} {row.bpmCode && `[${row.bpmCode}]`}
-              </span>
-              <span className="line-clamp-2 text-xs text-slate-800 font-normal">{row.noGL} - {row.processName}</span>
-            </div>
+            <span className="line-clamp-2 text-xs text-slate-800 font-medium">
+              {row.subProcessName || '-'}
+            </span>
           )
         },
-        { id: 'sub_process', header: t('matrix.sub_process'), accessorKey: 'subProcessName', width: '200px', className: 'text-xs text-slate-800 font-normal' },
       ]
     },
     {
@@ -243,18 +264,6 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride 
     }
   ];
 
-  const renderGroupRow = (row: RCMMatrixItem, index: number, prevRow?: RCMMatrixItem) => {
-    if (!prevRow || prevRow.processName !== row.processName) {
-      return (
-        <RCMGroupRow 
-          key={`group-${row.processName}`} 
-          title={`${row.noGL} - ${row.processName}`} 
-          colSpan={35} 
-        />
-      );
-    }
-    return null;
-  };
 
   const content = (
     <div className="flex flex-col min-w-0 flex-1 min-h-0">
@@ -265,6 +274,8 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride 
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
           onRefresh={() => queryClient.invalidateQueries({ queryKey: ['rcm-matrix-tlc'] })}
+          onExport={() => exportRCMToExcel(filteredItems, { matrixType: 'TLC', filename: `RCM_TLC_Matrix_${workingYear}_${new Date().toISOString().split('T')[0]}.xlsx` })}
+          exportLabel={t('rcm:actions.export_excel', 'Export Excel')}
           metadata={[
             { label: t('matrix.company'), value: items[0]?.companyName || "N/A" },
             { label: t('matrix.location'), value: items[0]?.locationCode || "N/A" }
@@ -302,7 +313,6 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride 
         groups={columnGroups}
         data={filteredItems}
         isLoading={isLoading}
-        renderGroupRow={renderGroupRow}
         minWidth="4800px"
       />
 

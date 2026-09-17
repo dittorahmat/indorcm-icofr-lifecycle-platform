@@ -6,7 +6,8 @@ import {
   rcms, controls, rcmControls, bpmProcesses, bpmDiagrams, bpmNodeRcms, 
   organization, accountAssertions, todEvaluations
 } from '../db/schema';
-import { eq, and, sql, like } from 'drizzle-orm';
+import { eq, and, or, sql, like } from 'drizzle-orm';
+import { aliasedTable } from 'drizzle-orm';
 import { RcmService } from "../services/rcm-service";
 import { ControlService } from "../services/control-service";
 import { DeficiencyService } from "../services/deficiency-service";
@@ -152,14 +153,26 @@ rcm.get('/rcm-matrix/tlc', async (c) => {
 
   const org = await db.select().from(organization).where(eq(organization.id, orgId)).then((rows: any) => rows[0]);
 
+  const parentProcess = aliasedTable(bpmProcesses, "parent_process");
+
   let query = db.select({
     mappingId: rcmControls.id,
     rcmId: rcms.id,
     controlId: controls.id,
-    processName: sql<string>`COALESCE(${bpmProcesses.name}, ${rcms.process})`,
-    fsliName: bpmProcesses.fsliName,
-    noGL: sql<string>`COALESCE(${noGL || null}, ${bpmProcesses.noGL})`,
-    subProcessName: sql<string>`COALESCE(${bpmDiagrams.name}, ${rcms.subProcess})`,
+    bpmProcessId: bpmProcesses.id,
+    parentId: bpmProcesses.parentId,
+    level: bpmProcesses.level,
+    // Parent Process Name & Code
+    parentProcessName: sql<string>`COALESCE(${parentProcess.name}, ${bpmProcesses.name}, ${rcms.process})`,
+    parentBpmCode: sql<string>`COALESCE(${parentProcess.bpmCode}, ${bpmProcesses.bpmCode})`,
+    // Process Name & Sub Process Name
+    processName: sql<string>`COALESCE(${parentProcess.name}, ${bpmProcesses.name}, ${rcms.process})`,
+    subProcessName: sql<string>`CASE 
+      WHEN ${parentProcess.id} IS NOT NULL THEN ${bpmProcesses.name}
+      ELSE COALESCE(${bpmDiagrams.name}, ${rcms.subProcess}, '-')
+    END`,
+    fsliName: sql<string>`COALESCE(${parentProcess.fsliName}, ${bpmProcesses.fsliName})`,
+    noGL: sql<string>`COALESCE(${noGL || null}, ${parentProcess.noGL}, ${bpmProcesses.noGL})`,
     riskDescription: rcms.riskDescription,
     isFraudRelated: rcms.isFraudRelated,
     riskRating: rcms.riskRating,
@@ -204,10 +217,14 @@ rcm.get('/rcm-matrix/tlc', async (c) => {
   .innerJoin(controls, eq(rcmControls.controlId, controls.id))
   .leftJoin(bpmNodeRcms, eq(rcms.id, bpmNodeRcms.rcmId))
   .leftJoin(bpmDiagrams, eq(bpmNodeRcms.diagramId, bpmDiagrams.id))
-  .leftJoin(bpmProcesses, eq(bpmDiagrams.subProcess, bpmProcesses.name))
+  .leftJoin(bpmProcesses, or(
+    eq(controls.bpmProcessId, bpmProcesses.id),
+    eq(bpmDiagrams.subProcess, bpmProcesses.name)
+  ))
+  .leftJoin(parentProcess, eq(bpmProcesses.parentId, parentProcess.id))
   .leftJoin(accountAssertions, and(
-    eq(bpmProcesses.fsliName, accountAssertions.fsliName),
-    eq(accountAssertions.noGL, noGL ? noGL : bpmProcesses.noGL),
+    eq(sql`COALESCE(${parentProcess.fsliName}, ${bpmProcesses.fsliName})`, accountAssertions.fsliName),
+    eq(accountAssertions.noGL, noGL ? noGL : sql`COALESCE(${parentProcess.noGL}, ${bpmProcesses.noGL})`),
     eq(bpmProcesses.organizationId, accountAssertions.organizationId)
   ));
 

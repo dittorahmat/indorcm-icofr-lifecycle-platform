@@ -10,13 +10,15 @@ import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { RCMPageHeader } from '@/components/rcm/RCMPageHeader';
 import { RCMTable, RCMColumnGroup } from '@/components/rcm/RCMTable';
-import { RCMGroupRow } from '@/components/rcm/RCMGroupRow';
 import { RCMEditDialog } from '@/components/rcm/RCMEditDialog';
+import { exportRCMToExcel } from '@/lib/rcm-excel-export';
 
 interface RCMMatrixItem extends RCMControlMapping {
   mappingId: string;
   processName: string;
   bpmCode?: string;
+  parentProcessName?: string;
+  parentBpmCode?: string;
   fsliName: string;
   noGL: string;
   subProcessName: string;
@@ -173,19 +175,6 @@ export function RCMITGCPage({ embedded = false, filterBpmId }: RCMITGCPageProps)
     }
   ];
 
-  const renderGroupRow = (row: RCMMatrixItem, index: number, prevRow?: RCMMatrixItem) => {
-    if (!prevRow || prevRow.processName !== row.processName) {
-      return (
-        <RCMGroupRow 
-          key={`group-${row.processName}`} 
-          title={`${row.noGL} - ${row.processName}`} 
-          colSpan={20} 
-        />
-      );
-    }
-    return null;
-  };
-
   const content = (
     <div className="flex flex-col min-w-0 flex-1 min-h-0">
       {!embedded && (
@@ -195,6 +184,8 @@ export function RCMITGCPage({ embedded = false, filterBpmId }: RCMITGCPageProps)
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
           onRefresh={() => queryClient.invalidateQueries({ queryKey: ['rcm-matrix-itgc'] })}
+          onExport={() => exportRCMToExcel(filteredItems, { matrixType: 'ITGC', filename: `RCM_ITGC_Matrix_${new Date().toISOString().split('T')[0]}.xlsx` })}
+          exportLabel={t('rcm:actions.export_excel', 'Export Excel')}
           metadata={[
             { label: t('matrix.company'), value: items[0]?.companyName || "N/A" },
             { label: t('matrix.location'), value: items[0]?.locationCode || "N/A" }
@@ -206,7 +197,6 @@ export function RCMITGCPage({ embedded = false, filterBpmId }: RCMITGCPageProps)
         groups={columnGroups}
         data={filteredItems}
         isLoading={isLoading}
-        renderGroupRow={renderGroupRow}
         minWidth="3800px"
       />
 

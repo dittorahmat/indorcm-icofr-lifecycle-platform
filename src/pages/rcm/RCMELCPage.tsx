@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 import { RolloverPrompt } from '@/components/layout/RolloverPrompt';
 import { Card, CardContent } from '@/components/ui/card';
+import { exportRCMToExcel } from '@/lib/rcm-excel-export';
 
 const COSO_PRINCIPLES = Array.from({ length: 17 }, (_, i) => i + 1);
 
@@ -159,6 +160,8 @@ export function RCMELCPage({ embedded = false }: { embedded?: boolean }) {
           searchTerm=""
           onSearchChange={() => {}}
           onRefresh={() => queryClient.invalidateQueries({ queryKey: ['controls-elc'] })}
+          onExport={() => exportRCMToExcel(elcItems, { matrixType: 'ELC', filename: `RCM_ELC_Matrix_${workingYear}_${new Date().toISOString().split('T')[0]}.xlsx` })}
+          exportLabel={t('rcm:actions.export_excel', 'Export Excel')}
         />
       )}
       {elcItems.length === 0 && !isLoadingControls && (
