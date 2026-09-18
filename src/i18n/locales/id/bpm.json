@@ -270,11 +270,30 @@
     "actions": {
       "save": "Simpan Alur",
       "saving": "Menyimpan...",
+      "undo": "Batal (Undo)",
+      "redo": "Ulang (Redo)",
+      "autoArrange": "Rapikan Otomatis",
       "locked": "TERKUNCI",
       "auditBaseline": "Baseline Audit",
       "backToEditor": "Kembali ke Editor",
       "printExport": "Cetak / Ekspor PDF",
       "documentView": "Tampilan Dokumen"
+    },
+    "selectionHud": {
+      "selected": "Terpilih",
+      "swimlane": "Swimlane",
+      "node": "Node",
+      "edge": "Koneksi",
+      "delete": "Hapus",
+      "unlock": "Buka Kunci",
+      "lock": "Kunci",
+      "delKey": "Del"
+    },
+    "toast": {
+      "undo": "Perubahan dibatalkan (Undo)",
+      "redo": "Perubahan diulang (Redo)",
+      "autoArrangeSuccess": "Tata letak kanvas berhasil dirapikan otomatis",
+      "deletedCount": "Berhasil menghapus {{count}} item"
     },
     "signatures": {
       "lini1NamePlaceholder": "Nama Penyusun",

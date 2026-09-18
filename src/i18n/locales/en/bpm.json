@@ -267,11 +267,30 @@
     "actions": {
       "save": "Save Flow",
       "saving": "Saving...",
+      "undo": "Undo",
+      "redo": "Redo",
+      "autoArrange": "Auto Arrange",
       "locked": "LOCKED",
       "auditBaseline": "Audit Baseline",
       "backToEditor": "Back to Editor",
       "printExport": "Print / Export PDF",
       "documentView": "Document View"
+    },
+    "selectionHud": {
+      "selected": "Selected",
+      "swimlane": "Swimlane",
+      "node": "Node",
+      "edge": "Connection",
+      "delete": "Delete",
+      "unlock": "Unlock",
+      "lock": "Lock",
+      "delKey": "Del"
+    },
+    "toast": {
+      "undo": "Changes undone (Undo)",
+      "redo": "Changes redone (Redo)",
+      "autoArrangeSuccess": "Canvas layout auto-arranged successfully",
+      "deletedCount": "Deleted {{count}} item(s)"
     },
     "signatures": {
       "lini1NamePlaceholder": "Preparer Name",

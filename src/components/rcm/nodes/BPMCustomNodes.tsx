@@ -42,12 +42,12 @@ export const getNodeStyles = (data: any, baseWidth: number = 160) => {
 };
 
 
-export const NodeTooltip = ({ children, data, type }: { children: React.ReactNode, data: any, type: string }) => {
+export const NodeTooltip = ({ children, data, type, selected }: { children: React.ReactNode, data: any, type: string, selected?: boolean }) => {
   return (
     <TooltipProvider delayDuration={300}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="relative">{children}</div>
+          <div className={cn("relative transition-all", selected && "ring-2 ring-primary ring-offset-2 rounded-md")}>{children}</div>
         </TooltipTrigger>
         <TooltipContent side="right" className="max-w-[250px] p-2 bg-mancity-pattern text-primary-foreground border-none shadow-2xl z-[100]">
           <div className="space-y-1.5">
@@ -187,7 +187,7 @@ export const EightConnectionHandles = ({ isLocked, selected }: { isLocked?: bool
 export const StartEndNode = ({ data, selected, type }: NodeProps) => {
   const { style, fontClass } = getNodeStyles(data, 120);
   return (
-    <NodeTooltip data={data} type={type}>
+    <NodeTooltip data={data} type={type} selected={selected}>
       <div 
         style={style}
         className={cn(
@@ -210,7 +210,7 @@ export const StartEndNode = ({ data, selected, type }: NodeProps) => {
 export const ActivityNode = ({ data, selected, type }: NodeProps) => {
   const { style, fontClass } = getNodeStyles(data, 160);
   return (
-    <NodeTooltip data={data} type={type}>
+    <NodeTooltip data={data} type={type} selected={selected}>
       <div 
         style={style}
         className={cn(
@@ -236,7 +236,7 @@ export const ActivityNode = ({ data, selected, type }: NodeProps) => {
 export const ManualInputNode = ({ data, selected, type }: NodeProps) => {
   const { style, fontClass } = getNodeStyles(data, 160);
   return (
-    <NodeTooltip data={data} type={type}>
+    <NodeTooltip data={data} type={type} selected={selected}>
       <div 
         style={style}
         className={cn(
@@ -260,7 +260,7 @@ export const ManualInputNode = ({ data, selected, type }: NodeProps) => {
 export const ExternalProcessNode = ({ data, selected, type }: NodeProps) => {
   const { style, fontClass } = getNodeStyles(data, 160);
   return (
-    <NodeTooltip data={data} type={type}>
+    <NodeTooltip data={data} type={type} selected={selected}>
       <div 
         style={style}
         className={cn(
@@ -279,7 +279,7 @@ export const ExternalProcessNode = ({ data, selected, type }: NodeProps) => {
 export const AutomatedActivityNode = ({ data, selected, type }: NodeProps) => {
   const { style, fontClass } = getNodeStyles(data, 160);
   return (
-    <NodeTooltip data={data} type={type}>
+    <NodeTooltip data={data} type={type} selected={selected}>
       <div 
         style={style}
         className={cn(
@@ -316,7 +316,7 @@ export const DecisionNode = ({ data, selected, type }: NodeProps) => {
   else if (fontScale === 'lg') fontClass = 'text-sm';
 
   return (
-    <NodeTooltip data={data} type={type}>
+    <NodeTooltip data={data} type={type} selected={selected}>
       <div 
         style={{ width: `${boxSize}px`, height: `${boxSize}px` }}
         className={cn("relative flex items-center justify-center transition-all", selected && "scale-105")}
@@ -346,7 +346,7 @@ export const DecisionNode = ({ data, selected, type }: NodeProps) => {
 export const DocumentNode = ({ data, selected, type }: NodeProps) => {
   const { style, fontClass } = getNodeStyles(data, 130);
   return (
-    <NodeTooltip data={data} type={type}>
+    <NodeTooltip data={data} type={type} selected={selected}>
       <div 
         style={style}
         className={cn(
@@ -379,7 +379,7 @@ export const DocumentNode = ({ data, selected, type }: NodeProps) => {
 export const ArchiveNode = ({ data, selected, type }: NodeProps) => {
   const { style, fontClass } = getNodeStyles(data, 64);
   return (
-    <NodeTooltip data={data} type={type}>
+    <NodeTooltip data={data} type={type} selected={selected}>
       <div 
         style={style}
         className={cn("h-16 relative flex items-center justify-center transition-all", selected && "scale-105")}
@@ -405,7 +405,7 @@ export const ArchiveNode = ({ data, selected, type }: NodeProps) => {
 export const DataMediaNode = ({ data, selected, type }: NodeProps) => {
   const { style, fontClass } = getNodeStyles(data, 100);
   return (
-    <NodeTooltip data={data} type={type}>
+    <NodeTooltip data={data} type={type} selected={selected}>
       <div 
         style={style}
         className={cn("h-20 relative flex items-center justify-center transition-all", selected && "scale-105")}
@@ -427,7 +427,7 @@ export const DataMediaNode = ({ data, selected, type }: NodeProps) => {
 export const OffPageRefNode = ({ data, selected, type }: NodeProps) => {
   const { style, fontClass } = getNodeStyles(data, 56);
   return (
-    <NodeTooltip data={data} type={type}>
+    <NodeTooltip data={data} type={type} selected={selected}>
       <div 
         style={style}
         className={cn("h-14 relative flex items-center justify-center transition-all", selected && "scale-105")}
@@ -447,7 +447,7 @@ export const OffPageRefNode = ({ data, selected, type }: NodeProps) => {
 export const ReferenceNode = ({ data, selected, type }: NodeProps) => {
   const { style, fontClass } = getNodeStyles(data, 40);
   return (
-    <NodeTooltip data={data} type={type}>
+    <NodeTooltip data={data} type={type} selected={selected}>
       <div 
         style={{ ...style, height: style.width }}
         className={cn(
@@ -490,15 +490,19 @@ export const SwimlaneNode = ({ data, selected }: NodeProps) => {
     <div className={cn(
       "h-full w-full border-2 bg-slate-50/20 relative group transition-all",
       data.isLocked ? "border-amber-200/60 bg-slate-50/10" : "border-slate-300",
-      selected && !data.isLocked && "border-indigo-500 bg-indigo-50/10 shadow-inner",
-      selected && data.isLocked && "border-amber-500 bg-amber-50/5 shadow-inner"
+      selected && !data.isLocked && "border-indigo-600 ring-2 ring-indigo-400/40 bg-indigo-50/15 shadow-xl",
+      selected && data.isLocked && "border-amber-500 ring-2 ring-amber-400/30 bg-amber-50/10 shadow-lg"
     )}>
       <NodeResizer
         isVisible={!!selected && !data.isLocked}
-        minWidth={400}
-        minHeight={400}
-        handleStyle={{ width: 8, height: 8, backgroundColor: '#6366f1', border: '1px solid white', borderRadius: 2 }}
-        lineStyle={{ borderColor: '#6366f1', borderWidth: 1 }}
+        minWidth={360}
+        minHeight={300}
+        keepAspectRatio={false}
+        onResizeEnd={(_, params) => {
+          data.onResizeEnd?.(params);
+        }}
+        handleStyle={{ width: 10, height: 10, backgroundColor: '#4f46e5', border: '2px solid white', borderRadius: 3 }}
+        lineStyle={{ borderColor: '#4f46e5', borderWidth: 2 }}
       />
       {/* Swimlane Header */}
       <div className={cn(
@@ -569,7 +573,7 @@ export const SwimlaneNode = ({ data, selected }: NodeProps) => {
 export const AlternateProcessNode = ({ data, selected, type }: NodeProps) => {
   const { style, fontClass } = getNodeStyles(data, 160);
   return (
-    <NodeTooltip data={data} type={type}>
+    <NodeTooltip data={data} type={type} selected={selected}>
       <div 
         style={style}
         className={cn(
@@ -593,7 +597,7 @@ export const AlternateProcessNode = ({ data, selected, type }: NodeProps) => {
 export const DataNode = ({ data, selected, type }: NodeProps) => {
   const { style, fontClass } = getNodeStyles(data, 160);
   return (
-    <NodeTooltip data={data} type={type}>
+    <NodeTooltip data={data} type={type} selected={selected}>
       <div 
         style={style}
         className={cn(
@@ -617,7 +621,7 @@ export const DataNode = ({ data, selected, type }: NodeProps) => {
 export const PredefinedProcessNode = ({ data, selected, type }: NodeProps) => {
   const { style, fontClass } = getNodeStyles(data, 160);
   return (
-    <NodeTooltip data={data} type={type}>
+    <NodeTooltip data={data} type={type} selected={selected}>
       <div 
         style={style}
         className={cn(
@@ -643,7 +647,7 @@ export const PredefinedProcessNode = ({ data, selected, type }: NodeProps) => {
 export const InternalStorageNode = ({ data, selected, type }: NodeProps) => {
   const { style, fontClass } = getNodeStyles(data, 160);
   return (
-    <NodeTooltip data={data} type={type}>
+    <NodeTooltip data={data} type={type} selected={selected}>
       <div 
         style={style}
         className={cn(
@@ -669,7 +673,7 @@ export const InternalStorageNode = ({ data, selected, type }: NodeProps) => {
 export const MultiDocumentNode = ({ data, selected, type }: NodeProps) => {
   const { style, fontClass } = getNodeStyles(data, 140);
   return (
-    <NodeTooltip data={data} type={type}>
+    <NodeTooltip data={data} type={type} selected={selected}>
       <div 
         style={style}
         className={cn(
@@ -694,7 +698,7 @@ export const MultiDocumentNode = ({ data, selected, type }: NodeProps) => {
 export const PreparationNode = ({ data, selected, type }: NodeProps) => {
   const { style, fontClass } = getNodeStyles(data, 160);
   return (
-    <NodeTooltip data={data} type={type}>
+    <NodeTooltip data={data} type={type} selected={selected}>
       <div 
         style={style}
         className={cn(
@@ -718,7 +722,7 @@ export const PreparationNode = ({ data, selected, type }: NodeProps) => {
 export const ManualOperationNode = ({ data, selected, type }: NodeProps) => {
   const { style, fontClass } = getNodeStyles(data, 160);
   return (
-    <NodeTooltip data={data} type={type}>
+    <NodeTooltip data={data} type={type} selected={selected}>
       <div 
         style={style}
         className={cn(
@@ -742,7 +746,7 @@ export const ManualOperationNode = ({ data, selected, type }: NodeProps) => {
 export const CardNode = ({ data, selected, type }: NodeProps) => {
   const { style, fontClass } = getNodeStyles(data, 160);
   return (
-    <NodeTooltip data={data} type={type}>
+    <NodeTooltip data={data} type={type} selected={selected}>
       <div 
         style={style}
         className={cn(
@@ -766,7 +770,7 @@ export const CardNode = ({ data, selected, type }: NodeProps) => {
 export const PunchedTapeNode = ({ data, selected, type }: NodeProps) => {
   const { style, fontClass } = getNodeStyles(data, 160);
   return (
-    <NodeTooltip data={data} type={type}>
+    <NodeTooltip data={data} type={type} selected={selected}>
       <div 
         style={style}
         className={cn(
@@ -800,7 +804,7 @@ export const SummingJunctionNode = ({ data, selected, type }: NodeProps) => {
   else if (fontScale === 'lg') fontClass = 'text-xs';
 
   return (
-    <NodeTooltip data={data} type={type}>
+    <NodeTooltip data={data} type={type} selected={selected}>
       <div 
         style={{ width: `${boxSize}px`, height: `${boxSize}px` }}
         className={cn(
@@ -837,7 +841,7 @@ export const OrNode = ({ data, selected, type }: NodeProps) => {
   else if (fontScale === 'lg') fontClass = 'text-xs';
 
   return (
-    <NodeTooltip data={data} type={type}>
+    <NodeTooltip data={data} type={type} selected={selected}>
       <div 
         style={{ width: `${boxSize}px`, height: `${boxSize}px` }}
         className={cn(
@@ -864,7 +868,7 @@ export const OrNode = ({ data, selected, type }: NodeProps) => {
 export const CollateNode = ({ data, selected, type }: NodeProps) => {
   const { style, fontClass } = getNodeStyles(data, 120);
   return (
-    <NodeTooltip data={data} type={type}>
+    <NodeTooltip data={data} type={type} selected={selected}>
       <div 
         style={style}
         className={cn(
@@ -888,7 +892,7 @@ export const CollateNode = ({ data, selected, type }: NodeProps) => {
 export const SortNode = ({ data, selected, type }: NodeProps) => {
   const { style, fontClass } = getNodeStyles(data, 120);
   return (
-    <NodeTooltip data={data} type={type}>
+    <NodeTooltip data={data} type={type} selected={selected}>
       <div 
         style={style}
         className={cn(
@@ -913,7 +917,7 @@ export const SortNode = ({ data, selected, type }: NodeProps) => {
 export const ExtractNode = ({ data, selected, type }: NodeProps) => {
   const { style, fontClass } = getNodeStyles(data, 120);
   return (
-    <NodeTooltip data={data} type={type}>
+    <NodeTooltip data={data} type={type} selected={selected}>
       <div 
         style={style}
         className={cn(
@@ -937,7 +941,7 @@ export const ExtractNode = ({ data, selected, type }: NodeProps) => {
 export const MergeNode = ({ data, selected, type }: NodeProps) => {
   const { style, fontClass } = getNodeStyles(data, 120);
   return (
-    <NodeTooltip data={data} type={type}>
+    <NodeTooltip data={data} type={type} selected={selected}>
       <div 
         style={style}
         className={cn(
@@ -961,7 +965,7 @@ export const MergeNode = ({ data, selected, type }: NodeProps) => {
 export const StoredDataNode = ({ data, selected, type }: NodeProps) => {
   const { style, fontClass } = getNodeStyles(data, 160);
   return (
-    <NodeTooltip data={data} type={type}>
+    <NodeTooltip data={data} type={type} selected={selected}>
       <div 
         style={style}
         className={cn(
@@ -986,7 +990,7 @@ export const StoredDataNode = ({ data, selected, type }: NodeProps) => {
 export const DelayNode = ({ data, selected, type }: NodeProps) => {
   const { style, fontClass } = getNodeStyles(data, 160);
   return (
-    <NodeTooltip data={data} type={type}>
+    <NodeTooltip data={data} type={type} selected={selected}>
       <div 
         style={style}
         className={cn(
@@ -1020,7 +1024,7 @@ export const SequentialAccessNode = ({ data, selected, type }: NodeProps) => {
   else if (fontScale === 'lg') fontClass = 'text-xs';
 
   return (
-    <NodeTooltip data={data} type={type}>
+    <NodeTooltip data={data} type={type} selected={selected}>
       <div 
         style={{ width: `${boxSize}px`, height: `${boxSize}px` }}
         className={cn(
@@ -1046,7 +1050,7 @@ export const SequentialAccessNode = ({ data, selected, type }: NodeProps) => {
 export const DirectAccessNode = ({ data, selected, type }: NodeProps) => {
   const { style, fontClass } = getNodeStyles(data, 160);
   return (
-    <NodeTooltip data={data} type={type}>
+    <NodeTooltip data={data} type={type} selected={selected}>
       <div 
         style={style}
         className={cn(
@@ -1071,7 +1075,7 @@ export const DirectAccessNode = ({ data, selected, type }: NodeProps) => {
 export const DisplayNode = ({ data, selected, type }: NodeProps) => {
   const { style, fontClass } = getNodeStyles(data, 160);
   return (
-    <NodeTooltip data={data} type={type}>
+    <NodeTooltip data={data} type={type} selected={selected}>
       <div 
         style={style}
         className={cn(
@@ -1095,7 +1099,7 @@ export const DisplayNode = ({ data, selected, type }: NodeProps) => {
 export const LoopLimitNode = ({ data, selected, type }: NodeProps) => {
   const { style, fontClass } = getNodeStyles(data, 160);
   return (
-    <NodeTooltip data={data} type={type}>
+    <NodeTooltip data={data} type={type} selected={selected}>
       <div 
         style={style}
         className={cn(
@@ -1119,7 +1123,7 @@ export const LoopLimitNode = ({ data, selected, type }: NodeProps) => {
 export const AnnotationNode = ({ data, selected, type }: NodeProps) => {
   const { style, fontClass } = getNodeStyles(data, 140);
   return (
-    <NodeTooltip data={data} type={type}>
+    <NodeTooltip data={data} type={type} selected={selected}>
       <div 
         style={style}
         className={cn(

@@ -62,5 +62,8 @@ Setiap kali menyelesaikan sebuah fitur, perbaikan bug, atau fase pengembangan, A
 *   **Localization:** Support multi-language (English/Indonesian) using `src/i18n/**`. All UI strings **MUST** be localized.
 *   **Data Loss Prevention:** Implement `UnSavedChanges` warning for any form or editor state to prevent accidental data loss, following the `useUnsavedChanges` hook pattern.
 *   **Navigation & Alerts:** Integrate critical workflows into the Sidebar menu and provide real-time feedback via a Notification Bell where appropriate.
-*   **Code Quality:** Rigorously apply SOLID, DRY, KISS, and YAGNI principles. Actively identify and refactor code smells. After refactoring, verify system integrity (API endpoints, imports, etc.).
+*   **File Size & Modularization Threshold (Max LOC Rule):**
+    *   **Soft Limit (500 LOC):** Component UI / Container files should not exceed 500 lines. If a file exceeds 500 LOC, actively consider refactoring into smaller modular components (extract dialogs/modals, toolbars, palettes, or custom hooks).
+    *   **Hard Limit (800 LOC):** Files exceeding 800 LOC are strictly frozen from receiving new functional additions until decomposed into sub-components or domain services first.
+    *   **Single Responsibility:** Separate orchestrator containers from isolated presentation widgets, modals, and business/state calculation logic.
 *   **Quality Assurance:** Adhere to TDD (Test Driven Development) with a "Fail Fast, Fix Early" mindset. A task is only "Done" when it passes all steps in the **Mandat Penyelesaian Tahap**.

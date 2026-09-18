@@ -1,4 +1,6 @@
 // ocr-layout.ts — deterministic OCR auto-layout (no dependencies, pure TS)
+import { getStandardNodeDimensions, DEFAULT_SWIMLANE_DIMENSIONS } from './bpm-constants';
+
 export interface OcrRawNode {
   id: string;
   type: string;
@@ -15,6 +17,8 @@ export interface OcrRawEdge {
   id: string;
   source: string;
   target: string;
+  sourceHandle?: string;
+  targetHandle?: string;
   label?: string;
 }
 
@@ -43,11 +47,11 @@ export interface OcrLayoutResult {
   warnings: OcrLayoutWarning[];
 }
 
-const GAP_X = 16;
-const HEADER_H = 80;
-const GAP_Y = 70;
-const LANE_MIN_W = 400;
-const LANE_MIN_H = 1000;
+const GAP_X = DEFAULT_SWIMLANE_DIMENSIONS.gapX;
+const HEADER_H = DEFAULT_SWIMLANE_DIMENSIONS.headerHeight;
+const GAP_Y = DEFAULT_SWIMLANE_DIMENSIONS.gapY;
+const LANE_MIN_W = DEFAULT_SWIMLANE_DIMENSIONS.minWidth;
+const LANE_MIN_H = DEFAULT_SWIMLANE_DIMENSIONS.defaultHeight;
 const V_STEP_DEFAULT = 126;
 const FOOTER_PAD = 120;
 
@@ -58,23 +62,7 @@ export function deriveLabelFromId(id: string): string {
 }
 
 function getNodeDimensions(type: string): { width: number; height: number } {
-  switch (type) {
-    case 'start':
-    case 'end':
-      return { width: 120, height: 40 };
-    case 'decision':
-      return { width: 110, height: 110 };
-    case 'document':
-      return { width: 130, height: 48 };
-    case 'archive':
-      return { width: 64, height: 64 };
-    case 'data-media':
-      return { width: 100, height: 80 };
-    case 'reference':
-      return { width: 40, height: 40 };
-    default:
-      return { width: 160, height: 56 };
-  }
+  return getStandardNodeDimensions(type);
 }
 
 function medianOf(values: number[]): number {
@@ -172,15 +160,21 @@ function orderLanes(lanes: OcrRawNode[], childMap: Map<string, OcrRawNode[]>): O
 
 function computeLaneWidths(sortedLanes: OcrRawNode[], childMap: Map<string, OcrRawNode[]>): Map<string, number> {
   const out = new Map<string, number>();
+  let globalMaxNodeWidth = 0;
+
   for (const lane of sortedLanes) {
     const children = childMap.get(lane.id) ?? [];
-    let maxW = 0;
     for (const c of children) {
       const d = getNodeDimensions(c.type);
-      if (d.width > maxW) maxW = d.width;
+      if (d.width > globalMaxNodeWidth) globalMaxNodeWidth = d.width;
     }
-    const w = Math.max(LANE_MIN_W, maxW + 160);
-    out.set(lane.id, w);
+  }
+
+  // Uniform equalized width for all lanes: at least LANE_MIN_W, or comfortably wide for the largest node
+  const uniformWidth = Math.max(LANE_MIN_W, globalMaxNodeWidth + 180);
+
+  for (const lane of sortedLanes) {
+    out.set(lane.id, uniformWidth);
   }
   return out;
 }
@@ -365,5 +359,62 @@ export function layoutOcrDiagram(raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[]
     curX += dims.width + 40;
   }
 
-  return { nodes: nodesOut, edges: filteredEdges, warnings };
+  // Build map of absolute node centers to determine clean, un-inverted edge connection handles
+  const nodeAbsCenter = new Map<string, { x: number; y: number }>();
+  for (const n of nodesOut) {
+    if (n.parentId && lanePos.has(n.parentId)) {
+      const p = lanePos.get(n.parentId)!;
+      nodeAbsCenter.set(n.id, {
+        x: p.x + n.position.x + n.width / 2,
+        y: p.y + n.position.y + n.height / 2,
+      });
+    } else {
+      nodeAbsCenter.set(n.id, {
+        x: n.position.x + n.width / 2,
+        y: n.position.y + n.height / 2,
+      });
+    }
+  }
+
+  const enrichedEdges: OcrRawEdge[] = filteredEdges.map((e) => {
+    const s = nodeAbsCenter.get(e.source);
+    const t = nodeAbsCenter.get(e.target);
+    if (!s || !t) return e;
+
+    const dx = t.x - s.x;
+    const dy = t.y - s.y;
+
+    let sourceHandle = e.sourceHandle;
+    let targetHandle = e.targetHandle;
+
+    if (!sourceHandle || !targetHandle) {
+      // If mostly vertical flow
+      if (Math.abs(dy) >= Math.abs(dx)) {
+        if (dy >= 0) {
+          sourceHandle = sourceHandle || 'bottom';
+          targetHandle = targetHandle || 'top';
+        } else {
+          sourceHandle = sourceHandle || 'top';
+          targetHandle = targetHandle || 'bottom';
+        }
+      } else {
+        // Mostly horizontal flow
+        if (dx >= 0) {
+          sourceHandle = sourceHandle || 'right';
+          targetHandle = targetHandle || 'left';
+        } else {
+          sourceHandle = sourceHandle || 'left';
+          targetHandle = targetHandle || 'right';
+        }
+      }
+    }
+
+    return {
+      ...e,
+      sourceHandle,
+      targetHandle,
+    };
+  });
+
+  return { nodes: nodesOut, edges: enrichedEdges, warnings };
 }

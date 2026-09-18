@@ -103,14 +103,14 @@ function normalizeHandlePosition(
   isSource?: boolean,
   nodeInternals?: any
 ): string {
-  if (handleId === 't-l') return 'top-left';
-  if (handleId === 't-r') return 'top-right';
-  if (handleId === 'b-l') return 'bottom-left';
-  if (handleId === 'b-r') return 'bottom-right';
-  if (handleId === 'm-l' || handleId === 'left' || handleId?.includes('left')) return 'left';
-  if (handleId === 'm-r' || handleId === 'right' || handleId?.includes('right')) return 'right';
-  if (handleId === 'top' || handleId?.includes('top') || handleId?.startsWith('t-')) return 'top';
-  if (handleId === 'bottom' || handleId?.includes('bottom') || handleId?.startsWith('b-')) return 'bottom';
+  if (handleId === 't-l' || handleId === 't-l-src') return 'top-left';
+  if (handleId === 't-r' || handleId === 't-r-src') return 'top-right';
+  if (handleId === 'b-l' || handleId === 'b-l-src') return 'bottom-left';
+  if (handleId === 'b-r' || handleId === 'b-r-src') return 'bottom-right';
+  if (handleId === 'm-l' || handleId === 'm-l-src' || handleId === 'left' || handleId === 'no' || handleId?.includes('left')) return 'left';
+  if (handleId === 'm-r' || handleId === 'm-r-src' || handleId === 'right' || handleId === 'yes' || handleId?.includes('right')) return 'right';
+  if (handleId === 'top' || handleId === 't-c-src' || handleId?.includes('top') || handleId?.startsWith('t-') || handleId === 'qc-top') return 'top';
+  if (handleId === 'bottom' || handleId === 'b-c-tgt' || handleId?.includes('bottom') || handleId?.startsWith('b-') || handleId === 'qc-bottom') return 'bottom';
 
   if (position === Position.Left) return 'left';
   if (position === Position.Right) return 'right';
@@ -120,20 +120,26 @@ function normalizeHandlePosition(
   if (sourceNode && targetNode && nodeInternals) {
     const sPos = getNodeAbsolutePosition(sourceNode, nodeInternals);
     const tPos = getNodeAbsolutePosition(targetNode, nodeInternals);
-    const dx = tPos.x - sPos.x;
-    const dy = tPos.y - sPos.y;
+    const sDim = getNodeDimensions(sourceNode);
+    const tDim = getNodeDimensions(targetNode);
+
+    const sCenter = { x: sPos.x + sDim.width / 2, y: sPos.y + sDim.height / 2 };
+    const tCenter = { x: tPos.x + tDim.width / 2, y: tPos.y + tDim.height / 2 };
+
+    const dx = tCenter.x - sCenter.x;
+    const dy = tCenter.y - sCenter.y;
 
     if (isSource) {
-      if (Math.abs(dx) > Math.abs(dy)) {
-        return dx > 0 ? 'right' : 'left';
+      if (Math.abs(dy) >= Math.abs(dx)) {
+        return dy >= 0 ? 'bottom' : 'top';
       } else {
-        return dy > 0 ? 'bottom' : 'top';
+        return dx >= 0 ? 'right' : 'left';
       }
     } else {
-      if (Math.abs(dx) > Math.abs(dy)) {
-        return dx > 0 ? 'left' : 'right';
+      if (Math.abs(dy) >= Math.abs(dx)) {
+        return dy >= 0 ? 'top' : 'bottom';
       } else {
-        return dy > 0 ? 'top' : 'bottom';
+        return dx >= 0 ? 'left' : 'right';
       }
     }
   }
@@ -335,7 +341,7 @@ export function BridgeEdge({
   targetPosition,
   style = {},
   markerEnd,
-  selected: _selected,
+  selected,
 }: BridgeEdgeProps) {
   const edges = useStore((state) => state.edges);
   const nodeInternals = useStore((state) => state.nodeInternals);
@@ -366,6 +372,15 @@ export function BridgeEdge({
     tSide
   );
 
+  const selectedEdgeStyle: React.CSSProperties = selected
+    ? {
+        ...style,
+        stroke: '#2563eb',
+        strokeWidth: 3.5,
+        filter: 'drop-shadow(0 0 4px rgba(37, 99, 235, 0.5))',
+      }
+    : style;
+
   if (currentSegments.length === 0) {
     return (
       <>
@@ -373,12 +388,12 @@ export function BridgeEdge({
           d={basePath}
           fill="none"
           stroke="transparent"
-          strokeWidth={20}
+          strokeWidth={24}
           style={{ pointerEvents: 'stroke' }}
           strokeLinecap="round"
           strokeLinejoin="round"
         />
-        <path id={id} style={style} className="react-flow__edge-path" d={basePath} markerEnd={markerEnd} />
+        <path id={id} style={selectedEdgeStyle} className="react-flow__edge-path" d={basePath} markerEnd={markerEnd} />
       </>
     );
   }
@@ -467,14 +482,14 @@ export function BridgeEdge({
         d={finalPath}
         fill="none"
         stroke="transparent"
-        strokeWidth={20}
+        strokeWidth={24}
         style={{ pointerEvents: 'stroke' }}
         strokeLinecap="round"
         strokeLinejoin="round"
       />
       <path
         id={id}
-        style={style}
+        style={selectedEdgeStyle}
         className="react-flow__edge-path"
         d={finalPath}
         markerEnd={markerEnd}
