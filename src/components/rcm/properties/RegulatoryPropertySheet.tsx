@@ -14,25 +14,22 @@ import { Node } from 'reactflow';
 import { useTranslation } from 'react-i18next';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { X, ShieldAlert, ShieldCheck, Database, Trash2, PlusCircle, AlertTriangle, RefreshCw, History, Layout, AlertCircle, Lock, Unlock } from 'lucide-react';
+import { X, ShieldAlert, ShieldCheck, Database, Trash2, PlusCircle, AlertTriangle, RefreshCw, History, Layout, Lock } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Accordion } from '@/components/ui/accordion';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
-import { format } from 'date-fns';
-import type { QualitativeLevel, ControlLevel, ChangeLog } from '@shared/types';
+import type { QualitativeLevel } from '@shared/types';
 
-import { TLCForm } from './TLCForm';
-import { ELCForm } from './ELCForm';
-import { ITGCForm } from './ITGCForm';
-import { SignificantApplicationCombobox } from '../SignificantApplicationCombobox';
+import { EntityHistoryList } from './EntityHistoryList';
+import { NodeVisualProperties } from './NodeVisualProperties';
+import { ControlAccordionItem } from './ControlAccordionItem';
 
 interface RegulatoryPropertySheetProps {
   selectedNode: Node | null;
@@ -48,67 +45,6 @@ interface RegulatoryPropertySheetProps {
   nodes?: Node[];
 }
 
-function EntityHistoryList({ entityId }: { entityId: string }) {
-  const { data, isLoading } = useQuery({
-    queryKey: ['changelogs', entityId],
-    queryFn: () => api<{ items: ChangeLog[] }>(`/api/changelogs?entityId=${entityId}`),
-    enabled: !!entityId
-  });
-
-  if (isLoading) return <div className="p-8 text-center"><RefreshCw className="h-4 w-4 animate-spin mx-auto text-slate-300" /></div>;
-  if (!data?.items?.length) return <div className="p-12 text-center text-slate-400 italic text-xs border-2 border-dashed rounded-xl">Belum ada riwayat perubahan regulasi untuk entitas ini.</div>;
-
-  return (
-    <div className="space-y-3 p-1">
-      {data.items.map((log) => (
-        <div key={log.id} className="border rounded-xl p-3 bg-white shadow-sm text-xs space-y-2 border-slate-100">
-           <div className="flex justify-between items-center">
-              <span className="font-black text-indigo-600 uppercase tracking-tight">{log.userId.split('@')[0]}</span>
-              <span className="text-slate-400 font-medium">{format(log.timestamp, 'dd MMM yyyy HH:mm')}</span>
-           </div>
-           <div className="text-slate-600 leading-relaxed bg-slate-50 p-2 rounded-lg border border-slate-100/50">
-             <div className="flex items-center gap-2 mb-1">
-                <Badge variant="outline" className="text-xs h-4 bg-white uppercase">{log.entityType}</Badge>
-                <span className="text-slate-400">Changed mapping/metadata:</span>
-             </div>
-             <p className="font-medium text-slate-800 italic">"{log.descriptionAfter}"</p>
-             {log.descriptionBefore && (
-               <p className="text-xs text-slate-400 mt-1 line-through decoration-red-200">Before: {log.descriptionBefore}</p>
-             )}
-           </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-const normalizeControlType = (val?: string) => {
-  if (!val) return 'Preventif';
-  const s = val.toLowerCase();
-  if (s.startsWith('prevent')) return 'Preventif';
-  if (s.startsWith('detect') || s.startsWith('detekt')) return 'Detektif';
-  return val;
-};
-
-const normalizeControlNature = (val?: string) => {
-  if (!val) return 'Manual';
-  const s = val.toLowerCase();
-  if (s === 'automated' || s === 'otomatis') return 'Otomatis';
-  return val;
-};
-
-const normalizeFrequency = (val?: string) => {
-  if (!val) return 'Bulanan';
-  const s = val.toLowerCase();
-  if (s === 'monthly' || s === 'bulanan') return 'Bulanan';
-  if (s === 'annual' || s === 'tahunan') return 'Tahunan';
-  if (s === 'semi-annual' || s === 'semesteran') return 'Semesteran';
-  if (s === 'quarterly' || s === 'kuartalan') return 'Kuartalan';
-  if (s === 'weekly' || s === 'mingguan') return 'Mingguan';
-  if (s === 'daily' || s === 'harian') return 'Harian';
-  return val;
-};
-
 export function RegulatoryPropertySheet({
   selectedNode,
   isOpen,
@@ -123,8 +59,8 @@ export function RegulatoryPropertySheet({
   nodes = []
 }: RegulatoryPropertySheetProps) {
   const { t } = useTranslation(['bpm', 'rcm', 'common', 'risklibrary']);
-  const [isConfirmDiscardOpen, setIsConfirmDiscardOpen] = React.useState(false);
-  const [deleteConfirm, setDeleteConfirm] = React.useState<{ type: 'risk' | 'control', id?: string, index?: number } | null>(null);
+  const [isConfirmDiscardOpen, setIsConfirmDiscardOpen] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ type: 'risk' | 'control', id?: string, index?: number } | null>(null);
 
   const canHaveRcm = useMemo(() => {
     if (!selectedNode) return false;
@@ -138,19 +74,16 @@ export function RegulatoryPropertySheet({
     enabled: !!bpmProcessId
   });
 
-  // SUPPORT MULTIPLE PAIRS: Convert single legacy object or hydrated array
   const pairs = useMemo(() => {
     return selectedNode?.data?.regulatoryPairs || 
            (selectedNode?.data?.regulatoryData ? [selectedNode?.data?.regulatoryData] : []);
   }, [selectedNode?.data?.regulatoryPairs, selectedNode?.data?.regulatoryData]);
 
-  // --- Grouping Logic ---
   const groupedRisks = useMemo(() => {
     if (!selectedNode) return [];
     const groups: Record<string, { risk: any, controls: { data: any, index: number }[] }> = {};
     
     pairs.forEach((p: any, index: number) => {
-      // Use stable internal ID for grouping so typing riskId doesn't re-key components
       const rId = p._tempRiskId || p.riskId || `R-GROUP-${index}`;
       if (!groups[rId]) {
         groups[rId] = { risk: p, controls: [] };
@@ -161,15 +94,14 @@ export function RegulatoryPropertySheet({
     return Object.values(groups);
   }, [pairs, selectedNode]);
 
-  // --- Duplicate ID Detection ---
   const duplicateRiskIds = useMemo(() => {
-    const riskIds = pairs.map((p: any) => p.riskId?.trim()).filter(Boolean);
-    return new Set(riskIds.filter((id: string, idx: number) => riskIds.indexOf(id) !== idx));
+    const riskIds: string[] = pairs.map((p: any) => p.riskId?.trim()).filter(Boolean);
+    return new Set<string>(riskIds.filter((id: string, idx: number) => riskIds.indexOf(id) !== idx));
   }, [pairs]);
 
   const duplicateControlIds = useMemo(() => {
-    const ctrlIds = pairs.map((p: any) => p.controlId?.trim()).filter(Boolean);
-    return new Set(ctrlIds.filter((id: string, idx: number) => ctrlIds.indexOf(id) !== idx));
+    const ctrlIds: string[] = pairs.map((p: any) => p.controlId?.trim()).filter(Boolean);
+    return new Set<string>(ctrlIds.filter((id: string, idx: number) => ctrlIds.indexOf(id) !== idx));
   }, [pairs]);
 
   const handleClose = () => {
@@ -182,7 +114,6 @@ export function RegulatoryPropertySheet({
 
   if (!selectedNode) return null;
 
-  // --- Update Handlers ---
   const updateAllPairsForRisk = (riskKey: string, field: string, value: any) => {
     const nextPairs = pairs.map((p: any) => {
       const match = (p.riskId === riskKey) || (p._tempRiskId === riskKey);
@@ -326,76 +257,12 @@ export function RegulatoryPropertySheet({
                 </div>
               )}
 
-              {/* 1. Visual Info */}
-              <section className="bg-slate-50/50 p-4 rounded-xl border border-slate-100">
-                <Label className="text-xs font-semibold uppercase text-slate-600 tracking-wide mb-3 block">{t('rcm:matrix.properties.visual_diagram_info')}</Label>
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-xs font-medium text-slate-700 uppercase">{t('rcm:matrix.properties.label')}</Label>
-                      <Input disabled={isLocked} value={selectedNode.data.label} onChange={(e) => onUpdateNodeData(selectedNode.id, { label: e.target.value })} className="h-10 text-sm bg-white" />
-                    </div>
-                    {canHaveRcm && (
-                      <div className="space-y-2">
-                        <Label className="text-xs font-medium text-slate-700 uppercase">{t('rcm:matrix.properties.pelaksana')}</Label>
-                        <Input disabled={isLocked} value={selectedNode.data.role || ''} onChange={(e) => onUpdateNodeData(selectedNode.id, { role: e.target.value })} className="h-10 text-sm bg-white" />
-                      </div>
-                    )}
-                </div>
-                <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-slate-100">
-                    <div className="space-y-2">
-                      <Label className="text-xs font-medium text-slate-700 uppercase">Node Scale Override</Label>
-                      <Select 
-                        disabled={isLocked} 
-                        value={selectedNode.data.nodeScaleOverride || 'md'} 
-                        onValueChange={(v) => onUpdateNodeData(selectedNode.id, { nodeScaleOverride: v })}
-                      >
-                        <SelectTrigger className="h-10 text-sm bg-white"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="sm">Small (Kecil)</SelectItem>
-                          <SelectItem value="md">Standard (Biasa)</SelectItem>
-                          <SelectItem value="lg">Large (Besar)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs font-medium text-slate-700 uppercase">Font Scale Override</Label>
-                      <Select 
-                        disabled={isLocked} 
-                        value={selectedNode.data.fontScaleOverride || 'md'} 
-                        onValueChange={(v) => onUpdateNodeData(selectedNode.id, { fontScaleOverride: v })}
-                      >
-                        <SelectTrigger className="h-10 text-sm bg-white"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="sm">Small (Kecil)</SelectItem>
-                          <SelectItem value="md">Standard (Biasa)</SelectItem>
-                          <SelectItem value="lg">Large (Besar)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                </div>
-                <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
-                  <div className="flex flex-col gap-0.5">
-                    <Label className="text-xs font-semibold text-slate-700 uppercase flex items-center gap-1.5">
-                      {selectedNode.data.isLocked ? (
-                        <Lock className="h-3.5 w-3.5 text-amber-600" />
-                      ) : (
-                        <Unlock className="h-3.5 w-3.5 text-slate-400" />
-                      )}
-                      {t('bpm:editor.lockPosition')}
-                    </Label>
-                    <span className="text-[10px] text-slate-400">
-                      {selectedNode.data.isLocked 
-                        ? t('bpm:editor.positionLocked') 
-                        : t('bpm:editor.lockPositionDesc')}
-                    </span>
-                  </div>
-                  <Switch 
-                    disabled={isLocked}
-                    checked={!!selectedNode.data.isLocked} 
-                    onCheckedChange={(checked) => onUpdateNodeData(selectedNode.id, { isLocked: checked })} 
-                  />
-                </div>
-              </section>
+              <NodeVisualProperties
+                selectedNode={selectedNode}
+                isLocked={isLocked}
+                canHaveRcm={canHaveRcm}
+                onUpdateNodeData={onUpdateNodeData}
+              />
 
               {canHaveRcm && (
                 <div className="space-y-16">
@@ -411,7 +278,6 @@ export function RegulatoryPropertySheet({
 
                   {groupedRisks.map((group, gIdx) => (
                     <div key={group.risk._tempRiskId || group.risk.riskId || `g-${gIdx}`} className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-                      {/* RISK HEADER CARD */}
                       <div className="bg-red-50/30 border-2 border-red-100 rounded-2xl overflow-hidden shadow-sm shadow-red-50">
                         <div className="bg-red-600 px-4 py-2 flex justify-between items-center text-white">
                           <div className="flex items-center gap-2">
@@ -490,144 +356,20 @@ export function RegulatoryPropertySheet({
                         </div>
                       </div>
 
-                      {/* CONTROLS LIST (Nested) */}
                       <Accordion type="single" collapsible className="ml-8 space-y-4">
                         {group.controls.map((ctrl, cIdx) => (
-                          <AccordionItem key={ctrl.data._tempControlId || `ctrl-${ctrl.index}`} value={ctrl.data._tempControlId || `ctrl-${ctrl.index}`} className="bg-white border rounded-xl shadow-sm overflow-hidden">
-                              <AccordionTrigger className="px-4 py-3 hover:no-underline bg-slate-50/50">
-                                <div className="flex items-center gap-4 flex-1">
-                                    <div className="flex items-center gap-2">
-                                      <Select disabled={isLocked} value={ctrl.data.classification || 'TLC'} onValueChange={(v: ControlLevel) => updateSpecificControl(ctrl.index, 'classification', v)}>
-                                          <SelectTrigger className="h-7 w-[80px] text-xs font-bold uppercase shadow-sm">
-                                            <SelectValue />
-                                          </SelectTrigger>
-                                          <SelectContent>
-                                            <SelectItem value="TLC" className="text-xs">TLC</SelectItem>
-                                            <SelectItem value="ELC" className="text-xs">ELC</SelectItem>
-                                            <SelectItem value="ITGC" className="text-xs">ITGC</SelectItem>
-                                          </SelectContent>
-                                      </Select>
-                                      <span className="text-xs font-bold text-slate-700">Kontrol #{cIdx + 1}</span>
-                                      <Input 
-                                        disabled={isLocked}
-                                        className={cn(
-                                          "h-7 w-40 text-xs font-mono border-slate-200 bg-slate-50 text-slate-700 uppercase focus-visible:ring-slate-300",
-                                          duplicateControlIds.has(ctrl.data.controlId?.trim()) && "border-rose-500 bg-rose-50 text-rose-900 font-black ring-2 ring-rose-200"
-                                        )}
-                                        value={ctrl.data.controlId || ''} 
-                                        onChange={(e) => updateSpecificControl(ctrl.index, 'controlId', e.target.value)}
-                                        placeholder="PENDING ID"
-                                      />
-                                      {duplicateControlIds.has(ctrl.data.controlId?.trim()) && (
-                                        <Badge variant="destructive" className="h-5 px-1.5 text-[9px] font-black uppercase animate-pulse">
-                                          Duplikat!
-                                        </Badge>
-                                      )}
-                                    </div>
-                                </div>
-                                <Button 
-                                  disabled={isLocked}
-                                  variant="ghost" size="sm" 
-                                  className="h-7 w-7 text-slate-400 hover:text-rose-600 p-0 mr-2" 
-                                  onClick={(e) => { e.stopPropagation(); setDeleteConfirm({ type: 'control', index: ctrl.index }); }}
-                                >
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                </Button>
-                              </AccordionTrigger>
-                              <AccordionContent className="p-4 space-y-4">
-                                <div className="space-y-1.5">
-                                  <Label className="text-xs font-medium text-slate-600">{t('rcm:matrix.properties.deskripsi_prosedur')}</Label>
-                                  <Textarea 
-                                    disabled={isLocked}
-                                    value={ctrl.data.controlDescription || ''} 
-                                    onChange={(e) => updateSpecificControl(ctrl.index, 'controlDescription', e.target.value)}
-                                    className="min-h-[80px] text-sm"
-                                    placeholder={t('common:placeholders.description')}
-                                  />
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                  <div className="space-y-1">
-                                    <Label className="text-xs font-medium text-slate-600">{t('rcm:matrix.properties.key_control_q')}</Label>
-                                    <Select disabled={isLocked} value={ctrl.data.isKeyControl ? 'Yes' : 'No'} onValueChange={(v) => updateSpecificControl(ctrl.index, 'isKeyControl', v === 'Yes')}>
-                                        <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
-                                        <SelectContent>
-                                          <SelectItem value="Yes">{t('common:yes')}</SelectItem>
-                                          <SelectItem value="No">{t('common:no')}</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                  </div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                  <div className="space-y-1">
-                                    <Label className="text-xs font-medium text-slate-600">{t('rcm:matrix.type')}</Label>
-                                    <Select disabled={isLocked} value={normalizeControlType(ctrl.data.controlType)} onValueChange={(v) => updateSpecificControl(ctrl.index, 'controlType', v)}>
-                                      <SelectTrigger className="h-9 text-sm bg-white"><SelectValue /></SelectTrigger>
-                                      <SelectContent>
-                                        <SelectItem value="Preventif">{t('rcm:matrix.options.type.preventive')}</SelectItem>
-                                        <SelectItem value="Detektif">{t('rcm:matrix.options.type.detective')}</SelectItem>
-                                      </SelectContent>
-                                    </Select>
-                                  </div>
-                                  <div className="space-y-1">
-                                    <Label className="text-xs font-medium text-slate-600">{t('rcm:matrix.nature')}</Label>
-                                    <Select disabled={isLocked} value={normalizeControlNature(ctrl.data.controlNature)} onValueChange={(v) => updateSpecificControl(ctrl.index, 'controlNature', v)}>
-                                      <SelectTrigger className="h-9 text-sm bg-white"><SelectValue /></SelectTrigger>
-                                      <SelectContent>
-                                        <SelectItem value="Manual">{t('rcm:matrix.options.nature.manual')}</SelectItem>
-                                        <SelectItem value="Otomatis">{t('rcm:matrix.options.nature.automated')}</SelectItem>
-                                        <SelectItem value="ITDM - EUC">{t('rcm:matrix.options.nature.itdm_euc')}</SelectItem>
-                                        <SelectItem value="ITDM - IPE">{t('rcm:matrix.options.nature.itdm_ipe')}</SelectItem>
-                                        <SelectItem value="MRC">{t('rcm:matrix.options.nature.mrc')}</SelectItem>
-                                      </SelectContent>
-                                    </Select>
-                                  </div>
-                                </div>
-                                <div className="space-y-1">
-                                  <Label className="text-xs font-medium text-slate-600">{t('rcm:matrix.significant_application', { defaultValue: 'Aplikasi Signifikan' })}</Label>
-                                  <SignificantApplicationCombobox
-                                    disabled={isLocked}
-                                    value={ctrl.data.applicationId}
-                                    appName={ctrl.data.supportingApp}
-                                    onChange={(appId, appName) => {
-                                      const nextPairs = [...pairs];
-                                      const updated = { 
-                                        ...nextPairs[ctrl.index], 
-                                        applicationId: appId,
-                                        supportingApp: appName || ''
-                                      };
-                                      nextPairs[ctrl.index] = updated;
-                                      onUpdateNodeData(selectedNode.id, { regulatoryPairs: nextPairs });
-                                    }}
-                                  />
-                                </div>
-                                <div className="space-y-1">
-                                  <Label className="text-xs font-medium text-slate-600">{t('rcm:matrix.frequency')}</Label>
-                                  <Select disabled={isLocked} value={normalizeFrequency(ctrl.data.frequency)} onValueChange={(v) => updateSpecificControl(ctrl.index, 'frequency', v)}>
-                                    <SelectTrigger className="h-9 text-sm bg-white"><SelectValue /></SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="Tahunan">{t('rcm:matrix.options.frequency.annual')}</SelectItem>
-                                      <SelectItem value="Semesteran">{t('rcm:matrix.options.frequency.semi_annual')}</SelectItem>
-                                      <SelectItem value="Kuartalan">{t('rcm:matrix.options.frequency.quarterly')}</SelectItem>
-                                      <SelectItem value="Bulanan">{t('rcm:matrix.options.frequency.monthly')}</SelectItem>
-                                      <SelectItem value="Mingguan">{t('rcm:matrix.options.frequency.weekly')}</SelectItem>
-                                      <SelectItem value="Harian">{t('rcm:matrix.options.frequency.daily')}</SelectItem>
-                                      <SelectItem value="Ad-hoc">{t('rcm:matrix.options.frequency.adhoc')}</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                                <div className="mt-4 pt-4 border-t border-slate-100">
-                                    {(!ctrl.data.classification || ctrl.data.classification === 'TLC') && (
-                                      <TLCForm disabled={isLocked} data={ctrl.data} onChange={(f, v) => updateSpecificControl(ctrl.index, f, v)} />
-                                    )}
-                                    {ctrl.data.classification === 'ELC' && (
-                                      <ELCForm disabled={isLocked} data={ctrl.data} onChange={(f, v) => updateSpecificControl(ctrl.index, f, v)} />
-                                    )}
-                                    {ctrl.data.classification === 'ITGC' && (
-                                      <ITGCForm disabled={isLocked} data={ctrl.data} onChange={(f, v) => updateSpecificControl(ctrl.index, f, v)} />
-                                    )}
-                                </div>
-                              </AccordionContent>
-                          </AccordionItem>
+                          <ControlAccordionItem
+                            key={ctrl.data._tempControlId || `ctrl-${ctrl.index}`}
+                            ctrl={ctrl}
+                            cIdx={cIdx}
+                            isLocked={isLocked}
+                            duplicateControlIds={duplicateControlIds}
+                            pairs={pairs}
+                            onUpdateSpecificControl={updateSpecificControl}
+                            onDeleteControl={(idx) => setDeleteConfirm({ type: 'control', index: idx })}
+                            onUpdateNodeData={onUpdateNodeData}
+                            selectedNodeId={selectedNode.id}
+                          />
                         ))}
                       </Accordion>
                     </div>
@@ -638,8 +380,6 @@ export function RegulatoryPropertySheet({
                   </Button>
                 </div>
               )}
-
-              {/* Removed Remove Node button from here as it's now in the sticky footer */}
             </TabsContent>
 
             <TabsContent value="history" className="m-0 p-6 focus-visible:outline-none">
@@ -651,7 +391,6 @@ export function RegulatoryPropertySheet({
                     <p className="text-xs text-slate-500 italic">Riwayat perubahan regulasi untuk seluruh risiko/kontrol pada node ini.</p>
                   </div>
 
-                  {/* Show history for each control in pairs */}
                   {Array.from(new Set(pairs.map((p: any) => p.controlId))).map((cId: any) => (
                     <div key={cId} className="space-y-3">
                        <div className="flex items-center gap-2">
@@ -666,7 +405,6 @@ export function RegulatoryPropertySheet({
           </ScrollArea>
         </Tabs>
 
-        {/* STICKY FOOTER */}
         <div className="p-4 border-t bg-slate-50 shadow-[0_-4px_12px_rgba(0,0,0,0.05)] flex items-center justify-between">
            <Button 
              disabled={isLocked}

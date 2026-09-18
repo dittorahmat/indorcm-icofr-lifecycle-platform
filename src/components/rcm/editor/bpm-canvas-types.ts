@@ -7,7 +7,7 @@ import {
   PunchedTapeNode, SummingJunctionNode, OrNode, CollateNode, SortNode,
   ExtractNode, MergeNode, StoredDataNode, DelayNode, SequentialAccessNode,
   DirectAccessNode, DisplayNode, LoopLimitNode, AnnotationNode
-} from '../nodes/BPMCustomNodes';
+} from '../nodes';
 import { BridgeEdge } from '../edges/BridgeEdge';
 
 export const bpmNodeTypes = {

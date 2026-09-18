@@ -7,27 +7,23 @@ import {
   getExpandedRowModel,
   getSortedRowModel,
   flexRender,
-  ColumnDef,
   GroupingState,
   VisibilityState,
   SortingState,
 } from '@tanstack/react-table';
 import { GLRow, QualitativeLevel, Department, User, Application } from '@shared/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronRight, Filter, FileSpreadsheet, Info, ExternalLink, Lock, Building2, Monitor, Send } from 'lucide-react';
+import { Filter } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import * as XLSX from 'xlsx';
-import { Link } from 'react-router-dom';
-import { DepartmentPicker } from './DepartmentPicker';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
-import { MultiSelect, Option } from '@/components/ui/multi-select';
+import { Option } from '@/components/ui/multi-select';
 import { useTranslation } from 'react-i18next';
 import { sortGLHierarchically } from '@/lib/compliance-utils';
+import { buildGLDataGridColumns } from './GLDataGridColumns';
+import { GLDataGridToolbar } from './GLDataGridToolbar';
 
 interface GLDataGridProps {
   data: GLRow[];
@@ -47,17 +43,6 @@ interface GLDataGridProps {
   onQuickAddApp?: (name: string, accountCode: string) => Promise<void>;
   onOpenWorkflow?: () => void;
 }
-
-const QUALITATIVE_RULES = [
-  { id: 1, key: "qualitativeRules.1" },
-  { id: 2, key: "qualitativeRules.2" },
-  { id: 3, key: "qualitativeRules.3" },
-  { id: 4, key: "qualitativeRules.4" },
-  { id: 5, key: "qualitativeRules.5" },
-  { id: 6, key: "qualitativeRules.6" },
-  { id: 7, key: "qualitativeRules.7" },
-  { id: 8, key: "qualitativeRules.8" },
-];
 
 export const GLDataGrid = React.memo(function GLDataGrid({
   data,
@@ -121,365 +106,22 @@ export const GLDataGrid = React.memo(function GLDataGrid({
     [departments]
   );
 
-  const columns = React.useMemo<ColumnDef<GLRow>[]>(
-    () => [
-      {
-        accessorKey: 'noUrut',
-        header: '#',
-        cell: info => <span className="text-xs text-slate-400">{info.getValue<number>()}</span>,
-        aggregatedCell: info => <span className="text-xs text-slate-500 font-bold">{info.getValue<number>()}</span>,
-        aggregationFn: 'min',
-        size: 40,
-      },
-      {
-        accessorKey: 'parentEntityCode',
-        header: t('grid.parentEntityCode', 'Parent Entity'),
-        cell: info => <span className="font-mono text-xs">{info.getValue<string>()}</span>,
-        size: 80,
-      },
-      {
-        accessorKey: 'entityCode',
-        header: t('grid.entityCode'),
-        cell: info => <span className="font-mono text-xs">{info.getValue<string>()}</span>,
-        size: 80,
-      },
-      {
-        accessorKey: 'fsliName',
-        header: t('grid.fsli'),
-        cell: ({ row, getValue }) => {
-          const isGrouped = row.getIsGrouped();
-          if (isGrouped) {
-            const groupCol = row.groupingColumnId;
-            const groupVal = row.getValue(groupCol) as string;
-            
-            let displayVal = groupVal || '';
-            if (groupCol === 'parentEntityCode') {
-              displayVal = `${t('grid.parentEntity', 'Parent Entity')}: ${groupVal}`;
-            } else if (groupCol === 'entityCode') {
-              displayVal = `${t('grid.entity', 'Entity')}: ${groupVal}`;
-            } else if (groupCol === 'fsliName') {
-              displayVal = groupVal;
-            }
-
-            const depth = row.depth;
-            const mlClass = depth === 1 ? 'ml-4' : depth === 2 ? 'ml-8' : '';
-
-            return (
-              <div className={cn("flex items-center gap-2 font-bold text-xs text-slate-700", mlClass)}>
-                {row.getCanExpand() && (
-                  <button onClick={row.getToggleExpandedHandler()} className="cursor-pointer">
-                    {row.getIsExpanded() ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-                  </button>
-                )}
-                <span className="truncate max-w-[250px]">{displayVal}</span>
-              </div>
-            );
-          }
-
-          const depth = row.depth;
-          const mlClass = depth === 1 ? 'ml-4' : depth === 2 ? 'ml-8' : depth === 3 ? 'ml-12' : '';
-          return (
-            <div className={cn("flex items-center gap-2 font-medium text-xs text-slate-500", mlClass)}>
-              <span className="truncate max-w-[150px]">{getValue<string>() || '-'}</span>
-            </div>
-          );
-        },
-      },
-      {
-        accessorKey: 'noGL',
-        header: t('grid.accountCode'),
-        cell: info => <span className="font-mono text-xs text-slate-500">{info.getValue<string>()}</span>,
-        size: 100,
-      },
-      {
-        accessorKey: 'glDesc',
-        header: t('grid.accountDesc'),
-        cell: ({ row, getValue }) => {
-          const glDesc = getValue<string>();
-          if (row.getIsGrouped()) return <span className="text-xs">{glDesc}</span>;
-
-          const fsliName = row.original.fsliName || "";
-          const noGL = row.original.noGL || "";
-          const assignedDeptIds = row.original.assignedDepartmentIds || [];
-          
-          const classification = row.original?.scopeClassification;
-          const isInScope = classification && classification !== 'out-of-scope';
-
-          // Logic: Lini 1 can only access if they own the account or it's unassigned
-          const userRole = currentUser?.role?.trim();
-          const isLini1 = userRole === 'Line 1';
-          const hasAccess = !isLini1 || assignedDeptIds.length === 0 || assignedDeptIds.includes(currentUser?.departmentId || "");
-
-          if (isInScope) {
-            if (!hasAccess) {
-              return (
-                <div className="text-xs text-slate-400 flex items-center gap-1.5 italic">
-                  <Lock className="h-2.5 w-2.5" /> {glDesc}
-                </div>
-              );
-            }
-
-            const params = new URLSearchParams({
-              fsli: fsliName,
-              noGL: noGL,
-              glDesc: glDesc
-            });
-            return (
-              <Link 
-                to={`/bpm?${params.toString()}`}
-                target="_blank"
-                className="text-xs text-blue-600 underline hover:text-blue-800 font-medium flex items-center gap-1 group truncate max-w-[180px]"
-                title={`Open BPM Workflow for ${glDesc}`}
-              >
-                {glDesc}
-                <ExternalLink className="h-2 w-2 opacity-0 group-hover:opacity-100 transition-opacity" />
-              </Link>
-            );
-          }
-
-          return (
-            <span className="text-xs truncate max-w-[180px]" title={glDesc}>
-              {glDesc}
-            </span>
-          );
-        },
-      },
-      {
-        accessorKey: 'balance',
-        header: () => <div className="text-right">{t('grid.balance')}</div>,
-        aggregationFn: 'sum',
-        cell: ({ row, getValue }) => {
-          let val = getValue<number>() || 0;
-          if (row.getIsGrouped() && row.groupingColumnId === 'fsliName') {
-            const leafRows = row.getLeafRows();
-            const groupExplicitTotal = leafRows[0]?.original.fsliBalance;
-            if (groupExplicitTotal !== undefined && groupExplicitTotal !== null && groupExplicitTotal !== 0) {
-              val = groupExplicitTotal;
-            }
-          }
-          return (
-            <div className={cn(
-              "text-right font-mono text-xs",
-              row.getIsGrouped() ? "font-bold text-slate-700" : (Math.abs(val) >= pmValue ? "text-red-600 font-bold" : "text-slate-500")
-            )}>
-              {val.toLocaleString('id-ID')}
-            </div>
-          );
-        },
-      },
-      {
-        id: 'quantFlag',
-        header: () => <div className="text-center bg-orange-50/50 -mx-2 py-1 text-xs">{t('grid.quantHeader')}</div>,
-        aggregationFn: (columnId, leafRows) => {
-          const groupExplicitTotal = leafRows[0]?.original.fsliBalance;
-          if (groupExplicitTotal !== undefined && groupExplicitTotal !== null && groupExplicitTotal !== 0) {
-            return Math.abs(groupExplicitTotal) >= pmValue;
-          }
-          return leafRows.some(row => Math.abs(row.original.balance) >= pmValue);
-        },
-        cell: ({ row, getValue }) => {
-          const isSignificant = row.getIsGrouped()
-            ? getValue<boolean>()
-            : (() => {
-                const isRowSignificant = Math.abs(row.original.balance || 0) >= pmValue;
-                const groupExplicitTotal = row.original.fsliBalance;
-                if (groupExplicitTotal !== undefined && groupExplicitTotal !== null && groupExplicitTotal !== 0) {
-                  return isRowSignificant || Math.abs(groupExplicitTotal) >= pmValue;
-                }
-                return isRowSignificant;
-              })();
-          return (
-            <div className="text-center">
-              {isSignificant ? (
-                <Badge className="bg-red-600 h-4 px-1.5 text-xs uppercase tracking-tighter">{t('grid.significant')}</Badge>
-              ) : (
-                <span className="text-slate-300 text-xs font-medium italic">{t('grid.notSignificant')}</span>
-              )}
-            </div>
-          );
-        }
-      },
-      ...QUALITATIVE_RULES.map(rule => ({
-        id: `rule-${rule.id}`,
-        header: () => (
-          <div className="text-xs uppercase tracking-tighter text-slate-400 text-center leading-tight max-w-[60px] mx-auto whitespace-normal">
-            {t(rule.key)}
-          </div>
-        ),
-        cell: ({ row }) => {
-          if (!row.getIsGrouped()) return <div className="text-center text-slate-200 text-xs">-</div>;
-          
-          const fsliName = row.getValue('fsliName') as string;
-          const currentLevel = assessmentData?.[fsliName]?.[rule.id] || "Low";
-          
-          return (
-            <Select 
-              disabled={isReadOnly}
-              value={currentLevel} 
-              onValueChange={(val: QualitativeLevel) => onAssessmentChange(fsliName, rule.id, val)}
-            >
-              <SelectTrigger className={cn(
-                "h-7 w-full text-xs px-1 border-none bg-transparent hover:bg-slate-100 transition-colors",
-                currentLevel === 'High' ? "text-red-600 font-bold bg-red-50" : 
-                currentLevel === 'Medium' ? "text-amber-600 font-medium bg-amber-50" : 
-                currentLevel === 'Low' ? "text-green-600 bg-green-50" : "text-slate-300 italic"
-              )}>
-                <SelectValue placeholder="-" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Low" className="text-xs text-green-600 font-medium">Low</SelectItem>
-                <SelectItem value="Medium" className="text-xs text-amber-600 font-medium">Medium</SelectItem>
-                <SelectItem value="High" className="text-xs text-red-600 font-bold">High</SelectItem>
-              </SelectContent>
-            </Select>
-          );
-        }
-      })),
-      {
-        id: 'finalStatus',
-        header: t('grid.scope'),
-        size: 130,
-        aggregationFn: (columnId, leafRows) => {
-          const groupExplicitTotal = leafRows[0]?.original.fsliBalance;
-          const isGroupKuanSignificant = (groupExplicitTotal !== undefined && groupExplicitTotal !== null && groupExplicitTotal !== 0)
-            ? Math.abs(groupExplicitTotal) >= pmValue
-            : leafRows.some(row => Math.abs(row.original.balance) >= pmValue);
-            
-          const fsliName = leafRows[0]?.original.fsliName || "";
-          const assessments = assessmentData?.[fsliName] || {};
-          const isQualSignificant = Object.values(assessments).some(v => v === 'High');
-          
-          return isQualSignificant || isGroupKuanSignificant;
-        },
-        cell: ({ row, getValue }) => {
-          const isInScope = row.getIsGrouped()
-            ? getValue<boolean>()
-            : (() => {
-                const classification = row.original?.scopeClassification;
-                return classification && classification !== 'out-of-scope';
-              })();
-
-          return isInScope ? (
-            <Badge className="bg-indigo-600 text-xs h-5 px-3 uppercase font-extrabold shadow-sm border-2 border-indigo-200 whitespace-nowrap">
-              {t('grid.inScope')}
-            </Badge>
-          ) : (
-            <Badge variant="outline" className="text-xs h-4 px-1.5 opacity-40 whitespace-nowrap">
-              {t('grid.outScope')}
-            </Badge>
-          );
-        }
-      },
-      {
-        id: 'significantApp',
-        header: t('table.significantApp'),
-        size: 320,
-        cell: ({ row }) => {
-          if (row.getIsGrouped()) return null;
-          const noGL = row.original.noGL || "";
-          
-          const classification = row.original?.scopeClassification;
-          const isInScope = classification && classification !== 'out-of-scope';
-
-          if (!isInScope) return null;
-
-          const currentSelected = selectedApps[noGL] || [];
-          const options: Option[] = (applications || []).map(app => ({
-            label: app.name,
-            value: app.id,
-            isWarning: (app.linkedControlCount || 0) === 0
-          }));
-
-          return (
-            <div className="py-1 px-1">
-              <MultiSelect
-                placeholder={t('grid.selectApp')}
-                options={options}
-                selected={currentSelected}
-                onChange={(ids) => onAppsChange(noGL, ids)}
-                onCreateNew={(name) => onQuickAddApp(name, noGL)}
-                disabled={isReadOnly}
-                className="min-h-7 py-1 text-xs"
-              />
-            </div>
-          );
-        }
-      },
-      {
-        id: 'departmentOwner',
-        header: t('grid.lini1Owner'),
-        size: 200,
-        cell: ({ row }) => {
-          if (row.getIsGrouped()) return null;
-          const currentDeptIds = row.original.assignedDepartmentIds || [];
-
-          // Fix: Default to allowing assignment if user data is still loading
-          // or if the user is explicitly Admin/Line 2
-          const userRole = currentUser?.role?.trim();
-          const canAssign = !currentUser || userRole === 'Line 2' || userRole === 'Admin';
-          const isDisabled = isReadOnly || !canAssign;
-
-          return (
-            <div className="py-1">
-              <MultiSelect
-                options={deptOptions}
-                selected={currentDeptIds}
-                onChange={(ids) => onAssignDepartments?.(row.original.noGL, ids)}
-                placeholder={t('grid.lini1Owner')}
-                disabled={isDisabled}
-                className="min-h-7 py-1 text-xs"
-              />
-            </div>
-          );
-        }
-      },
-      {
-        id: 'ownerAcceptance',
-        header: t('grid.ownerAcceptance'),
-        size: 140,
-        cell: ({ row }) => {
-          if (row.getIsGrouped()) return null;
-          
-          const currentAcceptance = row.original.ownerAcceptance;
-          const noGL = row.original.noGL;
-          const assignedDeptIds = row.original.assignedDepartmentIds || [];
-
-          // Check if user can edit owner acceptance:
-          // 1. Lini 1 Manager with matching department
-          // 2. Admin (any department)
-          const userRole = currentUser?.role?.trim();
-          const userLevel = currentUser?.level?.trim();
-          const isLini1Manager = userRole === 'Line 1' && userLevel === 'Manager';
-          const isAdmin = userRole === 'Admin';
-          
-          const canEdit = !isReadOnly && (
-            (isLini1Manager && assignedDeptIds.includes(currentUser?.departmentId || "")) ||
-            isAdmin
-          );
-
-          return (
-            <Select
-              disabled={!canEdit}
-              value={currentAcceptance || ""}
-              onValueChange={(val: "Accepted" | "Rejected") => onOwnerAcceptanceChange?.(noGL, val)}
-            >
-              <SelectTrigger className={cn(
-                "h-7 w-full text-xs px-1 border-none bg-transparent hover:bg-slate-100 transition-colors",
-                currentAcceptance === 'Accepted' ? "text-green-600 font-bold bg-green-50" :
-                currentAcceptance === 'Rejected' ? "text-red-600 font-bold bg-red-50" :
-                "text-slate-300 italic"
-              )}>
-                <SelectValue placeholder={t('grid.pending')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Accepted" className="text-xs text-green-600 font-bold">✓ Accepted</SelectItem>
-                <SelectItem value="Rejected" className="text-xs text-red-600 font-bold">✗ Rejected</SelectItem>
-              </SelectContent>
-            </Select>
-          );
-        }
-      }
-    ],
+  const columns = React.useMemo(
+    () => buildGLDataGridColumns({
+      t,
+      pmValue,
+      assessmentData,
+      isReadOnly,
+      onAssessmentChange,
+      onOwnerAcceptanceChange,
+      currentUser,
+      onAssignDepartments,
+      applications,
+      selectedApps,
+      onAppsChange,
+      onQuickAddApp,
+      deptOptions,
+    }),
     [t, pmValue, assessmentData, isReadOnly, onAssessmentChange, onOwnerAcceptanceChange, currentUser, onAssignDepartments, applications, selectedApps, onAppsChange, onQuickAddApp, deptOptions]
   );
 
@@ -573,30 +215,10 @@ export const GLDataGrid = React.memo(function GLDataGrid({
 
   return (
     <div className="flex flex-col flex-1 min-h-0 min-w-0 space-y-4">
-      <div className="flex flex-row items-center gap-4 bg-white p-2.5 rounded-lg border border-slate-100 shadow-sm overflow-hidden">
-        <div className="flex-1 min-w-0 flex gap-2 items-center text-[10px] sm:text-xs text-muted-foreground font-medium bg-slate-50 px-2.5 py-1.5 rounded-md border border-slate-200/50">
-          <Info className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
-          <span className="truncate leading-tight">{t('grid.fsliGuidance')}</span>
-        </div>
-        <div className="flex gap-2 items-center shrink-0">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleExportExcel}
-            className="h-8 gap-2 text-green-700 hover:text-green-800 hover:bg-green-50 border-green-200 text-[10px] font-bold uppercase tracking-wider shadow-sm hidden sm:flex"
-          >
-            <FileSpreadsheet className="h-3.5 w-3.5" /> {t('grid.exportExcel')}
-          </Button>
-          <Button 
-            variant="default" 
-            size="sm" 
-            onClick={onOpenWorkflow}
-            className="h-8 gap-2 bg-indigo-600 hover:bg-indigo-700 text-white border-none shadow-lg shadow-indigo-100 uppercase tracking-widest font-black text-[10px] px-4"
-          >
-            <Send className="h-3.5 w-3.5" /> {t('grid.submitForReview')}
-          </Button>
-        </div>
-      </div>
+      <GLDataGridToolbar
+        onExportExcel={handleExportExcel}
+        onOpenWorkflow={onOpenWorkflow}
+      />
 
       <div className="rounded-md border bg-white shadow-sm overflow-hidden flex-1 min-h-0 flex flex-col w-full">
         <div className="overflow-auto flex-1 min-h-0 w-full">
