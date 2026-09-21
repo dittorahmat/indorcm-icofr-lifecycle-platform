@@ -18,6 +18,7 @@ import { useUnsavedChangesContext } from '@/context/UnsavedChangesContext';
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { useCanvasHistory } from '@/hooks/use-canvas-history';
 import { useTranslation } from 'react-i18next';
+import { cn } from '@/lib/utils';
 import { RegulatoryPropertySheet } from './properties/RegulatoryPropertySheet';
 import { autoArrangeBpmDiagram } from '@/utils/bpm-auto-layout';
 import { BPMSelectionHUD } from './editor/BPMSelectionHUD';
@@ -50,6 +51,8 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
   const { t } = useTranslation(['risklibrary', 'common', 'bpm']);
   const [documentView, setDocumentView] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const [isOcrDialogOpen, setIsOcrDialogOpen] = useState(false);
 
@@ -60,6 +63,39 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
   const [rfInstance, setRfInstance] = useState<any>(null);
   const { setDirty, resetDirty } = useUnsavedChangesContext();
+
+  const handleFitView = useCallback(() => {
+    if (rfInstance) {
+      rfInstance.fitView({ padding: 0.15, duration: 400 });
+    }
+  }, [rfInstance]);
+
+  const toggleFullscreen = useCallback(() => {
+    if (!containerRef.current) return;
+    if (!document.fullscreenElement) {
+      containerRef.current.requestFullscreen().catch(() => {
+        // Fallback for browsers / iframes that deny native fullscreen
+        setIsFullscreen(prev => !prev);
+      });
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+      // Auto refit view after fullscreen resize transition
+      setTimeout(() => {
+        if (rfInstance) {
+          rfInstance.fitView({ padding: 0.15, duration: 200 });
+        }
+      }, 150);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, [rfInstance]);
 
   const {
     canUndo,
@@ -92,7 +128,13 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
     setEdges(arranged.edges);
     setDirty(true);
     toast.success(t('bpm:editor.toast.autoArrangeSuccess', { defaultValue: 'Canvas layout auto-arranged successfully' }));
-  }, [nodes, edges, pushState, setNodes, setEdges, setDirty, t]);
+    // Automatically center and fit whole diagram after arrangement
+    setTimeout(() => {
+      if (rfInstance) {
+        rfInstance.fitView({ padding: 0.15, duration: 400 });
+      }
+    }, 100);
+  }, [nodes, edges, pushState, setNodes, setEdges, setDirty, t, rfInstance]);
 
   // Global Keyboard Shortcuts for Undo/Redo
   useEffect(() => {
@@ -299,7 +341,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
   if (isDiagramLoading) return <div className="flex h-full items-center justify-center"><RefreshCw className="h-8 w-8 animate-spin text-slate-300" /></div>;
 
   return (
-    <div className="flex h-full w-full bg-slate-50 overflow-hidden print:p-0">
+    <div ref={containerRef} className={cn("flex h-full w-full bg-slate-50 overflow-hidden print:p-0", isFullscreen && "fixed inset-0 z-50 bg-white")}>
       <div className="flex-1 relative flex flex-col h-full overflow-hidden">
         {documentView ? (
           <BPMDocumentView
@@ -332,9 +374,12 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
               currentGL={currentGL}
               selectedGLs={selectedGLs}
               glOptions={glOptions}
+              isFullscreen={isFullscreen}
               onUndo={handleUndo}
               onRedo={handleRedo}
               onAutoArrange={handleAutoArrange}
+              onFitView={handleFitView}
+              onToggleFullscreen={toggleFullscreen}
               onOpenDocumentView={() => setDocumentView(true)}
               onOpenOcrDialog={() => setIsOcrDialogOpen(true)}
               onScaleChange={(scale) => setGlobalScale(scale)}
@@ -351,6 +396,8 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
               <ReactFlow
                 nodes={nodes}
                 edges={edges}
+                minZoom={0.02}
+                maxZoom={2.5}
                 style={{ 
                   '--bpm-global-width-scale': globalScale / 100, 
                   '--bpm-global-font-scale': globalScale / 100 
@@ -401,6 +448,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
                 nodeTypes={bpmNodeTypes}
                 edgeTypes={bpmEdgeTypes}
                 fitView
+                fitViewOptions={{ padding: 0.15 }}
               >
                 {/* Visio-like Smart Alignment Guide Lines */}
                 <BPMCanvasAlignmentGuides

@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Panel } from 'reactflow';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
-  PlayCircle, StopCircle, RefreshCw, GripVertical, Columns 
+  PlayCircle, StopCircle, RefreshCw, GripVertical, Columns,
+  ChevronLeft, ChevronRight, Palette
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { cn } from '@/lib/utils';
 
 export interface BPMShapePaletteProps {
   subProcess: string;
@@ -27,12 +29,42 @@ export const BPMShapePalette: React.FC<BPMShapePaletteProps> = ({
   unmappedControls,
 }) => {
   const { t } = useTranslation(['bpm', 'rcm']);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  if (isCollapsed) {
+    return (
+      <Panel position="top-left" className="m-3">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setIsCollapsed(false)}
+          className="h-10 px-3 bg-white/95 backdrop-blur-md border border-slate-200 shadow-xl rounded-xl gap-2 font-bold text-xs text-slate-700 hover:bg-slate-50 transition-all"
+          title={t('bpm:editor.actions.expandPalette', { defaultValue: 'Expand Elements Palette' })}
+        >
+          <Palette className="h-4 w-4 text-indigo-600" />
+          <span className="hidden sm:inline">{t('bpm:modal.title')}</span>
+          <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+        </Button>
+      </Panel>
+    );
+  }
 
   return (
-    <Panel position="top-left" className="bg-white/95 backdrop-blur-md p-5 rounded-[1.5rem] border border-slate-200 shadow-xl flex flex-col gap-5 max-w-[280px] max-h-[85vh] overflow-y-auto scrollbar-thin">
-      <div className="flex flex-col border-b border-slate-100 pb-4">
-        <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">{t('bpm:modal.title')}</span>
-        <span className="text-sm font-display font-bold text-slate-900 leading-tight">{subProcess}</span>
+    <Panel position="top-left" className="bg-white/95 backdrop-blur-md p-5 rounded-[1.5rem] border border-slate-200 shadow-xl flex flex-col gap-5 max-w-[280px] max-h-[85vh] overflow-y-auto scrollbar-thin transition-all">
+      <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+        <div className="flex flex-col pr-2">
+          <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">{t('bpm:modal.title')}</span>
+          <span className="text-sm font-display font-bold text-slate-900 leading-tight truncate max-w-[180px]">{subProcess}</span>
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setIsCollapsed(true)}
+          className="h-7 w-7 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 shrink-0"
+          title={t('bpm:editor.actions.collapsePalette', { defaultValue: 'Collapse Elements Palette' })}
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
       </div>
       
       {!isLocked && (

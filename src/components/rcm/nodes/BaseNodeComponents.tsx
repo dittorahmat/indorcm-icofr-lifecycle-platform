@@ -59,8 +59,10 @@ export const NodeTooltip = ({ children, data, type, selected }: { children: Reac
 // --- Universal 8-Point Connection Handles (Visio-Like) ---
 export const EightConnectionHandles = ({ isLocked, selected }: { isLocked?: boolean, selected?: boolean }) => {
   if (isLocked) return null;
-  const handleBase = "w-2.5 h-2.5 bg-white border border-slate-700 rounded-full shadow-sm transition-all z-30";
-  const hoverStyle = selected ? "opacity-100 scale-110 border-primary bg-primary/20" : "opacity-75 hover:opacity-100 hover:scale-125 hover:border-primary";
+  const handleBase = "w-2 h-2 bg-white border border-slate-600 rounded-full shadow-sm transition-all z-20 pointer-events-auto";
+  const hoverStyle = selected 
+    ? "opacity-90 scale-110 border-primary bg-primary/20" 
+    : "opacity-0 group-hover:opacity-70 hover:!opacity-100 hover:scale-125 hover:border-primary";
 
   return (
     <>

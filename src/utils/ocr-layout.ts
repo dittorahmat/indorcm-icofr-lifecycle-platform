@@ -265,7 +265,7 @@ export function layoutOcrDiagram(raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[]
 
   const sortedLanes = orderLanes(lanesRaw, childMap);
   const laneWidthMap = computeLaneWidths(sortedLanes, childMap);
-  const uniformHeight = computeUniformHeight(sortedLanes, childMap);
+  let uniformHeight = computeUniformHeight(sortedLanes, childMap);
 
   const lanePos = new Map<string, { x: number; y: number; width: number; height: number }>();
   let cumX = 0;
@@ -299,42 +299,139 @@ export function layoutOcrDiagram(raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[]
     });
   }
 
+  // Compute global topological rank across all nodes to synchronize Y coordinates across lanes
+  const nonSwimlaneNodes = downgraded.filter((n) => n.type !== 'swimlane');
+  const globalInDegree = new Map<string, number>();
+  const globalAdjacency = new Map<string, string[]>();
+  const nonSwimlaneIdSet = new Set(nonSwimlaneNodes.map((n) => n.id));
+
+  for (const n of nonSwimlaneNodes) {
+    globalInDegree.set(n.id, 0);
+    globalAdjacency.set(n.id, []);
+  }
+
+  for (const e of filteredEdges) {
+    if (nonSwimlaneIdSet.has(e.source) && nonSwimlaneIdSet.has(e.target)) {
+      globalInDegree.set(e.target, (globalInDegree.get(e.target) ?? 0) + 1);
+      globalAdjacency.get(e.source)?.push(e.target);
+    }
+  }
+
+  const globalRank = new Map<string, number>();
+  const queue: string[] = [];
+  const maxAllowedDepth = nonSwimlaneNodes.length;
+
+  for (const n of nonSwimlaneNodes) {
+    if ((globalInDegree.get(n.id) ?? 0) === 0) {
+      globalRank.set(n.id, 0);
+      queue.push(n.id);
+    }
+  }
+
+  let head = 0;
+  while (head < queue.length) {
+    const u = queue[head++];
+    const r = globalRank.get(u) ?? 0;
+    if (r >= maxAllowedDepth) continue; // cycle guard
+    const neighbors = globalAdjacency.get(u) ?? [];
+    for (const v of neighbors) {
+      const nextRank = r + 1;
+      const currentRank = globalRank.get(v);
+      if (currentRank === undefined || nextRank > currentRank) {
+        if (nextRank <= maxAllowedDepth) {
+          globalRank.set(v, nextRank);
+          queue.push(v);
+        }
+      }
+    }
+  }
+
+  let maxAssignedRank = 0;
+  for (const r of globalRank.values()) {
+    if (r > maxAssignedRank) maxAssignedRank = r;
+  }
+
+  const unranked = nonSwimlaneNodes.filter((n) => !globalRank.has(n.id));
+  unranked.sort((a, b) => a.position.y - b.position.y);
+  for (const n of unranked) {
+    maxAssignedRank += 1;
+    globalRank.set(n.id, maxAssignedRank);
+  }
+
+  const ROW_HEIGHT = 80;
+  const HEADER_OFFSET = HEADER_H + 20;
+
   for (const lane of sortedLanes) {
     const children = childMap.get(lane.id) ?? [];
     if (children.length === 0) continue;
     const pos = lanePos.get(lane.id);
     if (!pos) continue;
-    const intraEdges = filteredEdges.filter((e) => {
-      const sp = parentById.get(e.source);
-      const tp = parentById.get(e.target);
-      return sp === lane.id && tp === lane.id;
-    });
-    const depthMap = buildDepthMap(children, intraEdges);
-    const sortedChildren = [...children].sort((a, b) => {
-      const da = depthMap.get(a.id) ?? 0;
-      const db = depthMap.get(b.id) ?? 0;
-      if (da !== db) return da - db;
-      if (a.position.y !== b.position.y) return a.position.y - b.position.y;
-      return a.position.x - b.position.x;
-    });
-    let curY = HEADER_H;
-    sortedChildren.forEach((child) => {
-      const dims = getNodeDimensions(child.type);
-      const relX = Math.round((pos.width - dims.width) / 2);
-      const y = curY;
-      nodesOut.push({
-        id: child.id,
-        type: child.type,
-        label: child.label,
-        position: { x: relX, y },
-        parentId: lane.id,
-        width: dims.width,
-        height: dims.height,
-        department: child.department,
-        function: child.function,
-      });
-      curY += dims.height + GAP_Y;
-    });
+
+    const rankGroups = new Map<number, OcrRawNode[]>();
+    for (const child of children) {
+      const r = globalRank.get(child.id) ?? 0;
+      if (!rankGroups.has(r)) rankGroups.set(r, []);
+      rankGroups.get(r)!.push(child);
+    }
+
+    const sortedRanks = Array.from(rankGroups.keys()).sort((a, b) => a - b);
+    let lastUsedY = HEADER_OFFSET - GAP_Y;
+
+    for (const r of sortedRanks) {
+      const groupNodes = rankGroups.get(r)!;
+      groupNodes.sort((a, b) => a.position.x - b.position.x || a.position.y - b.position.y);
+
+      let targetY = HEADER_OFFSET + r * ROW_HEIGHT;
+      if (targetY <= lastUsedY + 20) {
+        targetY = lastUsedY + GAP_Y + 20;
+      }
+
+      const count = groupNodes.length;
+      for (let i = 0; i < count; i++) {
+        const child = groupNodes[i];
+        const dims = getNodeDimensions(child.type);
+
+        let relX = Math.round((pos.width - dims.width) / 2);
+        let nodeY = targetY;
+
+        if (count > 1) {
+          const stepOffset = Math.min(24, (pos.width - dims.width - 40) / count);
+          relX = Math.round((pos.width - dims.width) / 2) + (i - (count - 1) / 2) * stepOffset;
+          nodeY = targetY + i * 28;
+        }
+
+        nodesOut.push({
+          id: child.id,
+          type: child.type,
+          label: child.label,
+          position: { x: relX, y: nodeY },
+          parentId: lane.id,
+          width: dims.width,
+          height: dims.height,
+          department: child.department,
+          function: child.function,
+        });
+
+        if (nodeY + dims.height > lastUsedY) {
+          lastUsedY = nodeY + dims.height;
+        }
+      }
+    }
+
+    const requiredLaneHeight = lastUsedY + 100;
+    if (requiredLaneHeight > uniformHeight) {
+      uniformHeight = requiredLaneHeight;
+    }
+  }
+
+  // Update swimlane heights to final uniformHeight
+  for (const n of nodesOut) {
+    if (n.type === 'swimlane') {
+      n.height = uniformHeight;
+      if (lanePos.has(n.id)) {
+        lanePos.get(n.id)!.height = uniformHeight;
+      }
+    }
   }
 
   const topLevel = downgraded.filter((n) => n.type !== 'swimlane' && (n.parentId === undefined || !lanePos.has(n.parentId)));

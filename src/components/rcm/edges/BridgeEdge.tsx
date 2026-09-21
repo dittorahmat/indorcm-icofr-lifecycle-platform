@@ -240,32 +240,89 @@ function getDistributedPoint(
 }
 
 // Generate strict 90-degree Manhattan orthogonal step path (no diagonal lines ever)
+// with obstacle/gutter avoidance and arrowhead clearance
 function getOrthogonalPath(
   sPt: Point,
   sSide: string,
-  tPt: Point,
+  rawTPt: Point,
   tSide: string
 ): { path: string; segments: Segment[] } {
+  // Arrowhead clearance offset: back off target point by 6px along arrival direction
+  // so the arrow marker tip rests right on the border and is not occluded by the node
+  const ARROW_OFFSET = 6;
+  const tPt: Point = { ...rawTPt };
+  if (tSide === 'top') {
+    tPt.y -= ARROW_OFFSET;
+  } else if (tSide === 'bottom') {
+    tPt.y += ARROW_OFFSET;
+  } else if (tSide === 'left') {
+    tPt.x -= ARROW_OFFSET;
+  } else if (tSide === 'right') {
+    tPt.x += ARROW_OFFSET;
+  }
+
   const points: Point[] = [sPt];
 
   const dx = tPt.x - sPt.x;
   const dy = tPt.y - sPt.y;
 
-  // Compute 90-degree step points based on sides
   if ((sSide === 'bottom' && tSide === 'top') || (sSide === 'top' && tSide === 'bottom')) {
-    const midY = sPt.y + dy / 2;
-    points.push({ x: sPt.x, y: midY });
-    points.push({ x: tPt.x, y: midY });
+    if (dy >= 0) {
+      // Normal downward flow (or cross-lane downward)
+      const midY = sPt.y + dy / 2;
+      points.push({ x: sPt.x, y: midY });
+      points.push({ x: tPt.x, y: midY });
+    } else {
+      // Backward loop (target is above source): route out and loop cleanly around
+      // Ensure we never cross above the swimlane header border (Y: 70 min safe altitude)
+      const loopOffset = Math.abs(dx) > 20 ? 30 : 40;
+      const escapeX = dx >= 0 ? Math.min(sPt.x, tPt.x) - loopOffset : Math.max(sPt.x, tPt.x) + loopOffset;
+      const safeTopY = Math.max(75, tPt.y - 18);
+      points.push({ x: escapeX, y: sPt.y + 20 });
+      points.push({ x: escapeX, y: safeTopY });
+      points.push({ x: tPt.x, y: safeTopY });
+    }
   } else if ((sSide === 'right' && tSide === 'left') || (sSide === 'left' && tSide === 'right')) {
     const midX = sPt.x + dx / 2;
     points.push({ x: midX, y: sPt.y });
     points.push({ x: midX, y: tPt.y });
-  } else if (sSide === 'bottom' || sSide === 'top') {
-    // Exit vertically, then move horizontally to target X, then vertically to target Y
-    points.push({ x: sPt.x, y: tPt.y });
-  } else if (sSide === 'left' || sSide === 'right') {
-    // Exit horizontally, then move vertically to target Y, then horizontally to target X
-    points.push({ x: tPt.x, y: sPt.y });
+  } else if (sSide === 'bottom') {
+    // Exit downward from source, then turn toward target
+    if (tSide === 'left' || tSide === 'right') {
+      points.push({ x: sPt.x, y: tPt.y });
+    } else {
+      // both bottom or custom
+      const exitY = sPt.y + Math.max(30, dy / 2);
+      points.push({ x: sPt.x, y: exitY });
+      points.push({ x: tPt.x, y: exitY });
+    }
+  } else if (sSide === 'top') {
+    // Exit upward from source - enforce safe top ceiling above swimlane header
+    if (tSide === 'left' || tSide === 'right') {
+      points.push({ x: sPt.x, y: tPt.y });
+    } else {
+      const exitY = Math.max(75, sPt.y - Math.max(30, Math.abs(dy) / 2));
+      points.push({ x: sPt.x, y: exitY });
+      points.push({ x: tPt.x, y: exitY });
+    }
+  } else if (sSide === 'right') {
+    // Exit horizontally to right
+    if (tSide === 'top' || tSide === 'bottom') {
+      points.push({ x: tPt.x, y: sPt.y });
+    } else {
+      const midX = Math.max(sPt.x + 30, sPt.x + dx / 2);
+      points.push({ x: midX, y: sPt.y });
+      points.push({ x: midX, y: tPt.y });
+    }
+  } else if (sSide === 'left') {
+    // Exit horizontally to left
+    if (tSide === 'top' || tSide === 'bottom') {
+      points.push({ x: tPt.x, y: sPt.y });
+    } else {
+      const midX = Math.min(sPt.x - 30, sPt.x + dx / 2);
+      points.push({ x: midX, y: sPt.y });
+      points.push({ x: midX, y: tPt.y });
+    }
   } else {
     // Fallback step routing
     points.push({ x: sPt.x, y: sPt.y + dy / 2 });

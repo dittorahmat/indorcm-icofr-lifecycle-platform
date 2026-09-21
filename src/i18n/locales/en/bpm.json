@@ -274,7 +274,13 @@
       "auditBaseline": "Audit Baseline",
       "backToEditor": "Back to Editor",
       "printExport": "Print / Export PDF",
-      "documentView": "Document View"
+      "documentView": "Document View",
+      "fitView": "Fit to Screen",
+      "enterFullscreen": "Fullscreen",
+      "exitFullscreen": "Exit Fullscreen",
+      "zoom": "Scale",
+      "collapsePalette": "Collapse Elements Palette",
+      "expandPalette": "Expand Elements Palette"
     },
     "selectionHud": {
       "selected": "Selected",

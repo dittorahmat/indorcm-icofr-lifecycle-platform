@@ -277,7 +277,13 @@
       "auditBaseline": "Baseline Audit",
       "backToEditor": "Kembali ke Editor",
       "printExport": "Cetak / Ekspor PDF",
-      "documentView": "Tampilan Dokumen"
+      "documentView": "Tampilan Dokumen",
+      "fitView": "Paskan Layar",
+      "enterFullscreen": "Layar Penuh",
+      "exitFullscreen": "Keluar Layar Penuh",
+      "zoom": "Skala",
+      "collapsePalette": "Sembunyikan Panel Elemen",
+      "expandPalette": "Tampilkan Panel Elemen"
     },
     "selectionHud": {
       "selected": "Terpilih",

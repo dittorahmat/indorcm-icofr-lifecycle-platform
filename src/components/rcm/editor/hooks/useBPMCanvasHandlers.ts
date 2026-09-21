@@ -162,7 +162,9 @@ export function useBPMCanvasHandlers({
           draggable: !isLocked && !isNodeLocked,
           zIndex: isSwimlane ? -1 : (node.zIndex ?? 10),
           dragHandle: isSwimlane ? '.swimlane-drag-handle' : undefined,
-          style: node.style ? { ...node.style } : (isSwimlane ? { width: node.width || 400, height: node.height || 1000 } : undefined),
+          style: isSwimlane 
+            ? { width: node.width || 400, height: node.height || 1200, ...(node.style || {}) } 
+            : (node.style ? { ...node.style } : undefined),
           data: isSwimlane
             ? {
                 label: resolvedLabel,

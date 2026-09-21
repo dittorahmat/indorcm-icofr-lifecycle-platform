@@ -257,13 +257,44 @@ Format keluaran WAJIB berupa JSON objek yang memenuhi skema data yang diminta.`;
       responseSchema
     });
 
-    let parsedResult;
-    try {
-      parsedResult = JSON.parse(result.content);
-    } catch (e) {
-      const cleanJson = result.content.replace(/```json|```/g, "").trim();
-      parsedResult = JSON.parse(cleanJson);
+    let rawContent = (result.content || "").trim();
+    if (rawContent.startsWith("```")) {
+      rawContent = rawContent.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
     }
+
+    let parsedResult: any;
+    try {
+      parsedResult = JSON.parse(rawContent);
+    } catch {
+      // Robust fallback repair for unterminated JSON / truncated streaming strings
+      try {
+        let repaired = rawContent;
+        // If truncated inside an unclosed string, close the quote
+        const quoteCount = (repaired.match(/(?<!\\)"/g) || []).length;
+        if (quoteCount % 2 !== 0) {
+          repaired += '"';
+        }
+        // Balance curly braces and square brackets
+        const openBraces = (repaired.match(/{/g) || []).length;
+        const closeBraces = (repaired.match(/}/g) || []).length;
+        const openBrackets = (repaired.match(/\[/g) || []).length;
+        const closeBrackets = (repaired.match(/\]/g) || []).length;
+
+        for (let i = 0; i < openBrackets - closeBrackets; i++) repaired += ']';
+        for (let i = 0; i < openBraces - closeBraces; i++) repaired += '}';
+
+        parsedResult = JSON.parse(repaired);
+      } catch (innerErr: any) {
+        console.error("[BPM OCR API] JSON Repair failed. Raw content preview:", rawContent.slice(0, 300));
+        throw new Error(`Invalid JSON format: ${innerErr.message}`);
+      }
+    }
+
+    if (!parsedResult || typeof parsedResult !== 'object') {
+      parsedResult = { nodes: [], edges: [] };
+    }
+    if (!Array.isArray(parsedResult.nodes)) parsedResult.nodes = [];
+    if (!Array.isArray(parsedResult.edges)) parsedResult.edges = [];
 
     return ok(c, parsedResult);
   } catch (err: any) {

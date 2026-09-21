@@ -167,21 +167,91 @@ export function autoArrangeBpmDiagram(
   );
 
   // 4. Compute required uniform height
-  let maxRequiredHeight = DEFAULT_SWIMLANE_DIMENSIONS.minHeight;
-  for (const lane of sortedLanes) {
-    const children = laneChildMap.get(lane.id) || [];
-    let laneContentHeight = DEFAULT_SWIMLANE_DIMENSIONS.headerHeight;
-    for (const child of children) {
-      const dims = getStandardNodeDimensions(child.type || 'activity');
-      laneContentHeight += dims.height + DEFAULT_NODE_SPACING.verticalGap;
-    }
-    laneContentHeight += 120; // Bottom buffer
-    if (laneContentHeight > maxRequiredHeight) {
-      maxRequiredHeight = laneContentHeight;
+  // 4. Compute global topological rank across all nodes to synchronize Y coordinates across lanes
+  const globalInDegree = new Map<string, number>();
+  const globalAdjacency = new Map<string, string[]>();
+  const nonSwimlaneIdSet = new Set(nonSwimlaneNodes.map((n) => n.id));
+
+  for (const n of nonSwimlaneNodes) {
+    globalInDegree.set(n.id, 0);
+    globalAdjacency.set(n.id, []);
+  }
+
+  for (const e of currentEdges) {
+    if (nonSwimlaneIdSet.has(e.source) && nonSwimlaneIdSet.has(e.target)) {
+      globalInDegree.set(e.target, (globalInDegree.get(e.target) ?? 0) + 1);
+      globalAdjacency.get(e.source)?.push(e.target);
     }
   }
 
-  // 5. Place swimlanes side by side
+  // BFS / Topological longest-path leveling with cycle prevention
+  const globalRank = new Map<string, number>();
+  const queue: string[] = [];
+  const maxAllowedDepth = nonSwimlaneNodes.length;
+
+  for (const n of nonSwimlaneNodes) {
+    if ((globalInDegree.get(n.id) ?? 0) === 0) {
+      globalRank.set(n.id, 0);
+      queue.push(n.id);
+    }
+  }
+
+  let head = 0;
+  while (head < queue.length) {
+    const u = queue[head++];
+    const r = globalRank.get(u) ?? 0;
+    if (r >= maxAllowedDepth) continue; // cycle guard
+    const neighbors = globalAdjacency.get(u) ?? [];
+    for (const v of neighbors) {
+      const nextRank = r + 1;
+      const currentRank = globalRank.get(v);
+      if (currentRank === undefined || nextRank > currentRank) {
+        if (nextRank <= maxAllowedDepth) {
+          globalRank.set(v, nextRank);
+          queue.push(v);
+        }
+      }
+    }
+  }
+
+  // Assign fallback rank for any disconnected/cyclic nodes by bucketing
+  let maxAssignedRank = 0;
+  for (const r of globalRank.values()) {
+    if (r > maxAssignedRank) maxAssignedRank = r;
+  }
+
+  const unranked = nonSwimlaneNodes.filter((n) => !globalRank.has(n.id));
+  unranked.sort((a, b) => (a.position?.y ?? 0) - (b.position?.y ?? 0));
+  if (unranked.length > 0) {
+    let currentFallbackRank = maxAssignedRank + 1;
+    let prevY = unranked[0].position?.y ?? 0;
+    for (const n of unranked) {
+      const curY = n.position?.y ?? 0;
+      if (curY - prevY > 50) {
+        currentFallbackRank += 1;
+        prevY = curY;
+      }
+      globalRank.set(n.id, currentFallbackRank);
+    }
+  }
+
+  // 5. Compute required uniform height and map ranks to vertical slots
+  const ROW_HEIGHT = 80;
+  const HEADER_OFFSET = DEFAULT_SWIMLANE_DIMENSIONS.headerHeight + 20;
+  let maxRequiredHeight = DEFAULT_SWIMLANE_DIMENSIONS.minHeight;
+
+  // Find max rank in the diagram
+  let highestDiagramRank = 0;
+  for (const r of globalRank.values()) {
+    if (r > highestDiagramRank) highestDiagramRank = r;
+  }
+
+  const calculatedCanvasHeight = HEADER_OFFSET + (highestDiagramRank + 1) * ROW_HEIGHT + 100;
+  if (calculatedCanvasHeight > maxRequiredHeight) {
+    maxRequiredHeight = calculatedCanvasHeight;
+  }
+
+  // 6. Place swimlanes side by side
   let cumX = 40;
   const TOP_OFFSET = 40;
   const lanePositionMap = new Map<string, { x: number; y: number; width: number; height: number }>();
@@ -211,46 +281,87 @@ export function autoArrangeBpmDiagram(
     cumX += equalizedLaneWidth + DEFAULT_SWIMLANE_DIMENSIONS.laneGap;
   }
 
-  // 6. Layout child nodes inside each swimlane
+  // 7. Layout child nodes inside each swimlane aligned to global ranks
   for (const lane of sortedLanes) {
     const children = laneChildMap.get(lane.id) || [];
     if (children.length === 0) continue;
 
-    const intraEdges = currentEdges.filter(
-      (e) => nodeMap.get(e.source)?.parentId === lane.id && nodeMap.get(e.target)?.parentId === lane.id
-    );
+    // Group children by global rank so multiple nodes at same rank in same lane don't collide
+    const rankGroups = new Map<number, Node[]>();
+    for (const child of children) {
+      const r = globalRank.get(child.id) ?? 0;
+      if (!rankGroups.has(r)) rankGroups.set(r, []);
+      rankGroups.get(r)!.push(child);
+    }
 
-    const depthMap = buildDepthMap(children, intraEdges);
+    // Sort rank keys
+    const sortedRanks = Array.from(rankGroups.keys()).sort((a, b) => a - b);
 
-    const sortedChildren = [...children].sort((a, b) => {
-      const da = depthMap.get(a.id) ?? 0;
-      const db = depthMap.get(b.id) ?? 0;
-      if (da !== db) return da - db;
-      if ((a.position?.y ?? 0) !== (b.position?.y ?? 0)) {
-        return (a.position?.y ?? 0) - (b.position?.y ?? 0);
+    // Track vertical placement to ensure nodes within same lane never overlap
+    let lastUsedY = HEADER_OFFSET - DEFAULT_NODE_SPACING.verticalGap;
+
+    for (const r of sortedRanks) {
+      const groupNodes = rankGroups.get(r)!;
+      groupNodes.sort((a, b) => (a.position?.x ?? 0) - (b.position?.x ?? 0) || (a.position?.y ?? 0) - (b.position?.y ?? 0));
+
+      let targetY = HEADER_OFFSET + r * ROW_HEIGHT;
+      if (targetY <= lastUsedY + 20) {
+        targetY = lastUsedY + DEFAULT_NODE_SPACING.verticalGap + 20;
       }
-      return (a.position?.x ?? 0) - (b.position?.x ?? 0);
-    });
 
-    let curY = DEFAULT_SWIMLANE_DIMENSIONS.headerHeight + 20;
-    for (const child of sortedChildren) {
-      const dims = getStandardNodeDimensions(child.type || 'activity');
-      const relX = Math.round((equalizedLaneWidth - dims.width) / 2);
+      const count = groupNodes.length;
+      for (let i = 0; i < count; i++) {
+        const child = groupNodes[i];
+        const dims = getStandardNodeDimensions(child.type || 'activity');
 
-      outputNodes.push({
-        ...child,
-        parentId: lane.id,
-        position: { x: relX, y: curY },
-        width: dims.width,
-        height: dims.height,
-        style: {
-          ...child.style,
+        // If multiple items at the same rank in same lane (e.g. Form + KTP + Emas), offset slightly
+        let relX = Math.round((equalizedLaneWidth - dims.width) / 2);
+        let nodeY = targetY;
+
+        if (count > 1) {
+          // Slight cascade / offset for multi-documents in the same lane
+          const stepOffset = Math.min(24, (equalizedLaneWidth - dims.width - 40) / count);
+          relX = Math.round((equalizedLaneWidth - dims.width) / 2) + (i - (count - 1) / 2) * stepOffset;
+          nodeY = targetY + i * 28;
+        }
+
+        outputNodes.push({
+          ...child,
+          parentId: lane.id,
+          position: { x: relX, y: nodeY },
           width: dims.width,
           height: dims.height,
-        },
-      });
+          style: {
+            ...child.style,
+            width: dims.width,
+            height: dims.height,
+          },
+        });
 
-      curY += dims.height + DEFAULT_NODE_SPACING.verticalGap;
+        if (nodeY + dims.height > lastUsedY) {
+          lastUsedY = nodeY + dims.height;
+        }
+      }
+    }
+
+    // Ensure swimlane height dynamically stretches if cascaded nodes push beyond calculatedCanvasHeight
+    const requiredLaneHeight = lastUsedY + 100;
+    if (requiredLaneHeight > maxRequiredHeight) {
+      maxRequiredHeight = requiredLaneHeight;
+    }
+  }
+
+  // Update swimlane heights to the final maxRequiredHeight so all lanes stay uniform and fully contain all children
+  for (const n of outputNodes) {
+    if (n.type === 'swimlane') {
+      n.height = maxRequiredHeight;
+      n.style = {
+        ...n.style,
+        height: maxRequiredHeight,
+      };
+      if (lanePositionMap.has(n.id)) {
+        lanePositionMap.get(n.id)!.height = maxRequiredHeight;
+      }
     }
   }
 

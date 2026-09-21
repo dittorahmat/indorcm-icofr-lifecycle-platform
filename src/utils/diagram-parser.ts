@@ -82,9 +82,9 @@ export async function compressAndScaleImage(
         return;
       }
 
-      // Draw and export
+      // Draw and export as JPEG for high visual fidelity with much smaller payload
       ctx.drawImage(img, 0, 0, width, height);
-      const output = canvas.toDataURL('image/png', 0.85);
+      const output = canvas.toDataURL('image/jpeg', 0.85);
       
       // Clean up
       canvas.width = 0;

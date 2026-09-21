@@ -164,5 +164,40 @@ describe('autoArrangeBpmDiagram', () => {
     const noEdge = result.edges.find((e) => e.id === 'e-no')!;
     expect(noEdge.sourceHandle).toBe('no');
   });
+
+  it('should synchronize Y coordinates chronologically across swimlanes (SOP Rahn multi-lane scenario)', () => {
+    const nodes: Node[] = [
+      { id: 'lane-nasabah', type: 'swimlane', position: { x: 0, y: 0 }, data: { department: 'NASABAH' } },
+      { id: 'lane-penaksir', type: 'swimlane', position: { x: 450, y: 0 }, data: { department: 'PENAKSIR' } },
+      { id: 'lane-teller', type: 'swimlane', position: { x: 900, y: 0 }, data: { department: 'TELLER' } },
+      { id: 'doc-form', type: 'document', position: { x: 50, y: 50 }, parentId: 'lane-nasabah', data: { label: 'Formulir' } },
+      { id: 'doc-ktp', type: 'document', position: { x: 50, y: 120 }, parentId: 'lane-nasabah', data: { label: 'KTP' } },
+      { id: 'act-teliti', type: 'activity', position: { x: 50, y: 50 }, parentId: 'lane-penaksir', data: { label: 'Teliti Emas' } },
+      { id: 'act-cair', type: 'activity', position: { x: 50, y: 50 }, parentId: 'lane-teller', data: { label: 'Pencairan Dana' } },
+    ];
+
+    const edges: Edge[] = [
+      { id: 'e1', source: 'doc-form', target: 'act-teliti' },
+      { id: 'e2', source: 'doc-ktp', target: 'act-teliti' },
+      { id: 'e3', source: 'act-teliti', target: 'act-cair' },
+    ];
+
+    const result = autoArrangeBpmDiagram(nodes, edges);
+
+    const docForm = result.nodes.find((n) => n.id === 'doc-form')!;
+    const docKtp = result.nodes.find((n) => n.id === 'doc-ktp')!;
+    const actTeliti = result.nodes.find((n) => n.id === 'act-teliti')!;
+    const actCair = result.nodes.find((n) => n.id === 'act-cair')!;
+
+    // Input documents are root rank (0)
+    // actTeliti depends on documents (rank 1), so its Y must be greater than docForm
+    expect(actTeliti.position.y).toBeGreaterThan(docForm.position.y);
+
+    // actCair depends on actTeliti (rank 2), so its Y must be greater than actTeliti
+    expect(actCair.position.y).toBeGreaterThan(actTeliti.position.y);
+
+    // Multi-documents in same lane (docForm & docKtp) are cascaded cleanly without identical overlapping Y
+    expect(docForm.position.y).not.toBe(docKtp.position.y);
+  });
 });
 
