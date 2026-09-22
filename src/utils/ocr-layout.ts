@@ -254,8 +254,53 @@ export function layoutOcrDiagram(raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[]
   const filteredEdges: OcrRawEdge[] = raw.edges.filter((e) => idSet.has(e.source) && idSet.has(e.target));
 
   const lanesRaw = downgraded.filter((n) => n.type === 'swimlane');
+  const initialChildMap = new Map<string, OcrRawNode[]>();
+  for (const lane of lanesRaw) initialChildMap.set(lane.id, []);
+  for (const n of downgraded) {
+    if (n.type !== 'swimlane' && n.parentId !== undefined && initialChildMap.has(n.parentId)) {
+      const arr = initialChildMap.get(n.parentId);
+      if (arr) arr.push(n);
+    }
+  }
+
+  const sortedLanes = orderLanes(lanesRaw, initialChildMap);
+
+  // Spatial Geometric Snapping Fallback:
+  // If a node has no parent specified (undefined or empty), check if its x position falls
+  // inside the column bounds of one of the swimlanes (with reasonable padding).
+  // This ensures nodes positioned inside a column (like initial docs in Column 1) snap to that lane,
+  // while intentional top-level/footer nodes remain unparented.
+  if (sortedLanes.length > 0) {
+    for (const n of downgraded) {
+      if (n.type !== 'swimlane' && (n.parentId === undefined || n.parentId === '')) {
+        const rawNode = raw.nodes.find((rn) => rn.id === n.id);
+        const hadExplicitUnknownParent = rawNode?.parentId && !swimlaneIdSet.has(rawNode.parentId);
+
+        if (!hadExplicitUnknownParent) {
+          // Check if there are already explicit child mappings indicating an established lane structure
+          const anyExplicitChildren = downgraded.some((d) => d.type !== 'swimlane' && d.parentId && swimlaneIdSet.has(d.parentId));
+
+          // If there are explicit children in the diagram, snap orphan nodes whose X matches lane distribution
+          if (anyExplicitChildren) {
+            let closestLaneId = sortedLanes[0].id;
+            let minDistance = Math.abs(n.position.x - sortedLanes[0].position.x);
+
+            for (let i = 1; i < sortedLanes.length; i++) {
+              const dist = Math.abs(n.position.x - sortedLanes[i].position.x);
+              if (dist < minDistance) {
+                minDistance = dist;
+                closestLaneId = sortedLanes[i].id;
+              }
+            }
+            n.parentId = closestLaneId;
+          }
+        }
+      }
+    }
+  }
+
   const childMap = new Map<string, OcrRawNode[]>();
-  for (const lane of lanesRaw) childMap.set(lane.id, []);
+  for (const lane of sortedLanes) childMap.set(lane.id, []);
   for (const n of downgraded) {
     if (n.type !== 'swimlane' && n.parentId !== undefined && childMap.has(n.parentId)) {
       const arr = childMap.get(n.parentId);
@@ -263,7 +308,6 @@ export function layoutOcrDiagram(raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[]
     }
   }
 
-  const sortedLanes = orderLanes(lanesRaw, childMap);
   const laneWidthMap = computeLaneWidths(sortedLanes, childMap);
   let uniformHeight = computeUniformHeight(sortedLanes, childMap);
 
@@ -358,8 +402,9 @@ export function layoutOcrDiagram(raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[]
     globalRank.set(n.id, maxAssignedRank);
   }
 
-  const ROW_HEIGHT = 80;
-  const HEADER_OFFSET = HEADER_H + 20;
+  // Increased minimum row step and adaptive spacing to avoid crowded text
+  const ROW_HEIGHT = 120;
+  const HEADER_OFFSET = HEADER_H + 30;
 
   for (const lane of sortedLanes) {
     const children = childMap.get(lane.id) ?? [];
@@ -381,9 +426,10 @@ export function layoutOcrDiagram(raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[]
       const groupNodes = rankGroups.get(r)!;
       groupNodes.sort((a, b) => a.position.x - b.position.x || a.position.y - b.position.y);
 
+      // Ensure targetY respects both rank spacing and the actual bounding box of previously placed nodes
       let targetY = HEADER_OFFSET + r * ROW_HEIGHT;
-      if (targetY <= lastUsedY + 20) {
-        targetY = lastUsedY + GAP_Y + 20;
+      if (targetY <= lastUsedY + 30) {
+        targetY = lastUsedY + 35;
       }
 
       const count = groupNodes.length;
@@ -395,9 +441,9 @@ export function layoutOcrDiagram(raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[]
         let nodeY = targetY;
 
         if (count > 1) {
-          const stepOffset = Math.min(24, (pos.width - dims.width - 40) / count);
+          const stepOffset = Math.min(30, (pos.width - dims.width - 40) / count);
           relX = Math.round((pos.width - dims.width) / 2) + (i - (count - 1) / 2) * stepOffset;
-          nodeY = targetY + i * 28;
+          nodeY = targetY + i * (dims.height + 24);
         }
 
         nodesOut.push({

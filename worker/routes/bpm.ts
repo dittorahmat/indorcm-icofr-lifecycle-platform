@@ -116,22 +116,22 @@ bpm.post('/bpm-diagrams/ocr', rbac(['Line 1', 'Admin']), async (c) => {
 Tugas Anda adalah mendeteksi semua simbol alur (nodes), label teks di dalamnya, koordinat letak relatif (x dan y, dinormalisasi ke range 0 - 1000), serta panah penghubung (edges) antara nodes tersebut.
 
 PANDUAN KLASIFIKASI BENTUK VISUAL:
-- Oval / Pill Shape -> Tipe: "start" atau "end"
+- Oval / Pill Shape -> Tipe: "start" atau "end" (atau terminator alur)
 - Rectangle Standar -> Tipe: "activity"
 - Double-bordered Rectangle -> Tipe: "external-process"
 - Blue/System Icon/Database Rectangle -> Tipe: "automated-activity"
 - Diamond Shape -> Tipe: "decision"
-- Wavy-bottomed Rectangle -> Tipe: "document"
-- Inverted Triangle -> Tipe: "archive" (Arsip)
+- Wavy-bottomed Rectangle (Dokumen Tunggal) -> Tipe: "document"
+- Stacked / Layered Documents (Dokumen Berlapis / Bertumpuk) -> Tipe: "multi-document". PENTING: Jika melihat simbol tumpukan beberapa lembar dokumen (misalnya Formulir + KTP + Emas, atau Memorandum + Struktur + Akad Rahn + Tanda Terima), JANGAN dipecah menjadi banyak node terpisah! Jadikan SATU node bertipe "multi-document" dengan properti "label" berisi nama-nama dokumen tersebut dipisahkan baris baru (\n).
+- Inverted Triangle (Segitiga Terbalik) -> Tipe: "archive" (Simbol Arsip / FILE)
 - Cylinder Shape -> Tipe: "data-media" (System/Data Media)
 - Small Circle / Reference -> Tipe: "reference"
 - Rounded Rectangle / Alternate Process -> Tipe: "alternate-process"
 - Parallelogram -> Tipe: "data"
 - Rectangle with Double Vertical Bars -> Tipe: "predefined-process"
 - Rectangle with Top/Left Borders -> Tipe: "internal-storage"
-- Stacked Document -> Tipe: "multi-document"
 - Hexagon -> Tipe: "preparation"
-- Narrow-bottom Trapezoid -> Tipe: "manual-operation"
+- Narrow-bottom Trapezoid (Trapesium Terbalik, sisi atas lebih lebar dari sisi bawah) -> Tipe: "manual-operation" (misal: Teliti Fisik Emas, Menimbang, Menjelaskan, Mengisi data)
 - Rectangle with Cut Corner -> Tipe: "card"
 - Wavy Top and Bottom -> Tipe: "punched-tape"
 - Circle with X -> Tipe: "summing-junction"
@@ -157,22 +157,23 @@ ATURAN NEGATIF — WAJIB ABAIKAN (JANGAN JADIKAN NODE):
 - Ikon badge kecil RCM risiko/kontrol (< ~40px) yang menempel di sudut atau tepi shape — ini BUKAN node terpisah; abaikan sepenuhnya.
 Hanya yang BOLEH menjadi node/edge: lajur swimlane, bentuk alur proses, label di dalam shape, header lajur (department/function), dan panah konektor beserta labelnya. Jika ragu, ABAIKAN — lebih baik melewatkan chrome daripada membuat node palsu.
 
-Instruksi Koordinat & Swimlane:
-- Koordinat x dan y harus berada dalam rentang 0 s.d. 1000.
-- Koordinat x adalah sumbu horizontal (kiri ke kanan).
-- Koordinat y adalah sumbu vertikal (atas ke bawah).
-- PENTING — KOORDINAT HANYA HINT URUTAN RELATIF: nilai x/y yang Anda kembalikan TIDAK dipakai sebagai posisi piksel final. Layout final dihitung otomatis di frontend (lane diurutkan kiri-ke-kanan dari median x, node di dalam lane diurutkan atas-ke-bawah dari kedalaman alur/BFS, tie-break dari y). Fokus Anda adalah keanggotaan lane yang benar (parentId), topologi edge yang benar, label yang akurat, dan urutan relatif kasar — BUKAN presisi piksel. Tetap berikan x/y berbeda untuk setiap node agar urutan dapat disimpulkan, jangan menumpuk semua di koordinat sama.
-- Jika mendeteksi swimlane (kolom pembatas):
-  1. Buat node tipe "swimlane".
-  2. Ekstrak nama Departemen dan Fungsi yang tertulis di bagian header/judul swimlane tersebut, simpan ke properti "department", "function", serta "label". Properti "label" WAJIB diisi sama dengan teks judul/header swimlane tersebut (misal "DEBITUR", "MARKETING", "KREDIT ADMIN", "PEJABAT BERWENANG"), jangan biarkan "label" kosong.
-  3. Aturan ekstraksi teks header: ambil teks header lajur apa adanya; jika tertulis "DEPARTMENT DEBITUR" maka department = "DEBITUR" dan label = "DEBITUR"; jika tertulis "MARKETING", "KREDIT ADMIN", "PEJABAT BERWENANG" maka department = teks tersebut, label = teks tersebut, dan function = string kosong bila tidak ada fungsi terpisah; jika header memuat dua baris (departemen di baris 1, fungsi di baris 2) maka baris 1 -> department & label, baris 2 -> function. Jangan mengarang department/function yang tidak tertulis.
-  4. Tentukan ukuran "width" (lebar lajur, misal 350-450) dan "height" (tinggi lajur, misal 1000) yang sesuai.
-  5. Untuk setiap bentuk alur proses yang secara fisik berada di dalam area kolom swimlane tersebut, isi properti "parentId" dengan "id" dari swimlane bersangkutan.
+Instruksi Partisi Kolom & Swimlane (SANGAT KRITIS):
+1. Setiap kolom vertikal pembatas departemen/fungsi ADALAH SATU SWIMLANE. Identifikasi semua kolom dari kiri ke kanan secara berurutan.
+   - Contoh pada 5 kolom: Kolom 1 (x: 0 - 200), Kolom 2 (x: 200 - 400), Kolom 3 (x: 400 - 600), Kolom 4 (x: 600 - 800), Kolom 5 (x: 800 - 1000).
+   - Ekstrak judul header masing-masing lajur (misal Kolom 1: "NASABAH", Kolom 2: "PENAKSIR", Kolom 3: "PEMIMPIN BIDANG OPERASIONAL", Kolom 4: "UNIT OPERASIONAL", Kolom 5: "TELLER").
+   - Simpan teks header tersebut ke properti "department" dan "label" dari node swimlane tersebut. Jangan biarkan kosong!
+2. KEANGGOTAAN SWIMLANE (parentId):
+   - SEMUA bentuk alur proses yang berada secara fisik di dalam batas horizontal sebuah kolom WAJIB memiliki "parentId" bernilai "id" dari swimlane kolom tersebut.
+   - JANGAN PERNAH mengaitkan node di Kolom 1 ke Kolom 2 atau sebaliknya. Perhatikan posisi X fisik node tersebut terhadap garis kolom vertikal pembatas!
+   - Kolom paling kiri (seperti "NASABAH") yang memuat dokumen awal WAJIB berisi node-node tersebut dengan parentId menunjuk ke swimlane kolom paling kiri.
+3. KONSOLIDASI STACKED DOCUMENTS:
+   - Jika ada simbol dokumen bertumpuk 2-4 lembar, ekstrak menjadi TEPAT SATU node bertipe "multi-document".
+   - Gabungkan teks dokumen tersebut menjadi satu label yang rapi. Contoh: "Formulir Pembiayaan Rahn\nKTP\nEmas".
 
-Instruksi Edge & Label:
+Instruksi Edge, Percabangan & Label:
 - Setiap panah penghubung WAJIB menjadi satu edge dengan source = id node asal, target = id node tujuan.
-- Jika panah pada gambar memiliki teks label (mis. "YA"/"YES", "TIDAK"/"NO" pada cabang decision, atau label lain di tengah panah), Anda WAJIB mengisi properti edge "label" dengan teks tersebut persis seperti tertulis. Jangan kosongkan label bila gambar menampilkannya.
-- Jika panah tidak memiliki label, biarkan properti edge "label" kosong.
+- Jika panah keluar dari simbol Decision (Diamond) memuat teks persetujuan seperti "SETUJU" / "YA" / "TIDAK" / "NO", masukkan teks tersebut ke properti "label" pada EDGE panah bersangkutan. JANGAN jadikan teks "SETUJU" atau "TIDAK" sebagai node mandiri!
+- Jika ada panah yang menunjuk ke terminator akhir (misal kapsul "NASABAH"), jadikan node terminator tersebut bertipe "end" atau "reference" dengan target edge mengarah ke sana.
 
 Format keluaran WAJIB berupa JSON objek yang memenuhi skema data yang diminta.`;
 

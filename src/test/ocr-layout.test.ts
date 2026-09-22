@@ -288,5 +288,25 @@ describe('ocr-layout — KUR BPM fidelity', () => {
     expect(kreditAdmin?.label).toBe('KREDIT ADMIN');
     expect(kreditAdmin?.department).toBe('KREDIT ADMIN');
   });
+
+  it('snaps unparented nodes to closest swimlane column when established lane children exist', () => {
+    const raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[] } = {
+      nodes: [
+        { id: 'lane-nasabah', type: 'swimlane', label: 'NASABAH', position: { x: 50, y: 0 }, department: 'NASABAH' },
+        { id: 'lane-penaksir', type: 'swimlane', label: 'PENAKSIR', position: { x: 300, y: 0 }, department: 'PENAKSIR' },
+        { id: 'n-explicit', type: 'activity', label: 'Taksir Emas', position: { x: 310, y: 100 }, parentId: 'lane-penaksir' },
+        // n-unparented is at x: 60 (close to lane-nasabah at x: 50), with no parentId specified
+        { id: 'n-unparented', type: 'document', label: 'Formulir Rahn', position: { x: 60, y: 120 } },
+      ],
+      edges: [
+        { id: 'e1', source: 'n-unparented', target: 'n-explicit' },
+      ],
+    };
+
+    const laid = layoutOcrDiagram(raw);
+    const docNode = laid.nodes.find((n) => n.id === 'n-unparented');
+    expect(docNode).toBeDefined();
+    expect(docNode?.parentId).toBe('lane-nasabah');
+  });
 });
 

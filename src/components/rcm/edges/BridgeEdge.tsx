@@ -1,5 +1,5 @@
 import React from 'react';
-import { EdgeProps, useStore, Position } from 'reactflow';
+import { EdgeProps, useStore, Position, EdgeLabelRenderer } from 'reactflow';
 
 interface Point {
   x: number;
@@ -399,6 +399,7 @@ export function BridgeEdge({
   style = {},
   markerEnd,
   selected,
+  label,
 }: BridgeEdgeProps) {
   const edges = useStore((state) => state.edges);
   const nodeInternals = useStore((state) => state.nodeInternals);
@@ -551,6 +552,20 @@ export function BridgeEdge({
         d={finalPath}
         markerEnd={markerEnd}
       />
+      {label && (
+        <EdgeLabelRenderer>
+          <div
+            style={{
+              position: 'absolute',
+              transform: `translate(-50%, -50%) translate(${Math.round((sourcePt.x + targetPt.x) / 2)}px, ${Math.round((sourcePt.y + targetPt.y) / 2)}px)`,
+              pointerEvents: 'all',
+            }}
+            className="nodrag nopan px-2 py-0.5 rounded border border-slate-300 bg-white/95 text-[11px] font-semibold text-slate-700 shadow-sm backdrop-blur-sm select-none tracking-tight"
+          >
+            {label}
+          </div>
+        </EdgeLabelRenderer>
+      )}
     </>
   );
 }
