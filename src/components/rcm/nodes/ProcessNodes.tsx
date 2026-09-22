@@ -93,7 +93,7 @@ export const DecisionNode = ({ data, selected, type }: NodeProps) => {
         style={{ width: `${boxSize}px`, height: `${boxSize}px` }}
         className={cn("relative flex items-center justify-center transition-all", selected && "scale-105")}
       >
-        <Handle type="target" position={Position.Top} className="z-10" />
+        <Handle type="target" position={Position.Top} id="top" className="z-10" />
         <div className={cn(
           "absolute inset-0 border-2 rotate-45 transform shadow-md flex items-center justify-center bg-white",
           selected ? "border-primary ring-4 ring-primary/20 bg-primary/5" : "border-slate-800"
@@ -102,7 +102,7 @@ export const DecisionNode = ({ data, selected, type }: NodeProps) => {
         </div>
         <Handle type="source" position={Position.Left} id="no" className="z-10" />
         <Handle type="source" position={Position.Right} id="yes" className="z-10" />
-        <Handle type="source" position={Position.Bottom} className="z-10" />
+        <Handle type="source" position={Position.Bottom} id="bottom" className="z-10" />
         <div className="absolute -left-8 top-1/2 -translate-y-1/2 text-xs font-black text-red-600 bg-white/80 px-1 rounded">NO</div>
         <div className="absolute -right-10 top-1/2 -translate-y-1/2 text-xs font-black text-green-600 bg-white/80 px-1 rounded">YES</div>
         {data.isLocked && (

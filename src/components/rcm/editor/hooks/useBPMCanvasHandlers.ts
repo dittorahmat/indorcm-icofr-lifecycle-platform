@@ -192,6 +192,8 @@ export function useBPMCanvasHandlers({
         id: e.id,
         source: e.source,
         target: e.target,
+        sourceHandle: e.sourceHandle,
+        targetHandle: e.targetHandle,
         label: e.label || '',
         type: 'bridge',
         markerEnd: { type: MarkerType.ArrowClosed, width: 20, height: 20, color: '#0f172a' },

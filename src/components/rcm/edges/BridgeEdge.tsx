@@ -239,13 +239,17 @@ function getDistributedPoint(
   }
 }
 
+// Safe ceiling limit: waypoints must never cross into swimlane headers (top 100px)
+const SAFE_HEADER_CEILING = 100;
+
 // Generate strict 90-degree Manhattan orthogonal step path (no diagonal lines ever)
-// with obstacle/gutter avoidance and arrowhead clearance
+// with obstacle/gutter avoidance, arrowhead clearance, and header ceiling protection
 function getOrthogonalPath(
   sPt: Point,
   sSide: string,
   rawTPt: Point,
-  tSide: string
+  tSide: string,
+  channelOffset: number = 0
 ): { path: string; segments: Segment[] } {
   // Arrowhead clearance offset: back off target point by 6px along arrival direction
   // so the arrow marker tip rests right on the border and is not occluded by the node
@@ -269,67 +273,90 @@ function getOrthogonalPath(
   if ((sSide === 'bottom' && tSide === 'top') || (sSide === 'top' && tSide === 'bottom')) {
     if (dy >= 0) {
       // Normal downward flow (or cross-lane downward)
-      const midY = sPt.y + dy / 2;
+      const rawMidY = sPt.y + dy / 2 + channelOffset;
+      const midY = Math.max(SAFE_HEADER_CEILING, rawMidY);
       points.push({ x: sPt.x, y: midY });
       points.push({ x: tPt.x, y: midY });
     } else {
       // Backward loop (target is above source): route out and loop cleanly around
-      // Ensure we never cross above the swimlane header border (Y: 70 min safe altitude)
-      const loopOffset = Math.abs(dx) > 20 ? 30 : 40;
+      // Ensure we never cross above the swimlane header border (SAFE_HEADER_CEILING min safe altitude)
+      const loopOffset = (Math.abs(dx) > 20 ? 30 : 40) + Math.abs(channelOffset);
       const escapeX = dx >= 0 ? Math.min(sPt.x, tPt.x) - loopOffset : Math.max(sPt.x, tPt.x) + loopOffset;
-      const safeTopY = Math.max(75, tPt.y - 18);
+      const safeTopY = Math.max(SAFE_HEADER_CEILING, Math.min(sPt.y, tPt.y) - 24 + channelOffset);
       points.push({ x: escapeX, y: sPt.y + 20 });
       points.push({ x: escapeX, y: safeTopY });
       points.push({ x: tPt.x, y: safeTopY });
     }
   } else if ((sSide === 'right' && tSide === 'left') || (sSide === 'left' && tSide === 'right')) {
-    const midX = sPt.x + dx / 2;
+    const midX = sPt.x + dx / 2 + channelOffset;
     points.push({ x: midX, y: sPt.y });
     points.push({ x: midX, y: tPt.y });
   } else if (sSide === 'bottom') {
     // Exit downward from source, then turn toward target
     if (tSide === 'left' || tSide === 'right') {
-      points.push({ x: sPt.x, y: tPt.y });
+      const turnY = Math.max(SAFE_HEADER_CEILING, tPt.y + channelOffset);
+      points.push({ x: sPt.x, y: turnY });
+      points.push({ x: tPt.x, y: turnY });
     } else {
       // both bottom or custom
-      const exitY = sPt.y + Math.max(30, dy / 2);
+      const exitY = Math.max(SAFE_HEADER_CEILING, sPt.y + Math.max(30, dy / 2) + channelOffset);
       points.push({ x: sPt.x, y: exitY });
       points.push({ x: tPt.x, y: exitY });
     }
   } else if (sSide === 'top') {
     // Exit upward from source - enforce safe top ceiling above swimlane header
     if (tSide === 'left' || tSide === 'right') {
-      points.push({ x: sPt.x, y: tPt.y });
+      const turnY = Math.max(SAFE_HEADER_CEILING, tPt.y + channelOffset);
+      points.push({ x: sPt.x, y: turnY });
+      points.push({ x: tPt.x, y: turnY });
     } else {
-      const exitY = Math.max(75, sPt.y - Math.max(30, Math.abs(dy) / 2));
+      const exitY = Math.max(SAFE_HEADER_CEILING, sPt.y - Math.max(30, Math.abs(dy) / 2) + channelOffset);
       points.push({ x: sPt.x, y: exitY });
       points.push({ x: tPt.x, y: exitY });
     }
   } else if (sSide === 'right') {
     // Exit horizontally to right
     if (tSide === 'top' || tSide === 'bottom') {
-      points.push({ x: tPt.x, y: sPt.y });
+      const turnX = sPt.x + Math.max(20, (tPt.x - sPt.x) / 2) + channelOffset;
+      const turnY = Math.max(SAFE_HEADER_CEILING, sPt.y);
+      points.push({ x: turnX, y: turnY });
+      points.push({ x: turnX, y: tPt.y });
     } else {
-      const midX = Math.max(sPt.x + 30, sPt.x + dx / 2);
+      const midX = Math.max(sPt.x + 30, sPt.x + dx / 2 + channelOffset);
       points.push({ x: midX, y: sPt.y });
       points.push({ x: midX, y: tPt.y });
     }
   } else if (sSide === 'left') {
     // Exit horizontally to left
     if (tSide === 'top' || tSide === 'bottom') {
-      points.push({ x: tPt.x, y: sPt.y });
+      const turnX = sPt.x - Math.max(20, (sPt.x - tPt.x) / 2) + channelOffset;
+      const turnY = Math.max(SAFE_HEADER_CEILING, sPt.y);
+      points.push({ x: turnX, y: turnY });
+      points.push({ x: turnX, y: tPt.y });
     } else {
-      const midX = Math.min(sPt.x - 30, sPt.x + dx / 2);
+      const midX = Math.min(sPt.x - 30, sPt.x + dx / 2 + channelOffset);
       points.push({ x: midX, y: sPt.y });
       points.push({ x: midX, y: tPt.y });
     }
   } else {
-    // Fallback step routing
-    points.push({ x: sPt.x, y: sPt.y + dy / 2 });
-    points.push({ x: tPt.x, y: sPt.y + dy / 2 });
+    // Fallback step routing with safe ceiling
+    const midY = Math.max(SAFE_HEADER_CEILING, sPt.y + dy / 2 + channelOffset);
+    points.push({ x: sPt.x, y: midY });
+    points.push({ x: tPt.x, y: midY });
   }
 
   points.push(tPt);
+
+  // Strictly clamp all intermediate waypoints to stay at or below SAFE_HEADER_CEILING
+  // (unless source or target itself legitimately starts above, e.g. top banner)
+  const minYBound = Math.min(sPt.y, tPt.y);
+  if (minYBound >= SAFE_HEADER_CEILING) {
+    for (let i = 1; i < points.length - 1; i++) {
+      if (points[i].y < SAFE_HEADER_CEILING) {
+        points[i].y = SAFE_HEADER_CEILING;
+      }
+    }
+  }
 
   // Filter out redundant points that are collinear or too close
   const cleaned: Point[] = [points[0]];
@@ -423,11 +450,31 @@ export function BridgeEdge({
     ? getDistributedPoint(targetNode, tSide, id, edges, false, nodeInternals)
     : { x: 0, y: 0 };
 
+  // Compute channel offset for parallel edges connecting similar node pairs / directions
+  // to avoid overlapping coincident orthogonal segments
+  const parallelEdges = edges.filter((e) => {
+    return (
+      (e.source === source && e.target === target) ||
+      (e.source === target && e.target === source)
+    );
+  });
+
+  let channelOffset = 0;
+  if (parallelEdges.length > 1) {
+    parallelEdges.sort((a, b) => a.id.localeCompare(b.id));
+    const edgeIndex = parallelEdges.findIndex((e) => e.id === id);
+    if (edgeIndex !== -1) {
+      const spacing = 20; // 20px channel spacing
+      channelOffset = (edgeIndex - (parallelEdges.length - 1) / 2) * spacing;
+    }
+  }
+
   const { path: basePath, segments: currentSegments } = getOrthogonalPath(
     sourcePt,
     sSide,
     targetPt,
-    tSide
+    tSide,
+    channelOffset
   );
 
   const selectedEdgeStyle: React.CSSProperties = selected
@@ -470,7 +517,22 @@ export function BridgeEdge({
     const eSrcPt = getDistributedPoint(eSrcNode, eSSide, e.id, edges, true, nodeInternals);
     const eTgtPt = getDistributedPoint(eTgtNode, eTSide, e.id, edges, false, nodeInternals);
 
-    const { segments: otherSegs } = getOrthogonalPath(eSrcPt, eSSide, eTgtPt, eTSide);
+    let otherOffset = 0;
+    const otherParallels = edges.filter((pe) => {
+      return (
+        (pe.source === e.source && pe.target === e.target) ||
+        (pe.source === e.target && pe.target === e.source)
+      );
+    });
+    if (otherParallels.length > 1) {
+      otherParallels.sort((a, b) => a.id.localeCompare(b.id));
+      const idx = otherParallels.findIndex((pe) => pe.id === e.id);
+      if (idx !== -1) {
+        otherOffset = (idx - (otherParallels.length - 1) / 2) * 20;
+      }
+    }
+
+    const { segments: otherSegs } = getOrthogonalPath(eSrcPt, eSSide, eTgtPt, eTSide, otherOffset);
     if (otherSegs.length > 0) {
       otherEdgesSegments.push({
         edgeId: e.id,

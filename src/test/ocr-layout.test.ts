@@ -302,11 +302,43 @@ describe('ocr-layout — KUR BPM fidelity', () => {
         { id: 'e1', source: 'n-unparented', target: 'n-explicit' },
       ],
     };
-
     const laid = layoutOcrDiagram(raw);
     const docNode = laid.nodes.find((n) => n.id === 'n-unparented');
     expect(docNode).toBeDefined();
     expect(docNode?.parentId).toBe('lane-nasabah');
+  });
+
+  it('ensures all swimlane child nodes are placed with sufficient header clearance (Y >= 110)', () => {
+    const fixture = buildKurFixture();
+    const result = layoutOcrDiagram(fixture);
+
+    const childNodes = result.nodes.filter((n) => n.parentId !== undefined && n.type !== 'swimlane');
+    expect(childNodes.length).toBeGreaterThan(0);
+
+    for (const child of childNodes) {
+      // Child node position.y inside a swimlane must respect HEADER_H + 50 (>= 130px)
+      expect(child.position.y).toBeGreaterThanOrEqual(110);
+    }
+  });
+
+  it('assigns horizontal right-to-left handles for cross-lane connections', () => {
+    const raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[] } = {
+      nodes: [
+        { id: 'lane-1', type: 'swimlane', label: 'LANE 1', position: { x: 0, y: 0 }, department: 'LANE 1' },
+        { id: 'lane-2', type: 'swimlane', label: 'LANE 2', position: { x: 400, y: 0 }, department: 'LANE 2' },
+        { id: 'n1', type: 'document', label: 'Berkas', position: { x: 100, y: 100 }, parentId: 'lane-1' },
+        { id: 'n2', type: 'activity', label: 'Proses', position: { x: 500, y: 120 }, parentId: 'lane-2' },
+      ],
+      edges: [
+        { id: 'e1', source: 'n1', target: 'n2' },
+      ],
+    };
+
+    const laid = layoutOcrDiagram(raw);
+    const edge = laid.edges.find((e) => e.id === 'e1');
+    expect(edge).toBeDefined();
+    expect(edge?.sourceHandle).toBe('right');
+    expect(edge?.targetHandle).toBe('left');
   });
 });
 

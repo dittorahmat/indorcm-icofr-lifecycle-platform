@@ -402,9 +402,10 @@ export function layoutOcrDiagram(raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[]
     globalRank.set(n.id, maxAssignedRank);
   }
 
-  // Increased minimum row step and adaptive spacing to avoid crowded text
-  const ROW_HEIGHT = 120;
-  const HEADER_OFFSET = HEADER_H + 30;
+  // Use local intra-lane depth for vertical positioning so each swimlane starts
+  // immediately below its header (HEADER_OFFSET) rather than cascading in a giant staircase
+  const ROW_HEIGHT = 100;
+  const HEADER_OFFSET = HEADER_H + 50;
 
   for (const lane of sortedLanes) {
     const children = childMap.get(lane.id) ?? [];
@@ -412,9 +413,14 @@ export function layoutOcrDiagram(raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[]
     const pos = lanePos.get(lane.id);
     if (!pos) continue;
 
+    // Filter edges that connect nodes within this same swimlane
+    const childIdSet = new Set(children.map((c) => c.id));
+    const intraLaneEdges = filteredEdges.filter((e) => childIdSet.has(e.source) && childIdSet.has(e.target));
+    const laneDepthMap = buildDepthMap(children, intraLaneEdges);
+
     const rankGroups = new Map<number, OcrRawNode[]>();
     for (const child of children) {
-      const r = globalRank.get(child.id) ?? 0;
+      const r = laneDepthMap.get(child.id) ?? 0;
       if (!rankGroups.has(r)) rankGroups.set(r, []);
       rankGroups.get(r)!.push(child);
     }
@@ -428,8 +434,8 @@ export function layoutOcrDiagram(raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[]
 
       // Ensure targetY respects both rank spacing and the actual bounding box of previously placed nodes
       let targetY = HEADER_OFFSET + r * ROW_HEIGHT;
-      if (targetY <= lastUsedY + 30) {
-        targetY = lastUsedY + 35;
+      if (targetY <= lastUsedY + 24) {
+        targetY = lastUsedY + 28;
       }
 
       const count = groupNodes.length;
@@ -443,7 +449,7 @@ export function layoutOcrDiagram(raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[]
         if (count > 1) {
           const stepOffset = Math.min(30, (pos.width - dims.width - 40) / count);
           relX = Math.round((pos.width - dims.width) / 2) + (i - (count - 1) / 2) * stepOffset;
-          nodeY = targetY + i * (dims.height + 24);
+          nodeY = targetY + i * (dims.height + 20);
         }
 
         nodesOut.push({
@@ -464,7 +470,7 @@ export function layoutOcrDiagram(raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[]
       }
     }
 
-    const requiredLaneHeight = lastUsedY + 100;
+    const requiredLaneHeight = lastUsedY + 80;
     if (requiredLaneHeight > uniformHeight) {
       uniformHeight = requiredLaneHeight;
     }
@@ -503,18 +509,20 @@ export function layoutOcrDiagram(raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[]
   }
 
   // Build map of absolute node centers to determine clean, un-inverted edge connection handles
-  const nodeAbsCenter = new Map<string, { x: number; y: number }>();
+  const nodeAbsCenter = new Map<string, { x: number; y: number; parentId?: string }>();
   for (const n of nodesOut) {
     if (n.parentId && lanePos.has(n.parentId)) {
       const p = lanePos.get(n.parentId)!;
       nodeAbsCenter.set(n.id, {
         x: p.x + n.position.x + n.width / 2,
         y: p.y + n.position.y + n.height / 2,
+        parentId: n.parentId,
       });
     } else {
       nodeAbsCenter.set(n.id, {
         x: n.position.x + n.width / 2,
         y: n.position.y + n.height / 2,
+        parentId: undefined,
       });
     }
   }
@@ -530,9 +538,20 @@ export function layoutOcrDiagram(raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[]
     let sourceHandle = e.sourceHandle;
     let targetHandle = e.targetHandle;
 
+    const isCrossLane = s.parentId !== t.parentId;
+
     if (!sourceHandle || !targetHandle) {
-      // If mostly vertical flow
-      if (Math.abs(dy) >= Math.abs(dx)) {
+      // If cross-lane flow with significant horizontal distance, prefer horizontal handles
+      if (isCrossLane && Math.abs(dx) > 100) {
+        if (dx >= 0) {
+          sourceHandle = sourceHandle || 'right';
+          targetHandle = targetHandle || 'left';
+        } else {
+          sourceHandle = sourceHandle || 'left';
+          targetHandle = targetHandle || 'right';
+        }
+      } else if (Math.abs(dy) >= Math.abs(dx)) {
+        // If mostly vertical flow
         if (dy >= 0) {
           sourceHandle = sourceHandle || 'bottom';
           targetHandle = targetHandle || 'top';

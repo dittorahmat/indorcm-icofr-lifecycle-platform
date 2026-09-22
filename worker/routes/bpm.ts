@@ -6,6 +6,7 @@ import { BpmService } from "../services/bpm-service";
 import { rbac } from "../lib/guard";
 import { AIService } from "../services/ai-service";
 import { SchemaType } from "@google/generative-ai";
+import { jsonrepair } from "jsonrepair";
 
 const bpm = new Hono<HonoEnv>();
 
@@ -172,7 +173,12 @@ Instruksi Partisi Kolom & Swimlane (SANGAT KRITIS):
 
 Instruksi Edge, Percabangan & Label:
 - Setiap panah penghubung WAJIB menjadi satu edge dengan source = id node asal, target = id node tujuan.
-- Jika panah keluar dari simbol Decision (Diamond) memuat teks persetujuan seperti "SETUJU" / "YA" / "TIDAK" / "NO", masukkan teks tersebut ke properti "label" pada EDGE panah bersangkutan. JANGAN jadikan teks "SETUJU" atau "TIDAK" sebagai node mandiri!
+- PENTING: Untuk panah antar-kolom (cross-swimlane flow dari kiri ke kanan), pastikan alur logisnya jelas: sourceHandle = "right", targetHandle = "left".
+- Jika panah keluar dari simbol Decision (Diamond) memuat teks persetujuan seperti "SETUJU" / "YA" / "TIDAK" / "NO":
+  * Masukkan teks tersebut ke properti "label" pada EDGE panah bersangkutan. JANGAN jadikan teks "SETUJU" atau "TIDAK" sebagai node mandiri!
+  * Jika keputusan memiliki cabang negatif ("TIDAK") ke samping, tentukan sourceHandle = "left" atau "right" sesuai gambar.
+  * Jika keputusan memiliki cabang positif ("SETUJU" / "YA") ke bawah, tentukan sourceHandle = "bottom" dan targetHandle = "top".
+- KONSOLIDASI BUNDLE DOKUMEN: Simbol berkas formulir bertumpuk (seperti Formulir + KTP + Emas) WAJIB berupa 1 node "multi-document". Jangan memecah dokumen yang digambar tumpuk menjadi entitas terpisah.
 - Jika ada panah yang menunjuk ke terminator akhir (misal kapsul "NASABAH"), jadikan node terminator tersebut bertipe "end" atau "reference" dengan target edge mengarah ke sana.
 
 Format keluaran WAJIB berupa JSON objek yang memenuhi skema data yang diminta.`;
@@ -267,27 +273,23 @@ Format keluaran WAJIB berupa JSON objek yang memenuhi skema data yang diminta.`;
     try {
       parsedResult = JSON.parse(rawContent);
     } catch {
-      // Robust fallback repair for unterminated JSON / truncated streaming strings
+      // 1. Try standard jsonrepair
       try {
-        let repaired = rawContent;
-        // If truncated inside an unclosed string, close the quote
-        const quoteCount = (repaired.match(/(?<!\\)"/g) || []).length;
-        if (quoteCount % 2 !== 0) {
-          repaired += '"';
-        }
-        // Balance curly braces and square brackets
-        const openBraces = (repaired.match(/{/g) || []).length;
-        const closeBraces = (repaired.match(/}/g) || []).length;
-        const openBrackets = (repaired.match(/\[/g) || []).length;
-        const closeBrackets = (repaired.match(/\]/g) || []).length;
-
-        for (let i = 0; i < openBrackets - closeBrackets; i++) repaired += ']';
-        for (let i = 0; i < openBraces - closeBraces; i++) repaired += '}';
-
+        const repaired = jsonrepair(rawContent);
         parsedResult = JSON.parse(repaired);
-      } catch (innerErr: any) {
-        console.error("[BPM OCR API] JSON Repair failed. Raw content preview:", rawContent.slice(0, 300));
-        throw new Error(`Invalid JSON format: ${innerErr.message}`);
+      } catch {
+        // 2. Fallback: If streaming/token limit cut off midway inside a property, truncate back to last valid boundary
+        try {
+          let trimmed = rawContent.trim();
+          // Remove dangling incomplete property at the tail (e.g. , "position or "foo": )
+          trimmed = trimmed.replace(/,\s*"[^"]*"?\s*:\s*[^,}\]]*$/, '');
+          trimmed = trimmed.replace(/,\s*"[^"]*"$/, '');
+          const repaired = jsonrepair(trimmed);
+          parsedResult = JSON.parse(repaired);
+        } catch (innerErr: any) {
+          console.error("[BPM OCR API] JSON Repair failed. Raw content preview:", rawContent.slice(0, 300));
+          throw new Error(`Invalid JSON format: ${innerErr.message}`);
+        }
       }
     }
 

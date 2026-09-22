@@ -70,9 +70,9 @@ export const EightConnectionHandles = ({ isLocked, selected }: { isLocked?: bool
       <Handle type="target" position={Position.Top} id="t-l" style={{ left: "0%" }} className={cn(handleBase, hoverStyle, "!translate-x-0")} />
       <Handle type="source" position={Position.Top} id="t-l-src" style={{ left: "0%" }} className={cn(handleBase, hoverStyle, "!translate-x-0")} />
 
-      {/* 2. Top Center (fallback id top) */}
+      {/* 2. Top Center */}
       <Handle type="target" position={Position.Top} id="top" style={{ left: "50%" }} className={cn(handleBase, hoverStyle)} />
-      <Handle type="source" position={Position.Top} id="t-c-src" style={{ left: "50%" }} className={cn(handleBase, hoverStyle)} />
+      <Handle type="source" position={Position.Top} id="top-src" style={{ left: "50%" }} className={cn(handleBase, hoverStyle)} />
 
       {/* 3. Top Right */}
       <Handle type="target" position={Position.Top} id="t-r" style={{ left: "100%" }} className={cn(handleBase, hoverStyle, "!-translate-x-full")} />
@@ -80,19 +80,19 @@ export const EightConnectionHandles = ({ isLocked, selected }: { isLocked?: bool
 
       {/* 4. Middle Left */}
       <Handle type="target" position={Position.Left} id="left" style={{ top: "50%" }} className={cn(handleBase, hoverStyle)} />
-      <Handle type="source" position={Position.Left} id="m-l-src" style={{ top: "50%" }} className={cn(handleBase, hoverStyle)} />
+      <Handle type="source" position={Position.Left} id="left-src" style={{ top: "50%" }} className={cn(handleBase, hoverStyle)} />
 
       {/* 5. Middle Right */}
-      <Handle type="target" position={Position.Right} id="right" style={{ top: "50%" }} className={cn(handleBase, hoverStyle)} />
-      <Handle type="source" position={Position.Right} id="m-r-src" style={{ top: "50%" }} className={cn(handleBase, hoverStyle)} />
+      <Handle type="target" position={Position.Right} id="right-tgt" style={{ top: "50%" }} className={cn(handleBase, hoverStyle)} />
+      <Handle type="source" position={Position.Right} id="right" style={{ top: "50%" }} className={cn(handleBase, hoverStyle)} />
 
       {/* 6. Bottom Left */}
       <Handle type="target" position={Position.Bottom} id="b-l" style={{ left: "0%" }} className={cn(handleBase, hoverStyle, "!translate-x-0")} />
       <Handle type="source" position={Position.Bottom} id="b-l-src" style={{ left: "0%" }} className={cn(handleBase, hoverStyle, "!translate-x-0")} />
 
-      {/* 7. Bottom Center (fallback id bottom) */}
+      {/* 7. Bottom Center */}
       <Handle type="source" position={Position.Bottom} id="bottom" style={{ left: "50%" }} className={cn(handleBase, hoverStyle)} />
-      <Handle type="target" position={Position.Bottom} id="b-c-tgt" style={{ left: "50%" }} className={cn(handleBase, hoverStyle)} />
+      <Handle type="target" position={Position.Bottom} id="bottom-tgt" style={{ left: "50%" }} className={cn(handleBase, hoverStyle)} />
 
       {/* 8. Bottom Right */}
       <Handle type="target" position={Position.Bottom} id="b-r" style={{ left: "100%" }} className={cn(handleBase, hoverStyle, "!-translate-x-full")} />
