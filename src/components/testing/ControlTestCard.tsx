@@ -311,10 +311,10 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
                         <div className="grid grid-cols-2 gap-4">
                           <FormField control={form.control} name="sampleSize" render={({ field }) => (
                             <FormItem className="space-y-2">
-                              <FormLabel className="text-[10px] font-bold uppercase text-slate-400 tracking-wider flex justify-between items-center px-1">
+                              <FormLabel className="text-xs font-semibold uppercase text-slate-500 tracking-wider flex justify-between items-center px-1">
                                 {t('toe.sampleSize')}
                                 {field.value !== undefined && field.value < suggestion.min && (
-                                  <Badge variant="destructive" className="text-[8px] font-bold h-4 px-1.5 animate-pulse border-none shadow-none uppercase">
+                                  <Badge variant="destructive" className="text-xs font-semibold h-5 px-1.5 border-none shadow-none uppercase">
                                     {t('toe.belowMin')}
                                   </Badge>
                                 )}

@@ -548,7 +548,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                <div className="flex items-center justify-between w-full">
                   <div className="flex items-center gap-2">
                     {form.formState.isDirty && (
-                      <Badge variant="outline" className="animate-pulse bg-amber-50 text-amber-600 border-amber-200 font-black text-xs uppercase px-2 py-1">
+                      <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-300 font-semibold text-xs uppercase px-2 py-0.5">
                         Unsaved Changes
                       </Badge>
                     )}

@@ -79,24 +79,22 @@ export function TODSixPillarForm({ form, t, isReadOnly }: TODSixPillarFormProps)
             Test of Design: 6-Pilar Verification
           </h3>
         </div>
-        <Badge variant="outline" className="text-[8px] font-bold border-indigo-100 text-indigo-600 bg-indigo-50 px-2 h-4">LAMPIRAN 8</Badge>
+        <Badge variant="outline" className="text-xs font-semibold border-indigo-200 text-indigo-700 bg-indigo-50 px-2 py-0.5">LAMPIRAN 8</Badge>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {pillars.map((pillar) => (
-          <div key={pillar.name} className="group flex flex-col p-5 border border-slate-100 rounded-2xl bg-white hover:border-indigo-200 hover:shadow-lg hover:shadow-indigo-50/30 transition-all duration-300 relative overflow-hidden">
-            <div className={cn("absolute top-0 right-0 w-24 h-24 rounded-full -mr-12 -mt-12 opacity-0 group-hover:opacity-100 transition-opacity duration-500", pillar.bg + "/30")} />
-            
+          <div key={pillar.name} className="group flex flex-col p-5 border border-slate-200 rounded-lg bg-white hover:border-indigo-300 hover:shadow-md transition-all relative overflow-hidden">
             <div className="flex items-start justify-between gap-4 mb-4 relative z-10">
               <div className="flex items-start gap-3">
-                <div className={cn("p-2.5 rounded-xl border transition-all duration-300 group-hover:scale-110", pillar.bg, pillar.border, pillar.color)}>
+                <div className={cn("p-2.5 rounded-md border transition-all", pillar.bg, pillar.border, pillar.color)}>
                   <pillar.icon className="h-5 w-5" />
                 </div>
                 <div>
-                  <FormLabel className="text-xs font-bold uppercase tracking-widest block mb-1 text-slate-900">
+                  <FormLabel className="text-xs font-bold uppercase tracking-wider block mb-1 text-slate-900">
                     {pillar.label}
                   </FormLabel>
-                  <p className="text-[10px] text-slate-500 font-medium leading-relaxed italic">
+                  <p className="text-xs text-slate-600 font-normal leading-relaxed">
                     {t(`pillars.descriptions.${pillar.commentKey}`)}
                   </p>
                 </div>
@@ -111,7 +109,7 @@ export function TODSixPillarForm({ form, t, isReadOnly }: TODSixPillarFormProps)
                         checked={field.value} 
                         onCheckedChange={field.onChange} 
                         disabled={isReadOnly}
-                        className="h-6 w-6 rounded-lg data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600 transition-all"
+                        className="h-5 w-5 rounded data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600 transition-all"
                       />
                     </FormControl>
                   </FormItem>
@@ -128,11 +126,11 @@ export function TODSixPillarForm({ form, t, isReadOnly }: TODSixPillarFormProps)
                     <Textarea 
                       {...field} 
                       disabled={isReadOnly}
-                      className="text-[11px] font-medium min-h-[70px] bg-slate-50/50 border-slate-100 group-hover:border-indigo-100 group-hover:bg-white focus:bg-white rounded-xl resize-none transition-all placeholder:text-slate-400 p-3"
+                      className="text-xs font-normal min-h-[70px] bg-slate-50 border-slate-200 focus:bg-white rounded-md resize-none transition-all placeholder:text-slate-400 p-3"
                       placeholder={t('pillars.commentPlaceholder')}
                     />
                   </FormControl>
-                  <FormMessage className="text-[10px] font-bold" />
+                  <FormMessage className="text-xs font-semibold" />
                 </FormItem>
               )}
             />
@@ -140,14 +138,13 @@ export function TODSixPillarForm({ form, t, isReadOnly }: TODSixPillarFormProps)
         ))}
       </div>
 
-      <div className="p-5 bg-mancity-pattern rounded-2xl shadow-xl shadow-blue-100 relative overflow-hidden group">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-2xl group-hover:bg-white/10 transition-all duration-700" />
+      <div className="p-5 bg-mancity-pattern rounded-lg shadow-sm relative overflow-hidden group">
         <div className="flex gap-4 relative z-10">
-           <div className="h-10 w-10 rounded-xl bg-primary/20 text-primary-foreground flex items-center justify-center shrink-0 border border-white/20">
+           <div className="h-10 w-10 rounded-md bg-primary/20 text-primary-foreground flex items-center justify-center shrink-0 border border-white/20">
               <Info className="h-5 w-5" />
            </div>
            <div className="space-y-1">
-              <p className="text-[10px] font-bold text-primary-foreground uppercase tracking-widest flex items-center gap-2">
+              <p className="text-xs font-semibold text-primary-foreground uppercase tracking-wider flex items-center gap-2">
                 Regulatory Compliance Note
                 <ChevronRight className="h-3 w-3" />
               </p>

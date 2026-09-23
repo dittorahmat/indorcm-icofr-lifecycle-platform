@@ -79,10 +79,10 @@ export function BPMMigrationModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-xl rounded-2xl p-6">
+      <DialogContent className="max-w-xl rounded-lg p-6">
         <DialogHeader className="space-y-1">
           <div className="flex items-center gap-2">
-            <div className="h-9 w-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+            <div className="h-9 w-9 rounded-md bg-indigo-50 text-indigo-600 flex items-center justify-center">
               <GitMerge className="h-5 w-5" />
             </div>
             <div>

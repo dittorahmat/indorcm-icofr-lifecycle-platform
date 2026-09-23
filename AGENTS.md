@@ -40,11 +40,19 @@ IndoGRC Pro is a production-grade web application designed to digitize the ICOFR
     *   `reports/`: Regulatory reports, WBS recap, and digital sign-off.
 *   `shared/`: `types.ts` (Source of Truth), compliance utilities.
 
-## Mandat Penyelesaian Tahap (CRITICAL)
+## Mandat Penyelesaian Tahap & Anti-AI Slop (CRITICAL)
 
-Setiap kali menyelesaikan sebuah fitur, perbaikan bug, atau fase pengembangan, Anda **WAJIB** menjalankan urutan validasi berikut tanpa perlu diminta kembali oleh pengguna:
+Setiap kali melakukan penambahan komponen, modifikasi antarmuka frontend, menyelesaikan sebuah fitur, perbaikan bug, atau fase pengembangan, Anda **WAJIB** menjalankan urutan validasi berikut tanpa perlu diminta kembali oleh pengguna:
 
-1.  **Standar Desain Anti-AI Slop (design-taste-frontend):** Setiap kali membuat atau memodifikasi komponen/tampilan antarmuka (frontend), jalankan dan patuhi aturan skill `design-taste-frontend`. Pastikan tidak ada font/spacing inkonsisten, tidak ada font di bawah 12px (`text-xs`), tidak ada italic dekoratif pada data audit/regulatori, tidak ada gradien/blur/animasi distraktif (`backdrop-blur`, `bg-gradient-rainbow`, `animate-pulse`/`animate-ping` acak), dan seluruh komponen menggunakan institutional enterprise border-radius (`rounded-md`/`rounded-lg`).
+1.  **Mandat Wajib Penggunaan Skill `design-taste-frontend` (Strict Enforcement):**
+    *   Setiap kali membuat atau memodifikasi komponen/tampilan antarmuka (`src/**/*.tsx`), Anda **WAJIB** secara eksplisit mengaktifkan dan mematuhi seluruh panduan dari skill `design-taste-frontend`.
+    *   **Anti-AI Slop Checklist:**
+        *   **No sub-12px font:** Dilarang keras menggunakan font di bawah 12px (`text-[8px]`, `text-[9px]`, `text-[10px]`, `text-[11px]`). Gunakan minimal `text-xs` (12px) dengan font-weight tegas (`font-medium` / `font-semibold`).
+        *   **No decorative italic:** Dilarang menggunakan font miring (`italic`) pada data tabel audit, label regulasi, keterangan status, atau watermark audit. Teks kepatuhan BUMN harus tegas dan objektif.
+        *   **No backdrop-blur / glassmorphism:** Dilarang menggunakan `backdrop-blur`, `backdrop-filter`, atau frosted glass semu. Gunakan surface background solid yang bersih (`bg-background`, `bg-card`, `bg-slate-50`) dengan `border border-border`.
+        *   **No distracting animations:** Dilarang menggunakan `animate-pulse`, `animate-ping`, atau `animate-bounce` pada badge statis, counter sidebar, kartu, atau button. Animasi hanya diizinkan untuk loading state terisolasi (`<Skeleton />` atau `Loader2 className="animate-spin"`).
+        *   **Institutional border radius:** Seluruh card, modal, dialog, sheet, dan button wajib menggunakan border-radius enterprise institusional (`rounded-md` atau `rounded-lg`). Dilarang menggunakan kurva melingkar ekstrem/mainan (`rounded-2xl`, `rounded-3xl`, `rounded-[2rem]`).
+        *   **Design system tokens:** Gunakan token Shadcn / Tailwind semantik (`--primary`, `--muted`, `--border`, dsb.), dilarang hardcoded warna neon/gradien ungu-pink acak.
 2.  **Sinkronisasi Skema Database:** Jika ada perubahan pada `worker/db/schema.ts`, jalankan `npx drizzle-kit push` untuk menerapkan perubahan ke database PostgreSQL secara langsung.
 3.  **Lokalisasi Penuh (i18n):** Periksa seluruh file yang dimodifikasi. Pastikan **TIDAK ADA** teks hardcoded (Inggris maupun Indonesia). Gunakan `useTranslation` dan file di `src/i18n/locales/**`.
 4.  **Integritas Tipe:** Jalankan `npm run type-check`. Perbaiki semua error TS sebelum melangkah maju.
@@ -57,7 +65,7 @@ Setiap kali menyelesaikan sebuah fitur, perbaikan bug, atau fase pengembangan, A
 *   **Regulatory Compliance:** Any UI or data model change MUST refer to Regulation SK-5/DKU.MBU/11/2024.
 *   **Type Safety:** Shared types in `shared/types.ts` are the source of truth.
 *   **Auditability:** Every entity mutation should be accompanied by an entry in the `auditTrail` and `ChangeLog`.
-*   **Design Quality & Accessibility:** Avoid "AI Slop" (generic layouts, tiny fonts). Minimum font size is 12px (text-xs). Use Shadcn/UI Design Tokens (--primary, --sidebar, etc.) instead of hardcoded hex colors.
+*   **Design Quality & Accessibility (Mandat design-taste-frontend):** Hindari segala bentuk "AI Slop". Patuhi aturan minimum font 12px, border-radius enterprise, dan surface kontras tinggi.
 *   **Actionable Dashboard:** The Dashboard must function as an "Action Center," prioritizing urgent tasks (remediation, pending validation) to drive the ICOFR lifecycle.
 *   **Data Persistence:** Always generate and run drizzle migrations using `npx drizzle-kit push` after schema changes.
 *   **Localization:** Support multi-language (English/Indonesian) using `src/i18n/**`. All UI strings **MUST** be localized.

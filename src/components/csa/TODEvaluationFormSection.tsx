@@ -53,7 +53,7 @@ export function TODEvaluationFormSection({
               {pilar.label}
             </Label>
             {errors[pilar.id] && (
-              <span className="text-xs font-bold text-red-500 animate-pulse">Required</span>
+              <span className="text-xs font-semibold text-red-600">Required</span>
             )}
           </div>
           <Textarea
@@ -61,7 +61,7 @@ export function TODEvaluationFormSection({
             {...form.register(pilar.id as any)}
             placeholder={pilar.placeholder}
             className={cn(
-              "min-h-[100px] text-xs font-medium resize-none transition-all border-slate-200 rounded-xl focus:ring-4 focus:ring-slate-400/10",
+              "min-h-[100px] text-xs font-medium resize-none transition-all border-slate-200 rounded-md focus:ring-2 focus:ring-slate-400/20",
               errors[pilar.id] ? "border-red-300 bg-red-50/30" : "hover:border-slate-300"
             )}
           />

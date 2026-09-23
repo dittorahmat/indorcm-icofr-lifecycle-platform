@@ -59,9 +59,9 @@ export function ScopingEditorContent({
   return (
     <div className="flex flex-col flex-1 min-h-0 min-w-0 space-y-4 relative">
       {isRecalculating && (
-        <div className="absolute inset-0 bg-white/70 backdrop-blur-sm z-50 flex flex-col items-center justify-center gap-3 rounded-2xl transition-all duration-200">
+        <div className="absolute inset-0 bg-white/90 z-50 flex flex-col items-center justify-center gap-3 rounded-lg transition-all duration-200">
           <Loader2 className="h-8 w-8 text-indigo-600 animate-spin" />
-          <p className="text-xs font-bold text-indigo-950 uppercase tracking-widest animate-pulse">
+          <p className="text-xs font-semibold text-slate-800 uppercase tracking-wider">
             {t('params.recalculating', 'Recalculating scoping compliance...')}
           </p>
         </div>

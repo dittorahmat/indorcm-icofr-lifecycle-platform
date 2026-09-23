@@ -51,7 +51,7 @@ export function ChatMessageList({ messages, isLoading }: ChatMessageListProps) {
             >
               <div
                 className={cn(
-                  "max-w-[85%] rounded-2xl px-4 py-2 text-sm",
+                  "max-w-[85%] rounded-lg px-4 py-2 text-sm",
                   message.role === 'user'
                     ? 'bg-primary text-primary-foreground'
                     : 'bg-muted text-foreground'
@@ -93,7 +93,7 @@ export function ChatMessageList({ messages, isLoading }: ChatMessageListProps) {
                 </div>
                 <div
                   className={cn(
-                    "text-[10px] mt-1 opacity-70",
+                    "text-xs mt-1 opacity-70",
                     message.role === 'user' ? 'text-primary-foreground' : 'text-muted-foreground'
                   )}
                 >
@@ -109,7 +109,7 @@ export function ChatMessageList({ messages, isLoading }: ChatMessageListProps) {
 
         {isLoading && (
           <div className="flex justify-start">
-            <div className="bg-muted rounded-2xl px-4 py-3 text-sm">
+            <div className="bg-muted rounded-lg px-4 py-3 text-sm">
               <div className="flex items-center gap-2">
                 <div className="flex space-x-1">
                   <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce [animation-delay:-0.3s]" />

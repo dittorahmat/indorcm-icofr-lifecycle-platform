@@ -64,7 +64,7 @@ export const BPMCanvasToolbar: React.FC<BPMCanvasToolbarProps> = ({
   const { t } = useTranslation(['bpm']);
 
   return (
-    <div className="h-14 border-b border-slate-200 bg-white/95 backdrop-blur-sm px-4 sm:px-6 flex items-center justify-between gap-3 shrink-0 z-20 print:hidden">
+    <div className="h-14 border-b border-slate-200 bg-background px-4 sm:px-6 flex items-center justify-between gap-3 shrink-0 z-20 print:hidden">
       <div className="flex items-center gap-2 overflow-x-auto py-1 w-full justify-between">
         <div className="flex items-center gap-2 shrink-0">
           <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-xl p-0.5 shadow-sm shrink-0">

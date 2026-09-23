@@ -122,23 +122,23 @@ export function ChangeLogReport() {
           <Table className="min-w-[1200px] print:min-w-0 print:w-full print:text-[9px]">
             <TableHeader className="bg-slate-50 border-b print:bg-transparent">
               <TableRow>
-                <TableHead className="w-[50px] text-[10px] font-bold uppercase py-2 text-center text-slate-800">No (i)</TableHead>
-                <TableHead className="text-[10px] font-bold uppercase py-2 text-slate-800">Perusahaan (ii)</TableHead>
-                <TableHead className="text-[10px] font-bold uppercase py-2 text-slate-800">Proses Bisnis (iii)</TableHead>
-                <TableHead className="text-[10px] font-bold uppercase py-2 text-slate-800">Sub-Proses (iv)</TableHead>
-                <TableHead className="text-[10px] font-bold uppercase py-2 text-slate-800">Tanggal Laporan (v)</TableHead>
-                <TableHead className="text-[10px] font-bold uppercase py-2 text-slate-800">Pemilik (vi)</TableHead>
-                <TableHead className="text-[10px] font-bold uppercase py-2 text-slate-800">Deskripsi Sebelum (vii)</TableHead>
-                <TableHead className="text-[10px] font-bold uppercase py-2 text-slate-800">Deskripsi Setelah (viii)</TableHead>
-                <TableHead className="text-[10px] font-bold uppercase py-2 text-center text-slate-800">Ref Sebelum (ix)</TableHead>
-                <TableHead className="text-[10px] font-bold uppercase py-2 text-center text-slate-800">Ref Setelah (x)</TableHead>
-                <TableHead className="text-[10px] font-bold uppercase py-2 text-slate-800">Tgl Efektif (xi)</TableHead>
+                <TableHead className="w-[50px] text-xs font-semibold uppercase py-2 text-center text-slate-800">No (i)</TableHead>
+                <TableHead className="text-xs font-semibold uppercase py-2 text-slate-800">Perusahaan (ii)</TableHead>
+                <TableHead className="text-xs font-semibold uppercase py-2 text-slate-800">Proses Bisnis (iii)</TableHead>
+                <TableHead className="text-xs font-semibold uppercase py-2 text-slate-800">Sub-Proses (iv)</TableHead>
+                <TableHead className="text-xs font-semibold uppercase py-2 text-slate-800">Tanggal Laporan (v)</TableHead>
+                <TableHead className="text-xs font-semibold uppercase py-2 text-slate-800">Pemilik (vi)</TableHead>
+                <TableHead className="text-xs font-semibold uppercase py-2 text-slate-800">Deskripsi Sebelum (vii)</TableHead>
+                <TableHead className="text-xs font-semibold uppercase py-2 text-slate-800">Deskripsi Setelah (viii)</TableHead>
+                <TableHead className="text-xs font-semibold uppercase py-2 text-center text-slate-800">Ref Sebelum (ix)</TableHead>
+                <TableHead className="text-xs font-semibold uppercase py-2 text-center text-slate-800">Ref Setelah (x)</TableHead>
+                <TableHead className="text-xs font-semibold uppercase py-2 text-slate-800">Tgl Efektif (xi)</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {!logs || logs.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={11} className="text-center py-8 text-slate-400 italic text-xs">
+                  <TableCell colSpan={11} className="text-center py-8 text-slate-500 font-medium text-xs">
                     Tidak ditemukan data log perubahan regulasi.
                   </TableCell>
                 </TableRow>
@@ -147,20 +147,20 @@ export function ChangeLogReport() {
                   const meta = getRowMetadata(log);
                   return (
                     <TableRow key={log.id} className="border-b hover:bg-slate-50/50 transition-colors print:border-slate-300">
-                      <TableCell className="text-center font-medium text-[10px] text-slate-500 py-2.5 print:py-1">{index + 1}</TableCell>
-                      <TableCell className="text-[10px] font-semibold text-slate-700 py-2.5 print:py-1">PT Bukit Asam Tbk</TableCell>
-                      <TableCell className="text-[10px] text-slate-600 py-2.5 print:py-1">{meta.process}</TableCell>
-                      <TableCell className="text-[10px] text-slate-600 py-2.5 print:py-1">{meta.subProcess}</TableCell>
-                      <TableCell className="py-2.5 print:py-1 font-mono text-[10px] text-slate-500">
+                      <TableCell className="text-center font-medium text-xs text-slate-500 py-2.5 print:py-1">{index + 1}</TableCell>
+                      <TableCell className="text-xs font-semibold text-slate-700 py-2.5 print:py-1">PT Bukit Asam Tbk</TableCell>
+                      <TableCell className="text-xs text-slate-600 py-2.5 print:py-1">{meta.process}</TableCell>
+                      <TableCell className="text-xs text-slate-600 py-2.5 print:py-1">{meta.subProcess}</TableCell>
+                      <TableCell className="py-2.5 print:py-1 font-mono text-xs text-slate-500">
                         {log.timestamp ? format(log.timestamp, 'dd/MM/yyyy HH:mm') : "-"}
                       </TableCell>
-                      <TableCell className="text-[10px] text-slate-600 py-2.5 print:py-1 font-medium">{meta.owner}</TableCell>
-                      <TableCell className="max-w-[150px] truncate text-[10px] text-slate-500 py-2.5 print:py-1" title={meta.descBefore}>{meta.descBefore}</TableCell>
-                      <TableCell className="max-w-[150px] truncate text-[10px] text-slate-800 py-2.5 print:py-1 font-medium" title={meta.descAfter}>{meta.descAfter}</TableCell>
-                      <TableCell className="text-center text-[10px] font-mono text-slate-500 py-2.5 print:py-1">{meta.refBefore}</TableCell>
-                      <TableCell className="text-center text-[10px] font-mono text-slate-800 py-2.5 print:py-1 font-semibold">{meta.refAfter}</TableCell>
+                      <TableCell className="text-xs text-slate-600 py-2.5 print:py-1 font-medium">{meta.owner}</TableCell>
+                      <TableCell className="max-w-[150px] truncate text-xs text-slate-500 py-2.5 print:py-1" title={meta.descBefore}>{meta.descBefore}</TableCell>
+                      <TableCell className="max-w-[150px] truncate text-xs text-slate-800 py-2.5 print:py-1 font-medium" title={meta.descAfter}>{meta.descAfter}</TableCell>
+                      <TableCell className="text-center text-xs font-mono text-slate-500 py-2.5 print:py-1">{meta.refBefore}</TableCell>
+                      <TableCell className="text-center text-xs font-mono text-slate-800 py-2.5 print:py-1 font-semibold">{meta.refAfter}</TableCell>
                       <TableCell className="py-2.5 print:py-1">
-                        <span className="text-[10px] font-bold text-indigo-600">
+                        <span className="text-xs font-semibold text-indigo-600">
                           {log.effectiveDate ? format(log.effectiveDate, 'dd/MM/yyyy') : "-"}
                         </span>
                       </TableCell>
@@ -174,24 +174,24 @@ export function ChangeLogReport() {
 
         {/* Digital Sign-off Blocks */}
         <div className="grid grid-cols-2 gap-8 pt-8 max-w-2xl mx-auto print:pt-4 print:max-w-full">
-          <div className="border rounded-lg p-4 bg-slate-50/50 flex flex-col items-center justify-between text-center min-h-[140px] print:border-slate-300 print:bg-transparent print:p-2">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Disetujui oleh:</span>
+          <div className="border rounded-lg p-4 bg-slate-50 flex flex-col items-center justify-between text-center min-h-[140px] print:border-slate-300 print:bg-transparent print:p-2">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Disetujui oleh:</span>
             <div className="flex flex-col items-center gap-1 my-2">
               <CheckCircle2 className="h-6 w-6 text-emerald-600 print:h-4 print:w-4" />
               <span className="text-xs font-bold text-slate-800">{latestPreparer || "Pemilik Pengendalian"}</span>
-              <span className="text-[9px] text-slate-400">Lini Pertama (Control Owner)</span>
+              <span className="text-xs text-slate-500">Lini Pertama (Control Owner)</span>
             </div>
-            <span className="text-[9px] text-slate-400 italic">Signed & Verified Digitally</span>
+            <span className="text-xs text-slate-500 font-medium">Signed & Verified Digitally</span>
           </div>
 
-          <div className="border rounded-lg p-4 bg-slate-50/50 flex flex-col items-center justify-between text-center min-h-[140px] print:border-slate-300 print:bg-transparent print:p-2">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Diketahui oleh:</span>
+          <div className="border rounded-lg p-4 bg-slate-50 flex flex-col items-center justify-between text-center min-h-[140px] print:border-slate-300 print:bg-transparent print:p-2">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Diketahui oleh:</span>
             <div className="flex flex-col items-center gap-1 my-2">
               <CheckCircle2 className="h-6 w-6 text-indigo-600 print:h-4 print:w-4" />
               <span className="text-xs font-bold text-slate-800">{latestApprover || "Fungsi ICOFR"}</span>
-              <span className="text-[9px] text-slate-400">Lini Kedua (Fungsi ICOFR)</span>
+              <span className="text-xs text-slate-500">Lini Kedua (Fungsi ICOFR)</span>
             </div>
-            <span className="text-[9px] text-slate-400 italic">Approved & Validated Digitally</span>
+            <span className="text-xs text-slate-500 font-medium">Approved & Validated Digitally</span>
           </div>
         </div>
       </CardContent>

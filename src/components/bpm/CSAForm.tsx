@@ -466,9 +466,9 @@ export function CSAForm({
                 const flatResults = watchSamples.flatMap(s => Object.values(s.controlResults) as any[]);
                 const anyPassWithoutEvidence = flatResults.some(r => r.implemented && !r.evidenceUrl);
                 const nothingDone = flatResults.every(r => !r.implemented && !r.evidenceUrl && !r.comment);
-                if (nothingDone) return <p className="text-xl font-black uppercase italic text-slate-400">{t('csa_hub:form.notStarted')}</p>;
-                if (anyPassWithoutEvidence) return <p className="text-xl font-black uppercase italic text-rose-500 animate-pulse">{t('csa_hub:form.needEvidence')}</p>;
-                return <p className="text-xl font-black uppercase italic text-emerald-600">{t('csa_hub:form.readyToSign')}</p>;
+                if (nothingDone) return <p className="text-xl font-bold uppercase text-slate-400">{t('csa_hub:form.notStarted')}</p>;
+                if (anyPassWithoutEvidence) return <p className="text-xl font-bold uppercase text-rose-600">{t('csa_hub:form.needEvidence')}</p>;
+                return <p className="text-xl font-bold uppercase text-emerald-600">{t('csa_hub:form.readyToSign')}</p>;
                 })()}
                 </div>
                 </div>

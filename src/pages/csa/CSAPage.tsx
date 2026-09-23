@@ -365,16 +365,16 @@ export function CSAPage() {
           </div>
         </div>
 
-        <div className="border rounded-2xl bg-white shadow-2xl shadow-slate-200/50 overflow-hidden ring-1 ring-slate-200/50">
+        <div className="border rounded-lg bg-white shadow-sm overflow-hidden">
           <Table>
-            <TableHeader className="bg-slate-50/80 backdrop-blur-md border-b-2 border-slate-100">
-              <TableRow className="hover:bg-transparent border-none">
-                <TableHead className="text-xs font-black uppercase tracking-widest text-slate-400 py-6 pl-8">{t('page.table.subProcess')}</TableHead>
-                <TableHead className="text-xs font-black uppercase tracking-widest text-slate-400 text-center">{t('page.table.period')}</TableHead>
-                <TableHead className="text-xs font-black uppercase tracking-widest text-slate-400 text-center">{t('page.table.status')}</TableHead>
-                <TableHead className="text-xs font-black uppercase tracking-widest text-slate-400">{t('page.table.signOff')}</TableHead>
-                <TableHead className="text-xs font-black uppercase tracking-widest text-slate-400 text-center">{t('page.table.samples')}</TableHead>
-                <TableHead className="text-right text-xs font-black uppercase tracking-widest text-slate-400 pr-8">{t('page.table.reports')}</TableHead>
+            <TableHeader className="bg-slate-50 border-b border-slate-200">
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-500 py-4 pl-6">{t('page.table.subProcess')}</TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-500 text-center">{t('page.table.period')}</TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-500 text-center">{t('page.table.status')}</TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-500">{t('page.table.signOff')}</TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-500 text-center">{t('page.table.samples')}</TableHead>
+                <TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-slate-500 pr-6">{t('page.table.reports')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -382,14 +382,14 @@ export function CSAPage() {
                 <TableRow className="border-none"><TableCell colSpan={6} className="h-80 text-center border-none">
                    <div className="flex flex-col items-center gap-4">
                       <div className="relative">
-                        <div className="h-12 w-12 border-4 border-slate-100 rounded-full" />
-                        <div className="h-12 w-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin absolute top-0 left-0" />
+                        <div className="h-10 w-10 border-4 border-slate-100 rounded-full" />
+                        <div className="h-10 w-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin absolute top-0 left-0" />
                       </div>
-                      <span className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] animate-pulse">{t('page.loading')}</span>
+                      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('page.loading')}</span>
                    </div>
                 </TableCell></TableRow>
               ) : filteredRecords.length === 0 ? (
-                <TableRow className="border-none"><TableCell colSpan={6} className="h-80 text-center text-slate-400 italic border-none">{t('page.empty')}</TableCell></TableRow>
+                <TableRow className="border-none"><TableCell colSpan={6} className="h-80 text-center text-slate-500 font-normal border-none">{t('page.empty')}</TableCell></TableRow>
               ) : filteredRecords.map((record) => (
                 <CSARecordRow 
                   key={record.id} 

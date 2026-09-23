@@ -43,7 +43,7 @@ export function FileUploadZone({ type, onFileSelect, selectedFile, isProcessing 
             onDragLeave={() => setIsDragging(false)}
             onDrop={handleDrop}
             className={cn(
-                "relative border-2 border-dashed rounded-[2rem] flex flex-col items-center text-center gap-4 transition-all group",
+                "relative border-2 border-dashed rounded-xl flex flex-col items-center text-center gap-4 transition-all group",
                 selectedFile ? "p-8 border-solid bg-slate-50/50" : "p-12 border-dashed",
                 isDragging ? "border-indigo-500 bg-indigo-50" : "border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/30",
                 selectedFile && "border-indigo-500",
@@ -52,14 +52,14 @@ export function FileUploadZone({ type, onFileSelect, selectedFile, isProcessing 
             )}
         >
             {isProcessing && (
-                <div className="absolute inset-0 z-10 bg-white/60 backdrop-blur-[2px] rounded-[2rem] flex flex-col items-center justify-center gap-3">
+                <div className="absolute inset-0 z-10 bg-white/90 rounded-xl flex flex-col items-center justify-center gap-3">
                     <Loader2 className="h-10 w-10 text-indigo-600 animate-spin" />
                     <span className="font-bold text-xs text-indigo-900 uppercase tracking-widest">{t('rcm:migration.normalization.ai_thinking')}</span>
                 </div>
             )}
 
             <div className={cn(
-                "h-16 w-16 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-white transition-colors",
+                "h-16 w-16 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-white transition-colors",
                 selectedFile && "bg-white text-indigo-600",
                 type === 'RCM' && selectedFile && "text-emerald-600"
             )}>

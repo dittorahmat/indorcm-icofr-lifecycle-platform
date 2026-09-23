@@ -49,7 +49,7 @@ export function CrossCheckPanel({ items }: CrossCheckPanelProps) {
                                         </Badge>
                                     )}
                                     {item.status === 'Unmitigated' && (
-                                        <Badge className="bg-red-50 text-red-700 border-red-100 hover:bg-red-50 shadow-none animate-pulse">
+                                        <Badge className="bg-red-50 text-red-700 border-red-200 hover:bg-red-50 shadow-none">
                                             <AlertTriangle className="h-3 w-3 mr-1" /> {t('rcm:migration.normalization.unmitigated')}
                                         </Badge>
                                     )}

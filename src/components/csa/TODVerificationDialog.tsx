@@ -217,11 +217,11 @@ export function TODVerificationDialog({
           <DialogHeader className="p-6 bg-mancity-pattern text-primary-foreground shrink-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="p-2.5 bg-primary/20 backdrop-blur-md rounded-2xl shadow-md border border-white/20">
+                <div className="p-2.5 bg-primary/20 rounded-lg shadow-sm border border-white/20">
                   <ShieldCheck className="h-7 w-7 text-primary-foreground" />
                 </div>
                 <div>
-                  <DialogTitle className="text-2xl font-black tracking-tighter uppercase italic text-primary-foreground">
+                  <DialogTitle className="text-2xl font-bold tracking-tight uppercase text-primary-foreground">
                     {t('csa_hub:tod.title')}
                   </DialogTitle>
                   <div className="flex items-center gap-2 mt-1">

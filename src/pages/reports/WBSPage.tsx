@@ -41,7 +41,7 @@ export function WBSPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold">Whistleblowing Recap</h1>
-            <p className="text-muted-foreground italic">Integration of fraud indicators into ICOFR risk assessment (Lampiran 1 Prinsip 8 & 14).</p>
+            <p className="text-muted-foreground">Integration of fraud indicators into ICOFR risk assessment (Lampiran 1 Prinsip 8 & 14).</p>
           </div>
           <Button className="gap-2">
             <Plus className="h-4 w-4" /> Log Fraud Indicator

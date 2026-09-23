@@ -158,25 +158,25 @@ export function BPMDiagramList({
                   className="rounded"
                 />
               </TableHead>
-              <TableHead className="w-[110px] text-center font-bold text-[10px] uppercase tracking-[0.2em] text-slate-400 py-4">
+              <TableHead className="w-[110px] text-center font-semibold text-xs uppercase tracking-wider text-slate-500 py-3.5">
                 {t('common:actions.title', 'Aksi')}
               </TableHead>
-              <TableHead className="font-bold text-[10px] uppercase tracking-[0.2em] text-slate-400 py-4">
+              <TableHead className="font-semibold text-xs uppercase tracking-wider text-slate-500 py-3.5">
                 {t('bpm:table.processAndSubProcess', 'Proses & Sub-Proses')}
               </TableHead>
-              <TableHead className="w-[130px] font-bold text-[10px] uppercase tracking-[0.2em] text-slate-400 py-4">
+              <TableHead className="w-[130px] font-semibold text-xs uppercase tracking-wider text-slate-500 py-3.5">
                 {t('bpm:table.level', 'Tingkatan')}
               </TableHead>
-              <TableHead className="w-[140px] font-bold text-[10px] uppercase tracking-[0.2em] text-slate-400 py-4">
+              <TableHead className="w-[140px] font-semibold text-xs uppercase tracking-wider text-slate-500 py-3.5">
                 {t('bpm:table.company', 'Perusahaan')}
               </TableHead>
-              <TableHead className="w-[100px] text-center font-bold text-[10px] uppercase tracking-[0.2em] text-slate-400 py-4">
+              <TableHead className="w-[100px] text-center font-semibold text-xs uppercase tracking-wider text-slate-500 py-3.5">
                 {t('bpm:table.risks', 'Risiko')}
               </TableHead>
-              <TableHead className="w-[100px] text-center font-bold text-[10px] uppercase tracking-[0.2em] text-slate-400 py-4">
+              <TableHead className="w-[100px] text-center font-semibold text-xs uppercase tracking-wider text-slate-500 py-3.5">
                 {t('bpm:table.controls', 'Kontrol')}
               </TableHead>
-              <TableHead className="w-[80px] text-center font-bold text-[10px] uppercase tracking-[0.2em] text-slate-400 py-4">
+              <TableHead className="w-[80px] text-center font-semibold text-xs uppercase tracking-wider text-slate-500 py-3.5">
                 Status
               </TableHead>
               <TableHead className="w-[60px] py-4"></TableHead>

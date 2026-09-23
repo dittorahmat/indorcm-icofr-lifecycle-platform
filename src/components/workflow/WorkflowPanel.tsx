@@ -359,8 +359,8 @@ export function WorkflowPanel({
           </div>
         </CardContent>
 
-        <CardFooter className="bg-slate-50/30 border-t p-3">
-            <p className="text-[10px] text-slate-400 font-medium italic">
+        <CardFooter className="bg-slate-50/50 border-t p-3">
+            <p className="text-xs text-slate-500 font-normal">
                 {t('workflow:complianceNote')}
             </p>
         </CardFooter>

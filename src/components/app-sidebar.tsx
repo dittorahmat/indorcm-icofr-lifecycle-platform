@@ -94,7 +94,7 @@ function PendingApprovalBadge({ role }: { role: string | null | undefined }) {
   if (count === 0) return null;
 
   return (
-    <div className="h-5 w-5 rounded-full bg-red-500 text-xs font-bold text-white flex items-center justify-center animate-pulse shadow-sm shadow-red-200">
+    <div className="h-5 min-w-[1.25rem] px-1 rounded bg-red-600 text-xs font-semibold text-white flex items-center justify-center">
       {count}
     </div>
   );
@@ -111,7 +111,7 @@ function NotificationBadge() {
   if (!notificationData?.count || notificationData.count <= 0) return null;
 
   return (
-    <div className="h-5 w-5 rounded-full bg-rose-600 text-xs font-black text-white flex items-center justify-center animate-pulse shadow-sm shadow-rose-200">
+    <div className="h-5 min-w-[1.25rem] px-1 rounded bg-rose-700 text-xs font-semibold text-white flex items-center justify-center">
       {notificationData.count > 9 ? '9+' : notificationData.count}
     </div>
   );

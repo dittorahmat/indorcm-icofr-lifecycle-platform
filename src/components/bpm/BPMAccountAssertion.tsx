@@ -50,12 +50,12 @@ export function BPMAccountAssertion({
       <CardHeader className="bg-slate-50/50 py-5 px-8 border-b">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="h-10 w-10 rounded-2xl bg-slate-50 text-primary flex items-center justify-center border border-slate-200 shadow-sm">
+            <div className="h-10 w-10 rounded-lg bg-slate-50 text-primary flex items-center justify-center border border-slate-200 shadow-sm">
               <Shield className="h-5 w-5" />
             </div>
             <div>
               <CardTitle className="text-sm font-display font-bold uppercase tracking-widest text-slate-900">{t('assertions.title')}</CardTitle>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-0.5">Management Assertions (Tabel 13)</p>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-0.5">Management Assertions (Tabel 13)</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
@@ -66,14 +66,14 @@ export function BPMAccountAssertion({
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 10 }}
                 >
-                  <Button size="sm" onClick={onSave} disabled={isSaving} className="h-9 px-6 rounded-xl text-[10px] font-bold uppercase tracking-widest gap-2 bg-mancity-pattern hover:opacity-90 text-primary-foreground shadow-md">
+                  <Button size="sm" onClick={onSave} disabled={isSaving} className="h-9 px-6 rounded-lg text-xs font-semibold uppercase tracking-wider gap-2 bg-mancity-pattern hover:opacity-90 text-primary-foreground shadow-sm">
                     {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
                     {t('common:actions.save')}
                   </Button>
                 </motion.div>
               )}
             </AnimatePresence>
-            <Badge variant="outline" className="bg-white border-slate-200 text-slate-500 font-bold text-[10px] uppercase tracking-widest px-3 h-6">{t('assertions.subtitle')}</Badge>
+            <Badge variant="outline" className="bg-white border-slate-200 text-slate-600 font-semibold text-xs uppercase tracking-wider px-3 h-6">{t('assertions.subtitle')}</Badge>
           </div>
         </div>
       </CardHeader>
@@ -86,12 +86,12 @@ export function BPMAccountAssertion({
                   <TableHead key={field.key} className="text-center w-[120px] py-4">
                     <Tooltip>
                       <TooltipTrigger className="cursor-help flex items-center justify-center gap-2 mx-auto group">
-                        <span className={cn("font-bold text-[10px] uppercase tracking-widest transition-colors", field.color)}>{field.label}</span>
+                        <span className={cn("font-semibold text-xs uppercase tracking-wider transition-colors", field.color)}>{field.label}</span>
                         <Info className="h-3 w-3 text-slate-300 group-hover:text-slate-500 transition-colors" />
                       </TooltipTrigger>
-                      <TooltipContent side="top" className="max-w-xs p-3 rounded-xl shadow-xl border-slate-200">
+                      <TooltipContent side="top" className="max-w-xs p-3 rounded-lg shadow-lg border-slate-200">
                         <p className="text-xs font-bold text-slate-900"><strong>{field.label}</strong></p>
-                        <p className="text-[11px] mt-1 text-slate-500 leading-relaxed italic">"{field.desc}"</p>
+                        <p className="text-xs mt-1 text-slate-600 leading-relaxed font-normal">"{field.desc}"</p>
                       </TooltipContent>
                     </Tooltip>
                   </TableHead>

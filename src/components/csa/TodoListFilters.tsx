@@ -25,7 +25,7 @@ export function TodoListFilters({
   const { t } = useTranslation(['csa', 'common', 'csa_hub']);
 
   return (
-    <div className="flex flex-col md:flex-row items-center justify-between gap-4 p-4 border-b bg-white/80 backdrop-blur-sm sticky top-0 z-20">
+    <div className="flex flex-col md:flex-row items-center justify-between gap-4 p-4 border-b bg-background sticky top-0 z-20">
       <div className="flex items-center gap-4">
         <Button onClick={onCreateClick} size="sm" className="bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-100 gap-2 font-bold h-9">
           <Plus className="h-4 w-4" /> {t('csa_hub:scheduling.newEvent')}

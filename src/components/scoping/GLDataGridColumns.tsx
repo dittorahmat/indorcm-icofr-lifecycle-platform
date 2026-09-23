@@ -142,7 +142,7 @@ export function buildGLDataGridColumns({
         if (isInScope) {
           if (!hasAccess) {
             return (
-              <div className="text-xs text-slate-400 flex items-center gap-1.5 italic">
+              <div className="text-xs text-slate-400 flex items-center gap-1.5 font-normal">
                 <Lock className="h-2.5 w-2.5" /> {glDesc}
               </div>
             );
@@ -222,7 +222,7 @@ export function buildGLDataGridColumns({
             {isSignificant ? (
               <Badge className="bg-red-600 h-4 px-1.5 text-xs uppercase tracking-tighter">{t('grid.significant')}</Badge>
             ) : (
-              <span className="text-slate-300 text-xs font-medium italic">{t('grid.notSignificant')}</span>
+              <span className="text-slate-300 text-xs font-medium">{t('grid.notSignificant')}</span>
             )}
           </div>
         );
@@ -251,7 +251,7 @@ export function buildGLDataGridColumns({
               "h-7 w-full text-xs px-1 border-none bg-transparent hover:bg-slate-100 transition-colors",
               currentLevel === 'High' ? "text-red-600 font-bold bg-red-50" : 
               currentLevel === 'Medium' ? "text-amber-600 font-medium bg-amber-50" : 
-              currentLevel === 'Low' ? "text-green-600 bg-green-50" : "text-slate-300 italic"
+              currentLevel === 'Low' ? "text-green-600 bg-green-50" : "text-slate-300 font-normal"
             )}>
               <SelectValue placeholder="-" />
             </SelectTrigger>
@@ -391,7 +391,7 @@ export function buildGLDataGridColumns({
               "h-7 w-full text-xs px-1 border-none bg-transparent hover:bg-slate-100 transition-colors",
               currentAcceptance === 'Accepted' ? "text-green-600 font-bold bg-green-50" :
               currentAcceptance === 'Rejected' ? "text-red-600 font-bold bg-red-50" :
-              "text-slate-300 italic"
+              "text-slate-300 font-normal"
             )}>
               <SelectValue placeholder={t('grid.pending')} />
             </SelectTrigger>

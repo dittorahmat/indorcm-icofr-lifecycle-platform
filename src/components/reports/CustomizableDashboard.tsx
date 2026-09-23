@@ -337,7 +337,8 @@ export function CustomizableDashboard({ summaryData, isEffective }: Customizable
           <LayoutGrid className="h-5 w-5 text-slate-500" />
           <span className="text-sm font-bold text-slate-700">{t('customizableDashboard.title')}</span>
           {savePrefMutation.isPending && (
-            <Badge variant="secondary" className="bg-slate-200 text-slate-600 animate-pulse text-[10px]">
+            <Badge variant="secondary" className="bg-slate-200 text-slate-700 text-xs font-medium flex items-center gap-1">
+              <Loader2 className="h-3 w-3 animate-spin" />
               {t('customizableDashboard.saving')}
             </Badge>
           )}

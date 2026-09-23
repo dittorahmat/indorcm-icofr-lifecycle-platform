@@ -56,33 +56,33 @@ export function DeficiencyCard({ deficiency, actionPlan }: DeficiencyCardProps) 
         isOverdue && !isDragging && "border-rose-200"
       )}>
         {isOverdue && (
-           <div className="absolute top-0 left-0 w-full h-1 bg-rose-500 animate-pulse z-20" />
+           <div className="absolute top-0 left-0 w-full h-1 bg-rose-500 z-20" />
         )}
         
         <CardHeader className="flex flex-row items-start justify-between p-5 pb-3">
           <div className="space-y-2 w-full pr-2">
              <div className="flex flex-wrap items-center gap-1.5">
-                <Badge className={cn("text-[8px] font-bold uppercase tracking-widest px-2 h-4 border-none shadow-sm", config.color)}>
+                <Badge className={cn("text-xs font-semibold uppercase tracking-wider px-2 py-0.5 border-none shadow-none", config.color)}>
                    {deficiency.severity}
                 </Badge>
                 <Badge variant="outline" className={cn(
-                  "text-[8px] font-bold uppercase tracking-widest px-2 h-4 border-slate-200 bg-white",
+                  "text-xs font-medium uppercase tracking-wider px-2 py-0.5 border-slate-200 bg-white",
                   deficiency.source?.startsWith('Lini 2') ? "text-amber-600 border-amber-200" : "text-indigo-600 border-indigo-200"
                 )}>
                    {deficiency.source || 'Manual'}
                 </Badge>
                 {deficiency.controlCode && (
-                  <Badge variant="secondary" className="text-[9px] font-mono font-bold uppercase tracking-wider px-2 h-4.5 bg-indigo-100/80 text-indigo-800 border border-indigo-300 shadow-xs">
+                  <Badge variant="secondary" className="text-xs font-mono font-semibold uppercase tracking-wider px-2 py-0.5 bg-indigo-50 text-indigo-800 border border-indigo-200 shadow-none">
                     {deficiency.controlCode}
                   </Badge>
                 )}
                 {deficiency.riskCode && (
-                  <Badge variant="secondary" className="text-[9px] font-mono font-bold uppercase tracking-wider px-2 h-4.5 bg-rose-100/80 text-rose-800 border border-rose-300 shadow-xs">
+                  <Badge variant="secondary" className="text-xs font-mono font-semibold uppercase tracking-wider px-2 py-0.5 bg-rose-50 text-rose-800 border border-rose-200 shadow-none">
                     {deficiency.riskCode}
                   </Badge>
                 )}
                 {isOverdue && (
-                  <Badge variant="outline" className="text-[8px] font-bold uppercase tracking-widest px-2 h-4 border-rose-200 bg-rose-50 text-rose-600 animate-pulse">
+                  <Badge variant="outline" className="text-xs font-semibold uppercase tracking-wider px-2 py-0.5 border-rose-300 bg-rose-100 text-rose-700">
                     OVERDUE
                   </Badge>
                 )}

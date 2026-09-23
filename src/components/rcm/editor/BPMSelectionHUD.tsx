@@ -31,9 +31,9 @@ export const BPMSelectionHUD: React.FC<BPMSelectionHUDProps> = ({
 
   return (
     <Panel position="bottom-center" className="mb-4 pointer-events-auto">
-      <div className="flex items-center gap-3 bg-slate-900/95 text-white backdrop-blur-md px-4 py-2.5 rounded-2xl shadow-2xl border border-slate-700/80 animate-in fade-in slide-in-from-bottom-3 duration-200">
+      <div className="flex items-center gap-3 bg-slate-900 text-white px-4 py-2.5 rounded-lg shadow-xl border border-slate-700 animate-in fade-in slide-in-from-bottom-3 duration-200">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
             {t('bpm:editor.selectionHud.selected', { defaultValue: 'Selected' })}:
           </span>
           {selectedNode && (
@@ -41,7 +41,7 @@ export const BPMSelectionHUD: React.FC<BPMSelectionHUDProps> = ({
               <Badge
                 variant="outline"
                 className={cn(
-                  "text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-lg border",
+                  "text-xs font-semibold uppercase tracking-wider px-2 py-0.5 rounded border",
                   selectedNode.type === 'swimlane'
                     ? "bg-indigo-500/20 text-indigo-300 border-indigo-500/40"
                     : "bg-blue-500/20 text-blue-300 border-blue-500/40"
