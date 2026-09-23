@@ -41,25 +41,22 @@ export function ErrorFallback({
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
-        {/* Animated background gradient */}
-        <div className="absolute inset-0 bg-gradient-rainbow opacity-5 dark:opacity-10" />
-        
         {/* Error card */}
-        <Card className="relative backdrop-blur-sm shadow-2xl">
+        <Card className="relative border border-border shadow-sm bg-card">
           <CardContent className="p-8 space-y-6">
             {/* Icon and title */}
             <div className="text-center space-y-4">
-              <div className="mx-auto w-16 h-16 rounded-2xl bg-destructive/10 flex items-center justify-center">
-                <AlertTriangle className="w-8 h-8 text-destructive" />
+              <div className="mx-auto w-14 h-14 rounded-xl bg-destructive/10 flex items-center justify-center">
+                <AlertTriangle className="w-7 h-7 text-destructive" />
               </div>
-              <h1 className="text-2xl font-bold">{title}</h1>
-              <p className="text-muted-foreground">{message}</p>
+              <h1 className="text-xl font-semibold tracking-tight text-foreground">{title}</h1>
+              <p className="text-sm text-muted-foreground leading-relaxed">{message}</p>
             </div>
 
             {/* Status indicator */}
             {statusMessage && (
-              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+              <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                <div className="w-2 h-2 rounded-full bg-amber-500" />
                 <span>{statusMessage}</span>
               </div>
             )}

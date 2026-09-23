@@ -125,12 +125,12 @@ export function ScopingPage() {
           description={t('scoping:description')}
           badge={activeSnapshot && (
             <Badge variant="outline" className={cn(
-              "gap-1.5 font-bold uppercase tracking-wider text-[10px] transition-all px-2.5 py-1 shadow-sm ring-1 ring-slate-200/50",
+              "gap-1.5 font-bold uppercase tracking-wider text-xs transition-all px-2.5 py-1 shadow-sm ring-1 ring-slate-200/50",
               activeSnapshot.status === 'Mapped' 
                 ? "bg-white text-emerald-700 border-emerald-200" 
                 : "bg-white text-amber-700 border-amber-200"
             )}>
-              <div className={cn("h-1.5 w-1.5 rounded-full", activeSnapshot.status === 'Mapped' ? "bg-emerald-500 animate-pulse" : "bg-amber-500 animate-pulse")} />
+              <div className={cn("h-1.5 w-1.5 rounded-full", activeSnapshot.status === 'Mapped' ? "bg-emerald-500" : "bg-amber-500")} />
               {activeSnapshot.filename}
             </Badge>
           )}

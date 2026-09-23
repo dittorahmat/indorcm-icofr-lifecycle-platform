@@ -94,7 +94,7 @@ export function ControlAccordionItem({
               placeholder="PENDING ID"
             />
             {duplicateControlIds.has(ctrl.data.controlId?.trim()) && (
-              <Badge variant="destructive" className="h-5 px-1.5 text-[9px] font-black uppercase animate-pulse">
+              <Badge variant="destructive" className="h-5 px-1.5 text-xs font-semibold uppercase">
                 Duplikat!
               </Badge>
             )}

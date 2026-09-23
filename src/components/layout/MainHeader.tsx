@@ -64,8 +64,9 @@ export function MainHeader() {
                 className="relative cursor-pointer hover:opacity-80 transition-opacity ml-2 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 <Avatar className="h-9 w-9 border-2 border-white/10 shadow-sm">
-                  <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-                  <AvatarFallback className="bg-slate-800 text-white font-bold">CN</AvatarFallback>
+                  <AvatarFallback className="bg-slate-800 text-white font-semibold text-xs">
+                    {currentRole.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase() || 'US'}
+                  </AvatarFallback>
                 </Avatar>
                 <Badge
                   variant={isDark ? "outline" : "secondary"}

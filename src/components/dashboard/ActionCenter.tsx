@@ -22,7 +22,7 @@ export function ActionCenter({ csaCompletion, openDeficienciesCount }: ActionCen
              <Activity className="h-4 w-4 text-slate-900" aria-hidden="true" /> {t('actionCenter.title')}
           </CardTitle>
           <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white border border-slate-200 rounded-full">
-            <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+            <div className="h-2 w-2 rounded-full bg-emerald-500" />
             <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('actionCenter.status.systemLive', { defaultValue: 'System Live' })}</span>
           </div>
         </div>

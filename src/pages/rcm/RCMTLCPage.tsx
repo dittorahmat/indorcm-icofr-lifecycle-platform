@@ -141,22 +141,22 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride 
             </Button>
           )
         },
-        { id: 'no', header: 'No', width: '50px', className: 'text-center font-mono text-xs text-slate-400', render: (_, idx) => idx + 1 },
+        { id: 'no', header: 'No', width: '50px', className: 'text-center font-mono text-xs text-slate-500 font-medium', render: (_, idx) => idx + 1 },
         { 
           id: 'process_info', 
           header: t('matrix.process_info', 'Proses Bisnis (Parent)'), 
           width: '260px', 
-          className: 'text-xs text-slate-800 font-normal',
+          className: 'text-xs text-slate-900',
           render: (row) => {
             const displayName = row.parentProcessName || row.processName;
             const code = row.parentBpmCode || row.bpmCode;
             return (
-              <div className="flex flex-col gap-0.5 leading-tight">
-                <span className="font-bold text-xs text-slate-900 line-clamp-2">
+              <div className="flex flex-col gap-0.5 leading-snug">
+                <span className="font-semibold text-xs text-slate-900 line-clamp-2">
                   {displayName}
                 </span>
                 {code && (
-                  <span className="font-mono text-[10px] font-bold text-indigo-600 tracking-wider">
+                  <span className="font-mono text-xs font-semibold text-indigo-700">
                     [{code}]
                   </span>
                 )}
@@ -168,9 +168,9 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride 
           id: 'sub_process', 
           header: t('matrix.sub_process', 'Sub-Proses (Child)'), 
           width: '220px', 
-          className: 'text-xs text-slate-800 font-normal',
+          className: 'text-xs text-slate-800 font-medium',
           render: (row) => (
-            <span className="line-clamp-2 text-xs text-slate-800 font-medium">
+            <span className="line-clamp-2 text-xs text-slate-800 font-medium leading-snug">
               {row.subProcessName || '-'}
             </span>
           )
@@ -182,15 +182,15 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride 
       className: 'bg-rose-50/50',
       columns: [
         { id: 'company', header: t('matrix.company'), accessorKey: 'companyName', width: '180px', className: 'text-xs text-slate-800 font-normal' },
-        { id: 'location', header: t('matrix.location'), accessorKey: 'locationCode', width: '90px', className: 'text-xs text-slate-600 font-mono text-center' },
-        { id: 'risk_desc', header: t('matrix.risk_description'), accessorKey: 'riskDescription', width: '380px', className: 'text-xs text-slate-800 font-normal leading-normal' },
+        { id: 'location', header: t('matrix.location'), accessorKey: 'locationCode', width: '90px', className: 'text-xs text-slate-700 font-mono text-center font-medium' },
+        { id: 'risk_desc', header: t('matrix.risk_description'), accessorKey: 'riskDescription', width: '380px', className: 'text-xs text-slate-800 font-normal leading-relaxed' },
         { 
           id: 'fraud', 
           header: 'Fraud', 
           width: '70px', 
           className: 'text-center text-xs font-mono',
           render: (row) => (
-            <span className={cn(row.isFraudRelated ? "font-bold text-rose-600" : "text-slate-400 font-normal")}>
+            <span className={cn(row.isFraudRelated ? "font-semibold text-rose-700" : "text-slate-400 font-normal")}>
               {row.isFraudRelated ? 'Y' : 'N'}
             </span>
           )
@@ -199,7 +199,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride 
           id: 'risk_rating', 
           header: t('matrix.risk_rating'), 
           width: '110px', 
-          className: 'text-center text-xs font-normal text-slate-800',
+          className: 'text-center text-xs font-medium text-slate-800',
           accessorKey: 'riskRating'
         },
       ]
@@ -208,17 +208,17 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride 
       title: t('matrix.groups.control'),
       className: 'bg-indigo-50/50',
       columns: [
-        { id: 'control_ref', header: t('matrix.control_ref'), accessorKey: 'controlCode', width: '130px', className: 'font-mono text-xs font-normal text-slate-600' },
-        { id: 'control_name', header: t('matrix.control_name'), accessorKey: 'mappedControlName', width: '320px', className: 'text-xs text-slate-800 font-normal' },
-        { id: 'control_desc', header: t('matrix.control_description'), accessorKey: 'mappedControlDescription', width: '450px', className: 'text-xs text-slate-600 font-normal italic' },
-        { id: 'docs', header: t('matrix.supporting_docs'), accessorKey: 'supportingDocs', width: '220px', className: 'text-xs text-slate-600 font-normal' },
+        { id: 'control_ref', header: t('matrix.control_ref'), accessorKey: 'controlCode', width: '130px', className: 'font-mono text-xs font-semibold text-slate-700' },
+        { id: 'control_name', header: t('matrix.control_name'), accessorKey: 'mappedControlName', width: '320px', className: 'text-xs text-slate-900 font-medium leading-snug' },
+        { id: 'control_desc', header: t('matrix.control_description'), accessorKey: 'mappedControlDescription', width: '450px', className: 'text-xs text-slate-700 font-normal leading-relaxed' },
+        { id: 'docs', header: t('matrix.supporting_docs'), accessorKey: 'supportingDocs', width: '220px', className: 'text-xs text-slate-700 font-normal' },
         { 
           id: 'is_key', 
           header: t('matrix.is_key_control'), 
           width: '90px', 
           className: 'text-center text-xs font-mono',
           render: (row) => (
-            <span className={cn(row.isKeyControl ? "font-bold text-indigo-700" : "text-slate-400 font-normal")}>
+            <span className={cn(row.isKeyControl ? "font-semibold text-indigo-700" : "text-slate-400 font-normal")}>
               {row.isKeyControl ? 'Y' : 'N'}
             </span>
           )

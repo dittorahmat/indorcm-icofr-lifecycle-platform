@@ -48,7 +48,7 @@ export function ApprovalHistoryTimeline({ history }: ApprovalHistoryTimelineProp
   };
 
   return (
-    <div className="space-y-6 relative before:absolute before:inset-0 before:ml-4 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-200 before:to-transparent">
+    <div className="space-y-6 relative before:absolute before:inset-0 before:ml-4 before:-translate-x-px before:h-full before:w-0.5 before:bg-slate-200 dark:before:bg-slate-800">
       {sortedHistory.map((entry, index) => (
         <div key={entry.id} className="relative flex items-start gap-6 group">
           {/* Timeline Dot */}

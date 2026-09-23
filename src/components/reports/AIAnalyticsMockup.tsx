@@ -34,38 +34,30 @@ export function AIAnalyticsMockup() {
   
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between p-6 bg-mancity-pattern text-primary-foreground rounded-xl shadow-2xl overflow-hidden relative group">
-        <div className="absolute inset-0 bg-black/5 pointer-events-none"></div>
-        <div className="absolute top-0 right-0 p-10 opacity-10 group-hover:opacity-20 transition-opacity">
-          <BrainCircuit className="h-40 w-40 text-primary-foreground" />
-        </div>
-        
-        <div className="relative z-10 space-y-2">
+      <div className="flex items-center justify-between p-6 bg-slate-900 text-white rounded-xl shadow-sm border border-slate-800 relative">
+        <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <Badge className="bg-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/30 text-xs font-black tracking-tighter uppercase border-none">Enterprise AI</Badge>
-            <div className="h-1 w-1 rounded-full bg-primary-foreground/50"></div>
-            <span className="text-primary-foreground/80 text-xs font-bold uppercase tracking-widest">Digital Audit Core</span>
+            <Badge variant="outline" className="border-slate-700 bg-slate-800 text-slate-200 text-xs font-semibold tracking-wider uppercase">Continuous Monitoring</Badge>
+            <div className="h-1 w-1 rounded-full bg-slate-500"></div>
+            <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">ICOFR Analytics Core</span>
           </div>
-          <h2 className="text-3xl font-black text-primary-foreground tracking-tighter">Digital Analytics Hub</h2>
-          <p className="text-primary-foreground/70 text-sm max-w-md leading-relaxed">
-            Advanced Predictive Analytics & Continuous Control Monitoring for <strong>{companyName}</strong>.
+          <h2 className="text-2xl font-bold tracking-tight text-white">Digital Control Analytics Hub</h2>
+          <p className="text-slate-300 text-sm max-w-md leading-relaxed">
+            Continuous Control Monitoring & Automated Fraud Detection for <strong>{companyName}</strong>.
           </p>
         </div>
 
-        <div className="relative z-10 flex gap-4">
+        <div className="flex gap-6 items-center">
           <div className="text-right px-4 border-r border-slate-700">
-            <p className="text-xs text-slate-500 font-bold uppercase">System Status</p>
-            <div className="flex items-center gap-1 text-green-400 font-mono text-xs">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-              </span>
-              OPTIMIZED
+            <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">System Status</p>
+            <div className="flex items-center justify-end gap-1.5 text-emerald-400 font-mono text-xs font-semibold mt-0.5">
+              <span className="h-2 w-2 rounded-full bg-emerald-500" />
+              ONLINE
             </div>
           </div>
           <div className="text-right">
-            <p className="text-xs text-slate-500 font-bold uppercase">Data Freshness</p>
-            <p className="text-indigo-300 font-mono text-xs uppercase">Real-time Sync</p>
+            <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Data Freshness</p>
+            <p className="text-slate-200 font-mono text-xs uppercase mt-0.5">Real-time Sync</p>
           </div>
         </div>
       </div>
@@ -484,7 +476,7 @@ function CCMTab() {
               <div key={i} className="p-4 hover:bg-slate-50/80 transition-colors flex gap-4 items-start">
                 <div className={cn(
                   "mt-1 h-2 w-2 rounded-full shrink-0",
-                  alert.severity === 'HIGH' ? "bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.5)]" :
+                  alert.severity === 'HIGH' ? "bg-red-500" :
                   alert.severity === 'MEDIUM' ? "bg-amber-500" : "bg-blue-500"
                 )} />
                 <div className="flex-1 space-y-1">
@@ -506,14 +498,13 @@ function CCMTab() {
       </Card>
 
       <div className="space-y-6">
-        <Card className="bg-slate-900 text-white overflow-hidden relative">
-          <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/20 to-transparent"></div>
+        <Card className="bg-slate-900 text-white border-slate-800 shadow-sm relative">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs uppercase tracking-widest text-slate-400">Control Effectiveness Score</CardTitle>
+            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-slate-400">Control Effectiveness Score</CardTitle>
           </CardHeader>
           <CardContent className="relative z-10">
-            <div className="text-5xl font-black italic tracking-tighter">98.4</div>
-            <p className="text-xs font-bold text-green-400 mt-2 flex items-center gap-1 uppercase">
+            <div className="text-4xl font-bold tracking-tight">98.4</div>
+            <p className="text-xs font-semibold text-emerald-400 mt-2 flex items-center gap-1 uppercase">
               <TrendingUp className="h-3 w-3" /> +1.2% from last week
             </p>
           </CardContent>

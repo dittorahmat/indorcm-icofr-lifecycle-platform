@@ -50,51 +50,51 @@ export function ITGCTabContent({
         </Button>
       </div>
 
-      <div className="border border-slate-200 rounded-3xl bg-white shadow-xl shadow-slate-200/50 overflow-hidden">
+      <div className="border border-slate-200 rounded-lg bg-white shadow-sm overflow-hidden">
         <Table>
-          <TableHeader className="bg-slate-50/80 border-b border-slate-200">
+          <TableHeader className="bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
             <TableRow>
-              <TableHead className="w-[140px] font-bold text-[10px] uppercase tracking-[0.2em] text-slate-400 px-6 py-5">Domain</TableHead>
-              <TableHead className="w-[120px] font-bold text-[10px] uppercase tracking-[0.2em] text-slate-400 py-5">{t('matrix.control_ref')}</TableHead>
-              <TableHead className="font-bold text-[10px] uppercase tracking-[0.2em] text-slate-400 py-5">{t('matrix.control_name')}</TableHead>
-              <TableHead className="w-[150px] font-bold text-[10px] uppercase tracking-[0.2em] text-slate-400 text-center py-5">{t('matrix.automated_type')}</TableHead>
-              <TableHead className="w-[150px] font-bold text-[10px] uppercase tracking-[0.2em] text-slate-400 py-5">{t('matrix.supporting_app')}</TableHead>
-              <TableHead className="w-[100px] px-6 py-5"></TableHead>
+              <TableHead className="w-[140px] font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 px-4 py-3.5">Domain</TableHead>
+              <TableHead className="w-[120px] font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 py-3.5">{t('matrix.control_ref')}</TableHead>
+              <TableHead className="font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 py-3.5">{t('matrix.control_name')}</TableHead>
+              <TableHead className="w-[150px] font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 text-center py-3.5">{t('matrix.automated_type')}</TableHead>
+              <TableHead className="w-[150px] font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 py-3.5">{t('matrix.supporting_app')}</TableHead>
+              <TableHead className="w-[80px] px-4 py-3.5"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {controlsLoading ? (
-              <TableRow><TableCell colSpan={6} className="h-40 text-center text-slate-400">{t('common:status.pending')}...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="h-40 text-center text-slate-400 font-medium">{t('common:status.pending')}...</TableCell></TableRow>
             ) : filteredItgc.length === 0 ? (
-              <TableRow><TableCell colSpan={6} className="h-40 text-center text-slate-400 italic">Tidak ada rekaman ITGC ditemukan.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="h-40 text-center text-slate-400">{t('common:status.noData', { defaultValue: 'Tidak ada rekaman ITGC ditemukan.' })}</TableCell></TableRow>
             ) : filteredItgc.map((ctrl, i) => (
-              <TableRow key={ctrl.id} className={cn("group hover:bg-slate-50 transition-colors", i % 2 === 1 && "bg-slate-50/30")}>
-                <TableCell className="px-6 py-4">
-                  <Badge variant="outline" className="text-[9px] font-bold text-indigo-700 border-indigo-100 bg-indigo-50/50 uppercase tracking-widest px-2 h-6">
+              <TableRow key={ctrl.id} className={cn("group hover:bg-slate-50 transition-colors", i % 2 === 1 && "bg-slate-50/40")}>
+                <TableCell className="px-4 py-3">
+                  <Badge variant="outline" className="text-xs font-medium text-indigo-700 border-indigo-200 bg-indigo-50/50 uppercase tracking-wider px-2 h-6">
                     {ctrl.itgcDomain || 'N/A'}
                   </Badge>
                 </TableCell>
-                <TableCell className="font-mono text-xs font-bold text-slate-600 py-4">{ctrl.code}</TableCell>
-                <TableCell className="py-4">
-                  <div className="flex flex-col space-y-1">
-                    <span className="text-xs text-slate-800 font-normal leading-snug">{ctrl.name}</span>
-                    <span className="text-xs text-slate-600 line-clamp-1 italic font-normal">"{ctrl.description}"</span>
+                <TableCell className="font-mono text-xs font-semibold text-slate-700 py-3">{ctrl.code}</TableCell>
+                <TableCell className="py-3">
+                  <div className="flex flex-col space-y-0.5">
+                    <span className="text-xs text-slate-900 font-medium leading-snug">{ctrl.name}</span>
+                    <span className="text-xs text-slate-600 line-clamp-1 font-normal leading-normal">{ctrl.description}</span>
                   </div>
                 </TableCell>
-                <TableCell className="text-center py-4">
-                  <Badge className="bg-mancity-pattern text-primary-foreground border-none text-[9px] font-bold uppercase tracking-widest px-2.5 h-6">
+                <TableCell className="text-center py-3">
+                  <Badge variant="secondary" className="bg-slate-100 text-slate-700 border-slate-200 text-xs font-medium uppercase tracking-wider px-2.5 h-6">
                     {ctrl.automatedSubNature || 'Manual'}
                   </Badge>
                 </TableCell>
-                <TableCell className="py-4">
-                  <div className="flex items-center gap-2">
-                    <Lock className="h-3 w-3 text-slate-400" />
-                    <span className="text-[11px] font-bold text-slate-600 uppercase tracking-tight">{ctrl.itApplication || '-'}</span>
+                <TableCell className="py-3">
+                  <div className="flex items-center gap-1.5">
+                    <Lock className="h-3.5 w-3.5 text-slate-400" />
+                    <span className="text-xs font-medium text-slate-700">{ctrl.itApplication || '-'}</span>
                   </div>
                 </TableCell>
-                <TableCell className="text-right px-6 py-4">
-                  <Button variant="ghost" size="icon" className="h-9 w-9 text-slate-400 opacity-0 group-hover:opacity-100 group-hover:text-indigo-600 group-hover:bg-indigo-50 transition-all rounded-xl" onClick={() => onEditControl(ctrl)}>
-                    <Edit2 className="h-4 w-4" />
+                <TableCell className="text-right px-4 py-3">
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 opacity-0 group-hover:opacity-100 group-hover:text-indigo-600 group-hover:bg-indigo-50 transition-all rounded-md" onClick={() => onEditControl(ctrl)}>
+                    <Edit2 className="h-3.5 w-3.5" />
                   </Button>
                 </TableCell>
               </TableRow>

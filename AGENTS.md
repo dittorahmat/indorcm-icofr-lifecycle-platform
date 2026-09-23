@@ -44,12 +44,13 @@ IndoGRC Pro is a production-grade web application designed to digitize the ICOFR
 
 Setiap kali menyelesaikan sebuah fitur, perbaikan bug, atau fase pengembangan, Anda **WAJIB** menjalankan urutan validasi berikut tanpa perlu diminta kembali oleh pengguna:
 
-1.  **Sinkronisasi Skema Database:** Jika ada perubahan pada `worker/db/schema.ts`, jalankan `npx drizzle-kit push` untuk menerapkan perubahan ke database PostgreSQL secara langsung.
-2.  **Lokalisasi Penuh (i18n):** Periksa seluruh file yang dimodifikasi. Pastikan **TIDAK ADA** teks hardcoded (Inggris maupun Indonesia). Gunakan `useTranslation` dan file di `src/i18n/locales/**`.
-3.  **Integritas Tipe:** Jalankan `npm run type-check`. Perbaiki semua error TS sebelum melangkah maju.
-4.  **Standar Kode (Lint):** Jalankan `npm run lint`. Pastikan tidak ada peringatan atau error yang tersisa.
-5.  **Verifikasi Kompilasi (Build):** Jalankan `npm run build`. Perubahan dianggap gagal jika proses build tidak berhasil.
-6.  **Pengujian Otomatis (Test):** Jalankan `npm test`. Tambahkan unit test baru jika Anda menambahkan fitur baru atau melakukan perubahan di suatu fitur untuk mencegah regresi.
+1.  **Standar Desain Anti-AI Slop (design-taste-frontend):** Setiap kali membuat atau memodifikasi komponen/tampilan antarmuka (frontend), jalankan dan patuhi aturan skill `design-taste-frontend`. Pastikan tidak ada font/spacing inkonsisten, tidak ada font di bawah 12px (`text-xs`), tidak ada italic dekoratif pada data audit/regulatori, tidak ada gradien/blur/animasi distraktif (`backdrop-blur`, `bg-gradient-rainbow`, `animate-pulse`/`animate-ping` acak), dan seluruh komponen menggunakan institutional enterprise border-radius (`rounded-md`/`rounded-lg`).
+2.  **Sinkronisasi Skema Database:** Jika ada perubahan pada `worker/db/schema.ts`, jalankan `npx drizzle-kit push` untuk menerapkan perubahan ke database PostgreSQL secara langsung.
+3.  **Lokalisasi Penuh (i18n):** Periksa seluruh file yang dimodifikasi. Pastikan **TIDAK ADA** teks hardcoded (Inggris maupun Indonesia). Gunakan `useTranslation` dan file di `src/i18n/locales/**`.
+4.  **Integritas Tipe:** Jalankan `npm run type-check`. Perbaiki semua error TS sebelum melangkah maju.
+5.  **Standar Kode (Lint):** Jalankan `npm run lint`. Pastikan tidak ada peringatan atau error yang tersisa.
+6.  **Verifikasi Kompilasi (Build):** Jalankan `npm run build`. Perubahan dianggap gagal jika proses build tidak berhasil.
+7.  **Pengujian Otomatis (Test):** Jalankan `npm test`. Tambahkan unit test baru jika Anda menambahkan fitur baru atau melakukan perubahan di suatu fitur untuk mencegah regresi.
 
 ## Development Conventions
 

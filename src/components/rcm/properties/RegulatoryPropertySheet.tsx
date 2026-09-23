@@ -287,7 +287,7 @@ export function RegulatoryPropertySheet({
                           <div className="flex items-center gap-3">
                             <div className="flex items-center gap-2">
                               {duplicateRiskIds.has(group.risk.riskId?.trim()) && (
-                                <Badge variant="destructive" className="h-5 px-1.5 text-[9px] font-black uppercase animate-pulse">
+                                <Badge variant="destructive" className="h-5 px-1.5 text-xs font-semibold uppercase">
                                   Duplikat ID!
                                 </Badge>
                               )}
@@ -417,7 +417,7 @@ export function RegulatoryPropertySheet({
 
            <div className="flex items-center gap-3">
              <span className={cn("text-xs font-medium flex items-center gap-1.5", isDirty ? "text-amber-600" : "text-emerald-600")}>
-               <div className={cn("h-2 w-2 rounded-full", isDirty ? "bg-amber-400 animate-pulse" : "bg-emerald-500")} />
+               <div className={cn("h-2 w-2 rounded-full", isDirty ? "bg-amber-400" : "bg-emerald-500")} />
                {isDirty ? t('rcm:matrix.properties.pending_sync') : t('rcm:matrix.properties.synced')}
              </span>
              <Button 

@@ -205,7 +205,7 @@ export function TestWorkbench() {
                           </Badge>
                         )}
                         {violation && (
-                          <Badge className="bg-amber-500 text-white border-none text-[9px] font-bold uppercase tracking-widest px-2.5 h-6 animate-pulse">
+                          <Badge className="bg-amber-500 text-white border-none text-xs font-semibold uppercase tracking-wider px-2.5 h-6">
                             Cooling-off Violation
                           </Badge>
                         )}

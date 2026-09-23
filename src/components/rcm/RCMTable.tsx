@@ -59,13 +59,13 @@ export function RCMTable({
         >
           <thead className="z-30">
             {/* Level 1 Header: Groups */}
-            <tr className="h-10 bg-mancity-pattern text-primary-foreground shadow-md sticky top-0 z-30">
+            <tr className="h-9 bg-slate-800 text-slate-100 sticky top-0 z-30 border-b border-slate-700">
               {groups.map((group, gIdx) => (
                 <th 
                   key={`group-${gIdx}`}
                   colSpan={group.columns.length}
                   className={cn(
-                    "text-center font-black uppercase text-xs tracking-widest border-r border-slate-700/50 py-2 px-2",
+                    "text-center font-semibold uppercase text-xs tracking-wider border-r border-slate-700 py-1.5 px-3",
                     group.className
                   )}
                 >
@@ -75,12 +75,12 @@ export function RCMTable({
             </tr>
 
             {/* Level 2 Header: Columns */}
-            <tr className="h-12 bg-slate-100/95 backdrop-blur-md border-b-2 border-slate-300 sticky top-[40px] z-20">
+            <tr className="h-11 bg-slate-100 dark:bg-slate-900 border-b border-slate-300 dark:border-slate-700 sticky top-[36px] z-20">
               {allColumns.map((col, cIdx) => (
                 <th 
                   key={`col-${col.id}-${cIdx}`}
                   className={cn(
-                    "font-black uppercase text-xs px-3 border-r border-slate-300 text-slate-600 align-middle bg-slate-100/90",
+                    "font-semibold uppercase text-xs px-3 border-r border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 align-middle bg-slate-100 dark:bg-slate-900",
                     col.headerClassName
                   )}
                   style={{ 
@@ -95,8 +95,8 @@ export function RCMTable({
                             {col.header}
                           </div>
                         </TooltipTrigger>
-                        <TooltipContent side="top" className="max-w-[300px] bg-mancity-pattern text-primary-foreground p-3 border-none shadow-2xl rounded-xl z-[100]">
-                           <div className="text-xs leading-relaxed font-medium">
+                        <TooltipContent side="top" className="max-w-[300px] bg-slate-900 text-white p-3 border border-slate-700 shadow-xl rounded-lg z-[100]">
+                           <div className="text-xs leading-relaxed font-normal">
                               {col.tooltip}
                            </div>
                         </TooltipContent>
@@ -109,9 +109,9 @@ export function RCMTable({
           </thead>
           <tbody className="bg-white">
             {isLoading ? (
-              <tr><td colSpan={allColumns.length} className="h-64 text-center font-black uppercase text-xs text-slate-400 tracking-widest">Loading matrix data...</td></tr>
+              <tr><td colSpan={allColumns.length} className="h-64 text-center font-semibold uppercase text-xs text-slate-400 tracking-wider">Loading matrix data...</td></tr>
             ) : data.length === 0 ? (
-              <tr><td colSpan={allColumns.length} className="h-64 text-center italic text-slate-400">No RCM data found.</td></tr>
+              <tr><td colSpan={allColumns.length} className="h-64 text-center text-xs text-slate-500">No RCM data found.</td></tr>
             ) : data.map((row, idx) => {
               const groupRow = renderGroupRow?.(row, idx, data[idx - 1]);
               const isEven = idx % 2 === 1;

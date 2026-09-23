@@ -34,13 +34,13 @@ export function RCMPageHeader({
   children
 }: RCMPageHeaderProps) {
   return (
-    <div className="p-4 pb-2 space-y-3 shrink-0 bg-white/80 backdrop-blur-md border-b z-10 print:hidden">
+    <div className="p-4 pb-2 space-y-3 shrink-0 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 z-10 print:hidden">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <SidebarTrigger className="h-8 w-8 text-slate-700" />
+          <SidebarTrigger className="h-8 w-8 text-slate-700 dark:text-slate-300" />
           <div>
-            <h1 className="text-xl font-black tracking-tight text-slate-900 leading-none">{title}</h1>
-            <p className="text-muted-foreground text-xs font-bold uppercase tracking-widest mt-1 opacity-70">{subtitle}</p>
+            <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 leading-none">{title}</h1>
+            <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wider mt-1">{subtitle}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">

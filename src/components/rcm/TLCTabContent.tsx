@@ -51,40 +51,40 @@ export function TLCTabContent({
         </Button>
       </div>
 
-      <div className="border border-slate-200 rounded-3xl bg-white shadow-xl shadow-slate-200/50 overflow-hidden">
+      <div className="border border-slate-200 rounded-lg bg-white shadow-sm overflow-hidden">
         <Table>
-          <TableHeader className="bg-slate-50/80 border-b border-slate-200">
+          <TableHeader className="bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
             <TableRow>
-              <TableHead className="w-[120px] font-bold text-[10px] uppercase tracking-[0.2em] text-slate-400 px-6 py-5">{t('matrix.control_ref')}</TableHead>
-              <TableHead className="font-bold text-[10px] uppercase tracking-[0.2em] text-slate-400 py-5">{t('matrix.control_name')}</TableHead>
-              <TableHead className="w-[120px] font-bold text-[10px] uppercase tracking-[0.2em] text-slate-400 py-5">{t('matrix.nature')}</TableHead>
-              <TableHead className="w-[120px] font-bold text-[10px] uppercase tracking-[0.2em] text-slate-400 text-center py-5">{t('matrix.risk_rating')}</TableHead>
-              <TableHead className="w-[150px] text-center font-bold text-[10px] uppercase tracking-[0.2em] text-slate-400 py-5">{t('common:icofr.linkedTo')} ELC</TableHead>
-              <TableHead className="w-[100px] py-5 px-6"></TableHead>
+              <TableHead className="w-[120px] font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 px-4 py-3.5">{t('matrix.control_ref')}</TableHead>
+              <TableHead className="font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 py-3.5">{t('matrix.control_name')}</TableHead>
+              <TableHead className="w-[120px] font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 py-3.5">{t('matrix.nature')}</TableHead>
+              <TableHead className="w-[120px] font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 text-center py-3.5">{t('matrix.risk_rating')}</TableHead>
+              <TableHead className="w-[150px] text-center font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 py-3.5">{t('common:icofr.linkedTo')} ELC</TableHead>
+              <TableHead className="w-[80px] py-3.5 px-4"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {controlsLoading ? (
-              <TableRow><TableCell colSpan={6} className="h-40 text-center text-slate-400 font-medium italic">{t('common:status.pending')}...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="h-40 text-center text-slate-400 font-medium">{t('common:status.pending')}...</TableCell></TableRow>
             ) : filteredTlc.length === 0 ? (
-              <TableRow><TableCell colSpan={6} className="h-40 text-center text-slate-400 italic">Tidak ada rekaman TLC ditemukan.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="h-40 text-center text-slate-400">{t('common:status.noData', { defaultValue: 'Tidak ada rekaman TLC ditemukan.' })}</TableCell></TableRow>
             ) : filteredTlc.map((ctrl, i) => (
-              <TableRow key={ctrl.id} className={cn("group hover:bg-slate-50 transition-colors", i % 2 === 1 && "bg-slate-50/30")}>
-                <TableCell className="font-mono text-xs font-normal text-slate-600 px-6 py-4">{ctrl.code}</TableCell>
-                <TableCell className="py-4">
-                  <div className="flex flex-col space-y-1">
-                    <span className="text-xs text-slate-800 font-normal leading-snug">{ctrl.name}</span>
-                    <span className="text-xs text-slate-600 line-clamp-1 italic font-normal">"{ctrl.description}"</span>
+              <TableRow key={ctrl.id} className={cn("group hover:bg-slate-50 transition-colors", i % 2 === 1 && "bg-slate-50/40")}>
+                <TableCell className="font-mono text-xs font-semibold text-slate-700 px-4 py-3">{ctrl.code}</TableCell>
+                <TableCell className="py-3">
+                  <div className="flex flex-col space-y-0.5">
+                    <span className="text-xs text-slate-900 font-medium leading-snug">{ctrl.name}</span>
+                    <span className="text-xs text-slate-600 line-clamp-1 font-normal leading-normal">{ctrl.description}</span>
                   </div>
                 </TableCell>
-                <TableCell className="py-4">
-                  <Badge variant="outline" className="text-[9px] font-bold uppercase tracking-widest h-6 px-2.5 bg-slate-50 border-slate-200 text-slate-600">
+                <TableCell className="py-3">
+                  <Badge variant="outline" className="text-xs font-medium uppercase tracking-wider h-6 px-2 bg-slate-50 border-slate-200 text-slate-700">
                     {ctrl.nature}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-center py-4">
+                <TableCell className="text-center py-3">
                   <Badge className={cn(
-                    "text-[9px] font-bold h-6 px-2.5 uppercase tracking-wider shadow-none border", 
+                    "text-xs font-medium h-6 px-2 uppercase tracking-wider shadow-none border", 
                     ctrl.riskRating === 'High' ? "bg-rose-50 text-rose-700 border-rose-200" : 
                     ctrl.riskRating === 'Medium' ? "bg-amber-50 text-amber-700 border-amber-200" :
                     "bg-emerald-50 text-emerald-700 border-emerald-200"
@@ -92,23 +92,23 @@ export function TLCTabContent({
                     {ctrl.riskRating}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-center py-4">
+                <TableCell className="text-center py-3">
                   <div className="flex justify-center">
                     {ctrl.relatedControlIds && ctrl.relatedControlIds.length > 0 ? (
-                      <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-200 font-bold gap-2 py-1 px-3 text-[10px] uppercase tracking-tighter">
-                        <ShieldCheck className="h-3 w-3" /> {ctrl.relatedControlIds.length} {t('status.mapped', { ns: 'common' })}
+                      <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-200 font-semibold gap-1.5 py-0.5 px-2.5 text-xs">
+                        <ShieldCheck className="h-3.5 w-3.5" /> {ctrl.relatedControlIds.length} {t('status.mapped', { ns: 'common' })}
                       </Badge>
-                    ) : <span className="text-[10px] text-slate-300 italic font-medium">No Link</span>}
+                    ) : <span className="text-xs text-slate-400 font-normal">No Link</span>}
                   </div>
                 </TableCell>
-                <TableCell className="text-right py-4 px-6">
+                <TableCell className="text-right py-3 px-4">
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="h-9 w-9 text-slate-400 opacity-0 group-hover:opacity-100 group-hover:text-indigo-600 group-hover:bg-indigo-50 transition-all rounded-xl" 
+                    className="h-8 w-8 text-slate-400 opacity-0 group-hover:opacity-100 group-hover:text-indigo-600 group-hover:bg-indigo-50 transition-all rounded-md" 
                     onClick={() => onEditControl(ctrl)}
                   >
-                    <Edit2 className="h-4 w-4" />
+                    <Edit2 className="h-3.5 w-3.5" />
                   </Button>
                 </TableCell>
               </TableRow>

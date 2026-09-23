@@ -414,7 +414,7 @@ export function DeficiencyBoard() {
             title={<span className="font-display tracking-tight">Deficiency Board</span>} 
             description="Track remediation and assess severity using the Degree of Deficiency (DoD) model."
             badge={isAggregateMode && (
-               <Badge className="bg-rose-500 text-white border-none shadow-lg animate-pulse px-3 py-1 font-bold text-[10px] uppercase tracking-widest">
+               <Badge className="bg-rose-500 text-white border-none shadow-sm px-3 py-1 font-bold text-xs uppercase tracking-wider">
                   Selection Mode Active
                </Badge>
             )}
