@@ -38,6 +38,7 @@ import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 import { WorkflowPanel } from "@/components/workflow/WorkflowPanel";
 import { Card, CardContent } from '@/components/ui/card';
+import { isJustificationComplete } from './services/materiality-justification';
 
 import type { MaterialitySimulation } from '@shared/types';
 
@@ -364,6 +365,12 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
                 isStale={isStale}
                 isRecalculating={isRecalculating}
                 handleRecalculate={handleRecalculate}
+                onSaveJustification={(justification) => {
+                  mutations.save.mutate({
+                    ...simState,
+                    materialityJustification: justification
+                  });
+                }}
               />
             </div>
           ) : (
@@ -420,6 +427,19 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
                 history={simState.workflowHistory || []}
                 className="w-full border-none shadow-2xl"
                 isDirty={isDirty}
+                beforeAction={(actionId) => {
+                  if (actionId === 'Submit' || actionId === 'Approve') {
+                    if (!isJustificationComplete(simState.materialityJustification)) {
+                      toast.error(t('scoping:justification.incompleteAlertTitle'), {
+                        description: t('scoping:justification.incompleteAlertDesc')
+                      });
+                      setIsWorkflowOpen(false);
+                      setIsParamsOpen(true);
+                      return false;
+                    }
+                  }
+                  return true;
+                }}
                 onStatusChange={(newStatus) => {
                   queryClient.invalidateQueries({ queryKey: ['simulations'] });
                   setSimState(prev => ({ ...prev, workflowStatus: newStatus as any }));

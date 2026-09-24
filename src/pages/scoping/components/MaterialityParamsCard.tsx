@@ -5,10 +5,12 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Settings2, Info, Calculator, Percent, Layers, AlertTriangle, X } from 'lucide-react';
+import { Settings2, Info, Calculator, Percent, Layers, AlertTriangle, X, ShieldCheck, CheckCircle2, AlertCircle, FileText } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import type { MaterialitySimulation } from '@shared/types';
+import type { MaterialitySimulation, MaterialityJustification } from '@shared/types';
 import { cn } from '@/lib/utils';
+import { MaterialityJustificationModal } from './MaterialityJustificationModal';
+import { isJustificationComplete } from '../services/materiality-justification';
 
 interface MaterialityParamsCardProps {
   simState: MaterialitySimulation;
@@ -19,6 +21,7 @@ interface MaterialityParamsCardProps {
   pmValue: number;
   isLocked: boolean;
   onClose?: () => void;
+  onSaveJustification?: (justification: MaterialityJustification) => void;
   draftBasis: string;
   setDraftBasis: (val: string) => void;
   draftOmPercentage: number;
@@ -39,6 +42,7 @@ export function MaterialityParamsCard({
   pmValue,
   isLocked,
   onClose,
+  onSaveJustification,
   draftBasis,
   setDraftBasis,
   draftOmPercentage,
@@ -51,9 +55,13 @@ export function MaterialityParamsCard({
 }: MaterialityParamsCardProps) {
   const { t } = useTranslation('scoping');
 
-  // Local state to keep typing fast and avoid parent re-renders on every keystroke
   const [localOmPercentage, setLocalOmPercentage] = React.useState(draftOmPercentage);
   const [localHaircutPercentage, setLocalHaircutPercentage] = React.useState(draftHaircutPercentage);
+  const [isJustificationOpen, setIsJustificationOpen] = React.useState(false);
+
+  const hasCompleteJustification = React.useMemo(() => {
+    return isJustificationComplete(simState.materialityJustification);
+  }, [simState.materialityJustification]);
 
   React.useEffect(() => {
     setLocalOmPercentage(draftOmPercentage);
@@ -221,8 +229,68 @@ export function MaterialityParamsCard({
               <p className="text-xs font-display font-black text-slate-700">Rp {benchmarkValue.toLocaleString('id-ID')}</p>
             </div>
           </div>
+
+          {/* Justification Status & Modal Trigger */}
+          <div className="pt-2 border-t border-slate-100">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-[10px] font-bold uppercase text-slate-500 tracking-wider flex items-center gap-1">
+                <ShieldCheck className="h-3.5 w-3.5 text-indigo-500" />
+                {t('scoping:justification.buttonLabel')}
+              </span>
+              <Badge
+                variant="outline"
+                className={cn(
+                  "text-[10px] font-semibold px-2 py-0 rounded-md",
+                  hasCompleteJustification
+                    ? "bg-emerald-50 text-emerald-700 border-emerald-300"
+                    : "bg-amber-50 text-amber-700 border-amber-300"
+                )}
+              >
+                {hasCompleteJustification ? (
+                  <span className="flex items-center gap-1">
+                    <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                    {t('scoping:justification.statusComplete')}
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3 text-amber-600" />
+                    {t('scoping:justification.statusPending')}
+                  </span>
+                )}
+              </Badge>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setIsJustificationOpen(true)}
+              className={cn(
+                "w-full h-8 text-xs font-semibold rounded-md flex items-center justify-center gap-1.5 transition-all",
+                hasCompleteJustification
+                  ? "border-slate-200 hover:bg-slate-50 text-slate-700"
+                  : "border-amber-300 bg-amber-50/50 hover:bg-amber-50 text-amber-800"
+              )}
+            >
+              <FileText className="h-3.5 w-3.5 text-indigo-500" />
+              {t('scoping:justification.buttonLabel')}
+            </Button>
+          </div>
         </div>
       </CardContent>
+
+      <MaterialityJustificationModal
+        isOpen={isJustificationOpen}
+        onOpenChange={setIsJustificationOpen}
+        simulation={simState}
+        isLocked={isLocked}
+        onSave={(justification) => {
+          setSimState((prev) => ({
+            ...prev,
+            materialityJustification: justification
+          }));
+          onSaveJustification?.(justification);
+        }}
+      />
     </Card>
   );
 }

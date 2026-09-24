@@ -221,7 +221,8 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
       haircutPercentage: draftHaircutPercentage || 0,
       basis: draftBasis || '',
       appMappings: localAppMappings || {},
-      deptMappings: localDeptMappings || {}
+      deptMappings: localDeptMappings || {},
+      materialityJustification: simState.materialityJustification || null
     };
 
     const originalState = {
@@ -231,7 +232,8 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
       haircutPercentage: initialSimulation.haircutPercentage || 0,
       basis: initialSimulation.basis || '',
       appMappings: initialAppMappings || {},
-      deptMappings: initialDeptMappings || {}
+      deptMappings: initialDeptMappings || {},
+      materialityJustification: initialSimulation.materialityJustification || null
     };
 
     return JSON.stringify(currentState) !== JSON.stringify(originalState);

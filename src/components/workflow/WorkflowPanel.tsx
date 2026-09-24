@@ -148,10 +148,11 @@ interface WorkflowPanelProps {
   onStatusChange?: (newStatus: string) => void;
   className?: string;
   isDirty?: boolean;
+  beforeAction?: (actionId: WorkflowAction) => boolean | Promise<boolean>;
 }
 
 export function WorkflowPanel({ 
-  entityType, entityId, currentStatus, history, onStatusChange, className, isDirty 
+  entityType, entityId, currentStatus, history, onStatusChange, className, isDirty, beforeAction 
 }: WorkflowPanelProps) {
   const { t } = useTranslation(['common', 'bpm', 'deficiency', 'workflow']);
   const { executeAction, isPending } = useWorkflow(entityType, entityId);
@@ -201,12 +202,17 @@ export function WorkflowPanel({
 
   const isLocked = currentStatus !== 'Draft' && currentStatus !== 'Rejected' && currentStatus !== 'Ineffective';
 
-  const handleActionClick = (actionId: WorkflowAction) => {
+  const handleActionClick = async (actionId: WorkflowAction) => {
     if (isDirty) {
       toast.warning(t('common:unsavedChanges.title'), {
         description: t('common:unsavedChanges.description')
       });
       return;
+    }
+
+    if (beforeAction) {
+      const canProceed = await beforeAction(actionId);
+      if (!canProceed) return;
     }
 
     const config = findActionConfig(actionId);
@@ -224,12 +230,17 @@ export function WorkflowPanel({
     }
   };
 
-  const confirmActionWithNote = () => {
+  const confirmActionWithNote = async () => {
     if (!pendingActionId) return;
     const config = findActionConfig(pendingActionId);
     if (!config) return;
 
     if (config.needsNote && !note.trim()) return;
+
+    if (beforeAction) {
+      const canProceed = await beforeAction(pendingActionId);
+      if (!canProceed) return;
+    }
 
     executeAction({ action: pendingActionId, note, assigneeId: selectedAssigneeId || undefined }, {
       onSuccess: (data: any) => {

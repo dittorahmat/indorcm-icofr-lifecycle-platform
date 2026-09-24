@@ -99,6 +99,7 @@ export const simulations = pgTable("simulations", {
 	workflowHistory: jsonb("workflow_history").$type<any[]>().default([]),
 	significantAccounts: jsonb("significant_accounts"), // Added to store identified accounts
 	assessmentData: jsonb("assessment_data"),
+	materialityJustification: jsonb("materiality_justification"),
 	history: jsonb("history").$type<any[]>().default([]),
 	createdAt: timestamp("created_at").notNull(),
 	updatedAt: timestamp("updated_at"),

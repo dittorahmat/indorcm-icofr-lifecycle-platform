@@ -69,13 +69,19 @@ export function ScopingEditorHeader({
               <h1 className="text-lg font-display font-bold tracking-tight leading-none">{simState.name}</h1>
               <StatusBadge status={(simState.workflowStatus || simState.status) as SimulationStatus} />
             </div>
-            <div className="text-[10px] font-medium text-slate-500 flex items-center gap-1.5 mt-0.5">
-              <Badge variant="outline" className="bg-indigo-50/50 border-indigo-100 text-indigo-700 font-bold px-1.5 py-0 text-[9px]">
+            <div className="text-xs font-medium text-slate-500 flex items-center gap-1.5 mt-0.5">
+              <Badge variant="outline" className="bg-indigo-50/50 border-indigo-100 text-indigo-700 font-semibold px-2 py-0 text-xs rounded-md">
                 {simState.basis}
               </Badge>
+              {simState.materialityJustification?.entityCharacteristics && (
+                <Badge variant="outline" className="bg-emerald-50 border-emerald-200 text-emerald-700 font-semibold px-2 py-0 text-xs rounded-md flex items-center gap-1">
+                  <ShieldCheck className="h-3 w-3 text-emerald-600" />
+                  {t('scoping:justification.statusComplete')}
+                </Badge>
+              )}
               <span className="opacity-40">•</span>
-              <span className="flex items-center gap-1 text-[10px]">
-                <FileSpreadsheet className="h-3 w-3 text-slate-400" />
+              <span className="flex items-center gap-1 text-xs">
+                <FileSpreadsheet className="h-3.5 w-3.5 text-slate-400" />
                 {snapshotFilename || t('editor.activeSnapshot')}
               </span>
             </div>
