@@ -258,7 +258,12 @@ export function BPMModal({
               </TabsContent>
 
               <TabsContent value="logs" className="m-0 focus-visible:ring-0 h-full overflow-auto p-6">
-                <Lampiran6LogView entityId={noGL} year={year} subProcessName={subProcessName} />
+                <Lampiran6LogView 
+                  bpmProcessId={bpmProcessId} 
+                  subProcessName={subProcessName} 
+                  year={year} 
+                  entityId={noGL} 
+                />
               </TabsContent>
             </div>
           </Tabs>

@@ -449,5 +449,25 @@
       "thumbnailHint": "Original image for reference",
       "edgeHint": "Edit labels or delete edges that are hard to select on canvas"
     }
+  },
+  "logView": {
+    "title": "Appendix 6: BPM & RCM Change Log",
+    "subtitle": "Approval History & Control Modifications",
+    "loading": "Loading change log history...",
+    "empty": "No approved changes recorded (Appendix 6) for this sub-process.",
+    "entriesCount": "{{count}} Entries",
+    "cols": {
+      "no": "No (i)",
+      "company": "Company (ii)",
+      "process": "Business Process (iii)",
+      "subProcess": "Sub-Process (iv)",
+      "reportDate": "Report Date (v)",
+      "owner": "Owner (vi)",
+      "descBefore": "Description Before (vii)",
+      "descAfter": "Description After (viii)",
+      "refBefore": "Ref Before (ix)",
+      "refAfter": "Ref After (x)",
+      "effectiveDate": "Effective Date (xi)"
+    }
   }
 }

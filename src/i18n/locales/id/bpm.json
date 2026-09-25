@@ -452,5 +452,25 @@
       "thumbnailHint": "Gambar asli sebagai referensi",
       "edgeHint": "Ubah label atau hapus edge yang sulit dipilih di canvas"
     }
+  },
+  "logView": {
+    "title": "Lampiran 6: Log Perubahan BPM & RCM",
+    "subtitle": "Histori Persetujuan & Modifikasi Pengendalian",
+    "loading": "Memuat riwayat log perubahan...",
+    "empty": "Belum ada riwayat perubahan yang disetujui (Lampiran 6) untuk sub-proses ini.",
+    "entriesCount": "{{count}} Catatan",
+    "cols": {
+      "no": "No (i)",
+      "company": "Perusahaan (ii)",
+      "process": "Proses Bisnis (iii)",
+      "subProcess": "Sub-Proses (iv)",
+      "reportDate": "Tanggal Laporan (v)",
+      "owner": "Pemilik (vi)",
+      "descBefore": "Deskripsi Sebelum (vii)",
+      "descAfter": "Deskripsi Setelah (viii)",
+      "refBefore": "Ref Sebelum (ix)",
+      "refAfter": "Ref Setelah (x)",
+      "effectiveDate": "Tgl Efektif (xi)"
+    }
   }
 }

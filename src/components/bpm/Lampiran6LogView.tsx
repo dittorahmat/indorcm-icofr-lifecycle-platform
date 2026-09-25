@@ -6,36 +6,56 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, History, Calendar } from 'lucide-react';
+import { Loader2, History } from 'lucide-react';
 import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 
 interface Lampiran6LogViewProps {
-  entityId: string;
+  entityId?: string;
   year?: string;
   subProcessName?: string;
+  bpmProcessId?: string;
 }
 
-export function Lampiran6LogView({ entityId, year, subProcessName }: Lampiran6LogViewProps) {
+export function Lampiran6LogView({ entityId, year, subProcessName, bpmProcessId }: Lampiran6LogViewProps) {
+  const { t } = useTranslation('bpm');
+
   const { data: logs, isLoading } = useQuery({
-    queryKey: ['change-logs', entityId, year, subProcessName],
+    queryKey: ['change-logs', entityId, year, subProcessName, bpmProcessId],
     queryFn: async () => {
       const all = await api<{ items: ChangeLog[] }>('/api/change-logs');
       return all.items.filter(l => {
-        // Match entityId (GL account or general entity)
-        if (l.entityId !== entityId) return false;
+        const dAfter = l.dataAfter as any;
+        const dBefore = l.dataBefore as any;
+
+        // SubProcess matching
+        const targetSub = subProcessName ? subProcessName.toLowerCase().trim() : '';
+        const logSub = (dAfter?.subProcess || dBefore?.subProcess || '').toLowerCase().trim();
+
+        // Process ID matching
+        const logProcessId = dAfter?.bpmProcessId || dBefore?.bpmProcessId;
+
+        // Check if log belongs to this sub-process context
+        let matchesContext = false;
+        if (targetSub && logSub) {
+          matchesContext = logSub === targetSub;
+        }
+        if (!matchesContext && bpmProcessId) {
+          matchesContext = logProcessId === bpmProcessId || l.entityId === bpmProcessId;
+        }
+        if (!matchesContext && entityId) {
+          matchesContext = l.entityId === entityId;
+        }
+
+        // If no filter parameters were passed, allow all; otherwise require a match
+        if ((targetSub || bpmProcessId || entityId) && !matchesContext) {
+          return false;
+        }
 
         // Optional Year filter
         if (year && l.timestamp) {
           const logYear = new Date(l.timestamp).getFullYear().toString();
           if (logYear !== year) return false;
-        }
-
-        // Optional subProcess filter if metadata exists
-        if (subProcessName) {
-          const dAfter = l.dataAfter as any;
-          const dBefore = l.dataBefore as any;
-          const logSub = (dAfter?.subProcess || dBefore?.subProcess || "").toLowerCase().trim();
-          if (logSub && logSub !== subProcessName.toLowerCase().trim()) return false;
         }
 
         return true;
@@ -54,31 +74,31 @@ export function Lampiran6LogView({ entityId, year, subProcessName }: Lampiran6Lo
     const dataBefore = log.dataBefore as any;
     const dataAfter = log.dataAfter as any;
     
-    const process = dataAfter?.process || dataBefore?.process || "-";
-    const subProcess = dataAfter?.subProcess || dataBefore?.subProcess || "-";
+    const process = dataAfter?.businessProcess || dataAfter?.process || dataBefore?.businessProcess || dataBefore?.process || "-";
+    const subProcess = dataAfter?.subProcess || dataBefore?.subProcess || subProcessName || "-";
     const descBefore = dataBefore?.controlDescription || dataBefore?.riskDescription || log.descriptionBefore || "-";
     const descAfter = dataAfter?.controlDescription || dataAfter?.riskDescription || log.descriptionAfter || "-";
-    const refBefore = dataBefore?.controlId || dataBefore?.id || "-";
-    const refAfter = dataAfter?.controlId || dataAfter?.id || "-";
-    const owner = dataAfter?.executingFunction || dataAfter?.executorRole || dataBefore?.executingFunction || "-";
+    const refBefore = dataBefore?.controlId || dataBefore?.code || dataBefore?.id || "-";
+    const refAfter = dataAfter?.controlId || dataAfter?.code || dataAfter?.id || "-";
+    const owner = dataAfter?.executingFunction || dataAfter?.executorRole || dataBefore?.executingFunction || (log.userId ? getUserName(log.userId) : "-");
 
     return { process, subProcess, descBefore, descAfter, refBefore, refAfter, owner };
   };
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 gap-3 text-slate-400">
-        <Loader2 className="h-8 w-8 animate-spin" />
-        <p className="text-sm font-medium">Loading historical logs...</p>
+      <div className="flex flex-col items-center justify-center p-12 gap-3 text-muted-foreground">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-xs font-semibold">{t('logView.loading')}</p>
       </div>
     );
   }
 
   if (!logs || logs.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 gap-3 text-slate-300 italic border-2 border-dashed rounded-xl bg-slate-50/50">
-        <History className="h-10 w-10 opacity-20" />
-        <p className="text-sm">Belum ada riwayat perubahan yang disetujui (Lampiran 6).</p>
+      <div className="flex flex-col items-center justify-center p-12 gap-3 text-muted-foreground border-2 border-dashed rounded-lg bg-card">
+        <History className="h-10 w-10 opacity-30 text-muted-foreground" />
+        <p className="text-xs font-medium">{t('logView.empty')}</p>
       </div>
     );
   }
@@ -87,56 +107,56 @@ export function Lampiran6LogView({ entityId, year, subProcessName }: Lampiran6Lo
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2">
-            <History className="h-4 w-4 text-indigo-500" />
-            Lampiran 6: Log Perubahan BPM & RCM
+          <h4 className="text-xs font-bold text-foreground flex items-center gap-2">
+            <History className="h-4 w-4 text-primary" />
+            {t('logView.title')}
           </h4>
-          <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Histori Persetujuan & Modifikasi Pengendalian</p>
+          <p className="text-xs text-muted-foreground font-medium">{t('logView.subtitle')}</p>
         </div>
-        <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-100 px-2 py-0.5 text-xs">
-          {logs.length} Entries
+        <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 px-2 py-0.5 text-xs font-semibold">
+          {t('logView.entriesCount', { count: logs.length })}
         </Badge>
       </div>
 
-      <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
+      <div className="rounded-lg border border-border bg-card shadow-sm overflow-hidden">
         <div className="overflow-x-auto w-full">
           <Table className="min-w-[1200px]">
-            <TableHeader className="bg-slate-50">
+            <TableHeader className="bg-muted/50">
               <TableRow>
-                <TableHead className="w-[50px] text-xs font-bold uppercase py-3 text-center">No (i)</TableHead>
-                <TableHead className="text-xs font-bold uppercase py-3">Perusahaan (ii)</TableHead>
-                <TableHead className="text-xs font-bold uppercase py-3">Proses Bisnis (iii)</TableHead>
-                <TableHead className="text-xs font-bold uppercase py-3">Sub-Proses (iv)</TableHead>
-                <TableHead className="text-xs font-bold uppercase py-3">Tanggal Laporan (v)</TableHead>
-                <TableHead className="text-xs font-bold uppercase py-3">Pemilik (vi)</TableHead>
-                <TableHead className="text-xs font-bold uppercase py-3">Deskripsi Sebelum (vii)</TableHead>
-                <TableHead className="text-xs font-bold uppercase py-3">Deskripsi Setelah (viii)</TableHead>
-                <TableHead className="text-xs font-bold uppercase py-3 text-center">Ref Sebelum (ix)</TableHead>
-                <TableHead className="text-xs font-bold uppercase py-3 text-center">Ref Setelah (x)</TableHead>
-                <TableHead className="text-xs font-bold uppercase py-3">Tgl Efektif (xi)</TableHead>
+                <TableHead className="w-[50px] text-xs font-bold uppercase py-3 text-center">{t('logView.cols.no')}</TableHead>
+                <TableHead className="text-xs font-bold uppercase py-3">{t('logView.cols.company')}</TableHead>
+                <TableHead className="text-xs font-bold uppercase py-3">{t('logView.cols.process')}</TableHead>
+                <TableHead className="text-xs font-bold uppercase py-3">{t('logView.cols.subProcess')}</TableHead>
+                <TableHead className="text-xs font-bold uppercase py-3">{t('logView.cols.reportDate')}</TableHead>
+                <TableHead className="text-xs font-bold uppercase py-3">{t('logView.cols.owner')}</TableHead>
+                <TableHead className="text-xs font-bold uppercase py-3">{t('logView.cols.descBefore')}</TableHead>
+                <TableHead className="text-xs font-bold uppercase py-3">{t('logView.cols.descAfter')}</TableHead>
+                <TableHead className="text-xs font-bold uppercase py-3 text-center">{t('logView.cols.refBefore')}</TableHead>
+                <TableHead className="text-xs font-bold uppercase py-3 text-center">{t('logView.cols.refAfter')}</TableHead>
+                <TableHead className="text-xs font-bold uppercase py-3">{t('logView.cols.effectiveDate')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {logs.map((log, index) => {
                 const meta = getRowMetadata(log);
                 return (
-                  <TableRow key={log.id} className="hover:bg-slate-50/50 transition-colors">
-                    <TableCell className="text-center font-medium text-xs text-slate-500 py-3">{index + 1}</TableCell>
-                    <TableCell className="text-xs font-semibold text-slate-700 py-3">PT Bukit Asam Tbk</TableCell>
-                    <TableCell className="text-xs text-slate-600 py-3">{meta.process}</TableCell>
-                    <TableCell className="text-xs text-slate-600 py-3">{meta.subProcess}</TableCell>
+                  <TableRow key={log.id} className="hover:bg-muted/50 transition-colors">
+                    <TableCell className="text-center font-medium text-xs text-muted-foreground py-3">{index + 1}</TableCell>
+                    <TableCell className="text-xs font-semibold text-foreground py-3">PT Bukit Asam Tbk</TableCell>
+                    <TableCell className="text-xs text-foreground py-3">{meta.process}</TableCell>
+                    <TableCell className="text-xs text-foreground py-3">{meta.subProcess}</TableCell>
                     <TableCell className="py-3">
-                      <span className="text-xs text-slate-500 font-mono">
+                      <span className="text-xs text-muted-foreground font-mono">
                         {log.timestamp ? format(log.timestamp, 'dd MMM yyyy HH:mm') : "-"}
                       </span>
                     </TableCell>
-                    <TableCell className="text-xs text-slate-600 py-3 font-medium">{meta.owner}</TableCell>
-                    <TableCell className="max-w-[200px] truncate text-xs text-slate-500 py-3" title={meta.descBefore}>{meta.descBefore}</TableCell>
-                    <TableCell className="max-w-[200px] truncate text-xs text-slate-800 py-3 font-medium" title={meta.descAfter}>{meta.descAfter}</TableCell>
-                    <TableCell className="text-center text-xs font-mono text-slate-500 py-3">{meta.refBefore}</TableCell>
-                    <TableCell className="text-center text-xs font-mono text-slate-800 py-3 font-semibold">{meta.refAfter}</TableCell>
+                    <TableCell className="text-xs text-foreground py-3 font-medium">{meta.owner}</TableCell>
+                    <TableCell className="max-w-[200px] truncate text-xs text-muted-foreground py-3" title={meta.descBefore}>{meta.descBefore}</TableCell>
+                    <TableCell className="max-w-[200px] truncate text-xs text-foreground py-3 font-semibold" title={meta.descAfter}>{meta.descAfter}</TableCell>
+                    <TableCell className="text-center text-xs font-mono text-muted-foreground py-3">{meta.refBefore}</TableCell>
+                    <TableCell className="text-center text-xs font-mono text-foreground py-3 font-semibold">{meta.refAfter}</TableCell>
                     <TableCell className="py-3">
-                      <span className="text-xs font-bold text-indigo-600">
+                      <span className="text-xs font-semibold text-primary">
                         {log.effectiveDate ? format(log.effectiveDate, 'dd MMM yyyy') : "-"}
                       </span>
                     </TableCell>

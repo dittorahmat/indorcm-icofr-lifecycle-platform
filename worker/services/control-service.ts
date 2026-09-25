@@ -116,6 +116,7 @@ export class ControlService {
 
   async submitForApproval(orgId: string, userId: string, id: string) {
     await this.db.update(controls).set({ bpmStatus: 'Pending Approval' }).where(and(eq(controls.id, id), eq(controls.organizationId, orgId)));
+    const ctrl = await this.db.select().from(controls).where(and(eq(controls.id, id), eq(controls.organizationId, orgId))).then(rows => rows[0]);
     await this.audit.logAction({
       organizationId: orgId,
       userId,
@@ -123,6 +124,7 @@ export class ControlService {
       entityType: 'Control',
       entityId: id,
       description: "Submitted for approval",
+      dataAfter: ctrl || undefined,
       isRegulatory: true,
       effectiveDate: new Date()
     });
@@ -131,6 +133,7 @@ export class ControlService {
 
   async reject(orgId: string, userId: string, id: string, note?: string) {
     await this.db.update(controls).set({ bpmStatus: 'Rejected' }).where(and(eq(controls.id, id), eq(controls.organizationId, orgId)));
+    const ctrl = await this.db.select().from(controls).where(and(eq(controls.id, id), eq(controls.organizationId, orgId))).then(rows => rows[0]);
     await this.audit.logAction({
       organizationId: orgId,
       userId,
@@ -138,6 +141,7 @@ export class ControlService {
       entityType: 'Control',
       entityId: id,
       description: `Rejected changes. Note: ${note || 'No note provided'}`,
+      dataAfter: ctrl || undefined,
       isRegulatory: true,
       effectiveDate: new Date()
     });
