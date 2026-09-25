@@ -12,6 +12,7 @@ import { RCMPageHeader } from '@/components/rcm/RCMPageHeader';
 import { RCMTable, RCMColumnGroup } from '@/components/rcm/RCMTable';
 import { RCMEditDialog } from '@/components/rcm/RCMEditDialog';
 import { exportRCMToExcel } from '@/lib/rcm-excel-export';
+import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 
 interface RCMMatrixItem extends RCMControlMapping {
   mappingId: string;
@@ -38,18 +39,25 @@ interface RCMMatrixItem extends RCMControlMapping {
 interface RCMITGCPageProps {
   embedded?: boolean;
   filterBpmId?: string;
+  workingYearOverride?: string;
 }
 
-export function RCMITGCPage({ embedded = false, filterBpmId }: RCMITGCPageProps) {
+export function RCMITGCPage({ embedded = false, filterBpmId, workingYearOverride }: RCMITGCPageProps) {
   const { t } = useTranslation(['rcm', 'common']);
   const queryClient = useQueryClient();
+  const { workingYear: globalWorkingYear } = useFiscalYearStore();
+  const workingYear = workingYearOverride || globalWorkingYear;
   const [searchTerm, setSearchTerm] = React.useState('');
   const [editingItem, setEditingItem] = React.useState<RCMMatrixItem | null>(null);
 
   const { data: matrixData, isLoading } = useQuery({
-    queryKey: ['rcm-matrix-itgc', filterBpmId],
+    queryKey: ['rcm-matrix-itgc', filterBpmId, workingYear],
     queryFn: async () => {
-      const url = filterBpmId ? `/api/rcm-matrix/itgc?bpmProcessId=${filterBpmId}` : '/api/rcm-matrix/itgc';
+      const params = new URLSearchParams();
+      if (filterBpmId) params.append('bpmProcessId', filterBpmId);
+      if (workingYear) params.append('year', workingYear);
+      const queryStr = params.toString();
+      const url = queryStr ? `/api/rcm-matrix/itgc?${queryStr}` : '/api/rcm-matrix/itgc';
       const res = await api<{ items: RCMMatrixItem[] }>(url);
       return res;
     },

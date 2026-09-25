@@ -70,9 +70,11 @@ interface VerificationMatrixItem {
 export interface VerificationDesignPageProps {
   embedded?: boolean;
   filterBpmId?: string;
+  workingYear?: string;
+  noGLFilter?: string;
 }
 
-export function VerificationDesignPage({ embedded, filterBpmId }: VerificationDesignPageProps) {
+export function VerificationDesignPage({ embedded, filterBpmId, workingYear, noGLFilter }: VerificationDesignPageProps) {
   const { t } = useTranslation(['rcm', 'common', 'sidebar']);
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = React.useState('');
@@ -83,11 +85,14 @@ export function VerificationDesignPage({ embedded, filterBpmId }: VerificationDe
   const canEdit = userRole === 'Admin' || userRole === 'Line 2';
 
   const { data, isLoading } = useQuery({
-    queryKey: ['verification-design-matrix', filterBpmId],
+    queryKey: ['verification-design-matrix', filterBpmId, workingYear, noGLFilter],
     queryFn: () => {
-      const url = filterBpmId 
-        ? `/api/rcm-matrix/verification-design?bpmId=${filterBpmId}` 
-        : '/api/rcm-matrix/verification-design';
+      const params = new URLSearchParams();
+      if (filterBpmId) params.append('bpmProcessId', filterBpmId);
+      if (workingYear) params.append('year', workingYear);
+      if (noGLFilter) params.append('noGL', noGLFilter);
+      const queryStr = params.toString();
+      const url = queryStr ? `/api/rcm-matrix/verification-design?${queryStr}` : '/api/rcm-matrix/verification-design';
       return api<{ items: VerificationMatrixItem[] }>(url);
     },
   });

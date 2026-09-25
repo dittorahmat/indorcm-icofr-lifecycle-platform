@@ -100,10 +100,14 @@ export function BPMModal({
   });
 
   const { data: controls } = useQuery({
-    queryKey: ['bpm-controls', noGL, bpmProcessId, subProcessName],
+    queryKey: ['bpm-controls', noGL, bpmProcessId, subProcessName, year],
     queryFn: async () => {
-      const all = await api<{ items: Control[] }>('/api/controls');
+      const all = await api<{ items: Control[] }>(`/api/controls?year=${year}`);
       return all.items.filter(c => {
+        if (c.year && year && c.year.toString() !== year.toString()) {
+          return false;
+        }
+
         const cSub = (c.subProcess || "").toLowerCase().trim();
         const targetSub = (subProcessName || "").toLowerCase().trim();
 
@@ -216,7 +220,7 @@ export function BPMModal({
                       <div className="bg-indigo-50 p-3 border-b font-bold text-indigo-900 text-xs uppercase tracking-widest flex items-center gap-2">
                         <FileText className="h-4 w-4" /> Lampiran 5.b - TLC Matrix
                       </div>
-                      <RCMTLCPage embedded={true} filterBpmId={bpmProcessId} />
+                      <RCMTLCPage embedded={true} filterBpmId={bpmProcessId} workingYearOverride={year} noGLFilter={noGL} />
                    </div>
                    <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
                       <div className="bg-slate-50 p-3 border-b font-bold text-slate-900 text-xs uppercase tracking-widest flex items-center gap-2">
@@ -228,7 +232,7 @@ export function BPMModal({
                       <div className="bg-blue-50 p-3 border-b font-bold text-blue-900 text-xs uppercase tracking-widest flex items-center gap-2">
                         <FileText className="h-4 w-4" /> Lampiran 5.c - ITGC Matrix
                       </div>
-                      <RCMITGCPage embedded={true} filterBpmId={bpmProcessId} />
+                      <RCMITGCPage embedded={true} filterBpmId={bpmProcessId} workingYearOverride={year} />
                    </div>
                 </div>
               </TabsContent>
@@ -248,11 +252,13 @@ export function BPMModal({
                 <VerificationDesignPage 
                   embedded={true} 
                   filterBpmId={bpmProcessId} 
+                  workingYear={year}
+                  noGLFilter={noGL}
                 />
               </TabsContent>
 
               <TabsContent value="logs" className="m-0 focus-visible:ring-0 h-full overflow-auto p-6">
-                <Lampiran6LogView entityId={noGL} />
+                <Lampiran6LogView entityId={noGL} year={year} subProcessName={subProcessName} />
               </TabsContent>
             </div>
           </Tabs>

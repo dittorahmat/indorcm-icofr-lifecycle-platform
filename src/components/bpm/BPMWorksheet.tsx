@@ -103,10 +103,15 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
 
   // 1. Fetch Controls
   const { data: controls, isLoading } = useQuery({
-    queryKey: ['bpm-controls', noGL, bpmProcessId, subProcessName],
+    queryKey: ['bpm-controls', noGL, bpmProcessId, subProcessName, workingYear],
     queryFn: async () => {
-      const all = await api<{ items: Control[] }>('/api/controls');
+      const all = await api<{ items: Control[] }>(`/api/controls?year=${workingYear}`);
       return all.items.filter(c => {
+        // Year check: if control has year specified, it must match workingYear
+        if (c.year && workingYear && c.year.toString() !== workingYear.toString()) {
+          return false;
+        }
+
         const cSub = (c.subProcess || "").toLowerCase().trim();
         const targetSub = (subProcessName || "").toLowerCase().trim();
 
@@ -125,8 +130,8 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
   });
 
   const { data: allControlsData } = useQuery({
-    queryKey: ['controls-all'],
-    queryFn: () => api<{ items: Control[] }>('/api/controls'),
+    queryKey: ['controls-all', workingYear],
+    queryFn: () => api<{ items: Control[] }>(`/api/controls?year=${workingYear}`),
   });
 
   const elcControls = React.useMemo(() => {
@@ -230,7 +235,8 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
         ipos: [],
         assertions: [],
         type: 'Preventive',
-        nature: 'Manual'
+        nature: 'Manual',
+        year: workingYear ? parseInt(workingYear) : undefined
       })
     }),
     onSuccess: () => {

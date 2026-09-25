@@ -209,14 +209,17 @@ rcm.get('/rcm-matrix/itgc', async (c) => {
 rcm.get('/rcm-matrix/verification-design', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
-  const bpmProcessId = c.req.query('bpmProcessId');
+  const bpmProcessId = c.req.query('bpmProcessId') || c.req.query('bpmId');
+  const year = c.req.query('year');
+  const noGL = c.req.query('noGL');
 
   const org = await db.select().from(organization).where(eq(organization.id, orgId)).then((rows: any) => rows[0]);
 
   const results = await db.query.rcmControls.findMany({
     where: and(
       eq(rcmControls.organizationId, orgId),
-      bpmProcessId && bpmProcessId !== 'undefined' ? eq(rcmControls.rcmId, bpmProcessId) : undefined
+      bpmProcessId && bpmProcessId !== 'undefined' ? eq(rcmControls.rcmId, bpmProcessId) : undefined,
+      year && year !== 'undefined' ? eq(rcmControls.year, parseInt(year)) : undefined
     ),
     with: {
       rcm: true,
@@ -228,7 +231,14 @@ rcm.get('/rcm-matrix/verification-design', async (c) => {
     }
   });
 
-  const items = results.map((m: any) => {
+  const filteredResults = noGL && noGL !== 'undefined'
+    ? results.filter((m: any) => {
+        const glList = m.control?.fsliCodes || [];
+        return Array.isArray(glList) && glList.includes(noGL);
+      })
+    : results;
+
+  const items = filteredResults.map((m: any) => {
     const tod = m.control?.todEvaluations?.[0] || {};
     return {
       id: m.id,

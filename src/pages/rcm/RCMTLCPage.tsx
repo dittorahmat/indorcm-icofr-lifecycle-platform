@@ -46,9 +46,10 @@ interface RCMTLCPageProps {
   embedded?: boolean;
   filterBpmId?: string;
   workingYearOverride?: string;
+  noGLFilter?: string;
 }
 
-export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride }: RCMTLCPageProps) {
+export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride, noGLFilter }: RCMTLCPageProps) {
   const { t } = useTranslation(['rcm', 'common', 'bpm']);
   const queryClient = useQueryClient();
   const { workingYear: globalWorkingYear } = useFiscalYearStore();
@@ -72,10 +73,11 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride 
   });
 
   const { data: matrixData, isLoading } = useQuery({
-    queryKey: ['rcm-matrix-tlc', filterBpmId, workingYear],
+    queryKey: ['rcm-matrix-tlc', filterBpmId, workingYear, noGLFilter],
     queryFn: async () => {
       let url = `/api/rcm-matrix/tlc?year=${workingYear}`;
       if (filterBpmId) url += `&bpmProcessId=${filterBpmId}`;
+      if (noGLFilter) url += `&noGL=${noGLFilter}`;
       const res = await api<{ items: RCMMatrixItem[] }>(url);
       return res;
     },

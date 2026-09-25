@@ -11,14 +11,35 @@ import { format } from 'date-fns';
 
 interface Lampiran6LogViewProps {
   entityId: string;
+  year?: string;
+  subProcessName?: string;
 }
 
-export function Lampiran6LogView({ entityId }: Lampiran6LogViewProps) {
+export function Lampiran6LogView({ entityId, year, subProcessName }: Lampiran6LogViewProps) {
   const { data: logs, isLoading } = useQuery({
-    queryKey: ['change-logs', entityId],
+    queryKey: ['change-logs', entityId, year, subProcessName],
     queryFn: async () => {
       const all = await api<{ items: ChangeLog[] }>('/api/change-logs');
-      return all.items.filter(l => l.entityId === entityId).sort((a, b) => b.timestamp - a.timestamp);
+      return all.items.filter(l => {
+        // Match entityId (GL account or general entity)
+        if (l.entityId !== entityId) return false;
+
+        // Optional Year filter
+        if (year && l.timestamp) {
+          const logYear = new Date(l.timestamp).getFullYear().toString();
+          if (logYear !== year) return false;
+        }
+
+        // Optional subProcess filter if metadata exists
+        if (subProcessName) {
+          const dAfter = l.dataAfter as any;
+          const dBefore = l.dataBefore as any;
+          const logSub = (dAfter?.subProcess || dBefore?.subProcess || "").toLowerCase().trim();
+          if (logSub && logSub !== subProcessName.toLowerCase().trim()) return false;
+        }
+
+        return true;
+      }).sort((a, b) => b.timestamp - a.timestamp);
     }
   });
 
