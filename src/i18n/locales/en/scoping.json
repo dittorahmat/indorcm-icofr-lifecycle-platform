@@ -22,6 +22,15 @@
     "createNew": "Create New Simulation",
     "basisDescription": "Basis calculation will use {{filename}}."
   },
+  "sheetSelection": {
+    "title": "Select Worksheet",
+    "description": "File \"{{file}}\" contains multiple worksheets. Please select the worksheet containing Trial Balance / General Ledger data.",
+    "compliant": "Template Compliant",
+    "incomplete": "Missing Columns",
+    "rows": "rows detected",
+    "missing": "Missing: ",
+    "proceed": "Proceed with this Sheet"
+  },
   "form": {
     "name": "Simulation Name",
     "namePlaceholder": "e.g., Final Scoping 2024",

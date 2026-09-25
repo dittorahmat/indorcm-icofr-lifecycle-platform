@@ -2,6 +2,7 @@ import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import { 
   filterEmptyRows,
+  getWorkbookSheetsMeta,
 } from '@/lib/compliance-utils';
 import { z } from 'zod';
 
@@ -12,6 +13,7 @@ export interface RCMParseResult {
   rows: any[];
   error?: string;
   missingColumns?: string[];
+  selectedSheet?: string;
 }
 
 /**
@@ -82,7 +84,10 @@ export async function parseRCMFile(file: File, type: RCMType = 'TLC'): Promise<R
           rawData = results.data;
         } else {
           const workbook = XLSX.read(bstr, { type: 'binary' });
-          const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+          const sheetsMeta = getWorkbookSheetsMeta(workbook);
+          const visibleSheets = sheetsMeta.filter(s => !s.hidden);
+          const targetSheetName = visibleSheets.length > 0 ? visibleSheets[0].name : workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[targetSheetName];
           const json = XLSX.utils.sheet_to_json(worksheet);
           rawData = json.map((row: any) => {
             const trimmedRow: any = {};

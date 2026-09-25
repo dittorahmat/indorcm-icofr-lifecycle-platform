@@ -334,6 +334,27 @@ export function validateGLMapping(mapping: Record<string, string>): { valid: boo
   };
 }
 
+export interface SheetMeta {
+  name: string;
+  hidden: boolean;
+}
+
+/**
+ * Extract sheet metadata from XLSX workbook including hidden status
+ */
+export function getWorkbookSheetsMeta(workbook: any): SheetMeta[] {
+  const wbSheets = workbook.Workbook?.Sheets || [];
+  return (workbook.SheetNames || []).map((name: string, idx: number) => {
+    const meta = wbSheets[idx] || wbSheets.find((s: any) => s.name === name);
+    // Hidden: 1 = Hidden, 2 = VeryHidden
+    const isHidden = meta?.Hidden === 1 || meta?.Hidden === 2 || meta?.hidden === 1 || meta?.hidden === 2;
+    return {
+      name,
+      hidden: Boolean(isHidden)
+    };
+  });
+}
+
 // --- RCM AUTO MAPPING ---
 
 export const RCM_COLUMN_MAPPING = {

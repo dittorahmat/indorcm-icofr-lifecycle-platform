@@ -47,8 +47,9 @@ import {
 } from "@/components/ui/command";
 import { Input } from "@/components/ui/input";
 
-import { parseGLFile } from '@/pages/scoping/services/gl-parser';
+import { parseGLFile, SheetCandidate } from '@/pages/scoping/services/gl-parser';
 import { parseRCMFile, RCMType } from '@/pages/scoping/services/rcm-parser';
+import { SheetSelectionModal } from '../import/SheetSelectionModal';
 import { 
     getGroupMultiplier, 
     calculateOM, 
@@ -78,6 +79,11 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
     // Data States
     const [stagingData, setStagingData] = useState<any[]>([]);
     const [parsedTbData, setParsedTbData] = useState<any[]>([]);
+
+    // Sheet Selection State
+    const [sheetModalOpen, setSheetModalOpen] = useState(false);
+    const [sheetCandidates, setSheetCandidates] = useState<SheetCandidate[]>([]);
+    const [pendingTargetFile, setPendingTargetFile] = useState<File | null>(null);
 
     // Materiality States
     const [selectedBasis, setSelectedBasis] = useState<string>('');
@@ -139,6 +145,71 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
         };
     }, [isModified, setDirty, resetDirty, isOpen]);
 
+    const processTbWithSheet = async (file: File, targetSheet?: string) => {
+        const tbResult = await parseGLFile(file, { targetSheet });
+        if (tbResult.requiresSheetSelection && tbResult.sheets) {
+            setPendingTargetFile(file);
+            setSheetCandidates(tbResult.sheets);
+            setSheetModalOpen(true);
+            setIsProcessing(false);
+            return false;
+        }
+
+        if (tbResult.success) {
+            const tbDataForFinalize = tbResult.rows.map(r => ({
+                accountCode: r.noGL,
+                accountName: r.glDesc,
+                balance: r.balance,
+                fsliBalance: r.fsliBalance,
+                entityCode: r.entityCode,
+                parentEntityCode: r.parentEntityCode,
+                suggestedFsli: r.fsliName,
+                confidence: r.mappingConfidence,
+                noUrut: r.noUrut,
+                currency: r.currency,
+                ymd: r.ymd,
+                category: r.category,
+                subKategori: r.subKategori,
+                fsliCode: r.fsliCode
+            }));
+            setParsedTbData(tbDataForFinalize);
+            return true;
+        } else {
+            toast.error(`TB Parse Error: ${tbResult.error}`);
+            setIsProcessing(false);
+            return false;
+        }
+    };
+
+    const handleSheetSelected = async (sheetName: string) => {
+        if (!pendingTargetFile) return;
+        setIsProcessing(true);
+        try {
+            const ok = await processTbWithSheet(pendingTargetFile, sheetName);
+            if (ok) {
+                // If RCM file is also present and hasn't been parsed yet
+                if (rcmFile && stagingData.length === 0) {
+                    const rcmResult = await parseRCMFile(rcmFile, rcmType);
+                    if (rcmResult.success) {
+                        setStagingData(rcmResult.rows);
+                    } else {
+                        toast.error(`RCM Parse Error: ${rcmResult.error}`);
+                        setIsProcessing(false);
+                        return;
+                    }
+                }
+                setIsProcessing(false);
+                setIsDirtyLocal(true);
+                setStep(2);
+                toast.success("Extraction complete!");
+            }
+        } catch (err: any) {
+            console.error("Sheet selection processing error:", err);
+            toast.error("Processing failed: " + err.message);
+            setIsProcessing(false);
+        }
+    };
+
     const handleProcessAI = async () => {
         if (!tbFile && !rcmFile) {
             toast.error("Please upload at least one file to process.");
@@ -150,29 +221,9 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
         try {
             // 1. Process TB if exists
             if (tbFile) {
-                const tbResult = await parseGLFile(tbFile);
-                if (tbResult.success) {
-                    // Map GLRow format to what finalize expects
-                    const tbDataForFinalize = tbResult.rows.map(r => ({
-                        accountCode: r.noGL,
-                        accountName: r.glDesc,
-                        balance: r.balance,
-                        fsliBalance: r.fsliBalance,
-                        entityCode: r.entityCode,
-                        parentEntityCode: r.parentEntityCode,
-                        suggestedFsli: r.fsliName,
-                        confidence: r.mappingConfidence,
-                        noUrut: r.noUrut,
-                        currency: r.currency,
-                        ymd: r.ymd,
-                        category: r.category,
-                        subKategori: r.subKategori,
-                        fsliCode: r.fsliCode
-                    }));
-                    setParsedTbData(tbDataForFinalize);
-                } else {
-                    toast.error(`TB Parse Error: ${tbResult.error}`);
-                    setIsProcessing(false);
+                const tbSuccess = await processTbWithSheet(tbFile);
+                if (!tbSuccess) {
+                    // Modal opened or error shown
                     return;
                 }
             }
@@ -580,6 +631,14 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
                     </div>
                 </div>
             </DialogContent>
+
+            <SheetSelectionModal
+                isOpen={sheetModalOpen}
+                onOpenChange={setSheetModalOpen}
+                fileName={pendingTargetFile?.name || tbFile?.name || ''}
+                sheets={sheetCandidates}
+                onSelectSheet={handleSheetSelected}
+            />
         </Dialog>
     );
 }

@@ -77,4 +77,44 @@ D,A,201,Kas Anak,500,Kas,2`;
     expect(result.rows[1].entityCode).toBe('D');
     expect(result.rows[1].parentEntityCode).toBe('A');
   });
+
+  it('should auto-select visible valid sheet when a hidden sheet is present', async () => {
+    // Dynamically create XLSX binary string
+    const XLSX = await import('xlsx');
+    const wb = XLSX.utils.book_new();
+
+    // Sheet1 (hidden, no proper headers)
+    const ws1 = XLSX.utils.aoa_to_sheet([
+      ['Intro', 'Summary'],
+      ['Total', 12345]
+    ]);
+    XLSX.utils.book_append_sheet(wb, ws1, 'Sheet1');
+
+    // Sheet2 (visible, valid headers)
+    const ws2 = XLSX.utils.aoa_to_sheet([
+      ['No_GL', 'GL_Desc', 'GL_Balance', 'FSLI'],
+      ['1001', 'Kas Operasional', 5000000, 'Kas'],
+      ['1002', 'Bank Mandiri', 25000000, 'Kas']
+    ]);
+    XLSX.utils.book_append_sheet(wb, ws2, 'Sheet2');
+
+    // Mark Sheet1 as Hidden
+    wb.Workbook = {
+      Sheets: [
+        { name: 'Sheet1', Hidden: 1 },
+        { name: 'Sheet2', Hidden: 0 }
+      ]
+    };
+
+    const bstr = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
+    const file = new File([], 'multi.xlsx', { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    // @ts-expect-error - injecting binary content for mock
+    file.content = bstr;
+
+    const result = await parseGLFile(file);
+    expect(result.success).toBe(true);
+    expect(result.selectedSheet).toBe('Sheet2');
+    expect(result.rows).toHaveLength(2);
+    expect(result.rows[0].glDesc).toBe('Kas Operasional');
+  });
 });
