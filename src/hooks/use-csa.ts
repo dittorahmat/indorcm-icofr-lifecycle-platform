@@ -15,9 +15,10 @@ interface UseCSAProps {
   scheduleId?: string;
   initialSamples?: any[];
   controls?: any[];
+  year?: string | number;
 }
 
-export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls: propControls = [] }: UseCSAProps) {
+export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls: propControls = [], year }: UseCSAProps) {
   const confirm = useConfirm();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
@@ -51,8 +52,13 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
   });
 
   const { data: csaList, isLoading: isListLoading } = useQuery({
-    queryKey: ['csa-list', bpmProcessId],
-    queryFn: () => api<{ items: CSARecord[] }>(`/api/csa?bpmProcessId=${bpmProcessId}`),
+    queryKey: ['csa-list', bpmProcessId, year],
+    queryFn: () => {
+      const params = new URLSearchParams();
+      if (bpmProcessId) params.append('bpmProcessId', bpmProcessId);
+      if (year) params.append('year', year.toString());
+      return api<{ items: CSARecord[] }>(`/api/csa?${params.toString()}`);
+    },
     enabled: !!bpmProcessId && view === 'list'
   });
 

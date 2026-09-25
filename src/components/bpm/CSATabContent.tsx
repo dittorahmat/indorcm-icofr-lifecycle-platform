@@ -56,7 +56,8 @@ export function CSATabContent({
     bpmProcessId: bpmProcessId!, 
     scheduleId, 
     initialSamples, 
-    controls: propControls 
+    controls: propControls,
+    year: workingYear
   });
 
   const [printLayout, setPrintLayout] = useState<'detailed' | 'summary' | null>(null);

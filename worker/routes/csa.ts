@@ -65,11 +65,15 @@ csa.get('/csa', async (c) => {
   const controlId = c.req.query('controlId');
   const period = c.req.query('period');
   const year = c.req.query('year');
+  const bpmProcessId = c.req.query('bpmProcessId');
+  const scheduleId = c.req.query('scheduleId');
 
   let conditions: SQL = eq(csaRecords.organizationId, orgId);
   if (controlId) conditions = and(conditions, eq(csaRecords.controlId, controlId)) as SQL;
   if (period) conditions = and(conditions, eq(csaRecords.period, period)) as SQL;
   if (year) conditions = and(conditions, sql`${csaRecords.period} LIKE ${'%' + year + '%'}`) as SQL;
+  if (bpmProcessId) conditions = and(conditions, eq(csaRecords.bpmProcessId, bpmProcessId)) as SQL;
+  if (scheduleId) conditions = and(conditions, eq(csaRecords.scheduleId, scheduleId)) as SQL;
 
   const items = await db.select().from(csaRecords).where(conditions);
   return ok(c, { items });
