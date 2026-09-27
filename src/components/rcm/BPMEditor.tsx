@@ -363,6 +363,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
             onChangeSignature={(key, val) => setSignatures(prev => ({ ...prev, [key]: val }))}
             isLocked={isLocked}
             nodeTypes={bpmNodeTypes}
+            edgeTypes={bpmEdgeTypes}
             onInit={(instance) => setRfInstance(instance)}
             onClose={() => setDocumentView(false)}
             onExportToImage={exportToImage}

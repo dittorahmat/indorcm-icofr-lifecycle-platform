@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactFlow, { Background, BackgroundVariant } from 'reactflow';
+import ReactFlow, { Background, MarkerType } from 'reactflow';
 import { Button } from '@/components/ui/button';
 import { Workflow, FileText } from 'lucide-react';
 import { BPMCanvasHeader, BPMCanvasFooter } from '../nodes/BPMCanvasLayout';
@@ -23,6 +23,7 @@ interface BPMDocumentViewProps {
   onChangeSignature: (key: string, value: string) => void;
   isLocked: boolean;
   nodeTypes: any;
+  edgeTypes: any;
   onInit?: (instance: any) => void;
   onClose: () => void;
   onExportToImage: () => void;
@@ -40,6 +41,7 @@ export const BPMDocumentView: React.FC<BPMDocumentViewProps> = ({
   onChangeSignature,
   isLocked,
   nodeTypes,
+  edgeTypes,
   onInit,
   onClose,
   onExportToImage,
@@ -61,6 +63,8 @@ export const BPMDocumentView: React.FC<BPMDocumentViewProps> = ({
           <ReactFlow
             nodes={nodes}
             edges={edges}
+            minZoom={0.02}
+            maxZoom={2.5}
             style={
               {
                 '--bpm-global-width-scale': globalScale / 100,
@@ -69,16 +73,28 @@ export const BPMDocumentView: React.FC<BPMDocumentViewProps> = ({
             }
             onInit={(instance) => {
               onInit?.(instance);
-              setTimeout(() => instance.fitView(), 100);
+              setTimeout(() => instance.fitView({ padding: 0.15 }), 100);
             }}
             nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
+            defaultEdgeOptions={{
+              type: 'bridge',
+              markerEnd: {
+                type: MarkerType.ArrowClosed,
+                width: 20,
+                height: 20,
+                color: '#0f172a',
+              },
+              style: { strokeWidth: 2, stroke: '#0f172a' },
+            }}
             fitView
+            fitViewOptions={{ padding: 0.15 }}
             nodesDraggable={false}
             nodesConnectable={false}
             zoomOnScroll={false}
             panOnDrag={false}
           >
-            <Background variant={BackgroundVariant.Dots} gap={20} color="hsl(var(--muted))" />
+            <Background gap={16} size={1} color="hsl(var(--border))" />
           </ReactFlow>
         </div>
 
