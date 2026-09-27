@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Panel } from 'reactflow';
 import type { Node, Edge } from 'reactflow';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,7 @@ export interface BPMSelectionHUDProps {
   onToggleLock: (nodeId: string) => void;
   onDeleteSelected: () => void;
   onClearSelection: () => void;
+  onUpdateEdgeLabel?: (edgeId: string, label: string) => void;
 }
 
 export const BPMSelectionHUD: React.FC<BPMSelectionHUDProps> = ({
@@ -24,10 +25,30 @@ export const BPMSelectionHUD: React.FC<BPMSelectionHUDProps> = ({
   onToggleLock,
   onDeleteSelected,
   onClearSelection,
+  onUpdateEdgeLabel,
 }) => {
   const { t } = useTranslation(['bpm']);
 
+  const [edgeLabelDraft, setEdgeLabelDraft] = useState<string>(
+    (selectedEdge?.label as string) ?? ''
+  );
+
+  useEffect(() => {
+    setEdgeLabelDraft((selectedEdge?.label as string) ?? '');
+  }, [selectedEdge?.id, selectedEdge?.label]);
+
   if (!selectedNode && !selectedEdge) return null;
+
+  const commitEdgeLabel = () => {
+    if (!selectedEdge || !onUpdateEdgeLabel || isLocked) return;
+    const current = (selectedEdge.label as string) ?? '';
+    const next = edgeLabelDraft.trim().slice(0, 24);
+    if (next !== current) {
+      onUpdateEdgeLabel(selectedEdge.id, next);
+    } else if (edgeLabelDraft !== current) {
+      setEdgeLabelDraft(current);
+    }
+  };
 
   return (
     <Panel position="bottom-center" className="mb-4 pointer-events-auto">
@@ -69,6 +90,28 @@ export const BPMSelectionHUD: React.FC<BPMSelectionHUDProps> = ({
               <span className="text-xs font-mono font-bold text-slate-100">
                 {selectedEdge.source} ➔ {selectedEdge.target}
               </span>
+              <input
+                key={selectedEdge.id}
+                value={edgeLabelDraft}
+                disabled={isLocked || !onUpdateEdgeLabel}
+                maxLength={24}
+                onChange={(e) => setEdgeLabelDraft(e.target.value)}
+                onBlur={commitEdgeLabel}
+                onKeyDown={(e) => {
+                  e.stopPropagation();
+                  if (e.key === 'Enter') {
+                    (e.target as HTMLInputElement).blur();
+                  } else if (e.key === 'Escape') {
+                    setEdgeLabelDraft((selectedEdge.label as string) ?? '');
+                    (e.target as HTMLInputElement).blur();
+                  }
+                }}
+                onClick={(e) => e.stopPropagation()}
+                placeholder={t('bpm:editor.edge.labelPlaceholder', { defaultValue: 'Add label…' })}
+                title={t('bpm:editor.edge.labelHint', { defaultValue: 'Click an arrow, then type Ya / Tidak' })}
+                aria-label={t('bpm:editor.edge.labelAria', { defaultValue: 'Connection label' })}
+                className="h-7 w-36 rounded-md border border-slate-700 bg-white px-2 text-xs font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 disabled:opacity-50"
+              />
             </>
           )}
         </div>

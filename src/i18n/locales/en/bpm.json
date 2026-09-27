@@ -294,6 +294,11 @@
       "lock": "Lock",
       "delKey": "Del"
     },
+    "edge": {
+      "labelPlaceholder": "Add label…",
+      "labelHint": "Click an arrow, then type Ya / Tidak",
+      "labelAria": "Connection label"
+    },
     "toast": {
       "undo": "Changes undone (Undo)",
       "redo": "Changes redone (Redo)",

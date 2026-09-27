@@ -103,8 +103,6 @@ export const DecisionNode = ({ data, selected, type }: NodeProps) => {
         <Handle type="source" position={Position.Left} id="no" className="z-10" />
         <Handle type="source" position={Position.Right} id="yes" className="z-10" />
         <Handle type="source" position={Position.Bottom} id="bottom" className="z-10" />
-        <div className="absolute -left-8 top-1/2 -translate-y-1/2 text-xs font-black text-red-600 bg-white/80 px-1 rounded">NO</div>
-        <div className="absolute -right-10 top-1/2 -translate-y-1/2 text-xs font-black text-green-600 bg-white/80 px-1 rounded">YES</div>
         {data.isLocked && (
           <div className="absolute top-0 right-0 bg-amber-50 border border-amber-200 text-amber-600 rounded-full p-0.5 shadow-sm z-20">
             <Lock className="h-3 w-3" />

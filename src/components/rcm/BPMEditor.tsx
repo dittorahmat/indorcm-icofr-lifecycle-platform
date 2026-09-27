@@ -301,6 +301,13 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
   const selectedNode = useMemo(() => nodes.find(n => n.id === selectedNodeId), [nodes, selectedNodeId]);
   const selectedEdge = useMemo(() => edges.find(e => e.id === selectedEdgeId), [edges, selectedEdgeId]);
 
+  const handleUpdateEdgeLabel = useCallback((edgeId: string, label: string) => {
+    if (isLocked) return;
+    pushState(nodes, edges);
+    setEdges((eds) => eds.map((e) => (e.id === edgeId ? { ...e, label } : e)));
+    setDirty(true);
+  }, [isLocked, nodes, edges, pushState, setEdges, setDirty]);
+
   const saveMutation = useMutation({
     mutationFn: (data: any) => api(`/api/bpm-diagrams/${diagramId}`, { method: 'PUT', body: JSON.stringify(data) }),
     onSuccess: () => {
@@ -471,11 +478,12 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
             />
 
              {/* High-Contrast Selection Awareness HUD */}
-             <BPMSelectionHUD
-               selectedNode={selectedNode}
-               selectedEdge={selectedEdge}
-               isLocked={isLocked}
-               onToggleLock={toggleNodeLock}
+              <BPMSelectionHUD
+                selectedNode={selectedNode}
+                selectedEdge={selectedEdge}
+                isLocked={isLocked}
+                onToggleLock={toggleNodeLock}
+                onUpdateEdgeLabel={handleUpdateEdgeLabel}
                onDeleteSelected={() => {
                  if (selectedNode) {
                    pushState(nodes, edges);

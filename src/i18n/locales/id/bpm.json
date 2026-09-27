@@ -297,6 +297,11 @@
       "lock": "Kunci",
       "delKey": "Del"
     },
+    "edge": {
+      "labelPlaceholder": "Tambah label…",
+      "labelHint": "Klik panah, lalu ketik Ya / Tidak",
+      "labelAria": "Label koneksi"
+    },
     "toast": {
       "undo": "Perubahan dibatalkan (Undo)",
       "redo": "Perubahan diulang (Redo)",
