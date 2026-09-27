@@ -4,7 +4,9 @@
   "baseline": {
     "status": "Official Baseline",
     "description": "Using approved scoping results for {{year}} fiscal year.",
-    "empty": "No approved scoping baseline found for {{year}}. Please contact Admin/Line 2 to approve a scoping simulation."
+    "empty": "No approved scoping baseline found for {{year}}. Please contact Admin/Line 2 to approve a scoping simulation.",
+    "emptyTitle": "No Approved Baseline for {{year}}",
+    "openScoping": "Open Scoping"
   },
   "unsavedChanges": {
     "title": "Unsaved Assertions",

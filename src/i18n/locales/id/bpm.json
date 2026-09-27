@@ -4,7 +4,9 @@
   "baseline": {
     "status": "Baseline Resmi",
     "description": "Menggunakan hasil scoping yang telah disetujui untuk tahun fiskal {{year}}.",
-    "empty": "Tidak ditemukan baseline scoping yang disahkan untuk tahun {{year}}. Silahkan hubungi Admin/Lini 2 untuk menyetujui simulasi scoping."
+    "empty": "Tidak ditemukan baseline scoping yang disahkan untuk tahun {{year}}. Silahkan hubungi Admin/Lini 2 untuk menyetujui simulasi scoping.",
+    "emptyTitle": "Baseline Belum Disahkan untuk {{year}}",
+    "openScoping": "Buka Scoping"
   },
   "unsavedChanges": {
     "title": "Perubahan Belum Disimpan",

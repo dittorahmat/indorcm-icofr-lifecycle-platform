@@ -4,8 +4,9 @@ import {
   BPMWorkflowStatus, DeficiencyWorkflowStatus, UserRole 
 } from '@shared/types';
 import { 
-  Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter 
+  Card, CardContent, CardHeader, CardTitle, CardDescription 
 } from '@/components/ui/card';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
@@ -15,7 +16,7 @@ import {
 } from '@/components/ui/dialog';
 import { 
   CheckCircle2, XCircle, Send, Search, RotateCcw, 
-  History, AlertCircle, Lock, Unlock, Loader2, Check, ChevronsUpDown
+  History, AlertCircle, Lock, Unlock, Loader2, Check, ChevronsUpDown, ChevronDown
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
@@ -162,6 +163,7 @@ export function WorkflowPanel({
   const [isNoteDialogOpen, setIsNoteDialogOpen] = useState(false);
   const [selectedAssigneeId, setSelectedAssigneeId] = useState<string>('');
   const [isAssigneePickerOpen, setIsAssigneePickerOpen] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
   const blueprint = WORKFLOW_BLUEPRINTS[entityType];
   const currentStep = blueprint?.steps[currentStatus] || { actions: [] };
@@ -362,19 +364,25 @@ export function WorkflowPanel({
              </div>
           </div>
 
-          <div className="space-y-3">
-             <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('workflow:history')}</h4>
-             <ScrollArea className="h-[300px] pr-4">
+          <Collapsible open={isHistoryOpen} onOpenChange={setIsHistoryOpen} className="space-y-3">
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" className="w-full justify-between h-9 px-3 rounded-lg text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-slate-700 hover:bg-slate-100">
+                <span className="flex items-center gap-2">
+                  {t('workflow:history')} ({history?.length ?? 0})
+                </span>
+                <ChevronDown className={cn("h-4 w-4 shrink-0 transition-transform", isHistoryOpen && "rotate-180")} />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-3">
+              <ScrollArea className="h-[300px] pr-4">
                 <WorkflowHistoryTimeline history={history} />
-             </ScrollArea>
-          </div>
-        </CardContent>
-
-        <CardFooter className="bg-slate-50/50 border-t p-3">
-            <p className="text-xs text-slate-500 font-normal">
+              </ScrollArea>
+              <p className="text-xs text-slate-500 font-normal border-t border-slate-100 pt-3">
                 {t('workflow:complianceNote')}
-            </p>
-        </CardFooter>
+              </p>
+            </CollapsibleContent>
+          </Collapsible>
+        </CardContent>
       </Card>
 
       <Dialog open={isNoteDialogOpen} onOpenChange={setIsNoteDialogOpen}>
