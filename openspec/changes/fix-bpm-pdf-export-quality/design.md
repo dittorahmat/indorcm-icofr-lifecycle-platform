@@ -46,6 +46,10 @@ The `BPMEditor` uses React Flow to render business process maps. The current "Do
 - `filename`: Text
 - `createdAt`: Timestamp
 
+### 5. Export Edge Fidelity: `bridge` vs Bezier fallback
+- **Temuan (2026-09-27)**: `BPMEditor` merender edge via `edgeTypes={bpmEdgeTypes}` (`BridgeEdge`: orthogonal Manhattan + bridge arc + `ARROW_OFFSET 6px`), sedangkan `BPMDocumentView` (yang di-capture `toPng`) tidak menerima `edgeTypes`, sehingga `type: 'bridge'` jatuh ke Bezier default React Flow. Inilah penyebab PDF melengkung padahal editor siku.
+- **Keputusan**: teruskan `bpmEdgeTypes` ke Document View dan samakan `markerEnd`/`Background`/`fitView` agar WYSIWYG. Tidak perlu ganti library export untuk isu bentuk ini.
+
 ## Risks / Trade-offs
 
 - **[Risk] High Memory Usage for Massive Diagrams** → **Mitigation**: Use `quality: 0.95` and cap resolution if necessary.

@@ -30,3 +30,9 @@
 - [x] 5.1 Run `npm run lint` and fix any errors.
 - [x] 5.2 Run `npm run build` (which includes type check) to ensure production readiness.
 - [x] 5.3 Manual verification of PDF quality and audit logs.
+
+## 6. Export Edge Fidelity (lengkung vs siku)
+
+- [ ] 6.1 Teruskan `bpmEdgeTypes` (`bridge: BridgeEdge`) ke `BPMDocumentView` agar export memakai path orthogonal Manhattan + bridge arc yang sama dengan editor (saat ini `edgeTypes` tidak di-pass sehingga fallback ke Bezier default).
+- [ ] 6.2 Samakan `markerEnd` (ArrowClosed 20x20), `Background`, dan `fitView` padding antara editor dan document view.
+- [ ] 6.3 Verifikasi manual: bandingkan screenshot editor vs PDF — pastikan tidak ada lagi garis melengkung, bridge arc muncul saat crossing, dan distribusi multi-edge konsisten.
