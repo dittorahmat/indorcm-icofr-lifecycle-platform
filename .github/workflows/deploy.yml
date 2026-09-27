@@ -5,10 +5,16 @@ on:
     branches:
       - main
 
+# Push beruntun antre berurutan; deploy.sh sendiri juga memakai flock di server.
+concurrency:
+  group: production-icofr-deploy
+  cancel-in-progress: false
+
 jobs:
   deploy:
     name: Deploy to Production Server
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - name: Execute remote SSH commands to deploy

@@ -1,0 +1,12 @@
+#!/bin/bash
+# Git post-merge hook (terversioning).
+# Instalasi sekali per clone:  ln -sf ../../scripts/git-hooks/post-merge .git/hooks/post-merge
+# Menjamin `git pull` manual di server juga memicu build+reload bila build basi.
+# Aman: deploy.sh idempotent + flock-guarded; no-op bila tidak ada yang berubah.
+# Hook TIDAK boleh menggagalkan pull -> selalu exit 0.
+set -u
+TOP="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+if [ -n "$TOP" ] && [ -f "$TOP/deploy.sh" ]; then
+    bash "$TOP/deploy.sh" || true
+fi
+exit 0
