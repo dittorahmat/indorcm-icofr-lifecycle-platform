@@ -4,7 +4,7 @@ import type { Node, Edge } from 'reactflow';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { ShieldCheck, Trash2, X } from 'lucide-react';
+import { ShieldCheck, Pencil, Trash2, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 
@@ -16,6 +16,7 @@ export interface BPMSelectionHUDProps {
   onDeleteSelected: () => void;
   onClearSelection: () => void;
   onUpdateEdgeLabel?: (edgeId: string, label: string) => void;
+  onEditSelected?: () => void;
 }
 
 export const BPMSelectionHUD: React.FC<BPMSelectionHUDProps> = ({
@@ -26,6 +27,7 @@ export const BPMSelectionHUD: React.FC<BPMSelectionHUDProps> = ({
   onDeleteSelected,
   onClearSelection,
   onUpdateEdgeLabel,
+  onEditSelected,
 }) => {
   const { t } = useTranslation(['bpm']);
 
@@ -119,6 +121,20 @@ export const BPMSelectionHUD: React.FC<BPMSelectionHUDProps> = ({
         <Separator orientation="vertical" className="h-4 bg-slate-700" />
 
         <div className="flex items-center gap-1.5">
+          {selectedNode && selectedNode.type !== 'risk-control-badge' && onEditSelected && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={onEditSelected}
+              className="h-7 px-2 text-xs text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg gap-1.5"
+              title={t('bpm:editor.selectionHud.editHint', { defaultValue: 'Double-click a node to open properties' })}
+            >
+              <Pencil className="h-3.5 w-3.5 text-slate-400" />
+              <span className="text-xs font-bold uppercase">
+                {t('bpm:editor.selectionHud.editProperties', { defaultValue: 'Edit' })}
+              </span>
+            </Button>
+          )}
           {selectedNode && !isLocked && (
             <Button
               size="sm"

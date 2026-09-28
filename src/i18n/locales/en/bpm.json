@@ -292,7 +292,9 @@
       "delete": "Delete",
       "unlock": "Unlock",
       "lock": "Lock",
-      "delKey": "Del"
+      "delKey": "Del",
+      "editProperties": "Edit",
+      "editHint": "Double-click a node to open properties"
     },
     "edge": {
       "labelPlaceholder": "Add label…",

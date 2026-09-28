@@ -295,7 +295,9 @@
       "delete": "Hapus",
       "unlock": "Buka Kunci",
       "lock": "Kunci",
-      "delKey": "Del"
+      "delKey": "Del",
+      "editProperties": "Ubah",
+      "editHint": "Klik dua kali pada node untuk membuka properti"
     },
     "edge": {
       "labelPlaceholder": "Tambah label…",

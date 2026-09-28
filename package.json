@@ -9,7 +9,9 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0 --port 3000",
     "clean-dev": "rimraf node_modules/.vite .eslintcache tsconfig.tsbuildinfo && npm run dev -- --force",
-    "type-check": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.worker.json",
+    "type-check": "npm run type-check:app && npm run type-check:worker",
+    "type-check:app": "node --max-old-space-size=4096 ./node_modules/typescript/bin/tsc --noEmit -p tsconfig.app.json",
+    "type-check:worker": "node --max-old-space-size=4096 ./node_modules/typescript/bin/tsc --noEmit -p tsconfig.worker.json",
     "test": "vitest run",
     "build": "npm run sync-guide && npm run type-check && vite build",
     "sync-guide": "npx tsx scripts/sync-usage-guide.ts",

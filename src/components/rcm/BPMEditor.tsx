@@ -47,6 +47,14 @@ interface BPMEditorProps {
   bpmProcessId?: string;
 }
 
+// Badge helper nodes never take part in select-vs-edit: neither single-click
+// selection nor double-click worksheet opening applies to them.
+const NON_SELECTABLE_BADGE_TYPES = new Set(['risk-control-badge', 'docked-risk', 'docked-control']);
+
+function isBadgeNodeType(type?: string | null) {
+  return !!type && NON_SELECTABLE_BADGE_TYPES.has(type);
+}
+
 export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmProcessId: propBpmProcessId }: BPMEditorProps) {
   const { t } = useTranslation(['risklibrary', 'common', 'bpm']);
   const [documentView, setDocumentView] = useState(false);
@@ -61,6 +69,10 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
+  // Explicit edit intent: the node whose Regulatory Property Worksheet is open.
+  // Single-click only sets selectedNodeId (HUD + highlight); double-click,
+  // HUD Edit, or Enter sets editingNodeId to open the sheet.
+  const [editingNodeId, setEditingNodeId] = useState<string | null>(null);
   const [rfInstance, setRfInstance] = useState<any>(null);
   const { setDirty, resetDirty } = useUnsavedChangesContext();
 
@@ -159,6 +171,34 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleUndo, handleRedo]);
 
+  // Explicit edit intent: resolves the node, skips badge helpers, then marks it
+  // as both selected (HUD) and editing (worksheet open).
+  const openPropertiesForNode = useCallback((nodeId: string) => {
+    const target = nodes.find(n => n.id === nodeId);
+    if (!target || isBadgeNodeType(target.type)) return;
+    setSelectedEdgeId(null);
+    setSelectedNodeId(nodeId);
+    setEditingNodeId(nodeId);
+  }, [nodes]);
+
+  // Enter opens the Regulatory Property Worksheet for the selected node.
+  // Guarded so typing in inputs (incl. the HUD edge-label field) never triggers it,
+  // and so it never fires while the sheet is already open.
+  useEffect(() => {
+    const handleEnterToEdit = (e: KeyboardEvent) => {
+      if (e.key !== 'Enter' || e.ctrlKey || e.metaKey || e.altKey) return;
+      const target = e.target as HTMLElement;
+      if (target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA' || target?.isContentEditable) {
+        return;
+      }
+      if (!selectedNodeId || editingNodeId) return;
+      openPropertiesForNode(selectedNodeId);
+    };
+
+    window.addEventListener('keydown', handleEnterToEdit);
+    return () => window.removeEventListener('keydown', handleEnterToEdit);
+  }, [selectedNodeId, editingNodeId, openPropertiesForNode]);
+
   const localizedInitialNodes = useMemo(() => [
     { ...initialNodes[0], data: { ...initialNodes[0].data, label: t('bpm:editor.nodes.start') } },
     { id: '2', type: 'end', position: { x: 250, y: 500 }, data: { label: t('bpm:editor.nodes.end'), type: 'end' } }
@@ -246,6 +286,15 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
     t,
   });
 
+  // Keyboard Delete flows through here: clear stale selection/editing refs for
+  // removed nodes so the worksheet can never dangle on a deleted node.
+  const handleNodesDelete = useCallback((deleted: any[]) => {
+    onNodesDelete(deleted);
+    const deletedIds = new Set(deleted.map((d: any) => d.id));
+    setSelectedNodeId(prev => (prev && deletedIds.has(prev) ? null : prev));
+    setEditingNodeId(prev => (prev && deletedIds.has(prev) ? null : prev));
+  }, [onNodesDelete]);
+
   const hasLoadedDiagramRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -300,6 +349,10 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
 
   const selectedNode = useMemo(() => nodes.find(n => n.id === selectedNodeId), [nodes, selectedNodeId]);
   const selectedEdge = useMemo(() => edges.find(e => e.id === selectedEdgeId), [edges, selectedEdgeId]);
+  // The node whose worksheet dialog is open. Falls back to null (never to the
+  // current selection) so moving selection while the sheet is open keeps the
+  // sheet pinned to the node being edited.
+  const editingNode = useMemo(() => nodes.find(n => n.id === editingNodeId) ?? null, [nodes, editingNodeId]);
 
   const handleUpdateEdgeLabel = useCallback((edgeId: string, label: string) => {
     if (isLocked) return;
@@ -413,7 +466,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
                 onInit={setRfInstance}
                 onNodesChange={isLocked ? undefined : onNodesChange}
                 onEdgesChange={isLocked ? undefined : onEdgesChange}
-                onNodesDelete={isLocked ? undefined : onNodesDelete}
+                onNodesDelete={isLocked ? undefined : handleNodesDelete}
                 onEdgesDelete={isLocked ? undefined : onEdgesDelete}
                 deleteKeyCode={isLocked ? null : ["Delete", "Backspace"]}
                 nodesDraggable={!isLocked}
@@ -436,22 +489,26 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
                   }, eds));
                 }}
                 onNodeClick={(_, node) => {
+                  // Select only: never opens the worksheet. Users can drag,
+                  // lock, or delete straight from the selection HUD.
                   setSelectedEdgeId(null);
-                  if (node.type === 'swimlane') {
-                    setSelectedNodeId(node.id);
-                    return;
-                  }
-                  if (node.type !== 'risk-control-badge') {
-                    setSelectedNodeId(node.id);
-                  }
+                  if (isBadgeNodeType(node.type)) return;
+                  setSelectedNodeId(node.id);
+                }}
+                onNodeDoubleClick={(_, node) => {
+                  // Explicit edit intent: select + open the worksheet.
+                  if (isBadgeNodeType(node.type)) return;
+                  openPropertiesForNode(node.id);
                 }}
                 onEdgeClick={(_, edge) => {
                   setSelectedNodeId(null);
+                  setEditingNodeId(null);
                   setSelectedEdgeId(edge.id);
                 }}
                 onPaneClick={() => {
                   setSelectedNodeId(null);
                   setSelectedEdgeId(null);
+                  setEditingNodeId(null);
                 }}
                 nodeTypes={bpmNodeTypes}
                 edgeTypes={bpmEdgeTypes}
@@ -478,19 +535,23 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
               unmappedControls={unmappedControls}
             />
 
-             {/* High-Contrast Selection Awareness HUD */}
+              {/* High-Contrast Selection Awareness HUD */}
               <BPMSelectionHUD
                 selectedNode={selectedNode}
                 selectedEdge={selectedEdge}
                 isLocked={isLocked}
                 onToggleLock={toggleNodeLock}
                 onUpdateEdgeLabel={handleUpdateEdgeLabel}
+                onEditSelected={() => {
+                  if (selectedNode) openPropertiesForNode(selectedNode.id);
+                }}
                onDeleteSelected={() => {
                  if (selectedNode) {
                    pushState(nodes, edges);
                    setNodes(nds => nds.filter(n => n.id !== selectedNode.id && n.parentId !== selectedNode.id));
                    setEdges(eds => eds.filter(e => e.source !== selectedNode.id && e.target !== selectedNode.id));
                    setSelectedNodeId(null);
+                   setEditingNodeId(null);
                    setDirty(true);
                  } else if (selectedEdge) {
                    pushState(nodes, edges);
@@ -502,22 +563,24 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
                onClearSelection={() => {
                  setSelectedNodeId(null);
                  setSelectedEdgeId(null);
+                 setEditingNodeId(null);
                }}
-             />
+              />
           </ReactFlow>
         </div>
       </div>
     )}
 
         <RegulatoryPropertySheet
-          selectedNode={selectedNode}
-          isOpen={!!selectedNode}
-          onClose={() => setSelectedNodeId(null)}
+          selectedNode={editingNode ?? selectedNode ?? null}
+          isOpen={!!editingNode}
+          onClose={() => setEditingNodeId(null)}
           onUpdateNodeData={updateNodeData}
           onDeleteNode={(id) => {
             setNodes(nds => nds.filter(n => n.id !== id && n.parentId !== id));
             setEdges(eds => eds.filter(e => e.source !== id && e.target !== id));
             setSelectedNodeId(null);
+            setEditingNodeId(null);
           }}
           onSave={() => saveMutation.mutate({ 
             nodes, edges, name: subProcess, subProcess, year: diagram?.year || parseInt(workingYear), noGLs: selectedGLs,
