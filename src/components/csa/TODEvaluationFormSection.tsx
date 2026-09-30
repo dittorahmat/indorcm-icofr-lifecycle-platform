@@ -131,13 +131,13 @@ export function TODEvaluationFormSection({
           type="button"
           variant="ghost"
           onClick={onCancel}
-          className="font-black uppercase text-xs tracking-widest text-slate-400"
+          className="font-black uppercase text-xs tracking-widest text-slate-400 min-h-[44px]"
         >
           {t('common:actions.cancel')}
         </Button>
         <Button
           type="submit"
-          className="bg-mancity-pattern hover:opacity-90 shadow-md px-8 py-6 rounded-2xl font-black uppercase tracking-widest text-xs text-primary-foreground"
+          className="bg-mancity-pattern hover:opacity-90 shadow-md px-8 min-h-[44px] rounded-lg font-black uppercase tracking-widest text-xs text-primary-foreground"
           disabled={isPending}
         >
           {isPending ? t('common:actions.save') + "..." : t('csa_hub:tod.saveEvaluation')}

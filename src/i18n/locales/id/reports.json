@@ -60,8 +60,15 @@
       "notes": "Walkthrough / Catatan"
     }
   },
-  "customizableDashboard": {
-    "title": "Kustomisasi Halaman",
+  "changeLog": {
+    "title": "Format Lampiran 6 - Log Perubahan Proses Bisnis & Pengendalian",
+    "subtitle": "Standardisasi perubahan sesuai regulasi SK-5/2024",
+    "loading": "Memuat Log Perubahan...",
+    "exportCsv": "Ekspor CSV",
+    "printA4": "Cetak A4",
+    "empty": "Tidak ditemukan data log perubahan regulasi."
+  },
+  "customizableDashboard": {    "title": "Kustomisasi Halaman",
     "saving": "Menyimpan perubahan...",
     "widgetCatalog": "Katalog Widget",
     "closeCatalog": "Tutup Katalog",

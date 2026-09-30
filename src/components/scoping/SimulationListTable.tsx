@@ -15,6 +15,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 
 import { useSimulationSnapshot } from '@/hooks/use-bpm';
+import { MobileDesktopBanner } from '@/components/layout/MobileDesktopBanner';
 
 interface SimulationListTableProps {
   data: MaterialitySimulation[];
@@ -58,7 +59,9 @@ export function SimulationListTable({ data, onSelect, onDelete, isLoading }: Sim
   };
 
   return (
-    <div className="border rounded-xl overflow-hidden shadow-md bg-white">
+    <>
+      <MobileDesktopBanner recordCount={data.length} />
+      <div className="border rounded-xl overflow-hidden shadow-md bg-white max-w-full">
       <Table>
         <TableHeader className="bg-slate-50 border-b">
           <TableRow>
@@ -118,7 +121,7 @@ export function SimulationListTable({ data, onSelect, onDelete, isLoading }: Sim
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    className="h-8 gap-1.5 font-bold hover:bg-blue-50 hover:text-[#417dc1]"
+                    className="min-h-[44px] gap-1.5 font-bold hover:bg-blue-50 hover:text-[#417dc1]"
                     onClick={() => onSelect(sim.id)}
                   >
                     Details <ChevronRight className="h-3 w-3" />
@@ -126,7 +129,7 @@ export function SimulationListTable({ data, onSelect, onDelete, isLoading }: Sim
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="h-8 w-8 text-slate-300 hover:text-red-600 transition-colors"
+                    className="min-h-[44px] min-w-[44px] text-slate-300 hover:text-red-600 transition-colors"
                     onClick={() => onDelete(sim.id)}
                   >
                     <Trash2 className="h-4 w-4" />
@@ -146,6 +149,7 @@ export function SimulationListTable({ data, onSelect, onDelete, isLoading }: Sim
           onOpenChange={setLocModalOpen}
         />
       )}
-    </div>
+      </div>
+    </>
   );
 }

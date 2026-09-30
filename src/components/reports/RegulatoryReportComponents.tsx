@@ -12,6 +12,8 @@ import { Loader2, Download, Printer, CheckCircle2, History } from 'lucide-react'
 import { format } from 'date-fns';
 import Papa from 'papaparse';
 import { saveAs } from 'file-saver';
+import { useTranslation } from 'react-i18next';
+import { MobileDesktopBanner } from '@/components/layout/MobileDesktopBanner';
 
 export const ELCReport = () => <Card><CardContent className="p-4">ELC Report Content</CardContent></Card>;
 export const TLCReport = () => <Card><CardContent className="p-4">TLC Report Content</CardContent></Card>;
@@ -20,6 +22,7 @@ export const FindingsReport = ({ deficiencies, controls }: any) => <Card><CardCo
 export const DoDReport = () => <Card><CardContent className="p-4">DoD Report Content</CardContent></Card>;
 
 export function ChangeLogReport() {
+  const { t } = useTranslation('reports');
   const { data: logs, isLoading } = useQuery({
     queryKey: ['regulatory-change-logs'],
     queryFn: async () => {
@@ -81,7 +84,7 @@ export function ChangeLogReport() {
     return (
       <div className="flex flex-col items-center justify-center p-12 gap-3 text-slate-400">
         <Loader2 className="h-8 w-8 animate-spin" />
-        <p className="text-sm font-medium">Memuat Log Perubahan...</p>
+        <p className="text-sm font-medium">{t('changeLog.loading')}</p>
       </div>
     );
   }
@@ -92,29 +95,31 @@ export function ChangeLogReport() {
   return (
     <Card className="border-slate-200 shadow-sm print:shadow-none print:border-none">
       <CardContent className="p-6 space-y-6">
-        <div className="flex items-center justify-between no-print border-b pb-4">
-          <div className="space-y-1">
+        <div className="flex flex-wrap items-center justify-between gap-2 no-print border-b pb-4">
+          <div className="space-y-1 min-w-0">
             <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
               <History className="h-4 w-4 text-indigo-600" />
-              Format Lampiran 6 - Log Perubahan Proses Bisnis & Pengendalian
+              {t('changeLog.title')}
             </h3>
-            <p className="text-xs text-muted-foreground">Standardisasi perubahan sesuai regulasi SK-5/2024</p>
+            <p className="text-xs text-muted-foreground">{t('changeLog.subtitle')}</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline" onClick={handleExport} className="h-8 text-xs font-bold text-slate-700 bg-white">
-              <Download className="h-3.5 w-3.5 mr-1.5 text-slate-500" /> Export CSV
+            <Button size="sm" variant="outline" onClick={handleExport} className="min-h-[44px] text-xs font-bold text-slate-700 bg-white">
+              <Download className="h-3.5 w-3.5 mr-1.5 text-slate-500" /> {t('changeLog.exportCsv')}
             </Button>
-            <Button size="sm" variant="outline" onClick={() => window.print()} className="h-8 text-xs font-bold text-slate-700 bg-white">
-              <Printer className="h-3.5 w-3.5 mr-1.5 text-slate-500" /> Print A4
+            <Button size="sm" variant="outline" onClick={() => window.print()} className="min-h-[44px] text-xs font-bold text-slate-700 bg-white">
+              <Printer className="h-3.5 w-3.5 mr-1.5 text-slate-500" /> {t('changeLog.printA4')}
             </Button>
           </div>
         </div>
+
+        <MobileDesktopBanner recordCount={logs?.length ?? 0} />
 
         {/* Printable Header */}
         <div className="hidden print:block text-center space-y-2 mb-6">
           <h2 className="text-sm font-bold uppercase tracking-wider">LAMPIRAN 6</h2>
           <h3 className="text-xs font-bold uppercase">ILUSTRASI DOKUMENTASI LOG PERUBAHAN PROSES BISNIS DAN PENGENDALIAN ATAS PELAPORAN KEUANGAN</h3>
-          <p className="text-[10px] text-slate-500">PT BUKIT ASAM TBK - TAHUN {new Date().getFullYear()}</p>
+          <p className="text-xs text-slate-500">PT BUKIT ASAM TBK - TAHUN {new Date().getFullYear()}</p>
         </div>
 
         {/* Responsive Table Wrapper */}
@@ -139,7 +144,7 @@ export function ChangeLogReport() {
               {!logs || logs.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={11} className="text-center py-8 text-slate-500 font-medium text-xs">
-                    Tidak ditemukan data log perubahan regulasi.
+                    {t('changeLog.empty')}
                   </TableCell>
                 </TableRow>
               ) : (

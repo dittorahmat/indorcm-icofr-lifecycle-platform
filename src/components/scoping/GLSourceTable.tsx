@@ -10,6 +10,7 @@ import {
 import { GLSnapshot as SharedGLSnapshot } from '@shared/types';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { MobileDesktopBanner } from '@/components/layout/MobileDesktopBanner';
 
 interface GLSnapshotExtended extends SharedGLSnapshot {
   rowCount?: number;
@@ -50,7 +51,9 @@ export function GLSourceTable({ data, onSetActive, onSetBenchmark, onDelete, isL
   }
 
   return (
-    <div className="border rounded-lg overflow-hidden shadow-sm bg-white">
+    <>
+      <MobileDesktopBanner recordCount={sortedData.length} />
+      <div className="border rounded-lg overflow-hidden shadow-sm bg-white max-w-full">
       <Table>
         <TableHeader className="bg-slate-50">
           <TableRow>
@@ -69,7 +72,7 @@ export function GLSourceTable({ data, onSetActive, onSetBenchmark, onDelete, isL
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  className={cn("h-8 w-8 rounded-full", snap.isActive ? "text-green-600" : "text-slate-300")}
+                  className={cn("min-h-[44px] min-w-[44px] rounded-full", snap.isActive ? "text-green-600" : "text-slate-300")}
                   onClick={() => onSetActive(snap.id)}
                   title={snap.isActive ? "Currently Active" : "Set as Active Source"}
                 >
@@ -98,7 +101,7 @@ export function GLSourceTable({ data, onSetActive, onSetBenchmark, onDelete, isL
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="h-8 gap-1.5 text-xs font-bold uppercase tracking-wider"
+                    className="min-h-[44px] gap-1.5 text-xs font-bold uppercase tracking-wider"
                     onClick={() => onSetBenchmark(snap)}
                   >
                     <Settings2 className="h-3.5 w-3.5" /> Set Benchmark
@@ -106,7 +109,7 @@ export function GLSourceTable({ data, onSetActive, onSetBenchmark, onDelete, isL
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="h-8 w-8 text-slate-400 hover:text-destructive"
+                    className="min-h-[44px] min-w-[44px] text-slate-400 hover:text-destructive"
                     onClick={() => onDelete(snap.id)}
                   >
                     <Trash2 className="h-4 w-4" />
@@ -117,6 +120,7 @@ export function GLSourceTable({ data, onSetActive, onSetBenchmark, onDelete, isL
           ))}
         </TableBody>
       </Table>
-    </div>
+      </div>
+    </>
   );
 }

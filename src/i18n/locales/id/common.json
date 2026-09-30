@@ -124,6 +124,12 @@
     "stay": "Tetap di Halaman",
     "discard": "Buang Perubahan"
   },
+  "mobile": {
+    "desktopBanner": {
+      "title": "Tampilan baca di HP",
+      "description": "Tabel lengkap membutuhkan layar lebar. Buka di desktop untuk mengedit data ini."
+    }
+  },
   "emailSettings": {
     "title": "Pengaturan Notifikasi Email",
     "description": "Konfigurasikan server email dan detail pengirim untuk notifikasi sistem.",

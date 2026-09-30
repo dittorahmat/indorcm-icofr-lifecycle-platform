@@ -22,6 +22,7 @@ import { useTOD } from '@/hooks/use-tod';
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 import { CSAReviewMatrix } from '@/components/csa/CSAReviewMatrix';
 import { TODVerificationDialog } from '@/components/csa/TODVerificationDialog';
+import { EvidenceCaptureButton } from '@/components/csa/EvidenceCaptureButton';
 import { WorkflowPanel } from '@/components/workflow/WorkflowPanel';
 import * as XLSX from 'xlsx';
 
@@ -246,6 +247,9 @@ export function CSARecordCard({ record: initialRecord, process }: CSARecordCardP
                     (record as any).workflowStatus = newStatus;
                   }}
                 />
+              </div>
+              <div className="pt-2 border-t border-border/60" onClick={e => e.stopPropagation()}>
+                <EvidenceCaptureButton recordId={record.id} />
               </div>
             </>
           )}

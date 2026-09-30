@@ -139,7 +139,7 @@ export function MobileTodoAgenda({
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="h-8 px-2 text-xs font-medium text-muted-foreground hover:text-foreground"
+                  className="min-h-[44px] px-2 text-xs font-medium text-muted-foreground hover:text-foreground"
                   onClick={() => onEditClick(e)}
                 >
                   <Edit className="h-3.5 w-3.5 mr-1" />
@@ -149,7 +149,7 @@ export function MobileTodoAgenda({
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="h-8 px-2 text-xs font-medium text-destructive hover:bg-destructive/10"
+                  className="min-h-[44px] px-2 text-xs font-medium text-destructive hover:bg-destructive/10"
                   onClick={() => onDeleteClick(e.id)}
                 >
                   <Trash2 className="h-3.5 w-3.5 mr-1" />
@@ -163,7 +163,7 @@ export function MobileTodoAgenda({
             <Button
               type="button"
               size="sm"
-              className="h-8 px-3 text-xs font-semibold bg-primary text-primary-foreground gap-1.5 ml-auto"
+              className="min-h-[44px] px-3 text-xs font-semibold bg-primary text-primary-foreground gap-1.5 ml-auto"
               onClick={() => onOpenHub(e)}
             >
               <CheckCircle2 className="h-3.5 w-3.5" />

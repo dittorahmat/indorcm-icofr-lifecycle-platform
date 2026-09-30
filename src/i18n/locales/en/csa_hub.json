@@ -236,6 +236,18 @@
       "title": "Testing Executive Summary",
       "effective": "Effective",
       "ineffective": "Deficiency"
+    },
+    "evidence": {
+      "capture": "Capture Evidence",
+      "previewTitle": "Field evidence preview",
+      "upload": "Upload",
+      "retry": "Retry",
+      "cancel": "Cancel",
+      "uploading": "Uploading...",
+      "uploaded": "Evidence uploaded",
+      "uploadError": "Upload failed. The file is kept so you can retry.",
+      "openEvidence": "Open evidence",
+      "attachedCount": "{{count}} evidence attached"
     }
   }
 }

@@ -236,6 +236,18 @@
       "title": "Ringkasan Eksekutif Pengujian",
       "effective": "Efektif",
       "ineffective": "Defisiensi"
+    },
+    "evidence": {
+      "capture": "Foto Bukti",
+      "previewTitle": "Pratinjau bukti lapangan",
+      "upload": "Unggah",
+      "retry": "Coba Lagi",
+      "cancel": "Batal",
+      "uploading": "Mengunggah...",
+      "uploaded": "Bukti terunggah",
+      "uploadError": "Gagal mengunggah. File tetap tersimpan untuk dicoba lagi.",
+      "openEvidence": "Buka bukti",
+      "attachedCount": "{{count}} bukti terlampir"
     }
   }
 }

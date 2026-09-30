@@ -124,6 +124,12 @@
     "stay": "Stay on Page",
     "discard": "Discard Changes"
   },
+  "mobile": {
+    "desktopBanner": {
+      "title": "Read-only view on mobile",
+      "description": "The full table needs a wide screen. Open on desktop to edit this data."
+    }
+  },
   "emailSettings": {
     "title": "Email Notification Settings",
     "description": "Configure the email server and sender details for system notifications.",

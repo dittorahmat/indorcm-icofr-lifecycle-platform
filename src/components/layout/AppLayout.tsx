@@ -55,7 +55,7 @@ export function AppLayout({
       }>
         <AppSidebar />
       </Suspense>
-      <SidebarInset className={cn("flex flex-col min-h-0 min-w-0 bg-background overflow-hidden", className)}>
+      <SidebarInset className={cn("flex flex-col min-h-0 min-w-0 w-full max-w-full bg-background overflow-hidden overflow-x-hidden", className)}>
         <div className={cn(
           "flex-1 flex flex-col min-h-0 min-w-0",
           !noScroll && "scrollbar-hover",

@@ -60,6 +60,14 @@
       "notes": "Walkthrough / Notes"
     }
   },
+  "changeLog": {
+    "title": "Appendix 6 Format - Business Process & Control Change Log",
+    "subtitle": "Change standardization per SK-5/2024 regulation",
+    "loading": "Loading change log...",
+    "exportCsv": "Export CSV",
+    "printA4": "Print A4",
+    "empty": "No regulatory change log data found."
+  },
   "customizableDashboard": {
     "title": "Workspace Customization",
     "saving": "Saving changes...",
