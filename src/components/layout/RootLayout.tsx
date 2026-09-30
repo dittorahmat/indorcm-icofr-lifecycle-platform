@@ -50,7 +50,7 @@ export function RootLayout(): JSX.Element {
     <SidebarProvider className="h-screen flex flex-col bg-background text-foreground min-w-0 overflow-hidden">
       <MainHeader />
       <LicenseBanner />
-      <div className="flex-1 relative flex flex-col min-h-0 min-w-0 overflow-hidden pb-14 md:pb-0">
+      <div className="flex-1 relative flex flex-col min-h-0 min-w-0 overflow-hidden pb-[calc(3.5rem+env(safe-area-inset-bottom,0px))] md:pb-0">
         <Outlet />
       </div>
 

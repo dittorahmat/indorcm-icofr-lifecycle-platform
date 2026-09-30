@@ -26,19 +26,20 @@ export function ELCTabContent({ elcControls, onEditControl, onCreateControl }: E
       exit={{ opacity: 0, x: -20 }}
       className="space-y-8"
     >
-      <div className="flex items-center justify-between gap-6 bg-slate-900 p-6 rounded-xl text-white shadow-sm border border-slate-800 relative">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-slate-900 p-5 sm:p-6 rounded-xl text-white shadow-sm border border-slate-800 relative">
         <div className="space-y-1 relative z-10">
-          <h3 className="text-xl font-bold tracking-tight text-white">{t('matrix.title_elc')}</h3>
-          <p className="text-slate-300 text-sm font-normal leading-relaxed max-w-xl">
+          <h3 className="text-lg sm:text-xl font-bold tracking-tight text-white">{t('matrix.title_elc')}</h3>
+          <p className="text-slate-300 text-xs sm:text-sm font-normal leading-relaxed max-w-xl">
             {t('matrix.subtitle_elc')}
           </p>
         </div>
-        <Button onClick={() => onCreateControl({ level: 'ELC' })} className="h-10 gap-2 bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm transition-all font-semibold text-xs uppercase tracking-wider px-5 rounded-lg relative z-10 shrink-0">
+        <Button onClick={() => onCreateControl({ level: 'ELC' })} className="h-10 min-h-[44px] gap-2 bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm transition-all font-semibold text-xs uppercase tracking-wider px-4 rounded-lg relative z-10 shrink-0">
            <PlusCircle className="h-4 w-4" /> {t('matrix.properties.tambah_risiko_baru')}
         </Button>
       </div>
 
-      <div className="border border-slate-200 rounded-lg bg-white shadow-sm overflow-hidden">
+      {/* Desktop Table View */}
+      <div className="hidden md:block border border-slate-200 rounded-lg bg-white shadow-sm overflow-hidden">
         <Table>
           <TableHeader className="bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
             <TableRow>
@@ -151,6 +152,67 @@ export function ELCTabContent({ elcControls, onEditControl, onCreateControl }: E
             })}
           </TableBody>
         </Table>
+      </div>
+
+      {/* Mobile Card Feed View */}
+      <div className="md:hidden space-y-4">
+        {COSO_PRINCIPLES.map((principle) => {
+          const relatedControls = elcControls.filter(c => c.cosoPrinciples?.includes(principle.id as any));
+          const hasGap = relatedControls.length === 0;
+
+          return (
+            <div key={`m-principle-${principle.id}`} className="bg-white rounded-lg border border-slate-200 shadow-sm p-4 space-y-3">
+              <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-2.5">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-xs font-bold text-indigo-600">Principle {principle.id}</span>
+                    {hasGap ? (
+                      <Badge className="bg-rose-600 text-white font-semibold text-xs h-5 px-1.5">Critical Gap</Badge>
+                    ) : (
+                      <Badge className="bg-emerald-600 text-white font-semibold text-xs h-5 px-1.5">Mapped</Badge>
+                    )}
+                  </div>
+                  <h4 className="text-xs font-bold text-slate-900 leading-snug">{principle.name}</h4>
+                </div>
+                <Button 
+                  size="sm"
+                  variant="outline"
+                  onClick={() => onCreateControl({ level: 'ELC', cosoPrinciples: [principle.id as any], name: `Kontrol Prinsip ${principle.id}` })}
+                  className="h-9 min-h-[44px] min-w-[44px] px-2.5 gap-1 shrink-0 text-indigo-600 border-indigo-200 font-bold text-xs"
+                >
+                  <PlusCircle className="h-3.5 w-3.5" />
+                  <span>Tambah</span>
+                </Button>
+              </div>
+
+              <div className="space-y-2">
+                {relatedControls.length > 0 ? (
+                  relatedControls.map(ctrl => (
+                    <div key={ctrl.id} className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-xs font-bold text-slate-900">{ctrl.code}</span>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="h-8 min-h-[44px] min-w-[44px] px-2.5 text-xs font-bold text-indigo-600 border-indigo-200"
+                          onClick={() => onEditControl(ctrl)}
+                        >
+                          <Edit2 className="h-3 w-3 mr-1" /> Edit
+                        </Button>
+                      </div>
+                      <p className="text-xs text-slate-700 leading-relaxed">{ctrl.description}</p>
+                      <div className="text-xs text-slate-500 font-medium">Frequency: {ctrl.frequency}</div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-3 bg-rose-50 border border-dashed border-rose-200 rounded text-center text-xs text-rose-700 font-medium">
+                    Belum ada kontrol terpetakan untuk prinsip ini.
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </motion.div>
   );

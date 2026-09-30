@@ -81,16 +81,16 @@ export function DashboardKPIs({ controlsCount, openDeficienciesCount, cosoPercen
         }
       ].map((kpi, i) => (
         <motion.div key={i} variants={itemVariants} className="min-w-0 w-full">
-          <Card className="border-slate-200 bg-white shadow-sm hover:shadow-md transition-all duration-300 h-full border-b-2 hover:border-b-slate-900 rounded-xl overflow-hidden">
+          <Card className="border-slate-200 bg-white shadow-sm hover:shadow-md transition-all duration-300 h-full border-b-2 hover:border-b-slate-900 rounded-xl overflow-hidden flex flex-col justify-between">
             <CardHeader className="p-2.5 sm:p-3 md:p-4 pb-1">
-              <CardTitle className="text-xs font-bold uppercase text-slate-500 tracking-wider flex items-center gap-1.5 md:gap-2 truncate">
+              <CardTitle className="text-xs font-bold uppercase text-slate-500 tracking-wider flex items-center gap-1.5 md:gap-2">
                 <kpi.icon className={cn("h-3.5 w-3.5 shrink-0", kpi.color)} aria-hidden="true" /> 
                 <span className="truncate">{kpi.title}</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-2.5 sm:p-3 md:p-4 pt-0">
-              <div className={cn("text-xl sm:text-2xl md:text-3xl font-bold tracking-tight truncate", kpi.valueColor || "text-slate-900")}>{kpi.value}</div>
-              <p className="text-xs text-slate-500 font-medium uppercase tracking-wider mt-0.5 md:mt-1 truncate">{kpi.subtitle}</p>
+              <div className={cn("text-xl sm:text-2xl md:text-3xl font-bold tracking-tight", kpi.valueColor || "text-slate-900")}>{kpi.value}</div>
+              <p className="text-xs text-slate-500 font-medium uppercase tracking-wider mt-0.5 md:mt-1 line-clamp-1">{kpi.subtitle}</p>
             </CardContent>
           </Card>
         </motion.div>

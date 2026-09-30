@@ -141,31 +141,31 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0 overflow-hidden border-slate-300 shadow-2xl">
-        <DialogHeader className="p-6 pb-2 bg-slate-50 border-b border-slate-200">
-          <div className="flex items-center gap-3">
-             <div className="bg-indigo-600 p-2 rounded-lg text-white shadow-lg shadow-indigo-100">
-                <ShieldAlert className="h-5 w-5" />
+      <DialogContent className="w-full sm:max-w-4xl h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col p-0 overflow-hidden border-slate-300 shadow-2xl rounded-none sm:rounded-lg">
+        <DialogHeader className="p-4 sm:p-6 pb-2 bg-slate-50 border-b border-slate-200 shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+             <div className="bg-indigo-600 p-1.5 sm:p-2 rounded-lg text-white shadow-sm shrink-0">
+                <ShieldAlert className="h-4 w-4 sm:h-5 sm:w-5" />
              </div>
-             <div>
-                <DialogTitle className="text-xl font-black tracking-tight text-slate-900">
+             <div className="min-w-0 flex-1">
+                <DialogTitle className="text-base sm:text-xl font-black tracking-tight text-slate-900 truncate">
                   {t('matrix.control_name')}: {data?.controlCode || '-'}
                 </DialogTitle>
-                <DialogDescription className="text-xs font-bold uppercase tracking-widest text-slate-500 mt-0.5">
-                  Standardized Auditor Workbench - SK-5 Regulatory Compliance
+                <DialogDescription className="text-xs font-bold uppercase tracking-wider text-slate-500 mt-0.5 truncate">
+                  Standardized Auditor Workbench - SK-5
                 </DialogDescription>
              </div>
           </div>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="flex-1 flex flex-col overflow-hidden">
-            <Tabs defaultValue="general" className="flex-1 flex flex-col overflow-hidden">
-              <div className="px-6 bg-slate-50 border-b border-slate-200">
-                <TabsList className="bg-transparent h-12 p-0 gap-8 justify-start">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+            <Tabs defaultValue="general" className="flex-1 flex flex-col min-h-0 overflow-hidden">
+              <div className="px-3 sm:px-6 bg-slate-50 border-b border-slate-200 overflow-x-auto shrink-0">
+                <TabsList className="bg-transparent h-11 sm:h-12 p-0 gap-4 sm:gap-8 justify-start w-max">
                   <TabsTrigger 
                     value="general" 
-                    className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-indigo-600 data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none h-full px-0 font-black uppercase text-xs tracking-wider"
+                    className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-indigo-600 data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none h-full px-0 font-bold uppercase text-xs tracking-wider"
                   >
                     <Info className="h-3.5 w-3.5 mr-2" /> {t('matrix.sections.general')}
                   </TabsTrigger>
@@ -544,8 +544,8 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
               </ScrollArea>
             </Tabs>
 
-            <DialogFooter className="p-6 bg-slate-50 border-t border-slate-200">
-               <div className="flex items-center justify-between w-full">
+            <DialogFooter className="p-4 sm:p-6 bg-slate-50 border-t border-slate-200 shrink-0 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:pb-6">
+               <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 w-full">
                   <div className="flex items-center gap-2">
                     {form.formState.isDirty && (
                       <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-300 font-semibold text-xs uppercase px-2 py-0.5">
@@ -553,11 +553,11 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                       </Badge>
                     )}
                   </div>
-                  <div className="flex gap-3">
-                    <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="h-9 text-xs font-bold px-6">
+                  <div className="flex gap-2 sm:gap-3">
+                    <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1 sm:flex-initial h-10 sm:h-9 min-h-[44px] sm:min-h-0 text-xs font-bold px-4 sm:px-6">
                       Cancel
                     </Button>
-                    <Button type="submit" disabled={isSaving || !form.formState.isDirty} className="h-9 bg-indigo-600 hover:bg-indigo-700 text-xs font-black px-8 shadow-lg shadow-indigo-100">
+                    <Button type="submit" disabled={isSaving || !form.formState.isDirty} className="flex-1 sm:flex-initial h-10 sm:h-9 min-h-[44px] sm:min-h-0 bg-indigo-600 hover:bg-indigo-700 text-xs font-bold px-4 sm:px-8 shadow-sm">
                       {isSaving ? "Saving..." : "Update Mapping"}
                     </Button>
                   </div>

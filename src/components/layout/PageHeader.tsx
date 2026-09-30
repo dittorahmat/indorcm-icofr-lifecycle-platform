@@ -12,17 +12,17 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, description, children, className, badge }: PageHeaderProps) {
   return (
-    <div className={cn("flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8", className)}>
+    <div className={cn("flex flex-col md:flex-row md:items-end justify-between gap-3 sm:gap-4 mb-4 sm:mb-6 md:mb-8", className)}>
       <div className="space-y-1">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <SidebarTrigger className="h-8 w-8 text-slate-700" />
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white leading-none">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white leading-tight sm:leading-none">
             {title}
           </h1>
           {badge}
         </div>
         {description && (
-          <p className="text-muted-foreground text-sm font-medium">
+          <p className="text-muted-foreground text-xs sm:text-sm font-medium">
             {description}
           </p>
         )}

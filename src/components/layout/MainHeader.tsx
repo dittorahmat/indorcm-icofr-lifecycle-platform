@@ -44,24 +44,24 @@ export function MainHeader() {
           <SidebarTrigger 
             aria-label={t('navigation.toggleSidebar', { defaultValue: 'Toggle navigation menu' })}
             className={cn(
-              "md:hidden h-9 w-9 shrink-0 rounded-lg text-white hover:bg-white/20 active:bg-white/30 border border-white/20 shadow-sm",
+              "md:hidden h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 rounded-lg text-white hover:bg-white/20 active:bg-white/30 border border-white/20 shadow-sm flex items-center justify-center",
               isDark && "text-slate-100 hover:bg-slate-800 border-slate-700"
             )} 
           />
-          <div className="flex items-center gap-2 md:gap-3 min-w-0">
-            <Link to="/dashboard" className="flex items-center gap-2 group shrink-0">
+          <div className="flex items-center gap-1.5 xs:gap-2 md:gap-3 min-w-0">
+            <Link to="/dashboard" className="flex items-center gap-1.5 md:gap-2 group shrink-0 min-h-[44px] py-1">
               <Shield className={cn(
-                "h-6 w-6 md:h-7 md:w-7 transition-transform group-hover:scale-110",
+                "h-6 w-6 md:h-7 md:w-7 transition-transform group-hover:scale-105 shrink-0",
                 isDark ? "text-emerald-400" : "text-primary-foreground"
               )} />
               <span className={cn(
-                "font-display tracking-tight text-base md:text-lg font-bold truncate",
+                "font-display tracking-tight text-xs xs:text-sm sm:text-base md:text-lg font-bold truncate max-w-[110px] xs:max-w-[160px] sm:max-w-none",
                 isDark ? "text-white" : "text-primary-foreground"
               )}>{t('appName')}</span>
             </Link>
           </div>
         </div>
-        <div className="flex items-center gap-1.5 sm:gap-3 md:gap-4 shrink-0">
+        <div className="flex items-center gap-1 xs:gap-1.5 sm:gap-2 md:gap-4 shrink-0">
           <FiscalYearSelector />
           <div className="hidden sm:flex items-center">
             <LanguageSwitcher />
@@ -72,7 +72,7 @@ export function MainHeader() {
               <button 
                 type="button"
                 aria-label={t('actions.openAccountMenu', { defaultValue: 'User account menu' })}
-                className="relative cursor-pointer hover:opacity-80 transition-opacity ml-1 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="relative cursor-pointer hover:opacity-80 transition-opacity ml-1 rounded-full min-h-[44px] min-w-[44px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 <Avatar className="h-8 w-8 md:h-9 md:w-9 border-2 border-white/10 shadow-sm">
                   <AvatarFallback className="bg-slate-800 text-white font-semibold text-xs">

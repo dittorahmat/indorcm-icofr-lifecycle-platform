@@ -32,7 +32,7 @@ export function ActionCenter({ csaCompletion, openDeficienciesCount }: ActionCen
         {/* Action 1: CSA */}
         <button 
           type="button"
-          className="w-full flex items-center gap-4 p-5 hover:bg-slate-50 transition-colors text-left group relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="w-full flex items-center gap-3 sm:gap-4 p-4 sm:p-5 hover:bg-slate-50 transition-colors text-left group relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-[52px]"
           onClick={() => navigate('/csa')}
         >
           <div className="h-10 w-10 shrink-0 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center group-hover:bg-mancity-pattern group-hover:text-primary-foreground transition-all duration-300 shadow-sm border border-slate-200">
@@ -52,7 +52,7 @@ export function ActionCenter({ csaCompletion, openDeficienciesCount }: ActionCen
         {openDeficienciesCount > 0 && (
           <button 
             type="button"
-            className="w-full flex items-center gap-4 p-5 hover:bg-destructive/5 transition-colors text-left group relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="w-full flex items-center gap-3 sm:gap-4 p-4 sm:p-5 hover:bg-destructive/5 transition-colors text-left group relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-[52px]"
             onClick={() => navigate('/deficiencies')}
           >
             <div className="h-10 w-10 shrink-0 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center group-hover:bg-destructive group-hover:text-destructive-foreground transition-all duration-300 shadow-sm border border-destructive/20">
@@ -71,7 +71,7 @@ export function ActionCenter({ csaCompletion, openDeficienciesCount }: ActionCen
         {/* Action 3: Reports */}
         <button 
           type="button"
-          className="w-full flex items-center gap-4 p-5 hover:bg-slate-50 transition-colors text-left group relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="w-full flex items-center gap-3 sm:gap-4 p-4 sm:p-5 hover:bg-slate-50 transition-colors text-left group relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-[52px]"
           onClick={() => navigate('/reports')}
         >
           <div className="h-10 w-10 shrink-0 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center group-hover:bg-mancity-pattern group-hover:text-primary-foreground transition-all duration-300 shadow-sm border border-slate-200">

@@ -43,26 +43,26 @@ export function RCMPageHeader({
             <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wider mt-1">{subtitle}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {children}
           {onExport && (
             <Button 
               variant="outline" 
               size="xs" 
               onClick={onExport} 
-              className="bg-emerald-50 hover:bg-emerald-100/80 text-emerald-800 border-emerald-300 h-7 text-xs font-bold shadow-sm"
+              className="bg-emerald-50 hover:bg-emerald-100/80 text-emerald-800 border-emerald-300 h-9 sm:h-7 min-h-[44px] sm:min-h-0 text-xs font-bold shadow-sm"
             >
-              <Download className="h-3 w-3 mr-1.5 text-emerald-600" /> {exportLabel}
+              <Download className="h-3.5 w-3.5 sm:h-3 sm:w-3 mr-1.5 text-emerald-600" /> {exportLabel}
             </Button>
           )}
           {onPrint && (
-            <Button variant="outline" size="xs" onClick={onPrint} className="bg-white h-7 text-xs font-bold text-slate-600 border-slate-200">
-              <Printer className="h-3 w-3 mr-1.5" /> Print
+            <Button variant="outline" size="xs" onClick={onPrint} className="bg-white h-9 sm:h-7 min-h-[44px] sm:min-h-0 text-xs font-bold text-slate-600 border-slate-200">
+              <Printer className="h-3.5 w-3.5 sm:h-3 sm:w-3 mr-1.5" /> Print
             </Button>
           )}
           {onRefresh && (
-            <Button variant="outline" size="xs" onClick={onRefresh} className="bg-white h-7 text-xs font-bold">
-              <Filter className="h-3 w-3 mr-1.5" /> Refresh
+            <Button variant="outline" size="xs" onClick={onRefresh} className="bg-white h-9 sm:h-7 min-h-[44px] sm:min-h-0 text-xs font-bold">
+              <Filter className="h-3.5 w-3.5 sm:h-3 sm:w-3 mr-1.5" /> Refresh
             </Button>
           )}
           {onSave && (

@@ -80,55 +80,85 @@ export function CSARealizationTable({ controls, isLoading }: CSARealizationTable
         </CardDescription>
       </CardHeader>
       <CardContent className="p-0">
-        <Table>
-          <TableHeader className="bg-slate-50/20">
-            <TableRow className="hover:bg-transparent">
-              <TableHead className="text-xs font-bold uppercase tracking-wider text-slate-500 pl-5">
-                {t('realizationTable.columns.frequency')}
-              </TableHead>
-              <TableHead className="text-xs font-bold uppercase tracking-wider text-slate-500 text-center">
-                {t('realizationTable.columns.population')}
-              </TableHead>
-              <TableHead className="text-xs font-bold uppercase tracking-wider text-slate-500 text-center">
-                {t('realizationTable.columns.target')}
-              </TableHead>
-              <TableHead className="text-xs font-bold uppercase tracking-wider text-slate-500 text-right pr-5">
-                {t('realizationTable.columns.realization')}
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {realizationData.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={4} className="h-24 text-center text-slate-400 font-medium text-xs">
-                  {t('realizationTable.empty')}
-                </TableCell>
-              </TableRow>
-            ) : (
-              realizationData.map((row) => (
-                <TableRow key={row.frequency} className="hover:bg-slate-50/50">
-                  <TableCell className="font-bold text-slate-700 text-xs pl-5">
+        {/* Mobile View: Stacked Progress Cards (< md) */}
+        <div className="md:hidden divide-y divide-slate-100">
+          {realizationData.length === 0 ? (
+            <div className="p-6 text-center text-slate-400 font-medium text-xs">
+              {t('realizationTable.empty')}
+            </div>
+          ) : (
+            realizationData.map((row) => (
+              <div key={row.frequency} className="p-4 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-slate-800 text-xs uppercase">
                     {translateFrequency(row.frequency)}
-                  </TableCell>
-                  <TableCell className="text-center font-semibold text-slate-600 text-xs">
+                  </span>
+                  <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
                     {row.total} {t('realizationTable.controlsCount')}
-                  </TableCell>
-                  <TableCell className="text-center text-xs font-bold text-slate-500 bg-slate-50/30">
-                    {row.targetText}
-                  </TableCell>
-                  <TableCell className="text-right pr-5">
-                    <div className="flex flex-col items-end gap-1">
-                      <span className="text-xs font-bold text-slate-800">
-                        {row.completed} / {row.total} ({row.percentage}%)
-                      </span>
-                      <Progress value={row.percentage} className="h-1 w-20 bg-slate-100" />
-                    </div>
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
+                  <span>{t('realizationTable.columns.target')}: <strong className="text-slate-700">{row.targetText}</strong></span>
+                  <span className="font-bold text-slate-800">{row.completed} / {row.total} ({row.percentage}%)</span>
+                </div>
+                <Progress value={row.percentage} className="h-1.5 w-full bg-slate-100" />
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop View: Matrix Table (>= md) */}
+        <div className="hidden md:block">
+          <Table>
+            <TableHeader className="bg-slate-50/20">
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="text-xs font-bold uppercase tracking-wider text-slate-500 pl-5">
+                  {t('realizationTable.columns.frequency')}
+                </TableHead>
+                <TableHead className="text-xs font-bold uppercase tracking-wider text-slate-500 text-center">
+                  {t('realizationTable.columns.population')}
+                </TableHead>
+                <TableHead className="text-xs font-bold uppercase tracking-wider text-slate-500 text-center">
+                  {t('realizationTable.columns.target')}
+                </TableHead>
+                <TableHead className="text-xs font-bold uppercase tracking-wider text-slate-500 text-right pr-5">
+                  {t('realizationTable.columns.realization')}
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {realizationData.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="h-24 text-center text-slate-400 font-medium text-xs">
+                    {t('realizationTable.empty')}
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ) : (
+                realizationData.map((row) => (
+                  <TableRow key={row.frequency} className="hover:bg-slate-50/50">
+                    <TableCell className="font-bold text-slate-700 text-xs pl-5">
+                      {translateFrequency(row.frequency)}
+                    </TableCell>
+                    <TableCell className="text-center font-semibold text-slate-600 text-xs">
+                      {row.total} {t('realizationTable.controlsCount')}
+                    </TableCell>
+                    <TableCell className="text-center text-xs font-bold text-slate-500 bg-slate-50/30">
+                      {row.targetText}
+                    </TableCell>
+                    <TableCell className="text-right pr-5">
+                      <div className="flex flex-col items-end gap-1">
+                        <span className="text-xs font-bold text-slate-800">
+                          {row.completed} / {row.total} ({row.percentage}%)
+                        </span>
+                        <Progress value={row.percentage} className="h-1 w-20 bg-slate-100" />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </CardContent>
       <div className="p-3 bg-slate-50 border-t flex items-center gap-2 text-xs text-slate-500 font-medium leading-relaxed">
         <Info className="h-3.5 w-3.5 text-slate-400 shrink-0" />
