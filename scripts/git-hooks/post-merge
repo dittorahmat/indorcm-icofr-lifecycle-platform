@@ -6,6 +6,11 @@
 # Hook TIDAK boleh menggagalkan pull -> selalu exit 0.
 set -u
 TOP="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+# Hindari recursive deadlock bila git pull dipicu oleh deploy.sh sendiri
+if [ "${DEPLOY_IN_PROGRESS:-0}" = "1" ]; then
+    exit 0
+fi
+
 if [ -n "$TOP" ] && [ -f "$TOP/deploy.sh" ]; then
     bash "$TOP/deploy.sh" || true
 fi

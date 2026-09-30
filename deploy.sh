@@ -42,6 +42,9 @@ done
 
 log() { echo "$(date '+%F %T %Z'): [CI/CD] $*"; }
 
+# Tandai proses deploy aktif agar git hooks (post-merge) tidak memicu deploy rekursif/deadlock
+export DEPLOY_IN_PROGRESS=1
+
 # Antre bila ada deploy lain berjalan (maks 15 menit), jgn tumpang tindih.
 exec 9>"$LOCK_FILE"
 if ! flock -w 900 9; then
