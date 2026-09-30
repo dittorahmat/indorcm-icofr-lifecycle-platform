@@ -23,19 +23,59 @@ export function LifecycleProgress({ currentStage = 'evaluasi', workingYear = '20
   
   const currentIdx = stages.findIndex(s => s.id === currentStage);
 
+  const activeStage = stages[currentIdx] || stages[0];
+  const progressPercent = Math.round(((currentIdx + 1) / stages.length) * 100);
+
   return (
-    <div className="w-full bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
-      <div className="flex items-center justify-between mb-6">
+    <div className="w-full bg-white border border-slate-200 rounded-xl p-4 md:p-6 shadow-sm">
+      <div className="flex items-center justify-between mb-4 md:mb-6">
         <div>
-          <h3 className="text-sm font-semibold text-slate-900">ICOFR Lifecycle Progress</h3>
-          <p className="text-xs text-slate-500">Regulation SK-5/DKU.MBU/11/2024 Compliance Path</p>
+          <h3 className="text-sm font-semibold text-slate-900">{t('lifecycle.title')}</h3>
+          <p className="text-xs text-slate-500">{t('lifecycle.subtitle')}</p>
         </div>
-        <div className="px-3 py-1 bg-slate-100 rounded-full text-[10px] font-bold text-slate-600 uppercase tracking-wider border border-slate-200">
-          FY {workingYear} Cycle
+        <div className="px-2.5 py-1 bg-slate-100 rounded-full text-xs font-semibold text-slate-600 uppercase tracking-wider border border-slate-200 shrink-0">
+          FY {workingYear}
         </div>
       </div>
 
-      <div className="relative flex justify-between">
+      {/* MOBILE COMPACT VIEW: Active Phase Card & Progress Bar */}
+      <div className="flex md:hidden flex-col gap-3 p-3.5 bg-slate-50/80 rounded-lg border border-slate-200">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="h-6 w-6 rounded-full bg-slate-900 text-white text-xs font-bold flex items-center justify-center">
+              {currentIdx + 1}
+            </span>
+            <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+              {t(activeStage.label)}
+            </span>
+          </div>
+          <span className="text-xs font-bold text-slate-500">
+            {progressPercent}%
+          </span>
+        </div>
+
+        {/* Linear Progress Bar */}
+        <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+          <motion.div 
+            initial={{ width: 0 }}
+            animate={{ width: `${progressPercent}%` }}
+            className="h-full bg-slate-900 rounded-full"
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          />
+        </div>
+
+        <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
+          <span>{t('lifecycle.phaseStep', { current: currentIdx + 1, total: stages.length })}</span>
+          {currentIdx + 1 < stages.length && (
+            <span className="text-xs text-slate-400">
+              {t('lifecycle.nextPhase', { phase: t(stages[currentIdx + 1].label) })}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* DESKTOP VIEW: Full 6-Stage Timeline */}
+      <div className="relative hidden md:flex justify-between">
         {/* Progress Line */}
         <div className="absolute top-4 left-0 w-full h-0.5 bg-slate-100 -z-0" />
         <motion.div 
@@ -65,7 +105,7 @@ export function LifecycleProgress({ currentStage = 'evaluasi', workingYear = '20
               </div>
               <div className="text-center">
                 <p className={cn(
-                  "text-[10px] font-bold uppercase tracking-tight",
+                  "text-xs font-bold uppercase tracking-tight",
                   isCurrent ? "text-slate-900" : "text-slate-400"
                 )}>
                   {t(stage.label)}

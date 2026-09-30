@@ -24,7 +24,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white p-3 border-none shadow-2xl rounded-xl ring-1 ring-slate-200">
-        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">{label}</p>
+        <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">{label}</p>
         {payload.map((item: any, i: number) => (
           <div key={i} className="flex items-center gap-2">
             <div className="h-2 w-2 rounded-full" style={{ backgroundColor: item.fill || item.color }} />
@@ -54,14 +54,14 @@ export function ComplianceCharts({ barData, deficiencyBySeverity, isLoading }: C
         <CardHeader className="bg-slate-50 border-b py-5 px-6">
           <div className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4 text-slate-900" />
-            <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-800">{t('charts.controlsByProcess.title')}</CardTitle>
+            <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-800">{t('charts.controlsByProcess.title')}</CardTitle>
           </div>
-          <CardDescription className="text-[11px] font-medium text-slate-500 mt-1">{t('charts.controlsByProcess.description')}</CardDescription>
+          <CardDescription className="text-xs font-medium text-slate-500 mt-1">{t('charts.controlsByProcess.description')}</CardDescription>
         </CardHeader>
         <CardContent className="pt-8 px-6 pb-6">
           <div className="h-[300px] w-full">
             {isLoading ? <Skeleton className="h-full w-full rounded-xl" /> : barData.length === 0 ? (
-              <div className="h-full flex items-center justify-center text-slate-400 text-[10px] font-bold uppercase tracking-widest">{t('charts.noData')}</div>
+              <div className="h-full flex items-center justify-center text-slate-400 text-xs font-bold uppercase tracking-wider">{t('charts.noData')}</div>
             ) : (
               <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                 <BarChart data={barData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
@@ -105,9 +105,9 @@ export function ComplianceCharts({ barData, deficiencyBySeverity, isLoading }: C
         <CardHeader className="bg-slate-50 border-b py-5 px-6">
           <div className="flex items-center gap-2">
             <PieChartIcon className="h-4 w-4 text-rose-600" />
-            <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-800">{t('charts.deficienciesBySeverity.title')}</CardTitle>
+            <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-800">{t('charts.deficienciesBySeverity.title')}</CardTitle>
           </div>
-          <CardDescription className="text-[11px] font-medium text-slate-500 mt-1">{t('charts.deficienciesBySeverity.description')}</CardDescription>
+          <CardDescription className="text-xs font-medium text-slate-500 mt-1">{t('charts.deficienciesBySeverity.description')}</CardDescription>
         </CardHeader>
         <CardContent className="pt-8 px-6 pb-6">
           <div className="min-h-[400px] w-full flex flex-col items-center justify-between relative">
@@ -116,7 +116,7 @@ export function ComplianceCharts({ barData, deficiencyBySeverity, isLoading }: C
                 <div className="relative h-48 w-48 rounded-full border-8 border-slate-100 border-t-slate-900 animate-spin" />
               </div>
             ) : (!deficiencyBySeverity || deficiencyBySeverity.length === 0) ? (
-              <div className="flex-1 flex items-center justify-center text-slate-400 text-[10px] font-bold uppercase tracking-widest">{t('charts.noDeficiencies')}</div>
+              <div className="flex-1 flex items-center justify-center text-slate-400 text-xs font-bold uppercase tracking-wider">{t('charts.noDeficiencies')}</div>
             ) : (
               <>
                 <div className="w-full h-[240px] relative shrink-0">
@@ -145,7 +145,7 @@ export function ComplianceCharts({ barData, deficiencyBySeverity, isLoading }: C
                   
                   {/* Center Total Text */}
                   <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-0">
-                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">{t('badges.new')}</span>
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('badges.new')}</span>
                     <span className="text-4xl font-display font-black text-slate-900 leading-none">{totalDeficiencies}</span>
                   </div>
                 </div>
@@ -155,7 +155,7 @@ export function ComplianceCharts({ barData, deficiencyBySeverity, isLoading }: C
                     <div key={entry.name} className="flex items-center justify-between group">
                       <div className="flex items-center gap-2.5">
                         <div className="h-2 w-2 rounded-full transition-transform group-hover:scale-125" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter group-hover:text-slate-900 transition-colors">{entry.name}</span>
+                        <span className="text-xs font-semibold text-slate-600 uppercase tracking-tight group-hover:text-slate-900 transition-colors">{entry.name}</span>
                       </div>
                       <span className="text-xs font-display font-black text-slate-900 bg-slate-50 px-2 py-0.5 rounded group-hover:bg-slate-900 group-hover:text-white transition-all">{entry.value}</span>
                     </div>

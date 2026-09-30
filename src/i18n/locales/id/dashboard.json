@@ -63,6 +63,10 @@
     "principles": "17 PRINSIP"
   },
   "lifecycle": {
+    "title": "Progres Siklus ICOFR",
+    "subtitle": "Kepatuhan Regulasi SK-5/DKU.MBU/11/2024",
+    "phaseStep": "Tahap {{current}} dari {{total}}",
+    "nextPhase": "Berikutnya: {{phase}}",
     "perancangan": "Perancangan",
     "implementasi": "Implementasi & Pemantauan",
     "evaluasi": "Evaluasi",

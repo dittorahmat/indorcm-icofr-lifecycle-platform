@@ -71,11 +71,11 @@ export function CSARealizationTable({ controls, isLoading }: CSARealizationTable
   return (
     <Card className="border-slate-200 shadow-md overflow-hidden bg-white rounded-xl">
       <CardHeader className="bg-slate-50/50 border-b py-4 px-5">
-        <CardTitle className="text-[11px] font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2">
+        <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2">
           <ShieldCheck className="h-4 w-4 text-emerald-600" />
           {t('realizationTable.title')}
         </CardTitle>
-        <CardDescription className="text-[10px] text-slate-400 font-semibold uppercase tracking-tight mt-0.5">
+        <CardDescription className="text-xs text-slate-500 font-medium uppercase tracking-tight mt-0.5">
           {t('realizationTable.subtitle')}
         </CardDescription>
       </CardHeader>
@@ -83,16 +83,16 @@ export function CSARealizationTable({ controls, isLoading }: CSARealizationTable
         <Table>
           <TableHeader className="bg-slate-50/20">
             <TableRow className="hover:bg-transparent">
-              <TableHead className="text-[10px] font-bold uppercase tracking-wider text-slate-400 pl-5">
+              <TableHead className="text-xs font-bold uppercase tracking-wider text-slate-500 pl-5">
                 {t('realizationTable.columns.frequency')}
               </TableHead>
-              <TableHead className="text-[10px] font-bold uppercase tracking-wider text-slate-400 text-center">
+              <TableHead className="text-xs font-bold uppercase tracking-wider text-slate-500 text-center">
                 {t('realizationTable.columns.population')}
               </TableHead>
-              <TableHead className="text-[10px] font-bold uppercase tracking-wider text-slate-400 text-center">
+              <TableHead className="text-xs font-bold uppercase tracking-wider text-slate-500 text-center">
                 {t('realizationTable.columns.target')}
               </TableHead>
-              <TableHead className="text-[10px] font-bold uppercase tracking-wider text-slate-400 text-right pr-5">
+              <TableHead className="text-xs font-bold uppercase tracking-wider text-slate-500 text-right pr-5">
                 {t('realizationTable.columns.realization')}
               </TableHead>
             </TableRow>
@@ -100,7 +100,7 @@ export function CSARealizationTable({ controls, isLoading }: CSARealizationTable
           <TableBody>
             {realizationData.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="h-24 text-center text-slate-400 italic text-[11px]">
+                <TableCell colSpan={4} className="h-24 text-center text-slate-400 font-medium text-xs">
                   {t('realizationTable.empty')}
                 </TableCell>
               </TableRow>
@@ -130,7 +130,7 @@ export function CSARealizationTable({ controls, isLoading }: CSARealizationTable
           </TableBody>
         </Table>
       </CardContent>
-      <div className="p-3 bg-slate-50 border-t flex items-center gap-2 text-[10px] text-slate-400 font-medium leading-relaxed">
+      <div className="p-3 bg-slate-50 border-t flex items-center gap-2 text-xs text-slate-500 font-medium leading-relaxed">
         <Info className="h-3.5 w-3.5 text-slate-400 shrink-0" />
         <span>
           {t('realizationTable.footnote')}

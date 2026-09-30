@@ -29,11 +29,12 @@ export function DashboardKPIs({ controlsCount, openDeficienciesCount, cosoPercen
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
-      <motion.div variants={itemVariants} className="col-span-2 sm:col-span-1">
+      {/* Cycle Readiness Card */}
+      <motion.div variants={itemVariants} className="col-span-2 sm:col-span-1 min-w-0">
         <Card className="bg-mancity-pattern text-primary-foreground border-none h-full shadow-lg ring-1 ring-primary/20 overflow-hidden relative group rounded-xl p-1">
           <CardHeader className="p-3 md:p-4 pb-1 md:pb-2">
             <CardTitle className="text-xs font-bold uppercase tracking-wider text-primary-foreground/80 flex items-center gap-1.5 md:gap-2">
-              <Clock className="h-3.5 w-3.5" aria-hidden="true" /> {t('kpis.cycleReadiness')}
+              <Clock className="h-3.5 w-3.5 shrink-0" aria-hidden="true" /> {t('kpis.cycleReadiness')}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-3 md:p-4 pt-0">
@@ -79,16 +80,16 @@ export function DashboardKPIs({ controlsCount, openDeficienciesCount, cosoPercen
           bg: 'bg-slate-50'
         }
       ].map((kpi, i) => (
-        <motion.div key={i} variants={itemVariants}>
-          <Card className="border-slate-200 bg-white shadow-sm hover:shadow-md transition-all duration-300 h-full border-b-2 hover:border-b-slate-900 rounded-xl">
-            <CardHeader className="p-3 md:p-4 pb-1">
+        <motion.div key={i} variants={itemVariants} className="min-w-0 w-full">
+          <Card className="border-slate-200 bg-white shadow-sm hover:shadow-md transition-all duration-300 h-full border-b-2 hover:border-b-slate-900 rounded-xl overflow-hidden">
+            <CardHeader className="p-2.5 sm:p-3 md:p-4 pb-1">
               <CardTitle className="text-xs font-bold uppercase text-slate-500 tracking-wider flex items-center gap-1.5 md:gap-2 truncate">
                 <kpi.icon className={cn("h-3.5 w-3.5 shrink-0", kpi.color)} aria-hidden="true" /> 
                 <span className="truncate">{kpi.title}</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-3 md:p-4 pt-0">
-              <div className={cn("text-2xl sm:text-3xl font-bold tracking-tight", kpi.valueColor || "text-slate-900")}>{kpi.value}</div>
+            <CardContent className="p-2.5 sm:p-3 md:p-4 pt-0">
+              <div className={cn("text-xl sm:text-2xl md:text-3xl font-bold tracking-tight truncate", kpi.valueColor || "text-slate-900")}>{kpi.value}</div>
               <p className="text-xs text-slate-500 font-medium uppercase tracking-wider mt-0.5 md:mt-1 truncate">{kpi.subtitle}</p>
             </CardContent>
           </Card>

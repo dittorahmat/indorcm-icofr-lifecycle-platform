@@ -63,6 +63,10 @@
     "principles": "17 PRINCIPLES"
   },
   "lifecycle": {
+    "title": "ICOFR Lifecycle Progress",
+    "subtitle": "Regulation SK-5/DKU.MBU/11/2024 Compliance Path",
+    "phaseStep": "Stage {{current}} of {{total}}",
+    "nextPhase": "Next: {{phase}}",
     "perancangan": "Planning",
     "implementasi": "Implementation & Monitoring",
     "evaluasi": "Evaluation",
