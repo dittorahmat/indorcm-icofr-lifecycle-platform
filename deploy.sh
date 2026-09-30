@@ -24,6 +24,9 @@
 #                      backend HTTP menjawab; selebihnya exit 1 (Action merah).
 set -uo pipefail
 
+# Pastikan PATH mencakup Node v22, bun, dan pm2 untuk sesi non-login SSH (GitHub Actions)
+export PATH="/home/ubuntu/.nvm/versions/node/v22.22.3/bin:/home/ubuntu/.bun/bin:/usr/local/bin:$PATH"
+
 PROJECT_DIR="/home/ubuntu/indorcm-icofr-lifecycle-platform"
 LOCK_FILE="/tmp/icofr-deploy.lock"
 LOG_FILE="/tmp/icofr-deploy.log"
