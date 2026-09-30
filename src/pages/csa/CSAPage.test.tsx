@@ -56,4 +56,10 @@ describe('CSAPage', () => {
     render(<CSAPage />);
     expect(screen.getByPlaceholderText('page.searchPlaceholder')).toBeInTheDocument();
   });
+
+  it('renders both desktop table container and mobile card container', () => {
+    const { container } = render(<CSAPage />);
+    expect(container.querySelector('.hidden.md\\:block')).toBeInTheDocument();
+    expect(container.querySelector('.block.md\\:hidden')).toBeInTheDocument();
+  });
 });

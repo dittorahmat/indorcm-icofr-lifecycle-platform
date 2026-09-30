@@ -23,6 +23,13 @@
     "switchLanguage": "Switch language",
     "openAccountMenu": "User account menu"
   },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "csa": "CSA Tasks",
+    "rcm": "RCM",
+    "menu": "Menu",
+    "toggleSidebar": "Toggle navigation sidebar"
+  },
   "status": {
     "draft": "Draft",
     "pending": "Pending",

@@ -23,6 +23,13 @@
     "switchLanguage": "Ganti bahasa",
     "openAccountMenu": "Menu akun pengguna"
   },
+  "navigation": {
+    "dashboard": "Beranda",
+    "csa": "Tugas CSA",
+    "rcm": "RCM",
+    "menu": "Menu",
+    "toggleSidebar": "Buka tutup navigasi samping"
+  },
   "status": {
     "draft": "Draft",
     "pending": "Menunggu",

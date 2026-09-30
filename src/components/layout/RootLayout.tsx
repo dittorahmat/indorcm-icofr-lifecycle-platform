@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { Outlet, useSearchParams } from "react-router-dom";
 import { MainHeader } from "@/components/layout/MainHeader";
+import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { AIFabButton, AIChatDrawer } from "@/components/ai-chatbot";
 import { LicenseBanner, LicenseModal } from "@/components/LicenseNotifications";
 import { SidebarProvider } from "@/components/ui/sidebar";
@@ -49,11 +50,14 @@ export function RootLayout(): JSX.Element {
     <SidebarProvider className="h-screen flex flex-col bg-background text-foreground min-w-0 overflow-hidden">
       <MainHeader />
       <LicenseBanner />
-      <div className="flex-1 relative flex flex-col min-h-0 min-w-0 overflow-hidden">
+      <div className="flex-1 relative flex flex-col min-h-0 min-w-0 overflow-hidden pb-14 md:pb-0">
         <Outlet />
       </div>
 
       <LicenseModal />
+      {/* Mobile Bottom Navigation Bar */}
+      <MobileBottomNav />
+
       {/* Global AI Chatbot */}
       <AIFabButton isOpen={isChatOpen} onToggle={toggleChat} />
       <AIChatDrawer isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />

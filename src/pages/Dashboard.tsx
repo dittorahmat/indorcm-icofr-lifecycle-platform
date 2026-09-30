@@ -200,11 +200,55 @@ export function Dashboard() {
           workingYear={workingYear}
         />
 
-        {/* MAIN DASHBOARD GRID */}
+        {/* MAIN DASHBOARD CONTENT */}
         <div className="grid gap-6 lg:grid-cols-12">
           
-          {/* LEFT CONTENT AREA (Span 8) */}
-          <div className="lg:col-span-8 space-y-6">
+          {/* ACTION CENTER & OPERATIONAL METRICS (Priority 1 on mobile, Right column on desktop) */}
+          <div className="lg:col-span-4 space-y-6 order-1 lg:order-2">
+            <motion.div variants={itemVariants}>
+              <ActionCenter 
+                csaCompletion={csaCompletion}
+                openDeficienciesCount={openDeficiencies.length}
+              />
+            </motion.div>
+
+            {/* SECONDARY METRICS (Optimized grid) */}
+             <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
+                {[
+                  { label: t('kpis.remediationVelocity'), value: t('kpis.remediationAvgDays', { days: remediationVelocity }), icon: TrendingUp, color: 'text-blue-600', bg: 'bg-blue-50' },
+                  { label: t('kpis.line2Validation'), value: t('kpis.line2Percent', { percent: line2Percent }), icon: ShieldCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' }
+                ].map((metric, i) => (
+                 <div key={i} className="group p-4 md:p-5 bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer flex items-center gap-4">
+                    <div className={cn("h-10 w-10 rounded-lg flex items-center justify-center transition-colors group-hover:bg-slate-900 group-hover:text-white shrink-0 shadow-sm border border-slate-100", metric.bg)}>
+                        <metric.icon className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-0.5 truncate">{metric.label}</p>
+                        <div className="flex items-center justify-between">
+                          <p className="text-lg md:text-xl font-bold text-slate-900 leading-tight">{metric.value}</p>
+                          <ArrowRight className="h-4 w-4 text-slate-300 group-hover:text-slate-900 group-hover:translate-x-1 transition-all shrink-0" />
+                        </div>
+                    </div>
+                 </div>
+               ))}
+            </motion.div>
+
+            <motion.div variants={itemVariants} className="p-3 bg-slate-50 rounded-xl border border-slate-200 border-dashed">
+              <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider text-center">
+                Compliance Engine v2.4.0 — BUMN Standard
+              </p>
+            </motion.div>
+
+            <motion.div variants={itemVariants}>
+              <CSARealizationTable 
+                controls={controlsData?.items || []} 
+                isLoading={isLoading} 
+              />
+            </motion.div>
+          </div>
+
+          {/* ANALYTICAL CHARTS & COSO MATRICES (Priority 2 on mobile, Left column on desktop) */}
+          <div className="lg:col-span-8 space-y-6 order-2 lg:order-1">
             <motion.div variants={itemVariants}>
               <React.Suspense fallback={<Skeleton className="h-[380px] w-full rounded-xl" />}>
                 <ComplianceCharts 
@@ -221,51 +265,6 @@ export function Dashboard() {
                 isLoading={isLoading}
               />
             </motion.div>
-          </div>
-
-          {/* RIGHT SIDEBAR (Span 4) */}
-          <div className="lg:col-span-4 space-y-6">
-            <motion.div variants={itemVariants}>
-              <ActionCenter 
-                csaCompletion={csaCompletion}
-                openDeficienciesCount={openDeficiencies.length}
-              />
-            </motion.div>
-
-            {/* SECONDARY METRICS (Optimized grid) */}
-             <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
-                {[
-                  { label: t('kpis.remediationVelocity'), value: t('kpis.remediationAvgDays', { days: remediationVelocity }), icon: TrendingUp, color: 'text-blue-600', bg: 'bg-blue-50' },
-                  { label: t('kpis.line2Validation'), value: t('kpis.line2Percent', { percent: line2Percent }), icon: ShieldCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' }
-                ].map((metric, i) => (
-                 <div key={i} className="group p-5 bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer flex items-center gap-4">
-                    <div className={cn("h-10 w-10 rounded-lg flex items-center justify-center transition-colors group-hover:bg-slate-900 group-hover:text-white shrink-0 shadow-sm border border-slate-100", metric.bg)}>
-                        <metric.icon className="h-5 w-5" />
-                    </div>
-                    <div className="flex-1">
-                        <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">{metric.label}</p>
-                        <div className="flex items-center justify-between">
-                          <p className="text-xl font-bold text-slate-900 leading-tight">{metric.value}</p>
-                          <ArrowRight className="h-4 w-4 text-slate-300 group-hover:text-slate-900 group-hover:translate-x-1 transition-all" />
-                        </div>
-                    </div>
-                 </div>
-               ))}
-            </motion.div>
-
-            <motion.div variants={itemVariants} className="p-4 bg-slate-50 rounded-xl border border-slate-200 border-dashed">
-              <p className="text-[10px] text-slate-400 font-medium uppercase tracking-widest text-center">
-                Compliance Engine v2.4.0 — BUMN Standard
-              </p>
-            </motion.div>
-
-            <motion.div variants={itemVariants}>
-              <CSARealizationTable 
-                controls={controlsData?.items || []} 
-                isLoading={isLoading} 
-              />
-            </motion.div>
-
           </div>
         </div>
       </motion.div>

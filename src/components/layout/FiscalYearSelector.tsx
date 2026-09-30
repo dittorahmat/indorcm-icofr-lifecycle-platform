@@ -134,14 +134,14 @@ export function FiscalYearSelector() {
         <SelectTrigger 
           aria-label={translate('common:placeholders.year', { defaultValue: 'Year' })}
           className={cn(
-            "h-9 w-auto min-w-[110px] px-3 rounded-lg border-none font-bold text-xs shadow-sm transition-all",
+            "h-8 sm:h-9 w-auto min-w-[76px] sm:min-w-[110px] px-2 sm:px-3 rounded-lg border-none font-bold text-xs shadow-sm transition-all",
             isDark 
               ? "bg-slate-800 text-slate-100 hover:bg-slate-700" 
               : "bg-white/10 text-white hover:bg-white/20"
           )}
         >
-          <div className="flex items-center gap-2">
-            <Calendar className="h-3.5 w-3.5 opacity-70" aria-hidden="true" />
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <Calendar className="h-3.5 w-3.5 opacity-70 shrink-0" aria-hidden="true" />
             <SelectValue placeholder="Year" />
           </div>
         </SelectTrigger>

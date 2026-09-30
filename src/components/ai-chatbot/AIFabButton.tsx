@@ -22,7 +22,7 @@ export function AIFabButton({ isOpen, onToggle }: AIFabButtonProps) {
       <Tooltip>
         <TooltipTrigger asChild>
           <motion.div
-            className="fixed bottom-6 right-6 z-[1050]"
+            className="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-[1050]"
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.3 }}

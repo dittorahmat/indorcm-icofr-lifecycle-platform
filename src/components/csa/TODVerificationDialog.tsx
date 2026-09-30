@@ -6,6 +6,13 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -200,6 +207,8 @@ export function TODVerificationDialog({
     onSave(values);
   };
 
+  const isMobile = useIsMobile();
+
   const handleOpenChange = (val: boolean) => {
     if (!val && isDirty) {
        setIsConfirmDiscardOpen(true);
@@ -210,51 +219,72 @@ export function TODVerificationDialog({
 
   if (!control) return null;
 
+  const headerContent = (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-3 md:gap-4">
+        <div className="p-2 md:p-2.5 bg-primary/20 rounded-lg shadow-sm border border-white/20 shrink-0">
+          <ShieldCheck className="h-6 w-6 md:h-7 md:w-7 text-primary-foreground" />
+        </div>
+        <div>
+          <DialogTitle className="text-xl md:text-2xl font-bold tracking-tight uppercase text-primary-foreground">
+            {t('csa_hub:tod.title')}
+          </DialogTitle>
+          <div className="flex items-center gap-2 mt-0.5 md:mt-1">
+             <Badge variant="outline" className="bg-white/90 border-transparent text-primary-foreground font-bold text-xs py-0">{t('csa_hub:tod.badgeSync')}</Badge>
+             <p className="text-primary-foreground/70 text-xs font-semibold tracking-wide uppercase truncate">{t('csa_hub:tod.subtitle')}</p>
+          </div>
+        </div>
+      </div>
+      <div className="text-right shrink-0">
+        <div className="text-xs font-semibold text-primary-foreground/70 uppercase tracking-widest">{t('csa_hub:tod.controlReference')}</div>
+        <div className="text-base md:text-xl font-bold tracking-tight text-white">{rcmMapping?.controlCode || '-'}</div>
+      </div>
+    </div>
+  );
+
+  const formContent = (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 overflow-hidden flex flex-col md:flex-row">
+        {/* Left Column: Editable Design Context (RCM) */}
+        <ScrollArea className="w-full md:w-1/2 border-b md:border-b-0 md:border-r bg-slate-50/50 max-h-[30vh] md:max-h-none">
+          <TODDesignContextFields form={form} />
+        </ScrollArea>
+
+        {/* Right Column: Assessment (Interactive) */}
+        <ScrollArea className="w-full md:w-1/2 bg-white shadow-[-10px_0_15px_-5px_rgba(0,0,0,0.02)]">
+          <TODEvaluationFormSection
+            form={form}
+            onCancel={() => handleOpenChange(false)}
+            isPending={isPending}
+          />
+        </ScrollArea>
+      </form>
+    </Form>
+  );
+
   return (
     <>
-      <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent className="max-w-[1200px] max-h-[95vh] overflow-hidden p-0 flex flex-col border-none shadow-2xl">
-          <DialogHeader className="p-6 bg-mancity-pattern text-primary-foreground shrink-0">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="p-2.5 bg-primary/20 rounded-lg shadow-sm border border-white/20">
-                  <ShieldCheck className="h-7 w-7 text-primary-foreground" />
-                </div>
-                <div>
-                  <DialogTitle className="text-2xl font-bold tracking-tight uppercase text-primary-foreground">
-                    {t('csa_hub:tod.title')}
-                  </DialogTitle>
-                  <div className="flex items-center gap-2 mt-1">
-                     <Badge variant="outline" className="bg-white/90 border-transparent text-primary-foreground font-bold text-xs py-0">{t('csa_hub:tod.badgeSync')}</Badge>
-                     <p className="text-primary-foreground/60 text-xs font-medium tracking-wide uppercase">{t('csa_hub:tod.subtitle')}</p>
-                  </div>
-                  </div>
-                  </div>
-                  <div className="text-right hidden md:block">
-                  <div className="text-xs font-black text-slate-500 uppercase tracking-widest">{t('csa_hub:tod.controlReference')}</div>
-                  <div className="text-xl font-black tracking-tighter text-primary">{rcmMapping?.controlCode || '-'}</div>
-                  </div>
-                  </div>
-                  </DialogHeader>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 overflow-hidden flex flex-col md:flex-row">
-              {/* Left Column: Editable Design Context (RCM) */}
-              <ScrollArea className="w-full md:w-1/2 border-r bg-slate-50/50">
-                <TODDesignContextFields form={form} />
-              </ScrollArea>
-
-              {/* Right Column: Assessment (Interactive) */}
-              <ScrollArea className="w-full md:w-1/2 bg-white shadow-[-10px_0_15px_-5px_rgba(0,0,0,0.02)]">
-                <TODEvaluationFormSection
-                  form={form}
-                  onCancel={() => handleOpenChange(false)}
-                  isPending={isPending}
-                />
-              </ScrollArea>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
+      {isMobile ? (
+        <Sheet open={open} onOpenChange={handleOpenChange}>
+          <SheetContent side="bottom" className="h-[92vh] max-h-[92vh] p-0 flex flex-col border-t rounded-t-xl overflow-hidden bg-background">
+            <SheetHeader className="p-4 bg-mancity-pattern text-primary-foreground shrink-0 text-left">
+              {headerContent}
+            </SheetHeader>
+            <div className="flex-1 overflow-hidden flex flex-col">
+              {formContent}
+            </div>
+          </SheetContent>
+        </Sheet>
+      ) : (
+        <Dialog open={open} onOpenChange={handleOpenChange}>
+          <DialogContent className="max-w-[1200px] max-h-[95vh] overflow-hidden p-0 flex flex-col border-none shadow-2xl rounded-xl">
+            <DialogHeader className="p-6 bg-mancity-pattern text-primary-foreground shrink-0">
+              {headerContent}
+            </DialogHeader>
+            {formContent}
+          </DialogContent>
+        </Dialog>
+      )}
 
       <AlertDialog open={isConfirmDiscardOpen} onOpenChange={setIsConfirmDiscardOpen}>
         <AlertDialogContent>

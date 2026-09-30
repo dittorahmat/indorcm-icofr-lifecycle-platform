@@ -365,7 +365,8 @@ export function CSAPage() {
           </div>
         </div>
 
-        <div className="border rounded-lg bg-white shadow-sm overflow-hidden">
+        {/* DESKTOP VIEW: Table */}
+        <div className="hidden md:block border rounded-lg bg-white shadow-sm overflow-hidden">
           <Table>
             <TableHeader className="bg-slate-50 border-b border-slate-200">
               <TableRow className="hover:bg-transparent">
@@ -399,6 +400,101 @@ export function CSAPage() {
               ))}
             </TableBody>
           </Table>
+        </div>
+
+        {/* MOBILE VIEW: Card Stack */}
+        <div className="block md:hidden space-y-4">
+          {isLoading ? (
+            <div className="h-64 flex flex-col items-center justify-center bg-white rounded-xl border p-6">
+              <div className="h-8 w-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-3" />
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('page.loading')}</span>
+            </div>
+          ) : filteredRecords.length === 0 ? (
+            <div className="h-48 flex items-center justify-center bg-white rounded-xl border p-6 text-center text-slate-500 text-xs font-medium">
+              {t('page.empty')}
+            </div>
+          ) : (
+            filteredRecords.map((record) => {
+              const process = processes?.items.find(p => p.id === record.bpmProcessId);
+              return (
+                <div key={`mobile-${record.id}`} className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden p-4 space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <h4 className="font-bold text-slate-900 text-sm leading-snug line-clamp-2">
+                        {process?.name || t('page.unknownProcess')}
+                      </h4>
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-tight mt-0.5">
+                        ID: {record.bpmProcessId?.substring(0, 8)}
+                      </p>
+                    </div>
+                    <Badge className={cn(
+                      "text-xs font-bold uppercase shrink-0",
+                      record.result === 'Effective' ? "bg-green-600 text-white" : "bg-red-600 text-white"
+                    )}>
+                      {record.result}
+                    </Badge>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 py-2 border-y border-slate-100 text-xs">
+                    <div>
+                      <span className="text-slate-400 font-medium block">{t('page.table.period')}</span>
+                      <span className="font-bold text-indigo-700">{record.period}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 font-medium block">{t('page.table.samples')}</span>
+                      <span className="font-semibold text-slate-700">{record.samples?.length || 0} {t('page.table.samples')}</span>
+                    </div>
+                    <div className="col-span-2">
+                      <span className="text-slate-400 font-medium block">{t('page.table.signOff')}</span>
+                      <span className="font-medium text-slate-600">{format(new Date(record.assessmentDate), 'dd MMM yyyy HH:mm')}</span>
+                    </div>
+                  </div>
+
+                  <div className="pt-1 flex items-center justify-between gap-2">
+                    <Button 
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 h-9 text-xs font-bold gap-1.5 border-slate-200"
+                      onClick={async () => {
+                        try {
+                          const res = await fetch(`/api/csa/${record.id}/export-pdf`, {
+                            headers: { 'X-Mock-Role': localStorage.getItem('mockRole') || 'Line 2' }
+                          });
+                          if (!res.ok) throw new Error("Export failed");
+                          const blob = await res.blob();
+                          const url = window.URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = `CSA_${process?.name || 'Report'}_${record.period}.pdf`;
+                          document.body.appendChild(a);
+                          a.click();
+                          window.URL.revokeObjectURL(url);
+                          document.body.removeChild(a);
+                          toast.success("PDF exported successfully");
+                        } catch (err: any) {
+                          toast.error(err.message || "Failed to export");
+                        }
+                      }}
+                    >
+                      <Printer className="h-3.5 w-3.5" /> PDF
+                    </Button>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      className="flex-1 h-9 text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm"
+                      onClick={() => {
+                        // Triggers detail expansion in mobile row or opens control
+                        const rowTrigger = document.getElementById(`csa-row-${record.id}`);
+                        if (rowTrigger) rowTrigger.click();
+                      }}
+                    >
+                      <FileText className="h-3.5 w-3.5 mr-1" /> {t('common:actions.view', { defaultValue: 'Lihat Detail' })}
+                    </Button>
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
       </div>
     </AppLayout>

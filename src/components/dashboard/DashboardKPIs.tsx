@@ -28,18 +28,18 @@ export function DashboardKPIs({ controlsCount, openDeficienciesCount, cosoPercen
   const { t } = useTranslation('dashboard');
 
   return (
-    <div className="grid gap-6 md:grid-cols-4">
-      <motion.div variants={itemVariants}>
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
+      <motion.div variants={itemVariants} className="col-span-2 sm:col-span-1">
         <Card className="bg-mancity-pattern text-primary-foreground border-none h-full shadow-lg ring-1 ring-primary/20 overflow-hidden relative group rounded-xl p-1">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-bold uppercase tracking-wider text-primary-foreground/80 flex items-center gap-2">
+          <CardHeader className="p-3 md:p-4 pb-1 md:pb-2">
+            <CardTitle className="text-xs font-bold uppercase tracking-wider text-primary-foreground/80 flex items-center gap-1.5 md:gap-2">
               <Clock className="h-3.5 w-3.5" aria-hidden="true" /> {t('kpis.cycleReadiness')}
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-bold tracking-tight">{t('kpis.ready')}</div>
-            <p className="text-xs text-primary-foreground/70 mt-1.5 font-semibold uppercase tracking-wider">{t('kpis.reportingCycle', { year: workingYear })}</p>
-            <div className="mt-6 h-1.5 w-full bg-primary-foreground/10 rounded-full overflow-hidden relative">
+          <CardContent className="p-3 md:p-4 pt-0">
+            <div className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">{t('kpis.ready')}</div>
+            <p className="text-xs text-primary-foreground/70 mt-1 font-semibold uppercase tracking-wider">{t('kpis.reportingCycle', { year: workingYear })}</p>
+            <div className="mt-3 md:mt-6 h-1.5 w-full bg-primary-foreground/10 rounded-full overflow-hidden relative">
                <motion.div 
                 initial={{ scaleX: 0 }}
                 animate={{ scaleX: 0.92 }}
@@ -81,14 +81,15 @@ export function DashboardKPIs({ controlsCount, openDeficienciesCount, cosoPercen
       ].map((kpi, i) => (
         <motion.div key={i} variants={itemVariants}>
           <Card className="border-slate-200 bg-white shadow-sm hover:shadow-md transition-all duration-300 h-full border-b-2 hover:border-b-slate-900 rounded-xl">
-            <CardHeader className="pb-1">
-              <CardTitle className="text-xs font-bold uppercase text-slate-500 tracking-wider flex items-center gap-2">
-                <kpi.icon className={cn("h-3.5 w-3.5", kpi.color)} aria-hidden="true" /> {kpi.title}
+            <CardHeader className="p-3 md:p-4 pb-1">
+              <CardTitle className="text-xs font-bold uppercase text-slate-500 tracking-wider flex items-center gap-1.5 md:gap-2 truncate">
+                <kpi.icon className={cn("h-3.5 w-3.5 shrink-0", kpi.color)} aria-hidden="true" /> 
+                <span className="truncate">{kpi.title}</span>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className={cn("text-3xl font-bold tracking-tight", kpi.valueColor || "text-slate-900")}>{kpi.value}</div>
-              <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mt-1">{kpi.subtitle}</p>
+            <CardContent className="p-3 md:p-4 pt-0">
+              <div className={cn("text-2xl sm:text-3xl font-bold tracking-tight", kpi.valueColor || "text-slate-900")}>{kpi.value}</div>
+              <p className="text-xs text-slate-500 font-medium uppercase tracking-wider mt-0.5 md:mt-1 truncate">{kpi.subtitle}</p>
             </CardContent>
           </Card>
         </motion.div>
