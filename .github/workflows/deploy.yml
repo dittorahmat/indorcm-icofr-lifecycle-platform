@@ -24,6 +24,8 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT || '22' }}
+          timeout: 60s
+          command_timeout: 30m
           script: |
             echo "Starting deployment..."
             bash /home/ubuntu/indorcm-icofr-lifecycle-platform/deploy.sh

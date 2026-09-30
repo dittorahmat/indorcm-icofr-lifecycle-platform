@@ -147,7 +147,9 @@ if ! command -v bun >/dev/null 2>&1; then
     exit 1
 fi
 
+log "Menjalankan bun install (frozen-lockfile jika memungkinkan)..."
 bun install || { log "FATAL: bun install gagal"; exit 1; }
+log "bun install selesai."
 
 # 5. Migrasi DB hanya bila file skema berubah antar-revisi (hemat + aman utk change frontend-only).
 if [ "$NEW_REV" != "$OLD_REV" ]; then
@@ -169,7 +171,9 @@ else
 fi
 
 # 6. Build frontend utk Apache.
+log "Menjalankan bun run build (Vite frontend bundling)..."
 bun run build || { log "FATAL: bun run build gagal"; exit 1; }
+log "bun run build selesai."
 
 # 7. Cap versi live agar user bisa verifikasi yg sedang tayang.
 python3 - "$NEW_REV" "$DEPLOY_INFO" <<'EOF' || { echo "FATAL: tulis deploy-info gagal"; exit 1; }
