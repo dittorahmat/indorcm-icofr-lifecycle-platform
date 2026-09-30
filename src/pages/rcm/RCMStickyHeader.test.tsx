@@ -34,8 +34,11 @@ describe('RCMTable Sticky Header Verification', () => {
       </QueryClientProvider>
     );
 
-    const tableContainer = screen.getByRole('table').parentElement;
-    expect(tableContainer).toHaveClass('overflow-auto');
+    // The table sits inside a responsive wrapper (hidden md:block), so assert
+    // against the nearest scrollable ancestor rather than the direct parent.
+    const table = screen.getByRole('table');
+    const scrollContainer = table.closest('div.overflow-auto');
+    expect(scrollContainer).toBeInTheDocument();
   });
 
   it('should have a sticky thead', () => {

@@ -70,16 +70,24 @@ describe('CSARealizationTable Component', () => {
     expect(screen.getByText('realizationTable.title')).toBeInTheDocument();
     expect(screen.getByText('realizationTable.columns.frequency')).toBeInTheDocument();
 
+    // The component dual-renders a mobile card stack (md:hidden) and a desktop
+    // table (hidden md:block). In jsdom neither Tailwind class hides anything,
+    // so summary strings appear twice — once per view. Assert both render.
+    const expectInBothViews = (text: string) => {
+      const matches = screen.getAllByText(text);
+      expect(matches).toHaveLength(2);
+    };
+
     // Check Annual Group
     // Populasi is 1 control, target is 1, completed is 1/1
-    expect(screen.getByText('realizationTable.frequencies.Annual')).toBeInTheDocument();
-    expect(screen.getByText('1 realizationTable.controlsCount')).toBeInTheDocument();
-    expect(screen.getByText('1 / 1 (100%)')).toBeInTheDocument();
+    expectInBothViews('realizationTable.frequencies.Annual');
+    expectInBothViews('1 realizationTable.controlsCount');
+    expectInBothViews('1 / 1 (100%)');
 
     // Check Monthly Group
     // Populasi is 2 controls, target is 2 - 5, completed is 1/2 (c2 is pending = completed progress, c3 is rejected = incomplete)
-    expect(screen.getByText('realizationTable.frequencies.Monthly')).toBeInTheDocument();
-    expect(screen.getByText('2 realizationTable.controlsCount')).toBeInTheDocument();
-    expect(screen.getByText('1 / 2 (50%)')).toBeInTheDocument();
+    expectInBothViews('realizationTable.frequencies.Monthly');
+    expectInBothViews('2 realizationTable.controlsCount');
+    expectInBothViews('1 / 2 (50%)');
   });
 });

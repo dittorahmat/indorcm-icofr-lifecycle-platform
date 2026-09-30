@@ -31,8 +31,8 @@ export function ScopingSimulationForm({ activeSnap, onSubmit, isPending, default
 
   return (
     <div className="space-y-4 py-4">
-      <div className="grid grid-cols-3 gap-4">
-        <div className="col-span-2 space-y-2">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="sm:col-span-2 space-y-2">
           <Label className="text-xs uppercase font-bold text-slate-500 tracking-wider">{t('form.name')}</Label>
           <Input placeholder={t('form.namePlaceholder')} value={name} onChange={e => setName(e.target.value)} />
         </div>
@@ -41,7 +41,7 @@ export function ScopingSimulationForm({ activeSnap, onSubmit, isPending, default
           <Input value={defaultYear} readOnly className="bg-slate-100 font-bold text-slate-600 border-slate-200" />
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label className="text-xs uppercase font-bold text-slate-500 tracking-wider">{t('form.benchmark')}</Label>
           {activeSnap?.benchmarkFsliNames?.length ? (
@@ -66,7 +66,7 @@ export function ScopingSimulationForm({ activeSnap, onSubmit, isPending, default
         </div>
       </div>
       <div className="p-3 bg-blue-50 border border-blue-100 rounded-md">
-        <p className="text-xs text-blue-700 leading-relaxed italic">
+        <p className="text-xs text-blue-700 leading-relaxed">
           {t('params.multiplier')}: <strong>{getGroupMultiplier(locations)}x</strong>.
           Default OM: <strong>{defaultOm}%</strong>.
         </p>

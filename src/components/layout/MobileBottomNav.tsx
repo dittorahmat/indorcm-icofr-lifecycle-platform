@@ -11,17 +11,23 @@ export function MobileBottomNav() {
   const { t } = useTranslation('common');
   const { toggleSidebar } = useSidebar();
 
-  // Query pending approvals or unread notifications for badge count
+  // Query pending approvals or unread notifications for badge count.
+  // Battery/network-conscious: refresh on window focus + sparse 5-min
+  // interval instead of aggressive 30s polling.
   const { data: unreadNotifications } = useQuery({
     queryKey: ['notifications', 'unread-count'],
     queryFn: () => api<{ count: number }>('/api/notifications/unread-count'),
-    refetchInterval: 30000,
+    refetchOnWindowFocus: true,
+    refetchInterval: 5 * 60 * 1000,
+    staleTime: 60 * 1000,
   });
 
   const { data: csaSchedules } = useQuery({
     queryKey: ['csa-schedules'],
     queryFn: () => api<{ items: any[] }>('/api/csa/schedules'),
-    refetchInterval: 30000,
+    refetchOnWindowFocus: true,
+    refetchInterval: 5 * 60 * 1000,
+    staleTime: 60 * 1000,
   });
 
   const pendingCount = (csaSchedules?.items?.filter(s => s.status !== 'Completed').length || 0) +

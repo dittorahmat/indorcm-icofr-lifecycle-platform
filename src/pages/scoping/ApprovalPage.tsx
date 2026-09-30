@@ -99,7 +99,8 @@ export function ApprovalPage() {
           </Badge>
         </div>
 
-        <Card>
+        {/* DESKTOP VIEW: Table */}
+        <Card className="hidden md:block">
           <CardHeader>
             <CardTitle>{t('approval.queueTitle')}</CardTitle>
             <CardDescription>{t('approval.queueDesc')}</CardDescription>
@@ -122,7 +123,7 @@ export function ApprovalPage() {
                 {isLoading ? (
                   <TableRow><TableCell colSpan={8} className="text-center py-10"><Loader2 className="h-8 w-8 animate-spin mx-auto text-muted-foreground" /></TableCell></TableRow>
                 ) : pendingSims.length === 0 ? (
-                  <TableRow><TableCell colSpan={8} className="text-center py-10 text-muted-foreground italic">No simulations pending your review.</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={8} className="text-center py-10 text-muted-foreground">No simulations pending your review.</TableCell></TableRow>
                 ) : pendingSims.map(sim => (
                   <TableRow key={sim.id}>
                     <TableCell className="font-medium">{sim.name}</TableCell>
@@ -150,9 +151,60 @@ export function ApprovalPage() {
           </CardContent>
         </Card>
 
+        {/* MOBILE VIEW: Approval Card Stack */}
+        <div className="block md:hidden space-y-4">
+          {isLoading ? (
+            <div className="h-48 flex flex-col items-center justify-center bg-card rounded-lg border p-6">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mb-3" />
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t('approval.queueTitle')}</span>
+            </div>
+          ) : pendingSims.length === 0 ? (
+            <div className="h-48 flex items-center justify-center bg-card rounded-lg border p-6 text-center text-muted-foreground text-xs font-medium">
+              {t('approval.queueDesc')}
+            </div>
+          ) : pendingSims.map(sim => (
+            <div key={sim.id} className="bg-card border rounded-lg shadow-sm p-4 space-y-3">
+              <div className="flex items-start justify-between gap-2">
+                <p className="text-sm font-bold leading-tight">{sim.name}</p>
+                <Badge variant="secondary" className={cn(
+                  "shrink-0",
+                  sim.status === 'Pending CFO' ? "bg-amber-100 text-amber-700" : "bg-blue-100 text-blue-700"
+                )}>
+                  {sim.status === 'Pending CFO' ? t('status.pendingCfo') : t('status.pendingKomut')}
+                </Badge>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="bg-muted/50 rounded-md p-2 col-span-2">
+                  <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t('form.benchmark')}</p>
+                  <p className="text-xs font-semibold mt-0.5">{sim.basis}</p>
+                </div>
+                <div className="bg-muted/50 rounded-md p-2">
+                  <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t('params.omLabel')}</p>
+                  <p className="text-xs font-semibold mt-0.5">{sim.omPercentage}%</p>
+                </div>
+                <div className="bg-muted/50 rounded-md p-2">
+                  <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t('params.haircutLabel')}</p>
+                  <p className="text-xs font-semibold mt-0.5">{sim.haircutPercentage}%</p>
+                </div>
+                <div className="bg-muted/50 rounded-md p-2">
+                  <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t('params.omValue')}</p>
+                  <p className="text-xs font-semibold font-mono mt-0.5">Rp {sim.omValue.toLocaleString('id-ID')}</p>
+                </div>
+                <div className="bg-muted/50 rounded-md p-2">
+                  <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t('params.pmValue')}</p>
+                  <p className="text-xs font-semibold font-mono mt-0.5">Rp {sim.pmValue.toLocaleString('id-ID')}</p>
+                </div>
+              </div>
+              <Button className="w-full min-h-[44px] gap-2" onClick={() => { setSelectedSim(sim); setIsReviewOpen(true); }}>
+                <Eye className="h-4 w-4" /> Review
+              </Button>
+            </div>
+          ))}
+        </div>
+
         {/* Review Dialog */}
         <Dialog open={isReviewOpen} onOpenChange={setIsReviewOpen}>
-          <DialogContent className="max-w-5xl max-h-[90vh] flex flex-col">
+            <DialogContent className="w-[calc(100vw-2rem)] sm:w-full max-w-5xl max-h-[92dvh] sm:max-h-[90vh] flex flex-col overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <ShieldCheck className="h-5 w-5 text-indigo-600" />
@@ -191,7 +243,7 @@ export function ApprovalPage() {
               </Tabs>
             </div>
 
-            <div className="space-y-4 border-t pt-4">
+            <div className="space-y-4 border-t pt-4 sticky bottom-0 bg-background pb-1">
               <div className="space-y-2">
                 <Label htmlFor="note" className="flex items-center gap-2">
                   <MessageSquare className="h-4 w-4" /> {t('approval.notesLabel')}
