@@ -10,7 +10,7 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Eye } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
@@ -25,6 +25,7 @@ import { BPMSelectionHUD } from './editor/BPMSelectionHUD';
 import { BPMCanvasToolbar } from './editor/BPMCanvasToolbar';
 import { BPMShapePalette } from './editor/BPMShapePalette';
 import { BPMDocumentView } from './editor/BPMDocumentView';
+import { BPMNodeInspectSheet } from './editor/BPMNodeInspectSheet';
 import { BPMOcrModal } from './editor/BPMOcrModal';
 import { BPMCanvasExportOverlay } from './editor/BPMCanvasExportOverlay';
 import { BPMCanvasAlignmentGuides } from './editor/BPMCanvasAlignmentGuides';
@@ -53,6 +54,22 @@ const NON_SELECTABLE_BADGE_TYPES = new Set(['risk-control-badge', 'docked-risk',
 
 function isBadgeNodeType(type?: string | null) {
   return !!type && NON_SELECTABLE_BADGE_TYPES.has(type);
+}
+
+// Mobile (<md) viewport detection for the read-only inspection contract.
+// Edit chrome is hidden via CSS; canvas interactions are gated via this flag.
+function useIsMobileViewport() {
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches
+  );
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)');
+    const onChange = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    setIsMobile(mq.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+  return isMobile;
 }
 
 export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmProcessId: propBpmProcessId }: BPMEditorProps) {
@@ -234,6 +251,18 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
 
   // Sync isDirty with global context using the unique ID hook
   useUnsavedChanges(isDirty || isExporting);
+
+  // Read-only inspection contract on small viewports: same canvas, no edits.
+  // (Placed after useBPMEditorState so isLocked is in scope.)
+  const isMobileView = useIsMobileViewport();
+  const [mobileInspectId, setMobileInspectId] = useState<string | null>(null);
+  const isTouchReadOnly = isLocked || isMobileView;
+  const mobileInspectNode = mobileInspectId ? nodes.find(n => n.id === mobileInspectId) ?? null : null;
+
+  // Portals escape CSS wrappers: close the inspector when leaving mobile width.
+  useEffect(() => {
+    if (!isMobileView) setMobileInspectId(null);
+  }, [isMobileView]);
 
   const {
     toggleNodeLock,
@@ -423,7 +452,8 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
           />
         ) : (
           <div className="flex-1 flex flex-col h-full overflow-hidden">
-            {/* Dedicated Top Canvas Toolbar */}
+            {/* Dedicated Top Canvas Toolbar (desktop only; hidden on mobile) */}
+            <div className="hidden md:block">
             <BPMCanvasToolbar
               subProcess={subProcess}
               canUndo={canUndo}
@@ -451,6 +481,18 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
                 metadata: { ...diagram?.metadata, signatures, globalScale }
               })}
             />
+            </div>
+
+            {/* Mobile read-only banner */}
+            <div className="md:hidden flex items-center gap-2 px-4 py-2 bg-slate-100 border-b border-slate-200 shrink-0">
+              <Eye className="h-4 w-4 text-slate-500 shrink-0" />
+              <span className="text-xs font-black uppercase tracking-wider text-slate-600">
+                {t('bpm:mobile.viewMode', { defaultValue: 'Mode Lihat' })}
+              </span>
+              <span className="text-xs text-slate-500 truncate">
+                {t('bpm:mobile.viewModeHint', { defaultValue: 'Read-only di HP — sunting di desktop' })}
+              </span>
+            </div>
 
             {/* ReactFlow Canvas Viewport */}
             <div className="flex-1 relative h-full w-full overflow-hidden">
@@ -464,19 +506,19 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
                   '--bpm-global-font-scale': globalScale / 100 
                 } as React.CSSProperties}
                 onInit={setRfInstance}
-                onNodesChange={isLocked ? undefined : onNodesChange}
-                onEdgesChange={isLocked ? undefined : onEdgesChange}
-                onNodesDelete={isLocked ? undefined : handleNodesDelete}
-                onEdgesDelete={isLocked ? undefined : onEdgesDelete}
-                deleteKeyCode={isLocked ? null : ["Delete", "Backspace"]}
-                nodesDraggable={!isLocked}
-                nodesConnectable={!isLocked}
+                onNodesChange={isTouchReadOnly ? undefined : onNodesChange}
+                onEdgesChange={isTouchReadOnly ? undefined : onEdgesChange}
+                onNodesDelete={isTouchReadOnly ? undefined : handleNodesDelete}
+                onEdgesDelete={isTouchReadOnly ? undefined : onEdgesDelete}
+                deleteKeyCode={isTouchReadOnly ? null : ["Delete", "Backspace"]}
+                nodesDraggable={!isTouchReadOnly}
+                nodesConnectable={!isTouchReadOnly}
                 elementsSelectable={true}
                 onNodeDrag={handleNodeDrag}
                 onNodeDragStop={handleNodeDragStop}
                 onDragOver={onDragOver}
                 onDrop={onDrop}
-                onConnect={isLocked ? undefined : (params) => {
+                onConnect={isTouchReadOnly ? undefined : (params) => {
                   pushState(nodes, edges);
                   setDirty(true);
                   setEdges((eds) => addEdge({ 
@@ -494,10 +536,18 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
                   setSelectedEdgeId(null);
                   if (isBadgeNodeType(node.type)) return;
                   setSelectedNodeId(node.id);
+                  // On mobile the edit HUD is hidden: tap opens the read-only inspector.
+                  if (isMobileView) setMobileInspectId(node.id);
                 }}
                 onNodeDoubleClick={(_, node) => {
                   // Explicit edit intent: select + open the worksheet.
                   if (isBadgeNodeType(node.type)) return;
+                  // On mobile there is no editing: route to the read-only inspector.
+                  if (isMobileView) {
+                    setSelectedNodeId(node.id);
+                    setMobileInspectId(node.id);
+                    return;
+                  }
                   openPropertiesForNode(node.id);
                 }}
                 onEdgeClick={(_, edge) => {
@@ -522,9 +572,12 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
                 />
                 <Background gap={16} size={1} color="hsl(var(--border))" />
                 <Controls />
-                <MiniMap />
+                <div className="hidden md:block">
+                  <MiniMap />
+                </div>
 
-            {/* Process Elements & Flow Controls Palette */}
+            {/* Process Elements & Flow Controls Palette (desktop only) */}
+            <div className="hidden md:block">
             <BPMShapePalette
               subProcess={subProcess}
               isLocked={isLocked}
@@ -566,6 +619,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
                  setEditingNodeId(null);
                }}
               />
+            </div>
           </ReactFlow>
         </div>
       </div>
@@ -591,6 +645,12 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
           isLocked={isLocked}
           bpmProcessId={bpmProcess?.id}
           nodes={nodes}
+        />
+
+        {/* Mobile read-only node inspector (bottom sheet; opens on mobile tap only) */}
+        <BPMNodeInspectSheet
+          node={mobileInspectNode}
+          onClose={() => setMobileInspectId(null)}
         />
 
       </div>

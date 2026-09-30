@@ -8,6 +8,7 @@ import { GripVertical, Users, History, Calendar, ShieldAlert, Target, Info, Aler
 import type { Deficiency, ActionPlan } from '@shared/types';
 import { cn } from '@/lib/utils';
 import { getDeficiencyDistribution } from '@/lib/compliance-utils';
+import { useTranslation } from 'react-i18next';
 
 interface DeficiencyCardProps {
   deficiency: Deficiency;
@@ -15,6 +16,7 @@ interface DeficiencyCardProps {
 }
 
 export function DeficiencyCard({ deficiency, actionPlan }: DeficiencyCardProps) {
+  const { t } = useTranslation('deficiency');
   const distribution = getDeficiencyDistribution(deficiency.severity);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: actionPlan?.id || deficiency.id });
   
@@ -101,12 +103,12 @@ export function DeficiencyCard({ deficiency, actionPlan }: DeficiencyCardProps) 
         <CardContent className="p-5 pt-0 space-y-4">
           {/* PROMINENT RISK DESCRIPTION BOX */}
           {deficiency.riskDescription && (
-             <div className="p-2.5 bg-rose-50/70 border border-rose-200/80 rounded-lg text-rose-950 text-[11px] leading-relaxed flex items-start gap-2">
+             <div className="p-2.5 bg-rose-50/70 border border-rose-200/80 rounded-lg text-rose-950 text-xs leading-relaxed flex items-start gap-2">
                <AlertTriangle className="h-4 w-4 text-rose-500 shrink-0 mt-0.5" />
                <div>
-                 <span className="font-bold text-rose-900 block text-[9px] uppercase tracking-wider mb-0.5">
-                   Risiko Terdampak {deficiency.riskCode ? `(${deficiency.riskCode})` : ''}:
-                 </span>
+                  <span className="font-bold text-rose-900 block text-xs uppercase tracking-wider mb-0.5">
+                    {t('card.riskAffected', { defaultValue: 'Risiko Terdampak' })} {deficiency.riskCode ? `(${deficiency.riskCode})` : ''}:
+                  </span>
                  {deficiency.riskDescription}
                </div>
              </div>
@@ -114,26 +116,26 @@ export function DeficiencyCard({ deficiency, actionPlan }: DeficiencyCardProps) 
 
           {/* FINDING / JUSTIFICATION NOTE BOX */}
           {deficiency.controlName && (
-             <div className="p-3 bg-amber-50/60 border border-amber-200/80 rounded-lg text-slate-700 text-[11px] leading-relaxed">
-               <span className="font-bold text-amber-900 block text-[9px] uppercase tracking-wider mb-0.5">Catatan Evaluasi / Temuan Pengujian:</span>
+             <div className="p-3 bg-amber-50/60 border border-amber-200/80 rounded-lg text-slate-700 text-xs leading-relaxed">
+               <span className="font-bold text-amber-900 block text-xs uppercase tracking-wider mb-0.5">{t('card.evalNote', { defaultValue: 'Catatan Evaluasi / Temuan Pengujian:' })}</span>
                {deficiency.description}
              </div>
           )}
           <div className="flex items-center justify-between">
               {actionPlan ? (
                  <div className={cn(
-                   "flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest",
+                   "flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest",
                    isOverdue ? "text-rose-600" : "text-slate-400"
                  )}>
                    <Calendar className="h-3 w-3" />
                    Due: {displayDate.toLocaleDateString()}
                  </div>
               ) : (
-                <div className="text-[10px] font-bold text-slate-300 uppercase tracking-widest italic">No Action Plan</div>
+                <div className="text-xs font-bold text-slate-300 uppercase tracking-widest">No Action Plan</div>
              )}
              
              {actionPlan && (
-                <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-600 uppercase tracking-widest bg-slate-50 px-2 py-1 rounded-lg border border-slate-100">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-600 uppercase tracking-widest bg-slate-50 px-2 py-1 rounded-lg border border-slate-100">
                   <Target className="h-3 w-3 text-indigo-500" />
                   {actionPlan.picName || 'TBD'}
                 </div>
@@ -141,12 +143,12 @@ export function DeficiencyCard({ deficiency, actionPlan }: DeficiencyCardProps) 
           </div>
 
           <div className="pt-3 border-t border-slate-50">
-             <div className="flex items-center gap-1.5 text-[9px] font-bold text-slate-400 uppercase tracking-[0.15em] mb-2">
+             <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 uppercase tracking-[0.15em] mb-2">
                 <Users className="h-3 w-3 text-slate-300" /> Report Distribution
              </div>
              <div className="flex flex-wrap gap-1.5">
                 {distribution.map((stakeholder, i) => (
-                  <Badge key={i} variant="outline" className="text-[9px] bg-slate-50/50 border-slate-100 text-slate-500 font-bold uppercase px-2 h-4 shadow-none">
+                  <Badge key={i} variant="outline" className="text-xs bg-slate-50/50 border-slate-100 text-slate-500 font-bold uppercase px-2 h-4 shadow-none">
                     {stakeholder}
                   </Badge>
                 ))}
@@ -157,16 +159,16 @@ export function DeficiencyCard({ deficiency, actionPlan }: DeficiencyCardProps) 
             <div className="pt-3 border-t border-slate-50 space-y-2.5">
               {deficiency.correctiveActionTaken && (
                 <div className="space-y-1">
-                  <div className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest flex items-center gap-1.5">
+                  <div className="text-xs font-bold text-emerald-600 uppercase tracking-widest flex items-center gap-1.5">
                     <CheckCircle2 className="h-3 w-3" /> Action Taken
                   </div>
-                  <p className="text-[10px] leading-relaxed text-slate-500 italic font-medium">
+                    <p className="text-xs leading-relaxed text-slate-500 font-medium">
                     "{deficiency.correctiveActionTaken}"
                   </p>
                 </div>
               )}
               {deficiency.remediationEvidence && (
-                <div className="flex items-center gap-2 text-[9px] font-bold text-indigo-600 bg-indigo-50/50 px-2.5 py-1.5 rounded-xl border border-indigo-100 w-fit shadow-sm">
+                <div className="flex items-center gap-2 text-xs font-bold text-indigo-600 bg-indigo-50/50 px-2.5 py-1.5 rounded-xl border border-indigo-100 w-fit shadow-sm">
                   <History className="h-3 w-3" /> {deficiency.remediationEvidence}
                 </div>
               )}

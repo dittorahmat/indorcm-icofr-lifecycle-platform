@@ -9,6 +9,7 @@
   "actions": {
     "add": "Add",
     "save": "Save",
+    "close": "Close",
     "delete": "Delete",
     "edit": "Edit",
     "cancel": "Cancel",

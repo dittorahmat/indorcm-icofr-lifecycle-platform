@@ -1,6 +1,13 @@
 {
   "title": "Papan Defisiensi",
   "description": "Pantau remediasi dan nilai tingkat keparahan menggunakan model Degree of Deficiency (DoD).",
+  "board": {
+    "statusFilter": "Status defisiensi"
+  },
+  "card": {
+    "riskAffected": "Risiko Terdampak",
+    "evalNote": "Catatan Evaluasi / Temuan Pengujian:"
+  },
   "form": {
     "title": "Rencana Aksi Remediasi",
     "description": "Formulir perencanaan dan pemantauan remediasi kontrol sesuai SK-5/2024.",

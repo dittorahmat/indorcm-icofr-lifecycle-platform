@@ -6,6 +6,17 @@
     "rcm": "Matriks RCM",
     "logs": "Log Perubahan"
   },
+  "history": {
+    "title": "Riwayat Assessment",
+    "newAssessment": "Assessment Baru",
+    "loading": "Memuat...",
+    "empty": "Belum ada riwayat.",
+    "exportDetailed": "Ekspor Appendix 7a (Rinci)",
+    "exportSummary": "Ekspor Appendix 7a (Ringkas)",
+    "viewDetail": "Lihat detail",
+    "printOptions": "Opsi cetak",
+    "deleteAssessment": "Hapus assessment"
+  },
   "scheduling": {
     "title": "Penjadwalan Aktivitas ICOFR",
     "description": "Tentukan rencana kerja sesuai Juknis SK-5/2024.",
@@ -148,6 +159,26 @@
       "notes": "Keterangan",
       "pass": "Lulus?",
       "backToList": "Kembali ke Daftar"
+    },
+    "bpmConfirmTitle": "Konfirmasi Konsistensi BPM",
+    "bpmConfirmDesc": "Sesuai regulasi SK-5 Bab IV Bagian 2.2a, saya mengonfirmasi alur proses dan narasi kontrol masih sesuai dengan kondisi riil.",
+    "mobile": {
+      "sampleOf": "Sampel {{current}} dari {{total}}",
+      "prev": "Kembali",
+      "next": "Lanjut",
+      "jumpTo": "Lompat ke sampel",
+      "noSamples": "Belum ada sampel. Tambah sampel untuk memulai assessment lapangan.",
+      "takePhoto": "Ambil foto",
+      "uploadFile": "Unggah berkas",
+      "uploadFailed": "Unggah gagal",
+      "retry": "Coba lagi",
+      "attached": "Terlampir",
+      "readonlyNote": "Record sudah di-signoff (Read-only)",
+      "replaceEvidence": "Ganti bukti (Unggah ulang)",
+      "uploadEvidence": "Unggah bukti",
+      "viewEvidence": "Lihat Bukti (Pratinjau)",
+      "progress": "Progres",
+      "idLabel": "ID"
     }
   },
   "tod": {

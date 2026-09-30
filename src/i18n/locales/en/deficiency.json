@@ -1,6 +1,13 @@
 {
   "title": "Deficiency Board",
   "description": "Track remediation and assess severity using the Degree of Deficiency (DoD) model.",
+  "board": {
+    "statusFilter": "Deficiency status"
+  },
+  "card": {
+    "riskAffected": "Affected Risk",
+    "evalNote": "Evaluation Note / Test Finding:"
+  },
   "form": {
     "title": "Remediation Action Plan",
     "description": "Form for planning and tracking control remediation as per SK-5/2024.",

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,7 @@ import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/comp
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { 
   FileText, MapPin, LayoutDashboard, Plus, Database, 
-  UploadCloud, Check, Eye, RefreshCw, ChevronLeft, ChevronDown, 
+  UploadCloud, Camera, Check, Eye, RefreshCw, ChevronLeft, ChevronRight, ChevronDown, 
   UserCheck, Printer
 } from 'lucide-react';
 import { cn } from "@/lib/utils";
@@ -28,6 +28,9 @@ interface CSAFormProps {
   onBackToList: () => void;
   onPrint: (layout: 'detailed' | 'summary') => void;
   onFileUpload: (sIdx: number, cId: string) => void;
+  onCameraUpload?: (sIdx: number, cId: string) => void;
+  failedUploadRow?: { sIdx: number; cId: string } | null;
+  onRetryUpload?: () => void;
   isReadOnly: boolean;
   isAuthenticating: boolean;
   isPending: boolean;
@@ -47,11 +50,35 @@ interface CSAFormProps {
 
 export function CSAForm({
   form, onSubmit, onSaveDraft, onBackToList, onPrint, onFileUpload,
+  onCameraUpload, failedUploadRow, onRetryUpload,
   isReadOnly, isAuthenticating, isPending, activeControls, bpmRiskControlPairs,
   watchSamples, fields, append, anyPointFailed, activeUploadRow, getFileNameFromUrl,
   bpmCode, noGL, bpmProcessId, year
 }: CSAFormProps) {
   const { t } = useTranslation();
+
+  // Mobile stepper state (UI-only; form state stays in useCSA).
+  const [mobileStep, setMobileStep] = useState(0);
+  const stepCount = fields.length;
+  const safeStep = stepCount === 0 ? 0 : Math.min(Math.max(mobileStep, 0), stepCount - 1);
+  const activeStepSample = watchSamples[safeStep];
+
+  const handleAddSample = () => {
+    const controlResults: Record<string, any> = {};
+    activeControls.forEach(ctrl => {
+      const pair = bpmRiskControlPairs.find(p => p.controlId === ctrl.id);
+      controlResults[ctrl.id] = {
+        implemented: false,
+        riskId: pair?.riskId || '',
+        riskName: pair?.riskName || ctrl.description || 'N/A',
+        controlName: pair?.controlName || ctrl.name || 'N/A',
+        evidenceUrl: '',
+        comment: ''
+      };
+    });
+    append({ sampleRef: '', controlResults });
+    setMobileStep(stepCount);
+  };
 
   return (
     <Form {...form}>
@@ -139,10 +166,10 @@ export function CSAForm({
               </FormControl>
               <div className="space-y-1 leading-none">
                 <FormLabel className="text-xs font-bold text-slate-900 cursor-pointer">
-                  Konfirmasi Konsistensi BPM
+                  {t('csa_hub:form.bpmConfirmTitle', { defaultValue: 'Konfirmasi Konsistensi BPM' })}
                 </FormLabel>
                 <p className="text-xs text-slate-700 leading-tight">
-                  Sesuai regulasi SK-5 Bab IV Bagian 2.2a, saya mengonfirmasi alur proses dan narasi kontrol masih sesuai dengan kondisi riil.
+                  {t('csa_hub:form.bpmConfirmDesc', { defaultValue: 'Sesuai regulasi SK-5 Bab IV Bagian 2.2a, saya mengonfirmasi alur proses dan narasi kontrol masih sesuai dengan kondisi riil.' })}
                 </p>
               </div>
             </FormItem>
@@ -171,6 +198,8 @@ export function CSAForm({
           </div>
         </div>
 
+        {/* DESKTOP VIEW: Sample matrix */}
+        <div className="hidden md:block">
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h4 className="text-xs font-black uppercase text-slate-700 flex items-center gap-2">
@@ -180,21 +209,7 @@ export function CSAForm({
               {!isReadOnly && (
                 <Button 
                 type="button"
-                onClick={() => {
-                  const controlResults: Record<string, any> = {};
-                  activeControls.forEach(ctrl => {
-                    const pair = bpmRiskControlPairs.find(p => p.controlId === ctrl.id);
-                    controlResults[ctrl.id] = {
-                      implemented: false,
-                      riskId: pair?.riskId || '',
-                      riskName: pair?.riskName || ctrl.description || 'N/A',
-                      controlName: pair?.controlName || ctrl.name || 'N/A',
-                      evidenceUrl: '',
-                      comment: ''
-                    };
-                  });
-                  append({ sampleRef: '', controlResults });
-                }}
+                onClick={handleAddSample}
                 variant="outline"
                 size="sm"
                 className="h-7 text-xs font-bold border-slate-200 text-slate-700 hover:bg-slate-50"
@@ -243,7 +258,7 @@ export function CSAForm({
                         placeholder={t('csa_hub:form.typeReference')}
                       />
                     )} />
-                    <div className="text-xs text-slate-400 px-3">ID: {field.glRowId?.substring(0,8) || t('csa_hub:form.manualEntry')}</div>
+                    <div className="text-xs text-slate-400 px-3">{t('csa_hub:form.mobile.idLabel', { defaultValue: 'ID' })}: {field.glRowId?.substring(0,8) || t('csa_hub:form.manualEntry')}</div>
                   </TableCell>
                   {activeControls.map(ctrl => (
                     <TableCell key={ctrl.id} className="text-center p-0">
@@ -265,7 +280,231 @@ export function CSAForm({
                 </Table>
                 </div>
                 </div>
+                </div>
 
+                {/* MOBILE VIEW: Sample stepper (one sample per screen) */}
+                <div className="md:hidden space-y-4" data-testid="csa-sample-stepper">
+                  <div className="flex items-center justify-between gap-2">
+                    <h4 className="text-xs font-black uppercase text-slate-700 flex items-center gap-2">
+                      <LayoutDashboard className="h-3.5 w-3.5" /> {t('csa_hub:form.summaryTitle')}
+                    </h4>
+                    <Badge variant="outline" className="bg-slate-50 text-slate-700 border-slate-200 text-xs font-bold shrink-0">
+                      {t('csa_hub:form.mobile.sampleOf', { current: stepCount === 0 ? 0 : safeStep + 1, total: stepCount, defaultValue: `Sample ${stepCount === 0 ? 0 : safeStep + 1} of ${stepCount}` })}
+                    </Badge>
+                  </div>
+
+                  {stepCount === 0 ? (
+                    <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-center space-y-3">
+                      <p className="text-xs font-medium text-slate-500">
+                        {t('csa_hub:form.mobile.noSamples', { defaultValue: 'No samples yet. Add a sample to start field assessment.' })}
+                      </p>
+                      {!isReadOnly && (
+                        <Button type="button" onClick={handleAddSample} className="min-h-[44px] text-xs font-bold gap-2">
+                          <Plus className="h-4 w-4" /> {t('csa_hub:form.addManualSample')}
+                        </Button>
+                      )}
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setMobileStep(safeStep - 1)}
+                          disabled={safeStep === 0}
+                          aria-label={t('csa_hub:form.mobile.prev', { defaultValue: 'Back' })}
+                          className="min-h-[44px] min-w-[44px] shrink-0"
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <Select value={String(safeStep)} onValueChange={(v) => setMobileStep(Number(v))} disabled={isReadOnly && false}>
+                          <SelectTrigger className="flex-1 min-h-[44px] text-xs font-bold bg-white" aria-label={t('csa_hub:form.mobile.jumpTo', { defaultValue: 'Jump to sample' })}>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {fields.map((field, idx) => (
+                              <SelectItem key={field.id} value={String(idx)} className="text-xs font-bold">
+                                {watchSamples[idx]?.sampleRef || t('csa_hub:form.emptyReference')} ({idx + 1}/{stepCount})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setMobileStep(safeStep + 1)}
+                          disabled={safeStep >= stepCount - 1}
+                          aria-label={t('csa_hub:form.mobile.next', { defaultValue: 'Next' })}
+                          className="min-h-[44px] min-w-[44px] shrink-0"
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      </div>
+
+                      <FormField control={form.control} name={`samples.${safeStep}.sampleRef`} render={({ field: f }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs font-black uppercase text-slate-400">
+                            {t('csa_hub:form.sampleReference')}
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              {...f}
+                              disabled={isReadOnly}
+                              className="min-h-[44px] text-xs font-bold bg-white"
+                              placeholder={t('csa_hub:form.typeReference')}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+
+                      {activeControls.map(ctrl => {
+                        const res: any = activeStepSample?.controlResults?.[ctrl.id] ?? {};
+                        const isUploading = isPending && activeUploadRow?.sIdx === safeStep && activeUploadRow?.cId === ctrl.id;
+                        const isFailed = failedUploadRow?.sIdx === safeStep && failedUploadRow?.cId === ctrl.id;
+                        return (
+                          <div key={ctrl.id} className="rounded-lg border border-slate-200 bg-white p-4 space-y-3 shadow-sm">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="space-y-1 min-w-0">
+                                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider truncate">{res.riskName || 'N/A'}</p>
+                                <p className="text-xs font-bold text-slate-800">{res.controlName || ctrl.name}</p>
+                                <Badge variant="outline" className="w-fit text-xs h-5 font-mono">{ctrl.id}</Badge>
+                              </div>
+                              <div className={cn(
+                                "h-3 w-3 rounded-full shrink-0 mt-1",
+                                res.implemented ? "bg-emerald-500" : "bg-red-500"
+                              )} />
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              {!isReadOnly && onCameraUpload && (
+                                <Button
+                                  type="button"
+                                  variant={res.evidenceUrl ? "secondary" : "outline"}
+                                  onClick={() => onCameraUpload(safeStep, ctrl.id)}
+                                  disabled={isPending}
+                                  className="flex-1 min-h-[44px] text-xs font-bold gap-2"
+                                >
+                                  {isUploading ? (
+                                    <RefreshCw className="h-4 w-4 animate-spin" />
+                                  ) : res.evidenceUrl ? (
+                                    <Check className="h-4 w-4" />
+                                  ) : (
+                                    <Camera className="h-4 w-4" />
+                                  )}
+                                  {t('csa_hub:form.mobile.takePhoto', { defaultValue: 'Take photo' })}
+                                </Button>
+                              )}
+                              {!isReadOnly && (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  onClick={() => onFileUpload(safeStep, ctrl.id)}
+                                  disabled={isPending}
+                                  aria-label={t('csa_hub:form.mobile.uploadFile', { defaultValue: 'Upload file' })}
+                                  className="min-h-[44px] min-w-[44px] shrink-0"
+                                >
+                                  <UploadCloud className="h-4 w-4" />
+                                </Button>
+                              )}
+                              {res.evidenceUrl && (
+                                <Button
+                                  type="button"
+                                  variant="default"
+                                  onClick={() => window.open(res.evidenceUrl, '_blank')}
+                                  aria-label={t('csa_hub:form.mobile.viewEvidence', { defaultValue: 'View evidence' })}
+                                  className="min-h-[44px] min-w-[44px] shrink-0"
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+
+                            {res.evidenceUrl && (
+                              <div
+                                className="truncate text-xs text-emerald-700 font-bold uppercase tracking-tighter"
+                                title={getFileNameFromUrl(res.evidenceUrl)}
+                              >
+                                {getFileNameFromUrl(res.evidenceUrl) || t('csa_hub:form.mobile.attached', { defaultValue: 'Attached' })}
+                              </div>
+                            )}
+
+                            {isFailed && (
+                              <div className="rounded-md border border-red-200 bg-red-50 p-3 flex items-center justify-between gap-2">
+                                <span className="text-xs font-bold text-red-700">
+                                  {t('csa_hub:form.mobile.uploadFailed', { defaultValue: 'Upload failed' })}
+                                </span>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  onClick={onRetryUpload}
+                                  className="min-h-[44px] text-xs font-bold border-red-200 text-red-700 shrink-0"
+                                >
+                                  <RefreshCw className="h-4 w-4 mr-1" />
+                                  {t('csa_hub:form.mobile.retry', { defaultValue: 'Retry' })}
+                                </Button>
+                              </div>
+                            )}
+
+                            <FormField control={form.control} name={`samples.${safeStep}.controlResults.${ctrl.id}.comment`} render={({ field: f }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Input
+                                    {...f}
+                                    disabled={isReadOnly}
+                                    className="min-h-[44px] text-xs bg-white"
+                                    placeholder={t('common:placeholders.notes')}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )} />
+
+                            <FormField control={form.control} name={`samples.${safeStep}.controlResults.${ctrl.id}.implemented`} render={({ field: f }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <label
+                                    htmlFor={`mobile-step-${safeStep}-${ctrl.id}`}
+                                    className={cn(
+                                      "flex items-center justify-between gap-3 rounded-lg border p-3 min-h-[52px] cursor-pointer",
+                                      f.value ? "border-emerald-200 bg-emerald-50" : "border-slate-200 bg-white"
+                                    )}
+                                  >
+                                    <span className={cn(
+                                      "text-xs font-black uppercase tracking-wider",
+                                      f.value ? "text-emerald-700" : "text-slate-500"
+                                    )}>
+                                      {f.value ? t('csa_hub:form.passed', { defaultValue: 'PASSED' }) : t('csa_hub:form.deficiency', { defaultValue: 'DEFICIENCY' })}
+                                    </span>
+                                    <Checkbox
+                                      id={`mobile-step-${safeStep}-${ctrl.id}`}
+                                      checked={f.value}
+                                      onCheckedChange={f.onChange}
+                                      disabled={isReadOnly}
+                                      className={cn("h-7 w-7", f.value ? "text-green-600 border-green-600" : "text-slate-300")}
+                                    />
+                                  </label>
+                                </FormControl>
+                              </FormItem>
+                            )} />
+                          </div>
+                        );
+                      })}
+
+                      <div className="flex items-center gap-2">
+                        <Badge className="bg-emerald-600 text-xs font-black uppercase tracking-wider">
+                          {Object.values(activeStepSample?.controlResults ?? {}).filter((r: any) => r.implemented).length} {t('csa_hub:form.passed', { defaultValue: 'PASSED' })}
+                        </Badge>
+                        <Badge className="bg-red-600 text-xs font-black uppercase tracking-wider">
+                          {Object.values(activeStepSample?.controlResults ?? {}).filter((r: any) => !r.implemented).length} {t('csa_hub:form.deficiency', { defaultValue: 'DEFICIENCY' })}
+                        </Badge>
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {/* DESKTOP VIEW: Verification detail */}
+                <div className="hidden md:block">
                 <div className="space-y-4">
                 <div className="flex items-center justify-between">
                 <h4 className="text-xs font-black uppercase text-slate-700 flex items-center gap-2">
@@ -305,7 +544,7 @@ export function CSAForm({
                             <span className="text-xs font-black text-slate-900 uppercase tracking-tight">
                               {sample.sampleRef || t('csa_hub:form.emptyReference')}
                             </span>
-                            <span className="text-xs text-slate-500 font-mono">ID: {sample.glRowId || t('csa_hub:form.manualEntry')}</span>
+                            <span className="text-xs text-slate-500 font-mono">{t('csa_hub:form.mobile.idLabel', { defaultValue: 'ID' })}: {sample.glRowId || t('csa_hub:form.manualEntry')}</span>
                           </div>
                         </div>
                         <div className="flex gap-2 items-center">
@@ -380,7 +619,7 @@ export function CSAForm({
                                     </Button>
                                   </TooltipTrigger>
                                   <TooltipContent>
-                                    {isReadOnly ? "Record sudah di-signoff (Read-only)" : (res.evidenceUrl ? "Ganti bukti (Re-upload)" : "Unggah bukti")}
+                                    {isReadOnly ? t('csa_hub:form.mobile.readonlyNote', { defaultValue: 'Record sudah di-signoff (Read-only)' }) : (res.evidenceUrl ? t('csa_hub:form.mobile.replaceEvidence', { defaultValue: 'Ganti bukti (Re-upload)' }) : t('csa_hub:form.mobile.uploadEvidence', { defaultValue: 'Unggah bukti' }))}
                                   </TooltipContent>
                                 </Tooltip>
                               </TooltipProvider>
@@ -400,7 +639,7 @@ export function CSAForm({
                                       </Button>
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                      Lihat Bukti (Preview)
+                                      {t('csa_hub:form.mobile.viewEvidence', { defaultValue: 'Lihat Bukti (Preview)' })}
                                     </TooltipContent>
                                   </Tooltip>
                                 </TooltipProvider>
@@ -454,7 +693,7 @@ export function CSAForm({
                 <p className="text-2xl font-black text-slate-700">{watchSamples.length}</p>
                 </div>
                 <div className="text-center">
-                <p className="text-xs font-black uppercase text-slate-400 tracking-widest">Progress</p>
+                <p className="text-xs font-black uppercase text-slate-400 tracking-widest">{t('csa_hub:form.mobile.progress', { defaultValue: 'Progress' })}</p>
                 <p className="text-2xl font-black text-primary">
                   {watchSamples.reduce((acc, s) => acc + Object.values(s.controlResults).filter((r: any) => r.implemented || r.comment || r.evidenceUrl).length, 0)} / {watchSamples.reduce((acc, s) => acc + Object.keys(s.controlResults).length, 0)}
                 </p>
@@ -473,6 +712,7 @@ export function CSAForm({
                 </div>
                 </div>
                 </div>
+                </div>
 
                 <div className="pt-8 border-t space-y-6">
                 <FormField control={form.control} name="comments" render={({ field: f }) => (
@@ -483,12 +723,12 @@ export function CSAForm({
                 </FormItem>
                 )} />
 
-                <div className="flex justify-end gap-3">
+                <div className="sticky bottom-0 z-10 flex flex-wrap justify-end gap-2 border-t border-slate-100 bg-white/95 py-3 pb-[env(safe-area-inset-bottom,0px)] md:static md:z-auto md:gap-3 md:border-0 md:bg-transparent md:py-0 md:pb-0">
                 <Button 
                 variant="outline" 
                 type="button"
                 onClick={onBackToList} 
-                className="px-8 font-bold"
+                className="px-8 font-bold min-h-[44px] md:min-h-0"
                 >
                 {isReadOnly ? <ChevronLeft className="h-4 w-4 mr-2" /> : null}
                 {isReadOnly ? t('csa_hub:form.table.backToList') : t('common:actions.cancel')}

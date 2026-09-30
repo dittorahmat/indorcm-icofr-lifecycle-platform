@@ -59,7 +59,9 @@ function KanbanColumn({
   selectedIds,
   onToggleSelect,
   role,
-  onStatusChange
+  onStatusChange,
+  fullWidth,
+  alwaysShowActions
 }: { 
   status: string; 
   deficiencies: Deficiency[]; 
@@ -70,7 +72,9 @@ function KanbanColumn({
   selectedIds: string[],
   onToggleSelect: (id: string) => void,
   role: string,
-  onStatusChange: (apId: string, action: string) => void
+  onStatusChange: (apId: string, action: string) => void,
+  fullWidth?: boolean,
+  alwaysShowActions?: boolean
 }) {
   const { t } = useTranslation('deficiency');
   const plansInColumn = actionPlans.filter(ap => (ap.workflowStatus || ap.status) === status);
@@ -88,7 +92,10 @@ function KanbanColumn({
   const config = getColumnConfig(status);
 
   return (
-    <div className="w-80 flex-shrink-0 flex flex-col h-full group/column">
+    <div className={cn(
+      "flex flex-col h-full group/column",
+      fullWidth ? "w-full" : "w-80 flex-shrink-0"
+    )}>
       <div className="flex items-center justify-between mb-4 px-3">
         <div className="flex items-center gap-2.5">
            <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center border-2 border-white shadow-sm", config.bg)}>
@@ -96,12 +103,15 @@ function KanbanColumn({
            </div>
            <h2 className="font-display font-bold text-slate-900 tracking-tight">{config.title}</h2>
         </div>
-        <Badge variant="outline" className="font-mono text-[10px] font-bold bg-white border-slate-200 text-slate-400 px-2 h-5 flex items-center justify-center min-w-[24px]">
+        <Badge variant="outline" className="font-mono text-xs font-bold bg-white border-slate-200 text-slate-400 px-2 h-5 flex items-center justify-center min-w-[24px]">
           {plansInColumn.length}
         </Badge>
       </div>
 
-      <div className="flex-1 min-h-[500px] bg-slate-50/50 rounded-2xl border-2 border-dashed border-slate-200/60 p-3 group-hover/column:bg-slate-50/80 group-hover/column:border-slate-300 transition-all duration-300">
+      <div className={cn(
+        "flex-1 bg-slate-50/50 rounded-2xl border-2 border-dashed border-slate-200/60 p-3 group-hover/column:bg-slate-50/80 group-hover/column:border-slate-300 transition-all duration-300",
+        fullWidth ? "min-h-[200px]" : "min-h-[500px]"
+      )}>
         <SortableContext id={status} items={plansInColumn.map(ap => ap.id)} strategy={verticalListSortingStrategy}>
           <div className="space-y-4">
             {plansInColumn.map(ap => {
@@ -125,13 +135,18 @@ function KanbanColumn({
                     <DeficiencyCard deficiency={deficiency} actionPlan={ap} />
                   </div>
 
-                  <div className="flex flex-col gap-2 mt-2 px-1 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-[-5px] group-hover:translate-y-0">
+                  <div className={cn(
+                    "flex flex-col gap-2 mt-2 px-1 transition-all duration-300",
+                    alwaysShowActions
+                      ? "opacity-100 [&_button]:min-h-[44px]"
+                      : "opacity-0 group-hover:opacity-100 transform translate-y-[-5px] group-hover:translate-y-0"
+                  )}>
                     <div className="flex gap-2">
                     {(status === "Ineffective" || role === 'Admin') && (
                       <Button 
                         size="sm" 
                         variant="outline" 
-                        className="flex-1 h-8 text-[10px] font-bold uppercase tracking-widest bg-white border-slate-200 rounded-xl"
+                        className="flex-1 h-8 text-xs font-bold uppercase tracking-widest bg-white border-slate-200 rounded-xl"
                         onClick={() => onEditPlan(ap)}
                       >
                         {t('actions.actionPlan', 'Action Plan')}
@@ -140,7 +155,7 @@ function KanbanColumn({
                     {status === "Ineffective" && ['Line 1', 'Admin'].includes(role) && (
                       <Button 
                         size="sm" 
-                        className="flex-1 h-8 text-[10px] font-bold uppercase tracking-widest bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl"
+                        className="flex-1 h-8 text-xs font-bold uppercase tracking-widest bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl"
                         onClick={() => onStatusChange(ap.id, "Submit")}
                       >
                         <Send className="h-3 w-3 mr-1" /> {t('workflow:submitPlan', { ns: 'workflow' })}
@@ -152,7 +167,7 @@ function KanbanColumn({
                       <div className="flex gap-2">
                         <Button 
                           size="sm" 
-                          className="flex-1 h-8 text-[10px] font-bold uppercase tracking-widest bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl"
+                          className="flex-1 h-8 text-xs font-bold uppercase tracking-widest bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl"
                           onClick={() => onStatusChange(ap.id, "Review")}
                         >
                           <Zap className="h-3 w-3 mr-1" /> Pass Review
@@ -160,7 +175,7 @@ function KanbanColumn({
                         <Button 
                           size="sm" 
                           variant="outline" 
-                          className="flex-1 h-8 text-[10px] font-bold uppercase tracking-widest text-rose-600 border-rose-200 hover:bg-rose-50 rounded-xl"
+                          className="flex-1 h-8 text-xs font-bold uppercase tracking-widest text-rose-600 border-rose-200 hover:bg-rose-50 rounded-xl"
                           onClick={() => onStatusChange(ap.id, "Reject")}
                         >
                           <XCircle className="h-3 w-3 mr-1" /> Reject
@@ -172,7 +187,7 @@ function KanbanColumn({
                        <div className="flex gap-2">
                         <Button 
                           size="sm" 
-                          className="flex-1 h-8 text-[10px] font-bold uppercase tracking-widest bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl"
+                          className="flex-1 h-8 text-xs font-bold uppercase tracking-widest bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl"
                           onClick={() => onStatusChange(ap.id, "Approve")}
                         >
                           <CheckCircle2 className="h-3 w-3 mr-1" /> Approve
@@ -180,7 +195,7 @@ function KanbanColumn({
                         <Button 
                           size="sm" 
                           variant="outline" 
-                          className="flex-1 h-8 text-[10px] font-bold uppercase tracking-widest text-rose-600 border-rose-200 hover:bg-rose-50 rounded-xl"
+                          className="flex-1 h-8 text-xs font-bold uppercase tracking-widest text-rose-600 border-rose-200 hover:bg-rose-50 rounded-xl"
                           onClick={() => onStatusChange(ap.id, "Reject")}
                         >
                           <XCircle className="h-3 w-3 mr-1" /> Reject
@@ -193,7 +208,10 @@ function KanbanColumn({
                     <Button 
                       size="icon" 
                       variant="secondary" 
-                      className="absolute top-3 right-10 h-7 w-7 rounded-full shadow-md bg-white opacity-0 group-hover:opacity-100 transition-all hover:text-indigo-600 hover:scale-110"
+                      className={cn(
+                        "absolute top-3 right-10 rounded-full shadow-md bg-white transition-all hover:text-indigo-600 hover:scale-110",
+                        alwaysShowActions ? "h-11 w-11 opacity-100" : "h-7 w-7 opacity-0 group-hover:opacity-100"
+                      )}
                       title="Assess Severity (DoD)"
                       onClick={() => onAssess(deficiency.id)}
                     >
@@ -220,6 +238,14 @@ export function DeficiencyBoard() {
   const [activeDeficiencyId, setActiveDeficiencyId] = React.useState<string | null>(null);
   const [activePlan, setActivePlan] = React.useState<ActionPlan | null>(null);
   const [sourceFilter, setSourceFilter] = React.useState<string>("all");
+  const [mobileStatus, setMobileStatus] = React.useState<string>(KANBAN_COLUMNS[0]);
+
+  const mobileStatusKey: Record<string, string> = {
+    "Ineffective": "status.ineffective",
+    "In Review": "status.review",
+    "In Approval": "status.approval",
+    "Resolved": "status.resolved"
+  };
 
   const { data: deficienciesData, isLoading: deficienciesLoading } = useQuery({
     queryKey: ['deficiencies'],
@@ -257,7 +283,7 @@ export function DeficiencyBoard() {
   }, [actionPlansData]);
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
@@ -421,7 +447,7 @@ export function DeficiencyBoard() {
           >
             <div className="flex flex-col md:flex-row items-end md:items-center gap-4">
               <div className="flex flex-col gap-1.5">
-                <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest ml-1">{t('sources.label')}</span>
+                <span className="text-xs font-black uppercase text-slate-400 tracking-widest ml-1">{t('sources.label')}</span>
                 <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-inner">
                   {[
                     { id: 'all', label: t('sources.all') },
@@ -433,7 +459,7 @@ export function DeficiencyBoard() {
                       variant={sourceFilter === s.id ? "default" : "ghost"} 
                       size="sm" 
                       className={cn(
-                        "h-8 text-[10px] font-bold uppercase tracking-widest px-3 rounded-lg transition-all",
+                        "h-8 text-xs font-bold uppercase tracking-widest px-3 rounded-lg transition-all",
                         sourceFilter === s.id ? "bg-white text-indigo-600 shadow-sm border border-slate-200 hover:bg-white" : "text-slate-400"
                       )}
                       onClick={() => setSourceFilter(s.id)}
@@ -450,7 +476,7 @@ export function DeficiencyBoard() {
                 <Button 
                   variant="outline" 
                   onClick={() => setAggregateMode(true)} 
-                  className="h-10 gap-2 border-slate-200 bg-white hover:bg-slate-50 transition-all font-bold text-[10px] uppercase tracking-widest px-5 rounded-xl shadow-sm self-end"
+                  className="h-10 gap-2 border-slate-200 bg-white hover:bg-slate-50 transition-all font-bold text-xs uppercase tracking-widest px-5 rounded-xl shadow-sm self-end"
                 >
                   <Layers className="h-4 w-4 text-indigo-500" /> Aggregate Analysis
                 </Button>
@@ -459,13 +485,13 @@ export function DeficiencyBoard() {
                   <Button 
                     variant="ghost" 
                     onClick={() => { setAggregateMode(false); setSelectedDeficiencies([]); }}
-                    className="h-10 font-bold text-[10px] uppercase tracking-widest text-slate-400 hover:text-slate-600"
+                    className="h-10 font-bold text-xs uppercase tracking-widest text-slate-400 hover:text-slate-600"
                   >
                     Cancel
                   </Button>
                   <Button 
                     onClick={handleStartAggregate} 
-                    className="h-10 gap-2 bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all font-bold text-[10px] uppercase tracking-widest px-5 rounded-xl text-white"
+                    className="h-10 gap-2 bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all font-bold text-xs uppercase tracking-widest px-5 rounded-xl text-white"
                   >
                     <CheckCircle2 className="h-4 w-4" /> Evaluate Group ({selectedDeficiencies.length})
                   </Button>
@@ -475,7 +501,9 @@ export function DeficiencyBoard() {
           </PageHeader>
         </motion.div>
 
-        <div className="flex-1 overflow-x-auto pb-6 scrollbar-thin scrollbar-thumb-slate-200">
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          {/* DESKTOP VIEW: Kanban columns */}
+          <div className="hidden md:block flex-1 overflow-x-auto pb-6 scrollbar-thin scrollbar-thumb-slate-200">
           {isLoading ? (
             <div className="flex gap-6">
               {KANBAN_COLUMNS.map(status => (
@@ -487,7 +515,6 @@ export function DeficiencyBoard() {
               ))}
             </div>
           ) : (
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
               <div className="flex gap-8 pb-4 h-full min-h-[600px]">
                 {KANBAN_COLUMNS.map(status => (
                   <KanbanColumn
@@ -514,9 +541,70 @@ export function DeficiencyBoard() {
                   />
                 ))}
               </div>
-            </DndContext>
           )}
-        </div>
+          </div>
+
+          {/* MOBILE VIEW: Status tabs + vertical card stream */}
+          <div className="md:hidden flex-1" data-testid="deficiency-mobile-tabs">
+          {isLoading ? (
+              <div className="space-y-3">
+                <Skeleton className="h-11 w-full rounded-lg" />
+                <Skeleton className="h-28 w-full rounded-lg" />
+                <Skeleton className="h-28 w-full rounded-lg" />
+              </div>
+          ) : (
+              <>
+                <div className="flex gap-1.5 overflow-x-auto pb-3" role="tablist" aria-label={t('board.statusFilter', { defaultValue: 'Deficiency status' })}>
+                  {KANBAN_COLUMNS.map(status => {
+                    const count = actionPlans.filter(ap => (ap.workflowStatus || ap.status) === status).length;
+                    const isActive = mobileStatus === status;
+                    return (
+                      <button
+                        key={status}
+                        type="button"
+                        role="tab"
+                        aria-selected={isActive}
+                        onClick={() => setMobileStatus(status)}
+                        className={cn(
+                          "flex-1 min-h-[44px] min-w-[100px] rounded-lg border px-3 text-xs font-bold uppercase tracking-wider transition-colors",
+                          isActive
+                            ? "bg-indigo-600 text-white border-indigo-600"
+                            : "bg-white text-slate-500 border-slate-200"
+                        )}
+                      >
+                        {t(mobileStatusKey[status], { defaultValue: status })} ({count})
+                      </button>
+                    );
+                  })}
+                </div>
+                <KanbanColumn
+                  key={mobileStatus}
+                  status={mobileStatus}
+                  deficiencies={filteredDeficiencies}
+                  actionPlans={actionPlans}
+                  onAssess={handleAssess}
+                  isSelectionMode={isAggregateMode}
+                  selectedIds={selectedDeficiencies}
+                  onToggleSelect={handleToggleSelect}
+                  role={userRole}
+                  onEditPlan={(plan) => {
+                    setActivePlan(plan);
+                    setRemediationOpen(true);
+                  }}
+                  onStatusChange={(apId, action) => {
+                    workflowMutation.mutate({
+                      id: apId,
+                      action,
+                      note: `Transitioned from board: ${action}`
+                    });
+                  }}
+                  fullWidth
+                  alwaysShowActions
+                />
+              </>
+          )}
+          </div>
+        </DndContext>
       </motion.div>
 
       <DoDWizard 

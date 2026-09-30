@@ -6,6 +6,17 @@
     "rcm": "RCM Matrix",
     "logs": "Change Log"
   },
+  "history": {
+    "title": "Assessment History",
+    "newAssessment": "New Assessment",
+    "loading": "Loading...",
+    "empty": "No history found.",
+    "exportDetailed": "Export Appendix 7a (Detailed)",
+    "exportSummary": "Export Appendix 7a (Summary)",
+    "viewDetail": "View detail",
+    "printOptions": "Print options",
+    "deleteAssessment": "Delete assessment"
+  },
   "scheduling": {
     "title": "ICOFR Activity Scheduling",
     "description": "Set work plans according to Juknis SK-5/2024.",
@@ -148,6 +159,26 @@
       "notes": "Notes",
       "pass": "Pass?",
       "backToList": "Back to List"
+    },
+    "bpmConfirmTitle": "BPM Consistency Confirmation",
+    "bpmConfirmDesc": "Per regulation SK-5 Chapter IV Section 2.2a, I confirm the process flow and control narrative still match actual conditions.",
+    "mobile": {
+      "sampleOf": "Sample {{current}} of {{total}}",
+      "prev": "Back",
+      "next": "Next",
+      "jumpTo": "Jump to sample",
+      "noSamples": "No samples yet. Add a sample to start field assessment.",
+      "takePhoto": "Take photo",
+      "uploadFile": "Upload file",
+      "uploadFailed": "Upload failed",
+      "retry": "Retry",
+      "attached": "Attached",
+      "readonlyNote": "Record signed off (Read-only)",
+      "replaceEvidence": "Replace evidence (Re-upload)",
+      "uploadEvidence": "Upload evidence",
+      "viewEvidence": "View Evidence (Preview)",
+      "progress": "Progress",
+      "idLabel": "ID"
     }
   },
   "tod": {

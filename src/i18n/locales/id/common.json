@@ -9,6 +9,7 @@
   "actions": {
     "add": "Tambah",
     "save": "Simpan",
+    "close": "Tutup",
     "delete": "Hapus",
     "edit": "Ubah",
     "cancel": "Batal",

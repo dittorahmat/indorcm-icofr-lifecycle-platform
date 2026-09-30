@@ -73,6 +73,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
   
   const [isAddingApp, setIsAddingApp] = React.useState(false);
   const [newAppName, setNewAppName] = React.useState("");
+  const [showFullTable, setShowFullTable] = React.useState(false);
 
   const handleOpenDiagram = React.useCallback((diagramId: string, subProcess: string) => {
     setSearchParams(prev => {
@@ -367,7 +368,72 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
          </CollapsibleContent>
       </Collapsible>
 
-      <div className="flex-1 min-h-0 overflow-auto bg-white">
+      {/* MOBILE VIEW: Control summary cards */}
+      <div className="md:hidden px-3 pt-3 space-y-3 max-h-[45vh] overflow-y-auto shrink-0" data-testid="bpm-worksheet-mobile-cards">
+        <p className="text-xs font-black uppercase tracking-wider text-slate-500">
+          {t('bpm:mobile.worksheetSummary', { defaultValue: 'Ringkasan Worksheet' })}
+        </p>
+        {isLoading ? (
+          <div className="flex flex-col items-center gap-2 py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            <p className="text-xs text-slate-400 font-medium">Loading...</p>
+          </div>
+        ) : table.getRowModel().rows.length === 0 ? (
+          <div className="flex flex-col items-center gap-2 py-8">
+            <Info className="h-6 w-6 text-slate-300" />
+            <p className="text-xs text-slate-400 font-medium">No records found.</p>
+          </div>
+        ) : (
+          <>
+            {table.getRowModel().rows.map(row => {
+              const c = row.original as any;
+              const assertions = Array.isArray(c.assertions) ? c.assertions : [];
+              return (
+                <div key={row.id} className="rounded-lg border border-slate-200 bg-white p-4 space-y-2 shadow-sm">
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-900 border border-slate-200">
+                      {c.code || '-'}
+                    </span>
+                    {c.isKeyControl && (
+                      <Badge className="bg-indigo-600 text-white font-semibold text-xs shrink-0">
+                        {t('bpm:mobile.keyControl', { defaultValue: 'Kontrol Utama' })}
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-xs font-bold text-slate-800 leading-snug line-clamp-2">{c.name || '-'}</p>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {c.type && (
+                      <span className="bg-slate-100 px-2 py-0.5 rounded text-xs font-medium text-slate-700">{c.type}</span>
+                    )}
+                    {c.nature && (
+                      <span className="bg-slate-100 px-2 py-0.5 rounded text-xs font-medium text-slate-700">{c.nature}</span>
+                    )}
+                    {assertions.length > 0 && (
+                      <span className="text-xs text-slate-500 font-medium">
+                        {t('bpm:mobile.assertionsCount', { count: assertions.length, defaultValue: `${assertions.length} asersi` })}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowFullTable(v => !v)}
+              aria-expanded={showFullTable}
+              className="w-full min-h-[44px] text-xs font-bold gap-2 bg-white"
+            >
+              {showFullTable ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              {showFullTable
+                ? t('bpm:mobile.hideFullTable', { defaultValue: 'Sembunyikan Tabel Penuh' })
+                : t('bpm:mobile.fullTable', { defaultValue: 'Lihat Tabel Penuh' })}
+            </Button>
+          </>
+        )}
+      </div>
+
+      <div className={cn("flex-1 min-h-0 overflow-auto bg-white max-w-full w-full", !showFullTable && "hidden", "md:block")}>
         <Table className="min-w-[2500px] border-separate border-spacing-0">
           <TableHeader className="bg-slate-100 sticky top-0 z-20">
             {table.getHeaderGroups().map(headerGroup => (

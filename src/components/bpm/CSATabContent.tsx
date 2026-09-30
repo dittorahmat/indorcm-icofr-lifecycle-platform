@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { Appendix7aDetailed } from '../reports/Appendix7aDetailed';
 import { Appendix7aSummary } from '../reports/Appendix7aSummary';
 import { Control, GLRow, TransactionDetail } from '@shared/types';
@@ -16,6 +16,36 @@ interface CSATabContentProps {
   subProcessName?: string;
   standalone?: boolean;
   scheduleId?: string;
+}
+
+// Downscale large camera photos before upload (long-edge cap) to keep field
+// uploads usable on slow connections. Falls back to the original file.
+async function maybeCompressImage(file: File): Promise<File> {
+  if (!file.type.startsWith('image/')) return file;
+  try {
+    const bitmap = await createImageBitmap(file);
+    const MAX_EDGE = 1600;
+    const scale = Math.min(1, MAX_EDGE / Math.max(bitmap.width, bitmap.height));
+    if (scale === 1) {
+      bitmap.close();
+      return file;
+    }
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(bitmap.width * scale);
+    canvas.height = Math.round(bitmap.height * scale);
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      bitmap.close();
+      return file;
+    }
+    ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    bitmap.close();
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.82));
+    if (!blob) return file;
+    return new File([blob], file.name.replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' });
+  } catch {
+    return file;
+  }
 }
 
 export function CSATabContent({ 
@@ -62,6 +92,19 @@ export function CSATabContent({
 
   const [printLayout, setPrintLayout] = useState<'detailed' | 'summary' | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const pendingFileRef = useRef<{ sIdx: number; cId: string; file: File } | null>(null);
+  const [failedUpload, setFailedUpload] = useState<{ sIdx: number; cId: string; file: File } | null>(null);
+
+  // Track upload outcome so a failed capture can be retried without losing the photo.
+  useEffect(() => {
+    if (uploadMutation.isSuccess) {
+      pendingFileRef.current = null;
+      setFailedUpload(null);
+    } else if (uploadMutation.isError && pendingFileRef.current) {
+      setFailedUpload(pendingFileRef.current);
+    }
+  }, [uploadMutation.isSuccess, uploadMutation.isError, uploadMutation.failureCount]);
 
   const isDirty = form.formState.isDirty && view === 'form';
   useUnsavedChanges(isDirty);
@@ -74,12 +117,41 @@ export function CSATabContent({
     }, 500);
   };
 
+  const submitUploadFile = (target: { sIdx: number; cId: string }, file: File) => {
+    pendingFileRef.current = { ...target, file };
+    setFailedUpload(null);
+    uploadMutation.reset();
+    void maybeCompressImage(file).then((finalFile) => {
+      pendingFileRef.current = { ...target, file: finalFile };
+      uploadMutation.mutate({ ...target, file: finalFile });
+    });
+  };
+
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && activeUploadRow) {
-      uploadMutation.mutate({ ...activeUploadRow, file });
+      submitUploadFile(activeUploadRow, file);
     }
     e.target.value = '';
+  };
+
+  const onCameraChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && activeUploadRow) {
+      submitUploadFile(activeUploadRow, file);
+    }
+    e.target.value = '';
+  };
+
+  const onCameraUpload = (sIdx: number, cId: string) => {
+    setActiveUploadRow({ sIdx, cId });
+    cameraInputRef.current?.click();
+  };
+
+  const onRetryUpload = () => {
+    if (failedUpload) {
+      submitUploadFile({ sIdx: failedUpload.sIdx, cId: failedUpload.cId }, failedUpload.file);
+    }
   };
 
   const getFileNameFromUrl = (url: string) => {
@@ -122,6 +194,15 @@ export function CSATabContent({
         onChange={onFileChange} 
         className="hidden" 
         accept=".pdf,.png,.jpg,.jpeg,.xlsx" 
+      />
+
+      <input
+        type="file"
+        ref={cameraInputRef}
+        onChange={onCameraChange}
+        className="hidden"
+        accept="image/*"
+        capture="environment"
       />
 
       <div className="printable-area">
@@ -178,6 +259,9 @@ export function CSATabContent({
               onBackToList={handleBackToList}
               onPrint={handlePrint}
               onFileUpload={(sIdx, cId) => { setActiveUploadRow({ sIdx, cId }); fileInputRef.current?.click(); }}
+              onCameraUpload={onCameraUpload}
+              failedUploadRow={failedUpload ? { sIdx: failedUpload.sIdx, cId: failedUpload.cId } : null}
+              onRetryUpload={onRetryUpload}
               isReadOnly={isReadOnly}
               isAuthenticating={isAuthenticating}
               isPending={createMutation.isPending}
