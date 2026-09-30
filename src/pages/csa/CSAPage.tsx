@@ -402,8 +402,42 @@ export function CSAPage() {
           </Table>
         </div>
 
-        {/* MOBILE VIEW: Card Stack */}
+        {/* MOBILE VIEW: Executive Summary & Card Stack */}
         <div className="block md:hidden space-y-4">
+          {/* Executive Summary Card */}
+          {records?.items && records.items.length > 0 && (
+            <div className="p-4 bg-card border rounded-lg shadow-sm space-y-3" data-testid="csa-mobile-executive-summary">
+              <div className="flex items-center justify-between border-b pb-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                  <ShieldCheck className="h-4 w-4 text-primary" />
+                  {t('page.summary.title', { defaultValue: 'Ringkasan Eksekutif Pengujian' })}
+                </span>
+                <Badge variant="outline" className="text-xs font-semibold">
+                  {records.items.length} {t('page.table.subProcess', { defaultValue: 'Proses' })}
+                </Badge>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-center">
+                <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 rounded-md">
+                  <span className="text-xs font-medium text-emerald-700 dark:text-emerald-300 block">
+                    {t('page.summary.effective', { defaultValue: 'Efektif' })}
+                  </span>
+                  <span className="text-lg font-bold text-emerald-800 dark:text-emerald-200">
+                    {records.items.filter(r => r.result === 'Effective').length}
+                  </span>
+                </div>
+                <div className="p-2.5 bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 rounded-md">
+                  <span className="text-xs font-medium text-red-700 dark:text-red-300 block">
+                    {t('page.summary.ineffective', { defaultValue: 'Defisiensi' })}
+                  </span>
+                  <span className="text-lg font-bold text-red-800 dark:text-red-200">
+                    {records.items.filter(r => r.result !== 'Effective').length}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
           {isLoading ? (
             <div className="h-64 flex flex-col items-center justify-center bg-white rounded-xl border p-6">
               <div className="h-8 w-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-3" />

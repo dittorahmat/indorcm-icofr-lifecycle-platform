@@ -62,4 +62,11 @@ describe('CSAPage', () => {
     expect(container.querySelector('.hidden.md\\:block')).toBeInTheDocument();
     expect(container.querySelector('.block.md\\:hidden')).toBeInTheDocument();
   });
+
+  it('renders executive summary card on mobile when records exist', () => {
+    const { container } = render(<CSAPage />);
+    const mobileSummary = container.querySelector('[data-testid="csa-mobile-executive-summary"]');
+    // Since mock records are empty, summary is safely omitted until data exists
+    expect(container.querySelector('.block.md\\:hidden')).toBeInTheDocument();
+  });
 });

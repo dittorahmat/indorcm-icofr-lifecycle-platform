@@ -56,6 +56,7 @@ import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 import { TodoListFilters } from '@/components/csa/TodoListFilters';
 import { TodoListGrid } from '@/components/csa/TodoListGrid';
+import { MobileTodoAgenda, AgendaEvent } from '@/components/csa/MobileTodoAgenda';
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 
 export function TodoListPage() {
@@ -128,7 +129,7 @@ export function TodoListPage() {
     }
   });
 
-  const handleOpenHub = (event: CSASchedule | string) => {
+  const handleOpenHub = (event: CSASchedule | AgendaEvent | string) => {
     const processId = typeof event === 'string' ? event : event.bpmProcessId;
     const scheduleId = typeof event === 'string' ? undefined : event.id;
     
@@ -256,6 +257,19 @@ export function TodoListPage() {
       .filter(item => item.events.length > 0);
   }, [calendarDays, currentDate, getEventsForDay]);
 
+  const allCalendarEvents = useMemo(() => {
+    const list: AgendaEvent[] = [];
+    calendarDays.forEach(day => {
+      const dayEvts = getEventsForDay(day);
+      dayEvts.forEach(e => {
+        if (!list.some(existing => existing.id === e.id)) {
+          list.push(e);
+        }
+      });
+    });
+    return list;
+  }, [calendarDays, getEventsForDay]);
+
   return (
     <AppLayout container={false}>
       <div className="flex flex-col h-[calc(100vh-64px)] overflow-hidden">
@@ -269,8 +283,8 @@ export function TodoListPage() {
         />
 
         <div className="flex flex-1 overflow-hidden">
-          {/* Calendar Sidebar */}
-          <div className="w-64 border-r bg-slate-50/30 flex flex-col overflow-hidden">
+          {/* Calendar Sidebar (Desktop only) */}
+          <div className="hidden md:flex w-64 border-r bg-slate-50/30 flex-col overflow-hidden">
             <div className="p-4 border-b">
               <Calendar
                 mode="single"
@@ -390,12 +404,25 @@ export function TodoListPage() {
             </div>
           </div>
 
-          <TodoListGrid 
-            calendarDays={calendarDays}
-            currentDate={currentDate}
-            getEventsForDay={getEventsForDay}
-            onSelectDate={setSelectedDate}
-          />
+          {/* Desktop Calendar Grid */}
+          <div className="hidden md:flex flex-1 overflow-hidden">
+            <TodoListGrid 
+              calendarDays={calendarDays}
+              currentDate={currentDate}
+              getEventsForDay={getEventsForDay}
+              onSelectDate={setSelectedDate}
+            />
+          </div>
+
+          {/* Mobile Agenda Feed View */}
+          <div className="md:hidden flex-1 overflow-y-auto">
+            <MobileTodoAgenda 
+              events={allCalendarEvents}
+              onOpenHub={handleOpenHub}
+              onEditClick={handleEditClick}
+              onDeleteClick={handleDeleteClick}
+            />
+          </div>
         </div>
 
         {selectedHubProcess && (

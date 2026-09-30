@@ -200,6 +200,11 @@
       "signOff": "Tanggal Sign-off",
       "samples": "Sampel",
       "reports": "Laporan"
+    },
+    "summary": {
+      "title": "Ringkasan Eksekutif Pengujian",
+      "effective": "Efektif",
+      "ineffective": "Defisiensi"
     }
   }
 }

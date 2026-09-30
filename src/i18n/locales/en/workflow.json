@@ -23,5 +23,12 @@
   "rejectFinal": "Reject Final",
   "rollbackIneffective": "Rollback to Ineffective",
   "validateAndSignOff": "Validate & Sign Off",
-  "rollbackValidation": "Rollback Validation"
+  "rollbackValidation": "Rollback Validation",
+  "quickNotes": {
+    "title": "Quick Preset Notes",
+    "approvedAsPerAttachment": "Approved as per attachment",
+    "needMoreSampleEvidence": "Please complete sample evidence",
+    "verifiedInLineWithSK5": "Verified in accordance with SK-5 standard",
+    "remediationRequired": "Remediation plan required"
+  }
 }

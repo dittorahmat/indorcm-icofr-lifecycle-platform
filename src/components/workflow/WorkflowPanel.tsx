@@ -14,14 +14,19 @@ import {
   Dialog, DialogContent, DialogDescription, 
   DialogFooter, DialogHeader, DialogTitle, DialogTrigger 
 } from '@/components/ui/dialog';
+import {
+  Sheet, SheetContent, SheetDescription,
+  SheetFooter, SheetHeader, SheetTitle
+} from '@/components/ui/sheet';
 import { 
   CheckCircle2, XCircle, Send, Search, RotateCcw, 
-  History, AlertCircle, Lock, Unlock, Loader2, Check, ChevronsUpDown, ChevronDown
+  History, AlertCircle, Lock, Unlock, Loader2, Check, ChevronsUpDown, ChevronDown, Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { WorkflowHistoryTimeline } from './WorkflowHistoryTimeline';
 import { useWorkflow } from '@/hooks/use-workflow';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
@@ -164,6 +169,14 @@ export function WorkflowPanel({
   const [selectedAssigneeId, setSelectedAssigneeId] = useState<string>('');
   const [isAssigneePickerOpen, setIsAssigneePickerOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const isMobile = useIsMobile();
+
+  const quickNotesPresets = [
+    t('workflow:quickNotes.approvedAsPerAttachment', { defaultValue: 'Disetujui sesuai lampiran' }),
+    t('workflow:quickNotes.verifiedInLineWithSK5', { defaultValue: 'Terverifikasi sesuai standar SK-5' }),
+    t('workflow:quickNotes.needMoreSampleEvidence', { defaultValue: 'Mohon lengkapi bukti sampel' }),
+    t('workflow:quickNotes.remediationRequired', { defaultValue: 'Rencana remediasi wajib disusun' })
+  ];
 
   const blueprint = WORKFLOW_BLUEPRINTS[entityType];
   const currentStep = blueprint?.steps[currentStatus] || { actions: [] };
@@ -385,7 +398,8 @@ export function WorkflowPanel({
         </CardContent>
       </Card>
 
-      <Dialog open={isNoteDialogOpen} onOpenChange={setIsNoteDialogOpen}>
+      {/* Desktop Dialog for Action Confirmation */}
+      <Dialog open={!isMobile && isNoteDialogOpen} onOpenChange={setIsNoteDialogOpen}>
         <DialogContent className="sm:max-w-[425px] shadow-2xl border-slate-200">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -453,11 +467,30 @@ export function WorkflowPanel({
             )}
             <div className="space-y-2">
               <Label className="text-xs uppercase font-bold text-slate-500 tracking-widest">Notes {(pendingActionId === 'Reject' || pendingActionId === 'Rollback') && <span className="text-rose-500">*</span>}</Label>
+              {/* Quick Note Presets for Mobile and Fast Approval */}
+              <div className="space-y-1.5">
+                <span className="text-xs font-semibold text-slate-500 flex items-center gap-1">
+                  <Sparkles className="h-3 w-3 text-indigo-500" />
+                  {t('workflow:quickNotes.title', { defaultValue: 'Preset Catatan Cepat' })}
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {quickNotesPresets.map((preset, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setNote(prev => prev ? `${prev} - ${preset}` : preset)}
+                      className="text-xs font-medium px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-md border border-slate-200 dark:border-slate-700 hover:bg-slate-200 active:scale-95 transition-all text-left"
+                    >
+                      + {preset}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <Textarea 
                 placeholder={t('workflow:reasonPlaceholder')}
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
-                className="min-h-[100px] bg-slate-50 border-slate-200"
+                className="min-h-[100px] bg-slate-50 border-slate-200 text-xs sm:text-sm"
               />
             </div>
           </div>
@@ -474,6 +507,71 @@ export function WorkflowPanel({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Mobile Drawer / Bottom Sheet for Action Confirmation */}
+      <Sheet open={isMobile && isNoteDialogOpen} onOpenChange={setIsNoteDialogOpen}>
+        <SheetContent side="bottom" className="p-4 sm:p-6 rounded-t-xl max-h-[85vh] overflow-y-auto pb-[env(safe-area-inset-bottom,16px)]">
+          <SheetHeader className="text-left pb-3 border-b">
+            <SheetTitle className="flex items-center gap-2 text-base font-bold">
+              {pendingActionId === 'Reject' ? <AlertCircle className="text-rose-500 h-5 w-5" /> : (pendingActionId === 'Rollback' ? <RotateCcw className="text-amber-500 h-5 w-5" /> : <Send className="text-indigo-500 h-5 w-5" />)}
+              {t('workflow:confirmAction', { action: pendingActionId })}
+            </SheetTitle>
+            <SheetDescription className="text-xs text-muted-foreground">
+              {pendingActionId === 'Reject' || pendingActionId === 'Rollback' ? t('workflow:reasonDescription') : "Konfirmasi aksi tata kelola alur kerja ICOFR."}
+            </SheetDescription>
+          </SheetHeader>
+
+          <div className="py-4 space-y-4">
+            <div className="space-y-2">
+              <Label className="text-xs uppercase font-bold text-slate-500 tracking-widest">
+                Notes {(pendingActionId === 'Reject' || pendingActionId === 'Rollback') && <span className="text-rose-500">*</span>}
+              </Label>
+              
+              {/* Mobile Quick Note Presets */}
+              <div className="space-y-1.5">
+                <span className="text-xs font-semibold text-slate-500 flex items-center gap-1">
+                  <Sparkles className="h-3 w-3 text-indigo-500" />
+                  {t('workflow:quickNotes.title', { defaultValue: 'Preset Catatan Cepat' })}
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {quickNotesPresets.map((preset, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setNote(prev => prev ? `${prev} - ${preset}` : preset)}
+                      className="text-xs font-medium px-2 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-md border border-slate-200 dark:border-slate-700 active:bg-slate-200"
+                    >
+                      + {preset}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <Textarea 
+                placeholder={t('workflow:reasonPlaceholder')}
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                className="min-h-[90px] bg-slate-50 border-slate-200 text-xs"
+              />
+            </div>
+          </div>
+
+          <SheetFooter className="flex-row gap-2 pt-2 border-t">
+            <Button variant="outline" className="flex-1 h-10 text-xs font-semibold" onClick={() => setIsNoteDialogOpen(false)}>
+              {t('common:actions.cancel')}
+            </Button>
+            <Button 
+              variant={pendingActionId === 'Reject' ? 'destructive' : 'default'} 
+              className="flex-1 h-10 text-xs font-bold"
+              disabled={((pendingActionId === 'Reject' || pendingActionId === 'Rollback') && !note.trim()) || isPending}
+              onClick={confirmActionWithNote}
+            >
+              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {t('workflow:confirmAction', { action: pendingActionId })}
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
     </>
   );
 }

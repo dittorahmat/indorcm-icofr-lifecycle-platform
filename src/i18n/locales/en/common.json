@@ -25,6 +25,7 @@
   },
   "navigation": {
     "dashboard": "Dashboard",
+    "todo": "Agenda",
     "csa": "CSA Tasks",
     "rcm": "RCM",
     "menu": "Menu",

@@ -200,6 +200,11 @@
       "signOff": "Sign-off Date",
       "samples": "Samples",
       "reports": "Reports"
+    },
+    "summary": {
+      "title": "Testing Executive Summary",
+      "effective": "Effective",
+      "ineffective": "Deficiency"
     }
   }
 }

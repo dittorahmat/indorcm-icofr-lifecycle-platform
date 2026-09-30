@@ -23,5 +23,12 @@
   "rejectFinal": "Tolak Final",
   "rollbackIneffective": "Rollback ke Ineffective",
   "validateAndSignOff": "Validasi & Sign Off",
-  "rollbackValidation": "Rollback Validasi"
+  "rollbackValidation": "Rollback Validasi",
+  "quickNotes": {
+    "title": "Preset Catatan Cepat",
+    "approvedAsPerAttachment": "Disetujui sesuai lampiran",
+    "needMoreSampleEvidence": "Mohon lengkapi bukti sampel",
+    "verifiedInLineWithSK5": "Terverifikasi sesuai standar SK-5",
+    "remediationRequired": "Rencana remediasi wajib disusun"
+  }
 }

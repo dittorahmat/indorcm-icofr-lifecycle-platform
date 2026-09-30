@@ -25,6 +25,7 @@
   },
   "navigation": {
     "dashboard": "Beranda",
+    "todo": "Agenda",
     "csa": "Tugas CSA",
     "rcm": "RCM",
     "menu": "Menu",
