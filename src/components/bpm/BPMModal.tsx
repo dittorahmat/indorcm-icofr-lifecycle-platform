@@ -111,14 +111,22 @@ export function BPMModal({
         const cSub = (c.subProcess || "").toLowerCase().trim();
         const targetSub = (subProcessName || "").toLowerCase().trim();
 
-        // Match 1: Hard ID link (Primary)
-        if (bpmProcessId && c.bpmProcessId === bpmProcessId) return true;
+        // Match 1: Hard ID link (Primary & Strict)
+        if (bpmProcessId && c.bpmProcessId === bpmProcessId) {
+          // If GL is specified, verify control belongs to this GL or has no GL restriction
+          if (noGL && c.fsliCodes && c.fsliCodes.length > 0) {
+            return c.fsliCodes.includes(noGL);
+          }
+          return true;
+        }
         
-        // Match 2: Name link (Reliable Fallback)
-        if (targetSub && cSub === targetSub) return true;
-        
-        // Match 3: Orphan link (Fallback for data missing process metadata but linked to GL)
-        if (!c.bpmProcessId && !cSub && c.fsliCodes?.includes(noGL)) return true;
+        // Match 2: Name link (Secondary Fallback - MUST also match GL)
+        if (targetSub && cSub === targetSub) {
+          if (noGL && c.fsliCodes && c.fsliCodes.length > 0) {
+            return c.fsliCodes.includes(noGL);
+          }
+          return !noGL;
+        }
         
         return false;
       });
@@ -207,6 +215,7 @@ export function BPMModal({
                 <TransactionSamplingTab 
                   noGL={noGL} 
                   bpmProcessId={bpmProcessId}
+                  year={year}
                   onSamplesSelected={(samples) => {
                     setSelectedSamples(samples);
                     setActiveTab("csa");
@@ -226,7 +235,7 @@ export function BPMModal({
                       <div className="bg-slate-50 p-3 border-b font-bold text-slate-900 text-xs uppercase tracking-widest flex items-center gap-2">
                         <FileText className="h-4 w-4" /> Lampiran 5.a - ELC Matrix
                       </div>
-                      <RCMELCPage embedded={true} />
+                      <RCMELCPage embedded={true} workingYearOverride={year} relevantFsli={fsliName} />
                    </div>
                    <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
                       <div className="bg-blue-50 p-3 border-b font-bold text-blue-900 text-xs uppercase tracking-widest flex items-center gap-2">

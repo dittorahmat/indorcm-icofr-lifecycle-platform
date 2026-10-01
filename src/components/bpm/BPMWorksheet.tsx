@@ -116,14 +116,21 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
         const cSub = (c.subProcess || "").toLowerCase().trim();
         const targetSub = (subProcessName || "").toLowerCase().trim();
 
-        // Match 1: Hard ID link (Primary)
-        if (bpmProcessId && c.bpmProcessId === bpmProcessId) return true;
+        // Match 1: Hard ID link (Primary & Strict)
+        if (bpmProcessId && c.bpmProcessId === bpmProcessId) {
+          if (noGL && c.fsliCodes && c.fsliCodes.length > 0) {
+            return c.fsliCodes.includes(noGL);
+          }
+          return true;
+        }
         
-        // Match 2: Name link (Reliable Fallback)
-        if (targetSub && cSub === targetSub) return true;
-        
-        // Match 3: Orphan link (Fallback for data missing process metadata but linked to GL)
-        if (!c.bpmProcessId && !cSub && c.fsliCodes?.includes(noGL)) return true;
+        // Match 2: Name link (Secondary Fallback - MUST also match GL)
+        if (targetSub && cSub === targetSub) {
+          if (noGL && c.fsliCodes && c.fsliCodes.length > 0) {
+            return c.fsliCodes.includes(noGL);
+          }
+          return !noGL;
+        }
         
         return false;
       });

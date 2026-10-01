@@ -37,19 +37,23 @@ export function Lampiran6LogView({ entityId, year, subProcessName, bpmProcessId 
         // Process ID matching
         const logProcessId = dAfter?.bpmProcessId || dBefore?.bpmProcessId;
 
-        // Check if log belongs to this sub-process context
+        // Check if log belongs to this sub-process context strictly
         let matchesContext = false;
-        if (targetSub && logSub) {
-          matchesContext = logSub === targetSub;
-        }
-        if (!matchesContext && bpmProcessId) {
+        if (bpmProcessId) {
           matchesContext = logProcessId === bpmProcessId || l.entityId === bpmProcessId;
         }
-        if (!matchesContext && entityId) {
+        
+        if (!matchesContext && targetSub) {
+          if (logSub === targetSub) {
+            // When matching by subProcess name, if entityId (noGL) is also provided, enforce that entityId matches
+            matchesContext = !entityId || l.entityId === entityId || dAfter?.noGL === entityId || dBefore?.noGL === entityId;
+          }
+        } else if (!matchesContext && !bpmProcessId && !targetSub && entityId) {
+          // Only fall back to entityId if neither bpmProcessId nor targetSub was specified
           matchesContext = l.entityId === entityId;
         }
 
-        // If no filter parameters were passed, allow all; otherwise require a match
+        // If filter parameters were passed, require a strict match
         if ((targetSub || bpmProcessId || entityId) && !matchesContext) {
           return false;
         }

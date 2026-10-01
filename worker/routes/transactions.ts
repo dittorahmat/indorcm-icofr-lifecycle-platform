@@ -16,12 +16,17 @@ transactions.get('/transaction-details', async (c) => {
   const orgId = c.get('organizationId');
   const noGL = c.req.query('noGL');
   const year = c.req.query('year');
+  const bpmProcessId = c.req.query('bpmProcessId');
 
   let conditions = eq(transactionDetails.organizationId, orgId);
 
   // --- STRICT ISOLATION LOGIC ---
   if (noGL) {
     conditions = and(conditions, eq(transactionDetails.noGL, noGL)) as any;
+  }
+
+  if (bpmProcessId && bpmProcessId !== 'undefined' && bpmProcessId !== 'null') {
+    conditions = and(conditions, eq(transactionDetails.bpmProcessId, bpmProcessId)) as any;
   }
 
   if (year) {
@@ -54,11 +59,12 @@ transactions.post('/transaction-details', async (c) => {
 
   // Handle Replace mode
   if (body.mode === 'replace' && body.noGL) {
-    await db.delete(transactionDetails)
-      .where(and(
-        eq(transactionDetails.noGL, body.noGL),
-        eq(transactionDetails.organizationId, orgId)
-      ));
+    const deleteConditions = and(
+      eq(transactionDetails.noGL, body.noGL),
+      eq(transactionDetails.organizationId, orgId),
+      body.bpmProcessId ? eq(transactionDetails.bpmProcessId, body.bpmProcessId) : undefined
+    );
+    await db.delete(transactionDetails).where(deleteConditions);
   }
 
   // Batch Insert
@@ -68,6 +74,7 @@ transactions.post('/transaction-details', async (c) => {
       ...row,
       id: crypto.randomUUID(),
       organizationId: orgId,
+      bpmProcessId: row.bpmProcessId || body.bpmProcessId || null,
       // Ensure date objects for timestamp columns
       transDate: row.transDate ? new Date(row.transDate) : null
     }));
@@ -100,7 +107,15 @@ transactions.delete('/transaction-details/:noGL', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const noGL = c.req.param('noGL');
-  await db.delete(transactionDetails).where(and(eq(transactionDetails.noGL, noGL), eq(transactionDetails.organizationId, orgId)));
+  const bpmProcessId = c.req.query('bpmProcessId');
+
+  const deleteConditions = and(
+    eq(transactionDetails.noGL, noGL),
+    eq(transactionDetails.organizationId, orgId),
+    bpmProcessId && bpmProcessId !== 'undefined' ? eq(transactionDetails.bpmProcessId, bpmProcessId) : undefined
+  );
+
+  await db.delete(transactionDetails).where(deleteConditions);
   return ok(c, { success: true });
 });
 

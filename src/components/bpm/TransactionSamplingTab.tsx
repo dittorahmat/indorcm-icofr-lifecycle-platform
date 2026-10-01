@@ -31,13 +31,15 @@ import {
 interface TransactionSamplingTabProps {
   noGL: string;
   bpmProcessId?: string;
+  year?: string;
   onSamplesSelected: (samples: TransactionDetail[]) => void;
 }
 
-export function TransactionSamplingTab({ noGL, bpmProcessId, onSamplesSelected }: TransactionSamplingTabProps) {
+export function TransactionSamplingTab({ noGL, bpmProcessId, year: propYear, onSamplesSelected }: TransactionSamplingTabProps) {
   const { t } = useTranslation(['bpm', 'csa_hub', 'common']);
   const queryClient = useQueryClient();
-  const { workingYear } = useFiscalYearStore();
+  const { workingYear: globalYear } = useFiscalYearStore();
+  const workingYear = propYear || globalYear;
   const [searchTerm, setSearchTerm] = React.useState('');
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
   const [isUploadModalOpen, setIsUploadModalOpen] = React.useState(false);
@@ -82,11 +84,11 @@ export function TransactionSamplingTab({ noGL, bpmProcessId, onSamplesSelected }
 
   const handleReset = async () => {
     try {
-      // If we have a process context, we only want to delete transactions for THIS process/GL pair
-      // or those that are unlinked for this GL.
-      // But for now, let's keep it simple and delete all for the GL as per existing logic, 
-      // but warn the user.
-      await api(`/api/transaction-details/${noGL}`, { method: 'DELETE' });
+      let url = `/api/transaction-details/${noGL}`;
+      if (bpmProcessId && bpmProcessId !== 'null' && bpmProcessId !== 'undefined') {
+        url += `?bpmProcessId=${bpmProcessId}`;
+      }
+      await api(url, { method: 'DELETE' });
       toast.success(t('bpm:sampling.reset.success'));
       refetch();
     } catch (err) {

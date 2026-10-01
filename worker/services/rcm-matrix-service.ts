@@ -98,8 +98,14 @@ export class RcmMatrixService {
       finalConditions = and(finalConditions, eq(rcms.year, parseInt(year))) as any;
     }
 
-    if (noGL && (!bpmProcessId || bpmProcessId === 'undefined')) {
-      finalConditions = and(finalConditions, like(rcms.id, `%-${noGL}`)) as any;
+    if (noGL && noGL !== 'undefined') {
+      finalConditions = and(
+        finalConditions,
+        or(
+          like(rcms.id, `%-${noGL}`),
+          sql`${controls.fsliCodes}::jsonb ? ${noGL}`
+        )
+      ) as any;
     }
 
     const results = await query.where(finalConditions);
@@ -245,7 +251,7 @@ export class RcmMatrixService {
     });
   }
 
-  async getItgcMatrix(orgId: string, year?: string) {
+  async getItgcMatrix(orgId: string, year?: string, bpmProcessId?: string) {
     const parentProcess = aliasedTable(bpmProcesses, "parent_process");
 
     let finalConditions = and(
@@ -255,6 +261,10 @@ export class RcmMatrixService {
 
     if (year) {
       finalConditions = and(finalConditions, eq(rcms.year, parseInt(year))) as any;
+    }
+
+    if (bpmProcessId && bpmProcessId !== 'undefined') {
+      finalConditions = and(finalConditions, eq(controls.bpmProcessId, bpmProcessId)) as any;
     }
 
     const results = await this.db.select({

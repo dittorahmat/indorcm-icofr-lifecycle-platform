@@ -17,10 +17,17 @@ import { exportRCMToExcel } from '@/lib/rcm-excel-export';
 
 const COSO_PRINCIPLES = Array.from({ length: 17 }, (_, i) => i + 1);
 
-export function RCMELCPage({ embedded = false }: { embedded?: boolean }) {
+interface RCMELCPageProps {
+  embedded?: boolean;
+  workingYearOverride?: string;
+  relevantFsli?: string;
+}
+
+export function RCMELCPage({ embedded = false, workingYearOverride, relevantFsli }: RCMELCPageProps) {
   const { t } = useTranslation(['rcm', 'common']);
   const queryClient = useQueryClient();
-  const { workingYear } = useFiscalYearStore();
+  const { workingYear: globalYear } = useFiscalYearStore();
+  const workingYear = workingYearOverride || globalYear;
   const [selectedOrgId, setSelectedOrgId] = React.useState<string>('all');
   const [editingItem, setEditingItem] = React.useState<any | null>(null);
   const [isRolloverOpen, setIsRolloverOpen] = React.useState(false);
@@ -39,7 +46,7 @@ export function RCMELCPage({ embedded = false }: { embedded?: boolean }) {
   });
 
   const { data: controlsData, isLoading: isLoadingControls } = useQuery({
-    queryKey: ['controls-elc', workingYear],
+    queryKey: ['controls-elc', workingYear, relevantFsli],
     queryFn: () => api<{ items: Control[] }>(`/api/controls?level=ELC&year=${workingYear}`),
     staleTime: 30000,
   });

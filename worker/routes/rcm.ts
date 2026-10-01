@@ -192,10 +192,11 @@ rcm.get('/rcm-matrix/itgc', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const year = c.req.query('year');
+  const bpmProcessId = c.req.query('bpmProcessId') || c.req.query('bpmId');
 
   const matrixService = new RcmMatrixService(db);
   const org = await db.select().from(organization).where(eq(organization.id, orgId)).then((rows: any) => rows[0]);
-  const results = await matrixService.getItgcMatrix(orgId, year);
+  const results = await matrixService.getItgcMatrix(orgId, year, bpmProcessId);
 
   return ok(c, { 
     items: results.map((r: any) => ({
