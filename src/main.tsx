@@ -32,6 +32,7 @@ const RCMITGCPage = lazy(() => import('@/pages/rcm/RCMITGCPage').then(module => 
 const TestWorkbench = lazy(() => import('@/pages/testing/TestWorkbench').then(module => ({ default: module.TestWorkbench })));
 const DeficiencyBoard = lazy(() => import('@/pages/deficiencies/DeficiencyBoard').then(module => ({ default: module.DeficiencyBoard })));
 const ReportsPage = lazy(() => import('@/pages/reports/ReportsPage').then(module => ({ default: module.ReportsPage })));
+const Appendix10Page = lazy(() => import('@/pages/reports/Appendix10Page').then(module => ({ default: module.Appendix10Page })));
 const AIHubPage = lazy(() => import('@/pages/reports/AIHubPage').then(module => ({ default: module.AIHubPage })));
 const ImportPage = lazy(() => import('@/pages/import/ImportPage').then(module => ({ default: module.ImportPage })));
 const ScopingPage = lazy(() => import('@/pages/scoping/ScopingPage').then(module => ({ default: module.ScopingPage })));
@@ -82,6 +83,7 @@ const coreRoutes = [
   { path: "/testing", element: <PageSuspense><TestWorkbench /></PageSuspense> },
   { path: "/deficiencies", element: <PageSuspense><DeficiencyBoard /></PageSuspense> },
   { path: "/reports", element: <PageSuspense><ReportsPage /></PageSuspense> },
+  { path: "/reports/appendix-10", element: <PageSuspense><Appendix10Page /></PageSuspense> },
   { path: "/ai-hub", element: <PageSuspense><AIHubPage /></PageSuspense> },
   { path: "/wbs-recap", element: <PageSuspense><WBSPage /></PageSuspense> },
   { path: "/audit-portal", element: <PageSuspense><ExternalAuditPortal /></PageSuspense> },

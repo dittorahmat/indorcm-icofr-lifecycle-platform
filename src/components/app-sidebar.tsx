@@ -28,6 +28,7 @@ import {
   Settings2,
   RefreshCw,
   FileBarChart,
+  FileSpreadsheet,
   Calendar as CalendarIcon,
   ListTodo,
   LogOut,
@@ -147,7 +148,10 @@ export function AppSidebar(): JSX.Element {
     }
   }, [location.pathname, isMobile, setOpenMobile]);
 
-  const isActive = (path: string) => pathname === path || pathname.startsWith(path);
+  const isActive = (path: string) => {
+    if (path === "/reports") return pathname === "/reports";
+    return pathname === path || pathname.startsWith(path);
+  };
 
   const handleLogout = async () => {
     await authClient.signOut();
@@ -243,6 +247,11 @@ export function AppSidebar(): JSX.Element {
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/wbs-recap")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
                 <Link to={withYear("/wbs-recap")} className="font-semibold text-sm"><AlertTriangle className="h-4 w-4" /> <span>{t('items.wbs')}</span></Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={isActive("/reports/appendix-10")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
+                <Link to={withYear("/reports/appendix-10")} className="font-semibold text-sm"><FileSpreadsheet className="h-4 w-4" /> <span>{t('items.app10')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
