@@ -129,6 +129,85 @@
   },
   "actions": {
     "actionPlan": "Action Plan",
-    "submitPlan": "Submit Plan"
+    "submitPlan": "Submit Plan",
+    "openWorksheet": "Open DoD Worksheet"
+  },
+  "worksheet": {
+    "title": "DoD Evaluation Worksheet (Lampiran 10)",
+    "description": "Institutional audit documentation for Degree of Deficiency evaluation based on Regulation SK-5/DKU.MBU/11/2024 and AS 2201.",
+    "regulatoryRef": "Lampiran 10 SK-5/DKU.MBU/11/2024 & AS 2201",
+    "tabs": {
+      "summary": "Deficiency Summary",
+      "evidence": "Evidence Context",
+      "evaluation": "Logic Matrix (Box 1-7)",
+      "conclusion": "Final Conclusion"
+    },
+    "header": {
+      "deficiencyRef": "Deficiency Ref.",
+      "controlRef": "Control Code & Name",
+      "remediated": "Remediated & Retested Adequately?",
+      "remediatedYes": "Yes (Remediated)",
+      "remediatedNo": "Not Remediated",
+      "ineffectivePeriod": "Period Control Ineffective",
+      "exposureValue": "Deficiency Exposure Value",
+      "cosoComponent": "Internal Control Component",
+      "assertions": "Impacted Financial Assertions",
+      "identifiedDate": "Identified Date",
+      "source": "Deficiency Source"
+    },
+    "evidence": {
+      "title": "Integrated Evidence & Supporting Data",
+      "testingTitle": "Testing Sample Results (TOD / TOE)",
+      "testingDesc": "Underlying test execution data that led to the deficiency identification.",
+      "sampleFailures": "Exceptions / Failed Samples",
+      "sampleTotal": "Total Samples Tested",
+      "exceptionRate": "Exception Rate",
+      "workpaperRef": "Testing Workpaper Ref.",
+      "materialityTitle": "Exposure Value vs Materiality Comparison",
+      "materialityDesc": "Performance Materiality (PM) & Overall Materiality (OM) benchmarks.",
+      "pmLabel": "Performance Materiality (PM)",
+      "omLabel": "Overall Materiality (OM)",
+      "exposureRatio": "Ratio to PM",
+      "exposureAbove": "EXPOSURE EXCEEDS PM (Significant / Material Risk)",
+      "exposureBelow": "EXPOSURE BELOW PM (Within Tolerance)",
+      "compensatingTitle": "Compensating Controls (Secondary)",
+      "compensatingDesc": "Alternate controls on the same process/assertion operating effectively.",
+      "compensatingNone": "No compensating control meets sufficient precision.",
+      "precision": "Precision Level",
+      "status": "Test Status",
+      "redFlagsTitle": "Material Weakness Hard Indicators (Page 62 Point c)",
+      "redFlagsDesc": "Presence of any hard indicator mandates a Material Weakness conclusion.",
+      "fraudSenior": "Senior Management Fraud",
+      "fraudMaterial": "Fraud with material financial statement impact",
+      "restatement": "Restatement of prior financial statements",
+      "auditorMisstatement": "Material misstatement identified by auditor (bypassed ICOFR)",
+      "ineffectiveAuditComm": "Ineffective Audit Committee oversight"
+    },
+    "matrix": {
+      "boxHeader": "Box / Step",
+      "questionHeader": "Evaluation Question & Standard",
+      "choiceHeader": "Choice (Y/N)",
+      "justificationHeader": "Auditor Justification (Mandatory)",
+      "evidenceHeader": "Supporting Evidence Ref.",
+      "chipsLabel": "Quick Rationale Templates:",
+      "justificationPlaceholder": "Enter professional rationale and logical justification...",
+      "yes": "Yes",
+      "no": "No",
+      "mandatoryError": "Justifications for all active boxes must be provided before saving."
+    },
+    "conclusion": {
+      "computedSeverity": "Final Degree of Deficiency Conclusion",
+      "governanceTitle": "Governance Reporting Routing (Table 24 Page 65)",
+      "governanceDesc": "Parties that must receive this deficiency evaluation report:",
+      "recipients": {
+        "ceo": "CEO & Relevant Directors",
+        "organ": "Risk Management Unit (Management Assessment)",
+        "komisaris": "Board of Commissioners / Supervisory Board",
+        "komiteAudit": "Audit Committee"
+      },
+      "signOff": "Certified by Line 3 / Internal Audit Team",
+      "saveButton": "Save & Certify DoD Worksheet",
+      "cancelButton": "Cancel"
+    }
   }
 }

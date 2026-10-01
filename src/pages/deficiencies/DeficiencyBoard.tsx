@@ -14,7 +14,7 @@ import {
   Search, Kanban, Filter, UserCheck, ChevronRight, Settings2,
   Clock, AlertCircle, FileText, Zap, ShieldCheck, Send, XCircle
 } from 'lucide-react';
-import { DoDWizard } from '@/components/deficiencies/DoDWizard';
+import { DoDWorksheetDialog } from '@/components/deficiencies/DoDWorksheetDialog';
 import { RemediationForm } from '@/components/deficiencies/RemediationForm';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -607,12 +607,13 @@ export function DeficiencyBoard() {
         </DndContext>
       </motion.div>
 
-      <DoDWizard 
+      <DoDWorksheetDialog 
         isOpen={isWizardOpen} 
         setIsOpen={setWizardOpen} 
+        deficiency={deficienciesData?.items.find(d => d.id === activeDeficiencyId) || null}
         onComplete={handleWizardComplete} 
         isAggregate={isAggregateMode}
-        performanceMateriality={pmValue}
+        performanceMateriality={pmValue || undefined}
       />
 
       <RemediationForm

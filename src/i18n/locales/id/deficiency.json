@@ -129,6 +129,85 @@
   },
   "actions": {
     "actionPlan": "Action Plan",
-    "submitPlan": "Submit Plan"
+    "submitPlan": "Submit Plan",
+    "openWorksheet": "Buka Kertas Kerja DoD"
+  },
+  "worksheet": {
+    "title": "Kertas Kerja Penentuan DoD (Lampiran 10)",
+    "description": "Dokumentasi audit evaluasi tingkat defisiensi berdasarkan Peraturan SK-5/DKU.MBU/11/2024 dan AS 2201.",
+    "regulatoryRef": "Lampiran 10 SK-5/DKU.MBU/11/2024 & AS 2201",
+    "tabs": {
+      "summary": "Ringkasan Temuan",
+      "evidence": "Data Penyerta (Evidence)",
+      "evaluation": "Matriks Evaluasi Kotak 1-7",
+      "conclusion": "Kesimpulan Akhir"
+    },
+    "header": {
+      "deficiencyRef": "Ref. Defisiensi",
+      "controlRef": "Kode & Nama Kontrol",
+      "remediated": "Telah Diremediasi & Diuji Ulang?",
+      "remediatedYes": "Ya (Telah Diremediasi)",
+      "remediatedNo": "Belum Diremediasi",
+      "ineffectivePeriod": "Periode Pengendalian Tidak Beroperasi",
+      "exposureValue": "Nilai Eksposur Defisiensi",
+      "cosoComponent": "Komponen Pengendalian Internal",
+      "assertions": "Asersi Laporan Keuangan Terdampak",
+      "identifiedDate": "Tanggal Teridentifikasi",
+      "source": "Sumber Temuan"
+    },
+    "evidence": {
+      "title": "Bukti & Data Penyerta Terintegrasi",
+      "testingTitle": "Hasil Uji Sampel (TOD / TOE)",
+      "testingDesc": "Data pengujian yang mendasari identifikasi temuan defisiensi pengendalian.",
+      "sampleFailures": "Eksepsi / Sampel Gagal",
+      "sampleTotal": "Total Sampel Diuji",
+      "exceptionRate": "Tingkat Eksepsi",
+      "workpaperRef": "Ref. Kertas Kerja Pengujian",
+      "materialityTitle": "Perbandingan Nilai Eksposur vs Materialitas",
+      "materialityDesc": "Ambang batas Performance Materiality (PM) & Overall Materiality (OM).",
+      "pmLabel": "Performance Materiality (PM)",
+      "omLabel": "Overall Materiality (OM)",
+      "exposureRatio": "Rasio terhadap PM",
+      "exposureAbove": "EKSPOSUR MELAMPAUI PM (Risiko Signifikan/Material)",
+      "exposureBelow": "EKSPOSUR DI BAWAH PM (Dalam Toleransi)",
+      "compensatingTitle": "Pengendalian Kompensasi (Secondary Controls)",
+      "compensatingDesc": "Kontrol pengganti pada proses/asersi yang sama yang beroperasi secara efektif.",
+      "compensatingNone": "Tidak ada kontrol kompensasi yang memenuhi syarat presisi.",
+      "precision": "Tingkat Presisi",
+      "status": "Status Pengujian",
+      "redFlagsTitle": "Indikator Keras Kelemahan Material (Hal. 62 Poin c)",
+      "redFlagsDesc": "Keberadaan salah satu indikator ini mengarahkan ke kesimpulan Kelemahan Material.",
+      "fraudSenior": "Fraud melibatkan Manajemen Senior",
+      "fraudMaterial": "Fraud berdampak material pada laporan keuangan",
+      "restatement": "Pernyataan kembali (restatement) atas LK sebelumnya",
+      "auditorMisstatement": "Salah saji material ditemukan auditor (lolos ICOFR)",
+      "ineffectiveAuditComm": "Ketidakefektifan pengawasan Komite Audit"
+    },
+    "matrix": {
+      "boxHeader": "Kotak / Langkah",
+      "questionHeader": "Uraian Pertanyaan & Standar Regulasi",
+      "choiceHeader": "Pilihan (Y/T)",
+      "justificationHeader": "Justifikasi Auditor (Wajib Diisi)",
+      "evidenceHeader": "Data Penyerta Terkait",
+      "chipsLabel": "Template Alasan Cepat:",
+      "justificationPlaceholder": "Tuliskan justifikasi profesional dan alasan logis...",
+      "yes": "Ya",
+      "no": "Tidak",
+      "mandatoryError": "Semua justifikasi kotak aktif wajib diisi sebelum menyimpan kertas kerja."
+    },
+    "conclusion": {
+      "computedSeverity": "Kesimpulan Akhir Tingkat Defisiensi",
+      "governanceTitle": "Alur Pelaporan Tata Kelola (Tabel 24 Hal. 65)",
+      "governanceDesc": "Pihak-pihak yang wajib menerima penyampaian hasil evaluasi ini:",
+      "recipients": {
+        "ceo": "CEO & Direksi Terkait",
+        "organ": "Organ Pengelola Risiko (Asesmen Manajemen)",
+        "komisaris": "Dewan Komisaris / Dewan Pengawas",
+        "komiteAudit": "Komite Audit"
+      },
+      "signOff": "Disahkan oleh Tim Lini 3 / Auditor Internal",
+      "saveButton": "Simpan & Sahkan Kertas Kerja DoD",
+      "cancelButton": "Batal"
+    }
   }
 }

@@ -333,6 +333,70 @@ export type Notification = Omit<InferSelectModel<typeof schema.notifications>, '
   createdAt: number;
 };
 
+export interface DoDBoxEvaluation {
+  answer: boolean;
+  justification: string;
+  evidenceRef?: string;
+  supportingData?: Record<string, any>;
+}
+
+export interface DoDWorksheetData {
+  deficiencyId: string;
+  evaluatedAt: number;
+  evaluatorId?: string;
+  evaluatorName?: string;
+  exposureValue: number;
+  ineffectivePeriod: string;
+  isRemediated: boolean;
+  assertions: string[];
+  cosoComponent: string;
+  boxes: {
+    box1?: DoDBoxEvaluation;
+    box2?: DoDBoxEvaluation;
+    box3?: DoDBoxEvaluation;
+    box4?: DoDBoxEvaluation;
+    box5?: DoDBoxEvaluation;
+    box6?: DoDBoxEvaluation;
+    box7?: DoDBoxEvaluation;
+  };
+  finalSeverity: DeficiencySeverity;
+  governanceRouting: string[]; // e.g. ['CEO', 'Direksi', 'Komite Audit', 'Dewan Komisaris']
+}
+
+export interface DoDEvidenceContext {
+  testRecord?: {
+    id: string;
+    testType: "TOD" | "TOE";
+    workpaperRef?: string;
+    sampleCount: number;
+    failedSampleCount: number;
+    exceptionRate: number;
+    method?: string;
+  };
+  materiality?: {
+    omThreshold: number;
+    pmThreshold: number;
+    accountBalance?: number;
+    exposureRatio?: number;
+    isAbovePM: boolean;
+  };
+  compensatingControls?: Array<{
+    id: string;
+    code: string;
+    name: string;
+    nature: string;
+    status: "Effective" | "Ineffective" | "Not Tested";
+    precision: "Sufficient" | "Insufficient";
+  }>;
+  redFlags?: {
+    seniorManagementFraud: boolean;
+    materialFraudImpact: boolean;
+    restatement: boolean;
+    auditorIdentifiedMisstatement: boolean;
+    ineffectiveAuditCommittee: boolean;
+  };
+}
+
 export interface Deficiency extends Omit<InferSelectModel<typeof schema.deficiencies>, 'assertions' | 'flowchartPath' | 'identifiedDate' | 'compensatingControlIds' | 'source'> {
   severity: DeficiencySeverity;
   status: "Open" | "Remediated" | "Verified" | "Closed";
@@ -341,6 +405,7 @@ export interface Deficiency extends Omit<InferSelectModel<typeof schema.deficien
   compensatingControlIds: string[];
   assertions?: string[];
   flowchartPath?: Record<number, boolean>;
+  dodWorksheet?: DoDWorksheetData;
   preAssessment?: {
     seniorManagementFraud: boolean;
     materialFraudImpact: boolean;
