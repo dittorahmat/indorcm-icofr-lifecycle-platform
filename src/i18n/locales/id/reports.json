@@ -75,5 +75,68 @@
     "resetLayout": "Atur Ulang Layout",
     "addRemoveWidgets": "Tambah/Hapus Widget",
     "active": "Aktif"
+  },
+  "dodReport": {
+    "title": "LAMPIRAN 10",
+    "subtitle": "ILUSTRASI DOKUMENTASI KERTAS KERJA PENENTUAN TINGKAT DEFISIENSI PENGENDALIAN (DEGREE OF DEFICIENCY - DoD)",
+    "regulationReference": "Format Standar Berdasarkan Peraturan Menteri BUMN No. SK-5/DKU.MBU/11/2024 (Hal. 97–99)",
+    "loading": "Memuat Kertas Kerja DoD Lampiran 10...",
+    "exportCsv": "Ekspor CSV Lampiran 10",
+    "printA4": "Cetak Laporan (A4/A3)",
+    "empty": "Belum ada data evaluasi defisiensi pengendalian atau tidak ada data yang cocok dengan filter aktif.",
+    "filters": {
+      "allSeverities": "Semua Tingkat (CD, SD, MW)",
+      "controlDeficiency": "Defisiensi Pengendalian (CD)",
+      "significantDeficiency": "Defisiensi Signifikan (SD)",
+      "materialWeakness": "Kelemahan Material (MW)",
+      "allRemediation": "Semua Status Remediasi",
+      "remediated": "Telah Diremediasi",
+      "notRemediated": "Belum Diremediasi",
+      "searchPlaceholder": "Cari referensi, deskripsi, proses bisnis..."
+    },
+    "summary": {
+      "totalEvaluated": "Total Evaluasi DoD",
+      "materialWeakness": "Kelemahan Material (MW)",
+      "significantDeficiency": "Defisiensi Signifikan (SD)",
+      "controlDeficiency": "Defisiensi Pengendalian (CD)",
+      "remediatedCount": "Telah Diremediasi Sebelum Akhir Tahun"
+    },
+    "table": {
+      "groupFinding": "Data Defisiensi Pengendalian",
+      "groupAggregation": "Klasifikasi Agregasi",
+      "groupAssertions": "Asersi Laporan Keuangan",
+      "groupDecisionTree": "Pohon Keputusan Evaluasi DoD (AS 2201)",
+      "col1": "Ref. Defisiensi (i)",
+      "col2": "Deskripsi Defisiensi (ii)",
+      "col3": "Telah Diremediasi (iii)",
+      "col4": "Periode Tidak Efektif (iv)",
+      "col5": "Nilai Eksposur Defisiensi (v)",
+      "col6": "Kesimpulan Akhir (vi)",
+      "col7": "Akun/Pengungkapan Terdampak (vii)",
+      "col8": "Komponen COSO (viii)",
+      "col9": "Proses Bisnis (ix)",
+      "col10": "Unit Bisnis (x)",
+      "col11": "C (xi)",
+      "col12": "A (xii)",
+      "col13": "E/O (xiii)",
+      "col14": "CO (xiv)",
+      "col15": "R&O (xv)",
+      "col16": "V/A (xvi)",
+      "col17": "PD (xvii)",
+      "col18": "Kotak 1: Asersi LK (xviii)",
+      "col19": "Kotak 2: Likelihood (xix)",
+      "col20": "Kotak 3: Magnitude vs PM (xx)",
+      "col21": "Kotak 4: Perhatian Pengawas (xxi)",
+      "col22": "Kotak 5: Pengendalian Kompensasi (xxii)",
+      "col23": "Kotak 6: Prudent Official (xxiii)",
+      "col24": "Kotak 7: Dampak Kombinasi (xxiv)"
+    },
+    "signatures": {
+      "preparerTitle": "Disiapkan oleh (Auditor/Lini 3):",
+      "preparerRole": "Lini Ketiga (Fungsi Pengujian Independen / SPI)",
+      "approverTitle": "Diketahui oleh:",
+      "approverRole": "Komite Audit / Dewan Komisaris / Direksi",
+      "verifiedDigital": "Tervalidasi Digital Sesuai SK-5/2024"
+    }
   }
 }

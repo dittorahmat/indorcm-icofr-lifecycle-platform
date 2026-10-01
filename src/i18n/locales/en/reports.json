@@ -76,5 +76,68 @@
     "resetLayout": "Reset Layout",
     "addRemoveWidgets": "Add/Remove Widgets",
     "active": "Active"
+  },
+  "dodReport": {
+    "title": "APPENDIX 10",
+    "subtitle": "ILLUSTRATIVE WORKPAPER DOCUMENTATION FOR DEGREE OF DEFICIENCY (DoD) DETERMINATION",
+    "regulationReference": "Standard Format Pursuant to BUMN Ministerial Regulation No. SK-5/DKU.MBU/11/2024 (Pages 97–99)",
+    "loading": "Loading Appendix 10 DoD Workpaper...",
+    "exportCsv": "Export Appendix 10 CSV",
+    "printA4": "Print Report (A4/A3)",
+    "empty": "No control deficiency evaluation records found, or no records match the active filters.",
+    "filters": {
+      "allSeverities": "All Severities (CD, SD, MW)",
+      "controlDeficiency": "Control Deficiency (CD)",
+      "significantDeficiency": "Significant Deficiency (SD)",
+      "materialWeakness": "Material Weakness (MW)",
+      "allRemediation": "All Remediation Statuses",
+      "remediated": "Remediated",
+      "notRemediated": "Not Remediated",
+      "searchPlaceholder": "Search reference, description, business process..."
+    },
+    "summary": {
+      "totalEvaluated": "Total DoD Evaluated",
+      "materialWeakness": "Material Weakness (MW)",
+      "significantDeficiency": "Significant Deficiency (SD)",
+      "controlDeficiency": "Control Deficiency (CD)",
+      "remediatedCount": "Remediated Prior to Year-End"
+    },
+    "table": {
+      "groupFinding": "Deficiency Overview",
+      "groupAggregation": "Aggregation Classification",
+      "groupAssertions": "Financial Statement Assertions",
+      "groupDecisionTree": "DoD Evaluation Decision Tree (AS 2201)",
+      "col1": "Deficiency Ref (i)",
+      "col2": "Deficiency Description (ii)",
+      "col3": "Remediated (iii)",
+      "col4": "Ineffective Period (iv)",
+      "col5": "Deficiency Exposure (v)",
+      "col6": "Final Conclusion (vi)",
+      "col7": "Impacted Account/Disclosure (vii)",
+      "col8": "COSO Component (viii)",
+      "col9": "Business Process (ix)",
+      "col10": "Business Unit (x)",
+      "col11": "C (xi)",
+      "col12": "A (xii)",
+      "col13": "E/O (xiii)",
+      "col14": "CO (xiv)",
+      "col15": "R&O (xv)",
+      "col16": "V/A (xvi)",
+      "col17": "PD (xvii)",
+      "col18": "Box 1: Direct Assertion (xviii)",
+      "col19": "Box 2: Likelihood (xix)",
+      "col20": "Box 3: Magnitude vs PM (xx)",
+      "col21": "Box 4: Governance Attention (xxi)",
+      "col22": "Box 5: Compensating Control (xxii)",
+      "col23": "Box 6: Prudent Official (xxiii)",
+      "col24": "Box 7: Combinatorial Impact (xxiv)"
+    },
+    "signatures": {
+      "preparerTitle": "Prepared by (Auditor / Line 3):",
+      "preparerRole": "Third Line (Internal Audit / SPI)",
+      "approverTitle": "Acknowledged by:",
+      "approverRole": "Audit Committee / Board of Commissioners / Directors",
+      "verifiedDigital": "Digitally Verified per SK-5/2024"
+    }
   }
 }

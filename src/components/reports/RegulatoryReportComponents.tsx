@@ -19,7 +19,7 @@ export const ELCReport = () => <Card><CardContent className="p-4">ELC Report Con
 export const TLCReport = () => <Card><CardContent className="p-4">TLC Report Content</CardContent></Card>;
 export const ITGCReport = () => <Card><CardContent className="p-4">ITGC Report Content</CardContent></Card>;
 export const FindingsReport = ({ deficiencies, controls }: any) => <Card><CardContent className="p-4">Findings Report Content</CardContent></Card>;
-export const DoDReport = () => <Card><CardContent className="p-4">DoD Report Content</CardContent></Card>;
+export { DoDLampiran10Report, DoDLampiran10Report as DoDReport } from './DoDLampiran10Report';
 
 export function ChangeLogReport() {
   const { t } = useTranslation('reports');

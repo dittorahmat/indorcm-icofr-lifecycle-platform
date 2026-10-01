@@ -76,7 +76,7 @@ export function RegulatoryAppendices({ rcmData, controlsData, testsData, summary
           <TabsContent value="rcm-tlc" className="m-0"><TLCReport /></TabsContent>
           <TabsContent value="rcm-itgc" className="m-0"><ITGCReport /></TabsContent>
           <TabsContent value="findings" className="m-0"><FindingsReport deficiencies={allDeficiencies} controls={allControls} /></TabsContent>
-          <TabsContent value="dod" className="m-0"><DoDReport /></TabsContent>
+          <TabsContent value="dod" className="m-0"><DoDReport deficiencies={allDeficiencies} controls={allControls} /></TabsContent>
           <TabsContent value="changelog" className="m-0"><ChangeLogReport /></TabsContent>
           <TabsContent value="csa-doc" className="m-0"><CSADocReport /></TabsContent>
           <TabsContent value="rcm-lamp11" className="m-0"><Lampiran11Report deficiencies={allDeficiencies} controls={allControls} /></TabsContent>
