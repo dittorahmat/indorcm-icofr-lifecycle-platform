@@ -290,4 +290,36 @@ describe('DoDLampiran10Report Component', () => {
     expect(screen.getByText('B6 (xxiii)')).toBeInTheDocument();
     expect(screen.getByText('B7 (xxiv)')).toBeInTheDocument();
   });
+
+  it('filters table rows when KPI counter cards are clicked', () => {
+    render(<DoDLampiran10Report deficiencies={mockDeficiencies} controls={mockControls} />);
+
+    // Initially both deficiencies DEF-001 (MW) and DEF-002 (CD) are shown
+    expect(screen.getByText('DEF-001')).toBeInTheDocument();
+    expect(screen.getByText('DEF-002')).toBeInTheDocument();
+
+    // Click Material Weakness card
+    const mwCard = screen.getByRole('button', { name: /Kelemahan Material \(MW\)/i });
+    fireEvent.click(mwCard);
+
+    // Only DEF-001 should remain
+    expect(screen.getByText('DEF-001')).toBeInTheDocument();
+    expect(screen.queryByText('DEF-002')).not.toBeInTheDocument();
+
+    // Click Total card to reset filter
+    const totalCard = screen.getByRole('button', { name: /Total Evaluasi DoD/i });
+    fireEvent.click(totalCard);
+
+    // Both should appear again
+    expect(screen.getByText('DEF-001')).toBeInTheDocument();
+    expect(screen.getByText('DEF-002')).toBeInTheDocument();
+
+    // Click Remediated card
+    const remediatedCard = screen.getByRole('button', { name: /Telah Diremediasi/i });
+    fireEvent.click(remediatedCard);
+
+    // DEF-002 is remediated, DEF-001 is open
+    expect(screen.queryByText('DEF-001')).not.toBeInTheDocument();
+    expect(screen.getByText('DEF-002')).toBeInTheDocument();
+  });
 });

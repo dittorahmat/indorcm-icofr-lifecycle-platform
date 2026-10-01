@@ -35,6 +35,7 @@ import {
   ShieldAlert,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { cn } from '@/lib/utils';
 import type { Deficiency, Control } from '@shared/types';
 import { MOCK_COMPANY } from './mock-regulatory-data';
 
@@ -329,28 +330,123 @@ export function DoDLampiran10Report({
           </div>
         </div>
 
-        {/* KPI Counter Cards */}
+        {/* KPI Counter Cards (Interactive Filters) */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 print:grid-cols-5">
-          <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
-            <div className="text-xs font-medium text-slate-500 uppercase">{t('dodReport.summary.totalEvaluated')}</div>
+          {/* Card 1: Total (Reset all filters) */}
+          <button
+            type="button"
+            onClick={() => {
+              setSeverityFilter('ALL');
+              setRemediationFilter('ALL');
+            }}
+            className={cn(
+              "text-left p-3 rounded-lg border transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
+              severityFilter === 'ALL' && remediationFilter === 'ALL'
+                ? "bg-slate-100 border-slate-400 ring-2 ring-slate-400/40 shadow-sm"
+                : "bg-slate-50 border-slate-200 hover:bg-slate-100/70 hover:border-slate-300"
+            )}
+            title="Klik untuk menampilkan semua defisiensi (Reset Filter)"
+          >
+            <div className="text-xs font-semibold text-slate-600 uppercase flex items-center justify-between">
+              <span>{t('dodReport.summary.totalEvaluated')}</span>
+              {severityFilter === 'ALL' && remediationFilter === 'ALL' && (
+                <span className="text-[11px] font-bold text-slate-600 bg-white px-1.5 py-0.5 rounded border border-slate-200">Aktif</span>
+              )}
+            </div>
             <div className="text-lg font-bold text-slate-900 mt-1">{totalCount}</div>
-          </div>
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-            <div className="text-xs font-medium text-red-600 uppercase">{t('dodReport.summary.materialWeakness')}</div>
+          </button>
+
+          {/* Card 2: Material Weakness (MW) */}
+          <button
+            type="button"
+            onClick={() => {
+              setSeverityFilter((prev) => (prev === 'Material Weakness' ? 'ALL' : 'Material Weakness'));
+            }}
+            className={cn(
+              "text-left p-3 rounded-lg border transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2",
+              severityFilter === 'Material Weakness'
+                ? "bg-red-100 border-red-400 ring-2 ring-red-400/40 shadow-sm"
+                : "bg-red-50 border-red-200 hover:bg-red-100/70 hover:border-red-300"
+            )}
+            title="Klik untuk memfilter Material Weakness (MW)"
+          >
+            <div className="text-xs font-semibold text-red-700 uppercase flex items-center justify-between">
+              <span>{t('dodReport.summary.materialWeakness')}</span>
+              {severityFilter === 'Material Weakness' && (
+                <span className="text-[11px] font-bold text-red-700 bg-white px-1.5 py-0.5 rounded border border-red-200">Aktif</span>
+              )}
+            </div>
             <div className="text-lg font-bold text-red-700 mt-1">{mwCount}</div>
-          </div>
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-            <div className="text-xs font-medium text-amber-600 uppercase">{t('dodReport.summary.significantDeficiency')}</div>
+          </button>
+
+          {/* Card 3: Significant Deficiency (SD) */}
+          <button
+            type="button"
+            onClick={() => {
+              setSeverityFilter((prev) => (prev === 'Significant Deficiency' ? 'ALL' : 'Significant Deficiency'));
+            }}
+            className={cn(
+              "text-left p-3 rounded-lg border transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2",
+              severityFilter === 'Significant Deficiency'
+                ? "bg-amber-100 border-amber-400 ring-2 ring-amber-400/40 shadow-sm"
+                : "bg-amber-50 border-amber-200 hover:bg-amber-100/70 hover:border-amber-300"
+            )}
+            title="Klik untuk memfilter Significant Deficiency (SD)"
+          >
+            <div className="text-xs font-semibold text-amber-700 uppercase flex items-center justify-between">
+              <span>{t('dodReport.summary.significantDeficiency')}</span>
+              {severityFilter === 'Significant Deficiency' && (
+                <span className="text-[11px] font-bold text-amber-700 bg-white px-1.5 py-0.5 rounded border border-amber-200">Aktif</span>
+              )}
+            </div>
             <div className="text-lg font-bold text-amber-700 mt-1">{sdCount}</div>
-          </div>
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-            <div className="text-xs font-medium text-blue-600 uppercase">{t('dodReport.summary.controlDeficiency')}</div>
+          </button>
+
+          {/* Card 4: Control Deficiency (CD) */}
+          <button
+            type="button"
+            onClick={() => {
+              setSeverityFilter((prev) => (prev === 'Control Deficiency' ? 'ALL' : 'Control Deficiency'));
+            }}
+            className={cn(
+              "text-left p-3 rounded-lg border transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
+              severityFilter === 'Control Deficiency'
+                ? "bg-blue-100 border-blue-400 ring-2 ring-blue-400/40 shadow-sm"
+                : "bg-blue-50 border-blue-200 hover:bg-blue-100/70 hover:border-blue-300"
+            )}
+            title="Klik untuk memfilter Control Deficiency (CD)"
+          >
+            <div className="text-xs font-semibold text-blue-700 uppercase flex items-center justify-between">
+              <span>{t('dodReport.summary.controlDeficiency')}</span>
+              {severityFilter === 'Control Deficiency' && (
+                <span className="text-[11px] font-bold text-blue-700 bg-white px-1.5 py-0.5 rounded border border-blue-200">Aktif</span>
+              )}
+            </div>
             <div className="text-lg font-bold text-blue-700 mt-1">{cdCount}</div>
-          </div>
-          <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3">
-            <div className="text-xs font-medium text-emerald-600 uppercase">{t('dodReport.summary.remediatedCount')}</div>
+          </button>
+
+          {/* Card 5: Remediated Prior to Year-End */}
+          <button
+            type="button"
+            onClick={() => {
+              setRemediationFilter((prev) => (prev === 'REMEDIATED' ? 'ALL' : 'REMEDIATED'));
+            }}
+            className={cn(
+              "text-left p-3 rounded-lg border transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2",
+              remediationFilter === 'REMEDIATED'
+                ? "bg-emerald-100 border-emerald-400 ring-2 ring-emerald-400/40 shadow-sm"
+                : "bg-emerald-50 border-emerald-200 hover:bg-emerald-100/70 hover:border-emerald-300"
+            )}
+            title="Klik untuk memfilter defisiensi yang telah diremediasi sebelum akhir tahun"
+          >
+            <div className="text-xs font-semibold text-emerald-700 uppercase flex items-center justify-between">
+              <span>{t('dodReport.summary.remediatedCount')}</span>
+              {remediationFilter === 'REMEDIATED' && (
+                <span className="text-[11px] font-bold text-emerald-700 bg-white px-1.5 py-0.5 rounded border border-emerald-200">Aktif</span>
+              )}
+            </div>
             <div className="text-lg font-bold text-emerald-700 mt-1">{remediatedCount}</div>
-          </div>
+          </button>
         </div>
 
         {/* Interactive Filter Bar */}
