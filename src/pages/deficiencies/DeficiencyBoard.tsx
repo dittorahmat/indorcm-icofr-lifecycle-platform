@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { DndContext, closestCenter, pointerWithin, closestCorners, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, useDroppable } from '@dnd-kit/core';
+import { DndContext, DragOverlay, pointerWithin, closestCorners, KeyboardSensor, PointerSensor, TouchSensor, useSensor, useSensors, DragEndEvent, DragStartEvent, useDroppable } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { api } from '@/lib/api-client';
@@ -22,6 +22,8 @@ import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/context/AuthContext';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { resolveWorkflowAction } from '@/lib/deficiency-workflow';
 import { cn } from '@/lib/utils';
 
 const KANBAN_COLUMNS: string[] = ["Ineffective", "In Review", "In Approval", "Resolved"];
@@ -263,6 +265,11 @@ export function DeficiencyBoard() {
   const [activePlan, setActivePlan] = React.useState<ActionPlan | null>(null);
   const [sourceFilter, setSourceFilter] = React.useState<string>("all");
   const [mobileStatus, setMobileStatus] = React.useState<string>(KANBAN_COLUMNS[0]);
+  const [activeId, setActiveId] = React.useState<string | null>(null);
+  // Exactly one Kanban tree may be mounted at a time: duplicate droppable /
+  // sortable ids across the desktop + mobile trees break dnd-kit activation
+  // and collision. `useIsMobile` shares the Tailwind `md` breakpoint (768px).
+  const isMobileView = useIsMobile();
 
   const mobileStatusKey: Record<string, string> = {
     "Ineffective": "status.ineffective",
@@ -308,8 +315,13 @@ export function DeficiencyBoard() {
     }
   }, [actionPlansData]);
 
+  // Mutable mirror for rollback snapshots inside mutation callbacks.
+  const actionPlansRef = React.useRef<ActionPlan[]>([]);
+  actionPlansRef.current = actionPlans;
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
@@ -358,20 +370,41 @@ export function DeficiencyBoard() {
     },
   });
 
-  const workflowMutation = useMutation({
+  const workflowMutation = useMutation<
+    unknown,
+    Error,
+    { id: string; action: string; note: string },
+    { serverPlans: { items: ActionPlan[] } | undefined; localSnapshot: ActionPlan[] }
+  >({
     mutationFn: async ({ id, action, note }: { id: string, action: string, note: string }) => {
       return await api(`/api/actionplans/${id}/workflow`, {
         method: 'POST',
         body: JSON.stringify({ action, note })
       });
     },
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ['actionplans'] });
+      return {
+        serverPlans: queryClient.getQueryData<{ items: ActionPlan[] }>(['actionplans']),
+        localSnapshot: actionPlansRef.current,
+      };
+    },
     onSuccess: () => {
       toast.success("Workflow status updated.");
       queryClient.invalidateQueries({ queryKey: ['actionplans'] });
       queryClient.invalidateQueries({ queryKey: ['deficiencies'] });
     },
-    onError: (error: any) => {
+    onError: (error, _variables, context) => {
+      // Roll back the optimistic column move so a rejected transition never
+      // strands a card in the wrong governance column.
+      if (context?.serverPlans) {
+        queryClient.setQueryData(['actionplans'], context.serverPlans);
+      }
+      if (context?.localSnapshot) {
+        setActionPlans(context.localSnapshot);
+      }
       toast.error(error.message);
+      queryClient.invalidateQueries({ queryKey: ['actionplans'] });
     }
   });
 
@@ -406,95 +439,64 @@ export function DeficiencyBoard() {
     window.location.reload();
   };
 
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    setActiveId(String(event.active.id));
+  }, []);
+
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event;
+    setActiveId(null);
 
-    if (over && active.id !== over.id) {
-      const plan = actionPlans.find(p => p.id === active.id);
-      if (!plan) return;
+    if (!over || active.id === over.id) return;
 
-      const currentWorkflowStatus = (plan.workflowStatus || plan.status || "Ineffective") as DeficiencyWorkflowStatus;
-      
-      // Determine target column: overContainerId could be a column status string or another card ID
-      let overStatus: DeficiencyWorkflowStatus | null = null;
-      const overIdStr = String(over.id);
-      if (KANBAN_COLUMNS.includes(overIdStr)) {
-        overStatus = overIdStr as DeficiencyWorkflowStatus;
-      } else {
-        const overCard = actionPlans.find(p => p.id === over.id);
-        if (overCard) {
-          overStatus = (overCard.workflowStatus || overCard.status || "Ineffective") as DeficiencyWorkflowStatus;
-        } else if (over.data.current?.sortable?.containerId && KANBAN_COLUMNS.includes(over.data.current.sortable.containerId)) {
-          overStatus = over.data.current.sortable.containerId as DeficiencyWorkflowStatus;
-        }
-      }
+    const plan = actionPlans.find(p => p.id === active.id);
+    if (!plan) return;
 
-      if (!overStatus || currentWorkflowStatus === overStatus) {
-        return;
-      }
+    const currentWorkflowStatus = (plan.workflowStatus || plan.status || "Ineffective") as DeficiencyWorkflowStatus;
 
-      // SK-5 Transition mapping:
-      // Ineffective -> In Review : Submit (Line 1, Admin)
-      // In Review -> In Approval : Review (Line 2, Admin)
-      // In Approval -> Resolved  : Approve (Admin)
-      // Any -> Ineffective       : Reject / Rollback
-      let action: string | null = null;
-      let note = `Transitioned via Kanban board drag-and-drop to ${overStatus}`;
-
-      if (currentWorkflowStatus === 'Ineffective' && overStatus === 'In Review') {
-        if (!['Line 1', 'Admin'].includes(userRole)) {
-          toast.error("Hanya Lini 1 atau Admin yang dapat mengajukan rencana aksi (Submit).");
-          return;
-        }
-        action = "Submit";
-      } else if (currentWorkflowStatus === 'In Review' && overStatus === 'In Approval') {
-        if (!['Line 2', 'Admin'].includes(userRole)) {
-          toast.error("Hanya Lini 2 atau Admin yang dapat meloloskan telaah (Pass Review).");
-          return;
-        }
-        action = "Review";
-      } else if (currentWorkflowStatus === 'In Approval' && overStatus === 'Resolved') {
-        if (!['Admin'].includes(userRole)) {
-          toast.error("Hanya Admin yang dapat menyetujui penyelesaian (Approve).");
-          return;
-        }
-        action = "Approve";
-      } else if (overStatus === 'Ineffective') {
-        action = currentWorkflowStatus === 'Resolved' ? 'Rollback' : 'Reject';
-        note = `Dikembalikan ke status Ineffective via Kanban board`;
-      } else {
-        // Direct transition when authorized as Admin
-        if (userRole === 'Admin') {
-          if (overStatus === 'Resolved') action = 'Approve';
-          else if (overStatus === 'In Approval') action = 'Review';
-          else if (overStatus === 'In Review') action = 'Submit';
-        } else {
-          toast.error(`Perpindahan status dari "${currentWorkflowStatus}" ke "${overStatus}" tidak diizinkan tanpa tahapan tata kelola SK-5.`);
-          return;
-        }
-      }
-
-      if (action) {
-        // Optimistic UI update
-        setActionPlans(previousPlans => {
-          const activeIndex = previousPlans.findIndex(ap => ap.id === active.id);
-          if (activeIndex === -1) return previousPlans;
-          const newPlans = [...previousPlans];
-          newPlans[activeIndex] = {
-            ...newPlans[activeIndex],
-            workflowStatus: overStatus as DeficiencyWorkflowStatus,
-            status: overStatus === 'Resolved' ? 'Resolved' : newPlans[activeIndex].status
-          };
-          return newPlans;
-        });
-
-        workflowMutation.mutate({
-          id: plan.id,
-          action,
-          note
-        });
+    // Determine target column: over.id is either a column status string or another card id.
+    let overStatus: DeficiencyWorkflowStatus | null = null;
+    const overIdStr = String(over.id);
+    if (KANBAN_COLUMNS.includes(overIdStr)) {
+      overStatus = overIdStr as DeficiencyWorkflowStatus;
+    } else {
+      const overCard = actionPlans.find(p => p.id === over.id);
+      if (overCard) {
+        overStatus = (overCard.workflowStatus || overCard.status || "Ineffective") as DeficiencyWorkflowStatus;
+      } else if (over.data.current?.sortable?.containerId && KANBAN_COLUMNS.includes(over.data.current.sortable.containerId)) {
+        overStatus = over.data.current.sortable.containerId as DeficiencyWorkflowStatus;
       }
     }
+
+    if (!overStatus) return;
+
+    // SK-5 transition matrix lives in resolveWorkflowAction (unit-tested).
+    const resolution = resolveWorkflowAction(currentWorkflowStatus, overStatus, userRole);
+    if ('error' in resolution) {
+      if (resolution.error !== 'same-status') {
+        toast.error(resolution.error);
+      }
+      return;
+    }
+
+    // Optimistic UI update (rolled back in workflowMutation.onError).
+    setActionPlans(previousPlans => {
+      const activeIndex = previousPlans.findIndex(ap => ap.id === active.id);
+      if (activeIndex === -1) return previousPlans;
+      const newPlans = [...previousPlans];
+      newPlans[activeIndex] = {
+        ...newPlans[activeIndex],
+        workflowStatus: overStatus as DeficiencyWorkflowStatus,
+        status: overStatus === 'Resolved' ? 'Resolved' : newPlans[activeIndex].status
+      };
+      return newPlans;
+    });
+
+    workflowMutation.mutate({
+      id: plan.id,
+      action: resolution.action,
+      note: resolution.note
+    });
   }, [actionPlans, userRole, workflowMutation]);
 
   const isLoading = deficienciesLoading || actionPlansLoading;
@@ -512,6 +514,11 @@ export function DeficiencyBoard() {
     }
     setWizardOpen(true);
   };
+
+  const dragPlan = activeId ? actionPlans.find(p => p.id === activeId) ?? null : null;
+  const dragDeficiency = dragPlan
+    ? filteredDeficiencies.find(d => d.id === dragPlan.deficiencyId) ?? null
+    : null;
 
   return (
     <AppLayout container>
@@ -584,17 +591,19 @@ export function DeficiencyBoard() {
           </PageHeader>
         </motion.div>
 
-        <DndContext
-          sensors={sensors}
+        <DndContext 
+          sensors={sensors} 
           collisionDetection={(args) => {
             const pointerCollisions = pointerWithin(args);
             if (pointerCollisions.length > 0) return pointerCollisions;
             return closestCorners(args);
-          }}
+          }} 
+          onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
         >
-          {/* DESKTOP VIEW: Kanban columns */}
-          <div className="hidden md:block flex-1 overflow-x-auto pb-6 scrollbar-thin scrollbar-thumb-slate-200" data-testid="deficiency-kanban-desktop">
+          {!isMobileView ? (
+          /* DESKTOP VIEW: Kanban columns (sole mounted tree on desktop) */
+          <div className="flex-1 overflow-x-auto pb-6 scrollbar-thin scrollbar-thumb-slate-200" data-testid="deficiency-kanban-desktop">
           {isLoading ? (
             <div className="flex gap-6">
               {KANBAN_COLUMNS.map(status => (
@@ -634,9 +643,9 @@ export function DeficiencyBoard() {
               </div>
           )}
           </div>
-
-          {/* MOBILE VIEW: Status tabs + vertical card stream */}
-          <div className="md:hidden flex-1" data-testid="deficiency-mobile-tabs">
+          ) : (
+          /* MOBILE VIEW: Status tabs + vertical card stream (sole mounted tree on mobile) */
+          <div className="flex-1" data-testid="deficiency-mobile-tabs">
           {isLoading ? (
               <div className="space-y-3">
                 <Skeleton className="h-11 w-full rounded-lg" />
@@ -695,6 +704,12 @@ export function DeficiencyBoard() {
               </>
           )}
           </div>
+          )}
+          <DragOverlay dropAnimation={null}>
+            {dragPlan && dragDeficiency ? (
+              <DeficiencyCard deficiency={dragDeficiency} actionPlan={dragPlan} draggable={false} />
+            ) : null}
+          </DragOverlay>
         </DndContext>
       </motion.div>
 

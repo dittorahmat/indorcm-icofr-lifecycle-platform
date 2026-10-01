@@ -1,9 +1,22 @@
 import React from 'react';
 import { render, fireEvent, within, type RenderResult } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { DeficiencyBoard } from '../DeficiencyBoard';
+import { resolveWorkflowAction } from '@/lib/deficiency-workflow';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { UnsavedChangesProvider } from '@/context/UnsavedChangesContext';
+
+function setViewportWidth(width: number) {
+  Object.defineProperty(window, 'innerWidth', {
+    writable: true,
+    configurable: true,
+    value: width,
+  });
+}
+
+beforeEach(() => {
+  setViewportWidth(1024);
+});
 
 function renderBoard(): RenderResult {
   return render(
@@ -74,15 +87,22 @@ function mobile(container: HTMLElement) {
 }
 
 describe('DeficiencyBoard Mobile Tabs', () => {
-  it('renders desktop kanban wrapper and mobile tab container', () => {
+  it('renders only the desktop kanban tree at desktop width', () => {
     const { container } = renderBoard();
-    expect(container.querySelector('.hidden.md\\:block')).not.toBeNull();
-    const mobileTabs = container.querySelector('[data-testid="deficiency-mobile-tabs"]');
-    expect(mobileTabs).not.toBeNull();
-    expect(mobileTabs?.closest('.md\\:hidden')).not.toBeNull();
+    expect(container.querySelector('[data-testid="deficiency-kanban-desktop"]')).not.toBeNull();
+    // The inactive viewport tree must be unmounted (single DnD identity set).
+    expect(container.querySelector('[data-testid="deficiency-mobile-tabs"]')).toBeNull();
+  });
+
+  it('renders only the mobile tree at mobile width', () => {
+    setViewportWidth(500);
+    const { container } = renderBoard();
+    expect(container.querySelector('[data-testid="deficiency-mobile-tabs"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="deficiency-kanban-desktop"]')).toBeNull();
   });
 
   it('switches status streams without page-level horizontal scroll', () => {
+    setViewportWidth(500);
     const { container } = renderBoard();
     const m = mobile(container);
 
@@ -103,6 +123,7 @@ describe('DeficiencyBoard Mobile Tabs', () => {
   });
 
   it('keeps card actions visible with touch-sized targets on mobile', () => {
+    setViewportWidth(500);
     const { container } = renderBoard();
     const actionButtons = mobile(container).getAllByRole('button', { name: 'Action Plan' });
     expect(actionButtons.length).toBeGreaterThan(0);
@@ -111,15 +132,24 @@ describe('DeficiencyBoard Mobile Tabs', () => {
     });
   });
 
-  it('renders droppable containers for all SK-5 kanban columns', () => {
+  it('registers exactly one droppable per SK-5 kanban column on desktop', () => {
     const { container } = renderBoard();
     const droppables = container.querySelectorAll('[data-droppable-id]');
-    expect(droppables.length).toBeGreaterThanOrEqual(4);
+    // Single mounted tree: no duplicate DnD identities.
+    expect(droppables.length).toBe(4);
     const dropIds = Array.from(droppables).map((el) => el.getAttribute('data-droppable-id'));
     expect(dropIds).toContain('Ineffective');
     expect(dropIds).toContain('In Review');
     expect(dropIds).toContain('In Approval');
     expect(dropIds).toContain('Resolved');
+  });
+
+  it('registers a single droppable for the active mobile stream', () => {
+    setViewportWidth(500);
+    const { container } = renderBoard();
+    const droppables = container.querySelectorAll('[data-droppable-id]');
+    expect(droppables.length).toBe(1);
+    expect(droppables[0].getAttribute('data-droppable-id')).toBe('Ineffective');
   });
 });
 
@@ -214,6 +244,52 @@ describe('DeficiencyBoard granular source filtering', () => {
 
     expect(result.getByRole('button', { name: 'TOE Review (Operation)' })).toHaveAttribute('aria-pressed', 'true');
     expect(result.getByRole('button', { name: 'All' })).toHaveAttribute('aria-pressed', 'false');
+  });
+});
+
+describe('resolveWorkflowAction (SK-5 drag transition matrix)', () => {
+  it('maps Ineffective -> In Review to Submit for Line 1 and Admin', () => {
+    for (const role of ['Line 1', 'Admin']) {
+      const res = resolveWorkflowAction('Ineffective', 'In Review', role);
+      expect(res).toMatchObject({ action: 'Submit' });
+      expect((res as { note: string }).note).toContain('In Review');
+    }
+  });
+
+  it('blocks Ineffective -> In Review for Line 2', () => {
+    const res = resolveWorkflowAction('Ineffective', 'In Review', 'Line 2');
+    expect(res).toHaveProperty('error');
+    expect((res as { error: string }).error).not.toBe('same-status');
+  });
+
+  it('maps In Review -> In Approval to Review for Line 2 and Admin', () => {
+    for (const role of ['Line 2', 'Admin']) {
+      expect(resolveWorkflowAction('In Review', 'In Approval', role)).toMatchObject({ action: 'Review' });
+    }
+  });
+
+  it('blocks In Review -> In Approval for Line 1', () => {
+    expect(resolveWorkflowAction('In Review', 'In Approval', 'Line 1')).toHaveProperty('error');
+  });
+
+  it('maps In Approval -> Resolved to Approve for Admin only', () => {
+    expect(resolveWorkflowAction('In Approval', 'Resolved', 'Admin')).toMatchObject({ action: 'Approve' });
+    expect(resolveWorkflowAction('In Approval', 'Resolved', 'Line 1')).toHaveProperty('error');
+    expect(resolveWorkflowAction('In Approval', 'Resolved', 'Line 2')).toHaveProperty('error');
+  });
+
+  it('maps any status -> Ineffective to Reject, and Resolved -> Ineffective to Rollback', () => {
+    expect(resolveWorkflowAction('In Review', 'Ineffective', 'Line 1')).toMatchObject({ action: 'Reject' });
+    expect(resolveWorkflowAction('Resolved', 'Ineffective', 'Admin')).toMatchObject({ action: 'Rollback' });
+  });
+
+  it('allows Admin direct jumps and blocks them for other roles', () => {
+    expect(resolveWorkflowAction('Ineffective', 'Resolved', 'Admin')).toMatchObject({ action: 'Approve' });
+    expect(resolveWorkflowAction('Ineffective', 'Resolved', 'Line 1')).toHaveProperty('error');
+  });
+
+  it('returns same-status without a user-facing error', () => {
+    expect(resolveWorkflowAction('In Review', 'In Review', 'Admin')).toEqual({ error: 'same-status' });
   });
 });
 

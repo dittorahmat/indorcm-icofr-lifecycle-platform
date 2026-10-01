@@ -14,6 +14,12 @@ import { useTranslation } from 'react-i18next';
 interface DeficiencyCardProps {
   deficiency: Deficiency;
   actionPlan?: ActionPlan;
+  /**
+   * When false the card renders purely presentational (e.g. inside a
+   * `DragOverlay`) and registers no sortable/droppable identity, so the
+   * overlay can never steal collision from the dragged item.
+   */
+  draggable?: boolean;
 }
 
 /**
@@ -26,11 +32,14 @@ type SourceBadgeConfig = {
   icon: LucideIcon;
 };
 
-export function DeficiencyCard({ deficiency, actionPlan }: DeficiencyCardProps) {
+export function DeficiencyCard({ deficiency, actionPlan, draggable = true }: DeficiencyCardProps) {
   const { t } = useTranslation('deficiency');
   const distribution = getDeficiencyDistribution(deficiency.severity);
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: actionPlan?.id || deficiency.id });
-  
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: actionPlan?.id || deficiency.id,
+    disabled: !draggable,
+  });
+
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -96,9 +105,13 @@ export function DeficiencyCard({ deficiency, actionPlan }: DeficiencyCardProps) 
   const sourceConfig = getSourceConfig(deficiency.source);
 
   return (
+    <div
+      ref={draggable ? setNodeRef : undefined}
+      style={draggable ? style : undefined}
+      {...(draggable ? attributes : {})}
+      className={cn(isDragging && draggable && "opacity-40")}
+    >
     <motion.div
-      ref={setNodeRef}
-      style={style}
       animate={{ scale: isDragging ? 1.02 : 1 }}
       className="mb-4"
     >
@@ -111,7 +124,10 @@ export function DeficiencyCard({ deficiency, actionPlan }: DeficiencyCardProps) 
            <div className="absolute top-0 left-0 w-full h-1 bg-rose-500 z-20" />
         )}
         
-        <CardHeader className="flex flex-row items-start justify-between p-5 pb-3">
+        <CardHeader
+          {...(draggable ? listeners : {})}
+          className="flex flex-row items-start justify-between p-5 pb-3 cursor-grab active:cursor-grabbing select-none"
+        >
           <div className="space-y-2 w-full pr-2">
              <div className="flex flex-wrap items-center gap-1.5">
                 <Badge className={cn("text-xs font-semibold uppercase tracking-wider px-2 py-0.5 border-none shadow-none rounded-md", config.color)}>
@@ -146,7 +162,7 @@ export function DeficiencyCard({ deficiency, actionPlan }: DeficiencyCardProps) 
                {deficiency.controlName || deficiency.description}
              </CardTitle>
           </div>
-          <div {...attributes} {...listeners} className="cursor-grab p-2 -m-2 text-slate-300 hover:text-indigo-500 transition-colors">
+          <div aria-hidden="true" className="p-2 -m-2 text-slate-300 hover:text-indigo-500 transition-colors">
             <GripVertical className="h-5 w-5" />
           </div>
         </CardHeader>
@@ -228,5 +244,6 @@ export function DeficiencyCard({ deficiency, actionPlan }: DeficiencyCardProps) 
         </CardContent>
       </Card>
     </motion.div>
+    </div>
   );
 }
