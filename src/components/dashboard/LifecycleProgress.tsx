@@ -38,24 +38,22 @@ export function LifecycleProgress({ currentStage = 'evaluasi', workingYear = '20
         </div>
       </div>
 
-      {/* MOBILE COMPACT VIEW: Active Phase Card & Progress Bar */}
-      <div className="flex md:hidden flex-col gap-3 p-3.5 bg-slate-50/80 rounded-lg border border-slate-200">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="h-6 w-6 rounded-full bg-slate-900 text-white text-xs font-bold flex items-center justify-center">
+      {/* MOBILE INTERACTIVE HORIZONTAL STEPPER: All 6 SK-5 Phases */}
+      <div className="flex md:hidden flex-col gap-2.5">
+        <div className="flex items-center justify-between text-xs font-semibold px-0.5">
+          <span className="text-slate-900 font-bold uppercase tracking-wider flex items-center gap-1.5">
+            <span className="h-5 w-5 rounded-full bg-slate-900 text-white text-xs font-bold flex items-center justify-center">
               {currentIdx + 1}
             </span>
-            <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-              {t(activeStage.label)}
-            </span>
-          </div>
-          <span className="text-xs font-bold text-slate-500">
-            {progressPercent}%
+            {t(activeStage.label)}
+          </span>
+          <span className="text-slate-500 font-mono font-bold">
+            {progressPercent}% • {t('lifecycle.phaseStep', { current: currentIdx + 1, total: stages.length })}
           </span>
         </div>
 
-        {/* Linear Progress Bar */}
-        <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+        {/* Progress bar line */}
+        <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
           <motion.div 
             initial={{ width: 0 }}
             animate={{ width: `${progressPercent}%` }}
@@ -64,13 +62,36 @@ export function LifecycleProgress({ currentStage = 'evaluasi', workingYear = '20
           />
         </div>
 
-        <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
-          <span>{t('lifecycle.phaseStep', { current: currentIdx + 1, total: stages.length })}</span>
-          {currentIdx + 1 < stages.length && (
-            <span className="text-xs text-slate-400">
-              {t('lifecycle.nextPhase', { phase: t(stages[currentIdx + 1].label) })}
-            </span>
-          )}
+        {/* Horizontal scrollable pills */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1 no-scrollbar -mx-1 px-1 touch-pan-x">
+          {stages.map((stage, idx) => {
+            const isCompleted = idx < currentIdx;
+            const isCurrent = idx === currentIdx;
+
+            return (
+              <div
+                key={stage.id}
+                className={cn(
+                  "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-semibold shrink-0 transition-all select-none min-h-[36px]",
+                  isCompleted 
+                    ? "bg-slate-900 text-white border-slate-900 shadow-xs" 
+                    : isCurrent
+                    ? "bg-white text-slate-900 border-slate-900 ring-2 ring-slate-900/10 shadow-xs"
+                    : "bg-slate-50 text-slate-400 border-slate-200"
+                )}
+              >
+                <span className={cn(
+                  "h-4 w-4 rounded-full flex items-center justify-center text-xs font-bold shrink-0",
+                  isCompleted ? "bg-white text-slate-900" : isCurrent ? "bg-slate-900 text-white" : "bg-slate-200 text-slate-500"
+                )}>
+                  {isCompleted ? <Check className="h-2.5 w-2.5 stroke-[3]" /> : idx + 1}
+                </span>
+                <span className="whitespace-nowrap font-medium text-xs">
+                  {t(stage.label)}
+                </span>
+              </div>
+            );
+          })}
         </div>
       </div>
 

@@ -38,30 +38,30 @@ export function MainHeader() {
         ? "bg-slate-950 border-slate-800 text-slate-50"
         : "bg-mancity-pattern border-primary/20 text-primary-foreground"
     )}>
-      <div className="flex h-16 items-center justify-between px-3 md:px-4 gap-2">
-        <div className="flex items-center gap-2 md:gap-6 min-w-0">
+      <div className="flex h-14 sm:h-16 items-center justify-between px-2 sm:px-4 gap-1.5 sm:gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-4 md:gap-6 min-w-0">
           {/* Mobile Global Sidebar Trigger */}
           <SidebarTrigger 
             aria-label={t('navigation.toggleSidebar', { defaultValue: 'Toggle navigation menu' })}
             className={cn(
-              "md:hidden h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 rounded-lg text-white hover:bg-white/20 active:bg-white/30 border border-white/20 shadow-sm flex items-center justify-center",
+              "md:hidden h-9 w-9 min-h-[40px] min-w-[40px] shrink-0 rounded-lg text-white hover:bg-white/20 active:bg-white/30 border border-white/20 shadow-sm flex items-center justify-center",
               isDark && "text-slate-100 hover:bg-slate-800 border-slate-700"
             )} 
           />
-          <div className="flex items-center gap-1.5 xs:gap-2 md:gap-3 min-w-0">
-            <Link to="/dashboard" className="flex items-center gap-1.5 md:gap-2 group shrink-0 min-h-[44px] py-1">
+          <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 min-w-0">
+            <Link to="/dashboard" className="flex items-center gap-1.5 md:gap-2 group shrink-0 min-h-[40px] py-1">
               <Shield className={cn(
-                "h-6 w-6 md:h-7 md:w-7 transition-transform group-hover:scale-105 shrink-0",
+                "h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 transition-transform group-hover:scale-105 shrink-0",
                 isDark ? "text-emerald-400" : "text-primary-foreground"
               )} />
               <span className={cn(
-                "font-display tracking-tight text-xs xs:text-sm sm:text-base md:text-lg font-bold truncate max-w-[110px] xs:max-w-[160px] sm:max-w-none",
+                "font-display tracking-tight text-xs xs:text-sm sm:text-base md:text-lg font-bold truncate max-w-[100px] xs:max-w-[140px] sm:max-w-none",
                 isDark ? "text-white" : "text-primary-foreground"
               )}>{t('appName')}</span>
             </Link>
           </div>
         </div>
-        <div className="flex items-center gap-1 xs:gap-1.5 sm:gap-2 md:gap-4 shrink-0">
+        <div className="flex items-center gap-1 sm:gap-2 md:gap-3 shrink-0">
           <FiscalYearSelector />
           <div className="hidden sm:flex items-center">
             <LanguageSwitcher />
@@ -72,22 +72,30 @@ export function MainHeader() {
               <button 
                 type="button"
                 aria-label={t('actions.openAccountMenu', { defaultValue: 'User account menu' })}
-                className="relative cursor-pointer hover:opacity-80 transition-opacity ml-1 rounded-full min-h-[44px] min-w-[44px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="relative cursor-pointer hover:opacity-90 transition-opacity p-0.5 rounded-full min-h-[40px] min-w-[40px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
-                <Avatar className="h-8 w-8 md:h-9 md:w-9 border-2 border-white/10 shadow-sm">
-                  <AvatarFallback className="bg-slate-800 text-white font-semibold text-xs">
+                <Avatar className="h-8 w-8 sm:h-9 sm:w-9 border-2 border-white/20 shadow-sm ring-1 ring-black/5">
+                  <AvatarFallback className="bg-slate-900 text-white font-bold text-xs">
                     {currentRole.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase() || 'US'}
                   </AvatarFallback>
                 </Avatar>
-                <Badge
-                  variant={isDark ? "outline" : "secondary"}
+                <span
                   className={cn(
-                    "absolute -bottom-1 -right-2 text-xs px-1 h-4 min-w-[16px] justify-center border-slate-900 shadow-sm font-semibold",
-                    !isDark && "bg-white text-slate-900 hover:bg-white font-bold"
+                    "absolute -bottom-0.5 -right-1 text-xs px-1 py-0.2 min-w-[18px] h-4.5 rounded-full flex items-center justify-center border font-bold shadow-sm select-none",
+                    isDark
+                      ? "bg-slate-900 border-slate-700 text-slate-200"
+                      : "bg-white border-slate-300 text-slate-900"
                   )}
+                  title={`Role: ${currentRole}`}
                 >
-                  {currentRole.split(' ').pop()?.substring(0, 1)}
-                </Badge>
+                  {currentRole.toLowerCase().includes('lini 2') || currentRole.toLowerCase().includes('line 2')
+                    ? 'L2'
+                    : currentRole.toLowerCase().includes('lini 1') || currentRole.toLowerCase().includes('line 1')
+                    ? 'L1'
+                    : currentRole.toLowerCase().includes('lini 3') || currentRole.toLowerCase().includes('line 3')
+                    ? 'L3'
+                    : currentRole.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase()}
+                </span>
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">

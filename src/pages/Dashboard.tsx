@@ -179,12 +179,12 @@ export function Dashboard() {
           title={<span className="font-semibold text-slate-900 tracking-normal">{t('title')}</span>} 
           description={t('description')} 
         >
-          <div className="flex gap-2">
-             <Button variant="outline" className="h-9 gap-2 border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors px-3 text-sm" onClick={() => navigate('/rcm')}>
-                <Target className="h-3.5 w-3.5" /> {t('actions.manageRcm')}
+          <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
+             <Button variant="outline" className="h-10 sm:h-9 min-h-[40px] gap-1.5 sm:gap-2 border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors px-2.5 sm:px-3 text-xs sm:text-sm font-semibold rounded-lg justify-center" onClick={() => navigate('/rcm')}>
+                <Target className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">{t('actions.manageRcm')}</span>
              </Button>
-             <Button className="h-9 gap-2 bg-mancity-pattern text-primary-foreground hover:opacity-90 transition-all px-3 text-sm shadow-sm border-none font-bold" onClick={() => navigate('/csa')}>
-                <ClipboardCheck className="h-3.5 w-3.5" /> {t('actions.startAssessment')}
+             <Button className="h-10 sm:h-9 min-h-[40px] gap-1.5 sm:gap-2 bg-mancity-pattern text-primary-foreground hover:opacity-90 transition-all px-2.5 sm:px-3 text-xs sm:text-sm shadow-sm border-none font-bold rounded-lg justify-center" onClick={() => navigate('/csa')}>
+                <ClipboardCheck className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">{t('actions.startAssessment')}</span>
              </Button>
           </div>
         </PageHeader>

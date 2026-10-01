@@ -22,7 +22,7 @@ export function AIFabButton({ isOpen, onToggle }: AIFabButtonProps) {
       <Tooltip>
         <TooltipTrigger asChild>
           <motion.div
-            className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:bottom-6 right-4 md:right-6 z-[1050]"
+            className="fixed bottom-[calc(4.25rem+env(safe-area-inset-bottom,0px))] md:bottom-6 right-3 sm:right-4 md:right-6 z-[45]"
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.3 }}
@@ -34,7 +34,7 @@ export function AIFabButton({ isOpen, onToggle }: AIFabButtonProps) {
               size="lg"
               aria-label={label}
               aria-expanded={isOpen}
-              className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 bg-primary hover:bg-primary/90"
+              className="h-11 w-11 sm:h-12 sm:w-12 md:h-14 md:w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 bg-primary hover:bg-primary/90 p-0 flex items-center justify-center border-2 border-white/20"
             >
               <AnimatePresence mode="wait">
                 {isOpen ? (
