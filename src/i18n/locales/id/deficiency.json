@@ -2,11 +2,34 @@
   "title": "Papan Defisiensi",
   "description": "Pantau remediasi dan nilai tingkat keparahan menggunakan model Degree of Deficiency (DoD).",
   "board": {
-    "statusFilter": "Status defisiensi"
+    "statusFilter": "Status defisiensi",
+    "selectionModeActive": "Mode Selection Aktif",
+    "aggregateAnalysis": "Analisis Agregasi",
+    "cancel": "Batal",
+    "evaluateGroup": "Evaluasi Grup ({{count}})",
+    "minSelectionError": "Pilih minimal 2 temuan untuk analisis agregasi.",
+    "assessSeverity": "Nilai Keparahan (DoD)",
+    "columns": {
+      "ineffective": "Ineffective",
+      "review": "Dalam Review",
+      "approval": "Dalam Approval",
+      "resolved": "Selesai"
+    },
+    "actions": {
+      "passReview": "Lolos Telaah",
+      "reject": "Tolak",
+      "approve": "Setujui"
+    }
   },
   "card": {
     "riskAffected": "Risiko Terdampak",
-    "evalNote": "Catatan Evaluasi / Temuan Pengujian:"
+    "evalNote": "Catatan Evaluasi / Temuan Pengujian:",
+    "overdue": "Terlambat",
+    "dueDate": "Jatuh Tempo: {{date}}",
+    "noActionPlan": "Belum Ada Rencana Aksi",
+    "picUnassigned": "Belum Ditentukan",
+    "reportDistribution": "Distribusi Laporan",
+    "actionTaken": "Tindakan yang Telah Diambil"
   },
   "form": {
     "title": "Rencana Aksi Remediasi",
@@ -36,12 +59,17 @@
     "resolved": "Selesai"
   },
   "sources": {
-    "label": "Sumber",
+    "label": "Sumber Temuan",
+    "all": "Semua",
+    "csa": "CSA Inefektif",
+    "tod": "TOD Review (Desain)",
+    "toe": "TOE Review (Operasi)",
+    "audit": "Audit Eksternal / SPI",
+    "unspecified": "Manual / Tidak Ditentukan",
     "l1_csa": "Lini 1 - CSA",
     "l2_csa": "Lini 2 - Review CSA",
     "l2_tod": "Lini 2 - Review TOD",
-    "l3_audit": "Lini 3 - Audit",
-    "all": "Semua Sumber"
+    "l3_audit": "Lini 3 - Audit"
   },
   "dod": {
     "title": "Tingkat Defisiensi (DoD)",

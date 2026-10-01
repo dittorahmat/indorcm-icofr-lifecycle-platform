@@ -400,7 +400,7 @@ export interface DoDEvidenceContext {
 export interface Deficiency extends Omit<InferSelectModel<typeof schema.deficiencies>, 'assertions' | 'flowchartPath' | 'identifiedDate' | 'compensatingControlIds' | 'source'> {
   severity: DeficiencySeverity;
   status: "Open" | "Remediated" | "Verified" | "Closed";
-  source: "Lini 1 - CSA" | "Lini 2 - CSA Review" | "Lini 2 - TOD Review" | "Lini 3 - Audit";
+  source: "Lini 1 - CSA" | "Lini 2 - CSA Review" | "Lini 2 - CSA Validation" | "Lini 2 - TOD Review" | "Lini 2 - TOE Review" | "Lini 3 - Audit";
   relatedAssertions: ControlAssertion[];
   compensatingControlIds: string[];
   assertions?: string[];

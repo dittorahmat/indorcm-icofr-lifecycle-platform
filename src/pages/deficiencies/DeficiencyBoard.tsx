@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, useDroppable } from '@dnd-kit/core';
+import { DndContext, closestCenter, pointerWithin, closestCorners, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, useDroppable } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { api } from '@/lib/api-client';
@@ -25,6 +25,18 @@ import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
 
 const KANBAN_COLUMNS: string[] = ["Ineffective", "In Review", "In Approval", "Resolved"];
+
+/**
+ * Granular origin filters across the Three Lines Model (SK-5/DKU.MBU/11/2024).
+ * `fallback` mirrors the `en` locale, which is the app's `fallbackLng`.
+ */
+const SOURCE_FILTERS = [
+  { id: 'all', labelKey: 'sources.all', fallback: 'All' },
+  { id: 'csa', labelKey: 'sources.csa', fallback: 'CSA Ineffective' },
+  { id: 'tod', labelKey: 'sources.tod', fallback: 'TOD Review (Design)' },
+  { id: 'toe', labelKey: 'sources.toe', fallback: 'TOE Review (Operation)' },
+  { id: 'audit', labelKey: 'sources.audit', fallback: 'External / SPI Audit' },
+] as const;
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -81,10 +93,10 @@ function KanbanColumn({
 
   const getColumnConfig = (s: string) => {
     switch (s) {
-      case 'Ineffective': return { title: "Ineffective", color: 'text-slate-400', bg: 'bg-slate-100', icon: FileText };
-      case 'In Review': return { title: "In Review", color: 'text-amber-500', bg: 'bg-amber-50', icon: Clock };
-      case 'In Approval': return { title: "In Approval", color: 'text-blue-500', bg: 'bg-blue-50', icon: Zap };
-      case 'Resolved': return { title: "Resolved", color: 'text-emerald-500', bg: 'bg-emerald-50', icon: CheckCircle2 };
+      case 'Ineffective': return { title: t('board.columns.ineffective', 'Ineffective'), color: 'text-slate-400', bg: 'bg-slate-100', icon: FileText };
+      case 'In Review': return { title: t('board.columns.review', 'In Review'), color: 'text-amber-500', bg: 'bg-amber-50', icon: Clock };
+      case 'In Approval': return { title: t('board.columns.approval', 'In Approval'), color: 'text-blue-500', bg: 'bg-blue-50', icon: Zap };
+      case 'Resolved': return { title: t('board.columns.resolved', 'Resolved'), color: 'text-emerald-500', bg: 'bg-emerald-50', icon: CheckCircle2 };
       default: return { title: s, color: 'text-slate-400', bg: 'bg-slate-100', icon: FileText };
     }
   };
@@ -113,7 +125,7 @@ function KanbanColumn({
         ref={setNodeRef}
         data-droppable-id={status}
         className={cn(
-          "flex-1 rounded-2xl border-2 border-dashed p-3 transition-all duration-300",
+          "flex-1 rounded-lg border-2 border-dashed p-3 transition-all duration-300",
           isOver 
             ? "bg-indigo-50/70 border-indigo-400 ring-2 ring-indigo-300/40" 
             : "bg-slate-50/50 border-slate-200/60 group-hover/column:bg-slate-50/80 group-hover/column:border-slate-300",
@@ -154,7 +166,7 @@ function KanbanColumn({
                       <Button 
                         size="sm" 
                         variant="outline" 
-                        className="flex-1 h-8 text-xs font-bold uppercase tracking-widest bg-white border-slate-200 rounded-xl"
+                        className="flex-1 h-8 text-xs font-bold uppercase tracking-widest bg-white border-slate-200 rounded-lg"
                         onClick={() => onEditPlan(ap)}
                       >
                         {t('actions.actionPlan', 'Action Plan')}
@@ -163,7 +175,7 @@ function KanbanColumn({
                     {status === "Ineffective" && ['Line 1', 'Admin'].includes(role) && (
                       <Button 
                         size="sm" 
-                        className="flex-1 h-8 text-xs font-bold uppercase tracking-widest bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl"
+                        className="flex-1 h-8 text-xs font-bold uppercase tracking-widest bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg"
                         onClick={() => onStatusChange(ap.id, "Submit")}
                       >
                         <Send className="h-3 w-3 mr-1" /> {t('workflow:submitPlan', { ns: 'workflow' })}
@@ -175,18 +187,18 @@ function KanbanColumn({
                       <div className="flex gap-2">
                         <Button 
                           size="sm" 
-                          className="flex-1 h-8 text-xs font-bold uppercase tracking-widest bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl"
+                          className="flex-1 h-8 text-xs font-bold uppercase tracking-widest bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg"
                           onClick={() => onStatusChange(ap.id, "Review")}
                         >
-                          <Zap className="h-3 w-3 mr-1" /> Pass Review
+                          <Zap className="h-3 w-3 mr-1" /> {t('board.actions.passReview', 'Pass Review')}
                         </Button>
                         <Button 
                           size="sm" 
                           variant="outline" 
-                          className="flex-1 h-8 text-xs font-bold uppercase tracking-widest text-rose-600 border-rose-200 hover:bg-rose-50 rounded-xl"
+                          className="flex-1 h-8 text-xs font-bold uppercase tracking-widest text-rose-600 border-rose-200 hover:bg-rose-50 rounded-lg"
                           onClick={() => onStatusChange(ap.id, "Reject")}
                         >
-                          <XCircle className="h-3 w-3 mr-1" /> Reject
+                          <XCircle className="h-3 w-3 mr-1" /> {t('board.actions.reject', 'Reject')}
                         </Button>
                       </div>
                     )}
@@ -195,18 +207,18 @@ function KanbanColumn({
                        <div className="flex gap-2">
                         <Button 
                           size="sm" 
-                          className="flex-1 h-8 text-xs font-bold uppercase tracking-widest bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl"
+                          className="flex-1 h-8 text-xs font-bold uppercase tracking-widest bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg"
                           onClick={() => onStatusChange(ap.id, "Approve")}
                         >
-                          <CheckCircle2 className="h-3 w-3 mr-1" /> Approve
+                          <CheckCircle2 className="h-3 w-3 mr-1" /> {t('board.actions.approve', 'Approve')}
                         </Button>
                         <Button 
                           size="sm" 
                           variant="outline" 
-                          className="flex-1 h-8 text-xs font-bold uppercase tracking-widest text-rose-600 border-rose-200 hover:bg-rose-50 rounded-xl"
+                          className="flex-1 h-8 text-xs font-bold uppercase tracking-widest text-rose-600 border-rose-200 hover:bg-rose-50 rounded-lg"
                           onClick={() => onStatusChange(ap.id, "Reject")}
                         >
-                          <XCircle className="h-3 w-3 mr-1" /> Reject
+                          <XCircle className="h-3 w-3 mr-1" /> {t('board.actions.reject', 'Reject')}
                         </Button>
                       </div>
                     )}
@@ -216,12 +228,12 @@ function KanbanColumn({
                     <Button 
                       size="icon" 
                       variant="secondary" 
-                      className={cn(
-                        "absolute top-3 right-10 rounded-full shadow-md bg-white transition-all hover:text-indigo-600 hover:scale-110",
-                        alwaysShowActions ? "h-11 w-11 opacity-100" : "h-7 w-7 opacity-0 group-hover:opacity-100"
-                      )}
-                      title="Assess Severity (DoD)"
-                      onClick={() => onAssess(deficiency.id)}
+                        className={cn(
+                          "absolute top-3 right-10 rounded-lg shadow-md bg-white transition-all hover:text-indigo-600 hover:scale-110",
+                          alwaysShowActions ? "h-11 w-11 opacity-100" : "h-7 w-7 opacity-0 group-hover:opacity-100"
+                        )}
+                        title={t('board.assessSeverity', 'Assess Severity (DoD)')}
+                        onClick={() => onAssess(deficiency.id)}
                     >
                       <ShieldAlert className="h-3.5 w-3.5" />
                     </Button>
@@ -267,8 +279,10 @@ export function DeficiencyBoard() {
   const filteredDeficiencies = React.useMemo(() => {
     if (!deficienciesData?.items) return [];
     if (sourceFilter === "all") return deficienciesData.items;
-    if (sourceFilter === "lini1") return deficienciesData.items.filter(d => d.source === "Lini 1 - CSA");
-    if (sourceFilter === "lini23") return deficienciesData.items.filter(d => d.source?.startsWith("Lini 2") || d.source === "Lini 3 - Audit");
+    if (sourceFilter === "csa") return deficienciesData.items.filter(d => d.source === "Lini 1 - CSA");
+    if (sourceFilter === "tod") return deficienciesData.items.filter(d => d.source === "Lini 2 - TOD Review");
+    if (sourceFilter === "toe") return deficienciesData.items.filter(d => d.source === "Lini 2 - CSA Validation" || d.source === "Lini 2 - CSA Review" || d.source === "Lini 2 - TOE Review");
+    if (sourceFilter === "audit") return deficienciesData.items.filter(d => d.source === "Lini 3 - Audit");
     return deficienciesData.items;
   }, [deficienciesData, sourceFilter]);
 
@@ -493,7 +507,7 @@ export function DeficiencyBoard() {
 
   const handleStartAggregate = () => {
     if (selectedDeficiencies.length < 2) {
-      toast.error("Pilih minimal 2 temuan untuk analisis agregasi.");
+      toast.error(t('board.minSelectionError', 'Select at least 2 findings for aggregate analysis.'));
       return;
     }
     setWizardOpen(true);
@@ -508,35 +522,32 @@ export function DeficiencyBoard() {
         className="flex flex-col h-full space-y-8 pb-10"
       >
         <motion.div variants={itemVariants}>
-          <PageHeader 
-            title={<span className="font-display tracking-tight">Deficiency Board</span>} 
-            description="Track remediation and assess severity using the Degree of Deficiency (DoD) model."
+          <PageHeader
+            title={<span className="font-display tracking-tight">{t('title', 'Deficiency Board')}</span>}
+            description={t('description', 'Track remediation and assess severity using the Degree of Deficiency (DoD) model.')}
             badge={isAggregateMode && (
                <Badge className="bg-rose-500 text-white border-none shadow-sm px-3 py-1 font-bold text-xs uppercase tracking-wider">
-                  Selection Mode Active
+                  {t('board.selectionModeActive', 'Selection Mode Active')}
                </Badge>
             )}
           >
             <div className="flex flex-col md:flex-row items-end md:items-center gap-4">
               <div className="flex flex-col gap-1.5">
-                <span className="text-xs font-black uppercase text-slate-400 tracking-widest ml-1">{t('sources.label')}</span>
-                <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-inner">
-                  {[
-                    { id: 'all', label: t('sources.all') },
-                    { id: 'lini1', label: t('sources.l1_csa') },
-                    { id: 'lini23', label: 'Lini 2/3' }
-                  ].map(s => (
+                <span className="text-xs font-black uppercase text-slate-400 tracking-widest ml-1">{t('sources.label', 'Finding Source')}</span>
+                <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200 shadow-inner">
+                  {SOURCE_FILTERS.map(s => (
                     <Button 
                       key={s.id}
                       variant={sourceFilter === s.id ? "default" : "ghost"} 
                       size="sm" 
+                      aria-pressed={sourceFilter === s.id}
                       className={cn(
                         "h-8 text-xs font-bold uppercase tracking-widest px-3 rounded-lg transition-all",
                         sourceFilter === s.id ? "bg-white text-indigo-600 shadow-sm border border-slate-200 hover:bg-white" : "text-slate-400"
                       )}
                       onClick={() => setSourceFilter(s.id)}
                     >
-                      {s.label}
+                      {t(s.labelKey, s.fallback)}
                     </Button>
                   ))}
                 </div>
@@ -548,9 +559,9 @@ export function DeficiencyBoard() {
                 <Button 
                   variant="outline" 
                   onClick={() => setAggregateMode(true)} 
-                  className="h-10 gap-2 border-slate-200 bg-white hover:bg-slate-50 transition-all font-bold text-xs uppercase tracking-widest px-5 rounded-xl shadow-sm self-end"
+                  className="h-10 gap-2 border-slate-200 bg-white hover:bg-slate-50 transition-all font-bold text-xs uppercase tracking-widest px-5 rounded-lg shadow-sm self-end"
                 >
-                  <Layers className="h-4 w-4 text-indigo-500" /> Aggregate Analysis
+                  <Layers className="h-4 w-4 text-indigo-500" /> {t('board.aggregateAnalysis', 'Aggregate Analysis')}
                 </Button>
               ) : (
                 <div className="flex gap-2 self-end">
@@ -559,13 +570,13 @@ export function DeficiencyBoard() {
                     onClick={() => { setAggregateMode(false); setSelectedDeficiencies([]); }}
                     className="h-10 font-bold text-xs uppercase tracking-widest text-slate-400 hover:text-slate-600"
                   >
-                    Cancel
+                    {t('board.cancel', 'Cancel')}
                   </Button>
                   <Button 
                     onClick={handleStartAggregate} 
-                    className="h-10 gap-2 bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all font-bold text-xs uppercase tracking-widest px-5 rounded-xl text-white"
+                    className="h-10 gap-2 bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all font-bold text-xs uppercase tracking-widest px-5 rounded-lg text-white"
                   >
-                    <CheckCircle2 className="h-4 w-4" /> Evaluate Group ({selectedDeficiencies.length})
+                    <CheckCircle2 className="h-4 w-4" /> {t('board.evaluateGroup', { defaultValue: 'Evaluate Group ({{count}})', count: selectedDeficiencies.length })}
                   </Button>
                 </div>
               )}
@@ -573,16 +584,24 @@ export function DeficiencyBoard() {
           </PageHeader>
         </motion.div>
 
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={(args) => {
+            const pointerCollisions = pointerWithin(args);
+            if (pointerCollisions.length > 0) return pointerCollisions;
+            return closestCorners(args);
+          }}
+          onDragEnd={handleDragEnd}
+        >
           {/* DESKTOP VIEW: Kanban columns */}
-          <div className="hidden md:block flex-1 overflow-x-auto pb-6 scrollbar-thin scrollbar-thumb-slate-200">
+          <div className="hidden md:block flex-1 overflow-x-auto pb-6 scrollbar-thin scrollbar-thumb-slate-200" data-testid="deficiency-kanban-desktop">
           {isLoading ? (
             <div className="flex gap-6">
               {KANBAN_COLUMNS.map(status => (
                 <div key={status} className="w-80 flex-shrink-0 space-y-4">
-                  <Skeleton className="h-10 w-3/4 rounded-xl" />
-                  <Skeleton className="h-32 w-full rounded-2xl" />
-                  <Skeleton className="h-32 w-full rounded-2xl" />
+                   <Skeleton className="h-10 w-3/4 rounded-lg" />
+                   <Skeleton className="h-32 w-full rounded-lg" />
+                   <Skeleton className="h-32 w-full rounded-lg" />
                 </div>
               ))}
             </div>

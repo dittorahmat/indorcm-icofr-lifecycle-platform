@@ -4,7 +4,8 @@ import { CSS } from '@dnd-kit/utilities';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { GripVertical, Users, History, Calendar, ShieldAlert, Target, Info, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { GripVertical, Users, History, Calendar, ShieldAlert, Target, Info, AlertTriangle, CheckCircle2, ClipboardCheck, Compass, FlaskConical, FileQuestion } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import type { Deficiency, ActionPlan } from '@shared/types';
 import { cn } from '@/lib/utils';
 import { getDeficiencyDistribution } from '@/lib/compliance-utils';
@@ -14,6 +15,16 @@ interface DeficiencyCardProps {
   deficiency: Deficiency;
   actionPlan?: ActionPlan;
 }
+
+/**
+ * Visual identity of each evaluation origin across the Three Lines Model.
+ * Icons mirror the instrument that produced the finding (SK-5/DKU.MBU/11/2024).
+ */
+type SourceBadgeConfig = {
+  label: string;
+  color: string;
+  icon: LucideIcon;
+};
 
 export function DeficiencyCard({ deficiency, actionPlan }: DeficiencyCardProps) {
   const { t } = useTranslation('deficiency');
@@ -45,6 +56,45 @@ export function DeficiencyCard({ deficiency, actionPlan }: DeficiencyCardProps) 
 
   const config = severityConfig[deficiency.severity];
 
+  const getSourceConfig = (source?: string): SourceBadgeConfig => {
+    switch (source) {
+      case 'Lini 1 - CSA':
+        return {
+          label: t('sources.csa', 'CSA Ineffective'),
+          color: 'text-blue-700 bg-blue-50 border-blue-200',
+          icon: ClipboardCheck,
+        };
+      case 'Lini 2 - TOD Review':
+        return {
+          label: t('sources.tod', 'TOD Review (Design)'),
+          color: 'text-amber-800 bg-amber-50 border-amber-200',
+          icon: Compass,
+        };
+      case 'Lini 2 - CSA Review':
+      case 'Lini 2 - CSA Validation':
+      case 'Lini 2 - TOE Review':
+        return {
+          label: t('sources.toe', 'TOE Review (Operation)'),
+          color: 'text-purple-700 bg-purple-50 border-purple-200',
+          icon: FlaskConical,
+        };
+      case 'Lini 3 - Audit':
+        return {
+          label: t('sources.audit', 'External / SPI Audit'),
+          color: 'text-rose-700 bg-rose-50 border-rose-200',
+          icon: ShieldAlert,
+        };
+      default:
+        return {
+          label: source || t('sources.unspecified', 'Manual / Unspecified'),
+          color: 'text-slate-700 bg-slate-50 border-slate-200',
+          icon: FileQuestion,
+        };
+    }
+  };
+
+  const sourceConfig = getSourceConfig(deficiency.source);
+
   return (
     <motion.div
       ref={setNodeRef}
@@ -64,14 +114,15 @@ export function DeficiencyCard({ deficiency, actionPlan }: DeficiencyCardProps) 
         <CardHeader className="flex flex-row items-start justify-between p-5 pb-3">
           <div className="space-y-2 w-full pr-2">
              <div className="flex flex-wrap items-center gap-1.5">
-                <Badge className={cn("text-xs font-semibold uppercase tracking-wider px-2 py-0.5 border-none shadow-none", config.color)}>
+                <Badge className={cn("text-xs font-semibold uppercase tracking-wider px-2 py-0.5 border-none shadow-none rounded-md", config.color)}>
                    {deficiency.severity}
                 </Badge>
                 <Badge variant="outline" className={cn(
-                  "text-xs font-medium uppercase tracking-wider px-2 py-0.5 border-slate-200 bg-white",
-                  deficiency.source?.startsWith('Lini 2') ? "text-amber-600 border-amber-200" : "text-indigo-600 border-indigo-200"
+                  "text-xs font-semibold uppercase tracking-wider px-2 py-0.5 border rounded-md shadow-none flex items-center gap-1",
+                  sourceConfig.color
                 )}>
-                   {deficiency.source || 'Manual'}
+                   <sourceConfig.icon className="h-3 w-3 shrink-0" aria-hidden="true" />
+                   {sourceConfig.label}
                 </Badge>
                 {deficiency.controlCode && (
                   <Badge variant="secondary" className="text-xs font-mono font-semibold uppercase tracking-wider px-2 py-0.5 bg-indigo-50 text-indigo-800 border border-indigo-200 shadow-none">
@@ -84,8 +135,8 @@ export function DeficiencyCard({ deficiency, actionPlan }: DeficiencyCardProps) 
                   </Badge>
                 )}
                 {isOverdue && (
-                  <Badge variant="outline" className="text-xs font-semibold uppercase tracking-wider px-2 py-0.5 border-rose-300 bg-rose-100 text-rose-700">
-                    OVERDUE
+                  <Badge variant="outline" className="text-xs font-semibold uppercase tracking-wider px-2 py-0.5 border-rose-300 bg-rose-100 text-rose-700 rounded-md">
+                    {t('card.overdue', 'Overdue')}
                   </Badge>
                 )}
              </div>
@@ -106,9 +157,9 @@ export function DeficiencyCard({ deficiency, actionPlan }: DeficiencyCardProps) 
              <div className="p-2.5 bg-rose-50/70 border border-rose-200/80 rounded-lg text-rose-950 text-xs leading-relaxed flex items-start gap-2">
                <AlertTriangle className="h-4 w-4 text-rose-500 shrink-0 mt-0.5" />
                <div>
-                  <span className="font-bold text-rose-900 block text-xs uppercase tracking-wider mb-0.5">
-                    {t('card.riskAffected', { defaultValue: 'Risiko Terdampak' })} {deficiency.riskCode ? `(${deficiency.riskCode})` : ''}:
-                  </span>
+                   <span className="font-bold text-rose-900 block text-xs uppercase tracking-wider mb-0.5">
+                     {t('card.riskAffected', { defaultValue: 'Affected Risk' })} {deficiency.riskCode ? `(${deficiency.riskCode})` : ''}:
+                   </span>
                  {deficiency.riskDescription}
                </div>
              </div>
@@ -117,34 +168,34 @@ export function DeficiencyCard({ deficiency, actionPlan }: DeficiencyCardProps) 
           {/* FINDING / JUSTIFICATION NOTE BOX */}
           {deficiency.controlName && (
              <div className="p-3 bg-amber-50/60 border border-amber-200/80 rounded-lg text-slate-700 text-xs leading-relaxed">
-               <span className="font-bold text-amber-900 block text-xs uppercase tracking-wider mb-0.5">{t('card.evalNote', { defaultValue: 'Catatan Evaluasi / Temuan Pengujian:' })}</span>
+                <span className="font-bold text-amber-900 block text-xs uppercase tracking-wider mb-0.5">{t('card.evalNote', { defaultValue: 'Evaluation Note / Test Finding:' })}</span>
                {deficiency.description}
              </div>
           )}
           <div className="flex items-center justify-between">
               {actionPlan ? (
-                 <div className={cn(
-                   "flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest",
-                   isOverdue ? "text-rose-600" : "text-slate-400"
-                 )}>
-                   <Calendar className="h-3 w-3" />
-                   Due: {displayDate.toLocaleDateString()}
-                 </div>
-              ) : (
-                <div className="text-xs font-bold text-slate-300 uppercase tracking-widest">No Action Plan</div>
+                  <div className={cn(
+                    "flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest",
+                    isOverdue ? "text-rose-600" : "text-slate-400"
+                  )}>
+                    <Calendar className="h-3 w-3" />
+                    {t('card.dueDate', { defaultValue: 'Due: {{date}}', date: displayDate.toLocaleDateString() })}
+                  </div>
+               ) : (
+                 <div className="text-xs font-bold text-slate-300 uppercase tracking-widest">{t('card.noActionPlan', 'No Action Plan')}</div>
              )}
              
              {actionPlan && (
                 <div className="flex items-center gap-1.5 text-xs font-bold text-slate-600 uppercase tracking-widest bg-slate-50 px-2 py-1 rounded-lg border border-slate-100">
                   <Target className="h-3 w-3 text-indigo-500" />
-                  {actionPlan.picName || 'TBD'}
+                  {actionPlan.picName || t('card.picUnassigned', 'TBD')}
                 </div>
              )}
           </div>
 
           <div className="pt-3 border-t border-slate-50">
              <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 uppercase tracking-[0.15em] mb-2">
-                <Users className="h-3 w-3 text-slate-300" /> Report Distribution
+                <Users className="h-3 w-3 text-slate-300" /> {t('card.reportDistribution', 'Report Distribution')}
              </div>
              <div className="flex flex-wrap gap-1.5">
                 {distribution.map((stakeholder, i) => (
@@ -160,7 +211,7 @@ export function DeficiencyCard({ deficiency, actionPlan }: DeficiencyCardProps) 
               {deficiency.correctiveActionTaken && (
                 <div className="space-y-1">
                   <div className="text-xs font-bold text-emerald-600 uppercase tracking-widest flex items-center gap-1.5">
-                    <CheckCircle2 className="h-3 w-3" /> Action Taken
+                    <CheckCircle2 className="h-3 w-3" /> {t('card.actionTaken', 'Action Taken')}
                   </div>
                     <p className="text-xs leading-relaxed text-slate-500 font-medium">
                     "{deficiency.correctiveActionTaken}"
@@ -168,7 +219,7 @@ export function DeficiencyCard({ deficiency, actionPlan }: DeficiencyCardProps) 
                 </div>
               )}
               {deficiency.remediationEvidence && (
-                <div className="flex items-center gap-2 text-xs font-bold text-indigo-600 bg-indigo-50/50 px-2.5 py-1.5 rounded-xl border border-indigo-100 w-fit shadow-sm">
+                <div className="flex items-center gap-2 text-xs font-bold text-indigo-600 bg-indigo-50/50 px-2.5 py-1.5 rounded-lg border border-indigo-100 w-fit shadow-sm">
                   <History className="h-3 w-3" /> {deficiency.remediationEvidence}
                 </div>
               )}

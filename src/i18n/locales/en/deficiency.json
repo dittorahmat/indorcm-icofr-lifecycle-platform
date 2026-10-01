@@ -2,11 +2,34 @@
   "title": "Deficiency Board",
   "description": "Track remediation and assess severity using the Degree of Deficiency (DoD) model.",
   "board": {
-    "statusFilter": "Deficiency status"
+    "statusFilter": "Deficiency status",
+    "selectionModeActive": "Selection Mode Active",
+    "aggregateAnalysis": "Aggregate Analysis",
+    "cancel": "Cancel",
+    "evaluateGroup": "Evaluate Group ({{count}})",
+    "minSelectionError": "Select at least 2 findings for aggregate analysis.",
+    "assessSeverity": "Assess Severity (DoD)",
+    "columns": {
+      "ineffective": "Ineffective",
+      "review": "In Review",
+      "approval": "In Approval",
+      "resolved": "Resolved"
+    },
+    "actions": {
+      "passReview": "Pass Review",
+      "reject": "Reject",
+      "approve": "Approve"
+    }
   },
   "card": {
     "riskAffected": "Affected Risk",
-    "evalNote": "Evaluation Note / Test Finding:"
+    "evalNote": "Evaluation Note / Test Finding:",
+    "overdue": "Overdue",
+    "dueDate": "Due: {{date}}",
+    "noActionPlan": "No Action Plan",
+    "picUnassigned": "TBD",
+    "reportDistribution": "Report Distribution",
+    "actionTaken": "Action Taken"
   },
   "form": {
     "title": "Remediation Action Plan",
@@ -36,12 +59,17 @@
     "resolved": "Resolved"
   },
   "sources": {
-    "label": "Source",
+    "label": "Finding Source",
+    "all": "All",
+    "csa": "CSA Ineffective",
+    "tod": "TOD Review (Design)",
+    "toe": "TOE Review (Operation)",
+    "audit": "External / SPI Audit",
+    "unspecified": "Manual / Unspecified",
     "l1_csa": "Line 1 - CSA",
     "l2_csa": "Line 2 - CSA Review",
     "l2_tod": "Line 2 - TOD Review",
-    "l3_audit": "Line 3 - Audit Testing",
-    "all": "All Sources"
+    "l3_audit": "Line 3 - Audit Testing"
   },
   "dod": {
     "title": "Degree of Deficiency (DoD)",
