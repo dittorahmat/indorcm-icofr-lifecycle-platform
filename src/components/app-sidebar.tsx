@@ -125,6 +125,13 @@ export function AppSidebar(): JSX.Element {
   const { data: session } = authClient.useSession();
   const userRole = (session?.user as any)?.role;
   const { isPinned, setIsPinned, state, toggleSidebar, setOpen, isMobile, setOpenMobile } = useSidebar();
+  const { workingYear } = useFiscalYearStore();
+
+  const withYear = (path: string) => {
+    if (!workingYear) return path;
+    const separator = path.includes('?') ? '&' : '?';
+    return `${path}${separator}year=${workingYear}`;
+  };
 
   useEffect(() => {
     const userLang = (session?.user as any)?.language;
@@ -160,17 +167,17 @@ export function AppSidebar(): JSX.Element {
           <SidebarMenu className="px-3 gap-1">
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/dashboard")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight" title={t('items.dashboard')}>
-                <Link to="/dashboard" className="font-semibold text-sm"><LayoutDashboard className="h-4 w-4" /> <span>{t('items.dashboard')}</span></Link>
+                <Link to={withYear("/dashboard")} className="font-semibold text-sm"><LayoutDashboard className="h-4 w-4" /> <span>{t('items.dashboard')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/scoping")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight" title={t('items.scoping')}>
-                <Link to="/scoping" className="font-semibold text-sm"><Target className="h-4 w-4" /> <span>{t('items.scoping')}</span></Link>
+                <Link to={withYear("/scoping")} className="font-semibold text-sm"><Target className="h-4 w-4" /> <span>{t('items.scoping')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/bpm")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight" title={t('items.bpm')}>
-                <Link to="/bpm" className="flex items-center justify-between w-full font-semibold text-sm">
+                <Link to={withYear("/bpm")} className="flex items-center justify-between w-full font-semibold text-sm">
                   <div className="flex items-center gap-2">
                     <Workflow className="h-4 w-4" /> <span>{t('items.bpm')}</span>
                   </div>
@@ -179,13 +186,13 @@ export function AppSidebar(): JSX.Element {
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/todo")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight" title={t('items.todo')}>
-                <Link to="/todo" className="font-semibold text-sm"><ListTodo className="h-4 w-4" /> <span>{t('items.todo')}</span></Link>
+                <Link to={withYear("/todo")} className="font-semibold text-sm"><ListTodo className="h-4 w-4" /> <span>{t('items.todo')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             {(userRole === 'Komisaris' || userRole === 'CFO' || userRole === 'Line 2' || userRole === 'Admin') && (
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={isActive("/scoping/approval")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
-                  <Link to="/scoping/approval" className="flex items-center justify-between w-full font-semibold text-sm">
+                  <Link to={withYear("/scoping/approval")} className="flex items-center justify-between w-full font-semibold text-sm">
                     <div className="flex items-center gap-2">
                       <ShieldCheck className="h-4 w-4" /> <span>{t('items.approval')}</span>
                     </div>
@@ -196,17 +203,17 @@ export function AppSidebar(): JSX.Element {
             )}
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/csa")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight" title={t('items.csaReports')}>
-                <Link to="/csa" className="font-semibold text-sm"><ClipboardCheck className="h-4 w-4" /> <span>{t('items.csaReports')}</span></Link>
+                <Link to={withYear("/csa")} className="font-semibold text-sm"><ClipboardCheck className="h-4 w-4" /> <span>{t('items.csaReports')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/rcm/verification-design")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
-                <Link to="/rcm/verification-design" className="font-semibold text-sm"><ClipboardCheck className="h-4 w-4" /> <span>{t('items.verificationDesign')}</span></Link>
+                <Link to={withYear("/rcm/verification-design")} className="font-semibold text-sm"><ClipboardCheck className="h-4 w-4" /> <span>{t('items.verificationDesign')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/applications")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight" title={t('items.applications')}>
-                <Link to="/applications" className="font-semibold text-sm"><Cpu className="h-4 w-4" /> <span>{t('items.applications')}</span></Link>
+                <Link to={withYear("/applications")} className="font-semibold text-sm"><Cpu className="h-4 w-4" /> <span>{t('items.applications')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -220,27 +227,27 @@ export function AppSidebar(): JSX.Element {
           <SidebarMenu className="px-3 gap-1">
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/rcm/elc")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
-                <Link to="/rcm/elc" className="font-semibold text-sm"><Shield className="h-4 w-4" /> <span>{t('items.rcmElc')}</span></Link>
+                <Link to={withYear("/rcm/elc")} className="font-semibold text-sm"><Shield className="h-4 w-4" /> <span>{t('items.rcmElc')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/rcm/tlc")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
-                <Link to="/rcm/tlc" className="font-semibold text-sm"><ListChecks className="h-4 w-4" /> <span>{t('items.rcmTlc')}</span></Link>
+                <Link to={withYear("/rcm/tlc")} className="font-semibold text-sm"><ListChecks className="h-4 w-4" /> <span>{t('items.rcmTlc')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/rcm/itgc")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
-                <Link to="/rcm/itgc" className="font-semibold text-sm"><Database className="h-4 w-4" /> <span>{t('items.rcmItgc')}</span></Link>
+                <Link to={withYear("/rcm/itgc")} className="font-semibold text-sm"><Database className="h-4 w-4" /> <span>{t('items.rcmItgc')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/wbs-recap")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
-                <Link to="/wbs-recap" className="font-semibold text-sm"><AlertTriangle className="h-4 w-4" /> <span>{t('items.wbs')}</span></Link>
+                <Link to={withYear("/wbs-recap")} className="font-semibold text-sm"><AlertTriangle className="h-4 w-4" /> <span>{t('items.wbs')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/reports")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
-                <Link to="/reports" className="font-semibold text-sm"><FileBarChart className="h-4 w-4" /> <span>{t('items.app11')}</span></Link>
+                <Link to={withYear("/reports")} className="font-semibold text-sm"><FileBarChart className="h-4 w-4" /> <span>{t('items.app11')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -254,7 +261,7 @@ export function AppSidebar(): JSX.Element {
           <SidebarMenu className="px-3 gap-1">
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/deficiencies")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
-                <Link to="/deficiencies" className="flex items-center justify-between w-full font-semibold text-sm">
+                <Link to={withYear("/deficiencies")} className="flex items-center justify-between w-full font-semibold text-sm">
                   <div className="flex items-center gap-2">
                     <AlertTriangle className="h-4 w-4" /> <span>{t('items.deficiencies')}</span>
                   </div>
@@ -272,7 +279,7 @@ export function AppSidebar(): JSX.Element {
           <SidebarMenu className="px-3 gap-1">
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/ai-hub")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
-                <Link to="/ai-hub" className="font-semibold text-sm"><BrainCircuit className="h-4 w-4" /> <span>{t('items.aiAnalytics')}</span></Link>
+                <Link to={withYear("/ai-hub")} className="font-semibold text-sm"><BrainCircuit className="h-4 w-4" /> <span>{t('items.aiAnalytics')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
@@ -287,12 +294,12 @@ export function AppSidebar(): JSX.Element {
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/documents")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
-                <Link to="/documents" className="font-semibold text-sm"><FileText className="h-4 w-4" /> <span>{t('items.documents')}</span></Link>
+                <Link to={withYear("/documents")} className="font-semibold text-sm"><FileText className="h-4 w-4" /> <span>{t('items.documents')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/notifications")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
-                <Link to="/notifications" className="flex items-center justify-between w-full font-semibold text-sm">
+                <Link to={withYear("/notifications")} className="flex items-center justify-between w-full font-semibold text-sm">
                   <div className="flex items-center gap-2">
                     <BellIcon className="h-4 w-4" /> <span>{t('items.notifications')}</span>
                   </div>

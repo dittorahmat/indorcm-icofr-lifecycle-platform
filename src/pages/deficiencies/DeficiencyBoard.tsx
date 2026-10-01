@@ -1,10 +1,10 @@
 import React, { useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, useDroppable } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { api } from '@/lib/api-client';
-import type { Deficiency, ActionPlan, ActionPlanStatus, DeficiencySeverity, AggregateDeficiency, MaterialitySimulation } from '@shared/types';
+import type { Deficiency, ActionPlan, ActionPlanStatus, DeficiencySeverity, AggregateDeficiency, MaterialitySimulation, DeficiencyWorkflowStatus } from '@shared/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DeficiencyCard } from '@/components/deficiencies/DeficiencyCard';
 import { toast } from 'sonner';
@@ -90,6 +90,7 @@ function KanbanColumn({
   };
 
   const config = getColumnConfig(status);
+  const { setNodeRef, isOver } = useDroppable({ id: status });
 
   return (
     <div className={cn(
@@ -108,10 +109,17 @@ function KanbanColumn({
         </Badge>
       </div>
 
-      <div className={cn(
-        "flex-1 bg-slate-50/50 rounded-2xl border-2 border-dashed border-slate-200/60 p-3 group-hover/column:bg-slate-50/80 group-hover/column:border-slate-300 transition-all duration-300",
-        fullWidth ? "min-h-[200px]" : "min-h-[500px]"
-      )}>
+      <div 
+        ref={setNodeRef}
+        data-droppable-id={status}
+        className={cn(
+          "flex-1 rounded-2xl border-2 border-dashed p-3 transition-all duration-300",
+          isOver 
+            ? "bg-indigo-50/70 border-indigo-400 ring-2 ring-indigo-300/40" 
+            : "bg-slate-50/50 border-slate-200/60 group-hover/column:bg-slate-50/80 group-hover/column:border-slate-300",
+          fullWidth ? "min-h-[200px]" : "min-h-[500px]"
+        )}
+      >
         <SortableContext id={status} items={plansInColumn.map(ap => ap.id)} strategy={verticalListSortingStrategy}>
           <div className="space-y-4">
             {plansInColumn.map(ap => {
@@ -230,6 +238,10 @@ function KanbanColumn({
 
 export function DeficiencyBoard() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const mockRole = localStorage.getItem('mockRole');
+  const userRole = user?.role || mockRole || 'Admin';
+
   const { t } = useTranslation(['deficiency', 'workflow', 'common']);
   const [isWizardOpen, setWizardOpen] = React.useState(false);
   const [isRemediationOpen, setRemediationOpen] = React.useState(false);
@@ -385,33 +397,93 @@ export function DeficiencyBoard() {
 
     if (over && active.id !== over.id) {
       const plan = actionPlans.find(p => p.id === active.id);
-      const activeContainer = plan?.status;
-      const overContainerId = over.data.current?.sortable?.containerId || over.id;
-      const overContainer = KANBAN_COLUMNS.includes(overContainerId as any) ? overContainerId as ActionPlanStatus : null;
+      if (!plan) return;
 
-      if (plan && activeContainer && overContainer && activeContainer !== overContainer) {
+      const currentWorkflowStatus = (plan.workflowStatus || plan.status || "Ineffective") as DeficiencyWorkflowStatus;
+      
+      // Determine target column: overContainerId could be a column status string or another card ID
+      let overStatus: DeficiencyWorkflowStatus | null = null;
+      const overIdStr = String(over.id);
+      if (KANBAN_COLUMNS.includes(overIdStr)) {
+        overStatus = overIdStr as DeficiencyWorkflowStatus;
+      } else {
+        const overCard = actionPlans.find(p => p.id === over.id);
+        if (overCard) {
+          overStatus = (overCard.workflowStatus || overCard.status || "Ineffective") as DeficiencyWorkflowStatus;
+        } else if (over.data.current?.sortable?.containerId && KANBAN_COLUMNS.includes(over.data.current.sortable.containerId)) {
+          overStatus = over.data.current.sortable.containerId as DeficiencyWorkflowStatus;
+        }
+      }
+
+      if (!overStatus || currentWorkflowStatus === overStatus) {
+        return;
+      }
+
+      // SK-5 Transition mapping:
+      // Ineffective -> In Review : Submit (Line 1, Admin)
+      // In Review -> In Approval : Review (Line 2, Admin)
+      // In Approval -> Resolved  : Approve (Admin)
+      // Any -> Ineffective       : Reject / Rollback
+      let action: string | null = null;
+      let note = `Transitioned via Kanban board drag-and-drop to ${overStatus}`;
+
+      if (currentWorkflowStatus === 'Ineffective' && overStatus === 'In Review') {
+        if (!['Line 1', 'Admin'].includes(userRole)) {
+          toast.error("Hanya Lini 1 atau Admin yang dapat mengajukan rencana aksi (Submit).");
+          return;
+        }
+        action = "Submit";
+      } else if (currentWorkflowStatus === 'In Review' && overStatus === 'In Approval') {
+        if (!['Line 2', 'Admin'].includes(userRole)) {
+          toast.error("Hanya Lini 2 atau Admin yang dapat meloloskan telaah (Pass Review).");
+          return;
+        }
+        action = "Review";
+      } else if (currentWorkflowStatus === 'In Approval' && overStatus === 'Resolved') {
+        if (!['Admin'].includes(userRole)) {
+          toast.error("Hanya Admin yang dapat menyetujui penyelesaian (Approve).");
+          return;
+        }
+        action = "Approve";
+      } else if (overStatus === 'Ineffective') {
+        action = currentWorkflowStatus === 'Resolved' ? 'Rollback' : 'Reject';
+        note = `Dikembalikan ke status Ineffective via Kanban board`;
+      } else {
+        // Direct transition when authorized as Admin
+        if (userRole === 'Admin') {
+          if (overStatus === 'Resolved') action = 'Approve';
+          else if (overStatus === 'In Approval') action = 'Review';
+          else if (overStatus === 'In Review') action = 'Submit';
+        } else {
+          toast.error(`Perpindahan status dari "${currentWorkflowStatus}" ke "${overStatus}" tidak diizinkan tanpa tahapan tata kelola SK-5.`);
+          return;
+        }
+      }
+
+      if (action) {
+        // Optimistic UI update
         setActionPlans(previousPlans => {
           const activeIndex = previousPlans.findIndex(ap => ap.id === active.id);
           if (activeIndex === -1) return previousPlans;
-
           const newPlans = [...previousPlans];
-          newPlans[activeIndex] = { ...newPlans[activeIndex], status: overContainer };
+          newPlans[activeIndex] = {
+            ...newPlans[activeIndex],
+            workflowStatus: overStatus as DeficiencyWorkflowStatus,
+            status: overStatus === 'Resolved' ? 'Resolved' : newPlans[activeIndex].status
+          };
           return newPlans;
         });
 
-        planMutation.mutate({ 
-          id: active.id as string, 
-          status: overContainer, 
-          deficiencyId: plan.deficiencyId 
+        workflowMutation.mutate({
+          id: plan.id,
+          action,
+          note
         });
       }
     }
-  }, [actionPlans, planMutation]);
+  }, [actionPlans, userRole, workflowMutation]);
 
   const isLoading = deficienciesLoading || actionPlansLoading;
-  const { user } = useAuth();
-  const mockRole = localStorage.getItem('mockRole');
-  const userRole = user?.role || mockRole || 'Admin';
 
   const handleToggleSelect = (id: string) => {
     setSelectedDeficiencies(prev => 

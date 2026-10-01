@@ -13,11 +13,24 @@ export const UnsavedChangesGuard: React.FC = () => {
   
   // Define blocker callback based on global dirty state
   const blockerCallback = useCallback(
-    ({ currentLocation, nextLocation }: any) =>
-      isDirty && (
+    ({ currentLocation, nextLocation }: any) => {
+      if (!isDirty) return false;
+      // If path is identical and only 'year' query parameter is being synchronized, do not block
+      if (currentLocation.pathname === nextLocation.pathname) {
+        const currentParams = new URLSearchParams(currentLocation.search);
+        const nextParams = new URLSearchParams(nextLocation.search);
+        // If the only difference is the 'year' param being added or synced
+        const keys = new Set([...Array.from(currentParams.keys()), ...Array.from(nextParams.keys())]);
+        const otherParamChanged = Array.from(keys).some(k => k !== 'year' && currentParams.get(k) !== nextParams.get(k));
+        if (!otherParamChanged) {
+          return false;
+        }
+      }
+      return (
         currentLocation.pathname !== nextLocation.pathname || 
         currentLocation.search !== nextLocation.search
-      ),
+      );
+    },
     [isDirty]
   );
 

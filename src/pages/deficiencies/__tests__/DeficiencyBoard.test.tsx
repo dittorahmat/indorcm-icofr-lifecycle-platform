@@ -90,4 +90,15 @@ describe('DeficiencyBoard Mobile Tabs', () => {
     expect(actionBtn).toBeInTheDocument();
     expect(actionBtn.closest('.opacity-0')).toBeNull();
   });
+
+  it('renders droppable containers for all SK-5 kanban columns', () => {
+    const { container } = renderBoard();
+    const droppables = container.querySelectorAll('[data-droppable-id]');
+    expect(droppables.length).toBeGreaterThanOrEqual(4);
+    const dropIds = Array.from(droppables).map(el => el.getAttribute('data-droppable-id'));
+    expect(dropIds).toContain('Ineffective');
+    expect(dropIds).toContain('In Review');
+    expect(dropIds).toContain('In Approval');
+    expect(dropIds).toContain('Resolved');
+  });
 });
