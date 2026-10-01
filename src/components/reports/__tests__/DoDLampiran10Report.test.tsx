@@ -268,4 +268,26 @@ describe('DoDLampiran10Report Component', () => {
     expect(printSpy).toHaveBeenCalled();
     printSpy.mockRestore();
   });
+
+  it('renders tooltips for assertions and decision tree box headers', () => {
+    render(<DoDLampiran10Report deficiencies={mockDeficiencies} controls={mockControls} />);
+
+    // Check assertion acronym triggers
+    expect(screen.getByText('C')).toBeInTheDocument();
+    expect(screen.getByText('A')).toBeInTheDocument();
+    expect(screen.getByText('E/O')).toBeInTheDocument();
+    expect(screen.getByText('CO')).toBeInTheDocument();
+    expect(screen.getByText('R&O')).toBeInTheDocument();
+    expect(screen.getByText('V/A')).toBeInTheDocument();
+    expect(screen.getByText('PD')).toBeInTheDocument();
+
+    // Check decision tree box acronym triggers
+    expect(screen.getByText('B1 (xviii)')).toBeInTheDocument();
+    expect(screen.getByText('B2 (xix)')).toBeInTheDocument();
+    expect(screen.getByText('B3 (xx)')).toBeInTheDocument();
+    expect(screen.getByText('B4 (xxi)')).toBeInTheDocument();
+    expect(screen.getByText('B5 (xxii)')).toBeInTheDocument();
+    expect(screen.getByText('B6 (xxiii)')).toBeInTheDocument();
+    expect(screen.getByText('B7 (xxiv)')).toBeInTheDocument();
+  });
 });

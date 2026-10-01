@@ -131,6 +131,78 @@
       "col23": "Kotak 6: Prudent Official (xxiii)",
       "col24": "Kotak 7: Dampak Kombinasi (xxiv)"
     },
+    "tooltips": {
+      "c": {
+        "title": "C — Completeness (Kelengkapan)",
+        "desc": "Memastikan seluruh transaksi, aset, kewajiban, dan ekuitas yang seharusnya disajikan telah dicatat secara lengkap tanpa ada yang terlewat.",
+        "ref": "SK-5/2024 Hal. 24 Tabel 8"
+      },
+      "a": {
+        "title": "A — Accuracy (Akurasi)",
+        "desc": "Memastikan jumlah, angka nominal, kalkulasi matematis, dan data transaksi lainnya telah dicatat dan dihitung secara tepat dan akurat.",
+        "ref": "SK-5/2024 Hal. 24 Tabel 8"
+      },
+      "eo": {
+        "title": "E/O — Existence / Occurrence (Keberadaan / Keterjadian)",
+        "desc": "Memastikan saldo aset/liabilitas benar-benar ada pada tanggal pelaporan dan seluruh transaksi yang dicatat benar-benar terjadi selama periode berjalan.",
+        "ref": "SK-5/2024 Hal. 24 Tabel 8"
+      },
+      "co": {
+        "title": "CO — Cut-Off (Pisah Batas)",
+        "desc": "Memastikan seluruh transaksi keuangan dan peristiwa telah dicatat dalam periode akuntansi dan tahun buku yang tepat.",
+        "ref": "SK-5/2024 Hal. 24 Tabel 8"
+      },
+      "ro": {
+        "title": "R&O — Rights & Obligations (Hak & Kewajiban)",
+        "desc": "Memastikan Perusahaan memegang atau mengendalikan hak atas aset, serta kewajiban yang disajikan merupakan utang sah entitas.",
+        "ref": "SK-5/2024 Hal. 24 Tabel 8"
+      },
+      "va": {
+        "title": "V/A — Valuation & Allocation (Penilaian & Alokasi)",
+        "desc": "Memastikan akun aset, liabilitas, dan ekuitas telah dicatat pada nilai wajar/tepat, serta penyesuaian penyusutan/penurunan nilai dialokasikan dengan benar.",
+        "ref": "SK-5/2024 Hal. 24 Tabel 8"
+      },
+      "pd": {
+        "title": "PD — Presentation & Disclosure (Penyajian & Pengungkapan)",
+        "desc": "Memastikan akun dan komponen laporan keuangan digabungkan atau dipisahkan secara tepat, serta diuraikan dan diungkapkan sesuai standar akuntansi.",
+        "ref": "SK-5/2024 Hal. 24 Tabel 8"
+      },
+      "box1": {
+        "title": "Kotak 1: Asersi Laporan Keuangan",
+        "desc": "Mengevaluasi apakah defisiensi pengendalian berhubungan langsung dengan asersi laporan keuangan (C, A, E/O, CO, R&O, V/A, PD).",
+        "ref": "AS 2201.62-63 & SK-5 Hal. 63"
+      },
+      "box2": {
+        "title": "Kotak 2: Kemungkinan (Likelihood) Salah Saji",
+        "desc": "Mengevaluasi apakah terdapat kemungkinan wajar (reasonable possibility) bahwa pengendalian internal gagal mencegah atau mendeteksi salah saji.",
+        "ref": "AS 2201.64-65 & SK-5 Hal. 63"
+      },
+      "box3": {
+        "title": "Kotak 3: Magnitude Potensi Salah Saji vs PM",
+        "desc": "Mengevaluasi apakah potensi besaran nilai eksposur salah saji menyamai atau melampaui ambang batas Performance Materiality (PM).",
+        "ref": "AS 2201.66-67 & SK-5 Hal. 63"
+      },
+      "box4": {
+        "title": "Kotak 4: Perhatian Pihak Pengawas",
+        "desc": "Mengevaluasi apakah defisiensi cukup penting untuk mendapat perhatian formal dari pihak yang bertanggung jawab atas tata kelola (Direksi & Komite Audit).",
+        "ref": "AS 2201.A11 & SK-5 Hal. 63"
+      },
+      "box5": {
+        "title": "Kotak 5: Pengendalian Kompensasi",
+        "desc": "Mengevaluasi apakah terdapat kontrol kompensasi efektif yang beroperasi pada tingkat presisi yang cukup untuk memitigasi potensi salah saji material.",
+        "ref": "AS 2201.68 & SK-5 Hal. 63"
+      },
+      "box6": {
+        "title": "Kotak 6: Pertimbangan Prudent Official",
+        "desc": "Mengevaluasi apakah individu yang kompeten, berpengetahuan, dan objektif akan menyimpulkan defisiensi ini sebagai Kelemahan Material (Material Weakness).",
+        "ref": "AS 2201.18 & SK-5 Hal. 63"
+      },
+      "box7": {
+        "title": "Kotak 7: Dampak Agregasi / Kombinasi",
+        "desc": "Mengevaluasi apakah kombinasi beberapa defisiensi yang mempengaruhi akun atau asersi yang sama secara kolektif meningkat menjadi Defisiensi Signifikan / Kelemahan Material.",
+        "ref": "AS 2201.69 & SK-5 Hal. 63"
+      }
+    },
     "signatures": {
       "preparerTitle": "Disiapkan oleh (Auditor/Lini 3):",
       "preparerRole": "Lini Ketiga (Fungsi Pengujian Independen / SPI)",

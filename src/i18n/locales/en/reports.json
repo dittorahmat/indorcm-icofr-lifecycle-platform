@@ -132,6 +132,78 @@
       "col23": "Box 6: Prudent Official (xxiii)",
       "col24": "Box 7: Combinatorial Impact (xxiv)"
     },
+    "tooltips": {
+      "c": {
+        "title": "C — Completeness",
+        "desc": "Ensures all transactions, assets, liabilities, and equity interests that should have been recorded have been fully recorded without omission.",
+        "ref": "SK-5/2024 Page 24 Table 8"
+      },
+      "a": {
+        "title": "A — Accuracy",
+        "desc": "Ensures amounts, computations, and other data relating to recorded transactions and events have been recorded and calculated appropriately.",
+        "ref": "SK-5/2024 Page 24 Table 8"
+      },
+      "eo": {
+        "title": "E/O — Existence / Occurrence",
+        "desc": "Ensures assets, liabilities, and equity interests exist at the reporting date, and recorded transactions actually occurred during the period.",
+        "ref": "SK-5/2024 Page 24 Table 8"
+      },
+      "co": {
+        "title": "CO — Cut-Off",
+        "desc": "Ensures all transactions and events have been recorded in the correct accounting period and fiscal year.",
+        "ref": "SK-5/2024 Page 24 Table 8"
+      },
+      "ro": {
+        "title": "R&O — Rights & Obligations",
+        "desc": "Ensures the entity holds or controls the rights to assets, and liabilities are legitimate obligations of the entity.",
+        "ref": "SK-5/2024 Page 24 Table 8"
+      },
+      "va": {
+        "title": "V/A — Valuation & Allocation",
+        "desc": "Ensures assets, liabilities, and equity interests are included at appropriate amounts and resulting valuation adjustments are properly allocated.",
+        "ref": "SK-5/2024 Page 24 Table 8"
+      },
+      "pd": {
+        "title": "PD — Presentation & Disclosure",
+        "desc": "Ensures financial components are appropriately aggregated or disaggregated, clearly described, and relevant disclosures meet reporting standards.",
+        "ref": "SK-5/2024 Page 24 Table 8"
+      },
+      "box1": {
+        "title": "Box 1: Direct Financial Statement Assertion",
+        "desc": "Evaluates whether the control deficiency directly correlates with financial statement assertions (C, A, E/O, CO, R&O, V/A, PD).",
+        "ref": "AS 2201.62-63 & SK-5 Page 63"
+      },
+      "box2": {
+        "title": "Box 2: Misstatement Likelihood",
+        "desc": "Evaluates whether there is a reasonable possibility that controls will fail to prevent or detect misstatements on a timely basis.",
+        "ref": "AS 2201.64-65 & SK-5 Page 63"
+      },
+      "box3": {
+        "title": "Box 3: Potential Magnitude vs Performance Materiality",
+        "desc": "Evaluates whether the potential misstatement exposure equals or exceeds the established Performance Materiality (PM) threshold.",
+        "ref": "AS 2201.66-67 & SK-5 Page 63"
+      },
+      "box4": {
+        "title": "Box 4: Governance Attention",
+        "desc": "Evaluates whether the deficiency is sufficiently important to merit formal attention by those responsible for oversight (Board & Audit Committee).",
+        "ref": "AS 2201.A11 & SK-5 Page 63"
+      },
+      "box5": {
+        "title": "Box 5: Compensating Controls",
+        "desc": "Evaluates whether effective secondary or compensating controls operate at sufficient precision to mitigate potential material misstatements.",
+        "ref": "AS 2201.68 & SK-5 Page 63"
+      },
+      "box6": {
+        "title": "Box 6: Prudent Official Consideration",
+        "desc": "Evaluates whether a competent, knowledgeable, and objective prudent official would conclude the deficiency represents a Material Weakness.",
+        "ref": "AS 2201.18 & SK-5 Page 63"
+      },
+      "box7": {
+        "title": "Box 7: Combinatorial / Aggregate Impact",
+        "desc": "Evaluates whether combinations of multiple deficiencies impacting the same account or assertion collectively elevate to a Significant Deficiency / Material Weakness.",
+        "ref": "AS 2201.69 & SK-5 Page 63"
+      }
+    },
     "signatures": {
       "preparerTitle": "Prepared by (Auditor / Line 3):",
       "preparerRole": "Third Line (Internal Audit / SPI)",

@@ -19,6 +19,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import {
   Download,
   Printer,
   Search,
@@ -421,22 +427,244 @@ export function DoDLampiran10Report({
                   <TableHead className="w-[140px] text-xs font-semibold text-slate-800 border-r border-border py-2.5">{t('dodReport.table.col10')}</TableHead>
 
                   {/* xi - xvii: Assertions */}
-                  <TableHead className="w-[45px] text-xs font-semibold text-center text-blue-900 border-r border-border py-2.5">C</TableHead>
-                  <TableHead className="w-[45px] text-xs font-semibold text-center text-blue-900 border-r border-border py-2.5">A</TableHead>
-                  <TableHead className="w-[50px] text-xs font-semibold text-center text-blue-900 border-r border-border py-2.5">E/O</TableHead>
-                  <TableHead className="w-[45px] text-xs font-semibold text-center text-blue-900 border-r border-border py-2.5">CO</TableHead>
-                  <TableHead className="w-[50px] text-xs font-semibold text-center text-blue-900 border-r border-border py-2.5">R&O</TableHead>
-                  <TableHead className="w-[50px] text-xs font-semibold text-center text-blue-900 border-r border-border py-2.5">V/A</TableHead>
-                  <TableHead className="w-[45px] text-xs font-semibold text-center text-blue-900 border-r border-border py-2.5">PD</TableHead>
+                  <TableHead className="w-[50px] text-xs font-semibold text-center text-blue-900 border-r border-border py-2.5">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="cursor-help underline decoration-dotted decoration-blue-400 underline-offset-2 hover:text-blue-700">
+                            C
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs text-left p-2.5 bg-slate-900 text-white rounded-md shadow-lg border border-slate-700">
+                          <p className="font-bold text-xs text-blue-300">{t('dodReport.tooltips.c.title')}</p>
+                          <p className="text-xs text-slate-200 mt-1 leading-snug">{t('dodReport.tooltips.c.desc')}</p>
+                          <p className="text-[11px] font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.c.ref')}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </TableHead>
+
+                  <TableHead className="w-[50px] text-xs font-semibold text-center text-blue-900 border-r border-border py-2.5">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="cursor-help underline decoration-dotted decoration-blue-400 underline-offset-2 hover:text-blue-700">
+                            A
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs text-left p-2.5 bg-slate-900 text-white rounded-md shadow-lg border border-slate-700">
+                          <p className="font-bold text-xs text-blue-300">{t('dodReport.tooltips.a.title')}</p>
+                          <p className="text-xs text-slate-200 mt-1 leading-snug">{t('dodReport.tooltips.a.desc')}</p>
+                          <p className="text-[11px] font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.a.ref')}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </TableHead>
+
+                  <TableHead className="w-[55px] text-xs font-semibold text-center text-blue-900 border-r border-border py-2.5">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="cursor-help underline decoration-dotted decoration-blue-400 underline-offset-2 hover:text-blue-700">
+                            E/O
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs text-left p-2.5 bg-slate-900 text-white rounded-md shadow-lg border border-slate-700">
+                          <p className="font-bold text-xs text-blue-300">{t('dodReport.tooltips.eo.title')}</p>
+                          <p className="text-xs text-slate-200 mt-1 leading-snug">{t('dodReport.tooltips.eo.desc')}</p>
+                          <p className="text-[11px] font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.eo.ref')}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </TableHead>
+
+                  <TableHead className="w-[50px] text-xs font-semibold text-center text-blue-900 border-r border-border py-2.5">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="cursor-help underline decoration-dotted decoration-blue-400 underline-offset-2 hover:text-blue-700">
+                            CO
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs text-left p-2.5 bg-slate-900 text-white rounded-md shadow-lg border border-slate-700">
+                          <p className="font-bold text-xs text-blue-300">{t('dodReport.tooltips.co.title')}</p>
+                          <p className="text-xs text-slate-200 mt-1 leading-snug">{t('dodReport.tooltips.co.desc')}</p>
+                          <p className="text-[11px] font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.co.ref')}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </TableHead>
+
+                  <TableHead className="w-[55px] text-xs font-semibold text-center text-blue-900 border-r border-border py-2.5">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="cursor-help underline decoration-dotted decoration-blue-400 underline-offset-2 hover:text-blue-700">
+                            R&O
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs text-left p-2.5 bg-slate-900 text-white rounded-md shadow-lg border border-slate-700">
+                          <p className="font-bold text-xs text-blue-300">{t('dodReport.tooltips.ro.title')}</p>
+                          <p className="text-xs text-slate-200 mt-1 leading-snug">{t('dodReport.tooltips.ro.desc')}</p>
+                          <p className="text-[11px] font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.ro.ref')}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </TableHead>
+
+                  <TableHead className="w-[55px] text-xs font-semibold text-center text-blue-900 border-r border-border py-2.5">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="cursor-help underline decoration-dotted decoration-blue-400 underline-offset-2 hover:text-blue-700">
+                            V/A
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs text-left p-2.5 bg-slate-900 text-white rounded-md shadow-lg border border-slate-700">
+                          <p className="font-bold text-xs text-blue-300">{t('dodReport.tooltips.va.title')}</p>
+                          <p className="text-xs text-slate-200 mt-1 leading-snug">{t('dodReport.tooltips.va.desc')}</p>
+                          <p className="text-[11px] font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.va.ref')}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </TableHead>
+
+                  <TableHead className="w-[50px] text-xs font-semibold text-center text-blue-900 border-r border-border py-2.5">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="cursor-help underline decoration-dotted decoration-blue-400 underline-offset-2 hover:text-blue-700">
+                            PD
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs text-left p-2.5 bg-slate-900 text-white rounded-md shadow-lg border border-slate-700">
+                          <p className="font-bold text-xs text-blue-300">{t('dodReport.tooltips.pd.title')}</p>
+                          <p className="text-xs text-slate-200 mt-1 leading-snug">{t('dodReport.tooltips.pd.desc')}</p>
+                          <p className="text-[11px] font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.pd.ref')}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </TableHead>
 
                   {/* xviii - xxiv: AS 2201 Decision Tree Boxes */}
-                  <TableHead className="w-[90px] text-xs font-semibold text-center text-amber-900 border-r border-border py-2.5">B1 (xviii)</TableHead>
-                  <TableHead className="w-[90px] text-xs font-semibold text-center text-amber-900 border-r border-border py-2.5">B2 (xix)</TableHead>
-                  <TableHead className="w-[90px] text-xs font-semibold text-center text-amber-900 border-r border-border py-2.5">B3 (xx)</TableHead>
-                  <TableHead className="w-[90px] text-xs font-semibold text-center text-amber-900 border-r border-border py-2.5">B4 (xxi)</TableHead>
-                  <TableHead className="w-[90px] text-xs font-semibold text-center text-amber-900 border-r border-border py-2.5">B5 (xxii)</TableHead>
-                  <TableHead className="w-[90px] text-xs font-semibold text-center text-amber-900 border-r border-border py-2.5">B6 (xxiii)</TableHead>
-                  <TableHead className="w-[90px] text-xs font-semibold text-center text-amber-900 py-2.5">B7 (xxiv)</TableHead>
+                  <TableHead className="w-[95px] text-xs font-semibold text-center text-amber-900 border-r border-border py-2.5">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="cursor-help underline decoration-dotted decoration-amber-500 underline-offset-2 hover:text-amber-700">
+                            B1 (xviii)
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs text-left p-2.5 bg-slate-900 text-white rounded-md shadow-lg border border-slate-700">
+                          <p className="font-bold text-xs text-amber-300">{t('dodReport.tooltips.box1.title')}</p>
+                          <p className="text-xs text-slate-200 mt-1 leading-snug">{t('dodReport.tooltips.box1.desc')}</p>
+                          <p className="text-[11px] font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.box1.ref')}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </TableHead>
+
+                  <TableHead className="w-[95px] text-xs font-semibold text-center text-amber-900 border-r border-border py-2.5">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="cursor-help underline decoration-dotted decoration-amber-500 underline-offset-2 hover:text-amber-700">
+                            B2 (xix)
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs text-left p-2.5 bg-slate-900 text-white rounded-md shadow-lg border border-slate-700">
+                          <p className="font-bold text-xs text-amber-300">{t('dodReport.tooltips.box2.title')}</p>
+                          <p className="text-xs text-slate-200 mt-1 leading-snug">{t('dodReport.tooltips.box2.desc')}</p>
+                          <p className="text-[11px] font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.box2.ref')}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </TableHead>
+
+                  <TableHead className="w-[95px] text-xs font-semibold text-center text-amber-900 border-r border-border py-2.5">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="cursor-help underline decoration-dotted decoration-amber-500 underline-offset-2 hover:text-amber-700">
+                            B3 (xx)
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs text-left p-2.5 bg-slate-900 text-white rounded-md shadow-lg border border-slate-700">
+                          <p className="font-bold text-xs text-amber-300">{t('dodReport.tooltips.box3.title')}</p>
+                          <p className="text-xs text-slate-200 mt-1 leading-snug">{t('dodReport.tooltips.box3.desc')}</p>
+                          <p className="text-[11px] font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.box3.ref')}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </TableHead>
+
+                  <TableHead className="w-[95px] text-xs font-semibold text-center text-amber-900 border-r border-border py-2.5">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="cursor-help underline decoration-dotted decoration-amber-500 underline-offset-2 hover:text-amber-700">
+                            B4 (xxi)
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs text-left p-2.5 bg-slate-900 text-white rounded-md shadow-lg border border-slate-700">
+                          <p className="font-bold text-xs text-amber-300">{t('dodReport.tooltips.box4.title')}</p>
+                          <p className="text-xs text-slate-200 mt-1 leading-snug">{t('dodReport.tooltips.box4.desc')}</p>
+                          <p className="text-[11px] font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.box4.ref')}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </TableHead>
+
+                  <TableHead className="w-[95px] text-xs font-semibold text-center text-amber-900 border-r border-border py-2.5">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="cursor-help underline decoration-dotted decoration-amber-500 underline-offset-2 hover:text-amber-700">
+                            B5 (xxii)
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs text-left p-2.5 bg-slate-900 text-white rounded-md shadow-lg border border-slate-700">
+                          <p className="font-bold text-xs text-amber-300">{t('dodReport.tooltips.box5.title')}</p>
+                          <p className="text-xs text-slate-200 mt-1 leading-snug">{t('dodReport.tooltips.box5.desc')}</p>
+                          <p className="text-[11px] font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.box5.ref')}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </TableHead>
+
+                  <TableHead className="w-[95px] text-xs font-semibold text-center text-amber-900 border-r border-border py-2.5">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="cursor-help underline decoration-dotted decoration-amber-500 underline-offset-2 hover:text-amber-700">
+                            B6 (xxiii)
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs text-left p-2.5 bg-slate-900 text-white rounded-md shadow-lg border border-slate-700">
+                          <p className="font-bold text-xs text-amber-300">{t('dodReport.tooltips.box6.title')}</p>
+                          <p className="text-xs text-slate-200 mt-1 leading-snug">{t('dodReport.tooltips.box6.desc')}</p>
+                          <p className="text-[11px] font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.box6.ref')}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </TableHead>
+
+                  <TableHead className="w-[95px] text-xs font-semibold text-center text-amber-900 py-2.5">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="cursor-help underline decoration-dotted decoration-amber-500 underline-offset-2 hover:text-amber-700">
+                            B7 (xxiv)
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs text-left p-2.5 bg-slate-900 text-white rounded-md shadow-lg border border-slate-700">
+                          <p className="font-bold text-xs text-amber-300">{t('dodReport.tooltips.box7.title')}</p>
+                          <p className="text-xs text-slate-200 mt-1 leading-snug">{t('dodReport.tooltips.box7.desc')}</p>
+                          <p className="text-[11px] font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.box7.ref')}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </TableHead>
                 </TableRow>
               </TableHeader>
 
