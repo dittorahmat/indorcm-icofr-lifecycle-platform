@@ -114,6 +114,9 @@ export class BpmService {
       try {
         const oldDiagrams = await this.db.select().from(bpmDiagrams).where(and(eq(bpmDiagrams.id, id), eq(bpmDiagrams.organizationId, orgId))).limit(1);
         const oldDiagram = oldDiagrams[0];
+        if (!oldDiagram) {
+          return null;
+        }
 
         // 1. Update Diagram Metadata & Log Action
         await this.updateDiagramMetadata(orgId, userId, id, body, oldDiagram);

@@ -35,6 +35,7 @@ import { useBPMNodeOperations } from './editor/hooks/useBPMNodeOperations';
 import { useBPMCanvasDragGuides } from './editor/hooks/useBPMCanvasDragGuides';
 import { useBPMCanvasHandlers } from './editor/hooks/useBPMCanvasHandlers';
 import { exportBpmToPdf } from './editor/utils/export-bpm-pdf';
+import { sanitizeNodesForSave, sanitizeEdgesForSave } from './editor/utils/sanitize-bpm-nodes';
 
 const initialNodes = [
   { id: '1', type: 'start', position: { x: 250, y: 0 }, data: { label: 'Start', type: 'start' } },
@@ -477,7 +478,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
               onSelectedGLsChange={setSelectedGLs}
               onSwitchGLContext={handleSwitchGLContext}
               onSave={() => saveMutation.mutate({ 
-                nodes, edges, name: subProcess, subProcess, year: diagram?.year || parseInt(workingYear), noGLs: selectedGLs,
+                nodes: sanitizeNodesForSave(nodes), edges: sanitizeEdgesForSave(edges), name: subProcess, subProcess, year: diagram?.year || parseInt(workingYear), noGLs: selectedGLs,
                 metadata: { ...diagram?.metadata, signatures, globalScale }
               })}
             />
@@ -637,7 +638,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
             setEditingNodeId(null);
           }}
           onSave={() => saveMutation.mutate({ 
-            nodes, edges, name: subProcess, subProcess, year: diagram?.year || parseInt(workingYear), noGLs: selectedGLs,
+            nodes: sanitizeNodesForSave(nodes), edges: sanitizeEdgesForSave(edges), name: subProcess, subProcess, year: diagram?.year || parseInt(workingYear), noGLs: selectedGLs,
             metadata: { ...diagram?.metadata, signatures, globalScale }
           })}
           isSaving={saveMutation.isPending}

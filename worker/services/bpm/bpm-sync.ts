@@ -25,8 +25,28 @@ export class BpmSyncManager {
     const activeControlIds = new Set<string>();
 
     const skipTypes = ['start', 'end', 'reference', 'swimlane'];
+
+    // 1. Collect all risk entries and control entries to sync
+    interface RiskEntryToSync {
+      riskId: string;
+      reg: any;
+      nodeId: string;
+    }
+
+    interface ControlEntryToSync {
+      ctrlId: string;
+      riskId: string;
+      reg: any;
+      noGL: string | null;
+      nodeLabel?: string;
+    }
+
+    const risksToSyncMap = new Map<string, RiskEntryToSync>();
+    const controlsToSyncMap = new Map<string, ControlEntryToSync>();
+    const nodeRcmPairsToInsert: { id: string; organizationId: string; diagramId: string; nodeId: string; rcmId: string }[] = [];
+    const insertedRiskIdsForNode = new Set<string>();
+
     for (const node of nodes) {
-      const insertedRiskIdsForNode = new Set<string>();
       const nodePairs = node.data?.regulatoryPairs || 
                        (node.data?.regulatoryData ? [node.data.regulatoryData] : []);
 
@@ -46,20 +66,26 @@ export class BpmSyncManager {
               activeRiskIds.add(riskId);
               activeControlIds.add(ctrlId);
               activeRiskControlPairs.add(`${riskId}:${ctrlId}`);
-              
-              await this.syncRisk(orgId, diagramId, riskId, reg, processName, subProcessName, year);
-              await this.syncControl(orgId, ctrlId, riskId, reg, bpmProcessId, gl || null, processName, subProcessName, year, node.data?.label);
-              await this.syncRcmControlMapping(orgId, riskId, ctrlId, reg, year, node.data?.label);
 
-              if (!insertedRiskIdsForNode.has(riskId)) {
-                await this.db.insert(bpmNodeRcms).values({
+              risksToSyncMap.set(riskId, { riskId, reg, nodeId: node.id });
+              controlsToSyncMap.set(ctrlId, {
+                ctrlId,
+                riskId,
+                reg,
+                noGL: gl || null,
+                nodeLabel: node.data?.label,
+              });
+
+              const pairKey = `${node.id}:${riskId}`;
+              if (!insertedRiskIdsForNode.has(pairKey)) {
+                nodeRcmPairsToInsert.push({
                   id: crypto.randomUUID(),
                   organizationId: orgId,
                   diagramId,
                   nodeId: node.id,
-                  rcmId: riskId
+                  rcmId: riskId,
                 });
-                insertedRiskIdsForNode.add(riskId);
+                insertedRiskIdsForNode.add(pairKey);
               }
             }
           }
@@ -72,16 +98,20 @@ export class BpmSyncManager {
           const baseRiskId = extractBaseId(riskEntry.rcmId);
           for (const gl of glCodes) {
             const riskId = makeGlSpecificId(baseRiskId, gl);
+            activeRiskIds.add(riskId);
 
-            if (!insertedRiskIdsForNode.has(riskId)) {
-              await this.db.insert(bpmNodeRcms).values({
+            risksToSyncMap.set(riskId, { riskId, reg: riskEntry, nodeId: node.id });
+
+            const pairKey = `${node.id}:${riskId}`;
+            if (!insertedRiskIdsForNode.has(pairKey)) {
+              nodeRcmPairsToInsert.push({
                 id: crypto.randomUUID(),
                 organizationId: orgId,
                 diagramId,
                 nodeId: node.id,
-                rcmId: riskId
+                rcmId: riskId,
               });
-              insertedRiskIdsForNode.add(riskId);
+              insertedRiskIdsForNode.add(pairKey);
             }
 
             if (riskEntry.controlIds) {
@@ -97,111 +127,171 @@ export class BpmSyncManager {
       }
     }
 
+    // 2. Batch sync risks (1 SELECT instead of N SELECTs)
+    const allRiskIds = Array.from(risksToSyncMap.keys());
+    if (allRiskIds.length > 0) {
+      const existingRisks = await this.db.select({ id: rcms.id })
+        .from(rcms)
+        .where(and(inArray(rcms.id, allRiskIds), eq(rcms.organizationId, orgId)));
+      const existingRiskIdSet = new Set(existingRisks.map(r => r.id));
+
+      const risksToInsert: any[] = [];
+      const risksToUpdate: any[] = [];
+
+      for (const [riskId, { reg }] of risksToSyncMap.entries()) {
+        const riskValues = {
+          process: processName || "Default Process",
+          subProcess: subProcessName || "Default Sub Process",
+          riskDescription: reg.riskDescription || "Draft Risk",
+          isFraudRelated: reg.isFraudRelated || false,
+          riskRating: reg.riskRating || "Low",
+          status: "Draft",
+          diagramId,
+          year,
+        };
+
+        if (!existingRiskIdSet.has(riskId)) {
+          risksToInsert.push({
+            id: riskId,
+            organizationId: orgId,
+            ...riskValues,
+          });
+        } else {
+          risksToUpdate.push({ id: riskId, ...riskValues });
+        }
+      }
+
+      if (risksToInsert.length > 0) {
+        await this.db.insert(rcms).values(risksToInsert);
+      }
+      for (const r of risksToUpdate) {
+        await this.db.update(rcms).set({
+          process: r.process,
+          subProcess: r.subProcess,
+          riskDescription: r.riskDescription,
+          isFraudRelated: r.isFraudRelated,
+          riskRating: r.riskRating,
+          year: r.year,
+        }).where(and(eq(rcms.id, r.id), eq(rcms.organizationId, orgId)));
+      }
+    }
+
+    // 3. Batch sync controls (1 SELECT instead of N SELECTs)
+    const allControlIds = Array.from(controlsToSyncMap.keys());
+    if (allControlIds.length > 0) {
+      const existingControls = await this.db.select({ id: controls.id })
+        .from(controls)
+        .where(and(inArray(controls.id, allControlIds), eq(controls.organizationId, orgId)));
+      const existingControlIdSet = new Set(existingControls.map(c => c.id));
+
+      const controlsToInsert: any[] = [];
+      const controlsToUpdate: any[] = [];
+
+      for (const [ctrlId, item] of controlsToSyncMap.entries()) {
+        const controlData: any = {
+          name: item.reg.controlDescription || item.nodeLabel || "Draft Control",
+          level: item.reg.classification || 'TLC',
+          cosoPrinciples: item.reg.cosoPrinciples || [],
+          bpmProcessId: bpmProcessId,
+          businessProcess: processName,
+          subProcess: subProcessName,
+          ...(item.noGL ? { fsliCodes: [item.noGL] } : {}),
+        };
+
+        if (!existingControlIdSet.has(ctrlId)) {
+          controlsToInsert.push({
+            id: ctrlId,
+            organizationId: orgId,
+            code: ctrlId,
+            rcmId: item.riskId,
+            year,
+            ...controlData,
+          });
+        } else {
+          controlsToUpdate.push({ id: ctrlId, ...controlData });
+        }
+      }
+
+      if (controlsToInsert.length > 0) {
+        await this.db.insert(controls).values(controlsToInsert);
+      }
+      for (const c of controlsToUpdate) {
+        await this.db.update(controls).set({
+          name: c.name,
+          level: c.level,
+          cosoPrinciples: c.cosoPrinciples,
+          bpmProcessId: c.bpmProcessId,
+          businessProcess: c.businessProcess,
+          subProcess: c.subProcess,
+          year: year,
+          ...(c.fsliCodes ? { fsliCodes: c.fsliCodes } : {}),
+        }).where(and(eq(controls.id, c.id), eq(controls.organizationId, orgId)));
+      }
+    }
+
+    // 4. Batch sync rcmControls mappings for regulatory pairs
+    if (controlsToSyncMap.size > 0) {
+      const existingMaps = await this.db.select({ id: rcmControls.id, rcmId: rcmControls.rcmId, controlId: rcmControls.controlId })
+        .from(rcmControls)
+        .where(and(
+          inArray(rcmControls.rcmId, allRiskIds.length > 0 ? allRiskIds : ['__NONE__']),
+          inArray(rcmControls.controlId, allControlIds.length > 0 ? allControlIds : ['__NONE__']),
+          eq(rcmControls.organizationId, orgId)
+        ));
+      
+      const existingMapLookup = new Map<string, string>();
+      for (const em of existingMaps) {
+        existingMapLookup.set(`${em.rcmId}:${em.controlId}`, em.id);
+      }
+
+      const mappingsToInsert: any[] = [];
+      const mappingsToUpdate: any[] = [];
+
+      for (const item of controlsToSyncMap.values()) {
+        const pairKey = `${item.riskId}:${item.ctrlId}`;
+        const mapValues = {
+          controlName: item.reg.controlDescription || item.nodeLabel,
+          controlDescription: item.reg.controlDescription,
+          isKeyControl: item.reg.isKeyControl,
+          year: year,
+          ipoC: item.reg.ipoC,
+          ipoA: item.reg.ipoA,
+          ipoV: item.reg.ipoV,
+          ipoRa: item.reg.ipoRa,
+          cosoPrinciples: item.reg.cosoPrinciples,
+          itgcDomain: item.reg.itgcDomain,
+          itgcAssertions: item.reg.itgcAssertions,
+          controlType: item.reg.classification === 'ELC' ? 'ELC' : 'TLC',
+        };
+
+        const existingId = existingMapLookup.get(pairKey);
+        if (!existingId) {
+          mappingsToInsert.push({
+            id: crypto.randomUUID(),
+            organizationId: orgId,
+            rcmId: item.riskId,
+            controlId: item.ctrlId,
+            ...mapValues,
+          });
+        } else {
+          mappingsToUpdate.push({ id: existingId, ...mapValues });
+        }
+      }
+
+      if (mappingsToInsert.length > 0) {
+        await this.db.insert(rcmControls).values(mappingsToInsert);
+      }
+      for (const m of mappingsToUpdate) {
+        await this.db.update(rcmControls).set(m).where(eq(rcmControls.id, m.id));
+      }
+    }
+
+    // 5. Batch insert bpmNodeRcms
+    if (nodeRcmPairsToInsert.length > 0) {
+      await this.db.insert(bpmNodeRcms).values(nodeRcmPairsToInsert);
+    }
+
     return { activeRiskControlPairs, activeRiskIds, activeControlIds };
-  }
-
-  async syncRisk(orgId: string, diagramId: string, riskId: string, reg: any, processName: string, subProcessName: string, year: number | null) {
-    const existingRisk = await this.db.select().from(rcms).where(and(eq(rcms.id, riskId), eq(rcms.organizationId, orgId))).limit(1);
-    if (existingRisk.length === 0) {
-      await this.db.insert(rcms).values({
-        id: riskId,
-        organizationId: orgId,
-        process: processName || "Default Process",
-        subProcess: subProcessName || "Default Sub Process",
-        riskDescription: reg.riskDescription || "Draft Risk",
-        isFraudRelated: reg.isFraudRelated || false,
-        riskRating: reg.riskRating || "Low",
-        status: "Draft",
-        diagramId,
-        year
-      });
-    } else {
-      await this.db.update(rcms).set({
-        process: processName,
-        subProcess: subProcessName,
-        riskDescription: reg.riskDescription,
-        isFraudRelated: reg.isFraudRelated,
-        riskRating: reg.riskRating,
-        year: year
-      }).where(eq(rcms.id, riskId));
-    }
-  }
-
-  async syncControl(
-    orgId: string, 
-    ctrlId: string, 
-    riskId: string, 
-    reg: any, 
-    bpmProcessId: string | null, 
-    noGL: string | null, 
-    processName: string, 
-    subProcessName: string,
-    year: number | null,
-    nodeLabel?: string
-  ) {
-    const existingCtrl = await this.db.select().from(controls).where(and(eq(controls.id, ctrlId), eq(controls.organizationId, orgId))).limit(1);
-    const controlData: any = {
-      name: reg.controlDescription || nodeLabel || "Draft Control",
-      level: reg.classification || 'TLC',
-      cosoPrinciples: reg.cosoPrinciples || [],
-      bpmProcessId: bpmProcessId,
-      businessProcess: processName,
-      subProcess: subProcessName,
-      ...(noGL ? { fsliCodes: [noGL] } : {})
-    };
-
-    if (existingCtrl.length === 0) {
-      await this.db.insert(controls).values({
-        id: ctrlId,
-        organizationId: orgId,
-        code: ctrlId,
-        rcmId: riskId,
-        year,
-        ...controlData
-      });
-    } else {
-      await this.db.update(controls).set({
-        ...controlData,
-        year: year,
-        businessProcess: processName,
-        subProcess: subProcessName
-      }).where(eq(controls.id, ctrlId));
-    }
-  }
-
-  async syncRcmControlMapping(orgId: string, riskId: string, ctrlId: string, reg: any, year: number | null, nodeLabel?: string) {
-    const existingMap = await this.db.select().from(rcmControls).where(and(
-      eq(rcmControls.rcmId, riskId),
-      eq(rcmControls.controlId, ctrlId),
-      eq(rcmControls.organizationId, orgId)
-    )).limit(1);
-
-    const mapValues = {
-      controlName: reg.controlDescription || nodeLabel,
-      controlDescription: reg.controlDescription,
-      isKeyControl: reg.isKeyControl,
-      year: year,
-      ipoC: reg.ipoC,
-      ipoA: reg.ipoA,
-      ipoV: reg.ipoV,
-      ipoRa: reg.ipoRa,
-      cosoPrinciples: reg.cosoPrinciples,
-      itgcDomain: reg.itgcDomain,
-      itgcAssertions: reg.itgcAssertions,
-      controlType: reg.classification === 'ELC' ? 'ELC' : 'TLC',
-    };
-
-    if (existingMap.length === 0) {
-      await this.db.insert(rcmControls).values({
-        id: crypto.randomUUID(),
-        organizationId: orgId,
-        rcmId: riskId,
-        controlId: ctrlId,
-        ...mapValues
-      });
-    } else {
-      await this.db.update(rcmControls).set(mapValues).where(eq(rcmControls.id, existingMap[0].id));
-    }
   }
 
   async syncMappingsFromEdges(orgId: string, edges: any[], nodes: any[], activeRiskControlPairs: Set<string>, glCodes: string[]) {
@@ -222,22 +312,42 @@ export class BpmSyncManager {
       }
     }
 
-    for (const pair of activeRiskControlPairs) {
-      const [rcmId, ctrlId] = pair.split(':');
-      const existing = await this.db.select().from(rcmControls).where(and(
-        eq(rcmControls.rcmId, rcmId),
-        eq(rcmControls.controlId, ctrlId),
-        eq(rcmControls.organizationId, orgId)
-      )).limit(1);
+    if (activeRiskControlPairs.size === 0) return;
 
-      if (existing.length === 0) {
-        await this.db.insert(rcmControls).values({
+    const pairArray = Array.from(activeRiskControlPairs).map(p => {
+      const [rcmId, ctrlId] = p.split(':');
+      return { rcmId, ctrlId };
+    });
+
+    const riskIds = Array.from(new Set(pairArray.map(p => p.rcmId)));
+    const controlIds = Array.from(new Set(pairArray.map(p => p.ctrlId)));
+
+    const existingMappings = await this.db.select({ rcmId: rcmControls.rcmId, controlId: rcmControls.controlId })
+      .from(rcmControls)
+      .where(and(
+        inArray(rcmControls.rcmId, riskIds),
+        inArray(rcmControls.controlId, controlIds),
+        eq(rcmControls.organizationId, orgId)
+      ));
+
+    const existingSet = new Set(existingMappings.map(m => `${m.rcmId}:${m.controlId}`));
+    const newMappingsToInsert: any[] = [];
+
+    for (const pair of pairArray) {
+      const key = `${pair.rcmId}:${pair.ctrlId}`;
+      if (!existingSet.has(key)) {
+        newMappingsToInsert.push({
           id: crypto.randomUUID(),
           organizationId: orgId,
-          rcmId,
-          controlId: ctrlId
+          rcmId: pair.rcmId,
+          controlId: pair.ctrlId,
         });
+        existingSet.add(key);
       }
+    }
+
+    if (newMappingsToInsert.length > 0) {
+      await this.db.insert(rcmControls).values(newMappingsToInsert);
     }
   }
 

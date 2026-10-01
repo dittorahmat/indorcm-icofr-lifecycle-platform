@@ -58,6 +58,7 @@ bpm.put('/bpm-diagrams/:id', rbac(['Line 1', 'Admin']), async (c) => {
   const body = await c.req.json<any>();
 
   const result = await bpmService.updateDiagram(c.get('organizationId')!, c.get('userId')!, id!, body);
+  if (!result) return notFound(c, 'Diagram not found');
   return ok(c, result);
 });
 
