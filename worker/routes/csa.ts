@@ -4,7 +4,7 @@ import { ok, bad, notFound } from '../lib/utils';
 import { getDb } from '../db';
 import { 
   csaRecords, csaSamples, csaSchedules, testRecords, 
-  controls, testSamples, todEvaluations
+  controls, testSamples, todEvaluations, bpmProcesses
 } from '../db/schema';
 import { eq, and, desc, SQL, sql } from 'drizzle-orm';
 import type { TestRecord } from "@shared/types";
@@ -141,16 +141,56 @@ csa.post('/csa/:id/workflow', async (c) => {
     updateData.line2ValidatedBy = userId;
     updateData.line2ValidatedDate = new Date();
 
-    if (csaRecord.result === 'Ineffective' && csaRecord.controlId) {
+    if (csaRecord.result === 'Ineffective') {
       const defService = new DeficiencyService(db);
-      await defService.createAutoDeficiency({
-        organizationId: orgId,
-        controlId: csaRecord.controlId,
-        description: `Hasil CSA Ineffective untuk periode ${csaRecord.period}.`,
-        source: 'Lini 2 - CSA Validation',
-        userId,
-        period: csaRecord.period
-      });
+      if (csaRecord.controlId) {
+        await defService.createAutoDeficiency({
+          organizationId: orgId,
+          controlId: csaRecord.controlId,
+          description: `Hasil CSA Ineffective untuk periode ${csaRecord.period}.`,
+          source: 'Lini 2 - CSA Validation',
+          userId,
+          period: csaRecord.period
+        });
+      } else {
+        // Query samples to find failed controls for description
+        const samples = await db.select().from(csaSamples).where(eq(csaSamples.csaRecordId, id));
+        const failedControlIds = new Set<string>();
+        for (const sample of samples) {
+          if (sample.controlResults && typeof sample.controlResults === 'object') {
+            for (const [ctrlId, val] of Object.entries<any>(sample.controlResults)) {
+              if (val && val.implemented === false) {
+                failedControlIds.add(ctrlId);
+              }
+            }
+          }
+        }
+
+        let bpmProcessName = "Sub-Proses Bisnis";
+        if (csaRecord.bpmProcessId) {
+          const bpm = await db.query.bpmProcesses.findFirst({
+            where: eq(bpmProcesses.id, csaRecord.bpmProcessId),
+            columns: { name: true, noGL: true }
+          });
+          if (bpm) {
+            bpmProcessName = `${bpm.name} (${bpm.noGL})`;
+          }
+        }
+
+        let description = `Hasil CSA Ineffective untuk proses ${bpmProcessName} (periode ${csaRecord.period}).`;
+        if (failedControlIds.size > 0) {
+          description += ` Kontrol gagal: ${Array.from(failedControlIds).join(', ')}.`;
+        }
+
+        await defService.createAutoDeficiency({
+          organizationId: orgId,
+          controlId: null,
+          description,
+          source: 'Lini 2 - CSA Validation',
+          userId,
+          period: csaRecord.period
+        });
+      }
     }
 
     const auditService = new AuditService(db);

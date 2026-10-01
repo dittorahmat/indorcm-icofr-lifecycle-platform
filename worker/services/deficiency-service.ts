@@ -21,13 +21,25 @@ export class DeficiencyService {
     period: string;
   }) {
     // 1. Check for existing open deficiency for this control/period to avoid duplicates
-    // We use a partial match on the description to detect the period
-    const existing = await this.db.select().from(deficiencies).where(and(
+    // If controlId is provided, scope by (organizationId, controlId, period).
+    // If controlId is null, scope by (organizationId, null controlId, period, and description prefix).
+    const conditions = [
       eq(deficiencies.organizationId, organizationId),
-      controlId ? eq(deficiencies.controlId, controlId) : sql`TRUE`,
-      sql`description LIKE ${`%${period}%`}`,
       eq(deficiencies.status, 'Open')
-    )).limit(1);
+    ];
+
+    if (controlId) {
+      conditions.push(eq(deficiencies.controlId, controlId));
+      conditions.push(sql`description LIKE ${`%${period}%`}`);
+    } else {
+      conditions.push(sql`${deficiencies.controlId} IS NULL`);
+      // Extract prefix before '(' to match the specific BPM process
+      const processPrefix = description.includes('(') ? description.split('(')[0].trim() : description;
+      conditions.push(sql`description LIKE ${`%${processPrefix}%`}`);
+      conditions.push(sql`description LIKE ${`%${period}%`}`);
+    }
+
+    const existing = await this.db.select().from(deficiencies).where(and(...conditions)).limit(1);
 
     if (existing.length > 0) return existing[0].id;
 
