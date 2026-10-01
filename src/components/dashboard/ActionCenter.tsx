@@ -40,9 +40,9 @@ export function ActionCenter({ csaCompletion, openDeficienciesCount }: ActionCen
           </div>
           <div className="flex-1 min-w-0">
             <h4 className="font-bold text-slate-900 text-sm leading-tight">{t('actionCenter.csa.title')}</h4>
-            <p className="text-xs text-slate-500 font-medium mt-1 truncate">{t('actionCenter.csa.description')}</p>
+            <p className="text-xs text-slate-500 font-medium mt-1 line-clamp-2 sm:line-clamp-1">{t('actionCenter.csa.description')}</p>
           </div>
-          <div className="text-right">
+          <div className="text-right shrink-0">
             <div className="text-xs font-bold text-slate-900">{csaCompletion}%</div>
             <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('actionCenter.status.complete', { defaultValue: 'Complete' })}</div>
           </div>
@@ -60,9 +60,9 @@ export function ActionCenter({ csaCompletion, openDeficienciesCount }: ActionCen
             </div>
             <div className="flex-1 min-w-0">
               <h4 className="font-bold text-slate-900 text-sm leading-tight">{t('actionCenter.deficiency.title')}</h4>
-              <p className="text-xs text-destructive font-medium mt-1 truncate">{t('actionCenter.deficiency.description')}</p>
+              <p className="text-xs text-destructive font-medium mt-1 line-clamp-2 sm:line-clamp-1">{t('actionCenter.deficiency.description')}</p>
             </div>
-            <div className="text-right">
+            <div className="text-right shrink-0">
               <Badge className="bg-destructive text-destructive-foreground border-none font-bold text-xs h-5 px-1.5 flex items-center justify-center rounded-md">{openDeficienciesCount}</Badge>
             </div>
           </button>
@@ -79,9 +79,9 @@ export function ActionCenter({ csaCompletion, openDeficienciesCount }: ActionCen
           </div>
           <div className="flex-1 min-w-0">
             <h4 className="font-bold text-slate-900 text-sm leading-tight">{t('actionCenter.reports.title')}</h4>
-            <p className="text-xs text-slate-500 font-medium mt-1 truncate">{t('actionCenter.reports.description')}</p>
+            <p className="text-xs text-slate-500 font-medium mt-1 line-clamp-2 sm:line-clamp-1">{t('actionCenter.reports.description')}</p>
           </div>
-          <div className="text-right">
+          <div className="text-right shrink-0">
              <ArrowUpRight className="h-4 w-4 text-slate-300 group-hover:text-slate-900 transition-colors ml-auto" aria-hidden="true" />
           </div>
         </button>

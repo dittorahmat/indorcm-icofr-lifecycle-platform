@@ -48,40 +48,61 @@ export function ComplianceCharts({ barData, deficiencyBySeverity, isLoading }: C
   }, [deficiencyBySeverity]);
 
   return (
-    <div className="grid gap-8 lg:grid-cols-3">
+    <div className="grid gap-6 lg:grid-cols-3">
       {/* BAR CHART: CONTROLS BY PROCESS */}
       <Card className="lg:col-span-2 border-slate-200 shadow-sm overflow-hidden bg-white rounded-xl">
-        <CardHeader className="bg-slate-50 border-b py-5 px-6">
+        <CardHeader className="bg-slate-50 border-b py-4 sm:py-5 px-4 sm:px-6">
           <div className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4 text-slate-900" />
             <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-800">{t('charts.controlsByProcess.title')}</CardTitle>
           </div>
           <CardDescription className="text-xs font-medium text-slate-500 mt-1">{t('charts.controlsByProcess.description')}</CardDescription>
         </CardHeader>
-        <CardContent className="pt-8 px-6 pb-6">
-          <div className="h-[300px] w-full">
+        <CardContent className="pt-5 sm:pt-8 px-2 sm:px-6 pb-4 sm:pb-6">
+          <div className="h-[260px] sm:h-[300px] w-full min-w-0">
             {isLoading ? <Skeleton className="h-full w-full rounded-xl" /> : barData.length === 0 ? (
               <div className="h-full flex items-center justify-center text-slate-400 text-xs font-bold uppercase tracking-wider">{t('charts.noData')}</div>
             ) : (
               <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-                <BarChart data={barData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <BarChart data={barData} margin={{ top: 10, right: 10, left: -25, bottom: 20 }}>
                   <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="hsl(var(--muted))" />
                   <XAxis 
                     dataKey="name" 
                     stroke="hsl(var(--muted-foreground))" 
-                    fontSize={9} 
-                    fontWeight={800}
+                    fontSize={12} 
+                    fontWeight={600}
                     tickLine={false} 
                     axisLine={false}
-                    dy={12}
-                    textAnchor="middle"
+                    dy={10}
+                    interval={0}
+                    tick={({ x, y, payload }) => {
+                      const label = payload?.value || '';
+                      const truncated = label.length > 10 ? `${label.slice(0, 9)}…` : label;
+                      return (
+                        <g transform={`translate(${x},${y})`}>
+                          <text 
+                            x={0} 
+                            y={0} 
+                            dy={12} 
+                            textAnchor="middle" 
+                            fill="hsl(var(--muted-foreground))" 
+                            fontSize={12}
+                            fontWeight={600}
+                            className="select-none"
+                          >
+                            {truncated}
+                          </text>
+                        </g>
+                      );
+                    }}
                   />
                   <YAxis 
                     stroke="hsl(var(--muted-foreground))" 
-                    fontSize={9} 
-                    fontWeight={800}
+                    fontSize={12} 
+                    fontWeight={600}
                     tickLine={false} 
                     axisLine={false} 
+                    allowDecimals={false}
                   />
                   <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted)/0.3)', radius: 4 }} />
                   <Bar 
@@ -89,7 +110,7 @@ export function ComplianceCharts({ barData, deficiencyBySeverity, isLoading }: C
                     name={t('charts.controls')}
                     fill="hsl(var(--primary))" 
                     radius={[4, 4, 0, 0]} 
-                    barSize={32}
+                    maxBarSize={36}
                     animationDuration={1500}
                     animationEasing="ease-out"
                   />
@@ -102,24 +123,24 @@ export function ComplianceCharts({ barData, deficiencyBySeverity, isLoading }: C
 
       {/* PIE CHART: DEFICIENCIES */}
       <Card className="border-slate-200 shadow-sm overflow-hidden bg-white rounded-xl">
-        <CardHeader className="bg-slate-50 border-b py-5 px-6">
+        <CardHeader className="bg-slate-50 border-b py-4 sm:py-5 px-4 sm:px-6">
           <div className="flex items-center gap-2">
             <PieChartIcon className="h-4 w-4 text-rose-600" />
             <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-800">{t('charts.deficienciesBySeverity.title')}</CardTitle>
           </div>
           <CardDescription className="text-xs font-medium text-slate-500 mt-1">{t('charts.deficienciesBySeverity.description')}</CardDescription>
         </CardHeader>
-        <CardContent className="pt-8 px-6 pb-6">
-          <div className="min-h-[400px] w-full flex flex-col items-center justify-between relative">
+        <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6 pb-4 sm:pb-6">
+          <div className="min-h-[300px] sm:min-h-[360px] w-full flex flex-col items-center justify-between relative">
             {isLoading ? (
               <div className="flex-1 flex items-center justify-center">
-                <div className="relative h-48 w-48 rounded-full border-8 border-slate-100 border-t-slate-900 animate-spin" />
+                <div className="relative h-36 w-36 sm:h-48 sm:w-48 rounded-full border-8 border-slate-100 border-t-slate-900 animate-spin" />
               </div>
             ) : (!deficiencyBySeverity || deficiencyBySeverity.length === 0) ? (
               <div className="flex-1 flex items-center justify-center text-slate-400 text-xs font-bold uppercase tracking-wider">{t('charts.noDeficiencies')}</div>
             ) : (
               <>
-                <div className="w-full h-[240px] relative shrink-0">
+                <div className="w-full h-[190px] sm:h-[220px] relative shrink-0">
                   <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                     <PieChart>
                       <Pie 
@@ -128,8 +149,8 @@ export function ComplianceCharts({ barData, deficiencyBySeverity, isLoading }: C
                         nameKey="name" 
                         cx="50%" 
                         cy="50%" 
-                        innerRadius={70}
-                        outerRadius={95} 
+                        innerRadius={55}
+                        outerRadius={78} 
                         paddingAngle={4}
                         stroke="none"
                         animationBegin={200}
@@ -146,18 +167,18 @@ export function ComplianceCharts({ barData, deficiencyBySeverity, isLoading }: C
                   {/* Center Total Text */}
                   <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-0">
                     <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('badges.new')}</span>
-                    <span className="text-4xl font-display font-black text-slate-900 leading-none">{totalDeficiencies}</span>
+                    <span className="text-3xl sm:text-4xl font-display font-black text-slate-900 leading-none">{totalDeficiencies}</span>
                   </div>
                 </div>
                 
-                <div className="mt-8 space-y-2.5 w-full border-t border-slate-100 pt-6">
+                <div className="mt-4 sm:mt-6 space-y-2.5 w-full border-t border-slate-100 pt-4 sm:pt-6">
                   {deficiencyBySeverity.map((entry: any, index: number) => (
                     <div key={entry.name} className="flex items-center justify-between group">
                       <div className="flex items-center gap-2.5">
-                        <div className="h-2 w-2 rounded-full transition-transform group-hover:scale-125" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+                        <div className="h-2.5 w-2.5 rounded-full transition-transform group-hover:scale-125" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
                         <span className="text-xs font-semibold text-slate-600 uppercase tracking-tight group-hover:text-slate-900 transition-colors">{entry.name}</span>
                       </div>
-                      <span className="text-xs font-display font-black text-slate-900 bg-slate-50 px-2 py-0.5 rounded group-hover:bg-slate-900 group-hover:text-white transition-all">{entry.value}</span>
+                      <span className="text-xs font-display font-bold text-slate-900 bg-slate-50 px-2 py-0.5 rounded group-hover:bg-slate-900 group-hover:text-white transition-all">{entry.value}</span>
                     </div>
                   ))}
                 </div>

@@ -27,11 +27,11 @@ export function LifecycleProgress({ currentStage = 'evaluasi', workingYear = '20
   const progressPercent = Math.round(((currentIdx + 1) / stages.length) * 100);
 
   return (
-    <div className="w-full bg-white border border-slate-200 rounded-xl p-4 md:p-6 shadow-sm">
-      <div className="flex items-center justify-between mb-4 md:mb-6">
-        <div>
-          <h3 className="text-sm font-semibold text-slate-900">{t('lifecycle.title')}</h3>
-          <p className="text-xs text-slate-500">{t('lifecycle.subtitle')}</p>
+    <div className="w-full bg-white border border-slate-200 rounded-xl p-3.5 sm:p-4 md:p-6 shadow-sm">
+      <div className="flex items-start sm:items-center justify-between gap-2 mb-3.5 sm:mb-4 md:mb-6">
+        <div className="min-w-0">
+          <h3 className="text-sm font-semibold text-slate-900 truncate">{t('lifecycle.title')}</h3>
+          <p className="text-xs text-slate-500 line-clamp-1">{t('lifecycle.subtitle')}</p>
         </div>
         <div className="px-2.5 py-1 bg-slate-100 rounded-full text-xs font-semibold text-slate-600 uppercase tracking-wider border border-slate-200 shrink-0">
           FY {workingYear}

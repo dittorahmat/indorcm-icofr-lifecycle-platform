@@ -139,6 +139,12 @@
       "skillPath": "skills/redesign-skill/SKILL.md",
       "computedHash": "47eced3e960a2c961d3cbee11fa1216264f589344b586a5cbd03967cd6b9c54b"
     },
+    "responsive-design": {
+      "source": "mindrally/skills",
+      "sourceType": "github",
+      "skillPath": "responsive-design/SKILL.md",
+      "computedHash": "14e27ad810e205a94a761ae0c14475978409a16e932a1127b964398bc36c61ed"
+    },
     "stitch-design-taste": {
       "source": "Leonxlnx/taste-skill",
       "sourceType": "github",

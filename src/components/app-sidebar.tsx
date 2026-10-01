@@ -124,7 +124,7 @@ export function AppSidebar(): JSX.Element {
   const { t, i18n } = useTranslation('sidebar');
   const { data: session } = authClient.useSession();
   const userRole = (session?.user as any)?.role;
-  const { isPinned, setIsPinned, state, toggleSidebar, setOpen } = useSidebar();
+  const { isPinned, setIsPinned, state, toggleSidebar, setOpen, isMobile, setOpenMobile } = useSidebar();
 
   useEffect(() => {
     const userLang = (session?.user as any)?.language;
@@ -132,6 +132,13 @@ export function AppSidebar(): JSX.Element {
       i18n.changeLanguage(userLang);
     }
   }, [session?.user, i18n]);
+
+  // Close mobile sidebar automatically upon route transition
+  useEffect(() => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  }, [location.pathname, isMobile, setOpenMobile]);
 
   const isActive = (path: string) => pathname === path || pathname.startsWith(path);
 

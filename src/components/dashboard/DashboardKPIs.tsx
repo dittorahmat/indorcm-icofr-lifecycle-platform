@@ -28,11 +28,11 @@ export function DashboardKPIs({ controlsCount, openDeficienciesCount, cosoPercen
   const { t } = useTranslation('dashboard');
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
       {/* Executive Cycle Readiness Card */}
       <motion.div variants={itemVariants} className="min-w-0 w-full sm:col-span-2 lg:col-span-1">
-        <Card className="bg-mancity-pattern text-primary-foreground border border-primary/20 shadow-md overflow-hidden relative group rounded-xl">
-          <CardHeader className="p-3 sm:p-4 pb-1 sm:pb-2">
+        <Card className="bg-mancity-pattern text-primary-foreground border border-primary/20 shadow-sm overflow-hidden relative group rounded-xl">
+          <CardHeader className="p-3.5 sm:p-4 pb-1 sm:pb-2">
             <div className="flex items-center justify-between">
               <CardTitle className="text-xs font-bold uppercase tracking-wider text-primary-foreground/90 flex items-center gap-1.5">
                 <Clock className="h-3.5 w-3.5 shrink-0" aria-hidden="true" /> {t('kpis.cycleReadiness')}
@@ -42,10 +42,10 @@ export function DashboardKPIs({ controlsCount, openDeficienciesCount, cosoPercen
               </span>
             </div>
           </CardHeader>
-          <CardContent className="p-3 sm:p-4 pt-1 sm:pt-2">
+          <CardContent className="p-3.5 sm:p-4 pt-1 sm:pt-2">
             <div className="flex items-baseline justify-between gap-2">
               <div className="text-2xl sm:text-3xl font-bold tracking-tight">{t('kpis.ready')}</div>
-              <p className="text-xs text-primary-foreground/80 font-medium uppercase tracking-wider">{t('kpis.reportingCycle', { year: workingYear })}</p>
+              <p className="text-xs text-primary-foreground/80 font-medium uppercase tracking-wider truncate">{t('kpis.reportingCycle', { year: workingYear })}</p>
             </div>
             <div className="mt-2.5 sm:mt-4 h-1.5 w-full bg-primary-foreground/20 rounded-full overflow-hidden relative">
                <motion.div 
@@ -60,8 +60,8 @@ export function DashboardKPIs({ controlsCount, openDeficienciesCount, cosoPercen
         </Card>
       </motion.div>
 
-      {/* KPI Metric Cards */}
-      <div className="grid grid-cols-3 sm:contents gap-2 sm:gap-4 col-span-1 sm:col-span-2 lg:col-span-3">
+      {/* KPI Metric Cards: 1 column on xs (<380px), 3 cols on sm, 3 cols on lg */}
+      <div className="grid grid-cols-1 xs:grid-cols-3 sm:contents gap-2.5 sm:gap-4 col-span-1 sm:col-span-2 lg:col-span-3">
         {[
           { 
             title: t('kpis.controlCoverage'), 
@@ -90,18 +90,18 @@ export function DashboardKPIs({ controlsCount, openDeficienciesCount, cosoPercen
           }
         ].map((kpi, i) => (
           <motion.div key={i} variants={itemVariants} className="min-w-0 w-full">
-            <Card className="border-slate-200 bg-white shadow-sm hover:shadow-md transition-all duration-200 h-full border-b-2 hover:border-b-primary rounded-xl overflow-hidden flex flex-col justify-between p-2.5 sm:p-4">
+            <Card className="border-slate-200 bg-white shadow-sm hover:shadow-md transition-all duration-200 h-full border-b-2 hover:border-b-primary rounded-xl overflow-hidden flex flex-col justify-between p-3 sm:p-4">
               <div className="flex items-center gap-1.5 mb-1 sm:mb-2">
                 <kpi.icon className={cn("h-3.5 w-3.5 shrink-0", kpi.color)} aria-hidden="true" />
                 <span className="text-xs font-bold uppercase text-slate-500 tracking-wider truncate" title={kpi.title}>
                   {kpi.title}
                 </span>
               </div>
-              <div>
-                <div className={cn("text-lg sm:text-2xl md:text-3xl font-bold tracking-tight", kpi.valueColor || "text-slate-900")}>
+              <div className="min-w-0">
+                <div className={cn("text-xl sm:text-2xl md:text-3xl font-bold tracking-tight", kpi.valueColor || "text-slate-900")}>
                   {kpi.value}
                 </div>
-                <p className="text-xs text-slate-500 font-medium uppercase tracking-wider mt-0.5 line-clamp-1" title={kpi.subtitle}>
+                <p className="text-xs text-slate-500 font-medium uppercase tracking-wider mt-0.5 truncate" title={kpi.subtitle}>
                   {kpi.subtitle}
                 </p>
               </div>

@@ -24,7 +24,7 @@ export function COSOCoverageGrid({ cosoCoverage, isLoading }: COSOCoverageGridPr
 
   return (
     <Card className="border-slate-200 overflow-hidden shadow-sm bg-white rounded-xl">
-      <CardHeader className="bg-slate-50/50 border-b py-5 px-6">
+      <CardHeader className="bg-slate-50/50 border-b py-4 sm:py-5 px-4 sm:px-6">
         <div className="flex justify-between items-center">
           <div>
             <CardTitle className="text-xs font-bold uppercase tracking-wider flex items-center gap-2 text-slate-800">
@@ -34,16 +34,16 @@ export function COSOCoverageGrid({ cosoCoverage, isLoading }: COSOCoverageGridPr
           </div>
         </div>
       </CardHeader>
-      <CardContent className="p-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-6">
+      <CardContent className="p-4 sm:p-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-5 sm:gap-6">
           {isLoading ? Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-32 w-full rounded-xl" />) : (
             COSO_COMPONENTS.map((comp) => (
-              <div key={comp.name} className="space-y-4">
+              <div key={comp.name} className="space-y-3 sm:space-y-4">
                 <div className="flex items-center gap-2 px-1">
-                  <div className={cn("h-2.5 w-2.5 rounded-full", comp.color)} />
+                  <div className={cn("h-2.5 w-2.5 rounded-full shrink-0", comp.color)} />
                   <span className="text-xs font-bold uppercase tracking-wider text-slate-500 truncate leading-none">{comp.name}</span>
                 </div>
-                <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                <div className="grid grid-cols-5 xs:grid-cols-3 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                   {comp.principles.map(pNum => {
                     const c = cosoCoverage.find(cov => cov.principle === pNum);
                     const isCovered = (c?.count ?? 0) > 0;
@@ -54,12 +54,12 @@ export function COSOCoverageGrid({ cosoCoverage, isLoading }: COSOCoverageGridPr
                           "h-12 flex flex-col items-center justify-center rounded-lg transition-all duration-300 cursor-default border",
                           isCovered
                             ? 'bg-slate-900 border-slate-900 text-white shadow-sm' 
-                            : 'bg-white border-dashed border-slate-200 text-slate-300'
+                            : 'bg-white border-dashed border-slate-200 text-slate-400'
                         )}
                         title={`${c?.count || 0} controls mapped to Principle ${pNum}`}
                       >
-                        <span className={cn("text-[8px] font-bold uppercase tracking-tighter", isCovered ? "text-slate-400" : "text-slate-300")}>P{pNum}</span>
-                        <span className="text-sm font-bold leading-none mt-1">{c?.count || 0}</span>
+                        <span className={cn("text-xs font-bold uppercase tracking-tight", isCovered ? "text-slate-400" : "text-slate-400")}>P{pNum}</span>
+                        <span className="text-sm font-bold leading-none mt-0.5">{c?.count || 0}</span>
                       </div>
                     );
                   })}
@@ -68,12 +68,12 @@ export function COSOCoverageGrid({ cosoCoverage, isLoading }: COSOCoverageGridPr
             ))
           )}
         </div>
-        <div className="mt-8 flex gap-6 text-xs uppercase font-bold tracking-wider text-slate-500 border-t border-slate-100 pt-6">
-          <div className="flex items-center gap-2.5">
+        <div className="mt-6 sm:mt-8 flex flex-wrap gap-4 sm:gap-6 text-xs uppercase font-bold tracking-wider text-slate-500 border-t border-slate-100 pt-4 sm:pt-6">
+          <div className="flex items-center gap-2">
             <div className="h-2.5 w-2.5 bg-slate-900 rounded-sm" /> 
             {t('coso.covered')}
           </div>
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             <div className="h-2.5 w-2.5 bg-white border border-dashed border-slate-300 rounded-sm" /> 
             {t('coso.zeroCoverage')}
           </div>
