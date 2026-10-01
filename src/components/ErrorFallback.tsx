@@ -11,6 +11,7 @@ export interface ErrorFallbackProps {
   onGoHome?: () => void;
   showErrorDetails?: boolean;
   statusMessage?: string;
+  retryText?: string;
 }
 
 export function ErrorFallback({
@@ -20,7 +21,8 @@ export function ErrorFallback({
   onRetry,
   onGoHome,
   showErrorDetails = true,
-  statusMessage = "Our team has been notified"
+  statusMessage = "Our team has been notified",
+  retryText = "Try Again"
 }: ErrorFallbackProps) {
   const handleRetry = () => {
     if (onRetry) {
@@ -65,7 +67,7 @@ export function ErrorFallback({
             <div className="space-y-3">
               <Button onClick={handleRetry} className="w-full">
                 <RefreshCw className="w-4 h-4 mr-2" />
-                Try Again
+                {retryText}
               </Button>
               <Button onClick={handleGoHome} variant="secondary" className="w-full">
                 <Home className="w-4 h-4 mr-2" />

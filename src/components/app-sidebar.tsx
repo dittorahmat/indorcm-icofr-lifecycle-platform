@@ -339,7 +339,7 @@ export function AppSidebar(): JSX.Element {
                         className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight"
                         title={item.label}
                       >
-                        <Link to={item.path} className="font-semibold text-sm">
+                        <Link to={withYear(item.path)} className="font-semibold text-sm">
                           <DynamicIcon name={item.iconName} className="h-4 w-4" />
                           <span>{item.label}</span>
                         </Link>
@@ -357,13 +357,13 @@ export function AppSidebar(): JSX.Element {
           <SidebarMenu className="px-3 gap-1">
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/settings")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
-                <Link to="/settings" className="font-semibold text-sm"><Settings2 className="h-4 w-4" /> <span>{t('items.settings')}</span></Link>
+                <Link to={withYear("/settings")} className="font-semibold text-sm"><Settings2 className="h-4 w-4" /> <span>{t('items.settings')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             {userRole === 'Admin' && (
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={isActive("/admin/users")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
-                  <Link to="/admin/users" className="font-semibold text-sm"><UserCog className="h-4 w-4" /> <span>{t('items.adminUsers')}</span></Link>
+                  <Link to={withYear("/admin/users")} className="font-semibold text-sm"><UserCog className="h-4 w-4" /> <span>{t('items.adminUsers')}</span></Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             )}

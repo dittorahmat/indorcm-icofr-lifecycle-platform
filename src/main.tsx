@@ -1,7 +1,16 @@
 if (typeof window !== 'undefined') {
   (window as any).process = { env: { NODE_ENV: import.meta.env.MODE || 'development' } };
+
+  // Intercept Vite chunk preload failures (e.g. after fresh deployments) to reload automatically
+  window.addEventListener('vite:preloadError', () => {
+    const reloadKey = `icofr_vite_preload_${window.location.pathname}`;
+    if (typeof sessionStorage !== 'undefined' && !sessionStorage.getItem(reloadKey)) {
+      sessionStorage.setItem(reloadKey, '1');
+      window.location.reload();
+    }
+  });
 }
-import React, { StrictMode, lazy, Suspense } from 'react';
+import React, { StrictMode, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider, Navigate, Outlet } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -19,36 +28,37 @@ import i18n from './i18n/config';
 import { UnsavedChangesProvider } from '@/context/UnsavedChangesContext';
 import { UnsavedChangesGuard } from '@/components/UnsavedChangesGuard';
 import { ConfirmProvider } from '@/components/providers/ConfirmProvider';
+import { lazyWithRetry } from '@/lib/lazyWithRetry';
 
-// Lazy load all pages for optimized bundle size
-const HomePage = lazy(() => import('@/pages/HomePage').then(module => ({ default: module.HomePage })));
+// Lazy load all pages with automatic retry and reload resilience
+const HomePage = lazyWithRetry(() => import('@/pages/HomePage').then(module => ({ default: module.HomePage })));
 import { LoginPage } from '@/pages/LoginPage';
 import { WelcomePage } from '@/pages/WelcomePage';
-const Dashboard = lazy(() => import('@/pages/Dashboard').then(module => ({ default: module.Dashboard })));
-const RCMList = lazy(() => import('@/pages/rcm/RCMList').then(module => ({ default: module.RCMList })));
-const RCMTLCPage = lazy(() => import('@/pages/rcm/RCMTLCPage').then(module => ({ default: module.RCMTLCPage })));
-const RCMELCPage = lazy(() => import('@/pages/rcm/RCMELCPage').then(module => ({ default: module.RCMELCPage })));
-const RCMITGCPage = lazy(() => import('@/pages/rcm/RCMITGCPage').then(module => ({ default: module.RCMITGCPage })));
-const TestWorkbench = lazy(() => import('@/pages/testing/TestWorkbench').then(module => ({ default: module.TestWorkbench })));
-const DeficiencyBoard = lazy(() => import('@/pages/deficiencies/DeficiencyBoard').then(module => ({ default: module.DeficiencyBoard })));
-const ReportsPage = lazy(() => import('@/pages/reports/ReportsPage').then(module => ({ default: module.ReportsPage })));
-const Appendix10Page = lazy(() => import('@/pages/reports/Appendix10Page').then(module => ({ default: module.Appendix10Page })));
-const AIHubPage = lazy(() => import('@/pages/reports/AIHubPage').then(module => ({ default: module.AIHubPage })));
-const ImportPage = lazy(() => import('@/pages/import/ImportPage').then(module => ({ default: module.ImportPage })));
-const ScopingPage = lazy(() => import('@/pages/scoping/ScopingPage').then(module => ({ default: module.ScopingPage })));
-const ApprovalPage = lazy(() => import('@/pages/scoping/ApprovalPage').then(module => ({ default: module.ApprovalPage })));
-const ExternalAuditPortal = lazy(() => import('@/pages/audit/ExternalAuditPortal').then(module => ({ default: module.ExternalAuditPortal })));
-const WBSPage = lazy(() => import('@/pages/reports/WBSPage').then(module => ({ default: module.WBSPage })));
-const ChangeLogPage = lazy(() => import('@/pages/rcm/ChangeLogPage').then(module => ({ default: module.ChangeLogPage })));
-const SOCMonitoringPage = lazy(() => import('@/pages/rcm/SOCMonitoringPage').then(module => ({ default: module.SOCMonitoringPage })));
-const VerificationDesignPage = lazy(() => import('@/pages/rcm/VerificationDesignPage').then(module => ({ default: module.VerificationDesignPage })));
-const BPMPage = lazy(() => import('@/pages/bpm/BPMPage').then(module => ({ default: module.BPMPage })));
-const CSAPage = lazy(() => import('@/pages/csa/CSAPage').then(module => ({ default: module.CSAPage })));
-const TodoListPage = lazy(() => import('@/pages/csa/TodoListPage').then(module => ({ default: module.TodoListPage })));
-const UserManagementPage = lazy(() => import('@/pages/admin/UserManagementPage').then(module => ({ default: module.UserManagementPage })));
-const SettingsPage = lazy(() => import('@/pages/admin/SettingsPage').then(module => ({ default: module.SettingsPage })));
-const DocumentsPage = lazy(() => import('@/pages/knowledge/DocumentsPage').then(module => ({ default: module.DocumentsPage })));
-const NotificationsPage = lazy(() => import('@/pages/notifications/NotificationsPage').then(module => ({ default: module.NotificationsPage })));
+const Dashboard = lazyWithRetry(() => import('@/pages/Dashboard').then(module => ({ default: module.Dashboard })));
+const RCMList = lazyWithRetry(() => import('@/pages/rcm/RCMList').then(module => ({ default: module.RCMList })));
+const RCMTLCPage = lazyWithRetry(() => import('@/pages/rcm/RCMTLCPage').then(module => ({ default: module.RCMTLCPage })));
+const RCMELCPage = lazyWithRetry(() => import('@/pages/rcm/RCMELCPage').then(module => ({ default: module.RCMELCPage })));
+const RCMITGCPage = lazyWithRetry(() => import('@/pages/rcm/RCMITGCPage').then(module => ({ default: module.RCMITGCPage })));
+const TestWorkbench = lazyWithRetry(() => import('@/pages/testing/TestWorkbench').then(module => ({ default: module.TestWorkbench })));
+const DeficiencyBoard = lazyWithRetry(() => import('@/pages/deficiencies/DeficiencyBoard').then(module => ({ default: module.DeficiencyBoard })));
+const ReportsPage = lazyWithRetry(() => import('@/pages/reports/ReportsPage').then(module => ({ default: module.ReportsPage })));
+const Appendix10Page = lazyWithRetry(() => import('@/pages/reports/Appendix10Page').then(module => ({ default: module.Appendix10Page })));
+const AIHubPage = lazyWithRetry(() => import('@/pages/reports/AIHubPage').then(module => ({ default: module.AIHubPage })));
+const ImportPage = lazyWithRetry(() => import('@/pages/import/ImportPage').then(module => ({ default: module.ImportPage })));
+const ScopingPage = lazyWithRetry(() => import('@/pages/scoping/ScopingPage').then(module => ({ default: module.ScopingPage })));
+const ApprovalPage = lazyWithRetry(() => import('@/pages/scoping/ApprovalPage').then(module => ({ default: module.ApprovalPage })));
+const ExternalAuditPortal = lazyWithRetry(() => import('@/pages/audit/ExternalAuditPortal').then(module => ({ default: module.ExternalAuditPortal })));
+const WBSPage = lazyWithRetry(() => import('@/pages/reports/WBSPage').then(module => ({ default: module.WBSPage })));
+const ChangeLogPage = lazyWithRetry(() => import('@/pages/rcm/ChangeLogPage').then(module => ({ default: module.ChangeLogPage })));
+const SOCMonitoringPage = lazyWithRetry(() => import('@/pages/rcm/SOCMonitoringPage').then(module => ({ default: module.SOCMonitoringPage })));
+const VerificationDesignPage = lazyWithRetry(() => import('@/pages/rcm/VerificationDesignPage').then(module => ({ default: module.VerificationDesignPage })));
+const BPMPage = lazyWithRetry(() => import('@/pages/bpm/BPMPage').then(module => ({ default: module.BPMPage })));
+const CSAPage = lazyWithRetry(() => import('@/pages/csa/CSAPage').then(module => ({ default: module.CSAPage })));
+const TodoListPage = lazyWithRetry(() => import('@/pages/csa/TodoListPage').then(module => ({ default: module.TodoListPage })));
+const UserManagementPage = lazyWithRetry(() => import('@/pages/admin/UserManagementPage').then(module => ({ default: module.UserManagementPage })));
+const SettingsPage = lazyWithRetry(() => import('@/pages/admin/SettingsPage').then(module => ({ default: module.SettingsPage })));
+const DocumentsPage = lazyWithRetry(() => import('@/pages/knowledge/DocumentsPage').then(module => ({ default: module.DocumentsPage })));
+const NotificationsPage = lazyWithRetry(() => import('@/pages/notifications/NotificationsPage').then(module => ({ default: module.NotificationsPage })));
 
 import { ActivationPage } from '@/pages/ActivationPage';
 import { LicenseGuard } from '@/components/LicenseGuard';
