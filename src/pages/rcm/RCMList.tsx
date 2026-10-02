@@ -107,8 +107,8 @@ export function RCMList() {
               {t('matrix.subtitle_tlc')}
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <Button variant="outline" className="h-11 gap-2 border-slate-200 bg-white hover:bg-slate-50 shadow-sm transition-all font-bold text-xs uppercase tracking-widest px-5">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 w-full md:w-auto">
+            <Button variant="outline" className="h-11 sm:h-10 min-h-[44px] sm:min-h-0 gap-2 border-slate-200 bg-white hover:bg-slate-50 shadow-sm transition-all font-bold text-xs uppercase tracking-widest px-5 w-full sm:w-auto justify-center">
               <FileDown className="h-4 w-4 text-indigo-500" /> {t('common:actions.all')} RCM
             </Button>
           </div>

@@ -442,7 +442,7 @@ export function DoDLampiran10Report({
             <div className="text-xs font-semibold text-emerald-700 uppercase flex items-center justify-between">
               <span>{t('dodReport.summary.remediatedCount')}</span>
               {remediationFilter === 'REMEDIATED' && (
-                <span className="text-[11px] font-bold text-emerald-700 bg-white px-1.5 py-0.5 rounded border border-emerald-200">Aktif</span>
+                <span className="text-xs font-bold text-emerald-700 bg-white px-1.5 py-0.5 rounded border border-emerald-200">Aktif</span>
               )}
             </div>
             <div className="text-lg font-bold text-emerald-700 mt-1">{remediatedCount}</div>
@@ -462,7 +462,7 @@ export function DoDLampiran10Report({
           </div>
 
           <Select value={severityFilter} onValueChange={setSeverityFilter}>
-            <SelectTrigger className="w-[200px] h-9 text-xs font-medium rounded-md bg-background">
+            <SelectTrigger className="w-full sm:w-[200px] h-9 text-xs font-medium rounded-md bg-background">
               <SelectValue placeholder={t('dodReport.filters.allSeverities')} />
             </SelectTrigger>
             <SelectContent>
@@ -474,7 +474,7 @@ export function DoDLampiran10Report({
           </Select>
 
           <Select value={remediationFilter} onValueChange={setRemediationFilter}>
-            <SelectTrigger className="w-[180px] h-9 text-xs font-medium rounded-md bg-background">
+            <SelectTrigger className="w-full sm:w-[180px] h-9 text-xs font-medium rounded-md bg-background">
               <SelectValue placeholder={t('dodReport.filters.allRemediation')} />
             </SelectTrigger>
             <SelectContent>

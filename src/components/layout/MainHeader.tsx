@@ -55,7 +55,7 @@ export function MainHeader() {
                 isDark ? "text-emerald-400" : "text-primary-foreground"
               )} />
               <span className={cn(
-                "font-display tracking-tight text-xs xs:text-sm sm:text-base md:text-lg font-bold truncate max-w-[100px] xs:max-w-[140px] sm:max-w-none",
+                "font-display tracking-tight text-xs sm:text-base md:text-lg font-bold truncate max-w-[100px] min-[420px]:max-w-[140px] sm:max-w-none",
                 isDark ? "text-white" : "text-primary-foreground"
               )}>{t('appName')}</span>
             </Link>

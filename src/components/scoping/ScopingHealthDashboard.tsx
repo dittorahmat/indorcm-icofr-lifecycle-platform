@@ -133,47 +133,47 @@ export function ScopingHealthDashboard({ glData, scopingCompliance }: ScopingHea
             <CardDescription className="text-xs">{t('health.complianceDesc')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-slate-50 p-3 rounded-lg border border-slate-100">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 bg-slate-50 p-3 rounded-lg border border-slate-100">
               <div className="space-y-0.5">
-                <span className="text-[10px] uppercase font-bold text-slate-400">{t('health.assetsCoverage')}</span>
+                <span className="text-xs uppercase font-bold text-slate-400">{t('health.assetsCoverage')}</span>
                 <p className="text-xs font-black flex items-center gap-1.5 mt-0.5">
                   <span className={scopingCompliance.aggregateCompliance.assets.isCompliant ? "text-emerald-600" : "text-amber-600"}>
                     {scopingCompliance.aggregateCompliance.assets.percentage.toFixed(1)}%
                   </span>
-                  <Badge variant={scopingCompliance.aggregateCompliance.assets.isCompliant ? "default" : "secondary"} className="text-[9px] font-bold h-4 px-1 bg-white border border-slate-200 shadow-none">
+                  <Badge variant={scopingCompliance.aggregateCompliance.assets.isCompliant ? "default" : "secondary"} className="text-xs font-bold h-4 px-1 bg-white border border-slate-200 shadow-none">
                     {scopingCompliance.aggregateCompliance.assets.isCompliant ? t('health.compliant') : t('health.nonCompliant')}
                   </Badge>
                 </p>
               </div>
               <div className="space-y-0.5">
-                <span className="text-[10px] uppercase font-bold text-slate-400">{t('health.liabilitiesCoverage')}</span>
+                <span className="text-xs uppercase font-bold text-slate-400">{t('health.liabilitiesCoverage')}</span>
                 <p className="text-xs font-black flex items-center gap-1.5 mt-0.5">
                   <span className={scopingCompliance.aggregateCompliance.liabilities.isCompliant ? "text-emerald-600" : "text-amber-600"}>
                     {scopingCompliance.aggregateCompliance.liabilities.percentage.toFixed(1)}%
                   </span>
-                  <Badge variant={scopingCompliance.aggregateCompliance.liabilities.isCompliant ? "default" : "secondary"} className="text-[9px] font-bold h-4 px-1 bg-white border border-slate-200 shadow-none">
+                  <Badge variant={scopingCompliance.aggregateCompliance.liabilities.isCompliant ? "default" : "secondary"} className="text-xs font-bold h-4 px-1 bg-white border border-slate-200 shadow-none">
                     {scopingCompliance.aggregateCompliance.liabilities.isCompliant ? t('health.compliant') : t('health.nonCompliant')}
                   </Badge>
                 </p>
               </div>
               <div className="space-y-0.5">
-                <span className="text-[10px] uppercase font-bold text-slate-400">{t('health.revenueCoverage')}</span>
+                <span className="text-xs uppercase font-bold text-slate-400">{t('health.revenueCoverage')}</span>
                 <p className="text-xs font-black flex items-center gap-1.5 mt-0.5">
                   <span className={scopingCompliance.aggregateCompliance.revenue.isCompliant ? "text-emerald-600" : "text-amber-600"}>
                     {scopingCompliance.aggregateCompliance.revenue.percentage.toFixed(1)}%
                   </span>
-                  <Badge variant={scopingCompliance.aggregateCompliance.revenue.isCompliant ? "default" : "secondary"} className="text-[9px] font-bold h-4 px-1 bg-white border border-slate-200 shadow-none">
+                  <Badge variant={scopingCompliance.aggregateCompliance.revenue.isCompliant ? "default" : "secondary"} className="text-xs font-bold h-4 px-1 bg-white border border-slate-200 shadow-none">
                     {scopingCompliance.aggregateCompliance.revenue.isCompliant ? t('health.compliant') : t('health.nonCompliant')}
                   </Badge>
                 </p>
               </div>
               <div className="space-y-0.5">
-                <span className="text-[10px] uppercase font-bold text-slate-400">{t('health.expensesCoverage')}</span>
+                <span className="text-xs uppercase font-bold text-slate-400">{t('health.expensesCoverage')}</span>
                 <p className="text-xs font-black flex items-center gap-1.5 mt-0.5">
                   <span className={scopingCompliance.aggregateCompliance.expenses.isCompliant ? "text-emerald-600" : "text-amber-600"}>
                     {scopingCompliance.aggregateCompliance.expenses.percentage.toFixed(1)}%
                   </span>
-                  <Badge variant={scopingCompliance.aggregateCompliance.expenses.isCompliant ? "default" : "secondary"} className="text-[9px] font-bold h-4 px-1 bg-white border border-slate-200 shadow-none">
+                  <Badge variant={scopingCompliance.aggregateCompliance.expenses.isCompliant ? "default" : "secondary"} className="text-xs font-bold h-4 px-1 bg-white border border-slate-200 shadow-none">
                     {scopingCompliance.aggregateCompliance.expenses.isCompliant ? t('health.compliant') : t('health.nonCompliant')}
                   </Badge>
                 </p>

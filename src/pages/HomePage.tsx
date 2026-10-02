@@ -33,14 +33,14 @@ export function HomePage() {
                 <Shield className="h-4 w-4 mr-2" />
                 Compliance with SK-5/DKU.MBU/11/2024
               </div>
-              <h1 className="text-5xl md:text-7xl font-display font-black tracking-tight text-slate-900 leading-[1.1]">
+              <h1 className="text-4xl sm:text-5xl md:text-7xl font-display font-black tracking-tight text-slate-900 leading-[1.1] text-balance">
                 Enterprise ICOFR <br/>Lifecycle Platform
               </h1>
               <p className="mt-8 max-w-2xl mx-auto text-lg md:text-xl text-slate-600 font-medium leading-relaxed">
                 {t('appDescription')}
               </p>
-              <div className="mt-10 flex justify-center gap-4">
-                <Button size="lg" asChild className="bg-mancity-pattern hover:opacity-90 text-primary-foreground shadow-lg shadow-blue-100 transition-all duration-300 transform hover:-translate-y-0.5">
+              <div className="mt-10 flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 px-4 sm:px-0">
+                <Button size="lg" asChild className="bg-mancity-pattern hover:opacity-90 text-primary-foreground shadow-lg shadow-blue-100 transition-all duration-300 transform hover:-translate-y-0.5 w-full sm:w-auto">
                   <Link to="/dashboard">Get Started</Link>
                 </Button>
                 <Button size="lg" variant="outline" asChild>
@@ -57,7 +57,7 @@ export function HomePage() {
             className="mb-24"
           >
             <h2 className="text-center text-2xl font-bold mb-12">The 5-Step ICOFR Lifecycle</h2>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 relative">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 relative">
                {[
                  { step: "01", name: "Perancangan", desc: "Scoping & RCM" },
                  { step: "02", name: "Implementasi", desc: "CSA Workspace" },

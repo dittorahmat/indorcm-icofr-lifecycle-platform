@@ -62,7 +62,7 @@ export function SOCReviewDialog({ report, isOpen, onClose, onSave }: SOCReviewDi
         </DialogHeader>
 
         <div className="space-y-6 py-4">
-          <div className="grid grid-cols-2 gap-4 bg-muted/30 p-4 rounded-lg border">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-muted/30 p-4 rounded-lg border">
              <div>
                 <Label className="text-xs uppercase font-bold text-muted-foreground">Vendor</Label>
                 <p className="text-sm font-semibold">{report.vendorName}</p>

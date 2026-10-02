@@ -242,7 +242,7 @@ export function CustomizableDashboard({ summaryData, isEffective }: Customizable
     if (type === 'summary') {
       if (source === 'kpi-summary') {
         return (
-          <div className="grid gap-4 grid-cols-2 md:grid-cols-4 h-full items-center p-4">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-4 h-full items-center p-4">
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground font-black uppercase">Entity Cluster</p>
               <p className="text-sm font-bold text-slate-800">{clusterName}</p>

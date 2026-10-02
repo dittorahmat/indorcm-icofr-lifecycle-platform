@@ -81,7 +81,7 @@ export function RiskHeatmap() {
                             )}
                           </button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-80 p-0 overflow-hidden shadow-2xl border-indigo-100">
+                        <PopoverContent className="w-[calc(100vw-2rem)] max-w-80 sm:w-80 p-0 overflow-hidden shadow-2xl border-indigo-100">
                           <div className={cn("p-3 text-white text-xs font-bold flex justify-between items-center", outcome.color.replace('hover:', ''))}>
                             <span>RISIKO: {qn} Qn / {ql} Ql</span>
                             <Badge variant="outline" className="bg-white/20 border-white/30 text-white text-xs">{outcome.label}</Badge>

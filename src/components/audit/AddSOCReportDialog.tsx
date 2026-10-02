@@ -83,7 +83,7 @@ export function AddSOCReportDialog({ isOpen, onOpenChange }: AddSOCReportDialogP
               onChange={(e) => setFormData(prev => ({ ...prev, reportType: e.target.value }))}
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="grid gap-2">
               <Label htmlFor="start">Period Start</Label>
               <Input 

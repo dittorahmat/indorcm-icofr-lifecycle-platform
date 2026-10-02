@@ -155,16 +155,16 @@ export function SignificantLocationModal({
                   <span>{t('health.complianceCheck')}</span>
                 </div>
                 <Badge variant={compliance.isOverallCompliant ? "default" : "secondary"} className={cn(
-                  "text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 border-none",
+                  "text-xs font-black uppercase tracking-wider px-2.5 py-0.5 border-none",
                   compliance.isOverallCompliant ? "bg-emerald-600 text-white hover:bg-emerald-600" : "bg-amber-600 text-white hover:bg-amber-600"
                 )}>
                   {compliance.isOverallCompliant ? t('health.compliant') : t('health.nonCompliant')}
                 </Badge>
               </div>
               
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-white/60 dark:bg-black/20 p-3 rounded-lg border border-slate-100 dark:border-slate-800">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 bg-white/60 dark:bg-black/20 p-3 rounded-lg border border-slate-100 dark:border-slate-800">
                 <div className="space-y-0.5">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500">{t('health.assetsCoverage')}</span>
+                  <span className="text-xs uppercase font-bold text-slate-400 dark:text-slate-500">{t('health.assetsCoverage')}</span>
                   <p className="text-xs font-black flex items-center gap-1.5 mt-0.5">
                     <span className={compliance.aggregateCompliance.assets.isCompliant ? "text-emerald-600" : "text-amber-600"}>
                       {compliance.aggregateCompliance.assets.percentage.toFixed(1)}%
@@ -172,7 +172,7 @@ export function SignificantLocationModal({
                   </p>
                 </div>
                 <div className="space-y-0.5">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500">{t('health.liabilitiesCoverage')}</span>
+                  <span className="text-xs uppercase font-bold text-slate-400 dark:text-slate-500">{t('health.liabilitiesCoverage')}</span>
                   <p className="text-xs font-black flex items-center gap-1.5 mt-0.5">
                     <span className={compliance.aggregateCompliance.liabilities.isCompliant ? "text-emerald-600" : "text-amber-600"}>
                       {compliance.aggregateCompliance.liabilities.percentage.toFixed(1)}%
@@ -180,7 +180,7 @@ export function SignificantLocationModal({
                   </p>
                 </div>
                 <div className="space-y-0.5">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500">{t('health.revenueCoverage')}</span>
+                  <span className="text-xs uppercase font-bold text-slate-400 dark:text-slate-500">{t('health.revenueCoverage')}</span>
                   <p className="text-xs font-black flex items-center gap-1.5 mt-0.5">
                     <span className={compliance.aggregateCompliance.revenue.isCompliant ? "text-emerald-600" : "text-amber-600"}>
                       {compliance.aggregateCompliance.revenue.percentage.toFixed(1)}%
@@ -188,7 +188,7 @@ export function SignificantLocationModal({
                   </p>
                 </div>
                 <div className="space-y-0.5">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500">{t('health.expensesCoverage')}</span>
+                  <span className="text-xs uppercase font-bold text-slate-400 dark:text-slate-500">{t('health.expensesCoverage')}</span>
                   <p className="text-xs font-black flex items-center gap-1.5 mt-0.5">
                     <span className={compliance.aggregateCompliance.expenses.isCompliant ? "text-emerald-600" : "text-amber-600"}>
                       {compliance.aggregateCompliance.expenses.percentage.toFixed(1)}%

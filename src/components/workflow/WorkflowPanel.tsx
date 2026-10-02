@@ -430,7 +430,7 @@ export function WorkflowPanel({
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-[375px] p-0 shadow-2xl border-slate-200" align="start" side="bottom" sideOffset={5}>
+                  <PopoverContent className="w-[calc(100vw-2rem)] max-w-[375px] sm:w-[375px] p-0 shadow-2xl border-slate-200" align="start" side="bottom" sideOffset={5}>
                     <Command className="border-none">
                       <CommandInput placeholder="Search by name or role..." className="h-11" />
                       <CommandList className="max-h-[250px] overflow-y-auto">
