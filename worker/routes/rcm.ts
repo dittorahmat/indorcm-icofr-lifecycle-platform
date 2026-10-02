@@ -581,11 +581,26 @@ rcm.post('/controls/:id/reject', rbac(['Admin', 'Line 2']), async (c) => {
   return ok(c, result);
 });
 
-rcm.delete('/controls/:id', rbac(['Admin', 'Line 2']), async (c) => {
+rcm.post('/controls/:id/request-deletion', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const controlService = new ControlService(db);
   const id = c.req.param('id') as string;
-  const result = await controlService.delete(c.get('organizationId'), id, c.get('userRole'));
+  let body: { reason?: string } = {};
+  try {
+    body = await c.req.json();
+  } catch (e) {
+    // empty
+  }
+  const result = await controlService.requestDeletion(c.get('organizationId'), c.get('userId'), id, body.reason);
+  return ok(c, result);
+});
+
+rcm.delete('/controls/:id', async (c) => {
+  const db = getDb(c.env.DATABASE_URL);
+  const controlService = new ControlService(db);
+  const id = c.req.param('id') as string;
+  const bypassWorkflow = c.req.query('bypassWorkflow') === 'true';
+  const result = await controlService.delete(c.get('organizationId'), id, c.get('userRole'), bypassWorkflow);
   return ok(c, result);
 });
 

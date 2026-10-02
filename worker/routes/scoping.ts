@@ -183,6 +183,34 @@ scoping.post('/simulations/:id/approve', rbac(['CFO', 'Commissioner', 'Admin']),
   const [sim] = await db.select().from(simulations).where(and(eq(simulations.id, id), eq(simulations.organizationId, orgId))).limit(1);
   if (!sim) return notFound(c, 'Simulation not found');
 
+  // Handle Deletion Approval
+  if (sim.status === 'Pending Deletion Approval') {
+    await db.delete(simulations).where(and(eq(simulations.id, id), eq(simulations.organizationId, orgId)));
+    
+    const auditService = new AuditService(db);
+    await auditService.logAction({
+      organizationId: orgId,
+      userId: userId,
+      action: 'APPROVE_DELETION',
+      entityType: 'Simulation',
+      entityId: id,
+      description: `Approved deletion request for simulation "${sim.name}". Reason: ${body.note || 'Approved deletion'}`,
+      dataBefore: sim
+    });
+
+    await createNotificationAndSendEmail({
+      db,
+      orgId,
+      userId: sim.createdBy!,
+      message: `Your deletion request for simulation "${sim.name}" has been approved and permanently removed.`,
+      type: 'info',
+      link: `/scoping`,
+      env: c.env,
+    });
+
+    return ok(c, { success: true, deleted: true });
+  }
+
   let nextStatus: SimulationStatus = sim.status as SimulationStatus;
   if (userRole === 'CFO' && sim.status === 'Pending CFO') {
     nextStatus = 'Pending Komut';
@@ -239,18 +267,23 @@ scoping.post('/simulations/:id/reject', rbac(['CFO', 'Commissioner', 'Admin']), 
   if (!sim) return notFound(c, 'Simulation not found');
 
   const history = (sim.history as any[]) || [];
+  const isDeletionRejection = sim.status === 'Pending Deletion Approval';
+
   const newHistoryEntry = {
     id: crypto.randomUUID(),
-    action: "Reject",
+    action: isDeletionRejection ? "Reject Deletion" : "Reject",
     role: userRole,
     userId: userId,
     timestamp: Date.now(),
     note: body.note
   };
 
+  // If rejecting a deletion request, revert back to Approved
+  const targetStatus = isDeletionRejection ? 'Approved' : 'Rejected';
+
   await db.update(simulations)
     .set({
-      status: 'Rejected',
+      status: targetStatus,
       history: [...history, newHistoryEntry],
       updatedAt: new Date() as any
     })
@@ -261,7 +294,9 @@ scoping.post('/simulations/:id/reject', rbac(['CFO', 'Commissioner', 'Admin']), 
     db,
     orgId,
     userId: sim.createdBy!,
-    message: `Your scoping simulation "${sim.name}" has been rejected. Reason: ${body.note}`,
+    message: isDeletionRejection
+      ? `Your deletion request for simulation "${sim.name}" was rejected. The simulation remains Approved. Note: ${body.note}`
+      : `Your scoping simulation "${sim.name}" has been rejected. Reason: ${body.note}`,
     type: 'error',
     link: `/scoping?id=${id}`,
     env: c.env,
@@ -308,12 +343,83 @@ scoping.post('/simulations/assign-department', async (c) => {
   return ok(c, { success: true });
 });
 
+scoping.post('/simulations/:id/request-deletion', async (c) => {
+  const db = getDb(c.env.DATABASE_URL);
+  const id = c.req.param('id') as string;
+  const orgId = c.get('organizationId');
+  const userId = c.get('userId');
+  const userRole = c.get('userRole');
+  let body: { reason?: string } = {};
+  try {
+    body = await c.req.json();
+  } catch (e) {
+    // empty
+  }
+
+  const [sim] = await db.select().from(simulations).where(and(eq(simulations.id, id), eq(simulations.organizationId, orgId))).limit(1);
+  if (!sim) return notFound(c, 'Simulation not found');
+
+  // If already approved, transition to 'Pending Deletion Approval'
+  const history = (sim.history as any[]) || [];
+  const newHistoryEntry = {
+    id: crypto.randomUUID(),
+    action: "Request Deletion",
+    role: userRole,
+    userId: userId,
+    timestamp: Date.now(),
+    note: body.reason || "Requested deletion of simulation"
+  };
+
+  await db.update(simulations)
+    .set({
+      status: 'Pending Deletion Approval',
+      history: [...history, newHistoryEntry],
+      updatedAt: new Date() as any
+    })
+    .where(and(eq(simulations.id, id), eq(simulations.organizationId, orgId)));
+
+  const auditService = new AuditService(db);
+  await auditService.logAction({
+    organizationId: orgId,
+    userId: userId,
+    action: 'REQUEST_DELETION',
+    entityType: 'Simulation',
+    entityId: id,
+    description: `Requested deletion for simulation "${sim.name}". Reason: ${body.reason || 'None specified'}`,
+    dataBefore: sim
+  });
+
+  return ok(c, { success: true, status: 'Pending Deletion Approval' });
+});
+
 scoping.delete('/simulations/:id', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const id = c.req.param('id');
   const orgId = c.get('organizationId');
-  
+  const userRole = c.get('userRole');
+  const bypassWorkflow = c.req.query('bypassWorkflow') === 'true';
+
+  const [sim] = await db.select().from(simulations).where(and(eq(simulations.id, id), eq(simulations.organizationId, orgId))).limit(1);
+  if (!sim) return notFound(c, 'Simulation not found');
+
+  // If item is Approved and workflow is NOT bypassed, prevent direct physical deletion
+  if (sim.status === 'Approved' && !bypassWorkflow && userRole !== 'Admin') {
+    return bad(c, 'Cannot delete an Approved simulation directly. Please submit a Deletion Request for approval or confirm deletion with workflow disabled.', 403);
+  }
+
   await db.delete(simulations).where(and(eq(simulations.id, id), eq(simulations.organizationId, orgId)));
+
+  const auditService = new AuditService(db);
+  await auditService.logAction({
+    organizationId: orgId,
+    userId: c.get('userId'),
+    action: 'DELETE',
+    entityType: 'Simulation',
+    entityId: id,
+    description: `Permanently deleted simulation "${sim.name}"`,
+    dataBefore: sim
+  });
+
   return ok(c, { success: true });
 });
 

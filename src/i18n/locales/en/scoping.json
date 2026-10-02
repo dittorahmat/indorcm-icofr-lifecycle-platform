@@ -9,11 +9,13 @@
     "pendingKomut": "Pending Chairman Review",
     "approved": "Approved (Baseline)",
     "rejected": "Rejected / Needs Revision",
+    "pendingDeletion": "Pending Deletion Approval",
     "Draft": "Draft",
     "Pending CFO": "Pending CFO Review",
     "Pending Komut": "Pending Chairman Review",
     "Approved": "Approved (Baseline)",
-    "Rejected": "Rejected / Needs Revision"
+    "Rejected": "Rejected / Needs Revision",
+    "Pending Deletion Approval": "Pending Deletion Approval"
   },
   "simulation": {
     "title": "Materiality Simulation",
@@ -277,6 +279,9 @@
   "delete": {
     "simTitle": "Delete Materiality Simulation",
     "simDesc": "Are you sure you want to delete simulation \"{{name}}\"? This action cannot be undone and will permanently remove all scoping and materiality allocations associated with this scenario.",
+    "requestDeletionTitle": "Request Deletion of Approved Simulation",
+    "requestDeletionDesc": "Simulation \"{{name}}\" is an approved baseline. In accordance with Lampiran 6 SK-5/2024, deleting it requires maker-checker approval. Are you sure you want to submit a deletion request?",
+    "requestDeletionSuccess": "Deletion request submitted for approval",
     "snapTitle": "Delete GL Snapshot",
     "snapDesc": "Are you sure you want to delete GL snapshot \"{{name}}\"? This will permanently remove the snapshot and all its account row mappings. This action cannot be undone."
   },

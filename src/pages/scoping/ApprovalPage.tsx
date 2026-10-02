@@ -80,9 +80,10 @@ export function ApprovalPage() {
 
   // Filter logic based on role
   const pendingSims = simulations?.items.filter(s => {
+    if (s.status === 'Pending Deletion Approval') return true;
     if (userRole === 'CFO') return s.status === 'Pending CFO';
     if (userRole === 'Commissioner') return s.status === 'Pending Komut';
-    if (userRole === 'Admin') return s.status === 'Pending CFO' || s.status === 'Pending Komut';
+    if (userRole === 'Admin') return s.status === 'Pending CFO' || s.status === 'Pending Komut' || s.status === 'Pending Deletion Approval';
     return false;
   }) || [];
 
@@ -129,9 +130,11 @@ export function ApprovalPage() {
                     <TableCell className="font-medium">{sim.name}</TableCell>
                     <TableCell>
                       <Badge variant="secondary" className={cn(
-                        sim.status === 'Pending CFO' ? "bg-amber-100 text-amber-700" : "bg-blue-100 text-blue-700"
+                        sim.status === 'Pending Deletion Approval' ? "bg-rose-100 text-rose-800 border-rose-200" :
+                        sim.status === 'Pending CFO' ? "bg-amber-100 text-amber-700 border-amber-200" : "bg-blue-100 text-blue-700 border-blue-200"
                       )}>
-                        {sim.status === 'Pending CFO' ? t('status.pendingCfo') : t('status.pendingKomut')}
+                        {sim.status === 'Pending Deletion Approval' ? (t('status.pendingDeletion', { defaultValue: 'Pending Deletion' })) :
+                         sim.status === 'Pending CFO' ? t('status.pendingCfo') : t('status.pendingKomut')}
                       </Badge>
                     </TableCell>
                     <TableCell>{sim.basis}</TableCell>
@@ -168,9 +171,11 @@ export function ApprovalPage() {
                 <p className="text-sm font-bold leading-tight">{sim.name}</p>
                 <Badge variant="secondary" className={cn(
                   "shrink-0",
-                  sim.status === 'Pending CFO' ? "bg-amber-100 text-amber-700" : "bg-blue-100 text-blue-700"
+                  sim.status === 'Pending Deletion Approval' ? "bg-rose-100 text-rose-800 border-rose-200" :
+                  sim.status === 'Pending CFO' ? "bg-amber-100 text-amber-700 border-amber-200" : "bg-blue-100 text-blue-700 border-blue-200"
                 )}>
-                  {sim.status === 'Pending CFO' ? t('status.pendingCfo') : t('status.pendingKomut')}
+                  {sim.status === 'Pending Deletion Approval' ? (t('status.pendingDeletion', { defaultValue: 'Pending Deletion' })) :
+                   sim.status === 'Pending CFO' ? t('status.pendingCfo') : t('status.pendingKomut')}
                 </Badge>
               </div>
               <div className="grid grid-cols-2 gap-2">
@@ -266,14 +271,23 @@ export function ApprovalPage() {
                     disabled={rejectMutation.isPending || !note}
                     className="gap-2"
                   >
-                    <XCircle className="h-4 w-4" /> {t('approval.rejectBtn')}
+                    <XCircle className="h-4 w-4" /> {selectedSim?.status === 'Pending Deletion Approval' ? 'Reject Deletion' : t('approval.rejectBtn')}
                   </Button>
                   <Button 
                     onClick={() => approveMutation.mutate(selectedSim!.id)}
                     disabled={approveMutation.isPending}
-                    className="bg-green-600 hover:bg-green-700 gap-2"
+                    className={cn(
+                      "gap-2",
+                      selectedSim?.status === 'Pending Deletion Approval'
+                        ? "bg-red-600 hover:bg-red-700"
+                        : "bg-green-600 hover:bg-green-700"
+                    )}
                   >
-                    <UserCheck className="h-4 w-4" /> {userRole === 'CFO' ? t('approval.approveToKomutBtn') : t('approval.approveFinalBtn')}
+                    <UserCheck className="h-4 w-4" /> {
+                      selectedSim?.status === 'Pending Deletion Approval'
+                        ? 'Approve Deletion'
+                        : userRole === 'CFO' ? t('approval.approveToKomutBtn') : t('approval.approveFinalBtn')
+                    }
                   </Button>
                 </div>
               </DialogFooter>

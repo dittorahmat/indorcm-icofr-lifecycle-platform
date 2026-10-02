@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/dialog';
 import { Upload, RefreshCw, AlertTriangle, X, Trash2 } from 'lucide-react';
 import { layoutOcrDiagram, deriveLabelFromId, type OcrLayoutWarning } from '@/utils/ocr-layout';
+import { useConfirm } from '@/hooks/use-confirm';
 
 interface BPMOcrModalProps {
   isOpen: boolean;
@@ -43,6 +44,7 @@ export const BPMOcrModal: React.FC<BPMOcrModalProps> = ({
   isDirty,
 }) => {
   const { t } = useTranslation(['bpm', 'common']);
+  const confirm = useConfirm();
   const [ocrFile, setOcrFile] = useState<File | null>(null);
   const [isProcessingOcr, setIsProcessingOcr] = useState(false);
   const [ocrPreviewUrl, setOcrPreviewUrl] = useState<string | null>(null);
@@ -179,12 +181,17 @@ export const BPMOcrModal: React.FC<BPMOcrModalProps> = ({
     }
   };
 
-  const handleApply = () => {
+  const handleApply = async () => {
     if (stagingNodes.length === 0 && stagingEdges.length === 0 && !parsedDiagram) return;
     if (isDirty) {
-      if (!window.confirm(t('bpm:ocr.confirmOverwrite'))) {
-        return;
-      }
+      const ok = await confirm({
+        title: t('common:unsavedChanges.title'),
+        description: t('bpm:ocr.confirmOverwrite'),
+        confirmText: t('common:unsavedChanges.discard'),
+        cancelText: t('common:unsavedChanges.stay'),
+        variant: 'destructive',
+      });
+      if (!ok) return;
     }
     onApply(stagingNodes, stagingEdges);
     setParsedDiagram(null);

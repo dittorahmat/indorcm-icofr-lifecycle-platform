@@ -25,6 +25,7 @@ import {
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { useConfirm } from '@/hooks/use-confirm';
 import type { ApplicationDocument, ITGCArea } from '@shared/types';
 
 interface ITGCEvidenceLibraryProps {
@@ -43,6 +44,7 @@ export function ITGCEvidenceLibrary({
   onPreviewFile,
 }: ITGCEvidenceLibraryProps) {
   const { t } = useTranslation(['rcm', 'common']);
+  const confirm = useConfirm();
   const queryClient = useQueryClient();
   const [isUploading, setIsUploading] = useState(false);
   const [notes, setNotes] = useState('');
@@ -268,8 +270,13 @@ export function ITGCEvidenceLibrary({
                         size="sm"
                         className="h-7 w-7 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
                         title={t('rcm:application_detail.delete')}
-                        onClick={() => {
-                          if (window.confirm(t('rcm:application_detail.delete_doc_confirm'))) {
+                        onClick={async () => {
+                          const ok = await confirm({
+                            title: t('common:actions.delete'),
+                            description: t('rcm:application_detail.delete_doc_confirm'),
+                            variant: 'destructive',
+                          });
+                          if (ok) {
                             deleteMutation.mutate(doc.id);
                           }
                         }}

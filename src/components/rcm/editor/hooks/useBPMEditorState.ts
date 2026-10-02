@@ -6,6 +6,7 @@ import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
 import type { Settings, BPMProcess } from '@shared/types';
 import { useActiveSimulation, useSimulationSnapshot } from '@/hooks/use-bpm';
+import { useConfirm } from '@/hooks/use-confirm';
 
 interface UseBPMEditorStateProps {
   diagramId: string;
@@ -32,6 +33,7 @@ export function useBPMEditorState({
   isExporting,
   t,
 }: UseBPMEditorStateProps) {
+  const confirm = useConfirm();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // 1. Fetch Diagram Data
@@ -318,13 +320,18 @@ export function useBPMEditorState({
   }, [nodes, edges, diagram, isLocked, localizedInitialNodes, signatures, bpmProcess, getUserName, globalScale]);
 
   const handleSwitchGLContext = useCallback(
-    (targetGL: string) => {
+    async (targetGL: string) => {
       if (targetGL === currentGL) return;
 
       if (isDirty) {
-        if (!window.confirm(t('common:unsavedChanges.description'))) {
-          return;
-        }
+        const ok = await confirm({
+          title: t('common:unsavedChanges.title'),
+          description: t('common:unsavedChanges.description'),
+          confirmText: t('common:unsavedChanges.discard'),
+          cancelText: t('common:unsavedChanges.stay'),
+          variant: 'destructive',
+        });
+        if (!ok) return;
       }
 
       const matchedRow = activeSnap?.rows?.find((r: any) => r.noGL === targetGL);
@@ -343,7 +350,7 @@ export function useBPMEditorState({
 
       toast.success(t('bpm:editor.toast.contextSwitched', { defaultValue: `Switched context to ${targetGL}` }));
     },
-    [currentGL, isDirty, activeSnap, setSearchParams, t]
+    [currentGL, isDirty, activeSnap, setSearchParams, t, confirm]
   );
 
   return {

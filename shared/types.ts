@@ -60,10 +60,26 @@ export interface GLSnapshot extends Omit<InferSelectModel<typeof schema.glSnapsh
   uploadDate: number;
 }
 
-export type SimulationStatus = "Draft" | "Pending CFO" | "Pending Komut" | "Approved" | "Rejected";
-export type WorkflowAction = "Submit" | "Review" | "Approve" | "Reject" | "Rollback" | "Update";
+export type SimulationStatus = 
+  | "Draft" 
+  | "Pending CFO" 
+  | "Pending Komut" 
+  | "Approved" 
+  | "Rejected"
+  | "Pending Deletion Approval"
+  | "Pending Update Approval";
 
-export type BPMWorkflowStatus = "Draft" | "In Review" | "In Approval" | "Resolved" | "Rejected";
+export type ControlBPMStatus = 
+  | "Draft"
+  | "Pending Approval"
+  | "Approved"
+  | "Rejected"
+  | "Pending Deletion Approval"
+  | "Pending Update Approval";
+
+export type WorkflowAction = "Submit" | "Review" | "Approve" | "Reject" | "Rollback" | "Update" | "Request Deletion" | "Approve Deletion" | "Reject Deletion";
+
+export type BPMWorkflowStatus = "Draft" | "In Review" | "In Approval" | "Resolved" | "Rejected" | "Pending Deletion Approval" | "Pending Update Approval";
 export type DeficiencyWorkflowStatus = "Ineffective" | "In Review" | "In Approval" | "Resolved";
 
 export interface WorkflowHistoryEntry {
@@ -79,7 +95,7 @@ export interface WorkflowHistoryEntry {
 
 export interface ApprovalHistoryEntry {
   id: string;
-  action: "Submit" | "Approve" | "Reject" | "Update";
+  action: "Submit" | "Approve" | "Reject" | "Update" | "Request Deletion" | "Approve Deletion" | "Reject Deletion";
   role: UserRole;
   userId: string;
   timestamp: number;

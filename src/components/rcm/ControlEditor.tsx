@@ -22,6 +22,7 @@ import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
+import { useConfirm } from '@/hooks/use-confirm';
 import { QualitativeRiskWizard } from './QualitativeRiskWizard';
 import { 
   RiskAssessmentSection, 

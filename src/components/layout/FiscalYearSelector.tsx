@@ -25,10 +25,12 @@ import { Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/hooks/use-theme';
 import { useUnsavedChangesContext } from '@/context/UnsavedChangesContext';
+import { useConfirm } from '@/hooks/use-confirm';
 
 export function FiscalYearSelector() {
   const { workingYear, setWorkingYear, customYears, addCustomYear } = useFiscalYearStore();
   const { isDirty } = useUnsavedChangesContext();
+  const confirm = useConfirm();
   const { t: translate } = useTranslation(['common', 'bpm']);
   const { isDark } = useTheme();
 
@@ -122,12 +124,21 @@ export function FiscalYearSelector() {
     <div className="flex items-center gap-2 mr-2">
       <Select 
         value={workingYear} 
-        onValueChange={(val) => {
+        onValueChange={async (val) => {
           if (val === 'add-new-year') {
             handleOpenDialog();
             return;
           }
-          if (isDirty && !window.confirm(translate('bpm:unsavedChanges.description'))) return;
+          if (isDirty) {
+            const ok = await confirm({
+              title: translate('common:unsavedChanges.title'),
+              description: translate('bpm:unsavedChanges.description'),
+              confirmText: translate('common:unsavedChanges.discard'),
+              cancelText: translate('common:unsavedChanges.stay'),
+              variant: 'destructive',
+            });
+            if (!ok) return;
+          }
           setWorkingYear(val);
         }}
       >

@@ -7,6 +7,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Database, Search, Layers, Filter, Loader2, ChevronsUpDown, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
+import { useConfirm } from '@/hooks/use-confirm';
 
 interface BPMScopingFiltersProps {
   selectedFsli: string;
@@ -36,6 +37,7 @@ export function BPMScopingFilters({
   isAssertionDirty,
 }: BPMScopingFiltersProps) {
   const { t } = useTranslation(['bpm', 'common']);
+  const confirm = useConfirm();
   const [fsliOpen, setFsliOpen] = useState(false);
   const [glOpen, setGlOpen] = useState(false);
 
@@ -88,8 +90,17 @@ export function BPMScopingFilters({
                           key={f}
                           value={f}
                           className="text-xs font-bold uppercase cursor-pointer"
-                          onSelect={() => {
-                            if (isAssertionDirty && !window.confirm(t('bpm:unsavedChanges.description'))) return;
+                          onSelect={async () => {
+                            if (isAssertionDirty) {
+                              const ok = await confirm({
+                                title: t('common:unsavedChanges.title'),
+                                description: t('bpm:unsavedChanges.description'),
+                                confirmText: t('common:unsavedChanges.discard'),
+                                cancelText: t('common:unsavedChanges.stay'),
+                                variant: 'destructive',
+                              });
+                              if (!ok) return;
+                            }
                             setSelectedFsli(f);
                             setSelectedAccountKey('');
                             setSelectedBpmId(null);
@@ -155,8 +166,17 @@ export function BPMScopingFilters({
                           key={g.key}
                           value={`${g.noGL} ${g.glDesc}`}
                           className="text-xs font-bold uppercase cursor-pointer"
-                          onSelect={() => {
-                            if (isAssertionDirty && !window.confirm(t('bpm:unsavedChanges.description'))) return;
+                          onSelect={async () => {
+                            if (isAssertionDirty) {
+                              const ok = await confirm({
+                                title: t('common:unsavedChanges.title'),
+                                description: t('bpm:unsavedChanges.description'),
+                                confirmText: t('common:unsavedChanges.discard'),
+                                cancelText: t('common:unsavedChanges.stay'),
+                                variant: 'destructive',
+                              });
+                              if (!ok) return;
+                            }
                             setSelectedAccountKey(g.key);
                             setGlOpen(false);
                           }}

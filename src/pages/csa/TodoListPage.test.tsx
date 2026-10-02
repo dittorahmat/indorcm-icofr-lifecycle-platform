@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { TodoListPage } from './TodoListPage';
+import { ConfirmProvider } from '@/components/providers/ConfirmProvider';
 import React from 'react';
 
 vi.mock('@/components/layout/AppLayout', () => ({
@@ -53,7 +54,11 @@ vi.mock('@/hooks/use-unsaved-changes', () => ({
 
 describe('TodoListPage Responsive Views', () => {
   it('renders both desktop calendar grid container and mobile agenda view container', () => {
-    const { container } = render(<TodoListPage />);
+    const { container } = render(
+      <ConfirmProvider>
+        <TodoListPage />
+      </ConfirmProvider>
+    );
     
     // Desktop container with hidden md:flex
     const desktopGrid = container.querySelector('.hidden.md\\:flex');

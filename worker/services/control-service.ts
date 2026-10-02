@@ -148,13 +148,44 @@ export class ControlService {
     return { success: true };
   }
 
-  async delete(orgId: string, id: string, role: string) {
+  async requestDeletion(orgId: string, userId: string, id: string, reason?: string) {
+    const [ctrl] = await this.db.select().from(controls).where(and(eq(controls.id, id), eq(controls.organizationId, orgId))).limit(1);
+    if (!ctrl) throw new Error('Control not found');
+
+    await this.db.update(controls)
+      .set({ 
+        bpmStatus: 'Pending Deletion Approval',
+        updatedAt: new Date() as any
+      } as any)
+      .where(and(eq(controls.id, id), eq(controls.organizationId, orgId)));
+
+    await this.audit.logAction({
+      organizationId: orgId,
+      userId,
+      action: 'UPDATE',
+      entityType: 'Control',
+      entityId: id,
+      description: `Requested deletion for Control: ${ctrl.name || ctrl.code}. Reason: ${reason || 'None provided'}`,
+      dataBefore: ctrl,
+      isRegulatory: true,
+      effectiveDate: new Date()
+    });
+
+    return { success: true, status: 'Pending Deletion Approval' };
+  }
+
+  async delete(orgId: string, id: string, role: string, bypassWorkflow: boolean = false) {
     const originalDb = this.db;
     return await originalDb.transaction(async (tx) => {
       this.db = tx;
       try {
         const [control] = await this.db.select().from(controls).where(and(eq(controls.id, id), eq(controls.organizationId, orgId))).limit(1);
         if (!control) throw new Error('Control not found');
+
+        // Prevent direct deletion of Approved controls unless explicitly bypassed or Admin
+        if (control.bpmStatus === 'Approved' && !bypassWorkflow && role !== 'Admin') {
+          throw new Error("Cannot delete an Approved control directly. Please submit a Deletion Request for Line 2 approval or confirm with workflow disabled.");
+        }
 
         if (control.level === 'ELC') {
           if (role !== 'Admin' && role !== 'Line 2') {
@@ -176,6 +207,18 @@ export class ControlService {
 
         await this.db.delete(controls).where(eq(controls.id, id));
         await this.db.delete(rcmControls).where(eq(rcmControls.controlId, id));
+
+        await this.audit.logAction({
+          organizationId: orgId,
+          userId: 'system',
+          action: 'DELETE',
+          entityType: 'Control',
+          entityId: id,
+          description: `Deleted control ${control.code}: ${control.name}`,
+          dataBefore: control,
+          isRegulatory: true,
+          effectiveDate: new Date()
+        });
 
         return { success: true };
       } finally {

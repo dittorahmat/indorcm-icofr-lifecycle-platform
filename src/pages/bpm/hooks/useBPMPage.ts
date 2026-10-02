@@ -7,6 +7,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { useUnsavedChangesContext } from '@/context/UnsavedChangesContext';
+import { useConfirm } from '@/hooks/use-confirm';
 import { useAccountAssertions, useActiveSimulation, useSimulationSnapshot } from '@/hooks/use-bpm';
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 import { toast } from 'sonner';
@@ -69,6 +70,7 @@ export function buildProcessTree(
 
 export function useBPMPage() {
   const { t } = useTranslation(['bpm', 'common', 'rcm']);
+  const confirm = useConfirm();
   const { workingYear } = useFiscalYearStore();
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -107,9 +109,16 @@ export function useBPMPage() {
     });
   };
 
-  const handleCloseDiagram = () => {
-    if (isDirty && !window.confirm(t('common:unsavedChanges.description'))) {
-      return;
+  const handleCloseDiagram = async () => {
+    if (isDirty) {
+      const ok = await confirm({
+        title: t('common:unsavedChanges.title'),
+        description: t('common:unsavedChanges.description'),
+        confirmText: t('common:unsavedChanges.discard'),
+        cancelText: t('common:unsavedChanges.stay'),
+        variant: 'destructive',
+      });
+      if (!ok) return;
     }
     setSearchParams(prev => {
       const next = new URLSearchParams(prev);

@@ -19,6 +19,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useUnsavedChangesContext } from '@/context/UnsavedChangesContext';
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
+import { useConfirm } from '@/hooks/use-confirm';
 import { toast } from 'sonner';
 import { api } from '@/lib/api-client';
 import { FileUploadZone } from '../import/FileUploadZone';
@@ -64,6 +65,7 @@ interface SmartImportWizardProps {
 
 export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImportWizardProps) {
     const { t } = useTranslation(['rcm', 'common', 'scoping']);
+    const confirm = useConfirm();
     const { setDirty, resetDirty } = useUnsavedChangesContext();
     const { workingYear } = useFiscalYearStore();
     const [isModified, setIsDirtyLocal] = useState(false);
@@ -331,9 +333,16 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
     };
 
     return (
-        <Dialog open={isOpen} onOpenChange={(open) => {
+        <Dialog open={isOpen} onOpenChange={async (open) => {
             if (!open && isModified) {
-                if (window.confirm(t('common:unsavedChanges.description'))) {
+                const ok = await confirm({
+                    title: t('common:unsavedChanges.title'),
+                    description: t('common:unsavedChanges.description'),
+                    confirmText: t('common:unsavedChanges.discard'),
+                    cancelText: t('common:unsavedChanges.stay'),
+                    variant: 'destructive',
+                });
+                if (ok) {
                     onOpenChange(false);
                     setIsDirtyLocal(false);
                     setStep(1);

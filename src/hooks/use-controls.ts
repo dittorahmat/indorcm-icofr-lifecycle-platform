@@ -44,6 +44,19 @@ export function useControls(level?: string) {
     onError: (error: any) => toast.error(error.message || 'Failed to delete control')
   });
 
+  const requestDeletionMutation = useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason?: string }) =>
+      api<ApiResponse>(`/api/controls/${id}/request-deletion`, {
+        method: 'POST',
+        body: JSON.stringify({ reason }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['controls'] });
+      toast.success('Control deletion requested');
+    },
+    onError: (error: any) => toast.error(error.message || 'Failed to request control deletion')
+  });
+
   const approveMutation = useMutation({
     mutationFn: (id: string) => api<ApiResponse>(`/api/controls/${id}/approve`, { method: 'POST' }),
     onSuccess: () => {
@@ -60,8 +73,9 @@ export function useControls(level?: string) {
     createControl: createMutation.mutateAsync,
     updateControl: updateMutation.mutateAsync,
     deleteControl: deleteMutation.mutateAsync,
+    requestDeletion: requestDeletionMutation.mutateAsync,
     approveControl: approveMutation.mutateAsync,
-    isMutating: createMutation.isPending || updateMutation.isPending || deleteMutation.isPending || approveMutation.isPending
+    isMutating: createMutation.isPending || updateMutation.isPending || deleteMutation.isPending || requestDeletionMutation.isPending || approveMutation.isPending
   };
 }
 

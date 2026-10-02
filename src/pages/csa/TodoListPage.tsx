@@ -58,9 +58,11 @@ import { TodoListFilters } from '@/components/csa/TodoListFilters';
 import { TodoListGrid } from '@/components/csa/TodoListGrid';
 import { MobileTodoAgenda, AgendaEvent } from '@/components/csa/MobileTodoAgenda';
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
+import { useConfirm } from '@/hooks/use-confirm';
 
 export function TodoListPage() {
   const { t, i18n } = useTranslation(['csa', 'common', 'rcm', 'csa_hub']);
+  const confirm = useConfirm();
   const queryClient = useQueryClient();
   const { workingYear } = useFiscalYearStore();
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -186,8 +188,13 @@ export function TodoListPage() {
     setIsDirty(false);
   };
 
-  const handleDeleteClick = (id: string) => {
-    if (confirm(t('common:unsavedChanges.description'))) {
+  const handleDeleteClick = async (id: string) => {
+    const ok = await confirm({
+      title: t('common:actions.delete'),
+      description: t('csa_hub:scheduling.delete_confirm', { defaultValue: 'Are you sure you want to remove this schedule?' }),
+      variant: 'destructive',
+    });
+    if (ok) {
       deleteScheduleMutation.mutate(id);
     }
   };
@@ -440,9 +447,16 @@ export function TodoListPage() {
           />
         )}
         
-        <Dialog open={isDialogOpen} onOpenChange={(open) => {
+        <Dialog open={isDialogOpen} onOpenChange={async (open) => {
           if (!open && isDirty) {
-            if (confirm(t('common:unsavedChanges.description'))) {
+            const ok = await confirm({
+              title: t('common:unsavedChanges.title'),
+              description: t('common:unsavedChanges.description'),
+              confirmText: t('common:unsavedChanges.discard'),
+              cancelText: t('common:unsavedChanges.stay'),
+              variant: 'destructive',
+            });
+            if (ok) {
               setIsDialogOpen(false);
               resetForm();
             }
@@ -490,9 +504,16 @@ export function TodoListPage() {
         </Dialog>
 
         {/* Reschedule Dialog */}
-        <Dialog open={isRescheduleOpen} onOpenChange={(open) => {
+        <Dialog open={isRescheduleOpen} onOpenChange={async (open) => {
           if (!open && isRescheduleDirty) {
-            if (confirm(t('common:unsavedChanges.description'))) {
+            const ok = await confirm({
+              title: t('common:unsavedChanges.title'),
+              description: t('common:unsavedChanges.description'),
+              confirmText: t('common:unsavedChanges.discard'),
+              cancelText: t('common:unsavedChanges.stay'),
+              variant: 'destructive',
+            });
+            if (ok) {
               setIsRescheduleOpen(false);
               setIsRescheduleDirty(false);
             }

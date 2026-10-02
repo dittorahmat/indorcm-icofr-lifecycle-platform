@@ -81,9 +81,22 @@ export function ScopingPage() {
 
   const handleDeleteSim = async (id: string) => {
     const sim = simulations.find(s => s.id === id);
+    if (!sim) return;
+
+    if (sim.status === 'Approved') {
+      const ok = await confirm({
+        title: t('scoping:delete.requestDeletionTitle'),
+        description: t('scoping:delete.requestDeletionDesc', { name: sim.name }),
+        variant: 'destructive',
+        confirmText: t('common:actions.submit', { defaultValue: 'Submit Request' }),
+      });
+      if (ok) mutations.requestDeleteSim.mutate(id);
+      return;
+    }
+
     const ok = await confirm({
       title: t('scoping:delete.simTitle'),
-      description: t('scoping:delete.simDesc', { name: sim?.name || '' }),
+      description: t('scoping:delete.simDesc', { name: sim.name }),
       variant: 'destructive'
     });
     if (ok) mutations.deleteSim.mutate(id);

@@ -9,11 +9,13 @@
     "pendingKomut": "Menunggu Review Komut",
     "approved": "Disetujui (Baseline)",
     "rejected": "Ditolak / Butuh Revisi",
+    "pendingDeletion": "Menunggu Persetujuan Penghapusan",
     "Draft": "Draft",
     "Pending CFO": "Menunggu Review CFO",
     "Pending Komut": "Menunggu Review Komut",
     "Approved": "Disetujui (Baseline)",
-    "Rejected": "Ditolak / Butuh Revisi"
+    "Rejected": "Ditolak / Butuh Revisi",
+    "Pending Deletion Approval": "Menunggu Persetujuan Penghapusan"
   },
   "simulation": {
     "title": "Simulasi Materialitas",
@@ -277,6 +279,9 @@
   "delete": {
     "simTitle": "Hapus Simulasi Materialitas",
     "simDesc": "Apakah Anda yakin ingin menghapus simulasi \"{{name}}\"? Tindakan ini tidak dapat dibatalkan dan akan menghapus semua scoping dan alokasi materialitas yang terkait dengan skenario ini secara permanen.",
+    "requestDeletionTitle": "Pengajuan Penghapusan Simulasi Disetujui",
+    "requestDeletionDesc": "Simulasi \"{{name}}\" berstatus disetujui (baseline). Sesuai Lampiran 6 SK-5/2024, penghapusan memerlukan persetujuan maker-checker. Apakah Anda yakin ingin mengajukan permohonan penghapusan?",
+    "requestDeletionSuccess": "Permohonan penghapusan berhasil diajukan untuk persetujuan",
     "snapTitle": "Hapus Snapshot GL",
     "snapDesc": "Apakah Anda yakin ingin menghapus snapshot GL \"{{name}}\"? Ini akan menghapus snapshot dan semua pemetaan baris akun secara permanen. Tindakan ini tidak dapat dibatalkan."
   },

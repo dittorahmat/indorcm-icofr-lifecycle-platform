@@ -67,6 +67,20 @@ export function useScopingPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['simulations'] });
       toast.success(t('common:notifications.deleted'));
+    },
+    onError: (err: any) => {
+      toast.error(err.message || 'Failed to delete simulation');
+    }
+  });
+
+  const requestDeleteSimMutation = useMutation({
+    mutationFn: (id: string) => api(`/api/simulations/${id}/request-deletion`, { method: 'POST' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['simulations'] });
+      toast.success(t('scoping:delete.requestDeletionSuccess'));
+    },
+    onError: (err: any) => {
+      toast.error(err.message || 'Failed to request deletion');
     }
   });
 
@@ -129,6 +143,7 @@ export function useScopingPage() {
     mutations: {
       createSim: createSimMutation,
       deleteSim: deleteSimMutation,
+      requestDeleteSim: requestDeleteSimMutation,
       setActiveSnap: setActiveMutation,
       deleteSnap: deleteSnapMutation,
       uploadSnap: uploadSnapMutation,

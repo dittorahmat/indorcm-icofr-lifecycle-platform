@@ -53,6 +53,8 @@ export function SimulationListTable({ data, onSelect, onDelete, isLoading }: Sim
       case 'Approved': return <Badge className="bg-green-600 font-bold px-3">Approved</Badge>;
       case 'Pending CFO': return <Badge variant="secondary" className="bg-amber-100 text-amber-700 border-amber-200 font-bold px-3">Review CFO</Badge>;
       case 'Pending Komut': return <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-200 font-bold px-3">Review Komut</Badge>;
+      case 'Pending Deletion Approval': return <Badge variant="destructive" className="bg-rose-100 text-rose-800 border-rose-200 font-bold px-3">Pending Deletion</Badge>;
+      case 'Pending Update Approval': return <Badge variant="secondary" className="bg-purple-100 text-purple-700 border-purple-200 font-bold px-3">Pending Update</Badge>;
       case 'Rejected': return <Badge variant="destructive" className="font-bold px-3">Rejected</Badge>;
       default: return <Badge variant="outline" className="font-bold px-3">{status}</Badge>;
     }
@@ -129,7 +131,9 @@ export function SimulationListTable({ data, onSelect, onDelete, isLoading }: Sim
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="min-h-[44px] min-w-[44px] text-slate-300 hover:text-red-600 transition-colors"
+                    disabled={sim.status === 'Pending Deletion Approval'}
+                    title={sim.status === 'Approved' ? 'Request Deletion' : 'Delete'}
+                    className="min-h-[44px] min-w-[44px] text-slate-300 hover:text-red-600 transition-colors disabled:opacity-30"
                     onClick={() => onDelete(sim.id)}
                   >
                     <Trash2 className="h-4 w-4" />
