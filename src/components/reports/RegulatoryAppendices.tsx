@@ -36,8 +36,8 @@ export function RegulatoryAppendices({ rcmData, controlsData, testsData, summary
         </div>
       </div>
 
-      <Tabs defaultValue="rcm-tlc" className="flex flex-col md:flex-row gap-6">
-        <TabsList className="flex flex-col h-auto bg-transparent border-r rounded-none p-0 items-start min-w-[200px]">
+      <Tabs defaultValue="rcm-tlc" className="flex flex-col md:flex-row gap-4 sm:gap-6">
+        <TabsList className="flex flex-row md:flex-col h-auto bg-transparent md:border-r border-b md:border-b-0 rounded-none p-0 items-start md:min-w-[200px] overflow-x-auto w-full md:w-auto">
           <div className="px-4 py-2 text-xs font-bold text-muted-foreground uppercase tracking-widest">Risk Control Matrix</div>
           <TabsTrigger value="rcm-elc" className="w-full justify-start rounded-none border-l-2 border-l-transparent data-[state=active]:border-l-primary data-[state=active]:bg-muted/50 px-4 py-2">
             <ShieldCheck className="h-4 w-4 mr-2" /> ELC (Lampiran 5a)
@@ -71,7 +71,7 @@ export function RegulatoryAppendices({ rcmData, controlsData, testsData, summary
           </TabsTrigger>
         </TabsList>
 
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-hidden min-w-0">
           <TabsContent value="rcm-elc" className="m-0"><ELCReport /></TabsContent>
           <TabsContent value="rcm-tlc" className="m-0"><TLCReport /></TabsContent>
           <TabsContent value="rcm-itgc" className="m-0"><ITGCReport /></TabsContent>

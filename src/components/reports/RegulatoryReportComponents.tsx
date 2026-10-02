@@ -178,7 +178,7 @@ export function ChangeLogReport() {
         </div>
 
         {/* Digital Sign-off Blocks */}
-        <div className="grid grid-cols-2 gap-8 pt-8 max-w-2xl mx-auto print:pt-4 print:max-w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8 pt-6 sm:pt-8 max-w-2xl mx-auto print:pt-4 print:max-w-full">
           <div className="border rounded-lg p-4 bg-slate-50 flex flex-col items-center justify-between text-center min-h-[140px] print:border-slate-300 print:bg-transparent print:p-2">
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Disetujui oleh:</span>
             <div className="flex flex-col items-center gap-1 my-2">

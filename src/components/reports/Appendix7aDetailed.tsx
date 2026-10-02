@@ -57,7 +57,7 @@ export const Appendix7aDetailed = React.forwardRef<HTMLDivElement, Appendix7aDet
           {/* Section I: Metodologi & Prosedur */}
           <div className="space-y-4">
              <h2 className="text-xs font-black uppercase tracking-widest text-slate-400 border-b pb-1">I. Metodologi & Prosedur Pengujian</h2>
-             <div className="grid grid-cols-2 gap-8">
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
                 <div className="space-y-2">
                    <p className="text-xs font-black text-slate-500 uppercase">Metodologi Sampling</p>
                    <p className="text-xs font-medium leading-relaxed">{record.samplingMethodology || "-"}</p>

@@ -119,7 +119,7 @@ export const RegulatoryMappingSection = ({ form }: { form: any }) => {
         </FormItem>
       )} />
 
-      <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t">
         <FormField control={form.control} name="assertions" render={() => (
           <FormItem>
             <FormLabel className="text-xs">{t('matrix.assertions')}</FormLabel>

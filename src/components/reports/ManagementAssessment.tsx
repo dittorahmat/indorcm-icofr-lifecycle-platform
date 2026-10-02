@@ -59,7 +59,7 @@ export function ManagementAssessment({
           <CardTitle className="text-2xl font-bold uppercase tracking-tight text-slate-900">{t('assessment.title')}</CardTitle>
           <CardDescription className="text-sm font-medium text-slate-500 mt-2">{t('assessment.subtitle')}</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-10 py-10 px-12">
+        <CardContent className="space-y-8 sm:space-y-10 py-6 sm:py-10 px-4 sm:px-8 lg:px-12">
           <div className="space-y-6 text-justify leading-relaxed">
             <p className="text-sm font-semibold text-slate-800">{t('assessment.directorsStatement', { companyName: settings?.companyName || 'IndoRCM' })}</p>
             
@@ -91,7 +91,7 @@ export function ManagementAssessment({
             <h3 className="font-bold text-slate-900 border-b border-slate-200 pb-3 flex items-center gap-2 text-sm uppercase tracking-wider">
               <AlertTriangle className="h-4 w-4 text-orange-500" /> {t('assessment.deficiencyTitle')}
             </h3>
-            <div className="rounded-lg border border-slate-200 overflow-hidden bg-white">
+            <div className="rounded-lg border border-slate-200 overflow-x-auto bg-white">
               <Table className="text-xs">
                 <TableHeader className="bg-slate-50">
                   <TableRow>
@@ -104,7 +104,7 @@ export function ManagementAssessment({
                   {(summaryData?.allDeficiencies || []).filter((d: any) => d.severity !== 'Control Deficiency').map((def: any) => (
                     <TableRow key={def.id} className="hover:bg-slate-50/50">
                       <TableCell className="font-medium text-slate-800 py-3">{def.description}</TableCell>
-                      <TableCell className="py-3"><Badge variant="outline" className={cn("text-[10px] font-bold border-none", def.severity === 'Material Weakness' ? "bg-rose-50 text-rose-700" : "bg-amber-50 text-amber-700")}>{def.severity}</Badge></TableCell>
+                      <TableCell className="py-3"><Badge variant="outline" className={cn("text-xs font-bold border-none", def.severity === 'Material Weakness' ? "bg-rose-50 text-rose-700" : "bg-amber-50 text-amber-700")}>{def.severity}</Badge></TableCell>
                       <TableCell className="italic text-slate-500 py-3">{t('assessment.monitorProgress')}</TableCell>
                     </TableRow>
                   ))}
@@ -116,12 +116,12 @@ export function ManagementAssessment({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-24 pt-16">
-            <div className="text-center space-y-24">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 sm:gap-12 lg:gap-24 pt-10 sm:pt-16">
+            <div className="text-center space-y-8 sm:space-y-24">
               <p className="font-bold text-slate-900 border-b border-slate-200 pb-2 text-sm uppercase tracking-wide">Chief Financial Officer (CFO)</p>
               <p className="font-bold text-lg text-slate-900 underline decoration-2 underline-offset-8">{settings?.cfoName || 'Belum Ditunjuk'}</p>
             </div>
-            <div className="text-center space-y-24">
+            <div className="text-center space-y-8 sm:space-y-24">
               <p className="font-bold text-slate-900 border-b border-slate-200 pb-2 text-sm uppercase tracking-wide">Chief Executive Officer (CEO)</p>
               <p className="font-bold text-lg text-slate-900 underline decoration-2 underline-offset-8">{settings?.ceoName || 'Belum Ditunjuk'}</p>
             </div>

@@ -42,8 +42,8 @@ export function BasicInfoTabContent({ form }: { form: UseFormReturn<any> }) {
   const { t } = useTranslation(['rcm', 'common']);
   return (
     <div className="space-y-4 pt-4">
-      <div className="grid grid-cols-3 gap-4">
-        <div className="col-span-1">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="col-span-1 sm:col-span-1">
           <FormField
             control={form.control}
             name="controlCode"
@@ -57,7 +57,7 @@ export function BasicInfoTabContent({ form }: { form: UseFormReturn<any> }) {
             )}
           />
         </div>
-        <div className="col-span-2">
+        <div className="col-span-1 sm:col-span-2">
           <FormField
             control={form.control}
             name="controlName"
@@ -115,7 +115,7 @@ export function IpoAssertionTabContent({ form }: { form: UseFormReturn<any> }) {
   const { t } = useTranslation(['rcm', 'common']);
   return (
     <div className="pt-4">
-      <div className="grid grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
         <div className="space-y-2">
           <h4 className="text-xs font-black uppercase text-slate-500 mb-2">{t('rcm:matrix.ipo')}</h4>
           <div className="grid grid-cols-2 gap-2">
@@ -146,7 +146,7 @@ export function NatureTabContent({ form }: { form: UseFormReturn<any> }) {
   const { t } = useTranslation(['rcm', 'common']);
   return (
     <div className="space-y-4 pt-4">
-      <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <FormField
           control={form.control}
           name="controlType"

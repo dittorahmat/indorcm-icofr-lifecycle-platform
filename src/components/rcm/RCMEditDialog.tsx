@@ -193,7 +193,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
               <ScrollArea className="flex-1 p-6">
                 {/* General Info Tab */}
                 <TabsContent value="general" className="m-0 space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                   <div className="grid grid-cols-2 gap-6">
+                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                       <div className="space-y-4">
                         <FormField
                           control={form.control}
@@ -281,7 +281,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                         />
                       </div>
                       
-                      <div className="col-span-6 space-y-4">
+                      <div className="col-span-12 sm:col-span-6 space-y-4">
                         <FormField
                           control={form.control}
                           name="mappedControlName"
@@ -305,8 +305,8 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                         />
                       </div>
 
-                      <div className="col-span-6 space-y-4">
-                         <div className="grid grid-cols-2 gap-4">
+                      <div className="col-span-12 sm:col-span-6 space-y-4">
+                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                            <FormField
                               control={form.control}
                               name="riskRating"
@@ -338,7 +338,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                             />
                          </div>
 
-                         <div className="grid grid-cols-2 gap-4 pt-2">
+                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                            <FormField
                               control={form.control}
                               name="controlType"
@@ -436,7 +436,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                           <h3 className="text-xs font-black uppercase tracking-widest text-slate-700">{t('matrix.ipo')}</h3>
                        </div>
                        <TooltipProvider>
-                          <div className="grid grid-cols-4 gap-4">
+                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                              {[
                                { name: 'ipoC', label: 'C', desc: t('bpm:ipo.tooltip.c.label'), tooltip: t('bpm:ipo.tooltip.c.desc') },
                                { name: 'ipoA', label: 'A', desc: t('bpm:ipo.tooltip.a.label'), tooltip: t('bpm:ipo.tooltip.a.desc') },
@@ -481,7 +481,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                           <h3 className="text-xs font-black uppercase tracking-widest text-slate-700">{t('matrix.assertions')}</h3>
                        </div>
                        <TooltipProvider>
-                          <div className="grid grid-cols-4 gap-4">
+                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                              {[
                                { name: 'assertionE', label: 'E/O', desc: t('bpm:assertions.tooltip.eo.label'), tooltip: t('bpm:assertions.tooltip.eo.desc') },
                                { name: 'assertionC', label: 'C', desc: t('bpm:assertions.tooltip.c.label'), tooltip: t('bpm:assertions.tooltip.c.desc') },

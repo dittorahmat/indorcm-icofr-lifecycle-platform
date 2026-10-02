@@ -193,7 +193,7 @@ export function VerificationEditDialog({
               </TabsList>
 
               <TabsContent value="tod" className="space-y-4 pt-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
                     name="pilarObjective"
@@ -261,7 +261,7 @@ export function VerificationEditDialog({
                     )}
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4 border-t pt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t pt-4">
                   <FormField
                     control={form.control}
                     name="kkReference"
@@ -345,7 +345,7 @@ export function VerificationEditDialog({
               </TabsContent>
 
               <TabsContent value="ipo" className="pt-4">
-                <div className="grid grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
                   <div className="space-y-2">
                     <h4 className="text-sm font-bold uppercase text-slate-500 mb-2">{t('rcm:matrix.ipo')}</h4>
                     <div className="grid grid-cols-2 gap-2">
@@ -371,7 +371,7 @@ export function VerificationEditDialog({
               </TabsContent>
 
               <TabsContent value="nature" className="space-y-4 pt-4">
-                 <div className="grid grid-cols-2 gap-4">
+                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
                       name="controlType"

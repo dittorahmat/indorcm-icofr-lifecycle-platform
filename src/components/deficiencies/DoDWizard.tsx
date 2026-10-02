@@ -269,7 +269,7 @@ export function DoDWizard({ isOpen, setIsOpen, onComplete, isAggregate = false, 
               <div className="text-left space-y-3 mt-4 border-t pt-4">
                 <div>
                   <label className="text-xs font-bold uppercase text-muted-foreground block mb-1.5">{t('wizard.result.assertionsLabel')}</label>
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
                     {ASSERTION_OPTIONS.map(assertion => (
                       <div key={assertion} className="flex items-center space-x-2">
                         <Checkbox 

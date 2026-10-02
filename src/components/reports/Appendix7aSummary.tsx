@@ -51,8 +51,8 @@ export const Appendix7aSummary = React.forwardRef<HTMLDivElement, Appendix7aSumm
 
         <div className="space-y-10">
           {/* Section I: Executive Summary */}
-          <div className="grid grid-cols-3 gap-6">
-             <div className="col-span-2 p-6 bg-slate-50 border-2 border-slate-900 rounded-xl flex flex-col justify-between">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+             <div className="col-span-1 sm:col-span-2 p-6 bg-slate-50 border-2 border-slate-900 rounded-xl flex flex-col justify-between">
                 <div>
                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Simpulan Akhir</p>
                    <h3 className={cn(
@@ -132,12 +132,12 @@ export const Appendix7aSummary = React.forwardRef<HTMLDivElement, Appendix7aSumm
           <div className="space-y-4">
              <h2 className="text-xs font-black uppercase tracking-widest text-slate-400 border-b pb-1">III. Prosedur Pengujian & Lokasi Arsip</h2>
              <div className="p-6 bg-slate-50 border border-slate-200 rounded-xl space-y-4">
-                <div className="grid grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
                    <div className="space-y-1">
                       <p className="text-xs font-black text-slate-400 uppercase">Metodologi Sampling</p>
                       <p className="text-xs font-medium">{record.samplingMethodology || "-"}</p>
                    </div>
-                   <div className="space-y-1 text-right">
+                    <div className="space-y-1 text-left sm:text-right">
                       <p className="text-xs font-black text-slate-400 uppercase">Lokasi Arsip Fisik</p>
                       <p className="text-xs font-bold text-indigo-700">{(record as any).archiveLocation || "-"}</p>
                    </div>
@@ -151,7 +151,8 @@ export const Appendix7aSummary = React.forwardRef<HTMLDivElement, Appendix7aSumm
           </div>
 
           {/* Footer Area */}
-          <div className="grid grid-cols-3 border-2 border-slate-900 bg-white rounded-lg overflow-hidden h-40">
+          <div className="overflow-x-auto rounded-lg border-2 border-slate-900 bg-white">
+          <div className="grid grid-cols-3 min-w-[560px] bg-white overflow-hidden min-h-[10rem]">
              <div className="border-r-2 border-slate-900 p-4 flex flex-col">
                 <span className="text-xs font-black uppercase text-slate-400">Dikerjakan Oleh (Auditee)</span>
                 <div className="flex-1 flex items-center justify-center italic text-xs text-slate-300">Digital Signature Verified</div>
@@ -172,10 +173,11 @@ export const Appendix7aSummary = React.forwardRef<HTMLDivElement, Appendix7aSumm
                 <span className="text-xs font-black uppercase text-slate-400">Otentikasi Dokumen</span>
                 <div className="flex-1 flex items-center justify-center p-4">
                    <div className="w-20 h-20 bg-slate-100 border-2 border-dashed border-slate-300 flex items-center justify-center text-center p-2">
-                      <span className="text-[7px] font-black text-slate-400">SCAN QR TO VERIFY DOCUMENT INTEGRITY</span>
+                       <span className="text-xs font-black text-slate-400 leading-tight">SCAN QR TO VERIFY DOCUMENT INTEGRITY</span>
                    </div>
                 </div>
              </div>
+          </div>
           </div>
         </div>
       </div>
