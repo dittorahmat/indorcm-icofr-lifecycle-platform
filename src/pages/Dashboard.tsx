@@ -218,8 +218,8 @@ export function Dashboard() {
                   { label: t('kpis.remediationVelocity'), value: t('kpis.remediationAvgDays', { days: remediationVelocity }), icon: TrendingUp, color: 'text-blue-600', bg: 'bg-blue-50' },
                   { label: t('kpis.line2Validation'), value: t('kpis.line2Percent', { percent: line2Percent }), icon: ShieldCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' }
                 ].map((metric, i) => (
-                 <div key={i} className="group p-4 md:p-5 bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer flex items-center gap-4">
-                    <div className={cn("h-10 w-10 rounded-lg flex items-center justify-center transition-colors group-hover:bg-slate-900 group-hover:text-white shrink-0 shadow-sm border border-slate-100", metric.bg)}>
+                 <div key={i} className="group p-4 md:p-5 bg-white border border-slate-200 rounded-lg shadow-xs hover:shadow-sm transition-all duration-200 cursor-pointer flex items-center gap-4">
+                    <div className={cn("h-10 w-10 rounded-md flex items-center justify-center transition-colors group-hover:bg-slate-900 group-hover:text-white shrink-0 shadow-xs border border-slate-100", metric.bg)}>
                         <metric.icon className="h-5 w-5" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -233,7 +233,7 @@ export function Dashboard() {
                ))}
             </motion.div>
 
-            <motion.div variants={itemVariants} className="p-3 bg-slate-50 rounded-xl border border-slate-200 border-dashed">
+            <motion.div variants={itemVariants} className="p-3 bg-slate-50 rounded-lg border border-slate-200 border-dashed">
               <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider text-center">
                 Compliance Engine v2.4.0 — BUMN Standard
               </p>
@@ -250,7 +250,7 @@ export function Dashboard() {
           {/* ANALYTICAL CHARTS & COSO MATRICES (Priority 2 on mobile, Left column on desktop) */}
           <div className="lg:col-span-8 space-y-6 order-2 lg:order-1">
             <motion.div variants={itemVariants}>
-              <React.Suspense fallback={<Skeleton className="h-[380px] w-full rounded-xl" />}>
+              <React.Suspense fallback={<Skeleton className="h-[380px] w-full rounded-lg" />}>
                 <ComplianceCharts 
                   barData={barData} 
                   deficiencyBySeverity={deficiencyBySeverity} 

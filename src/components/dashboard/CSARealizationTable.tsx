@@ -49,7 +49,7 @@ export function CSARealizationTable({ controls, isLoading }: CSARealizationTable
 
   if (isLoading) {
     return (
-      <Card className="border-slate-200 shadow-md bg-white rounded-xl">
+      <Card className="border-slate-200 shadow-xs bg-white rounded-lg">
         <CardHeader className="bg-slate-50/50 border-b py-4 px-5">
           <div className="h-4 w-48 bg-slate-200 rounded animate-pulse" />
         </CardHeader>
@@ -69,7 +69,7 @@ export function CSARealizationTable({ controls, isLoading }: CSARealizationTable
   };
 
   return (
-    <Card className="border-slate-200 shadow-md overflow-hidden bg-white rounded-xl">
+    <Card className="border-slate-200 shadow-xs overflow-hidden bg-white rounded-lg">
       <CardHeader className="bg-slate-50/50 border-b py-4 px-5">
         <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2">
           <ShieldCheck className="h-4 w-4 text-emerald-600" />

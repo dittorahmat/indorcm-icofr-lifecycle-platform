@@ -31,7 +31,7 @@ export function DashboardKPIs({ controlsCount, openDeficienciesCount, cosoPercen
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
       {/* Executive Cycle Readiness Card */}
       <motion.div variants={itemVariants} className="min-w-0 w-full sm:col-span-2 lg:col-span-1">
-        <Card className="bg-mancity-pattern text-primary-foreground border border-primary/20 shadow-sm overflow-hidden relative group rounded-xl">
+        <Card className="bg-mancity-pattern text-primary-foreground border border-primary/20 shadow-xs overflow-hidden relative group rounded-lg">
           <CardHeader className="p-3.5 sm:p-4 pb-1 sm:pb-2">
             <div className="flex items-center justify-between">
               <CardTitle className="text-xs font-bold uppercase tracking-wider text-primary-foreground/90 flex items-center gap-1.5">
@@ -60,8 +60,8 @@ export function DashboardKPIs({ controlsCount, openDeficienciesCount, cosoPercen
         </Card>
       </motion.div>
 
-      {/* KPI Metric Cards: 1 column on xs (<380px), 3 cols on sm, 3 cols on lg */}
-      <div className="grid grid-cols-1 xs:grid-cols-3 sm:contents gap-2.5 sm:gap-4 col-span-1 sm:col-span-2 lg:col-span-3">
+      {/* KPI Metric Cards: 1 column on mobile (<640px), 3 cols on sm, 3 cols on lg */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 sm:contents gap-2.5 sm:gap-4 col-span-1 sm:col-span-2 lg:col-span-3">
         {[
           { 
             title: t('kpis.controlCoverage'), 
@@ -90,15 +90,15 @@ export function DashboardKPIs({ controlsCount, openDeficienciesCount, cosoPercen
           }
         ].map((kpi, i) => (
           <motion.div key={i} variants={itemVariants} className="min-w-0 w-full">
-            <Card className="border-slate-200 bg-white shadow-sm hover:shadow-md transition-all duration-200 h-full border-b-2 hover:border-b-primary rounded-xl overflow-hidden flex flex-col justify-between p-3 sm:p-4">
-              <div className="flex items-center gap-1.5 mb-1 sm:mb-2">
-                <kpi.icon className={cn("h-3.5 w-3.5 shrink-0", kpi.color)} aria-hidden="true" />
+            <Card className="border-slate-200 bg-white shadow-xs hover:shadow-sm transition-all duration-200 h-full border-b-2 hover:border-b-primary rounded-lg overflow-hidden flex flex-col justify-between p-3.5 sm:p-4">
+              <div className="flex items-center gap-1.5 mb-1.5 sm:mb-2">
+                <kpi.icon className={cn("h-4 w-4 shrink-0", kpi.color)} aria-hidden="true" />
                 <span className="text-xs font-bold uppercase text-slate-500 tracking-wider truncate" title={kpi.title}>
                   {kpi.title}
                 </span>
               </div>
               <div className="min-w-0">
-                <div className={cn("text-xl sm:text-2xl md:text-3xl font-bold tracking-tight", kpi.valueColor || "text-slate-900")}>
+                <div className={cn("text-2xl sm:text-2xl md:text-3xl font-bold tracking-tight", kpi.valueColor || "text-slate-900")}>
                   {kpi.value}
                 </div>
                 <p className="text-xs text-slate-500 font-medium uppercase tracking-wider mt-0.5 truncate" title={kpi.subtitle}>

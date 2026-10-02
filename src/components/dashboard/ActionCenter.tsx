@@ -15,7 +15,7 @@ export function ActionCenter({ csaCompletion, openDeficienciesCount }: ActionCen
   const navigate = useNavigate();
 
   return (
-    <Card className="border-slate-200 shadow-md overflow-hidden bg-white rounded-xl">
+    <Card className="border-slate-200 shadow-xs overflow-hidden bg-white rounded-lg">
       <CardHeader className="bg-slate-50/50 border-b py-4 px-5">
         <div className="flex items-center justify-between">
           <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2">
@@ -86,7 +86,7 @@ export function ActionCenter({ csaCompletion, openDeficienciesCount }: ActionCen
           </div>
         </button>
       </CardContent>
-      <div className="p-3.5 bg-slate-50 border-t flex items-center justify-between">
+      <div className="p-3.5 bg-slate-50 border-t flex flex-wrap items-center justify-between gap-2">
         <span className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
           <TrendingUp className="h-3.5 w-3.5" aria-hidden="true" /> {t('actionCenter.status.auditTrailVerified', { defaultValue: 'Audit Trail Verified' })}
         </span>

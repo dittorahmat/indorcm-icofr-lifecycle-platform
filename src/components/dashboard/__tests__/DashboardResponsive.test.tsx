@@ -3,6 +3,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { DashboardKPIs } from '../DashboardKPIs';
 import { COSOCoverageGrid } from '../COSOCoverageGrid';
+import { LifecycleProgress } from '../LifecycleProgress';
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -57,5 +58,26 @@ describe('Dashboard Mobile Responsiveness & Anti-Slop Integrity', () => {
 
     // Confirm Principle labels exist
     expect(screen.getByText('P1')).toBeInTheDocument();
+  });
+
+  it('renders LifecycleProgress mobile stepper and active stage pill', () => {
+    const { container } = render(
+      <LifecycleProgress currentStage="evaluasi" workingYear="2026" />
+    );
+
+    // Verify mobile stepper exists with touch scroll classes
+    const mobileContainer = container.querySelector('.flex.md\\:hidden');
+    expect(mobileContainer).not.toBeNull();
+
+    const scrollablePills = container.querySelector('.overflow-x-auto');
+    expect(scrollablePills).not.toBeNull();
+    expect(scrollablePills?.className).toContain('touch-pan-x');
+
+    // Anti-slop check: no sub-12px text in LifecycleProgress
+    const html = container.innerHTML;
+    expect(html).not.toContain('text-[8px]');
+    expect(html).not.toContain('text-[9px]');
+    expect(html).not.toContain('text-[10px]');
+    expect(html).not.toContain('text-[11px]');
   });
 });

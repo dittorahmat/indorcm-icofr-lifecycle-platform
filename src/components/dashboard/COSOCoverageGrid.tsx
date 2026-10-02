@@ -23,7 +23,7 @@ export function COSOCoverageGrid({ cosoCoverage, isLoading }: COSOCoverageGridPr
   const { t } = useTranslation('dashboard');
 
   return (
-    <Card className="border-slate-200 overflow-hidden shadow-sm bg-white rounded-xl">
+    <Card className="border-slate-200 overflow-hidden shadow-xs bg-white rounded-lg">
       <CardHeader className="bg-slate-50/50 border-b py-4 sm:py-5 px-4 sm:px-6">
         <div className="flex justify-between items-center">
           <div>
@@ -36,7 +36,7 @@ export function COSOCoverageGrid({ cosoCoverage, isLoading }: COSOCoverageGridPr
       </CardHeader>
       <CardContent className="p-4 sm:p-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-5 sm:gap-6">
-          {isLoading ? Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-32 w-full rounded-xl" />) : (
+          {isLoading ? Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-32 w-full rounded-lg" />) : (
             COSO_COMPONENTS.map((comp) => (
               <div key={comp.name} className="space-y-3 sm:space-y-4">
                 <div className="flex items-center gap-2 px-1">

@@ -20,14 +20,21 @@ interface LifecycleProgressProps {
 
 export function LifecycleProgress({ currentStage = 'evaluasi', workingYear = '2026' }: LifecycleProgressProps) {
   const { t } = useTranslation('dashboard');
+  const activePillRef = React.useRef<HTMLDivElement>(null);
   
   const currentIdx = stages.findIndex(s => s.id === currentStage);
 
   const activeStage = stages[currentIdx] || stages[0];
   const progressPercent = Math.round(((currentIdx + 1) / stages.length) * 100);
 
+  React.useEffect(() => {
+    if (activePillRef.current && typeof activePillRef.current.scrollIntoView === 'function') {
+      activePillRef.current.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+  }, [currentStage]);
+
   return (
-    <div className="w-full bg-white border border-slate-200 rounded-xl p-3.5 sm:p-4 md:p-6 shadow-sm">
+    <div className="w-full bg-white border border-slate-200 rounded-lg p-3.5 sm:p-4 md:p-6 shadow-xs">
       <div className="flex items-start sm:items-center justify-between gap-2 mb-3.5 sm:mb-4 md:mb-6">
         <div className="min-w-0">
           <h3 className="text-sm font-semibold text-slate-900 truncate">{t('lifecycle.title')}</h3>
@@ -62,8 +69,8 @@ export function LifecycleProgress({ currentStage = 'evaluasi', workingYear = '20
           />
         </div>
 
-        {/* Horizontal scrollable pills */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1 no-scrollbar -mx-1 px-1 touch-pan-x">
+        {/* Horizontal scrollable pills with momentum scroll and touch padding */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1.5 pt-1 no-scrollbar -mx-1 px-1 touch-pan-x scroll-smooth overscroll-x-contain">
           {stages.map((stage, idx) => {
             const isCompleted = idx < currentIdx;
             const isCurrent = idx === currentIdx;
@@ -71,8 +78,9 @@ export function LifecycleProgress({ currentStage = 'evaluasi', workingYear = '20
             return (
               <div
                 key={stage.id}
+                ref={isCurrent ? activePillRef : undefined}
                 className={cn(
-                  "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-semibold shrink-0 transition-all select-none min-h-[36px]",
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold shrink-0 transition-all select-none min-h-[38px]",
                   isCompleted 
                     ? "bg-slate-900 text-white border-slate-900 shadow-xs" 
                     : isCurrent

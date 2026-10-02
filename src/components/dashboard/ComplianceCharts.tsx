@@ -23,7 +23,7 @@ interface ComplianceChartsProps {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white p-3 border-none shadow-2xl rounded-xl ring-1 ring-slate-200">
+      <div className="bg-white p-3 border border-slate-200 shadow-md rounded-lg">
         <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">{label}</p>
         {payload.map((item: any, i: number) => (
           <div key={i} className="flex items-center gap-2">
@@ -50,7 +50,7 @@ export function ComplianceCharts({ barData, deficiencyBySeverity, isLoading }: C
   return (
     <div className="grid gap-6 lg:grid-cols-3">
       {/* BAR CHART: CONTROLS BY PROCESS */}
-      <Card className="lg:col-span-2 border-slate-200 shadow-sm overflow-hidden bg-white rounded-xl">
+      <Card className="lg:col-span-2 border-slate-200 shadow-xs overflow-hidden bg-white rounded-lg">
         <CardHeader className="bg-slate-50 border-b py-4 sm:py-5 px-4 sm:px-6">
           <div className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4 text-slate-900" />
@@ -122,7 +122,7 @@ export function ComplianceCharts({ barData, deficiencyBySeverity, isLoading }: C
       </Card>
 
       {/* PIE CHART: DEFICIENCIES */}
-      <Card className="border-slate-200 shadow-sm overflow-hidden bg-white rounded-xl">
+      <Card className="border-slate-200 shadow-xs overflow-hidden bg-white rounded-lg">
         <CardHeader className="bg-slate-50 border-b py-4 sm:py-5 px-4 sm:px-6">
           <div className="flex items-center gap-2">
             <PieChartIcon className="h-4 w-4 text-rose-600" />
