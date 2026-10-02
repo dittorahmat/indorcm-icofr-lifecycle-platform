@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
 import { ShieldCheck, Info } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Control, ControlFrequency } from '@shared/types';
@@ -51,12 +52,12 @@ export function CSARealizationTable({ controls, isLoading }: CSARealizationTable
     return (
       <Card className="border-slate-200 shadow-xs bg-white rounded-lg">
         <CardHeader className="bg-slate-50/50 border-b py-4 px-5">
-          <div className="h-4 w-48 bg-slate-200 rounded animate-pulse" />
+          <Skeleton className="h-4 w-48 rounded" />
         </CardHeader>
         <CardContent className="p-5">
           <div className="space-y-4">
             {[1, 2, 3].map((_, i) => (
-              <div key={i} className="h-10 bg-slate-100 rounded animate-pulse" />
+              <Skeleton key={i} className="h-10 w-full rounded-lg" />
             ))}
           </div>
         </CardContent>

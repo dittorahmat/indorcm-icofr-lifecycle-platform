@@ -58,7 +58,7 @@ export function COSOCoverageGrid({ cosoCoverage, isLoading }: COSOCoverageGridPr
                         )}
                         title={`${c?.count || 0} controls mapped to Principle ${pNum}`}
                       >
-                        <span className={cn("text-xs font-bold uppercase tracking-tight", isCovered ? "text-slate-400" : "text-slate-400")}>P{pNum}</span>
+                        <span className={cn("text-xs font-bold uppercase tracking-tight", isCovered ? "text-slate-300" : "text-slate-400")}>P{pNum}</span>
                         <span className="text-sm font-bold leading-none mt-0.5">{c?.count || 0}</span>
                       </div>
                     );

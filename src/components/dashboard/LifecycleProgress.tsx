@@ -21,6 +21,7 @@ interface LifecycleProgressProps {
 export function LifecycleProgress({ currentStage = 'evaluasi', workingYear = '2026' }: LifecycleProgressProps) {
   const { t } = useTranslation('dashboard');
   const activePillRef = React.useRef<HTMLDivElement>(null);
+  const isFirstRender = React.useRef(true);
   
   const currentIdx = stages.findIndex(s => s.id === currentStage);
 
@@ -28,6 +29,10 @@ export function LifecycleProgress({ currentStage = 'evaluasi', workingYear = '20
   const progressPercent = Math.round(((currentIdx + 1) / stages.length) * 100);
 
   React.useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
     if (activePillRef.current && typeof activePillRef.current.scrollIntoView === 'function') {
       activePillRef.current.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
     }
@@ -70,7 +75,11 @@ export function LifecycleProgress({ currentStage = 'evaluasi', workingYear = '20
         </div>
 
         {/* Horizontal scrollable pills with momentum scroll and touch padding */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1.5 pt-1 no-scrollbar -mx-1 px-1 touch-pan-x scroll-smooth overscroll-x-contain">
+        <div
+          role="region"
+          aria-label={t('lifecycle.title')}
+          className="relative flex items-center gap-2 overflow-x-auto pb-1.5 pt-1 no-scrollbar -mx-1 px-1 touch-pan-x scroll-smooth overscroll-x-contain [mask-image:linear-gradient(to_right,black_calc(100%-2rem),transparent)]"
+        >
           {stages.map((stage, idx) => {
             const isCompleted = idx < currentIdx;
             const isCurrent = idx === currentIdx;

@@ -2,7 +2,7 @@ import React from 'react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, CartesianGrid } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { BarChart3, PieChart as PieChartIcon } from 'lucide-react';
+import { BarChart3, PieChart as PieChartIcon, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 // High-end Corporate Navy/Slate Palette
@@ -48,7 +48,7 @@ export function ComplianceCharts({ barData, deficiencyBySeverity, isLoading }: C
   }, [deficiencyBySeverity]);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-3">
+    <div className="grid gap-4 lg:gap-6 lg:grid-cols-3">
       {/* BAR CHART: CONTROLS BY PROCESS */}
       <Card className="lg:col-span-2 border-slate-200 shadow-xs overflow-hidden bg-white rounded-lg">
         <CardHeader className="bg-slate-50 border-b py-4 sm:py-5 px-4 sm:px-6">
@@ -74,7 +74,8 @@ export function ComplianceCharts({ barData, deficiencyBySeverity, isLoading }: C
                     tickLine={false} 
                     axisLine={false}
                     dy={10}
-                    interval={0}
+                    interval="preserveStartEnd"
+                    minTickGap={8}
                     tick={({ x, y, payload }) => {
                       const label = payload?.value || '';
                       const truncated = label.length > 10 ? `${label.slice(0, 9)}…` : label;
@@ -134,7 +135,7 @@ export function ComplianceCharts({ barData, deficiencyBySeverity, isLoading }: C
           <div className="min-h-[300px] sm:min-h-[360px] w-full flex flex-col items-center justify-between relative">
             {isLoading ? (
               <div className="flex-1 flex items-center justify-center">
-                <div className="relative h-36 w-36 sm:h-48 sm:w-48 rounded-full border-8 border-slate-100 border-t-slate-900 animate-spin" />
+                <Loader2 className="h-10 w-10 sm:h-12 sm:w-12 text-slate-900 animate-spin" aria-hidden="true" />
               </div>
             ) : (!deficiencyBySeverity || deficiencyBySeverity.length === 0) ? (
               <div className="flex-1 flex items-center justify-center text-slate-400 text-xs font-bold uppercase tracking-wider">{t('charts.noDeficiencies')}</div>
