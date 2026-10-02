@@ -3,9 +3,11 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { AIAnalyticsMockup } from '@/components/reports/AIAnalyticsMockup';
 import { BrainCircuit } from 'lucide-react';
 import { useOrganizationBranding } from '@/hooks/use-organization-branding';
+import { useTranslation } from 'react-i18next';
 
 export function AIHubPage() {
   const { companyName } = useOrganizationBranding();
+  const { t } = useTranslation('reports');
 
   return (
     <AppLayout container>
@@ -16,7 +18,7 @@ export function AIHubPage() {
           </div>
           <div>
             <h1 className="text-3xl font-black tracking-tighter text-slate-900">{companyName} — AI Analytics Center</h1>
-            <p className="text-muted-foreground">Modern digital audit capabilities for enterprise control monitoring.</p>
+            <p className="text-muted-foreground">{t('aiHub.pageSubtitle')}</p>
           </div>
         </div>
 
