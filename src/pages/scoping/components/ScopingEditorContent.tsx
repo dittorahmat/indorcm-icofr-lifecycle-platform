@@ -67,19 +67,19 @@ export function ScopingEditorContent({
         </div>
       )}
       <Tabs defaultValue="worksheet" className="flex flex-col flex-1 min-h-0 w-full">
-        <div className="flex justify-between items-center mb-4 shrink-0">
-          <TabsList className="grid w-full max-w-[550px] grid-cols-3 bg-slate-100/50 p-1 border border-slate-200 rounded-xl">
-            <TabsTrigger value="worksheet" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest">{t('approval.tabWorksheet')}</TabsTrigger>
-            <TabsTrigger value="history" className="flex items-center gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest">
-              <History className="h-3 w-3" /> {t('approval.tabHistory')}
+        <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center mb-4 shrink-0 min-w-0">
+          <TabsList className="grid w-full max-w-[550px] grid-cols-3 bg-slate-100/50 p-1 border border-slate-200 rounded-lg min-w-0">
+            <TabsTrigger value="worksheet" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest min-w-0 truncate">{t('approval.tabWorksheet')}</TabsTrigger>
+            <TabsTrigger value="history" className="flex items-center justify-center gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest min-w-0">
+              <History className="h-3 w-3 shrink-0" /> <span className="truncate">{t('approval.tabHistory')}</span>
               {simState.history && simState.history.length > 0 && (
-                <Badge variant="secondary" className="ml-1 h-4 px-1 text-[10px] font-black">
+                <Badge variant="secondary" className="ml-1 h-4 px-1 text-xs font-black shrink-0">
                   {simState.history.length}
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="integrity" className="flex items-center gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest">
-              <ShieldCheck className="h-3 w-3" /> {t('approval.tabIntegrity')}
+            <TabsTrigger value="integrity" className="flex items-center justify-center gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest min-w-0">
+              <ShieldCheck className="h-3 w-3 shrink-0" /> <span className="truncate">{t('approval.tabIntegrity')}</span>
             </TabsTrigger>
           </TabsList>
 

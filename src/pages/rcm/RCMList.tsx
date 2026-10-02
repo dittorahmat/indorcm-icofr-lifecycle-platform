@@ -115,8 +115,8 @@ export function RCMList() {
         </motion.div>
 
         <Tabs defaultValue="tlc" className="w-full">
-          <motion.div variants={itemVariants} className="bg-slate-100/50 p-1 border border-slate-200 rounded-lg max-w-full overflow-x-auto mb-8">
-            <TabsList className="bg-transparent h-auto p-0 flex gap-1">
+          <motion.div variants={itemVariants} className="bg-slate-100/50 p-1 border border-slate-200 rounded-lg max-w-full overflow-x-auto mb-8 no-scrollbar">
+            <TabsList className="bg-transparent h-auto p-0 flex gap-1 w-max min-w-full">
               {[
                 { value: 'tlc', label: `TLC (${t('common:icofr.tlc')})`, count: tlcControls.length },
                 { value: 'elc', label: `ELC (${t('common:icofr.elc')})`, count: elcControls.length, hidden: !isAdminOrLine2 },

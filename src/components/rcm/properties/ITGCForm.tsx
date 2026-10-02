@@ -79,7 +79,7 @@ export function ITGCForm({ data, onChange, disabled = false }: ITGCFormProps) {
       </div>
 
       {isAutomatedRelated && (
-        <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-indigo-50/50 border border-indigo-100/50 animate-in fade-in slide-in-from-top-2 duration-300">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-lg bg-indigo-50/50 border border-indigo-100/50 animate-in fade-in slide-in-from-top-2 duration-300">
           <div className="space-y-2">
             <Label className="text-xs font-black uppercase text-indigo-900 tracking-wider">Jenis Pengendalian Otomatis</Label>
             <Select 

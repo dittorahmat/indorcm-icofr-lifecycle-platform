@@ -120,7 +120,7 @@ export function ControlAccordionItem({
             placeholder={t('common:placeholders.description')}
           />
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1">
             <Label className="text-xs font-medium text-slate-600">{t('rcm:matrix.properties.key_control_q')}</Label>
             <Select disabled={isLocked} value={ctrl.data.isKeyControl ? 'Yes' : 'No'} onValueChange={(v) => onUpdateSpecificControl(ctrl.index, 'isKeyControl', v === 'Yes')}>
@@ -132,7 +132,7 @@ export function ControlAccordionItem({
             </Select>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1">
             <Label className="text-xs font-medium text-slate-600">{t('rcm:matrix.type')}</Label>
             <Select disabled={isLocked} value={normalizeControlType(ctrl.data.controlType)} onValueChange={(v) => onUpdateSpecificControl(ctrl.index, 'controlType', v)}>

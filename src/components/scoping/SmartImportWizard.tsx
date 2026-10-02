@@ -573,9 +573,9 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
                                                                 </Popover>
                                                             </div>
 
-                                                            <div className="grid grid-cols-2 gap-4">
+                                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                                 <div className="space-y-2">
-                                                                    <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Overall Materiality %</Label>
+                                                                    <Label className="text-xs font-black uppercase tracking-widest text-slate-500">Overall Materiality %</Label>
                                                                     <div className="relative">
                                                                         <Input 
                                                                             type="number" step="0.1" value={omPercentage} 

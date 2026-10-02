@@ -348,7 +348,7 @@ export function VerificationEditDialog({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
                   <div className="space-y-2">
                     <h4 className="text-sm font-bold uppercase text-slate-500 mb-2">{t('rcm:matrix.ipo')}</h4>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-2">
                       <CheckboxField name="ipoC" label="Completeness" />
                       <CheckboxField name="ipoA" label="Accuracy" />
                       <CheckboxField name="ipoV" label="Validity" />
@@ -357,7 +357,7 @@ export function VerificationEditDialog({
                   </div>
                   <div className="space-y-2">
                     <h4 className="text-sm font-bold uppercase text-slate-500 mb-2">{t('rcm:matrix.assertions')}</h4>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-2">
                       <CheckboxField name="assertionE" label="Existence / Occurrence" />
                       <CheckboxField name="assertionC" label="Completeness" />
                       <CheckboxField name="assertionA" label="Accuracy" />

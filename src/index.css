@@ -206,6 +206,49 @@
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
+
+  /* Mobile responsiveness guards (systemic, 320-640px) */
+  /* Popovers / dropdowns never exceed the viewport */
+  [data-radix-popper-content-wrapper],
+  [role="dialog"] + [data-radix-popper-content-wrapper] {
+    max-width: calc(100vw - 1.5rem);
+  }
+
+  /* Long tab rails scroll horizontally instead of squeezing */
+  [role="tablist"] {
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  [role="tablist"]::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Wide report tables keep a touch-scroll cue on mobile */
+  .table-scroll-hint {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+  }
+}
+
+@layer base {
+  @media (max-width: 639px) {
+    /* Enforce institutional minimum 12px on mobile for audit legibility.
+       Covers arbitrary-value labels (text-[8/9/10/11px]) without touching desktop density. */
+    .text-\[8px\],
+    .text-\[9px\],
+    .text-\[10px\],
+    .text-\[11px\] {
+      font-size: 0.75rem;
+      line-height: 1rem;
+    }
+
+    /* Floating popovers anchored near the edge stay inside the viewport */
+    [data-side] {
+      max-width: calc(100vw - 1.5rem);
+    }
+  }
 }
 
 @media print {

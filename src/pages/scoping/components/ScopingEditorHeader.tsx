@@ -39,8 +39,8 @@ export function ScopingEditorHeader({
 
   return (
     <div className="space-y-3">
-      <div className="flex justify-between items-start text-slate-900 dark:text-white">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-start text-slate-900 dark:text-white">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap min-w-0">
           <SidebarTrigger className="h-8 w-8 text-slate-700 bg-white border border-slate-200 shadow-sm" />
           {onToggleParams && (
             <Button
@@ -48,7 +48,7 @@ export function ScopingEditorHeader({
               size="sm"
               onClick={onToggleParams}
               className={cn(
-                "h-8 gap-1.5 text-slate-700 bg-white border border-slate-200 shadow-sm transition-all px-2.5 text-[10px] font-black uppercase tracking-widest",
+                "h-8 gap-1.5 text-slate-700 bg-white border border-slate-200 shadow-sm transition-all px-2.5 text-xs font-black uppercase tracking-widest",
                 isParamsOpen && "bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100 hover:text-indigo-800"
               )}
             >
@@ -69,7 +69,7 @@ export function ScopingEditorHeader({
               <h1 className="text-lg font-display font-bold tracking-tight leading-none">{simState.name}</h1>
               <StatusBadge status={(simState.workflowStatus || simState.status) as SimulationStatus} />
             </div>
-            <div className="text-xs font-medium text-slate-500 flex items-center gap-1.5 mt-0.5">
+            <div className="text-xs font-medium text-slate-500 flex items-center gap-1.5 mt-0.5 flex-wrap min-w-0">
               <Badge variant="outline" className="bg-indigo-50/50 border-indigo-100 text-indigo-700 font-semibold px-2 py-0 text-xs rounded-md">
                 {simState.basis}
               </Badge>
@@ -102,7 +102,7 @@ export function ScopingEditorHeader({
             </div>
           )}
           {isLocked && (
-            <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-100 rounded-lg text-emerald-700 text-[10px] font-bold uppercase tracking-wider shadow-sm">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-100 rounded-lg text-emerald-700 text-xs font-bold uppercase tracking-wider shadow-sm">
               <ShieldCheck className="h-3.5 w-3.5" /> {t('editor.lockedMessage')}
             </div>
           )}
@@ -111,40 +111,40 @@ export function ScopingEditorHeader({
 
       {/* HERO STATS BAR */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <div className="relative group overflow-hidden bg-mancity-pattern rounded-xl p-2.5 text-primary-foreground shadow-md shadow-blue-100/50">
+        <div className="relative group overflow-hidden bg-mancity-pattern rounded-lg p-2.5 text-primary-foreground shadow-md shadow-blue-100/50">
            <div className="absolute top-0 right-0 w-16 h-16 bg-white/10 rounded-full -mr-8 -mt-8 group-hover:scale-110 transition-transform" />
-           <p className="text-[9px] font-bold uppercase tracking-widest text-primary-foreground/70 mb-0.5 flex items-center gap-1">
-             <Target className="h-2.5 w-2.5 text-primary-foreground/60" /> {t('params.omValue')} (OM)
-           </p>
-           <div className="flex items-baseline gap-1.5">
-              <span className="text-lg font-display font-bold tracking-tight">Rp {omValue.toLocaleString('id-ID')}</span>
-              <Badge variant="outline" className="bg-primary-foreground/10 border-primary-foreground/20 text-primary-foreground text-[9px] font-mono py-0 px-1">
+            <p className="text-xs font-bold uppercase tracking-widest text-primary-foreground/70 mb-0.5 flex items-center gap-1">
+              <Target className="h-2.5 w-2.5 text-primary-foreground/60" /> {t('params.omValue')} (OM)
+            </p>
+            <div className="flex items-baseline gap-1.5 flex-wrap">
+               <span className="text-lg font-display font-bold tracking-tight break-all">Rp {omValue.toLocaleString('id-ID')}</span>
+               <Badge variant="outline" className="bg-primary-foreground/10 border-primary-foreground/20 text-primary-foreground text-xs font-mono py-0 px-1">
                 {simState.omPercentage}%
               </Badge>
            </div>
         </div>
 
-        <div className="relative group overflow-hidden bg-white border border-slate-200 rounded-xl p-2.5 shadow-sm hover:shadow-md transition-all">
+        <div className="relative group overflow-hidden bg-white border border-slate-200 rounded-lg p-2.5 shadow-sm hover:shadow-md transition-all">
            <div className="absolute top-0 right-0 w-16 h-16 bg-blue-50/50 rounded-full -mr-8 -mt-8 group-hover:scale-110 transition-transform" />
-           <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-0.5 flex items-center gap-1">
-             <TrendingUp className="h-2.5 w-2.5 text-blue-500" /> {t('params.pmValue')} (PM)
-           </p>
-           <div className="flex items-baseline gap-1.5">
-              <span className="text-lg font-display font-bold tracking-tight text-slate-900">Rp {pmValue.toLocaleString('id-ID')}</span>
-              <Badge variant="outline" className="bg-blue-50 border-blue-100 text-blue-700 text-[9px] font-mono py-0 px-1">
+            <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-0.5 flex items-center gap-1">
+              <TrendingUp className="h-2.5 w-2.5 text-blue-500" /> {t('params.pmValue')} (PM)
+            </p>
+            <div className="flex items-baseline gap-1.5 flex-wrap">
+               <span className="text-lg font-display font-bold tracking-tight text-slate-900 break-all">Rp {pmValue.toLocaleString('id-ID')}</span>
+               <Badge variant="outline" className="bg-blue-50 border-blue-100 text-blue-700 text-xs font-mono py-0 px-1">
                 -{simState.haircutPercentage}% HC
               </Badge>
            </div>
         </div>
 
-        <div className="relative group overflow-hidden bg-white border border-slate-200 rounded-xl p-2.5 shadow-sm hover:shadow-md transition-all">
+        <div className="relative group overflow-hidden bg-white border border-slate-200 rounded-lg p-2.5 shadow-sm hover:shadow-md transition-all">
            <div className="absolute top-0 right-0 w-16 h-16 bg-rose-50/50 rounded-full -mr-8 -mt-8 group-hover:scale-110 transition-transform" />
-           <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-0.5 flex items-center gap-1">
-             <ShieldAlert className="h-2.5 w-2.5 text-rose-500" /> {t('params.locations')}
-           </p>
-           <div className="flex items-baseline gap-1.5">
-              <span className="text-lg font-display font-bold tracking-tight text-slate-900">{simState.locationCount || 1} {t('editor.unitSuffix')}</span>
-              <span className="text-[8px] font-bold text-rose-600 uppercase tracking-tighter">{t('editor.multiplierApplied')}</span>
+            <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-0.5 flex items-center gap-1">
+              <ShieldAlert className="h-2.5 w-2.5 text-rose-500" /> {t('params.locations')}
+            </p>
+            <div className="flex items-baseline gap-1.5 flex-wrap">
+               <span className="text-lg font-display font-bold tracking-tight text-slate-900">{simState.locationCount || 1} {t('editor.unitSuffix')}</span>
+               <span className="text-xs font-bold text-rose-600 uppercase tracking-tighter">{t('editor.multiplierApplied')}</span>
            </div>
         </div>
       </div>
@@ -154,7 +154,7 @@ export function ScopingEditorHeader({
 
 function StatusBadge({ status }: { status: SimulationStatus }) {
   const { t } = useTranslation('scoping');
-  const base = "font-bold uppercase tracking-wider text-[9px] px-2 py-0.5 border-none shadow-sm";
+  const base = "font-bold uppercase tracking-wider text-xs px-2 py-0.5 border-none shadow-sm";
   
   switch (status) {
     case 'Approved': 

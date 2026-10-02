@@ -197,7 +197,7 @@ export function ScopingPage() {
         )}
 
         <Tabs defaultValue="simulations" className="w-full">
-          <TabsList className="grid w-full max-w-[440px] grid-cols-2 mb-8 bg-slate-100/50 p-1 border border-slate-200 rounded-xl shadow-inner">
+          <TabsList className="grid w-full max-w-[440px] grid-cols-2 mb-8 bg-slate-100/50 p-1 border border-slate-200 rounded-lg shadow-inner min-w-0">
             <TabsTrigger value="simulations" className="gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest py-2">
               <LayoutGrid className="h-4 w-4" /> {t('scoping:simulation.title')}
             </TabsTrigger>
@@ -253,7 +253,7 @@ export function ScopingPage() {
         </Tabs>
 
         <Dialog open={isCreating} onOpenChange={setIsCreating}>
-          <DialogContent className="sm:max-w-[425px] border-none shadow-2xl rounded-2xl overflow-hidden p-0 ring-1 ring-primary/20">
+          <DialogContent className="sm:max-w-[425px] border-none shadow-2xl rounded-lg overflow-hidden p-0 ring-1 ring-primary/20">
             <div className="bg-mancity-pattern p-6 text-primary-foreground">
               <DialogHeader>
                 <DialogTitle className="font-display font-extrabold text-2xl tracking-tight uppercase">{t('scoping:simulation.createNew')}</DialogTitle>
@@ -357,9 +357,10 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
           />
         </div>
 
-        <div className="flex flex-row flex-1 min-h-0 min-w-0 gap-4 overflow-hidden w-full">
+        <div className="flex flex-col md:flex-row flex-1 min-h-0 min-w-0 gap-4 overflow-y-auto md:overflow-hidden w-full">
           {isParamsOpen ? (
-            <div className="w-[280px] shrink-0 min-h-0">
+            <div className="w-full md:w-[280px] shrink-0 min-h-0">
+              <div className="max-h-[42vh] overflow-y-auto md:max-h-none md:overflow-visible rounded-xl">
               <MaterialityParamsCard 
                 simState={simState}
                 setSimState={setSimState}
@@ -385,17 +386,17 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
                   });
                 }}
               />
+              </div>
             </div>
           ) : (
             <div 
-              className="w-8 shrink-0 flex flex-col items-center py-6 border border-slate-200 bg-white hover:bg-slate-50 hover:border-indigo-200 rounded-xl cursor-pointer transition-all shadow-sm hover:shadow-md group min-h-0 justify-start gap-4 select-none"
+              className="w-full md:w-8 shrink-0 flex flex-row md:flex-col items-center justify-center md:justify-start py-3 md:py-6 px-4 md:px-0 border border-slate-200 bg-white hover:bg-slate-50 hover:border-indigo-200 rounded-xl cursor-pointer transition-all shadow-sm hover:shadow-md group min-h-0 gap-2 md:gap-4 select-none"
               onClick={() => setIsParamsOpen(true)}
               title={t('params.show', 'Show Parameters')}
             >
               <Settings2 className="h-4 w-4 text-slate-400 group-hover:text-indigo-600 transition-colors duration-200" />
               <span 
-                className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-indigo-600 transition-colors duration-200" 
-                style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
+                className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-indigo-600 transition-colors duration-200 md:[writing-mode:vertical-rl]" 
               >
                 {t('params.title', 'Parameters')}
               </span>

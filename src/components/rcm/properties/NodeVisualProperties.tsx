@@ -27,7 +27,7 @@ export function NodeVisualProperties({
       <Label className="text-xs font-semibold uppercase text-slate-600 tracking-wide mb-3 block">
         {t('rcm:matrix.properties.visual_diagram_info')}
       </Label>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label className="text-xs font-medium text-slate-700 uppercase">{t('rcm:matrix.properties.label')}</Label>
           <Input 
@@ -49,7 +49,7 @@ export function NodeVisualProperties({
           </div>
         )}
       </div>
-      <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-slate-100">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 pt-4 border-t border-slate-100">
         <div className="space-y-2">
           <Label className="text-xs font-medium text-slate-700 uppercase">Node Scale Override</Label>
           <Select 
@@ -91,7 +91,7 @@ export function NodeVisualProperties({
             )}
             {t('bpm:editor.lockPosition')}
           </Label>
-          <span className="text-[10px] text-slate-400">
+          <span className="text-xs text-slate-400">
             {selectedNode.data.isLocked 
               ? t('bpm:editor.positionLocked') 
               : t('bpm:editor.lockPositionDesc')}
