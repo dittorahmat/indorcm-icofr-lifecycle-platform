@@ -4,7 +4,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Trash2, CheckCircle2, XCircle } from 'lucide-react';
 import { TestFormValues } from './test-schema';
 import { cn } from '@/lib/utils';
@@ -51,19 +50,131 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h3 className="text-sm font-bold uppercase tracking-tight flex items-center gap-2">
+      <div className="flex flex-wrap justify-between items-center gap-2">
+        <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center gap-2 text-slate-800">
           {t('sampling.title')} 
-          <span className="text-xs font-normal lowercase text-muted-foreground">(Lampiran 7)</span>
+          <span className="text-xs font-semibold text-slate-500">(Lampiran 7)</span>
         </h3>
         {!isReadOnly && (
-          <Button type="button" variant="outline" size="sm" onClick={addSample} className="h-8 gap-2">
-            <Plus className="h-4 w-4" /> {t('sampling.addSample')}
+          <Button 
+            type="button" 
+            variant="outline" 
+            size="sm" 
+            onClick={addSample} 
+            className="h-9 min-h-[36px] text-xs font-semibold gap-1.5 border-slate-200"
+          >
+            <Plus className="h-4 w-4 shrink-0" /> {t('sampling.addSample')}
           </Button>
         )}
       </div>
 
-      <div className="border rounded-md overflow-hidden">
+      {/* MOBILE VIEW: Stacked Touch Cards (< md) */}
+      <div className="block md:hidden space-y-3">
+        {fields.length === 0 ? (
+          <div className="p-6 bg-slate-50 border border-dashed border-slate-200 rounded-lg text-center text-slate-500 text-xs font-medium">
+            {t('sampling.empty')}
+          </div>
+        ) : (
+          fields.map((field, index) => (
+            <div 
+              key={field.id}
+              className={cn(
+                "p-3.5 rounded-lg border bg-white shadow-xs space-y-3",
+                field.status === 'Fail' ? "border-red-200 bg-red-50/20" : "border-slate-200"
+              )}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="h-6 w-6 rounded-md bg-slate-100 text-slate-700 font-mono text-xs font-bold flex items-center justify-center border border-slate-200">
+                    {index + 1}
+                  </span>
+                  <div className={cn(
+                    "flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold uppercase",
+                    field.status === 'Pass' ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                  )}>
+                    {field.status === 'Pass' ? <CheckCircle2 className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5" />}
+                    {field.status}
+                  </div>
+                </div>
+
+                {!isReadOnly && (
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => remove(index)}
+                    className="h-8 w-8 min-h-[32px] min-w-[32px] p-0 text-slate-400 hover:text-destructive hover:bg-red-50"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1">
+                  {t('sampling.ref')}
+                </label>
+                <Input 
+                  value={field.sampleRef} 
+                  onChange={(e) => update(index, { ...field, sampleRef: e.target.value })}
+                  disabled={isReadOnly}
+                  className="h-9 text-xs font-medium bg-slate-50/50"
+                  placeholder="e.g. VOU-001"
+                />
+              </div>
+
+              {/* Attributes 4-Pillar Grid */}
+              <div className="pt-2 border-t border-slate-100">
+                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">
+                  Atribut Kepatuhan (Lampiran 7)
+                </span>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { key: 'attrA', label: 'Attr A: Otomatis' },
+                    { key: 'attrB', label: 'Attr B: Lengkap' },
+                    { key: 'attrC', label: 'Attr C: Bukti' },
+                    { key: 'attrD', label: 'Attr D: Wewenang' },
+                  ].map((attr) => (
+                    <label 
+                      key={attr.key}
+                      className={cn(
+                        "flex items-center gap-2 p-2 rounded-md border text-xs font-semibold cursor-pointer select-none transition-colors",
+                        (field as any)[attr.key] 
+                          ? "bg-slate-50 border-slate-300 text-slate-800" 
+                          : "bg-red-50/40 border-red-200 text-red-700"
+                      )}
+                    >
+                      <Checkbox 
+                        checked={(field as any)[attr.key]} 
+                        onCheckedChange={() => toggleAttribute(index, attr.key as any)}
+                        disabled={isReadOnly}
+                        className="h-4 w-4"
+                      />
+                      <span className="truncate">{attr.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1">
+                  {t('sampling.comments')}
+                </label>
+                <Input 
+                  value={field.comments || ''} 
+                  onChange={(e) => update(index, { ...field, comments: e.target.value })}
+                  disabled={isReadOnly}
+                  className="h-9 text-xs"
+                  placeholder={t('sampling.commentPlaceholder')}
+                />
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* DESKTOP VIEW: Table (>= md) */}
+      <div className="hidden md:block border rounded-md overflow-hidden bg-white">
         <Table>
           <TableHeader className="bg-muted/50">
             <TableRow>
@@ -81,7 +192,7 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
           <TableBody>
             {fields.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={isReadOnly ? 8 : 9} className="h-24 text-center text-muted-foreground italic text-xs">
+                <TableCell colSpan={isReadOnly ? 8 : 9} className="h-24 text-center text-muted-foreground text-xs font-normal">
                   {t('sampling.empty')}
                 </TableCell>
               </TableRow>
@@ -167,7 +278,7 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
       </div>
       
       {fields.length > 0 && (
-        <div className="flex items-center gap-4 text-xs text-muted-foreground bg-muted/20 p-2 rounded border border-dashed">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-muted-foreground bg-muted/20 p-2.5 rounded-md border border-dashed">
           <p className="font-bold uppercase tracking-tight text-blue-700">Lampiran 7 Legend:</p>
           <p><strong>Attr A:</strong> Otomatisitas</p>
           <p><strong>Attr B:</strong> Populasi Lengkap</p>

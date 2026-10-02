@@ -23,22 +23,22 @@ export function TODDesignContextFields({ form }: { form: UseFormReturn<any> }) {
   const { t } = useTranslation(['rcm', 'csa_hub', 'common', 'risklibrary']);
 
   return (
-    <div className="p-8 space-y-8">
-      <div className="flex items-center gap-2 text-primary font-black text-xs uppercase tracking-widest mb-6">
-        <Target className="h-4 w-4" />
-        {t('csa_hub:tod.designContext')}
+    <div className="p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8">
+      <div className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-wider mb-4 sm:mb-6">
+        <Target className="h-4 w-4 shrink-0" />
+        <span>{t('csa_hub:tod.designContext')}</span>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <FormField
           control={form.control}
           name="riskRating"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.risk_rating')}</FormLabel>
+            <FormItem className="space-y-1.5">
+              <FormLabel className="text-xs font-semibold uppercase text-slate-500 tracking-wider">{t('matrix.risk_rating')}</FormLabel>
               <Select onValueChange={field.onChange} value={field.value || undefined}>
-                <FormControl><SelectTrigger className="h-9 text-xs border-slate-200"><SelectValue /></SelectTrigger></FormControl>
-                <SelectContent>
+                <FormControl><SelectTrigger className="h-10 text-xs border-slate-200 rounded-lg"><SelectValue /></SelectTrigger></FormControl>
+                <SelectContent className="rounded-lg">
                   <SelectItem value="High" className="text-rose-600 font-bold">{t('risklibrary:form.high')}</SelectItem>
                   <SelectItem value="Medium" className="text-amber-600 font-bold">{t('risklibrary:form.medium')}</SelectItem>
                   <SelectItem value="Low" className="text-emerald-600 font-bold">{t('risklibrary:form.low')}</SelectItem>
@@ -51,8 +51,8 @@ export function TODDesignContextFields({ form }: { form: UseFormReturn<any> }) {
           control={form.control}
           name="isFraudRelated"
           render={({ field }) => (
-            <FormItem className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-3 h-9 mt-auto">
-              <FormLabel className="text-xs font-black uppercase text-slate-400 mb-0">{t('rcm:matrix.properties.fraud_related_q')}</FormLabel>
+            <FormItem className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3 h-10 mt-auto shadow-xs">
+              <FormLabel className="text-xs font-semibold uppercase text-slate-500 mb-0">{t('rcm:matrix.properties.fraud_related_q')}</FormLabel>
               <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
             </FormItem>
           )}
@@ -63,9 +63,9 @@ export function TODDesignContextFields({ form }: { form: UseFormReturn<any> }) {
         control={form.control}
         name="riskDescription"
         render={({ field }) => (
-          <FormItem>
-            <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.risk_description')}</FormLabel>
-            <FormControl><Textarea {...field} rows={3} className="text-xs border-slate-200" /></FormControl>
+          <FormItem className="space-y-1.5">
+            <FormLabel className="text-xs font-semibold uppercase text-slate-500 tracking-wider">{t('matrix.risk_description')}</FormLabel>
+            <FormControl><Textarea {...field} rows={3} className="text-xs border-slate-200 rounded-lg" /></FormControl>
           </FormItem>
         )}
       />
@@ -75,9 +75,9 @@ export function TODDesignContextFields({ form }: { form: UseFormReturn<any> }) {
           control={form.control}
           name="mappedControlName"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.control_name')}</FormLabel>
-              <FormControl><Input {...field} className="text-xs font-bold border-slate-200" /></FormControl>
+            <FormItem className="space-y-1.5">
+              <FormLabel className="text-xs font-semibold uppercase text-slate-500 tracking-wider">{t('matrix.control_name')}</FormLabel>
+              <FormControl><Input {...field} className="text-xs font-bold border-slate-200 rounded-lg h-10" /></FormControl>
             </FormItem>
           )}
         />
@@ -85,22 +85,22 @@ export function TODDesignContextFields({ form }: { form: UseFormReturn<any> }) {
           control={form.control}
           name="mappedControlDescription"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.control_description')}</FormLabel>
-              <FormControl><Textarea {...field} rows={4} className="text-xs border-slate-200 italic" /></FormControl>
+            <FormItem className="space-y-1.5">
+              <FormLabel className="text-xs font-semibold uppercase text-slate-500 tracking-wider">{t('matrix.control_description')}</FormLabel>
+              <FormControl><Textarea {...field} rows={3} className="text-xs border-slate-200 rounded-lg" /></FormControl>
             </FormItem>
           )}
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <FormField
           control={form.control}
           name="frequency"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.frequency')}</FormLabel>
-              <FormControl><Input {...field} className="text-xs border-slate-200" /></FormControl>
+            <FormItem className="space-y-1.5">
+              <FormLabel className="text-xs font-semibold uppercase text-slate-500 tracking-wider">{t('matrix.frequency')}</FormLabel>
+              <FormControl><Input {...field} className="text-xs border-slate-200 rounded-lg h-10" /></FormControl>
             </FormItem>
           )}
         />
@@ -108,24 +108,24 @@ export function TODDesignContextFields({ form }: { form: UseFormReturn<any> }) {
           control={form.control}
           name="controlNature"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.nature')}</FormLabel>
-              <FormControl><Input {...field} className="text-xs border-slate-200" /></FormControl>
+            <FormItem className="space-y-1.5">
+              <FormLabel className="text-xs font-semibold uppercase text-slate-500 tracking-wider">{t('matrix.nature')}</FormLabel>
+              <FormControl><Input {...field} className="text-xs border-slate-200 rounded-lg h-10" /></FormControl>
             </FormItem>
           )}
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <FormField
           control={form.control}
           name="controlType"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.type')}</FormLabel>
+            <FormItem className="space-y-1.5">
+              <FormLabel className="text-xs font-semibold uppercase text-slate-500 tracking-wider">{t('matrix.type')}</FormLabel>
               <Select onValueChange={field.onChange} value={field.value || undefined}>
-                <FormControl><SelectTrigger className="h-9 text-xs border-slate-200"><SelectValue placeholder="Pilih Tipe" /></SelectTrigger></FormControl>
-                <SelectContent>
+                <FormControl><SelectTrigger className="h-10 text-xs border-slate-200 rounded-lg"><SelectValue placeholder="Pilih Tipe" /></SelectTrigger></FormControl>
+                <SelectContent className="rounded-lg">
                   <SelectItem value="Preventif">Preventif</SelectItem>
                   <SelectItem value="Detektif">Detektif</SelectItem>
                 </SelectContent>
@@ -137,22 +137,22 @@ export function TODDesignContextFields({ form }: { form: UseFormReturn<any> }) {
           control={form.control}
           name="isKeyControl"
           render={({ field }) => (
-            <FormItem className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-3 h-9 mt-auto">
-              <FormLabel className="text-xs font-black uppercase text-slate-400 mb-0">{t('matrix.is_key_control')}</FormLabel>
+            <FormItem className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3 h-10 mt-auto shadow-xs">
+              <FormLabel className="text-xs font-semibold uppercase text-slate-500 mb-0">{t('matrix.is_key_control')}</FormLabel>
               <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
             </FormItem>
           )}
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-200">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-200">
         <FormField
           control={form.control}
           name="automatedSubNature"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.automated_type')}</FormLabel>
-              <FormControl><Input {...field} className="text-xs border-slate-200" placeholder="Contoh: Automated Calculation" /></FormControl>
+            <FormItem className="space-y-1.5">
+              <FormLabel className="text-xs font-semibold uppercase text-slate-500 tracking-wider">{t('matrix.automated_type')}</FormLabel>
+              <FormControl><Input {...field} className="text-xs border-slate-200 rounded-lg h-10" placeholder="Contoh: Automated Calculation" /></FormControl>
             </FormItem>
           )}
         />
@@ -160,22 +160,22 @@ export function TODDesignContextFields({ form }: { form: UseFormReturn<any> }) {
           control={form.control}
           name="supportingApp"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.supporting_app')}</FormLabel>
-              <FormControl><Input {...field} className="text-xs border-slate-200" /></FormControl>
+            <FormItem className="space-y-1.5">
+              <FormLabel className="text-xs font-semibold uppercase text-slate-500 tracking-wider">{t('matrix.supporting_app')}</FormLabel>
+              <FormControl><Input {...field} className="text-xs border-slate-200 rounded-lg h-10" /></FormControl>
             </FormItem>
           )}
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <FormField
           control={form.control}
           name="executingFunction"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.executing_function')}</FormLabel>
-              <FormControl><Input {...field} className="text-xs border-slate-200" /></FormControl>
+            <FormItem className="space-y-1.5">
+              <FormLabel className="text-xs font-semibold uppercase text-slate-500 tracking-wider">{t('matrix.executing_function')}</FormLabel>
+              <FormControl><Input {...field} className="text-xs border-slate-200 rounded-lg h-10" /></FormControl>
             </FormItem>
           )}
         />
@@ -183,22 +183,22 @@ export function TODDesignContextFields({ form }: { form: UseFormReturn<any> }) {
           control={form.control}
           name="executorRole"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.executor_role')}</FormLabel>
-              <FormControl><Input {...field} className="text-xs border-slate-200" /></FormControl>
+            <FormItem className="space-y-1.5">
+              <FormLabel className="text-xs font-semibold uppercase text-slate-500 tracking-wider">{t('matrix.executor_role')}</FormLabel>
+              <FormControl><Input {...field} className="text-xs border-slate-200 rounded-lg h-10" /></FormControl>
             </FormItem>
           )}
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <FormField
           control={form.control}
           name="affectedFsliItem"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.affected_fsli_item')}</FormLabel>
-              <FormControl><Input {...field} className="text-xs border-slate-200" /></FormControl>
+            <FormItem className="space-y-1.5">
+              <FormLabel className="text-xs font-semibold uppercase text-slate-500 tracking-wider">{t('matrix.affected_fsli_item')}</FormLabel>
+              <FormControl><Input {...field} className="text-xs border-slate-200 rounded-lg h-10" /></FormControl>
             </FormItem>
           )}
         />
@@ -206,9 +206,9 @@ export function TODDesignContextFields({ form }: { form: UseFormReturn<any> }) {
           control={form.control}
           name="effectivePeriod"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.effective_period')}</FormLabel>
-              <FormControl><Input {...field} className="text-xs border-slate-200" /></FormControl>
+            <FormItem className="space-y-1.5">
+              <FormLabel className="text-xs font-semibold uppercase text-slate-500 tracking-wider">{t('matrix.effective_period')}</FormLabel>
+              <FormControl><Input {...field} className="text-xs border-slate-200 rounded-lg h-10" /></FormControl>
             </FormItem>
           )}
         />
@@ -218,25 +218,25 @@ export function TODDesignContextFields({ form }: { form: UseFormReturn<any> }) {
         control={form.control}
         name="supportingDocs"
         render={({ field }) => (
-          <FormItem>
-            <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.supporting_docs')}</FormLabel>
-            <FormControl><Textarea {...field} rows={2} className="text-xs border-slate-200" /></FormControl>
+          <FormItem className="space-y-1.5">
+            <FormLabel className="text-xs font-semibold uppercase text-slate-500 tracking-wider">{t('matrix.supporting_docs')}</FormLabel>
+            <FormControl><Textarea {...field} rows={2} className="text-xs border-slate-200 rounded-lg" /></FormControl>
           </FormItem>
         )}
       />
 
-      <div className="space-y-6 pt-4 border-t border-slate-200">
+      <div className="space-y-4 pt-4 border-t border-slate-200">
         <div>
-          <h4 className="text-xs font-black uppercase text-slate-400 mb-3 tracking-widest">{t('csa_hub:tod.complianceMarkers')}</h4>
-          <div className="grid grid-cols-4 gap-2">
+          <h4 className="text-xs font-bold uppercase text-slate-500 mb-2.5 tracking-wider">{t('csa_hub:tod.complianceMarkers')}</h4>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {['ipoC', 'ipoA', 'ipoV', 'ipoRa'].map(f => (
               <FormField
                 key={f}
                 control={form.control}
                 name={f as any}
                 render={({ field }) => (
-                  <FormItem className="flex flex-col items-center gap-1 space-y-0 p-2 rounded-lg border border-slate-200 bg-white">
-                    <FormLabel className="text-xs font-black">{f.replace('ipo', '')}</FormLabel>
+                  <FormItem className="flex items-center justify-between sm:flex-col sm:items-center gap-1 space-y-0 p-2 rounded-lg border border-slate-200 bg-white shadow-xs">
+                    <FormLabel className="text-xs font-bold uppercase text-slate-700">{f.replace('ipo', '')}</FormLabel>
                     <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                   </FormItem>
                 )}
@@ -244,20 +244,23 @@ export function TODDesignContextFields({ form }: { form: UseFormReturn<any> }) {
             ))}
           </div>
         </div>
-        <div className="grid grid-cols-7 gap-1.5">
-          {['assertionE', 'assertionC', 'assertionA', 'assertionCo', 'assertionVa', 'assertionRo', 'assertionPd'].map(f => (
-            <FormField
-              key={f}
-              control={form.control}
-              name={f as any}
-              render={({ field }) => (
-                <FormItem className="flex flex-col items-center gap-1 space-y-0 p-1 rounded-lg border border-slate-200 bg-white">
-                  <FormLabel className="text-xs font-black">{f.replace('assertion', '').toUpperCase()}</FormLabel>
-                  <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                </FormItem>
-              )}
-            />
-          ))}
+        <div>
+          <span className="text-xs font-semibold uppercase text-slate-400 tracking-wider block mb-2">Asersi Laporan Keuangan</span>
+          <div className="grid grid-cols-4 sm:grid-cols-7 gap-1.5">
+            {['assertionE', 'assertionC', 'assertionA', 'assertionCo', 'assertionVa', 'assertionRo', 'assertionPd'].map(f => (
+              <FormField
+                key={f}
+                control={form.control}
+                name={f as any}
+                render={({ field }) => (
+                  <FormItem className="flex flex-col items-center gap-1 space-y-0 p-1.5 rounded-lg border border-slate-200 bg-white shadow-xs">
+                    <FormLabel className="text-xs font-bold text-slate-700">{f.replace('assertion', '').toUpperCase()}</FormLabel>
+                    <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                  </FormItem>
+                )}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </div>

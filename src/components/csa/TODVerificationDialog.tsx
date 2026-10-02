@@ -220,24 +220,24 @@ export function TODVerificationDialog({
   if (!control) return null;
 
   const headerContent = (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-3 md:gap-4">
-        <div className="p-2 md:p-2.5 bg-primary/20 rounded-lg shadow-sm border border-white/20 shrink-0">
-          <ShieldCheck className="h-6 w-6 md:h-7 md:w-7 text-primary-foreground" />
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
+        <div className="p-2 sm:p-2.5 bg-primary/20 rounded-lg shadow-xs border border-white/20 shrink-0">
+          <ShieldCheck className="h-5 w-5 sm:h-6 sm:w-6 text-primary-foreground" />
         </div>
-        <div>
-          <DialogTitle className="text-xl md:text-2xl font-bold tracking-tight uppercase text-primary-foreground">
+        <div className="min-w-0">
+          <DialogTitle className="text-base sm:text-xl font-bold tracking-tight uppercase text-primary-foreground truncate">
             {t('csa_hub:tod.title')}
           </DialogTitle>
-          <div className="flex items-center gap-2 mt-0.5 md:mt-1">
-             <Badge variant="outline" className="bg-white/90 border-transparent text-primary-foreground font-bold text-xs py-0">{t('csa_hub:tod.badgeSync')}</Badge>
-             <p className="text-primary-foreground/70 text-xs font-semibold tracking-wide uppercase truncate">{t('csa_hub:tod.subtitle')}</p>
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mt-0.5">
+             <Badge variant="outline" className="bg-white/90 border-transparent text-primary-foreground font-bold text-xs py-0 rounded">{t('csa_hub:tod.badgeSync')}</Badge>
+             <p className="text-primary-foreground/80 text-xs font-medium tracking-wide uppercase truncate">{t('csa_hub:tod.subtitle')}</p>
           </div>
         </div>
       </div>
-      <div className="text-right shrink-0">
-        <div className="text-xs font-semibold text-primary-foreground/70 uppercase tracking-widest">{t('csa_hub:tod.controlReference')}</div>
-        <div className="text-base md:text-xl font-bold tracking-tight text-white">{rcmMapping?.controlCode || '-'}</div>
+      <div className="text-right shrink-0 ml-auto">
+        <div className="text-xs font-semibold text-primary-foreground/80 uppercase tracking-wider">{t('csa_hub:tod.controlReference')}</div>
+        <div className="text-sm sm:text-lg font-bold tracking-tight text-white">{rcmMapping?.controlCode || '-'}</div>
       </div>
     </div>
   );
@@ -246,12 +246,12 @@ export function TODVerificationDialog({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 overflow-hidden flex flex-col md:flex-row">
         {/* Left Column: Editable Design Context (RCM) */}
-        <ScrollArea className="w-full md:w-1/2 border-b md:border-b-0 md:border-r bg-slate-50/50 max-h-[30vh] md:max-h-none">
+        <ScrollArea className="w-full md:w-1/2 border-b md:border-b-0 md:border-r bg-slate-50/50 max-h-[38vh] md:max-h-none">
           <TODDesignContextFields form={form} />
         </ScrollArea>
 
         {/* Right Column: Assessment (Interactive) */}
-        <ScrollArea className="w-full md:w-1/2 bg-white shadow-[-10px_0_15px_-5px_rgba(0,0,0,0.02)]">
+        <ScrollArea className="w-full md:w-1/2 bg-white">
           <TODEvaluationFormSection
             form={form}
             onCancel={() => handleOpenChange(false)}
@@ -266,8 +266,8 @@ export function TODVerificationDialog({
     <>
       {isMobile ? (
         <Sheet open={open} onOpenChange={handleOpenChange}>
-          <SheetContent side="bottom" className="h-[90vh] max-h-[90vh] p-0 flex flex-col border-t rounded-t-lg overflow-hidden bg-background">
-            <SheetHeader className="p-4 bg-mancity-pattern text-primary-foreground shrink-0 text-left">
+          <SheetContent side="bottom" className="h-[92vh] max-h-[92vh] p-0 flex flex-col border-t rounded-t-lg overflow-hidden bg-background">
+            <SheetHeader className="p-3.5 sm:p-4 bg-mancity-pattern text-primary-foreground shrink-0 text-left">
               {headerContent}
             </SheetHeader>
             <div className="flex-1 overflow-hidden flex flex-col">
@@ -277,8 +277,8 @@ export function TODVerificationDialog({
         </Sheet>
       ) : (
         <Dialog open={open} onOpenChange={handleOpenChange}>
-          <DialogContent className="max-w-[1200px] max-h-[95vh] overflow-hidden p-0 flex flex-col border-none shadow-2xl rounded-xl">
-            <DialogHeader className="p-6 bg-mancity-pattern text-primary-foreground shrink-0">
+          <DialogContent className="max-w-[1200px] max-h-[95vh] overflow-hidden p-0 flex flex-col border border-border shadow-xl rounded-lg">
+            <DialogHeader className="p-5 bg-mancity-pattern text-primary-foreground shrink-0">
               {headerContent}
             </DialogHeader>
             {formContent}

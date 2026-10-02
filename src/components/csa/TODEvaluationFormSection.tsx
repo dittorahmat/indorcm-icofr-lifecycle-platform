@@ -37,18 +37,18 @@ export function TODEvaluationFormSection({
   ];
 
   return (
-    <div className="p-8 space-y-8">
-      <div className="flex items-center gap-2 text-primary font-black text-xs uppercase tracking-widest mb-6">
-        <Target className="h-4 w-4" />
-        {t('csa_hub:tod.evaluationTitle')}
+    <div className="p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8">
+      <div className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-wider mb-4 sm:mb-6">
+        <Target className="h-4 w-4 shrink-0" />
+        <span>{t('csa_hub:tod.evaluationTitle')}</span>
       </div>
 
       {pillars.map((pilar) => (
-        <div key={pilar.id} className="space-y-2 group">
+        <div key={pilar.id} className="space-y-1.5 group">
           <div className="flex justify-between items-center">
             <Label
               htmlFor={pilar.id}
-              className="text-xs font-black uppercase tracking-tight text-slate-600 group-focus-within:text-primary transition-colors"
+              className="text-xs font-bold uppercase tracking-wider text-slate-700 group-focus-within:text-primary transition-colors"
             >
               {pilar.label}
             </Label>
@@ -61,83 +61,86 @@ export function TODEvaluationFormSection({
             {...form.register(pilar.id as any)}
             placeholder={pilar.placeholder}
             className={cn(
-              "min-h-[100px] text-xs font-medium resize-none transition-all border-slate-200 rounded-md focus:ring-2 focus:ring-slate-400/20",
+              "min-h-[80px] sm:min-h-[100px] text-xs font-normal resize-none transition-all border-slate-200 rounded-lg p-3 focus:ring-2 focus:ring-slate-400/20",
               errors[pilar.id] ? "border-red-300 bg-red-50/30" : "hover:border-slate-300"
             )}
           />
         </div>
       ))}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
-        <div className="space-y-2">
-          <Label className="text-xs font-black uppercase text-slate-500 flex items-center gap-1.5">
-            <FileText className="h-3.5 w-3.5 text-primary" /> {t('csa_hub:tod.kkRef')}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 pt-4 border-t border-slate-100">
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold uppercase text-slate-500 tracking-wider flex items-center gap-1.5">
+            <FileText className="h-3.5 w-3.5 text-primary shrink-0" /> 
+            <span>{t('csa_hub:tod.kkRef')}</span>
           </Label>
           <Input
             {...form.register('kkReference')}
             placeholder={t('csa_hub:tod.kkRefPlaceholder')}
-            className="h-11 font-mono text-xs border-slate-200 rounded-xl focus:ring-slate-400/10"
+            className="h-10 font-mono text-xs border-slate-200 rounded-lg"
           />
         </div>
 
-        <div className="space-y-2">
-          <Label className="text-xs font-black uppercase text-slate-500">
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold uppercase text-slate-500 tracking-wider">
             {t('csa_hub:tod.conclusion')}
           </Label>
-          <div className="flex gap-2 h-11">
+          <div className="flex gap-2 h-10">
             <Button
               type="button"
               variant="outline"
               className={cn(
-                "flex-1 gap-2 font-black text-xs uppercase border-2 rounded-xl transition-all",
+                "flex-1 gap-1.5 font-bold text-xs uppercase border rounded-lg transition-all min-h-[40px]",
                 form.watch('conclusion') === 'Effective'
-                  ? "bg-green-50 border-green-600 text-green-700 shadow-sm"
+                  ? "bg-green-50 border-green-600 text-green-700 shadow-xs"
                   : "opacity-40 grayscale"
               )}
               onClick={() => form.setValue('conclusion', 'Effective', { shouldDirty: true })}
             >
-              <CheckCircle2 className="h-4 w-4" /> {t('common:status.effective')}
+              <CheckCircle2 className="h-4 w-4 shrink-0" /> 
+              <span>{t('common:status.effective')}</span>
             </Button>
             <Button
               type="button"
               variant="outline"
               className={cn(
-                "flex-1 gap-2 font-black text-xs uppercase border-2 rounded-xl transition-all",
+                "flex-1 gap-1.5 font-bold text-xs uppercase border rounded-lg transition-all min-h-[40px]",
                 form.watch('conclusion') === 'Ineffective'
-                  ? "bg-red-50 border-red-600 text-red-700 shadow-sm"
+                  ? "bg-red-50 border-red-600 text-red-700 shadow-xs"
                   : "opacity-40 grayscale"
               )}
               onClick={() => form.setValue('conclusion', 'Ineffective', { shouldDirty: true })}
             >
-              <XCircle className="h-4 w-4" /> {t('common:status.ineffective')}
+              <XCircle className="h-4 w-4 shrink-0" /> 
+              <span>{t('common:status.ineffective')}</span>
             </Button>
           </div>
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label className="text-xs font-black uppercase text-slate-500">
+      <div className="space-y-1.5">
+        <Label className="text-xs font-semibold uppercase text-slate-500 tracking-wider">
           {t('csa_hub:tod.overallComment')}
         </Label>
         <Textarea
           {...form.register('comment')}
           placeholder={t('csa_hub:tod.overallCommentPlaceholder')}
-          className="min-h-[80px] text-xs resize-none border-slate-200 rounded-xl focus:ring-slate-400/10"
+          className="min-h-[80px] text-xs border-slate-200 rounded-lg p-3"
         />
       </div>
 
-      <div className="pt-6 border-t flex justify-end gap-3 sticky bottom-0 bg-white pb-4">
+      <div className="pt-4 border-t flex flex-col sm:flex-row justify-end gap-2.5 sm:gap-3 sticky bottom-0 bg-white pb-2 sm:pb-4 z-20">
         <Button
           type="button"
           variant="ghost"
           onClick={onCancel}
-          className="font-black uppercase text-xs tracking-widest text-slate-400 min-h-[44px]"
+          className="font-bold uppercase text-xs tracking-wider text-slate-500 min-h-[44px] w-full sm:w-auto"
         >
           {t('common:actions.cancel')}
         </Button>
         <Button
           type="submit"
-          className="bg-mancity-pattern hover:opacity-90 shadow-md px-8 min-h-[44px] rounded-lg font-black uppercase tracking-widest text-xs text-primary-foreground"
+          className="bg-mancity-pattern hover:opacity-90 shadow-sm px-6 min-h-[44px] rounded-lg font-bold uppercase tracking-wider text-xs text-primary-foreground w-full sm:w-auto justify-center"
           disabled={isPending}
         >
           {isPending ? t('common:actions.save') + "..." : t('csa_hub:tod.saveEvaluation')}
