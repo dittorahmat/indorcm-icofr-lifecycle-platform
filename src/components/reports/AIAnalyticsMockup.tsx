@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-  LineChart, Line, AreaChart, Area, PieChart, Pie, Cell,
+  LineChart, Line, AreaChart, Area,
   ScatterChart, Scatter, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
 } from 'recharts';
 import { 
@@ -16,17 +16,18 @@ import {
   TrendingUp, 
   Search, 
   FileSearch, 
-  UserCheck, 
+  Ship, 
   Zap, 
   AlertTriangle,
-  CheckCircle2,
   Clock,
   ArrowLeft,
-  BarChart3
+  Anchor,
+  Compass,
+  FileCheck2,
+  DollarSign
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { AI_DRILLDOWN_DATA } from '@shared/ai-mock-data';
-import { AI_BANKING_DRILLDOWN_DATA } from '@shared/ai-banking-data';
+import { AI_MARITIME_DRILLDOWN_DATA } from '@shared/ai-maritime-data';
 import { useOrganizationBranding } from '@/hooks/use-organization-branding';
 
 export function AIAnalyticsMockup() {
@@ -34,16 +35,16 @@ export function AIAnalyticsMockup() {
   
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between p-6 bg-slate-900 text-white rounded-xl shadow-sm border border-slate-800 relative">
+      <div className="flex items-center justify-between p-6 bg-slate-900 text-white rounded-lg shadow-sm border border-slate-800 relative">
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="border-slate-700 bg-slate-800 text-slate-200 text-xs font-semibold tracking-wider uppercase">Continuous Monitoring</Badge>
             <div className="h-1 w-1 rounded-full bg-slate-500"></div>
-            <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">ICOFR Analytics Core</span>
+            <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">ICOFR Maritime Analytics</span>
           </div>
           <h2 className="text-2xl font-bold tracking-tight text-white">Digital Control Analytics Hub</h2>
           <p className="text-slate-300 text-sm max-w-md leading-relaxed">
-            Continuous Control Monitoring & Automated Fraud Detection for <strong>{companyName}</strong>.
+            Continuous Control Monitoring & Automated Maritime Anomaly Detection for <strong>{companyName}</strong>.
           </p>
         </div>
 
@@ -57,20 +58,20 @@ export function AIAnalyticsMockup() {
           </div>
           <div className="text-right">
             <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Data Freshness</p>
-            <p className="text-slate-200 font-mono text-xs uppercase mt-0.5">Real-time Sync</p>
+            <p className="text-slate-200 font-mono text-xs uppercase mt-0.5">Real-time Telemetry</p>
           </div>
         </div>
       </div>
 
       <Tabs defaultValue="analytics" className="space-y-6">
-        <TabsList className="bg-slate-100/50 p-1 border border-slate-200/60 shadow-sm">
-          <TabsTrigger value="analytics" className="data-[state=active]:bg-white data-[state=active]:shadow-md gap-2">
+        <TabsList className="bg-slate-100 p-1 border border-slate-200 shadow-sm rounded-lg">
+          <TabsTrigger value="analytics" className="data-[state=active]:bg-white data-[state=active]:shadow-sm gap-2 text-xs font-medium">
             <TrendingUp className="h-4 w-4" /> Data Analytics (Slide 8)
           </TabsTrigger>
-          <TabsTrigger value="ai-cases" className="data-[state=active]:bg-white data-[state=active]:shadow-md gap-2">
+          <TabsTrigger value="ai-cases" className="data-[state=active]:bg-white data-[state=active]:shadow-sm gap-2 text-xs font-medium">
             <BrainCircuit className="h-4 w-4" /> AI Use Cases (Slide 9)
           </TabsTrigger>
-          <TabsTrigger value="ccm" className="data-[state=active]:bg-white data-[state=active]:shadow-md gap-2">
+          <TabsTrigger value="ccm" className="data-[state=active]:bg-white data-[state=active]:shadow-sm gap-2 text-xs font-medium">
             <ShieldAlert className="h-4 w-4" /> CCM Monitoring (Slide 10)
           </TabsTrigger>
         </TabsList>
@@ -92,46 +93,54 @@ export function AIAnalyticsMockup() {
 // --- SUB-COMPONENTS ---
 
 function AnalyticsTab() {
-  const bankingTrendData = [
-    { name: 'Jan', loans: 400, casa: 450 },
-    { name: 'Feb', loans: 420, casa: 460 },
-    { name: 'Mar', loans: 450, casa: 480 },
-    { name: 'Apr', loans: 480, casa: 510 },
-    { name: 'May', loans: 520, casa: 540 },
-    { name: 'Jun', loans: 550, casa: 580 },
+  const maritimeTrendData = [
+    { name: 'Jan', fuel: 4120, miles: 38400 },
+    { name: 'Feb', fuel: 3980, miles: 37100 },
+    { name: 'Mar', fuel: 4350, miles: 40200 },
+    { name: 'Apr', fuel: 4210, miles: 39500 },
+    { name: 'May', fuel: 4580, miles: 42800 },
+    { name: 'Jun', fuel: 4420, miles: 41900 },
+  ];
+
+  const otpData = [
+    { cluster: 'Penumpang', otp: 94 },
+    { cluster: 'Tol Laut', otp: 91 },
+    { cluster: 'Perintis', otp: 89 },
+    { cluster: 'Ternak', otp: 96 },
   ];
 
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      <Card className="col-span-2">
+      <Card className="col-span-2 rounded-lg border-border">
         <CardHeader>
           <CardTitle className="text-sm font-bold flex items-center gap-2">
-            <Activity className="h-4 w-4 text-blue-600" /> Loan Disbursement vs CASA Growth
+            <Activity className="h-4 w-4 text-blue-600" /> Bunker Fuel Consumption vs Nautical Miles Sailed
           </CardTitle>
-          <CardDescription>Correlation between credit expansion and stable funding mix (Billion IDR).</CardDescription>
+          <CardDescription>Correlation between fleet sailing distance (NM) and MDO/HFO fuel consumption (Kiloliter).</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={bankingTrendData}>
+              <AreaChart data={maritimeTrendData}>
                 <defs>
-                  <linearGradient id="colorLoans" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient id="colorFuel" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.1}/>
                     <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
                   </linearGradient>
-                  <linearGradient id="colorCasa" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.1}/>
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                  <linearGradient id="colorMiles" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#0284c7" stopOpacity={0.1}/>
+                    <stop offset="95%" stopColor="#0284c7" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" />
-                <XAxis dataKey="name" fontSize={10} axisLine={false} tickLine={false} stroke="hsl(var(--muted-foreground))" />
-                <YAxis fontSize={10} axisLine={false} tickLine={false} stroke="hsl(var(--muted-foreground))" />
+                <XAxis dataKey="name" fontSize={12} axisLine={false} tickLine={false} stroke="hsl(var(--muted-foreground))" />
+                <YAxis yAxisId="left" fontSize={12} axisLine={false} tickLine={false} stroke="hsl(var(--muted-foreground))" />
+                <YAxis yAxisId="right" orientation="right" fontSize={12} axisLine={false} tickLine={false} stroke="hsl(var(--muted-foreground))" />
                 <Tooltip 
-                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
+                  contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}
                 />
-                <Area type="monotone" dataKey="loans" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorLoans)" strokeWidth={2} />
-                <Area type="monotone" dataKey="casa" stroke="#10b981" fillOpacity={1} fill="url(#colorCasa)" strokeWidth={2} />
+                <Area yAxisId="left" type="monotone" dataKey="fuel" name="Bunker (KL)" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorFuel)" strokeWidth={2} />
+                <Area yAxisId="right" type="monotone" dataKey="miles" name="Nautical Miles" stroke="#0284c7" fillOpacity={1} fill="url(#colorMiles)" strokeWidth={2} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -139,76 +148,84 @@ function AnalyticsTab() {
       </Card>
 
       <div className="space-y-6">
-        <Card>
+        <Card className="rounded-lg border-border">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-bold">Non-Performing Loan (NPL)</CardTitle>
-            <CardDescription>Aggregate credit risk status.</CardDescription>
+            <CardTitle className="text-sm font-bold">Bunker Discrepancy Rate</CardTitle>
+            <CardDescription>Aggregate soundings vs BDN tolerance.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-black text-red-600">2.14% Gross</div>
+            <div className="text-2xl font-bold text-emerald-600">1.82% Variance</div>
             <div className="mt-2 space-y-1">
               <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                <div className="h-full bg-red-500 w-[42%]"></div>
+                <div className="h-full bg-emerald-500 w-[36%]"></div>
               </div>
-              <p className="text-xs text-muted-foreground">OJK Threshold: 5.0%</p>
+              <p className="text-xs text-muted-foreground font-medium">SK-5 Audit Threshold: &le; 2.00%</p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-indigo-50 border-indigo-100">
+        <Card className="bg-sky-50 border-sky-100 rounded-lg">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-bold text-indigo-900">Suspense Account Aging</CardTitle>
-            <CardDescription>Items &gt; 3 days requiring resolution.</CardDescription>
+            <CardTitle className="text-sm font-bold text-sky-900">Unreconciled PSO & Port Clearance</CardTitle>
+            <CardDescription className="text-sky-700">Passenger tickets vs Kemenhub manifests.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-black text-indigo-700">142</div>
-            <p className="text-xs font-medium text-indigo-600 mt-1">Pending items flagged by AI</p>
+            <div className="text-3xl font-bold text-sky-800">28 Items</div>
+            <p className="text-xs font-semibold text-sky-600 mt-1">Pending verification for PSO invoice submission</p>
           </CardContent>
         </Card>
       </div>
 
-      <Card>
+      <Card className="rounded-lg border-border">
         <CardHeader>
-          <CardTitle className="text-sm font-bold">LDR (Loan to Deposit Ratio)</CardTitle>
+          <CardTitle className="text-sm font-bold">Fleet On-Time Performance (OTP)</CardTitle>
+          <CardDescription>Sailing punctuality by vessel cluster.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="h-[150px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={bankingTrendData.slice(0, 4)}>
-                <Bar dataKey="loans" fill="#6366f1" radius={[4, 4, 0, 0]} />
+              <BarChart data={otpData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" />
+                <XAxis dataKey="cluster" fontSize={12} axisLine={false} tickLine={false} />
+                <YAxis domain={[80, 100]} fontSize={12} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))' }} />
+                <Bar dataKey="otp" name="OTP %" fill="#0284c7" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <p className="text-center text-xs mt-4 font-mono text-slate-500 uppercase tracking-widest">Baseline: 85% - 92%</p>
+          <p className="text-center text-xs mt-3 font-mono text-slate-500 uppercase tracking-widest font-semibold">National KPI Target: &ge; 90%</p>
         </CardContent>
       </Card>
 
-      <Card className="col-span-2">
+      <Card className="col-span-2 rounded-lg border-border">
         <CardHeader>
-          <CardTitle className="text-sm font-bold italic">Enterprise Risk Indicators (Banking)</CardTitle>
+          <CardTitle className="text-sm font-bold">Enterprise Risk Indicators (Maritime Logistics)</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="p-3 border rounded-lg bg-slate-50">
-              <p className="text-xs font-bold text-slate-500 uppercase">Dormant Account Reactivations</p>
+              <p className="text-xs font-bold text-slate-500 uppercase">Off-Manifest Container Alert</p>
               <div className="flex items-center justify-between mt-1">
-                <span className="text-lg font-bold">12 Flagged</span>
+                <span className="text-lg font-bold text-slate-900">3 Units</span>
                 <ShieldAlert className="h-4 w-4 text-amber-500" />
               </div>
+              <p className="text-xs text-muted-foreground mt-1">Held at Makassar & Surabaya ports</p>
             </div>
             <div className="p-3 border rounded-lg bg-slate-50">
-              <p className="text-xs font-bold text-slate-500 uppercase">Unauthorized Rate Overrides</p>
+              <p className="text-xs font-bold text-slate-500 uppercase">Dry-Docking Cost Overrun</p>
               <div className="flex items-center justify-between mt-1">
-                <span className="text-lg font-bold">2 Critical</span>
+                <span className="text-lg font-bold text-slate-900">2 Vessels</span>
                 <ShieldAlert className="h-4 w-4 text-red-500" />
               </div>
+              <p className="text-xs text-muted-foreground mt-1">RAB exceeded &gt; 10% during overhaul</p>
             </div>
             <div className="p-3 border rounded-lg bg-slate-50">
-              <p className="text-xs font-bold text-slate-500 uppercase">AML Smurfing Patterns</p>
+              <p className="text-xs font-bold text-slate-500 uppercase">Bunkering Density Anomaly</p>
               <div className="flex items-center justify-between mt-1">
-                <span className="text-lg font-bold">5 Clusters</span>
+                <span className="text-lg font-bold text-slate-900">4 Events</span>
                 <AlertTriangle className="h-4 w-4 text-red-500" />
               </div>
+              <p className="text-xs text-muted-foreground mt-1">BDN density mismatch &gt; 3%</p>
             </div>
           </div>
         </CardContent>
@@ -221,12 +238,12 @@ function AICasesTab() {
   const [selectedCaseId, setSelectedCaseId] = React.useState<string | null>(null);
 
   const useCases = [
-    { id: "aml-detection", title: "AML Pattern Engine", icon: <ShieldAlert className="h-6 w-6" />, desc: "Detects structured money laundering patterns using high-velocity scatter analysis.", status: "LIVE", color: "text-red-600 bg-red-50 border-red-100" },
-    { id: "credit-portfolio", title: "Loan Portfolio Predictor", icon: <BarChart3 className="h-6 w-6" />, desc: "Multi-dimensional risk assessment of loan clusters using radar variance.", status: "BETA", color: "text-amber-600 bg-amber-50 border-amber-100" },
-    { id: "suspense-monitoring", title: "Suspense Account NLP", icon: <Search className="h-6 w-6" />, desc: "Automated reconciliation of suspense items using semantic mismatch detection.", status: "LIVE", color: "text-indigo-600 bg-indigo-50 border-indigo-100" },
-    { id: "fraud-transactions", title: "Internal Fraud Detection", icon: <FileSearch className="h-6 w-6" />, desc: "Identifies unauthorized overrides and journal description anomalies.", status: "LIVE", color: "text-blue-600 bg-blue-50 border-blue-100" },
-    { id: "kyc-onboarding", title: "KYC Sentiment Score", icon: <UserCheck className="h-6 w-6" />, desc: "Automated scoring of customer onboarding risk using open-source intelligence.", status: "BETA", color: "text-purple-600 bg-purple-50 border-purple-100" },
-    { id: "liquidity-forecast", title: "Predictive Liquidity", icon: <Zap className="h-6 w-6" />, desc: "Forecasting ATM cash requirements and data center operational health.", status: "POC", color: "text-orange-600 bg-orange-50 border-orange-100" },
+    { id: "bunker-anomaly", title: "Bunker & Fuel Anomaly Engine", icon: <Ship className="h-6 w-6" />, desc: "Detects bunker fuel anomalies by correlating SFOC telemetry with vessel speed and sea conditions.", status: "LIVE", color: "text-red-700 bg-red-50 border-red-200" },
+    { id: "predictive-docking", title: "Predictive Dry-Docking & Spares", icon: <Anchor className="h-6 w-6" />, desc: "Multi-dimensional evaluation of shipyard repair costs and spare part lead-time variances.", status: "LIVE", color: "text-amber-700 bg-amber-50 border-amber-200" },
+    { id: "pso-ticket-recon", title: "Automated PSO & Ticket Recon", icon: <FileCheck2 className="h-6 w-6" />, desc: "Reconciles passenger e-ticketing and port gate scans against Kemenhub PSO subsidy ceilings.", status: "LIVE", color: "text-sky-700 bg-sky-50 border-sky-200" },
+    { id: "cargo-leakage", title: "Cargo Demurrage & Slot Audit", icon: <Compass className="h-6 w-6" />, desc: "Identifies unbilled container demurrage and unverified reefer plug-in power logs.", status: "LIVE", color: "text-blue-700 bg-blue-50 border-blue-200" },
+    { id: "port-disbursement-nlp", title: "Port Disbursement & Agency NLP", icon: <FileSearch className="h-6 w-6" />, desc: "NLP audit of maritime agency tug and pilotage invoices against official Pelindo tariffs.", status: "BETA", color: "text-purple-700 bg-purple-50 border-purple-200" },
+    { id: "crew-payroll", title: "Crew Payroll & Per Diem Validation", icon: <DollarSign className="h-6 w-6" />, desc: "Validates seafarer sailing allowance claims against official Master logbook sign-on records.", status: "LIVE", color: "text-emerald-700 bg-emerald-50 border-emerald-200" },
   ];
 
   return (
@@ -235,10 +252,10 @@ function AICasesTab() {
         {selectedCaseId ? (
           <motion.div
             key="detail"
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
+            exit={{ opacity: 0, y: -16 }}
+            transition={{ duration: 0.2 }}
             className="absolute inset-0"
           >
             <AIDrilldownView 
@@ -249,34 +266,34 @@ function AICasesTab() {
         ) : (
           <motion.div
             key="grid"
-            initial={{ opacity: 0, y: -20 }}
+            initial={{ opacity: 0, y: -16 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            transition={{ duration: 0.3 }}
+            exit={{ opacity: 0, y: 16 }}
+            transition={{ duration: 0.2 }}
             className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
           >
             {useCases.map((uc) => (
-              <motion.div layoutId={`card-${uc.id}`} key={uc.id}>
+              <div key={uc.id}>
                 <Card 
-                  className="h-full hover:shadow-lg transition-shadow overflow-hidden group cursor-pointer"
+                  className="h-full hover:shadow-md transition-shadow overflow-hidden group cursor-pointer rounded-lg border-border"
                   onClick={() => setSelectedCaseId(uc.id)}
                 >
                   <CardHeader className={cn("pb-4 h-full", uc.color)}>
                     <div className="flex items-center justify-between">
-                      <div className="p-2 bg-white rounded-lg shadow-sm">{uc.icon}</div>
-                      <Badge variant="outline" className="bg-white/50 text-xs font-bold">{uc.status}</Badge>
+                      <div className="p-2 bg-white rounded-lg shadow-sm border border-border">{uc.icon}</div>
+                      <Badge variant="outline" className="bg-white text-xs font-semibold">{uc.status}</Badge>
                     </div>
-                    <CardTitle className="mt-4 text-lg font-black tracking-tight">{uc.title}</CardTitle>
+                    <CardTitle className="mt-4 text-base font-bold tracking-tight">{uc.title}</CardTitle>
                   </CardHeader>
                   <CardContent className="pt-4">
-                    <p className="text-sm text-slate-600 leading-relaxed italic">"{uc.desc}"</p>
-                    <div className="mt-6 flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-widest">
-                      <span>Model Accuracy: 94.2%</span>
-                      <span className="group-hover:text-primary transition-colors">Details →</span>
+                    <p className="text-xs text-slate-700 leading-relaxed font-normal">{uc.desc}</p>
+                    <div className="mt-6 flex items-center justify-between text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                      <span>Model Precision: 95.8%</span>
+                      <span className="group-hover:text-primary transition-colors">Details &rarr;</span>
                     </div>
                   </CardContent>
                 </Card>
-              </motion.div>
+              </div>
             ))}
           </motion.div>
         )}
@@ -286,49 +303,50 @@ function AICasesTab() {
 }
 
 function AIDrilldownView({ useCase, onBack }: { useCase: any, onBack: () => void }) {
-  const data = AI_BANKING_DRILLDOWN_DATA[useCase.id];
+  const data = AI_MARITIME_DRILLDOWN_DATA[useCase.id];
 
   if (!data) return (
     <div className="p-20 text-center">
-      <CardTitle className="text-slate-300">Data for {useCase.title} not available in Banking Mockup</CardTitle>
+      <CardTitle className="text-slate-400">Data for {useCase.title} not available in Maritime Mockup</CardTitle>
       <Button variant="ghost" onClick={onBack} className="mt-4">Back to Cases</Button>
     </div>
   );
 
-  const mainColorClass = useCase.color.split(' ')[0]; // e.g., "text-red-600"
+  const mainColorClass = useCase.color.split(' ')[0];
   
   const colorMap: Record<string, string> = {
-    "text-red-600": "#e11d48", // Rose 600
-    "text-indigo-600": "#4f46e5", // Indigo 600
-    "text-amber-600": "#f59e0b", // Amber 500
-    "text-blue-600": "#2563eb", // Blue 600
-    "text-purple-600": "#9333ea", // Purple 600
-    "text-orange-600": "#ea580c" // Orange 600
+    "text-red-700": "#b91c1c",
+    "text-amber-700": "#b45309",
+    "text-sky-700": "#0369a1",
+    "text-blue-700": "#1d4ed8",
+    "text-purple-700": "#7e22ce",
+    "text-emerald-700": "#047857"
   };
 
-  const activeColor = colorMap[mainColorClass] || "#4f46e5";
+  const activeColor = colorMap[mainColorClass] || "#0369a1";
 
   return (
-    <motion.div layoutId={`card-${useCase.id}`} className="h-full">
-      <Card className="min-h-[600px] border-slate-200/60 shadow-xl overflow-hidden flex flex-col h-full">
-        <CardHeader className={cn("pb-6 transition-colors duration-500", useCase.color)}>
+    <div className="h-full">
+      <Card className="min-h-[600px] border-border shadow-md overflow-hidden flex flex-col h-full rounded-lg">
+        <CardHeader className={cn("pb-6 transition-colors", useCase.color)}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button 
                 onClick={onBack}
-                className="p-2 hover:bg-white/20 rounded-lg transition-colors text-current group"
+                className="p-2 hover:bg-white/40 rounded-lg transition-colors text-current group"
+                aria-label="Back to use cases"
               >
-                <ArrowLeft className="h-5 w-5 group-hover:-translate-x-1 transition-transform" />
+                <ArrowLeft className="h-5 w-5 group-hover:-translate-x-0.5 transition-transform" />
               </button>
-              <div className="p-2 bg-white rounded-lg shadow-sm">{useCase.icon}</div>
+              <div className="p-2 bg-white rounded-lg shadow-sm border border-border">{useCase.icon}</div>
               <div>
-                <CardTitle className="text-2xl font-black tracking-tighter">{useCase.title}</CardTitle>
-                <CardDescription className="text-current opacity-70">Banking Analytical Workbench</CardDescription>
+                <CardTitle className="text-xl font-bold tracking-tight">{useCase.title}</CardTitle>
+                <CardDescription className="text-current opacity-80 text-xs font-medium">PELNI Maritime Analytical Workbench</CardDescription>
               </div>
             </div>
             <div className="flex gap-2">
-              <Badge className="bg-white text-slate-900 font-bold uppercase tracking-tighter px-2 py-0.5">{useCase.status}</Badge>
-              <Badge variant="outline" className="border-white/30 text-white bg-white/10 uppercase tracking-tighter">Financial Cluster</Badge>
+              <Badge className="bg-white text-slate-900 font-bold uppercase tracking-wider text-xs px-2 py-0.5">{useCase.status}</Badge>
+              <Badge variant="outline" className="border-current/30 text-current bg-white/20 uppercase tracking-wider text-xs">Maritime Logistics Cluster</Badge>
             </div>
           </div>
         </CardHeader>
@@ -338,14 +356,14 @@ function AIDrilldownView({ useCase, onBack }: { useCase: any, onBack: () => void
         {/* Metric Row */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {data.metrics.map((m, i) => (
-            <div key={i} className="p-4 rounded-xl border bg-slate-50/50 border-slate-200/60 shadow-sm space-y-1">
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">{m.label}</p>
+            <div key={i} className="p-4 rounded-lg border bg-slate-50 border-slate-200 shadow-sm space-y-1">
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{m.label}</p>
               <div className="flex items-center justify-between">
-                <span className="text-2xl font-black tracking-tight">{m.value}</span>
+                <span className="text-xl font-bold tracking-tight text-slate-900">{m.value}</span>
                 {m.trend && (
                   <TrendingUp className={cn(
                     "h-4 w-4",
-                    m.trend === 'up' ? "text-green-500" : "text-red-500"
+                    m.trend === 'up' ? "text-emerald-600" : "text-amber-600"
                   )} />
                 )}
               </div>
@@ -356,49 +374,49 @@ function AIDrilldownView({ useCase, onBack }: { useCase: any, onBack: () => void
         {/* Chart Section */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold uppercase tracking-tight text-slate-600 flex items-center gap-2">
-              <Activity className="h-4 w-4" /> {data.chart.title}
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
+              <Activity className="h-4 w-4 text-sky-600" /> {data.chart.title}
             </h3>
-            <span className="text-xs font-mono text-slate-400">Visualization: {data.chart.type.toUpperCase()}</span>
+            <span className="text-xs font-mono text-slate-500">Visualization: {data.chart.type.toUpperCase()}</span>
           </div>
           
-          <div className="h-[300px] w-full bg-slate-50/30 rounded-xl border border-dashed border-slate-200 p-4">
+          <div className="h-[300px] w-full bg-slate-50/50 rounded-lg border border-slate-200 p-4">
             <ResponsiveContainer width="100%" height="100%">
               {data.chart.type === 'bar' ? (
                 <BarChart data={data.chart.data}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" />
-                  <XAxis dataKey={Object.keys(data.chart.data[0])[0]} fontSize={10} axisLine={false} tickLine={false} stroke="hsl(var(--muted-foreground))" />
-                  <YAxis fontSize={10} axisLine={false} tickLine={false} stroke="hsl(var(--muted-foreground))" />
+                  <XAxis dataKey={Object.keys(data.chart.data[0])[0]} fontSize={12} axisLine={false} tickLine={false} stroke="hsl(var(--muted-foreground))" />
+                  <YAxis fontSize={12} axisLine={false} tickLine={false} stroke="hsl(var(--muted-foreground))" />
                   <Tooltip 
-                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                    contentStyle={{ borderRadius: '6px', border: '1px solid hsl(var(--border))', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}
                   />
                   <Bar dataKey={Object.keys(data.chart.data[0])[1]} fill={activeColor} radius={[4, 4, 0, 0]} />
                 </BarChart>
               ) : data.chart.type === 'line' ? (
                 <LineChart data={data.chart.data}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" />
-                  <XAxis dataKey={Object.keys(data.chart.data[0])[0]} fontSize={10} axisLine={false} tickLine={false} stroke="hsl(var(--muted-foreground))" />
-                  <YAxis fontSize={10} axisLine={false} tickLine={false} stroke="hsl(var(--muted-foreground))" />
-                  <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-                  <Line type="monotone" dataKey={Object.keys(data.chart.data[0])[1]} stroke={activeColor} strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                  <XAxis dataKey={Object.keys(data.chart.data[0])[0]} fontSize={12} axisLine={false} tickLine={false} stroke="hsl(var(--muted-foreground))" />
+                  <YAxis fontSize={12} axisLine={false} tickLine={false} stroke="hsl(var(--muted-foreground))" />
+                  <Tooltip contentStyle={{ borderRadius: '6px', border: '1px solid hsl(var(--border))' }} />
+                  <Line type="monotone" dataKey={Object.keys(data.chart.data[0])[1]} stroke={activeColor} strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
                 </LineChart>
               ) : data.chart.type === 'scatter' ? (
                 <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
-                  <XAxis type="number" dataKey={Object.keys(data.chart.data[0])[0]} fontSize={10} axisLine={false} tickLine={false} stroke="hsl(var(--muted-foreground))" />
-                  <YAxis type="number" dataKey={Object.keys(data.chart.data[0])[1]} fontSize={10} axisLine={false} tickLine={false} stroke="hsl(var(--muted-foreground))" />
-                  <Tooltip cursor={{ strokeDasharray: '3 3' }} />
-                  <Scatter name="Data" data={data.chart.data} fill={activeColor} />
+                  <XAxis type="number" dataKey="speed" name="Speed (Knots)" fontSize={12} axisLine={false} tickLine={false} stroke="hsl(var(--muted-foreground))" />
+                  <YAxis type="number" dataKey="consumption" name="SFOC (g/kWh)" fontSize={12} axisLine={false} tickLine={false} stroke="hsl(var(--muted-foreground))" />
+                  <Tooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={{ borderRadius: '6px', border: '1px solid hsl(var(--border))' }} />
+                  <Scatter name="Vessel Voyages" data={data.chart.data} fill={activeColor} />
                 </ScatterChart>
               ) : data.chart.type === 'radar' ? (
                 <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data.chart.data}>
                   <PolarGrid stroke="hsl(var(--muted))" />
-                  <PolarAngleAxis dataKey="subject" fontSize={10} />
-                  <PolarRadiusAxis angle={30} domain={[0, 100]} fontSize={8} />
-                  <Radar name="Score" dataKey="A" stroke={activeColor} fill={activeColor} fillOpacity={0.6} />
+                  <PolarAngleAxis dataKey="subject" fontSize={12} />
+                  <PolarRadiusAxis angle={30} domain={[0, 100]} fontSize={12} />
+                  <Radar name="Score" dataKey="A" stroke={activeColor} fill={activeColor} fillOpacity={0.4} />
                 </RadarChart>
               ) : (
-                <div className="flex items-center justify-center h-full text-slate-300 italic">Unsupported chart type</div>
+                <div className="flex items-center justify-center h-full text-slate-400 text-xs">Unsupported chart type</div>
               )}
             </ResponsiveContainer>
           </div>
@@ -407,31 +425,33 @@ function AIDrilldownView({ useCase, onBack }: { useCase: any, onBack: () => void
         {/* Findings Section */}
         <div className="space-y-4">
           <div className="flex items-center justify-between border-b pb-2">
-            <h3 className="text-sm font-bold uppercase tracking-tight text-slate-600 flex items-center gap-2">
-              <Search className="h-4 w-4" /> Discovery Log (Mock Data)
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
+              <Search className="h-4 w-4 text-sky-600" /> Maritime Discovery Log
             </h3>
-            <Badge variant="outline" className="text-xs font-black uppercase tracking-tighter">Real-time Analysis</Badge>
+            <Badge variant="outline" className="text-xs font-bold uppercase tracking-wider">Live Analysis</Badge>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="text-slate-400 font-bold uppercase tracking-widest border-b">
+                <tr className="text-slate-500 font-semibold uppercase tracking-wider border-b">
                   {Object.keys(data.findings[0]).map(k => (
                     <th key={k} className="pb-2 px-2">{k.toUpperCase().replace('_', ' ')}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y">
+              <tbody className="divide-y divide-border">
                 {data.findings.map((f, i) => (
                   <tr key={i} className="hover:bg-slate-50 transition-colors">
                     {Object.values(f).map((v: any, j) => (
                       <td key={j} className="py-3 px-2 font-medium">
-                        {v === 'High' || v === 'Critical' || v === 'Fail' ? (
-                          <Badge className="bg-red-500 text-xs h-4 uppercase">{v}</Badge>
-                        ) : v === 'Pass' || v === 'Good' || v === 'Low Risk' ? (
-                          <Badge className="bg-green-500 text-xs h-4 uppercase">{v}</Badge>
+                        {v === 'High' || v === 'Critical' || v === 'Inspection Required' ? (
+                          <Badge className="bg-red-600 text-white text-xs h-5 uppercase font-semibold">{v}</Badge>
+                        ) : v === 'Low' || v === 'Within RAB' || v === 'Verified' ? (
+                          <Badge className="bg-emerald-600 text-white text-xs h-5 uppercase font-semibold">{v}</Badge>
+                        ) : v === 'Medium' || v === 'Flagged' || v === 'Under Review' || v === 'Held at Gate' ? (
+                          <Badge variant="outline" className="border-amber-400 text-amber-700 bg-amber-50 text-xs h-5 uppercase font-semibold">{v}</Badge>
                         ) : (
-                          <span className="text-slate-700">{v}</span>
+                          <span className="text-slate-800">{v}</span>
                         )}
                       </td>
                     ))}
@@ -443,53 +463,53 @@ function AIDrilldownView({ useCase, onBack }: { useCase: any, onBack: () => void
         </div>
       </CardContent>
     </Card>
-    </motion.div>
+    </div>
   );
 }
 
 function CCMTab() {
   const alerts = [
-    { time: '10:42 AM', type: 'ALERT', msg: 'Potential Smurfing detected: Account #8821-XX (5 deposits < 10M in 4h).', severity: 'HIGH' },
-    { time: '10:15 AM', type: 'ALERT', msg: 'Unauthorized Rate Override: SME Loan #992 changed from 8.5% to 6.0% by User ADMIN_OPS.', severity: 'HIGH' },
-    { time: '09:15 AM', type: 'LOG', msg: 'Daily Suspense Account variance check completed. Within tolerance (0.4%).', severity: 'INFO' },
-    { time: '08:30 AM', type: 'ALERT', msg: 'Dormant Account Reactivation: Account #1029-XX (Inactive 2 yrs) rapid debit: 500M.', severity: 'HIGH' },
-    { time: 'Yesterday', type: 'ALERT', msg: 'Backdated GL entry detected in Treasury (15 days delay). Ref: TR-9921.', severity: 'MEDIUM' },
-    { time: 'Yesterday', type: 'ALERT', msg: 'Duplicate CIF detected: Same KTP found for 2 different Customer IDs.', severity: 'MEDIUM' },
-    { time: '2 days ago', type: 'LOG', msg: 'Customer master data change: Limit increase for Corporate Client ID-001.', severity: 'INFO' },
+    { time: '10:42 AM', type: 'ALERT', msg: 'Bunker Discrepancy: KM Kelud recorded 12,000L bunker fill at Tanjung Priok with density variance -4.2% against BDN certificate.', severity: 'HIGH' },
+    { time: '10:15 AM', type: 'ALERT', msg: 'Off-Manifest Cargo: 2 container units detected on board KM Sinabung without verified e-manifest at Makassar Port.', severity: 'HIGH' },
+    { time: '09:15 AM', type: 'LOG', msg: 'Daily PSO revenue vs passenger ticket reconciliation completed for Cabang Surabaya (Variance: 0.12%, within tolerance).', severity: 'INFO' },
+    { time: '08:30 AM', type: 'ALERT', msg: 'Dry-docking Emergency PO: Overhaul repair job order created for KM Bukit Siguntang exceeding authorization threshold (> Rp 500M).', severity: 'HIGH' },
+    { time: 'Yesterday', type: 'ALERT', msg: 'Port Disbursement Variance: Stevedoring rate on invoice #INV-PLD-8891 higher than Pelindo official tariff rate (Branch Belawan).', severity: 'MEDIUM' },
+    { time: 'Yesterday', type: 'ALERT', msg: 'Backdated Voyage Log: Fuel logbook entry submitted 8 days after voyage completion (Trayek R-14).', severity: 'MEDIUM' },
+    { time: '2 days ago', type: 'LOG', msg: 'Annual Survey Certificate compliance validated for 18 active vessels in fleet.', severity: 'INFO' },
   ];
 
   return (
     <div className="grid gap-6 md:grid-cols-3">
-      <Card className="md:col-span-2">
-        <CardHeader className="border-b bg-slate-50/50">
+      <Card className="md:col-span-2 rounded-lg border-border">
+        <CardHeader className="border-b bg-slate-50">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <CardTitle className="text-lg">Continuous Control Monitoring (CCM)</CardTitle>
-              <CardDescription>Live automated monitoring of key internal controls.</CardDescription>
+              <CardTitle className="text-base font-bold">Continuous Control Monitoring (CCM)</CardTitle>
+              <CardDescription>Live automated monitoring of key maritime & shipping controls.</CardDescription>
             </div>
-            <Badge className="bg-indigo-600">LIVE FEED</Badge>
+            <Badge className="bg-sky-700 text-white font-semibold text-xs">LIVE FEED</Badge>
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="divide-y">
+          <div className="divide-y divide-border">
             {alerts.map((alert, i) => (
-              <div key={i} className="p-4 hover:bg-slate-50/80 transition-colors flex gap-4 items-start">
+              <div key={i} className="p-4 hover:bg-slate-50 transition-colors flex gap-4 items-start">
                 <div className={cn(
-                  "mt-1 h-2 w-2 rounded-full shrink-0",
+                  "mt-1.5 h-2 w-2 rounded-full shrink-0",
                   alert.severity === 'HIGH' ? "bg-red-500" :
-                  alert.severity === 'MEDIUM' ? "bg-amber-500" : "bg-blue-500"
+                  alert.severity === 'MEDIUM' ? "bg-amber-500" : "bg-sky-500"
                 )} />
                 <div className="flex-1 space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1">
                       <Clock className="h-3 w-3" /> {alert.time}
                     </span>
                     <Badge variant="outline" className={cn(
-                      "text-xs h-4 px-1 font-black",
+                      "text-xs h-5 px-1.5 font-bold uppercase",
                       alert.type === 'ALERT' ? "border-red-200 text-red-700 bg-red-50" : "border-slate-200 text-slate-600 bg-slate-50"
                     )}>{alert.type}</Badge>
                   </div>
-                  <p className="text-xs font-medium text-slate-700">{alert.msg}</p>
+                  <p className="text-xs font-medium text-slate-800 leading-relaxed">{alert.msg}</p>
                 </div>
               </div>
             ))}
@@ -498,40 +518,40 @@ function CCMTab() {
       </Card>
 
       <div className="space-y-6">
-        <Card className="bg-slate-900 text-white border-slate-800 shadow-sm relative">
+        <Card className="bg-slate-900 text-white border-slate-800 shadow-sm relative rounded-lg">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-slate-400">Control Effectiveness Score</CardTitle>
+            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-slate-400">Fleet Control Effectiveness</CardTitle>
           </CardHeader>
           <CardContent className="relative z-10">
-            <div className="text-4xl font-bold tracking-tight">98.4</div>
+            <div className="text-4xl font-bold tracking-tight">98.4%</div>
             <p className="text-xs font-semibold text-emerald-400 mt-2 flex items-center gap-1 uppercase">
-              <TrendingUp className="h-3 w-3" /> +1.2% from last week
+              <TrendingUp className="h-3 w-3" /> +1.2% from prior cycle
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="rounded-lg border-border">
           <CardHeader>
-            <CardTitle className="text-sm font-bold uppercase tracking-tighter text-slate-500">Monitoring Reach</CardTitle>
+            <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-600">Monitoring Coverage</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div className="space-y-1">
-                <div className="flex justify-between text-xs font-bold uppercase">
-                  <span>Automated Controls</span>
-                  <span>82%</span>
+                <div className="flex justify-between text-xs font-semibold uppercase">
+                  <span>Automated Maritime Controls</span>
+                  <span>78%</span>
                 </div>
-                <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-indigo-600 w-[82%]"></div>
+                <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-sky-600 w-[78%]"></div>
                 </div>
               </div>
               <div className="space-y-1">
-                <div className="flex justify-between text-xs font-bold uppercase">
-                  <span>Manual Controls Covered</span>
-                  <span>45%</span>
+                <div className="flex justify-between text-xs font-semibold uppercase">
+                  <span>Manual Operational Controls</span>
+                  <span>52%</span>
                 </div>
-                <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-blue-400 w-[45%]"></div>
+                <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-blue-500 w-[52%]"></div>
                 </div>
               </div>
             </div>

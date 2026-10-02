@@ -11,7 +11,7 @@ export function AIHubPage() {
     <AppLayout container>
       <div className="space-y-8">
         <div className="flex items-center gap-4">
-          <div className="p-3 bg-indigo-100 rounded-2xl text-indigo-600 shadow-sm border border-indigo-200">
+          <div className="p-3 bg-sky-100 rounded-lg text-sky-700 shadow-sm border border-sky-200">
             <BrainCircuit className="h-8 w-8" />
           </div>
           <div>
