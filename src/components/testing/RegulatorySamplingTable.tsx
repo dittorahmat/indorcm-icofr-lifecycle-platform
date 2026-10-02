@@ -128,7 +128,7 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
                 <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">
                   Atribut Kepatuhan (Lampiran 7)
                 </span>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 xs:grid-cols-2 gap-2">
                   {[
                     { key: 'attrA', label: 'Attr A: Otomatis' },
                     { key: 'attrB', label: 'Attr B: Lengkap' },
@@ -138,7 +138,7 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
                     <label 
                       key={attr.key}
                       className={cn(
-                        "flex items-center gap-2 p-2 rounded-md border text-xs font-semibold cursor-pointer select-none transition-colors",
+                        "flex items-center gap-2.5 p-2.5 min-h-[40px] rounded-md border text-xs font-semibold cursor-pointer select-none transition-colors",
                         (field as any)[attr.key] 
                           ? "bg-slate-50 border-slate-300 text-slate-800" 
                           : "bg-red-50/40 border-red-200 text-red-700"
@@ -148,7 +148,7 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
                         checked={(field as any)[attr.key]} 
                         onCheckedChange={() => toggleAttribute(index, attr.key as any)}
                         disabled={isReadOnly}
-                        className="h-4 w-4"
+                        className="h-4 w-4 shrink-0"
                       />
                       <span className="truncate">{attr.label}</span>
                     </label>

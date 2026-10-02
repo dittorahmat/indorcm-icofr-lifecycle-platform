@@ -106,7 +106,7 @@ export function CSAReviewMatrix({
                     <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">
                       {t('tod.evidenceSummary', { defaultValue: 'Bukti Sampel' })}
                     </span>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 xs:grid-cols-2 gap-2">
                       {record.samples.map((sample, sIdx) => {
                         const res = (sample.controlResults as any)?.[control.controlId];
                         const isPassed = res?.implemented;
@@ -116,34 +116,34 @@ export function CSAReviewMatrix({
                           <div 
                             key={`${control.mappingId}-mob-${sIdx}`}
                             className={cn(
-                              "p-2 rounded-md border flex items-center justify-between gap-1.5 text-xs",
+                              "p-2.5 rounded-lg border flex items-center justify-between gap-2 text-xs",
                               isPassed ? "bg-green-50/60 border-green-200" : "bg-red-50/60 border-red-200"
                             )}
                           >
-                            <span className="font-semibold text-slate-700 truncate max-w-[110px]" title={sample.sampleRef || `Sample ${sIdx + 1}`}>
+                            <span className="font-semibold text-slate-700 truncate min-w-0 flex-1" title={sample.sampleRef || `Sample ${sIdx + 1}`}>
                               {sample.sampleRef || `S-${sIdx + 1}`}
                             </span>
-                            <div className="flex items-center gap-1 shrink-0">
+                            <div className="flex items-center gap-1.5 shrink-0">
                               {evidenceUrl ? (
                                 <Button 
                                   variant="ghost" 
                                   size="sm" 
-                                  className="h-8 w-8 min-h-[32px] min-w-[32px] p-0 rounded-md bg-white border border-slate-200 shadow-xs text-indigo-600 hover:bg-slate-50"
+                                  className="h-8 w-8 min-h-[36px] min-w-[36px] p-0 rounded-md bg-white border border-slate-200 shadow-xs text-indigo-600 hover:bg-slate-50"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     window.open(evidenceUrl, '_blank');
                                   }}
                                   title="Lihat Bukti"
                                 >
-                                  <FileText className="h-3.5 w-3.5" />
+                                  <FileText className="h-4 w-4" />
                                 </Button>
                               ) : (
-                                <div className="h-6 w-6 rounded-md border border-dashed border-slate-300 flex items-center justify-center text-slate-300">
-                                  <Search className="h-3 w-3" />
+                                <div className="h-8 w-8 rounded-md border border-dashed border-slate-300 flex items-center justify-center text-slate-300">
+                                  <Search className="h-3.5 w-3.5" />
                                 </div>
                               )}
                               <div className={cn(
-                                "w-2 h-2 rounded-full",
+                                "w-2.5 h-2.5 rounded-full shrink-0",
                                 isPassed ? "bg-green-500 shadow-xs" : "bg-red-500 shadow-xs"
                               )} />
                             </div>

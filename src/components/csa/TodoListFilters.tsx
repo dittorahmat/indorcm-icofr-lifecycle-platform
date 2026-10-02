@@ -25,9 +25,9 @@ export function TodoListFilters({
   const { t } = useTranslation(['csa', 'common', 'csa_hub']);
 
   return (
-    <div className="flex flex-col md:flex-row items-center justify-between gap-4 p-4 border-b bg-background sticky top-0 z-20">
-      <div className="flex items-center gap-4">
-        <Button onClick={onCreateClick} size="sm" className="bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-100 gap-2 font-bold h-9">
+    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 p-3 sm:p-4 border-b bg-background sticky top-0 z-20">
+      <div className="flex items-center justify-between sm:justify-start gap-3">
+        <Button onClick={onCreateClick} size="sm" className="bg-indigo-600 hover:bg-indigo-700 shadow-sm gap-2 font-bold h-9 min-h-[36px] text-xs">
           <Plus className="h-4 w-4" /> {t('csa_hub:scheduling.newEvent')}
         </Button>
         
@@ -42,24 +42,24 @@ export function TodoListFilters({
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
-        <div className="flex items-center border rounded-md p-0.5 bg-slate-50">
-          <Button variant="ghost" size="icon" className="h-7 w-7 rounded-sm" onClick={onPrevMonth}>
+      <div className="flex items-center justify-between sm:justify-end gap-2">
+        <div className="flex items-center border rounded-md p-0.5 bg-slate-50 shrink-0">
+          <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-7 sm:w-7 rounded-sm min-h-[32px] min-w-[32px]" onClick={onPrevMonth}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="sm" className="h-7 px-3 text-xs font-semibold" onClick={onToday}>
+          <Button variant="ghost" size="sm" className="h-8 sm:h-7 px-2.5 sm:px-3 text-xs font-semibold min-h-[32px]" onClick={onToday}>
             {t('common:calendar.today')}
           </Button>
-          <Button variant="ghost" size="icon" className="h-7 w-7 rounded-sm" onClick={onNextMonth}>
+          <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-7 sm:w-7 rounded-sm min-h-[32px] min-w-[32px]" onClick={onNextMonth}>
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
-        <h2 className="text-sm font-bold text-slate-700 ml-2">
+        <h2 className="text-xs sm:text-sm font-bold text-slate-700 ml-1 sm:ml-2 truncate">
           {format(currentDate, 'MMMM yyyy')}
         </h2>
-        <div className="h-4 w-[1px] bg-slate-200 mx-1" />
-        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500"><Search className="h-4 w-4" /></Button>
-        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500"><Printer className="h-4 w-4" /></Button>
+        <div className="h-4 w-[1px] bg-slate-200 mx-1 shrink-0" />
+        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500 min-h-[32px] min-w-[32px] shrink-0"><Search className="h-4 w-4" /></Button>
+        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500 min-h-[32px] min-w-[32px] shrink-0"><Printer className="h-4 w-4" /></Button>
       </div>
     </div>
   );

@@ -328,40 +328,40 @@ export function CSAPage() {
   return (
     <AppLayout container>
       <div className="space-y-6 pb-20 pt-4">
-        <div className="flex justify-between items-end">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
           <div>
-            <h1 className="text-4xl font-black tracking-tighter text-slate-900 flex items-center gap-4">
-              <div className="p-3 bg-indigo-600 rounded-xl shadow-xl shadow-indigo-200 ring-4 ring-indigo-50">
-                 <History className="h-8 w-8 text-white" />
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-slate-900 flex items-center gap-3 sm:gap-4">
+              <div className="p-2.5 sm:p-3 bg-indigo-600 rounded-lg sm:rounded-xl shadow-lg sm:shadow-xl shadow-indigo-200 ring-2 sm:ring-4 ring-indigo-50 shrink-0">
+                 <History className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
               </div>
               <div>
-                {t('page.title')}
+                <span>{t('page.title')}</span>
                 <div className="h-1.5 w-1/2 bg-indigo-600 rounded-full mt-1" />
               </div>
             </h1>
-            <p className="text-slate-500 text-sm mt-3 font-medium max-w-xl leading-relaxed">
+            <p className="text-slate-500 text-xs sm:text-sm mt-2 sm:mt-3 font-medium max-w-xl leading-relaxed">
               {t('page.description')}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-4 bg-white p-6 rounded-2xl border shadow-xl shadow-slate-200/40 ring-1 ring-slate-200/50">
-          <div className="relative flex-1 max-w-md">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 bg-white p-3.5 sm:p-6 rounded-lg sm:rounded-xl border shadow-sm ring-1 ring-slate-200/50">
+          <div className="relative flex-1 max-w-none sm:max-w-md">
             <Label htmlFor="csa-search" className="sr-only">Search CSA Records</Label>
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input 
               id="csa-search"
               placeholder={t('page.searchPlaceholder')} 
-              className="pl-11 h-12 bg-slate-50/50 border-slate-200 rounded-xl focus:ring-indigo-500 transition-all border-2" 
+              className="pl-10 h-10 sm:h-11 bg-slate-50/50 border-slate-200 rounded-lg focus:ring-indigo-500 transition-all text-xs" 
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
             />
           </div>
-          <div className="hidden sm:flex items-center gap-3 px-5 py-3 bg-indigo-50 rounded-xl border-2 border-indigo-100 shadow-sm shadow-indigo-100/50 animate-in fade-in slide-in-from-right-4">
-             <ShieldCheck className="h-5 w-5 text-indigo-600" />
-             <div className="flex flex-col">
-                <span className="text-xs font-black uppercase text-indigo-700 tracking-widest leading-none">{t('page.modeBadge')}</span>
-                <span className="text-xs font-bold text-indigo-400 uppercase tracking-tighter mt-0.5">{t('page.modeSubtitle')}</span>
+          <div className="flex items-center gap-2.5 px-3.5 sm:px-5 py-2.5 sm:py-3 bg-indigo-50/70 rounded-lg border border-indigo-100 shadow-xs shrink-0">
+             <ShieldCheck className="h-4 w-4 sm:h-5 sm:w-5 text-indigo-600 shrink-0" />
+             <div className="flex flex-col min-w-0">
+                <span className="text-xs font-bold uppercase text-indigo-700 tracking-wider leading-none truncate">{t('page.modeBadge')}</span>
+                <span className="text-xs font-medium text-indigo-500 uppercase tracking-tight mt-0.5 truncate">{t('page.modeSubtitle')}</span>
              </div>
           </div>
         </div>
