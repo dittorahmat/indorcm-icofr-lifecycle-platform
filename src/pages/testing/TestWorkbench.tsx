@@ -216,7 +216,7 @@ export function TestWorkbench() {
                       </div>
                       
                       <div className={cn(
-                        "h-8 w-8 rounded-md flex items-center justify-center transition-all shrink-0 border border-slate-200",
+                        "h-10 w-10 min-h-[40px] min-w-[40px] rounded-md flex items-center justify-center transition-all shrink-0 border border-slate-200",
                         isExpanded ? "bg-indigo-50 text-indigo-600 border-indigo-200" : "bg-white text-slate-400 hover:text-slate-600"
                       )}>
                         {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}

@@ -310,7 +310,7 @@ export function TodoListPage() {
               <ScrollArea className="flex-1">
                 <div className="divide-y divide-slate-100">
                   {monthlyTaskSummary.length === 0 ? (
-                    <div className="p-8 text-center text-slate-400 text-xs italic">
+                    <div className="p-8 text-center text-slate-400 text-xs font-medium">
                       {t('common:calendar.noTasks')}
                     </div>
                   ) : (

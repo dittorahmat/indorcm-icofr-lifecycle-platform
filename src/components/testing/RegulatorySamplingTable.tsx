@@ -128,7 +128,7 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
                 <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">
                   Atribut Kepatuhan (Lampiran 7)
                 </span>
-                <div className="grid grid-cols-1 xs:grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {[
                     { key: 'attrA', label: 'Attr A: Otomatis' },
                     { key: 'attrB', label: 'Attr B: Lengkap' },
