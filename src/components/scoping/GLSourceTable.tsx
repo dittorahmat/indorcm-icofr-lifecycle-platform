@@ -53,7 +53,7 @@ export function GLSourceTable({ data, onSetActive, onSetBenchmark, onDelete, isL
   return (
     <>
       <MobileDesktopBanner recordCount={sortedData.length} />
-      <div className="border rounded-lg overflow-hidden shadow-sm bg-white max-w-full">
+      <div className="border rounded-lg overflow-x-auto shadow-sm bg-white max-w-full">
       <Table>
         <TableHeader className="bg-slate-50">
           <TableRow>

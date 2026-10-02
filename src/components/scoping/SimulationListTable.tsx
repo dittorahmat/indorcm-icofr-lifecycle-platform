@@ -63,7 +63,7 @@ export function SimulationListTable({ data, onSelect, onDelete, isLoading }: Sim
   return (
     <>
       <MobileDesktopBanner recordCount={data.length} />
-      <div className="border rounded-xl overflow-hidden shadow-md bg-white max-w-full">
+      <div className="border rounded-xl overflow-x-auto shadow-md bg-white max-w-full">
       <Table>
         <TableHeader className="bg-slate-50 border-b">
           <TableRow>

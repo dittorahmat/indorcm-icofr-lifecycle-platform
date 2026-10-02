@@ -27,7 +27,7 @@ export function TLCForm({ data, onChange, disabled = false }: TLCFormProps) {
         <p className="text-xs text-slate-500 italic">Petakan tujuan pemrosesan informasi untuk kontrol tingkat transaksi ini.</p>
       </div>
 
-      <div className="grid grid-cols-4 gap-2 border rounded-lg p-3 bg-white shadow-sm">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 border rounded-lg p-3 bg-white shadow-sm">
         <TooltipProvider>
           {ipoFields.map((field) => (
             <div key={field.key} className="flex flex-col gap-2 items-center">

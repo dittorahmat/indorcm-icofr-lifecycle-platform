@@ -196,6 +196,16 @@
   .scrollbar-hover::-webkit-scrollbar-thumb:active {
     background: hsl(var(--muted-foreground) / 0.5);
   }
+
+  /* Hide scrollbar for horizontal pill/tab rails on mobile (keeps scroll) */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @media print {

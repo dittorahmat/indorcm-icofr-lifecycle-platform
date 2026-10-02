@@ -50,7 +50,7 @@ export function ControlsTable({
   }
 
   return (
-    <div className="border border-slate-200 rounded-lg overflow-hidden shadow-sm">
+    <div className="border border-slate-200 rounded-lg overflow-x-auto shadow-sm">
       <Table>
         <TableHeader className="bg-slate-50">
           <TableRow>

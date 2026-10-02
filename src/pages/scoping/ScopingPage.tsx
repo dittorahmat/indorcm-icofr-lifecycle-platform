@@ -166,13 +166,13 @@ export function ScopingPage() {
                 <Plus className="h-3.5 w-3.5" /> {t('scoping:simulation.createNew')}
               </Button>
             </div>
-            {!activeSnapshot && <p className="text-[10px] font-bold text-rose-500 uppercase tracking-[0.1em]">{t('scoping:emptyState')}</p>}
+            {!activeSnapshot && <p className="text-xs font-bold text-rose-500 uppercase tracking-[0.1em]">{t('scoping:emptyState')}</p>}
           </div>
         </PageHeader>
 
         {simulations.length === 0 && snapshots.length === 0 && !isLoading && (
           <motion.div variants={itemVariants}>
-            <Card className="bg-teal-50/50 border-teal-200/60 shadow-sm rounded-2xl overflow-hidden">
+            <Card className="bg-teal-50/50 border-teal-200/60 shadow-sm rounded-lg overflow-hidden">
               <CardContent className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex gap-3">
                   <div className="bg-teal-500/10 p-2.5 rounded-xl h-10 w-10 flex items-center justify-center text-teal-600 shrink-0">
@@ -223,7 +223,7 @@ export function ScopingPage() {
                 <Button 
                   variant="destructive" 
                   size="sm" 
-                  className="gap-2 h-8 font-bold text-[10px] uppercase tracking-widest bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-100 transition-all shadow-none rounded-md"
+                  className="gap-2 h-8 font-bold text-xs uppercase tracking-widest bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-100 transition-all shadow-none rounded-md"
                   onClick={async () => {
                     const ok = await confirm({
                       title: t('scoping:resetDataButton'),

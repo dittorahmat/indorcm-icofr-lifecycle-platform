@@ -168,7 +168,7 @@ export function UploadDocumentModal({ isOpen, onClose }: UploadDocumentModalProp
             <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t('upload.titlePlaceholder')} />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="grid gap-2">
               <Label>{t('upload.labelAccess')}</Label>
               <Select value={type} onValueChange={setType}>
@@ -200,7 +200,7 @@ export function UploadDocumentModal({ isOpen, onClose }: UploadDocumentModalProp
           {type === 'Internal' && (
             <div className="grid gap-2 border rounded-md p-4 bg-muted/20">
               <Label className="mb-2 block">{t('upload.labelDepts')}</Label>
-              <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto pr-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-32 overflow-y-auto pr-2">
                 {depts?.items.map((dept) => (
                   <div key={dept.id} className="flex items-center space-x-2">
                     <Checkbox 

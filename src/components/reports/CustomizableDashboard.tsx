@@ -244,21 +244,21 @@ export function CustomizableDashboard({ summaryData, isEffective }: Customizable
         return (
           <div className="grid gap-4 grid-cols-2 md:grid-cols-4 h-full items-center p-4">
             <div className="space-y-1">
-              <p className="text-[10px] text-muted-foreground font-black uppercase">Entity Cluster</p>
+              <p className="text-xs text-muted-foreground font-black uppercase">Entity Cluster</p>
               <p className="text-sm font-bold text-slate-800">{clusterName}</p>
             </div>
             <div className="space-y-1">
-              <p className="text-[10px] text-muted-foreground font-black uppercase">Last Review</p>
+              <p className="text-xs text-muted-foreground font-black uppercase">Last Review</p>
               <p className="text-sm font-bold text-slate-800">July 20, 2026</p>
             </div>
             <div className="space-y-1">
-              <p className="text-[10px] text-muted-foreground font-black uppercase">Conclusion</p>
+              <p className="text-xs text-muted-foreground font-black uppercase">Conclusion</p>
               <span className={cn("text-sm font-bold uppercase", isEffective ? "text-green-600" : "text-red-600")}>
                 {isEffective ? 'Effective' : 'Ineffective'}
               </span>
             </div>
             <div className="space-y-1">
-              <p className="text-[10px] text-muted-foreground font-black uppercase">Total Controls</p>
+              <p className="text-xs text-muted-foreground font-black uppercase">Total Controls</p>
               <p className="text-sm font-bold text-slate-800">{summaryData?.totalControls || 0}</p>
             </div>
           </div>
@@ -266,15 +266,15 @@ export function CustomizableDashboard({ summaryData, isEffective }: Customizable
       }
 
       return (
-        <div className="grid gap-4 grid-cols-3 h-full items-center px-4">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-3 h-full items-center px-4">
           {dataPayload.map((d: any, idx: number) => (
             <div key={idx} className="space-y-1 text-center">
-              <p className="text-[9px] text-muted-foreground font-black uppercase truncate">{d.name}</p>
+              <p className="text-xs text-muted-foreground font-black uppercase truncate">{d.name}</p>
               <p className="text-2xl font-black text-primary">{d.count}</p>
             </div>
           ))}
           {dataPayload.length === 0 && (
-            <div className="col-span-3 text-center text-xs text-slate-400 italic">No summary metrics available</div>
+            <div className="col-span-1 sm:col-span-3 text-center text-xs text-slate-400 italic">No summary metrics available</div>
           )}
         </div>
       );

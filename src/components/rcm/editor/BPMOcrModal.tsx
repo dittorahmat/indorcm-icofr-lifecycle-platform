@@ -213,9 +213,9 @@ export const BPMOcrModal: React.FC<BPMOcrModalProps> = ({
         </DialogHeader>
 
         {parsedDiagram ? (
-          <div className="grid grid-cols-2 gap-6 h-[640px] mt-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 lg:h-[640px] mt-4">
             {/* Left Column: Source image preview */}
-            <div className="border border-border rounded-xl overflow-hidden bg-muted/30 flex flex-col p-3 gap-3">
+            <div className="border border-border rounded-xl overflow-hidden bg-muted/30 flex flex-col p-3 gap-3 min-h-[280px] lg:min-h-0">
               <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
                 {t('bpm:ocr.originalImage')}
               </span>

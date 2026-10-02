@@ -102,7 +102,7 @@ export function RCMList() {
       >
         <motion.div variants={itemVariants} className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-2">
-            <h1 className="text-4xl font-display font-bold tracking-tight text-slate-900 leading-none">Risk Control Matrix</h1>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-display font-bold tracking-tight text-slate-900 leading-none">Risk Control Matrix</h1>
             <p className="text-slate-500 text-sm font-medium max-w-2xl leading-relaxed">
               {t('matrix.subtitle_tlc')}
             </p>
@@ -115,7 +115,7 @@ export function RCMList() {
         </motion.div>
 
         <Tabs defaultValue="tlc" className="w-full">
-          <motion.div variants={itemVariants} className="bg-slate-100/50 p-1 border border-slate-200 rounded-2xl w-fit mb-8">
+          <motion.div variants={itemVariants} className="bg-slate-100/50 p-1 border border-slate-200 rounded-lg max-w-full overflow-x-auto mb-8">
             <TabsList className="bg-transparent h-auto p-0 flex gap-1">
               {[
                 { value: 'tlc', label: `TLC (${t('common:icofr.tlc')})`, count: tlcControls.length },
@@ -173,7 +173,7 @@ export function RCMList() {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="flex flex-col items-center justify-center py-20 bg-white border border-slate-200 rounded-2xl shadow-sm"
+                className="flex flex-col items-center justify-center py-20 bg-white border border-slate-200 rounded-lg shadow-sm"
               >
                 <div className="h-16 w-16 bg-indigo-50 rounded-xl flex items-center justify-center mb-4">
                   <ShieldAlert className="h-8 w-8 text-indigo-600" />
