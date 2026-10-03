@@ -33,6 +33,9 @@ LOG_FILE="/tmp/icofr-deploy.log"
 BACKEND_URL="http://localhost:3001/api/settings"
 DIST_INDEX="dist/client/index.html"
 DEPLOY_INFO="dist/client/deploy-info.json"
+LIVE_DIR="/var/www/icofr"
+LIVE_INDEX="$LIVE_DIR/index.html"
+LIVE_DEPLOY_INFO="$LIVE_DIR/deploy-info.json"
 
 MODE="deploy"
 for arg in "$@"; do
@@ -71,7 +74,9 @@ HEAD_TIME="$(git log -1 --format=%ct HEAD)"
 DIST_TIME=0
 [ -f "$DIST_INDEX" ] && DIST_TIME="$(stat -c %Y "$DIST_INDEX")"
 INFO_COMMIT=""
-if [ -f "$DEPLOY_INFO" ]; then
+if [ -f "$LIVE_DEPLOY_INFO" ]; then
+    INFO_COMMIT="$(python3 -c "import json;print(json.load(open('$LIVE_DEPLOY_INFO')).get('commit',''))" 2>/dev/null || true)"
+elif [ -f "$DEPLOY_INFO" ]; then
     INFO_COMMIT="$(python3 -c "import json;print(json.load(open('$DEPLOY_INFO')).get('commit',''))" 2>/dev/null || true)"
 fi
 PM2_STATE="$(pm2 jlist 2>/dev/null | python3 -c "import json,sys;print(next((a['pm2_env']['status'] for a in json.load(sys.stdin) if a['name']=='icofr-backend'),'missing'))" 2>/dev/null || echo unknown)"
@@ -79,8 +84,8 @@ PM2_STATE="$(pm2 jlist 2>/dev/null | python3 -c "import json,sys;print(next((a['
 NEED_REASON=""
 if [ "$LOCAL" != "$REMOTE" ]; then
     NEED_REASON="commit baru di remote ($LOCAL -> $REMOTE)"
-elif [ ! -f "$DIST_INDEX" ]; then
-    NEED_REASON="hasil build hilang ($DIST_INDEX tidak ada)"
+elif [ ! -f "$LIVE_INDEX" ] || [ ! -f "$DIST_INDEX" ]; then
+    NEED_REASON="hasil build hilang (live/dist index.html tidak ada)"
 elif [ "$DIST_TIME" -lt "$HEAD_TIME" ]; then
     NEED_REASON="build basi (dist lebih tua dari HEAD)"
 elif [ "$INFO_COMMIT" != "$LOCAL" ]; then
@@ -181,7 +186,7 @@ log "Menjalankan bun run build (Vite frontend bundling)..."
 bun run build || { log "FATAL: bun run build gagal"; exit 1; }
 log "bun run build selesai."
 
-# 7. Cap versi live agar user bisa verifikasi yg sedang tayang.
+# 7. Cap versi build agar user bisa verifikasi yg sedang tayang.
 python3 - "$NEW_REV" "$DEPLOY_INFO" <<'EOF' || { echo "FATAL: tulis deploy-info gagal"; exit 1; }
 import json, sys, datetime
 info = {"commit": sys.argv[1], "branch": "main",
@@ -190,14 +195,24 @@ info = {"commit": sys.argv[1], "branch": "main",
 open(sys.argv[2], "w").write(json.dumps(info, indent=2) + "\n")
 EOF
 
-# 8. Reload backend.
+# 8. Rilis atomik: sinkronkan hasil build ke folder live produksi Apache (/var/www/icofr)
+log "Menyinkronkan aset web ke direktori produksi $LIVE_DIR..."
+mkdir -p "$LIVE_DIR"
+if ! rsync -a --delete dist/client/ "$LIVE_DIR/"; then
+    log "FATAL: rsync ke $LIVE_DIR gagal"
+    exit 1
+fi
+log "Sinkronisasi ke $LIVE_DIR selesai."
+
+# 9. Reload backend.
 PM2_BIN="$(command -v pm2 || echo /home/ubuntu/.nvm/versions/node/v20.20.2/bin/pm2)"
 "$PM2_BIN" reload icofr-backend || { log "FATAL: pm2 reload gagal"; exit 1; }
 
-# 9. Health gate: klaim sukses hanya bila semuanya terbukti.
+# 10. Health gate: klaim sukses hanya bila semuanya terbukti.
 sleep 5
-LIVE_COMMIT="$(python3 -c "import json;print(json.load(open('$DEPLOY_INFO')).get('commit',''))" 2>/dev/null || true)"
-[ "$LIVE_COMMIT" = "$NEW_REV" ] || { log "FATAL: deploy-info tidak cocok ($LIVE_COMMIT != $NEW_REV)"; exit 1; }
+LIVE_COMMIT="$(python3 -c "import json;print(json.load(open('$LIVE_DEPLOY_INFO')).get('commit',''))" 2>/dev/null || true)"
+[ "$LIVE_COMMIT" = "$NEW_REV" ] || { log "FATAL: live deploy-info tidak cocok ($LIVE_COMMIT != $NEW_REV)"; exit 1; }
+[ -f "$LIVE_INDEX" ] || { log "FATAL: live index.html tidak ditemukan di $LIVE_INDEX"; exit 1; }
 PM2_NOW="$(pm2 jlist 2>/dev/null | python3 -c "import json,sys;print(next((a['pm2_env']['status'] for a in json.load(sys.stdin) if a['name']=='icofr-backend'),'missing'))" 2>/dev/null || echo unknown)"
 [ "$PM2_NOW" = "online" ] || { log "FATAL: icofr-backend tidak online (status: $PM2_NOW)"; exit 1; }
 HTTP_CODE="$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "$BACKEND_URL" || echo 000)"
@@ -207,4 +222,4 @@ case "$HTTP_CODE" in
     *)   log "Backend menjawab (HTTP $HTTP_CODE)." ;;
 esac
 
-log "Deployment sukses: commit=$NEW_REV pm2=$PM2_NOW backend_http=$HTTP_CODE"
+log "Deployment sukses: commit=$NEW_REV pm2=$PM2_NOW backend_http=$HTTP_CODE live_dir=$LIVE_DIR"
