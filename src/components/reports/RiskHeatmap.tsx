@@ -57,7 +57,7 @@ export function RiskHeatmap() {
             </div>
 
             <div className="space-y-4">
-              <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+              <div className="grid grid-cols-3 gap-1 min-[380px]:gap-1.5 sm:gap-2">
                 {levels.map((qn) => (
                   levels.slice().reverse().map((ql) => {
                     const outcome = getOutcome(qn, ql);
@@ -68,14 +68,14 @@ export function RiskHeatmap() {
                       <Popover key={key}>
                         <PopoverTrigger asChild>
                           <button className={cn(
-                            "aspect-square rounded-lg flex flex-col items-center justify-center p-1 sm:p-2 transition-all transform hover:scale-[1.02] shadow-sm relative group min-h-[44px] min-w-[44px]",
+                            "aspect-square rounded-md flex flex-col items-center justify-center p-1 min-[380px]:p-1.5 sm:p-2 transition-colors shadow-sm relative group min-h-[44px] min-w-0 w-full overflow-hidden",
                             outcome.color,
                             outcome.textColor
                           )}>
-                            <span className="text-xs font-black opacity-60 uppercase tracking-tighter">{qn}-{ql}</span>
-                            <span className="text-xs font-black mt-1">{outcome.label}</span>
+                            <span className="text-xs font-bold opacity-70 uppercase tracking-tight truncate max-w-full">{qn}-{ql}</span>
+                            <span className="text-xs font-bold mt-0.5 truncate max-w-full">{outcome.label}</span>
                             {risks.length > 0 && (
-                              <Badge className="absolute -top-2 -right-2 bg-mancity-pattern text-primary-foreground border-white border-2 h-5 w-5 flex items-center justify-center p-0 text-xs">
+                              <Badge className="absolute top-0.5 right-0.5 bg-mancity-pattern text-primary-foreground border-white border h-5 min-w-[20px] flex items-center justify-center px-1 text-xs font-bold">
                                 {risks.length}
                               </Badge>
                             )}
@@ -114,7 +114,7 @@ export function RiskHeatmap() {
               </div>
 
               {/* X-Axis Labels */}
-              <div className="grid grid-cols-3 gap-1.5 sm:gap-2 text-center">
+              <div className="grid grid-cols-3 gap-1 min-[380px]:gap-1.5 sm:gap-2 text-center">
                 <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Rendah</span>
                 <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Medium</span>
                 <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Tinggi</span>

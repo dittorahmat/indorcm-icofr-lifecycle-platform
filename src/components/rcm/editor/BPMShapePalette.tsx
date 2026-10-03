@@ -84,7 +84,7 @@ export const BPMShapePalette: React.FC<BPMShapePaletteProps> = ({
               <Button 
                 variant="outline" 
                 size="icon" 
-                className="h-10 w-10 border-rose-200 bg-rose-50/50 hover:bg-rose-100 rounded-xl transition-all shadow-sm" 
+                className="h-10 w-10 border-rose-200 bg-rose-50/50 hover:bg-rose-100 rounded-lg transition-colors shadow-sm"
                 title={t('bpm:editor.nodes.end')} 
                 onClick={onCreateEndNode}
               >
@@ -96,7 +96,7 @@ export const BPMShapePalette: React.FC<BPMShapePaletteProps> = ({
           <div className="space-y-3">
             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest px-1">Process Elements</p>
             <ScrollArea className="h-[200px] pr-2 border border-slate-100 rounded-lg p-2 bg-slate-50/50">
-              <div className="grid grid-cols-4 sm:grid-cols-4 lg:grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 min-[380px]:grid-cols-4 gap-2">
                 {/* Row 1 */}
                 <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100 bg-white text-slate-600 hover:text-slate-800" title={t('bpm:editor.nodes.activity')} onClick={() => onCreateActivityNode('activity')}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><rect x="2" y="5" width="20" height="14" /></svg>

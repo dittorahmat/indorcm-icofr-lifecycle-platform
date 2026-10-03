@@ -216,8 +216,8 @@ export function TransactionUploadModal({ isOpen, onClose, noGL, bpmProcessId, on
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2 mt-6">
-                <Button variant="ghost" onClick={onClose} disabled={isUploading}>
+              <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 mt-6">
+                <Button variant="ghost" onClick={onClose} disabled={isUploading} className="w-full sm:w-auto min-h-[44px] sm:min-h-0">
                   Batal
                 </Button>
               </div>
@@ -257,8 +257,8 @@ export function TransactionUploadModal({ isOpen, onClose, noGL, bpmProcessId, on
                   </div>
                 )}
               </ScrollArea>
-              <div className="flex justify-end mt-6">
-                <Button variant="ghost" onClick={onClose}>Tutup</Button>
+              <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 mt-6">
+                <Button variant="ghost" onClick={onClose} className="w-full sm:w-auto min-h-[44px] sm:min-h-0">Tutup</Button>
               </div>
             </TabsContent>
           </div>

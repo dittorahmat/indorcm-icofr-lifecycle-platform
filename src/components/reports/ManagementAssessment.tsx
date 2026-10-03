@@ -33,9 +33,9 @@ export function ManagementAssessment({
 
   return (
     <div className="pt-6">
-      <div className="flex justify-end mb-6 gap-2 no-print">
+      <div className="flex flex-col sm:flex-row sm:justify-end mb-6 gap-2 no-print">
         {!isSigned ? (
-          <Button onClick={onSignOff} variant="destructive" className="font-bold shadow-md h-9 gap-2" disabled={isSigningOff}>
+          <Button onClick={onSignOff} variant="destructive" className="font-bold shadow-md h-11 sm:h-9 min-h-[44px] sm:min-h-0 gap-2 w-full sm:w-auto justify-center" disabled={isSigningOff}>
             {isSigningOff ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />}
             {t('actions.signAndLock')}
           </Button>

@@ -110,7 +110,7 @@ export function CSAViewerModal({ isOpen, onClose, controlId }: CSAViewerModalPro
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-5xl h-[80vh] flex flex-col p-0">
+      <DialogContent className="max-w-5xl h-[70dvh] sm:h-[80vh] flex flex-col p-0">
         <DialogHeader className="p-4 border-b">
           <DialogTitle className="flex items-center gap-2">
             <ShieldCheck className="h-5 w-5 text-green-600" />

@@ -97,7 +97,7 @@ export function ApplicationDetailDialog({
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-5xl w-[94vw] max-h-[92vh] flex flex-col p-0 overflow-hidden shadow-2xl border-slate-200">
           {/* Header */}
-          <div className="bg-slate-900 text-white p-6 border-b border-slate-800 shrink-0">
+          <div className="bg-slate-900 text-white p-4 sm:p-6 border-b border-slate-800 shrink-0">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="space-y-1.5">
                 <div className="flex items-center gap-2.5 flex-wrap">

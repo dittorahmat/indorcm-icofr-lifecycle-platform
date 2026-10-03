@@ -119,7 +119,7 @@ export function SimulationListTable({ data, onSelect, onDelete, isLoading }: Sim
                 </div>
               </TableCell>
               <TableCell className="text-right px-6" onClick={(e) => e.stopPropagation()}>
-                <div className="flex justify-end gap-2">
+                <div className="flex flex-wrap justify-end gap-2">
                   <Button 
                     variant="ghost" 
                     size="sm" 

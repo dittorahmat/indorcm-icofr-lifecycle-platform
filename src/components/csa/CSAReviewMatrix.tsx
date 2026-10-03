@@ -21,6 +21,7 @@ import {
 import { CSARecord, Control, TODEvaluation } from '@shared/types';
 import { cn } from '@/lib/utils';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { MobileDesktopBanner } from '@/components/layout/MobileDesktopBanner';
 import { useTranslation } from 'react-i18next';
 
 interface CSAReviewMatrixProps {
@@ -63,6 +64,10 @@ export function CSAReviewMatrix({
             <div className="w-2 h-2 rounded-full bg-red-500" /> Fail
           </div>
         </div>
+      </div>
+
+      <div className="px-2 pt-2 md:hidden">
+        <MobileDesktopBanner recordCount={controls.length} />
       </div>
 
       {/* MOBILE VIEW: Touch-friendly Card Stack (< md) */}
@@ -154,7 +159,7 @@ export function CSAReviewMatrix({
                   </div>
                 )}
 
-                <div className="pt-2 border-t border-slate-100 flex justify-end">
+                <div className="pt-2 border-t border-slate-100 flex flex-wrap justify-end gap-2">
                   <Button
                     variant="outline"
                     size="sm"

@@ -67,7 +67,7 @@ export function ScopingEditorHeader({
           </Button>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <h1 className="text-lg font-display font-bold tracking-tight leading-none">{simState.name}</h1>
+              <h1 className="text-lg font-display font-bold tracking-tight leading-none truncate min-w-0 max-w-[52vw] sm:max-w-none">{simState.name}</h1>
               <StatusBadge status={(simState.workflowStatus || simState.status) as SimulationStatus} />
             </div>
             <div className="text-xs font-medium text-slate-500 flex items-center gap-1.5 mt-0.5 flex-wrap min-w-0">

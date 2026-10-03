@@ -38,9 +38,9 @@ export function RCMPageHeader({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-2 min-w-0">
           <SidebarTrigger className="h-11 w-11 min-h-[44px] min-w-[44px] text-slate-700 dark:text-slate-300 shrink-0 rounded-md" />
-          <div>
-            <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 leading-none">{title}</h1>
-            <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wider mt-1">{subtitle}</p>
+          <div className="min-w-0">
+            <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 leading-none truncate min-w-0">{title}</h1>
+            <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wider mt-1 truncate min-w-0">{subtitle}</p>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">

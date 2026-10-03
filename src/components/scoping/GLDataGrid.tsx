@@ -24,6 +24,7 @@ import { useTranslation } from 'react-i18next';
 import { sortGLHierarchically } from '@/lib/compliance-utils';
 import { buildGLDataGridColumns } from './GLDataGridColumns';
 import { GLDataGridToolbar } from './GLDataGridToolbar';
+import { MobileDesktopBanner } from '@/components/layout/MobileDesktopBanner';
 
 interface GLDataGridProps {
   data: GLRow[];
@@ -219,6 +220,7 @@ export const GLDataGrid = React.memo(function GLDataGrid({
         onExportExcel={handleExportExcel}
         onOpenWorkflow={onOpenWorkflow}
       />
+      <MobileDesktopBanner recordCount={data.length} />
 
       <div className="rounded-md border bg-white shadow-sm overflow-hidden flex-1 min-h-0 flex flex-col w-full max-w-full">
         <div className="overflow-auto overscroll-x-contain touch-pan-x max-w-full flex-1 min-h-0 w-full">
