@@ -313,6 +313,11 @@
       width: 100% !important;
       flex-shrink: 1 !important;
     }
+    /* Intentional horizontal scroll containers get momentum + containment on touch */
+    .overflow-x-auto {
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-x: contain;
+    }
   }
 
   /* Prevent fixed-pixel toolbars from forcing horizontal scroll */

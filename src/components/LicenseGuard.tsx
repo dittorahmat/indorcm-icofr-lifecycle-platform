@@ -8,7 +8,7 @@ export const LicenseGuard = () => {
   const location = useLocation();
 
   if (isLoading) {
-    return <div className="h-screen w-full flex items-center justify-center"><Skeleton className="h-12 w-12 rounded-full" /></div>;
+    return <div className="h-dvh w-full flex items-center justify-center"><Skeleton className="h-12 w-12 rounded-full" /></div>;
   }
 
   // If not active and not already on activation page, redirect

@@ -178,7 +178,7 @@ root.render(
           <ConfirmProvider>
             <I18nextProvider i18n={i18n}>
               <ErrorBoundary>
-                <Suspense fallback={<div className="h-screen w-full flex items-center justify-center"><Skeleton className="h-12 w-12 rounded-full" /></div>}>
+                <Suspense fallback={<div className="h-dvh w-full flex items-center justify-center"><Skeleton className="h-12 w-12 rounded-full" /></div>}>
                   <RouterProvider 
                     router={router} 
                     future={{

@@ -77,14 +77,14 @@ export function ActivationPage() {
 
   if (isFetchingStatus) {
     return (
-      <div className="h-screen w-full flex items-center justify-center bg-background">
+      <div className="h-dvh w-full flex items-center justify-center bg-background">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background text-foreground relative overflow-hidden">
+    <div className="min-h-dvh flex items-center justify-center bg-background text-foreground relative overflow-hidden">
       {/* ... (gradient code) ... */}
 
       <motion.div

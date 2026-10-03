@@ -18,12 +18,12 @@ const StatCard = ({ icon, title, value }: { icon: React.ReactNode; title: string
 export function HomePage() {
   const { t } = useTranslation('common');
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-foreground">
+    <div className="min-h-dvh flex flex-col bg-slate-50 text-foreground">
       <div className="absolute inset-0 -z-10 h-full w-full bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:24px_24px] opacity-40">
       </div>
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="py-24 md:py-32 lg:py-40 text-center">
+          <div className="py-12 sm:py-16 md:py-24 lg:py-28 text-center">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -33,7 +33,7 @@ export function HomePage() {
                 <Shield className="h-4 w-4 mr-2" />
                 Compliance with SK-5/DKU.MBU/11/2024
               </div>
-              <h1 className="text-4xl sm:text-5xl md:text-7xl font-display font-black tracking-tight text-slate-900 leading-[1.1] text-balance">
+              <h1 className="text-3xl sm:text-5xl md:text-6xl font-display font-black tracking-tight text-slate-900 leading-[1.1] text-balance px-4 sm:px-0">
                 Enterprise ICOFR <br/>Lifecycle Platform
               </h1>
               <p className="mt-8 max-w-2xl mx-auto text-lg md:text-xl text-slate-600 font-medium leading-relaxed">
@@ -43,7 +43,7 @@ export function HomePage() {
                 <Button size="lg" asChild className="bg-mancity-pattern hover:opacity-90 text-primary-foreground shadow-lg shadow-blue-100 transition-all duration-300 transform hover:-translate-y-0.5 w-full sm:w-auto">
                   <Link to="/dashboard">Get Started</Link>
                 </Button>
-                <Button size="lg" variant="outline" asChild>
+                <Button size="lg" variant="outline" asChild className="w-full sm:w-auto">
                    <a href="https://www.bumn.go.id" target="_blank" rel="noreferrer">Regulation Details</a>
                 </Button>
               </div>
@@ -54,7 +54,7 @@ export function HomePage() {
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            className="mb-24"
+            className="mb-12 sm:mb-16 md:mb-24"
           >
             <h2 className="text-center text-2xl font-bold mb-12">The 5-Step ICOFR Lifecycle</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 relative">
@@ -78,7 +78,7 @@ export function HomePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="grid grid-cols-1 gap-6 md:grid-cols-3 mb-24"
+            className="grid grid-cols-1 gap-6 md:grid-cols-3 mb-12 sm:mb-16 md:mb-24"
           >
             <StatCard icon={<Zap className="h-5 w-5 text-muted-foreground" />} title="ISB Risk Control Coverage" value="98.7%" />
             <StatCard icon={<CheckCircle className="h-5 w-5 text-muted-foreground" />} title="Controls Effective" value="95.2%" />

@@ -9,7 +9,7 @@ export function WelcomePage() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 text-foreground relative overflow-hidden">
+    <div className="min-h-dvh flex items-center justify-center bg-slate-50 text-foreground relative overflow-hidden">
       {/* Background Pattern - Consistent with Login */}
       <div className="absolute inset-0 -z-10 h-full w-full bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:24px_24px] opacity-40" />
 

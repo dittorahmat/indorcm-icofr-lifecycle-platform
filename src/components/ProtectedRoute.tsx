@@ -7,7 +7,7 @@ export const ProtectedRoute = () => {
   const { data: session, isPending } = authClient.useSession();
 
   if (isPending) {
-    return <div className="h-screen w-full flex items-center justify-center"><Skeleton className="h-12 w-12 rounded-full" /></div>;
+    return <div className="h-dvh w-full flex items-center justify-center"><Skeleton className="h-12 w-12 rounded-full" /></div>;
   }
 
   return session ? <Outlet /> : <Navigate to="/" replace />;

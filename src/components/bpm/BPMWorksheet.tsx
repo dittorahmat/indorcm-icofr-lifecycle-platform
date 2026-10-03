@@ -52,6 +52,7 @@ import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 import { useUnsavedChangesContext } from '@/context/UnsavedChangesContext';
 import { useConfirm } from '@/hooks/use-confirm';
 import { createWorksheetColumns } from './BPMWorksheetColumns';
+import { MobileDesktopBanner } from '@/components/layout/MobileDesktopBanner';
 
 interface BPMWorksheetProps {
   bpmProcessId: string;
@@ -316,12 +317,12 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
           <p className="text-xs text-slate-500">Identify risks and control activities at the transaction level.</p>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 w-full min-[480px]:w-auto">
           <Button 
             onClick={() => setIsProcedureOpen(!isProcedureOpen)} 
             variant="outline" 
             size="sm"
-            className="h-9 gap-2 border-slate-200 text-slate-900 font-bold"
+            className="h-9 min-h-[44px] min-[480px]:min-h-0 gap-2 border-slate-200 text-slate-900 font-bold flex-1 min-[480px]:flex-none justify-center"
           >
             <Shield className="h-4 w-4" />
             {isProcedureOpen ? "Hide Procedure" : "Set Std. Procedure"}
@@ -330,7 +331,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
             onClick={() => createMutation.mutate()} 
             variant="default" 
             size="sm"
-            className="bg-slate-900 hover:bg-slate-800 font-bold gap-2 shadow-md px-4 h-9"
+            className="bg-slate-900 hover:bg-slate-800 font-bold gap-2 shadow-md px-4 h-9 min-h-[44px] min-[480px]:min-h-0 flex-1 min-[480px]:flex-none justify-center"
             disabled={createMutation.isPending}
           >
             {createMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlusCircle className="h-4 w-4" />}
@@ -342,8 +343,8 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
       <Collapsible open={isProcedureOpen} onOpenChange={setIsProcedureOpen} className="bg-slate-50 border-b">
          <CollapsibleContent>
             <div className="p-4 space-y-3 max-w-4xl mx-auto">
-               <div className="flex items-center justify-between flex-wrap gap-2">
-                  <div className="flex items-center gap-4">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                   <div className="flex flex-wrap items-center gap-x-4 gap-y-2 min-w-0">
                      <Label className="text-xs font-black uppercase text-slate-500 tracking-widest whitespace-nowrap">BPM Code:</Label>
                      <Input 
                        className="h-8 text-xs font-mono font-bold uppercase w-32 bg-white"
@@ -440,7 +441,12 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
         )}
       </div>
 
-      <div className={cn("flex-1 min-h-0 overflow-auto bg-white max-w-full w-full", !showFullTable && "hidden", "md:block")}>
+      <div className={cn("flex-1 min-h-0 overflow-auto overflow-x-auto max-w-full w-full touch-pan-x overscroll-x-contain table-scroll-hint", !showFullTable && "hidden", "md:block")}>
+        {showFullTable && (
+          <div className="md:hidden px-3 pt-3">
+            <MobileDesktopBanner recordCount={table.getRowModel().rows.length} />
+          </div>
+        )}
         <Table className="min-w-[2500px] border-separate border-spacing-0">
           <TableHeader className="bg-slate-100 sticky top-0 z-20">
             {table.getHeaderGroups().map(headerGroup => (
@@ -491,7 +497,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
       </div>
 
       <Dialog open={isAddingApp} onOpenChange={setIsAddingApp}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] max-h-[90dvh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle>Add New Application</DialogTitle>
             <DialogDescription>
@@ -509,11 +515,12 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
               />
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddingApp(false)}>Cancel</Button>
+          <DialogFooter className="flex-col-reverse sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => setIsAddingApp(false)} className="w-full sm:w-auto min-h-[44px] sm:min-h-0">Cancel</Button>
             <Button 
               disabled={!newAppName || createAppMutation.isPending}
               onClick={() => createAppMutation.mutate(newAppName)}
+              className="w-full sm:w-auto min-h-[44px] sm:min-h-0"
             >
               Add Application
             </Button>

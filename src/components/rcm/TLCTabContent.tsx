@@ -106,7 +106,8 @@ export function TLCTabContent({
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="h-8 w-8 text-slate-400 opacity-0 group-hover:opacity-100 group-hover:text-indigo-600 group-hover:bg-indigo-50 transition-all rounded-md" 
+                    aria-label="Edit control"
+                    className="h-8 w-8 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 md:h-8 md:w-8 text-slate-400 opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 focus-visible:!opacity-100 group-hover:text-indigo-600 group-hover:bg-indigo-50 transition-all rounded-md" 
                     onClick={() => onEditControl(ctrl)}
                   >
                     <Edit2 className="h-3.5 w-3.5" />

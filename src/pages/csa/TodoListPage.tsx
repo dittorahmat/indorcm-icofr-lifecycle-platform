@@ -279,7 +279,7 @@ export function TodoListPage() {
 
   return (
     <AppLayout container={false}>
-      <div className="flex flex-col h-[calc(100vh-64px)] overflow-hidden">
+      <div className="flex flex-col h-[calc(100dvh-64px)] overflow-hidden">
         {/* Calendar Header with Controls */}
         <TodoListFilters 
           currentDate={currentDate}
@@ -465,7 +465,7 @@ export function TodoListPage() {
             if (!open) resetForm();
           }
         }}>
-          <DialogContent>
+          <DialogContent className="max-h-[90dvh] overflow-y-auto p-4 sm:p-6">
             <DialogHeader>
               <DialogTitle>{isEditMode ? t('csa_hub:actions.execute') : t('csa_hub:scheduling.newEvent')}</DialogTitle>
               <DialogDescription>{t('csa_hub:scheduling.description')}</DialogDescription>
@@ -496,9 +496,9 @@ export function TodoListPage() {
                 <Input type="date" value={formData.plannedDate} onChange={(e) => updateFormData({ plannedDate: e.target.value })} />
               </div>
             </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>{t('common:actions.cancel')}</Button>
-              <Button onClick={handleCreate}>{t('csa_hub:scheduling.save')}</Button>
+            <DialogFooter className="flex-col-reverse sm:flex-row gap-2">
+              <Button variant="outline" onClick={() => setIsDialogOpen(false)} className="w-full sm:w-auto min-h-[44px] sm:min-h-0">{t('common:actions.cancel')}</Button>
+              <Button onClick={handleCreate} className="w-full sm:w-auto min-h-[44px] sm:min-h-0">{t('csa_hub:scheduling.save')}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -521,7 +521,7 @@ export function TodoListPage() {
           }
           setIsRescheduleOpen(open);
         }}>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-[425px] max-h-[90dvh] overflow-y-auto p-4 sm:p-6">
             <DialogHeader>
               <DialogTitle>{t('csa_hub:scheduling.reschedule.title')}</DialogTitle>
               <DialogDescription>{t('csa_hub:scheduling.reschedule.description')}</DialogDescription>
@@ -551,8 +551,8 @@ export function TodoListPage() {
                 />
               </div>
             </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsRescheduleOpen(false)}>{t('common:actions.cancel')}</Button>
+            <DialogFooter className="flex-col-reverse sm:flex-row gap-2">
+              <Button variant="outline" onClick={() => setIsRescheduleOpen(false)} className="w-full sm:w-auto min-h-[44px] sm:min-h-0">{t('common:actions.cancel')}</Button>
               <Button
                 disabled={!rescheduleData.justification.trim() || !rescheduleData.newDate}
                 onClick={() => {
@@ -560,6 +560,7 @@ export function TodoListPage() {
                   setIsRescheduleOpen(false);
                   setIsRescheduleDirty(false);
                 }}
+                className="w-full sm:w-auto min-h-[44px] sm:min-h-0"
               >
                 {t('csa_hub:scheduling.reschedule.save')}
               </Button>

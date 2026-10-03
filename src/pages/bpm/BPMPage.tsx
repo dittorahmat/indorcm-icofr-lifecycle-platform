@@ -354,7 +354,7 @@ export function BPMPage() {
         />
 
         <Dialog open={isBpmEditorOpen} onOpenChange={(open) => !open && handleCloseDiagram()}>
-          <DialogContent className="max-w-[98vw] w-[1600px] h-[92dvh] sm:h-[98vh] flex flex-col p-0 overflow-hidden border-none shadow-2xl rounded-lg">
+          <DialogContent className="max-w-[98vw] w-[1600px] h-[92dvh] sm:h-[95dvh] flex flex-col p-0 overflow-hidden border-none shadow-2xl rounded-lg">
             <DialogTitle className="sr-only">BPM Workflow Editor: {currentSubProcess}</DialogTitle>
             <DialogDescription className="sr-only">Visual editor for BPM workflow processes</DialogDescription>
             <div className="bg-mancity-pattern p-4 sm:p-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 text-primary-foreground">

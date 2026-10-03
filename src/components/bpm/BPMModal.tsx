@@ -136,19 +136,19 @@ export function BPMModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-[98vw] w-[1600px] h-[95vh] flex flex-col p-0 overflow-hidden border-none shadow-2xl">
-        <DialogHeader className="p-4 border-b bg-mancity-pattern text-primary-foreground shrink-0">
+      <DialogContent className="max-w-[98vw] w-[1600px] h-[95dvh] flex flex-col p-0 overflow-hidden border-none shadow-2xl rounded-lg">
+        <DialogHeader className="p-3 sm:p-4 border-b bg-mancity-pattern text-primary-foreground shrink-0">
           <div className="flex justify-between items-center flex-wrap gap-2">
-            <div className="flex items-center gap-3">
-              <div className="bg-primary-foreground/10 p-2 rounded-lg">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              <div className="bg-primary-foreground/10 p-2 rounded-lg shrink-0">
                 <Network className="h-5 w-5" />
               </div>
-              <div>
-                <DialogTitle className="text-xl font-black tracking-tight flex items-center gap-2">
-                  <span className="text-indigo-900">Execution Hub:</span>
-                  {subProcessName || glDesc}
+              <div className="min-w-0">
+                <DialogTitle className="text-base sm:text-xl font-black tracking-tight flex items-center gap-2 min-w-0">
+                  <span className="text-indigo-900 shrink-0">Execution Hub:</span>
+                  <span className="truncate">{subProcessName || glDesc}</span>
                 </DialogTitle>
-                <div className="flex items-center gap-2 mt-0.5 opacity-80">
+                <div className="flex flex-wrap items-center gap-2 mt-0.5 opacity-80">
                   <Badge className="bg-primary-foreground/10 text-primary-foreground border-none font-mono text-xs">
                     BPM-REF: {noGL}
                   </Badge>
@@ -164,11 +164,11 @@ export function BPMModal({
                 </div>
               </div>
             </div>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" className="h-8 text-xs font-bold bg-primary-foreground/5 border-primary-foreground/10 hover:bg-primary-foreground/10 text-primary-foreground">
+            <div className="flex gap-2 shrink-0">
+              <Button variant="outline" size="sm" className="h-8 min-h-[44px] sm:min-h-0 text-xs font-bold bg-primary-foreground/5 border-primary-foreground/10 hover:bg-primary-foreground/10 text-primary-foreground">
                 <Printer className="h-3.5 w-3.5 mr-1.5" /> {t('common:actions.printPdf')}
               </Button>
-              <Button variant="ghost" size="icon" onClick={() => handleOpenChange(false)} className="text-primary-foreground hover:bg-primary-foreground/5">
+              <Button variant="ghost" size="icon" onClick={() => handleOpenChange(false)} aria-label={t('common:actions.close', { defaultValue: 'Close' })} className="text-primary-foreground hover:bg-primary-foreground/5 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 sm:h-8 sm:w-8">
                 <XCircle className="h-5 w-5" />
               </Button>
             </div>
@@ -177,8 +177,8 @@ export function BPMModal({
 
         <div className="flex-1 flex min-h-0 overflow-hidden bg-slate-50">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
-            <div className="px-6 border-b bg-white shrink-0 shadow-sm z-10">
-              <TabsList className="h-14 bg-transparent gap-8 p-0">
+            <div className="px-3 sm:px-6 border-b bg-white shrink-0 shadow-sm z-10 max-w-full">
+              <TabsList className="h-14 bg-transparent gap-4 sm:gap-8 p-0 max-w-full overflow-x-auto no-scrollbar">
                 <TabsTrigger value="worksheet" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-xs uppercase text-slate-500 tracking-wider">
                   <FileSpreadsheet className="h-4 w-4" /> {t('modal.tabs.worksheet')}
                 </TabsTrigger>

@@ -44,7 +44,7 @@ export function AppLayout({
         style={{ width: "var(--sidebar-width)" }}
       />
       <Suspense fallback={
-        <div className="h-screen w-64 border-r bg-sidebar p-4 space-y-4 hidden md:block">
+        <div className="h-dvh w-64 border-r bg-sidebar p-4 space-y-4 hidden md:block">
            <Skeleton className="h-8 w-full" />
            <div className="space-y-2 pt-4">
              <Skeleton className="h-4 w-12" />
