@@ -246,7 +246,7 @@ export function TODDesignContextFields({ form }: { form: UseFormReturn<any> }) {
         </div>
         <div>
           <span className="text-xs font-semibold uppercase text-slate-400 tracking-wider block mb-2">Asersi Laporan Keuangan</span>
-          <div className="grid grid-cols-4 sm:grid-cols-7 gap-1.5">
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-1.5">
             {['assertionE', 'assertionC', 'assertionA', 'assertionCo', 'assertionVa', 'assertionRo', 'assertionPd'].map(f => (
               <FormField
                 key={f}

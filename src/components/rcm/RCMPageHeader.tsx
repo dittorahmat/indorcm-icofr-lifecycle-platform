@@ -74,18 +74,18 @@ export function RCMPageHeader({
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div className="relative max-w-md w-full">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <Input 
             placeholder="Search matrix..." 
-            className="pl-8 bg-white border-slate-200 h-8 text-xs font-medium" 
+            className="pl-8 bg-white border-slate-200 h-10 sm:h-8 min-h-[44px] sm:min-h-0 text-xs font-medium" 
             value={searchTerm} 
             onChange={(e) => onSearchChange(e.target.value)} 
           />
         </div>
         {metadata && (
-          <div className="flex gap-4 items-center bg-slate-100/50 px-3 py-1 rounded-lg border border-slate-200">
+          <div className="flex flex-wrap gap-3 sm:gap-4 items-center bg-slate-100/50 px-3 py-2 sm:py-1 rounded-lg border border-slate-200 w-full sm:w-auto">
             {metadata.map((item, idx) => (
               <React.Fragment key={idx}>
                 <div className="text-right">

@@ -241,7 +241,7 @@ export function BPMPage() {
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
                 </div>
-                <div className="flex items-center gap-4 w-full md:w-auto">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 w-full md:w-auto">
                   <div className="hidden md:block text-right">
                     <p className="text-xs text-slate-400 font-bold uppercase tracking-[0.2em]">{t('bpm:modal.owner')}</p>
                     <p className="text-xs font-bold text-slate-900 flex items-center gap-1.5 justify-end">
@@ -249,8 +249,8 @@ export function BPMPage() {
                       {departmentName || "Finance & Accounting"}
                     </p>
                   </div>
-                  <div className="h-8 w-px bg-slate-100" />
-                  <Button onClick={() => setIsCreatingBPM(true)} className="h-10 gap-2 bg-mancity-pattern hover:opacity-90 text-primary-foreground shadow-sm transition-all font-bold text-xs uppercase tracking-widest px-6 rounded-lg">
+                  <div className="h-8 w-px bg-slate-100 hidden sm:block" />
+                  <Button onClick={() => setIsCreatingBPM(true)} className="h-10 min-h-[44px] sm:min-h-0 gap-2 bg-mancity-pattern hover:opacity-90 text-primary-foreground shadow-sm transition-all font-bold text-xs uppercase tracking-widest px-6 rounded-lg w-full sm:w-auto justify-center">
                     <PlusCircle className="h-3.5 w-3.5" /> {t('createProcessButton')}
                   </Button>
                 </div>
@@ -300,10 +300,10 @@ export function BPMPage() {
                     <ResizableHandle withHandle />
                     <ResizablePanel defaultSize={30} minSize={20} className="bg-slate-50/30">
                       <div className="h-full flex flex-col">
-                        <div className="p-4 border-b bg-white flex items-center justify-between">
-                           <div className="flex flex-col">
-                              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Selected Process</span>
-                              <span className="text-sm font-bold text-slate-900 truncate max-w-[200px]">{selectedProcess.name}</span>
+                        <div className="p-4 border-b bg-white flex flex-col min-[380px]:flex-row min-[380px]:items-center justify-between gap-2">
+                           <div className="flex flex-col min-w-0">
+                              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Selected Process</span>
+                              <span className="text-sm font-bold text-slate-900 truncate max-w-full min-[380px]:max-w-[200px]">{selectedProcess.name}</span>
                            </div>
                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => setSelectedProcess(null)}>
                               <XIcon className="h-4 w-4" />

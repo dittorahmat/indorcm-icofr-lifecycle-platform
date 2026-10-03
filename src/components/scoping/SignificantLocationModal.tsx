@@ -103,7 +103,7 @@ export function SignificantLocationModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[800px] max-h-[90vh] flex flex-col p-0 overflow-hidden border-none shadow-2xl">
+      <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-[800px] max-h-[90dvh] flex flex-col p-0 overflow-hidden border-none shadow-2xl rounded-lg">
         <DialogHeader className="p-6 bg-primary text-primary-foreground">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-white/20 rounded-lg">

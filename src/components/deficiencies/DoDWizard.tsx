@@ -201,9 +201,9 @@ export function DoDWizard({ isOpen, setIsOpen, onComplete, isAggregate = false, 
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-4 pt-2">
-                <Button variant="outline" className="h-12 text-lg" onClick={() => handleAnswer(false)}>{t('wizard.common.no')}</Button>
-                <Button variant={isMaterialByPM ? "default" : "outline"} className={`h-12 text-lg ${isMaterialByPM ? 'bg-green-600 hover:bg-green-700' : 'border-primary/30'}`} onClick={() => handleAnswer(true)}>{t('wizard.common.yes')}</Button>
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 pt-2">
+                <Button variant="outline" className="h-11 sm:h-12 min-h-[44px] text-base sm:text-lg" onClick={() => handleAnswer(false)}>{t('wizard.common.no')}</Button>
+                <Button variant={isMaterialByPM ? "default" : "outline"} className={`h-11 sm:h-12 min-h-[44px] text-base sm:text-lg ${isMaterialByPM ? 'bg-green-600 hover:bg-green-700' : 'border-primary/30'}`} onClick={() => handleAnswer(true)}>{t('wizard.common.yes')}</Button>
               </div>
             </div>
           )}
@@ -333,9 +333,9 @@ function Question({ title, q, onAnswer }: { title: string, q: string, onAnswer: 
         {title}
       </h3>
       <p className="text-base font-medium leading-relaxed">{q}</p>
-      <div className="grid grid-cols-2 gap-4 pt-4">
-        <Button variant="outline" className="h-12 text-lg hover:bg-red-50 hover:text-red-700 hover:border-red-200" onClick={() => onAnswer(false)}>{t('wizard.common.no')}</Button>
-        <Button variant="outline" className="h-12 text-lg hover:bg-green-50 hover:text-green-700 hover:border-green-200" onClick={() => onAnswer(true)}>{t('wizard.common.yes')}</Button>
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 pt-4">
+        <Button variant="outline" className="h-11 sm:h-12 min-h-[44px] text-base sm:text-lg hover:bg-red-50 hover:text-red-700 hover:border-red-200" onClick={() => onAnswer(false)}>{t('wizard.common.no')}</Button>
+        <Button variant="outline" className="h-11 sm:h-12 min-h-[44px] text-base sm:text-lg hover:bg-green-50 hover:text-green-700 hover:border-green-200" onClick={() => onAnswer(true)}>{t('wizard.common.yes')}</Button>
       </div>
     </div>
   );

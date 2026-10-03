@@ -400,7 +400,7 @@ export function WorkflowPanel({
 
       {/* Desktop Dialog for Action Confirmation */}
       <Dialog open={!isMobile && isNoteDialogOpen} onOpenChange={setIsNoteDialogOpen}>
-        <DialogContent className="sm:max-w-[425px] shadow-2xl border-slate-200">
+        <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-[425px] max-h-[90dvh] overflow-y-auto shadow-2xl border-slate-200 rounded-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
                {pendingActionId === 'Reject' ? <AlertCircle className="text-rose-500 h-5 w-5" /> : (pendingActionId === 'Rollback' ? <RotateCcw className="text-amber-500 h-5 w-5" /> : <Send className="text-indigo-500 h-5 w-5" />)}

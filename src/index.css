@@ -230,6 +230,18 @@
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-x: contain;
   }
+
+  /* Systemic mobile guards: dialogs, sheets, and wide cards */
+  [role="dialog"] {
+    max-width: calc(100vw - 1.5rem);
+    max-height: 90dvh;
+  }
+
+  /* Prevent fixed-pixel toolbars from forcing horizontal scroll */
+  .min-w-\[720px\],
+  .min-w-\[880px\] {
+    max-width: none;
+  }
 }
 
 @layer base {

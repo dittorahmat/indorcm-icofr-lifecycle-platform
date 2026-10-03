@@ -122,10 +122,10 @@ export function ImportPage() {
     <AppLayout container>
       <div className="max-w-7xl mx-auto">
         <div className="py-8">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold text-foreground">Bulk Import RCM</h1>
-              <p className="text-muted-foreground">Upload a CSV file to bulk-create processes, risks, and controls.</p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-6">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground leading-tight">Bulk Import RCM</h1>
+              <p className="text-muted-foreground text-xs sm:text-sm font-medium">Upload a CSV file to bulk-create processes, risks, and controls.</p>
               {/* DEMO MODE: Removed access warning */}
               {!isAuthorized && (
                 <Card className="mt-4 bg-destructive/5 border-destructive/20">
@@ -139,12 +139,12 @@ export function ImportPage() {
                 </Card>
               )}
             </div>
-            <Button variant="outline" onClick={handleDownloadTemplate} className="shadow-sm">
-              <Download className="h-4 w-4 mr-2" /> Download Template
+            <Button variant="outline" onClick={handleDownloadTemplate} className="shadow-sm w-full sm:w-auto min-h-[44px] shrink-0">
+              <Download className="h-4 w-4 mr-2 shrink-0" /> Download Template
             </Button>
           </div>
-          <Card className="shadow-sm border-muted">
-            <CardContent className="p-6">
+          <Card className="shadow-sm border-muted max-w-full overflow-hidden">
+            <CardContent className="p-4 sm:p-6">
               {rows.length === 0 ? (
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
                   <div {...getRootProps()} className={cn("flex justify-center rounded-md border-2 border-dashed border-input px-6 py-12 cursor-pointer hover:border-primary transition-colors bg-muted/30", isDragActive && 'border-primary bg-accent', !isAuthorized && 'pointer-events-none opacity-50')}>

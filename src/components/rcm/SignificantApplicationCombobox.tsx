@@ -178,7 +178,7 @@ export function SignificantApplicationCombobox({
                     onChange(null, '');
                     setOpen(false);
                   }}
-                  className="text-xs text-slate-500 italic flex items-center justify-between"
+                  className="text-xs font-medium text-slate-500 flex items-center justify-between"
                 >
                   <span>{t('rcm:applications.none', { defaultValue: 'None (Pure Manual Control)' })}</span>
                   {!selectedApp && !appName && <Check className="h-3.5 w-3.5 text-emerald-600" />}

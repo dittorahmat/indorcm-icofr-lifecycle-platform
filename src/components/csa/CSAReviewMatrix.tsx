@@ -106,7 +106,7 @@ export function CSAReviewMatrix({
                     <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">
                       {t('tod.evidenceSummary', { defaultValue: 'Bukti Sampel' })}
                     </span>
-                    <div className="grid grid-cols-1 xs:grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 min-[380px]:grid-cols-2 gap-2">
                       {record.samples.map((sample, sIdx) => {
                         const res = (sample.controlResults as any)?.[control.controlId];
                         const isPassed = res?.implemented;

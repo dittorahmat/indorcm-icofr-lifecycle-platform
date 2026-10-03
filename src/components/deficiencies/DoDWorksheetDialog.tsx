@@ -297,7 +297,7 @@ export function DoDWorksheetDialog({
 
         <div className="flex-1 overflow-y-auto p-5 space-y-5">
           <Tabs defaultValue="matrix" className="w-full">
-            <TabsList className="grid grid-cols-3 mb-4 bg-muted/50 p-1 rounded-md">
+            <TabsList className="grid grid-cols-3 mb-4 bg-muted/50 p-1 rounded-md min-h-[44px] max-w-full overflow-x-auto">
               <TabsTrigger value="matrix" className="text-xs font-semibold rounded">
                 1. {t('worksheet.tabs.evaluation')}
               </TabsTrigger>

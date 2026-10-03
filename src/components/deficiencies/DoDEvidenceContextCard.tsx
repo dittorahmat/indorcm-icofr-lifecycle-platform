@@ -39,7 +39,7 @@ export function DoDEvidenceContextCard({
             </Badge>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className="grid grid-cols-1 min-[380px]:grid-cols-2 gap-2 text-xs">
             <div className="bg-muted/30 p-2 rounded-md border border-border">
               <span className="text-muted-foreground block text-xs">{t('worksheet.evidence.sampleFailures')}</span>
               <span className="font-bold text-rose-600 text-sm">
