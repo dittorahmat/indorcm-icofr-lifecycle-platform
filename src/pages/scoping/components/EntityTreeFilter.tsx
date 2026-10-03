@@ -94,7 +94,7 @@ export const EntityTreeFilter: React.FC<EntityTreeFilterProps> = ({
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[300px] p-2" align="end">
+      <PopoverContent className="w-[calc(100vw-2rem)] max-w-[300px] sm:w-[300px] p-2" align="end">
         <div className="mb-2 px-2 pb-2 border-b flex justify-between items-center flex-wrap gap-2">
           <span className="text-xs font-black uppercase text-muted-foreground tracking-widest">{t('scoping:filter.selectTitle', 'Select Entities')}</span>
           <Button 

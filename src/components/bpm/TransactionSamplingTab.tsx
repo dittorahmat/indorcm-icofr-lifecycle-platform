@@ -130,9 +130,9 @@ export function TransactionSamplingTab({ noGL, bpmProcessId, year: propYear, onS
                   {t('bpm:sampling.reset.description', { noGL })}
                 </AlertDialogDescription>
               </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>{t('bpm:sampling.reset.cancel')}</AlertDialogCancel>
-                <AlertDialogAction onClick={handleReset} className="bg-red-600 hover:bg-red-700">
+              <AlertDialogFooter className="flex-col-reverse sm:flex-row gap-2 sm:gap-0">
+                <AlertDialogCancel className="w-full sm:w-auto h-11 sm:h-10 min-h-[44px] rounded-md mt-0">{t('bpm:sampling.reset.cancel')}</AlertDialogCancel>
+                <AlertDialogAction onClick={handleReset} className="bg-red-600 hover:bg-red-700 w-full sm:w-auto h-11 sm:h-10 min-h-[44px] rounded-md">
                   {t('bpm:sampling.reset.confirm')}
                 </AlertDialogAction>
               </AlertDialogFooter>

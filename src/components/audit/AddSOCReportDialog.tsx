@@ -113,11 +113,12 @@ export function AddSOCReportDialog({ isOpen, onOpenChange }: AddSOCReportDialogP
             />
           </div>
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button 
+        <DialogFooter className="flex-col-reverse sm:flex-row gap-2 sm:gap-0">
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto h-11 sm:h-10 min-h-[44px] rounded-md">Cancel</Button>
+          <Button
             disabled={!formData.vendorId || !formData.periodEnd || mutation.isPending}
             onClick={() => mutation.mutate(formData)}
+            className="w-full sm:w-auto h-11 sm:h-10 min-h-[44px] rounded-md"
           >
             {mutation.isPending ? "Saving..." : "Save Report"}
           </Button>

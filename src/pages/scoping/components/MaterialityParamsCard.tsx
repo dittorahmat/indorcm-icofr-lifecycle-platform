@@ -100,7 +100,7 @@ export function MaterialityParamsCard({
                 <Info className="h-3 w-3 text-indigo-500" /> {t('logic.title')}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[300px] p-4 border-slate-200 shadow-xl" align="end" side="bottom" sideOffset={5}>
+            <PopoverContent className="w-[calc(100vw-2rem)] max-w-[300px] sm:w-[300px] p-4 border-slate-200 shadow-xl" align="end" side="bottom" sideOffset={5}>
               <h3 className="text-xs uppercase font-black text-slate-800 tracking-widest flex items-center gap-2 mb-2">
                 <AlertTriangle className="h-3.5 w-3.5 text-amber-500" /> {t('logic.title')}
               </h3>

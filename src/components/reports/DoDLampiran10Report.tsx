@@ -498,8 +498,8 @@ export function DoDLampiran10Report({
         </div>
 
         {/* Interactive Filter Bar */}
-        <div className="flex flex-wrap items-center gap-3 print:hidden bg-muted/40 p-3 rounded-lg border border-border">
-          <div className="relative flex-1 min-w-[220px]">
+        <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 print:hidden bg-muted/40 p-3 rounded-md border border-border">
+          <div className="relative flex-1 min-w-0 w-full sm:w-auto sm:min-w-[220px]">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder={t('dodReport.filters.searchPlaceholder')}

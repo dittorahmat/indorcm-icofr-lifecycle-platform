@@ -89,8 +89,8 @@ export function SOCMonitoringPage() {
           </Button>
         </PageHeader>
 
-        <Tabs defaultValue="apps">
-          <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 max-w-[400px]">
+          <Tabs defaultValue="apps">
+          <TabsList className="grid w-full grid-cols-2 max-w-[400px]">
             <TabsTrigger value="apps">Significant Applications</TabsTrigger>
             <TabsTrigger value="soc">SOC Monitoring</TabsTrigger>
           </TabsList>
@@ -102,8 +102,9 @@ export function SOCMonitoringPage() {
                 <CardTitle>Significant Application Inventory</CardTitle>
                 <CardDescription>Inventory of IT assets affecting ICOFR and their ITGC status (Tabel 1).</CardDescription>
               </CardHeader>
-              <CardContent>
-                <Table>
+              <CardContent className="p-0 sm:p-6">
+                <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain">
+                <Table className="min-w-[880px]">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Application Name</TableHead>
@@ -278,6 +279,7 @@ export function SOCMonitoringPage() {
                     })}
                   </TableBody>
                 </Table>
+                </div>
               </CardContent>
             </Card>
 
@@ -327,8 +329,9 @@ export function SOCMonitoringPage() {
                 <CardTitle>Service Organization Control (SOC) Repository</CardTitle>
                 <CardDescription>Formal review of third-party assurance reports to ensure financial reporting data integrity.</CardDescription>
               </CardHeader>
-              <CardContent>
-                <Table>
+              <CardContent className="p-0 sm:p-6">
+                <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain">
+                <Table className="min-w-[720px]">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Vendor Name</TableHead>
@@ -383,6 +386,7 @@ export function SOCMonitoringPage() {
                     ))}
                   </TableBody>
                 </Table>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

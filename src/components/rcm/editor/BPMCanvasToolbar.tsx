@@ -167,12 +167,12 @@ export const BPMCanvasToolbar: React.FC<BPMCanvasToolbarProps> = ({
                           key={glCode}
                           onClick={() => onSwitchGLContext(glCode)}
                           className={cn(
-                            "flex items-center justify-between px-2 py-1.5 rounded-lg text-left text-xs transition-colors",
+                            "flex items-center justify-between gap-2 px-2 py-1.5 rounded-md text-left text-xs transition-colors min-w-0",
                             isCurrent ? "bg-indigo-50 text-indigo-700 font-bold" : "hover:bg-slate-50 text-slate-600"
                           )}
                         >
-                          <span className="truncate">{opt?.label || glCode}</span>
-                          {isCurrent && <span className="text-xs font-black uppercase text-indigo-600">Active</span>}
+                          <span className="truncate min-w-0 flex-1">{opt?.label || glCode}</span>
+                          {isCurrent && <span className="text-xs font-black uppercase text-indigo-600 shrink-0">Active</span>}
                         </button>
                       );
                     })}

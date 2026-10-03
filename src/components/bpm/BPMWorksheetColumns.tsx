@@ -214,7 +214,7 @@ export function createWorksheetColumns({
                 {selectedIds.length > 0 ? `${selectedIds.length} Linked` : "Select ELC..."}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[300px] p-0" align="start">
+            <PopoverContent className="w-[calc(100vw-2rem)] max-w-[300px] sm:w-[300px] p-0" align="start">
               <Command>
                 <CommandInput placeholder="Search ELC policies..." className="h-8 text-xs" />
                 <CommandList>

@@ -99,8 +99,9 @@ export function ChangeLogPage() {
               <CardTitle>Master Change Log</CardTitle>
               <CardDescription>Comprehensive record of all structural changes to RCM, BPM, and Control Definitions.</CardDescription>
             </CardHeader>
-            <CardContent>
-              <Table>
+            <CardContent className="p-0 sm:p-6">
+              <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain">
+              <Table className="min-w-[720px]">
                 <TableHeader>
                   <TableRow className="bg-muted/50 hover:bg-muted/50">
                     <TableHead className="w-[100px]">ID</TableHead>
@@ -166,6 +167,7 @@ export function ChangeLogPage() {
                   )}
                 </TableBody>
               </Table>
+              </div>
             </CardContent>
           </Card>
         )}

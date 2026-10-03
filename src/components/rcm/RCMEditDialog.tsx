@@ -553,11 +553,11 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                       </Badge>
                     )}
                   </div>
-                  <div className="flex gap-2 sm:gap-3">
-                    <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1 sm:flex-initial h-10 sm:h-9 min-h-[44px] sm:min-h-0 text-xs font-bold px-4 sm:px-6">
+                   <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
+                    <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto h-11 sm:h-9 min-h-[44px] sm:min-h-0 text-xs font-bold px-4 sm:px-6 rounded-md">
                       Cancel
                     </Button>
-                    <Button type="submit" disabled={isSaving || !form.formState.isDirty} className="flex-1 sm:flex-initial h-10 sm:h-9 min-h-[44px] sm:min-h-0 bg-indigo-600 hover:bg-indigo-700 text-xs font-bold px-4 sm:px-8 shadow-sm">
+                    <Button type="submit" disabled={isSaving || !form.formState.isDirty} className="w-full sm:w-auto h-11 sm:h-9 min-h-[44px] sm:min-h-0 bg-indigo-600 hover:bg-indigo-700 text-xs font-bold px-4 sm:px-8 shadow-sm rounded-md">
                       {isSaving ? "Saving..." : "Update Mapping"}
                     </Button>
                   </div>

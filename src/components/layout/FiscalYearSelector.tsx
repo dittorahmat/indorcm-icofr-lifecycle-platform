@@ -203,11 +203,11 @@ export function FiscalYearSelector() {
               )}
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)} className="text-xs font-bold">
+          <DialogFooter className="flex-col-reverse sm:flex-row gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)} className="text-xs font-bold w-full sm:w-auto h-11 sm:h-10 min-h-[44px] rounded-md">
               {translate('common:cycles.cancelButton')}
             </Button>
-            <Button onClick={handleAddYear} className="text-xs font-bold">
+            <Button onClick={handleAddYear} className="text-xs font-bold w-full sm:w-auto h-11 sm:h-10 min-h-[44px] rounded-md">
               {translate('common:cycles.addYearButton')}
             </Button>
           </DialogFooter>

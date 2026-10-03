@@ -76,21 +76,21 @@ export function SheetSelectionModal({
                 key={sheet.name}
                 onClick={() => setSelected(sheet.name)}
                 className={cn(
-                  "cursor-pointer rounded-lg border p-3.5 transition-all text-left flex items-start justify-between gap-3",
+                  "cursor-pointer rounded-md border p-3.5 transition-all text-left flex items-start justify-between gap-3 flex-wrap min-w-0",
                   isChosen
                     ? "border-primary bg-primary/5 shadow-xs"
                     : "border-border hover:border-slate-300 hover:bg-slate-50/60"
                 )}
               >
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-3 min-w-0 flex-1">
                   <div className={cn(
-                    "mt-0.5 flex h-7 w-7 items-center justify-center rounded-md",
+                    "mt-0.5 flex h-7 w-7 items-center justify-center rounded-md shrink-0",
                     sheet.isValid ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"
                   )}>
                     <FileSpreadsheet className="h-4 w-4" />
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
                       <span className="text-sm font-semibold text-foreground">{sheet.name}</span>
                       {sheet.isValid ? (
                         <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700 text-xs font-medium px-2 py-0.5">

@@ -257,9 +257,9 @@ export function ControlEditor({ isOpen, setIsOpen, control }: ControlEditorProps
             <RiskAssessmentSection form={form} wizard={<QualitativeRiskWizard onApply={(val) => form.setValue("riskQualitative", val, { shouldDirty: true })} />} />
             <RegulatoryMappingSection form={form} />
 
-            <SheetFooter className="mt-8">
-              <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>{t('common:actions.cancel')}</Button>
-              <Button type="submit" disabled={mutation.isPending}>
+            <SheetFooter className="mt-8 flex-col-reverse sm:flex-row gap-2 sm:gap-0 p-4 sm:p-0 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:pb-0">
+              <Button type="button" variant="outline" onClick={() => setIsOpen(false)} className="w-full sm:w-auto h-11 sm:h-10 min-h-[44px] rounded-md text-xs font-semibold">{t('common:actions.cancel')}</Button>
+              <Button type="submit" disabled={mutation.isPending} className="w-full sm:w-auto h-11 sm:h-10 min-h-[44px] rounded-md text-xs font-semibold">
                 {mutation.isPending ? t('common:status.pending') + '...' : (control?.id ? t('common:actions.save') : t('common:actions.add'))}
               </Button>
             </SheetFooter>
