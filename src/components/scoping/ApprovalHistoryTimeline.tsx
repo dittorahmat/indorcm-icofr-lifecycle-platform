@@ -82,7 +82,7 @@ export function ApprovalHistoryTimeline({ history }: ApprovalHistoryTimelineProp
                   <p className="text-xs text-slate-500 font-medium mb-1">{t('history.userId')} {entry.userId}</p>
                   <p className={cn(
                     "text-xs leading-relaxed",
-                    entry.action === 'Reject' ? "text-red-700 font-medium italic" : "text-slate-600"
+                    entry.action === 'Reject' ? "text-red-700 font-medium not-italic" : "text-slate-600"
                   )}>
                     {entry.note || t('history.noComments')}
                   </p>

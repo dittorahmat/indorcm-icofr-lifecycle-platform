@@ -79,7 +79,7 @@ export function CSAReviewMatrix({
                 key={control.mappingId} 
                 className="bg-white p-3.5 rounded-lg border border-slate-200 shadow-xs space-y-3"
               >
-                <div className="flex items-start justify-between gap-2">
+                <div className="flex items-start justify-between gap-2 flex-wrap">
                   <div className="min-w-0 flex-1">
                     <button 
                       onClick={() => onControlClick(control)}

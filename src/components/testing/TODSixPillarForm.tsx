@@ -85,7 +85,7 @@ export function TODSixPillarForm({ form, t, isReadOnly }: TODSixPillarFormProps)
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         {pillars.map((pillar) => (
           <div key={pillar.name} className="group flex flex-col p-4 sm:p-5 border border-slate-200 rounded-lg bg-white hover:border-indigo-300 hover:shadow-xs transition-all relative overflow-hidden">
-            <div className="flex items-start justify-between gap-3 mb-3.5 relative z-10">
+            <div className="flex items-start justify-between gap-3 mb-3.5 relative z-10 flex-wrap">
               <div className="flex items-start gap-3 min-w-0 flex-1">
                 <div className={cn("p-2 sm:p-2.5 rounded-md border shrink-0 transition-all", pillar.bg, pillar.border, pillar.color)}>
                   <pillar.icon className="h-4 w-4 sm:h-5 sm:w-5" />

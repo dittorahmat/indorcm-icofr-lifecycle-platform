@@ -38,7 +38,7 @@ export function MainHeader() {
         ? "bg-slate-950 border-slate-800 text-slate-50"
         : "bg-mancity-pattern border-primary/20 text-primary-foreground"
     )}>
-      <div className="flex h-14 sm:h-16 items-center justify-between px-2 sm:px-4 gap-1.5 sm:gap-2">
+      <div className="flex h-14 sm:h-16 items-center justify-between px-2 sm:px-4 gap-1.5 sm:gap-2 flex-wrap">
         <div className="flex items-center gap-1.5 sm:gap-4 md:gap-6 min-w-0">
           {/* Mobile Global Sidebar Trigger */}
           <SidebarTrigger 
@@ -101,7 +101,7 @@ export function MainHeader() {
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel className="font-bold">{t('account.title')}</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <div className="sm:hidden px-2 py-1.5 flex items-center justify-between border-b pb-2 mb-1">
+              <div className="sm:hidden px-2 py-1.5 flex items-center justify-between border-b pb-2 mb-1 flex-wrap gap-2">
                 <span className="text-xs font-medium text-muted-foreground">{t('settings.language', { defaultValue: 'Bahasa' })}</span>
                 <LanguageSwitcher />
               </div>

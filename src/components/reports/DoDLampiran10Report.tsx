@@ -331,7 +331,7 @@ export function DoDLampiran10Report({
         </div>
 
         {/* KPI Counter Cards (Interactive Filters) */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 print:grid-cols-5">
+        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3 print:grid-cols-5">
           {/* Card 1: Total (Reset all filters) */}
           <button
             type="button"
@@ -347,10 +347,10 @@ export function DoDLampiran10Report({
             )}
             title="Klik untuk menampilkan semua defisiensi (Reset Filter)"
           >
-            <div className="text-xs font-semibold text-slate-600 uppercase flex items-center justify-between">
+            <div className="text-xs font-semibold text-slate-600 uppercase flex items-center justify-between flex-wrap gap-2">
               <span>{t('dodReport.summary.totalEvaluated')}</span>
               {severityFilter === 'ALL' && remediationFilter === 'ALL' && (
-                <span className="text-[11px] font-bold text-slate-600 bg-white px-1.5 py-0.5 rounded border border-slate-200">Aktif</span>
+                <span className="text-xs font-bold text-slate-600 bg-white px-1.5 py-0.5 rounded border border-slate-200">Aktif</span>
               )}
             </div>
             <div className="text-lg font-bold text-slate-900 mt-1">{totalCount}</div>
@@ -370,10 +370,10 @@ export function DoDLampiran10Report({
             )}
             title="Klik untuk memfilter Material Weakness (MW)"
           >
-            <div className="text-xs font-semibold text-red-700 uppercase flex items-center justify-between">
+            <div className="text-xs font-semibold text-red-700 uppercase flex items-center justify-between flex-wrap gap-2">
               <span>{t('dodReport.summary.materialWeakness')}</span>
               {severityFilter === 'Material Weakness' && (
-                <span className="text-[11px] font-bold text-red-700 bg-white px-1.5 py-0.5 rounded border border-red-200">Aktif</span>
+                <span className="text-xs font-bold text-red-700 bg-white px-1.5 py-0.5 rounded border border-red-200">Aktif</span>
               )}
             </div>
             <div className="text-lg font-bold text-red-700 mt-1">{mwCount}</div>
@@ -393,10 +393,10 @@ export function DoDLampiran10Report({
             )}
             title="Klik untuk memfilter Significant Deficiency (SD)"
           >
-            <div className="text-xs font-semibold text-amber-700 uppercase flex items-center justify-between">
+            <div className="text-xs font-semibold text-amber-700 uppercase flex items-center justify-between flex-wrap gap-2">
               <span>{t('dodReport.summary.significantDeficiency')}</span>
               {severityFilter === 'Significant Deficiency' && (
-                <span className="text-[11px] font-bold text-amber-700 bg-white px-1.5 py-0.5 rounded border border-amber-200">Aktif</span>
+                <span className="text-xs font-bold text-amber-700 bg-white px-1.5 py-0.5 rounded border border-amber-200">Aktif</span>
               )}
             </div>
             <div className="text-lg font-bold text-amber-700 mt-1">{sdCount}</div>
@@ -416,10 +416,10 @@ export function DoDLampiran10Report({
             )}
             title="Klik untuk memfilter Control Deficiency (CD)"
           >
-            <div className="text-xs font-semibold text-blue-700 uppercase flex items-center justify-between">
+            <div className="text-xs font-semibold text-blue-700 uppercase flex items-center justify-between flex-wrap gap-2">
               <span>{t('dodReport.summary.controlDeficiency')}</span>
               {severityFilter === 'Control Deficiency' && (
-                <span className="text-[11px] font-bold text-blue-700 bg-white px-1.5 py-0.5 rounded border border-blue-200">Aktif</span>
+                <span className="text-xs font-bold text-blue-700 bg-white px-1.5 py-0.5 rounded border border-blue-200">Aktif</span>
               )}
             </div>
             <div className="text-lg font-bold text-blue-700 mt-1">{cdCount}</div>
@@ -439,7 +439,7 @@ export function DoDLampiran10Report({
             )}
             title="Klik untuk memfilter defisiensi yang telah diremediasi sebelum akhir tahun"
           >
-            <div className="text-xs font-semibold text-emerald-700 uppercase flex items-center justify-between">
+            <div className="text-xs font-semibold text-emerald-700 uppercase flex items-center justify-between flex-wrap gap-2">
               <span>{t('dodReport.summary.remediatedCount')}</span>
               {remediationFilter === 'REMEDIATED' && (
                 <span className="text-xs font-bold text-emerald-700 bg-white px-1.5 py-0.5 rounded border border-emerald-200">Aktif</span>
@@ -488,7 +488,7 @@ export function DoDLampiran10Report({
         {/* 24-Column Tabular Formal Worksheet */}
         <div className="rounded-lg border border-border overflow-hidden bg-background">
           <div className="overflow-x-auto max-w-full">
-            <Table className="min-w-[2000px] border-collapse print:min-w-0 print:w-full print:text-[10px]">
+            <Table className="min-w-[2000px] border-collapse print:min-w-0 print:w-full print:text-xs">
               <TableHeader className="bg-slate-50 border-b border-border">
                 {/* Tier 1 Header: Grouping */}
                 <TableRow className="border-b border-border text-center">
@@ -534,7 +534,7 @@ export function DoDLampiran10Report({
                         <TooltipContent side="top" className="max-w-xs text-left p-2.5 bg-slate-900 text-white rounded-md shadow-lg border border-slate-700">
                           <p className="font-bold text-xs text-blue-300">{t('dodReport.tooltips.c.title')}</p>
                           <p className="text-xs text-slate-200 mt-1 leading-snug">{t('dodReport.tooltips.c.desc')}</p>
-                          <p className="text-[11px] font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.c.ref')}</p>
+                          <p className="text-xs font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.c.ref')}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -551,7 +551,7 @@ export function DoDLampiran10Report({
                         <TooltipContent side="top" className="max-w-xs text-left p-2.5 bg-slate-900 text-white rounded-md shadow-lg border border-slate-700">
                           <p className="font-bold text-xs text-blue-300">{t('dodReport.tooltips.a.title')}</p>
                           <p className="text-xs text-slate-200 mt-1 leading-snug">{t('dodReport.tooltips.a.desc')}</p>
-                          <p className="text-[11px] font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.a.ref')}</p>
+                          <p className="text-xs font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.a.ref')}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -568,7 +568,7 @@ export function DoDLampiran10Report({
                         <TooltipContent side="top" className="max-w-xs text-left p-2.5 bg-slate-900 text-white rounded-md shadow-lg border border-slate-700">
                           <p className="font-bold text-xs text-blue-300">{t('dodReport.tooltips.eo.title')}</p>
                           <p className="text-xs text-slate-200 mt-1 leading-snug">{t('dodReport.tooltips.eo.desc')}</p>
-                          <p className="text-[11px] font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.eo.ref')}</p>
+                          <p className="text-xs font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.eo.ref')}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -585,7 +585,7 @@ export function DoDLampiran10Report({
                         <TooltipContent side="top" className="max-w-xs text-left p-2.5 bg-slate-900 text-white rounded-md shadow-lg border border-slate-700">
                           <p className="font-bold text-xs text-blue-300">{t('dodReport.tooltips.co.title')}</p>
                           <p className="text-xs text-slate-200 mt-1 leading-snug">{t('dodReport.tooltips.co.desc')}</p>
-                          <p className="text-[11px] font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.co.ref')}</p>
+                          <p className="text-xs font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.co.ref')}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -602,7 +602,7 @@ export function DoDLampiran10Report({
                         <TooltipContent side="top" className="max-w-xs text-left p-2.5 bg-slate-900 text-white rounded-md shadow-lg border border-slate-700">
                           <p className="font-bold text-xs text-blue-300">{t('dodReport.tooltips.ro.title')}</p>
                           <p className="text-xs text-slate-200 mt-1 leading-snug">{t('dodReport.tooltips.ro.desc')}</p>
-                          <p className="text-[11px] font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.ro.ref')}</p>
+                          <p className="text-xs font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.ro.ref')}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -619,7 +619,7 @@ export function DoDLampiran10Report({
                         <TooltipContent side="top" className="max-w-xs text-left p-2.5 bg-slate-900 text-white rounded-md shadow-lg border border-slate-700">
                           <p className="font-bold text-xs text-blue-300">{t('dodReport.tooltips.va.title')}</p>
                           <p className="text-xs text-slate-200 mt-1 leading-snug">{t('dodReport.tooltips.va.desc')}</p>
-                          <p className="text-[11px] font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.va.ref')}</p>
+                          <p className="text-xs font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.va.ref')}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -636,7 +636,7 @@ export function DoDLampiran10Report({
                         <TooltipContent side="top" className="max-w-xs text-left p-2.5 bg-slate-900 text-white rounded-md shadow-lg border border-slate-700">
                           <p className="font-bold text-xs text-blue-300">{t('dodReport.tooltips.pd.title')}</p>
                           <p className="text-xs text-slate-200 mt-1 leading-snug">{t('dodReport.tooltips.pd.desc')}</p>
-                          <p className="text-[11px] font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.pd.ref')}</p>
+                          <p className="text-xs font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.pd.ref')}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -654,7 +654,7 @@ export function DoDLampiran10Report({
                         <TooltipContent side="top" className="max-w-xs text-left p-2.5 bg-slate-900 text-white rounded-md shadow-lg border border-slate-700">
                           <p className="font-bold text-xs text-amber-300">{t('dodReport.tooltips.box1.title')}</p>
                           <p className="text-xs text-slate-200 mt-1 leading-snug">{t('dodReport.tooltips.box1.desc')}</p>
-                          <p className="text-[11px] font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.box1.ref')}</p>
+                          <p className="text-xs font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.box1.ref')}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -671,7 +671,7 @@ export function DoDLampiran10Report({
                         <TooltipContent side="top" className="max-w-xs text-left p-2.5 bg-slate-900 text-white rounded-md shadow-lg border border-slate-700">
                           <p className="font-bold text-xs text-amber-300">{t('dodReport.tooltips.box2.title')}</p>
                           <p className="text-xs text-slate-200 mt-1 leading-snug">{t('dodReport.tooltips.box2.desc')}</p>
-                          <p className="text-[11px] font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.box2.ref')}</p>
+                          <p className="text-xs font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.box2.ref')}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -688,7 +688,7 @@ export function DoDLampiran10Report({
                         <TooltipContent side="top" className="max-w-xs text-left p-2.5 bg-slate-900 text-white rounded-md shadow-lg border border-slate-700">
                           <p className="font-bold text-xs text-amber-300">{t('dodReport.tooltips.box3.title')}</p>
                           <p className="text-xs text-slate-200 mt-1 leading-snug">{t('dodReport.tooltips.box3.desc')}</p>
-                          <p className="text-[11px] font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.box3.ref')}</p>
+                          <p className="text-xs font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.box3.ref')}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -705,7 +705,7 @@ export function DoDLampiran10Report({
                         <TooltipContent side="top" className="max-w-xs text-left p-2.5 bg-slate-900 text-white rounded-md shadow-lg border border-slate-700">
                           <p className="font-bold text-xs text-amber-300">{t('dodReport.tooltips.box4.title')}</p>
                           <p className="text-xs text-slate-200 mt-1 leading-snug">{t('dodReport.tooltips.box4.desc')}</p>
-                          <p className="text-[11px] font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.box4.ref')}</p>
+                          <p className="text-xs font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.box4.ref')}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -722,7 +722,7 @@ export function DoDLampiran10Report({
                         <TooltipContent side="top" className="max-w-xs text-left p-2.5 bg-slate-900 text-white rounded-md shadow-lg border border-slate-700">
                           <p className="font-bold text-xs text-amber-300">{t('dodReport.tooltips.box5.title')}</p>
                           <p className="text-xs text-slate-200 mt-1 leading-snug">{t('dodReport.tooltips.box5.desc')}</p>
-                          <p className="text-[11px] font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.box5.ref')}</p>
+                          <p className="text-xs font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.box5.ref')}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -739,7 +739,7 @@ export function DoDLampiran10Report({
                         <TooltipContent side="top" className="max-w-xs text-left p-2.5 bg-slate-900 text-white rounded-md shadow-lg border border-slate-700">
                           <p className="font-bold text-xs text-amber-300">{t('dodReport.tooltips.box6.title')}</p>
                           <p className="text-xs text-slate-200 mt-1 leading-snug">{t('dodReport.tooltips.box6.desc')}</p>
-                          <p className="text-[11px] font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.box6.ref')}</p>
+                          <p className="text-xs font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.box6.ref')}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -756,7 +756,7 @@ export function DoDLampiran10Report({
                         <TooltipContent side="top" className="max-w-xs text-left p-2.5 bg-slate-900 text-white rounded-md shadow-lg border border-slate-700">
                           <p className="font-bold text-xs text-amber-300">{t('dodReport.tooltips.box7.title')}</p>
                           <p className="text-xs text-slate-200 mt-1 leading-snug">{t('dodReport.tooltips.box7.desc')}</p>
-                          <p className="text-[11px] font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.box7.ref')}</p>
+                          <p className="text-xs font-mono text-slate-400 mt-1.5 pt-1 border-t border-slate-700/60">{t('dodReport.tooltips.box7.ref')}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>

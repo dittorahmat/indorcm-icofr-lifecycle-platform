@@ -181,7 +181,7 @@ export function AppSidebar(): JSX.Element {
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/bpm")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight" title={t('items.bpm')}>
-                <Link to={withYear("/bpm")} className="flex items-center justify-between w-full font-semibold text-sm">
+                <Link to={withYear("/bpm")} className="flex items-center justify-between w-full font-semibold text-sm flex-wrap gap-2">
                   <div className="flex items-center gap-2">
                     <Workflow className="h-4 w-4" /> <span>{t('items.bpm')}</span>
                   </div>
@@ -196,7 +196,7 @@ export function AppSidebar(): JSX.Element {
             {(userRole === 'Komisaris' || userRole === 'CFO' || userRole === 'Line 2' || userRole === 'Admin') && (
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={isActive("/scoping/approval")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
-                  <Link to={withYear("/scoping/approval")} className="flex items-center justify-between w-full font-semibold text-sm">
+                  <Link to={withYear("/scoping/approval")} className="flex items-center justify-between w-full font-semibold text-sm flex-wrap gap-2">
                     <div className="flex items-center gap-2">
                       <ShieldCheck className="h-4 w-4" /> <span>{t('items.approval')}</span>
                     </div>
@@ -270,7 +270,7 @@ export function AppSidebar(): JSX.Element {
           <SidebarMenu className="px-3 gap-1">
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/deficiencies")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
-                <Link to={withYear("/deficiencies")} className="flex items-center justify-between w-full font-semibold text-sm">
+                <Link to={withYear("/deficiencies")} className="flex items-center justify-between w-full font-semibold text-sm flex-wrap gap-2">
                   <div className="flex items-center gap-2">
                     <AlertTriangle className="h-4 w-4" /> <span>{t('items.deficiencies')}</span>
                   </div>
@@ -308,7 +308,7 @@ export function AppSidebar(): JSX.Element {
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={isActive("/notifications")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
-                <Link to={withYear("/notifications")} className="flex items-center justify-between w-full font-semibold text-sm">
+                <Link to={withYear("/notifications")} className="flex items-center justify-between w-full font-semibold text-sm flex-wrap gap-2">
                   <div className="flex items-center gap-2">
                     <BellIcon className="h-4 w-4" /> <span>{t('items.notifications')}</span>
                   </div>

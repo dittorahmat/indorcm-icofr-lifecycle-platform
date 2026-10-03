@@ -159,7 +159,7 @@ export function Lampiran6LogView({ entityId, year, subProcessName, bpmProcessId 
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="space-y-0.5">
           <h4 className="text-xs font-bold text-foreground flex items-center gap-2">
             <History className="h-4 w-4 text-primary" />
@@ -185,7 +185,7 @@ export function Lampiran6LogView({ entityId, year, subProcessName, bpmProcessId 
           const meta = getRowMetadata(log);
           return (
             <div key={log.id} className="rounded-lg border border-border bg-card p-4 space-y-2 shadow-sm">
-              <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
                 <span className="text-xs font-bold text-muted-foreground">#{index + 1}</span>
                 <span className="text-xs text-muted-foreground font-mono">
                   {log.timestamp ? format(log.timestamp, 'dd MMM yyyy HH:mm') : "-"}
@@ -197,7 +197,7 @@ export function Lampiran6LogView({ entityId, year, subProcessName, bpmProcessId 
                 <Badge className="text-xs font-mono">{meta.refAfter}</Badge>
               </div>
               <p className="text-xs font-semibold text-foreground line-clamp-2">{meta.descAfter}</p>
-              <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+              <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground flex-wrap">
                 <span className="font-medium truncate">{meta.owner}</span>
                 <span className="font-semibold text-primary shrink-0">
                   {log.effectiveDate ? format(log.effectiveDate, 'dd MMM yyyy') : "-"}

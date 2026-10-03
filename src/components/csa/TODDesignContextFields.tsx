@@ -51,7 +51,7 @@ export function TODDesignContextFields({ form }: { form: UseFormReturn<any> }) {
           control={form.control}
           name="isFraudRelated"
           render={({ field }) => (
-            <FormItem className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3 min-h-[44px] sm:h-10 mt-auto shadow-xs">
+            <FormItem className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3 min-h-[44px] sm:h-10 mt-auto shadow-xs flex-wrap gap-2">
               <FormLabel className="text-xs font-semibold uppercase text-slate-500 mb-0">{t('rcm:matrix.properties.fraud_related_q')}</FormLabel>
               <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
             </FormItem>
@@ -137,7 +137,7 @@ export function TODDesignContextFields({ form }: { form: UseFormReturn<any> }) {
           control={form.control}
           name="isKeyControl"
           render={({ field }) => (
-            <FormItem className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3 min-h-[44px] sm:h-10 mt-auto shadow-xs">
+            <FormItem className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3 min-h-[44px] sm:h-10 mt-auto shadow-xs flex-wrap gap-2">
               <FormLabel className="text-xs font-semibold uppercase text-slate-500 mb-0">{t('matrix.is_key_control')}</FormLabel>
               <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
             </FormItem>

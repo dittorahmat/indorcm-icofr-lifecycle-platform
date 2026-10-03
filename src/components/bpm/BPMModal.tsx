@@ -138,7 +138,7 @@ export function BPMModal({
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-[98vw] w-[1600px] h-[95vh] flex flex-col p-0 overflow-hidden border-none shadow-2xl">
         <DialogHeader className="p-4 border-b bg-mancity-pattern text-primary-foreground shrink-0">
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center flex-wrap gap-2">
             <div className="flex items-center gap-3">
               <div className="bg-primary-foreground/10 p-2 rounded-lg">
                 <Network className="h-5 w-5" />
@@ -156,7 +156,7 @@ export function BPMModal({
                   {subProcessName && glDesc && (
                     <>
                       <div className="h-3 w-[1px] bg-primary-foreground/20 mx-1" />
-                      <span className="text-xs uppercase font-medium text-primary-foreground/70 tracking-tight italic">
+                      <span className="text-xs uppercase font-medium text-primary-foreground/70 tracking-tight">
                         Account: {glDesc}
                       </span>
                     </>

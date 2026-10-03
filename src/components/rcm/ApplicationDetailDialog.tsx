@@ -185,7 +185,7 @@ export function ApplicationDetailDialog({
                 >
                   <Layers className="h-3.5 w-3.5 text-indigo-500" />
                   <span>{t('rcm:application_detail.tabs.tlc')}</span>
-                  <Badge variant="secondary" className="ml-1 text-[10px] py-0 px-1 font-semibold">
+                  <Badge variant="secondary" className="ml-1 text-xs py-0 px-1 font-semibold">
                     {tlcControls.length}
                   </Badge>
                 </TabsTrigger>
@@ -195,7 +195,7 @@ export function ApplicationDetailDialog({
                 >
                   <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
                   <span>{t('rcm:application_detail.tabs.itgc')}</span>
-                  <Badge variant="secondary" className="ml-1 text-[10px] py-0 px-1 font-semibold">
+                  <Badge variant="secondary" className="ml-1 text-xs py-0 px-1 font-semibold">
                     {itgcControls.length}
                   </Badge>
                 </TabsTrigger>
@@ -234,7 +234,7 @@ export function ApplicationDetailDialog({
             <div className="flex-1 overflow-y-auto p-6 bg-white">
               {/* TAB 1: RCM TLC */}
               <TabsContent value="tlc" className="m-0 space-y-4 focus-visible:outline-none">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between flex-wrap gap-2">
                   <div>
                     <h3 className="text-sm font-semibold text-slate-800">
                       {t('rcm:application_detail.tabs.tlc')} - {application?.name}
@@ -253,7 +253,7 @@ export function ApplicationDetailDialog({
 
               {/* TAB 2: RCM ITGC */}
               <TabsContent value="itgc" className="m-0 space-y-4 focus-visible:outline-none">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between flex-wrap gap-2">
                   <div>
                     <h3 className="text-sm font-semibold text-slate-800">
                       {t('rcm:application_detail.tabs.itgc')} - {application?.name}
@@ -330,7 +330,7 @@ export function ApplicationDetailDialog({
       {previewFile && (
         <Dialog open={!!previewFile} onOpenChange={(open) => !open && setPreviewFile(null)}>
           <DialogContent className="max-w-4xl w-[90vw] max-h-[90vh] flex flex-col p-0 overflow-hidden shadow-2xl">
-            <div className="bg-slate-900 text-white px-5 py-3.5 flex items-center justify-between shrink-0">
+            <div className="bg-slate-900 text-white px-5 py-3.5 flex items-center justify-between shrink-0 flex-wrap gap-2">
               <div className="flex items-center gap-2 truncate">
                 <FileText className="h-4 w-4 text-blue-400 shrink-0" />
                 <span className="text-sm font-semibold truncate">{previewFile.name}</span>

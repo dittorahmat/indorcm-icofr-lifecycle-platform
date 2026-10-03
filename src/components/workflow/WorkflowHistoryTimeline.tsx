@@ -72,7 +72,7 @@ export function WorkflowHistoryTimeline({ history }: WorkflowHistoryTimelineProp
                   {entry.role}
                 </Badge>
                 {entry.toStatus && (
-                   <Badge className="text-[9px] h-3.5 px-1 bg-slate-100 text-slate-600 border-none font-black uppercase">
+                   <Badge className="text-xs h-3.5 px-1 bg-slate-100 text-slate-600 border-none font-black uppercase">
                      → {entry.toStatus}
                    </Badge>
                 )}
@@ -89,10 +89,10 @@ export function WorkflowHistoryTimeline({ history }: WorkflowHistoryTimelineProp
                   <User className="h-3 w-3 text-slate-400" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter mb-1">{entry.userId}</p>
+                  <p className="text-xs text-slate-400 font-bold uppercase tracking-tighter mb-1">{entry.userId}</p>
                   <p className={cn(
                     "text-xs leading-relaxed",
-                    entry.action === 'Reject' || entry.action === 'Rollback' ? "text-red-700 font-medium italic" : "text-slate-600"
+                    entry.action === 'Reject' || entry.action === 'Rollback' ? "text-red-700 font-medium not-italic" : "text-slate-600"
                   )}>
                     {entry.note || "No comments provided."}
                   </p>

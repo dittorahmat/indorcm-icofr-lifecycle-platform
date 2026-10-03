@@ -37,7 +37,7 @@ export function LicenseBanner() {
 
   return (
     <div className="bg-amber-50 border-b border-amber-200 py-2.5 px-6 animate-in slide-in-from-top duration-500 shadow-sm">
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
+      <div className="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-3 text-amber-800 text-sm font-semibold">
           <Clock className="h-4 w-4 text-amber-600" />
           <span>License Notice: {license?.daysRemaining} days remaining until expiration. Please renew your subscription soon.</span>

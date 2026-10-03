@@ -132,7 +132,7 @@ export function MaterialityJustificationModal({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto border border-border bg-card p-6 shadow-xl rounded-lg">
         <DialogHeader className="border-b border-border pb-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
               <ShieldCheck className="h-5 w-5 text-primary" />
               <DialogTitle className="text-base font-semibold text-foreground">

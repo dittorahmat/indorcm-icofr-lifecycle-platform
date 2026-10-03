@@ -21,7 +21,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 const BaseNode = ({ children, selected, type, highlight }: { children: React.ReactNode, selected?: boolean, type: string, highlight?: boolean }) => (
   <div className={cn(
     "transition-all relative",
-    highlight && "ring-8 ring-yellow-400 ring-offset-4 rounded-lg animate-pulse scale-110 z-50"
+    highlight && "ring-8 ring-yellow-400 ring-offset-4 rounded-lg scale-110 z-50"
   )}>
     {children}
   </div>
@@ -62,7 +62,7 @@ const nodeTypes = {
   'risk-control-badge': ({ data }: NodeProps) => <div className="p-1 bg-indigo-100 border border-indigo-300 text-xs font-bold rounded">{data.label}</div>,
   'docked-risk': ({ data }: NodeProps) => <div className="p-1 bg-red-100 border border-red-300 text-xs font-bold rounded">{data.label}</div>,
   'docked-control': ({ data }: NodeProps) => <div className="p-1 bg-green-100 border border-green-300 text-xs font-bold rounded">{data.label}</div>,
-  'reference': ({ data }: NodeProps) => <div className="p-1 bg-slate-100 border border-slate-300 text-xs font-bold rounded italic">{data.label}</div>,
+  'reference': ({ data }: NodeProps) => <div className="p-1 bg-slate-100 border border-slate-300 text-xs font-bold rounded">{data.label}</div>,
 };
 
 interface CSAViewerModalProps {

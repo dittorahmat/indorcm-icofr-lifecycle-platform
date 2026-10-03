@@ -75,12 +75,12 @@ export function ControlsTable({
               <TableCell className="space-y-0.5 max-w-[320px]">
                 <div className="font-semibold text-xs text-slate-800 truncate">{ctrl.name}</div>
                 {ctrl.description && (
-                  <div className="text-[11px] text-slate-500 line-clamp-1">{ctrl.description}</div>
+                  <div className="text-xs text-slate-500 line-clamp-1">{ctrl.description}</div>
                 )}
               </TableCell>
               {matrixType === 'itgc' && (
                 <TableCell>
-                  <Badge variant="outline" className="text-[10px] bg-slate-50 text-slate-700">
+                  <Badge variant="outline" className="text-xs bg-slate-50 text-slate-700">
                     {ctrl.itgcDomain || 'ITGC'}
                   </Badge>
                 </TableCell>
@@ -90,8 +90,8 @@ export function ControlsTable({
                   variant="outline"
                   className={
                     ctrl.type === 'Preventive' || ctrl.type === 'Preventif'
-                      ? 'bg-blue-50 text-blue-700 border-blue-200 text-[10px]'
-                      : 'bg-amber-50 text-amber-700 border-amber-200 text-[10px]'
+                      ? 'bg-blue-50 text-blue-700 border-blue-200 text-xs'
+                      : 'bg-amber-50 text-amber-700 border-amber-200 text-xs'
                   }
                 >
                   {ctrl.type || '-'}
@@ -101,7 +101,7 @@ export function ControlsTable({
               <TableCell className="text-xs text-slate-600 whitespace-nowrap">{ctrl.frequency || '-'}</TableCell>
               <TableCell className="text-center">
                 {ctrl.isKeyControl ? (
-                  <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100 border-0 text-[10px] font-bold">
+                  <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100 border-0 text-xs font-bold">
                     Key
                   </Badge>
                 ) : (

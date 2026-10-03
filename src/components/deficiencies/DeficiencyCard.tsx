@@ -126,7 +126,7 @@ export function DeficiencyCard({ deficiency, actionPlan, draggable = true }: Def
         
         <CardHeader
           {...(draggable ? listeners : {})}
-          className="flex flex-row items-start justify-between p-5 pb-3 cursor-grab active:cursor-grabbing select-none"
+          className="flex flex-row items-start justify-between p-5 pb-3 cursor-grab active:cursor-grabbing select-none flex-wrap gap-2"
         >
           <div className="space-y-2 w-full pr-2">
              <div className="flex flex-wrap items-center gap-1.5">
@@ -188,7 +188,7 @@ export function DeficiencyCard({ deficiency, actionPlan, draggable = true }: Def
                {deficiency.description}
              </div>
           )}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-2">
               {actionPlan ? (
                   <div className={cn(
                     "flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest",

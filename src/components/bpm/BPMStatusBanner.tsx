@@ -33,7 +33,7 @@ export function BPMStatusBanner({
             <ShieldCheck className="h-6 w-6" />
           </div>
           <div className="space-y-0.5">
-            <p className="text-[10px] font-bold text-emerald-900 uppercase tracking-widest">{t('bpm:baseline.status')}</p>
+            <p className="text-xs font-bold text-emerald-900 uppercase tracking-widest">{t('bpm:baseline.status')}</p>
             <p className="text-xs font-medium text-emerald-700/80 leading-relaxed">{t('bpm:baseline.description', { year: viewYear })}</p>
           </div>
         </motion.div>
@@ -49,7 +49,7 @@ export function BPMStatusBanner({
             <ShieldAlert className="h-6 w-6" />
           </div>
           <div className="space-y-0.5">
-            <p className="text-[10px] font-bold text-rose-900 uppercase tracking-widest">Source Data Missing</p>
+            <p className="text-xs font-bold text-rose-900 uppercase tracking-widest">Source Data Missing</p>
             <p className="text-xs font-medium text-rose-700/80 leading-relaxed">The GL Snapshot used for this simulation was not found. Please re-perform scoping for this cycle.</p>
           </div>
         </motion.div>

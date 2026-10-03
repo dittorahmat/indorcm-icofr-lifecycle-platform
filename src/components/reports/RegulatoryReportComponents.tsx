@@ -124,7 +124,7 @@ export function ChangeLogReport() {
 
         {/* Responsive Table Wrapper */}
         <div className="rounded-lg border overflow-x-auto bg-white max-w-full print:border-slate-300">
-          <Table className="min-w-[1200px] print:min-w-0 print:w-full print:text-[9px]">
+          <Table className="min-w-[1200px] print:min-w-0 print:w-full print:text-xs">
             <TableHeader className="bg-slate-50 border-b print:bg-transparent">
               <TableRow>
                 <TableHead className="w-[50px] text-xs font-semibold uppercase py-2 text-center text-slate-800">No (i)</TableHead>

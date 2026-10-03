@@ -119,7 +119,7 @@ export function SignificantLocationModal({
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          <div className="flex items-center justify-between bg-blue-50 p-4 rounded-xl border border-blue-100">
+          <div className="flex items-center justify-between bg-blue-50 p-4 rounded-xl border border-blue-100 flex-wrap gap-2">
             <div className="space-y-1">
               <Label className="text-xs font-bold uppercase text-blue-700 tracking-wider">{t('locationModal.thresholdLabel')}</Label>
               <div className="flex items-center gap-3">
@@ -129,7 +129,7 @@ export function SignificantLocationModal({
                   value={threshold}
                   onChange={(e) => setThreshold(Number(e.target.value))}
                 />
-                <span className="text-sm text-blue-600 font-medium italic">
+                <span className="text-sm text-blue-600 font-medium">
                   {t('locationModal.thresholdRecommendation')}
                 </span>
               </div>
@@ -149,7 +149,7 @@ export function SignificantLocationModal({
                 ? "bg-emerald-50/50 border-emerald-100 text-emerald-950 dark:bg-emerald-950/10 dark:border-emerald-900/30 dark:text-emerald-50" 
                 : "bg-amber-50/50 border-amber-100 text-amber-950 dark:bg-amber-950/10 dark:border-amber-900/30 dark:text-amber-50"
             )}>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2 font-bold text-sm">
                   <AlertCircle className={cn("h-4 w-4", compliance.isOverallCompliant ? "text-emerald-600" : "text-amber-600")} />
                   <span>{t('health.complianceCheck')}</span>
@@ -198,7 +198,7 @@ export function SignificantLocationModal({
               </div>
 
               {!compliance.isOverallCompliant && (
-                <div className="mt-1 text-[11px] font-medium text-amber-800 dark:text-amber-300 leading-relaxed border-t border-amber-100/50 dark:border-amber-900/30 pt-2">
+                <div className="mt-1 text-xs font-medium text-amber-800 dark:text-amber-300 leading-relaxed border-t border-amber-100/50 dark:border-amber-900/30 pt-2">
                   <span className="font-bold flex items-center gap-1 mb-1">
                     <AlertCircle className="h-3.5 w-3.5 text-amber-500" />
                     {t('health.nonCompliantFslis')}
@@ -229,7 +229,7 @@ export function SignificantLocationModal({
               <TableBody>
                 {analysisResults.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="h-32 text-center text-slate-400 italic">
+                    <TableCell colSpan={5} className="h-32 text-center text-slate-400">
                       {t('locationModal.noData')}
                     </TableCell>
                   </TableRow>

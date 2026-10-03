@@ -21,7 +21,7 @@ export function CrossCheckPanel({ items }: CrossCheckPanelProps) {
     const { t } = useTranslation(['rcm', 'scoping', 'common']);
 
     return (
-        <Card className="border-slate-200 shadow-sm rounded-3xl overflow-hidden bg-slate-50/50">
+        <Card className="border-slate-200 shadow-sm rounded-lg overflow-hidden bg-slate-50/50">
             <CardHeader className="border-b bg-white/50 py-4">
                 <CardTitle className="text-xs font-black uppercase tracking-widest text-slate-500">
                     {t('rcm:migration.normalization.cross_check_title')}
@@ -30,13 +30,13 @@ export function CrossCheckPanel({ items }: CrossCheckPanelProps) {
             <CardContent className="p-0">
                 <div className="divide-y divide-slate-100">
                     {items.map((item, idx) => (
-                        <div key={idx} className="p-4 flex items-center justify-between hover:bg-white transition-colors group">
+                        <div key={idx} className="p-4 flex items-center justify-between hover:bg-white transition-colors group flex-wrap gap-2">
                             <div className="flex flex-col gap-1">
                                 <div className="flex items-center gap-2">
-                                    <span className="text-[10px] font-mono text-slate-400">{item.accountCode}</span>
+                                    <span className="text-xs font-mono text-slate-400">{item.accountCode}</span>
                                     <span className="text-sm font-bold text-slate-900">{item.accountName}</span>
                                 </div>
-                                <div className="text-[10px] text-slate-500 font-medium">
+                                <div className="text-xs text-slate-500 font-medium">
                                     {t('scoping:table.balance')}: {item.balance.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}
                                 </div>
                             </div>

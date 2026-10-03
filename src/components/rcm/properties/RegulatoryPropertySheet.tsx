@@ -216,7 +216,7 @@ export function RegulatoryPropertySheet({
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="w-[95vw] max-w-[1000px] h-[90vh] overflow-hidden flex flex-col p-0">
         <DialogHeader className="p-6 border-b bg-slate-50/50">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex flex-col gap-1">
               <DialogTitle className="flex items-center gap-2 text-xl">
                 {canHaveRcm ? <ShieldAlert className="h-5 w-5 text-indigo-600" /> : <Database className="h-5 w-5" />}
@@ -251,7 +251,7 @@ export function RegulatoryPropertySheet({
                 <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3 text-amber-800 text-xs items-start">
                   <Lock className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
                   <div className="space-y-1">
-                    <p className="font-bold uppercase tracking-wider text-[10px]">{t('bpm:editor.actions.locked', { defaultValue: 'READ-ONLY MODE' })}</p>
+                    <p className="font-bold uppercase tracking-wider text-xs">{t('bpm:editor.actions.locked', { defaultValue: 'READ-ONLY MODE' })}</p>
                     <p className="text-slate-600">{t('bpm:editor.lockedWarning', { defaultValue: 'Diagram ini terkunci karena status alur kerja (workflow) atau periode telah dikunci. Perubahan tidak dapat disimpan.' })}</p>
                   </div>
                 </div>
@@ -267,9 +267,9 @@ export function RegulatoryPropertySheet({
               {canHaveRcm && (
                 <div className="space-y-16">
                   {groupedRisks.length === 0 && (
-                    <div className="text-center py-12 border-2 border-dashed rounded-2xl bg-slate-50">
+                    <div className="text-center py-12 border-2 border-dashed rounded-lg bg-slate-50">
                       <AlertTriangle className="h-8 w-8 text-amber-400 mx-auto mb-3" />
-                      <p className="text-sm text-slate-500 italic mb-4">{t('bpm:noSubProcesses')}</p>
+                      <p className="text-sm text-slate-500 mb-4">{t('bpm:noSubProcesses')}</p>
                       <Button disabled={isLocked} onClick={addNewRisk} className="bg-indigo-600 hover:bg-indigo-700">
                         <PlusCircle className="h-4 w-4 mr-2" /> {t('rcm:matrix.properties.tambah_risiko_baru')}
                       </Button>
@@ -278,8 +278,8 @@ export function RegulatoryPropertySheet({
 
                   {groupedRisks.map((group, gIdx) => (
                     <div key={group.risk._tempRiskId || group.risk.riskId || `g-${gIdx}`} className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-                      <div className="bg-red-50/30 border-2 border-red-100 rounded-2xl overflow-hidden shadow-sm shadow-red-50">
-                        <div className="bg-red-600 px-4 py-2 flex justify-between items-center text-white">
+                      <div className="bg-red-50/30 border-2 border-red-100 rounded-lg overflow-hidden shadow-sm shadow-red-50">
+                        <div className="bg-red-600 px-4 py-2 flex justify-between items-center text-white flex-wrap gap-2">
                           <div className="flex items-center gap-2">
                             <AlertTriangle className="h-4 w-4" />
                             <h3 className="text-xs font-black uppercase tracking-widest">{t('rcm:matrix.properties.id_risiko')} #{gIdx + 1}</h3>
@@ -388,7 +388,7 @@ export function RegulatoryPropertySheet({
                     <h4 className="text-xs font-black uppercase text-slate-700 tracking-wider flex items-center gap-2">
                       <History className="h-3 w-3" /> Audit Trail (Lampiran 6)
                     </h4>
-                    <p className="text-xs text-slate-500 italic">Riwayat perubahan regulasi untuk seluruh risiko/kontrol pada node ini.</p>
+                    <p className="text-xs text-slate-500">Riwayat perubahan regulasi untuk seluruh risiko/kontrol pada node ini.</p>
                   </div>
 
                   {Array.from(new Set(pairs.map((p: any) => p.controlId))).map((cId: any) => (
@@ -405,7 +405,7 @@ export function RegulatoryPropertySheet({
           </ScrollArea>
         </Tabs>
 
-        <div className="p-4 border-t bg-slate-50 shadow-[0_-4px_12px_rgba(0,0,0,0.05)] flex items-center justify-between">
+        <div className="p-4 border-t bg-slate-50 shadow-[0_-4px_12px_rgba(0,0,0,0.05)] flex items-center justify-between flex-wrap gap-2">
            <Button 
              disabled={isLocked}
              variant="outline" 

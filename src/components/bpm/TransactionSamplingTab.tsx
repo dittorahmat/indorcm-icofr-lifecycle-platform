@@ -98,7 +98,7 @@ export function TransactionSamplingTab({ noGL, bpmProcessId, year: propYear, onS
 
   return (
     <div className="flex flex-col h-full bg-white">
-      <div className="p-4 border-b flex justify-between items-center bg-slate-50/50">
+      <div className="p-4 border-b flex justify-between items-center bg-slate-50/50 flex-wrap gap-2">
         <div className="flex items-center gap-4">
           <div className="relative w-72">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -171,7 +171,7 @@ export function TransactionSamplingTab({ noGL, bpmProcessId, year: propYear, onS
             {isLoading ? (
               <TableRow><TableCell colSpan={8} className="h-64 text-center"><Loader2 className="h-8 w-8 animate-spin mx-auto text-indigo-500" /></TableCell></TableRow>
             ) : filteredRows.length === 0 ? (
-              <TableRow><TableCell colSpan={8} className="h-64 text-center text-slate-400 italic">{t('bpm:sampling.empty')}</TableCell></TableRow>
+              <TableRow><TableCell colSpan={8} className="h-64 text-center text-slate-400">{t('bpm:sampling.empty')}</TableCell></TableRow>
             ) : filteredRows.map((row) => (
               <TableRow key={row.id} className={cn("hover:bg-indigo-50/30 transition-colors", selectedIds.has(row.id) && "bg-indigo-50/50")}>
                 <TableCell className="text-center">
@@ -186,7 +186,7 @@ export function TransactionSamplingTab({ noGL, bpmProcessId, year: propYear, onS
                       {row.bpmCode}
                     </Badge>
                   ) : (
-                    <span className="text-xs text-slate-300 italic">Unlinked</span>
+                    <span className="text-xs text-slate-300">Unlinked</span>
                   )}
                 </TableCell>
                 <TableCell className="text-xs font-medium text-slate-600">

@@ -20,7 +20,7 @@ export const NodeTooltip = ({ children, data, type, selected }: { children: Reac
         </TooltipTrigger>
         <TooltipContent side="right" className="max-w-[250px] p-2 bg-mancity-pattern text-primary-foreground border-none shadow-2xl z-[100]">
           <div className="space-y-1.5">
-            <div className="flex justify-between items-center border-b border-white/20 pb-1 mb-1">
+            <div className="flex justify-between items-center border-b border-white/20 pb-1 mb-1 flex-wrap gap-2">
               <p className="font-bold text-xs uppercase text-primary-foreground/70">
                 {type} Preview
               </p>
@@ -29,7 +29,7 @@ export const NodeTooltip = ({ children, data, type, selected }: { children: Reac
               )}
             </div>
             <p className="text-xs font-bold leading-tight text-primary-foreground">{data.label}</p>
-            {data.description && <p className="text-xs text-primary-foreground/80 line-clamp-3 italic leading-relaxed">{data.description}</p>}
+            {data.description && <p className="text-xs text-primary-foreground/80 line-clamp-3 leading-relaxed">{data.description}</p>}
             
             {data.relatedElcNames && data.relatedElcNames.length > 0 && (
               <div className="mt-2 pt-2 border-t border-white/20">
@@ -108,7 +108,7 @@ export const EightConnectionHandles = ({ isLocked, selected }: { isLocked?: bool
             id="qc-top"
             className="!h-4 !w-4 !rounded-full !border !border-blue-500 !bg-blue-50 !shadow-md hover:!bg-blue-500 hover:!scale-125 transition-all flex items-center justify-center cursor-crosshair"
           >
-            <span className="text-[9px] font-black text-blue-600 hover:text-white leading-none">▲</span>
+            <span className="text-xs font-black text-blue-600 hover:text-white leading-none">▲</span>
           </Handle>
         </div>
 
@@ -120,7 +120,7 @@ export const EightConnectionHandles = ({ isLocked, selected }: { isLocked?: bool
             id="qc-right"
             className="!h-4 !w-4 !rounded-full !border !border-blue-500 !bg-blue-50 !shadow-md hover:!bg-blue-500 hover:!scale-125 transition-all flex items-center justify-center cursor-crosshair"
           >
-            <span className="text-[9px] font-black text-blue-600 hover:text-white leading-none">▶</span>
+            <span className="text-xs font-black text-blue-600 hover:text-white leading-none">▶</span>
           </Handle>
         </div>
 
@@ -132,7 +132,7 @@ export const EightConnectionHandles = ({ isLocked, selected }: { isLocked?: bool
             id="qc-bottom"
             className="!h-4 !w-4 !rounded-full !border !border-blue-500 !bg-blue-50 !shadow-md hover:!bg-blue-500 hover:!scale-125 transition-all flex items-center justify-center cursor-crosshair"
           >
-            <span className="text-[9px] font-black text-blue-600 hover:text-white leading-none">▼</span>
+            <span className="text-xs font-black text-blue-600 hover:text-white leading-none">▼</span>
           </Handle>
         </div>
 
@@ -144,7 +144,7 @@ export const EightConnectionHandles = ({ isLocked, selected }: { isLocked?: bool
             id="qc-left"
             className="!h-4 !w-4 !rounded-full !border !border-blue-500 !bg-blue-50 !shadow-md hover:!bg-blue-500 hover:!scale-125 transition-all flex items-center justify-center cursor-crosshair"
           >
-            <span className="text-[9px] font-black text-blue-600 hover:text-white leading-none">◀</span>
+            <span className="text-xs font-black text-blue-600 hover:text-white leading-none">◀</span>
           </Handle>
         </div>
       </div>

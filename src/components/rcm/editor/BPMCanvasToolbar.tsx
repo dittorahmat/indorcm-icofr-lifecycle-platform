@@ -64,8 +64,8 @@ export const BPMCanvasToolbar: React.FC<BPMCanvasToolbarProps> = ({
   const { t } = useTranslation(['bpm']);
 
   return (
-    <div className="h-14 border-b border-slate-200 bg-background px-4 sm:px-6 flex items-center justify-between gap-3 shrink-0 z-20 print:hidden">
-      <div className="flex items-center gap-2 overflow-x-auto py-1 w-full justify-between">
+    <div className="h-14 border-b border-slate-200 bg-background px-4 sm:px-6 flex items-center justify-between gap-3 shrink-0 z-20 print:hidden flex-wrap">
+      <div className="flex items-center gap-2 overflow-x-auto py-1 w-full justify-between flex-wrap">
         <div className="flex items-center gap-2 shrink-0">
           <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-xl p-0.5 shadow-sm shrink-0">
             <Button
@@ -77,7 +77,7 @@ export const BPMCanvasToolbar: React.FC<BPMCanvasToolbarProps> = ({
               title={`${t('bpm:editor.actions.undo', { defaultValue: 'Undo' })} (Ctrl+Z)`}
             >
               <Undo2 className="h-3.5 w-3.5" />
-              <span className="hidden xl:inline text-[10px] uppercase tracking-wider">{t('bpm:editor.actions.undo', { defaultValue: 'Undo' })}</span>
+              <span className="hidden xl:inline text-xs uppercase tracking-wider">{t('bpm:editor.actions.undo', { defaultValue: 'Undo' })}</span>
             </Button>
             <Separator orientation="vertical" className="h-4" />
             <Button
@@ -89,7 +89,7 @@ export const BPMCanvasToolbar: React.FC<BPMCanvasToolbarProps> = ({
               title={`${t('bpm:editor.actions.redo', { defaultValue: 'Redo' })} (Ctrl+Y)`}
             >
               <Redo2 className="h-3.5 w-3.5" />
-              <span className="hidden xl:inline text-[10px] uppercase tracking-wider">{t('bpm:editor.actions.redo', { defaultValue: 'Redo' })}</span>
+              <span className="hidden xl:inline text-xs uppercase tracking-wider">{t('bpm:editor.actions.redo', { defaultValue: 'Redo' })}</span>
             </Button>
           </div>
 
@@ -97,7 +97,7 @@ export const BPMCanvasToolbar: React.FC<BPMCanvasToolbarProps> = ({
             size="sm" 
             variant="outline" 
             disabled={!hasNodes || isLocked}
-            className="h-9 gap-1.5 bg-white border-slate-200 hover:bg-slate-50 transition-all font-bold text-[10px] uppercase tracking-widest px-3 rounded-xl shadow-sm shrink-0"
+            className="h-9 gap-1.5 bg-white border-slate-200 hover:bg-slate-50 transition-all font-bold text-xs uppercase tracking-widest px-3 rounded-xl shadow-sm shrink-0"
             onClick={onAutoArrange}
             title={t('bpm:editor.actions.autoArrange', { defaultValue: 'Auto Arrange' })}
           >
@@ -110,7 +110,7 @@ export const BPMCanvasToolbar: React.FC<BPMCanvasToolbarProps> = ({
               size="sm" 
               variant="outline" 
               disabled={!hasNodes}
-              className="h-9 gap-1.5 bg-white border-slate-200 hover:bg-slate-50 transition-all font-bold text-[10px] uppercase tracking-widest px-3 rounded-xl shadow-sm shrink-0"
+              className="h-9 gap-1.5 bg-white border-slate-200 hover:bg-slate-50 transition-all font-bold text-xs uppercase tracking-widest px-3 rounded-xl shadow-sm shrink-0"
               onClick={onFitView}
               title={t('bpm:editor.actions.fitView', { defaultValue: 'Fit to Screen' })}
             >
@@ -122,7 +122,7 @@ export const BPMCanvasToolbar: React.FC<BPMCanvasToolbarProps> = ({
           <Button 
             size="sm" 
             variant="outline" 
-            className="h-9 gap-1.5 bg-white border-slate-200 hover:bg-slate-50 transition-all font-bold text-[10px] uppercase tracking-widest px-3 rounded-xl shadow-sm shrink-0"
+            className="h-9 gap-1.5 bg-white border-slate-200 hover:bg-slate-50 transition-all font-bold text-xs uppercase tracking-widest px-3 rounded-xl shadow-sm shrink-0"
             onClick={onOpenDocumentView}
             title={t('bpm:editor.actions.documentView')}
           >
@@ -138,12 +138,12 @@ export const BPMCanvasToolbar: React.FC<BPMCanvasToolbarProps> = ({
             <Button 
               size="sm" 
               variant="outline" 
-              className="h-9 gap-1.5 bg-white border-slate-200 hover:bg-slate-50 transition-all font-bold text-[10px] uppercase tracking-widest px-2.5 rounded-xl shadow-sm shrink-0"
+              className="h-9 gap-1.5 bg-white border-slate-200 hover:bg-slate-50 transition-all font-bold text-xs uppercase tracking-widest px-2.5 rounded-xl shadow-sm shrink-0"
               title="Linked GLs"
             >
               <LinkIcon className="h-3.5 w-3.5 text-indigo-500" />
               <span className="hidden lg:inline">Linked GLs</span>
-              <span className="text-[10px] font-black bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded-full">
+              <span className="text-xs font-black bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded-full">
                 {selectedGLs.length}
               </span>
             </Button>
@@ -152,12 +152,12 @@ export const BPMCanvasToolbar: React.FC<BPMCanvasToolbarProps> = ({
             <div className="space-y-4">
               <div className="space-y-1">
                 <h4 className="font-bold text-xs uppercase tracking-wider text-slate-700">Link GL Codes</h4>
-                <p className="text-[10px] text-slate-400">Pilih akun GL yang menggunakan diagram alur proses ini.</p>
+                <p className="text-xs text-slate-400">Pilih akun GL yang menggunakan diagram alur proses ini.</p>
               </div>
 
               {selectedGLs.length > 0 && (
                 <div className="space-y-1.5 border-b border-slate-100 pb-3">
-                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Switch Context</span>
+                  <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Switch Context</span>
                   <div className="flex flex-col gap-1 max-h-[120px] overflow-y-auto pr-1 scrollbar-thin">
                     {selectedGLs.map(glCode => {
                       const opt = glOptions.find(o => o.value === glCode);
@@ -172,7 +172,7 @@ export const BPMCanvasToolbar: React.FC<BPMCanvasToolbarProps> = ({
                           )}
                         >
                           <span className="truncate">{opt?.label || glCode}</span>
-                          {isCurrent && <span className="text-[9px] font-black uppercase text-indigo-600">Active</span>}
+                          {isCurrent && <span className="text-xs font-black uppercase text-indigo-600">Active</span>}
                         </button>
                       );
                     })}
@@ -181,7 +181,7 @@ export const BPMCanvasToolbar: React.FC<BPMCanvasToolbarProps> = ({
               )}
 
               <div className="space-y-1.5">
-                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Select Accounts</span>
+                <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Select Accounts</span>
                 <MultiSelect
                   options={glOptions}
                   selected={selectedGLs}
@@ -195,7 +195,7 @@ export const BPMCanvasToolbar: React.FC<BPMCanvasToolbarProps> = ({
         </Popover>
 
         <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-xl px-2 h-9 shadow-sm shrink-0">
-          <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-0.5 hidden sm:inline">{t('bpm:editor.actions.zoom', { defaultValue: 'Scale' })}:</span>
+          <span className="text-xs font-black text-slate-400 uppercase tracking-widest pl-0.5 hidden sm:inline">{t('bpm:editor.actions.zoom', { defaultValue: 'Scale' })}:</span>
           <Select value={String(globalScale)} onValueChange={(val) => onScaleChange(Number(val))}>
             <SelectTrigger className="h-7 w-[68px] text-xs font-bold border-none bg-transparent focus:ring-0 p-0 shadow-none">
               <SelectValue />
@@ -225,7 +225,7 @@ export const BPMCanvasToolbar: React.FC<BPMCanvasToolbarProps> = ({
           <Button 
             size="sm" 
             variant="outline" 
-            className="h-9 gap-1.5 bg-white border-slate-200 hover:bg-slate-50 transition-all font-bold text-[10px] uppercase tracking-widest px-2.5 rounded-xl shadow-sm shrink-0"
+            className="h-9 gap-1.5 bg-white border-slate-200 hover:bg-slate-50 transition-all font-bold text-xs uppercase tracking-widest px-2.5 rounded-xl shadow-sm shrink-0"
             onClick={onOpenOcrDialog}
             title={t('bpm:ocr.importButton')}
           >
@@ -235,14 +235,14 @@ export const BPMCanvasToolbar: React.FC<BPMCanvasToolbarProps> = ({
         )}
 
         {isLocked && (
-          <Badge variant="outline" className="h-9 bg-amber-50 text-amber-700 border-amber-200 gap-1.5 px-3 font-bold text-[10px] uppercase tracking-widest rounded-xl shadow-sm shrink-0">
+          <Badge variant="outline" className="h-9 bg-amber-50 text-amber-700 border-amber-200 gap-1.5 px-3 font-bold text-xs uppercase tracking-widest rounded-xl shadow-sm shrink-0">
             <ShieldCheck className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">{t('bpm:editor.actions.locked')}</span>
           </Badge>
         )}
         <Button 
           size="sm" 
-          className="h-9 gap-2 bg-mancity-pattern hover:opacity-90 text-primary-foreground shadow-sm transition-all font-bold text-[10px] uppercase tracking-widest px-4 sm:px-5 rounded-xl shrink-0" 
+          className="h-9 gap-2 bg-mancity-pattern hover:opacity-90 text-primary-foreground shadow-sm transition-all font-bold text-xs uppercase tracking-widest px-4 sm:px-5 rounded-xl shrink-0" 
           onClick={onSave} 
           disabled={isSaving || isLocked}
           title={t('bpm:editor.actions.save')}

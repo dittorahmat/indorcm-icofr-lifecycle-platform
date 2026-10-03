@@ -111,7 +111,7 @@ function KanbanColumn({
       "flex flex-col h-full group/column",
       fullWidth ? "w-full" : "w-80 flex-shrink-0"
     )}>
-      <div className="flex items-center justify-between mb-4 px-3">
+      <div className="flex items-center justify-between mb-4 px-3 flex-wrap gap-2">
         <div className="flex items-center gap-2.5">
            <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center border-2 border-white shadow-sm", config.bg)}>
               <config.icon className={cn("h-4 w-4", config.color)} />

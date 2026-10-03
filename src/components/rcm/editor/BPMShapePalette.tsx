@@ -51,7 +51,7 @@ export const BPMShapePalette: React.FC<BPMShapePaletteProps> = ({
 
   return (
     <Panel position="top-left" className="bg-white p-5 rounded-lg border border-slate-200 shadow-lg flex flex-col gap-5 max-w-[280px] max-h-[85vh] overflow-y-auto scrollbar-thin transition-all">
-      <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+      <div className="flex items-center justify-between border-b border-slate-100 pb-4 flex-wrap gap-2">
         <div className="flex flex-col pr-2">
           <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">{t('bpm:modal.title')}</span>
           <span className="text-sm font-display font-bold text-slate-900 leading-tight truncate max-w-[180px]">{subProcess}</span>
@@ -70,7 +70,7 @@ export const BPMShapePalette: React.FC<BPMShapePaletteProps> = ({
       {!isLocked && (
         <div className="space-y-5">
           <div className="space-y-3">
-            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest px-1">Flow Controls</p>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest px-1">Flow Controls</p>
             <div className="flex gap-2">
               <Button 
                 variant="outline" 
@@ -94,9 +94,9 @@ export const BPMShapePalette: React.FC<BPMShapePaletteProps> = ({
           </div>
           
           <div className="space-y-3">
-            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest px-1">Process Elements</p>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest px-1">Process Elements</p>
             <ScrollArea className="h-[200px] pr-2 border border-slate-100 rounded-lg p-2 bg-slate-50/50">
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
                 {/* Row 1 */}
                 <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg hover:bg-slate-50 border-slate-100 bg-white text-slate-600 hover:text-slate-800" title={t('bpm:editor.nodes.activity')} onClick={() => onCreateActivityNode('activity')}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><rect x="2" y="5" width="20" height="14" /></svg>
@@ -217,13 +217,13 @@ export const BPMShapePalette: React.FC<BPMShapePaletteProps> = ({
 
           {/* Migration Backlog Section */}
           <div className="space-y-3 pt-4 border-t border-slate-100">
-            <p className="text-[9px] font-bold text-indigo-500 uppercase tracking-widest px-1 flex items-center gap-2">
+            <p className="text-xs font-bold text-indigo-500 uppercase tracking-widest px-1 flex items-center gap-2">
               <RefreshCw className="h-3 w-3" /> {t('rcm:migration.backlog.title')}
             </p>
             <ScrollArea className="h-[120px] pr-2">
               <div className="space-y-2">
                 {unmappedControls.length === 0 ? (
-                  <p className="text-[10px] text-slate-400 italic text-center py-4">No pending items</p>
+                  <p className="text-xs text-slate-400 text-center py-4">No pending items</p>
                 ) : (
                   unmappedControls.map(ctrl => (
                     <div 
@@ -233,7 +233,7 @@ export const BPMShapePalette: React.FC<BPMShapePaletteProps> = ({
                         e.dataTransfer.setData('application/reactflow', JSON.stringify(ctrl));
                         e.dataTransfer.effectAllowed = 'move';
                       }}
-                      className="p-2 rounded-lg bg-indigo-50/50 border border-indigo-100 text-[10px] font-bold text-indigo-700 flex items-center gap-2 cursor-grab active:cursor-grabbing hover:bg-indigo-100 transition-colors group"
+                      className="p-2 rounded-lg bg-indigo-50/50 border border-indigo-100 text-xs font-bold text-indigo-700 flex items-center gap-2 cursor-grab active:cursor-grabbing hover:bg-indigo-100 transition-colors group"
                       title={ctrl.mappedControlDescription || ctrl.riskDescription}
                     >
                       <GripVertical className="h-3 w-3 text-indigo-300 group-hover:text-indigo-500 shrink-0" />
@@ -243,7 +243,7 @@ export const BPMShapePalette: React.FC<BPMShapePaletteProps> = ({
                 )}
               </div>
             </ScrollArea>
-            <p className="text-[8px] text-slate-400 italic">{t('rcm:migration.backlog.drag_hint')}</p>
+            <p className="text-xs text-slate-400">{t('rcm:migration.backlog.drag_hint')}</p>
           </div>
         </div>
       )}

@@ -88,19 +88,19 @@ export const EntityTreeFilter: React.FC<EntityTreeFilterProps> = ({
           <Filter className="h-4 w-4" />
           <span className="text-xs font-bold uppercase tracking-wider">{t('scoping:filter.entityLabel', 'Entity Filter')}</span>
           {selectedCodes.length > 0 && (
-            <div className="ml-1 bg-primary text-primary-foreground text-[10px] rounded-full h-4 w-4 flex items-center justify-center font-black">
+            <div className="ml-1 bg-primary text-primary-foreground text-xs rounded-full h-4 w-4 flex items-center justify-center font-black">
               {selectedCodes.length}
             </div>
           )}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[300px] p-2" align="end">
-        <div className="mb-2 px-2 pb-2 border-b flex justify-between items-center">
-          <span className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">{t('scoping:filter.selectTitle', 'Select Entities')}</span>
+        <div className="mb-2 px-2 pb-2 border-b flex justify-between items-center flex-wrap gap-2">
+          <span className="text-xs font-black uppercase text-muted-foreground tracking-widest">{t('scoping:filter.selectTitle', 'Select Entities')}</span>
           <Button 
             variant="ghost" 
             size="sm" 
-            className="h-7 px-2 text-[10px] font-bold uppercase tracking-wider hover:bg-slate-100"
+            className="h-7 px-2 text-xs font-bold uppercase tracking-wider hover:bg-slate-100"
             onClick={() => onSelectionChange([])}
           >
             {t('common:actions.clearAll', 'Clear All')}
@@ -111,7 +111,7 @@ export const EntityTreeFilter: React.FC<EntityTreeFilterProps> = ({
             {hierarchy.length > 0 ? (
               hierarchy.map(node => renderNode(node))
             ) : (
-              <p className="text-center py-8 text-xs text-muted-foreground font-medium italic">No entities found</p>
+              <p className="text-center py-8 text-xs text-muted-foreground font-medium">No entities found</p>
             )}
           </div>
         </ScrollArea>

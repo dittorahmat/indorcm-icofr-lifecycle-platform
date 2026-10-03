@@ -194,7 +194,7 @@ export function ImportPage() {
                   {mutation.status === 'pending' && (
                     <div className="mt-4 flex items-center gap-3">
                       <Progress className="h-1.5 w-full" />
-                      <span className="h-2 w-2 rounded-full bg-primary animate-ping" aria-hidden />
+                      <span className="h-2 w-2 rounded-full bg-primary" aria-hidden />
                     </div>
                   )}
                 </div>

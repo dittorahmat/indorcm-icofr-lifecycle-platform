@@ -90,7 +90,7 @@ export function NotificationCenter() {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80 p-0 mr-4 mt-2 shadow-xl border-slate-200" align="end">
-        <div className="flex items-center justify-between px-4 py-3 border-b bg-slate-50/50">
+        <div className="flex items-center justify-between px-4 py-3 border-b bg-slate-50/50 flex-wrap gap-2">
           <h3 className="font-bold text-sm text-slate-900">{t('notifications.title')}</h3>
           <div className="flex gap-3">
             {unreadCount > 0 && (
@@ -120,7 +120,7 @@ export function NotificationCenter() {
           {notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full py-12 text-slate-400">
               <Bell className="h-8 w-8 mb-2 opacity-20" />
-              <p className="text-xs italic">{t('notifications.empty')}</p>
+              <p className="text-xs">{t('notifications.empty')}</p>
             </div>
           ) : (
             <div className="divide-y divide-slate-100">

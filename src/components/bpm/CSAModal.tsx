@@ -56,7 +56,7 @@ return (
   <Dialog open={isOpen} onOpenChange={onOpenChange}>
     <DialogContent className="max-w-[95vw] w-full h-[90vh] flex flex-col p-0 overflow-hidden">
       <DialogHeader className="p-6 border-b bg-slate-50/50 shrink-0">
-        <div className="flex justify-between items-start">
+        <div className="flex justify-between items-start flex-wrap gap-2">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <DialogTitle className="text-xl font-bold text-slate-900 flex items-center gap-2">

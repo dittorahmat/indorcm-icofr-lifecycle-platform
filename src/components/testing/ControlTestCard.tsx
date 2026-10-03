@@ -213,7 +213,7 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
 
           <Tabs defaultValue="tod" className="w-full">
             <div className="bg-slate-100/70 p-1 border border-slate-200 rounded-lg w-full sm:w-fit mb-6 sm:mb-8">
-              <TabsList className="bg-transparent h-auto p-0 grid grid-cols-2 sm:flex gap-1 w-full sm:w-auto">
+              <TabsList className="bg-transparent h-auto p-0 grid grid-cols-1 sm:flex gap-1 w-full sm:w-auto">
                 <TabsTrigger 
                   value="tod" 
                   className="rounded-md data-[state=active]:bg-white data-[state=active]:shadow-xs data-[state=active]:text-indigo-600 transition-all font-bold text-xs uppercase tracking-wider py-2 px-3 sm:px-6 text-slate-500 justify-center min-h-[36px]"
@@ -308,7 +308,7 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <FormField control={form.control} name="sampleSize" render={({ field }) => (
                             <FormItem className="space-y-1.5">
-                              <FormLabel className="text-xs font-semibold uppercase text-slate-500 tracking-wider flex justify-between items-center px-0.5">
+                              <FormLabel className="text-xs font-semibold uppercase text-slate-500 tracking-wider flex justify-between items-center px-0.5 flex-wrap gap-2">
                                 <span>{t('toe.sampleSize')}</span>
                                 {field.value !== undefined && field.value < suggestion.min && (
                                   <Badge variant="destructive" className="text-xs font-semibold h-5 px-1.5 border-none shadow-none uppercase rounded">
@@ -385,7 +385,7 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
                       </div>
 
                       <div className="bg-slate-50/60 rounded-lg border border-slate-200 p-4 sm:p-5 space-y-3.5">
-                         <div className="flex items-center justify-between">
+                         <div className="flex items-center justify-between flex-wrap gap-2">
                             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2">
                                <Target className="h-4 w-4 text-indigo-500" />
                                Regulatory Note
@@ -396,7 +396,7 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
                             <p className="text-xs text-slate-600 font-normal leading-relaxed">
                                Pengambilan sampel harus didasarkan pada populasi transaksi selama periode penilaian untuk memastikan efektivitas operasional yang konsisten.
                             </p>
-                            <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between">
+                            <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between flex-wrap gap-2">
                                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Requirement</span>
                                <span className="text-xs font-bold text-indigo-600 uppercase flex items-center gap-1">Zero Tolerance <ChevronRight className="h-3.5 w-3.5" /></span>
                             </div>

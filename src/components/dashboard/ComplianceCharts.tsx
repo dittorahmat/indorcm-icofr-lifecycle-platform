@@ -174,7 +174,7 @@ export function ComplianceCharts({ barData, deficiencyBySeverity, isLoading }: C
                 
                 <div className="mt-4 sm:mt-6 space-y-2.5 w-full border-t border-slate-100 pt-4 sm:pt-6">
                   {deficiencyBySeverity.map((entry: any, index: number) => (
-                    <div key={entry.name} className="flex items-center justify-between group">
+                    <div key={entry.name} className="flex items-center justify-between group flex-wrap gap-2">
                       <div className="flex items-center gap-2.5">
                         <div className="h-2.5 w-2.5 rounded-full transition-transform group-hover:scale-125" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
                         <span className="text-xs font-semibold text-slate-600 uppercase tracking-tight group-hover:text-slate-900 transition-colors">{entry.name}</span>

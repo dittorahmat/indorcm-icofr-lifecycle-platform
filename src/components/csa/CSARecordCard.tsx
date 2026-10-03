@@ -142,7 +142,7 @@ export function CSARecordCard({ record: initialRecord, process }: CSARecordCardP
         onClick={() => setIsExpanded(!isExpanded)}
         className="p-4 cursor-pointer hover:bg-muted/40 transition-colors space-y-3"
       >
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start justify-between gap-3 flex-wrap">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-semibold uppercase tracking-wider mb-1">
               <Layers className="h-3.5 w-3.5 text-primary shrink-0" />
@@ -171,7 +171,7 @@ export function CSARecordCard({ record: initialRecord, process }: CSARecordCardP
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/60 text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-border/60 text-xs">
           <div>
             <span className="text-muted-foreground font-medium block">{t('page.table.period')}</span>
             <span className="font-bold text-primary">{initialRecord.period}</span>

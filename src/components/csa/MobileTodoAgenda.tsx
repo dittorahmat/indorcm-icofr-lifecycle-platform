@@ -78,7 +78,7 @@ export function MobileTodoAgenda({
             : "border-border"
         )}
       >
-        <div className="flex items-start justify-between gap-2">
+        <div className="flex items-start justify-between gap-2 flex-wrap">
           <div className="flex items-center gap-1.5 flex-wrap">
             <Badge
               variant="outline"
@@ -131,7 +131,7 @@ export function MobileTodoAgenda({
           )}
         </div>
 
-        <div className="flex items-center justify-between pt-2 border-t border-border/60 gap-2">
+        <div className="flex items-center justify-between pt-2 border-t border-border/60 gap-2 flex-wrap">
           <div className="flex items-center gap-1">
             {e.eventType === 'SCHEDULE' && (
               <>
@@ -198,7 +198,7 @@ export function MobileTodoAgenda({
       {/* 1. Overdue Section */}
       {overdue.length > 0 && (
         <div className="space-y-2.5">
-          <div className="flex items-center justify-between px-1">
+          <div className="flex items-center justify-between px-1 flex-wrap gap-2">
             <h3 className="text-xs font-bold uppercase tracking-wider text-red-600 dark:text-red-400 flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full bg-red-600 animate-none inline-block" />
               {t('csa_hub:status.overdue', { defaultValue: 'Terlambat / Perlu Tindakan Segera' })}
@@ -216,7 +216,7 @@ export function MobileTodoAgenda({
       {/* 2. Today Section */}
       {today.length > 0 && (
         <div className="space-y-2.5">
-          <div className="flex items-center justify-between px-1">
+          <div className="flex items-center justify-between px-1 flex-wrap gap-2">
             <h3 className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full bg-primary inline-block" />
               {t('common:calendar.today', { defaultValue: 'Hari Ini' })}
@@ -234,7 +234,7 @@ export function MobileTodoAgenda({
       {/* 3. Upcoming Section */}
       {upcoming.length > 0 && (
         <div className="space-y-2.5">
-          <div className="flex items-center justify-between px-1">
+          <div className="flex items-center justify-between px-1 flex-wrap gap-2">
             <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full bg-muted-foreground/60 inline-block" />
               {t('common:status.upcoming', { defaultValue: 'Mendatang' })}

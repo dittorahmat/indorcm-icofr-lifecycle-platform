@@ -85,7 +85,7 @@ export const BPMSelectionHUD: React.FC<BPMSelectionHUDProps> = ({
             <>
               <Badge
                 variant="outline"
-                className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-lg border bg-amber-500/20 text-amber-300 border-amber-500/40"
+                className="text-xs font-black uppercase tracking-wider px-2 py-0.5 rounded-lg border bg-amber-500/20 text-amber-300 border-amber-500/40"
               >
                 {t('bpm:editor.selectionHud.edge', { defaultValue: 'Connection' })}
               </Badge>
@@ -148,7 +148,7 @@ export const BPMSelectionHUD: React.FC<BPMSelectionHUDProps> = ({
               ) : (
                 <ShieldCheck className="h-3.5 w-3.5 text-slate-400" />
               )}
-              <span className="text-[10px] font-bold uppercase">
+              <span className="text-xs font-bold uppercase">
                 {selectedNode.data?.isLocked ? t('bpm:editor.selectionHud.unlock', { defaultValue: 'Unlock' }) : t('bpm:editor.selectionHud.lock', { defaultValue: 'Lock' })}
               </span>
             </Button>
@@ -163,7 +163,7 @@ export const BPMSelectionHUD: React.FC<BPMSelectionHUDProps> = ({
               title={`${t('bpm:editor.selectionHud.delete', { defaultValue: 'Delete' })} (${t('bpm:editor.selectionHud.delKey', { defaultValue: 'Del' })})`}
             >
               <Trash2 className="h-3.5 w-3.5" />
-              <span className="text-[10px] uppercase tracking-wider">
+              <span className="text-xs uppercase tracking-wider">
                 {t('bpm:editor.selectionHud.delete', { defaultValue: 'Delete' })}
               </span>
             </Button>

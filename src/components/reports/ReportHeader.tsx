@@ -32,7 +32,7 @@ export const ReportHeader = ({
   return (
     <div className="w-full bg-white border-b-4 border-slate-900 p-6 mb-6 flex flex-col gap-6">
       {/* Top row: Logo & Signatories placeholder */}
-      <div className="flex justify-between items-start">
+      <div className="flex justify-between items-start flex-wrap gap-2">
         <div className="flex items-center gap-6">
           <div className="w-20 h-20 bg-slate-50 rounded-xl border-2 border-slate-200 flex items-center justify-center overflow-hidden shadow-sm">
              {settings?.logoUrl ? (
@@ -58,19 +58,19 @@ export const ReportHeader = ({
         </div>
 
         <div className="grid grid-cols-1 gap-1 text-xs border-l-2 pl-6 border-slate-100">
-           <div className="flex items-center justify-between gap-4">
+           <div className="flex items-center justify-between gap-4 flex-wrap">
               <span className="text-slate-400 font-black uppercase">Doc No:</span>
               <span className="font-mono font-bold text-slate-700">{documentNo}</span>
            </div>
-           <div className="flex items-center justify-between gap-4">
+           <div className="flex items-center justify-between gap-4 flex-wrap">
               <span className="text-slate-400 font-black uppercase">Periode:</span>
               <span className="font-bold text-slate-700">{period || "-"}</span>
            </div>
-           <div className="flex items-center justify-between gap-4">
+           <div className="flex items-center justify-between gap-4 flex-wrap">
               <span className="text-slate-400 font-black uppercase">Tanggal:</span>
               <span className="font-bold text-slate-700">{date || "-"}</span>
            </div>
-           <div className="flex items-center justify-between gap-4">
+           <div className="flex items-center justify-between gap-4 flex-wrap">
               <span className="text-slate-400 font-black uppercase">Status:</span>
               <Badge className={cn("text-xs h-4 px-1.5 font-black uppercase", isDraft ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800")}>
                 {isDraft ? 'DRAFT' : 'FINAL'}
@@ -81,7 +81,7 @@ export const ReportHeader = ({
 
       {/* Meta Bar */}
       {subProcess && (
-        <div className="bg-mancity-pattern text-primary-foreground p-3 rounded-lg flex justify-between items-center px-6 shadow-md">
+        <div className="bg-mancity-pattern text-primary-foreground p-3 rounded-lg flex justify-between items-center px-6 shadow-md flex-wrap gap-2">
            <div className="flex items-center gap-3">
               <span className="text-xs font-black text-primary-foreground/40 uppercase tracking-widest">Sub-Proses:</span>
               <span className="text-sm font-black uppercase tracking-tight text-primary-foreground">{subProcess}</span>

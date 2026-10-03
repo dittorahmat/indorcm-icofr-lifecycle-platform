@@ -48,7 +48,7 @@ export const SwimlaneNode = ({ data, selected }: NodeProps) => {
       />
       {/* Swimlane Header */}
       <div className={cn(
-        "absolute top-0 left-0 right-0 h-16 bg-white/90 backdrop-blur-sm border-b-2 border-slate-300 p-2 pr-20 flex flex-col justify-center select-none",
+        "absolute top-0 left-0 right-0 h-16 bg-white border-b-2 border-slate-300 p-2 pr-20 flex flex-col justify-center select-none",
         !data.isLocked && "swimlane-drag-handle cursor-grab active:cursor-grabbing hover:bg-slate-50/90"
       )}>
         <div className="flex items-center gap-2 mb-1 nodrag">
@@ -70,7 +70,7 @@ export const SwimlaneNode = ({ data, selected }: NodeProps) => {
             onChange={(e) => data.onChangeFunction?.(e.target.value)}
             onKeyDown={(e) => e.stopPropagation()}
             disabled={data.isLocked}
-            className="h-6 text-xs italic bg-transparent border-none focus-visible:ring-0 p-0 text-slate-600 hover:bg-slate-100/50 focus:bg-white focus:px-2 rounded transition-all"
+            className="h-6 text-xs bg-transparent border-none focus-visible:ring-0 p-0 text-slate-600 hover:bg-slate-100/50 focus:bg-white focus:px-2 rounded transition-all"
           />
         </div>
 

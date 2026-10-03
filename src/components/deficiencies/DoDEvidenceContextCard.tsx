@@ -29,7 +29,7 @@ export function DoDEvidenceContextCard({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {/* 1. Testing Evidence Card (Box 2 / Likelihood Context) */}
         <div className="bg-card border border-border rounded-lg p-3.5 space-y-2.5">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
               <Layers className="h-3.5 w-3.5 text-primary" />
               {t('worksheet.evidence.testingTitle')}
@@ -54,7 +54,7 @@ export function DoDEvidenceContextCard({
             </div>
           </div>
 
-          <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border">
+          <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border flex-wrap gap-2">
             <span>{t('worksheet.evidence.workpaperRef')}:</span>
             <span className="font-mono font-medium text-foreground flex items-center gap-1">
               {testRecord?.workpaperRef}
@@ -65,7 +65,7 @@ export function DoDEvidenceContextCard({
 
         {/* 2. Materiality & Exposure Card (Box 3 / Magnitude Context) */}
         <div className="bg-card border border-border rounded-lg p-3.5 space-y-2.5">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
               <Scale className="h-3.5 w-3.5 text-primary" />
               {t('worksheet.evidence.materialityTitle')}
@@ -79,19 +79,19 @@ export function DoDEvidenceContextCard({
           </div>
 
           <div className="space-y-1.5 text-xs">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center flex-wrap gap-2">
               <span className="text-muted-foreground">{t('worksheet.evidence.pmLabel')}:</span>
               <span className="font-mono font-bold text-foreground">
                 {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(pmVal)}
               </span>
             </div>
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center flex-wrap gap-2">
               <span className="text-muted-foreground">{t('worksheet.evidence.omLabel')}:</span>
               <span className="font-mono font-medium text-muted-foreground">
                 {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(omVal)}
               </span>
             </div>
-            <div className="flex justify-between items-center pt-1 border-t border-border">
+            <div className="flex justify-between items-center pt-1 border-t border-border flex-wrap gap-2">
               <span className="text-muted-foreground">{t('worksheet.evidence.exposureRatio')}:</span>
               <span className={`font-mono font-bold ${isAbovePM ? 'text-rose-600' : 'text-emerald-600'}`}>
                 {pmVal > 0 ? ((exposureValue / pmVal) * 100).toFixed(1) : 0}%
@@ -103,7 +103,7 @@ export function DoDEvidenceContextCard({
 
       {/* 3. Compensating Controls Picker (Box 5 Context) */}
       <div className="bg-card border border-border rounded-lg p-3.5 space-y-2.5">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
             <ShieldCheck className="h-3.5 w-3.5 text-primary" />
             {t('worksheet.evidence.compensatingTitle')}
@@ -154,7 +154,7 @@ export function DoDEvidenceContextCard({
               );
             })
           ) : (
-            <p className="text-xs text-muted-foreground italic col-span-2">
+            <p className="text-xs text-muted-foreground col-span-2">
               {t('worksheet.evidence.compensatingNone')}
             </p>
           )}

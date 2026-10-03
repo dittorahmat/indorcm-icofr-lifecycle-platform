@@ -294,12 +294,12 @@ export function WorkflowPanel({
           <div className="p-3 bg-amber-50 border border-amber-100 rounded-lg flex items-start gap-3">
             <AlertCircle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
             <div className="space-y-1">
-              <p className="text-[10px] font-bold text-amber-800 uppercase tracking-wider">Demo Mode Active</p>
-              <p className="text-[10px] text-amber-700 leading-relaxed font-medium">Standard approval workflow is bypassed. You can instantly finalize this document.</p>
+              <p className="text-xs font-bold text-amber-800 uppercase tracking-wider">Demo Mode Active</p>
+              <p className="text-xs text-amber-700 leading-relaxed font-medium">Standard approval workflow is bypassed. You can instantly finalize this document.</p>
             </div>
           </div>
           <Button 
-            className="w-full gap-2 font-black text-[10px] uppercase tracking-widest h-10 bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-100"
+            className="w-full gap-2 font-black text-xs uppercase tracking-widest h-10 bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-100"
             onClick={handleBypass}
             disabled={isPending}
           >
@@ -318,7 +318,7 @@ export function WorkflowPanel({
       
       // Custom classes for special colors
       const customClass = cn(
-        "w-full gap-2 font-bold text-[10px] uppercase tracking-widest h-9",
+        "w-full gap-2 font-bold text-xs uppercase tracking-widest h-9",
         action.variant === 'indigo' && "bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-100",
         action.variant === 'emerald' && "bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-100",
         action.variant === 'amber' && "bg-amber-500 hover:bg-amber-600 shadow-md shadow-amber-100",
@@ -344,15 +344,15 @@ export function WorkflowPanel({
     <>
       <Card className={cn("shadow-lg border-slate-200 overflow-hidden", className)}>
         <CardHeader className="bg-slate-50/50 pb-4 border-b">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
               <History className="h-4 w-4 text-primary" /> {t('workflow:title')}
             </CardTitle>
-            <Badge variant="outline" className={cn("font-bold uppercase tracking-tight text-[10px]", getStatusColor(currentStatus))}>
+            <Badge variant="outline" className={cn("font-bold uppercase tracking-tight text-xs", getStatusColor(currentStatus))}>
               {currentStatus}
             </Badge>
           </div>
-          <CardDescription className="text-[11px] font-medium">
+          <CardDescription className="text-xs font-medium">
             {isLocked ? (
                 <span className="flex items-center gap-1.5 text-amber-600">
                     <Lock className="h-3 w-3" /> {t('workflow:locked')}
@@ -367,7 +367,7 @@ export function WorkflowPanel({
         
         <CardContent className="p-4 space-y-6">
           <div className="flex flex-col gap-3">
-             <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('workflow:actions')}</h4>
+             <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">{t('workflow:actions')}</h4>
              <div className="flex flex-wrap gap-2">
                 {isPending ? (
                     <Button disabled className="w-full gap-2">
@@ -434,7 +434,7 @@ export function WorkflowPanel({
                     <Command className="border-none">
                       <CommandInput placeholder="Search by name or role..." className="h-11" />
                       <CommandList className="max-h-[250px] overflow-y-auto">
-                        <CommandEmpty className="py-6 text-center text-xs text-slate-400 italic">No users found.</CommandEmpty>
+                        <CommandEmpty className="py-6 text-center text-xs text-slate-400">No users found.</CommandEmpty>
                         <CommandGroup heading="Available Users">
                           {uniqueUsers.map((u) => (
                             <CommandItem
@@ -454,7 +454,7 @@ export function WorkflowPanel({
                               />
                               <div className="flex flex-col min-w-0">
                                 <span className="font-bold text-xs text-slate-700 truncate">{u.name}</span>
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate">{u.role}</span>
+                                <span className="text-xs font-black text-slate-400 uppercase tracking-widest truncate">{u.role}</span>
                               </div>
                             </CommandItem>
                           ))}

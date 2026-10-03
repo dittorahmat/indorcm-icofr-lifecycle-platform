@@ -74,7 +74,7 @@ export function CSAList({
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center flex-wrap gap-2">
         <h3 className="text-xl font-black text-slate-900 tracking-tight">{t('csa_hub:history.title', { defaultValue: 'Assessment History' })}</h3>
         <Button 
           onClick={onNewAssessment} 
@@ -98,15 +98,15 @@ export function CSAList({
           {isLoading ? (
             <TableRow><TableCell colSpan={4} className="h-24 text-center"><RefreshCw className="animate-spin inline-block mr-2" /> {t('csa_hub:history.loading', { defaultValue: 'Loading...' })}</TableCell></TableRow>
           ) : items.length === 0 ? (
-            <TableRow><TableCell colSpan={4} className="h-24 text-center text-muted-foreground italic">No history found.</TableCell></TableRow>
+            <TableRow><TableCell colSpan={4} className="h-24 text-center text-muted-foreground">No history found.</TableCell></TableRow>
           ) : items.map(item => (
             <TableRow key={item.id}>
               <TableCell className="font-bold text-xs">
                 <div className="flex flex-col gap-1 items-start">
-                  <span className="font-mono text-[11px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-1.5 py-0.5 rounded shadow-2xs">
+                  <span className="font-mono text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-1.5 py-0.5 rounded shadow-2xs">
                     {formatReference(item)}
                   </span>
-                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{item.period}</span>
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{item.period}</span>
                 </div>
               </TableCell>
               <TableCell className="text-center">
@@ -157,7 +157,7 @@ export function CSAList({
           </div>
         ) : items.map(item => (
           <div key={item.id} className="rounded-lg border border-slate-200 bg-white p-4 space-y-3 shadow-sm">
-            <div className="flex items-start justify-between gap-2">
+            <div className="flex items-start justify-between gap-2 flex-wrap">
               <span className="font-mono text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-1.5 py-0.5 rounded">
                 {formatReference(item)}
               </span>
@@ -166,7 +166,7 @@ export function CSAList({
                 item.result === 'Effective' ? "bg-green-600" : "bg-red-600"
               )}>{item.result}</Badge>
             </div>
-            <div className="flex items-center justify-between gap-2 text-xs text-slate-500">
+            <div className="flex items-center justify-between gap-2 text-xs text-slate-500 flex-wrap">
               <span className="font-bold uppercase tracking-wider">{item.period}</span>
               <span>{formatDateTime(item.assessmentDate)}</span>
             </div>

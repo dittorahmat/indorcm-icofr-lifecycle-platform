@@ -23,7 +23,7 @@ export const ManualInputNode = ({ data, selected, type }: NodeProps) => {
           <path d="M0 20 L160 0 L160 60 L0 60 Z" fill="white" stroke="#0f172a" strokeWidth="2" />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center pt-2 px-3 z-10">
-          <div className="text-[8px] font-black text-slate-400 uppercase leading-none mb-1">Manual Input</div>
+          <div className="text-xs font-black text-slate-400 uppercase leading-none mb-1">Manual Input</div>
           <div className={cn("font-bold text-slate-800 text-center leading-tight whitespace-pre-wrap break-words max-h-[32px] overflow-y-auto scrollbar-none", fontClass)}>{data.label}</div>
         </div>
       </div>
@@ -43,7 +43,7 @@ export const AutomatedActivityNode = ({ data, selected, type }: NodeProps) => {
         )}
       >
         <EightConnectionHandles isLocked={data.isLocked} selected={selected} />
-        <div className="font-bold text-[9px] mb-1.5 uppercase text-blue-600 border-b border-blue-200 pb-1 flex items-center justify-center gap-1">
+        <div className="font-bold text-xs mb-1.5 uppercase text-blue-600 border-b border-blue-200 pb-1 flex items-center justify-center gap-1">
           <Database className="h-2.5 w-2.5" /> SYSTEM
         </div>
         <div className={cn("font-semibold text-blue-900 leading-tight mb-2 whitespace-pre-wrap break-words", fontClass)}>{data.label}</div>
@@ -96,7 +96,7 @@ export const DataNode = ({ data, selected, type }: NodeProps) => {
           <path d="M20 2 L158 2 L138 54 L2 54 Z" fill="white" stroke="#0f172a" strokeWidth="2" />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center px-6 z-10">
-          <div className="text-[9px] font-black text-slate-400 uppercase leading-none mb-0.5">Data</div>
+          <div className="text-xs font-black text-slate-400 uppercase leading-none mb-0.5">Data</div>
           <div className={cn("font-bold text-slate-800 text-center leading-tight whitespace-pre-wrap break-words max-h-[32px] overflow-y-auto scrollbar-none", fontClass)}>{data.label}</div>
         </div>
       </div>
@@ -122,7 +122,7 @@ export const InternalStorageNode = ({ data, selected, type }: NodeProps) => {
           <line x1="2" y1="14" x2="158" y2="14" stroke="#0f172a" strokeWidth="2" />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center pt-2 px-6 z-10">
-          <div className="text-[9px] font-black text-slate-400 uppercase leading-none mb-0.5">Internal Storage</div>
+          <div className="text-xs font-black text-slate-400 uppercase leading-none mb-0.5">Internal Storage</div>
           <div className={cn("font-bold text-slate-800 text-center leading-tight whitespace-pre-wrap break-words max-h-[32px] overflow-y-auto scrollbar-none", fontClass)}>{data.label}</div>
         </div>
       </div>
@@ -146,7 +146,7 @@ export const CardNode = ({ data, selected, type }: NodeProps) => {
           <path d="M20 2 L158 2 L158 54 L2 54 L2 20 Z" fill="white" stroke="#0f172a" strokeWidth="2" />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center pt-2 px-6 z-10">
-          <div className="text-[9px] font-black text-slate-400 uppercase leading-none mb-0.5">Card</div>
+          <div className="text-xs font-black text-slate-400 uppercase leading-none mb-0.5">Card</div>
           <div className={cn("font-bold text-slate-800 text-center leading-tight whitespace-pre-wrap break-words max-h-[32px] overflow-y-auto scrollbar-none", fontClass)}>{data.label}</div>
         </div>
       </div>
@@ -170,7 +170,7 @@ export const PunchedTapeNode = ({ data, selected, type }: NodeProps) => {
           <path d="M2 10 Q40 0 80 10 T158 10 L158 46 Q120 56 80 46 T2 46 Z" fill="white" stroke="#0f172a" strokeWidth="2" />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center px-6 z-10">
-          <div className="text-[9px] font-black text-slate-400 uppercase leading-none mb-0.5">Punched Tape</div>
+          <div className="text-xs font-black text-slate-400 uppercase leading-none mb-0.5">Punched Tape</div>
           <div className={cn("font-bold text-slate-800 text-center leading-tight whitespace-pre-wrap break-words max-h-[32px] overflow-y-auto scrollbar-none", fontClass)}>{data.label}</div>
         </div>
       </div>
@@ -195,7 +195,7 @@ export const StoredDataNode = ({ data, selected, type }: NodeProps) => {
           <path d="M12 2 A 12 26 0 0 0 12 54" fill="none" stroke="#0f172a" strokeWidth="2" />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center px-6 z-10">
-          <div className="text-[9px] font-black text-slate-400 uppercase leading-none mb-0.5">Stored Data</div>
+          <div className="text-xs font-black text-slate-400 uppercase leading-none mb-0.5">Stored Data</div>
           <div className={cn("font-bold text-slate-800 text-center leading-tight whitespace-pre-wrap break-words max-h-[32px] overflow-y-auto scrollbar-none", fontClass)}>{data.label}</div>
         </div>
       </div>
@@ -211,8 +211,8 @@ export const SequentialAccessNode = ({ data, selected, type }: NodeProps) => {
   if (nodeScale === 'sm') boxSize = 44;
   else if (nodeScale === 'lg') boxSize = 70;
 
-  let fontClass = 'text-[10px]';
-  if (fontScale === 'sm') fontClass = 'text-[9px]';
+  let fontClass = 'text-xs';
+  if (fontScale === 'sm') fontClass = 'text-xs';
   else if (fontScale === 'lg') fontClass = 'text-xs';
 
   return (
@@ -256,7 +256,7 @@ export const DirectAccessNode = ({ data, selected, type }: NodeProps) => {
           <ellipse cx="146" cy="28" rx="12" ry="26" fill="white" stroke="#0f172a" strokeWidth="2" />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center pr-4 pl-2 z-10">
-          <div className="text-[9px] font-black text-slate-400 uppercase leading-none mb-0.5">Direct Access</div>
+          <div className="text-xs font-black text-slate-400 uppercase leading-none mb-0.5">Direct Access</div>
           <div className={cn("font-bold text-slate-800 text-center leading-tight whitespace-pre-wrap break-words max-h-[32px] overflow-y-auto scrollbar-none", fontClass)}>{data.label}</div>
         </div>
       </div>
@@ -280,7 +280,7 @@ export const DisplayNode = ({ data, selected, type }: NodeProps) => {
           <path d="M20 2 L158 2 L158 54 L20 54 L2 28 Z" fill="white" stroke="#0f172a" strokeWidth="2" />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center pl-4 pr-2 z-10">
-          <div className="text-[9px] font-black text-slate-400 uppercase leading-none mb-0.5">Display</div>
+          <div className="text-xs font-black text-slate-400 uppercase leading-none mb-0.5">Display</div>
           <div className={cn("font-bold text-slate-800 text-center leading-tight whitespace-pre-wrap break-words max-h-[32px] overflow-y-auto scrollbar-none", fontClass)}>{data.label}</div>
         </div>
       </div>

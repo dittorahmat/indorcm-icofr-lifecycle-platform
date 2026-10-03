@@ -56,7 +56,7 @@ export const Appendix7aSummary = React.forwardRef<HTMLDivElement, Appendix7aSumm
                 <div>
                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Simpulan Akhir</p>
                    <h3 className={cn(
-                     "text-3xl font-black uppercase italic",
+                      "text-3xl font-black uppercase not-italic",
                      record.result === 'Effective' ? "text-emerald-600" : "text-rose-600"
                    )}>
                      {record.result}
@@ -64,7 +64,7 @@ export const Appendix7aSummary = React.forwardRef<HTMLDivElement, Appendix7aSumm
                 </div>
                 <div className="mt-6 space-y-2">
                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Justifikasi Manajemen</p>
-                   <p className="text-xs leading-relaxed text-slate-700 italic">
+                   <p className="text-xs leading-relaxed text-slate-700">
                       {record.comments || "Berdasarkan hasil pengujian sampel, pengendalian dinyatakan efektif/tidak efektif sesuai dengan kriteria yang ditetapkan."}
                    </p>
                 </div>
@@ -156,7 +156,7 @@ export const Appendix7aSummary = React.forwardRef<HTMLDivElement, Appendix7aSumm
              <div className="border-r-2 border-slate-900 p-4 flex flex-col">
                 <span className="text-xs font-black uppercase text-slate-400">Dikerjakan Oleh (Auditee)</span>
                 <div className="flex-1 flex items-center justify-center text-xs font-semibold uppercase tracking-wider text-slate-400">Digital Signature Verified</div>
-                <div className="flex justify-between text-xs font-black uppercase mt-2">
+                <div className="flex justify-between text-xs font-black uppercase mt-2 flex-wrap gap-2">
                    <span>{record.assessedBy}</span>
                    <span>{format(new Date(record.assessmentDate), 'dd/MM/yy')}</span>
                 </div>
@@ -164,7 +164,7 @@ export const Appendix7aSummary = React.forwardRef<HTMLDivElement, Appendix7aSumm
              <div className="border-r-2 border-slate-900 p-4 flex flex-col bg-slate-50/50">
                 <span className="text-xs font-black uppercase text-slate-400">Direview Oleh (Lini 2)</span>
                 <div className="flex-1 border-b border-slate-100" />
-                <div className="flex justify-between text-xs font-black uppercase mt-2">
+                <div className="flex justify-between text-xs font-black uppercase mt-2 flex-wrap gap-2">
                    <span>Nama:</span>
                    <span>Tanggal:</span>
                 </div>

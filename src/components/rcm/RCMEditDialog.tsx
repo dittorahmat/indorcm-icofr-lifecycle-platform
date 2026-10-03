@@ -299,7 +299,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.control_description')}</FormLabel>
-                              <FormControl><Textarea {...field} rows={5} className="text-xs border-slate-200 leading-relaxed italic" /></FormControl>
+                              <FormControl><Textarea {...field} rows={5} className="text-xs border-slate-200 leading-relaxed" /></FormControl>
                             </FormItem>
                           )}
                         />
@@ -330,7 +330,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                               control={form.control}
                               name="isFraudRelated"
                               render={({ field }) => (
-                                <FormItem className="flex flex-row items-center justify-between rounded-lg border border-slate-200 p-2 h-9 bg-white mt-auto">
+                                <FormItem className="flex flex-row items-center justify-between rounded-lg border border-slate-200 p-2 h-9 bg-white mt-auto flex-wrap gap-2">
                                   <FormLabel className="text-xs font-black uppercase text-slate-400 mb-0">{t('matrix.is_fraud')}</FormLabel>
                                   <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                                 </FormItem>

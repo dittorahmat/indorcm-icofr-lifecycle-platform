@@ -125,13 +125,13 @@ export function ITGCForm({ data, onChange, disabled = false }: ITGCFormProps) {
               </Tooltip>
             </TooltipProvider>
           </div>
-          <p className="text-xs text-slate-500 italic">Dokumentasi teknis keandalan sistem.</p>
+          <p className="text-xs text-slate-500">Dokumentasi teknis keandalan sistem.</p>
         </div>
 
         <TooltipProvider>
           <div className="border rounded-lg bg-white shadow-sm divide-y">
             {itAssertions.map((a) => (
-              <div key={a.key} className="px-3 py-2 flex items-center justify-between group">
+              <div key={a.key} className="px-3 py-2 flex items-center justify-between group flex-wrap gap-2">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-slate-600 uppercase">{a.label}</span>
                   <Tooltip>

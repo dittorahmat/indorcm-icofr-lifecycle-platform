@@ -81,7 +81,7 @@ export function NodeVisualProperties({
           </Select>
         </div>
       </div>
-      <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
+      <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between flex-wrap gap-2">
         <div className="flex flex-col gap-0.5">
           <Label className="text-xs font-semibold text-slate-700 uppercase flex items-center gap-1.5">
             {selectedNode.data.isLocked ? (

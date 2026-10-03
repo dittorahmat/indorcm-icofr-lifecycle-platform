@@ -195,7 +195,7 @@ export function NotificationsPage() {
             <CardContent className="p-4 space-y-3">
               <div className="grid sm:grid-cols-2 gap-3">
                 {/* 1. In-App */}
-                <div className="flex items-center justify-between p-3 rounded-lg bg-white border border-slate-200">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-white border border-slate-200 flex-wrap gap-2">
                   <div>
                     <p className="text-xs font-bold text-slate-800">{t('common:webhookSettings.inApp')}</p>
                     <p className="text-xs text-slate-500">{t('common:webhookSettings.inAppDesc')}</p>
@@ -207,7 +207,7 @@ export function NotificationsPage() {
                 </div>
 
                 {/* 2. Email */}
-                <div className="flex items-center justify-between p-3 rounded-lg bg-white border border-slate-200">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-white border border-slate-200 flex-wrap gap-2">
                   <div>
                     <p className="text-xs font-bold text-slate-800">{t('common:webhookSettings.email')}</p>
                     <p className="text-xs text-slate-500">{t('common:webhookSettings.emailDesc')}</p>
@@ -219,7 +219,7 @@ export function NotificationsPage() {
                 </div>
 
                 {/* 3. Slack */}
-                <div className="flex items-center justify-between p-3 rounded-lg bg-white border border-slate-200">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-white border border-slate-200 flex-wrap gap-2">
                   <div>
                     <p className="text-xs font-bold text-slate-800">{t('common:webhookSettings.slack')}</p>
                     <p className="text-xs text-slate-500">{t('common:webhookSettings.slackDesc')}</p>
@@ -231,7 +231,7 @@ export function NotificationsPage() {
                 </div>
 
                 {/* 4. MS Teams */}
-                <div className="flex items-center justify-between p-3 rounded-lg bg-white border border-slate-200">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-white border border-slate-200 flex-wrap gap-2">
                   <div>
                     <p className="text-xs font-bold text-slate-800">{t('common:webhookSettings.msTeams')}</p>
                     <p className="text-xs text-slate-500">{t('common:webhookSettings.msTeamsDesc')}</p>
@@ -243,7 +243,7 @@ export function NotificationsPage() {
                 </div>
 
                 {/* 5. Generic Webhook */}
-                <div className="flex items-center justify-between p-3 rounded-lg bg-white border border-slate-200 sm:col-span-2">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-white border border-slate-200 sm:col-span-2 flex-wrap gap-2">
                   <div>
                     <p className="text-xs font-bold text-slate-800">{t('common:webhookSettings.genericWebhook')}</p>
                     <p className="text-xs text-slate-500">{t('common:webhookSettings.genericWebhookDesc')}</p>
@@ -272,7 +272,7 @@ export function NotificationsPage() {
                 </div>
                 <div className="space-y-1">
                   <h3 className="text-lg font-bold text-slate-800">{t('notifications.empty')}</h3>
-                  <p className="text-slate-400 text-sm max-w-xs mx-auto italic font-medium">
+                  <p className="text-slate-400 text-sm max-w-xs mx-auto font-medium">
                     {t('notifications.emptyDetail')}
                   </p>
                 </div>
@@ -298,7 +298,7 @@ export function NotificationsPage() {
                     </div>
 
                     <div className="flex-1 min-w-0 space-y-1">
-                      <div className="flex justify-between items-start gap-4">
+                      <div className="flex justify-between items-start gap-4 flex-wrap">
                         <h4 className={cn(
                           "text-sm tracking-tight",
                           n.readStatus ? "font-bold text-slate-700" : "font-black text-slate-900"

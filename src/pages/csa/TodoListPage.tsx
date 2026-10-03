@@ -333,7 +333,7 @@ export function TodoListPage() {
                             return (
                               <Popover key={e.id}>
                                 <PopoverTrigger asChild>
-                                  <div className="text-xs text-slate-600 truncate flex items-center justify-between gap-1.5 p-1.5 rounded-md hover:bg-slate-50 cursor-pointer transition-colors border border-transparent hover:border-slate-100 group/item">
+                                  <div className="text-xs text-slate-600 truncate flex items-center justify-between gap-1.5 p-1.5 rounded-md hover:bg-slate-50 cursor-pointer transition-colors border border-transparent hover:border-slate-100 group/item flex-wrap">
                                     <div className="flex items-center gap-2 overflow-hidden">
                                       <div className={cn(
                                         "w-2 h-2 rounded-full shrink-0",
@@ -348,7 +348,7 @@ export function TodoListPage() {
                                 </PopoverTrigger>
                                 <PopoverContent className="w-64 p-0" align="start" side="right" sideOffset={10}>
                                   <div className="p-3 border-b bg-slate-50/50">
-                                    <div className="flex justify-between items-start mb-1">
+                                    <div className="flex justify-between items-start mb-1 flex-wrap gap-2">
                                       <Badge variant="outline" className="text-xs uppercase font-bold bg-white">{e.type || 'REMEDIATION'}</Badge>
                                       <Badge className={cn(
                                         "text-xs font-mono uppercase",

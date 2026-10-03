@@ -185,7 +185,7 @@ export function VerificationEditDialog({
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit, handleError)} className="space-y-6">
             <Tabs defaultValue="tod" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
                 <TabsTrigger value="tod">{t('rcm:verification.groups.tod')}</TabsTrigger>
                 <TabsTrigger value="basic">{t('rcm:verification.groups.info')}</TabsTrigger>
                 <TabsTrigger value="ipo">{t('rcm:matrix.sections.compliance')}</TabsTrigger>

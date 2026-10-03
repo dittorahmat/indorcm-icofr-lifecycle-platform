@@ -212,7 +212,7 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <Card className="lg:col-span-3">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 flex-wrap gap-2">
               <div>
                 <CardTitle className="text-xl">{t('intake.results.title')}</CardTitle>
                 <CardDescription>
@@ -265,7 +265,7 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
                     ))}
                     {data.length > 50 && (
                       <TableRow>
-                        <TableCell colSpan={data[0]?.fsliCode ? 5 : 4} className="text-center text-muted-foreground italic py-4">
+                        <TableCell colSpan={data[0]?.fsliCode ? 5 : 4} className="text-center text-muted-foreground py-4">
                           {t('intake.table.showingFirst50', { count: data.length })}
                         </TableCell>
                       </TableRow>
@@ -285,7 +285,7 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center flex-wrap gap-2">
                   <span className="text-xs">{t('intake.integrity.balanceCheck')}</span>
                   {balanceStatus?.isBalanced ? (
                     <Badge className="bg-green-600">{t('intake.integrity.balanced')}</Badge>
@@ -324,7 +324,7 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
                     </ComposedChart>
                   </ResponsiveContainer>
                 </div>
-                <div className="mt-4 p-3 rounded bg-muted/30 border text-xs italic flex gap-2">
+                <div className="mt-4 p-3 rounded bg-muted/30 border text-xs flex gap-2">
                   <AlertCircle className="h-4 w-4 shrink-0 text-muted-foreground" />
                   <span>{t('intake.benford.tip')}</span>
                 </div>

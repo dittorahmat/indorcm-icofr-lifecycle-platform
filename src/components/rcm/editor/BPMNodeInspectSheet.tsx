@@ -77,7 +77,7 @@ export function BPMNodeInspectSheet({ node, onClose }: BPMNodeInspectSheetProps)
               ) : (
                 groupedRisks.map((group, gIdx) => (
                   <div key={group.risk.riskId || group.risk._tempRiskId || `g-${gIdx}`} className="rounded-lg border border-red-100 bg-red-50/40 p-3 space-y-2">
-                    <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
                       <Badge className="text-xs font-mono font-bold bg-white border border-red-200 text-red-700">
                         {group.risk.riskId || group.risk._tempRiskId || `R-${gIdx + 1}`}
                       </Badge>

@@ -57,7 +57,7 @@ export function StagingTable({ rows, onUpdateRow }: StagingTableProps) {
             )}>
                 <div className="flex items-center gap-2">
                     <span className={cn(
-                        "text-[11px] font-medium",
+                        "text-xs font-medium",
                         field === 'controlCode' ? "font-mono font-bold text-indigo-600" : "text-slate-600"
                     )}>
                         {Array.isArray(val) ? val.join(', ') : String(val || '-')}
@@ -80,19 +80,19 @@ export function StagingTable({ rows, onUpdateRow }: StagingTableProps) {
     };
 
     return (
-        <div className="rounded-[2rem] border border-slate-200 overflow-hidden bg-white shadow-sm">
+        <div className="rounded-lg border border-slate-200 overflow-hidden bg-white shadow-sm">
             <div className="overflow-x-auto">
                 <Table>
                     <TableHeader className="bg-slate-50/50">
                         <TableRow className="hover:bg-transparent border-b-slate-200">
                             <TableHead className="w-12"></TableHead>
-                            <TableHead className="font-black text-[9px] uppercase tracking-[0.2em] text-slate-400 py-4">{t('rcm:matrix.company')}</TableHead>
-                            {rcmType !== 'ELC' && <TableHead className="font-black text-[9px] uppercase tracking-[0.2em] text-slate-400 py-4">Process / Sub</TableHead>}
-                            {rcmType !== 'ELC' && <TableHead className="font-black text-[9px] uppercase tracking-[0.2em] text-slate-400 py-4">Risk</TableHead>}
-                            <TableHead className="font-black text-[9px] uppercase tracking-[0.2em] text-slate-400 py-4">Control Ref / Name</TableHead>
-                            <TableHead className="font-black text-[9px] uppercase tracking-[0.2em] text-slate-400 py-4">Metadata</TableHead>
-                            {rcmType === 'ELC' && <TableHead className="font-black text-[9px] uppercase tracking-[0.2em] text-slate-400 py-4">COSO Principles</TableHead>}
-                            {rcmType === 'ITGC' && <TableHead className="font-black text-[9px] uppercase tracking-[0.2em] text-slate-400 py-4">App</TableHead>}
+                            <TableHead className="font-black text-xs uppercase tracking-[0.2em] text-slate-400 py-4">{t('rcm:matrix.company')}</TableHead>
+                            {rcmType !== 'ELC' && <TableHead className="font-black text-xs uppercase tracking-[0.2em] text-slate-400 py-4">Process / Sub</TableHead>}
+                            {rcmType !== 'ELC' && <TableHead className="font-black text-xs uppercase tracking-[0.2em] text-slate-400 py-4">Risk</TableHead>}
+                            <TableHead className="font-black text-xs uppercase tracking-[0.2em] text-slate-400 py-4">Control Ref / Name</TableHead>
+                            <TableHead className="font-black text-xs uppercase tracking-[0.2em] text-slate-400 py-4">Metadata</TableHead>
+                            {rcmType === 'ELC' && <TableHead className="font-black text-xs uppercase tracking-[0.2em] text-slate-400 py-4">COSO Principles</TableHead>}
+                            {rcmType === 'ITGC' && <TableHead className="font-black text-xs uppercase tracking-[0.2em] text-slate-400 py-4">App</TableHead>}
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -117,35 +117,35 @@ export function StagingTable({ rows, onUpdateRow }: StagingTableProps) {
                                         </TooltipProvider>
                                     )}
                                 </TableCell>
-                                <TableCell className="font-bold text-[10px] text-slate-900 uppercase">{row.entityCode || 'N/A'}</TableCell>
+                                <TableCell className="font-bold text-xs text-slate-900 uppercase">{row.entityCode || 'N/A'}</TableCell>
                                 
                                 {rcmType !== 'ELC' && (
                                     <TableCell className="max-w-[200px]">
                                         <div className="flex flex-col gap-0.5">
-                                            <span className="text-[10px] font-bold text-slate-800 truncate">{row.processName}</span>
-                                            <span className="text-[9px] text-slate-500 truncate">{row.subProcessName}</span>
+                                            <span className="text-xs font-bold text-slate-800 truncate">{row.processName}</span>
+                                            <span className="text-xs text-slate-500 truncate">{row.subProcessName}</span>
                                         </div>
                                     </TableCell>
                                 )}
 
                                 {rcmType !== 'ELC' && (
                                     <TableCell className="max-w-[250px]">
-                                        <span className="text-[10px] text-slate-600 line-clamp-2 leading-tight">{row.riskDescription}</span>
+                                        <span className="text-xs text-slate-600 line-clamp-2 leading-tight">{row.riskDescription}</span>
                                     </TableCell>
                                 )}
 
                                 <TableCell className="max-w-[300px]">
                                     <div className="flex flex-col gap-0.5">
-                                        <span className="text-[10px] font-mono font-black text-indigo-600 uppercase tracking-tighter">{row.controlCode}</span>
-                                        <span className="text-[10px] font-bold text-slate-800 line-clamp-1">{row.controlName}</span>
+                                        <span className="text-xs font-mono font-black text-indigo-600 uppercase tracking-tighter">{row.controlCode}</span>
+                                        <span className="text-xs font-bold text-slate-800 line-clamp-1">{row.controlName}</span>
                                     </div>
                                 </TableCell>
 
                                 <TableCell>
                                     <div className="flex flex-wrap gap-1">
-                                        {row.type && <Badge variant="outline" className="text-[8px] h-4 uppercase px-1 border-slate-200">{row.type}</Badge>}
-                                        {row.nature && <Badge variant="outline" className="text-[8px] h-4 uppercase px-1 border-slate-200">{row.nature}</Badge>}
-                                        {row.frequency && <Badge variant="outline" className="text-[8px] h-4 uppercase px-1 border-slate-200 bg-slate-50">{row.frequency}</Badge>}
+                                        {row.type && <Badge variant="outline" className="text-xs h-4 uppercase px-1 border-slate-200">{row.type}</Badge>}
+                                        {row.nature && <Badge variant="outline" className="text-xs h-4 uppercase px-1 border-slate-200">{row.nature}</Badge>}
+                                        {row.frequency && <Badge variant="outline" className="text-xs h-4 uppercase px-1 border-slate-200 bg-slate-50">{row.frequency}</Badge>}
                                     </div>
                                 </TableCell>
 
@@ -153,7 +153,7 @@ export function StagingTable({ rows, onUpdateRow }: StagingTableProps) {
                                     <TableCell>
                                         <div className="flex flex-wrap gap-1 max-w-[150px]">
                                             {row.cosoPrinciples?.map(p => (
-                                                <Badge key={p} className="text-[8px] h-4 bg-indigo-50 text-indigo-700 border-indigo-100 hover:bg-indigo-100">{p}</Badge>
+                                                <Badge key={p} className="text-xs h-4 bg-indigo-50 text-indigo-700 border-indigo-100 hover:bg-indigo-100">{p}</Badge>
                                             ))}
                                         </div>
                                     </TableCell>
@@ -161,7 +161,7 @@ export function StagingTable({ rows, onUpdateRow }: StagingTableProps) {
 
                                 {rcmType === 'ITGC' && (
                                     <TableCell>
-                                        <span className="text-[10px] font-bold text-amber-600 flex items-center gap-1.5">
+                                        <span className="text-xs font-bold text-amber-600 flex items-center gap-1.5">
                                             <Info className="h-3 w-3" /> {row.supportingApp || 'Missing App'}
                                         </span>
                                     </TableCell>

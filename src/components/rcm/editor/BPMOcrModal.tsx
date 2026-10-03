@@ -226,12 +226,12 @@ export const BPMOcrModal: React.FC<BPMOcrModalProps> = ({
                   alt="Source Diagram"
                 />
               </div>
-              <p className="text-xs italic text-muted-foreground">{t('bpm:ocr.staging.thumbnailHint')}</p>
+              <p className="text-xs text-muted-foreground">{t('bpm:ocr.staging.thumbnailHint')}</p>
             </div>
 
             {/* Right Column: staging mini-canvas + edge list + node edits */}
             <div className="flex flex-col border border-border rounded-xl overflow-hidden bg-card shadow-sm">
-              <div className="bg-muted px-4 py-2 border-b border-border flex justify-between items-center">
+              <div className="bg-muted px-4 py-2 border-b border-border flex justify-between items-center flex-wrap gap-2">
                 <span className="text-xs font-black text-foreground uppercase tracking-wider">
                   {t('bpm:ocr.shapeDetection')}
                 </span>
@@ -312,7 +312,7 @@ export const BPMOcrModal: React.FC<BPMOcrModalProps> = ({
               {/* Tabbed Inspector: Elements vs Connections */}
               <Tabs defaultValue="elements" className="flex-1 flex flex-col min-h-0 overflow-hidden">
                 <div className="px-3 pt-2 pb-0 border-b border-border bg-muted/10 shrink-0">
-                  <TabsList className="grid w-full grid-cols-2 h-8">
+                  <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 h-8">
                     <TabsTrigger value="elements" className="text-xs">
                       {t('bpm:ocr.tabs.elements')} ({stagingNodes.length})
                     </TabsTrigger>
@@ -327,7 +327,7 @@ export const BPMOcrModal: React.FC<BPMOcrModalProps> = ({
                   className="flex-1 min-h-0 m-0 overflow-hidden data-[state=active]:flex data-[state=active]:flex-col"
                 >
                   <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-4">
-                    <p className="text-xs italic text-muted-foreground">{t('bpm:ocr.adjustmentInstructions')}</p>
+                    <p className="text-xs text-muted-foreground">{t('bpm:ocr.adjustmentInstructions')}</p>
                     <div className="space-y-3">
                       {stagingNodes.map((node) => {
                         let shapeName = t('bpm:ocr.shapes.activity');
@@ -432,7 +432,7 @@ export const BPMOcrModal: React.FC<BPMOcrModalProps> = ({
                             <div className="flex h-8 w-8 shrink-0 items-center justify-center">
                               <div
                                 className={cn(
-                                  'flex h-full w-full items-center justify-center border-2 text-[8px] font-bold uppercase tracking-tighter shadow-sm',
+                                  'flex h-full w-full items-center justify-center border-2 text-xs font-bold uppercase tracking-tighter shadow-sm',
                                   iconBg
                                 )}
                               >
@@ -448,7 +448,7 @@ export const BPMOcrModal: React.FC<BPMOcrModalProps> = ({
                               </div>
                             </div>
                             <div className="flex-1 space-y-1">
-                              <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center justify-between gap-2 flex-wrap">
                                 <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">
                                   {shapeName}
                                 </span>
@@ -541,11 +541,11 @@ export const BPMOcrModal: React.FC<BPMOcrModalProps> = ({
                   className="flex-1 min-h-0 m-0 overflow-hidden data-[state=active]:flex data-[state=active]:flex-col"
                 >
                   <div className="p-3 border-b border-border bg-muted/20 shrink-0">
-                    <p className="text-xs italic text-muted-foreground">{t('bpm:ocr.staging.edgeHint')}</p>
+                    <p className="text-xs text-muted-foreground">{t('bpm:ocr.staging.edgeHint')}</p>
                   </div>
                   <div className="flex-1 min-h-0 overflow-y-auto p-3">
                     {stagingEdges.length === 0 ? (
-                      <p className="py-4 text-center text-xs italic text-muted-foreground">
+                      <p className="py-4 text-center text-xs text-muted-foreground">
                         {t('bpm:ocr.edgeList.empty')}
                       </p>
                     ) : (
@@ -586,7 +586,7 @@ export const BPMOcrModal: React.FC<BPMOcrModalProps> = ({
             </div>
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-2xl p-10 bg-slate-50/50 hover:bg-slate-50/80 transition-all gap-4 min-h-[300px] relative mt-4">
+          <div className="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-lg p-10 bg-slate-50/50 hover:bg-slate-50/80 transition-all gap-4 min-h-[300px] relative mt-4">
             {isProcessingOcr ? (
               <div className="flex flex-col items-center gap-3">
                 <RefreshCw className="h-10 w-10 text-emerald-500 animate-spin" />
@@ -619,7 +619,7 @@ export const BPMOcrModal: React.FC<BPMOcrModalProps> = ({
               </div>
             ) : (
               <>
-                <div className="h-12 w-12 rounded-2xl bg-emerald-50 flex items-center justify-center shadow-inner">
+                <div className="h-12 w-12 rounded-lg bg-emerald-50 flex items-center justify-center shadow-inner">
                   <Upload className="h-6 w-6 text-emerald-600" />
                 </div>
                 <div className="text-center space-y-1">

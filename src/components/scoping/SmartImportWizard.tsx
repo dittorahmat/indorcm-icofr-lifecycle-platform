@@ -359,7 +359,7 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
             }
         }}>
             <DialogContent className="w-[calc(100vw-1.5rem)] sm:w-full sm:max-w-[90vw] lg:max-w-[1100px] h-[92dvh] sm:h-[85vh] flex flex-col p-0 overflow-hidden border shadow-2xl rounded-lg">
-                <DialogHeader className="px-4 sm:px-8 py-4 sm:py-6 bg-mancity-pattern text-primary-foreground flex flex-row items-center justify-between gap-3">
+                <DialogHeader className="px-4 sm:px-8 py-4 sm:py-6 bg-mancity-pattern text-primary-foreground flex flex-row items-center justify-between gap-3 flex-wrap">
                     <div className="space-y-1 min-w-0">
                         <DialogTitle className="text-lg sm:text-2xl font-black uppercase tracking-tight flex items-center gap-3 text-primary-foreground">
                             <Zap className="h-6 w-6 text-primary-foreground" />
@@ -500,7 +500,7 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
                                             {parsedTbData.length > 0 && (
                                                 <div className="bg-white p-4 sm:p-8 rounded-lg border border-slate-200 shadow-xl space-y-6">
                                                     <div className="flex items-center gap-3">
-                                                        <div className="h-10 w-10 rounded-2xl bg-indigo-50 flex items-center justify-center">
+                                                        <div className="h-10 w-10 rounded-lg bg-indigo-50 flex items-center justify-center">
                                                             <Calculator className="h-5 w-5 text-indigo-600" />
                                                         </div>
                                                         <div className="space-y-0.5">
@@ -522,7 +522,7 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
                                                                             className="w-full h-12 justify-between rounded-xl border-slate-200 bg-slate-50/50 font-bold text-slate-700 hover:bg-slate-100 px-4"
                                                                         >
                                                                             {selectedBasis ? (
-                                                                                <div className="flex items-center justify-between w-full pr-2 text-left truncate">
+                                                                                <div className="flex items-center justify-between w-full pr-2 text-left truncate flex-wrap gap-2">
                                                                                     <span className="truncate">{selectedBasis}</span>
                                                                                     <span className="text-xs text-slate-400 font-mono ml-2 shrink-0">
                                                                                         Rp {(uniqueFsliData.find(f => f.name === selectedBasis)?.total || 0).toLocaleString()}
@@ -550,7 +550,7 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
                                                                                                 setSelectedBasis(item.name);
                                                                                                 setBenchmarkPopoverOpen(false);
                                                                                             }}
-                                                                                            className="flex items-center justify-between py-2.5 px-3 cursor-pointer text-xs font-bold text-slate-700 data-[selected=true]:bg-indigo-50 data-[selected=true]:text-indigo-900"
+                                                                                            className="flex items-center justify-between py-2.5 px-3 cursor-pointer text-xs font-bold text-slate-700 data-[selected=true]:bg-indigo-50 data-[selected=true]:text-indigo-900 flex-wrap gap-2"
                                                                                         >
                                                                                             <div className="flex items-center gap-2 truncate">
                                                                                                 <Check
@@ -599,7 +599,7 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
                                                             </div>
                                                         </div>
 
-                                                        <div className="bg-mancity-pattern rounded-[2rem] p-6 text-primary-foreground space-y-6 flex flex-col justify-center border-4 border-white/20 shadow-2xl relative overflow-hidden group">
+                                                        <div className="bg-mancity-pattern rounded-lg p-6 text-primary-foreground space-y-6 flex flex-col justify-center border-4 border-white/20 shadow-2xl relative overflow-hidden group">
                                                             <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
                                                                 <Calculator className="h-32 w-32 -rotate-12" />
                                                             </div>
@@ -653,5 +653,5 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
 }
 
 function ZapLoader({ className }: any) {
-    return <Zap className={cn("animate-pulse text-amber-500", className)} />;
+    return <Zap className={cn(" text-amber-500", className)} />;
 }

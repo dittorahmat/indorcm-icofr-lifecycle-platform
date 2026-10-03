@@ -54,7 +54,7 @@ export function ScopingHealthDashboard({ glData, scopingCompliance }: ScopingHea
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex justify-between items-center mb-2">
+          <div className="flex justify-between items-center mb-2 flex-wrap gap-2">
             <span className="text-xs text-muted-foreground">{t('health.balanceCheck')}</span>
             {balanceStatus.isBalanced ? (
               <Badge className="bg-green-600 text-xs">BALANCED</Badge>
@@ -69,7 +69,7 @@ export function ScopingHealthDashboard({ glData, scopingCompliance }: ScopingHea
             </p>
           </div>
           {!balanceStatus.isBalanced && (
-            <p className="text-xs text-destructive mt-2 italic">
+            <p className="text-xs text-destructive mt-2">
               {t('health.unbalancedWarning')}
             </p>
           )}
@@ -79,7 +79,7 @@ export function ScopingHealthDashboard({ glData, scopingCompliance }: ScopingHea
       {/* Benford's Law Analysis */}
       <Card className="md:col-span-2">
         <CardHeader className="pb-0">
-          <div className="flex justify-between items-start">
+          <div className="flex justify-between items-start flex-wrap gap-2">
             <div>
               <CardTitle className="text-xs font-bold uppercase flex items-center gap-2 text-primary">
                 <BarChart3 className="h-4 w-4" />

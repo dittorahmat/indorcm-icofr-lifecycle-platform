@@ -90,7 +90,7 @@ export function SOCMonitoringPage() {
         </PageHeader>
 
         <Tabs defaultValue="apps">
-          <TabsList className="grid w-full grid-cols-2 max-w-[400px]">
+          <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 max-w-[400px]">
             <TabsTrigger value="apps">Significant Applications</TabsTrigger>
             <TabsTrigger value="soc">SOC Monitoring</TabsTrigger>
           </TabsList>
@@ -124,7 +124,7 @@ export function SOCMonitoringPage() {
                       <TableRow><TableCell colSpan={10} className="h-24 text-center">Loading...</TableCell></TableRow>
                     ) : !appsData?.items.length ? (
                       <TableRow>
-                        <TableCell colSpan={10} className="h-32 text-center text-slate-400 italic">
+                        <TableCell colSpan={10} className="h-32 text-center text-slate-400">
                           No applications found. Click "Add Application" to start.
                         </TableCell>
                       </TableRow>
@@ -147,7 +147,7 @@ export function SOCMonitoringPage() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="h-6 px-1.5 text-[10px] text-indigo-600 hover:bg-indigo-50 opacity-0 group-hover:opacity-100 transition-opacity"
+                                className="h-6 px-1.5 text-xs text-indigo-600 hover:bg-indigo-50 opacity-0 group-hover:opacity-100 transition-opacity"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setSelectedAppDetail(app);
@@ -177,7 +177,7 @@ export function SOCMonitoringPage() {
                                   </Badge>
                                 ))
                               ) : (
-                                <span className="text-xs text-slate-400 italic">-</span>
+                                <span className="text-xs text-slate-400">-</span>
                               )}
                             </div>
                           </TableCell>
@@ -190,7 +190,7 @@ export function SOCMonitoringPage() {
                                   </Badge>
                                 ))
                               ) : (
-                                <span className="text-xs text-slate-400 italic">-</span>
+                                <span className="text-xs text-slate-400">-</span>
                               )}
                             </div>
                           </TableCell>
@@ -208,7 +208,7 @@ export function SOCMonitoringPage() {
                                 <span className="truncate">{app.architectureDocName || "Architecture.pdf"}</span>
                               </a>
                             ) : (
-                              <span className="text-xs text-slate-400 italic">No document</span>
+                              <span className="text-xs text-slate-400">No document</span>
                             )}
                           </TableCell>
                           <TableCell>
@@ -244,7 +244,7 @@ export function SOCMonitoringPage() {
                                     </TooltipContent>
                                   </Tooltip>
                                 ))}
-                                {mappedAreas.length === 0 && <span className="text-xs text-slate-400 italic">No mapping</span>}
+                                {mappedAreas.length === 0 && <span className="text-xs text-slate-400">No mapping</span>}
                               </div>
                             </TooltipProvider>
                           </TableCell>
@@ -285,7 +285,7 @@ export function SOCMonitoringPage() {
               <Info className="h-5 w-5 text-blue-600 mt-0.5" />
               <div className="space-y-1">
                 <p className="text-xs font-bold text-blue-800 uppercase tracking-wide">Table 1 Compliance: COBIT to ITGC Mapping</p>
-                <p className="text-xs text-blue-700 leading-relaxed italic">
+                <p className="text-xs text-blue-700 leading-relaxed">
                   In accordance with SK-5 Table 1 regulation, each IT control (COBIT 2019) is automatically mapped to 4 main ITGC areas: 
                   Access to Program & Data, Program Change, Program Development, and Computer Operations.
                 </p>
@@ -344,7 +344,7 @@ export function SOCMonitoringPage() {
                       <TableRow><TableCell colSpan={6} className="h-24 text-center">Loading SOC data...</TableCell></TableRow>
                     ) : !socData?.length ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="h-32 text-center text-slate-400 italic">
+                        <TableCell colSpan={6} className="h-32 text-center text-slate-400">
                           No SOC reports found. Register a vendor and report to begin.
                         </TableCell>
                       </TableRow>

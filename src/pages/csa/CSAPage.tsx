@@ -196,7 +196,7 @@ function CSARecordRow({ record: initialRecord, process }: { record: CSARecord, p
                  <div className="h-40 flex items-center justify-center bg-slate-50/50">
                     <div className="flex flex-col items-center gap-3">
                         <div className="h-6 w-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-                        <span className="text-xs font-black text-slate-400 uppercase tracking-widest animate-pulse">{t('page.loadingSamples')}</span>
+                        <span className="text-xs font-black text-slate-400 uppercase tracking-widest">{t('page.loadingSamples')}</span>
                     </div>
                  </div>
                ) : (
@@ -408,7 +408,7 @@ export function CSAPage() {
           {/* Executive Summary Card */}
           {records?.items && records.items.length > 0 && (
             <div className="p-4 bg-card border rounded-lg shadow-sm space-y-3" data-testid="csa-mobile-executive-summary">
-              <div className="flex items-center justify-between border-b pb-2">
+              <div className="flex items-center justify-between border-b pb-2 flex-wrap gap-2">
                 <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                   <ShieldCheck className="h-4 w-4 text-primary" />
                   {t('page.summary.title', { defaultValue: 'Ringkasan Eksekutif Pengujian' })}
@@ -418,7 +418,7 @@ export function CSAPage() {
                 </Badge>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 text-center">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-center">
                 <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 rounded-md">
                   <span className="text-xs font-medium text-emerald-700 dark:text-emerald-300 block">
                     {t('page.summary.effective', { defaultValue: 'Efektif' })}

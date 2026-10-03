@@ -201,7 +201,7 @@ export function AIChatDrawer({ isOpen, onClose }: AIChatDrawerProps) {
         className="w-full sm:max-w-[500px] flex flex-col p-0 gap-0 border-l"
       >
         <SheetHeader className="px-6 py-4 border-b flex-shrink-0">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
                 <Bot className="h-5 w-5 text-primary" />
@@ -228,7 +228,7 @@ export function AIChatDrawer({ isOpen, onClose }: AIChatDrawerProps) {
           
           {pendingAction && (
             <div className="absolute bottom-4 left-0 right-0 px-4 animate-in fade-in slide-in-from-bottom-2">
-              <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 flex flex-col gap-3 backdrop-blur-sm shadow-lg">
+              <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 flex flex-col gap-3 shadow-lg">
                 <p className="text-sm font-medium text-primary flex items-center gap-2">
                   <Bot className="h-4 w-4" /> Konfirmasi Aksi
                 </p>
@@ -260,7 +260,7 @@ export function AIChatDrawer({ isOpen, onClose }: AIChatDrawerProps) {
             disabled={isLoading}
             placeholder={t('inputPlaceholder')}
           />
-          <p className="mt-2 text-xs text-center text-muted-foreground italic">
+          <p className="mt-2 text-xs text-center text-muted-foreground">
             {t('disclaimer')}
           </p>
         </div>

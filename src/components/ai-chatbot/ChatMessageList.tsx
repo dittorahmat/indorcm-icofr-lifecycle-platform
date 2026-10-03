@@ -112,9 +112,9 @@ export function ChatMessageList({ messages, isLoading }: ChatMessageListProps) {
             <div className="bg-muted rounded-lg px-4 py-3 text-sm">
               <div className="flex items-center gap-2">
                 <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                  <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                  <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" />
+                  <div className="w-2 h-2 bg-muted-foreground/50 rounded-full [animation-delay:-0.3s]" />
+                  <div className="w-2 h-2 bg-muted-foreground/50 rounded-full [animation-delay:-0.15s]" />
+                  <div className="w-2 h-2 bg-muted-foreground/50 rounded-full" />
                 </div>
                 <span className="text-muted-foreground">{t('thinking')}</span>
               </div>

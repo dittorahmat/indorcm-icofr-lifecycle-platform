@@ -40,7 +40,7 @@ export function LifecycleProgress({ currentStage = 'evaluasi', workingYear = '20
 
   return (
     <div className="w-full bg-white border border-slate-200 rounded-lg p-3.5 sm:p-4 md:p-6 shadow-xs">
-      <div className="flex items-start sm:items-center justify-between gap-2 mb-3.5 sm:mb-4 md:mb-6">
+      <div className="flex items-start sm:items-center justify-between gap-2 mb-3.5 sm:mb-4 md:mb-6 flex-wrap">
         <div className="min-w-0">
           <h3 className="text-sm font-semibold text-slate-900 truncate">{t('lifecycle.title')}</h3>
           <p className="text-xs text-slate-500 line-clamp-1">{t('lifecycle.subtitle')}</p>
@@ -52,7 +52,7 @@ export function LifecycleProgress({ currentStage = 'evaluasi', workingYear = '20
 
       {/* MOBILE INTERACTIVE HORIZONTAL STEPPER: All 6 SK-5 Phases */}
       <div className="flex md:hidden flex-col gap-2.5">
-        <div className="flex items-center justify-between text-xs font-semibold px-0.5">
+        <div className="flex items-center justify-between text-xs font-semibold px-0.5 flex-wrap gap-2">
           <span className="text-slate-900 font-bold uppercase tracking-wider flex items-center gap-1.5">
             <span className="h-5 w-5 rounded-full bg-slate-900 text-white text-xs font-bold flex items-center justify-center">
               {currentIdx + 1}

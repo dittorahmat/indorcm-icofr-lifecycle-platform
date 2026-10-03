@@ -37,7 +37,7 @@ export function ControlHistory({ history }: ControlHistoryProps) {
                 >
                   <div className="absolute -left-[5px] top-0 h-2 w-2 rounded-full bg-slate-300 group-hover:bg-indigo-500 transition-colors" />
                   
-                  <div className="flex justify-between items-center mb-1.5 gap-2">
+                  <div className="flex justify-between items-center mb-1.5 gap-2 flex-wrap">
                     <Badge variant="outline" className="text-xs font-semibold uppercase tracking-wider h-5 px-2 bg-white border-slate-200 text-slate-600 rounded">
                       {h.testType}
                     </Badge>
@@ -48,7 +48,7 @@ export function ControlHistory({ history }: ControlHistoryProps) {
                   </div>
 
                   <div className="bg-slate-50 rounded-lg p-3 space-y-2 border border-slate-200 group-hover:border-indigo-200 group-hover:bg-white transition-all shadow-xs">
-                    <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
                       <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5 uppercase tracking-wide truncate">
                         <FileText className="h-3.5 w-3.5 text-slate-400 shrink-0" />
                         {h.method}

@@ -229,7 +229,7 @@ export function createWorksheetColumns({
                             : [...selectedIds, elc.id];
                           updateMutation.mutate({ id: row.original.id, data: { relatedControlIds: nextIds } });
                         }}
-                        className="text-xs flex items-center justify-between"
+                        className="text-xs flex items-center justify-between flex-wrap gap-2"
                       >
                         <div className="flex flex-col">
                           <span className="font-bold">{elc.code}</span>

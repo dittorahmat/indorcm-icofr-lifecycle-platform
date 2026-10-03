@@ -152,7 +152,7 @@ export function BPMPage() {
             title={<span className="font-display tracking-tight text-slate-900 font-extrabold">{t('title')}</span>} 
             description={t('description')}
             badge={
-              <Badge variant="outline" className="bg-slate-50 text-slate-700 border-slate-200 gap-1.5 py-1 px-3 font-bold uppercase tracking-widest text-[10px] rounded-md shadow-sm">
+              <Badge variant="outline" className="bg-slate-50 text-slate-700 border-slate-200 gap-1.5 py-1 px-3 font-bold uppercase tracking-widest text-xs rounded-md shadow-sm">
                 <ShieldCheck className="h-3.5 w-3.5" />
                 {t('common:cycles.cycleLabel', { year: viewYear })}
               </Badge>
@@ -186,9 +186,9 @@ export function BPMPage() {
         {!activeSim ? null : !selectedAccountKey ? (
           <motion.div 
             variants={itemVariants}
-            className="py-24 text-center border-2 border-dashed rounded-2xl bg-white border-slate-200 shadow-sm"
+            className="py-24 text-center border-2 border-dashed rounded-lg bg-white border-slate-200 shadow-sm"
           >
-            <div className="h-20 w-20 bg-indigo-50/50 text-indigo-400 rounded-2xl flex items-center justify-center mx-auto mb-6 ring-8 ring-indigo-50/30">
+            <div className="h-20 w-20 bg-indigo-50/50 text-indigo-400 rounded-lg flex items-center justify-center mx-auto mb-6 ring-8 ring-indigo-50/30">
               <Search className="h-10 w-10" />
             </div>
             <h3 className="text-lg font-display font-black text-slate-900 uppercase tracking-tight mb-2">Ready to Map Process</h3>
@@ -196,15 +196,15 @@ export function BPMPage() {
               Select an FSLI and GL Account from the selection panel above to begin mapping business processes, risks, and controls.
             </p>
             <div className="flex items-center justify-center gap-3">
-              <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-400 border border-slate-200">1</div>
+              <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-black text-slate-400 border border-slate-200">1</div>
               <ArrowRight className="h-4 w-4 text-slate-300" />
-              <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-400 border border-slate-200">2</div>
+              <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-black text-slate-400 border border-slate-200">2</div>
             </div>
           </motion.div>
         ) : !hasAccess ? (
           <motion.div 
             variants={itemVariants}
-            className="py-12 text-center border-2 border-rose-100 rounded-2xl bg-rose-50/30"
+            className="py-12 text-center border-2 border-rose-100 rounded-lg bg-rose-50/30"
           >
             <div className="h-14 w-14 bg-rose-100 text-rose-300 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-sm">
               <AlertTriangle className="h-7 w-7" />
@@ -390,14 +390,14 @@ export function BPMPage() {
             <div className="bg-mancity-pattern p-6 text-primary-foreground">
               <DialogHeader>
                 <DialogTitle className="font-display text-xl tracking-tight text-primary-foreground">{t('bpm:createModalTitle')}</DialogTitle>
-                <DialogDescription className="text-primary-foreground/60 text-[10px] uppercase tracking-wider mt-1">
+                <DialogDescription className="text-primary-foreground/60 text-xs uppercase tracking-wider mt-1">
                   Define a major process heading for <strong>{selectedGLRow?.noGL}</strong>.
                 </DialogDescription>
               </DialogHeader>
             </div>
             <div className="p-6 space-y-6">
               <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 px-1">{t('bpm:processNameLabel')}</Label>
+                <Label className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500 px-1">{t('bpm:processNameLabel')}</Label>
                 <Input 
                   placeholder="e.g. Penerimaan setoran tunai" 
                   value={bpmName} 
@@ -406,7 +406,7 @@ export function BPMPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 px-1">BPM Code</Label>
+                <Label className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500 px-1">BPM Code</Label>
                 <Input 
                   placeholder="e.g. FIN-01" 
                   value={bpmCode} 
@@ -415,7 +415,7 @@ export function BPMPage() {
                 />
               </div>
               <DialogFooter className="gap-2">
-                <Button variant="ghost" onClick={() => setIsCreatingBPM(false)} className="font-bold text-[10px] uppercase tracking-widest text-slate-400 hover:text-slate-600">{t('common:actions.cancel')}</Button>
+                <Button variant="ghost" onClick={() => setIsCreatingBPM(false)} className="font-bold text-xs uppercase tracking-widest text-slate-400 hover:text-slate-600">{t('common:actions.cancel')}</Button>
                 <Button 
                   disabled={!bpmName || !bpmCode || createBPMMutation.isPending} 
                   onClick={() => createBPMMutation.mutate({ 
@@ -425,7 +425,7 @@ export function BPMPage() {
                     fsliName: selectedFsli,
                     year: parseInt(viewYear)
                   })}
-                  className="h-10 px-6 bg-mancity-pattern hover:opacity-90 shadow-sm rounded-lg font-bold text-[10px] uppercase tracking-widest text-primary-foreground"
+                  className="h-10 px-6 bg-mancity-pattern hover:opacity-90 shadow-sm rounded-lg font-bold text-xs uppercase tracking-widest text-primary-foreground"
                 >
                   {createBPMMutation.isPending && <Loader2 className="h-3 w-3 animate-spin mr-2" />}
                   {t('bpm:createProcessButton')}

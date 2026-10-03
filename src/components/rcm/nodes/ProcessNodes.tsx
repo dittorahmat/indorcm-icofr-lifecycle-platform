@@ -42,7 +42,7 @@ export const ActivityNode = ({ data, selected, type }: NodeProps) => {
         )}
       >
         <EightConnectionHandles isLocked={data.isLocked} selected={selected} />
-        <div className="font-bold text-[9px] mb-1.5 uppercase text-slate-500 border-b pb-1 flex items-center justify-center gap-1">
+        <div className="font-bold text-xs mb-1.5 uppercase text-slate-500 border-b pb-1 flex items-center justify-center gap-1">
           <Activity className="h-2.5 w-2.5" /> {data.role || "Role"}
         </div>
         <div className={cn("font-semibold text-slate-800 leading-tight whitespace-pre-wrap break-words", fontClass)}>{data.label}</div>
@@ -84,7 +84,7 @@ export const DecisionNode = ({ data, selected, type }: NodeProps) => {
   else if (nodeScale === 'lg') boxSize = 135;
 
   let fontClass = 'text-xs';
-  if (fontScale === 'sm') fontClass = 'text-[10px]';
+  if (fontScale === 'sm') fontClass = 'text-xs';
   else if (fontScale === 'lg') fontClass = 'text-sm';
 
   return (
@@ -129,7 +129,7 @@ export const AlternateProcessNode = ({ data, selected, type }: NodeProps) => {
           <rect x="2" y="2" width="156" height="52" rx="12" ry="12" fill="white" stroke="#0f172a" strokeWidth="2" />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center px-4 z-10">
-          <div className="text-[9px] font-black text-slate-400 uppercase leading-none mb-0.5">Alt Process</div>
+          <div className="text-xs font-black text-slate-400 uppercase leading-none mb-0.5">Alt Process</div>
           <div className={cn("font-bold text-slate-800 text-center leading-tight whitespace-pre-wrap break-words max-h-[32px] overflow-y-auto scrollbar-none", fontClass)}>{data.label}</div>
         </div>
       </div>
@@ -155,7 +155,7 @@ export const PredefinedProcessNode = ({ data, selected, type }: NodeProps) => {
           <line x1="144" y1="2" x2="144" y2="54" stroke="#0f172a" strokeWidth="2" />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center px-6 z-10">
-          <div className="text-[9px] font-black text-slate-400 uppercase leading-none mb-0.5">Predefined</div>
+          <div className="text-xs font-black text-slate-400 uppercase leading-none mb-0.5">Predefined</div>
           <div className={cn("font-bold text-slate-800 text-center leading-tight whitespace-pre-wrap break-words max-h-[32px] overflow-y-auto scrollbar-none", fontClass)}>{data.label}</div>
         </div>
       </div>
@@ -217,7 +217,7 @@ export const DelayNode = ({ data, selected, type }: NodeProps) => {
           <path d="M2 2 L134 2 A 26 26 0 0 1 134 54 L2 54 Z" fill="white" stroke="#0f172a" strokeWidth="2" />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center px-6 z-10">
-          <div className="text-[9px] font-black text-slate-400 uppercase leading-none mb-0.5">Delay</div>
+          <div className="text-xs font-black text-slate-400 uppercase leading-none mb-0.5">Delay</div>
           <div className={cn("font-bold text-slate-800 text-center leading-tight whitespace-pre-wrap break-words max-h-[32px] overflow-y-auto scrollbar-none", fontClass)}>{data.label}</div>
         </div>
       </div>
@@ -241,7 +241,7 @@ export const LoopLimitNode = ({ data, selected, type }: NodeProps) => {
           <path d="M20 2 L140 2 L158 15 L158 54 L2 54 L2 15 Z" fill="white" stroke="#0f172a" strokeWidth="2" />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center pt-2 px-6 z-10">
-          <div className="text-[9px] font-black text-slate-400 uppercase leading-none mb-0.5">Loop Limit</div>
+          <div className="text-xs font-black text-slate-400 uppercase leading-none mb-0.5">Loop Limit</div>
           <div className={cn("font-bold text-slate-800 text-center leading-tight whitespace-pre-wrap break-words max-h-[32px] overflow-y-auto scrollbar-none", fontClass)}>{data.label}</div>
         </div>
       </div>

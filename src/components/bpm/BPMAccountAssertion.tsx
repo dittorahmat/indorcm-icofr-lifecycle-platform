@@ -46,9 +46,9 @@ export function BPMAccountAssertion({
   ] as const;
 
   return (
-    <Card className="border-slate-200 shadow-md overflow-hidden rounded-[2rem] bg-white">
+    <Card className="border-slate-200 shadow-md overflow-hidden rounded-lg bg-white">
       <CardHeader className="bg-slate-50/50 py-5 px-8 border-b">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-4">
             <div className="h-10 w-10 rounded-lg bg-slate-50 text-primary flex items-center justify-center border border-slate-200 shadow-sm">
               <Shield className="h-5 w-5" />

@@ -36,7 +36,7 @@ export function RiskHeatmap() {
   return (
     <Card className="overflow-hidden border-slate-200 shadow-sm">
       <CardHeader className="bg-slate-50/50 border-b pb-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="space-y-1">
             <CardTitle className="text-lg flex items-center gap-2">
               Heatmap Risiko (SK-5/2024)
@@ -57,7 +57,7 @@ export function RiskHeatmap() {
             </div>
 
             <div className="space-y-4">
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                 {levels.map((qn) => (
                   levels.slice().reverse().map((ql) => {
                     const outcome = getOutcome(qn, ql);
@@ -98,7 +98,7 @@ export function RiskHeatmap() {
                                 </div>
                               ))
                             ) : (
-                              <p className="text-xs text-slate-400 italic text-center py-2">Tidak ada data risiko di kategori ini.</p>
+                              <p className="text-xs text-slate-400 text-center py-2">Tidak ada data risiko di kategori ini.</p>
                             )}
                             <div className="pt-2 border-t mt-2">
                               <button className="text-xs font-bold text-primary hover:underline flex items-center gap-1">
@@ -114,7 +114,7 @@ export function RiskHeatmap() {
               </div>
 
               {/* X-Axis Labels */}
-              <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-center">
                 <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Rendah</span>
                 <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Medium</span>
                 <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Tinggi</span>

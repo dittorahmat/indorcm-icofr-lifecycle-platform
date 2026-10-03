@@ -154,7 +154,7 @@ export function SettingsPage() {
                         )}
                       </div>
                     </div>
-                    <p className="text-xs text-slate-400 italic">Recommended: Transparent PNG, 200x200px</p>
+                    <p className="text-xs text-slate-400">Recommended: Transparent PNG, 200x200px</p>
                   </div>
                </div>
             </CardContent>
@@ -334,7 +334,7 @@ export function SettingsPage() {
             <CardContent className="p-6 space-y-6">
                {/* 1. Slack Webhook */}
                <div className="p-4 border rounded-xl bg-slate-50/30 space-y-3">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
                     <div>
                       <h4 className="font-bold text-sm text-slate-800">{t('webhookSettings.slackTitle')}</h4>
                       <p className="text-xs text-slate-500">{t('webhookSettings.slackDesc')}</p>
@@ -372,7 +372,7 @@ export function SettingsPage() {
 
                {/* 2. Microsoft Teams Webhook */}
                <div className="p-4 border rounded-xl bg-slate-50/30 space-y-3">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
                     <div>
                       <h4 className="font-bold text-sm text-slate-800">{t('webhookSettings.teamsTitle')}</h4>
                       <p className="text-xs text-slate-500">{t('webhookSettings.teamsDesc')}</p>
@@ -410,7 +410,7 @@ export function SettingsPage() {
 
                {/* 3. Generic Webhook */}
                <div className="p-4 border rounded-xl bg-slate-50/30 space-y-3">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
                     <div>
                       <h4 className="font-bold text-sm text-slate-800">{t('webhookSettings.genericTitle')}</h4>
                       <p className="text-xs text-slate-500">{t('webhookSettings.genericDesc')}</p>
@@ -465,7 +465,7 @@ export function SettingsPage() {
                </div>
             </CardHeader>
             <CardContent className="p-6 space-y-6">
-               <div className="flex items-center justify-between p-4 bg-rose-50/50 rounded-xl border border-rose-100">
+               <div className="flex items-center justify-between p-4 bg-rose-50/50 rounded-xl border border-rose-100 flex-wrap gap-2">
                   <div className="space-y-1">
                     <p className="text-sm font-bold text-rose-900 flex items-center gap-2">
                        {localSettings.isPeriodLocked ? <Lock className="h-3.5 w-3.5" /> : <ShieldCheck className="h-3.5 w-3.5 text-green-600" />}

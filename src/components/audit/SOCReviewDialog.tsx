@@ -171,7 +171,7 @@ function CheckItem({ id, label, desc, checked, onChecked }: { id: string, label:
         <Label htmlFor={id} className="text-sm font-bold leading-none cursor-pointer">
           {label}
         </Label>
-        <p className="text-xs text-muted-foreground leading-relaxed italic">
+        <p className="text-xs text-muted-foreground leading-relaxed">
           {desc}
         </p>
       </div>

@@ -69,7 +69,7 @@ export function IntelligenceDashboard({ summary }: IntelligenceDashboardProps) {
                 </Card>
 
                 <Card className="border-red-100 shadow-lg rounded-lg bg-red-50 overflow-hidden relative">
-                    <CardContent className="p-4 sm:p-8 flex items-center justify-between">
+                    <CardContent className="p-4 sm:p-8 flex items-center justify-between flex-wrap gap-2">
                         <div className="space-y-1">
                             <div className="text-2xl font-black text-red-600">{summary.unmitigatedRisks}</div>
                             <div className="text-xs font-black text-red-400 uppercase tracking-widest">{t('rcm:migration.intelligence.unmitigated_label')}</div>

@@ -131,7 +131,7 @@ export function TLCTabContent({
         ) : (
           filteredTlc.map((ctrl) => (
             <div key={ctrl.id} className="bg-white rounded-lg border border-slate-200 shadow-sm p-4 space-y-3">
-              <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-2">
+              <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-2 flex-wrap">
                 <div className="space-y-1">
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-900 border border-slate-200">
@@ -168,7 +168,7 @@ export function TLCTabContent({
                 </p>
               )}
 
-              <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-xs">
+              <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-xs flex-wrap gap-2">
                 <Badge variant="outline" className="text-xs font-medium h-5 px-2 bg-slate-50 border-slate-200 text-slate-700">
                   {ctrl.nature}
                 </Badge>

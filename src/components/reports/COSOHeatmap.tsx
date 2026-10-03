@@ -85,7 +85,7 @@ export function COSOHeatmap({ principleStatuses }: COSOHeatmapProps) {
                         isIneffective ? "bg-red-500" : "bg-slate-300"
                       )} />
                       <div className="flex flex-col gap-1.5 ml-2">
-                        <div className="flex justify-between items-start">
+                        <div className="flex justify-between items-start flex-wrap gap-2">
                           <span className="font-bold text-slate-800">Prinsip {p}</span>
                           {isEffective && <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />}
                           {isIneffective && <AlertTriangle className="h-3.5 w-3.5 text-red-600" />}

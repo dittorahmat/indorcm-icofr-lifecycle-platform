@@ -53,19 +53,19 @@ export const BPMCanvasHeader = ({ subProcess, year, version = '1.0', isDraft, no
 
         {/* Metadata Section */}
         <div className="col-span-3 grid grid-rows-4 text-xs uppercase font-bold">
-           <div className="border-b border-slate-800 px-3 flex items-center justify-between">
+           <div className="border-b border-slate-800 px-3 flex items-center justify-between flex-wrap gap-2">
               <span className="text-slate-400 font-black">Versi</span>
               <span className="text-slate-900">{version}</span>
            </div>
-           <div className="border-b border-slate-800 px-3 flex items-center justify-between">
+           <div className="border-b border-slate-800 px-3 flex items-center justify-between flex-wrap gap-2">
               <span className="text-slate-400 font-black">Revisi</span>
               <span className="text-slate-900">00</span>
            </div>
-           <div className="border-b border-slate-800 px-3 flex items-center justify-between bg-slate-50">
+           <div className="border-b border-slate-800 px-3 flex items-center justify-between bg-slate-50 flex-wrap gap-2">
               <span className="text-slate-400 font-black">Tahun</span>
               <span className="text-slate-900">{year}</span>
            </div>
-           <div className="px-3 flex items-center justify-between">
+           <div className="px-3 flex items-center justify-between flex-wrap gap-2">
               <span className="text-slate-400 font-black">Halaman</span>
               <span className="text-slate-900">1 dari 1</span>
            </div>
@@ -116,12 +116,12 @@ export const BPMCanvasFooter = ({ signatures, onChangeSignature, isLocked = fals
   };
 
   return (
-    <div className="w-full mt-8 grid grid-cols-3 border-2 border-slate-800 bg-white">
+    <div className="w-full mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 border-2 border-slate-800 bg-white">
        <div className="border-r-2 border-slate-800 p-4 min-h-[120px] flex flex-col">
           <span className="text-xs font-black uppercase text-slate-500 mb-4 border-b pb-1">Disusun Oleh (Lini 1)</span>
           <div className="flex-1" />
           <div className="space-y-1">
-             <div className="flex justify-between items-center text-xs font-bold uppercase">
+             <div className="flex justify-between items-center text-xs font-bold uppercase flex-wrap gap-2">
                 <span className="text-slate-400">Nama:</span>
                 <input
                    type="text"
@@ -132,7 +132,7 @@ export const BPMCanvasFooter = ({ signatures, onChangeSignature, isLocked = fals
                    className={inputClass}
                 />
              </div>
-             <div className="flex justify-between items-center text-xs font-bold uppercase pt-1">
+             <div className="flex justify-between items-center text-xs font-bold uppercase pt-1 flex-wrap gap-2">
                 <span className="text-slate-400">Tgl:</span>
                 <input
                    type="text"
@@ -149,7 +149,7 @@ export const BPMCanvasFooter = ({ signatures, onChangeSignature, isLocked = fals
           <span className="text-xs font-black uppercase text-slate-500 mb-4 border-b pb-1">Direview Oleh (Lini 2)</span>
           <div className="flex-1" />
           <div className="space-y-1">
-             <div className="flex justify-between items-center text-xs font-bold uppercase">
+             <div className="flex justify-between items-center text-xs font-bold uppercase flex-wrap gap-2">
                 <span className="text-slate-400">Nama:</span>
                 <input
                    type="text"
@@ -160,7 +160,7 @@ export const BPMCanvasFooter = ({ signatures, onChangeSignature, isLocked = fals
                    className={inputClass}
                 />
              </div>
-             <div className="flex justify-between items-center text-xs font-bold uppercase pt-1">
+             <div className="flex justify-between items-center text-xs font-bold uppercase pt-1 flex-wrap gap-2">
                 <span className="text-slate-400">Tgl:</span>
                 <input
                    type="text"
@@ -179,7 +179,7 @@ export const BPMCanvasFooter = ({ signatures, onChangeSignature, isLocked = fals
              <ShieldCheck className="h-10 w-10 text-slate-900" />
           </div>
           <div className="space-y-1 mt-auto">
-             <div className="flex justify-between items-center text-xs font-bold uppercase">
+             <div className="flex justify-between items-center text-xs font-bold uppercase flex-wrap gap-2">
                 <span className="text-slate-400">Nama:</span>
                 <input
                    type="text"
@@ -190,7 +190,7 @@ export const BPMCanvasFooter = ({ signatures, onChangeSignature, isLocked = fals
                    className={inputClass}
                 />
              </div>
-             <div className="flex justify-between items-center text-xs font-bold uppercase pt-1">
+             <div className="flex justify-between items-center text-xs font-bold uppercase pt-1 flex-wrap gap-2">
                 <span className="text-slate-400">Sign:</span>
                 <input
                    type="text"

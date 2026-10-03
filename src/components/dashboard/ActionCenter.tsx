@@ -17,7 +17,7 @@ export function ActionCenter({ csaCompletion, openDeficienciesCount }: ActionCen
   return (
     <Card className="border-slate-200 shadow-xs overflow-hidden bg-white rounded-lg">
       <CardHeader className="bg-slate-50/50 border-b py-4 px-5">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2">
              <Activity className="h-4 w-4 text-slate-900" aria-hidden="true" /> {t('actionCenter.title')}
           </CardTitle>

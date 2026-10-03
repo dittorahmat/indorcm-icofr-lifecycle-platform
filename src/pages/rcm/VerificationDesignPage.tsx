@@ -153,7 +153,7 @@ export function VerificationDesignPage({ embedded, filterBpmId, workingYear, noG
       className: 'bg-indigo-50/50',
       columns: [
         { id: 'control_name', header: t('rcm:verification.columns.control_name'), accessorKey: 'controlName', width: '280px', className: 'text-xs text-slate-800 font-normal' },
-        { id: 'control_desc', header: t('rcm:matrix.control_description'), accessorKey: 'controlDescription', width: '350px', className: 'text-xs text-slate-600 font-normal italic' },
+        { id: 'control_desc', header: t('rcm:matrix.control_description'), accessorKey: 'controlDescription', width: '350px', className: 'text-xs text-slate-600 font-normal not-italic' },
         { id: 'docs', header: t('rcm:matrix.supporting_docs'), accessorKey: 'supportingDocs', width: '200px', className: 'text-xs text-slate-800 font-normal' },
         { 
           id: 'is_key', 
@@ -222,7 +222,7 @@ export function VerificationDesignPage({ embedded, filterBpmId, workingYear, noG
           width: '120px', 
           className: 'text-center',
           render: (row) => row.conclusion && (
-            <Badge variant="outline" className={cn("text-[10px] uppercase font-bold", 
+            <Badge variant="outline" className={cn("text-xs uppercase font-bold", 
               row.conclusion === 'Effective' ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-rose-200 bg-rose-50 text-rose-700"
             )}>
               {row.conclusion === 'Effective' ? t('common:status.effective') : t('common:status.ineffective')}

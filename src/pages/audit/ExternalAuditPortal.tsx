@@ -58,7 +58,7 @@ export function ExternalAuditPortal() {
 
         <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 flex-wrap gap-2">
               <CardTitle className="text-sm font-medium">Management Conclusion</CardTitle>
               <ShieldCheck className="h-4 w-4 text-green-600" />
             </CardHeader>
@@ -68,7 +68,7 @@ export function ExternalAuditPortal() {
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 flex-wrap gap-2">
               <CardTitle className="text-sm font-medium">Open Deficiencies</CardTitle>
               <AlertTriangle className="h-4 w-4 text-orange-600" />
             </CardHeader>
@@ -78,7 +78,7 @@ export function ExternalAuditPortal() {
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 flex-wrap gap-2">
               <CardTitle className="text-sm font-medium">Scope Coverage</CardTitle>
               <FileCheck className="h-4 w-4 text-blue-600" />
             </CardHeader>
@@ -90,7 +90,7 @@ export function ExternalAuditPortal() {
         </div>
 
         <Tabs defaultValue="review">
-          <TabsList className="w-full sm:w-auto grid grid-cols-2 sm:inline-flex justify-start gap-1 min-h-[44px]">
+          <TabsList className="w-full sm:w-auto grid grid-cols-1 sm:inline-flex justify-start gap-1 min-h-[44px]">
             <TabsTrigger value="review" className="min-w-0 truncate px-2 text-xs sm:text-sm">1. Working Paper Review</TabsTrigger>
             <TabsTrigger value="opinion" className="min-w-0 truncate px-2 text-xs sm:text-sm">2. Audit Opinion</TabsTrigger>
           </TabsList>
@@ -103,19 +103,19 @@ export function ExternalAuditPortal() {
               </CardHeader>
               <CardContent>
                 <div className="p-4 bg-muted/30 rounded-lg border text-sm space-y-4">
-                  <div className="flex justify-between items-center border-b pb-2">
+                  <div className="flex justify-between items-center border-b pb-2 flex-wrap gap-2">
                     <span className="font-semibold">Management Assessment Report</span>
                     <Button variant="link" size="sm">View Document</Button>
                   </div>
-                  <div className="flex justify-between items-center border-b pb-2">
+                  <div className="flex justify-between items-center border-b pb-2 flex-wrap gap-2">
                     <span className="font-semibold">RCM & Control Design</span>
                     <Button variant="link" size="sm">View Matrix</Button>
                   </div>
-                  <div className="flex justify-between items-center border-b pb-2">
+                  <div className="flex justify-between items-center border-b pb-2 flex-wrap gap-2">
                     <span className="font-semibold">Testing Results (Line 3)</span>
                     <Button variant="link" size="sm">View Working Papers</Button>
                   </div>
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center flex-wrap gap-2">
                     <span className="font-semibold">Remediation Minutes</span>
                     <Button variant="link" size="sm">View Evidence</Button>
                   </div>

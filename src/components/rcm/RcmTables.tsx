@@ -13,8 +13,8 @@ interface RcmTableProps {
 }
 
 export const RcmTlcTable: React.FC<RcmTableProps> = ({ items, isLoading, onEdit }) => {
-  if (isLoading) return <div className="p-8 text-center text-muted-foreground italic">Loading TLC Matrix...</div>;
-  if (items.length === 0) return <div className="p-8 text-center text-muted-foreground italic">No TLC mappings found for this process.</div>;
+  if (isLoading) return <div className="p-8 text-center text-muted-foreground">Loading TLC Matrix...</div>;
+  if (items.length === 0) return <div className="p-8 text-center text-muted-foreground">No TLC mappings found for this process.</div>;
 
   return (
     <div className="rounded-md border bg-white overflow-hidden">
@@ -41,7 +41,7 @@ export const RcmTlcTable: React.FC<RcmTableProps> = ({ items, isLoading, onEdit 
               <TableCell className="font-bold text-indigo-700">{item.controlCode}</TableCell>
               <TableCell>
                 <div className="font-medium">{item.mappedControlName || item.baseControlName}</div>
-                <div className="text-xs text-muted-foreground line-clamp-1 italic">
+                <div className="text-xs text-muted-foreground line-clamp-1">
                   {item.mappedControlDescription || item.baseControlDescription}
                 </div>
               </TableCell>

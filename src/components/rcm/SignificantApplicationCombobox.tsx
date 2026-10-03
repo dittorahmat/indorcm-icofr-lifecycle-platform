@@ -178,7 +178,7 @@ export function SignificantApplicationCombobox({
                     onChange(null, '');
                     setOpen(false);
                   }}
-                  className="text-xs font-medium text-slate-500 flex items-center justify-between"
+                  className="text-xs font-medium text-slate-500 flex items-center justify-between flex-wrap gap-2"
                 >
                   <span>{t('rcm:applications.none', { defaultValue: 'None (Pure Manual Control)' })}</span>
                   {!selectedApp && !appName && <Check className="h-3.5 w-3.5 text-emerald-600" />}
@@ -198,13 +198,13 @@ export function SignificantApplicationCombobox({
                           onChange(app.id, app.name);
                           setOpen(false);
                         }}
-                        className="text-xs flex items-center justify-between py-2 cursor-pointer"
+                        className="text-xs flex items-center justify-between py-2 cursor-pointer flex-wrap gap-2"
                       >
                         <div className="flex items-center gap-2 truncate">
                           <Server className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
                           <span className="font-medium text-slate-800 truncate">{app.name}</span>
                           {app.isSignificant && (
-                            <Badge variant="outline" className="text-[10px] py-0 px-1 border-indigo-200 text-indigo-600 bg-indigo-50/50">
+                            <Badge variant="outline" className="text-xs py-0 px-1 border-indigo-200 text-indigo-600 bg-indigo-50/50">
                               Significant
                             </Badge>
                           )}

@@ -56,18 +56,18 @@ export function ELCForm({ data, onChange, disabled = false }: ELCFormProps) {
       <div className="space-y-4">
         <div className="flex flex-col gap-1 mb-2">
           <h4 className="text-xs font-black uppercase text-indigo-900 tracking-wider">Pemetaan 17 Prinsip COSO (Lampiran 1)</h4>
-          <p className="text-xs text-slate-500 italic">Tentukan prinsip COSO mana yang dipayungi oleh kontrol entitas ini.</p>
+          <p className="text-xs text-slate-500">Tentukan prinsip COSO mana yang dipayungi oleh kontrol entitas ini.</p>
         </div>
 
         <div className="border rounded-lg bg-white shadow-sm overflow-hidden">
-          <div className="bg-slate-50 border-b px-3 py-1.5 flex justify-between items-center">
+          <div className="bg-slate-50 border-b px-3 py-1.5 flex justify-between items-center flex-wrap gap-2">
             <span className="text-xs font-bold text-slate-400 uppercase">Prinsip COSO</span>
             <span className="text-xs font-bold text-slate-400 uppercase">Relevan?</span>
           </div>
           <ScrollArea className="h-[250px]">
             <div className="divide-y">
               {cosoPrinciples.map((p) => (
-                <div key={p.id} className="px-3 py-2 flex items-center justify-between hover:bg-slate-50/50 transition-colors group/row">
+                <div key={p.id} className="px-3 py-2 flex items-center justify-between hover:bg-slate-50/50 transition-colors group/row flex-wrap gap-2">
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <div className="flex items-center gap-3 cursor-help">

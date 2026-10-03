@@ -25,7 +25,7 @@ export function COSOCoverageGrid({ cosoCoverage, isLoading }: COSOCoverageGridPr
   return (
     <Card className="border-slate-200 overflow-hidden shadow-xs bg-white rounded-lg">
       <CardHeader className="bg-slate-50/50 border-b py-4 sm:py-5 px-4 sm:px-6">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center flex-wrap gap-2">
           <div>
             <CardTitle className="text-xs font-bold uppercase tracking-wider flex items-center gap-2 text-slate-800">
               <LayoutDashboard className="h-4 w-4 text-slate-900" aria-hidden="true" /> {t('coso.title')}
@@ -43,7 +43,7 @@ export function COSOCoverageGrid({ cosoCoverage, isLoading }: COSOCoverageGridPr
                   <div className={cn("h-2.5 w-2.5 rounded-full shrink-0", comp.color)} />
                   <span className="text-xs font-bold uppercase tracking-wider text-slate-500 truncate leading-none">{comp.name}</span>
                 </div>
-                <div className="grid grid-cols-2 min-[380px]:grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 min-[380px]:grid-cols-3 gap-2">
                   {comp.principles.map(pNum => {
                     const c = cosoCoverage.find(cov => cov.principle === pNum);
                     const isCovered = (c?.count ?? 0) > 0;

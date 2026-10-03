@@ -29,7 +29,7 @@ export function RegulatoryAppendices({ rcmData, controlsData, testsData, summary
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between no-print">
+      <div className="flex items-center justify-between no-print flex-wrap gap-2">
         <div className="flex items-center gap-2 p-4 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm flex-1">
           <Info className="h-4 w-4" />
           <p className="font-medium">COMPLIANCE ENGINE: Aggregating real-time data for <strong>{MOCK_COMPANY}</strong> as per SK-5/2024 Appendices.</p>

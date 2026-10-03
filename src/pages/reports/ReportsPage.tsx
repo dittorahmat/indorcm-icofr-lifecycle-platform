@@ -54,7 +54,7 @@ export function ReportsPage() {
       <AppLayout container>
         <div className="flex flex-col items-center justify-center h-[60vh] gap-4">
           <Loader2 className="h-12 w-12 animate-spin text-primary" />
-          <p className="text-muted-foreground font-medium animate-pulse">{t('actions.generatingReport')}</p>
+          <p className="text-muted-foreground font-medium">{t('actions.generatingReport')}</p>
         </div>
       </AppLayout>
     );
@@ -174,7 +174,7 @@ export function ReportsPage() {
                               <TableCell className="py-3">
                                 <div className="space-y-0.5">
                                   <p className="text-xs font-bold text-blue-800 uppercase tracking-tighter">{rcm?.process || 'N/A'}</p>
-                                  <p className="text-xs text-slate-600 line-clamp-1 italic">{rcm?.subProcess || 'N/A'}</p>
+                                  <p className="text-xs text-slate-600 line-clamp-1">{rcm?.subProcess || 'N/A'}</p>
                                 </div>
                               </TableCell>
                               <TableCell className="py-3">
@@ -198,7 +198,7 @@ export function ReportsPage() {
                                   {test.testType}
                                 </Badge>
                               </TableCell>
-                              <TableCell className="text-center text-xs font-medium text-slate-600 font-mono italic">{test.method}</TableCell>
+                              <TableCell className="text-center text-xs font-medium text-slate-600 font-mono">{test.method}</TableCell>
                               <TableCell className="text-center">
                                 <div className="flex flex-col items-center gap-1">
                                   <div className="flex gap-0.5">
@@ -227,7 +227,7 @@ export function ReportsPage() {
                                 </Badge>
                               </TableCell>
                               <TableCell className="py-3 text-xs text-muted-foreground leading-relaxed">
-                                <p className="line-clamp-3 italic">"{test.comments}"</p>
+                                <p className="line-clamp-3">"{test.comments}"</p>
                                 <p className="text-xs mt-1 uppercase font-bold">Audit Ref: {test.id.substring(0,8).toUpperCase()}</p>
                               </TableCell>
                             </TableRow>

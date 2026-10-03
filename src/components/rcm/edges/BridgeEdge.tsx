@@ -622,7 +622,7 @@ export function BridgeEdge({
               transform: `translate(-50%, -50%) translate(${Math.round((sourcePt.x + targetPt.x) / 2)}px, ${Math.round((sourcePt.y + targetPt.y) / 2)}px)`,
               pointerEvents: 'all',
             }}
-            className="nodrag nopan px-2 py-0.5 rounded border border-slate-300 bg-white/95 text-[11px] font-semibold text-slate-700 shadow-sm backdrop-blur-sm select-none tracking-tight"
+            className="nodrag nopan px-2 py-0.5 rounded border border-slate-300 bg-white text-xs font-semibold text-slate-700 shadow-sm select-none tracking-tight"
           >
             {label}
           </div>

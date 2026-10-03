@@ -176,7 +176,7 @@ export function ScopingPage() {
               <CardContent className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex gap-3">
                   <div className="bg-teal-500/10 p-2.5 rounded-xl h-10 w-10 flex items-center justify-center text-teal-600 shrink-0">
-                    <Settings2 className="h-5 w-5 animate-pulse" />
+                    <Settings2 className="h-5 w-5" />
                   </div>
                   <div>
                     <h3 className="font-bold text-teal-900 text-sm">{t('scoping:rollover.title')}</h3>
@@ -197,7 +197,7 @@ export function ScopingPage() {
         )}
 
         <Tabs defaultValue="simulations" className="w-full">
-          <TabsList className="grid w-full max-w-[440px] grid-cols-2 mb-8 bg-slate-100/50 p-1 border border-slate-200 rounded-lg shadow-inner min-w-0">
+          <TabsList className="grid w-full max-w-[440px] grid-cols-1 sm:grid-cols-2 mb-8 bg-slate-100/50 p-1 border border-slate-200 rounded-lg shadow-inner min-w-0">
             <TabsTrigger value="simulations" className="gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest py-2">
               <LayoutGrid className="h-4 w-4" /> {t('scoping:simulation.title')}
             </TabsTrigger>

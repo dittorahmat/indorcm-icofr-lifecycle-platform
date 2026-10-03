@@ -362,7 +362,7 @@ export function UserManagementPage() {
             {isDeptsLoading ? <div className="col-span-3 text-center py-10">Loading...</div> :
               departments.map(d => (
                 <Card key={d.id}>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 flex-wrap gap-2">
                     <CardTitle className="text-sm font-medium">{d.name}</CardTitle>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>

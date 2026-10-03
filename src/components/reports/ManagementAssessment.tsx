@@ -105,11 +105,11 @@ export function ManagementAssessment({
                     <TableRow key={def.id} className="hover:bg-slate-50/50">
                       <TableCell className="font-medium text-slate-800 py-3">{def.description}</TableCell>
                       <TableCell className="py-3"><Badge variant="outline" className={cn("text-xs font-bold border-none", def.severity === 'Material Weakness' ? "bg-rose-50 text-rose-700" : "bg-amber-50 text-amber-700")}>{def.severity}</Badge></TableCell>
-                      <TableCell className="italic text-slate-500 py-3">{t('assessment.monitorProgress')}</TableCell>
+                      <TableCell className="text-slate-500 py-3">{t('assessment.monitorProgress')}</TableCell>
                     </TableRow>
                   ))}
                   {!(summaryData?.allDeficiencies || []).some((d: any) => d.severity !== 'Control Deficiency') && (
-                    <TableRow><TableCell colSpan={3} className="text-center py-6 text-slate-400 font-medium italic">{t('assessment.noDeficiencies')}</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={3} className="text-center py-6 text-slate-400 font-medium">{t('assessment.noDeficiencies')}</TableCell></TableRow>
                   )}
                 </TableBody>
               </Table>

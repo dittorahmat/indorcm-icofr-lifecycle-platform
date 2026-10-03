@@ -83,7 +83,7 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
                 field.status === 'Fail' ? "border-red-200 bg-red-50/20" : "border-slate-200"
               )}
             >
-              <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
                 <div className="flex items-center gap-2">
                   <span className="h-6 w-6 rounded-md bg-slate-100 text-slate-700 font-mono text-xs font-bold flex items-center justify-center border border-slate-200">
                     {index + 1}

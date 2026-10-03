@@ -307,13 +307,13 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      <div className="flex items-center justify-between bg-slate-50/50 p-4 border-b shrink-0">
+      <div className="flex items-center justify-between bg-slate-50/50 p-4 border-b shrink-0 flex-wrap gap-2">
         <div className="space-y-0.5">
           <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2">
             <FileSpreadsheet className="h-4 w-4 text-primary" />
             Control Activity Matrix (RCM) - {subProcessName || fsliName} ({noGL})
           </h4>
-          <p className="text-xs text-slate-500 italic">Identify risks and control activities at the transaction level.</p>
+          <p className="text-xs text-slate-500">Identify risks and control activities at the transaction level.</p>
         </div>
         
         <div className="flex items-center gap-2">
@@ -342,7 +342,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
       <Collapsible open={isProcedureOpen} onOpenChange={setIsProcedureOpen} className="bg-slate-50 border-b">
          <CollapsibleContent>
             <div className="p-4 space-y-3 max-w-4xl mx-auto">
-               <div className="flex items-center justify-between">
+               <div className="flex items-center justify-between flex-wrap gap-2">
                   <div className="flex items-center gap-4">
                      <Label className="text-xs font-black uppercase text-slate-500 tracking-widest whitespace-nowrap">BPM Code:</Label>
                      <Input 
@@ -370,7 +370,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
                  value={standardProcedure}
                  onChange={e => setStandardProcedure(e.target.value)}
                />
-               <p className="text-xs text-slate-400 italic">Prosedur dan Kode ini akan menjadi acuan identitas proses dalam pengerjaan CSA.</p>
+               <p className="text-xs text-slate-400">Prosedur dan Kode ini akan menjadi acuan identitas proses dalam pengerjaan CSA.</p>
             </div>
          </CollapsibleContent>
       </Collapsible>
@@ -397,7 +397,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
               const assertions = Array.isArray(c.assertions) ? c.assertions : [];
               return (
                 <div key={row.id} className="rounded-lg border border-slate-200 bg-white p-4 space-y-2 shadow-sm">
-                  <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-start justify-between gap-2 flex-wrap">
                     <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-900 border border-slate-200">
                       {c.code || '-'}
                     </span>
@@ -462,7 +462,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
                 <TableCell colSpan={20} className="h-32 text-center border-b">
                   <div className="flex flex-col items-center gap-2">
                     <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                    <p className="text-xs text-slate-400 animate-pulse font-medium">Loading...</p>
+                    <p className="text-xs text-slate-400 font-medium">Loading...</p>
                   </div>
                 </TableCell>
               </TableRow>
@@ -471,7 +471,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
                 <TableCell colSpan={20} className="h-32 text-center border-b">
                   <div className="flex flex-col items-center gap-2 py-8">
                     <Info className="h-8 w-8 text-slate-300" />
-                    <p className="text-sm text-slate-400 italic">No records found. Click add row above.</p>
+                    <p className="text-sm text-slate-400">No records found. Click add row above.</p>
                   </div>
                 </TableCell>
               </TableRow>

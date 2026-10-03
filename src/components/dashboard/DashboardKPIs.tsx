@@ -33,7 +33,7 @@ export function DashboardKPIs({ controlsCount, openDeficienciesCount, cosoPercen
       <motion.div variants={itemVariants} className="min-w-0 w-full sm:col-span-2 lg:col-span-1">
         <Card className="bg-mancity-pattern text-primary-foreground border border-primary/20 shadow-xs overflow-hidden relative group rounded-lg">
           <CardHeader className="p-3.5 sm:p-4 pb-1 sm:pb-2">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-2">
               <CardTitle className="text-xs font-bold uppercase tracking-wider text-primary-foreground/90 flex items-center gap-1.5">
                 <Clock className="h-3.5 w-3.5 shrink-0" aria-hidden="true" /> {t('kpis.cycleReadiness')}
               </CardTitle>
@@ -43,7 +43,7 @@ export function DashboardKPIs({ controlsCount, openDeficienciesCount, cosoPercen
             </div>
           </CardHeader>
           <CardContent className="p-3.5 sm:p-4 pt-1 sm:pt-2">
-            <div className="flex items-baseline justify-between gap-2">
+            <div className="flex items-baseline justify-between gap-2 flex-wrap">
               <div className="text-2xl sm:text-3xl font-bold tracking-tight">{t('kpis.ready')}</div>
               <p className="text-xs text-primary-foreground/80 font-medium uppercase tracking-wider truncate">{t('kpis.reportingCycle', { year: workingYear })}</p>
             </div>

@@ -51,7 +51,7 @@ export const RiskAssessmentSection = ({ form, wizard }: { form: any; wizard?: Re
         )} />
         <FormField control={form.control} name="riskQualitative" render={({ field }) => (
           <FormItem>
-            <div className="flex justify-between items-center mb-1">
+            <div className="flex justify-between items-center mb-1 flex-wrap gap-2">
               <FormLabel className="text-xs uppercase">Kualitatif (Table 11)</FormLabel>
               {wizard}
             </div>
@@ -80,7 +80,7 @@ export const RegulatoryMappingSection = ({ form }: { form: any }) => {
       
       <FormField control={form.control} name="cosoPrinciples" render={() => (
         <FormItem>
-          <div className="flex justify-between items-center mb-1">
+          <div className="flex justify-between items-center mb-1 flex-wrap gap-2">
             <FormLabel className="text-xs">COSO Principles (1-17)</FormLabel>
             <Button 
               type="button" 

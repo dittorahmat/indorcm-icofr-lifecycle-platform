@@ -201,7 +201,7 @@ export function DoDWizard({ isOpen, setIsOpen, onComplete, isAggregate = false, 
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-3 sm:gap-4 pt-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 pt-2">
                 <Button variant="outline" className="h-11 sm:h-12 min-h-[44px] text-base sm:text-lg" onClick={() => handleAnswer(false)}>{t('wizard.common.no')}</Button>
                 <Button variant={isMaterialByPM ? "default" : "outline"} className={`h-11 sm:h-12 min-h-[44px] text-base sm:text-lg ${isMaterialByPM ? 'bg-green-600 hover:bg-green-700' : 'border-primary/30'}`} onClick={() => handleAnswer(true)}>{t('wizard.common.yes')}</Button>
               </div>
@@ -251,15 +251,15 @@ export function DoDWizard({ isOpen, setIsOpen, onComplete, isAggregate = false, 
               {exposureValue && performanceMateriality && (
                 <div className="text-left bg-muted/50 p-3 rounded-lg border border-muted text-xs space-y-1">
                   <p className="font-bold uppercase text-muted-foreground mb-1">{t('wizard.result.quantComparison')}</p>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between flex-wrap gap-2">
                     <span>{t('wizard.result.exposureValue')}</span>
                     <span className="font-mono font-bold">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(parseFloat(exposureValue))}</span>
                   </div>
-                  <div className="flex justify-between border-b border-muted pb-1 mb-1">
+                  <div className="flex justify-between border-b border-muted pb-1 mb-1 flex-wrap gap-2">
                     <span>{t('wizard.result.pmThreshold')}</span>
                     <span className="font-mono">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(performanceMateriality)}</span>
                   </div>
-                  <div className="flex justify-between text-orange-600 font-bold">
+                  <div className="flex justify-between text-orange-600 font-bold flex-wrap gap-2">
                     <span>{t('wizard.result.conclusion')}</span>
                     <span>{parseFloat(exposureValue) >= performanceMateriality ? t('wizard.result.material') : t('wizard.result.immaterial')}</span>
                   </div>
@@ -333,7 +333,7 @@ function Question({ title, q, onAnswer }: { title: string, q: string, onAnswer: 
         {title}
       </h3>
       <p className="text-base font-medium leading-relaxed">{q}</p>
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 pt-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 pt-4">
         <Button variant="outline" className="h-11 sm:h-12 min-h-[44px] text-base sm:text-lg hover:bg-red-50 hover:text-red-700 hover:border-red-200" onClick={() => onAnswer(false)}>{t('wizard.common.no')}</Button>
         <Button variant="outline" className="h-11 sm:h-12 min-h-[44px] text-base sm:text-lg hover:bg-green-50 hover:text-green-700 hover:border-green-200" onClick={() => onAnswer(true)}>{t('wizard.common.yes')}</Button>
       </div>

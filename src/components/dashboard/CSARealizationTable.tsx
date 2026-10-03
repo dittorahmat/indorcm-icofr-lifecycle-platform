@@ -90,7 +90,7 @@ export function CSARealizationTable({ controls, isLoading }: CSARealizationTable
           ) : (
             realizationData.map((row) => (
               <div key={row.frequency} className="p-4 space-y-2.5">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between flex-wrap gap-2">
                   <span className="font-bold text-slate-800 text-xs uppercase">
                     {translateFrequency(row.frequency)}
                   </span>
@@ -98,7 +98,7 @@ export function CSARealizationTable({ controls, isLoading }: CSARealizationTable
                     {row.total} {t('realizationTable.controlsCount')}
                   </span>
                 </div>
-                <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
+                <div className="flex items-center justify-between text-xs text-slate-500 font-medium flex-wrap gap-2">
                   <span>{t('realizationTable.columns.target')}: <strong className="text-slate-700">{row.targetText}</strong></span>
                   <span className="font-bold text-slate-800">{row.completed} / {row.total} ({row.percentage}%)</span>
                 </div>

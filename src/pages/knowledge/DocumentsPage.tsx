@@ -101,7 +101,7 @@ export const DocumentsPage = () => {
         )}
 
         <Tabs defaultValue="internal" value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsList className="grid w-full max-w-md grid-cols-1 sm:grid-cols-2">
             <TabsTrigger value="internal">{t('tabs.internal')}</TabsTrigger>
             <TabsTrigger value="external">{t('tabs.external')}</TabsTrigger>
           </TabsList>

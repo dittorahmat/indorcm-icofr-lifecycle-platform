@@ -61,7 +61,7 @@ export function ELCTabContent({ elcControls, onEditControl, onCreateControl }: E
                       <TableCell colSpan={4} className="py-3 px-8">
                         <div className="flex items-center gap-3">
                           <Zap className="h-3.5 w-3.5 text-indigo-500" />
-                          <span className="text-[11px] font-bold uppercase text-slate-900 tracking-[0.25em]">{principle.component}</span>
+                          <span className="text-xs font-bold uppercase text-slate-900 tracking-[0.25em]">{principle.component}</span>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -92,7 +92,7 @@ export function ELCTabContent({ elcControls, onEditControl, onCreateControl }: E
                       <div className="space-y-4">
                         {relatedControls.length > 0 ? relatedControls.map(ctrl => (
                           <div key={ctrl.id} className="flex flex-col p-4 border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-sm transition-all group/item relative">
-                            <div className="flex justify-between items-start">
+                            <div className="flex justify-between items-start flex-wrap gap-2">
                               <div className="flex items-center gap-2">
                                  <Badge variant="outline" className="text-xs font-mono h-5 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold">{ctrl.code || 'ELC'}</Badge>
                                  <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 leading-snug">{ctrl.name}</span>
@@ -162,7 +162,7 @@ export function ELCTabContent({ elcControls, onEditControl, onCreateControl }: E
 
           return (
             <div key={`m-principle-${principle.id}`} className="bg-white rounded-lg border border-slate-200 shadow-sm p-4 space-y-3">
-              <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-2.5">
+              <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-2.5 flex-wrap">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <span className="font-mono text-xs font-bold text-indigo-600">Principle {principle.id}</span>
@@ -189,7 +189,7 @@ export function ELCTabContent({ elcControls, onEditControl, onCreateControl }: E
                 {relatedControls.length > 0 ? (
                   relatedControls.map(ctrl => (
                     <div key={ctrl.id} className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-2">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
                         <span className="font-mono text-xs font-bold text-slate-900">{ctrl.code}</span>
                         <Button 
                           variant="outline" 

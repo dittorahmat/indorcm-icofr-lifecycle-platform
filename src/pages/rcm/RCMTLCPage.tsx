@@ -287,11 +287,11 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
 
       {items.length === 0 && !isLoading && (
         <div className="p-6 pb-2">
-          <Card className="bg-teal-50/50 border-teal-200/60 shadow-sm rounded-2xl overflow-hidden">
+          <Card className="bg-teal-50/50 border-teal-200/60 shadow-sm rounded-lg overflow-hidden">
             <CardContent className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex gap-3">
                 <div className="bg-teal-500/10 p-2.5 rounded-xl h-10 w-10 flex items-center justify-center text-teal-600 shrink-0">
-                  <Settings2 className="h-5 w-5 animate-pulse" />
+                  <Settings2 className="h-5 w-5" />
                 </div>
                 <div>
                   <h3 className="font-bold text-teal-900 text-sm">{t('scoping:rollover.title')}</h3>

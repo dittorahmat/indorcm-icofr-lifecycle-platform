@@ -269,7 +269,7 @@ export function AddAssessmentDialog({
 
             {/* RCM anchoring section */}
             <div className="bg-slate-50 p-4 rounded-xl border border-slate-200/80 space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between flex-wrap gap-2">
                 <h3 className="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
                   <Info className="h-4 w-4 text-indigo-600" />
                   {t('rcm:matrix.groups.process')}
@@ -374,7 +374,7 @@ export function AddAssessmentDialog({
 
             {/* Assessment Tabs */}
             <Tabs defaultValue="tod" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
                 <TabsTrigger value="tod" className="text-xs font-bold">
                   <span className="flex items-center gap-1">
                     {t('rcm:verification.add_dialog.tab_tod')}

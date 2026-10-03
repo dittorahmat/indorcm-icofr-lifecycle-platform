@@ -152,10 +152,10 @@ export function AddApplicationDialog({ isOpen, onOpenChange, initialData }: AddA
             <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. SAP S/4HANA" />
           </div>
 
-          <div className="flex items-center justify-between p-3 rounded-lg border border-slate-200 bg-slate-50/50">
+          <div className="flex items-center justify-between p-3 rounded-lg border border-slate-200 bg-slate-50/50 flex-wrap gap-2">
             <div className="space-y-0.5">
               <Label htmlFor="icofr-scope" className="font-semibold text-slate-800">ICOFR Scope (Significant)</Label>
-              <p className="text-slate-500 text-[11px]">Mark application as in-scope for ICOFR financial reporting.</p>
+              <p className="text-slate-500 text-xs">Mark application as in-scope for ICOFR financial reporting.</p>
             </div>
             <Switch
               id="icofr-scope"
@@ -219,7 +219,7 @@ export function AddApplicationDialog({ isOpen, onOpenChange, initialData }: AddA
           <div className="grid gap-2">
             <Label>Application Architecture (File PDF/Doc)</Label>
             {architectureDocName ? (
-              <div className="flex items-center justify-between p-2.5 rounded-md border border-indigo-200 bg-indigo-50/50">
+              <div className="flex items-center justify-between p-2.5 rounded-md border border-indigo-200 bg-indigo-50/50 flex-wrap gap-2">
                 <div className="flex items-center gap-2 text-indigo-700 font-medium truncate">
                   <FileText className="h-4 w-4 flex-shrink-0" />
                   <span className="truncate">{architectureDocName}</span>

@@ -79,7 +79,7 @@ export const ArchiveNode = ({ data, selected, type }: NodeProps) => {
         </svg>
         <div className="absolute inset-0 flex flex-col items-center pt-2 z-10">
           <GitCommit className="h-4 w-4 text-slate-600 opacity-50" />
-          <span className="text-[10px] font-black text-slate-600 uppercase">ARSIP</span>
+          <span className="text-xs font-black text-slate-600 uppercase">ARSIP</span>
         </div>
         <div className={cn(
           "absolute -bottom-6 left-1/2 -translate-x-1/2 w-32 text-center font-bold uppercase leading-none py-1 px-2 rounded-md transition-colors whitespace-pre-wrap break-words",
@@ -107,7 +107,7 @@ export const PreparationNode = ({ data, selected, type }: NodeProps) => {
           <path d="M15 2 L145 2 L158 28 L145 54 L15 54 L2 28 Z" fill="white" stroke="#0f172a" strokeWidth="2" />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center px-6 z-10">
-          <div className="text-[9px] font-black text-slate-400 uppercase leading-none mb-0.5">Preparation</div>
+          <div className="text-xs font-black text-slate-400 uppercase leading-none mb-0.5">Preparation</div>
           <div className={cn("font-bold text-slate-800 text-center leading-tight whitespace-pre-wrap break-words max-h-[32px] overflow-y-auto scrollbar-none", fontClass)}>{data.label}</div>
         </div>
       </div>
@@ -131,7 +131,7 @@ export const ManualOperationNode = ({ data, selected, type }: NodeProps) => {
           <path d="M2 2 L158 2 L138 54 L22 54 Z" fill="white" stroke="#0f172a" strokeWidth="2" />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center px-6 z-10">
-          <div className="text-[9px] font-black text-slate-400 uppercase leading-none mb-0.5">Manual Op</div>
+          <div className="text-xs font-black text-slate-400 uppercase leading-none mb-0.5">Manual Op</div>
           <div className={cn("font-bold text-slate-800 text-center leading-tight whitespace-pre-wrap break-words max-h-[32px] overflow-y-auto scrollbar-none", fontClass)}>{data.label}</div>
         </div>
       </div>
@@ -147,8 +147,8 @@ export const SummingJunctionNode = ({ data, selected, type }: NodeProps) => {
   if (nodeScale === 'sm') boxSize = 38;
   else if (nodeScale === 'lg') boxSize = 60;
 
-  let fontClass = 'text-[10px]';
-  if (fontScale === 'sm') fontClass = 'text-[9px]';
+  let fontClass = 'text-xs';
+  if (fontScale === 'sm') fontClass = 'text-xs';
   else if (fontScale === 'lg') fontClass = 'text-xs';
 
   return (
@@ -184,8 +184,8 @@ export const OrNode = ({ data, selected, type }: NodeProps) => {
   if (nodeScale === 'sm') boxSize = 38;
   else if (nodeScale === 'lg') boxSize = 60;
 
-  let fontClass = 'text-[10px]';
-  if (fontScale === 'sm') fontClass = 'text-[9px]';
+  let fontClass = 'text-xs';
+  if (fontScale === 'sm') fontClass = 'text-xs';
   else if (fontScale === 'lg') fontClass = 'text-xs';
 
   return (
@@ -229,7 +229,7 @@ export const CollateNode = ({ data, selected, type }: NodeProps) => {
           <path d="M2 2 L118 2 L2 54 L118 54 Z" fill="white" stroke="#0f172a" strokeWidth="2" />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center pt-1.5 px-4 z-10">
-          <div className="text-[9px] font-black text-slate-400 uppercase leading-none mb-0.5">Collate</div>
+          <div className="text-xs font-black text-slate-400 uppercase leading-none mb-0.5">Collate</div>
           <div className={cn("font-bold text-slate-800 text-center leading-tight whitespace-pre-wrap break-words max-h-[32px] overflow-y-auto scrollbar-none", fontClass)}>{data.label}</div>
         </div>
       </div>
@@ -254,7 +254,7 @@ export const SortNode = ({ data, selected, type }: NodeProps) => {
           <line x1="2" y1="28" x2="118" y2="28" stroke="#0f172a" strokeWidth="2" />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center pt-2 px-4 z-10">
-          <div className="text-[9px] font-black text-slate-400 uppercase leading-none mb-0.5">Sort</div>
+          <div className="text-xs font-black text-slate-400 uppercase leading-none mb-0.5">Sort</div>
           <div className={cn("font-bold text-slate-800 text-center leading-tight whitespace-pre-wrap break-words max-h-[32px] overflow-y-auto scrollbar-none", fontClass)}>{data.label}</div>
         </div>
       </div>
@@ -278,7 +278,7 @@ export const ExtractNode = ({ data, selected, type }: NodeProps) => {
           <path d="M60 2 L118 54 L2 54 Z" fill="white" stroke="#0f172a" strokeWidth="2" />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-end pb-2 px-4 z-10">
-          <div className="text-[8px] font-black text-slate-400 uppercase leading-none mb-0.5">Extract</div>
+          <div className="text-xs font-black text-slate-400 uppercase leading-none mb-0.5">Extract</div>
           <div className={cn("font-bold text-slate-800 text-center leading-tight whitespace-pre-wrap break-words max-h-[28px] overflow-y-auto scrollbar-none", fontClass)}>{data.label}</div>
         </div>
       </div>
@@ -302,7 +302,7 @@ export const MergeNode = ({ data, selected, type }: NodeProps) => {
           <path d="M2 2 L118 2 L60 54 Z" fill="white" stroke="#0f172a" strokeWidth="2" />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-start pt-2 px-4 z-10">
-          <div className="text-[8px] font-black text-slate-400 uppercase leading-none mb-0.5">Merge</div>
+          <div className="text-xs font-black text-slate-400 uppercase leading-none mb-0.5">Merge</div>
           <div className={cn("font-bold text-slate-800 text-center leading-tight whitespace-pre-wrap break-words max-h-[28px] overflow-y-auto scrollbar-none", fontClass)}>{data.label}</div>
         </div>
       </div>
@@ -326,8 +326,8 @@ export const AnnotationNode = ({ data, selected, type }: NodeProps) => {
           <path d="M40 2 L2 2 L2 54 L40 54" fill="none" stroke="#64748b" strokeWidth="2" strokeDasharray="4 4" />
         </svg>
         <div className="absolute inset-0 flex flex-col items-start justify-center pl-4 pr-2 z-10">
-          <div className="text-[8px] font-black text-slate-400 uppercase leading-none mb-0.5">Annotation</div>
-          <div className={cn("italic text-slate-600 leading-tight text-left whitespace-pre-wrap break-words max-h-[36px] overflow-y-auto scrollbar-none", fontClass)}>{data.label}</div>
+          <div className="text-xs font-black text-slate-400 uppercase leading-none mb-0.5">Annotation</div>
+          <div className={cn("not-italic text-slate-600 leading-tight text-left whitespace-pre-wrap break-words max-h-[36px] overflow-y-auto scrollbar-none", fontClass)}>{data.label}</div>
         </div>
       </div>
     </NodeTooltip>

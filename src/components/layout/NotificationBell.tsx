@@ -120,7 +120,7 @@ export function NotificationBell() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80 p-0">
-        <DropdownMenuLabel className="p-4 flex items-center justify-between">
+        <DropdownMenuLabel className="p-4 flex items-center justify-between flex-wrap gap-2">
           <span className="text-xs font-black uppercase tracking-widest">{t('notifications.title')}</span>
           <div className="flex gap-2">
             {unreadCount > 0 && (
@@ -154,7 +154,7 @@ export function NotificationBell() {
         <DropdownMenuSeparator className="m-0" />
         <ScrollArea className="h-80">
           {notifications.length === 0 ? (
-            <div className="p-8 text-center text-slate-400 italic text-xs">
+            <div className="p-8 text-center text-slate-400 text-xs">
               {t('notifications.empty')}
             </div>
           ) : (

@@ -158,7 +158,7 @@ export function TransactionUploadModal({ isOpen, onClose, noGL, bpmProcessId, on
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[700px] p-0 overflow-hidden">
         <Tabs defaultValue="upload" className="w-full">
-          <div className="px-6 pt-6 flex justify-between items-start">
+          <div className="px-6 pt-6 flex justify-between items-start flex-wrap gap-2">
             <div>
               <DialogTitle>{t('bpm:sampling.upload.title')}</DialogTitle>
               <DialogDescription className="mt-1">
@@ -174,7 +174,7 @@ export function TransactionUploadModal({ isOpen, onClose, noGL, bpmProcessId, on
           <div className="p-6">
             <TabsContent value="upload" className="m-0 border-none outline-none">
               <div className="space-y-4">
-                <div className="flex items-center justify-between bg-indigo-50 border border-indigo-100 rounded-lg p-3">
+                <div className="flex items-center justify-between bg-indigo-50 border border-indigo-100 rounded-lg p-3 flex-wrap gap-2">
                   <div className="flex gap-3">
                     <AlertCircle className="h-5 w-5 text-indigo-600 shrink-0" />
                     <div className="space-y-0.5">
@@ -226,14 +226,14 @@ export function TransactionUploadModal({ isOpen, onClose, noGL, bpmProcessId, on
             <TabsContent value="history" className="m-0 border-none outline-none">
               <ScrollArea className="h-80 pr-4">
                 {history.length === 0 ? (
-                  <div className="h-64 flex flex-col items-center justify-center text-slate-400 italic">
+                  <div className="h-64 flex flex-col items-center justify-center text-slate-400">
                     <TableIcon className="h-12 w-12 mb-2 opacity-20" />
                     <p className="text-xs">Belum ada riwayat unggahan untuk akun ini.</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {history.map((h) => (
-                      <div key={h.id} className="p-3 border rounded-lg hover:bg-slate-50 transition-colors flex justify-between items-center group">
+                      <div key={h.id} className="p-3 border rounded-lg hover:bg-slate-50 transition-colors flex justify-between items-center group flex-wrap gap-2">
                         <div className="flex gap-3 items-start">
                           <div className="mt-1 h-8 w-8 rounded bg-indigo-50 flex items-center justify-center text-indigo-600">
                             <FileText className="h-4 w-4" />

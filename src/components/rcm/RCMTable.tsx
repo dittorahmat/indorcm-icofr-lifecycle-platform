@@ -182,7 +182,7 @@ export function RCMTable({
                   className="bg-white rounded-lg border border-slate-200 shadow-sm p-4 space-y-3 transition-shadow hover:shadow-md"
                 >
                   {/* Card Header: Code, Badges, and Action Button */}
-                  <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-2.5">
+                  <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-2.5 flex-wrap">
                     <div className="space-y-1">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-900 border border-slate-200">
@@ -240,7 +240,7 @@ export function RCMTable({
                   </div>
 
                   {/* Card Footer: Metadata (Nature, Frequency, Status) */}
-                  <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-xs text-slate-500">
+                  <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-xs text-slate-500 flex-wrap gap-2">
                     <span className="font-medium bg-slate-100 px-2 py-0.5 rounded text-slate-700">
                       {nature}
                     </span>

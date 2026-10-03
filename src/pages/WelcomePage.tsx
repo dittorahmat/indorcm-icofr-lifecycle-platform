@@ -26,7 +26,7 @@ export function WelcomePage() {
           transition={{ duration: 0.4, delay: 0.1 }}
           className="flex justify-center mb-10"
         >
-          <div className="h-24 w-24 bg-mancity-pattern rounded-3xl flex items-center justify-center shadow-2xl shadow-blue-100">
+          <div className="h-24 w-24 bg-mancity-pattern rounded-lg flex items-center justify-center shadow-2xl shadow-blue-100">
             <Shield className="h-12 w-12 text-primary-foreground" />
           </div>
         </motion.div>

@@ -274,7 +274,7 @@ export function CustomizableDashboard({ summaryData, isEffective }: Customizable
             </div>
           ))}
           {dataPayload.length === 0 && (
-            <div className="col-span-1 sm:col-span-3 text-center text-xs text-slate-400 italic">No summary metrics available</div>
+            <div className="col-span-1 sm:col-span-3 text-center text-xs text-slate-400">No summary metrics available</div>
           )}
         </div>
       );
@@ -282,7 +282,7 @@ export function CustomizableDashboard({ summaryData, isEffective }: Customizable
 
     if (type === 'bar') {
       if (dataPayload.length === 0) {
-        return <div className="flex items-center justify-center h-full text-slate-400 text-xs italic">No data available</div>;
+        return <div className="flex items-center justify-center h-full text-slate-400 text-xs">No data available</div>;
       }
       return (
         <ResponsiveContainer width="100%" height="90%">
@@ -299,7 +299,7 @@ export function CustomizableDashboard({ summaryData, isEffective }: Customizable
     if (type === 'pie') {
       const hasData = dataPayload.some(d => d.count > 0);
       if (!hasData) {
-        return <div className="flex items-center justify-center h-full text-slate-400 text-xs italic">No data available</div>;
+        return <div className="flex items-center justify-center h-full text-slate-400 text-xs">No data available</div>;
       }
       return (
         <ResponsiveContainer width="100%" height="90%">
@@ -316,7 +316,7 @@ export function CustomizableDashboard({ summaryData, isEffective }: Customizable
       );
     }
 
-    return <div className="flex items-center justify-center h-full text-slate-400 text-xs italic">Unsupported format</div>;
+    return <div className="flex items-center justify-center h-full text-slate-400 text-xs">Unsupported format</div>;
   };
 
   if (isPrefsLoading) {
@@ -397,8 +397,8 @@ export function CustomizableDashboard({ summaryData, isEffective }: Customizable
                 return (
                   <div key={item.i} className="bg-white border rounded-xl shadow-sm overflow-hidden flex flex-col justify-between h-full">
                     {/* Widget Header */}
-                    <div className="widget-header bg-slate-50/50 border-b px-4 py-2 cursor-move flex items-center justify-between no-print">
-                      <span className="text-[10px] font-black text-slate-500 tracking-wider uppercase truncate max-w-[70%]">
+                    <div className="widget-header bg-slate-50/50 border-b px-4 py-2 cursor-move flex items-center justify-between no-print flex-wrap gap-2">
+                      <span className="text-xs font-black text-slate-500 tracking-wider uppercase truncate max-w-[70%]">
                         {item.title || getDefaultTitle(item.i)}
                       </span>
                       
@@ -415,7 +415,7 @@ export function CustomizableDashboard({ summaryData, isEffective }: Customizable
                             
                             {/* Widget Title */}
                             <div className="space-y-1">
-                              <Label className="text-[9px] font-bold uppercase tracking-wider text-slate-400">Widget Title</Label>
+                              <Label className="text-xs font-bold uppercase tracking-wider text-slate-400">Widget Title</Label>
                               <Input
                                 value={item.title || getDefaultTitle(item.i)}
                                 onChange={(e) => handleUpdateWidgetSettings(item.i, { title: e.target.value })}
@@ -425,7 +425,7 @@ export function CustomizableDashboard({ summaryData, isEffective }: Customizable
 
                             {/* Data Source */}
                             <div className="space-y-1">
-                              <Label className="text-[9px] font-bold uppercase tracking-wider text-slate-400">Data Source</Label>
+                              <Label className="text-xs font-bold uppercase tracking-wider text-slate-400">Data Source</Label>
                               <Select
                                 value={item.dataSource || getDefaultDataSource(item.i)}
                                 onValueChange={(val) => handleUpdateWidgetSettings(item.i, { dataSource: val })}
@@ -445,7 +445,7 @@ export function CustomizableDashboard({ summaryData, isEffective }: Customizable
 
                             {/* Visualization type */}
                             <div className="space-y-1">
-                              <Label className="text-[9px] font-bold uppercase tracking-wider text-slate-400">Visualization Type</Label>
+                              <Label className="text-xs font-bold uppercase tracking-wider text-slate-400">Visualization Type</Label>
                               <Select
                                 value={item.vizType || getDefaultVizType(item.i)}
                                 onValueChange={(val) => handleUpdateWidgetSettings(item.i, { vizType: val })}
@@ -490,9 +490,9 @@ export function CustomizableDashboard({ summaryData, isEffective }: Customizable
         {/* Collapsible Sidebar widget catalog */}
         {isSidebarOpen && (
           <div className="w-80 bg-slate-50 border rounded-xl p-4 shadow-sm space-y-4 no-print border-slate-200 transition-all">
-            <div className="flex items-center justify-between border-b pb-2">
+            <div className="flex items-center justify-between border-b pb-2 flex-wrap gap-2">
               <span className="text-xs font-bold text-slate-700">{t('customizableDashboard.addRemoveWidgets')}</span>
-              <Badge variant="outline" className="text-[10px] text-slate-500">
+              <Badge variant="outline" className="text-xs text-slate-500">
                 {activeWidgets.length} {t('customizableDashboard.active')}
               </Badge>
             </div>
@@ -501,7 +501,7 @@ export function CustomizableDashboard({ summaryData, isEffective }: Customizable
               {AVAILABLE_WIDGETS.map((widget) => {
                 const isActive = activeWidgets.includes(widget.id);
                 return (
-                  <div key={widget.id} className="flex items-center justify-between p-3 bg-white border rounded-lg hover:shadow-xs transition-all">
+                  <div key={widget.id} className="flex items-center justify-between p-3 bg-white border rounded-lg hover:shadow-xs transition-all flex-wrap gap-2">
                     <div className="space-y-0.5">
                       <Label htmlFor={`widget-switch-${widget.id}`} className="text-xs font-bold text-slate-800 cursor-pointer">
                         {widget.name}

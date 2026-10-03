@@ -198,7 +198,7 @@ export function BPMDiagramList({
                 <TableCell colSpan={9} className="h-48 text-center">
                   <div className="flex flex-col items-center gap-3">
                     <Loader2 className="h-10 w-10 animate-spin text-indigo-500" />
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
                       {t('bpm:loading')}
                     </p>
                   </div>
@@ -208,10 +208,10 @@ export function BPMDiagramList({
               <TableRow>
                 <TableCell colSpan={9} className="h-48 text-center">
                   <div className="flex flex-col items-center gap-3">
-                    <div className="h-12 w-12 bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100">
+                    <div className="h-12 w-12 bg-slate-50 rounded-lg flex items-center justify-center border border-slate-100">
                       <Info className="h-6 w-6 text-slate-300" />
                     </div>
-                    <p className="text-sm text-slate-400 font-medium italic">
+                    <p className="text-sm text-slate-400 font-medium">
                       {searchTerm ? t('bpm:noProcessesFound', 'Tidak ada proses yang sesuai dengan pencarian') : t('bpm:noSubProcesses')}
                     </p>
                   </div>
@@ -262,7 +262,7 @@ export function BPMDiagramList({
                                   <Workflow className="h-4 w-4" />
                                 </Button>
                               </TooltipTrigger>
-                              <TooltipContent className="bg-mancity-pattern text-primary-foreground border-none rounded-lg text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 shadow-xl">
+                              <TooltipContent className="bg-mancity-pattern text-primary-foreground border-none rounded-lg text-xs font-bold uppercase tracking-widest px-3 py-1.5 shadow-xl">
                                 {t('bpm:tooltips.openMacroDiagram', 'Buka Diagram Makro Proses')}
                               </TooltipContent>
                             </Tooltip>
@@ -282,7 +282,7 @@ export function BPMDiagramList({
                                     <FileSpreadsheet className="h-4 w-4" />
                                   </Button>
                                 </TooltipTrigger>
-                                <TooltipContent className="bg-mancity-pattern text-primary-foreground border-none rounded-lg text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 shadow-xl">
+                                <TooltipContent className="bg-mancity-pattern text-primary-foreground border-none rounded-lg text-xs font-bold uppercase tracking-widest px-3 py-1.5 shadow-xl">
                                   {t('bpm:tooltips.openWorksheet', 'Buka RCM Worksheet')}
                                 </TooltipContent>
                               </Tooltip>
@@ -321,17 +321,17 @@ export function BPMDiagramList({
                                 {process.name}
                               </span>
                               {process.bpmCode && (
-                                <Badge className="h-4 px-1.5 text-[9px] bg-indigo-100 text-indigo-800 hover:bg-indigo-200 border-none font-bold tracking-widest rounded-md shrink-0">
+                                <Badge className="h-4 px-1.5 text-xs bg-indigo-100 text-indigo-800 hover:bg-indigo-200 border-none font-bold tracking-widest rounded-md shrink-0">
                                   {process.bpmCode}
                                 </Badge>
                               )}
                             </div>
                             <div className="flex items-center gap-2 mt-0.5">
-                              <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest flex items-center gap-1">
+                              <span className="text-xs text-slate-400 font-bold uppercase tracking-widest flex items-center gap-1">
                                 <Activity className="h-2.5 w-2.5" /> ID: {process.id.substring(0, 8)}
                               </span>
                               {hasChildren && (
-                                <span className="text-[10px] text-indigo-600 font-bold">
+                                <span className="text-xs text-indigo-600 font-bold">
                                   • {process.children!.length} {t('bpm:hierarchy.subProcessesCount', 'sub-proses')}
                                 </span>
                               )}
@@ -344,7 +344,7 @@ export function BPMDiagramList({
                       <TableCell className="py-4">
                         <Badge
                           variant="outline"
-                          className="bg-indigo-50/80 text-indigo-700 border-indigo-200 font-bold text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-md"
+                          className="bg-indigo-50/80 text-indigo-700 border-indigo-200 font-bold text-xs uppercase tracking-wider px-2 py-0.5 rounded-md"
                         >
                           {t('bpm:hierarchy.macroProcess', 'Proses Bisnis')}
                         </Badge>
@@ -353,10 +353,10 @@ export function BPMDiagramList({
                       {/* Company & Entity */}
                       <TableCell className="py-4">
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest truncate max-w-[120px]">
+                          <span className="text-xs font-bold text-slate-500 uppercase tracking-widest truncate max-w-[120px]">
                             {settings?.companyName || 'PT BUMN SEJAHTERA'}
                           </span>
-                          <Badge variant="outline" className="font-mono text-[9px] font-bold bg-slate-50 text-slate-500 px-1.5 h-4 rounded">
+                          <Badge variant="outline" className="font-mono text-xs font-bold bg-slate-50 text-slate-500 px-1.5 h-4 rounded">
                             {selectedGLRow?.entityCode || 'ENT-01'}
                           </Badge>
                         </div>
@@ -364,21 +364,21 @@ export function BPMDiagramList({
 
                       {/* Risks (Rollup) */}
                       <TableCell className="text-center py-4">
-                        <Badge className="bg-orange-100 text-orange-700 border-none font-bold text-[10px] h-6 px-2.5 rounded-lg shadow-sm">
+                        <Badge className="bg-orange-100 text-orange-700 border-none font-bold text-xs h-6 px-2.5 rounded-lg shadow-sm">
                           {process.riskCount || 0} RISKS
                         </Badge>
                       </TableCell>
 
                       {/* Controls (Rollup) */}
                       <TableCell className="text-center py-4">
-                        <Badge className="bg-emerald-100 text-emerald-700 border-none font-bold text-[10px] h-6 px-2.5 rounded-lg shadow-sm">
+                        <Badge className="bg-emerald-100 text-emerald-700 border-none font-bold text-xs h-6 px-2.5 rounded-lg shadow-sm">
                           {process.controlCount || 0} CONTROLS
                         </Badge>
                       </TableCell>
 
                       {/* Workflow Status */}
                       <TableCell className="text-center py-4">
-                        <Badge variant="outline" className="text-[9px] font-black uppercase tracking-tight px-2 py-0.5 rounded-md border-slate-200 text-slate-500">
+                        <Badge variant="outline" className="text-xs font-black uppercase tracking-tight px-2 py-0.5 rounded-md border-slate-200 text-slate-500">
                           {process.workflowStatus || 'Draft'}
                         </Badge>
                       </TableCell>
@@ -437,7 +437,7 @@ export function BPMDiagramList({
                                         <Map className="h-4 w-4" />
                                       </Button>
                                     </TooltipTrigger>
-                                    <TooltipContent className="bg-mancity-pattern text-primary-foreground border-none rounded-lg text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 shadow-xl">
+                                    <TooltipContent className="bg-mancity-pattern text-primary-foreground border-none rounded-lg text-xs font-bold uppercase tracking-widest px-3 py-1.5 shadow-xl">
                                       {t('bpm:tooltips.openMicroDiagram', 'Buka Diagram Alir BPMN Mikro')}
                                     </TooltipContent>
                                   </Tooltip>
@@ -455,7 +455,7 @@ export function BPMDiagramList({
                                         <FileSpreadsheet className="h-4 w-4" />
                                       </Button>
                                     </TooltipTrigger>
-                                    <TooltipContent className="bg-mancity-pattern text-primary-foreground border-none rounded-lg text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 shadow-xl">
+                                    <TooltipContent className="bg-mancity-pattern text-primary-foreground border-none rounded-lg text-xs font-bold uppercase tracking-widest px-3 py-1.5 shadow-xl">
                                       {t('bpm:tooltips.openWorksheet', 'Buka RCM Worksheet')}
                                     </TooltipContent>
                                   </Tooltip>
@@ -473,12 +473,12 @@ export function BPMDiagramList({
                                       {sub.name}
                                     </span>
                                     {sub.bpmCode && (
-                                      <Badge variant="outline" className="h-4 px-1 text-[8px] font-mono font-bold bg-white text-slate-600 border-slate-200 shrink-0">
+                                      <Badge variant="outline" className="h-4 px-1 text-xs font-mono font-bold bg-white text-slate-600 border-slate-200 shrink-0">
                                         {sub.bpmCode}
                                       </Badge>
                                     )}
                                   </div>
-                                  <span className="text-[8px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">
+                                  <span className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-0.5">
                                     ID: {sub.id.substring(0, 8)}
                                   </span>
                                 </div>
@@ -489,7 +489,7 @@ export function BPMDiagramList({
                             <TableCell className="py-3">
                               <Badge
                                 variant="outline"
-                                className="bg-slate-100 text-slate-600 border-slate-200 font-semibold text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-md"
+                                className="bg-slate-100 text-slate-600 border-slate-200 font-semibold text-xs uppercase tracking-wider px-2 py-0.5 rounded-md"
                               >
                                 {t('bpm:hierarchy.subProcess', 'Sub-Proses')}
                               </Badge>
@@ -497,7 +497,7 @@ export function BPMDiagramList({
 
                             {/* Company */}
                             <TableCell className="py-3">
-                              <span className="text-[10px] font-medium text-slate-400">
+                              <span className="text-xs font-medium text-slate-400">
                                 —
                               </span>
                             </TableCell>
@@ -518,7 +518,7 @@ export function BPMDiagramList({
 
                             {/* Status */}
                             <TableCell className="text-center py-3">
-                              <Badge variant="outline" className="text-[8px] font-semibold uppercase px-1.5 py-0.5 rounded text-slate-400 border-slate-200">
+                              <Badge variant="outline" className="text-xs font-semibold uppercase px-1.5 py-0.5 rounded text-slate-400 border-slate-200">
                                 {sub.workflowStatus || 'Draft'}
                               </Badge>
                             </TableCell>
@@ -573,7 +573,7 @@ export function BPMDiagramList({
                 className="rounded-lg border border-slate-200 bg-white p-4 space-y-3 shadow-sm"
                 onClick={() => onSelectProcess?.(process)}
               >
-                <div className="flex items-start justify-between gap-2">
+                <div className="flex items-start justify-between gap-2 flex-wrap">
                   <div className="min-w-0">
                     <p className="text-sm font-bold text-slate-900 truncate">{process.name}</p>
                     <div className="flex items-center gap-1.5 mt-1 flex-wrap">
@@ -648,7 +648,7 @@ export function BPMDiagramList({
                           onSelectProcess?.(sub);
                         }}
                       >
-                        <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-start justify-between gap-2 flex-wrap">
                           <p className="text-xs font-bold text-slate-800 min-w-0">{sub.name}</p>
                           <Badge variant="outline" className="text-xs px-1.5 py-0.5 rounded text-slate-400 border-slate-200 shrink-0">
                             {sub.workflowStatus || 'Draft'}

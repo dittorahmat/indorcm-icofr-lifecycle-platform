@@ -116,7 +116,7 @@ export function DoDLogicMatrix({
 
   return (
     <div className="border border-border rounded-lg overflow-hidden bg-card">
-      <div className="bg-muted/40 px-4 py-2.5 border-b border-border flex items-center justify-between">
+      <div className="bg-muted/40 px-4 py-2.5 border-b border-border flex items-center justify-between flex-wrap gap-2">
         <h4 className="text-xs font-semibold uppercase tracking-wider text-foreground">
           {t('worksheet.matrix.boxHeader')} (Kotak 1 s.d Kotak 7 Lampiran 10)
         </h4>
@@ -147,7 +147,7 @@ export function DoDLogicMatrix({
                     <span className="font-bold text-xs text-foreground">{box.title}</span>
                     <span className="text-xs text-muted-foreground font-mono">[{box.standard}]</span>
                     {!isActive && (
-                      <span className="text-xs text-muted-foreground italic">(Dilewati oleh alur logika)</span>
+                      <span className="text-xs text-muted-foreground">(Dilewati oleh alur logika)</span>
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground leading-relaxed">
@@ -189,7 +189,7 @@ export function DoDLogicMatrix({
               {/* Justification Field & Evidence Reference */}
               {isActive && (
                 <div className="bg-muted/20 rounded-md p-3 border border-border space-y-2">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
                     <label className="text-xs font-semibold uppercase text-muted-foreground flex items-center gap-1">
                       {t('worksheet.matrix.justificationHeader')}
                       {!hasJustification && (

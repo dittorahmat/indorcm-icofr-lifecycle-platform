@@ -167,7 +167,7 @@ export function ApprovalPage() {
             </div>
           ) : pendingSims.map(sim => (
             <div key={sim.id} className="bg-card border rounded-lg shadow-sm p-4 space-y-3">
-              <div className="flex items-start justify-between gap-2">
+              <div className="flex items-start justify-between gap-2 flex-wrap">
                 <p className="text-sm font-bold leading-tight">{sim.name}</p>
                 <Badge variant="secondary" className={cn(
                   "shrink-0",
@@ -178,7 +178,7 @@ export function ApprovalPage() {
                    sim.status === 'Pending CFO' ? t('status.pendingCfo') : t('status.pendingKomut')}
                 </Badge>
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div className="bg-muted/50 rounded-md p-2 col-span-2">
                   <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t('form.benchmark')}</p>
                   <p className="text-xs font-semibold mt-0.5">{sim.basis}</p>
@@ -222,7 +222,7 @@ export function ApprovalPage() {
 
             <div className="flex-1 min-h-0 flex flex-col py-4">
               <Tabs defaultValue="worksheet" className="flex flex-col flex-1 min-h-0 w-full">
-                <TabsList className="grid w-full max-w-[400px] grid-cols-2 mb-4">
+                <TabsList className="grid w-full max-w-[400px] grid-cols-1 sm:grid-cols-2 mb-4">
                   <TabsTrigger value="worksheet">{t('approval.tabWorksheet')}</TabsTrigger>
                   <TabsTrigger value="history">{t('approval.tabHistory')}</TabsTrigger>
                 </TabsList>
@@ -260,7 +260,7 @@ export function ApprovalPage() {
                   onChange={(e) => setNote(e.target.value)}
                   className="min-h-[100px]"
                 />
-                <p className="text-xs text-muted-foreground italic">Note: Rejection requires a reason to be provided.</p>
+                <p className="text-xs text-muted-foreground">Note: Rejection requires a reason to be provided.</p>
               </div>
               <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-between sm:items-center gap-2 w-full">
                 <Button variant="outline" onClick={() => setIsReviewOpen(false)} className="w-full sm:w-auto min-h-[44px]">Cancel</Button>

@@ -45,7 +45,7 @@ export function TODEvaluationFormSection({
 
       {pillars.map((pilar) => (
         <div key={pilar.id} className="space-y-1.5 group">
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center flex-wrap gap-2">
             <Label
               htmlFor={pilar.id}
               className="text-xs font-bold uppercase tracking-wider text-slate-700 group-focus-within:text-primary transition-colors"

@@ -24,7 +24,7 @@ export function TLCForm({ data, onChange, disabled = false }: TLCFormProps) {
     <div className="space-y-4">
       <div className="flex flex-col gap-1 mb-2">
         <h4 className="text-xs font-black uppercase text-indigo-900 tracking-wider">Information Processing Objective (IPO)</h4>
-        <p className="text-xs text-slate-500 italic">Petakan tujuan pemrosesan informasi untuk kontrol tingkat transaksi ini.</p>
+        <p className="text-xs text-slate-500">Petakan tujuan pemrosesan informasi untuk kontrol tingkat transaksi ini.</p>
       </div>
 
       <div className="grid grid-cols-1 min-[420px]:grid-cols-2 sm:grid-cols-4 gap-2 border rounded-lg p-3 bg-white shadow-sm">

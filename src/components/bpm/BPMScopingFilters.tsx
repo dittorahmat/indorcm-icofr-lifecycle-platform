@@ -49,7 +49,7 @@ export function BPMScopingFilters({
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
           {/* FSLI Searchable Dropdown */}
           <div className="space-y-2">
-            <Label htmlFor="fsli-select" className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 flex items-center gap-2 px-1">
+            <Label htmlFor="fsli-select" className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500 flex items-center gap-2 px-1">
               <Database className="h-3.5 w-3.5 text-indigo-500" /> 1. {t('bpm:fsliLabel')}
             </Label>
             <Popover open={fsliOpen} onOpenChange={setFsliOpen}>
@@ -125,7 +125,7 @@ export function BPMScopingFilters({
 
           {/* GL Account Searchable Dropdown */}
           <div className="space-y-2">
-            <Label htmlFor="account-select" className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 flex items-center gap-2 px-1">
+            <Label htmlFor="account-select" className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500 flex items-center gap-2 px-1">
               <Search className="h-3.5 w-3.5 text-indigo-500" /> 2. {t('common:glAccount')}
             </Label>
             <Popover open={glOpen} onOpenChange={setGlOpen}>
@@ -199,7 +199,7 @@ export function BPMScopingFilters({
 
           {/* ICOFR Category */}
           <div className="space-y-2">
-            <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 px-1 flex items-center gap-2">
+            <Label className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500 px-1 flex items-center gap-2">
               <Layers className="h-3.5 w-3.5 text-slate-400" /> {t('common:icofr.category')}
             </Label>
             <div className="h-10 px-3 flex items-center border border-slate-200 rounded-lg bg-slate-50 text-xs text-slate-600 font-bold uppercase tracking-widest overflow-hidden whitespace-nowrap">
@@ -209,7 +209,7 @@ export function BPMScopingFilters({
 
           {/* ICOFR SubCategory */}
           <div className="space-y-2">
-            <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 px-1 flex items-center gap-2">
+            <Label className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500 px-1 flex items-center gap-2">
               <Filter className="h-3.5 w-3.5 text-slate-400" /> {t('common:icofr.subCategory')}
             </Label>
             <div className="h-10 px-3 flex items-center border border-slate-200 rounded-lg bg-slate-50 text-xs text-slate-600 font-bold uppercase tracking-widest overflow-hidden whitespace-nowrap">

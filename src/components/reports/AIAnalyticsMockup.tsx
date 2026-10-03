@@ -36,7 +36,7 @@ export function AIAnalyticsMockup() {
   
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between p-6 bg-slate-900 text-white rounded-lg shadow-sm border border-slate-800 relative">
+      <div className="flex items-center justify-between p-6 bg-slate-900 text-white rounded-lg shadow-sm border border-slate-800 relative flex-wrap gap-2">
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="border-slate-700 bg-slate-800 text-slate-200 text-xs font-semibold tracking-wider uppercase">{t('aiHub.badge')}</Badge>
@@ -207,7 +207,7 @@ function AnalyticsTab() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="p-3 border rounded-lg bg-slate-50">
               <p className="text-xs font-bold text-slate-500 uppercase">{t('aiHub.risk1Title')}</p>
-              <div className="flex items-center justify-between mt-1">
+              <div className="flex items-center justify-between mt-1 flex-wrap gap-2">
                 <span className="text-lg font-bold text-slate-900">{t('aiHub.risk1Value')}</span>
                 <ShieldAlert className="h-4 w-4 text-amber-500" />
               </div>
@@ -215,7 +215,7 @@ function AnalyticsTab() {
             </div>
             <div className="p-3 border rounded-lg bg-slate-50">
               <p className="text-xs font-bold text-slate-500 uppercase">{t('aiHub.risk2Title')}</p>
-              <div className="flex items-center justify-between mt-1">
+              <div className="flex items-center justify-between mt-1 flex-wrap gap-2">
                 <span className="text-lg font-bold text-slate-900">{t('aiHub.risk2Value')}</span>
                 <ShieldAlert className="h-4 w-4 text-red-500" />
               </div>
@@ -223,7 +223,7 @@ function AnalyticsTab() {
             </div>
             <div className="p-3 border rounded-lg bg-slate-50">
               <p className="text-xs font-bold text-slate-500 uppercase">{t('aiHub.risk3Title')}</p>
-              <div className="flex items-center justify-between mt-1">
+              <div className="flex items-center justify-between mt-1 flex-wrap gap-2">
                 <span className="text-lg font-bold text-slate-900">{t('aiHub.risk3Value')}</span>
                 <AlertTriangle className="h-4 w-4 text-red-500" />
               </div>
@@ -282,7 +282,7 @@ function AICasesTab() {
                   onClick={() => setSelectedCaseId(uc.id)}
                 >
                   <CardHeader className={cn("pb-4 h-full", uc.color)}>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
                       <div className="p-2 bg-white rounded-lg shadow-sm border border-border">{uc.icon}</div>
                       <Badge variant="outline" className="bg-white text-xs font-semibold">{uc.status}</Badge>
                     </div>
@@ -290,7 +290,7 @@ function AICasesTab() {
                   </CardHeader>
                   <CardContent className="pt-4">
                     <p className="text-xs text-slate-700 leading-relaxed font-normal">{uc.desc}</p>
-                    <div className="mt-6 flex items-center justify-between text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    <div className="mt-6 flex items-center justify-between text-xs font-semibold text-slate-500 uppercase tracking-wider flex-wrap gap-2">
                       <span>{t('aiHub.modelPrecision', { value: '95.8%' })}</span>
                       <span className="group-hover:text-primary transition-colors">{t('aiHub.details')}</span>
                     </div>
@@ -333,7 +333,7 @@ function AIDrilldownView({ useCase, onBack }: { useCase: any, onBack: () => void
     <div className="h-full">
       <Card className="min-h-[600px] border-border shadow-md overflow-hidden flex flex-col h-full rounded-lg">
         <CardHeader className={cn("pb-6 transition-colors", useCase.color)}>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-4">
               <button 
                 onClick={onBack}
@@ -358,11 +358,11 @@ function AIDrilldownView({ useCase, onBack }: { useCase: any, onBack: () => void
         <CardContent className="p-6 space-y-8 flex-1 overflow-auto">
 
         {/* Metric Row */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {data.metrics.map((m, i) => (
             <div key={i} className="p-4 rounded-lg border bg-slate-50 border-slate-200 shadow-sm space-y-1">
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{m.label}</p>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between flex-wrap gap-2">
                 <span className="text-xl font-bold tracking-tight text-slate-900">{m.value}</span>
                 {m.trend && (
                   <TrendingUp className={cn(
@@ -377,7 +377,7 @@ function AIDrilldownView({ useCase, onBack }: { useCase: any, onBack: () => void
 
         {/* Chart Section */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
               <Activity className="h-4 w-4 text-sky-600" /> {data.chart.title}
             </h3>
@@ -428,7 +428,7 @@ function AIDrilldownView({ useCase, onBack }: { useCase: any, onBack: () => void
 
         {/* Findings Section */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between border-b pb-2">
+          <div className="flex items-center justify-between border-b pb-2 flex-wrap gap-2">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
               <Search className="h-4 w-4 text-sky-600" /> {t('aiHub.discoveryLog')}
             </h3>
@@ -487,7 +487,7 @@ function CCMTab() {
     <div className="grid gap-6 md:grid-cols-3">
       <Card className="md:col-span-2 rounded-lg border-border">
         <CardHeader className="border-b bg-slate-50">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="space-y-1">
               <CardTitle className="text-base font-bold">{t('aiHub.ccmTitle')}</CardTitle>
               <CardDescription>{t('aiHub.ccmDesc')}</CardDescription>
@@ -505,7 +505,7 @@ function CCMTab() {
                   alert.severity === 'MEDIUM' ? "bg-amber-500" : "bg-sky-500"
                 )} />
                 <div className="flex-1 space-y-1">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
                     <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1">
                       <Clock className="h-3 w-3" /> {alert.time}
                     </span>
@@ -542,7 +542,7 @@ function CCMTab() {
           <CardContent>
             <div className="space-y-4">
               <div className="space-y-1">
-                <div className="flex justify-between text-xs font-semibold uppercase">
+                <div className="flex justify-between text-xs font-semibold uppercase flex-wrap gap-2">
                   <span>{t('aiHub.automatedControls')}</span>
                   <span>78%</span>
                 </div>
@@ -551,7 +551,7 @@ function CCMTab() {
                 </div>
               </div>
               <div className="space-y-1">
-                <div className="flex justify-between text-xs font-semibold uppercase">
+                <div className="flex justify-between text-xs font-semibold uppercase flex-wrap gap-2">
                   <span>{t('aiHub.manualControls')}</span>
                   <span>52%</span>
                 </div>
