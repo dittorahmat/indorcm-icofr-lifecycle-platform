@@ -144,7 +144,7 @@ export function CSAList({
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-1">
-                  <Button variant="outline" size="icon" aria-label={t('csa_hub:history.viewDetail', { defaultValue: 'View detail' })} className="h-7 w-7" onClick={() => onViewDetail(item.id)}>
+                  <Button variant="outline" size="icon" aria-label={t('csa_hub:history.viewDetail', { defaultValue: 'View detail' })} className="h-7 w-7 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 md:h-7 md:w-7" onClick={() => onViewDetail(item.id)}>
                     <Eye className="h-3.5 w-3.5" />
                   </Button>
                   {renderPrintMenu(
@@ -156,7 +156,7 @@ export function CSAList({
                     variant="ghost" 
                     size="icon" 
                     aria-label={t('csa_hub:history.deleteAssessment', { defaultValue: 'Delete assessment' })}
-                    className="h-7 w-7 text-slate-300 hover:text-red-600 hover:bg-red-50" 
+                    className="h-7 w-7 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 md:h-7 md:w-7 text-slate-300 hover:text-red-600 hover:bg-red-50" 
                     onClick={() => onDelete(item.id)}
                   >
                     <Trash2 className="h-3.5 w-3.5" />

@@ -201,7 +201,7 @@ export function Dashboard() {
         />
 
         {/* MAIN DASHBOARD CONTENT */}
-        <div className="grid gap-4 lg:gap-6 lg:grid-cols-12">
+        <div className="grid grid-cols-1 gap-4 lg:gap-6 lg:grid-cols-12">
           
           {/* ACTION CENTER & OPERATIONAL METRICS (Priority 1 on mobile, Right column on desktop) */}
           <div className="lg:col-span-4 space-y-6 order-1 lg:order-2">
@@ -223,7 +223,7 @@ export function Dashboard() {
                         <metric.icon className="h-5 w-5" />
                     </div>
                     <div className="flex-1 min-w-0">
-                        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-0.5 truncate">{metric.label}</p>
+                        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-0.5 truncate" title={metric.label}>{metric.label}</p>
                         <div className="flex items-center justify-between flex-wrap gap-2">
                           <p className="text-lg md:text-xl font-bold text-slate-900 leading-tight">{metric.value}</p>
                           <ArrowRight className="h-4 w-4 text-slate-300 group-hover:text-slate-900 group-hover:translate-x-1 transition-all shrink-0" />

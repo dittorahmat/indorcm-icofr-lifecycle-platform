@@ -327,7 +327,7 @@ export function CSAPage() {
 
   return (
     <AppLayout container>
-      <div className="space-y-6 pb-20 pt-4">
+      <div className="space-y-6 pb-6 md:pb-8 pt-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-slate-900 flex items-center gap-3 sm:gap-4">

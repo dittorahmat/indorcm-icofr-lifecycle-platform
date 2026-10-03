@@ -135,7 +135,7 @@ export function TestWorkbench() {
         initial="hidden"
         animate="visible"
         variants={containerVariants}
-        className="max-w-6xl mx-auto space-y-6 sm:space-y-8 pb-16 sm:pb-20"
+        className="max-w-6xl mx-auto space-y-6 sm:space-y-8 pb-6 md:pb-8"
       >
         <motion.div variants={itemVariants}>
           <PageHeader 
@@ -225,7 +225,7 @@ export function TestWorkbench() {
                           <span className={cn(
                             "text-sm sm:text-base font-bold leading-snug line-clamp-2",
                             isExpanded ? "text-indigo-600" : "text-slate-900"
-                          )}>
+                          )} title={control.name}>
                             {control.name}
                           </span>
                           <Badge variant="outline" className="font-mono text-xs font-bold text-slate-500 border-slate-200 uppercase tracking-tight rounded shrink-0">

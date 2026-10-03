@@ -48,7 +48,7 @@ export function ComplianceCharts({ barData, deficiencyBySeverity, isLoading }: C
   }, [deficiencyBySeverity]);
 
   return (
-    <div className="grid gap-4 lg:gap-6 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 lg:gap-6 lg:grid-cols-3">
       {/* BAR CHART: CONTROLS BY PROCESS */}
       <Card className="lg:col-span-2 border-slate-200 shadow-xs overflow-hidden bg-white rounded-lg">
         <CardHeader className="bg-slate-50 border-b py-4 sm:py-5 px-4 sm:px-6">
@@ -91,6 +91,7 @@ export function ComplianceCharts({ barData, deficiencyBySeverity, isLoading }: C
                             fontWeight={600}
                             className="select-none"
                           >
+                            <title>{label}</title>
                             {truncated}
                           </text>
                         </g>

@@ -120,7 +120,7 @@ export function CSAForm({
                     disabled={isReadOnly}
                   >
                     <FormControl>
-                      <SelectTrigger className="h-9 font-bold text-xs bg-white">
+                      <SelectTrigger className="h-9 min-h-[44px] font-bold text-base md:text-xs bg-white">
                         <SelectValue placeholder={t('csa_hub:form.selectQuarter')} />
                       </SelectTrigger>
                     </FormControl>
@@ -181,7 +181,7 @@ export function CSAForm({
                 <FormLabel className="text-xs font-black uppercase text-slate-400 flex items-center gap-2">
                    <FileText className="h-3 w-3" /> {t('csa_hub:appendix7a.testProcedure')}
                 </FormLabel>
-                <FormControl><Textarea {...f} disabled={isReadOnly} className="min-h-[100px] text-xs bg-white" placeholder={t('csa_hub:appendix7a.procedurePlaceholder')} /></FormControl>
+                <FormControl><Textarea {...f} disabled={isReadOnly} className="min-h-[100px] text-base md:text-xs bg-white" placeholder={t('csa_hub:appendix7a.procedurePlaceholder')} /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
@@ -190,7 +190,7 @@ export function CSAForm({
                 <FormLabel className="text-xs font-black uppercase text-slate-400 flex items-center gap-2">
                    <MapPin className="h-3 w-3" /> {t('csa_hub:appendix7a.archiveLocation')}
                 </FormLabel>
-                <FormControl><Input {...f} disabled={isReadOnly} className="h-10 text-xs bg-white" placeholder={t('csa_hub:appendix7a.locationPlaceholder')} /></FormControl>
+                <FormControl><Input {...f} disabled={isReadOnly} className="h-10 min-h-[44px] text-base md:text-xs bg-white" placeholder={t('csa_hub:appendix7a.locationPlaceholder')} /></FormControl>
                 <FormMessage />
                 <p className="text-xs text-slate-400 mt-2">{t('csa_hub:appendix7a.archiveNote')}</p>
               </FormItem>

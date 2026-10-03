@@ -193,7 +193,7 @@ export function NotificationsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="p-4 space-y-3">
-              <div className="grid sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {/* 1. In-App */}
                 <div className="flex items-center justify-between p-3 rounded-lg bg-white border border-slate-200 flex-wrap gap-2">
                   <div>

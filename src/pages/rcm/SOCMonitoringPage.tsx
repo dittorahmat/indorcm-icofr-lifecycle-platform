@@ -295,7 +295,7 @@ export function SOCMonitoringPage() {
 
           {/* TAB 2: SOC MONITORING */}
           <TabsContent value="soc" className="space-y-6 pt-4">
-            <div className="grid gap-6 md:grid-cols-3">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                <Card className="bg-green-50 border-green-200 shadow-sm">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-xs font-bold uppercase text-green-800 flex items-center gap-2">

@@ -125,7 +125,7 @@ export function MobileTodoAgenda({
             {e.displayTitle || t('common:status.active', { defaultValue: 'Aktivitas Kepatuhan' })}
           </h4>
           {e.description && e.description !== e.displayTitle && (
-            <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+            <p className="text-xs text-muted-foreground mt-1 line-clamp-2" title={e.description}>
               {e.description}
             </p>
           )}

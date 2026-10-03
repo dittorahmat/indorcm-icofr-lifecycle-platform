@@ -30,7 +30,7 @@ export function AppLayout({
 
   if (tenant.isEmbedded) {
     return (
-      <div className={cn("w-full h-full p-4 overflow-auto", className, contentClassName)}>
+      <div className={cn("w-full h-full p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] overflow-auto", className, contentClassName)}>
         {children}
       </div>
     );

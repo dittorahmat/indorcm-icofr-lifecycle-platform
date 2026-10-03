@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { Outlet, useSearchParams } from "react-router-dom";
+import { MotionConfig } from "framer-motion";
 import { MainHeader } from "@/components/layout/MainHeader";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { AIFabButton, AIChatDrawer } from "@/components/ai-chatbot";
@@ -47,6 +48,7 @@ export function RootLayout(): JSX.Element {
   }, [isDirty]);
 
   return (
+    <MotionConfig reducedMotion="user">
     <SidebarProvider className="h-screen flex flex-col bg-background text-foreground min-w-0 overflow-hidden">
       <MainHeader />
       <LicenseBanner />
@@ -62,6 +64,7 @@ export function RootLayout(): JSX.Element {
       <AIFabButton isOpen={isChatOpen} onToggle={toggleChat} />
       <AIChatDrawer isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
     </SidebarProvider>
+    </MotionConfig>
   );
 }
 export default RootLayout;

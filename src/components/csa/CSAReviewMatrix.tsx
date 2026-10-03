@@ -128,7 +128,7 @@ export function CSAReviewMatrix({
                                 <Button 
                                   variant="ghost" 
                                   size="sm" 
-                                  className="h-8 w-8 min-h-[36px] min-w-[36px] p-0 rounded-md bg-white border border-slate-200 shadow-xs text-indigo-600 hover:bg-slate-50"
+                                  className="h-8 w-8 min-h-[44px] min-w-[44px] md:min-h-[36px] md:min-w-[36px] p-0 rounded-md bg-white border border-slate-200 shadow-xs text-indigo-600 hover:bg-slate-50"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     window.open(evidenceUrl, '_blank');
@@ -158,7 +158,7 @@ export function CSAReviewMatrix({
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-8 min-h-[36px] text-xs font-semibold gap-1.5 text-indigo-700 border-indigo-200 hover:bg-indigo-50 w-full sm:w-auto"
+                    className="h-8 min-h-[44px] md:min-h-[36px] text-xs font-semibold gap-1.5 text-indigo-700 border-indigo-200 hover:bg-indigo-50 w-full sm:w-auto"
                     onClick={() => onControlClick(control)}
                   >
                     <span>{t('tod.verifyDesign', { defaultValue: 'Verifikasi Desain' })}</span>
@@ -236,7 +236,7 @@ export function CSAReviewMatrix({
                                 <Button 
                                   variant="ghost" 
                                   size="sm" 
-                                  className="h-7 w-7 p-0 rounded-full bg-white border border-slate-200 shadow-sm hover:scale-110 transition-transform text-indigo-600"
+                                   className="h-7 w-7 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 md:h-7 md:w-7 p-0 rounded-full bg-white border border-slate-200 shadow-sm hover:scale-110 transition-transform text-indigo-600"
                                   onClick={() => window.open(evidenceUrl, '_blank')}
                                   title="Lihat Bukti"
                                 >

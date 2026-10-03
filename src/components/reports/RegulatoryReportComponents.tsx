@@ -435,7 +435,7 @@ export function Lampiran11Report({ deficiencies = [], controls = [] }: { deficie
           <p className="text-xs font-semibold text-muted-foreground mt-1">{aggregateLine}</p>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 min-[420px]:grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { label: t('dodReport.summary.controlDeficiency', { defaultValue: 'CD' }), value: cdCount, tone: 'bg-slate-50 border-slate-200 text-slate-800' },
             { label: t('dodReport.summary.significantDeficiency', { defaultValue: 'SD' }), value: sdCount, tone: 'bg-amber-50 border-amber-200 text-amber-800' },

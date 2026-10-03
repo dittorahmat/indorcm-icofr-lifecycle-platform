@@ -112,7 +112,7 @@ function AnalyticsTab() {
   ];
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
       <Card className="col-span-2 rounded-lg border-border">
         <CardHeader>
           <CardTitle className="text-sm font-bold flex items-center gap-2">
@@ -273,7 +273,7 @@ function AICasesTab() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 16 }}
             transition={{ duration: 0.2 }}
-            className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
+            className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
           >
             {useCases.map((uc) => (
               <div key={uc.id}>
@@ -484,7 +484,7 @@ function CCMTab() {
   ];
 
   return (
-    <div className="grid gap-6 md:grid-cols-3">
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
       <Card className="md:col-span-2 rounded-lg border-border">
         <CardHeader className="border-b bg-slate-50">
           <div className="flex items-center justify-between flex-wrap gap-2">

@@ -173,8 +173,8 @@ export function Lampiran6LogView({ entityId, year, subProcessName, bpmProcessId 
       </div>
 
       {/* DESKTOP VIEW: Full table */}
-      <div className="hidden md:block rounded-lg border border-border bg-card shadow-sm overflow-hidden">
-        <div className="overflow-x-auto w-full">
+      <div className="hidden md:block rounded-lg border border-border bg-card shadow-sm overflow-hidden max-w-full">
+        <div className="overflow-x-auto w-full max-w-full touch-pan-x overscroll-x-contain table-scroll-hint">
           {renderTable()}
         </div>
       </div>
@@ -222,7 +222,7 @@ export function Lampiran6LogView({ entityId, year, subProcessName, bpmProcessId 
 
       {/* MOBILE VIEW: Full table inside a locked scroll container */}
       {showFullTable && (
-        <div className="md:hidden rounded-lg border border-border bg-card shadow-sm max-w-full overflow-x-auto">
+        <div className="md:hidden rounded-lg border border-border bg-card shadow-sm max-w-full overflow-x-auto touch-pan-x overscroll-x-contain table-scroll-hint">
           {renderTable()}
         </div>
       )}

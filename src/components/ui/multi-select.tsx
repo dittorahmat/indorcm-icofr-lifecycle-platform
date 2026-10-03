@@ -59,7 +59,7 @@ export function MultiSelect({
           role="combobox"
           aria-expanded={open}
           className={cn(
-            "flex min-h-9 w-full flex-wrap gap-1.5 rounded-md border border-input bg-background px-3 py-1.5 text-sm ring-offset-background cursor-pointer items-center",
+            "flex min-h-[44px] w-full flex-wrap gap-1.5 rounded-md border border-input bg-background px-3 py-1.5 text-base md:text-sm ring-offset-background cursor-pointer items-center",
             disabled && "opacity-50 cursor-not-allowed",
             className
           )}

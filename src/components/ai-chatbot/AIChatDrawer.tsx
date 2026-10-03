@@ -216,7 +216,7 @@ export function AIChatDrawer({ isOpen, onClose }: AIChatDrawerProps) {
               onClick={handleClearHistory}
               disabled={messages.length === 0}
               title={t('clearHistory')}
-              className="h-8 w-8 text-muted-foreground hover:text-destructive"
+              className="h-8 w-8 min-h-[44px] min-w-[44px] text-muted-foreground hover:text-destructive"
             >
               <Trash2 className="h-4 w-4" />
             </Button>
