@@ -439,9 +439,9 @@ export const BPMOcrModal: React.FC<BPMOcrModalProps> = ({
                                 {node.type === 'decision' ? (
                                   <span className="-rotate-45">DEC</span>
                                 ) : node.type === 'archive' ? (
-                                  <span className="text-[7px]">ARS</span>
+                                  <span className="text-xs">ARS</span>
                                 ) : node.type === 'swimlane' ? (
-                                  <span className="text-[7px]">LANE</span>
+                                  <span className="text-xs">LANE</span>
                                 ) : (
                                   node.type.substring(0, 3)
                                 )}

@@ -38,7 +38,7 @@ export function MainHeader() {
         ? "bg-slate-950 border-slate-800 text-slate-50"
         : "bg-mancity-pattern border-primary/20 text-primary-foreground"
     )}>
-      <div className="flex h-14 sm:h-16 items-center justify-between px-2 sm:px-4 gap-1.5 sm:gap-2 flex-wrap">
+      <div className="flex min-h-14 sm:min-h-16 items-center justify-between px-2 sm:px-4 gap-1.5 sm:gap-2 flex-wrap py-1">
         <div className="flex items-center gap-1.5 sm:gap-4 md:gap-6 min-w-0">
           {/* Mobile Global Sidebar Trigger */}
           <SidebarTrigger 
@@ -80,8 +80,8 @@ export function MainHeader() {
                   </AvatarFallback>
                 </Avatar>
                 <span
-                  className={cn(
-                    "absolute -bottom-0.5 -right-1 text-xs px-1 py-0.2 min-w-[18px] h-4.5 rounded-full flex items-center justify-center border font-bold shadow-sm select-none",
+                   className={cn(
+                    "absolute -bottom-0.5 -right-1 text-xs px-1 min-w-[18px] h-[18px] rounded-full flex items-center justify-center border font-bold shadow-sm select-none",
                     isDark
                       ? "bg-slate-900 border-slate-700 text-slate-200"
                       : "bg-white border-slate-300 text-slate-900"

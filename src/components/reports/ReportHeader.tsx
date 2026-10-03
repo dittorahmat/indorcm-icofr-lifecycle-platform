@@ -30,25 +30,25 @@ export const ReportHeader = ({
   });
 
   return (
-    <div className="w-full bg-white border-b-4 border-slate-900 p-6 mb-6 flex flex-col gap-6">
+    <div className="w-full max-w-full overflow-x-hidden bg-white border-b-4 border-slate-900 p-4 sm:p-6 mb-4 sm:mb-6 flex flex-col gap-4 sm:gap-6">
       {/* Top row: Logo & Signatories placeholder */}
-      <div className="flex justify-between items-start flex-wrap gap-2">
-        <div className="flex items-center gap-6">
-          <div className="w-20 h-20 bg-slate-50 rounded-xl border-2 border-slate-200 flex items-center justify-center overflow-hidden shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 flex-wrap">
+        <div className="flex items-center gap-3 sm:gap-6 min-w-0">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-slate-50 rounded-lg border-2 border-slate-200 flex items-center justify-center overflow-hidden shadow-sm shrink-0">
              {settings?.logoUrl ? (
                <img src={settings.logoUrl} alt="Logo" className="w-full h-full object-contain" />
              ) : (
-               <div className="text-center">
+               <div className="text-center px-1">
                  <ShieldCheck className="h-8 w-8 text-slate-200 mx-auto" />
-                 <span className="text-[7px] font-black text-slate-300 uppercase">COMPANY LOGO</span>
+                 <span className="text-xs font-black text-slate-300 uppercase leading-tight">COMPANY LOGO</span>
                </div>
              )}
           </div>
-          <div className="flex flex-col">
-            <h1 className="text-xl font-black uppercase tracking-tighter text-slate-900 leading-tight">
+          <div className="flex flex-col min-w-0">
+            <h1 className="text-base sm:text-xl font-black uppercase tracking-tighter text-slate-900 leading-tight truncate">
               {settings?.companyName || "PT. INDO GRC PRO"}
             </h1>
-            <p className="text-sm font-black text-indigo-700 uppercase tracking-widest mt-1">
+            <p className="text-xs sm:text-sm font-black text-indigo-700 uppercase tracking-widest mt-1">
               {title}
             </p>
             <div className="flex items-center gap-2 mt-2 text-xs text-slate-400 font-bold uppercase">
@@ -57,7 +57,7 @@ export const ReportHeader = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-1 text-xs border-l-2 pl-6 border-slate-100">
+        <div className="grid grid-cols-1 gap-1 text-xs w-full sm:w-auto border-t-2 border-slate-100 pt-4 sm:border-t-0 sm:pt-0 sm:border-l-2 sm:pl-6 sm:border-slate-100">
            <div className="flex items-center justify-between gap-4 flex-wrap">
               <span className="text-slate-400 font-black uppercase">Doc No:</span>
               <span className="font-mono font-bold text-slate-700">{documentNo}</span>
@@ -81,7 +81,7 @@ export const ReportHeader = ({
 
       {/* Meta Bar */}
       {subProcess && (
-        <div className="bg-mancity-pattern text-primary-foreground p-3 rounded-lg flex justify-between items-center px-6 shadow-md flex-wrap gap-2">
+        <div className="bg-mancity-pattern text-primary-foreground p-3 sm:p-3 rounded-lg flex flex-col sm:flex-row sm:justify-between sm:items-center px-4 sm:px-6 shadow-md flex-wrap gap-2">
            <div className="flex items-center gap-3">
               <span className="text-xs font-black text-primary-foreground/40 uppercase tracking-widest">Sub-Proses:</span>
               <span className="text-sm font-black uppercase tracking-tight text-primary-foreground">{subProcess}</span>

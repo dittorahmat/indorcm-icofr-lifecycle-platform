@@ -44,7 +44,7 @@ export const Appendix7aDetailed = React.forwardRef<HTMLDivElement, Appendix7aDet
     });
 
     return (
-      <div ref={ref} className="p-12 bg-white text-slate-900 font-sans print:p-0 w-full min-h-screen">
+      <div ref={ref} className="p-4 sm:p-8 lg:p-12 bg-white text-slate-900 font-sans print:p-0 w-full min-h-screen max-w-full overflow-x-hidden">
         <ReportHeader 
           title="Kertas Kerja Evaluasi Pengendalian (CSA) - Detailed"
           subProcess={bpmProcessName}
@@ -142,7 +142,7 @@ export const Appendix7aDetailed = React.forwardRef<HTMLDivElement, Appendix7aDet
                 </div>
              </div>
 
-             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 border-2 border-slate-900 bg-white rounded-lg overflow-hidden h-40">
+             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 border-2 border-slate-900 bg-white rounded-lg overflow-hidden min-h-[10rem] h-auto lg:h-40">
                 <div className="border-r-2 border-slate-900 p-4 flex flex-col">
                    <span className="text-xs font-black uppercase text-slate-400">Dikerjakan Oleh (Auditee)</span>
                    <div className="flex-1 border-b border-slate-100 flex items-center justify-center text-xs text-slate-300">Digital Signature Verified</div>
@@ -164,7 +164,7 @@ export const Appendix7aDetailed = React.forwardRef<HTMLDivElement, Appendix7aDet
                    <div className="flex-1 flex items-center justify-center p-4">
                       {/* QR Code Placeholder */}
                       <div className="w-20 h-20 bg-slate-100 border-2 border-dashed border-slate-300 flex items-center justify-center text-center p-2">
-                         <span className="text-[7px] font-black text-slate-400">SCAN QR TO VERIFY DOCUMENT INTEGRITY</span>
+                         <span className="text-xs font-black text-slate-400 leading-tight">SCAN QR TO VERIFY DOCUMENT INTEGRITY</span>
                       </div>
                    </div>
                 </div>

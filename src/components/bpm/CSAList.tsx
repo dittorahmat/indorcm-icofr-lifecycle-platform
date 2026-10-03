@@ -74,11 +74,11 @@ export function CSAList({
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center flex-wrap gap-2">
-        <h3 className="text-xl font-black text-slate-900 tracking-tight">{t('csa_hub:history.title', { defaultValue: 'Assessment History' })}</h3>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 flex-wrap">
+        <h3 className="text-xl font-black text-slate-900 tracking-tight min-w-0 truncate">{t('csa_hub:history.title', { defaultValue: 'Assessment History' })}</h3>
         <Button 
           onClick={onNewAssessment} 
-          className="bg-indigo-600 hover:bg-indigo-700 font-bold text-xs gap-2 min-h-[44px]"
+          className="bg-indigo-600 hover:bg-indigo-700 font-bold text-xs gap-2 min-h-[44px] w-full sm:w-auto"
         >
           <Plus className="h-3.5 w-3.5" /> {t('csa_hub:history.newAssessment', { defaultValue: 'New Assessment' })}
         </Button>
