@@ -468,7 +468,7 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
                                             initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
                                             className="space-y-6"
                                         >
-                                            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                                                 <div className="lg:col-span-1"><CrossCheckPanel items={[
                                                     { accountCode: '1110.01', accountName: 'Kas Kecil', balance: 25000000, status: 'Covered', linkedControls: 1 },
                                                     { accountCode: '1210.01', accountName: 'Piutang PLN', balance: 15000000000, status: 'Unmitigated', linkedControls: 0 },
@@ -509,7 +509,7 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
                                                         </div>
                                                     </div>
 
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
                                                         <div className="space-y-4">
                                                             <div className="space-y-2">
                                                                 <Label className="text-xs font-black uppercase tracking-widest text-slate-500">{t('scoping:form.benchmark')}</Label>

@@ -77,7 +77,7 @@ export function BPMScopingFilters({
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-[max(100%,320px)] min-w-[280px] p-0 rounded-lg border-slate-200 shadow-xl" align="start">
+              <PopoverContent className="w-[calc(100vw-2rem)] max-w-[320px] min-w-0 p-0 rounded-lg border-slate-200 shadow-xl" align="start">
                 <Command>
                   <CommandInput placeholder={t('bpm:searchFsli')} className="h-9 text-xs" />
                   <CommandList className="max-h-60 overflow-y-auto">
@@ -153,7 +153,7 @@ export function BPMScopingFilters({
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-[max(100%,360px)] min-w-[300px] p-0 rounded-lg border-slate-200 shadow-xl" align="start">
+              <PopoverContent className="w-[calc(100vw-2rem)] max-w-[360px] min-w-0 p-0 rounded-lg border-slate-200 shadow-xl" align="start">
                 <Command>
                   <CommandInput placeholder={t('bpm:searchGl')} className="h-9 text-xs" />
                   <CommandList className="max-h-60 overflow-y-auto">

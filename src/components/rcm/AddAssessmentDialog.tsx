@@ -405,7 +405,7 @@ export function AddAssessmentDialog({
               </TabsContent>
             </Tabs>
 
-            <DialogFooter className="sticky bottom-0 bg-white pt-3 border-t mt-6 gap-2">
+            <DialogFooter className="sticky bottom-0 bg-white pt-3 pb-[env(safe-area-inset-bottom,0px)] border-t mt-6 gap-2 flex-col-reverse sm:flex-row">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 {t('common:actions.cancel')}
               </Button>

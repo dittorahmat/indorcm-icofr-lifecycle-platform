@@ -158,7 +158,7 @@ export function SignificantApplicationCombobox({
             </div>
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[340px] p-0 shadow-lg" align="start">
+        <PopoverContent className="w-[calc(100vw-2rem)] max-w-[340px] min-w-0 p-0 shadow-lg rounded-lg" align="start">
           <Command shouldFilter={false}>
             <CommandInput
               placeholder={t('rcm:applications.searchPlaceholder', { defaultValue: 'Search application...' })}

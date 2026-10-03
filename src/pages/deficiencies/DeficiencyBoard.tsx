@@ -603,7 +603,7 @@ export function DeficiencyBoard() {
         >
           {!isMobileView ? (
           /* DESKTOP VIEW: Kanban columns (sole mounted tree on desktop) */
-          <div className="flex-1 overflow-x-auto pb-6 scrollbar-thin scrollbar-thumb-slate-200" data-testid="deficiency-kanban-desktop">
+          <div className="flex-1 overflow-x-auto max-w-full touch-pan-x overscroll-x-contain pb-6 scrollbar-thin scrollbar-thumb-slate-200" data-testid="deficiency-kanban-desktop">
           {isLoading ? (
             <div className="flex gap-6">
               {KANBAN_COLUMNS.map(status => (
@@ -654,7 +654,7 @@ export function DeficiencyBoard() {
               </div>
           ) : (
               <>
-                <div className="flex gap-1.5 overflow-x-auto pb-3" role="tablist" aria-label={t('board.statusFilter', { defaultValue: 'Deficiency status' })}>
+                <div className="flex gap-1.5 overflow-x-auto max-w-full touch-pan-x overscroll-x-contain no-scrollbar pb-3" role="tablist" aria-label={t('board.statusFilter', { defaultValue: 'Deficiency status' })}>
                   {KANBAN_COLUMNS.map(status => {
                     const count = actionPlans.filter(ap => (ap.workflowStatus || ap.status) === status).length;
                     const isActive = mobileStatus === status;

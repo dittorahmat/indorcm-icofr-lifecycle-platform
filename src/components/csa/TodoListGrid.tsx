@@ -18,9 +18,9 @@ export function TodoListGrid({
   const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   return (
-    <div className="flex-1 flex flex-col bg-slate-50 overflow-hidden">
+    <div className="flex-1 flex flex-col bg-slate-50 overflow-hidden max-w-full">
       {/* Grid Header */}
-      <div className="grid grid-cols-7 border-b bg-white shadow-sm">
+      <div className="grid grid-cols-7 border-b bg-white shadow-sm max-w-full overflow-hidden">
         {daysOfWeek.map((day, i) => (
           <div key={day} className="py-2 text-center text-xs font-bold text-slate-400 uppercase tracking-widest">
             <span className="hidden min-[420px]:inline">{day}</span>

@@ -170,7 +170,7 @@ export function Dashboard() {
   return (
     <AppLayout container>
       <motion.div 
-        className="w-full max-w-full min-w-0 overflow-x-hidden space-y-6 pb-12"
+        className="w-full max-w-full min-w-0 overflow-x-hidden space-y-6 pb-[calc(3.5rem+env(safe-area-inset-bottom,0px))] md:pb-6"
         initial={shouldReduceMotion ? false : "hidden"}
         animate="visible"
         variants={shouldReduceMotion ? undefined : containerVariants}

@@ -71,7 +71,7 @@ export function ReportsPage() {
         </PageHeader>
 
         <Tabs defaultValue="dashboard" className="w-full">
-          <div className="border-b no-print overflow-x-auto no-scrollbar max-w-full">
+          <div className="border-b no-print overflow-x-auto no-scrollbar max-w-full touch-pan-x overscroll-x-contain">
             <TabsList className="bg-transparent h-auto p-0 gap-6 min-w-max">
               <TabsTrigger value="dashboard" className="rounded-none border-b-2 border-transparent data-[state=active]:border-indigo-600 data-[state=active]:bg-transparent px-0 py-2.5 font-bold uppercase tracking-wider text-xs text-slate-500 data-[state=active]:text-indigo-600 transition-all">{t('tabs.dashboard')}</TabsTrigger>
               <TabsTrigger value="management" className="rounded-none border-b-2 border-transparent data-[state=active]:border-indigo-600 data-[state=active]:bg-transparent px-0 py-2.5 font-bold uppercase tracking-wider text-xs text-slate-500 data-[state=active]:text-indigo-600 transition-all">{t('tabs.managementAssessment')}</TabsTrigger>

@@ -37,13 +37,13 @@ export function WBSPage() {
 
   return (
     <AppLayout container>
-      <div className="space-y-6 min-w-0">
+      <div className="space-y-6 min-w-0 pb-[calc(3.5rem+env(safe-area-inset-bottom,0px))] md:pb-0">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="min-w-0">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Whistleblowing Recap</h1>
-            <p className="text-muted-foreground">Integration of fraud indicators into ICOFR risk assessment (Lampiran 1 Prinsip 8 & 14).</p>
+            <p className="text-muted-foreground text-xs sm:text-sm">Integration of fraud indicators into ICOFR risk assessment (Lampiran 1 Prinsip 8 & 14).</p>
           </div>
-          <Button className="gap-2">
+          <Button className="gap-2 w-full sm:w-auto h-11 sm:h-10 min-h-[44px] justify-center">
             <Plus className="h-4 w-4" /> Log Fraud Indicator
           </Button>
         </div>
@@ -94,7 +94,8 @@ export function WBSPage() {
             </div>
             <CardDescription>Recap of reports from Whistleblowing System affecting Financial Reporting.</CardDescription>
           </CardHeader>
-          <CardContent className="overflow-x-auto">
+          <CardContent className="p-0 sm:p-6">
+            <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint rounded-lg">
             <Table className="min-w-[720px]">
               <TableHeader>
                 <TableRow>
@@ -142,6 +143,7 @@ export function WBSPage() {
                 ))}
               </TableBody>
             </Table>
+            </div>
           </CardContent>
         </Card>
 

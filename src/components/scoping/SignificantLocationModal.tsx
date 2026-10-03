@@ -268,7 +268,7 @@ export function SignificantLocationModal({
           </div>
         </div>
 
-        <DialogFooter className="p-6 bg-slate-50 border-t">
+        <DialogFooter className="p-4 sm:p-6 bg-slate-50 border-t flex-col-reverse sm:flex-row gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>{t('common:actions.cancel')}</Button>
           <Button 
             className="bg-primary hover:bg-primary/90 gap-2 font-bold px-8"

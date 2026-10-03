@@ -357,7 +357,7 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
           />
         </div>
 
-        <div className="flex flex-col md:flex-row flex-1 min-h-0 min-w-0 gap-4 overflow-y-auto md:overflow-hidden w-full">
+        <div className="flex flex-col md:flex-row flex-1 min-h-0 min-w-0 gap-4 overflow-y-auto md:overflow-hidden w-full max-w-full pb-[calc(3.5rem+env(safe-area-inset-bottom,0px))] md:pb-0">
           {isParamsOpen ? (
             <div className="w-full md:w-[280px] shrink-0 min-h-0">
               <div className="max-h-[42vh] overflow-y-auto md:max-h-none md:overflow-visible rounded-xl">

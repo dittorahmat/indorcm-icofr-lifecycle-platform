@@ -88,14 +88,14 @@ export function ScopingEditorHeader({
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto shrink-0">
           {!isLocked && (
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full sm:w-auto">
               <Button 
                 variant="outline" 
                 onClick={onSave} 
                 disabled={isSaving}
-                className="h-8 border-slate-200 bg-white hover:bg-slate-50 transition-all text-xs px-3"
+                className="h-11 sm:h-8 min-h-[44px] sm:min-h-0 border-slate-200 bg-white hover:bg-slate-50 transition-all text-xs px-3 w-full sm:w-auto justify-center"
               >
                 <Save className="h-3.5 w-3.5 mr-1.5 text-slate-500" /> {t('editor.saveDraft')}
               </Button>
@@ -110,7 +110,7 @@ export function ScopingEditorHeader({
       </div>
 
       {/* HERO STATS BAR */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-3">
         <div className="relative group overflow-hidden bg-mancity-pattern rounded-lg p-2.5 text-primary-foreground shadow-md shadow-blue-100/50">
            <div className="absolute top-0 right-0 w-16 h-16 bg-white/10 rounded-full -mr-8 -mt-8 group-hover:scale-110 transition-transform" />
             <p className="text-xs font-bold uppercase tracking-widest text-primary-foreground/70 mb-0.5 flex items-center gap-1">

@@ -286,8 +286,9 @@ export function UserManagementPage() {
           </div>
 
           <Card>
-            <CardContent className="pt-6">
-              <Table>
+            <CardContent className="pt-6 px-2 sm:px-6">
+              <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain rounded-lg">
+              <Table className="min-w-[560px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead>User</TableHead>
@@ -328,11 +329,12 @@ export function UserManagementPage() {
                   }
                 </TableBody>
               </Table>
+              </div>
               {totalPages > 1 && (
-                <div className="flex items-center justify-end space-x-2 py-4">
-                  <Button variant="outline" size="sm" onClick={() => setPage(p => p - 1)} disabled={page === 1}>Previous</Button>
-                  <span className="text-sm">Page {page} of {totalPages}</span>
-                  <Button variant="outline" size="sm" onClick={() => setPage(p => p + 1)} disabled={page === totalPages}>Next</Button>
+                <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2 py-4">
+                  <Button variant="outline" size="sm" className="w-full sm:w-auto min-h-[44px] sm:min-h-0 justify-center" onClick={() => setPage(p => p - 1)} disabled={page === 1}>Previous</Button>
+                  <span className="text-xs text-center sm:text-sm">Page {page} of {totalPages}</span>
+                  <Button variant="outline" size="sm" className="w-full sm:w-auto min-h-[44px] sm:min-h-0 justify-center" onClick={() => setPage(p => p + 1)} disabled={page === totalPages}>Next</Button>
                 </div>
               )}
             </CardContent>
