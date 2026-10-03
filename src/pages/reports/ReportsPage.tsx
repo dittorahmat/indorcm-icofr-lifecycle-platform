@@ -71,8 +71,8 @@ export function ReportsPage() {
         </PageHeader>
 
         <Tabs defaultValue="dashboard" className="w-full">
-          <div className="border-b no-print">
-            <TabsList className="bg-transparent h-auto p-0 gap-6">
+          <div className="border-b no-print overflow-x-auto no-scrollbar max-w-full">
+            <TabsList className="bg-transparent h-auto p-0 gap-6 min-w-max">
               <TabsTrigger value="dashboard" className="rounded-none border-b-2 border-transparent data-[state=active]:border-indigo-600 data-[state=active]:bg-transparent px-0 py-2.5 font-bold uppercase tracking-wider text-xs text-slate-500 data-[state=active]:text-indigo-600 transition-all">{t('tabs.dashboard')}</TabsTrigger>
               <TabsTrigger value="management" className="rounded-none border-b-2 border-transparent data-[state=active]:border-indigo-600 data-[state=active]:bg-transparent px-0 py-2.5 font-bold uppercase tracking-wider text-xs text-slate-500 data-[state=active]:text-indigo-600 transition-all">{t('tabs.managementAssessment')}</TabsTrigger>
               <TabsTrigger value="audit" className="rounded-none border-b-2 border-transparent data-[state=active]:border-indigo-600 data-[state=active]:bg-transparent px-0 py-2.5 font-bold uppercase tracking-wider text-xs text-slate-500 data-[state=active]:text-indigo-600 transition-all">{t('tabs.testingResults')}</TabsTrigger>
@@ -97,7 +97,7 @@ export function ReportsPage() {
 
           <TabsContent value="audit" className="pt-6 space-y-6">
             <div className="flex flex-wrap items-center justify-between gap-4 bg-slate-50 p-4 rounded-lg border border-slate-200 no-print shadow-sm">
-              <div className="flex items-center gap-6">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 w-full sm:w-auto">
                 <div className="space-y-1.5">
                   <p className="text-xs font-bold uppercase tracking-wider text-slate-400">{t('testing.filters.type')}</p>
                   <div className="flex gap-1">
@@ -143,8 +143,8 @@ export function ReportsPage() {
                 <CardDescription className="text-xs">{t('testing.description')}</CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
-                <div className="rounded-lg border border-slate-200 overflow-x-auto shadow-sm bg-white">
-                  <Table>
+                <div className="rounded-lg border border-slate-200 overflow-x-auto shadow-sm bg-white table-scroll-hint max-w-full">
+                  <Table className="min-w-[880px]">
                     <TableHeader className="bg-slate-50/80">
                       <TableRow>
                         <TableHead className="w-[40px] text-xs uppercase font-bold text-center text-slate-500 tracking-wider">{t('testing.table.no')}</TableHead>

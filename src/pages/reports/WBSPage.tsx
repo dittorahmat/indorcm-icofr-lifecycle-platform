@@ -37,10 +37,10 @@ export function WBSPage() {
 
   return (
     <AppLayout container>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Whistleblowing Recap</h1>
+      <div className="space-y-6 min-w-0">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Whistleblowing Recap</h1>
             <p className="text-muted-foreground">Integration of fraud indicators into ICOFR risk assessment (Lampiran 1 Prinsip 8 & 14).</p>
           </div>
           <Button className="gap-2">
@@ -48,7 +48,7 @@ export function WBSPage() {
           </Button>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
           <Card className="bg-amber-50 border-amber-200">
             <CardHeader className="pb-2">
               <CardTitle className="text-xs font-bold uppercase text-amber-800">Total Indicators</CardTitle>
@@ -85,17 +85,17 @@ export function WBSPage() {
 
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <CardTitle>Fraud Risk Indicators Matrix</CardTitle>
-              <div className="flex items-center gap-2">
-                <Search className="h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Search reports..." className="h-8 w-[200px]" />
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <Search className="h-4 w-4 text-muted-foreground shrink-0" />
+                <Input placeholder="Search reports..." className="h-10 sm:h-8 w-full sm:w-[200px]" />
               </div>
             </div>
             <CardDescription>Recap of reports from Whistleblowing System affecting Financial Reporting.</CardDescription>
           </CardHeader>
-          <CardContent>
-            <Table>
+          <CardContent className="overflow-x-auto">
+            <Table className="min-w-[720px]">
               <TableHeader>
                 <TableRow>
                   <TableHead>Date</TableHead>
@@ -145,7 +145,7 @@ export function WBSPage() {
           </CardContent>
         </Card>
 
-        <div className="bg-muted/30 p-6 rounded-lg border flex items-start gap-4">
+        <div className="bg-muted/30 p-4 sm:p-6 rounded-lg border flex items-start gap-3 sm:gap-4">
           <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5" />
           <div className="space-y-1">
             <h4 className="font-bold text-sm">Regulatory Compliance Note</h4>

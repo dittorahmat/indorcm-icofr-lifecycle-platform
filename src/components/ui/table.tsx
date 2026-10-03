@@ -17,7 +17,7 @@ const Table = React.forwardRef<
   if (noWrapper) return table
 
   return (
-    <div className="relative w-full overflow-auto">
+    <div className="relative w-full max-w-full overflow-x-auto touch-pan-x overscroll-x-contain table-scroll-hint">
       {table}
     </div>
   )

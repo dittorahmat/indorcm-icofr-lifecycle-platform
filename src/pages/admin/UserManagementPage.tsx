@@ -242,7 +242,7 @@ export function UserManagementPage() {
                     <div className="grid gap-2"><Label>Full Name</Label><Input name="name" required /></div>
                     <div className="grid gap-2"><Label>BUMN Email</Label><Input name="email" type="email" required /></div>
                     <div className="grid gap-2"><Label>Password</Label><Input name="password" type="password" defaultValue="password123" required /></div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 min-[380px]:grid-cols-2 gap-4">
                       <div className="grid gap-2"><Label>Role</Label>
                         <Select name="role" defaultValue="Line 1">
                           <SelectTrigger><SelectValue /></SelectTrigger>
@@ -394,7 +394,7 @@ export function UserManagementPage() {
               <DialogHeader><DialogTitle>Edit User: {editingUser.name}</DialogTitle></DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2"><Label>Full Name</Label><Input name="name" defaultValue={editingUser.name} required /></div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 min-[380px]:grid-cols-2 gap-4">
                   <div className="grid gap-2"><Label>Role</Label>
                     <Select name="role" defaultValue={editingUser.role}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
