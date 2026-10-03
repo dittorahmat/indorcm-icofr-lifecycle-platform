@@ -41,22 +41,22 @@ export function ExternalAuditPortal() {
 
   return (
     <AppLayout container>
-      <div className="space-y-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
+      <div className="space-y-6 sm:space-y-8">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2 mb-2">
               <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">KAP Portal</Badge>
               <span className="text-xs text-muted-foreground">SK-5 Chapter VIII: External Attestation</span>
             </div>
-            <h1 className="text-3xl font-bold">Independent Assurance Portal</h1>
-            <p className="text-muted-foreground">Review of Management Assessment and Internal Audit Working Papers.</p>
+            <h1 className="text-2xl sm:text-3xl font-bold leading-tight">Independent Assurance Portal</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">Review of Management Assessment and Internal Audit Working Papers.</p>
           </div>
-          <Button onClick={handleSubmitOpinion} className="gap-2">
+          <Button onClick={handleSubmitOpinion} className="w-full sm:w-auto gap-2 h-11 sm:h-10 min-h-[44px] sm:min-h-0 shrink-0">
             <Briefcase className="h-4 w-4" /> Submit Audit Opinion
           </Button>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Management Conclusion</CardTitle>
@@ -90,9 +90,9 @@ export function ExternalAuditPortal() {
         </div>
 
         <Tabs defaultValue="review">
-          <TabsList className="w-full justify-start">
-            <TabsTrigger value="review">1. Working Paper Review</TabsTrigger>
-            <TabsTrigger value="opinion">2. Audit Opinion</TabsTrigger>
+          <TabsList className="w-full sm:w-auto grid grid-cols-2 sm:inline-flex justify-start gap-1 min-h-[44px]">
+            <TabsTrigger value="review" className="min-w-0 truncate px-2 text-xs sm:text-sm">1. Working Paper Review</TabsTrigger>
+            <TabsTrigger value="opinion" className="min-w-0 truncate px-2 text-xs sm:text-sm">2. Audit Opinion</TabsTrigger>
           </TabsList>
           
           <TabsContent value="review" className="pt-6 space-y-6">

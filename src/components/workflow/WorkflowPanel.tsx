@@ -556,13 +556,13 @@ export function WorkflowPanel({
             </div>
           </div>
 
-          <SheetFooter className="flex-row gap-2 pt-2 border-t">
-            <Button variant="outline" className="flex-1 h-10 text-xs font-semibold" onClick={() => setIsNoteDialogOpen(false)}>
+          <SheetFooter className="flex-col-reverse sm:flex-row gap-2 pt-2 border-t">
+            <Button variant="outline" className="w-full sm:flex-1 h-11 sm:h-10 min-h-[44px] text-xs font-semibold" onClick={() => setIsNoteDialogOpen(false)}>
               {t('common:actions.cancel')}
             </Button>
             <Button 
               variant={pendingActionId === 'Reject' ? 'destructive' : 'default'} 
-              className="flex-1 h-10 text-xs font-bold"
+              className="w-full sm:flex-1 h-11 sm:h-10 min-h-[44px] text-xs font-bold"
               disabled={((pendingActionId === 'Reject' || pendingActionId === 'Rollback') && !note.trim()) || isPending}
               onClick={confirmActionWithNote}
             >

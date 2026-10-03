@@ -294,7 +294,7 @@ export function DoDWizard({ isOpen, setIsOpen, onComplete, isAggregate = false, 
                 </div>
               </div>
 
-              <p className="text-sm text-muted-foreground italic">
+              <p className="text-sm font-medium text-muted-foreground">
                 {result === "Material Weakness" ? t('wizard.result.mwNote') : t('wizard.result.cdNote')}
               </p>
             </div>

@@ -155,7 +155,7 @@ export const Appendix7aSummary = React.forwardRef<HTMLDivElement, Appendix7aSumm
           <div className="grid grid-cols-3 min-w-[560px] bg-white overflow-hidden min-h-[10rem]">
              <div className="border-r-2 border-slate-900 p-4 flex flex-col">
                 <span className="text-xs font-black uppercase text-slate-400">Dikerjakan Oleh (Auditee)</span>
-                <div className="flex-1 flex items-center justify-center italic text-xs text-slate-300">Digital Signature Verified</div>
+                <div className="flex-1 flex items-center justify-center text-xs font-semibold uppercase tracking-wider text-slate-400">Digital Signature Verified</div>
                 <div className="flex justify-between text-xs font-black uppercase mt-2">
                    <span>{record.assessedBy}</span>
                    <span>{format(new Date(record.assessmentDate), 'dd/MM/yy')}</span>

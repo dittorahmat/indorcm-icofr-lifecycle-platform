@@ -202,7 +202,7 @@ export function BPMScopingFilters({
             <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 px-1 flex items-center gap-2">
               <Layers className="h-3.5 w-3.5 text-slate-400" /> {t('common:icofr.category')}
             </Label>
-            <div className="h-10 px-3 flex items-center border border-slate-200 rounded-lg bg-slate-50 text-[10px] text-slate-600 font-bold uppercase tracking-widest overflow-hidden whitespace-nowrap">
+            <div className="h-10 px-3 flex items-center border border-slate-200 rounded-lg bg-slate-50 text-xs text-slate-600 font-bold uppercase tracking-widest overflow-hidden whitespace-nowrap">
               {selectedGLRow?.category || "-"}
             </div>
           </div>
@@ -212,7 +212,7 @@ export function BPMScopingFilters({
             <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 px-1 flex items-center gap-2">
               <Filter className="h-3.5 w-3.5 text-slate-400" /> {t('common:icofr.subCategory')}
             </Label>
-            <div className="h-10 px-3 flex items-center border border-slate-200 rounded-lg bg-slate-50 text-[10px] text-slate-600 font-bold uppercase tracking-widest overflow-hidden whitespace-nowrap">
+            <div className="h-10 px-3 flex items-center border border-slate-200 rounded-lg bg-slate-50 text-xs text-slate-600 font-bold uppercase tracking-widest overflow-hidden whitespace-nowrap">
               {selectedGLRow?.subKategori || "-"}
             </div>
           </div>

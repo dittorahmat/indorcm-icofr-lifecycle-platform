@@ -21,9 +21,10 @@ export function TodoListGrid({
     <div className="flex-1 flex flex-col bg-slate-50 overflow-hidden">
       {/* Grid Header */}
       <div className="grid grid-cols-7 border-b bg-white shadow-sm">
-        {daysOfWeek.map(day => (
+        {daysOfWeek.map((day, i) => (
           <div key={day} className="py-2 text-center text-xs font-bold text-slate-400 uppercase tracking-widest">
-            {day}
+            <span className="hidden min-[420px]:inline">{day}</span>
+            <span className="min-[420px]:hidden">{day.charAt(0)}</span>
           </div>
         ))}
       </div>
@@ -39,12 +40,12 @@ export function TodoListGrid({
               <div 
                 key={idx} 
                 className={cn(
-                  "min-h-[140px] border-r border-b p-1 transition-colors hover:bg-slate-100/50 group bg-white",
+                  "min-h-[72px] sm:min-h-[140px] border-r border-b p-0.5 sm:p-1 transition-colors hover:bg-slate-100/50 group bg-white min-w-0",
                   !isCurrentMonth && "bg-slate-50/50 text-slate-300"
                 )}
                 onClick={() => onSelectDate(day)}
               >
-                <div className="flex justify-start mb-1 px-1">
+                <div className="flex justify-center sm:justify-start mb-0.5 sm:mb-1 sm:px-1">
                   <span className={cn(
                     "text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full transition-colors",
                     isToday(day) ? "bg-indigo-600 text-white" : "text-slate-500",
@@ -54,7 +55,24 @@ export function TodoListGrid({
                   </span>
                 </div>
                 
-                <div className="space-y-1">
+                {/* Mobile: dot indicators to avoid cramped truncated pills */}
+                <div className="flex items-center justify-center gap-1 py-0.5 sm:hidden" aria-hidden="true">
+                  {dayEvents.slice(0, 3).map(event => (
+                    <span
+                      key={event.id}
+                      className={cn(
+                        "h-1.5 w-1.5 rounded-full shrink-0",
+                        event.eventType === 'REMEDIATION' ? "bg-amber-500" : "bg-indigo-500"
+                      )}
+                    />
+                  ))}
+                </div>
+                {dayEvents.length > 0 && (
+                  <p className="text-center text-xs font-bold text-slate-500 leading-none pb-1 sm:hidden">
+                    {dayEvents.length > 1 ? dayEvents.length : ''}
+                  </p>
+                )}
+                <div className="hidden sm:block space-y-1">
                   {dayEvents.slice(0, 3).map(event => (
                     <div 
                       key={event.id}
@@ -66,7 +84,7 @@ export function TodoListGrid({
                       )}
                     >
                       <div className={cn(
-                        "w-1 h-1 rounded-full",
+                        "w-1 h-1 rounded-full shrink-0",
                         event.eventType === 'REMEDIATION' ? "bg-amber-500" : "bg-indigo-500"
                       )} />
                       <span className="truncate font-medium">{event.displayTitle || event.type || 'REMEDIATION'}</span>

@@ -274,8 +274,8 @@ export function DoDWorksheetDialog({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="max-w-4xl max-h-[92vh] flex flex-col p-0 overflow-hidden bg-background border border-border rounded-lg shadow-xl">
-        <DialogHeader className="p-5 border-b border-border bg-card">
-          <div className="flex items-center justify-between">
+        <DialogHeader className="p-4 sm:p-5 border-b border-border bg-card">
+          <div className="flex flex-col min-[480px]:flex-row min-[480px]:items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <div className="p-2 bg-primary/10 rounded-md text-primary">
                 <ShieldAlert className="h-5 w-5" />
@@ -289,22 +289,22 @@ export function DoDWorksheetDialog({
                 </DialogDescription>
               </div>
             </div>
-            <span className="text-xs font-mono font-semibold uppercase bg-muted/40 border border-border px-2.5 py-1 rounded-md text-muted-foreground">
+            <span className="self-start min-[480px]:self-auto shrink-0 text-xs font-mono font-semibold uppercase bg-muted/40 border border-border px-2.5 py-1 rounded-md text-muted-foreground">
               {t('worksheet.regulatoryRef')}
             </span>
           </div>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto p-5 space-y-5">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-5">
           <Tabs defaultValue="matrix" className="w-full">
-            <TabsList className="grid grid-cols-3 mb-4 bg-muted/50 p-1 rounded-md min-h-[44px] max-w-full overflow-x-auto">
-              <TabsTrigger value="matrix" className="text-xs font-semibold rounded">
+            <TabsList className="grid grid-cols-3 mb-4 bg-muted/50 p-1 rounded-md min-h-[44px] max-w-full gap-1">
+              <TabsTrigger value="matrix" className="min-w-0 px-1 text-xs font-semibold rounded truncate">
                 1. {t('worksheet.tabs.evaluation')}
               </TabsTrigger>
-              <TabsTrigger value="evidence" className="text-xs font-semibold rounded">
+              <TabsTrigger value="evidence" className="min-w-0 px-1 text-xs font-semibold rounded truncate">
                 2. {t('worksheet.tabs.evidence')}
               </TabsTrigger>
-              <TabsTrigger value="summary" className="text-xs font-semibold rounded">
+              <TabsTrigger value="summary" className="min-w-0 px-1 text-xs font-semibold rounded truncate">
                 3. {t('worksheet.tabs.summary')}
               </TabsTrigger>
             </TabsList>

@@ -51,7 +51,7 @@ export function SheetSelectionModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg rounded-lg border border-border bg-background p-6 shadow-lg">
+      <DialogContent className="max-w-lg rounded-lg border border-border bg-background p-4 sm:p-6 shadow-lg">
         <DialogHeader className="space-y-2">
           <div className="flex items-center gap-2">
             <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
@@ -126,12 +126,12 @@ export function SheetSelectionModal({
           })}
         </div>
 
-        <DialogFooter className="mt-6 flex items-center justify-end gap-2 border-t border-border pt-4">
+        <DialogFooter className="mt-6 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2 border-t border-border pt-4">
           <Button
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="text-xs font-semibold rounded-md h-9"
+            className="w-full sm:w-auto text-xs font-semibold rounded-md h-11 sm:h-9 min-h-[44px] sm:min-h-0"
           >
             {t('common:actions.cancel', 'Batal')}
           </Button>
@@ -139,7 +139,7 @@ export function SheetSelectionModal({
             type="button"
             onClick={handleConfirm}
             disabled={!selected}
-            className="text-xs font-semibold rounded-md h-9 bg-primary text-primary-foreground hover:bg-primary/90"
+            className="w-full sm:w-auto text-xs font-semibold rounded-md h-11 sm:h-9 min-h-[44px] sm:min-h-0 bg-primary text-primary-foreground hover:bg-primary/90"
           >
             {t('scoping:sheetSelection.proceed', 'Lanjutkan dengan Lembar Ini')}
           </Button>
