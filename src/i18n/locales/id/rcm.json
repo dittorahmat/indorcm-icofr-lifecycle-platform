@@ -133,6 +133,7 @@
   "verification": {
     "title": "Verifikasi Rancangan Pengendalian (Lampiran 8)",
     "subtitle": "Fungsi ICOFR memvalidasi desain pengendalian untuk memitigasi risiko",
+    "excelTitle": "LAMPIRAN 8",
     "add_new": "Tambah Asesmen Baru",
     "add_new_short": "Asesmen Baru",
     "groups": {

@@ -12,9 +12,11 @@ import { cn } from '@/lib/utils';
 import type { Control, TestRecord, Deficiency, User } from '@shared/types';
 import { 
   AlertTriangle, UserCheck, ListFilter, History, 
-  ChevronDown, ChevronUp, Search,
+  ChevronDown, ChevronUp, Search, Download, Loader2,
   Fingerprint, Clock, Lock, ShieldAlert
 } from 'lucide-react';
+import { format } from 'date-fns';
+import { exportRegulatoryTableToExcel } from '@/lib/rcm-excel-export';
 import { ControlTestCard } from '@/components/testing/ControlTestCard';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -43,10 +45,11 @@ const itemVariants: Variants = {
 };
 
 export function TestWorkbench() {
-  const { t } = useTranslation('testing');
+  const { t } = useTranslation(['testing', 'reports']);
   const [showOnlyValidated, setShowOnlyValidated] = React.useState(true);
   const [expandedId, setExpandedId] = React.useState<string | null>(null);
   const [searchTerm, setSearchTerm] = React.useState('');
+  const [isExportingExcel, setIsExportingExcel] = React.useState(false);
 
   const { data: controlsData, isLoading: controlsLoading } = useQuery({
     queryKey: ['controls'],
@@ -87,6 +90,45 @@ export function TestWorkbench() {
     return matchesSearch && matchesFilter;
   }) || [];
 
+  const handleExportExcel = async () => {
+    if (isExportingExcel) return;
+    setIsExportingExcel(true);
+    try {
+      const visibleIds = new Set(filteredControls.map((c) => c.id));
+      const visibleTests = (testsData?.items || []).filter((tr) => visibleIds.has(tr.controlId));
+      const rows = visibleTests.map((tr, index) => {
+        const control = controlsData?.items.find((c) => c.id === tr.controlId);
+        return {
+          no: index + 1,
+          control: `${control?.code || '-'} - ${control?.name || '-'}`,
+          type: tr.testType,
+          method: tr.method || '-',
+          result: tr.result,
+          date: tr.testDate ? format(tr.testDate, 'yyyy-MM-dd') : '-',
+          sample: tr.testType === 'TOE' ? (tr.sampleSize ?? '-') : 'N/A',
+        };
+      });
+      await exportRegulatoryTableToExcel(rows, {
+        title: t('testing:title', { defaultValue: 'KERTAS KERJA TOD & TOE' }),
+        subtitle: t('testing:description', { defaultValue: '' }),
+        identityLines: [String(new Date().getFullYear())],
+        columns: [
+          { key: 'no', header: t('reports:testing.table.no', { defaultValue: 'No' }), numeric: true },
+          { key: 'control', header: t('reports:testing.table.control', { defaultValue: 'Referensi Kontrol' }) },
+          { key: 'type', header: t('reports:testing.table.type', { defaultValue: 'Tipe' }) },
+          { key: 'method', header: t('reports:testing.table.method', { defaultValue: 'Metode' }) },
+          { key: 'result', header: t('reports:testing.table.result', { defaultValue: 'Hasil' }) },
+          { key: 'date', header: t('testing:testDate', { defaultValue: 'Tanggal Uji' }) },
+          { key: 'sample', header: t('reports:testing.table.sample', { defaultValue: 'Sampel' }), numeric: true },
+        ],
+        filename: `TOD_TOE_Kertas_Kerja_${new Date().getFullYear()}.xlsx`,
+        sheetName: t('testing:title', { defaultValue: 'TOD & TOE' }),
+      });
+    } finally {
+      setIsExportingExcel(false);
+    }
+  };
+
   return (
     <AppLayout container>
       <motion.div 
@@ -121,6 +163,15 @@ export function TestWorkbench() {
                   <UserCheck className="h-3.5 w-3.5 text-emerald-600 shrink-0" /> {t('filterReady')}
                 </Label>
               </div>
+              <Button
+                variant="outline"
+                onClick={handleExportExcel}
+                disabled={isExportingExcel}
+                className="h-10 px-4 gap-2 bg-white border-slate-200 text-xs font-bold uppercase tracking-wider rounded-lg shadow-xs shrink-0 min-h-[44px] sm:min-h-0"
+              >
+                {isExportingExcel ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4 text-emerald-600" />}
+                {t('exportExcel')}
+              </Button>
             </div>
           </PageHeader>
         </motion.div>

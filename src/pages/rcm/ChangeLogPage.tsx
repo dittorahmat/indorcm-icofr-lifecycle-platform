@@ -6,16 +6,61 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { History, ArrowRight, User, Calendar, AlertCircle } from 'lucide-react';
+import { History, ArrowRight, User, Calendar, AlertCircle, Download, Loader2 } from 'lucide-react';
 import type { ChangeLog } from '@shared/types';
+import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/button';
+import { exportRegulatoryTableToExcel } from '@/lib/rcm-excel-export';
+import {
+  changeLogRegulatoryColumns,
+  changeLogRegulatoryFilename,
+  mapChangeLogToRegulatoryRow,
+} from '@/lib/changelog-excel-export';
 
 export function ChangeLogPage() {
+  const { t } = useTranslation('reports');
+  const [isExportingExcel, setIsExportingExcel] = React.useState(false);
   const { data: logsData, isLoading, error } = useQuery({
     queryKey: ['changelogs'],
     queryFn: () => api<{ items: ChangeLog[] }>('/api/changelogs'),
   });
 
   const logs = logsData?.items || [];
+
+  const handleExportExcel = async () => {
+    if (logs.length === 0 || isExportingExcel) return;
+    setIsExportingExcel(true);
+    try {
+      const sorted = [...logs].sort((a, b) => b.timestamp - a.timestamp);
+      const rows = sorted.map((log, index) =>
+        mapChangeLogToRegulatoryRow(log, index, 'PT Bukit Asam Tbk', (id) => id || '-'),
+      );
+      await exportRegulatoryTableToExcel(rows, {
+        title: t('changeLog.title', { defaultValue: 'LAMPIRAN 6' }),
+        subtitle: t('changeLog.subtitle', { defaultValue: '' }),
+        identityLines: ['PT Bukit Asam Tbk', String(new Date().getFullYear())],
+        columns: changeLogRegulatoryColumns({
+          no: t('changeLog.columns.no', { defaultValue: 'No (i)' }),
+          company: t('changeLog.columns.company', { defaultValue: 'Perusahaan (ii)' }),
+          process: t('changeLog.columns.process', { defaultValue: 'Proses Bisnis (iii)' }),
+          subProcess: t('changeLog.columns.subProcess', { defaultValue: 'Sub-Proses (iv)' }),
+          reportDate: t('changeLog.columns.reportDate', { defaultValue: 'Tanggal Laporan (v)' }),
+          owner: t('changeLog.columns.owner', { defaultValue: 'Pemilik Pengendalian (vi)' }),
+          descBefore: t('changeLog.columns.descBefore', { defaultValue: 'Deskripsi Sebelum (vii)' }),
+          descAfter: t('changeLog.columns.descAfter', { defaultValue: 'Deskripsi Setelah (viii)' }),
+          refBefore: t('changeLog.columns.refBefore', { defaultValue: 'Referensi Sebelum (ix)' }),
+          refAfter: t('changeLog.columns.refAfter', { defaultValue: 'Referensi Setelah (x)' }),
+          effectiveDate: t('changeLog.columns.effectiveDate', { defaultValue: 'Tanggal Efektif (xi)' }),
+          preparer: t('changeLog.columns.preparer', { defaultValue: 'Penyusun (Lini 1)' }),
+          approver: t('changeLog.columns.approver', { defaultValue: 'Penyetuju (Lini 2)' }),
+        }),
+        filename: changeLogRegulatoryFilename(),
+        sheetName: t('changeLog.title', { defaultValue: 'Lampiran 6' }),
+      });
+    } finally {
+      setIsExportingExcel(false);
+    }
+  };
 
   return (
     <AppLayout container>
@@ -25,9 +70,21 @@ export function ChangeLogPage() {
             <h1 className="text-3xl font-bold truncate">Change Management Log</h1>
             <p className="text-muted-foreground">Appendix 6 - Illustration of Documentation for Business Process and Control Change Log.</p>
           </div>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 self-start sm:self-auto shrink-0">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExportExcel}
+            disabled={isExportingExcel || isLoading || logs.length === 0}
+            className="gap-2 w-full sm:w-auto min-h-[44px] text-xs font-semibold rounded-md"
+          >
+            {isExportingExcel ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+            {t('changeLog.exportExcel', { defaultValue: 'Ekspor Excel' })}
+          </Button>
           <Badge variant="secondary" className="px-3 py-1 gap-2 border-primary/20 bg-primary/5 self-start sm:self-auto shrink-0">
             <History className="h-3 w-3" /> Audit-Ready
           </Badge>
+          </div>
         </div>
 
         {error ? (

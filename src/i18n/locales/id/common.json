@@ -48,6 +48,8 @@
     "warning": "Peringatan",
     "info": "Informasi",
     "exportSuccess": "Laporan berhasil diekspor.",
+    "exportingExcel": "Mengekspor Excel...",
+    "exportFailed": "Gagal mengekspor Excel.",
     "created": "Berhasil dibuat",
     "updated": "Berhasil diperbarui",
     "deleted": "Berhasil dihapus",

@@ -7,6 +7,7 @@
   "pageDescription": "Dashboard pelaporan regulasi dan portal pengesahan Lampiran 11.",
   "actions": {
     "exportCsv": "Ekspor CSV",
+    "exportExcel": "Ekspor Excel",
     "print": "Cetak Laporan",
     "signAndLock": "Tanda Tangan & Kunci Laporan (CEO & CFO)",
     "generatingReport": "Menghasilkan laporan konsolidasi..."
@@ -17,6 +18,37 @@
     "managementAssessment": "Asesmen Manajemen",
     "testingResults": "Hasil Pengujian",
     "appendices": "Lampiran Peraturan"
+  },
+  "findings": {
+    "title": "LAMPIRAN 9",
+    "subtitle": "FORMAT DAFTAR TEMUAN PENGENDALIAN",
+    "exportExcel": "Ekspor Excel",
+    "print": "Cetak",
+    "empty": "Belum ada data temuan.",
+    "columns": {
+      "no": "No",
+      "ref": "Ref. Temuan",
+      "description": "Deskripsi Temuan",
+      "control": "Kontrol Terkait",
+      "severity": "Tingkat",
+      "exposure": "Nilai Eksposur",
+      "identifiedBy": "Ditemukan Oleh",
+      "identifiedDate": "Tanggal Temuan",
+      "source": "Sumber",
+      "status": "Status"
+    }
+  },
+  "wbs": {
+    "title": "Rekap Whistleblowing",
+    "exportExcel": "Ekspor Excel",
+    "columns": {
+      "date": "Tanggal",
+      "category": "Kategori",
+      "description": "Deskripsi",
+      "impact": "Estimasi Dampak",
+      "status": "Status",
+      "controls": "Kontrol Terkait"
+    }
   },
   "assessment": {
     "title": "Laporan Asesmen Manajemen atas Efektivitas Penerapan ICOFR",
@@ -36,7 +68,8 @@
     "monitorProgress": "Pantau progres melalui Papan Defisiensi",
     "signed": "TANDA TANGAN",
     "awaitingSign": "Menunggu Tanda Tangan CEO/CFO",
-    "periodFinalized": "PERIODE DIFINALISASI & DITANDATANGANI"
+    "periodFinalized": "PERIODE DIFINALISASI & DITANDATANGANI",
+    "exportExcel": "Ekspor Excel"
   },
   "testing": {
     "title": "Laporan Hasil Pengujian (TOD & TOE)",
@@ -57,7 +90,8 @@
       "criteria": "Kriteria Lamp. 8 (xxvii-xxxii)",
       "sample": "Sampel",
       "result": "Hasil",
-      "notes": "Walkthrough / Catatan"
+      "notes": "Walkthrough / Catatan",
+      "date": "Tanggal Uji"
     }
   },
   "changeLog": {
@@ -65,8 +99,24 @@
     "subtitle": "Standardisasi perubahan sesuai regulasi SK-5/2024",
     "loading": "Memuat Log Perubahan...",
     "exportCsv": "Ekspor CSV",
+    "exportExcel": "Ekspor Excel",
     "printA4": "Cetak A4",
-    "empty": "Tidak ditemukan data log perubahan regulasi."
+    "empty": "Tidak ditemukan data log perubahan regulasi.",
+    "columns": {
+      "no": "No (i)",
+      "company": "Perusahaan (ii)",
+      "process": "Proses Bisnis (iii)",
+      "subProcess": "Sub-Proses (iv)",
+      "reportDate": "Tanggal Laporan (v)",
+      "owner": "Pemilik Pengendalian (vi)",
+      "descBefore": "Deskripsi Sebelum (vii)",
+      "descAfter": "Deskripsi Setelah (viii)",
+      "refBefore": "Referensi Sebelum (ix)",
+      "refAfter": "Referensi Setelah (x)",
+      "effectiveDate": "Tanggal Efektif (xi)",
+      "preparer": "Penyusun (Lini 1)",
+      "approver": "Penyetuju (Lini 2)"
+    }
   },
   "customizableDashboard": {    "title": "Kustomisasi Halaman",
     "saving": "Menyimpan perubahan...",
@@ -82,6 +132,8 @@
     "regulationReference": "Format Standar Berdasarkan Peraturan Menteri BUMN No. SK-5/DKU.MBU/11/2024 (Hal. 97–99)",
     "loading": "Memuat Kertas Kerja DoD Lampiran 10...",
     "exportCsv": "Ekspor CSV Lampiran 10",
+    "exportExcel": "Ekspor Excel Lampiran 10",
+    "period": "Periode {{year}}",
     "printA4": "Cetak Laporan (A4/A3)",
     "empty": "Belum ada data evaluasi defisiensi pengendalian atau tidak ada data yang cocok dengan filter aktif.",
     "filters": {

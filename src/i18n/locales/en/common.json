@@ -48,6 +48,8 @@
     "warning": "Warning",
     "info": "Info",
     "exportSuccess": "Report exported successfully.",
+    "exportingExcel": "Exporting Excel...",
+    "exportFailed": "Excel export failed.",
     "created": "Created successfully",
     "updated": "Updated successfully",
     "deleted": "Deleted successfully",

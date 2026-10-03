@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { api } from '@/lib/api-client';
 import { 
-  Edit3, Shield, PlusCircle, Search
+  Edit3, Shield, PlusCircle, Search, Download, Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,6 +17,7 @@ import { RCMGroupRow } from '@/components/rcm/RCMGroupRow';
 import { VerificationEditDialog } from '@/components/rcm/VerificationEditDialog';
 import { AddAssessmentDialog } from '@/components/rcm/AddAssessmentDialog';
 import { authClient } from '@/lib/auth-client';
+import { exportRegulatoryTableToExcel } from '@/lib/rcm-excel-export';
 
 interface VerificationMatrixItem {
   id: string;
@@ -80,6 +81,7 @@ export function VerificationDesignPage({ embedded, filterBpmId, workingYear, noG
   const [searchTerm, setSearchTerm] = React.useState('');
   const [editingItem, setEditingItem] = React.useState<VerificationMatrixItem | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false);
+  const [isExporting, setIsExporting] = React.useState(false);
   const { data: session } = authClient.useSession();
   const userRole = (session?.user as any)?.role;
   const canEdit = userRole === 'Admin' || userRole === 'Line 2';
@@ -233,6 +235,108 @@ export function VerificationDesignPage({ embedded, filterBpmId, workingYear, noG
     }
   ], [t, canEdit]);
 
+  const handleExportExcel = async () => {
+    if (isExporting) return;
+    setIsExporting(true);
+    try {
+      const yn = (v?: string | null) => (v === 'Y' ? 'Y' : 'N');
+      const rows = filteredItems.map((item, index) => ({
+        no: index + 1,
+        controlCode: item.controlCode,
+        controlName: item.controlName,
+        controlDescription: item.controlDescription,
+        supportingDocs: item.supportingDocs,
+        isKey: item.isKeyControl ? 'Y' : 'N',
+        ipoC: yn(item.ipoC),
+        ipoA: yn(item.ipoA),
+        ipoV: yn(item.ipoV),
+        ipoRa: yn(item.ipoRa),
+        assertionE: yn(item.assertionE),
+        assertionC: yn(item.assertionC),
+        assertionA: yn(item.assertionA),
+        assertionCo: yn(item.assertionCo),
+        assertionRo: yn(item.assertionRo),
+        assertionVa: yn(item.assertionVa),
+        assertionPd: yn(item.assertionPd),
+        controlType: item.controlType,
+        controlNature: item.controlNature,
+        automatedControlType: item.automatedControlType,
+        frequency: item.frequency,
+        supportingApp: item.supportingApp,
+        executingFunction: item.executingFunction,
+        executorRole: item.executorRole,
+        affectedFsliItem: item.affectedFsliItem,
+        effectivePeriod: item.effectivePeriod,
+        pilarObjective: item.pilarObjective,
+        pilarTiming: item.pilarTiming,
+        pilarAuthority: item.pilarAuthority,
+        pilarReliability: item.pilarReliability,
+        pilarCoverage: item.pilarCoverage,
+        pilarEvidence: item.pilarEvidence,
+        kkReference: item.kkReference,
+        conclusion: item.conclusion,
+      }));
+
+      const col = (key: string, header: string, numeric = false) => ({ key, header, numeric });
+      const yearLabel = workingYear || String(new Date().getFullYear());
+      await exportRegulatoryTableToExcel(rows, {
+        title: t('rcm:verification.excelTitle', { defaultValue: 'LAMPIRAN 8' }),
+        subtitle: t('rcm:verification.subtitle', { defaultValue: '' }),
+        identityLines: [items[0]?.companyName || 'N/A', items[0]?.locationCode || 'N/A', yearLabel],
+        groups: [
+          { label: t('rcm:verification.groups.info', { defaultValue: 'Informasi Pengendalian' }), span: 6 },
+          { label: t('rcm:matrix.ipo', { defaultValue: 'IPO' }), span: 4 },
+          { label: t('rcm:matrix.assertions', { defaultValue: 'Asersi' }), span: 7 },
+          { label: t('rcm:matrix.groups.metadata', { defaultValue: 'Metadata' }), span: 9 },
+          { label: t('rcm:verification.groups.tod', { defaultValue: 'Verifikasi 6 Pilar' }), span: 8 },
+        ],
+        columns: [
+          col('no', t('rcm:matrix.no', { defaultValue: 'No' }), true),
+          col('controlCode', t('rcm:verification.columns.control_ref', { defaultValue: 'Referensi' })),
+          col('controlName', t('rcm:verification.columns.control_name', { defaultValue: 'Nama Pengendalian' })),
+          col('controlDescription', t('rcm:matrix.control_description', { defaultValue: 'Deskripsi' })),
+          col('supportingDocs', t('rcm:matrix.supporting_docs', { defaultValue: 'Dokumen' })),
+          col('isKey', t('rcm:verification.columns.is_key', { defaultValue: 'Utama' })),
+          col('ipoC', 'C'),
+          col('ipoA', 'A'),
+          col('ipoV', 'V'),
+          col('ipoRa', 'RA'),
+          col('assertionE', 'E/O'),
+          col('assertionC', 'C'),
+          col('assertionA', 'A'),
+          col('assertionCo', 'CO'),
+          col('assertionRo', 'R&O'),
+          col('assertionVa', 'V/A'),
+          col('assertionPd', 'PD'),
+          col('controlType', t('rcm:matrix.type', { defaultValue: 'Tipe' })),
+          col('controlNature', t('rcm:matrix.nature', { defaultValue: 'Sifat' })),
+          col('automatedControlType', t('rcm:matrix.automated_type', { defaultValue: 'Jenis Otomatis' })),
+          col('frequency', t('rcm:matrix.frequency', { defaultValue: 'Frekuensi' })),
+          col('supportingApp', t('rcm:matrix.supporting_app', { defaultValue: 'Aplikasi' })),
+          col('executingFunction', t('rcm:matrix.executing_function', { defaultValue: 'Fungsi Pelaksana' })),
+          col('executorRole', t('rcm:matrix.executor_role', { defaultValue: 'Pelaku' })),
+          col('affectedFsliItem', t('rcm:matrix.affected_fsli_item', { defaultValue: 'FSLI Terdampak' })),
+          col('effectivePeriod', t('rcm:matrix.effective_period', { defaultValue: 'Periode Efektif' })),
+          col('pilarObjective', t('rcm:verification.columns.p_obj', { defaultValue: 'Pilar Tujuan' })),
+          col('pilarTiming', t('rcm:verification.columns.p_time', { defaultValue: 'Pilar Waktu' })),
+          col('pilarAuthority', t('rcm:verification.columns.p_auth', { defaultValue: 'Pilar Otoritas' })),
+          col('pilarReliability', t('rcm:verification.columns.p_rel', { defaultValue: 'Pilar Reliabilitas' })),
+          col('pilarCoverage', t('rcm:verification.columns.p_cov', { defaultValue: 'Pilar Cakupan' })),
+          col('pilarEvidence', t('rcm:verification.columns.p_evid', { defaultValue: 'Pilar Bukti' })),
+          col('kkReference', t('rcm:verification.columns.kk_ref', { defaultValue: 'Ref. KK' })),
+          col('conclusion', t('rcm:verification.columns.conclusion', { defaultValue: 'Kesimpulan' })),
+        ],
+        filename: `Lampiran_8_Verifikasi_Rancangan_${yearLabel}.xlsx`,
+        sheetName: t('rcm:verification.excelTitle', { defaultValue: 'Lampiran 8' }),
+      });
+      toast.success(t('common:notifications.exportSuccess', { defaultValue: 'Excel berhasil diunduh' }));
+    } catch (err: any) {
+      toast.error(err?.message || t('common:notifications.exportFailed', { defaultValue: 'Gagal mengekspor Excel' }));
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const newAssessmentButton = canEdit ? (
     <Button
       id="btn-new-verification-assessment"
@@ -255,6 +359,8 @@ export function VerificationDesignPage({ embedded, filterBpmId, workingYear, noG
           onSearchChange={setSearchTerm}
           onRefresh={() => queryClient.invalidateQueries({ queryKey: ['verification-design-matrix'] })}
           onPrint={() => window.print()}
+          onExport={() => void handleExportExcel()}
+          exportLabel={t('rcm:actions.export_excel', { defaultValue: 'Export Excel' })}
           metadata={[
             { label: t('rcm:verification.columns.entity'), value: items[0]?.companyName || "N/A" },
             { label: t('rcm:verification.columns.location'), value: items[0]?.locationCode || "N/A" }
@@ -305,6 +411,16 @@ export function VerificationDesignPage({ embedded, filterBpmId, workingYear, noG
               />
             </div>
             {newAssessmentButton}
+            <Button
+              size="xs"
+              variant="outline"
+              onClick={() => void handleExportExcel()}
+              disabled={isExporting}
+              className="h-8 text-xs font-bold gap-1.5 px-3"
+            >
+              {isExporting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+              {t('rcm:actions.export_excel', { defaultValue: 'Export Excel' })}
+            </Button>
           </div>
           <span className="text-xs font-black text-slate-400 uppercase tracking-wider hidden md:inline">
             {t('rcm:verification.title')}

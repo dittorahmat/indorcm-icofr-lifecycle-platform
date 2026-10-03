@@ -17,6 +17,10 @@ vi.mock('@/components/layout/PageHeader', () => ({
   ),
 }));
 
+vi.mock('@/lib/rcm-excel-export', () => ({
+  exportRegulatoryTableToExcel: vi.fn(),
+}));
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, options?: any) => {
@@ -46,7 +50,10 @@ vi.mock('react-i18next', () => ({
         'dodReport.filters.searchPlaceholder': 'Cari referensi...',
         'dodReport.filters.allSeverities': 'Semua Tingkat',
         'dodReport.filters.allRemediation': 'Semua Status',
-        'dodReport.exportCsv': 'Ekspor CSV Lampiran 10',
+        'dodReport.exportExcel': 'Ekspor Excel Lampiran 10',
+        'dodReport.period': 'Periode 2026',
+        'common:yes': 'Ya',
+        'common:no': 'Tidak',
         'dodReport.printA4': 'Cetak Laporan (A4/A3)',
       };
       return translations[key] || options?.defaultValue || key;
@@ -123,6 +130,6 @@ describe('Appendix10Page (Lampiran 10 Dedicated Route)', () => {
     expect(screen.getByText('DEF-001')).toBeInTheDocument();
     expect(screen.getByText('Segregation of duties deficiency in GL posting')).toBeInTheDocument();
     expect(screen.getByText('Beban Operasional / Kas & Bank')).toBeInTheDocument();
-    expect(screen.getByText('Ekspor CSV Lampiran 10')).toBeInTheDocument();
+    expect(screen.getByText('Ekspor Excel Lampiran 10')).toBeInTheDocument();
   });
 });

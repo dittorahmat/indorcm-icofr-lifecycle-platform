@@ -6,7 +6,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, Loader2, XCircle } from 'lucide-react';
+import { CheckCircle2, Loader2, XCircle, Download } from 'lucide-react';
+import { format } from 'date-fns';
+import { exportRegulatoryTableToExcel } from '@/lib/rcm-excel-export';
 import type { Settings } from '@shared/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
@@ -24,6 +26,7 @@ export function ReportsPage() {
   const queryClient = useQueryClient();
   const [testTypeFilter, setTestTypeFilter] = React.useState<'ALL' | 'TOD' | 'TOE'>('ALL');
   const [testStatusFilter, setTestStatusFilter] = React.useState<'ALL' | 'Effective' | 'Ineffective'>('ALL');
+  const [isExportingTests, setIsExportingTests] = React.useState(false);
   
   const { data: summaryData, isLoading: summaryLoading } = useReportSummary();
   const { rcmData, controlsData, testsData, isLoading: dataLoading } = useReportData();
@@ -41,6 +44,56 @@ export function ReportsPage() {
 
   const handleExport = async (format: 'csv' | 'excel') => {
     await exportReport(format);
+  };
+
+  const handleExportTestsExcel = async () => {
+    if (isExportingTests) return;
+    setIsExportingTests(true);
+    try {
+      const filtered = (testsData || [])
+        .filter((tr) => testTypeFilter === 'ALL' || tr.testType === testTypeFilter)
+        .filter((tr) => testStatusFilter === 'ALL' || tr.result === testStatusFilter);
+      const rows = filtered.map((tr, index) => {
+        const control = (controlsData || []).find((c) => c.id === tr.controlId);
+        const rcm = (rcmData || []).find((r) => r.id === (control as any)?.rcmId);
+        const attrCount = tr.evaluationAttributes ? Object.values(tr.evaluationAttributes).filter(Boolean).length : 0;
+        return {
+          no: index + 1,
+          process: `${(rcm as any)?.process || 'N/A'} / ${(rcm as any)?.subProcess || 'N/A'}`,
+          control: `${control?.code || '-'} - ${control?.name || '-'}`,
+          assertion: (control?.assertions || []).join(', ') || '-',
+          type: tr.testType,
+          method: tr.method || '-',
+          criteria: `${attrCount}/6`,
+          sample: tr.testType === 'TOE' ? (tr.sampleSize ?? '-') : 'N/A',
+          result: tr.result,
+          notes: tr.comments || '-',
+          date: tr.testDate ? format(tr.testDate, 'yyyy-MM-dd') : '-',
+        };
+      });
+      await exportRegulatoryTableToExcel(rows, {
+        title: t('testing.title'),
+        subtitle: t('testing.description'),
+        identityLines: [String(new Date().getFullYear()), `${testTypeFilter} / ${testStatusFilter}`],
+        columns: [
+          { key: 'no', header: t('testing.table.no'), numeric: true },
+          { key: 'process', header: t('testing.table.process') },
+          { key: 'control', header: t('testing.table.control') },
+          { key: 'assertion', header: t('testing.table.assertion') },
+          { key: 'type', header: t('testing.table.type') },
+          { key: 'method', header: t('testing.table.method') },
+          { key: 'criteria', header: t('testing.table.criteria') },
+          { key: 'sample', header: t('testing.table.sample') },
+          { key: 'result', header: t('testing.table.result') },
+          { key: 'notes', header: t('testing.table.notes') },
+          { key: 'date', header: t('testing.table.date') },
+        ],
+        filename: `TOD_TOE_Hasil_Pengujian_${testTypeFilter}_${testStatusFilter}_${new Date().getFullYear()}.xlsx`,
+        sheetName: t('testing.title'),
+      });
+    } finally {
+      setIsExportingTests(false);
+    }
   };
 
   const isSigned = settings?.isPeriodLocked || false;
@@ -131,9 +184,21 @@ export function ReportsPage() {
                   </div>
                 </div>
               </div>
-              <div className="text-right">
-                <p className="text-xs font-bold text-indigo-600 uppercase tracking-wide">Regulatory Reference</p>
-                <p className="text-xs text-slate-500 font-medium">SK-5 Bab V & Lampiran 8</p>
+              <div className="text-right space-y-2">
+                <div>
+                  <p className="text-xs font-bold text-indigo-600 uppercase tracking-wide">Regulatory Reference</p>
+                  <p className="text-xs text-slate-500 font-medium">SK-5 Bab V & Lampiran 8</p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleExportTestsExcel}
+                  disabled={isExportingTests}
+                  className="gap-2 h-9 text-xs font-bold rounded-md bg-white"
+                >
+                  {isExportingTests ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+                  {t('actions.exportExcel')}
+                </Button>
               </div>
             </div>
 

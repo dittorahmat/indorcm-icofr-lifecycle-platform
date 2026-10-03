@@ -13,9 +13,28 @@
     "empty": "No history found.",
     "exportDetailed": "Export Appendix 7a (Detailed)",
     "exportSummary": "Export Appendix 7a (Summary)",
+    "excelDetailed": "Appendix 7a Excel (Detailed)",
+    "excelSummary": "Appendix 7a Excel (Summary)",
     "viewDetail": "View detail",
     "printOptions": "Print options",
     "deleteAssessment": "Delete assessment"
+  },
+  "excel": {
+    "no": "No",
+    "sampleRef": "Sample / Transaction Reference",
+    "control": "Control Code & Name",
+    "totalSamples": "Total Samples",
+    "pass": "Pass",
+    "fail": "Fail",
+    "status": "Status",
+    "result": "Result",
+    "evidence": "Evidence",
+    "hasEvidence": "Evidence Attached",
+    "noEvidence": "No Evidence",
+    "effective": "EFFECTIVE",
+    "ineffective": "INEFFECTIVE",
+    "detailedTitle": "APPENDIX 7A - DETAILED",
+    "summaryTitle": "APPENDIX 7A - SUMMARY"
   },
   "scheduling": {
     "title": "ICOFR Activity Scheduling",

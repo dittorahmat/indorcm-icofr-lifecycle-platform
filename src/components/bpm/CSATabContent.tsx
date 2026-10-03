@@ -7,6 +7,17 @@ import { CSAList } from './CSAList';
 import { CSAForm } from './CSAForm';
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
+import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
+import { exportRegulatoryTableToExcel } from '@/lib/rcm-excel-export';
+import {
+  csaAppendixFilename,
+  csaDetailedColumns,
+  csaSummaryColumns,
+  mapCsaDetailedRows,
+  mapCsaSummaryRows,
+} from '@/lib/csa-excel-export';
+import { formatCsaReference } from '@/lib/csa-utils';
 
 interface CSATabContentProps {
   noGL?: string;
@@ -58,6 +69,8 @@ export function CSATabContent({
   scheduleId
 }: CSATabContentProps) {
   const { workingYear } = useFiscalYearStore();
+  const { t } = useTranslation(['csa_hub', 'common']);
+  const [exportingId, setExportingId] = useState<string | null>(null);
   const {
     view, setView,
     activeCsa,
@@ -115,6 +128,76 @@ export function CSATabContent({
       window.print();
       setPrintLayout(null);
     }, 500);
+  };
+
+  const handleExcel = async (id: string, layout: 'detailed' | 'summary') => {
+    const record = csaList?.items?.find((r) => r.id === id);
+    if (!record || exportingId) return;
+    setExportingId(id);
+    try {
+      const reference = formatCsaReference({
+        bpmCode: bpmProcess?.bpmCode,
+        noGL: noGL || bpmProcess?.noGL,
+        bpmProcessId: record.bpmProcessId || bpmProcessId,
+        year: workingYear || new Date(record.assessmentDate).getFullYear(),
+        period: record.period,
+      });
+      const processName = subProcessName || bpmProcess?.name || 'N/A';
+      const assessmentDate = new Date(record.assessmentDate).toISOString().split('T')[0];
+      if (layout === 'detailed') {
+        const rows = mapCsaDetailedRows(record, {
+          passText: t('csa_hub:excel.pass', { defaultValue: 'Lolos' }),
+          failText: t('csa_hub:excel.fail', { defaultValue: 'Gagal' }),
+          hasEvidenceText: t('csa_hub:excel.hasEvidence', { defaultValue: 'Ada Bukti' }),
+          noEvidenceText: t('csa_hub:excel.noEvidence', { defaultValue: 'Tanpa Bukti' }),
+        });
+        await exportRegulatoryTableToExcel(rows, {
+          title: t('csa_hub:excel.detailedTitle', { defaultValue: 'LAMPIRAN 7A - RINCI' }),
+          subtitle: processName,
+          identityLines: [reference, record.period, assessmentDate],
+          columns: csaDetailedColumns({
+            no: t('csa_hub:excel.no', { defaultValue: 'No' }),
+            sampleRef: t('csa_hub:excel.sampleRef', { defaultValue: 'Referensi Sampel / Transaksi' }),
+            control: t('csa_hub:excel.control', { defaultValue: 'Kode & Nama Kontrol' }),
+            result: t('csa_hub:excel.result', { defaultValue: 'Hasil' }),
+            evidence: t('csa_hub:excel.evidence', { defaultValue: 'Bukti' }),
+            passText: '',
+            failText: '',
+            hasEvidenceText: '',
+            noEvidenceText: '',
+          }),
+          filename: csaAppendixFilename('detailed', reference, record.period),
+          sheetName: t('csa_hub:excel.detailedTitle', { defaultValue: 'Lampiran 7A Rinci' }),
+        });
+      } else {
+        const rows = mapCsaSummaryRows(record, {
+          effectiveText: t('csa_hub:excel.effective', { defaultValue: 'EFEKTIF' }),
+          ineffectiveText: t('csa_hub:excel.ineffective', { defaultValue: 'TIDAK EFEKTIF' }),
+        });
+        await exportRegulatoryTableToExcel(rows, {
+          title: t('csa_hub:excel.summaryTitle', { defaultValue: 'LAMPIRAN 7A - RINGKAS' }),
+          subtitle: processName,
+          identityLines: [reference, record.period, assessmentDate],
+          columns: csaSummaryColumns({
+            no: t('csa_hub:excel.no', { defaultValue: 'No' }),
+            control: t('csa_hub:excel.control', { defaultValue: 'Kode & Nama Kontrol' }),
+            totalSamples: t('csa_hub:excel.totalSamples', { defaultValue: 'Total Sampel' }),
+            pass: t('csa_hub:excel.pass', { defaultValue: 'Lolos' }),
+            fail: t('csa_hub:excel.fail', { defaultValue: 'Gagal' }),
+            status: t('csa_hub:excel.status', { defaultValue: 'Status' }),
+            effectiveText: '',
+            ineffectiveText: '',
+          }),
+          filename: csaAppendixFilename('summary', reference, record.period),
+          sheetName: t('csa_hub:excel.summaryTitle', { defaultValue: 'Lampiran 7A Ringkas' }),
+        });
+      }
+      toast.success(t('common:notifications.exportSuccess', { defaultValue: 'Excel berhasil diunduh' }));
+    } catch (err: any) {
+      toast.error(err?.message || t('common:notifications.exportFailed', { defaultValue: 'Gagal mengekspor Excel' }));
+    } finally {
+      setExportingId(null);
+    }
   };
 
   const submitUploadFile = (target: { sIdx: number; cId: string }, file: File) => {
@@ -231,6 +314,8 @@ export function CSATabContent({
               onViewDetail={(id) => { manualViewOverride.current = 'form'; setActiveCsaId(id); setView('form'); }}
               onDelete={handleDelete}
               onPrint={(id, layout) => { setActiveCsaId(id); handlePrint(layout); }}
+              onExcel={handleExcel}
+              exportingId={exportingId}
               onNewAssessment={() => {
                 manualViewOverride.current = 'form';
                 setIsInitialized(true); 

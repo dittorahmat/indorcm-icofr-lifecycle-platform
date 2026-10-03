@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { Eye, Printer, FileText, LayoutDashboard, Trash2, RefreshCw, Plus } from 'lucide-react';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { Eye, Printer, FileText, LayoutDashboard, Trash2, RefreshCw, Plus, FileSpreadsheet, Loader2 } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { CSARecord } from '@shared/types';
 import { formatCsaReference } from '@/lib/csa-utils';
@@ -15,6 +15,8 @@ interface CSAListProps {
   onViewDetail: (id: string) => void;
   onDelete: (id: string) => void;
   onPrint: (id: string, layout: 'detailed' | 'summary') => void;
+  onExcel?: (id: string, layout: 'detailed' | 'summary') => void;
+  exportingId?: string | null;
   onNewAssessment: () => void;
   bpmCode?: string;
   noGL?: string;
@@ -28,6 +30,8 @@ export function CSAList({
   onViewDetail, 
   onDelete, 
   onPrint, 
+  onExcel,
+  exportingId,
   onNewAssessment,
   bpmCode,
   noGL,
@@ -68,6 +72,27 @@ export function CSAList({
         <DropdownMenuItem className="text-xs font-bold gap-2 cursor-pointer" onClick={() => onPrint(item.id, 'summary')}>
           <LayoutDashboard className="h-3.5 w-3.5" /> {t('csa_hub:history.exportSummary', { defaultValue: 'Export Appendix 7a (Summary)' })}
         </DropdownMenuItem>
+        {onExcel && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="text-xs font-bold gap-2 cursor-pointer"
+              disabled={exportingId === item.id}
+              onClick={() => onExcel(item.id, 'detailed')}
+            >
+              {exportingId === item.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileSpreadsheet className="h-3.5 w-3.5" />}
+              {t('csa_hub:history.excelDetailed', { defaultValue: 'Excel Appendix 7a (Detailed)' })}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="text-xs font-bold gap-2 cursor-pointer"
+              disabled={exportingId === item.id}
+              onClick={() => onExcel(item.id, 'summary')}
+            >
+              {exportingId === item.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileSpreadsheet className="h-3.5 w-3.5" />}
+              {t('csa_hub:history.excelSummary', { defaultValue: 'Excel Appendix 7a (Summary)' })}
+            </DropdownMenuItem>
+          </>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

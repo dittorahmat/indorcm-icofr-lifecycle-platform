@@ -13,9 +13,28 @@
     "empty": "Belum ada riwayat.",
     "exportDetailed": "Ekspor Appendix 7a (Rinci)",
     "exportSummary": "Ekspor Appendix 7a (Ringkas)",
+    "excelDetailed": "Excel Appendix 7a (Rinci)",
+    "excelSummary": "Excel Appendix 7a (Ringkas)",
     "viewDetail": "Lihat detail",
     "printOptions": "Opsi cetak",
     "deleteAssessment": "Hapus assessment"
+  },
+  "excel": {
+    "no": "No",
+    "sampleRef": "Referensi Sampel / Transaksi",
+    "control": "Kode & Nama Kontrol",
+    "totalSamples": "Total Sampel",
+    "pass": "Lolos",
+    "fail": "Gagal",
+    "status": "Status",
+    "result": "Hasil",
+    "evidence": "Bukti",
+    "hasEvidence": "Ada Bukti",
+    "noEvidence": "Tanpa Bukti",
+    "effective": "EFEKTIF",
+    "ineffective": "TIDAK EFEKTIF",
+    "detailedTitle": "LAMPIRAN 7A - RINCI",
+    "summaryTitle": "LAMPIRAN 7A - RINGKAS"
   },
   "scheduling": {
     "title": "Penjadwalan Aktivitas ICOFR",

@@ -2,6 +2,8 @@
   "title": "Testing Workbench",
   "description": "Perform TOD and TOE for in-scope controls according to Regulation SK-5.",
   "filterReady": "Ready for Testing (L2 Validated)",
+  "exportExcel": "Export Excel",
+  "testDate": "Test Date",
   "validatedByL2": "Validated by Line 2:",
   "noControls": "No controls match the current filter.",
   "noControlsDetail": "Toggle \"Ready for Testing\" or check if any controls have been validated by Line 2.",

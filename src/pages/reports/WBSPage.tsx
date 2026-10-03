@@ -4,8 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, Plus, FileText, CheckCircle2, Search } from 'lucide-react';
+import { AlertCircle, Plus, FileText, CheckCircle2, Search, Download, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { useTranslation } from 'react-i18next';
+import { exportRegulatoryTableToExcel } from '@/lib/rcm-excel-export';
+import { mapWbsRows, wbsColumns, wbsFilename } from '@/lib/wbs-excel-export';
 import type { WBSReport } from '@shared/types';
 import { motion } from 'framer-motion';
 
@@ -33,7 +36,33 @@ const mockWBS: WBSReport[] = [
 ];
 
 export function WBSPage() {
+  const { t } = useTranslation('reports');
+  const [isExportingExcel, setIsExportingExcel] = React.useState(false);
   const formatCurrency = (val: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(val);
+
+  const handleExportExcel = async () => {
+    if (mockWBS.length === 0 || isExportingExcel) return;
+    setIsExportingExcel(true);
+    try {
+      await exportRegulatoryTableToExcel(mapWbsRows(mockWBS), {
+        title: t('wbs.title', { defaultValue: 'Rekap Whistleblowing' }),
+        subtitle: 'Lampiran 1 Prinsip 8 & 14 — SK-5/DKU.MBU/11/2024',
+        identityLines: [String(new Date().getFullYear())],
+        columns: wbsColumns({
+          date: t('wbs.columns.date', { defaultValue: 'Tanggal' }),
+          category: t('wbs.columns.category', { defaultValue: 'Kategori' }),
+          description: t('wbs.columns.description', { defaultValue: 'Deskripsi' }),
+          impact: t('wbs.columns.impact', { defaultValue: 'Estimasi Dampak' }),
+          status: t('wbs.columns.status', { defaultValue: 'Status' }),
+          controls: t('wbs.columns.controls', { defaultValue: 'Kontrol Terkait' }),
+        }),
+        filename: wbsFilename(),
+        sheetName: t('wbs.title', { defaultValue: 'WBS Recap' }),
+      });
+    } finally {
+      setIsExportingExcel(false);
+    }
+  };
 
   return (
     <AppLayout container>
@@ -87,9 +116,21 @@ export function WBSPage() {
           <CardHeader>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <CardTitle>Fraud Risk Indicators Matrix</CardTitle>
-              <div className="flex items-center gap-2 w-full sm:w-auto">
-                <Search className="h-4 w-4 text-muted-foreground shrink-0" />
-                <Input placeholder="Search reports..." className="h-10 sm:h-8 w-full sm:w-[200px]" />
+              <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleExportExcel}
+                  disabled={isExportingExcel}
+                  className="gap-2 h-10 sm:h-8 min-h-[44px] sm:min-h-0 text-xs font-semibold rounded-md"
+                >
+                  {isExportingExcel ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                  {t('wbs.exportExcel', { defaultValue: 'Ekspor Excel' })}
+                </Button>
+                <div className="flex items-center gap-2 flex-1 sm:flex-none">
+                  <Search className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <Input placeholder="Search reports..." className="h-10 sm:h-8 w-full sm:w-[200px]" />
+                </div>
               </div>
             </div>
             <CardDescription>Recap of reports from Whistleblowing System affecting Financial Reporting.</CardDescription>

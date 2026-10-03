@@ -1,8 +1,13 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { DoDLampiran10Report } from '../DoDLampiran10Report';
+import { exportRegulatoryTableToExcel } from '@/lib/rcm-excel-export';
 import type { Deficiency, Control } from '@shared/types';
+
+vi.mock('@/lib/rcm-excel-export', () => ({
+  exportRegulatoryTableToExcel: vi.fn(),
+}));
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -12,6 +17,10 @@ vi.mock('react-i18next', () => ({
         'dodReport.subtitle': 'ILUSTRASI DOKUMENTASI KERTAS KERJA PENENTUAN TINGKAT DEFISIENSI PENGENDALIAN',
         'dodReport.regulationReference': 'Format Standar Berdasarkan SK-5/DKU.MBU/11/2024',
         'dodReport.exportCsv': 'Ekspor CSV',
+        'dodReport.exportExcel': 'Ekspor Excel Lampiran 10',
+        'dodReport.period': 'Periode 2025',
+        'common:yes': 'Ya',
+        'common:no': 'Tidak',
         'dodReport.printA4': 'Cetak Laporan',
         'dodReport.empty': 'Belum ada data evaluasi defisiensi pengendalian',
         'dodReport.summary.totalEvaluated': 'Total Evaluasi DoD',
@@ -244,18 +253,26 @@ describe('DoDLampiran10Report Component', () => {
     expect(screen.getAllByText('Tervalidasi Digital Sesuai SK-5/2024')).toHaveLength(2);
   });
 
-  it('triggers CSV download when Export CSV button is clicked', () => {
+  it('exports filtered rows to Excel when Export Excel button is clicked', async () => {
+    const mockedExport = vi.mocked(exportRegulatoryTableToExcel);
+    mockedExport.mockClear();
     render(<DoDLampiran10Report deficiencies={mockDeficiencies} controls={mockControls} />);
 
-    const createObjectURL = vi.fn();
-    window.URL.createObjectURL = createObjectURL;
-    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    // Apply MW filter so only DEF-001 remains
+    const mwCard = screen.getByRole('button', { name: /Kelemahan Material \(MW\)/i });
+    fireEvent.click(mwCard);
 
-    const exportBtn = screen.getByText('Ekspor CSV');
+    const exportBtn = screen.getByText('Ekspor Excel Lampiran 10');
     fireEvent.click(exportBtn);
 
-    expect(clickSpy).toHaveBeenCalled();
-    clickSpy.mockRestore();
+    await waitFor(() => expect(mockedExport).toHaveBeenCalledTimes(1));
+    const [rows, options] = mockedExport.mock.calls[0] as unknown as [any[], any];
+    expect(rows).toHaveLength(1);
+    expect(rows[0].ref).toBe('DEF-001');
+    expect(rows[0].exposure).toBe(12_500_000_000);
+    expect(options.columns).toHaveLength(24);
+    expect(options.filename).toContain('Lampiran_10_Kertas_Kerja_DoD_');
+    expect(options.filename.endsWith('.xlsx')).toBe(true);
   });
 
   it('triggers print when Print button is clicked', () => {

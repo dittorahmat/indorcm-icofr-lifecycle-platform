@@ -36,6 +36,8 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
+import { exportRegulatoryTableToExcel } from '@/lib/rcm-excel-export';
+import { Loader2 } from 'lucide-react';
 import type { Deficiency, Control } from '@shared/types';
 import { MOCK_COMPANY } from './mock-regulatory-data';
 
@@ -81,10 +83,11 @@ export function DoDLampiran10Report({
   controls = [],
   fiscalYear = new Date().getFullYear(),
 }: DoDLampiran10ReportProps) {
-  const { t } = useTranslation('reports');
+  const { t } = useTranslation(['reports', 'common']);
   const [severityFilter, setSeverityFilter] = React.useState<string>('ALL');
   const [remediationFilter, setRemediationFilter] = React.useState<string>('ALL');
   const [searchQuery, setSearchQuery] = React.useState<string>('');
+  const [isExporting, setIsExporting] = React.useState(false);
 
   // Normalize deficiency row to 24 columns
   const formattedRows: FormattedDoDRow[] = React.useMemo(() => {
@@ -190,69 +193,113 @@ export function DoDLampiran10Report({
     window.print();
   };
 
-  const handleExportCsv = () => {
-    const headers = [
-      'Ref. Defisiensi (i)',
-      'Deskripsi Defisiensi (ii)',
-      'Telah Diremediasi (iii)',
-      'Periode Tidak Efektif (iv)',
-      'Nilai Eksposur Defisiensi (v)',
-      'Kesimpulan Akhir (vi)',
-      'Akun/Pengungkapan Terdampak (vii)',
-      'Komponen COSO (viii)',
-      'Proses Bisnis (ix)',
-      'Unit Bisnis (x)',
-      'C (xi)',
-      'A (xii)',
-      'E/O (xiii)',
-      'CO (xiv)',
-      'R&O (xv)',
-      'V/A (xvi)',
-      'PD (xvii)',
-      'Kotak 1: Asersi LK (xviii)',
-      'Kotak 2: Likelihood (xix)',
-      'Kotak 3: Magnitude vs PM (xx)',
-      'Kotak 4: Perhatian Pengawas (xxi)',
-      'Kotak 5: Pengendalian Kompensasi (xxii)',
-      'Kotak 6: Prudent Official (xxiii)',
-      'Kotak 7: Dampak Kombinasi (xxiv)',
-    ];
+  const handleExportExcel = async () => {
+    if (isExporting) return;
+    setIsExporting(true);
+    try {
+      const yesLabel = t('common:yes', { defaultValue: 'Ya' });
+      const noLabel = t('common:no', { defaultValue: 'Tidak' });
+      const check = (v: boolean) => (v ? '✓' : '-');
+      const yn = (v: boolean) => (v ? yesLabel : noLabel);
 
-    const rows = filteredRows.map((r) => [
-      `"${r.ref}"`,
-      `"${r.description.replace(/"/g, '""')}"`,
-      r.isRemediated ? 'Ya' : 'Tidak',
-      `"${r.ineffectivePeriod}"`,
-      r.exposureValue,
-      `"${r.severity}"`,
-      `"${r.impactedAccount.replace(/"/g, '""')}"`,
-      `"${r.cosoComponent}"`,
-      `"${r.businessProcess}"`,
-      `"${r.businessUnit}"`,
-      r.assertions.c ? '✓' : '-',
-      r.assertions.a ? '✓' : '-',
-      r.assertions.eo ? '✓' : '-',
-      r.assertions.co ? '✓' : '-',
-      r.assertions.ro ? '✓' : '-',
-      r.assertions.va ? '✓' : '-',
-      r.assertions.pd ? '✓' : '-',
-      r.boxes.box1 ? 'Ya' : 'Tidak',
-      r.boxes.box2 ? 'Ya' : 'Tidak',
-      r.boxes.box3 ? 'Ya' : 'Tidak',
-      r.boxes.box4 ? 'Ya' : 'Tidak',
-      r.boxes.box5 ? 'Ya' : 'Tidak',
-      r.boxes.box6 ? 'Ya' : 'Tidak',
-      r.boxes.box7 ? 'Ya' : 'Tidak',
-    ]);
+      const rows = filteredRows.map((r) => ({
+        ref: r.ref,
+        description: r.description,
+        remediated: yn(r.isRemediated),
+        ineffectivePeriod: r.ineffectivePeriod,
+        exposure: r.exposureValue,
+        severity: r.severity,
+        impactedAccount: r.impactedAccount,
+        cosoComponent: r.cosoComponent,
+        businessProcess: r.businessProcess,
+        businessUnit: r.businessUnit,
+        c: check(r.assertions.c),
+        a: check(r.assertions.a),
+        eo: check(r.assertions.eo),
+        co: check(r.assertions.co),
+        ro: check(r.assertions.ro),
+        va: check(r.assertions.va),
+        pd: check(r.assertions.pd),
+        box1: yn(r.boxes.box1),
+        box2: yn(r.boxes.box2),
+        box3: yn(r.boxes.box3),
+        box4: yn(r.boxes.box4),
+        box5: yn(r.boxes.box5),
+        box6: yn(r.boxes.box6),
+        box7: yn(r.boxes.box7),
+      }));
 
-    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `Lampiran_10_Kertas_Kerja_DoD_${fiscalYear}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      const col = (key: string, header: string, numeric = false) => ({ key, header, numeric });
+      const headers = [
+        t('dodReport.table.col1'),
+        t('dodReport.table.col2'),
+        t('dodReport.table.col3'),
+        t('dodReport.table.col4'),
+        t('dodReport.table.col5'),
+        t('dodReport.table.col6'),
+        t('dodReport.table.col7'),
+        t('dodReport.table.col8'),
+        t('dodReport.table.col9'),
+        t('dodReport.table.col10'),
+        t('dodReport.table.col11'),
+        t('dodReport.table.col12'),
+        t('dodReport.table.col13'),
+        t('dodReport.table.col14'),
+        t('dodReport.table.col15'),
+        t('dodReport.table.col16'),
+        t('dodReport.table.col17'),
+        t('dodReport.table.col18'),
+        t('dodReport.table.col19'),
+        t('dodReport.table.col20'),
+        t('dodReport.table.col21'),
+        t('dodReport.table.col22'),
+        t('dodReport.table.col23'),
+        t('dodReport.table.col24'),
+      ];
+      const dataKeys = [
+        'ref',
+        'description',
+        'remediated',
+        'ineffectivePeriod',
+        'exposure',
+        'severity',
+        'impactedAccount',
+        'cosoComponent',
+        'businessProcess',
+        'businessUnit',
+        'c',
+        'a',
+        'eo',
+        'co',
+        'ro',
+        'va',
+        'pd',
+        'box1',
+        'box2',
+        'box3',
+        'box4',
+        'box5',
+        'box6',
+        'box7',
+      ];
+
+      await exportRegulatoryTableToExcel(rows, {
+        title: t('dodReport.title', { defaultValue: 'LAMPIRAN 10' }),
+        subtitle: t('dodReport.subtitle', { defaultValue: '' }),
+        identityLines: [MOCK_COMPANY, t('dodReport.period', { year: fiscalYear, defaultValue: `Periode ${fiscalYear}` })],
+        groups: [
+          { label: `${t('dodReport.table.groupFinding')} (i - vi)`, span: 6 },
+          { label: `${t('dodReport.table.groupAggregation')} (vii - x)`, span: 4 },
+          { label: `${t('dodReport.table.groupAssertions')} (xi - xvii)`, span: 7 },
+          { label: `${t('dodReport.table.groupDecisionTree')} (xviii - xxiv)`, span: 7 },
+        ],
+        columns: dataKeys.map((key, index) => col(key, headers[index], key === 'exposure')),
+        filename: `Lampiran_10_Kertas_Kerja_DoD_${fiscalYear}.xlsx`,
+        sheetName: t('dodReport.title', { defaultValue: 'LAMPIRAN 10' }),
+      });
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const formatCurrency = (val: number) => {
@@ -312,11 +359,12 @@ export function DoDLampiran10Report({
             <Button
               variant="outline"
               size="sm"
-              onClick={handleExportCsv}
+              onClick={handleExportExcel}
+              disabled={isExporting}
               className="text-xs font-semibold rounded-md h-9 gap-1.5"
             >
-              <Download className="h-4 w-4" />
-              {t('dodReport.exportCsv')}
+              {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+              {t('dodReport.exportExcel')}
             </Button>
             <Button
               variant="outline"

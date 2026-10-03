@@ -133,6 +133,7 @@
   "verification": {
     "title": "Control Design Verification (Appendix 8)",
     "subtitle": "ICOFR Function validates control design to mitigate risks",
+    "excelTitle": "APPENDIX 8",
     "add_new": "New Assessment",
     "add_new_short": "New Assessment",
     "groups": {

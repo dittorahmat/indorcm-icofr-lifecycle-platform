@@ -12,7 +12,8 @@ import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { 
   AlertTriangle, ShieldAlert, Layers, Plus, CheckCircle2, 
   Search, Kanban, Filter, UserCheck, ChevronRight, Settings2,
-  Clock, AlertCircle, FileText, Zap, ShieldCheck, Send, XCircle
+  Clock, AlertCircle, FileText, Zap, ShieldCheck, Send, XCircle,
+  Download, Loader2
 } from 'lucide-react';
 import { DoDWorksheetDialog } from '@/components/deficiencies/DoDWorksheetDialog';
 import { RemediationForm } from '@/components/deficiencies/RemediationForm';
@@ -24,6 +25,8 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/context/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { resolveWorkflowAction } from '@/lib/deficiency-workflow';
+import { exportRegulatoryTableToExcel } from '@/lib/rcm-excel-export';
+import { findingsColumns, findingsFilename, mapFindingsRows } from '@/lib/findings-excel-export';
 import { cn } from '@/lib/utils';
 
 const KANBAN_COLUMNS: string[] = ["Ineffective", "In Review", "In Approval", "Resolved"];
@@ -256,8 +259,9 @@ export function DeficiencyBoard() {
   const mockRole = localStorage.getItem('mockRole');
   const userRole = user?.role || mockRole || 'Admin';
 
-  const { t } = useTranslation(['deficiency', 'workflow', 'common']);
+  const { t } = useTranslation(['deficiency', 'workflow', 'common', 'reports']);
   const [isWizardOpen, setWizardOpen] = React.useState(false);
+  const [isExportingExcel, setIsExportingExcel] = React.useState(false);
   const [isRemediationOpen, setRemediationOpen] = React.useState(false);
   const [isAggregateMode, setAggregateMode] = React.useState(false);
   const [selectedDeficiencies, setSelectedDeficiencies] = React.useState<string[]>([]);
@@ -515,6 +519,38 @@ export function DeficiencyBoard() {
     setWizardOpen(true);
   };
 
+  const handleExportExcel = async () => {
+    if (filteredDeficiencies.length === 0 || isExportingExcel) return;
+    setIsExportingExcel(true);
+    try {
+      const rows = mapFindingsRows(filteredDeficiencies, (d) => d.controlName || d.controlCode || '-');
+      await exportRegulatoryTableToExcel(rows, {
+        title: t('reports:findings.title', { defaultValue: 'LAMPIRAN 9' }),
+        subtitle: t('reports:findings.subtitle', { defaultValue: '' }),
+        identityLines: [String(new Date().getFullYear())],
+        columns: findingsColumns({
+          no: t('reports:findings.columns.no', { defaultValue: 'No' }),
+          ref: t('reports:findings.columns.ref', { defaultValue: 'Ref. Temuan' }),
+          description: t('reports:findings.columns.description', { defaultValue: 'Deskripsi Temuan' }),
+          control: t('reports:findings.columns.control', { defaultValue: 'Kontrol Terkait' }),
+          severity: t('reports:findings.columns.severity', { defaultValue: 'Tingkat' }),
+          exposure: t('reports:findings.columns.exposure', { defaultValue: 'Nilai Eksposur' }),
+          identifiedBy: t('reports:findings.columns.identifiedBy', { defaultValue: 'Ditemukan Oleh' }),
+          identifiedDate: t('reports:findings.columns.identifiedDate', { defaultValue: 'Tanggal Temuan' }),
+          source: t('reports:findings.columns.source', { defaultValue: 'Sumber' }),
+          status: t('reports:findings.columns.status', { defaultValue: 'Status' }),
+        }),
+        filename: findingsFilename(new Date().getFullYear()),
+        sheetName: t('reports:findings.title', { defaultValue: 'Lampiran 9' }),
+      });
+      toast.success(t('common:notifications.exportSuccess', { defaultValue: 'Excel berhasil diunduh' }));
+    } catch (err: any) {
+      toast.error(err?.message || t('common:notifications.exportFailed', { defaultValue: 'Gagal mengekspor Excel' }));
+    } finally {
+      setIsExportingExcel(false);
+    }
+  };
+
   const dragPlan = activeId ? actionPlans.find(p => p.id === activeId) ?? null : null;
   const dragDeficiency = dragPlan
     ? filteredDeficiencies.find(d => d.id === dragPlan.deficiencyId) ?? null
@@ -561,6 +597,16 @@ export function DeficiencyBoard() {
               </div>
 
               <div className="h-8 w-px bg-slate-200 mx-1 hidden md:block" />
+
+              <Button
+                variant="outline"
+                onClick={handleExportExcel}
+                disabled={isExportingExcel || filteredDeficiencies.length === 0}
+                className="h-10 gap-2 border-slate-200 bg-white hover:bg-slate-50 transition-all font-bold text-xs uppercase tracking-widest px-5 rounded-lg shadow-sm self-end"
+              >
+                {isExportingExcel ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4 text-emerald-600" />}
+                {t('reports:findings.exportExcel', { defaultValue: 'Ekspor Excel' })}
+              </Button>
 
               {!isAggregateMode ? (
                 <Button 

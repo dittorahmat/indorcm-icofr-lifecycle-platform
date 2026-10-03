@@ -113,3 +113,96 @@ export function exportRCMToExcel(data: any[], options: RCMExportOptions = {}) {
   XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
   XLSX.writeFile(workbook, filename);
 }
+
+// ---------------------------------------------------------------------------
+// Shared regulatory export builder (Lampiran 6/7a/8/9/10/11, WBS, TOD/TOE)
+// Layout per spec: title rows -> identity -> blank -> group row -> header -> data
+// Callers pass already-filtered rows and locale-resolved headers.
+// ---------------------------------------------------------------------------
+
+export interface RegulatoryExportColumn {
+  /** Key into each row record. */
+  key: string;
+  /** Already-localized column header text. */
+  header: string;
+  /** When true, numeric values are kept as numbers (summable in Excel). */
+  numeric?: boolean;
+}
+
+export interface RegulatoryExportGroup {
+  /** Group label placed at the group's first column (e.g. "Data Defisiensi (i - vi)"). */
+  label: string;
+  /** How many consecutive columns this group spans. */
+  span: number;
+}
+
+export interface RegulatoryExportOptions {
+  /** e.g. "LAMPIRAN 10". */
+  title: string;
+  /** Full document subtitle. */
+  subtitle?: string;
+  /** Identity lines, e.g. ["PT Bukit Asam Tbk", "Periode 2025"]. Cells stay plain text for manual completion. */
+  identityLines?: string[];
+  /** Optional group-header row; spans are laid out left-to-right over the columns. */
+  groups?: RegulatoryExportGroup[];
+  columns: RegulatoryExportColumn[];
+  filename: string;
+  sheetName?: string;
+}
+
+export const REGULATORY_EMPTY_CELL = '-';
+
+/** Pure AoA builder — no xlsx dependency, fully unit-testable. */
+export function buildRegulatoryAoA(
+  rows: Array<Record<string, unknown>>,
+  options: RegulatoryExportOptions,
+): unknown[][] {
+  const { title, subtitle, identityLines = [], groups = [], columns } = options;
+  const aoa: unknown[][] = [];
+
+  aoa.push([title]);
+  if (subtitle) aoa.push([subtitle]);
+  for (const line of identityLines) aoa.push([line]);
+  aoa.push([]);
+
+  if (groups.length > 0) {
+    const groupRow: unknown[] = new Array(columns.length).fill('');
+    let cursor = 0;
+    for (const group of groups) {
+      if (cursor < columns.length && group.span > 0) {
+        groupRow[cursor] = group.label;
+        cursor += group.span;
+      }
+    }
+    aoa.push(groupRow);
+  }
+
+  aoa.push(columns.map((c) => c.header));
+
+  for (const row of rows) {
+    aoa.push(
+      columns.map((col) => {
+        const value = row[col.key];
+        if (value === null || value === undefined || value === '') return REGULATORY_EMPTY_CELL;
+        if (col.numeric && typeof value === 'number' && Number.isFinite(value)) return value;
+        return value;
+      }),
+    );
+  }
+
+  return aoa;
+}
+
+/** Writes a single-table, single-sheet workbook. Lazy-loads xlsx at click time. */
+export async function exportRegulatoryTableToExcel(
+  rows: Array<Record<string, unknown>>,
+  options: RegulatoryExportOptions,
+): Promise<void> {
+  const { filename, sheetName = 'Lampiran' } = options;
+  const XLSX = await import('xlsx');
+  const aoa = buildRegulatoryAoA(rows, options);
+  const worksheet = XLSX.utils.aoa_to_sheet(aoa);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+  XLSX.writeFile(workbook, filename);
+}

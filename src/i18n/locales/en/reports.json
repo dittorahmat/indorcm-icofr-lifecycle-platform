@@ -7,6 +7,7 @@
   "pageDescription": "Regulatory reporting dashboard and Appendix 11 sign-off portal.",
   "actions": {
     "exportCsv": "Export CSV",
+    "exportExcel": "Export Excel",
     "print": "Print Report",
     "signAndLock": "Sign & Lock Report (CEO & CFO)",
     "generatingReport": "Generating consolidated report..."
@@ -17,6 +18,37 @@
     "managementAssessment": "Management Assessment",
     "testingResults": "Testing Results",
     "appendices": "Regulatory Appendices"
+  },
+  "findings": {
+    "title": "APPENDIX 9",
+    "subtitle": "CONTROL FINDINGS REGISTER FORMAT",
+    "exportExcel": "Export Excel",
+    "print": "Print",
+    "empty": "No findings data.",
+    "columns": {
+      "no": "No",
+      "ref": "Finding Ref",
+      "description": "Finding Description",
+      "control": "Related Control",
+      "severity": "Severity",
+      "exposure": "Exposure Value",
+      "identifiedBy": "Identified By",
+      "identifiedDate": "Identified Date",
+      "source": "Source",
+      "status": "Status"
+    }
+  },
+  "wbs": {
+    "title": "Whistleblowing Recap",
+    "exportExcel": "Export Excel",
+    "columns": {
+      "date": "Date",
+      "category": "Category",
+      "description": "Description",
+      "impact": "Est. Impact",
+      "status": "Status",
+      "controls": "Related Controls"
+    }
   },
   "assessment": {
     "title": "Management Assessment on ICOFR Implementation Effectiveness",
@@ -36,7 +68,8 @@
     "monitorProgress": "Monitor progress via Deficiency Board",
     "signed": "SIGNED",
     "awaitingSign": "Awaiting CEO/CFO Sign-off",
-    "periodFinalized": "PERIOD FINALIZED & SIGNED"
+    "periodFinalized": "PERIOD FINALIZED & SIGNED",
+    "exportExcel": "Export Excel"
   },
   "testing": {
     "title": "Test Results Report (TOD & TOE)",
@@ -57,7 +90,8 @@
       "criteria": "Appx 8 Criteria (xxvii-xxxii)",
       "sample": "Sample",
       "result": "Result",
-      "notes": "Walkthrough / Notes"
+      "notes": "Walkthrough / Notes",
+      "date": "Test Date"
     }
   },
   "changeLog": {
@@ -65,8 +99,24 @@
     "subtitle": "Change standardization per SK-5/2024 regulation",
     "loading": "Loading change log...",
     "exportCsv": "Export CSV",
+    "exportExcel": "Export Excel",
     "printA4": "Print A4",
-    "empty": "No regulatory change log data found."
+    "empty": "No regulatory change log data found.",
+    "columns": {
+      "no": "No (i)",
+      "company": "Company (ii)",
+      "process": "Business Process (iii)",
+      "subProcess": "Sub-Process (iv)",
+      "reportDate": "Report Date (v)",
+      "owner": "Control Owner (vi)",
+      "descBefore": "Description Before (vii)",
+      "descAfter": "Description After (viii)",
+      "refBefore": "Reference Before (ix)",
+      "refAfter": "Reference After (x)",
+      "effectiveDate": "Effective Date (xi)",
+      "preparer": "Preparer (Line 1)",
+      "approver": "Approver (Line 2)"
+    }
   },
   "customizableDashboard": {
     "title": "Workspace Customization",
@@ -83,6 +133,8 @@
     "regulationReference": "Standard Format Pursuant to BUMN Ministerial Regulation No. SK-5/DKU.MBU/11/2024 (Pages 97–99)",
     "loading": "Loading Appendix 10 DoD Workpaper...",
     "exportCsv": "Export Appendix 10 CSV",
+    "exportExcel": "Export Appendix 10 Excel",
+    "period": "Period {{year}}",
     "printA4": "Print Report (A4/A3)",
     "empty": "No control deficiency evaluation records found, or no records match the active filters.",
     "filters": {
