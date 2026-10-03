@@ -180,10 +180,10 @@ export function Dashboard() {
           description={t('description')} 
         >
           <div className="grid grid-cols-1 min-[380px]:grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
-             <Button variant="outline" className="h-10 sm:h-9 min-h-[40px] gap-1.5 sm:gap-2 border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors px-2.5 sm:px-3 text-xs sm:text-sm font-semibold rounded-lg justify-center" onClick={() => navigate('/rcm')}>
+             <Button variant="outline" className="h-11 sm:h-10 min-h-[44px] sm:min-h-0 w-full sm:w-auto justify-center gap-1.5 sm:gap-2 border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors px-2.5 sm:px-3 text-xs sm:text-sm font-semibold rounded-lg" onClick={() => navigate('/rcm')}>
                 <Target className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">{t('actions.manageRcm')}</span>
              </Button>
-             <Button className="h-10 sm:h-9 min-h-[40px] gap-1.5 sm:gap-2 bg-mancity-pattern text-primary-foreground hover:opacity-90 transition-all px-2.5 sm:px-3 text-xs sm:text-sm shadow-sm border-none font-bold rounded-lg justify-center" onClick={() => navigate('/csa')}>
+             <Button className="h-11 sm:h-10 min-h-[44px] sm:min-h-0 w-full sm:w-auto justify-center gap-1.5 sm:gap-2 bg-mancity-pattern text-primary-foreground hover:opacity-90 transition-all px-2.5 sm:px-3 text-xs sm:text-sm shadow-sm border-none font-bold rounded-lg" onClick={() => navigate('/csa')}>
                 <ClipboardCheck className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">{t('actions.startAssessment')}</span>
              </Button>
           </div>

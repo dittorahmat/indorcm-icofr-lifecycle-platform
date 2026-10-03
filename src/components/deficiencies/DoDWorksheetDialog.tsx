@@ -273,8 +273,8 @@ export function DoDWorksheetDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="max-w-4xl max-h-[92vh] flex flex-col p-0 overflow-hidden bg-background border border-border rounded-lg shadow-xl">
-        <DialogHeader className="p-4 sm:p-5 border-b border-border bg-card">
+      <DialogContent className="max-w-4xl w-[calc(100vw-2rem)] max-h-[92dvh] flex flex-col p-0 overflow-hidden bg-background border border-border rounded-lg shadow-xl">
+        <DialogHeader className="p-4 sm:p-6 border-b border-border bg-card">
           <div className="flex flex-col min-[480px]:flex-row min-[480px]:items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <div className="p-2 bg-primary/10 rounded-md text-primary">
@@ -298,13 +298,13 @@ export function DoDWorksheetDialog({
         <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-5">
           <Tabs defaultValue="matrix" className="w-full">
             <TabsList className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-4 bg-muted/50 p-1 rounded-md min-h-[44px] max-w-full gap-1">
-              <TabsTrigger value="matrix" className="min-w-0 px-1 text-xs font-semibold rounded truncate">
+              <TabsTrigger value="matrix" className="min-w-0 px-1 text-xs font-semibold rounded truncate min-h-[44px] flex items-center justify-center">
                 1. {t('worksheet.tabs.evaluation')}
               </TabsTrigger>
-              <TabsTrigger value="evidence" className="min-w-0 px-1 text-xs font-semibold rounded truncate">
+              <TabsTrigger value="evidence" className="min-w-0 px-1 text-xs font-semibold rounded truncate min-h-[44px] flex items-center justify-center">
                 2. {t('worksheet.tabs.evidence')}
               </TabsTrigger>
-              <TabsTrigger value="summary" className="min-w-0 px-1 text-xs font-semibold rounded truncate">
+              <TabsTrigger value="summary" className="min-w-0 px-1 text-xs font-semibold rounded truncate min-h-[44px] flex items-center justify-center">
                 3. {t('worksheet.tabs.summary')}
               </TabsTrigger>
             </TabsList>

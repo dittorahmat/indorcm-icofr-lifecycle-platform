@@ -171,7 +171,7 @@ function CSARecordRow({ record: initialRecord, process }: { record: CSARecord, p
               size="sm" 
               onClick={handleExportPDF}
               disabled={isExportingPDF}
-              className="h-8 text-xs gap-1.5 border-slate-200 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 font-bold shadow-sm"
+              className="h-11 md:h-8 min-h-[44px] md:min-h-0 text-xs gap-1.5 border-slate-200 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 font-bold shadow-sm"
             >
               {isExportingPDF ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Printer className="h-3.5 w-3.5" />} PDF
             </Button>
@@ -180,7 +180,7 @@ function CSARecordRow({ record: initialRecord, process }: { record: CSARecord, p
               size="sm" 
               onClick={handleExportXLS}
               disabled={isExportingXLS}
-              className="h-8 text-xs gap-1.5 border-slate-200 font-bold shadow-sm"
+              className="h-11 md:h-8 min-h-[44px] md:min-h-0 text-xs gap-1.5 border-slate-200 font-bold shadow-sm"
             >
               {isExportingXLS ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />} XLS
             </Button>
@@ -352,7 +352,7 @@ export function CSAPage() {
             <Input 
               id="csa-search"
               placeholder={t('page.searchPlaceholder')} 
-              className="pl-10 h-10 sm:h-11 bg-slate-50/50 border-slate-200 rounded-lg focus:ring-indigo-500 transition-all text-xs" 
+              className="pl-10 h-11 min-h-[44px] bg-slate-50/50 border-slate-200 rounded-lg focus:ring-indigo-500 transition-all text-xs" 
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
             />

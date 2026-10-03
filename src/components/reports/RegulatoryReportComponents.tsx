@@ -95,7 +95,7 @@ export function FindingsReport({ deficiencies = [], controls = [] }: { deficienc
           </div>
         </div>
 
-        <div className="rounded-lg border overflow-x-auto bg-white max-w-full">
+        <div className="rounded-lg border overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint bg-white">
           <Table className="min-w-[1100px]">
             <TableHeader className="bg-slate-50 border-b">
               <TableRow>
@@ -253,7 +253,7 @@ export function ChangeLogReport() {
         </div>
 
         {/* Responsive Table Wrapper */}
-        <div className="rounded-lg border overflow-x-auto bg-white max-w-full print:border-slate-300">
+        <div className="rounded-lg border overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint bg-white print:border-slate-300">
           <Table className="min-w-[1200px] print:min-w-0 print:w-full print:text-xs">
             <TableHeader className="bg-slate-50 border-b print:bg-transparent">
               <TableRow>
@@ -449,7 +449,7 @@ export function Lampiran11Report({ deficiencies = [], controls = [] }: { deficie
           ))}
         </div>
 
-        <div className="rounded-lg border overflow-x-auto bg-white max-w-full">
+        <div className="rounded-lg border overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint bg-white">
           <Table className="min-w-[800px]">
             <TableHeader className="bg-slate-50 border-b">
               <TableRow>

@@ -497,8 +497,8 @@ export function TodoListPage() {
               </div>
             </div>
             <DialogFooter className="flex-col-reverse sm:flex-row gap-2">
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)} className="w-full sm:w-auto min-h-[44px] sm:min-h-0">{t('common:actions.cancel')}</Button>
-              <Button onClick={handleCreate} className="w-full sm:w-auto min-h-[44px] sm:min-h-0">{t('csa_hub:scheduling.save')}</Button>
+              <Button variant="outline" onClick={() => setIsDialogOpen(false)} className="w-full sm:w-auto h-11 sm:h-10 min-h-[44px] sm:min-h-0 justify-center">{t('common:actions.cancel')}</Button>
+              <Button onClick={handleCreate} className="w-full sm:w-auto h-11 sm:h-10 min-h-[44px] sm:min-h-0 justify-center">{t('csa_hub:scheduling.save')}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -552,15 +552,15 @@ export function TodoListPage() {
               </div>
             </div>
             <DialogFooter className="flex-col-reverse sm:flex-row gap-2">
-              <Button variant="outline" onClick={() => setIsRescheduleOpen(false)} className="w-full sm:w-auto min-h-[44px] sm:min-h-0">{t('common:actions.cancel')}</Button>
+              <Button variant="outline" onClick={() => setIsRescheduleOpen(false)} className="w-full sm:w-auto h-11 sm:h-10 min-h-[44px] sm:min-h-0 justify-center">{t('common:actions.cancel')}</Button>
               <Button
                 disabled={!rescheduleData.justification.trim() || !rescheduleData.newDate}
+                className="w-full sm:w-auto h-11 sm:h-10 min-h-[44px] sm:min-h-0 justify-center"
                 onClick={() => {
                   toast.success(t('rcm:matrix.save_success'));
                   setIsRescheduleOpen(false);
                   setIsRescheduleDirty(false);
                 }}
-                className="w-full sm:w-auto min-h-[44px] sm:min-h-0"
               >
                 {t('csa_hub:scheduling.reschedule.save')}
               </Button>

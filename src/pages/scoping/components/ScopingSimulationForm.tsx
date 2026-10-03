@@ -72,7 +72,7 @@ export function ScopingSimulationForm({ activeSnap, onSubmit, isPending, default
         </p>
       </div>
       <Button 
-        className="w-full mt-2" 
+        className="w-full mt-2 h-11 sm:h-10 min-h-[44px] font-bold text-xs uppercase tracking-widest rounded-lg justify-center" 
         disabled={!name || !basis || isPending} 
         onClick={() => onSubmit({ 
           name, 

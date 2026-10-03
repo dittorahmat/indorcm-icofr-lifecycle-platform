@@ -80,8 +80,8 @@ export function StagingTable({ rows, onUpdateRow }: StagingTableProps) {
     };
 
     return (
-        <div className="rounded-lg border border-slate-200 overflow-hidden bg-white shadow-sm">
-            <div className="overflow-x-auto">
+        <div className="rounded-lg border border-slate-200 overflow-hidden bg-white shadow-sm max-w-full">
+            <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint">
                 <Table>
                     <TableHeader className="bg-slate-50/50">
                         <TableRow className="hover:bg-transparent border-b-slate-200">

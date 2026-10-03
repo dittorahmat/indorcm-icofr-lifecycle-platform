@@ -139,7 +139,7 @@ export function ImportPage() {
                 </Card>
               )}
             </div>
-            <Button variant="outline" onClick={handleDownloadTemplate} className="shadow-sm w-full sm:w-auto min-h-[44px] shrink-0">
+            <Button variant="outline" onClick={handleDownloadTemplate} className="shadow-sm w-full sm:w-auto h-11 sm:h-10 min-h-[44px] justify-center shrink-0 rounded-md">
               <Download className="h-4 w-4 mr-2 shrink-0" /> Download Template
             </Button>
           </div>
@@ -166,8 +166,8 @@ export function ImportPage() {
                       <X className="h-4 w-4" />
                     </Button>
                   </div>
-                  <div className="max-h-96 overflow-auto border rounded-md shadow-inner bg-background">
-                    <Table>
+                  <div className="max-h-96 overflow-auto max-w-full overflow-x-auto touch-pan-x overscroll-x-contain table-scroll-hint border rounded-md shadow-inner bg-background">
+                    <Table className="min-w-[640px]">
                       <TableHeader className="sticky top-0 bg-muted z-10">
                         <TableRow>{Object.keys(rcmRowSchema.shape).map(key => <TableHead key={key} className="uppercase text-xs font-bold">{key}</TableHead>)}</TableRow>
                       </TableHeader>

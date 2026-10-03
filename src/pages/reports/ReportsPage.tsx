@@ -208,7 +208,7 @@ export function ReportsPage() {
                 <CardDescription className="text-xs">{t('testing.description')}</CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
-                <div className="rounded-lg border border-slate-200 overflow-x-auto shadow-sm bg-white table-scroll-hint max-w-full">
+                <div className="rounded-lg border border-slate-200 overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint shadow-sm bg-white">
                   <Table className="min-w-[880px]">
                     <TableHeader className="bg-slate-50/80">
                       <TableRow>

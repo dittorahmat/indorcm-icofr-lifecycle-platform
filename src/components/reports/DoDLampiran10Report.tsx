@@ -534,8 +534,8 @@ export function DoDLampiran10Report({
         </div>
 
         {/* 24-Column Tabular Formal Worksheet */}
-        <div className="rounded-lg border border-border overflow-hidden bg-background">
-          <div className="overflow-x-auto max-w-full">
+        <div className="rounded-lg border border-border overflow-hidden bg-background max-w-full">
+          <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint">
             <Table className="min-w-[2000px] border-collapse print:min-w-0 print:w-full print:text-xs">
               <TableHeader className="bg-slate-50 border-b border-border">
                 {/* Tier 1 Header: Grouping */}

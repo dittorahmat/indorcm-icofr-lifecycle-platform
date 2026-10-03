@@ -147,12 +147,12 @@ export function TestWorkbench() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
                 <Input 
                   placeholder={t('searchPlaceholder') || "Search controls..."} 
-                  className="pl-9 h-10 w-full sm:w-[240px] bg-white border-slate-200 text-xs font-medium rounded-lg"
+                  className="pl-9 h-11 sm:h-10 min-h-[44px] sm:min-h-0 w-full sm:w-[240px] bg-white border-slate-200 text-xs font-medium rounded-lg"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-              <div className="flex items-center justify-between sm:justify-start gap-3 bg-white h-10 px-3.5 sm:px-4 rounded-lg border border-slate-200 shadow-xs shrink-0 flex-wrap">
+              <div className="flex items-center justify-between sm:justify-start gap-3 bg-white min-h-[44px] h-auto sm:h-10 py-2 sm:py-0 px-3.5 sm:px-4 rounded-lg border border-slate-200 shadow-xs shrink-0 flex-wrap">
                 <Switch 
                   id="validated-filter" 
                   checked={showOnlyValidated} 
@@ -167,7 +167,7 @@ export function TestWorkbench() {
                 variant="outline"
                 onClick={handleExportExcel}
                 disabled={isExportingExcel}
-                className="h-10 px-4 gap-2 bg-white border-slate-200 text-xs font-bold uppercase tracking-wider rounded-lg shadow-xs shrink-0 min-h-[44px] sm:min-h-0"
+                className="h-11 sm:h-10 min-h-[44px] sm:min-h-0 w-full sm:w-auto justify-center px-4 gap-2 bg-white border-slate-200 text-xs font-bold uppercase tracking-wider rounded-lg shadow-xs shrink-0"
               >
                 {isExportingExcel ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4 text-emerald-600" />}
                 {t('exportExcel')}

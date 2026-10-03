@@ -68,7 +68,7 @@ export function MobileBottomNav() {
             key={item.to}
             to={item.to}
             className={({ isActive }) => cn(
-              "flex flex-col items-center justify-center flex-1 py-1 px-2 rounded-md transition-colors min-h-[44px]",
+              "flex flex-col items-center justify-center flex-1 py-1 px-1 sm:px-2 rounded-md transition-colors min-h-[44px] min-w-0 overflow-hidden",
               isActive 
                 ? "text-primary font-bold" 
                 : "text-muted-foreground hover:text-foreground font-medium"
@@ -84,7 +84,7 @@ export function MobileBottomNav() {
                     </span>
                   )}
                 </div>
-                <span className="text-xs leading-none tracking-tight">{item.label}</span>
+                <span className="text-xs leading-none tracking-tight truncate max-w-full min-w-0 text-center">{item.label}</span>
               </>
             )}
           </NavLink>
@@ -95,10 +95,10 @@ export function MobileBottomNav() {
           type="button"
           onClick={() => toggleSidebar()}
           aria-label={t('navigation.menu', { defaultValue: 'Menu' })}
-          className="flex flex-col items-center justify-center flex-1 py-1 px-2 rounded-md text-muted-foreground hover:text-foreground transition-colors min-h-[44px]"
+          className="flex flex-col items-center justify-center flex-1 py-1 px-1 sm:px-2 rounded-md text-muted-foreground hover:text-foreground transition-colors min-h-[44px] min-w-0 overflow-hidden"
         >
           <Menu className="h-5 w-5 mb-0.5 stroke-[1.75]" />
-          <span className="text-xs font-medium leading-none tracking-tight">
+          <span className="text-xs font-medium leading-none tracking-tight truncate max-w-full min-w-0 text-center">
             {t('navigation.menu', { defaultValue: 'Menu' })}
           </span>
         </button>

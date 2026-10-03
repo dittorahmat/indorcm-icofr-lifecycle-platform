@@ -277,8 +277,8 @@ export function TODVerificationDialog({
         </Sheet>
       ) : (
         <Dialog open={open} onOpenChange={handleOpenChange}>
-          <DialogContent className="max-w-[1200px] max-h-[95vh] overflow-hidden p-0 flex flex-col border border-border shadow-xl rounded-lg">
-            <DialogHeader className="p-5 bg-mancity-pattern text-primary-foreground shrink-0">
+          <DialogContent className="max-w-[1200px] w-[calc(100vw-2rem)] max-h-[95dvh] overflow-hidden p-0 flex flex-col border border-border shadow-xl rounded-lg">
+            <DialogHeader className="p-4 sm:p-6 bg-mancity-pattern text-primary-foreground shrink-0">
               {headerContent}
             </DialogHeader>
             {formContent}
@@ -294,8 +294,8 @@ export function TODVerificationDialog({
               {t('common:unsavedChanges.description')}
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setIsConfirmDiscardOpen(false)}>
+          <AlertDialogFooter className="flex-col-reverse sm:flex-row gap-2">
+            <AlertDialogCancel onClick={() => setIsConfirmDiscardOpen(false)} className="w-full sm:w-auto h-11 sm:h-10 min-h-[44px] justify-center">
               {t('common:unsavedChanges.stay')}
             </AlertDialogCancel>
             <AlertDialogAction 
@@ -304,7 +304,7 @@ export function TODVerificationDialog({
                 form.reset();
                 onOpenChange(false);
               }}
-              className="bg-red-600 hover:bg-red-700 text-white font-bold"
+              className="bg-red-600 hover:bg-red-700 text-white font-bold w-full sm:w-auto h-11 sm:h-10 min-h-[44px] justify-center"
             >
               {t('common:unsavedChanges.discard')}
             </AlertDialogAction>

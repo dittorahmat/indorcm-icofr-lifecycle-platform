@@ -45,8 +45,8 @@ export function BPMScopingFilters({
 
   return (
     <Card className="border-slate-200 shadow-md bg-white rounded-xl overflow-hidden">
-      <CardContent className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
+      <CardContent className="p-4 sm:p-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 items-end">
           {/* FSLI Searchable Dropdown */}
           <div className="space-y-2">
             <Label htmlFor="fsli-select" className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500 flex items-center gap-2 px-1">

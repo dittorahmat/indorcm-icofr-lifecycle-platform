@@ -152,7 +152,7 @@ export function RemediationForm({ isOpen, setIsOpen, actionPlan, onSubmit, isLoa
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-4xl overflow-y-auto max-h-[90vh] flex flex-col p-0 border-none">
+      <DialogContent className="sm:max-w-4xl w-[calc(100vw-2rem)] overflow-y-auto max-h-[90dvh] flex flex-col p-0 border-none rounded-lg">
         <div className="bg-mancity-pattern p-4 sm:p-6 text-primary-foreground shrink-0">
            <DialogHeader>
              <DialogTitle className="flex items-center gap-2 text-primary-foreground font-display text-xl uppercase tracking-tight">
@@ -284,16 +284,16 @@ export function RemediationForm({ isOpen, setIsOpen, actionPlan, onSubmit, isLoa
 
                   {!isWorkflowLocked ? (
                     <DialogFooter className="pt-6 border-t flex flex-col-reverse sm:flex-row sm:justify-between sm:items-center gap-2">
-                      <Button type="button" variant="ghost" onClick={() => setIsOpen(false)} className="font-bold text-xs uppercase tracking-widest text-slate-400 hover:text-slate-600">
+                      <Button type="button" variant="ghost" onClick={() => setIsOpen(false)} className="w-full sm:w-auto h-11 sm:h-10 min-h-[44px] justify-center font-bold text-xs uppercase tracking-widest text-slate-400 hover:text-slate-600">
                         {isDirty ? "Cancel" : "Close"}
                       </Button>
-                      <Button type="submit" disabled={isLoading} className="h-10 px-8 bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-100 rounded-lg font-bold text-xs uppercase tracking-widest text-white">
+                      <Button type="submit" disabled={isLoading} className="h-11 sm:h-10 min-h-[44px] w-full sm:w-auto justify-center px-8 bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-100 rounded-lg font-bold text-xs uppercase tracking-widest text-white">
                         {isLoading ? "Saving..." : "Save Remediation Plan"}
                       </Button>
                     </DialogFooter>
                   ) : (
                     <DialogFooter className="pt-6 border-t flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
-                      <Button type="button" variant="outline" onClick={() => setIsOpen(false)} className="font-bold text-xs uppercase tracking-widest">
+                      <Button type="button" variant="outline" onClick={() => setIsOpen(false)} className="w-full sm:w-auto h-11 sm:h-10 min-h-[44px] justify-center font-bold text-xs uppercase tracking-widest">
                         Close
                       </Button>
                     </DialogFooter>
