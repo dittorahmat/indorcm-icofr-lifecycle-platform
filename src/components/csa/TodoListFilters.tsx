@@ -42,7 +42,7 @@ export function TodoListFilters({
         </div>
       </div>
 
-      <div className="flex items-center justify-between sm:justify-end gap-2 flex-wrap">
+      <div className="flex flex-col min-[420px]:flex-row min-[420px]:items-center min-[420px]:justify-between sm:justify-end gap-2 flex-wrap">
         <div className="flex items-center border rounded-md p-0.5 bg-slate-50 shrink-0">
           <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-7 sm:w-7 rounded-sm min-h-[32px] min-w-[32px]" onClick={onPrevMonth}>
             <ChevronLeft className="h-4 w-4" />

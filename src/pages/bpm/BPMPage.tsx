@@ -256,7 +256,7 @@ export function BPMPage() {
                 </div>
               </div>
 
-              <ResizablePanelGroup direction={isMobile ? "vertical" : "horizontal"} className="min-h-[600px] border border-slate-200 rounded-lg bg-white overflow-hidden shadow-xl shadow-slate-100">
+              <ResizablePanelGroup direction={isMobile ? "vertical" : "horizontal"} className="min-h-[480px] md:min-h-[600px] border border-slate-200 rounded-lg bg-white overflow-hidden shadow-xl shadow-slate-100 max-w-full">
                 <ResizablePanel defaultSize={selectedProcess ? 70 : 100} minSize={30}>
                   <BPMDiagramList 
                     bpmLoading={bpmLoading}
@@ -354,7 +354,7 @@ export function BPMPage() {
         />
 
         <Dialog open={isBpmEditorOpen} onOpenChange={(open) => !open && handleCloseDiagram()}>
-          <DialogContent className="max-w-[98vw] w-[1600px] h-[98vh] flex flex-col p-0 overflow-hidden border-none shadow-2xl rounded-lg">
+          <DialogContent className="max-w-[98vw] w-[1600px] h-[92dvh] sm:h-[98vh] flex flex-col p-0 overflow-hidden border-none shadow-2xl rounded-lg">
             <DialogTitle className="sr-only">BPM Workflow Editor: {currentSubProcess}</DialogTitle>
             <DialogDescription className="sr-only">Visual editor for BPM workflow processes</DialogDescription>
             <div className="bg-mancity-pattern p-4 sm:p-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 text-primary-foreground">

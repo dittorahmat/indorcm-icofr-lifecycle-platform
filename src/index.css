@@ -287,6 +287,34 @@
     max-height: 90dvh;
   }
 
+  /* Mobile-first resizable panels: never keep horizontal split under 768px.
+     BPMPage already switches direction via JS; this is the CSS safety net
+     for any ResizablePanelGroup left in row mode (320-767px). */
+  @media (max-width: 767px) {
+    [data-panel-group][data-panel-group-direction="horizontal"] {
+      flex-direction: column !important;
+      min-height: 0 !important;
+    }
+    [data-panel-group][data-panel-group-direction="horizontal"] > [data-panel] {
+      min-width: 0 !important;
+      width: 100% !important;
+      flex: none !important;
+    }
+    [data-panel-group][data-panel-group-direction="horizontal"] > [data-panel-resize-handle-enabled],
+    [data-panel-group][data-panel-group-direction="horizontal"] [role="separator"] {
+      display: none !important;
+    }
+    /* Kanban / wide flex rails become vertical stacks on phones */
+    .kanban-rail {
+      flex-direction: column !important;
+      overflow-x: visible !important;
+    }
+    .kanban-rail > * {
+      width: 100% !important;
+      flex-shrink: 1 !important;
+    }
+  }
+
   /* Prevent fixed-pixel toolbars from forcing horizontal scroll */
   .min-w-\[720px\],
   .min-w-\[880px\] {

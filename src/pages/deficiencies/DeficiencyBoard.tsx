@@ -615,7 +615,7 @@ export function DeficiencyBoard() {
               ))}
             </div>
           ) : (
-              <div className="flex gap-8 pb-4 h-full min-h-[600px]">
+              <div className="kanban-rail flex gap-8 pb-4 h-full min-h-[600px]">
                 {KANBAN_COLUMNS.map(status => (
                   <KanbanColumn
                     key={status}
