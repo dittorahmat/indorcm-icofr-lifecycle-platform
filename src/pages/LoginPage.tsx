@@ -141,7 +141,7 @@ export function LoginPage() {
             {/* Credential Helper */}
             <div className="text-xs text-muted-foreground text-center space-y-1">
               <p className="font-medium text-xs uppercase tracking-wider text-slate-400">{t('demo.title')}</p>
-              <div className="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-2 rounded-lg border border-slate-100 max-h-[120px] overflow-y-auto text-left">
+              <div className="grid grid-cols-1 min-[380px]:grid-cols-2 gap-2 text-xs bg-slate-50 p-2 rounded-lg border border-slate-100 max-h-[120px] overflow-y-auto text-left">
                 <div>
                   <p className="font-bold text-slate-500 mb-0.5">{t('demo.departments.mining')}</p>
                   <p>staff.ops@bumn.go.id</p>

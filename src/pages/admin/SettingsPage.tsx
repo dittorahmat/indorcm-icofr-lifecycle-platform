@@ -99,15 +99,15 @@ export function SettingsPage() {
   return (
     <AppLayout container>
       <div className="max-w-4xl mx-auto space-y-8">
-        <div className="flex justify-between items-end">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">System Settings</h1>
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3">
+          <div className="min-w-0">
+            <h1 className="text-3xl font-bold tracking-tight truncate">System Settings</h1>
             <p className="text-muted-foreground">Manage organization metadata and regulatory configurations.</p>
           </div>
           <Button 
             onClick={handleSave} 
             disabled={updateSettingsMutation.isPending}
-            className="bg-indigo-600 hover:bg-indigo-700 gap-2 shadow-lg shadow-indigo-100"
+            className="bg-indigo-600 hover:bg-indigo-700 gap-2 shadow-lg shadow-indigo-100 w-full sm:w-auto min-h-[44px] shrink-0"
           >
             {updateSettingsMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             Save Global Changes

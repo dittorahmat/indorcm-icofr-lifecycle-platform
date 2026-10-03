@@ -357,17 +357,17 @@ export function BPMPage() {
           <DialogContent className="max-w-[98vw] w-[1600px] h-[98vh] flex flex-col p-0 overflow-hidden border-none shadow-2xl rounded-lg">
             <DialogTitle className="sr-only">BPM Workflow Editor: {currentSubProcess}</DialogTitle>
             <DialogDescription className="sr-only">Visual editor for BPM workflow processes</DialogDescription>
-            <div className="bg-mancity-pattern p-6 flex justify-between items-center text-primary-foreground">
-              <div className="space-y-1">
+            <div className="bg-mancity-pattern p-4 sm:p-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 text-primary-foreground">
+              <div className="space-y-1 min-w-0">
                 <div className="flex items-center gap-3">
-                  <div className="h-9 w-9 rounded-md bg-white/20 flex items-center justify-center text-primary-foreground border border-white/30">
+                  <div className="h-9 w-9 rounded-md bg-white/20 flex items-center justify-center text-primary-foreground border border-white/30 shrink-0">
                     <WorkflowIcon className="h-5 w-5" />
                   </div>
-                  <h2 className="font-display text-2xl font-bold tracking-tight text-primary-foreground">BPM Workflow Editor: {currentSubProcess}</h2>
+                  <h2 className="font-display text-xl sm:text-2xl font-bold tracking-tight text-primary-foreground truncate">BPM Workflow Editor: {currentSubProcess}</h2>
                 </div>
-                <p className="text-primary-foreground/80 text-xs font-medium uppercase tracking-wider ml-[48px]">Mapping business processes, risks, and controls visually.</p>
+                <p className="text-primary-foreground/80 text-xs font-medium uppercase tracking-wider ml-0 sm:ml-[48px]">Mapping business processes, risks, and controls visually.</p>
               </div>
-              <Button variant="ghost" size="icon" onClick={handleCloseDiagram} className="text-primary-foreground/60 hover:text-primary-foreground hover:bg-white/10 rounded-md h-9 w-9">
+              <Button variant="ghost" size="icon" onClick={handleCloseDiagram} className="text-primary-foreground/60 hover:text-primary-foreground hover:bg-white/10 rounded-md h-11 w-11 min-h-[44px] min-w-[44px] self-end sm:self-auto shrink-0">
                  <X className="h-5 w-5" />
               </Button>
             </div>

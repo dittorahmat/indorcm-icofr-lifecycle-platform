@@ -228,7 +228,7 @@ export function TODDesignContextFields({ form }: { form: UseFormReturn<any> }) {
       <div className="space-y-4 pt-4 border-t border-slate-200">
         <div>
           <h4 className="text-xs font-bold uppercase text-slate-500 mb-2.5 tracking-wider">{t('csa_hub:tod.complianceMarkers')}</h4>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div className="grid grid-cols-1 min-[380px]:grid-cols-2 sm:grid-cols-4 gap-2">
             {['ipoC', 'ipoA', 'ipoV', 'ipoRa'].map(f => (
               <FormField
                 key={f}
@@ -246,7 +246,7 @@ export function TODDesignContextFields({ form }: { form: UseFormReturn<any> }) {
         </div>
         <div>
           <span className="text-xs font-semibold uppercase text-slate-400 tracking-wider block mb-2">Asersi Laporan Keuangan</span>
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-1.5">
+          <div className="grid grid-cols-1 min-[380px]:grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-1.5">
             {['assertionE', 'assertionC', 'assertionA', 'assertionCo', 'assertionVa', 'assertionRo', 'assertionPd'].map(f => (
               <FormField
                 key={f}

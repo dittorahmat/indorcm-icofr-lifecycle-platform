@@ -200,9 +200,9 @@ export function UserManagementPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Organization Admin</h1>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+        <div className="min-w-0">
+          <h1 className="text-3xl font-bold tracking-tight truncate">Organization Admin</h1>
           <p className="text-muted-foreground">Manage personnel and BUMN department structures.</p>
         </div>
       </div>
@@ -218,8 +218,8 @@ export function UserManagementPage() {
         </TabsList>
 
         <TabsContent value="users" className="space-y-4">
-          <div className="flex justify-between items-center">
-            <div className="relative w-full max-w-sm">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+            <div className="relative w-full sm:max-w-sm">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search user name..."
@@ -230,7 +230,7 @@ export function UserManagementPage() {
             </div>
             <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
               <DialogTrigger asChild>
-                <Button className="gap-2"><UserPlus className="h-4 w-4" /> Add User</Button>
+                <Button className="gap-2 w-full sm:w-auto min-h-[44px]"><UserPlus className="h-4 w-4" /> Add User</Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
                 <form onSubmit={handleAddUser}>

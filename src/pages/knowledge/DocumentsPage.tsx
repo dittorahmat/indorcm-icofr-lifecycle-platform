@@ -73,13 +73,13 @@ export const DocumentsPage = () => {
   return (
     <AppLayout container>
       <div className="space-y-6 pt-2 md:pt-4">
-        <div className="flex justify-between items-center pl-1">
-          <div>
-            <h1 className="text-3xl font-bold">{t('title')}</h1>
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 pl-1">
+          <div className="min-w-0">
+            <h1 className="text-3xl font-bold truncate">{t('title')}</h1>
             <p className="text-muted-foreground">{t('description')}</p>
           </div>
           {canManage && (
-            <Button onClick={() => setIsUploadModalOpen(true)}>
+            <Button onClick={() => setIsUploadModalOpen(true)} className="w-full sm:w-auto min-h-[44px] shrink-0">
               <Plus className="mr-2 h-4 w-4" /> {t('upload.button')}
             </Button>
           )}
@@ -109,9 +109,9 @@ export const DocumentsPage = () => {
           <div className="mt-6">
             <Card>
               <CardHeader className="pb-3">
-                <div className="flex justify-between items-center">
-                  <CardTitle>{activeTab === 'internal' ? t('card.internalTitle') : t('card.externalTitle')}</CardTitle>
-                  <div className="relative w-72">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                  <CardTitle className="min-w-0 truncate">{activeTab === 'internal' ? t('card.internalTitle') : t('card.externalTitle')}</CardTitle>
+                  <div className="relative w-full sm:w-72 shrink-0">
                     <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input placeholder={t('card.searchPlaceholder')} className="pl-8" />
                   </div>

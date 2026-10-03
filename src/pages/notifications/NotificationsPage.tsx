@@ -198,7 +198,7 @@ export function NotificationsPage() {
                 <div className="flex items-center justify-between p-3 rounded-lg bg-white border border-slate-200">
                   <div>
                     <p className="text-xs font-bold text-slate-800">{t('common:webhookSettings.inApp')}</p>
-                    <p className="text-[11px] text-slate-500">{t('common:webhookSettings.inAppDesc')}</p>
+                    <p className="text-xs text-slate-500">{t('common:webhookSettings.inAppDesc')}</p>
                   </div>
                   <Switch 
                     checked={localPrefs.inApp} 
@@ -210,7 +210,7 @@ export function NotificationsPage() {
                 <div className="flex items-center justify-between p-3 rounded-lg bg-white border border-slate-200">
                   <div>
                     <p className="text-xs font-bold text-slate-800">{t('common:webhookSettings.email')}</p>
-                    <p className="text-[11px] text-slate-500">{t('common:webhookSettings.emailDesc')}</p>
+                    <p className="text-xs text-slate-500">{t('common:webhookSettings.emailDesc')}</p>
                   </div>
                   <Switch 
                     checked={localPrefs.email} 
@@ -222,7 +222,7 @@ export function NotificationsPage() {
                 <div className="flex items-center justify-between p-3 rounded-lg bg-white border border-slate-200">
                   <div>
                     <p className="text-xs font-bold text-slate-800">{t('common:webhookSettings.slack')}</p>
-                    <p className="text-[11px] text-slate-500">{t('common:webhookSettings.slackDesc')}</p>
+                    <p className="text-xs text-slate-500">{t('common:webhookSettings.slackDesc')}</p>
                   </div>
                   <Switch 
                     checked={localPrefs.slack} 
@@ -234,7 +234,7 @@ export function NotificationsPage() {
                 <div className="flex items-center justify-between p-3 rounded-lg bg-white border border-slate-200">
                   <div>
                     <p className="text-xs font-bold text-slate-800">{t('common:webhookSettings.msTeams')}</p>
-                    <p className="text-[11px] text-slate-500">{t('common:webhookSettings.msTeamsDesc')}</p>
+                    <p className="text-xs text-slate-500">{t('common:webhookSettings.msTeamsDesc')}</p>
                   </div>
                   <Switch 
                     checked={localPrefs.msTeams} 
@@ -246,7 +246,7 @@ export function NotificationsPage() {
                 <div className="flex items-center justify-between p-3 rounded-lg bg-white border border-slate-200 sm:col-span-2">
                   <div>
                     <p className="text-xs font-bold text-slate-800">{t('common:webhookSettings.genericWebhook')}</p>
-                    <p className="text-[11px] text-slate-500">{t('common:webhookSettings.genericWebhookDesc')}</p>
+                    <p className="text-xs text-slate-500">{t('common:webhookSettings.genericWebhookDesc')}</p>
                   </div>
                   <Switch 
                     checked={localPrefs.genericWebhook} 

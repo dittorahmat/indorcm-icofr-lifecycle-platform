@@ -348,13 +348,13 @@ export function MaterialityJustificationModal({
           </div>
         </div>
 
-        <DialogFooter className="border-t border-border pt-4 flex items-center justify-between sm:justify-end gap-2">
+        <DialogFooter className="border-t border-border pt-4 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2">
           <Button
             type="button"
             variant="outline"
             size="sm"
             onClick={() => onOpenChange(false)}
-            className="text-xs rounded-md"
+            className="text-xs rounded-md w-full sm:w-auto min-h-[44px]"
           >
             {t('common:actions.cancel')}
           </Button>
@@ -363,7 +363,7 @@ export function MaterialityJustificationModal({
               type="button"
               size="sm"
               onClick={handleSave}
-              className="text-xs rounded-md font-semibold"
+              className="text-xs rounded-md font-semibold w-full sm:w-auto min-h-[44px]"
             >
               <FileText className="h-3.5 w-3.5 mr-1.5" />
               {t('scoping:justification.saveButton')}

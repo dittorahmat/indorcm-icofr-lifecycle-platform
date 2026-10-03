@@ -90,12 +90,12 @@ export function ApprovalPage() {
   return (
     <AppLayout container>
       <div className="space-y-6">
-        <div className="flex justify-between items-end">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">{t('approval.title')}</h1>
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3">
+          <div className="min-w-0">
+            <h1 className="text-3xl font-bold tracking-tight truncate">{t('approval.title')}</h1>
             <p className="text-muted-foreground">{t('approval.description', { role: userRole })}</p>
           </div>
-          <Badge variant="outline" className="h-6 px-3 bg-amber-50 text-amber-700 border-amber-200 gap-1.5">
+          <Badge variant="outline" className="h-6 px-3 bg-amber-50 text-amber-700 border-amber-200 gap-1.5 self-start sm:self-auto shrink-0">
             <Loader2 className="h-3 w-3 animate-spin" /> {pendingSims.length} Pending Actions
           </Badge>
         </div>
@@ -262,14 +262,14 @@ export function ApprovalPage() {
                 />
                 <p className="text-xs text-muted-foreground italic">Note: Rejection requires a reason to be provided.</p>
               </div>
-              <DialogFooter className="flex justify-between items-center sm:justify-between w-full">
-                <Button variant="outline" onClick={() => setIsReviewOpen(false)}>Cancel</Button>
-                <div className="flex gap-2">
+              <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-between sm:items-center gap-2 w-full">
+                <Button variant="outline" onClick={() => setIsReviewOpen(false)} className="w-full sm:w-auto min-h-[44px]">Cancel</Button>
+                <div className="flex flex-col-reverse sm:flex-row gap-2 w-full sm:w-auto">
                   <Button 
                     variant="destructive" 
                     onClick={() => rejectMutation.mutate(selectedSim!.id)}
                     disabled={rejectMutation.isPending || !note}
-                    className="gap-2"
+                    className="gap-2 w-full sm:w-auto min-h-[44px]"
                   >
                     <XCircle className="h-4 w-4" /> {selectedSim?.status === 'Pending Deletion Approval' ? 'Reject Deletion' : t('approval.rejectBtn')}
                   </Button>
@@ -277,7 +277,7 @@ export function ApprovalPage() {
                     onClick={() => approveMutation.mutate(selectedSim!.id)}
                     disabled={approveMutation.isPending}
                     className={cn(
-                      "gap-2",
+                      "gap-2 w-full sm:w-auto min-h-[44px]",
                       selectedSim?.status === 'Pending Deletion Approval'
                         ? "bg-red-600 hover:bg-red-700"
                         : "bg-green-600 hover:bg-green-700"

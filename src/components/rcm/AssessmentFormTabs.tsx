@@ -118,7 +118,7 @@ export function IpoAssertionTabContent({ form }: { form: UseFormReturn<any> }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
         <div className="space-y-2">
           <h4 className="text-xs font-black uppercase text-slate-500 mb-2">{t('rcm:matrix.ipo')}</h4>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 min-[380px]:grid-cols-2 gap-2">
             <CheckboxField control={form.control} name="ipoC" label="Completeness" />
             <CheckboxField control={form.control} name="ipoA" label="Accuracy" />
             <CheckboxField control={form.control} name="ipoV" label="Validity" />
@@ -127,7 +127,7 @@ export function IpoAssertionTabContent({ form }: { form: UseFormReturn<any> }) {
         </div>
         <div className="space-y-2">
           <h4 className="text-xs font-black uppercase text-slate-500 mb-2">{t('rcm:matrix.assertions')}</h4>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 min-[380px]:grid-cols-2 gap-2">
             <CheckboxField control={form.control} name="assertionE" label="Existence / Occurrence" />
             <CheckboxField control={form.control} name="assertionC" label="Completeness" />
             <CheckboxField control={form.control} name="assertionA" label="Accuracy" />

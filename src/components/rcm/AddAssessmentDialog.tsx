@@ -326,7 +326,7 @@ export function AddAssessmentDialog({
                   )}
                 />
               ) : (
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
                     name="process"
@@ -353,7 +353,7 @@ export function AddAssessmentDialog({
                       </FormItem>
                     )}
                   />
-                  <div className="col-span-2">
+                  <div className="col-span-1 sm:col-span-2">
                     <FormField
                       control={form.control}
                       name="riskDescription"

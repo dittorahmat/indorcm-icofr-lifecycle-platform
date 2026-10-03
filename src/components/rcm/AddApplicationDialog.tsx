@@ -253,7 +253,7 @@ export function AddApplicationDialog({ isOpen, onOpenChange, initialData }: AddA
 
           <div className="grid gap-2">
             <Label>ITGC Areas (Table 1 Mapping)</Label>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-3 mt-1 bg-slate-50 p-3 rounded-md border border-slate-100">
+            <div className="grid grid-cols-1 min-[380px]:grid-cols-2 gap-x-4 gap-y-3 mt-1 bg-slate-50 p-3 rounded-md border border-slate-100">
               {ITGC_AREAS.map(area => (
                 <div key={area} className="flex items-center space-x-2">
                   <Checkbox 
@@ -272,9 +272,9 @@ export function AddApplicationDialog({ isOpen, onOpenChange, initialData }: AddA
             </div>
           </div>
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={handleSubmit} disabled={!name || mutation.isPending}>
+        <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2">
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto min-h-[44px]">Cancel</Button>
+          <Button onClick={handleSubmit} disabled={!name || mutation.isPending} className="w-full sm:w-auto min-h-[44px]">
             {mutation.isPending ? "Saving..." : (initialData ? "Save Changes" : "Add Application")}
           </Button>
         </DialogFooter>

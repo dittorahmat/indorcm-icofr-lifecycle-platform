@@ -301,21 +301,21 @@ export function DoDWizard({ isOpen, setIsOpen, onComplete, isAggregate = false, 
           )}
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex-col-reverse sm:flex-row gap-2">
           {step === 'RESULT' ? (
             <div className="w-full space-y-2">
-              <Button onClick={handleFinish} disabled={!rationale || selectedAssertions.length === 0} className="w-full">{t('wizard.result.applyButton')}</Button>
+              <Button onClick={handleFinish} disabled={!rationale || selectedAssertions.length === 0} className="w-full min-h-[44px]">{t('wizard.result.applyButton')}</Button>
               <p className="text-xs text-center text-muted-foreground uppercase font-bold tracking-tight">Ref: Gambar 5 SK-5/DKU.MBU/11/2024 (Hal. 73)</p>
             </div>
           ) : (
-            <div className="w-full flex justify-between items-center">
+            <div className="w-full flex flex-col-reverse sm:flex-row sm:justify-between sm:items-center gap-2">
                <div className="flex flex-col">
                  <span className="text-xs text-muted-foreground uppercase font-bold">
                    {t('wizard.common.boxProgress', { step: String.fromCharCode(96 + (step as number)) })}
                  </span>
                  <span className="text-xs text-muted-foreground/60 font-medium">Ref: Gambar 5 SK-5/2024</span>
                </div>
-               <Button variant="ghost" size="sm" onClick={reset}>{t('wizard.common.reset')}</Button>
+                <Button variant="ghost" size="sm" onClick={reset} className="w-full sm:w-auto min-h-[44px]">{t('wizard.common.reset')}</Button>
             </div>
           )}
         </DialogFooter>

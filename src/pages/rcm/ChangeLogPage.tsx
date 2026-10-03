@@ -20,12 +20,12 @@ export function ChangeLogPage() {
   return (
     <AppLayout container>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Change Management Log</h1>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="text-3xl font-bold truncate">Change Management Log</h1>
             <p className="text-muted-foreground">Appendix 6 - Illustration of Documentation for Business Process and Control Change Log.</p>
           </div>
-          <Badge variant="secondary" className="px-3 py-1 gap-2 border-primary/20 bg-primary/5">
+          <Badge variant="secondary" className="px-3 py-1 gap-2 border-primary/20 bg-primary/5 self-start sm:self-auto shrink-0">
             <History className="h-3 w-3" /> Audit-Ready
           </Badge>
         </div>

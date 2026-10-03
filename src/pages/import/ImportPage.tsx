@@ -157,12 +157,12 @@ export function ImportPage() {
                 </motion.div>
               ) : (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-3 rounded-md border bg-muted/20">
-                    <div className="flex items-center gap-2">
-                      <FileIcon className="h-6 w-6 text-primary" />
-                      <span className="text-sm font-medium">{fileName}</span>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 rounded-md border bg-muted/20">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <FileIcon className="h-6 w-6 text-primary shrink-0" />
+                      <span className="text-sm font-medium truncate">{fileName}</span>
                     </div>
-                    <Button variant="ghost" size="icon" onClick={() => { setRows([]); setFileName(null); }}>
+                    <Button variant="ghost" size="icon" onClick={() => { setRows([]); setFileName(null); }} className="min-h-[44px] min-w-[44px] self-end sm:self-auto shrink-0">
                       <X className="h-4 w-4" />
                     </Button>
                   </div>
@@ -185,9 +185,9 @@ export function ImportPage() {
                       </TableBody>
                     </Table>
                   </div>
-                  <div className="mt-6 flex items-center justify-between border-t pt-4">
-                    <div>{hasErrors && <p className="text-xs text-destructive font-medium flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> Some rows have validation errors and will be skipped.</p>}</div>
-                    <Button onClick={handleImport} disabled={mutation.status === 'pending' || rows.filter(r => !r.errors).length === 0 || !isAuthorized} className="min-w-[150px]">
+                  <div className="mt-6 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 border-t pt-4">
+                    <div className="min-w-0">{hasErrors && <p className="text-xs text-destructive font-medium flex items-center gap-1"><AlertTriangle className="h-3 w-3 shrink-0" /> Some rows have validation errors and will be skipped.</p>}</div>
+                    <Button onClick={handleImport} disabled={mutation.status === 'pending' || rows.filter(r => !r.errors).length === 0 || !isAuthorized} className="min-w-[150px] w-full sm:w-auto min-h-[44px] shrink-0">
                       {mutation.status === 'pending' ? 'Importing...' : `Import ${rows.filter(r => !r.errors).length} Valid Rows`}
                     </Button>
                   </div>

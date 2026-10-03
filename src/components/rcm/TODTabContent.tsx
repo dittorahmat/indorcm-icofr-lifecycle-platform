@@ -98,7 +98,7 @@ export function TODTabContent({ form, conclusionValue }: TODTabContentProps) {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4 border-t pt-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t pt-4">
         <FormField
           control={form.control}
           name="kkReference"

@@ -436,7 +436,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                           <h3 className="text-xs font-black uppercase tracking-widest text-slate-700">{t('matrix.ipo')}</h3>
                        </div>
                        <TooltipProvider>
-                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                            <div className="grid grid-cols-1 min-[380px]:grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                              {[
                                { name: 'ipoC', label: 'C', desc: t('bpm:ipo.tooltip.c.label'), tooltip: t('bpm:ipo.tooltip.c.desc') },
                                { name: 'ipoA', label: 'A', desc: t('bpm:ipo.tooltip.a.label'), tooltip: t('bpm:ipo.tooltip.a.desc') },
@@ -461,11 +461,11 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                                              </TooltipTrigger>
                                              <TooltipContent side="top" className="max-w-[280px] p-3 rounded-xl shadow-xl border-none bg-slate-900 text-white z-[1100]">
                                                 <p className="text-xs font-bold text-blue-400">{item.label} - {item.desc}</p>
-                                                <p className="text-[11px] mt-1 text-slate-300 leading-relaxed italic">"{item.tooltip}"</p>
+                                                <p className="text-xs mt-1 text-slate-300 leading-relaxed">"{item.tooltip}"</p>
                                              </TooltipContent>
                                           </Tooltip>
                                        </div>
-                                       <p className="text-[10px] text-slate-400 font-bold uppercase mt-1 line-clamp-1">{item.desc}</p>
+                                       <p className="text-xs text-slate-400 font-bold uppercase mt-1 line-clamp-1">{item.desc}</p>
                                     </div>
                                   </FormItem>
                                 )}
@@ -481,7 +481,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                           <h3 className="text-xs font-black uppercase tracking-widest text-slate-700">{t('matrix.assertions')}</h3>
                        </div>
                        <TooltipProvider>
-                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                            <div className="grid grid-cols-1 min-[380px]:grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                              {[
                                { name: 'assertionE', label: 'E/O', desc: t('bpm:assertions.tooltip.eo.label'), tooltip: t('bpm:assertions.tooltip.eo.desc') },
                                { name: 'assertionC', label: 'C', desc: t('bpm:assertions.tooltip.c.label'), tooltip: t('bpm:assertions.tooltip.c.desc') },
@@ -509,11 +509,11 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                                              </TooltipTrigger>
                                              <TooltipContent side="top" className="max-w-[280px] p-3 rounded-xl shadow-xl border-none bg-slate-900 text-white z-[1100]">
                                                 <p className="text-xs font-bold text-indigo-400">{item.label} - {item.desc}</p>
-                                                <p className="text-[11px] mt-1 text-slate-300 leading-relaxed italic">"{item.tooltip}"</p>
+                                                <p className="text-xs mt-1 text-slate-300 leading-relaxed">"{item.tooltip}"</p>
                                              </TooltipContent>
                                           </Tooltip>
                                        </div>
-                                       <p className="text-[10px] text-slate-400 font-bold uppercase mt-1 line-clamp-1">{item.desc}</p>
+                                       <p className="text-xs text-slate-400 font-bold uppercase mt-1 line-clamp-1">{item.desc}</p>
                                     </div>
                                   </FormItem>
                                 )}
