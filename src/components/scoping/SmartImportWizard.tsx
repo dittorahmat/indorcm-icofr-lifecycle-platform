@@ -358,27 +358,27 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
                 }
             }
         }}>
-            <DialogContent className="max-w-[90vw] w-[1200px] h-[85vh] flex flex-col p-0 overflow-hidden border-none shadow-2xl rounded-[2.5rem]">
-                <DialogHeader className="px-8 py-6 bg-mancity-pattern text-primary-foreground flex flex-row items-center justify-between">
-                    <div className="space-y-1">
-                        <DialogTitle className="text-2xl font-black uppercase tracking-tight flex items-center gap-3 text-primary-foreground">
+            <DialogContent className="w-[calc(100vw-1.5rem)] sm:w-full sm:max-w-[90vw] lg:max-w-[1100px] h-[92dvh] sm:h-[85vh] flex flex-col p-0 overflow-hidden border shadow-2xl rounded-lg">
+                <DialogHeader className="px-4 sm:px-8 py-4 sm:py-6 bg-mancity-pattern text-primary-foreground flex flex-row items-center justify-between gap-3">
+                    <div className="space-y-1 min-w-0">
+                        <DialogTitle className="text-lg sm:text-2xl font-black uppercase tracking-tight flex items-center gap-3 text-primary-foreground">
                             <Zap className="h-6 w-6 text-primary-foreground" />
                             {t('rcm:migration.title')}
                         </DialogTitle>
                         <p className="text-xs text-primary-foreground/60 font-medium">{t('rcm:migration.description')}</p>
                     </div>
-                    <div className="flex items-center gap-6 mr-8">
+                    <div className="flex items-center gap-3 sm:gap-6 mr-1 sm:mr-8 shrink-0">
                         <div className="flex flex-col items-end gap-1">
-                            <span className="text-[9px] font-black text-primary-foreground/60 uppercase tracking-widest">Import for Cycle</span>
+                            <span className="text-xs font-black text-primary-foreground/60 uppercase tracking-widest">Import for Cycle</span>
                             <span className="text-xs font-bold text-primary-foreground">{fiscalYear}</span>
                         </div>
                     </div>
                 </DialogHeader>
 
-                <div className="flex-1 overflow-y-auto bg-slate-50/50 p-8">
-                    <div className="max-w-5xl mx-auto space-y-8">
+                <div className="flex-1 overflow-y-auto bg-slate-50/50 p-4 sm:p-8 min-h-0">
+                    <div className="max-w-5xl mx-auto space-y-6 sm:space-y-8">
                          {/* Stepper */}
-                        <div className="flex items-center justify-center gap-8 py-2">
+                        <div className="flex items-center justify-center gap-2 sm:gap-8 py-2 overflow-x-auto no-scrollbar max-w-full">
                             {[1, 2, 3].map((s) => (
                                 <React.Fragment key={s}>
                                     <div className="flex items-center gap-3">
@@ -389,7 +389,7 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
                                             {s}
                                         </div>
                                         <span className={cn(
-                                            "text-[10px] font-black uppercase tracking-widest transition-colors duration-500",
+                                            "text-xs font-black uppercase tracking-widest transition-colors duration-500 whitespace-nowrap",
                                             step >= s ? "text-indigo-900" : "text-slate-400"
                                         )}>
                                             {s === 1 ? t('rcm:migration.steps.ingestion') : s === 2 ? t('rcm:migration.steps.normalization') : t('rcm:migration.steps.baselining')}
@@ -400,22 +400,22 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
                             ))}
                         </div>
 
-                        <Card className="border-slate-200 shadow-xl overflow-hidden rounded-[2.5rem] bg-white">
-                            <CardContent className="p-8">
+                        <Card className="border-slate-200 shadow-xl overflow-hidden rounded-lg bg-white">
+                            <CardContent className="p-4 sm:p-8">
                                 <AnimatePresence mode="wait">
                                     {step === 1 && (
                                         <motion.div 
                                             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
                                             className="space-y-8"
                                         >
-                                            <div className="bg-slate-50 p-6 rounded-3xl border border-slate-200 space-y-4">
-                                                <div className="flex items-center justify-between">
-                                                    <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Pilih Tipe RCM</h4>
-                                                    <Button variant="outline" size="sm" onClick={downloadTemplate} className="h-7 text-[9px] font-bold gap-2 uppercase tracking-widest rounded-full">
+                                            <div className="bg-slate-50 p-4 sm:p-6 rounded-lg border border-slate-200 space-y-4">
+                                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                                    <h4 className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">Pilih Tipe RCM</h4>
+                                                    <Button variant="outline" size="sm" onClick={downloadTemplate} className="h-7 text-xs font-bold gap-2 uppercase tracking-widest rounded-full">
                                                         <Download className="h-3 w-3" /> Template {rcmType}
                                                     </Button>
                                                 </div>
-                                                <RadioGroup value={rcmType} onValueChange={(v) => setRcmType(v as RCMType)} className="flex gap-6">
+                                                <RadioGroup value={rcmType} onValueChange={(v) => setRcmType(v as RCMType)} className="flex flex-wrap gap-4 sm:gap-6">
                                                     <div className="flex items-center space-x-2">
                                                         <RadioGroupItem value="TLC" id="tlc" />
                                                         <Label htmlFor="tlc" className="text-xs font-bold text-slate-700">TLC (Transactional)</Label>
@@ -446,13 +446,13 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
                                                 "pt-8 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4 transition-all duration-500",
                                                 (tbFile || rcmFile) ? "opacity-100 translate-y-0" : "opacity-40 translate-y-2 pointer-events-none"
                                             )}>
-                                                <div className="flex items-center gap-3 text-[11px] font-bold text-slate-500 bg-slate-50 px-5 py-2.5 rounded-full border border-slate-200">
-                                                    <Zap className={cn("h-3.5 w-3.5", (tbFile || rcmFile) ? "text-amber-500 fill-amber-500 animate-pulse" : "text-slate-300")} />
+                                                <div className="flex items-center gap-3 text-xs font-bold text-slate-500 bg-slate-50 px-5 py-2.5 rounded-full border border-slate-200">
+                                                    <Zap className={cn("h-3.5 w-3.5", (tbFile || rcmFile) ? "text-amber-500 fill-amber-500" : "text-slate-300")} />
                                                     {(tbFile || rcmFile) ? t('rcm:migration.ingestion.ai_ready') : "Upload files to begin AI analysis"}
                                                 </div>
                                                 <Button 
                                                     size="lg" 
-                                                    className="rounded-2xl px-12 font-black uppercase tracking-[0.15em] gap-3 bg-indigo-600 hover:bg-indigo-700 text-white shadow-xl h-14 text-xs transition-all active:scale-95"
+                                                    className="rounded-lg px-6 sm:px-12 font-black uppercase tracking-[0.15em] gap-3 bg-indigo-600 hover:bg-indigo-700 text-white shadow-xl h-12 sm:h-14 text-xs transition-all active:scale-95 w-full md:w-auto min-h-[44px]"
                                                     onClick={handleProcessAI}
                                                     disabled={isProcessing}
                                                 >
@@ -480,9 +480,9 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
                                                     }} />
                                                 </div>
                                             </div>
-                                            <div className="flex justify-end gap-3 pt-4">
-                                                <Button variant="ghost" onClick={() => setStep(1)} className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Back to Upload</Button>
-                                                <Button onClick={() => setStep(3)} className="rounded-xl px-10 h-11 font-black uppercase tracking-widest bg-mancity-pattern text-primary-foreground hover:opacity-90 shadow-lg text-[10px]">Next: View Summary</Button>
+                                            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 pt-4">
+                                                <Button variant="ghost" onClick={() => setStep(1)} className="text-slate-400 font-bold uppercase tracking-widest text-xs min-h-[44px]">Back to Upload</Button>
+                                                <Button onClick={() => setStep(3)} className="rounded-lg px-6 sm:px-10 min-h-[44px] h-11 font-black uppercase tracking-widest bg-mancity-pattern text-primary-foreground hover:opacity-90 shadow-lg text-xs w-full sm:w-auto">Next: View Summary</Button>
                                             </div>
                                         </motion.div>
                                     )}
@@ -498,21 +498,21 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
                                             }} />
 
                                             {parsedTbData.length > 0 && (
-                                                <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-xl space-y-6">
+                                                <div className="bg-white p-4 sm:p-8 rounded-lg border border-slate-200 shadow-xl space-y-6">
                                                     <div className="flex items-center gap-3">
                                                         <div className="h-10 w-10 rounded-2xl bg-indigo-50 flex items-center justify-center">
                                                             <Calculator className="h-5 w-5 text-indigo-600" />
                                                         </div>
                                                         <div className="space-y-0.5">
                                                             <h4 className="text-sm font-black uppercase tracking-tight text-slate-900">Materiality Configuration</h4>
-                                                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Set baseline parameters for quantitative scoping</p>
+                                                            <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Set baseline parameters for quantitative scoping</p>
                                                         </div>
                                                     </div>
 
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
                                                         <div className="space-y-4">
                                                             <div className="space-y-2">
-                                                                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">{t('scoping:form.benchmark')}</Label>
+                                                                <Label className="text-xs font-black uppercase tracking-widest text-slate-500">{t('scoping:form.benchmark')}</Label>
                                                                 <Popover open={benchmarkPopoverOpen} onOpenChange={setBenchmarkPopoverOpen}>
                                                                     <PopoverTrigger asChild>
                                                                         <Button
@@ -524,7 +524,7 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
                                                                             {selectedBasis ? (
                                                                                 <div className="flex items-center justify-between w-full pr-2 text-left truncate">
                                                                                     <span className="truncate">{selectedBasis}</span>
-                                                                                    <span className="text-[10px] text-slate-400 font-mono ml-2 shrink-0">
+                                                                                    <span className="text-xs text-slate-400 font-mono ml-2 shrink-0">
                                                                                         Rp {(uniqueFsliData.find(f => f.name === selectedBasis)?.total || 0).toLocaleString()}
                                                                                     </span>
                                                                                 </div>
@@ -534,7 +534,7 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
                                                                             <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50 ml-2" />
                                                                         </Button>
                                                                     </PopoverTrigger>
-                                                                    <PopoverContent className="w-[420px] p-0 rounded-2xl border-slate-200 shadow-xl overflow-hidden" align="start">
+                                                                    <PopoverContent className="w-[calc(100vw-2rem)] max-w-[420px] p-0 rounded-lg border-slate-200 shadow-xl overflow-hidden" align="start">
                                                                         <Command>
                                                                             <CommandInput placeholder="Cari FSLI / GL Benchmark..." className="h-10 text-xs" />
                                                                             <CommandList className="max-h-60 overflow-y-auto">
@@ -561,7 +561,7 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
                                                                                                 />
                                                                                                 <span className="truncate">{item.name}</span>
                                                                                             </div>
-                                                                                            <span className="text-[10px] text-slate-400 font-mono shrink-0 ml-4">
+                                                                                            <span className="text-xs text-slate-400 font-mono shrink-0 ml-4">
                                                                                                 Rp {item.total.toLocaleString()}
                                                                                             </span>
                                                                                         </CommandItem>
@@ -582,18 +582,18 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
                                                                             onChange={e => setOmPercentage(parseFloat(e.target.value) || 0)}
                                                                             className="h-12 rounded-xl border-slate-200 bg-slate-50/50 font-black text-indigo-600 pr-8"
                                                                         />
-                                                                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-400">%</span>
+                                                                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-black text-slate-400">%</span>
                                                                     </div>
                                                                 </div>
                                                                 <div className="space-y-2">
-                                                                    <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Haircut %</Label>
+                                                                    <Label className="text-xs font-black uppercase tracking-widest text-slate-500">Haircut %</Label>
                                                                     <div className="relative">
                                                                         <Input 
                                                                             type="number" step="0.1" value={haircutPercentage} 
                                                                             onChange={e => setHaircutPercentage(parseFloat(e.target.value) || 0)}
                                                                             className="h-12 rounded-xl border-slate-200 bg-slate-50/50 font-black text-amber-600 pr-8"
                                                                         />
-                                                                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-400">%</span>
+                                                                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-black text-slate-400">%</span>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -605,20 +605,20 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
                                                             </div>
                                                             <div className="space-y-4 relative z-10">
                                                                 <div className="space-y-1">
-                                                                    <p className="text-[9px] font-black uppercase tracking-[0.2em] text-indigo-400">Calculated OM</p>
+                                                                    <p className="text-xs font-black uppercase tracking-[0.2em] text-indigo-400">Calculated OM</p>
                                                                     <p className="text-2xl font-mono font-black tracking-tighter">
                                                                         Rp {calculateOM(uniqueFsliData.find(f => f.name === selectedBasis)?.total || 0, omPercentage, getGroupMultiplier(locationCount)).toLocaleString()}
                                                                     </p>
                                                                 </div>
                                                                 <div className="h-px bg-slate-800" />
                                                                 <div className="space-y-1">
-                                                                    <p className="text-[9px] font-black uppercase tracking-[0.2em] text-amber-400">Performance Materiality (PM)</p>
+                                                                    <p className="text-xs font-black uppercase tracking-[0.2em] text-amber-400">Performance Materiality (PM)</p>
                                                                     <p className="text-2xl font-mono font-black tracking-tighter text-amber-50">
                                                                         Rp {calculatePM(calculateOM(uniqueFsliData.find(f => f.name === selectedBasis)?.total || 0, omPercentage, getGroupMultiplier(locationCount)), haircutPercentage).toLocaleString()}
                                                                     </p>
                                                                 </div>
                                                             </div>
-                                                            <div className="flex items-center gap-2 text-[9px] font-bold text-slate-500 uppercase tracking-widest relative z-10">
+                                                            <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-widest relative z-10">
                                                                 <AlertCircle className="h-3 w-3" />
                                                                 Based on {getGroupMultiplier(locationCount)}x Group Multiplier
                                                             </div>
@@ -630,7 +630,7 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
                                             <div className="flex flex-col items-center justify-center py-10 text-center gap-6 bg-indigo-50/30 rounded-[3rem] border-2 border-dashed border-indigo-100">
                                                 <div className="h-16 w-16 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg"><ShieldCheck className="h-8 w-8" /></div>
                                                 <div className="space-y-1"><h2 className="text-xl font-black text-slate-900 uppercase">{t('rcm:migration.baselining.ready_title')}</h2><p className="text-xs text-slate-500 max-w-sm mx-auto">{t('rcm:migration.baselining.ready_desc')}</p></div>
-                                                <div className="flex gap-4"><Button variant="ghost" onClick={() => setStep(2)} className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Review Mapping</Button><Button size="lg" onClick={handleFinalize} className="rounded-2xl px-12 font-black uppercase tracking-widest bg-emerald-600 hover:bg-emerald-700 shadow-xl text-white h-14 text-xs">Finalize Baseline</Button></div>
+                                                <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-4"><Button variant="ghost" onClick={() => setStep(2)} className="text-xs font-bold text-slate-400 uppercase tracking-widest min-h-[44px]">Review Mapping</Button><Button size="lg" onClick={handleFinalize} className="rounded-lg px-6 sm:px-12 font-black uppercase tracking-widest bg-emerald-600 hover:bg-emerald-700 shadow-xl text-white min-h-[44px] h-12 sm:h-14 text-xs w-full sm:w-auto">Finalize Baseline</Button></div>
                                             </div>
                                         </motion.div>
                                     )}

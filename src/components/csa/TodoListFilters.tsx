@@ -32,11 +32,11 @@ export function TodoListFilters({
         </Button>
         
         <div className="flex items-center gap-1">
-          <Tabs defaultValue="month" className="hidden md:block">
-            <TabsList className="bg-slate-100/50 p-1">
-              <TabsTrigger value="day" className="text-xs px-4">{t('common:calendar.day')}</TabsTrigger>
-              <TabsTrigger value="week" className="text-xs px-4">{t('common:calendar.week')}</TabsTrigger>
-              <TabsTrigger value="month" className="text-xs px-4">{t('common:calendar.month')}</TabsTrigger>
+          <Tabs defaultValue="month" className="block max-w-full">
+            <TabsList className="bg-slate-100/50 p-1 max-w-full overflow-x-auto no-scrollbar flex sm:inline-flex">
+              <TabsTrigger value="day" className="text-xs px-3 sm:px-4 shrink-0">{t('common:calendar.day')}</TabsTrigger>
+              <TabsTrigger value="week" className="text-xs px-3 sm:px-4 shrink-0">{t('common:calendar.week')}</TabsTrigger>
+              <TabsTrigger value="month" className="text-xs px-3 sm:px-4 shrink-0">{t('common:calendar.month')}</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>

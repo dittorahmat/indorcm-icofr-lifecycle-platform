@@ -306,7 +306,7 @@ export function VerificationDesignPage({ embedded, filterBpmId, workingYear, noG
             </div>
             {newAssessmentButton}
           </div>
-          <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider hidden md:inline">
+          <span className="text-xs font-black text-slate-400 uppercase tracking-wider hidden md:inline">
             {t('rcm:verification.title')}
           </span>
         </div>

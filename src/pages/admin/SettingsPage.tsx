@@ -129,7 +129,7 @@ export function SettingsPage() {
                </div>
             </CardHeader>
             <CardContent className="p-6 space-y-6">
-               <div className="grid md:grid-cols-2 gap-6">
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label className="text-xs font-black uppercase text-slate-500 tracking-wider">Company Name</Label>
                     <Input 
@@ -174,7 +174,7 @@ export function SettingsPage() {
                </div>
             </CardHeader>
             <CardContent className="p-6 space-y-6">
-               <div className="grid md:grid-cols-2 gap-6">
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label className="text-xs font-black uppercase text-slate-500 tracking-wider">Chief Executive Officer (CEO)</Label>
                     <Input 
@@ -222,7 +222,7 @@ export function SettingsPage() {
                </div>
             </CardHeader>
             <CardContent className="p-6 space-y-6">
-               <div className="grid md:grid-cols-2 gap-6">
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label className="text-xs font-black uppercase text-slate-500 tracking-wider">{t('emailSettings.provider')}</Label>
                     <Select 
@@ -253,7 +253,7 @@ export function SettingsPage() {
                  <>
                    <Separator className="my-4" />
                    <div className="space-y-6">
-                     <div className="grid md:grid-cols-3 gap-6">
+                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                        <div className="space-y-2 md:col-span-2">
                          <Label className="text-xs font-black uppercase text-slate-500 tracking-wider">{t('emailSettings.senderEmail')}</Label>
                          <Input 
@@ -274,7 +274,7 @@ export function SettingsPage() {
                        </div>
                      </div>
 
-                     <div className="grid md:grid-cols-3 gap-6">
+                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                        <div className="space-y-2 md:col-span-2">
                          <Label className="text-xs font-black uppercase text-slate-500 tracking-wider">{t('emailSettings.smtpHost')}</Label>
                          <Input 
@@ -291,7 +291,7 @@ export function SettingsPage() {
                        </div>
                      </div>
 
-                     <div className="grid md:grid-cols-2 gap-6">
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                        <div className="space-y-2">
                          <Label className="text-xs font-black uppercase text-slate-500 tracking-wider">{t('emailSettings.smtpUser')}</Label>
                          <Input 

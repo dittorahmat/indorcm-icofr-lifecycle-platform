@@ -151,7 +151,7 @@ export const Appendix7aSummary = React.forwardRef<HTMLDivElement, Appendix7aSumm
           </div>
 
           {/* Footer Area */}
-          <div className="overflow-x-auto rounded-lg border-2 border-slate-900 bg-white">
+          <div className="overflow-x-auto max-w-full rounded-lg border-2 border-slate-900 bg-white touch-pan-x overscroll-x-contain table-scroll-hint">
           <div className="grid grid-cols-3 min-w-[560px] bg-white overflow-hidden min-h-[10rem]">
              <div className="border-r-2 border-slate-900 p-4 flex flex-col">
                 <span className="text-xs font-black uppercase text-slate-400">Dikerjakan Oleh (Auditee)</span>

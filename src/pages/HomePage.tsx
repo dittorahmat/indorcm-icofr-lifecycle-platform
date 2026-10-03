@@ -78,7 +78,7 @@ export function HomePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="grid gap-6 md:grid-cols-3 mb-24"
+            className="grid grid-cols-1 gap-6 md:grid-cols-3 mb-24"
           >
             <StatCard icon={<Zap className="h-5 w-5 text-muted-foreground" />} title="ISB Risk Control Coverage" value="98.7%" />
             <StatCard icon={<CheckCircle className="h-5 w-5 text-muted-foreground" />} title="Controls Effective" value="95.2%" />
