@@ -100,9 +100,9 @@ export function RCMList() {
         variants={containerVariants}
         className="flex flex-col space-y-8 pb-10"
       >
-        <motion.div variants={itemVariants} className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div className="space-y-2">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-display font-bold tracking-tight text-slate-900 leading-none">Risk Control Matrix</h1>
+        <motion.div variants={itemVariants} className="flex flex-col md:flex-row md:items-end justify-between gap-6 min-w-0 max-w-full">
+          <div className="space-y-2 min-w-0 max-w-full">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-display font-bold tracking-tight text-slate-900 leading-none break-words">Risk Control Matrix</h1>
             <p className="text-slate-500 text-sm font-medium max-w-2xl leading-relaxed">
               {t('matrix.subtitle_tlc')}
             </p>
@@ -115,7 +115,7 @@ export function RCMList() {
         </motion.div>
 
         <Tabs defaultValue="tlc" className="w-full">
-          <motion.div variants={itemVariants} className="bg-slate-100/50 p-1 border border-slate-200 rounded-lg max-w-full overflow-x-auto mb-8 no-scrollbar">
+          <motion.div variants={itemVariants} className="bg-slate-100/50 p-1 border border-slate-200 rounded-lg max-w-full overflow-x-auto touch-pan-x overscroll-x-contain mb-8 no-scrollbar">
             <TabsList className="bg-transparent h-auto p-0 flex gap-1 w-max min-w-full">
               {[
                 { value: 'tlc', label: `TLC (${t('common:icofr.tlc')})`, count: tlcControls.length },
@@ -126,7 +126,7 @@ export function RCMList() {
                 <TabsTrigger 
                   key={tab.value}
                   value={tab.value} 
-                  className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-indigo-600 transition-all font-bold text-xs uppercase tracking-widest py-3 px-6 text-slate-500 flex items-center gap-2.5"
+                  className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-indigo-600 transition-all font-bold text-xs uppercase tracking-widest py-3 px-6 min-h-[44px] text-slate-500 flex items-center gap-2.5 whitespace-nowrap"
                 >
                   {tab.label}
                   <Badge className="bg-slate-200/50 text-slate-500 group-data-[state=active]:bg-indigo-50 group-data-[state=active]:text-indigo-600 border-none px-1.5 py-0 min-w-[20px] h-5 flex items-center justify-center font-mono">

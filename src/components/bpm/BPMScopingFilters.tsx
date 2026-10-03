@@ -60,7 +60,7 @@ export function BPMScopingFilters({
                   role="combobox"
                   aria-expanded={fsliOpen}
                   disabled={snapLoading || simLoading}
-                  className="w-full bg-slate-50 border-slate-200 h-10 text-xs font-bold uppercase tracking-wider rounded-lg focus:bg-white transition-all shadow-sm justify-between px-3"
+                  className="w-full bg-slate-50 border-slate-200 h-11 sm:h-10 min-h-[44px] sm:min-h-0 text-xs font-bold uppercase tracking-wider rounded-lg focus:bg-white transition-all shadow-sm justify-between px-3"
                 >
                   <span className="truncate">
                     {snapLoading ? (
@@ -136,7 +136,7 @@ export function BPMScopingFilters({
                   role="combobox"
                   aria-expanded={glOpen}
                   disabled={!selectedFsli || snapLoading}
-                  className="w-full bg-slate-50 border-slate-200 h-10 text-xs font-bold uppercase tracking-wider rounded-lg focus:bg-white transition-all shadow-sm justify-between px-3"
+                  className="w-full bg-slate-50 border-slate-200 h-11 sm:h-10 min-h-[44px] sm:min-h-0 text-xs font-bold uppercase tracking-wider rounded-lg focus:bg-white transition-all shadow-sm justify-between px-3"
                 >
                   <span className="truncate">
                     {snapLoading ? (

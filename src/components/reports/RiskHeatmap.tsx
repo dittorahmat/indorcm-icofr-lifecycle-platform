@@ -36,9 +36,9 @@ export function RiskHeatmap() {
   return (
     <Card className="overflow-hidden border-slate-200 shadow-sm">
       <CardHeader className="bg-slate-50/50 border-b pb-4">
-        <div className="flex items-center justify-between flex-wrap gap-2">
-          <div className="space-y-1">
-            <CardTitle className="text-lg flex items-center gap-2">
+        <div className="flex items-center justify-between flex-wrap gap-2 min-w-0">
+          <div className="space-y-1 min-w-0">
+            <CardTitle className="text-base sm:text-lg flex items-center gap-2 min-w-0">
               Heatmap Risiko (SK-5/2024)
             </CardTitle>
             <CardDescription>Kombinasi Faktor Kuantitatif vs Kualitatif - {companyName}</CardDescription>
@@ -48,9 +48,9 @@ export function RiskHeatmap() {
           </Badge>
         </div>
       </CardHeader>
-      <CardContent className="pt-8">
+      <CardContent className="px-3 sm:px-6 pt-6 sm:pt-8">
         <div className="flex flex-col items-center">
-          <div className="grid grid-cols-[40px_1fr] gap-4 w-full max-w-[600px]">
+          <div className="grid grid-cols-[28px_1fr] sm:grid-cols-[40px_1fr] gap-2 sm:gap-4 w-full max-w-[600px] min-w-0">
             {/* Y-Axis Label */}
             <div className="flex flex-col justify-between py-10">
               <span className="text-xs font-black text-slate-400 uppercase vertical-text -rotate-180 h-full flex items-center justify-center">Kuantitatif</span>
