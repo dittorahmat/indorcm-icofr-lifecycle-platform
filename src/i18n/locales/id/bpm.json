@@ -322,7 +322,12 @@
     "edge": {
       "labelPlaceholder": "Tambah label…",
       "labelHint": "Klik panah, lalu ketik Ya / Tidak",
-      "labelAria": "Label koneksi"
+      "labelAria": "Label koneksi",
+      "corner1": "1-Siku (L)",
+      "corner2": "2-Siku (Step)",
+      "autoRouting": "Otomatis",
+      "resetWaypoint": "Reset Jalur Asal",
+      "resetWaypointHint": "Reset belokan kustom (atau klik dua kali titik kontrol)"
     },
     "toast": {
       "undo": "Perubahan dibatalkan (Undo)",

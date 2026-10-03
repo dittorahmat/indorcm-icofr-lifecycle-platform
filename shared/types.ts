@@ -267,11 +267,27 @@ export interface BPMNode {
   };
 }
 
+export type BPMEdgeRoutingMode = 'auto' | '1-corner' | '2-corner';
+
+export interface BPMEdgeData {
+  bendOffset?: {
+    x?: number;
+    y?: number;
+  };
+  routingMode?: BPMEdgeRoutingMode;
+  [key: string]: any;
+}
+
 export interface BPMEdge {
   id: string;
   source: string;
   target: string;
+  sourceHandle?: string | null;
+  targetHandle?: string | null;
   label?: string;
+  type?: string;
+  style?: Record<string, any>;
+  data?: BPMEdgeData;
 }
 
 export type RCMControlMapping = InferSelectModel<typeof schema.rcmControls>;

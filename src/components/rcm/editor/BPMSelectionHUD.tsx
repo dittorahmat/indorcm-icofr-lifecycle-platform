@@ -16,6 +16,7 @@ export interface BPMSelectionHUDProps {
   onDeleteSelected: () => void;
   onClearSelection: () => void;
   onUpdateEdgeLabel?: (edgeId: string, label: string) => void;
+  onUpdateEdgeRouting?: (edgeId: string, mode: 'auto' | '1-corner' | '2-corner', resetOffset?: boolean) => void;
   onEditSelected?: () => void;
 }
 
@@ -27,6 +28,7 @@ export const BPMSelectionHUD: React.FC<BPMSelectionHUDProps> = ({
   onDeleteSelected,
   onClearSelection,
   onUpdateEdgeLabel,
+  onUpdateEdgeRouting,
   onEditSelected,
 }) => {
   const { t } = useTranslation(['bpm']);
@@ -51,6 +53,9 @@ export const BPMSelectionHUD: React.FC<BPMSelectionHUDProps> = ({
       setEdgeLabelDraft(current);
     }
   };
+
+  const edgeRoutingMode = (selectedEdge?.data?.routingMode as 'auto' | '1-corner' | '2-corner') || 'auto';
+  const hasBendOffset = Boolean(selectedEdge?.data?.bendOffset);
 
   return (
     <Panel position="bottom-center" className="mb-4 pointer-events-auto">
@@ -112,8 +117,55 @@ export const BPMSelectionHUD: React.FC<BPMSelectionHUDProps> = ({
                 placeholder={t('bpm:editor.edge.labelPlaceholder', { defaultValue: 'Add label…' })}
                 title={t('bpm:editor.edge.labelHint', { defaultValue: 'Click an arrow, then type Ya / Tidak' })}
                 aria-label={t('bpm:editor.edge.labelAria', { defaultValue: 'Connection label' })}
-                className="h-7 w-36 rounded-md border border-slate-700 bg-white px-2 text-xs font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 disabled:opacity-50"
+                className="h-7 w-32 rounded-md border border-slate-700 bg-white px-2 text-xs font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 disabled:opacity-50"
               />
+
+              {onUpdateEdgeRouting && !isLocked && (
+                <div className="flex items-center gap-1 border-l border-slate-700 pl-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={edgeRoutingMode === '1-corner' ? 'secondary' : 'ghost'}
+                    onClick={() => onUpdateEdgeRouting(selectedEdge.id, '1-corner')}
+                    title={t('bpm:editor.edge.corner1', { defaultValue: '1-Corner (L)' })}
+                    className={cn(
+                      "h-7 px-2 text-xs font-bold rounded-md",
+                      edgeRoutingMode === '1-corner'
+                        ? "bg-amber-400 text-slate-900 hover:bg-amber-300"
+                        : "text-slate-300 hover:text-white hover:bg-slate-800"
+                    )}
+                  >
+                    {t('bpm:editor.edge.corner1', { defaultValue: '1-Corner (L)' })}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={edgeRoutingMode === '2-corner' ? 'secondary' : 'ghost'}
+                    onClick={() => onUpdateEdgeRouting(selectedEdge.id, '2-corner')}
+                    title={t('bpm:editor.edge.corner2', { defaultValue: '2-Corner (Step)' })}
+                    className={cn(
+                      "h-7 px-2 text-xs font-bold rounded-md",
+                      edgeRoutingMode === '2-corner'
+                        ? "bg-amber-400 text-slate-900 hover:bg-amber-300"
+                        : "text-slate-300 hover:text-white hover:bg-slate-800"
+                    )}
+                  >
+                    {t('bpm:editor.edge.corner2', { defaultValue: '2-Corner (Step)' })}
+                  </Button>
+                  {(hasBendOffset || edgeRoutingMode !== 'auto') && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => onUpdateEdgeRouting(selectedEdge.id, 'auto', true)}
+                      title={t('bpm:editor.edge.resetWaypointHint', { defaultValue: 'Reset custom bend points (or double-click the waypoint handle)' })}
+                      className="h-7 px-2 text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 rounded-md"
+                    >
+                      {t('bpm:editor.edge.resetWaypoint', { defaultValue: 'Reset to Default Path' })}
+                    </Button>
+                  )}
+                </div>
+              )}
             </>
           )}
         </div>

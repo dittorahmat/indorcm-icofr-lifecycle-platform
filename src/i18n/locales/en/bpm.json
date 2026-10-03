@@ -319,7 +319,12 @@
     "edge": {
       "labelPlaceholder": "Add label…",
       "labelHint": "Click an arrow, then type Ya / Tidak",
-      "labelAria": "Connection label"
+      "labelAria": "Connection label",
+      "corner1": "1-Corner (L)",
+      "corner2": "2-Corner (Step)",
+      "autoRouting": "Auto",
+      "resetWaypoint": "Reset to Default Path",
+      "resetWaypointHint": "Reset custom bend points (or double-click the waypoint handle)"
     },
     "toast": {
       "undo": "Changes undone (Undo)",

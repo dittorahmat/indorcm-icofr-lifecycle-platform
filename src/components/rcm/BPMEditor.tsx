@@ -391,6 +391,26 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
     setDirty(true);
   }, [isLocked, nodes, edges, pushState, setEdges, setDirty]);
 
+  const handleUpdateEdgeRouting = useCallback((edgeId: string, mode: 'auto' | '1-corner' | '2-corner', resetOffset?: boolean) => {
+    if (isLocked) return;
+    pushState(nodes, edges);
+    setEdges((eds) =>
+      eds.map((e) => {
+        if (e.id !== edgeId) return e;
+        const currentData = { ...(e.data || {}) };
+        if (resetOffset) {
+          delete currentData.bendOffset;
+        }
+        currentData.routingMode = mode;
+        return {
+          ...e,
+          data: currentData,
+        };
+      })
+    );
+    setDirty(true);
+  }, [isLocked, nodes, edges, pushState, setEdges, setDirty]);
+
   const saveMutation = useMutation({
     mutationFn: (data: any) => api(`/api/bpm-diagrams/${diagramId}`, { method: 'PUT', body: JSON.stringify(data) }),
     onSuccess: () => {
@@ -596,6 +616,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
                 isLocked={isLocked}
                 onToggleLock={toggleNodeLock}
                 onUpdateEdgeLabel={handleUpdateEdgeLabel}
+                onUpdateEdgeRouting={handleUpdateEdgeRouting}
                 onEditSelected={() => {
                   if (selectedNode) openPropertiesForNode(selectedNode.id);
                 }}
