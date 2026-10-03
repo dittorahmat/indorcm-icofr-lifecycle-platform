@@ -60,8 +60,8 @@ export function COSOHeatmap({ principleStatuses }: COSOHeatmapProps) {
           Status pemenuhan 17 Prinsip COSO berdasarkan hasil pengujian pengendalian ELC dan TLC.
         </CardDescription>
       </CardHeader>
-      <CardContent className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+      <CardContent className="p-4 sm:p-6">
+        <div className="grid grid-cols-1 min-[420px]:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 lg:gap-6">
           {components.map((comp) => (
             <div key={comp.name} className="space-y-3">
               <h3 className="font-bold text-sm text-slate-700 border-b pb-2 uppercase tracking-wider">{comp.name}</h3>

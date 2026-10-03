@@ -36,8 +36,8 @@ export function RCMPageHeader({
   return (
     <div className="p-4 pb-2 space-y-3 shrink-0 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 z-10 print:hidden">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <SidebarTrigger className="h-8 w-8 text-slate-700 dark:text-slate-300" />
+        <div className="flex items-center gap-2 min-w-0">
+          <SidebarTrigger className="h-11 w-11 min-h-[44px] min-w-[44px] text-slate-700 dark:text-slate-300 shrink-0 rounded-md" />
           <div>
             <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 leading-none">{title}</h1>
             <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wider mt-1">{subtitle}</p>
@@ -66,7 +66,7 @@ export function RCMPageHeader({
             </Button>
           )}
           {onSave && (
-            <Button onClick={onSave} disabled={isSaving} size="xs" className="bg-indigo-600 hover:bg-indigo-700 shadow-md h-7 text-xs font-bold px-4">
+            <Button onClick={onSave} disabled={isSaving} size="xs" className="bg-indigo-600 hover:bg-indigo-700 shadow-md h-11 sm:h-7 min-h-[44px] sm:min-h-0 text-xs font-bold px-4 w-full sm:w-auto justify-center">
               {isSaving ? <Loader2 className="h-3 w-3 mr-1.5 animate-spin" /> : <Save className="h-3 w-3 mr-1.5" />}
               Save
             </Button>
@@ -79,7 +79,7 @@ export function RCMPageHeader({
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <Input 
             placeholder="Search matrix..." 
-            className="pl-8 bg-white border-slate-200 h-10 sm:h-8 min-h-[44px] sm:min-h-0 text-xs font-medium" 
+            className="pl-8 bg-white border-slate-200 h-10 sm:h-8 min-h-[44px] sm:min-h-0 text-base sm:text-xs font-medium" 
             value={searchTerm} 
             onChange={(e) => onSearchChange(e.target.value)} 
           />

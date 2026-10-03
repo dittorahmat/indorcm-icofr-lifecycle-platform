@@ -234,7 +234,7 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
               </Button>
             </CardHeader>
             <CardContent>
-              <div className="max-h-[400px] overflow-auto border rounded-md">
+              <div className="max-h-[400px] overflow-auto overscroll-x-contain touch-pan-x max-w-full border rounded-md">
                 <Table>
                   <TableHeader className="sticky top-0 bg-background z-10">
                     <TableRow>

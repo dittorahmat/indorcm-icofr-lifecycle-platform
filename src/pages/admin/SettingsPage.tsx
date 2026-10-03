@@ -333,7 +333,7 @@ export function SettingsPage() {
             </CardHeader>
             <CardContent className="p-6 space-y-6">
                {/* 1. Slack Webhook */}
-               <div className="p-4 border rounded-xl bg-slate-50/30 space-y-3">
+               <div className="p-4 border rounded-lg bg-slate-50/30 space-y-3">
                   <div className="flex items-center justify-between flex-wrap gap-2">
                     <div>
                       <h4 className="font-bold text-sm text-slate-800">{t('webhookSettings.slackTitle')}</h4>
@@ -349,12 +349,12 @@ export function SettingsPage() {
                       </Badge>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
                     <Input 
                       value={localSettings.slackWebhookUrl || ''} 
                       onChange={(e) => handleChange('slackWebhookUrl', e.target.value)}
                       placeholder={t('webhookSettings.slackPlaceholder')}
-                      className="font-mono text-xs"
+                      className="font-mono text-base sm:text-xs h-11 sm:h-10 min-h-[44px] sm:min-h-0 min-w-0 flex-1"
                     />
                     <Button 
                       type="button" 
@@ -362,7 +362,7 @@ export function SettingsPage() {
                       size="sm"
                       disabled={testingWebhook === 'slack' || !localSettings.slackWebhookUrl}
                       onClick={() => handleTestWebhook('slack', localSettings.slackWebhookUrl)}
-                      className="gap-2 shrink-0 border-sky-200 text-sky-700 hover:bg-sky-50"
+                      className="gap-2 shrink-0 border-sky-200 text-sky-700 hover:bg-sky-50 h-11 sm:h-9 min-h-[44px] sm:min-h-0 w-full sm:w-auto justify-center"
                     >
                       {testingWebhook === 'slack' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
                       {t('webhookSettings.testWebhook')}
@@ -371,7 +371,7 @@ export function SettingsPage() {
                </div>
 
                {/* 2. Microsoft Teams Webhook */}
-               <div className="p-4 border rounded-xl bg-slate-50/30 space-y-3">
+               <div className="p-4 border rounded-lg bg-slate-50/30 space-y-3">
                   <div className="flex items-center justify-between flex-wrap gap-2">
                     <div>
                       <h4 className="font-bold text-sm text-slate-800">{t('webhookSettings.teamsTitle')}</h4>
@@ -387,12 +387,12 @@ export function SettingsPage() {
                       </Badge>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
                     <Input 
                       value={localSettings.msTeamsWebhookUrl || ''} 
                       onChange={(e) => handleChange('msTeamsWebhookUrl', e.target.value)}
                       placeholder={t('webhookSettings.teamsPlaceholder')}
-                      className="font-mono text-xs"
+                      className="font-mono text-base sm:text-xs h-11 sm:h-10 min-h-[44px] sm:min-h-0 min-w-0 flex-1"
                     />
                     <Button 
                       type="button" 
@@ -400,7 +400,7 @@ export function SettingsPage() {
                       size="sm"
                       disabled={testingWebhook === 'msTeams' || !localSettings.msTeamsWebhookUrl}
                       onClick={() => handleTestWebhook('msTeams', localSettings.msTeamsWebhookUrl)}
-                      className="gap-2 shrink-0 border-sky-200 text-sky-700 hover:bg-sky-50"
+                      className="gap-2 shrink-0 border-sky-200 text-sky-700 hover:bg-sky-50 h-11 sm:h-9 min-h-[44px] sm:min-h-0 w-full sm:w-auto justify-center"
                     >
                       {testingWebhook === 'msTeams' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
                       {t('webhookSettings.testWebhook')}
@@ -409,7 +409,7 @@ export function SettingsPage() {
                </div>
 
                {/* 3. Generic Webhook */}
-               <div className="p-4 border rounded-xl bg-slate-50/30 space-y-3">
+               <div className="p-4 border rounded-lg bg-slate-50/30 space-y-3">
                   <div className="flex items-center justify-between flex-wrap gap-2">
                     <div>
                       <h4 className="font-bold text-sm text-slate-800">{t('webhookSettings.genericTitle')}</h4>
@@ -425,12 +425,12 @@ export function SettingsPage() {
                       </Badge>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
                     <Input 
                       value={localSettings.genericWebhookUrl || ''} 
                       onChange={(e) => handleChange('genericWebhookUrl', e.target.value)}
                       placeholder={t('webhookSettings.genericPlaceholder')}
-                      className="font-mono text-xs"
+                      className="font-mono text-base sm:text-xs h-11 sm:h-10 min-h-[44px] sm:min-h-0 min-w-0 flex-1"
                     />
                     <Button 
                       type="button" 
@@ -438,7 +438,7 @@ export function SettingsPage() {
                       size="sm"
                       disabled={testingWebhook === 'generic' || !localSettings.genericWebhookUrl}
                       onClick={() => handleTestWebhook('generic', localSettings.genericWebhookUrl)}
-                      className="gap-2 shrink-0 border-sky-200 text-sky-700 hover:bg-sky-50"
+                      className="gap-2 shrink-0 border-sky-200 text-sky-700 hover:bg-sky-50 h-11 sm:h-9 min-h-[44px] sm:min-h-0 w-full sm:w-auto justify-center"
                     >
                       {testingWebhook === 'generic' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
                       {t('webhookSettings.testWebhook')}
@@ -465,7 +465,7 @@ export function SettingsPage() {
                </div>
             </CardHeader>
             <CardContent className="p-6 space-y-6">
-               <div className="flex items-center justify-between p-4 bg-rose-50/50 rounded-xl border border-rose-100 flex-wrap gap-2">
+               <div className="flex items-center justify-between p-4 bg-rose-50/50 rounded-lg border border-rose-100 flex-wrap gap-2">
                   <div className="space-y-1">
                     <p className="text-sm font-bold text-rose-900 flex items-center gap-2">
                        {localSettings.isPeriodLocked ? <Lock className="h-3.5 w-3.5" /> : <ShieldCheck className="h-3.5 w-3.5 text-green-600" />}

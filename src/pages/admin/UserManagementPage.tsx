@@ -42,6 +42,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AppLayout } from "@/components/layout/AppLayout";
+import { MobileDesktopBanner } from "@/components/layout/MobileDesktopBanner";
 import { toast } from "sonner";
 import { UserRole, UserLevel } from "@shared/types";
 
@@ -199,7 +201,8 @@ export function UserManagementPage() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <AppLayout container>
+    <div className="p-4 sm:p-6 space-y-6">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <div className="min-w-0">
           <h1 className="text-3xl font-bold tracking-tight truncate">Organization Admin</h1>
@@ -208,14 +211,16 @@ export function UserManagementPage() {
       </div>
 
       <Tabs defaultValue="users" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="users" className="gap-2">
+        <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain no-scrollbar -mx-1 px-1">
+        <TabsList className="flex w-max min-w-full sm:w-auto gap-1 min-h-[44px]">
+          <TabsTrigger value="users" className="gap-2 min-h-[44px] px-4 text-xs font-semibold flex-1 sm:flex-none whitespace-nowrap min-w-[160px] sm:min-w-0">
             <Users className="h-4 w-4" /> User Management
           </TabsTrigger>
-          <TabsTrigger value="departments" className="gap-2">
+          <TabsTrigger value="departments" className="gap-2 min-h-[44px] px-4 text-xs font-semibold flex-1 sm:flex-none whitespace-nowrap min-w-[160px] sm:min-w-0">
             <LayoutGrid className="h-4 w-4" /> Departments
           </TabsTrigger>
         </TabsList>
+        </div>
 
         <TabsContent value="users" className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
@@ -223,7 +228,7 @@ export function UserManagementPage() {
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search user name..."
-                className="pl-8"
+                className="pl-8 h-11 sm:h-10 min-h-[44px] text-base sm:text-sm"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -287,7 +292,8 @@ export function UserManagementPage() {
 
           <Card>
             <CardContent className="pt-6 px-2 sm:px-6">
-              <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain rounded-lg">
+              <MobileDesktopBanner />
+              <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint rounded-lg mt-3">
               <Table className="min-w-[560px]">
                 <TableHeader>
                   <TableRow>
@@ -316,7 +322,7 @@ export function UserManagementPage() {
                         <TableCell className="text-right">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4" /></Button>
+                              <Button variant="ghost" size="icon" aria-label="User actions" className="h-11 w-11 min-h-[44px] min-w-[44px]"><MoreVertical className="h-4 w-4" /></Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem onClick={() => setEditingUser(u)}><Edit className="h-4 w-4 mr-2" /> Edit</DropdownMenuItem>
@@ -360,7 +366,7 @@ export function UserManagementPage() {
             </Dialog>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {isDeptsLoading ? <div className="col-span-3 text-center py-10">Loading...</div> :
               departments.map(d => (
                 <Card key={d.id}>
@@ -368,7 +374,7 @@ export function UserManagementPage() {
                     <CardTitle className="text-sm font-medium">{d.name}</CardTitle>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="icon" aria-label="Department actions" className="h-11 w-11 min-h-[44px] min-w-[44px]"><MoreVertical className="h-4 w-4" /></Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => setEditingDept(d)}><Edit className="h-4 w-4 mr-2" /> Rename</DropdownMenuItem>
@@ -469,5 +475,6 @@ export function UserManagementPage() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+    </AppLayout>
   );
 }

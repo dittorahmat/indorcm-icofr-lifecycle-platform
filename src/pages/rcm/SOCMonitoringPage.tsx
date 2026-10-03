@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/tooltip";
 
 import { PageHeader } from '@/components/layout/PageHeader';
+import { MobileDesktopBanner } from '@/components/layout/MobileDesktopBanner';
 
 export function SOCMonitoringPage() {
   const confirm = useConfirm();
@@ -78,22 +79,24 @@ export function SOCMonitoringPage() {
           title={t('items.applications', { ns: 'sidebar' }) + " & IT Assets"}
           description="Evaluation of 3rd Parties and Significant Applications (Bab III.1.5 & 4.3)."
         >
-          <Button variant="outline" className="gap-2 bg-white" onClick={() => setIsAddVendorModalOpen(true)}>
+          <Button variant="outline" className="gap-2 bg-white w-full sm:w-auto h-11 sm:h-10 min-h-[44px] justify-center" onClick={() => setIsAddVendorModalOpen(true)}>
             <Globe className="h-4 w-4" /> Add Vendor
           </Button>
-          <Button variant="outline" className="gap-2 bg-white" onClick={() => setIsAddSOCModalOpen(true)}>
+          <Button variant="outline" className="gap-2 bg-white w-full sm:w-auto h-11 sm:h-10 min-h-[44px] justify-center" onClick={() => setIsAddSOCModalOpen(true)}>
             <ShieldCheck className="h-4 w-4" /> Register SOC
           </Button>
-          <Button className="gap-2 bg-indigo-600 hover:bg-indigo-700 shadow-lg" onClick={() => setIsAddAppModalOpen(true)}>
+          <Button className="gap-2 bg-indigo-600 hover:bg-indigo-700 shadow-lg w-full sm:w-auto h-11 sm:h-10 min-h-[44px] justify-center" onClick={() => setIsAddAppModalOpen(true)}>
             <Plus className="h-4 w-4" /> Add Application
           </Button>
         </PageHeader>
 
           <Tabs defaultValue="apps">
-          <TabsList className="grid w-full grid-cols-2 max-w-[400px]">
-            <TabsTrigger value="apps">Significant Applications</TabsTrigger>
-            <TabsTrigger value="soc">SOC Monitoring</TabsTrigger>
+          <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain no-scrollbar -mx-1 px-1">
+          <TabsList className="flex w-full sm:w-auto sm:grid sm:grid-cols-2 sm:max-w-[400px] min-w-max sm:min-w-0 gap-1 min-h-[44px]">
+            <TabsTrigger value="apps" className="flex-1 sm:flex-none min-h-[44px] min-w-[140px] sm:min-w-0 px-4 text-xs font-semibold">Significant Applications</TabsTrigger>
+            <TabsTrigger value="soc" className="flex-1 sm:flex-none min-h-[44px] min-w-[140px] sm:min-w-0 px-4 text-xs font-semibold">SOC Monitoring</TabsTrigger>
           </TabsList>
+          </div>
 
           {/* TAB 1: APPLICATIONS */}
           <TabsContent value="apps" className="space-y-6 pt-4">
@@ -103,7 +106,10 @@ export function SOCMonitoringPage() {
                 <CardDescription>Inventory of IT assets affecting ICOFR and their ITGC status (Tabel 1).</CardDescription>
               </CardHeader>
               <CardContent className="p-0 sm:p-6">
-                <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain">
+                <div className="px-4 pt-4 sm:px-0 sm:pt-0">
+                  <MobileDesktopBanner recordCount={appsData?.items?.length} />
+                </div>
+                <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint">
                 <Table className="min-w-[880px]">
                   <TableHeader>
                     <TableRow>
@@ -148,7 +154,7 @@ export function SOCMonitoringPage() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="h-6 px-1.5 text-xs text-indigo-600 hover:bg-indigo-50 opacity-0 group-hover:opacity-100 transition-opacity"
+                                className="h-11 sm:h-6 min-h-[44px] sm:min-h-0 px-2 sm:px-1.5 text-xs text-indigo-600 hover:bg-indigo-50 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:group-focus-visible:opacity-100 focus-visible:opacity-100 transition-opacity"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setSelectedAppDetail(app);
@@ -251,13 +257,14 @@ export function SOCMonitoringPage() {
                           </TableCell>
                           <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                             <div className="flex justify-end gap-1">
-                              <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-indigo-600" onClick={() => setEditingApp(app)}>
+                              <Button variant="ghost" size="icon" aria-label={t('common:actions.edit', { defaultValue: 'Edit application' })} className="h-11 w-11 sm:h-8 sm:w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 text-slate-400 hover:text-indigo-600" onClick={() => setEditingApp(app)}>
                                 <Edit className="h-4 w-4" />
                               </Button>
                               <Button 
                                 variant="ghost" 
                                 size="icon" 
-                                className="h-8 w-8 text-slate-400 hover:text-destructive" 
+                                aria-label={t('common:actions.delete', { defaultValue: 'Remove application' })}
+                                className="h-11 w-11 sm:h-8 sm:w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 text-slate-400 hover:text-destructive" 
                                 onClick={async () => {
                                   const ok = await confirm({
                                     title: "Remove Application",
@@ -330,7 +337,10 @@ export function SOCMonitoringPage() {
                 <CardDescription>Formal review of third-party assurance reports to ensure financial reporting data integrity.</CardDescription>
               </CardHeader>
               <CardContent className="p-0 sm:p-6">
-                <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain">
+                <div className="px-4 pt-4 sm:px-0 sm:pt-0">
+                  <MobileDesktopBanner recordCount={socData?.length} />
+                </div>
+                <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint">
                 <Table className="min-w-[720px]">
                   <TableHeader>
                     <TableRow>
@@ -378,7 +388,7 @@ export function SOCMonitoringPage() {
                           )}
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button variant="ghost" size="sm" onClick={() => setSelectedReport(soc)} className="gap-2 text-indigo-600 hover:bg-indigo-50">
+                          <Button variant="ghost" size="sm" onClick={() => setSelectedReport(soc)} className="gap-2 text-indigo-600 hover:bg-indigo-50 h-11 sm:h-8 min-h-[44px] sm:min-h-0 px-3 text-xs font-semibold">
                             <FileSearch className="h-4 w-4" /> Review
                           </Button>
                         </TableCell>

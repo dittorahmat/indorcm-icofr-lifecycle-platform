@@ -37,23 +37,23 @@ export function RegulatoryAppendices({ rcmData, controlsData, testsData, summary
       </div>
 
       <Tabs defaultValue="rcm-tlc" className="flex flex-col md:flex-row gap-4 sm:gap-6">
-        <TabsList className="flex flex-row md:flex-col h-auto bg-transparent md:border-r border-b md:border-b-0 rounded-none p-0 items-start md:min-w-[200px] overflow-x-auto w-full md:w-auto">
-          <div className="px-4 py-2 text-xs font-bold text-muted-foreground uppercase tracking-widest">Risk Control Matrix</div>
-          <TabsTrigger value="rcm-elc" className="w-full justify-start rounded-none border-l-2 border-l-transparent data-[state=active]:border-l-primary data-[state=active]:bg-muted/50 px-4 py-2">
+        <TabsList className="flex flex-row md:flex-col h-auto bg-transparent md:border-r border-b md:border-b-0 rounded-none p-0 items-start md:min-w-[200px] overflow-x-auto max-w-full touch-pan-x overscroll-x-contain no-scrollbar w-full md:w-auto">
+          <div className="px-4 py-2 text-xs font-bold text-muted-foreground uppercase tracking-widest whitespace-nowrap shrink-0">Risk Control Matrix</div>
+          <TabsTrigger value="rcm-elc" className="w-auto md:w-full shrink-0 justify-start rounded-none border-l-2 border-l-transparent data-[state=active]:border-l-primary data-[state=active]:bg-muted/50 px-4 py-2 min-h-[44px] text-xs font-semibold whitespace-nowrap">
             <ShieldCheck className="h-4 w-4 mr-2" /> ELC (Lampiran 5a)
           </TabsTrigger>
-          <TabsTrigger value="rcm-tlc" className="w-full justify-start rounded-none border-l-2 border-l-transparent data-[state=active]:border-l-primary data-[state=active]:bg-muted/50 px-4 py-2">
+          <TabsTrigger value="rcm-tlc" className="w-auto md:w-full shrink-0 justify-start rounded-none border-l-2 border-l-transparent data-[state=active]:border-l-primary data-[state=active]:bg-muted/50 px-4 py-2 min-h-[44px] text-xs font-semibold whitespace-nowrap">
             <LayoutGrid className="h-4 w-4 mr-2" /> TLC (Lampiran 5b)
           </TabsTrigger>
-          <TabsTrigger value="rcm-itgc" className="w-full justify-start rounded-none border-l-2 border-l-transparent data-[state=active]:border-l-primary data-[state=active]:bg-muted/50 px-4 py-2">
+          <TabsTrigger value="rcm-itgc" className="w-auto md:w-full shrink-0 justify-start rounded-none border-l-2 border-l-transparent data-[state=active]:border-l-primary data-[state=active]:bg-muted/50 px-4 py-2 min-h-[44px] text-xs font-semibold whitespace-nowrap">
             <Info className="h-4 w-4 mr-2" /> ITGC (Lampiran 5c)
           </TabsTrigger>
           
-          <div className="px-4 py-2 mt-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Findings & DoD</div>
-          <TabsTrigger value="findings" className="w-full justify-start rounded-none border-l-2 border-l-transparent data-[state=active]:border-l-primary data-[state=active]:bg-muted/50 px-4 py-2">
+          <div className="px-4 py-2 mt-0 md:mt-4 text-xs font-bold text-muted-foreground uppercase tracking-widest whitespace-nowrap shrink-0">Findings & DoD</div>
+          <TabsTrigger value="findings" className="w-auto md:w-full shrink-0 justify-start rounded-none border-l-2 border-l-transparent data-[state=active]:border-l-primary data-[state=active]:bg-muted/50 px-4 py-2 min-h-[44px] text-xs font-semibold whitespace-nowrap">
             <AlertCircle className="h-4 w-4 mr-2" /> Temuan (Lampiran 9)
           </TabsTrigger>
-          <TabsTrigger value="dod" className="w-full justify-start rounded-none border-l-2 border-l-transparent data-[state=active]:border-l-primary data-[state=active]:bg-muted/50 px-4 py-2">
+          <TabsTrigger value="dod" className="w-auto md:w-full shrink-0 justify-start rounded-none border-l-2 border-l-transparent data-[state=active]:border-l-primary data-[state=active]:bg-muted/50 px-4 py-2 min-h-[44px] text-xs font-semibold whitespace-nowrap">
             <LayoutGrid className="h-4 w-4 mr-2" /> DoD (Lampiran 10)
           </TabsTrigger>
 

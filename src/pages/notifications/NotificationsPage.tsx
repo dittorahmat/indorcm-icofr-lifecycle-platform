@@ -132,24 +132,24 @@ export function NotificationsPage() {
   return (
     <AppLayout container>
       <div className="max-w-4xl mx-auto space-y-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-              <div className="bg-indigo-100 p-2.5 rounded-xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3 min-w-0">
+              <div className="bg-indigo-100 p-2.5 rounded-lg shrink-0">
                 <Megaphone className="h-7 w-7 text-indigo-600" />
               </div>
-              {t('notifications.title')}
+              <span className="truncate">{t('notifications.title')}</span>
             </h1>
-            <p className="text-slate-500 font-medium mt-1">
+            <p className="text-slate-500 font-medium mt-1 text-xs sm:text-sm">
               {t('notifications.description')}
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2 w-full sm:w-auto shrink-0">
             <Button 
               variant={showPreferences ? "default" : "outline"}
               size="sm" 
               className={cn(
-                "font-bold text-xs uppercase tracking-wider gap-2 h-9",
+                "font-bold text-xs uppercase tracking-wider gap-2 h-11 sm:h-9 min-h-[44px] sm:min-h-0 w-full sm:w-auto justify-center",
                 showPreferences ? "bg-indigo-600 hover:bg-indigo-700" : ""
               )}
               onClick={() => setShowPreferences(!showPreferences)}
@@ -160,7 +160,7 @@ export function NotificationsPage() {
             <Button 
               variant="outline" 
               size="sm" 
-              className="font-bold text-xs uppercase tracking-wider gap-2 h-9"
+              className="font-bold text-xs uppercase tracking-wider gap-2 h-11 sm:h-9 min-h-[44px] sm:min-h-0 w-full sm:w-auto justify-center"
               onClick={() => markAllReadMutation.mutate()}
               disabled={!sortedNotifications.length || markAllReadMutation.isPending}
             >
@@ -170,7 +170,7 @@ export function NotificationsPage() {
             <Button 
               variant="outline" 
               size="sm" 
-              className="font-bold text-xs uppercase tracking-wider gap-2 h-9 text-rose-600 hover:text-rose-700 hover:bg-rose-50"
+              className="font-bold text-xs uppercase tracking-wider gap-2 h-11 sm:h-9 min-h-[44px] sm:min-h-0 w-full sm:w-auto justify-center text-rose-600 hover:text-rose-700 hover:bg-rose-50"
               onClick={() => clearAllMutation.mutate()}
               disabled={!sortedNotifications.length || clearAllMutation.isPending}
             >
@@ -339,7 +339,8 @@ export function NotificationsPage() {
                         )}
                         <Button 
                           variant="ghost" 
-                          className="p-0 h-auto text-xs font-black uppercase text-slate-400 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-opacity ml-auto"
+                          aria-label={t('notifications.delete', { defaultValue: 'Delete notification' })}
+                          className="p-2 min-h-[44px] min-w-[44px] text-xs font-black uppercase text-slate-400 hover:text-rose-600 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100 focus-visible:opacity-100 transition-opacity ml-auto shrink-0"
                           onClick={() => deleteMutation.mutate(n.id)}
                         >
                           <Trash2 className="h-3 w-3 mr-1" /> Delete

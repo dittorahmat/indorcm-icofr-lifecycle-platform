@@ -153,13 +153,13 @@ export function ReportsPage() {
               <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 w-full sm:w-auto">
                 <div className="space-y-1.5">
                   <p className="text-xs font-bold uppercase tracking-wider text-slate-400">{t('testing.filters.type')}</p>
-                  <div className="flex gap-1">
+                  <div className="flex gap-1 flex-wrap">
                     {['ALL', 'TOD', 'TOE'].map(t => (
                       <Button 
                         key={t} 
                         size="sm" 
                         variant={testTypeFilter === t ? 'default' : 'outline'} 
-                        className={cn("h-7 px-3 text-xs font-bold", testTypeFilter === t ? "bg-indigo-600" : "bg-white text-slate-600")}
+                        className={cn("h-11 sm:h-7 min-h-[44px] sm:min-h-0 px-4 sm:px-3 text-xs font-bold", testTypeFilter === t ? "bg-indigo-600" : "bg-white text-slate-600")}
                         onClick={() => setTestTypeFilter(t as any)}
                       >
                         {t}
@@ -169,13 +169,13 @@ export function ReportsPage() {
                 </div>
                 <div className="space-y-1.5">
                   <p className="text-xs font-bold uppercase tracking-wider text-slate-400">{t('testing.filters.status')}</p>
-                  <div className="flex gap-1">
+                  <div className="flex gap-1 flex-wrap">
                     {['ALL', 'Effective', 'Ineffective'].map(s => (
                       <Button 
                         key={s} 
                         size="sm" 
                         variant={testStatusFilter === s ? 'default' : 'outline'} 
-                        className={cn("h-7 px-3 text-xs font-bold", testStatusFilter === s ? "bg-indigo-600" : "bg-white text-slate-600")}
+                        className={cn("h-11 sm:h-7 min-h-[44px] sm:min-h-0 px-4 sm:px-3 text-xs font-bold", testStatusFilter === s ? "bg-indigo-600" : "bg-white text-slate-600")}
                         onClick={() => setTestStatusFilter(s as any)}
                       >
                         {s === 'ALL' ? 'ALL' : s === 'Effective' ? t('reports:testing.effective').toUpperCase() : t('reports:testing.ineffective').toUpperCase()}

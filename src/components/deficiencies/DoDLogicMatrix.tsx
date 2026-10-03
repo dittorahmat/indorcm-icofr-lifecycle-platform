@@ -156,12 +156,12 @@ export function DoDLogicMatrix({
                 </div>
 
                 {/* Yes / No Toggle Buttons */}
-                <div className="flex items-center gap-1.5 shrink-0">
+                <div className="flex items-center gap-1.5 shrink-0 w-full sm:w-auto">
                   <button
                     type="button"
                     disabled={!isActive}
                     onClick={() => onEvaluationChange(box.boxId, { answer: true })}
-                    className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors flex items-center gap-1 border ${
+                    className={`px-3 min-h-[44px] rounded-md text-xs font-semibold transition-colors flex flex-1 sm:flex-none items-center justify-center gap-1 border ${
                       currentEval.answer === true
                         ? 'bg-emerald-600 text-white border-emerald-600'
                         : 'bg-background text-muted-foreground border-border hover:bg-muted/30 disabled:opacity-40'
@@ -174,7 +174,7 @@ export function DoDLogicMatrix({
                     type="button"
                     disabled={!isActive}
                     onClick={() => onEvaluationChange(box.boxId, { answer: false })}
-                    className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors flex items-center gap-1 border ${
+                    className={`px-3 min-h-[44px] rounded-md text-xs font-semibold transition-colors flex flex-1 sm:flex-none items-center justify-center gap-1 border ${
                       currentEval.answer === false
                         ? 'bg-rose-600 text-white border-rose-600'
                         : 'bg-background text-muted-foreground border-border hover:bg-muted/30 disabled:opacity-40'
@@ -206,7 +206,7 @@ export function DoDLogicMatrix({
                     value={currentEval.justification || ''}
                     onChange={(e) => onEvaluationChange(box.boxId, { justification: e.target.value })}
                     placeholder={t('worksheet.matrix.justificationPlaceholder')}
-                    className="w-full text-xs bg-background border border-input rounded-md p-2 text-foreground font-medium outline-none focus:border-primary transition-colors"
+                    className="w-full text-base sm:text-xs bg-background border border-input rounded-md p-2 text-foreground font-medium outline-none focus:border-primary transition-colors"
                   />
 
                   {/* Suggestion Chips */}
@@ -224,7 +224,7 @@ export function DoDLogicMatrix({
                           const nextText = current ? `${current}. ${chip}` : chip;
                           onEvaluationChange(box.boxId, { justification: nextText });
                         }}
-                        className="text-xs bg-background border border-border hover:border-primary hover:text-primary px-2 py-0.5 rounded text-muted-foreground transition-colors"
+                        className="text-xs bg-background border border-border hover:border-primary hover:text-primary px-2 py-2 min-h-[44px] rounded text-muted-foreground transition-colors text-left"
                       >
                         {chip}
                       </button>

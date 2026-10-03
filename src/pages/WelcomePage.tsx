@@ -62,7 +62,7 @@ export function WelcomePage() {
           <Button
             size="lg"
             onClick={() => navigate('/dashboard')}
-            className="bg-mancity-pattern hover:opacity-90 text-primary-foreground shadow-xl shadow-blue-100 transition-all px-10 h-14 text-base font-bold rounded-xl"
+            className="bg-mancity-pattern hover:opacity-90 text-primary-foreground shadow-xl shadow-blue-100 transition-all px-8 sm:px-10 h-11 sm:h-14 min-h-[44px] text-base font-bold rounded-lg w-full sm:w-auto justify-center"
           >
             {t('getStarted')}
             <ArrowRight className="ml-2 h-5 w-5" />
@@ -76,7 +76,7 @@ export function WelcomePage() {
           transition={{ duration: 0.5, delay: 0.7 }}
           className="mt-12 space-y-4"
         >
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-muted-foreground">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm text-muted-foreground">
             <div className="p-4 rounded-lg bg-card/50 border">
               <p className="font-medium text-foreground">{t('lines.l1.title')}</p>
               <p>{t('lines.l1.desc')}</p>

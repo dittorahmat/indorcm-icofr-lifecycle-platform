@@ -222,10 +222,12 @@ export function ApprovalPage() {
 
             <div className="flex-1 min-h-0 flex flex-col py-4">
               <Tabs defaultValue="worksheet" className="flex flex-col flex-1 min-h-0 w-full">
-                <TabsList className="grid w-full max-w-[400px] grid-cols-1 sm:grid-cols-2 mb-4">
-                  <TabsTrigger value="worksheet">{t('approval.tabWorksheet')}</TabsTrigger>
-                  <TabsTrigger value="history">{t('approval.tabHistory')}</TabsTrigger>
+                <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain no-scrollbar -mx-1 px-1 mb-4">
+                <TabsList className="flex sm:grid w-max min-w-full sm:w-full sm:max-w-[400px] sm:grid-cols-2 gap-1 min-h-[44px]">
+                  <TabsTrigger value="worksheet" className="min-h-[44px] px-4 text-xs font-semibold flex-1 sm:flex-none whitespace-nowrap min-w-[140px] sm:min-w-0">{t('approval.tabWorksheet')}</TabsTrigger>
+                  <TabsTrigger value="history" className="min-h-[44px] px-4 text-xs font-semibold flex-1 sm:flex-none whitespace-nowrap min-w-[140px] sm:min-w-0">{t('approval.tabHistory')}</TabsTrigger>
                 </TabsList>
+                </div>
                 
                 <TabsContent value="worksheet" className="flex-grow min-h-0 min-w-0 flex flex-col space-y-4 mt-0">
                   {snapshot ? (

@@ -215,8 +215,8 @@ export function SignificantLocationModal({
             </div>
           )}
 
-          <div className="rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-            <Table>
+          <div className="rounded-lg border border-slate-200 overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint shadow-sm">
+            <Table className="min-w-[560px]">
               <TableHeader className="bg-slate-50 border-b">
                 <TableRow>
                   <TableHead className="font-bold text-slate-700">{t('locationModal.colEntityCode')}</TableHead>
@@ -269,9 +269,9 @@ export function SignificantLocationModal({
         </div>
 
         <DialogFooter className="p-4 sm:p-6 bg-slate-50 border-t flex-col-reverse sm:flex-row gap-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>{t('common:actions.cancel')}</Button>
+          <Button variant="outline" className="w-full sm:w-auto min-h-[44px] justify-center" onClick={() => onOpenChange(false)}>{t('common:actions.cancel')}</Button>
           <Button 
-            className="bg-primary hover:bg-primary/90 gap-2 font-bold px-8"
+            className="bg-primary hover:bg-primary/90 gap-2 font-bold px-8 w-full sm:w-auto min-h-[44px] justify-center"
             disabled={analysisResults.length === 0 || updateMutation.isPending}
             onClick={handleSave}
           >

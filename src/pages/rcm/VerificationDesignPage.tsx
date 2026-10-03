@@ -342,7 +342,7 @@ export function VerificationDesignPage({ embedded, filterBpmId, workingYear, noG
       id="btn-new-verification-assessment"
       size="xs"
       onClick={() => setIsAddDialogOpen(true)}
-      className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold h-7 text-xs flex items-center gap-1.5 px-3 shadow-sm"
+      className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold h-11 sm:h-7 min-h-[44px] sm:min-h-0 text-xs flex items-center justify-center gap-1.5 px-3 shadow-sm w-full sm:w-auto shrink-0"
     >
       <PlusCircle className="h-3.5 w-3.5" />
       {t('rcm:verification.add_new_short')}
@@ -400,27 +400,29 @@ export function VerificationDesignPage({ embedded, filterBpmId, workingYear, noG
     return (
       <div className="flex flex-col h-full bg-white">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 px-4 py-3 border-b bg-slate-50 shrink-0">
-          <div className="flex items-center gap-3 flex-1 max-w-md">
-            <div className="relative w-full">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 flex-1 min-w-0 w-full md:max-w-md">
+            <div className="relative w-full min-w-0">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               <Input 
                 placeholder="Search matrix..." 
-                className="pl-8 bg-white border-slate-200 h-8 text-xs font-medium" 
+                className="pl-8 bg-white border-slate-200 h-11 sm:h-8 min-h-[44px] sm:min-h-0 text-base sm:text-xs font-medium w-full" 
                 value={searchTerm} 
                 onChange={(e) => setSearchTerm(e.target.value)} 
               />
             </div>
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto shrink-0">
             {newAssessmentButton}
             <Button
               size="xs"
               variant="outline"
               onClick={() => void handleExportExcel()}
               disabled={isExporting}
-              className="h-8 text-xs font-bold gap-1.5 px-3"
+              className="h-11 sm:h-8 min-h-[44px] sm:min-h-0 text-xs font-bold gap-1.5 px-3 w-full sm:w-auto justify-center"
             >
               {isExporting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
               {t('rcm:actions.export_excel', { defaultValue: 'Export Excel' })}
             </Button>
+            </div>
           </div>
           <span className="text-xs font-black text-slate-400 uppercase tracking-wider hidden md:inline">
             {t('rcm:verification.title')}

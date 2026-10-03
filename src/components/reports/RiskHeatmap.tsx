@@ -57,7 +57,7 @@ export function RiskHeatmap() {
             </div>
 
             <div className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
                 {levels.map((qn) => (
                   levels.slice().reverse().map((ql) => {
                     const outcome = getOutcome(qn, ql);
@@ -68,7 +68,7 @@ export function RiskHeatmap() {
                       <Popover key={key}>
                         <PopoverTrigger asChild>
                           <button className={cn(
-                            "aspect-square rounded-lg flex flex-col items-center justify-center p-2 transition-all transform hover:scale-[1.02] shadow-sm relative group",
+                            "aspect-square rounded-lg flex flex-col items-center justify-center p-1 sm:p-2 transition-all transform hover:scale-[1.02] shadow-sm relative group min-h-[44px] min-w-[44px]",
                             outcome.color,
                             outcome.textColor
                           )}>
@@ -114,7 +114,7 @@ export function RiskHeatmap() {
               </div>
 
               {/* X-Axis Labels */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-center">
+              <div className="grid grid-cols-3 gap-1.5 sm:gap-2 text-center">
                 <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Rendah</span>
                 <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Medium</span>
                 <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Tinggi</span>

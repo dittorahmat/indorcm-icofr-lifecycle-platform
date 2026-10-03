@@ -212,17 +212,17 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
           </AnimatePresence>
 
           <Tabs defaultValue="tod" className="w-full">
-            <div className="bg-slate-100/70 p-1 border border-slate-200 rounded-lg w-full sm:w-fit mb-6 sm:mb-8">
-              <TabsList className="bg-transparent h-auto p-0 grid grid-cols-1 sm:flex gap-1 w-full sm:w-auto">
+            <div className="bg-slate-100/70 p-1 border border-slate-200 rounded-lg w-full sm:w-fit mb-6 sm:mb-8 overflow-x-auto max-w-full touch-pan-x overscroll-x-contain no-scrollbar">
+              <TabsList className="bg-transparent h-auto p-0 flex gap-1 w-max min-w-full sm:w-auto">
                 <TabsTrigger 
                   value="tod" 
-                  className="rounded-md data-[state=active]:bg-white data-[state=active]:shadow-xs data-[state=active]:text-indigo-600 transition-all font-bold text-xs uppercase tracking-wider py-2 px-3 sm:px-6 text-slate-500 justify-center min-h-[36px]"
+                  className="rounded-md data-[state=active]:bg-white data-[state=active]:shadow-xs data-[state=active]:text-indigo-600 transition-all font-bold text-xs uppercase tracking-wider py-2 px-4 sm:px-6 text-slate-500 justify-center min-h-[44px] flex-1 sm:flex-none whitespace-nowrap"
                 >
                   {t('tabs.tod')}
                 </TabsTrigger>
                 <TabsTrigger 
                   value="toe" 
-                  className="rounded-md data-[state=active]:bg-white data-[state=active]:shadow-xs data-[state=active]:text-indigo-600 transition-all font-bold text-xs uppercase tracking-wider py-2 px-3 sm:px-6 text-slate-500 justify-center min-h-[36px]"
+                  className="rounded-md data-[state=active]:bg-white data-[state=active]:shadow-xs data-[state=active]:text-indigo-600 transition-all font-bold text-xs uppercase tracking-wider py-2 px-4 sm:px-6 text-slate-500 justify-center min-h-[44px] flex-1 sm:flex-none whitespace-nowrap"
                 >
                   {t('tabs.toe')}
                 </TabsTrigger>

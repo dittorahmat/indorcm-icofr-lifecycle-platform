@@ -209,7 +209,7 @@ export function ITGCEvidenceLibrary({
           <p className="text-xs text-slate-400">{t('rcm:application_detail.drop_file_hint')}</p>
         </div>
       ) : (
-        <div className="border border-slate-200 rounded-lg overflow-x-auto shadow-sm">
+        <div className="border border-slate-200 rounded-lg overflow-x-auto max-w-full touch-pan-x overscroll-x-contain shadow-sm">
           <Table>
             <TableHeader className="bg-slate-50">
               <TableRow>

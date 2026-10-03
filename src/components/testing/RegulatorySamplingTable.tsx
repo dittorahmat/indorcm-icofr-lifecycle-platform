@@ -102,8 +102,9 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
                     type="button" 
                     variant="ghost" 
                     size="sm" 
+                    aria-label={t('sampling.remove', { defaultValue: 'Remove sample' })}
                     onClick={() => remove(index)}
-                    className="h-8 w-8 min-h-[32px] min-w-[32px] p-0 text-slate-400 hover:text-destructive hover:bg-red-50"
+                    className="h-11 w-11 min-h-[44px] min-w-[44px] p-0 text-slate-400 hover:text-destructive hover:bg-red-50 shrink-0"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -118,7 +119,7 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
                   value={field.sampleRef} 
                   onChange={(e) => update(index, { ...field, sampleRef: e.target.value })}
                   disabled={isReadOnly}
-                  className="h-9 text-xs font-medium bg-slate-50/50"
+                  className="h-11 sm:h-9 min-h-[44px] sm:min-h-0 text-base sm:text-xs font-medium bg-slate-50/50"
                   placeholder="e.g. VOU-001"
                 />
               </div>
@@ -164,7 +165,7 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
                   value={field.comments || ''} 
                   onChange={(e) => update(index, { ...field, comments: e.target.value })}
                   disabled={isReadOnly}
-                  className="h-9 text-xs"
+                  className="h-11 sm:h-9 min-h-[44px] sm:min-h-0 text-base sm:text-xs"
                   placeholder={t('sampling.commentPlaceholder')}
                 />
               </div>

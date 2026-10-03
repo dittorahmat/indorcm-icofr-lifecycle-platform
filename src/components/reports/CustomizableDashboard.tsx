@@ -287,8 +287,8 @@ export function CustomizableDashboard({ summaryData, isEffective }: Customizable
       return (
         <ResponsiveContainer width="100%" height="90%">
           <BarChart data={dataPayload} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-            <XAxis dataKey="name" stroke="#888888" fontSize={9} />
-            <YAxis stroke="#888888" fontSize={9} />
+            <XAxis dataKey="name" stroke="#888888" fontSize={12} fontWeight={600} />
+            <YAxis stroke="#888888" fontSize={12} fontWeight={600} />
             <ChartTooltip />
             <Bar dataKey="count" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
           </BarChart>
@@ -304,7 +304,7 @@ export function CustomizableDashboard({ summaryData, isEffective }: Customizable
       return (
         <ResponsiveContainer width="100%" height="90%">
           <PieChart>
-            <Pie data={dataPayload} dataKey="count" nameKey="name" cx="50%" cy="50%" outerRadius={36} label={{ fontSize: 8 }}>
+            <Pie data={dataPayload} dataKey="count" nameKey="name" cx="50%" cy="50%" outerRadius={36} label={{ fontSize: 12, fontWeight: 600 }}>
               {dataPayload.map((entry: any, index: number) => (
                 <Cell key={`cell-${index}`} fill={entry.name === 'Open' || entry.name === 'High' ? '#ef4444' : (entry.name === 'Medium' || entry.name === 'In Progress' ? '#f59e0b' : '#10b981')} />
               ))}

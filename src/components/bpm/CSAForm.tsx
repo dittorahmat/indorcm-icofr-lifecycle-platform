@@ -222,7 +222,7 @@ export function CSAForm({
                 </Badge>
                 </div>
                 </div>
-                <div className="border rounded-xl overflow-x-auto shadow-sm">
+                <div className="border rounded-lg overflow-x-auto max-w-full touch-pan-x overscroll-x-contain shadow-sm">
                 <Table>
                 <TableHeader className="bg-slate-50">
                 <TableRow className="divide-x">

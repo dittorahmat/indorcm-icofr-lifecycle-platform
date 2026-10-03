@@ -90,10 +90,12 @@ export function ExternalAuditPortal() {
         </div>
 
         <Tabs defaultValue="review">
-          <TabsList className="w-full sm:w-auto grid grid-cols-1 sm:inline-flex justify-start gap-1 min-h-[44px]">
-            <TabsTrigger value="review" className="min-w-0 truncate px-2 text-xs sm:text-sm min-h-[44px] w-full sm:w-auto flex items-center justify-center">1. Working Paper Review</TabsTrigger>
-            <TabsTrigger value="opinion" className="min-w-0 truncate px-2 text-xs sm:text-sm min-h-[44px] w-full sm:w-auto flex items-center justify-center">2. Audit Opinion</TabsTrigger>
+          <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain no-scrollbar -mx-1 px-1">
+          <TabsList className="flex w-max min-w-full sm:w-auto sm:inline-flex justify-start gap-1 min-h-[44px]">
+            <TabsTrigger value="review" className="px-4 text-xs sm:text-sm min-h-[44px] flex-1 sm:flex-none whitespace-nowrap min-w-[180px] sm:min-w-0 flex items-center justify-center">1. Working Paper Review</TabsTrigger>
+            <TabsTrigger value="opinion" className="px-4 text-xs sm:text-sm min-h-[44px] flex-1 sm:flex-none whitespace-nowrap min-w-[180px] sm:min-w-0 flex items-center justify-center">2. Audit Opinion</TabsTrigger>
           </TabsList>
+          </div>
           
           <TabsContent value="review" className="pt-6 space-y-6">
             <Card>
@@ -135,7 +137,7 @@ export function ExternalAuditPortal() {
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Opinion Type</label>
                     <select 
-                      className="w-full p-2 border rounded-md bg-background"
+                      className="w-full p-2 min-h-[44px] border rounded-md bg-background text-base sm:text-sm"
                       value={opinionType}
                       onChange={(e) => setOpinionType(e.target.value)}
                     >
@@ -149,7 +151,7 @@ export function ExternalAuditPortal() {
                     <label className="text-sm font-medium">Basis for Opinion & Key Audit Matters</label>
                     <Textarea 
                       placeholder="Describe the basis for opinion and key audit findings..." 
-                      className="min-h-[150px]" 
+                      className="min-h-[150px] text-base sm:text-sm" 
                       value={basisOpinion}
                       onChange={(e) => setBasisOpinion(e.target.value)}
                     />
@@ -161,11 +163,11 @@ export function ExternalAuditPortal() {
                 <CardHeader>
                   <CardTitle className="text-slate-800">Auditor's Report Preview</CardTitle>
                 </CardHeader>
-                <CardContent className="text-xs text-slate-700 space-y-4 font-serif leading-relaxed">
+                <CardContent className="text-xs text-slate-700 space-y-4 font-sans font-medium leading-relaxed">
                   <p className="font-bold text-center uppercase">Independent Auditor's Report</p>
                   <p>To the Shareholders and Board of Commissioners of PT [Company Name]</p>
                   <p>
-                    We have audited the internal control over financial reporting of PT [Company Name] as of [Date], based on criteria established in <em>Internal Control - Integrated Framework</em> issued by the <em>Committee of Sponsoring Organizations of the Treadway Commission (COSO)</em>.
+                    We have audited the internal control over financial reporting of PT [Company Name] as of [Date], based on criteria established in <span className="font-semibold not-italic">Internal Control - Integrated Framework</span> issued by the <span className="font-semibold not-italic">Committee of Sponsoring Organizations of the Treadway Commission (COSO)</span>.
                   </p>
                   <p className="font-bold underline">Opinion</p>
                   <p>

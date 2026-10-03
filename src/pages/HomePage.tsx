@@ -65,7 +65,7 @@ export function HomePage() {
                  { step: "04", name: "Remediasi", desc: "Deficiency Board" },
                  { step: "05", name: "Pelaporan", desc: "Sign-off & Exports" },
                ].map((item, i) => (
-                 <div key={i} className="flex flex-col items-center text-center p-4 rounded-xl bg-card border shadow-sm hover:shadow-md transition-shadow">
+                  <div key={i} className="flex flex-col items-center text-center p-4 rounded-lg bg-card border shadow-sm hover:shadow-md transition-shadow">
                     <span className="text-4xl font-black text-muted/30 mb-2">{item.step}</span>
                     <h3 className="font-bold text-sm uppercase tracking-wider">{item.name}</h3>
                     <p className="text-xs text-muted-foreground mt-1">{item.desc}</p>
@@ -78,7 +78,7 @@ export function HomePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="grid grid-cols-1 gap-6 md:grid-cols-3 mb-12 sm:mb-16 md:mb-24"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-12 sm:mb-16 md:mb-24"
           >
             <StatCard icon={<Zap className="h-5 w-5 text-muted-foreground" />} title="ISB Risk Control Coverage" value="98.7%" />
             <StatCard icon={<CheckCircle className="h-5 w-5 text-muted-foreground" />} title="Controls Effective" value="95.2%" />

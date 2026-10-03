@@ -68,9 +68,10 @@ export function ScopingEditorContent({
       )}
       <Tabs defaultValue="worksheet" className="flex flex-col flex-1 min-h-0 w-full">
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center mb-4 shrink-0 min-w-0">
-          <TabsList className="grid w-full max-w-[550px] grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 bg-slate-100/50 p-1 border border-slate-200 rounded-lg min-w-0 min-h-[44px]">
-            <TabsTrigger value="worksheet" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest min-w-0 truncate min-h-[44px] flex items-center justify-center">{t('approval.tabWorksheet')}</TabsTrigger>
-            <TabsTrigger value="history" className="flex items-center justify-center gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest min-w-0 min-h-[44px]">
+          <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain no-scrollbar -mx-1 px-1 min-w-0">
+          <TabsList className="flex sm:grid w-max min-w-full sm:w-full sm:max-w-[550px] sm:grid-cols-2 lg:grid-cols-3 bg-slate-100/50 p-1 border border-slate-200 rounded-lg min-h-[44px] gap-1">
+            <TabsTrigger value="worksheet" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest px-4 min-h-[44px] flex items-center justify-center flex-1 sm:flex-none whitespace-nowrap min-w-[140px] sm:min-w-0"> {t('approval.tabWorksheet')}</TabsTrigger>
+            <TabsTrigger value="history" className="flex items-center justify-center gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest px-4 min-h-[44px] flex-1 sm:flex-none whitespace-nowrap min-w-[140px] sm:min-w-0">
               <History className="h-3 w-3 shrink-0" /> <span className="truncate">{t('approval.tabHistory')}</span>
               {simState.history && simState.history.length > 0 && (
                 <Badge variant="secondary" className="ml-1 h-4 px-1 text-xs font-black shrink-0">
@@ -78,10 +79,11 @@ export function ScopingEditorContent({
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="integrity" className="flex items-center justify-center gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest min-w-0 min-h-[44px]">
+            <TabsTrigger value="integrity" className="flex items-center justify-center gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest px-4 min-h-[44px] flex-1 sm:flex-none whitespace-nowrap min-w-[140px] sm:min-w-0">
               <ShieldCheck className="h-3 w-3 shrink-0" /> <span className="truncate">{t('approval.tabIntegrity')}</span>
             </TabsTrigger>
           </TabsList>
+          </div>
 
           <EntityTreeFilter 
             hierarchy={entityHierarchy}

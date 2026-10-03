@@ -592,7 +592,12 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
                   vertical={alignmentLines.vertical}
                 />
                 <Background gap={16} size={1} color="hsl(var(--border))" />
-                <Controls />
+                {/* MOBILE POLICY (2026-10-04, audit): BPM canvas view-only di <md — full edit desktop-only.
+                    Controls disembunyikan di mobile agar tidak menutupi kanvas & target sentuh kecil.
+                    Jangan aktifkan toolbar/palette/Controls di mobile tanpa RFC audit. */}
+                <div className="hidden md:block">
+                  <Controls />
+                </div>
                 <div className="hidden md:block">
                   <MiniMap />
                 </div>

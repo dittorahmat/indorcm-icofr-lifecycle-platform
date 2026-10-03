@@ -156,7 +156,7 @@ export function BPMDiagramList({
       </div>
 
       {/* DESKTOP VIEW: Hierarchical table */}
-      <div className="hidden md:block overflow-x-auto">
+      <div className="hidden md:block overflow-x-auto max-w-full touch-pan-x overscroll-x-contain">
         <Table>
           <TableHeader className="bg-slate-50/80 border-b border-slate-200">
             <TableRow>

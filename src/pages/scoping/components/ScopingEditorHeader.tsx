@@ -41,14 +41,14 @@ export function ScopingEditorHeader({
     <div className="space-y-3">
       <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-start text-slate-900 dark:text-white">
         <div className="flex items-center gap-2 sm:gap-3 flex-wrap min-w-0">
-          <SidebarTrigger className="h-8 w-8 text-slate-700 bg-white border border-slate-200 shadow-sm" />
+          <SidebarTrigger className="h-11 w-11 min-h-[44px] min-w-[44px] text-slate-700 bg-white border border-slate-200 shadow-sm rounded-md shrink-0" />
           {onToggleParams && (
             <Button
               variant="outline"
               size="sm"
               onClick={onToggleParams}
               className={cn(
-                "h-8 gap-1.5 text-slate-700 bg-white border border-slate-200 shadow-sm transition-all px-2.5 text-xs font-black uppercase tracking-widest",
+                "h-11 sm:h-8 min-h-[44px] sm:min-h-0 gap-1.5 text-slate-700 bg-white border border-slate-200 shadow-sm transition-all px-2.5 text-xs font-black uppercase tracking-widest",
                 isParamsOpen && "bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100 hover:text-indigo-800"
               )}
             >
@@ -59,8 +59,9 @@ export function ScopingEditorHeader({
           <Button 
             variant="ghost" 
             size="icon" 
+            aria-label={t('common:actions.back', { defaultValue: 'Back' })}
             onClick={onBack}
-            className="h-8 w-8 rounded-full hover:bg-slate-100 transition-colors shrink-0"
+            className="h-11 w-11 min-h-[44px] min-w-[44px] rounded-md hover:bg-slate-100 transition-colors shrink-0"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>

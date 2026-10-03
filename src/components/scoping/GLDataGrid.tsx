@@ -220,8 +220,8 @@ export const GLDataGrid = React.memo(function GLDataGrid({
         onOpenWorkflow={onOpenWorkflow}
       />
 
-      <div className="rounded-md border bg-white shadow-sm overflow-hidden flex-1 min-h-0 flex flex-col w-full">
-        <div className="overflow-auto flex-1 min-h-0 w-full">
+      <div className="rounded-md border bg-white shadow-sm overflow-hidden flex-1 min-h-0 flex flex-col w-full max-w-full">
+        <div className="overflow-auto overscroll-x-contain touch-pan-x max-w-full flex-1 min-h-0 w-full">
           <Table noWrapper className="relative w-full">
             <TableHeader className="bg-slate-50 sticky top-0 z-10 shadow-sm">
               {table.getHeaderGroups().map(headerGroup => (
@@ -239,7 +239,7 @@ export const GLDataGrid = React.memo(function GLDataGrid({
                             <div className="relative mt-1" onClick={e => e.stopPropagation()} onKeyDown={e => e.stopPropagation()}>
                               <Filter className="absolute left-1.5 top-1.5 h-2.5 w-2.5 text-slate-300" />
                               <input
-                                className="w-full pl-5 pr-1 py-1 text-xs font-normal border rounded"
+                                className="w-full pl-5 pr-1 py-2 sm:py-1 min-h-[44px] sm:min-h-0 text-base sm:text-xs font-normal border rounded"
                                 placeholder="Search..."
                                 aria-label={`Filter by ${header.column.columnDef.header?.toString() || 'column'}`}
                                 onChange={e => header.column.setFilterValue(e.target.value)}

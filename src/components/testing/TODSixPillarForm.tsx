@@ -91,7 +91,7 @@ export function TODSixPillarForm({ form, t, isReadOnly }: TODSixPillarFormProps)
                   <pillar.icon className="h-4 w-4 sm:h-5 sm:w-5" />
                 </div>
                 <div className="min-w-0">
-                  <FormLabel className="text-xs font-bold uppercase tracking-wider block mb-1 text-slate-900 truncate">
+                  <FormLabel className="text-xs font-bold uppercase tracking-wider block mb-1 text-slate-900 whitespace-normal leading-snug">
                     {pillar.label}
                   </FormLabel>
                   <p className="text-xs text-slate-600 font-normal leading-relaxed">
@@ -126,7 +126,7 @@ export function TODSixPillarForm({ form, t, isReadOnly }: TODSixPillarFormProps)
                     <Textarea 
                       {...field} 
                       disabled={isReadOnly}
-                      className="text-xs font-normal min-h-[64px] bg-slate-50 border-slate-200 focus:bg-white rounded-md resize-none transition-all placeholder:text-slate-400 p-2.5 sm:p-3"
+                      className="text-base sm:text-xs font-normal min-h-[64px] bg-slate-50 border-slate-200 focus:bg-white rounded-md resize-none transition-all placeholder:text-slate-400 p-2.5 sm:p-3"
                       placeholder={t('pillars.commentPlaceholder')}
                     />
                   </FormControl>

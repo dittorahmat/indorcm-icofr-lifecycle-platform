@@ -197,14 +197,16 @@ export function ScopingPage() {
         )}
 
         <Tabs defaultValue="simulations" className="w-full">
-          <TabsList className="grid w-full max-w-[440px] grid-cols-1 sm:grid-cols-2 mb-8 bg-slate-100/50 p-1 border border-slate-200 rounded-lg shadow-inner min-w-0">
-            <TabsTrigger value="simulations" className="gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest py-2 min-h-[44px] flex items-center justify-center">
+          <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain no-scrollbar -mx-1 px-1 mb-8">
+          <TabsList className="flex sm:grid w-max min-w-full sm:w-full sm:max-w-[440px] sm:grid-cols-2 bg-slate-100/50 p-1 border border-slate-200 rounded-lg shadow-inner min-h-[44px] gap-1">
+            <TabsTrigger value="simulations" className="gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest py-2 px-4 min-h-[44px] flex items-center justify-center flex-1 sm:flex-none whitespace-nowrap min-w-[160px] sm:min-w-0">
               <LayoutGrid className="h-4 w-4" /> {t('scoping:simulation.title')}
             </TabsTrigger>
-            <TabsTrigger value="master-gl" className="gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest py-2 min-h-[44px] flex items-center justify-center">
+            <TabsTrigger value="master-gl" className="gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest py-2 px-4 min-h-[44px] flex items-center justify-center flex-1 sm:flex-none whitespace-nowrap min-w-[160px] sm:min-w-0">
               <Database className="h-4 w-4" /> {t('scoping:masterDataTab')}
             </TabsTrigger>
           </TabsList>
+          </div>
 
           <TabsContent value="simulations">
             <motion.div variants={itemVariants}>
