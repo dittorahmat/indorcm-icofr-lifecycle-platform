@@ -442,9 +442,9 @@ export function VerificationEditDialog({
               </TabsContent>
             </Tabs>
 
-            <DialogFooter className="sticky bottom-0 bg-white pt-2 border-t mt-4">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t('common:actions.cancel')}</Button>
-              <Button type="submit" disabled={isSaving} className="bg-indigo-600 hover:bg-indigo-700 text-white">
+            <DialogFooter className="sticky bottom-0 bg-background pt-3 border-t mt-4 p-4 sm:p-0 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:pb-0 flex-col-reverse sm:flex-row">
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto min-h-[44px] sm:min-h-0">{t('common:actions.cancel')}</Button>
+              <Button type="submit" disabled={isSaving} className="bg-indigo-600 hover:bg-indigo-700 text-white w-full sm:w-auto min-h-[44px] sm:min-h-0">
                 {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {t('common:actions.save')}
               </Button>

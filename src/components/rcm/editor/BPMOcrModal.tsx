@@ -635,14 +635,14 @@ export const BPMOcrModal: React.FC<BPMOcrModalProps> = ({
           </div>
         )}
 
-        <DialogFooter className="mt-4 border-t pt-4">
-          <Button variant="outline" onClick={onClose} disabled={isProcessingOcr} className="rounded-xl">
+        <DialogFooter className="mt-4 border-t pt-4 flex-col-reverse sm:flex-row pb-[env(safe-area-inset-bottom,0px)] sm:pb-0">
+          <Button variant="outline" onClick={onClose} disabled={isProcessingOcr} className="rounded-md w-full sm:w-auto min-h-[44px] sm:min-h-0">
             {t('bpm:ocr.buttons.cancel')}
           </Button>
           {parsedDiagram && (
             <Button
               onClick={handleApply}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold uppercase tracking-wider"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-md font-bold uppercase tracking-wider w-full sm:w-auto min-h-[44px] sm:min-h-0"
             >
               {t('bpm:ocr.buttons.saveApply')}
             </Button>

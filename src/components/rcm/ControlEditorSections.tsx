@@ -102,7 +102,7 @@ export const RegulatoryMappingSection = ({ form }: { form: any }) => {
               <Lightbulb className="h-3 w-3" /> Suggest Template
             </Button>
           </div>
-          <div className="grid grid-cols-6 gap-1 pt-2">
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-1 pt-2">
             {ALL_COSO.map((p) => (
               <FormField key={p} control={form.control} name="cosoPrinciples" render={({ field }) => (
                 <FormItem key={p} className="flex flex-col items-center space-y-1">

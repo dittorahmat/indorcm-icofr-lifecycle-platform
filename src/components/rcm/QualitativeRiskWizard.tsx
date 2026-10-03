@@ -68,19 +68,19 @@ export function QualitativeRiskWizard({ onApply }: QualitativeRiskWizardProps) {
               </div>
             ))}
 
-            <div className={`mt-4 p-4 rounded-lg border flex items-center justify-between ${suggestedRating === 'Low' ? 'bg-green-50 border-green-200' : suggestedRating === 'Medium' ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200'}`}>
-               <div className="flex items-center gap-3">
-                  <Info className={`h-5 w-5 ${suggestedRating === 'Low' ? 'text-green-600' : suggestedRating === 'Medium' ? 'text-amber-600' : 'text-red-600'}`} />
-                  <div>
+            <div className={`mt-4 p-4 rounded-lg border flex flex-col sm:flex-row sm:items-center justify-between gap-3 flex-wrap min-w-0 ${suggestedRating === 'Low' ? 'bg-green-50 border-green-200' : suggestedRating === 'Medium' ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200'}`}>
+               <div className="flex items-center gap-3 min-w-0">
+                  <Info className={`h-5 w-5 shrink-0 ${suggestedRating === 'Low' ? 'text-green-600' : suggestedRating === 'Medium' ? 'text-amber-600' : 'text-red-600'}`} />
+                  <div className="min-w-0">
                      <p className="text-xs uppercase font-bold text-muted-foreground">Suggested Qualitative Rating</p>
-                     <p className="text-2xl font-black tracking-tight uppercase">{suggestedRating}</p>
+                     <p className="text-2xl font-black tracking-tight uppercase truncate">{suggestedRating}</p>
                   </div>
                </div>
-               <Badge variant="outline" className="text-xs">Criteria met: {count}/9</Badge>
+               <Badge variant="outline" className="text-xs w-full sm:w-auto justify-center shrink-0">Criteria met: {count}/9</Badge>
             </div>
           </div>
-          <DialogFooter>
-            <Button onClick={() => onApply(suggestedRating)} className="w-full">Apply Rating</Button>
+          <DialogFooter className="flex-col-reverse sm:flex-row pb-[env(safe-area-inset-bottom,0px)] sm:pb-0">
+            <Button onClick={() => onApply(suggestedRating)} className="w-full sm:w-auto min-h-[44px] sm:min-h-0">Apply Rating</Button>
           </DialogFooter>
         </motion.div>
       </DialogContent>

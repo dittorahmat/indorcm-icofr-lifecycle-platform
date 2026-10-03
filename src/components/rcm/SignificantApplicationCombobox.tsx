@@ -282,7 +282,7 @@ export function SignificantApplicationCombobox({
                 className="text-sm"
               />
             </div>
-            <DialogFooter className="pt-2">
+            <DialogFooter className="pt-3 flex-col-reverse sm:flex-row pb-[env(safe-area-inset-bottom,0px)] sm:pb-0">
               <Button
                 type="button"
                 variant="outline"

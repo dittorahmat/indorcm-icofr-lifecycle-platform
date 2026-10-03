@@ -55,7 +55,7 @@ export function RCMTable({
           Wrapper div must have overflow-auto and a defined height (via flex-1 min-h-0 in a flex-col parent)
           to enable vertical sticky headers on desktop, and a clean card feed on mobile.
       */}
-      <div className="w-full border-t border-b bg-slate-50/50 md:bg-white border-slate-300 scrollbar-hover flex-1 min-h-0 relative overflow-auto">
+      <div className="w-full max-w-full border-t border-b bg-slate-50/50 md:bg-white border-slate-300 scrollbar-hover flex-1 min-h-0 relative overflow-auto touch-pan-x overscroll-x-contain">
         {/* Desktop View: Wide Table with Frozen Sticky Headers (md and up) */}
         <div className="hidden md:block w-full">
           <table 

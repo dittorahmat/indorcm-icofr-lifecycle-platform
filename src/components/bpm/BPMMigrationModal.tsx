@@ -236,20 +236,20 @@ export function BPMMigrationModal({
             </div>
           </div>
 
-          <DialogFooter className="gap-2 sm:gap-0 pt-2 border-t border-slate-100">
+          <DialogFooter className="gap-2 sm:gap-2 pt-3 border-t border-slate-100 flex-col-reverse sm:flex-row pb-[env(safe-area-inset-bottom,0px)] sm:pb-0">
             <Button
               type="button"
               variant="outline"
               onClick={onClose}
               disabled={isPending}
-              className="rounded-lg h-9 text-xs font-bold uppercase tracking-wider"
+              className="rounded-md h-11 sm:h-9 min-h-[44px] sm:min-h-0 text-xs font-bold uppercase tracking-wider w-full sm:w-auto"
             >
               {t('common:actions.cancel', 'Batal')}
             </Button>
             <Button
               type="submit"
               disabled={isPending || (action === 'demote' && !selectedParentId)}
-              className="bg-mancity-pattern text-primary-foreground hover:opacity-90 rounded-lg h-9 text-xs font-bold uppercase tracking-wider px-5 shadow-sm"
+              className="bg-mancity-pattern text-primary-foreground hover:opacity-90 rounded-md h-11 sm:h-9 min-h-[44px] sm:min-h-0 text-xs font-bold uppercase tracking-wider px-5 shadow-sm w-full sm:w-auto"
             >
               {isPending && <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />}
               {t('bpm:migration.applyButton', 'Terapkan Struktur')}

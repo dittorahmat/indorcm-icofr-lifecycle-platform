@@ -466,12 +466,12 @@ export function CSAForm({
                                   <label
                                     htmlFor={`mobile-step-${safeStep}-${ctrl.id}`}
                                     className={cn(
-                                      "flex items-center justify-between gap-3 rounded-lg border p-3 min-h-[52px] cursor-pointer",
+                                      "flex items-center justify-between gap-3 rounded-lg border p-3 min-h-[52px] cursor-pointer flex-wrap min-w-0",
                                       f.value ? "border-emerald-200 bg-emerald-50" : "border-slate-200 bg-white"
                                     )}
                                   >
                                     <span className={cn(
-                                      "text-xs font-black uppercase tracking-wider",
+                                      "text-xs font-black uppercase tracking-wider min-w-0 truncate flex-1",
                                       f.value ? "text-emerald-700" : "text-slate-500"
                                     )}>
                                       {f.value ? t('csa_hub:form.passed', { defaultValue: 'PASSED' }) : t('csa_hub:form.deficiency', { defaultValue: 'DEFICIENCY' })}

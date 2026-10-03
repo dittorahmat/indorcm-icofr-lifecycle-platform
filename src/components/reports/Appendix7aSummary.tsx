@@ -85,7 +85,7 @@ export const Appendix7aSummary = React.forwardRef<HTMLDivElement, Appendix7aSumm
           {/* Section II: Ringkasan Efektivitas Kontrol */}
           <div className="space-y-4">
             <h2 className="text-xs font-black uppercase tracking-widest text-slate-400 border-b pb-1">II. Ringkasan Efektivitas Per Aktivitas Kontrol</h2>
-            <div className="border-2 border-slate-900 overflow-hidden rounded-lg">
+            <div className="border-2 border-slate-900 overflow-x-auto max-w-full rounded-lg touch-pan-x overscroll-x-contain table-scroll-hint">
               <Table>
                 <TableHeader className="bg-mancity-pattern">
                   <TableRow className="hover:bg-transparent">
@@ -152,8 +152,8 @@ export const Appendix7aSummary = React.forwardRef<HTMLDivElement, Appendix7aSumm
 
           {/* Footer Area */}
           <div className="overflow-x-auto max-w-full rounded-lg border-2 border-slate-900 bg-white touch-pan-x overscroll-x-contain table-scroll-hint">
-          <div className="grid grid-cols-3 min-w-[560px] bg-white overflow-hidden min-h-[10rem]">
-             <div className="border-r-2 border-slate-900 p-4 flex flex-col">
+          <div className="grid grid-cols-1 sm:grid-cols-3 sm:min-w-[560px] bg-white min-h-[10rem]">
+             <div className="border-b-2 sm:border-b-0 sm:border-r-2 border-slate-900 p-4 flex flex-col">
                 <span className="text-xs font-black uppercase text-slate-400">Dikerjakan Oleh (Auditee)</span>
                 <div className="flex-1 flex items-center justify-center text-xs font-semibold uppercase tracking-wider text-slate-400">Digital Signature Verified</div>
                 <div className="flex justify-between text-xs font-black uppercase mt-2 flex-wrap gap-2">
@@ -161,7 +161,7 @@ export const Appendix7aSummary = React.forwardRef<HTMLDivElement, Appendix7aSumm
                    <span>{format(new Date(record.assessmentDate), 'dd/MM/yy')}</span>
                 </div>
              </div>
-             <div className="border-r-2 border-slate-900 p-4 flex flex-col bg-slate-50/50">
+             <div className="border-b-2 sm:border-b-0 sm:border-r-2 border-slate-900 p-4 flex flex-col bg-slate-50/50">
                 <span className="text-xs font-black uppercase text-slate-400">Direview Oleh (Lini 2)</span>
                 <div className="flex-1 border-b border-slate-100" />
                 <div className="flex justify-between text-xs font-black uppercase mt-2 flex-wrap gap-2">

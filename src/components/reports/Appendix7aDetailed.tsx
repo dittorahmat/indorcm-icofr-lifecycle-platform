@@ -78,7 +78,7 @@ export const Appendix7aDetailed = React.forwardRef<HTMLDivElement, Appendix7aDet
           {/* Section II: Matriks Pengujian Sampel */}
           <div className="space-y-4">
             <h2 className="text-xs font-black uppercase tracking-widest text-slate-400 border-b pb-1">II. Rincian Hasil Pengujian Sampel</h2>
-            <div className="border-2 border-slate-900 overflow-hidden rounded-lg">
+            <div className="border-2 border-slate-900 overflow-x-auto max-w-full rounded-lg touch-pan-x overscroll-x-contain table-scroll-hint">
               <Table>
                 <TableHeader className="bg-mancity-pattern">
                   <TableRow className="hover:bg-transparent">

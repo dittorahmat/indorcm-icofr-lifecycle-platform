@@ -121,14 +121,14 @@ export function DoDEvidenceContextCard({
                 <div
                   key={c.id}
                   onClick={() => onSelectCompensatingControl && onSelectCompensatingControl(c.id)}
-                  className={`p-2.5 rounded-md border text-xs cursor-pointer transition-colors flex items-start justify-between gap-2 ${
+                  className={`p-2.5 rounded-md border text-xs cursor-pointer transition-colors flex items-start justify-between gap-2 flex-wrap min-w-0 ${
                     isSelected
                       ? 'border-primary bg-primary/5'
                       : 'border-border bg-background hover:bg-muted/30'
                   }`}
                 >
-                  <div className="space-y-0.5">
-                    <div className="flex items-center gap-1.5">
+                  <div className="space-y-0.5 min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5 flex-wrap min-w-0">
                       <span className="font-mono font-semibold text-foreground">{c.code}</span>
                       <Badge variant="outline" className="text-xs font-normal">
                         {c.nature}

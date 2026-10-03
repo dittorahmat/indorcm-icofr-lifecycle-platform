@@ -116,7 +116,7 @@ export function CSAReviewMatrix({
                           <div 
                             key={`${control.mappingId}-mob-${sIdx}`}
                             className={cn(
-                              "p-2.5 rounded-lg border flex items-center justify-between gap-2 text-xs",
+                              "p-2.5 rounded-lg border flex items-center justify-between gap-2 flex-wrap min-w-0 text-xs",
                               isPassed ? "bg-green-50/60 border-green-200" : "bg-red-50/60 border-red-200"
                             )}
                           >
@@ -173,7 +173,7 @@ export function CSAReviewMatrix({
 
       {/* DESKTOP VIEW: Full Scrollable Matrix (>= md) */}
       <div className="hidden md:block">
-        <ScrollArea className="w-full">
+        <ScrollArea className="w-full max-w-full overflow-x-auto touch-pan-x overscroll-x-contain">
           <Table className="border-collapse">
             <TableHeader className="bg-white">
               <TableRow className="hover:bg-transparent border-b-2">

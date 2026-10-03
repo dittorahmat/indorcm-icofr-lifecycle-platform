@@ -235,8 +235,8 @@ export function TODDesignContextFields({ form }: { form: UseFormReturn<any> }) {
                 control={form.control}
                 name={f as any}
                 render={({ field }) => (
-                  <FormItem className="flex items-center justify-between sm:flex-col sm:items-center gap-1 space-y-0 p-2 rounded-lg border border-slate-200 bg-white shadow-xs">
-                    <FormLabel className="text-xs font-bold uppercase text-slate-700">{f.replace('ipo', '')}</FormLabel>
+                  <FormItem className="flex items-center justify-between gap-1 space-y-0 p-2 rounded-lg border border-slate-200 bg-white shadow-xs flex-wrap min-w-0 sm:flex-col sm:items-center sm:justify-center">
+                    <FormLabel className="text-xs font-bold uppercase text-slate-700 min-w-0 truncate flex-1 sm:flex-none">{f.replace('ipo', '')}</FormLabel>
                     <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                   </FormItem>
                 )}
