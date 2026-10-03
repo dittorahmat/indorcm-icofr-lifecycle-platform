@@ -44,6 +44,56 @@
     --sidebar-accent-foreground: 222 47% 11%;
     --sidebar-border: 214.3 31.8% 91.4%;
     --sidebar-ring: 222 47% 11%;
+
+    /* Transitions.dev Motion Tokens (Systemic Scale) */
+    --duration-stagger: 40ms;
+    --duration-micro: 80ms;
+    --duration-quick: 150ms;
+    --duration-fast: 250ms;
+    --duration-medium: 350ms;
+    --duration-slow: 400ms;
+    --duration-very-slow: 500ms;
+
+    --ease-smooth-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-in-out: ease-in-out;
+    --ease-out: ease-out;
+    --ease-linear: linear;
+    --ease-bounce: cubic-bezier(0.34, 1.36, 0.64, 1);
+    --ease-bounce-strong: cubic-bezier(0.34, 3.85, 0.64, 1);
+
+    --distance-micro: 4px;
+    --distance-small: 6px;
+    --distance-base: 8px;
+    --distance-medium: 12px;
+    --distance-large: 30px;
+
+    --scale-large: 0.96;
+    --scale-medium: 0.97;
+    --scale-small: 0.98;
+    --scale-tiny: 0.99;
+
+    --blur-small: 2px;
+    --blur-medium: 3px;
+    --blur-large: 8px;
+
+    /* Transitions.dev Specific Preset Variables */
+    --badge-slide-dur: 260ms;
+    --badge-pop-dur: 500ms;
+    --badge-pop-close-dur: 180ms;
+    --badge-offset-x: -8px;
+    --badge-offset-y: 12px;
+
+    --toast-open: 350ms;
+    --toast-close: 250ms;
+    --toast-distance: 16px;
+    --toast-blur: 2px;
+    --toast-scale: 0.97;
+
+    --shake-distance: 6px;
+    --shake-overshoot: 4px;
+    --shake-dur-a: 80ms;
+    --shake-dur-b: 60ms;
+    --shake-ease: cubic-bezier(0.22, 1, 0.36, 1);
   }
   
   .dark {
@@ -241,6 +291,129 @@
   .min-w-\[720px\],
   .min-w-\[880px\] {
     max-width: none;
+  }
+
+  /* Transitions.dev Motion Utilities */
+  .t-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    pointer-events: none;
+    will-change: transform, opacity;
+    animation: t-badge-slide-in var(--badge-slide-dur) var(--ease-smooth-out) both;
+  }
+  .t-badge-dot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    will-change: transform;
+    animation: t-badge-pop-in var(--badge-pop-dur) var(--ease-bounce) both;
+  }
+
+  @keyframes t-badge-slide-in {
+    0% {
+      opacity: 0;
+      transform: translate(var(--badge-offset-x), var(--badge-offset-y));
+    }
+    100% {
+      opacity: 1;
+      transform: translate(0, 0);
+    }
+  }
+
+  @keyframes t-badge-pop-in {
+    0% {
+      transform: scale(0.4);
+    }
+    70% {
+      transform: scale(1.15);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  /* Success Check Path Draw & Pop */
+  .t-success-check {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    animation: t-success-pop var(--duration-very-slow) var(--ease-bounce) both;
+  }
+  .t-success-check path {
+    stroke-dasharray: 50;
+    stroke-dashoffset: 50;
+    animation: t-check-stroke var(--duration-slow) var(--ease-smooth-out) 80ms forwards;
+  }
+
+  @keyframes t-success-pop {
+    0% {
+      opacity: 0;
+      transform: scale(0.6);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes t-check-stroke {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  /* Error state shake */
+  .t-shake {
+    animation: t-error-shake 360ms var(--shake-ease) both;
+  }
+
+  @keyframes t-error-shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(calc(var(--shake-distance) * -1)); }
+    40% { transform: translateX(var(--shake-distance)); }
+    60% { transform: translateX(calc(var(--shake-overshoot) * -1)); }
+    80% { transform: translateX(var(--shake-overshoot)); }
+  }
+
+  /* Shimmer text */
+  .t-shimmer {
+    background: linear-gradient(
+      90deg,
+      currentColor 0%,
+      hsl(var(--primary)) 50%,
+      currentColor 100%
+    );
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: t-shimmer-sweep 2.5s linear infinite;
+  }
+
+  @keyframes t-shimmer-sweep {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .t-badge,
+  .t-badge-dot,
+  .t-shake,
+  .t-success-check,
+  .t-success-check path,
+  .t-shimmer {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
   }
 }
 

@@ -106,14 +106,16 @@ export function NotificationBell() {
               : t('notifications.ariaLabel', { defaultValue: 'Notifications' })
           }
         >
-          <Bell className="h-5 w-5" aria-hidden="true" />
+          <Bell className="h-5 w-5 transition-transform duration-200 group-hover:scale-105" aria-hidden="true" />
           {unreadCount > 0 && (
-            <Badge 
+            <span 
               aria-hidden="true"
-              className="absolute -top-1 -right-1 h-4 min-w-[16px] px-1 flex items-center justify-center bg-destructive text-destructive-foreground border-none text-xs"
+              className="t-badge pointer-events-none -top-1 -right-1"
             >
-              {unreadCount}
-            </Badge>
+              <span className="t-badge-dot h-4.5 min-w-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-xs font-bold shadow-sm">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            </span>
           )}
         </Button>
       </DropdownMenuTrigger>
