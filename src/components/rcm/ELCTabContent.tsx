@@ -26,7 +26,7 @@ export function ELCTabContent({ elcControls, onEditControl, onCreateControl }: E
       exit={{ opacity: 0, x: -20 }}
       className="space-y-8"
     >
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-slate-900 p-5 sm:p-6 rounded-xl text-white shadow-sm border border-slate-800 relative">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-slate-900 p-5 sm:p-6 rounded-lg text-white shadow-sm border border-slate-800 relative">
         <div className="space-y-1 relative z-10">
           <h3 className="text-lg sm:text-xl font-bold tracking-tight text-white">{t('matrix.title_elc')}</h3>
           <p className="text-slate-300 text-xs sm:text-sm font-normal leading-relaxed max-w-xl">
@@ -39,8 +39,8 @@ export function ELCTabContent({ elcControls, onEditControl, onCreateControl }: E
       </div>
 
       {/* Desktop Table View */}
-      <div className="hidden md:block border border-slate-200 rounded-lg bg-white shadow-sm overflow-hidden">
-        <Table>
+      <div className="hidden md:block border border-slate-200 rounded-lg bg-white shadow-sm overflow-x-auto max-w-full touch-pan-x overscroll-x-contain">
+        <Table className="min-w-[640px]">
           <TableHeader className="bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
             <TableRow>
               <TableHead className="w-[320px] font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 px-6 py-3.5">{t('matrix.properties.coso_section')}</TableHead>

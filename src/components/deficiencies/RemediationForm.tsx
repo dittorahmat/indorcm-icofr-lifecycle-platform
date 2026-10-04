@@ -187,7 +187,7 @@ export function RemediationForm({ isOpen, setIsOpen, actionPlan, onSubmit, isLoa
                           <FormLabel className="text-xs uppercase font-black text-slate-400 tracking-widest">{t('form.fields.relatedFunction')}</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value} disabled={isWorkflowLocked}>
                             <FormControl>
-                              <SelectTrigger className="h-10 bg-slate-50 border-slate-200 focus:bg-white transition-all rounded-lg font-bold">
+                              <SelectTrigger className="h-11 sm:h-10 min-h-[44px] sm:min-h-0 bg-slate-50 border-slate-200 focus:bg-white transition-all rounded-lg font-bold">
                                 <SelectValue placeholder={t('form.placeholders.relatedFunction')} />
                               </SelectTrigger>
                             </FormControl>
@@ -211,7 +211,7 @@ export function RemediationForm({ isOpen, setIsOpen, actionPlan, onSubmit, isLoa
                           <FormLabel className="text-xs uppercase font-black text-slate-400 tracking-widest">{t('form.fields.picName')}</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value} disabled={isWorkflowLocked}>
                             <FormControl>
-                              <SelectTrigger className="h-10 bg-slate-50 border-slate-200 focus:bg-white transition-all rounded-lg font-bold">
+                              <SelectTrigger className="h-11 sm:h-10 min-h-[44px] sm:min-h-0 bg-slate-50 border-slate-200 focus:bg-white transition-all rounded-lg font-bold">
                                 <SelectValue placeholder={t('form.placeholders.picName')} />
                               </SelectTrigger>
                             </FormControl>
@@ -237,7 +237,7 @@ export function RemediationForm({ isOpen, setIsOpen, actionPlan, onSubmit, isLoa
                         <FormLabel className="text-xs uppercase font-black text-slate-400 tracking-widest">{t('form.fields.targetDate')}</FormLabel>
                         <FormControl>
                           <div className="relative">
-                            <Input type="date" {...field} className="h-10 bg-slate-50 border-slate-200 focus:bg-white transition-all rounded-lg font-bold pr-10" disabled={isWorkflowLocked} />
+                            <Input type="date" {...field} className="h-11 sm:h-10 min-h-[44px] sm:min-h-0 bg-slate-50 border-slate-200 focus:bg-white transition-all rounded-lg font-bold pr-10" disabled={isWorkflowLocked} />
                             <Calendar className="absolute right-3 top-3 h-4 w-4 text-slate-400 pointer-events-none" />
                           </div>
                         </FormControl>

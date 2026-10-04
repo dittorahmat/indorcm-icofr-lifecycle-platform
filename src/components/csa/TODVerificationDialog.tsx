@@ -220,7 +220,7 @@ export function TODVerificationDialog({
   if (!control) return null;
 
   const headerContent = (
-    <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="flex flex-col min-[420px]:flex-row min-[420px]:items-center min-[420px]:justify-between flex-wrap gap-3">
       <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
         <div className="p-2 sm:p-2.5 bg-primary/20 rounded-lg shadow-xs border border-white/20 shrink-0">
           <ShieldCheck className="h-5 w-5 sm:h-6 sm:w-6 text-primary-foreground" />
@@ -235,7 +235,7 @@ export function TODVerificationDialog({
           </div>
         </div>
       </div>
-      <div className="text-right shrink-0 ml-auto">
+      <div className="text-left min-[420px]:text-right shrink-0 min-[420px]:ml-auto w-full min-[420px]:w-auto">
         <div className="text-xs font-semibold text-primary-foreground/80 uppercase tracking-wider">{t('csa_hub:tod.controlReference')}</div>
         <div className="text-sm sm:text-lg font-bold tracking-tight text-white">{rcmMapping?.controlCode || '-'}</div>
       </div>

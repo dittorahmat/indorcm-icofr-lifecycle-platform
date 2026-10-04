@@ -91,8 +91,8 @@ export function ManagementAssessment({
             <h3 className="font-bold text-slate-900 border-b border-slate-200 pb-3 flex items-center gap-2 text-sm uppercase tracking-wider">
               <AlertTriangle className="h-4 w-4 text-orange-500" /> {t('assessment.deficiencyTitle')}
             </h3>
-            <div className="rounded-lg border border-slate-200 overflow-x-auto bg-white">
-              <Table className="text-xs">
+            <div className="rounded-lg border border-slate-200 overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint bg-white">
+              <Table className="text-xs min-w-[560px]">
                 <TableHeader className="bg-slate-50">
                   <TableRow>
                     <TableHead className="font-bold text-slate-600 uppercase tracking-wider">{t('testing.table.notes')}</TableHead>

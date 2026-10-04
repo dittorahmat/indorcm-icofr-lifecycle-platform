@@ -256,7 +256,7 @@ export function SOCMonitoringPage() {
                             </TooltipProvider>
                           </TableCell>
                           <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                            <div className="flex justify-end gap-1">
+                            <div className="flex flex-wrap justify-end gap-1">
                               <Button variant="ghost" size="icon" aria-label={t('common:actions.edit', { defaultValue: 'Edit application' })} className="h-11 w-11 sm:h-8 sm:w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 text-slate-400 hover:text-indigo-600" onClick={() => setEditingApp(app)}>
                                 <Edit className="h-4 w-4" />
                               </Button>

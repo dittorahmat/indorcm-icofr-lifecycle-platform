@@ -35,12 +35,12 @@ export function ITGCTabContent({
       exit={{ opacity: 0, x: -20 }}
       className="space-y-6"
     >
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-4 sm:p-5 rounded-xl border border-slate-200 shadow-sm">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-4 sm:p-5 rounded-lg border border-slate-200 shadow-sm">
         <div className="relative flex-1 group">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
           <Input 
             placeholder={t('matrix.subtitle_itgc')} 
-            className="pl-10 h-10 min-h-[44px] bg-slate-50 border-slate-200 text-xs sm:text-sm font-medium focus:bg-white rounded-lg transition-all" 
+            className="pl-10 h-10 min-h-[44px] bg-slate-50 border-slate-200 text-base sm:text-sm font-medium focus:bg-white rounded-lg transition-all" 
             value={searchTerm} 
             onChange={(e) => onSearchChange(e.target.value)} 
           />
@@ -51,8 +51,8 @@ export function ITGCTabContent({
       </div>
 
       {/* Desktop Table View */}
-      <div className="hidden md:block border border-slate-200 rounded-lg bg-white shadow-sm overflow-hidden">
-        <Table>
+      <div className="hidden md:block border border-slate-200 rounded-lg bg-white shadow-sm overflow-x-auto max-w-full touch-pan-x overscroll-x-contain">
+        <Table className="min-w-[720px]">
           <TableHeader className="bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
             <TableRow>
               <TableHead className="w-[140px] font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 px-4 py-3.5">Domain</TableHead>

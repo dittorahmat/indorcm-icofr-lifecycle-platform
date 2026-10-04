@@ -100,14 +100,14 @@ export function RCMList() {
         variants={containerVariants}
         className="flex flex-col space-y-8 pb-10"
       >
-        <motion.div variants={itemVariants} className="flex flex-col md:flex-row md:items-end justify-between gap-6 min-w-0 max-w-full">
+        <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 sm:gap-6 min-w-0 max-w-full">
           <div className="space-y-2 min-w-0 max-w-full">
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-display font-bold tracking-tight text-slate-900 leading-none break-words">Risk Control Matrix</h1>
             <p className="text-slate-500 text-sm font-medium max-w-2xl leading-relaxed">
               {t('matrix.subtitle_tlc')}
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 w-full md:w-auto">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
             <Button variant="outline" className="h-11 sm:h-10 min-h-[44px] sm:min-h-0 gap-2 border-slate-200 bg-white hover:bg-slate-50 shadow-sm transition-all font-bold text-xs uppercase tracking-widest px-5 w-full sm:w-auto justify-center">
               <FileDown className="h-4 w-4 text-indigo-500" /> {t('common:actions.all')} RCM
             </Button>
@@ -175,14 +175,14 @@ export function RCMList() {
                 exit={{ opacity: 0, x: -20 }}
                 className="flex flex-col items-center justify-center py-20 bg-white border border-slate-200 rounded-lg shadow-sm"
               >
-                <div className="h-16 w-16 bg-indigo-50 rounded-xl flex items-center justify-center mb-4">
+                <div className="h-16 w-16 bg-indigo-50 rounded-lg flex items-center justify-center mb-4">
                   <ShieldAlert className="h-8 w-8 text-indigo-600" />
                 </div>
                 <h3 className="text-lg font-display font-bold text-slate-900">Whistleblowing Integration</h3>
                 <p className="text-slate-500 text-sm font-medium mt-1 max-w-sm text-center">
                   Fitur integrasi laporan WBS sedang dipersiapkan untuk sinkronisasi otomatis indikator kecurangan (fraud) dengan profil risiko RCM.
                 </p>
-                <Button variant="outline" className="mt-8 font-bold text-xs uppercase tracking-widest px-6 h-10 border-indigo-100 text-indigo-600 hover:bg-indigo-50 rounded-xl">
+                <Button variant="outline" className="mt-8 font-bold text-xs uppercase tracking-widest px-6 h-10 border-indigo-100 text-indigo-600 hover:bg-indigo-50 rounded-lg">
                   Pelajari Lebih Lanjut
                 </Button>
               </motion.div>

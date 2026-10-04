@@ -57,17 +57,17 @@ export function RegulatoryAppendices({ rcmData, controlsData, testsData, summary
             <LayoutGrid className="h-4 w-4 mr-2" /> DoD (Lampiran 10)
           </TabsTrigger>
 
-          <div className="px-4 py-2 mt-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Governance</div>
-          <TabsTrigger value="changelog" className="w-full justify-start rounded-none border-l-2 border-l-transparent data-[state=active]:border-l-primary data-[state=active]:bg-muted/50 px-4 py-2">
-            <History className="h-4 w-4 mr-2" /> Log Perubahan (Lmp 6)
+          <div className="px-4 py-2 mt-4 text-xs font-bold text-muted-foreground uppercase tracking-widest whitespace-nowrap shrink-0">Governance</div>
+          <TabsTrigger value="changelog" className="w-auto md:w-full shrink-0 justify-start rounded-none border-l-2 border-l-transparent data-[state=active]:border-l-primary data-[state=active]:bg-muted/50 px-4 py-2 min-h-[44px] text-xs font-semibold whitespace-nowrap">
+            <History className="h-4 w-4 mr-2 shrink-0" /> Log Perubahan (Lmp 6)
           </TabsTrigger>
-          <TabsTrigger value="csa-doc" className="w-full justify-start rounded-none border-l-2 border-l-transparent data-[state=active]:border-l-primary data-[state=active]:bg-muted/50 px-4 py-2">
-            <ClipboardCheck className="h-4 w-4 mr-2" /> Dok. CSA (Lampiran 7)
+          <TabsTrigger value="csa-doc" className="w-auto md:w-full shrink-0 justify-start rounded-none border-l-2 border-l-transparent data-[state=active]:border-l-primary data-[state=active]:bg-muted/50 px-4 py-2 min-h-[44px] text-xs font-semibold whitespace-nowrap">
+            <ClipboardCheck className="h-4 w-4 mr-2 shrink-0" /> Dok. CSA (Lampiran 7)
           </TabsTrigger>
 
-          <div className="px-4 py-2 mt-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Final Conclusion</div>
-          <TabsTrigger value="rcm-lamp11" className="w-full justify-start rounded-none border-l-2 border-l-transparent data-[state=active]:border-l-primary data-[state=active]:bg-muted/50 px-4 py-2">
-            <ShieldCheck className="h-4 w-4 mr-2" /> Asesmen Manajemen (Lmp 11)
+          <div className="px-4 py-2 mt-4 text-xs font-bold text-muted-foreground uppercase tracking-widest whitespace-nowrap shrink-0">Final Conclusion</div>
+          <TabsTrigger value="rcm-lamp11" className="w-auto md:w-full shrink-0 justify-start rounded-none border-l-2 border-l-transparent data-[state=active]:border-l-primary data-[state=active]:bg-muted/50 px-4 py-2 min-h-[44px] text-xs font-semibold whitespace-nowrap">
+            <ShieldCheck className="h-4 w-4 mr-2 shrink-0" /> Asesmen Manajemen (Lmp 11)
           </TabsTrigger>
         </TabsList>
 

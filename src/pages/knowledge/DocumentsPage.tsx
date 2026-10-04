@@ -101,10 +101,12 @@ export const DocumentsPage = () => {
         )}
 
         <Tabs defaultValue="internal" value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full max-w-md grid-cols-1 sm:grid-cols-2">
-            <TabsTrigger value="internal">{t('tabs.internal')}</TabsTrigger>
-            <TabsTrigger value="external">{t('tabs.external')}</TabsTrigger>
+          <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain no-scrollbar -mx-1 px-1">
+          <TabsList className="flex sm:grid w-max min-w-full sm:w-full sm:max-w-md sm:grid-cols-2 gap-1 min-h-[44px]">
+            <TabsTrigger value="internal" className="flex-1 sm:flex-none min-h-[44px] whitespace-nowrap px-4 text-xs font-semibold">{t('tabs.internal')}</TabsTrigger>
+            <TabsTrigger value="external" className="flex-1 sm:flex-none min-h-[44px] whitespace-nowrap px-4 text-xs font-semibold">{t('tabs.external')}</TabsTrigger>
           </TabsList>
+          </div>
 
           <div className="mt-6">
             <Card>
@@ -113,7 +115,7 @@ export const DocumentsPage = () => {
                   <CardTitle className="min-w-0 truncate">{activeTab === 'internal' ? t('card.internalTitle') : t('card.externalTitle')}</CardTitle>
                   <div className="relative w-full sm:w-72 shrink-0">
                     <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder={t('card.searchPlaceholder')} className="pl-8" />
+                    <Input placeholder={t('card.searchPlaceholder')} className="pl-8 h-11 sm:h-10 min-h-[44px] sm:min-h-0 text-base sm:text-sm" />
                   </div>
                 </div>
                 <CardDescription>
@@ -123,7 +125,8 @@ export const DocumentsPage = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Table>
+                <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint -mx-1 px-1">
+                <Table className="min-w-[640px]">
                   <TableHeader>
                     <TableRow>
                       <TableHead>{t('table.title')}</TableHead>
@@ -171,11 +174,12 @@ export const DocumentsPage = () => {
                               </span>
                             )}
                           </TableCell>
-                          <TableCell className="text-right space-x-2">
+                          <TableCell className="text-right space-x-1 whitespace-nowrap">
                             <Button 
                               variant="ghost" 
                               size="icon" 
                               title={t('common:actions.view') || 'Lihat'}
+                              className="h-11 w-11 sm:h-9 sm:w-9 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 shrink-0"
                               onClick={() => window.open(`/api/documents/download/${doc.id}?mode=view`, '_blank')}
                             >
                               <Eye className="h-4 w-4" />
@@ -184,6 +188,7 @@ export const DocumentsPage = () => {
                               variant="ghost" 
                               size="icon" 
                               title={t('common:actions.download') || 'Download'}
+                              className="h-11 w-11 sm:h-9 sm:w-9 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 shrink-0"
                               onClick={() => window.open(`/api/documents/download/${doc.id}`, '_blank')}
                             >
                               <Download className="h-4 w-4" />
@@ -192,7 +197,7 @@ export const DocumentsPage = () => {
                               <Button 
                                 variant="ghost" 
                                 size="icon" 
-                                className="text-red-500 hover:text-red-700 hover:bg-red-50" 
+                                className="text-red-500 hover:text-red-700 hover:bg-red-50 h-11 w-11 sm:h-9 sm:w-9 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 shrink-0" 
                                 title={t('common:actions.delete')}
                                 disabled={deleteMutation.isPending}
                                 onClick={async () => {
@@ -216,6 +221,7 @@ export const DocumentsPage = () => {
                     })}
                   </TableBody>
                 </Table>
+                </div>
               </CardContent>
             </Card>
           </div>

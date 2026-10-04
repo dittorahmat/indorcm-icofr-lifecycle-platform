@@ -138,7 +138,7 @@ export function BPMModal({
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-[98vw] w-[1600px] h-[95dvh] flex flex-col p-0 overflow-hidden border-none shadow-2xl rounded-lg">
         <DialogHeader className="p-3 sm:p-4 border-b bg-mancity-pattern text-primary-foreground shrink-0">
-          <div className="flex justify-between items-center flex-wrap gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between flex-wrap gap-2">
             <div className="flex items-center gap-3 min-w-0 flex-1">
               <div className="bg-primary-foreground/10 p-2 rounded-lg shrink-0">
                 <Network className="h-5 w-5" />

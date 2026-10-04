@@ -129,13 +129,13 @@ export function ActivationPage() {
 
             <div className="space-y-2">
               <Label>Your Machine ID</Label>
-              <div className="flex gap-2">
+              <div className="flex flex-col min-[420px]:flex-row gap-2">
                 <Input
                   readOnly
                   value={status?.machineId || 'Fetching...'}
-                  className="bg-muted font-mono text-xs"
+                  className="bg-muted font-mono text-xs min-w-0 h-11 min-[420px]:h-10 min-h-[44px] min-[420px]:min-h-0"
                 />
-                <Button variant="outline" size="icon" onClick={handleCopyMachineId}>
+                <Button variant="outline" size="icon" onClick={handleCopyMachineId} aria-label="Copy machine ID" className="h-11 w-11 min-h-[44px] min-w-[44px] shrink-0 self-start min-[420px]:self-auto">
                   {copied ? <CheckCircle2 className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
                 </Button>
               </div>

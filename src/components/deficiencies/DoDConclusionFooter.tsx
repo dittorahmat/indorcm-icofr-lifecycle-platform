@@ -107,12 +107,12 @@ export function DoDConclusionFooter({
           <span className="font-mono text-xs">({new Date().toLocaleDateString('id-ID')})</span>
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
           <Button
             type="button"
             variant="outline"
             onClick={onCancel}
-            className="flex-1 sm:flex-none text-xs font-semibold rounded-md border-border"
+            className="flex-1 sm:flex-none h-11 sm:h-10 min-h-[44px] sm:min-h-0 text-xs font-semibold rounded-md border-border justify-center"
           >
             {t('worksheet.conclusion.cancelButton')}
           </Button>
@@ -120,9 +120,9 @@ export function DoDConclusionFooter({
             type="button"
             disabled={!isSubmittable || isSaving}
             onClick={onSave}
-            className="flex-1 sm:flex-none text-xs font-semibold rounded-md bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5"
+            className="flex-1 sm:flex-none h-11 sm:h-10 min-h-[44px] sm:min-h-0 text-xs font-semibold rounded-md bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5 justify-center"
           >
-            <ShieldCheck className="h-4 w-4" />
+            <ShieldCheck className="h-4 w-4 shrink-0" />
             {t('worksheet.conclusion.saveButton')}
           </Button>
         </div>

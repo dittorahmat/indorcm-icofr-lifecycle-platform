@@ -148,11 +148,11 @@ export function SOCReviewDialog({ report, isOpen, onClose, onSave }: SOCReviewDi
           </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button 
-            onClick={() => mutation.mutate(formData)} 
-            className="gap-2"
+        <DialogFooter className="flex-col-reverse sm:flex-row">
+          <Button variant="outline" onClick={onClose} className="w-full sm:w-auto h-11 sm:h-10 min-h-[44px]">Cancel</Button>
+          <Button
+            onClick={() => mutation.mutate(formData)}
+            className="gap-2 w-full sm:w-auto h-11 sm:h-10 min-h-[44px]"
             disabled={mutation.isPending}
           >
             <CheckCircle2 className="h-4 w-4" /> {mutation.isPending ? "Saving..." : "Save Evaluation"}

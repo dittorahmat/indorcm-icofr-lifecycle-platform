@@ -101,8 +101,8 @@ export function MainHeader() {
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel className="font-bold">{t('account.title')}</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <div className="sm:hidden px-2 py-1.5 flex items-center justify-between border-b pb-2 mb-1 flex-wrap gap-2">
-                <span className="text-xs font-medium text-muted-foreground">{t('settings.language', { defaultValue: 'Bahasa' })}</span>
+              <div className="sm:hidden px-2 py-1.5 flex flex-col min-[360px]:flex-row min-[360px]:items-center min-[360px]:justify-between border-b pb-2 mb-1 gap-2">
+                <span className="text-xs font-medium text-muted-foreground min-w-0 truncate">{t('settings.language', { defaultValue: 'Bahasa' })}</span>
                 <LanguageSwitcher />
               </div>
               <DropdownMenuItem className="cursor-pointer font-medium">{t('account.profile')}</DropdownMenuItem>

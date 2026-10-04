@@ -147,7 +147,7 @@ export function TestWorkbench() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
                 <Input 
                   placeholder={t('searchPlaceholder') || "Search controls..."} 
-                  className="pl-9 h-11 sm:h-10 min-h-[44px] sm:min-h-0 w-full sm:w-[240px] bg-white border-slate-200 text-xs font-medium rounded-lg"
+                  className="pl-9 h-11 sm:h-10 min-h-[44px] sm:min-h-0 w-full sm:w-[240px] bg-white border-slate-200 text-base sm:text-sm font-medium rounded-lg"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />

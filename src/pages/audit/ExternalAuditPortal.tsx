@@ -58,9 +58,9 @@ export function ExternalAuditPortal() {
 
         <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2 flex-wrap gap-2">
-              <CardTitle className="text-sm font-medium">Management Conclusion</CardTitle>
-              <ShieldCheck className="h-4 w-4 text-green-600" />
+            <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-2 gap-2">
+              <CardTitle className="text-sm font-medium min-w-0 truncate">Management Conclusion</CardTitle>
+              <ShieldCheck className="h-4 w-4 text-green-600 shrink-0" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-700">Effective</div>
@@ -68,9 +68,9 @@ export function ExternalAuditPortal() {
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2 flex-wrap gap-2">
-              <CardTitle className="text-sm font-medium">Open Deficiencies</CardTitle>
-              <AlertTriangle className="h-4 w-4 text-orange-600" />
+            <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-2 gap-2">
+              <CardTitle className="text-sm font-medium min-w-0 truncate">Open Deficiencies</CardTitle>
+              <AlertTriangle className="h-4 w-4 text-orange-600 shrink-0" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{summaryData?.openDeficiencies || 0}</div>
@@ -78,9 +78,9 @@ export function ExternalAuditPortal() {
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2 flex-wrap gap-2">
-              <CardTitle className="text-sm font-medium">Scope Coverage</CardTitle>
-              <FileCheck className="h-4 w-4 text-blue-600" />
+            <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-2 gap-2">
+              <CardTitle className="text-sm font-medium min-w-0 truncate">Scope Coverage</CardTitle>
+              <FileCheck className="h-4 w-4 text-blue-600 shrink-0" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">100%</div>

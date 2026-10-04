@@ -85,12 +85,12 @@ export function TODEvaluationFormSection({
           <Label className="text-xs font-semibold uppercase text-slate-500 tracking-wider">
             {t('csa_hub:tod.conclusion')}
           </Label>
-          <div className="flex gap-2 h-10">
+          <div className="flex flex-col min-[380px]:flex-row gap-2 min-h-[44px]">
             <Button
               type="button"
               variant="outline"
               className={cn(
-                "flex-1 gap-1.5 font-bold text-xs uppercase border rounded-lg transition-all min-h-[40px]",
+                "flex-1 gap-1.5 font-bold text-xs uppercase border rounded-lg transition-all min-h-[44px] w-full min-[380px]:w-auto justify-center",
                 form.watch('conclusion') === 'Effective'
                   ? "bg-green-50 border-green-600 text-green-700 shadow-xs"
                   : "opacity-40 grayscale"
@@ -104,7 +104,7 @@ export function TODEvaluationFormSection({
               type="button"
               variant="outline"
               className={cn(
-                "flex-1 gap-1.5 font-bold text-xs uppercase border rounded-lg transition-all min-h-[40px]",
+                "flex-1 gap-1.5 font-bold text-xs uppercase border rounded-lg transition-all min-h-[44px] w-full min-[380px]:w-auto justify-center",
                 form.watch('conclusion') === 'Ineffective'
                   ? "bg-red-50 border-red-600 text-red-700 shadow-xs"
                   : "opacity-40 grayscale"

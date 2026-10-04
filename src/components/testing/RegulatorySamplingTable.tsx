@@ -49,11 +49,11 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap justify-between items-center gap-2">
-        <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center gap-2 text-slate-800">
-          {t('sampling.title')} 
-          <span className="text-xs font-semibold text-slate-500">(Lampiran 7)</span>
+    <div className="space-y-4 min-w-0 max-w-full">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between flex-wrap gap-2">
+        <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center gap-2 text-slate-800 min-w-0">
+          <span className="truncate">{t('sampling.title')}</span> 
+          <span className="text-xs font-semibold text-slate-500 shrink-0">(Lampiran 7)</span>
         </h3>
         {!isReadOnly && (
           <Button 
@@ -61,7 +61,7 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
             variant="outline" 
             size="sm" 
             onClick={addSample} 
-            className="h-9 min-h-[36px] text-xs font-semibold gap-1.5 border-slate-200"
+            className="h-11 sm:h-9 min-h-[44px] sm:min-h-0 text-xs font-semibold gap-1.5 border-slate-200 w-full sm:w-auto justify-center"
           >
             <Plus className="h-4 w-4 shrink-0" /> {t('sampling.addSample')}
           </Button>
@@ -175,8 +175,8 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
       </div>
 
       {/* DESKTOP VIEW: Table (>= md) */}
-      <div className="hidden md:block border rounded-md overflow-hidden bg-white">
-        <Table>
+      <div className="hidden md:block border rounded-md overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint bg-white">
+        <Table className="min-w-[720px]">
           <TableHeader className="bg-muted/50">
             <TableRow>
               <TableHead className="w-[50px] text-center text-xs uppercase font-bold">No</TableHead>
@@ -206,7 +206,7 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
                       value={field.sampleRef} 
                       onChange={(e) => update(index, { ...field, sampleRef: e.target.value })}
                       disabled={isReadOnly}
-                      className="h-8 text-xs font-medium"
+                      className="h-11 md:h-9 min-h-[44px] md:min-h-0 text-base md:text-xs font-medium"
                       placeholder="e.g. VOU-001"
                     />
                   </TableCell>
@@ -254,7 +254,7 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
                       value={field.comments || ''} 
                       onChange={(e) => update(index, { ...field, comments: e.target.value })}
                       disabled={isReadOnly}
-                      className="h-8 text-xs"
+                      className="h-11 md:h-9 min-h-[44px] md:min-h-0 text-base md:text-xs"
                       placeholder={t('sampling.commentPlaceholder')}
                     />
                   </TableCell>
@@ -265,7 +265,8 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
                         variant="ghost" 
                         size="icon" 
                         onClick={() => remove(index)}
-                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                        aria-label={t('sampling.remove', { defaultValue: 'Remove sample' })}
+                        className="h-11 w-11 md:h-9 md:w-9 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 text-muted-foreground hover:text-destructive shrink-0"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

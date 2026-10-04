@@ -84,7 +84,7 @@ export function CSAForm({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-12">
         <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-5 bg-slate-50 rounded-xl border border-slate-100 shadow-inner">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-5 bg-slate-50 rounded-lg border border-slate-100 shadow-inner">
             <div className="flex flex-col justify-center space-y-1">
               <span className="text-xs font-black uppercase text-slate-400">
                 {t('csa_hub:form.referenceCodeLabel')}
@@ -175,7 +175,7 @@ export function CSAForm({
             </FormItem>
           )} />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-slate-50/50 border border-slate-200 rounded-xl">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-slate-50/50 border border-slate-200 rounded-lg">
             <FormField control={form.control} name="testProcedure" render={({ field: f }) => (
               <FormItem className="col-span-1">
                 <FormLabel className="text-xs font-black uppercase text-slate-400 flex items-center gap-2">
@@ -201,20 +201,20 @@ export function CSAForm({
         {/* DESKTOP VIEW: Sample matrix */}
         <div className="hidden md:block">
         <div className="space-y-4">
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <h4 className="text-xs font-black uppercase text-slate-700 flex items-center gap-2">
-              <LayoutDashboard className="h-3.5 w-3.5" /> {t('csa_hub:form.summaryTitle')}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between flex-wrap gap-2">
+            <h4 className="text-xs font-black uppercase text-slate-700 flex items-center gap-2 min-w-0">
+              <LayoutDashboard className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">{t('csa_hub:form.summaryTitle')}</span>
             </h4>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
               {!isReadOnly && (
                 <Button 
                 type="button"
                 onClick={handleAddSample}
                 variant="outline"
                 size="sm"
-                className="h-7 text-xs font-bold border-slate-200 text-slate-700 hover:bg-slate-50"
+                className="h-11 sm:h-9 min-h-[44px] sm:min-h-0 text-xs font-bold border-slate-200 text-slate-700 hover:bg-slate-50 w-full min-[420px]:w-auto justify-center"
                 >
-                <Plus className="h-3.5 w-3.5 mr-1" /> {t('csa_hub:form.addManualSample')}
+                <Plus className="h-3.5 w-3.5 mr-1 shrink-0" /> {t('csa_hub:form.addManualSample')}
                 </Button>
                 )}
                 <Badge variant="outline" className="bg-slate-50 text-slate-700 border-slate-200 text-xs font-bold">
@@ -520,7 +520,7 @@ export function CSAForm({
                 </div>
                 </div>
 
-                <div className="border rounded-xl overflow-hidden shadow-md">
+                <div className="border rounded-lg overflow-hidden shadow-md">
                 <Table>
                 <TableHeader className="bg-mancity-pattern text-primary-foreground">
                 <TableRow className="divide-x divide-white/10 hover:bg-transparent">
@@ -686,7 +686,7 @@ export function CSAForm({
                 </Table>
                 </div>
 
-                <div className="flex justify-between items-center bg-slate-100 p-5 rounded-xl border border-slate-200 shadow-inner flex-wrap gap-2">
+                <div className="flex justify-between items-center bg-slate-100 p-5 rounded-lg border border-slate-200 shadow-inner flex-wrap gap-2">
                 <div className="flex gap-10">
                 <div className="text-center border-r pr-10 border-slate-300">
                 <p className="text-xs font-black uppercase text-slate-400 tracking-widest">{t('csa_hub:page.table.samples')}</p>
@@ -723,12 +723,12 @@ export function CSAForm({
                 </FormItem>
                 )} />
 
-                <div className="sticky bottom-0 z-10 flex flex-wrap justify-end gap-2 border-t border-slate-100 bg-white/95 py-3 pb-[env(safe-area-inset-bottom,0px)] md:static md:z-auto md:gap-3 md:border-0 md:bg-transparent md:py-0 md:pb-0">
-                <Button 
-                variant="outline" 
+                <div className="sticky bottom-0 z-10 flex flex-col-reverse sm:flex-row sm:justify-end flex-wrap gap-2 border-t border-slate-100 bg-white p-4 sm:p-0 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] sm:pb-0 md:static md:z-auto md:gap-3 md:border-0 md:bg-transparent md:py-0 md:pb-0">
+                <Button
+                variant="outline"
                 type="button"
-                onClick={onBackToList} 
-                className="px-8 font-bold min-h-[44px] md:min-h-0"
+                onClick={onBackToList}
+                className="px-8 font-bold w-full sm:w-auto h-11 sm:h-10 min-h-[44px]"
                 >
                 {isReadOnly ? <ChevronLeft className="h-4 w-4 mr-2" /> : null}
                 {isReadOnly ? t('csa_hub:form.table.backToList') : t('common:actions.cancel')}
@@ -737,7 +737,7 @@ export function CSAForm({
                 {(isReadOnly || watchSamples.length > 0) && (
                 <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button type="button" className="bg-mancity-pattern hover:opacity-90 text-primary-foreground font-black px-8 h-12 gap-2 shadow-xl uppercase tracking-widest">
+                  <Button type="button" className="bg-mancity-pattern hover:opacity-90 text-primary-foreground font-black px-8 h-11 sm:h-12 min-h-[44px] w-full sm:w-auto gap-2 shadow-xl uppercase tracking-widest">
                     <Printer className="h-5 w-5" /> {t('csa_hub:actions.exportApp7a')} <ChevronDown className="h-4 w-4 ml-1" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -754,16 +754,16 @@ export function CSAForm({
 
                 {!isReadOnly && (
                 <>
-                <Button 
+                <Button
                   type="button"
-                  disabled={isPending || isAuthenticating} 
+                  disabled={isPending || isAuthenticating}
                   onClick={onSaveDraft}
-                  className="bg-mancity-pattern hover:opacity-90 text-primary-foreground font-black px-8 h-12 gap-2 shadow-xl shadow-blue-100 uppercase tracking-widest"
+                  className="bg-mancity-pattern hover:opacity-90 text-primary-foreground font-black px-8 h-11 sm:h-12 min-h-[44px] w-full sm:w-auto gap-2 shadow-xl shadow-blue-100 uppercase tracking-widest"
                 >
                    {isPending ? <RefreshCw className="h-5 w-5 animate-spin" /> : <FileText className="h-5 w-5" />}
                    {t('csa_hub:actions.saveDraft')}
                 </Button>
-                <Button disabled={isPending || isAuthenticating} type="submit" className="bg-mancity-pattern hover:opacity-90 text-primary-foreground font-black px-12 h-12 gap-2 shadow-md uppercase tracking-widest">
+                <Button disabled={isPending || isAuthenticating} type="submit" className="bg-mancity-pattern hover:opacity-90 text-primary-foreground font-black px-12 h-11 sm:h-12 min-h-[44px] w-full sm:w-auto gap-2 shadow-md uppercase tracking-widest">
                    {isAuthenticating ? <RefreshCw className="h-5 w-5 animate-spin" /> : <UserCheck className="h-5 w-5" />}
                    {t('csa_hub:actions.save')}
                 </Button>

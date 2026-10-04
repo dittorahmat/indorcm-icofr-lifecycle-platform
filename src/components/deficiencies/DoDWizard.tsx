@@ -139,7 +139,7 @@ export function DoDWizard({ isOpen, setIsOpen, onComplete, isAggregate = false, 
 
   return (
     <Dialog open={isOpen} onOpenChange={(o) => { if(!o) reset(); setIsOpen(o); }}>
-      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-md max-h-[90dvh] overflow-y-auto rounded-lg p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <ShieldCheck className="h-5 w-5 text-primary" />
@@ -184,7 +184,7 @@ export function DoDWizard({ isOpen, setIsOpen, onComplete, isAggregate = false, 
                     value={exposureValue} 
                     onChange={(e) => setExposureValue(e.target.value)} 
                     placeholder={t('wizard.box3.exposurePlaceholder')}
-                    className="h-8 text-xs"
+                    className="h-11 sm:h-9 min-h-[44px] sm:min-h-0 text-base sm:text-xs"
                   />
                   {performanceMateriality && (
                     <div className="text-xs flex flex-col justify-center">

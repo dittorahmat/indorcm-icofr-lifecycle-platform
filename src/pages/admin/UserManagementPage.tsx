@@ -284,7 +284,7 @@ export function UserManagementPage() {
                       </Select>
                     </div>
                   </div>
-                  <DialogFooter><Button type="submit">Save</Button></DialogFooter>
+                  <DialogFooter className="flex-col-reverse sm:flex-row"><Button type="submit" className="w-full sm:w-auto h-11 sm:h-10 min-h-[44px]">Save</Button></DialogFooter>
                 </form>
               </DialogContent>
             </Dialog>
@@ -348,10 +348,10 @@ export function UserManagementPage() {
         </TabsContent>
 
         <TabsContent value="departments" className="space-y-4">
-          <div className="flex justify-end">
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
             <Dialog open={isAddDeptOpen} onOpenChange={setIsAddDeptOpen}>
               <DialogTrigger asChild>
-                <Button className="gap-2"><Plus className="h-4 w-4" /> Add Department</Button>
+                <Button className="gap-2 w-full sm:w-auto h-11 sm:h-10 min-h-[44px]"><Plus className="h-4 w-4" /> Add Department</Button>
               </DialogTrigger>
               <DialogContent>
                 <form onSubmit={handleAddDept}>
@@ -360,7 +360,7 @@ export function UserManagementPage() {
                     <DialogDescription>Example: Finance, Mining Operations, HR, etc.</DialogDescription>
                   </DialogHeader>
                   <div className="py-4"><Label>Department Name</Label><Input name="name" required /></div>
-                  <DialogFooter><Button type="submit">Save</Button></DialogFooter>
+                  <DialogFooter className="flex-col-reverse sm:flex-row"><Button type="submit" className="w-full sm:w-auto h-11 sm:h-10 min-h-[44px]">Save</Button></DialogFooter>
                 </form>
               </DialogContent>
             </Dialog>
@@ -370,8 +370,8 @@ export function UserManagementPage() {
             {isDeptsLoading ? <div className="col-span-3 text-center py-10">Loading...</div> :
               departments.map(d => (
                 <Card key={d.id}>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 flex-wrap gap-2">
-                    <CardTitle className="text-sm font-medium">{d.name}</CardTitle>
+                  <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-0 pb-2 gap-2">
+                    <CardTitle className="text-sm font-medium min-w-0 truncate">{d.name}</CardTitle>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" aria-label="Department actions" className="h-11 w-11 min-h-[44px] min-w-[44px]"><MoreVertical className="h-4 w-4" /></Button>
@@ -439,7 +439,7 @@ export function UserManagementPage() {
                   </Select>
                 </div>
               </div>
-              <DialogFooter><Button type="submit">Update</Button></DialogFooter>
+              <DialogFooter className="flex-col-reverse sm:flex-row"><Button type="submit" className="w-full sm:w-auto h-11 sm:h-10 min-h-[44px]">Update</Button></DialogFooter>
             </form>
           )}
         </DialogContent>
@@ -450,7 +450,7 @@ export function UserManagementPage() {
           <form onSubmit={handleUpdateDept}>
             <DialogHeader><DialogTitle>Rename Department</DialogTitle></DialogHeader>
             <div className="py-4"><Label>New Name</Label><Input name="name" defaultValue={editingDept?.name} required /></div>
-            <DialogFooter><Button type="submit">Update</Button></DialogFooter>
+            <DialogFooter className="flex-col-reverse sm:flex-row"><Button type="submit" className="w-full sm:w-auto h-11 sm:h-10 min-h-[44px]">Update</Button></DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
@@ -458,9 +458,9 @@ export function UserManagementPage() {
       <AlertDialog open={!!deletingUser} onOpenChange={(open) => !open && setDeletingUser(null)}>
         <AlertDialogContent>
           <AlertDialogHeader><AlertDialogTitle>Delete User?</AlertDialogTitle><AlertDialogDescription>This action cannot be undone.</AlertDialogDescription></AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => deletingUser && deleteUserMutation.mutate(deletingUser.id)} className="bg-red-600">Delete</AlertDialogAction>
+          <AlertDialogFooter className="flex-col-reverse sm:flex-row gap-2">
+            <AlertDialogCancel className="w-full sm:w-auto h-11 sm:h-10 min-h-[44px] sm:min-h-0 justify-center">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => deletingUser && deleteUserMutation.mutate(deletingUser.id)} className="bg-red-600 w-full sm:w-auto h-11 sm:h-10 min-h-[44px] sm:min-h-0 justify-center">Delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -468,9 +468,9 @@ export function UserManagementPage() {
       <AlertDialog open={!!deletingDept} onOpenChange={(open) => !open && setDeletingDept(null)}>
         <AlertDialogContent>
           <AlertDialogHeader><AlertDialogTitle>Delete Department?</AlertDialogTitle><AlertDialogDescription>Delete <b>{deletingDept?.name}</b>? Ensure there are no users in it.</AlertDialogDescription></AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => deletingDept && deleteDeptMutation.mutate(deletingDept.id)} className="bg-red-600">Delete</AlertDialogAction>
+          <AlertDialogFooter className="flex-col-reverse sm:flex-row gap-2">
+            <AlertDialogCancel className="w-full sm:w-auto h-11 sm:h-10 min-h-[44px] sm:min-h-0 justify-center">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => deletingDept && deleteDeptMutation.mutate(deletingDept.id)} className="bg-red-600 w-full sm:w-auto h-11 sm:h-10 min-h-[44px] sm:min-h-0 justify-center">Delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

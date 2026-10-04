@@ -36,14 +36,14 @@ export function RiskHeatmap() {
   return (
     <Card className="overflow-hidden border-slate-200 shadow-sm">
       <CardHeader className="bg-slate-50/50 border-b pb-4">
-        <div className="flex items-center justify-between flex-wrap gap-2 min-w-0">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 min-w-0">
           <div className="space-y-1 min-w-0">
             <CardTitle className="text-base sm:text-lg flex items-center gap-2 min-w-0">
               Heatmap Risiko (SK-5/2024)
             </CardTitle>
             <CardDescription>Kombinasi Faktor Kuantitatif vs Kualitatif - {companyName}</CardDescription>
           </div>
-          <Badge variant="outline" className="bg-white gap-1 text-xs font-bold">
+          <Badge variant="outline" className="bg-white gap-1 text-xs font-bold self-start sm:self-auto shrink-0">
             <Info className="h-3 w-3" /> Tabel 12 Juknis
           </Badge>
         </div>
@@ -56,8 +56,9 @@ export function RiskHeatmap() {
               <span className="text-xs font-black text-slate-400 uppercase vertical-text -rotate-180 h-full flex items-center justify-center">Kuantitatif</span>
             </div>
 
-            <div className="space-y-4">
-              <div className="grid grid-cols-3 gap-1 min-[380px]:gap-1.5 sm:gap-2">
+            <div className="space-y-4 min-w-0 max-w-full">
+              <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint -mx-1 px-1">
+              <div className="grid grid-cols-3 gap-1.5 min-[380px]:gap-1.5 sm:gap-2 min-w-[280px]">
                 {levels.map((qn) => (
                   levels.slice().reverse().map((ql) => {
                     const outcome = getOutcome(qn, ql);
@@ -68,12 +69,12 @@ export function RiskHeatmap() {
                       <Popover key={key}>
                         <PopoverTrigger asChild>
                           <button className={cn(
-                            "aspect-square rounded-md flex flex-col items-center justify-center p-1 min-[380px]:p-1.5 sm:p-2 transition-colors shadow-sm relative group min-h-[44px] min-w-0 w-full overflow-hidden",
+                            "aspect-square rounded-md flex flex-col items-center justify-center p-1.5 sm:p-2 transition-colors shadow-sm relative group min-h-[56px] min-w-[88px] w-full overflow-hidden",
                             outcome.color,
                             outcome.textColor
                           )}>
-                            <span className="text-xs font-bold opacity-70 uppercase tracking-tight truncate max-w-full">{qn}-{ql}</span>
-                            <span className="text-xs font-bold mt-0.5 truncate max-w-full">{outcome.label}</span>
+                            <span className="text-xs font-bold opacity-70 uppercase tracking-tight truncate max-w-full" title={`${qn}-${ql}`}>{qn}-{ql}</span>
+                            <span className="text-xs font-bold mt-0.5 truncate max-w-full" title={outcome.label}>{outcome.label}</span>
                             {risks.length > 0 && (
                               <Badge className="absolute top-0.5 right-0.5 bg-mancity-pattern text-primary-foreground border-white border h-5 min-w-[20px] flex items-center justify-center px-1 text-xs font-bold">
                                 {risks.length}
@@ -113,11 +114,15 @@ export function RiskHeatmap() {
                 ))}
               </div>
 
+              </div>
+
               {/* X-Axis Labels */}
-              <div className="grid grid-cols-3 gap-1 min-[380px]:gap-1.5 sm:gap-2 text-center">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Rendah</span>
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Medium</span>
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Tinggi</span>
+              <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint -mx-1 px-1">
+              <div className="grid grid-cols-3 gap-1.5 min-[380px]:gap-1.5 sm:gap-2 text-center min-w-[280px]">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider truncate" title="Rendah">Rendah</span>
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider truncate" title="Medium">Medium</span>
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider truncate" title="Tinggi">Tinggi</span>
+              </div>
               </div>
               <div className="text-center">
                 <span className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Kualitatif</span>

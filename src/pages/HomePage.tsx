@@ -6,9 +6,9 @@ import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 const StatCard = ({ icon, title, value }: { icon: React.ReactNode; title: string; value: string }) => (
   <Card className="bg-card">
-    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 flex-wrap gap-2">
-      <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground">{title}</CardTitle>
-      {icon}
+    <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-0 pb-2 gap-2">
+      <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground min-w-0 truncate">{title}</CardTitle>
+      <span className="shrink-0">{icon}</span>
     </CardHeader>
     <CardContent>
       <div className="text-3xl font-display font-black tracking-tight">{value}</div>
@@ -40,10 +40,10 @@ export function HomePage() {
                 {t('appDescription')}
               </p>
               <div className="mt-10 flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 px-4 sm:px-0">
-                <Button size="lg" asChild className="bg-mancity-pattern hover:opacity-90 text-primary-foreground shadow-lg shadow-blue-100 transition-all duration-300 transform hover:-translate-y-0.5 w-full sm:w-auto">
+                <Button size="lg" asChild className="bg-mancity-pattern hover:opacity-90 text-primary-foreground shadow-lg shadow-blue-100 transition-all duration-300 transform hover:-translate-y-0.5 w-full sm:w-auto h-11 min-h-[44px] justify-center">
                   <Link to="/dashboard">Get Started</Link>
                 </Button>
-                <Button size="lg" variant="outline" asChild className="w-full sm:w-auto">
+                <Button size="lg" variant="outline" asChild className="w-full sm:w-auto h-11 min-h-[44px] justify-center">
                    <a href="https://www.bumn.go.id" target="_blank" rel="noreferrer">Regulation Details</a>
                 </Button>
               </div>

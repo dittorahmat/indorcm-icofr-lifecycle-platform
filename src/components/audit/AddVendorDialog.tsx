@@ -71,11 +71,12 @@ export function AddVendorDialog({ isOpen, onOpenChange }: AddVendorDialogProps) 
             />
           </div>
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button 
+        <DialogFooter className="flex-col-reverse sm:flex-row">
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto h-11 sm:h-10 min-h-[44px]">Cancel</Button>
+          <Button
             disabled={!formData.name || mutation.isPending}
             onClick={() => mutation.mutate(formData)}
+            className="w-full sm:w-auto h-11 sm:h-10 min-h-[44px]"
           >
             {mutation.isPending ? "Saving..." : "Save Vendor"}
           </Button>

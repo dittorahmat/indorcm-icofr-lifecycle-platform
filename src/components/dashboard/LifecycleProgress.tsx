@@ -89,7 +89,7 @@ export function LifecycleProgress({ currentStage = 'evaluasi', workingYear = '20
                 key={stage.id}
                 ref={isCurrent ? activePillRef : undefined}
                 className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold shrink-0 transition-all select-none min-h-[38px]",
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold shrink-0 transition-all select-none min-h-[44px]",
                   isCompleted 
                     ? "bg-slate-900 text-white border-slate-900 shadow-xs" 
                     : isCurrent

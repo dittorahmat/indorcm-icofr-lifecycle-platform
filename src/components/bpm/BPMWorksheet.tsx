@@ -308,11 +308,11 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      <div className="flex items-center justify-between bg-slate-50/50 p-4 border-b shrink-0 flex-wrap gap-2">
-        <div className="space-y-0.5">
-          <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2">
-            <FileSpreadsheet className="h-4 w-4 text-primary" />
-            Control Activity Matrix (RCM) - {subProcessName || fsliName} ({noGL})
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-slate-50/50 p-4 border-b shrink-0 flex-wrap gap-3 min-w-0 max-w-full">
+        <div className="space-y-0.5 min-w-0">
+          <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2 min-w-0">
+            <FileSpreadsheet className="h-4 w-4 text-primary shrink-0" />
+            <span className="truncate">Control Activity Matrix (RCM) - {subProcessName || fsliName} ({noGL})</span>
           </h4>
           <p className="text-xs text-slate-500">Identify risks and control activities at the transaction level.</p>
         </div>
@@ -342,8 +342,8 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
 
       <Collapsible open={isProcedureOpen} onOpenChange={setIsProcedureOpen} className="bg-slate-50 border-b">
          <CollapsibleContent>
-            <div className="p-4 space-y-3 max-w-4xl mx-auto">
-                <div className="flex items-center justify-between flex-wrap gap-2">
+             <div className="p-4 space-y-3 max-w-4xl mx-auto">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between flex-wrap gap-2">
                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 min-w-0">
                      <Label className="text-xs font-black uppercase text-slate-500 tracking-widest whitespace-nowrap">BPM Code:</Label>
                      <Input 

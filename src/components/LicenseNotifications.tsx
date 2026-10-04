@@ -101,10 +101,10 @@ export function LicenseModal() {
           </AlertDescription>
         </Alert>
 
-        <DialogFooter className="sm:justify-start mt-4">
+        <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-start mt-4">
           <Button
             type="button"
-            className="w-full bg-red-600 hover:bg-red-700 text-white"
+            className="w-full sm:w-auto h-11 sm:h-10 min-h-[44px] bg-red-600 hover:bg-red-700 text-white"
             onClick={handleAcknowledge}
           >
             I understand, continue to application

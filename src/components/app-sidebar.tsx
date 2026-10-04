@@ -170,17 +170,17 @@ export function AppSidebar(): JSX.Element {
           </SidebarGroupLabel>
           <SidebarMenu className="px-3 gap-1">
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/dashboard")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight" title={t('items.dashboard')}>
+              <SidebarMenuButton asChild isActive={isActive("/dashboard")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight" title={t('items.dashboard')}>
                 <Link to={withYear("/dashboard")} className="font-semibold text-sm"><LayoutDashboard className="h-4 w-4" /> <span>{t('items.dashboard')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/scoping")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight" title={t('items.scoping')}>
+              <SidebarMenuButton asChild isActive={isActive("/scoping")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight" title={t('items.scoping')}>
                 <Link to={withYear("/scoping")} className="font-semibold text-sm"><Target className="h-4 w-4" /> <span>{t('items.scoping')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/bpm")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight" title={t('items.bpm')}>
+              <SidebarMenuButton asChild isActive={isActive("/bpm")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight" title={t('items.bpm')}>
                 <Link to={withYear("/bpm")} className="flex items-center justify-between w-full font-semibold text-sm flex-wrap gap-2">
                   <div className="flex items-center gap-2">
                     <Workflow className="h-4 w-4" /> <span>{t('items.bpm')}</span>
@@ -189,13 +189,13 @@ export function AppSidebar(): JSX.Element {
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/todo")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight" title={t('items.todo')}>
+              <SidebarMenuButton asChild isActive={isActive("/todo")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight" title={t('items.todo')}>
                 <Link to={withYear("/todo")} className="font-semibold text-sm"><ListTodo className="h-4 w-4" /> <span>{t('items.todo')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             {(userRole === 'Komisaris' || userRole === 'CFO' || userRole === 'Line 2' || userRole === 'Admin') && (
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive("/scoping/approval")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
+                <SidebarMenuButton asChild isActive={isActive("/scoping/approval")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
                   <Link to={withYear("/scoping/approval")} className="flex items-center justify-between w-full font-semibold text-sm flex-wrap gap-2">
                     <div className="flex items-center gap-2">
                       <ShieldCheck className="h-4 w-4" /> <span>{t('items.approval')}</span>
@@ -206,17 +206,17 @@ export function AppSidebar(): JSX.Element {
               </SidebarMenuItem>
             )}
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/csa")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight" title={t('items.csaReports')}>
+              <SidebarMenuButton asChild isActive={isActive("/csa")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight" title={t('items.csaReports')}>
                 <Link to={withYear("/csa")} className="font-semibold text-sm"><ClipboardCheck className="h-4 w-4" /> <span>{t('items.csaReports')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/rcm/verification-design")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
+              <SidebarMenuButton asChild isActive={isActive("/rcm/verification-design")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
                 <Link to={withYear("/rcm/verification-design")} className="font-semibold text-sm"><ClipboardCheck className="h-4 w-4" /> <span>{t('items.verificationDesign')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/applications")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight" title={t('items.applications')}>
+              <SidebarMenuButton asChild isActive={isActive("/applications")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight" title={t('items.applications')}>
                 <Link to={withYear("/applications")} className="font-semibold text-sm"><Cpu className="h-4 w-4" /> <span>{t('items.applications')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -230,32 +230,32 @@ export function AppSidebar(): JSX.Element {
           </SidebarGroupLabel>
           <SidebarMenu className="px-3 gap-1">
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/rcm/elc")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
+              <SidebarMenuButton asChild isActive={isActive("/rcm/elc")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
                 <Link to={withYear("/rcm/elc")} className="font-semibold text-sm"><Shield className="h-4 w-4" /> <span>{t('items.rcmElc')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/rcm/tlc")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
+              <SidebarMenuButton asChild isActive={isActive("/rcm/tlc")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
                 <Link to={withYear("/rcm/tlc")} className="font-semibold text-sm"><ListChecks className="h-4 w-4" /> <span>{t('items.rcmTlc')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/rcm/itgc")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
+              <SidebarMenuButton asChild isActive={isActive("/rcm/itgc")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
                 <Link to={withYear("/rcm/itgc")} className="font-semibold text-sm"><Database className="h-4 w-4" /> <span>{t('items.rcmItgc')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/wbs-recap")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
+              <SidebarMenuButton asChild isActive={isActive("/wbs-recap")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
                 <Link to={withYear("/wbs-recap")} className="font-semibold text-sm"><AlertTriangle className="h-4 w-4" /> <span>{t('items.wbs')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/reports/appendix-10")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
+              <SidebarMenuButton asChild isActive={isActive("/reports/appendix-10")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
                 <Link to={withYear("/reports/appendix-10")} className="font-semibold text-sm"><FileSpreadsheet className="h-4 w-4" /> <span>{t('items.app10')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/reports")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
+              <SidebarMenuButton asChild isActive={isActive("/reports")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
                 <Link to={withYear("/reports")} className="font-semibold text-sm"><FileBarChart className="h-4 w-4" /> <span>{t('items.app11')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -269,7 +269,7 @@ export function AppSidebar(): JSX.Element {
           </SidebarGroupLabel>
           <SidebarMenu className="px-3 gap-1">
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/deficiencies")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
+              <SidebarMenuButton asChild isActive={isActive("/deficiencies")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
                 <Link to={withYear("/deficiencies")} className="flex items-center justify-between w-full font-semibold text-sm flex-wrap gap-2">
                   <div className="flex items-center gap-2">
                     <AlertTriangle className="h-4 w-4" /> <span>{t('items.deficiencies')}</span>
@@ -287,7 +287,7 @@ export function AppSidebar(): JSX.Element {
           </SidebarGroupLabel>
           <SidebarMenu className="px-3 gap-1">
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/ai-hub")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
+              <SidebarMenuButton asChild isActive={isActive("/ai-hub")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
                 <Link to={withYear("/ai-hub")} className="font-semibold text-sm"><BrainCircuit className="h-4 w-4" /> <span>{t('items.aiAnalytics')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -302,12 +302,12 @@ export function AppSidebar(): JSX.Element {
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/documents")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
+              <SidebarMenuButton asChild isActive={isActive("/documents")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
                 <Link to={withYear("/documents")} className="font-semibold text-sm"><FileText className="h-4 w-4" /> <span>{t('items.documents')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/notifications")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
+              <SidebarMenuButton asChild isActive={isActive("/notifications")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
                 <Link to={withYear("/notifications")} className="flex items-center justify-between w-full font-semibold text-sm flex-wrap gap-2">
                   <div className="flex items-center gap-2">
                     <BellIcon className="h-4 w-4" /> <span>{t('items.notifications')}</span>
@@ -336,7 +336,7 @@ export function AppSidebar(): JSX.Element {
                       <SidebarMenuButton 
                         asChild 
                         isActive={isActive(item.path)} 
-                        className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight"
+                        className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight"
                         title={item.label}
                       >
                         <Link to={withYear(item.path)} className="font-semibold text-sm">
@@ -356,13 +356,13 @@ export function AppSidebar(): JSX.Element {
         <SidebarGroup className="mt-auto pt-4 pb-6 border-t border-sidebar-border/30">
           <SidebarMenu className="px-3 gap-1">
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/settings")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
+              <SidebarMenuButton asChild isActive={isActive("/settings")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
                 <Link to={withYear("/settings")} className="font-semibold text-sm"><Settings2 className="h-4 w-4" /> <span>{t('items.settings')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             {userRole === 'Admin' && (
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive("/admin/users")} className="min-h-9 h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
+                <SidebarMenuButton asChild isActive={isActive("/admin/users")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
                   <Link to={withYear("/admin/users")} className="font-semibold text-sm"><UserCog className="h-4 w-4" /> <span>{t('items.adminUsers')}</span></Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

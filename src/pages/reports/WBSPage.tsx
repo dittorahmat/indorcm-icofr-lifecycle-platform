@@ -129,7 +129,7 @@ export function WBSPage() {
                 </Button>
                 <div className="flex items-center gap-2 flex-1 sm:flex-none">
                   <Search className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <Input placeholder="Search reports..." className="h-10 sm:h-8 w-full sm:w-[200px]" />
+                  <Input placeholder="Search reports..." className="h-11 sm:h-8 min-h-[44px] sm:min-h-0 w-full sm:w-[200px] text-base sm:text-sm" />
                 </div>
               </div>
             </div>

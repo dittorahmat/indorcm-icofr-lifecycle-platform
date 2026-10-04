@@ -346,7 +346,7 @@ export function TodoListPage() {
                                     <ChevronRight className="h-3 w-3 text-slate-300 opacity-0 group-hover/item:opacity-100 transition-opacity" />
                                   </div>
                                 </PopoverTrigger>
-                                <PopoverContent className="w-64 p-0" align="start" side="right" sideOffset={10}>
+                                <PopoverContent className="w-64 max-w-[calc(100vw-2rem)] p-0" align="start" side="right" sideOffset={10} avoidCollisions={true}>
                                   <div className="p-3 border-b bg-slate-50/50">
                                     <div className="flex justify-between items-start mb-1 flex-wrap gap-2">
                                       <Badge variant="outline" className="text-xs uppercase font-bold bg-white">{e.type || 'REMEDIATION'}</Badge>
@@ -489,11 +489,12 @@ export function TodoListPage() {
                   placeholder="e.g. Weekly Review, Monthly Closing" 
                   value={formData.description} 
                   onChange={(e) => updateFormData({ description: e.target.value })} 
+                  className="text-base sm:text-sm"
                 />
               </div>
               <div className="grid gap-2">
                 <Label>{t('csa_hub:scheduling.targetDate')}</Label>
-                <Input type="date" value={formData.plannedDate} onChange={(e) => updateFormData({ plannedDate: e.target.value })} />
+                <Input type="date" value={formData.plannedDate} onChange={(e) => updateFormData({ plannedDate: e.target.value })} className="text-base sm:text-sm" />
               </div>
             </div>
             <DialogFooter className="flex-col-reverse sm:flex-row gap-2">
@@ -536,12 +537,13 @@ export function TodoListPage() {
                     setRescheduleData(prev => ({ ...prev, newDate: e.target.value }));
                     setIsRescheduleDirty(true);
                   }}
+                  className="text-base sm:text-sm"
                 />
               </div>
               <div className="space-y-2">
                 <Label>{t('csa_hub:scheduling.reschedule.justification')} <span className="text-red-500">*</span></Label>
                 <textarea
-                  className="w-full min-h-[100px] p-3 border rounded-md text-sm focus:ring-2 focus:ring-indigo-500"
+                  className="w-full min-h-[100px] p-3 border rounded-md text-base sm:text-sm focus:ring-2 focus:ring-indigo-500"
                   placeholder={t('csa_hub:scheduling.reschedule.placeholder')}
                   value={rescheduleData.justification}
                   onChange={e => {

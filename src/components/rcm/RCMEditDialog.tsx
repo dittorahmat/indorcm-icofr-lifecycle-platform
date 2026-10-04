@@ -544,7 +544,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
               </ScrollArea>
             </Tabs>
 
-            <DialogFooter className="p-4 sm:p-6 bg-slate-50 border-t border-slate-200 shrink-0 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:pb-6">
+            <DialogFooter className="p-4 sm:p-6 bg-slate-50 border-t border-slate-200 shrink-0 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:pb-6 flex-col-reverse sm:flex-row gap-2">
                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 w-full">
                   <div className="flex items-center gap-2">
                     {form.formState.isDirty && (

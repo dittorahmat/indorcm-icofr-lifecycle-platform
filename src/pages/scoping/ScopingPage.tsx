@@ -221,11 +221,11 @@ export function ScopingPage() {
 
           <TabsContent value="master-gl">
             <motion.div variants={itemVariants}>
-              <div className="flex justify-end mb-4">
-                <Button 
-                  variant="destructive" 
-                  size="sm" 
-                  className="gap-2 h-8 font-bold text-xs uppercase tracking-widest bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-100 transition-all shadow-none rounded-md"
+              <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 mb-4">
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="gap-2 h-11 sm:h-8 min-h-[44px] sm:min-h-0 w-full sm:w-auto font-bold text-xs uppercase tracking-widest bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-100 transition-all shadow-none rounded-md"
                   onClick={async () => {
                     const ok = await confirm({
                       title: t('scoping:resetDataButton'),

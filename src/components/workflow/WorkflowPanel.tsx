@@ -494,12 +494,13 @@ export function WorkflowPanel({
               />
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsNoteDialogOpen(false)}>{t('common:actions.cancel')}</Button>
-            <Button 
-                variant={pendingActionId === 'Reject' ? 'destructive' : 'default'} 
+          <DialogFooter className="flex-col-reverse sm:flex-row">
+            <Button variant="outline" onClick={() => setIsNoteDialogOpen(false)} className="w-full sm:w-auto h-11 sm:h-10 min-h-[44px]">{t('common:actions.cancel')}</Button>
+            <Button
+                variant={pendingActionId === 'Reject' ? 'destructive' : 'default'}
                 disabled={((pendingActionId === 'Reject' || pendingActionId === 'Rollback') && !note.trim()) || isPending}
                 onClick={confirmActionWithNote}
+                className="w-full sm:w-auto h-11 sm:h-10 min-h-[44px]"
             >
               {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {t('workflow:confirmAction', { action: pendingActionId })}

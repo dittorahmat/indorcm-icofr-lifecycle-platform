@@ -111,10 +111,10 @@ function KanbanColumn({
 
   return (
     <div className={cn(
-      "flex flex-col h-full group/column",
-      fullWidth ? "w-full" : "w-80 flex-shrink-0"
+      "flex flex-col h-full group/column snap-start",
+      fullWidth ? "w-full" : "w-80 max-w-[85vw] sm:max-w-none flex-shrink-0"
     )}>
-      <div className="flex items-center justify-between mb-4 px-3 flex-wrap gap-2">
+      <div className="flex flex-col min-[380px]:flex-row min-[380px]:items-center min-[380px]:justify-between mb-4 px-3 flex-wrap gap-2">
         <div className="flex items-center gap-2.5">
            <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center border-2 border-white shadow-sm", config.bg)}>
               <config.icon className={cn("h-4 w-4", config.color)} />
@@ -164,14 +164,14 @@ function KanbanColumn({
                     "flex flex-col gap-2 mt-2 px-1 transition-all duration-300",
                     alwaysShowActions
                       ? "opacity-100 [&_button]:min-h-[44px]"
-                      : "opacity-0 group-hover:opacity-100 transform translate-y-[-5px] group-hover:translate-y-0"
+                      : "opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:transform [@media(hover:hover)]:translate-y-[-5px] [@media(hover:hover)]:group-hover:translate-y-0 focus-within:opacity-100 focus-visible:opacity-100 [&_button]:min-h-[44px]"
                   )}>
                     <div className="flex gap-2">
                     {(status === "Ineffective" || role === 'Admin') && (
                       <Button 
                         size="sm" 
                         variant="outline" 
-                        className="flex-1 h-8 text-xs font-bold uppercase tracking-widest bg-white border-slate-200 rounded-lg"
+                        className="flex-1 h-11 sm:h-9 min-h-[44px] sm:min-h-0 text-xs font-bold uppercase tracking-widest bg-white border-slate-200 rounded-lg justify-center"
                         onClick={() => onEditPlan(ap)}
                       >
                         {t('actions.actionPlan', 'Action Plan')}
@@ -180,10 +180,10 @@ function KanbanColumn({
                     {status === "Ineffective" && ['Line 1', 'Admin'].includes(role) && (
                       <Button 
                         size="sm" 
-                        className="flex-1 h-8 text-xs font-bold uppercase tracking-widest bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg"
+                        className="flex-1 h-11 sm:h-9 min-h-[44px] sm:min-h-0 text-xs font-bold uppercase tracking-widest bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg justify-center"
                         onClick={() => onStatusChange(ap.id, "Submit")}
                       >
-                        <Send className="h-3 w-3 mr-1" /> {t('workflow:submitPlan', { ns: 'workflow' })}
+                        <Send className="h-3 w-3 mr-1 shrink-0" /> {t('workflow:submitPlan', { ns: 'workflow' })}
                       </Button>
                     )}
                     </div>
@@ -192,18 +192,18 @@ function KanbanColumn({
                       <div className="flex gap-2">
                         <Button 
                           size="sm" 
-                          className="flex-1 h-8 text-xs font-bold uppercase tracking-widest bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg"
+                          className="flex-1 h-11 sm:h-9 min-h-[44px] sm:min-h-0 text-xs font-bold uppercase tracking-widest bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg justify-center"
                           onClick={() => onStatusChange(ap.id, "Review")}
                         >
-                          <Zap className="h-3 w-3 mr-1" /> {t('board.actions.passReview', 'Pass Review')}
+                          <Zap className="h-3 w-3 mr-1 shrink-0" /> {t('board.actions.passReview', 'Pass Review')}
                         </Button>
                         <Button 
                           size="sm" 
                           variant="outline" 
-                          className="flex-1 h-8 text-xs font-bold uppercase tracking-widest text-rose-600 border-rose-200 hover:bg-rose-50 rounded-lg"
+                          className="flex-1 h-11 sm:h-9 min-h-[44px] sm:min-h-0 text-xs font-bold uppercase tracking-widest text-rose-600 border-rose-200 hover:bg-rose-50 rounded-lg justify-center"
                           onClick={() => onStatusChange(ap.id, "Reject")}
                         >
-                          <XCircle className="h-3 w-3 mr-1" /> {t('board.actions.reject', 'Reject')}
+                          <XCircle className="h-3 w-3 mr-1 shrink-0" /> {t('board.actions.reject', 'Reject')}
                         </Button>
                       </div>
                     )}
@@ -212,18 +212,18 @@ function KanbanColumn({
                        <div className="flex gap-2">
                         <Button 
                           size="sm" 
-                          className="flex-1 h-8 text-xs font-bold uppercase tracking-widest bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg"
+                          className="flex-1 h-11 sm:h-9 min-h-[44px] sm:min-h-0 text-xs font-bold uppercase tracking-widest bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg justify-center"
                           onClick={() => onStatusChange(ap.id, "Approve")}
                         >
-                          <CheckCircle2 className="h-3 w-3 mr-1" /> {t('board.actions.approve', 'Approve')}
+                          <CheckCircle2 className="h-3 w-3 mr-1 shrink-0" /> {t('board.actions.approve', 'Approve')}
                         </Button>
                         <Button 
                           size="sm" 
                           variant="outline" 
-                          className="flex-1 h-8 text-xs font-bold uppercase tracking-widest text-rose-600 border-rose-200 hover:bg-rose-50 rounded-lg"
+                          className="flex-1 h-11 sm:h-9 min-h-[44px] sm:min-h-0 text-xs font-bold uppercase tracking-widest text-rose-600 border-rose-200 hover:bg-rose-50 rounded-lg justify-center"
                           onClick={() => onStatusChange(ap.id, "Reject")}
                         >
-                          <XCircle className="h-3 w-3 mr-1" /> {t('board.actions.reject', 'Reject')}
+                          <XCircle className="h-3 w-3 mr-1 shrink-0" /> {t('board.actions.reject', 'Reject')}
                         </Button>
                       </div>
                     )}
@@ -234,8 +234,8 @@ function KanbanColumn({
                       size="icon" 
                       variant="secondary" 
                         className={cn(
-                          "absolute top-3 right-10 rounded-lg shadow-md bg-white transition-all hover:text-indigo-600 hover:scale-110",
-                          alwaysShowActions ? "h-11 w-11 opacity-100" : "h-7 w-7 opacity-0 group-hover:opacity-100"
+                          "absolute top-3 right-10 rounded-lg shadow-md bg-white transition-all hover:text-indigo-600 focus-visible:opacity-100",
+                          alwaysShowActions ? "h-11 w-11 min-h-[44px] min-w-[44px] opacity-100" : "h-11 w-11 min-h-[44px] min-w-[44px] opacity-100 [@media(hover:hover)]:h-8 [@media(hover:hover)]:w-8 [@media(hover:hover)]:min-h-[32px] [@media(hover:hover)]:min-w-[32px] [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:focus-visible:opacity-100"
                         )}
                         title={t('board.assessSeverity', 'Assess Severity (DoD)')}
                         onClick={() => onAssess(deficiency.id)}
@@ -649,7 +649,7 @@ export function DeficiencyBoard() {
         >
           {!isMobileView ? (
           /* DESKTOP VIEW: Kanban columns (sole mounted tree on desktop) */
-          <div className="flex-1 overflow-x-auto max-w-full touch-pan-x overscroll-x-contain pb-6 scrollbar-thin scrollbar-thumb-slate-200" data-testid="deficiency-kanban-desktop">
+          <div className="flex-1 overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint pb-6 snap-x scrollbar-thin scrollbar-thumb-slate-200 [mask-image:linear-gradient(to_right,black_calc(100%-2rem),transparent)]" data-testid="deficiency-kanban-desktop">
           {isLoading ? (
             <div className="flex gap-6">
               {KANBAN_COLUMNS.map(status => (

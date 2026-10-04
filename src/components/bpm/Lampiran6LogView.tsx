@@ -159,8 +159,8 @@ export function Lampiran6LogView({ entityId, year, subProcessName, bpmProcessId 
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between flex-wrap gap-2">
-        <div className="space-y-0.5">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between flex-wrap gap-2">
+        <div className="space-y-0.5 min-w-0">
           <h4 className="text-xs font-bold text-foreground flex items-center gap-2">
             <History className="h-4 w-4 text-primary" />
             {t('logView.title')}

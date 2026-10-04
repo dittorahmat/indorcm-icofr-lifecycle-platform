@@ -118,7 +118,7 @@ export function createWorksheetColumns({
       header: t('worksheet.columns.businessProcess'),
       cell: ({ row, getValue }) => (
         <Input 
-          className="h-8 text-xs border-slate-200 focus:border-slate-400 bg-white px-2 min-w-[150px]"
+          className="h-11 md:h-9 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 focus:border-slate-400 bg-white px-2 min-w-[150px]"
           placeholder="Isi Proses..."
           defaultValue={getValue<string>()}
           onBlur={(e) => debouncedUpdate(row.original.id, 'businessProcess', e.target.value)}
@@ -130,7 +130,7 @@ export function createWorksheetColumns({
       header: t('worksheet.columns.subProcess'),
       cell: ({ row, getValue }) => (
         <Input 
-          className="h-8 text-xs border-slate-200 focus:border-slate-400 bg-white px-2 font-bold min-w-[180px]"
+          className="h-11 md:h-9 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 focus:border-slate-400 bg-white px-2 font-bold min-w-[180px]"
           placeholder="Nama Sub-Proses..."
           defaultValue={getValue<string>()}
           onBlur={(e) => debouncedUpdate(row.original.id, 'subProcess', e.target.value)}
@@ -324,7 +324,7 @@ export function createWorksheetColumns({
           value={getValue<string>()} 
           onValueChange={(v: ControlNature) => updateMutation.mutate({ id: row.original.id, data: { nature: v } })}
         >
-          <SelectTrigger className="h-7 text-xs border-slate-200 bg-white min-w-[80px]">
+          <SelectTrigger className="h-11 md:h-9 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 bg-white min-w-[80px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -351,7 +351,7 @@ export function createWorksheetColumns({
             }
           }}
         >
-          <SelectTrigger className="h-7 text-xs border-slate-200 bg-white min-w-[120px]">
+          <SelectTrigger className="h-11 md:h-9 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 bg-white min-w-[120px]">
             <SelectValue placeholder="Pilih..." />
           </SelectTrigger>
           <SelectContent>

@@ -98,13 +98,13 @@ export function TransactionSamplingTab({ noGL, bpmProcessId, year: propYear, onS
 
   return (
     <div className="flex flex-col h-full bg-white">
-      <div className="p-4 border-b flex justify-between items-center bg-slate-50/50 flex-wrap gap-2">
-        <div className="flex items-center gap-4">
-          <div className="relative w-72">
+      <div className="p-4 border-b flex flex-col sm:flex-row sm:items-center sm:justify-between bg-slate-50/50 flex-wrap gap-3 min-w-0 max-w-full">
+        <div className="flex items-center gap-4 min-w-0 w-full sm:w-auto">
+          <div className="relative w-full sm:w-72 min-w-0">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input 
               placeholder={t('bpm:sampling.search')} 
-              className="pl-9 h-9 text-xs" 
+              className="pl-9 h-11 sm:h-9 min-h-[44px] sm:min-h-0 text-base sm:text-xs" 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />

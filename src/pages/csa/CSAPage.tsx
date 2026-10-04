@@ -165,7 +165,7 @@ function CSARecordRow({ record: initialRecord, process }: { record: CSARecord, p
            </Badge>
         </TableCell>
         <TableCell className="text-right" onClick={e => e.stopPropagation()}>
-          <div className="flex justify-end gap-2 pr-2">
+          <div className="flex flex-wrap justify-end gap-2 pr-2">
             <Button 
               variant="outline" 
               size="sm" 
@@ -331,7 +331,7 @@ export function CSAPage() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-slate-900 flex items-center gap-3 sm:gap-4">
-              <div className="p-2.5 sm:p-3 bg-indigo-600 rounded-lg sm:rounded-xl shadow-lg sm:shadow-xl shadow-indigo-200 ring-2 sm:ring-4 ring-indigo-50 shrink-0">
+              <div className="p-2.5 sm:p-3 bg-indigo-600 rounded-lg shadow-lg sm:shadow-xl shadow-indigo-200 ring-2 sm:ring-4 ring-indigo-50 shrink-0">
                  <History className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
               </div>
               <div>
@@ -345,14 +345,14 @@ export function CSAPage() {
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 bg-white p-3.5 sm:p-6 rounded-lg sm:rounded-xl border shadow-sm ring-1 ring-slate-200/50">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 bg-white p-3.5 sm:p-6 rounded-lg border shadow-sm ring-1 ring-slate-200/50">
           <div className="relative flex-1 max-w-none sm:max-w-md">
             <Label htmlFor="csa-search" className="sr-only">Search CSA Records</Label>
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input 
               id="csa-search"
               placeholder={t('page.searchPlaceholder')} 
-              className="pl-10 h-11 min-h-[44px] bg-slate-50/50 border-slate-200 rounded-lg focus:ring-indigo-500 transition-all text-xs" 
+              className="pl-10 h-11 min-h-[44px] bg-slate-50/50 border-slate-200 rounded-lg focus:ring-indigo-500 transition-all text-base sm:text-sm" 
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
             />
@@ -367,8 +367,8 @@ export function CSAPage() {
         </div>
 
         {/* DESKTOP VIEW: Table */}
-        <div className="hidden md:block border rounded-lg bg-white shadow-sm overflow-hidden">
-          <Table>
+        <div className="hidden md:block border rounded-lg bg-white shadow-sm overflow-x-auto max-w-full touch-pan-x overscroll-x-contain">
+          <Table className="min-w-[720px]">
             <TableHeader className="bg-slate-50 border-b border-slate-200">
               <TableRow className="hover:bg-transparent">
                 <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-500 py-4 pl-6">{t('page.table.subProcess')}</TableHead>
@@ -440,7 +440,7 @@ export function CSAPage() {
           )}
 
           {isLoading ? (
-            <div className="h-64 flex flex-col items-center justify-center bg-white rounded-xl border p-6">
+            <div className="h-64 flex flex-col items-center justify-center bg-white rounded-lg border p-6">
               <div className="h-8 w-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-3" />
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('page.loading')}</span>
             </div>

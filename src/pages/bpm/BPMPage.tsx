@@ -206,7 +206,7 @@ export function BPMPage() {
             variants={itemVariants}
             className="py-12 text-center border-2 border-rose-100 rounded-lg bg-rose-50/30"
           >
-            <div className="h-14 w-14 bg-rose-100 text-rose-300 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+            <div className="h-14 w-14 bg-rose-100 text-rose-300 rounded-lg flex items-center justify-center mx-auto mb-4 shadow-sm">
               <AlertTriangle className="h-7 w-7" />
             </div>
             <h3 className="text-lg font-display font-bold text-rose-900">{t('common:access.restricted')}</h3>
@@ -229,14 +229,14 @@ export function BPMPage() {
             </motion.div>
 
             <motion.div variants={itemVariants} className="space-y-6">
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-4 rounded-lg border border-slate-200 shadow-sm max-w-full">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-lg border border-slate-200 shadow-sm max-w-full">
                 <div className="flex-1 w-full md:max-w-md relative group">
                   <Label htmlFor="bpm-search" className="sr-only">Search BPM Processes</Label>
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
                   <Input 
                     id="bpm-search"
                     placeholder={t('searchPlaceholder')} 
-                    className="pl-10 h-10 bg-slate-50 border-slate-200 text-sm font-medium rounded-lg focus:bg-white transition-all shadow-sm"
+                    className="pl-10 h-11 sm:h-10 min-h-[44px] sm:min-h-0 bg-slate-50 border-slate-200 text-base sm:text-sm font-medium rounded-lg focus:bg-white transition-all shadow-sm"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
@@ -305,7 +305,7 @@ export function BPMPage() {
                               <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Selected Process</span>
                               <span className="text-sm font-bold text-slate-900 truncate max-w-full min-[380px]:max-w-[200px]">{selectedProcess.name}</span>
                            </div>
-                           <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => setSelectedProcess(null)}>
+                            <Button variant="ghost" size="icon" aria-label="Close selected process" className="h-11 w-11 min-h-[44px] min-w-[44px] sm:h-8 sm:w-8 sm:min-h-0 sm:min-w-0 rounded-md shrink-0" onClick={() => setSelectedProcess(null)}>
                               <XIcon className="h-4 w-4" />
                            </Button>
                         </div>
