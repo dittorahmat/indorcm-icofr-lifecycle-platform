@@ -18,6 +18,7 @@ import {
   mapCsaSummaryRows,
 } from '@/lib/csa-excel-export';
 import { formatCsaReference } from '@/lib/csa-utils';
+import { requestFieldLocation } from '@/hooks/csa/use-field-location';
 
 interface CSATabContentProps {
   noGL?: string;
@@ -27,6 +28,7 @@ interface CSATabContentProps {
   subProcessName?: string;
   standalone?: boolean;
   scheduleId?: string;
+  fieldMode?: boolean;
 }
 
 // Downscale large camera photos before upload (long-edge cap) to keep field
@@ -59,14 +61,15 @@ async function maybeCompressImage(file: File): Promise<File> {
   }
 }
 
-export function CSATabContent({ 
-  noGL, 
-  controls: propControls = [], 
+export function CSATabContent({
+  noGL,
+  controls: propControls = [],
   initialSamples = [],
   bpmProcessId,
   subProcessName,
   standalone = false,
-  scheduleId
+  scheduleId,
+  fieldMode = false
 }: CSATabContentProps) {
   const { workingYear } = useFiscalYearStore();
   const { t } = useTranslation(['csa_hub', 'common']);
@@ -118,6 +121,25 @@ export function CSATabContent({
       setFailedUpload(pendingFileRef.current);
     }
   }, [uploadMutation.isSuccess, uploadMutation.isError, uploadMutation.failureCount]);
+
+  // Field mode (Lini 1 from agenda): skip History, land directly on the form.
+  useEffect(() => {
+    if (!fieldMode || view !== 'list' || isListLoading) return;
+    manualViewOverride.current = 'form';
+    setIsInitialized(true);
+    setView('form');
+    setActiveCsaId(null);
+    form.reset({
+      period: `${workingYear}-Q1`,
+      result: 'Effective',
+      comments: '',
+      testProcedure: bpmProcess?.standardTestProcedure || '',
+      archiveLocation: '',
+      isBpmConfirmed: false,
+      samples: []
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fieldMode, view, isListLoading]);
 
   const isDirty = form.formState.isDirty && view === 'form';
   useUnsavedChanges(isDirty);
@@ -204,9 +226,17 @@ export function CSATabContent({
     pendingFileRef.current = { ...target, file };
     setFailedUpload(null);
     uploadMutation.reset();
+    // GPS Fase-1: capture location in parallel, never block the upload.
+    const locationPromise = requestFieldLocation();
     void maybeCompressImage(file).then((finalFile) => {
       pendingFileRef.current = { ...target, file: finalFile };
-      uploadMutation.mutate({ ...target, file: finalFile });
+      void locationPromise.then((loc) => {
+        uploadMutation.mutate({
+          ...target,
+          file: finalFile,
+          meta: { lat: loc.lat, lng: loc.lng, accuracyM: loc.accuracyM, capturedAt: loc.capturedAt, gpsStatus: loc.status },
+        });
+      });
     });
   };
 
@@ -306,7 +336,17 @@ export function CSATabContent({
       </div>
 
       <div className="flex-1 print-hidden h-full flex flex-col overflow-hidden">
-        <div className="flex-1 overflow-y-auto bg-white p-6 relative">
+        {fieldMode && (
+          <div className="shrink-0 border-b border-indigo-100 bg-indigo-50/70 px-4 py-2.5 sm:px-6" data-testid="csa-field-task-banner">
+            <p className="text-xs font-bold uppercase tracking-wider text-indigo-700 truncate">
+              {subProcessName || bpmProcess?.name || t('csa_hub:form.summaryTitle', { defaultValue: 'CSA Assessment' })}
+            </p>
+            <p className="text-xs text-indigo-500 font-medium truncate">
+              {formatCsaReference({ bpmCode: bpmProcess?.bpmCode, noGL: noGL || bpmProcess?.noGL, bpmProcessId, year: workingYear, period: form.watch('period') })}
+            </p>
+          </div>
+        )}
+        <div className="flex-1 overflow-y-auto bg-white p-4 sm:p-6 relative">
           {view === 'list' ? (
             <CSAList 
               items={csaList?.items || []}
@@ -362,6 +402,7 @@ export function CSATabContent({
               noGL={noGL || bpmProcess?.noGL}
               bpmProcessId={bpmProcessId}
               year={workingYear}
+              hideLine2Actions={fieldMode}
             />
           )}
         </div>

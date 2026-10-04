@@ -317,10 +317,19 @@ export type CSASchedule = Omit<InferSelectModel<typeof schema.csaSchedules>, 'pl
 
 export type CSASample = CSATestSample;
 
+export interface CSAEvidenceMeta {
+  lat?: number;
+  lng?: number;
+  accuracyM?: number;
+  capturedAt?: number;
+  gpsStatus?: 'granted' | 'denied' | 'timeout' | 'unavailable';
+}
+
 export interface CSATestSample extends Omit<InferSelectModel<typeof schema.csaSamples>, 'controlResults'> {
-  controlResults?: Record<string, { 
-    implemented: boolean; 
-    evidenceUrl?: string; 
+  controlResults?: Record<string, {
+    implemented: boolean;
+    evidenceUrl?: string;
+    evidenceMeta?: CSAEvidenceMeta;
     comment?: string;
     riskId: string;
     riskName: string;

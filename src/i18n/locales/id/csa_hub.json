@@ -137,6 +137,13 @@
     "biometric": "Identitas Biometrik Terverifikasi",
     "hash": "Hash Tanda Tangan Digital"
   },
+  "evidence": {
+    "gpsRecorded": "Lokasi tercatat",
+    "gpsDenied": "Lokasi tidak diizinkan",
+    "gpsTimeout": "Lokasi tidak tersedia",
+    "gpsLocating": "Mencatat lokasi...",
+    "gpsEnableHint": "Aktifkan lokasi di pengaturan situs browser agar koordinat terlampir pada bukti."
+  },
   "form": {
     "addManualSample": "Tambah Sampel Manual",
     "sampleReference": "Referensi Sampel",

@@ -1,5 +1,6 @@
 {
   "forensicVerified": "Verified by BALE GRC Forensic Engine",
+  "fieldLocationNote": "Lokasi lapangan tercatat (GPS fase 1, bukan verifikasi forensik)",
   "footerText": "© 2026 GRC Integra - Internal Control Over Financial Reporting Lifecycle Platform",
   "title": "Laporan & Ekspor",
   "description": "Laporan ICOFR standar untuk kepatuhan {{companyName}}.",

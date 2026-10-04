@@ -2,12 +2,15 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Camera, Loader2, RotateCcw, X, ExternalLink } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { api } from '@/lib/api-client';
-import { toast } from 'sonner';
+import { useEvidenceUpload } from '@/hooks/csa/use-evidence-upload';
+import { useFieldLocation } from '@/hooks/csa/use-field-location';
+import { EvidenceLocationBadge } from './EvidenceLocationBadge';
+import type { CSAEvidenceMeta } from '@shared/types';
 
 interface CapturedEvidence {
   name: string;
   url: string;
+  meta?: CSAEvidenceMeta;
 }
 
 interface EvidenceCaptureButtonProps {
@@ -16,62 +19,38 @@ interface EvidenceCaptureButtonProps {
 
 /**
  * One-thumb field evidence capture for Lini 1 on mobile.
- * Native file/camera picker (zero new dependencies) with preview
- * BEFORE upload. A failed upload keeps the selected file in place
- * for retry — no draft or card state is lost.
+ * Unified behavior: select -> preview -> compressed upload with
+ * consistent metadata (csaId) + optional GPS Fase-1. A failed
+ * upload keeps the selected file for retry without losing state.
  */
 export function EvidenceCaptureButton({ recordId }: EvidenceCaptureButtonProps) {
   const { t } = useTranslation(['csa_hub', 'common']);
   const fileRef = React.useRef<HTMLInputElement>(null);
-  const [pending, setPending] = React.useState<{ file: File; previewUrl: string } | null>(null);
   const [uploaded, setUploaded] = React.useState<CapturedEvidence[]>([]);
-  const [isUploading, setIsUploading] = React.useState(false);
-  const [failed, setFailed] = React.useState(false);
-
-  React.useEffect(() => {
-    return () => {
-      if (pending) URL.revokeObjectURL(pending.previewUrl);
-    };
-  }, [pending]);
+  const lastNameRef = React.useRef<string>('');
+  const lastMetaRef = React.useRef<CapturedEvidence['meta']>(undefined);
+  const { pending, failed, isUploading, selectFile, cancelPending, uploadPending, retry, setGpsMeta } = useEvidenceUpload({
+    csaId: recordId,
+    onUploaded: (_target, url) => {
+      setUploaded((prev) => [...prev, { name: lastNameRef.current || url, url, meta: lastMetaRef.current }]);
+    },
+  });
+  const { captureLocation } = useFieldLocation();
+  const [locating, setLocating] = React.useState(false);
 
   const handleSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
-    if (pending) URL.revokeObjectURL(pending.previewUrl);
-    setPending({ file, previewUrl: URL.createObjectURL(file) });
-    setFailed(false);
-  };
-
-  const doUpload = async () => {
-    if (!pending || isUploading) return;
-    setIsUploading(true);
-    setFailed(false);
-    try {
-      const formData = new FormData();
-      formData.append('file', pending.file);
-      formData.append('csaId', recordId);
-      const res = await api<{ url: string }>('/api/upload', { method: 'POST', body: formData });
-      setUploaded((prev) => [...prev, { name: pending.file.name, url: res.url }]);
-      URL.revokeObjectURL(pending.previewUrl);
-      setPending(null);
-      toast.success(t('page.evidence.uploaded', { defaultValue: 'Bukti terunggah' }));
-    } catch (err: unknown) {
-      // Keep the pending file so the user can retry without reselecting.
-      setFailed(true);
-      const message = err instanceof Error ? err.message : undefined;
-      toast.error(
-        message || t('page.evidence.uploadError', { defaultValue: 'Gagal mengunggah. File tetap tersimpan untuk dicoba lagi.' })
-      );
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  const cancelPending = () => {
-    if (pending) URL.revokeObjectURL(pending.previewUrl);
-    setPending(null);
-    setFailed(false);
+    lastNameRef.current = file.name;
+    selectFile(0, 'field', file);
+    setLocating(true);
+    void captureLocation().then((loc) => {
+      const meta = { lat: loc.lat, lng: loc.lng, accuracyM: loc.accuracyM, capturedAt: loc.capturedAt, gpsStatus: loc.status };
+      lastMetaRef.current = meta;
+      setGpsMeta(meta);
+      setLocating(false);
+    });
   };
 
   const isImage = pending?.file.type.startsWith('image/');
@@ -121,7 +100,12 @@ export function EvidenceCaptureButton({ recordId }: EvidenceCaptureButtonProps) 
                 <Camera className="h-5 w-5 text-muted-foreground" />
               </div>
             )}
-            <p className="min-w-0 flex-1 truncate text-xs font-semibold text-foreground">{pending.file.name}</p>
+            <div className="min-w-0 flex-1 space-y-1">
+              <p className="truncate text-xs font-semibold text-foreground">{pending.file.name}</p>
+              {locating ? (
+                <p className="text-xs text-muted-foreground">{t('csa_hub:evidence.gpsLocating', { defaultValue: 'Mencatat lokasi...' })}</p>
+              ) : null}
+            </div>
           </div>
           {failed && (
             <p className="text-xs font-semibold text-red-600">
@@ -134,7 +118,7 @@ export function EvidenceCaptureButton({ recordId }: EvidenceCaptureButtonProps) 
               size="sm"
               className="flex-1 min-h-[44px] text-xs font-semibold gap-1.5"
               disabled={isUploading}
-              onClick={doUpload}
+              onClick={() => (failed ? retry() : uploadPending())}
             >
               {isUploading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -167,11 +151,9 @@ export function EvidenceCaptureButton({ recordId }: EvidenceCaptureButtonProps) 
       {uploaded.length > 0 && (
         <ul className="space-y-2">
           {uploaded.map((item) => (
-            <li
-              key={item.url}
-              className="flex items-center gap-2 rounded-md border border-border bg-muted/30 px-3 py-2"
-            >
+            <li key={item.url} className="flex flex-wrap items-center gap-2 rounded-md border border-border bg-muted/30 px-3 py-2">
               <span className="min-w-0 flex-1 truncate text-xs font-medium text-foreground">{item.name}</span>
+              {item.meta?.gpsStatus === 'granted' && <EvidenceLocationBadge meta={item.meta} />}
               <Button
                 type="button"
                 variant="ghost"

@@ -28,6 +28,7 @@ import { useTranslation } from 'react-i18next';
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { WorkflowPanel } from '../workflow/WorkflowPanel';
 import { useUnsavedChangesContext } from '@/context/UnsavedChangesContext';
+import { isFieldLini1 } from '@/lib/field-lini1';
 
 interface BPMModalProps {
   isOpen: boolean;
@@ -98,6 +99,11 @@ export function BPMModal({
     queryKey: ['auth-me'],
     queryFn: () => api<User>('/api/user/me'),
   });
+
+  const fieldMode = isFieldLini1(
+    (currentUser as unknown as { role?: unknown })?.role ?? (typeof localStorage !== 'undefined' ? localStorage.getItem('mockRole') : null),
+    scheduleId,
+  );
 
   const { data: controls } = useQuery({
     queryKey: ['bpm-controls', noGL, bpmProcessId, subProcessName, year],
@@ -179,24 +185,34 @@ export function BPMModal({
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
             <div className="px-3 sm:px-6 border-b bg-white shrink-0 shadow-sm z-10 max-w-full">
               <TabsList className="h-14 bg-transparent gap-4 sm:gap-8 p-0 max-w-full overflow-x-auto no-scrollbar">
-                <TabsTrigger value="worksheet" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-xs uppercase text-slate-500 tracking-wider">
-                  <FileSpreadsheet className="h-4 w-4" /> {t('modal.tabs.worksheet')}
-                </TabsTrigger>
-                <TabsTrigger value="sampling" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-xs uppercase text-slate-500 tracking-wider">
-                  <Database className="h-4 w-4" /> {t('modal.tabs.sampling')}
-                </TabsTrigger>
-                <TabsTrigger value="rcm" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-xs uppercase text-slate-500 tracking-wider">
-                  <ListChecks className="h-4 w-4" /> {t('modal.tabs.rcm')}
-                </TabsTrigger>
+                {!fieldMode && (
+                  <TabsTrigger value="worksheet" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-xs uppercase text-slate-500 tracking-wider">
+                    <FileSpreadsheet className="h-4 w-4" /> {t('modal.tabs.worksheet')}
+                  </TabsTrigger>
+                )}
+                {!fieldMode && (
+                  <TabsTrigger value="sampling" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-xs uppercase text-slate-500 tracking-wider">
+                    <Database className="h-4 w-4" /> {t('modal.tabs.sampling')}
+                  </TabsTrigger>
+                )}
+                {!fieldMode && (
+                  <TabsTrigger value="rcm" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-xs uppercase text-slate-500 tracking-wider">
+                    <ListChecks className="h-4 w-4" /> {t('modal.tabs.rcm')}
+                  </TabsTrigger>
+                )}
                 <TabsTrigger value="csa" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-xs uppercase text-slate-500 tracking-wider">
                   <ShieldCheck className="h-4 w-4" /> {t('modal.tabs.csa')}
                 </TabsTrigger>
-                <TabsTrigger value="verification" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-xs uppercase text-slate-500 tracking-wider">
-                  <ClipboardCheck className="h-4 w-4" /> {t('modal.tabs.verification')}
-                </TabsTrigger>
-                <TabsTrigger value="logs" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-xs uppercase text-slate-500 tracking-wider">
-                  <History className="h-4 w-4" /> {t('modal.tabs.logs')}
-                </TabsTrigger>
+                {!fieldMode && (
+                  <TabsTrigger value="verification" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-xs uppercase text-slate-500 tracking-wider">
+                    <ClipboardCheck className="h-4 w-4" /> {t('modal.tabs.verification')}
+                  </TabsTrigger>
+                )}
+                {!fieldMode && (
+                  <TabsTrigger value="logs" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-xs uppercase text-slate-500 tracking-wider">
+                    <History className="h-4 w-4" /> {t('modal.tabs.logs')}
+                  </TabsTrigger>
+                )}
               </TabsList>
             </div>
 
@@ -247,13 +263,14 @@ export function BPMModal({
               </TabsContent>
 
               <TabsContent value="csa" className="m-0 focus-visible:ring-0 h-full overflow-hidden">
-                <CSATabContent 
-                  noGL={noGL} 
-                  controls={controls || []} 
+                <CSATabContent
+                  noGL={noGL}
+                  controls={controls || []}
                   initialSamples={selectedSamples}
                   bpmProcessId={bpmProcessId}
                   subProcessName={subProcessName}
                   scheduleId={scheduleId}
+                  fieldMode={fieldMode}
                 />
               </TabsContent>
 

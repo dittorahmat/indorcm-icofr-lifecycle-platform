@@ -76,7 +76,7 @@ export const csaSamples = pgTable("csa_samples", {
 	sampleRef: text("sample_ref"),
 	
 	// Refactored Multi-Control Results
-	// Format: { [controlId: string]: { implemented: boolean, evidenceUrl?: string } }
+	// Format: { [controlId: string]: { implemented: boolean, evidenceUrl?: string, evidenceMeta?: { lat, lng, accuracyM, capturedAt, gpsStatus } } }
 	controlResults: jsonb("control_results"), 
 
 	itacExpectedResult: text("itac_expected_result"),

@@ -9,6 +9,9 @@ import { useCSAForm, CSAFormValues } from './csa/use-csa-form';
 export type { CSAFormValues };
 import { useCSADiagramLink } from './csa/use-csa-diagram-link';
 import { useConfirm } from './use-confirm';
+import { checkSignOff } from './csa/sign-off-guard';
+import { buildEvidenceFormData, compressEvidenceImage } from './csa/use-evidence-upload';
+import type { CSAEvidenceMeta } from '@shared/types';
 
 interface UseCSAProps {
   bpmProcessId: string;
@@ -219,18 +222,26 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
   });
 
   const uploadMutation = useMutation({
-    mutationFn: async ({ sIdx, cId, file }: { sIdx: number; cId: string; file: File }) => {
-      const formData = new FormData();
-      formData.append('file', file);
+    mutationFn: async ({ sIdx, cId, file, meta }: { sIdx: number; cId: string; file: File; meta?: CSAEvidenceMeta }) => {
+      const finalFile = await compressEvidenceImage(file);
+      const formData = buildEvidenceFormData(
+        { file: finalFile, previewUrl: '', sIdx, cId, csaId: activeCsaId ?? undefined, scheduleId },
+        finalFile,
+        { capturedAt: Date.now(), gpsStatus: 'unavailable', ...(meta ?? {}) },
+      );
       return api<{ url: string }>('/api/upload', { method: 'POST', body: formData });
     },
     onSuccess: (data, variables) => {
       const path = `samples.${variables.sIdx}.controlResults.${variables.cId}.evidenceUrl` as any;
-      form.setValue(path, data.url, { 
+      form.setValue(path, data.url, {
         shouldDirty: true,
         shouldTouch: true,
-        shouldValidate: true 
+        shouldValidate: true
       });
+      if (variables.meta) {
+        const metaPath = `samples.${variables.sIdx}.controlResults.${variables.cId}.evidenceMeta` as any;
+        form.setValue(metaPath, variables.meta, { shouldDirty: true, shouldTouch: true });
+      }
       toast.success("Bukti berhasil diunggah");
       setActiveUploadRow(null);
     }
@@ -260,17 +271,13 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
   };
 
   const onSubmit = async (values: CSAFormValues) => {
-    const flatResults = values.samples.flatMap(s => Object.values(s.controlResults));
-    const anySampleFailed = flatResults.some(r => !r.implemented);
-    const anyMissingEvidence = flatResults.some(r => r.implemented && !r.evidenceUrl);
-
-    if (anyMissingEvidence && values.result === 'Effective') {
+    const check = checkSignOff(values);
+    if (check.blocked && check.reason === 'missing-evidence') {
       toast.error("Setiap kontrol yang 'Pass' wajib melampirkan bukti (evidence) sebelum sign-off.");
       return;
     }
-
-    const realResult = anySampleFailed ? 'Ineffective' : values.result;
-    if (anySampleFailed && values.result === 'Effective') {
+    const realResult = check.realResult;
+    if (check.blocked && check.reason === 'failed-effective') {
        toast.error("Tidak dapat sign-off sebagai Effective karena terdapat kontrol yang gagal.");
        return;
     }

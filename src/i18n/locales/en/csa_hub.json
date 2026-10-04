@@ -137,6 +137,13 @@
     "biometric": "Biometric Identity Verified",
     "hash": "Digital Signature Hash"
   },
+  "evidence": {
+    "gpsRecorded": "Location recorded",
+    "gpsDenied": "Location not permitted",
+    "gpsTimeout": "Location unavailable",
+    "gpsLocating": "Recording location...",
+    "gpsEnableHint": "Enable location in the browser site settings to attach coordinates to proof."
+  },
   "form": {
     "addManualSample": "Add Manual Sample",
     "sampleReference": "Sample Reference",

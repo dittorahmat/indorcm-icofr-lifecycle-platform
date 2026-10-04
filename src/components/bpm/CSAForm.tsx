@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -9,17 +9,18 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { 
-  FileText, MapPin, LayoutDashboard, Plus, Database, 
-  UploadCloud, Camera, Check, Eye, RefreshCw, ChevronLeft, ChevronRight, ChevronDown, 
-  UserCheck, Printer
+import {
+  FileText, MapPin, LayoutDashboard, Plus, Database,
+  UploadCloud, Check, Eye, RefreshCw, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatCsaReference } from '@/lib/csa-utils';
 import { UseFormReturn, FieldValues } from 'react-hook-form';
 import { CSAFormValues } from '@/hooks/use-csa';
+import { useSampleStepper } from './csa/use-sample-stepper';
+import { SampleEvidenceCard } from './csa/SampleEvidenceCard';
+import { CSAFormFooter } from './csa/CSAFormFooter';
 
 interface CSAFormProps {
   form: UseFormReturn<any>;
@@ -46,6 +47,7 @@ interface CSAFormProps {
   noGL?: string;
   bpmProcessId?: string;
   year?: string | number;
+  hideLine2Actions?: boolean;
 }
 
 export function CSAForm({
@@ -53,14 +55,13 @@ export function CSAForm({
   onCameraUpload, failedUploadRow, onRetryUpload,
   isReadOnly, isAuthenticating, isPending, activeControls, bpmRiskControlPairs,
   watchSamples, fields, append, anyPointFailed, activeUploadRow, getFileNameFromUrl,
-  bpmCode, noGL, bpmProcessId, year
+  bpmCode, noGL, bpmProcessId, year, hideLine2Actions = false
 }: CSAFormProps) {
   const { t } = useTranslation();
 
   // Mobile stepper state (UI-only; form state stays in useCSA).
-  const [mobileStep, setMobileStep] = useState(0);
   const stepCount = fields.length;
-  const safeStep = stepCount === 0 ? 0 : Math.min(Math.max(mobileStep, 0), stepCount - 1);
+  const { mobileStep: safeStep, setMobileStep } = useSampleStepper(stepCount);
   const activeStepSample = watchSamples[safeStep];
 
   const handleAddSample = () => {
@@ -363,131 +364,21 @@ export function CSAForm({
                         const isUploading = isPending && activeUploadRow?.sIdx === safeStep && activeUploadRow?.cId === ctrl.id;
                         const isFailed = failedUploadRow?.sIdx === safeStep && failedUploadRow?.cId === ctrl.id;
                         return (
-                          <div key={ctrl.id} className="rounded-lg border border-slate-200 bg-white p-4 space-y-3 shadow-sm">
-                            <div className="flex items-start justify-between gap-2 flex-wrap">
-                              <div className="space-y-1 min-w-0">
-                                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider truncate">{res.riskName || 'N/A'}</p>
-                                <p className="text-xs font-bold text-slate-800">{res.controlName || ctrl.name}</p>
-                                <Badge variant="outline" className="w-fit text-xs h-5 font-mono">{ctrl.id}</Badge>
-                              </div>
-                              <div className={cn(
-                                "h-3 w-3 rounded-full shrink-0 mt-1",
-                                res.implemented ? "bg-emerald-500" : "bg-red-500"
-                              )} />
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                              {!isReadOnly && onCameraUpload && (
-                                <Button
-                                  type="button"
-                                  variant={res.evidenceUrl ? "secondary" : "outline"}
-                                  onClick={() => onCameraUpload(safeStep, ctrl.id)}
-                                  disabled={isPending}
-                                  className="flex-1 min-h-[44px] text-xs font-bold gap-2"
-                                >
-                                  {isUploading ? (
-                                    <RefreshCw className="h-4 w-4 animate-spin" />
-                                  ) : res.evidenceUrl ? (
-                                    <Check className="h-4 w-4" />
-                                  ) : (
-                                    <Camera className="h-4 w-4" />
-                                  )}
-                                  {t('csa_hub:form.mobile.takePhoto', { defaultValue: 'Take photo' })}
-                                </Button>
-                              )}
-                              {!isReadOnly && (
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  onClick={() => onFileUpload(safeStep, ctrl.id)}
-                                  disabled={isPending}
-                                  aria-label={t('csa_hub:form.mobile.uploadFile', { defaultValue: 'Upload file' })}
-                                  className="min-h-[44px] min-w-[44px] shrink-0"
-                                >
-                                  <UploadCloud className="h-4 w-4" />
-                                </Button>
-                              )}
-                              {res.evidenceUrl && (
-                                <Button
-                                  type="button"
-                                  variant="default"
-                                  onClick={() => window.open(res.evidenceUrl, '_blank')}
-                                  aria-label={t('csa_hub:form.mobile.viewEvidence', { defaultValue: 'View evidence' })}
-                                  className="min-h-[44px] min-w-[44px] shrink-0"
-                                >
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                              )}
-                            </div>
-
-                            {res.evidenceUrl && (
-                              <div
-                                className="truncate text-xs text-emerald-700 font-bold uppercase tracking-tighter"
-                                title={getFileNameFromUrl(res.evidenceUrl)}
-                              >
-                                {getFileNameFromUrl(res.evidenceUrl) || t('csa_hub:form.mobile.attached', { defaultValue: 'Attached' })}
-                              </div>
-                            )}
-
-                            {isFailed && (
-                              <div className="rounded-md border border-red-200 bg-red-50 p-3 flex items-center justify-between gap-2 flex-wrap">
-                                <span className="text-xs font-bold text-red-700">
-                                  {t('csa_hub:form.mobile.uploadFailed', { defaultValue: 'Upload failed' })}
-                                </span>
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  onClick={onRetryUpload}
-                                  className="min-h-[44px] text-xs font-bold border-red-200 text-red-700 shrink-0"
-                                >
-                                  <RefreshCw className="h-4 w-4 mr-1" />
-                                  {t('csa_hub:form.mobile.retry', { defaultValue: 'Retry' })}
-                                </Button>
-                              </div>
-                            )}
-
-                            <FormField control={form.control} name={`samples.${safeStep}.controlResults.${ctrl.id}.comment`} render={({ field: f }) => (
-                              <FormItem>
-                                <FormControl>
-                                  <Input
-                                    {...f}
-                                    disabled={isReadOnly}
-                                    className="min-h-[44px] text-xs bg-white"
-                                    placeholder={t('common:placeholders.notes')}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )} />
-
-                            <FormField control={form.control} name={`samples.${safeStep}.controlResults.${ctrl.id}.implemented`} render={({ field: f }) => (
-                              <FormItem>
-                                <FormControl>
-                                  <label
-                                    htmlFor={`mobile-step-${safeStep}-${ctrl.id}`}
-                                    className={cn(
-                                      "flex items-center justify-between gap-3 rounded-lg border p-3 min-h-[52px] cursor-pointer flex-wrap min-w-0",
-                                      f.value ? "border-emerald-200 bg-emerald-50" : "border-slate-200 bg-white"
-                                    )}
-                                  >
-                                    <span className={cn(
-                                      "text-xs font-black uppercase tracking-wider min-w-0 truncate flex-1",
-                                      f.value ? "text-emerald-700" : "text-slate-500"
-                                    )}>
-                                      {f.value ? t('csa_hub:form.passed', { defaultValue: 'PASSED' }) : t('csa_hub:form.deficiency', { defaultValue: 'DEFICIENCY' })}
-                                    </span>
-                                    <Checkbox
-                                      id={`mobile-step-${safeStep}-${ctrl.id}`}
-                                      checked={f.value}
-                                      onCheckedChange={f.onChange}
-                                      disabled={isReadOnly}
-                                      className={cn("h-7 w-7", f.value ? "text-green-600 border-green-600" : "text-slate-300")}
-                                    />
-                                  </label>
-                                </FormControl>
-                              </FormItem>
-                            )} />
-                          </div>
+                          <SampleEvidenceCard
+                            key={ctrl.id}
+                            form={form}
+                            safeStep={safeStep}
+                            ctrl={ctrl}
+                            res={res}
+                            isReadOnly={isReadOnly}
+                            isPending={isPending}
+                            isUploading={isUploading}
+                            isFailed={isFailed}
+                            onCameraUpload={onCameraUpload}
+                            onFileUpload={onFileUpload}
+                            onRetryUpload={onRetryUpload}
+                            getFileNameFromUrl={getFileNameFromUrl}
+                          />
                         );
                       })}
 
@@ -723,53 +614,16 @@ export function CSAForm({
                 </FormItem>
                 )} />
 
-                <div className="sticky bottom-0 z-10 flex flex-col-reverse sm:flex-row sm:justify-end flex-wrap gap-2 border-t border-slate-100 bg-white p-4 sm:p-0 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] sm:pb-0 md:static md:z-auto md:gap-3 md:border-0 md:bg-transparent md:py-0 md:pb-0">
-                <Button
-                variant="outline"
-                type="button"
-                onClick={onBackToList}
-                className="px-8 font-bold w-full sm:w-auto h-11 sm:h-10 min-h-[44px]"
-                >
-                {isReadOnly ? <ChevronLeft className="h-4 w-4 mr-2" /> : null}
-                {isReadOnly ? t('csa_hub:form.table.backToList') : t('common:actions.cancel')}
-                </Button>
-
-                {(isReadOnly || watchSamples.length > 0) && (
-                <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button type="button" className="bg-mancity-pattern hover:opacity-90 text-primary-foreground font-black px-8 h-11 sm:h-12 min-h-[44px] w-full sm:w-auto gap-2 shadow-xl uppercase tracking-widest">
-                    <Printer className="h-5 w-5" /> {t('csa_hub:actions.exportApp7a')} <ChevronDown className="h-4 w-4 ml-1" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem className="text-xs font-bold gap-2 py-3 cursor-pointer" onClick={() => onPrint('detailed')}>
-                    <FileText className="h-4 w-4 text-primary" /> {t('csa_hub:actions.layoutDetailed')}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="text-xs font-bold gap-2 py-3 cursor-pointer" onClick={() => onPrint('summary')}>
-                    <LayoutDashboard className="h-4 w-4 text-primary" /> {t('csa_hub:actions.layoutSummary')}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-                </DropdownMenu>
-                )}
-
-                {!isReadOnly && (
-                <>
-                <Button
-                  type="button"
-                  disabled={isPending || isAuthenticating}
-                  onClick={onSaveDraft}
-                  className="bg-mancity-pattern hover:opacity-90 text-primary-foreground font-black px-8 h-11 sm:h-12 min-h-[44px] w-full sm:w-auto gap-2 shadow-xl shadow-blue-100 uppercase tracking-widest"
-                >
-                   {isPending ? <RefreshCw className="h-5 w-5 animate-spin" /> : <FileText className="h-5 w-5" />}
-                   {t('csa_hub:actions.saveDraft')}
-                </Button>
-                <Button disabled={isPending || isAuthenticating} type="submit" className="bg-mancity-pattern hover:opacity-90 text-primary-foreground font-black px-12 h-11 sm:h-12 min-h-[44px] w-full sm:w-auto gap-2 shadow-md uppercase tracking-widest">
-                   {isAuthenticating ? <RefreshCw className="h-5 w-5 animate-spin" /> : <UserCheck className="h-5 w-5" />}
-                   {t('csa_hub:actions.save')}
-                </Button>
-                </>
-                )}
-                </div>
+                <CSAFormFooter
+                  isReadOnly={isReadOnly}
+                  isPending={isPending}
+                  isAuthenticating={isAuthenticating}
+                  hasSamples={watchSamples.length > 0}
+                  hideLine2Actions={hideLine2Actions}
+                  onBackToList={onBackToList}
+                  onPrint={onPrint}
+                  onSaveDraft={onSaveDraft}
+                />
                 </div>
                 </form>
               </Form>
