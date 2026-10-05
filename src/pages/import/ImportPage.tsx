@@ -129,7 +129,7 @@ export function ImportPage() {
               {/* DEMO MODE: Removed access warning */}
               {!isAuthorized && (
                 <Card className="mt-4 bg-destructive/5 border-destructive/20">
-                  <CardContent className="p-4 flex items-center gap-3">
+                  <CardContent className="p-4 flex items-start sm:items-center gap-3">
                     <AlertTriangle className="h-6 w-6 text-destructive" />
                     <div>
                       <p className="font-medium text-destructive">Access restricted</p>

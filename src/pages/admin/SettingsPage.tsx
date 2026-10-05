@@ -114,11 +114,11 @@ export function SettingsPage() {
           </Button>
         </div>
 
-        <div className="grid gap-8">
+        <div className="grid gap-4 sm:gap-6 lg:gap-8">
           {/* 1. Organization Profile */}
           <Card className="border-slate-200 shadow-sm overflow-hidden">
             <CardHeader className="bg-slate-50/50 border-b">
-               <div className="flex items-center gap-3">
+               <div className="flex items-center gap-3 flex-wrap min-w-0">
                   <div className="p-2 bg-indigo-100 rounded-lg text-indigo-600">
                     <Building2 className="h-5 w-5" />
                   </div>
@@ -128,7 +128,7 @@ export function SettingsPage() {
                   </div>
                </div>
             </CardHeader>
-            <CardContent className="p-6 space-y-6">
+            <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label className="text-xs font-black uppercase text-slate-500 tracking-wider">Company Name</Label>
@@ -173,7 +173,7 @@ export function SettingsPage() {
                   </div>
                </div>
             </CardHeader>
-            <CardContent className="p-6 space-y-6">
+            <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label className="text-xs font-black uppercase text-slate-500 tracking-wider">Chief Executive Officer (CEO)</Label>
@@ -221,7 +221,7 @@ export function SettingsPage() {
                  )}
                </div>
             </CardHeader>
-            <CardContent className="p-6 space-y-6">
+            <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label className="text-xs font-black uppercase text-slate-500 tracking-wider">{t('emailSettings.provider')}</Label>
@@ -331,7 +331,7 @@ export function SettingsPage() {
                  </div>
                </div>
             </CardHeader>
-            <CardContent className="p-6 space-y-6">
+            <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                {/* 1. Slack Webhook */}
                <div className="p-4 border rounded-lg bg-slate-50/30 space-y-3">
                   <div className="flex items-center justify-between flex-wrap gap-2">
@@ -464,7 +464,7 @@ export function SettingsPage() {
                   </div>
                </div>
             </CardHeader>
-            <CardContent className="p-6 space-y-6">
+            <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                <div className="flex items-center justify-between p-4 bg-rose-50/50 rounded-lg border border-rose-100 flex-wrap gap-2">
                   <div className="space-y-1">
                     <p className="text-sm font-bold text-rose-900 flex items-center gap-2">

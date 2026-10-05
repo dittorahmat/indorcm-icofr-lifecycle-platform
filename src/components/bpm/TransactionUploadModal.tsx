@@ -158,20 +158,22 @@ export function TransactionUploadModal({ isOpen, onClose, noGL, bpmProcessId, on
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[700px] p-0 overflow-hidden">
         <Tabs defaultValue="upload" className="w-full">
-          <div className="px-6 pt-6 flex justify-between items-start flex-wrap gap-2">
-            <div>
+          <div className="px-4 sm:px-6 pt-4 sm:pt-6 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 min-w-0">
+            <div className="min-w-0">
               <DialogTitle>{t('bpm:sampling.upload.title')}</DialogTitle>
               <DialogDescription className="mt-1">
                 Account: <span className="font-bold text-indigo-600">{noGL}</span>
               </DialogDescription>
             </div>
-            <TabsList className="bg-slate-100">
+            <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain no-scrollbar -mx-1 px-1">
+            <TabsList className="bg-slate-100 flex w-max min-w-full sm:min-w-0">
               <TabsTrigger value="upload" className="text-xs font-bold uppercase tracking-tight">Upload Baru</TabsTrigger>
               <TabsTrigger value="history" className="text-xs font-bold uppercase tracking-tight">Riwayat</TabsTrigger>
             </TabsList>
+            </div>
           </div>
 
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             <TabsContent value="upload" className="m-0 border-none outline-none">
               <div className="space-y-4">
                 <div className="flex items-center justify-between bg-indigo-50 border border-indigo-100 rounded-lg p-3 flex-wrap gap-2">
@@ -191,7 +193,7 @@ export function TransactionUploadModal({ isOpen, onClose, noGL, bpmProcessId, on
                 <div 
                   {...getRootProps()} 
                   className={cn(
-                    "border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-colors relative",
+                    "border-2 border-dashed rounded-lg p-6 sm:p-12 text-center cursor-pointer transition-colors relative",
                     isDragActive ? "border-indigo-500 bg-indigo-50" : "border-slate-200 hover:border-indigo-300 hover:bg-slate-50",
                     isUploading && "opacity-50 cursor-not-allowed"
                   )}

@@ -204,7 +204,7 @@ export const BPMOcrModal: React.FC<BPMOcrModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !isProcessingOcr && (!open ? onClose() : undefined)}>
-      <DialogContent className={cn('max-w-md transition-all duration-300', parsedDiagram && 'max-w-6xl')}>
+      <DialogContent className={cn('w-[calc(100vw-2rem)] sm:max-w-md transition-all duration-300 p-4 sm:p-6', parsedDiagram && 'sm:max-w-6xl')}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-slate-800">
             <Upload className="h-5 w-5 text-emerald-600" />
@@ -312,7 +312,7 @@ export const BPMOcrModal: React.FC<BPMOcrModalProps> = ({
               {/* Tabbed Inspector: Elements vs Connections */}
               <Tabs defaultValue="elements" className="flex-1 flex flex-col min-h-0 overflow-hidden">
                 <div className="px-3 pt-2 pb-0 border-b border-border bg-muted/10 shrink-0">
-                  <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 h-8">
+                  <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 h-auto min-h-8">
                     <TabsTrigger value="elements" className="text-xs">
                       {t('bpm:ocr.tabs.elements')} ({stagingNodes.length})
                     </TabsTrigger>

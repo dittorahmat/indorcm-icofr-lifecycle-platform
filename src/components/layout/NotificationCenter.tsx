@@ -89,7 +89,7 @@ export function NotificationCenter() {
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-0 mr-4 mt-2 shadow-xl border-slate-200" align="end">
+      <PopoverContent className="w-[calc(100vw-2rem)] max-w-80 sm:w-80 p-0 sm:mr-4 mt-2 shadow-xl border-slate-200" align="end">
         <div className="flex items-center justify-between px-4 py-3 border-b bg-slate-50/50 flex-wrap gap-2">
           <h3 className="font-bold text-sm text-slate-900">{t('notifications.title')}</h3>
           <div className="flex gap-3">

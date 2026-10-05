@@ -148,7 +148,7 @@ export const BPMCanvasToolbar: React.FC<BPMCanvasToolbarProps> = ({
               </span>
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-[320px] p-4" align="end">
+          <PopoverContent className="w-[calc(100vw-2rem)] max-w-[320px] p-4" align="end">
             <div className="space-y-4">
               <div className="space-y-1">
                 <h4 className="font-bold text-xs uppercase tracking-wider text-slate-700">Link GL Codes</h4>

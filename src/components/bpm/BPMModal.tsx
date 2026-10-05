@@ -142,7 +142,7 @@ export function BPMModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-[98vw] w-[1600px] h-[95dvh] flex flex-col p-0 overflow-hidden border-none shadow-2xl rounded-lg">
+      <DialogContent className="w-full sm:max-w-[98vw] h-[95dvh] flex flex-col p-0 overflow-hidden border-none shadow-2xl rounded-lg">
         <DialogHeader className="p-3 sm:p-4 border-b bg-mancity-pattern text-primary-foreground shrink-0">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between flex-wrap gap-2">
             <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -283,7 +283,7 @@ export function BPMModal({
                 />
               </TabsContent>
 
-              <TabsContent value="logs" className="m-0 focus-visible:ring-0 h-full overflow-auto p-6">
+              <TabsContent value="logs" className="m-0 focus-visible:ring-0 h-full overflow-auto p-4 sm:p-6">
                 <Lampiran6LogView 
                   bpmProcessId={bpmProcessId} 
                   subProcessName={subProcessName} 

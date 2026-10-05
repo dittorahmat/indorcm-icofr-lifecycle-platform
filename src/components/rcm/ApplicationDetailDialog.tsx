@@ -177,8 +177,8 @@ export function ApplicationDetailDialog({
 
           {/* 6 Tabs Navigation */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
-            <div className="border-b border-slate-200 bg-slate-50 px-6 pt-2 shrink-0">
-              <TabsList className="bg-transparent p-0 h-10 gap-1 sm:gap-2 flex-wrap">
+            <div className="border-b border-slate-200 bg-slate-50 px-4 sm:px-6 pt-2 shrink-0 max-w-full overflow-x-auto touch-pan-x overscroll-x-contain no-scrollbar">
+              <TabsList className="bg-transparent p-0 h-auto min-h-10 gap-1 sm:gap-2 flex w-max min-w-full sm:min-w-0">
                 <TabsTrigger
                   value="tlc"
                   className="data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-t-md px-3 py-1.5 text-xs font-medium gap-1.5"
@@ -231,7 +231,7 @@ export function ApplicationDetailDialog({
             </div>
 
             {/* Tab Contents */}
-            <div className="flex-1 overflow-y-auto p-6 bg-white">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-white">
               {/* TAB 1: RCM TLC */}
               <TabsContent value="tlc" className="m-0 space-y-4 focus-visible:outline-none">
                 <div className="flex items-center justify-between flex-wrap gap-2">

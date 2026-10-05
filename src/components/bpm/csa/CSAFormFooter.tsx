@@ -27,7 +27,7 @@ export function CSAFormFooter({
 }: CSAFormFooterProps) {
   const { t } = useTranslation();
   return (
-    <div className="sticky bottom-0 z-10 flex flex-col-reverse sm:flex-row sm:justify-end flex-wrap gap-2 border-t border-slate-100 bg-white p-4 sm:p-0 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] sm:pb-0 md:static md:z-auto md:gap-3 md:border-0 md:bg-transparent md:py-0 md:pb-0">
+    <div className="sticky bottom-[calc(3.5rem+env(safe-area-inset-bottom,0px))] md:bottom-0 z-10 flex flex-col-reverse sm:flex-row sm:justify-end flex-wrap gap-2 border-t border-slate-100 bg-white p-4 sm:p-0 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] sm:pb-0 md:static md:z-auto md:gap-3 md:border-0 md:bg-transparent md:py-0 md:pb-0">
       <Button variant="outline" type="button" onClick={onBackToList} className="px-8 font-bold w-full sm:w-auto h-11 sm:h-10 min-h-[44px]">
         {isReadOnly ? <ChevronLeft className="h-4 w-4 mr-2" /> : null}
         {isReadOnly ? t('csa_hub:form.table.backToList') : t('common:actions.cancel')}

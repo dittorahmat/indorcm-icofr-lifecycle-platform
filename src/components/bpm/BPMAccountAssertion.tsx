@@ -47,9 +47,9 @@ export function BPMAccountAssertion({
 
   return (
     <Card className="border-slate-200 shadow-md overflow-hidden rounded-lg bg-white">
-      <CardHeader className="bg-slate-50/50 py-5 px-8 border-b">
-        <div className="flex items-center justify-between flex-wrap gap-2">
-          <div className="flex items-center gap-4">
+      <CardHeader className="bg-slate-50/50 py-4 sm:py-5 px-4 sm:px-8 border-b">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 min-w-0">
+          <div className="flex items-center gap-3 sm:gap-4 min-w-0">
             <div className="h-10 w-10 rounded-lg bg-slate-50 text-primary flex items-center justify-center border border-slate-200 shadow-sm">
               <Shield className="h-5 w-5" />
             </div>
@@ -58,7 +58,7 @@ export function BPMAccountAssertion({
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-0.5">Management Assertions (Tabel 13)</p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 flex-wrap shrink-0">
             <AnimatePresence>
               {isAssertionDirty && (
                 <motion.div

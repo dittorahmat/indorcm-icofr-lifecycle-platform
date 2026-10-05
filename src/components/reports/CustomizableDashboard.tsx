@@ -410,7 +410,7 @@ export function CustomizableDashboard({ summaryData, isEffective }: Customizable
                               <Settings2 className="h-3 w-3" />
                             </Button>
                           </PopoverTrigger>
-                          <PopoverContent className="w-80 p-4 space-y-4 z-[9999]" align="end">
+                          <PopoverContent className="w-[calc(100vw-2rem)] max-w-80 sm:w-80 p-4 space-y-4 z-[9999]" align="end">
                             <h4 className="font-bold text-xs text-slate-700">Widget Configuration</h4>
                             
                             {/* Widget Title */}

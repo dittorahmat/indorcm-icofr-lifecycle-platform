@@ -47,10 +47,10 @@ export const BPMDocumentView: React.FC<BPMDocumentViewProps> = ({
   onExportToImage,
 }) => {
   return (
-    <div className="bg-slate-100 p-8 overflow-y-auto print:p-0 h-full">
+    <div className="bg-slate-100 p-4 sm:p-8 overflow-y-auto print:p-0 h-full">
       <div
         id="bpm-document-canvas"
-        className="max-w-5xl mx-auto border-2 border-slate-300 p-8 shadow-2xl bg-white print:border-none print:shadow-none min-h-screen"
+        className="max-w-5xl mx-auto border-2 border-slate-300 p-4 sm:p-8 shadow-2xl bg-white print:border-none print:shadow-none min-h-screen rounded-lg overflow-hidden"
       >
         <BPMCanvasHeader
           subProcess={subProcess}

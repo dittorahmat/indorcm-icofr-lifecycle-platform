@@ -529,7 +529,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
       </Dialog>
 
       <Dialog open={isBpmModalOpen} onOpenChange={(open) => !open && handleCloseDiagram()}>
-        <DialogContent className="max-w-[95vw] w-full sm:w-[1400px] h-[90vh] flex flex-col p-0 overflow-hidden">
+        <DialogContent className="w-full sm:max-w-[95vw] h-[90vh] flex flex-col p-0 overflow-hidden">
           <DialogHeader className="p-4 sm:p-6 pb-2 sm:pb-2 shrink-0">
             <DialogTitle className="flex items-center gap-2 text-base sm:text-xl min-w-0 truncate">
               <WorkflowIcon className="h-5 w-5 text-primary" />

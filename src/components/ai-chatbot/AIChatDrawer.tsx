@@ -200,7 +200,7 @@ export function AIChatDrawer({ isOpen, onClose }: AIChatDrawerProps) {
         side="right" 
         className="w-full sm:max-w-[500px] flex flex-col p-0 gap-0 border-l"
       >
-        <SheetHeader className="px-6 py-4 border-b flex-shrink-0">
+        <SheetHeader className="px-4 sm:px-6 py-4 border-b flex-shrink-0">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">

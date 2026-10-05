@@ -234,8 +234,8 @@ export function RegulatoryPropertySheet({
         </DialogHeader>
 
         <Tabs defaultValue="properties" className="flex-1 flex flex-col overflow-hidden">
-          <div className="px-6 border-b bg-white">
-            <TabsList className="bg-transparent h-12 gap-6">
+          <div className="px-4 sm:px-6 border-b bg-white max-w-full overflow-x-auto touch-pan-x overscroll-x-contain no-scrollbar">
+            <TabsList className="bg-transparent h-auto min-h-12 gap-4 sm:gap-6 flex w-max min-w-full">
               <TabsTrigger value="properties" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2">
                 <Layout className="h-4 w-4" /> Properties
               </TabsTrigger>
@@ -246,9 +246,9 @@ export function RegulatoryPropertySheet({
           </div>
 
           <ScrollArea className="flex-1">
-            <TabsContent value="properties" className="m-0 p-6 space-y-10 pb-20 focus-visible:outline-none">
+            <TabsContent value="properties" className="m-0 p-4 sm:p-6 space-y-6 sm:space-y-10 pb-20 focus-visible:outline-none">
               {isLocked && (
-                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3 text-amber-800 text-xs items-start">
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex gap-3 text-amber-800 text-xs items-start">
                   <Lock className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
                   <div className="space-y-1">
                     <p className="font-bold uppercase tracking-wider text-xs">{t('bpm:editor.actions.locked', { defaultValue: 'READ-ONLY MODE' })}</p>
