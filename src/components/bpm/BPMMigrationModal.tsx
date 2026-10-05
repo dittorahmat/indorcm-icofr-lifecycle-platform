@@ -167,7 +167,7 @@ export function BPMMigrationModal({
                 </p>
               ) : (
                 <Select value={selectedParentId} onValueChange={setSelectedParentId}>
-                  <SelectTrigger id="target-parent" className="bg-white border-slate-200 text-xs font-semibold h-10 rounded-lg">
+                  <SelectTrigger id="target-parent" className="bg-white border-slate-200 min-h-[44px] text-base md:text-sm font-semibold rounded-lg">
                     <SelectValue placeholder={t('bpm:migration.selectParentPlaceholder', 'Pilih Proses Induk...')} />
                   </SelectTrigger>
                   <SelectContent className="max-h-56">

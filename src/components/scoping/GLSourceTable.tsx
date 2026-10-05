@@ -5,7 +5,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
-  FileText, Trash2, CheckCircle2, Circle, Settings2, PlayCircle, Loader2 
+  FileText, Trash2, CheckCircle2, Circle, Settings2, PlayCircle, Loader2, ChevronDown, ChevronUp 
 } from 'lucide-react';
 import { GLSnapshot as SharedGLSnapshot } from '@shared/types';
 import { cn } from '@/lib/utils';
@@ -25,6 +25,7 @@ interface GLSourceTableProps {
 }
 
 export function GLSourceTable({ data, onSetActive, onSetBenchmark, onDelete, isLoading }: GLSourceTableProps) {
+  const [showFullTable, setShowFullTable] = React.useState(false);
   const sortedData = React.useMemo(() => {
     return [...data].sort((a, b) => {
       const dateA = a.uploadDate ? new Date(a.uploadDate).getTime() : 0;
@@ -53,7 +54,55 @@ export function GLSourceTable({ data, onSetActive, onSetBenchmark, onDelete, isL
   return (
     <>
       <MobileDesktopBanner recordCount={sortedData.length} />
-      <div className="border rounded-lg overflow-x-auto shadow-sm bg-white max-w-full">
+      <div className="md:hidden space-y-3" data-testid="gl-source-mobile-cards">
+        {sortedData.map((snap) => (
+          <div key={snap.id} className="rounded-lg border border-slate-200 bg-white p-4 space-y-2 shadow-sm">
+            <div className="flex items-start justify-between gap-2">
+              <p className="text-xs font-bold text-slate-900 leading-snug break-words min-w-0 flex-1">{snap.filename}</p>
+              <Badge variant={snap.status === 'Mapped' ? 'default' : 'outline'} className={cn(snap.status === 'Mapped' ? "bg-indigo-600" : "text-slate-400")}>
+                {snap.status}
+              </Badge>
+            </div>
+            <p className="text-xs font-medium text-slate-500">
+              {snap.uploadDate ? format(new Date(snap.uploadDate), 'dd MMM yyyy, HH:mm') : 'Unknown'} · {snap.rowCount ?? snap.rows?.length ?? 0} accounts
+            </p>
+            <div className="flex gap-2 flex-wrap">
+              <Button variant="outline" size="sm" className="flex-1 min-h-[44px] gap-1.5 text-xs font-bold" onClick={() => onSetBenchmark(snap)}>
+                <Settings2 className="h-3.5 w-3.5" /> Set Benchmark
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={snap.isActive ? "Currently Active" : "Set as Active Source"}
+                className={cn("min-h-[44px] min-w-[44px] rounded-md", snap.isActive ? "text-green-600" : "text-slate-300")}
+                onClick={() => onSetActive(snap.id)}
+              >
+                {snap.isActive ? <CheckCircle2 className="h-5 w-5 fill-green-50" /> : <Circle className="h-5 w-5" />}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Delete snapshot"
+                className="min-h-[44px] min-w-[44px] text-slate-400 hover:text-destructive"
+                onClick={() => onDelete(snap.id)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        ))}
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => setShowFullTable((v) => !v)}
+          aria-expanded={showFullTable}
+          className="w-full min-h-[44px] text-xs font-bold gap-2 bg-white"
+        >
+          {showFullTable ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          {showFullTable ? 'Sembunyikan Tabel Penuh' : 'Lihat Tabel Penuh'}
+        </Button>
+      </div>
+      <div className={`border rounded-lg shadow-sm bg-white max-w-full overflow-x-auto overscroll-x-contain touch-pan-x table-scroll-hint ${showFullTable ? 'block' : 'hidden'} md:block`}>
       <Table>
         <TableHeader className="bg-slate-50">
           <TableRow>

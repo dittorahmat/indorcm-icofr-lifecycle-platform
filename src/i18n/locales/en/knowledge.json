@@ -31,6 +31,7 @@
     "labelCategory": "Category",
     "labelDepts": "Select Related Departments",
     "submit": "Upload Document",
+    "extracting": "Extracting PDF...",
     "success": "Document uploaded successfully",
     "error": "Upload failed"
   },

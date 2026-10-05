@@ -189,7 +189,7 @@ export function ReportsPage() {
                   </div>
                 </div>
               </div>
-              <div className="text-right space-y-2">
+              <div className="text-left sm:text-right space-y-2 w-full sm:w-auto min-w-0">
                 <div>
                   <p className="text-xs font-bold text-indigo-600 uppercase tracking-wide">Regulatory Reference</p>
                   <p className="text-xs text-slate-500 font-medium">SK-5 Bab V & Lampiran 8</p>
@@ -199,7 +199,7 @@ export function ReportsPage() {
                   size="sm"
                   onClick={handleExportTestsExcel}
                   disabled={isExportingTests}
-                  className="gap-2 h-9 text-xs font-bold rounded-md bg-white"
+                  className="gap-2 h-9 text-xs font-bold rounded-md bg-white w-full sm:w-auto justify-center"
                 >
                   {isExportingTests ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
                   {t('actions.exportExcel')}

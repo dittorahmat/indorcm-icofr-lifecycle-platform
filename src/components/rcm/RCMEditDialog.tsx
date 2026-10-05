@@ -201,7 +201,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.process_info')}</FormLabel>
-                              <FormControl><Input {...field} readOnly className="bg-slate-50 border-slate-200 text-xs font-semibold text-slate-700" /></FormControl>
+                              <FormControl><Input {...field} readOnly className="bg-slate-50 border-slate-200 min-h-[44px] text-base md:text-sm font-semibold text-slate-700" /></FormControl>
                             </FormItem>
                           )}
                         />
@@ -211,7 +211,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.sub_process')}</FormLabel>
-                              <FormControl><Input {...field} readOnly className="bg-slate-50 border-slate-200 text-xs font-semibold text-slate-700" /></FormControl>
+                              <FormControl><Input {...field} readOnly className="bg-slate-50 border-slate-200 min-h-[44px] text-base md:text-sm font-semibold text-slate-700" /></FormControl>
                             </FormItem>
                           )}
                         />
@@ -223,7 +223,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-xs font-black uppercase text-slate-400">Financial Item (FSLI)</FormLabel>
-                              <FormControl><Input {...field} readOnly className="bg-slate-50 border-slate-200 text-xs font-semibold text-slate-700" /></FormControl>
+                              <FormControl><Input {...field} readOnly className="bg-slate-50 border-slate-200 min-h-[44px] text-base md:text-sm font-semibold text-slate-700" /></FormControl>
                             </FormItem>
                           )}
                         />
@@ -234,7 +234,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel className="text-xs font-black uppercase text-slate-400">No GL</FormLabel>
-                                <FormControl><Input {...field} readOnly className="bg-slate-50 border-slate-200 text-xs font-mono font-bold text-indigo-700" /></FormControl>
+                                <FormControl><Input {...field} readOnly className="bg-slate-50 border-slate-200 min-h-[44px] text-base md:text-sm font-mono font-bold text-indigo-700" /></FormControl>
                               </FormItem>
                             )}
                           />
@@ -244,7 +244,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel className="text-xs font-black uppercase text-slate-400">BPM Code</FormLabel>
-                                <FormControl><Input {...field} readOnly className="bg-slate-50 border-slate-200 text-xs font-mono font-bold text-indigo-700" /></FormControl>
+                                <FormControl><Input {...field} readOnly className="bg-slate-50 border-slate-200 min-h-[44px] text-base md:text-sm font-mono font-bold text-indigo-700" /></FormControl>
                               </FormItem>
                             )}
                           />
@@ -252,7 +252,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                       </div>
                    </div>
                    
-                   <div className="bg-indigo-50/50 border border-indigo-100 rounded-xl p-4 flex items-start gap-3">
+                   <div className="bg-indigo-50/50 border border-indigo-100 rounded-lg p-4 flex items-start gap-3">
                       <div className="bg-white p-1.5 rounded-full shadow-sm">
                          <Info className="h-4 w-4 text-indigo-600" />
                       </div>
@@ -275,7 +275,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.risk_description')}</FormLabel>
-                              <FormControl><Textarea {...field} rows={3} className="text-xs border-slate-200 focus:border-indigo-300 transition-all leading-normal" /></FormControl>
+                              <FormControl><Textarea {...field} rows={3} className="min-h-[44px] text-base md:text-sm border-slate-200 focus:border-indigo-300 transition-all leading-normal" /></FormControl>
                             </FormItem>
                           )}
                         />
@@ -288,7 +288,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.control_name')}</FormLabel>
-                              <FormControl><Input {...field} className="text-xs border-slate-200 font-bold" /></FormControl>
+                              <FormControl><Input {...field} className="min-h-[44px] text-base md:text-sm border-slate-200 font-bold" /></FormControl>
                               <FormMessage className="text-xs" />
                             </FormItem>
                           )}
@@ -299,7 +299,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.control_description')}</FormLabel>
-                              <FormControl><Textarea {...field} rows={5} className="text-xs border-slate-200 leading-relaxed" /></FormControl>
+                              <FormControl><Textarea {...field} rows={5} className="min-h-[44px] text-base md:text-sm border-slate-200 leading-relaxed" /></FormControl>
                             </FormItem>
                           )}
                         />

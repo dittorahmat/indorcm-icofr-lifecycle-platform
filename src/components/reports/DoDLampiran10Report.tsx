@@ -89,6 +89,7 @@ export function DoDLampiran10Report({
   const [remediationFilter, setRemediationFilter] = React.useState<string>('ALL');
   const [searchQuery, setSearchQuery] = React.useState<string>('');
   const [isExporting, setIsExporting] = React.useState(false);
+  const [showFullTable, setShowFullTable] = React.useState(false);
 
   // Normalize deficiency row to 24 columns
   const formattedRows: FormattedDoDRow[] = React.useMemo(() => {
@@ -538,7 +539,28 @@ export function DoDLampiran10Report({
         <div className="md:hidden">
           <MobileDesktopBanner recordCount={filteredRows.length} />
         </div>
-        <div className="rounded-lg border border-border overflow-hidden bg-background max-w-full">
+        <div className="md:hidden space-y-3" data-testid="dod-mobile-cards">
+          {filteredRows.slice(0, 10).map((row) => (
+            <div key={row.ref} className="rounded-lg border border-border bg-white p-4 space-y-2 shadow-sm">
+              <div className="flex items-start justify-between gap-2 flex-wrap">
+                <span className="font-mono text-xs font-bold text-slate-900">{row.ref}</span>
+                {getSeverityBadge(row.severity)}
+              </div>
+              <p className="text-xs font-medium text-slate-800 leading-snug line-clamp-2">{row.description}</p>
+              <p className="text-xs font-mono font-bold text-primary">{formatCurrency(row.exposureValue)}</p>
+            </div>
+          ))}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setShowFullTable((v) => !v)}
+            aria-expanded={showFullTable}
+            className="w-full min-h-[44px] text-xs font-bold gap-2 bg-white"
+          >
+            {showFullTable ? t('common:mobile.hideFullTable', { defaultValue: 'Sembunyikan Tabel Penuh' }) : t('common:mobile.showFullTable', { defaultValue: 'Lihat Tabel Penuh' })}
+          </Button>
+        </div>
+        <div className={`rounded-lg border border-border overflow-hidden bg-background max-w-full ${showFullTable ? 'block' : 'hidden'} md:block`}>
           <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint">
             <Table className="min-w-[2000px] border-collapse print:min-w-0 print:w-full print:text-xs">
               <TableHeader className="bg-slate-50 border-b border-border">

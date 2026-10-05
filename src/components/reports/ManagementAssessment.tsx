@@ -11,6 +11,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
+import { MobileDesktopBanner } from '@/components/layout/MobileDesktopBanner';
 
 interface ManagementAssessmentProps {
   isSigned: boolean;
@@ -87,10 +88,13 @@ export function ManagementAssessment({
             </ol>
           </div>
 
-          <div className="bg-slate-50 p-8 rounded-xl border border-slate-200 space-y-5 shadow-sm">
+          <div className="bg-slate-50 p-4 sm:p-8 rounded-xl border border-slate-200 space-y-5 shadow-sm">
             <h3 className="font-bold text-slate-900 border-b border-slate-200 pb-3 flex items-center gap-2 text-sm uppercase tracking-wider">
               <AlertTriangle className="h-4 w-4 text-orange-500" /> {t('assessment.deficiencyTitle')}
             </h3>
+            <div className="md:hidden">
+              <MobileDesktopBanner />
+            </div>
             <div className="rounded-lg border border-slate-200 overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint bg-white">
               <Table className="text-xs min-w-[560px]">
                 <TableHeader className="bg-slate-50">

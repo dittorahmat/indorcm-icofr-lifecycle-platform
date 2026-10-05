@@ -424,7 +424,7 @@ export function VerificationDesignPage({ embedded, filterBpmId, workingYear, noG
             </Button>
             </div>
           </div>
-          <span className="text-xs font-black text-slate-400 uppercase tracking-wider hidden md:inline">
+          <span className="order-first md:order-none truncate min-w-0 max-w-full text-xs font-black text-slate-400 uppercase tracking-wider">
             {t('rcm:verification.title')}
           </span>
         </div>

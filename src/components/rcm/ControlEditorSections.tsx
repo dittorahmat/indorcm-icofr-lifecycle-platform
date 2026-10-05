@@ -39,7 +39,7 @@ export const RiskAssessmentSection = ({ form, wizard }: { form: any; wizard?: Re
             <FormLabel className="text-xs uppercase">{t('matrix.properties.risk_rating_label')} (Table 10)</FormLabel>
             <Select onValueChange={field.onChange} defaultValue={field.value}>
               <FormControl>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-11 min-h-[44px] text-base md:text-sm"><SelectValue /></SelectTrigger>
               </FormControl>
               <SelectContent>
                 <SelectItem value="High">High (at least OM)</SelectItem>
@@ -57,7 +57,7 @@ export const RiskAssessmentSection = ({ form, wizard }: { form: any; wizard?: Re
             </div>
             <Select onValueChange={field.onChange} value={field.value}>
               <FormControl>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-11 min-h-[44px] text-base md:text-sm"><SelectValue /></SelectTrigger>
               </FormControl>
               <SelectContent>
                 <SelectItem value="High">High (Frequent)</SelectItem>
@@ -208,15 +208,15 @@ export const MRCParametersSection = ({ form }: { form: any }) => {
       <div className="space-y-3">
         <div className="space-y-1">
           <Label className="text-xs">Management Expectation (Kewajaran Ekspektasi)</Label>
-          <Input className="h-8 text-xs" placeholder="e.g. Varians biaya operasional < 5% per bulan" />
+          <Input className="h-11 min-h-[44px] text-base md:text-sm" placeholder="e.g. Varians biaya operasional < 5% per bulan" />
         </div>
         <div className="space-y-1">
           <Label className="text-xs">Investigation Threshold (Ambang Batas)</Label>
-          <Input className="h-8 text-xs" placeholder="e.g. Selisih absolut > Rp 50.000.000" />
+          <Input className="h-11 min-h-[44px] text-base md:text-sm" placeholder="e.g. Selisih absolut > Rp 50.000.000" />
         </div>
         <div className="space-y-1">
           <Label className="text-xs">Investigation Procedures (Prosedur Tindak Lanjut)</Label>
-          <Textarea className="text-xs" placeholder="Langkah-langkah jika threshold terlampaui..." />
+          <Textarea className="min-h-[44px] text-base md:text-sm" placeholder="Langkah-langkah jika threshold terlampaui..." />
         </div>
       </div>
     </div>

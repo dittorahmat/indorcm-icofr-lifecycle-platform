@@ -37,7 +37,7 @@ export function TODDesignContextFields({ form }: { form: UseFormReturn<any> }) {
             <FormItem className="space-y-1.5">
               <FormLabel className="text-xs font-semibold uppercase text-slate-500 tracking-wider">{t('matrix.risk_rating')}</FormLabel>
               <Select onValueChange={field.onChange} value={field.value || undefined}>
-                <FormControl><SelectTrigger className="h-10 text-xs border-slate-200 rounded-lg"><SelectValue /></SelectTrigger></FormControl>
+                <FormControl><SelectTrigger className="h-10 min-h-[44px] text-base md:text-sm border-slate-200 rounded-lg"><SelectValue /></SelectTrigger></FormControl>
                 <SelectContent className="rounded-lg">
                   <SelectItem value="High" className="text-rose-600 font-bold">{t('risklibrary:form.high')}</SelectItem>
                   <SelectItem value="Medium" className="text-amber-600 font-bold">{t('risklibrary:form.medium')}</SelectItem>
@@ -65,7 +65,7 @@ export function TODDesignContextFields({ form }: { form: UseFormReturn<any> }) {
         render={({ field }) => (
           <FormItem className="space-y-1.5">
             <FormLabel className="text-xs font-semibold uppercase text-slate-500 tracking-wider">{t('matrix.risk_description')}</FormLabel>
-            <FormControl><Textarea {...field} rows={3} className="text-xs border-slate-200 rounded-lg" /></FormControl>
+            <FormControl><Textarea {...field} rows={3} className="min-h-[44px] text-base md:text-sm border-slate-200 rounded-lg" /></FormControl>
           </FormItem>
         )}
       />
@@ -77,7 +77,7 @@ export function TODDesignContextFields({ form }: { form: UseFormReturn<any> }) {
           render={({ field }) => (
             <FormItem className="space-y-1.5">
               <FormLabel className="text-xs font-semibold uppercase text-slate-500 tracking-wider">{t('matrix.control_name')}</FormLabel>
-              <FormControl><Input {...field} className="text-xs font-bold border-slate-200 rounded-lg h-10" /></FormControl>
+              <FormControl><Input {...field} className="min-h-[44px] text-base md:text-sm font-bold border-slate-200 rounded-lg" /></FormControl>
             </FormItem>
           )}
         />
@@ -87,7 +87,7 @@ export function TODDesignContextFields({ form }: { form: UseFormReturn<any> }) {
           render={({ field }) => (
             <FormItem className="space-y-1.5">
               <FormLabel className="text-xs font-semibold uppercase text-slate-500 tracking-wider">{t('matrix.control_description')}</FormLabel>
-              <FormControl><Textarea {...field} rows={3} className="text-xs border-slate-200 rounded-lg" /></FormControl>
+              <FormControl><Textarea {...field} rows={3} className="min-h-[44px] text-base md:text-sm border-slate-200 rounded-lg" /></FormControl>
             </FormItem>
           )}
         />
@@ -100,7 +100,7 @@ export function TODDesignContextFields({ form }: { form: UseFormReturn<any> }) {
           render={({ field }) => (
             <FormItem className="space-y-1.5">
               <FormLabel className="text-xs font-semibold uppercase text-slate-500 tracking-wider">{t('matrix.frequency')}</FormLabel>
-              <FormControl><Input {...field} className="text-xs border-slate-200 rounded-lg h-10" /></FormControl>
+              <FormControl><Input {...field} className="min-h-[44px] text-base md:text-sm border-slate-200 rounded-lg" /></FormControl>
             </FormItem>
           )}
         />
@@ -110,7 +110,7 @@ export function TODDesignContextFields({ form }: { form: UseFormReturn<any> }) {
           render={({ field }) => (
             <FormItem className="space-y-1.5">
               <FormLabel className="text-xs font-semibold uppercase text-slate-500 tracking-wider">{t('matrix.nature')}</FormLabel>
-              <FormControl><Input {...field} className="text-xs border-slate-200 rounded-lg h-10" /></FormControl>
+              <FormControl><Input {...field} className="min-h-[44px] text-base md:text-sm border-slate-200 rounded-lg" /></FormControl>
             </FormItem>
           )}
         />
@@ -124,7 +124,7 @@ export function TODDesignContextFields({ form }: { form: UseFormReturn<any> }) {
             <FormItem className="space-y-1.5">
               <FormLabel className="text-xs font-semibold uppercase text-slate-500 tracking-wider">{t('matrix.type')}</FormLabel>
               <Select onValueChange={field.onChange} value={field.value || undefined}>
-                <FormControl><SelectTrigger className="h-10 text-xs border-slate-200 rounded-lg"><SelectValue placeholder="Pilih Tipe" /></SelectTrigger></FormControl>
+                <FormControl><SelectTrigger className="h-10 min-h-[44px] text-base md:text-sm border-slate-200 rounded-lg"><SelectValue placeholder="Pilih Tipe" /></SelectTrigger></FormControl>
                 <SelectContent className="rounded-lg">
                   <SelectItem value="Preventif">Preventif</SelectItem>
                   <SelectItem value="Detektif">Detektif</SelectItem>
@@ -152,7 +152,7 @@ export function TODDesignContextFields({ form }: { form: UseFormReturn<any> }) {
           render={({ field }) => (
             <FormItem className="space-y-1.5">
               <FormLabel className="text-xs font-semibold uppercase text-slate-500 tracking-wider">{t('matrix.automated_type')}</FormLabel>
-              <FormControl><Input {...field} className="text-xs border-slate-200 rounded-lg h-10" placeholder="Contoh: Automated Calculation" /></FormControl>
+              <FormControl><Input {...field} className="min-h-[44px] text-base md:text-sm border-slate-200 rounded-lg" placeholder="Contoh: Automated Calculation" /></FormControl>
             </FormItem>
           )}
         />
@@ -162,7 +162,7 @@ export function TODDesignContextFields({ form }: { form: UseFormReturn<any> }) {
           render={({ field }) => (
             <FormItem className="space-y-1.5">
               <FormLabel className="text-xs font-semibold uppercase text-slate-500 tracking-wider">{t('matrix.supporting_app')}</FormLabel>
-              <FormControl><Input {...field} className="text-xs border-slate-200 rounded-lg h-10" /></FormControl>
+              <FormControl><Input {...field} className="min-h-[44px] text-base md:text-sm border-slate-200 rounded-lg" /></FormControl>
             </FormItem>
           )}
         />
@@ -175,7 +175,7 @@ export function TODDesignContextFields({ form }: { form: UseFormReturn<any> }) {
           render={({ field }) => (
             <FormItem className="space-y-1.5">
               <FormLabel className="text-xs font-semibold uppercase text-slate-500 tracking-wider">{t('matrix.executing_function')}</FormLabel>
-              <FormControl><Input {...field} className="text-xs border-slate-200 rounded-lg h-10" /></FormControl>
+              <FormControl><Input {...field} className="min-h-[44px] text-base md:text-sm border-slate-200 rounded-lg" /></FormControl>
             </FormItem>
           )}
         />
@@ -185,7 +185,7 @@ export function TODDesignContextFields({ form }: { form: UseFormReturn<any> }) {
           render={({ field }) => (
             <FormItem className="space-y-1.5">
               <FormLabel className="text-xs font-semibold uppercase text-slate-500 tracking-wider">{t('matrix.executor_role')}</FormLabel>
-              <FormControl><Input {...field} className="text-xs border-slate-200 rounded-lg h-10" /></FormControl>
+              <FormControl><Input {...field} className="min-h-[44px] text-base md:text-sm border-slate-200 rounded-lg" /></FormControl>
             </FormItem>
           )}
         />
@@ -198,7 +198,7 @@ export function TODDesignContextFields({ form }: { form: UseFormReturn<any> }) {
           render={({ field }) => (
             <FormItem className="space-y-1.5">
               <FormLabel className="text-xs font-semibold uppercase text-slate-500 tracking-wider">{t('matrix.affected_fsli_item')}</FormLabel>
-              <FormControl><Input {...field} className="text-xs border-slate-200 rounded-lg h-10" /></FormControl>
+              <FormControl><Input {...field} className="min-h-[44px] text-base md:text-sm border-slate-200 rounded-lg" /></FormControl>
             </FormItem>
           )}
         />
@@ -208,7 +208,7 @@ export function TODDesignContextFields({ form }: { form: UseFormReturn<any> }) {
           render={({ field }) => (
             <FormItem className="space-y-1.5">
               <FormLabel className="text-xs font-semibold uppercase text-slate-500 tracking-wider">{t('matrix.effective_period')}</FormLabel>
-              <FormControl><Input {...field} className="text-xs border-slate-200 rounded-lg h-10" /></FormControl>
+              <FormControl><Input {...field} className="min-h-[44px] text-base md:text-sm border-slate-200 rounded-lg" /></FormControl>
             </FormItem>
           )}
         />
@@ -220,7 +220,7 @@ export function TODDesignContextFields({ form }: { form: UseFormReturn<any> }) {
         render={({ field }) => (
           <FormItem className="space-y-1.5">
             <FormLabel className="text-xs font-semibold uppercase text-slate-500 tracking-wider">{t('matrix.supporting_docs')}</FormLabel>
-            <FormControl><Textarea {...field} rows={2} className="text-xs border-slate-200 rounded-lg" /></FormControl>
+            <FormControl><Textarea {...field} rows={2} className="min-h-[44px] text-base md:text-sm border-slate-200 rounded-lg" /></FormControl>
           </FormItem>
         )}
       />

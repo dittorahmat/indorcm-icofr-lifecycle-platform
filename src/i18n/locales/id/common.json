@@ -130,7 +130,10 @@
     "desktopBanner": {
       "title": "Tampilan baca di HP",
       "description": "Tabel lengkap membutuhkan layar lebar. Buka di desktop untuk mengedit data ini."
-    }
+    },
+    "summary": "Ringkasan",
+    "showFullTable": "Lihat Tabel Penuh",
+    "hideFullTable": "Sembunyikan Tabel Penuh"
   },
   "emailSettings": {
     "title": "Pengaturan Notifikasi Email",

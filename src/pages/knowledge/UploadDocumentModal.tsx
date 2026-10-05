@@ -223,7 +223,7 @@ export function UploadDocumentModal({ isOpen, onClose }: UploadDocumentModalProp
           <Button variant="outline" onClick={onClose} disabled={uploadMutation.isPending || isExtracting} className="w-full sm:w-auto h-11 sm:h-10 min-h-[44px]">{t('common:actions.cancel')}</Button>
           <Button onClick={() => uploadMutation.mutate()} disabled={!file || uploadMutation.isPending || isExtracting} className="w-full sm:w-auto h-11 sm:h-10 min-h-[44px]">
             {(uploadMutation.isPending || isExtracting) ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
-            {isExtracting ? 'Extracting PDF...' : t('upload.submit')}
+            {isExtracting ? t('upload.extracting', { defaultValue: 'Extracting PDF...' }) : t('upload.submit')}
           </Button>
         </DialogFooter>
       </DialogContent>

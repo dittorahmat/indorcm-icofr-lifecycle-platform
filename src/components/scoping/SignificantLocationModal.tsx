@@ -119,13 +119,13 @@ export function SignificantLocationModal({
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          <div className="flex items-center justify-between bg-blue-50 p-4 rounded-xl border border-blue-100 flex-wrap gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-blue-50 p-4 rounded-lg border border-blue-100 flex-wrap gap-3">
             <div className="space-y-1">
               <Label className="text-xs font-bold uppercase text-blue-700 tracking-wider">{t('locationModal.thresholdLabel')}</Label>
               <div className="flex items-center gap-3">
                 <Input 
                   type="number" 
-                  className="w-24 h-9 font-bold text-lg border-blue-200 focus:ring-primary" 
+                  className="w-24 h-11 min-h-[44px] text-base sm:text-sm font-bold border-blue-200 focus:ring-primary" 
                   value={threshold}
                   onChange={(e) => setThreshold(Number(e.target.value))}
                 />

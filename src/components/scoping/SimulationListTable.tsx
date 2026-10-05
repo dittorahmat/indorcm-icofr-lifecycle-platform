@@ -5,7 +5,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
-  Trash2, Eye, LayoutGrid, Clock, ChevronRight, Loader2, MapPin
+  Trash2, Eye, LayoutGrid, Clock, ChevronRight, ChevronDown, ChevronUp, Loader2, MapPin
 } from 'lucide-react';
 import { MaterialitySimulation, SimulationStatus, GLSnapshot } from '@shared/types';
 import { cn } from '@/lib/utils';
@@ -27,6 +27,7 @@ interface SimulationListTableProps {
 export function SimulationListTable({ data, onSelect, onDelete, isLoading }: SimulationListTableProps) {
   const [locModalOpen, setLocModalOpen] = React.useState(false);
   const [selectedSim, setSelectedSim] = React.useState<MaterialitySimulation | null>(null);
+  const [showFullTable, setShowFullTable] = React.useState(false);
 
   // Fetch Snapshot linked to the selected simulation (for the modal)
   const { data: linkedSnap } = useSimulationSnapshot(selectedSim?.glSnapshotId);
@@ -63,7 +64,47 @@ export function SimulationListTable({ data, onSelect, onDelete, isLoading }: Sim
   return (
     <>
       <MobileDesktopBanner recordCount={data.length} />
-      <div className="border rounded-xl overflow-x-auto shadow-md bg-white max-w-full">
+      <div className="md:hidden space-y-3" data-testid="simulation-mobile-cards">
+        {data.map((sim) => (
+          <div key={sim.id} className="rounded-lg border border-slate-200 bg-white p-4 space-y-2 shadow-sm">
+            <div className="flex items-start justify-between gap-2 flex-wrap">
+              <p className="text-xs font-bold text-slate-900 leading-snug line-clamp-2 min-w-0 flex-1">{sim.name}</p>
+              {getStatusBadge((sim.workflowStatus || sim.status) as SimulationStatus)}
+            </div>
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <span className="text-xs font-black uppercase tracking-wider text-slate-500">{sim.basis}</span>
+              <span className="font-mono text-xs font-bold text-[#417dc1]">Rp {sim.pmValue?.toLocaleString('id-ID') || 0}</span>
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              <Button variant="outline" className="flex-1 min-h-[44px] text-xs font-bold" onClick={() => onSelect(sim.id)}>
+                Details <ChevronRight className="h-3 w-3" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Delete simulation"
+                disabled={sim.status === 'Pending Deletion Approval'}
+                title={sim.status === 'Approved' ? 'Request Deletion' : 'Delete'}
+                className="min-h-[44px] min-w-[44px] text-slate-300 hover:text-red-600 disabled:opacity-30"
+                onClick={() => onDelete(sim.id)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        ))}
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => setShowFullTable((v) => !v)}
+          aria-expanded={showFullTable}
+          className="w-full min-h-[44px] text-xs font-bold gap-2 bg-white"
+        >
+          {showFullTable ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          {showFullTable ? 'Sembunyikan Tabel Penuh' : 'Lihat Tabel Penuh'}
+        </Button>
+      </div>
+      <div className={`border rounded-xl shadow-md bg-white max-w-full overflow-x-auto overscroll-x-contain touch-pan-x table-scroll-hint ${showFullTable ? 'block' : 'hidden'} md:block`}>
       <Table>
         <TableHeader className="bg-slate-50 border-b">
           <TableRow>

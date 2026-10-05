@@ -225,10 +225,15 @@ describe('DoDLampiran10Report Component', () => {
   it('displays deficiency items and their mapped data rows', () => {
     render(<DoDLampiran10Report deficiencies={mockDeficiencies} controls={mockControls} />);
 
-    expect(screen.getByText('DEF-001')).toBeInTheDocument();
-    expect(screen.getByText('Persetujuan tender di atas ambang batas otorisasi tanpa tanda tangan Direktur.')).toBeInTheDocument();
-    expect(screen.getByText('DEF-002')).toBeInTheDocument();
-    expect(screen.getByText('Selisih perhitungan fisik batu bara tidak diverifikasi tepat waktu.')).toBeInTheDocument();
+    // Dual-render: mobile cards (block md:hidden) + desktop table (hidden md:block) both mount in jsdom
+    expect(screen.getAllByText('DEF-001')).toHaveLength(2);
+    expect(screen.getAllByText('Persetujuan tender di atas ambang batas otorisasi tanpa tanda tangan Direktur.')).toHaveLength(2);
+    expect(screen.getAllByText('DEF-002')).toHaveLength(2);
+    expect(screen.getAllByText('Selisih perhitungan fisik batu bara tidak diverifikasi tepat waktu.')).toHaveLength(2);
+
+    // Scroll container assertion via closest() so responsive wrapper refactors don't break the suite
+    const tableEl = screen.getAllByText('DEF-001')[1].closest('div.overflow-x-auto');
+    expect(tableEl).not.toBeNull();
 
     // Assertion checkmarks rendered
     const checkmarks = screen.getAllByText('✓');
@@ -241,8 +246,8 @@ describe('DoDLampiran10Report Component', () => {
     const searchInput = screen.getByPlaceholderText('Cari referensi...');
     fireEvent.change(searchInput, { target: { value: 'Otorisasi' } });
 
-    expect(screen.getByText('DEF-001')).toBeInTheDocument();
-    expect(screen.queryByText('DEF-002')).not.toBeInTheDocument();
+    expect(screen.getAllByText('DEF-001')).toHaveLength(2);
+    expect(screen.queryAllByText('DEF-002')).toHaveLength(0);
   });
 
   it('renders digital sign-off blocks', () => {
@@ -311,32 +316,32 @@ describe('DoDLampiran10Report Component', () => {
   it('filters table rows when KPI counter cards are clicked', () => {
     render(<DoDLampiran10Report deficiencies={mockDeficiencies} controls={mockControls} />);
 
-    // Initially both deficiencies DEF-001 (MW) and DEF-002 (CD) are shown
-    expect(screen.getByText('DEF-001')).toBeInTheDocument();
-    expect(screen.getByText('DEF-002')).toBeInTheDocument();
+    // Initially both deficiencies DEF-001 (MW) and DEF-002 (CD) are shown in both views
+    expect(screen.getAllByText('DEF-001')).toHaveLength(2);
+    expect(screen.getAllByText('DEF-002')).toHaveLength(2);
 
     // Click Material Weakness card
     const mwCard = screen.getByRole('button', { name: /Kelemahan Material \(MW\)/i });
     fireEvent.click(mwCard);
 
-    // Only DEF-001 should remain
-    expect(screen.getByText('DEF-001')).toBeInTheDocument();
-    expect(screen.queryByText('DEF-002')).not.toBeInTheDocument();
+    // Only DEF-001 should remain (both views)
+    expect(screen.getAllByText('DEF-001')).toHaveLength(2);
+    expect(screen.queryAllByText('DEF-002')).toHaveLength(0);
 
     // Click Total card to reset filter
     const totalCard = screen.getByRole('button', { name: /Total Evaluasi DoD/i });
     fireEvent.click(totalCard);
 
     // Both should appear again
-    expect(screen.getByText('DEF-001')).toBeInTheDocument();
-    expect(screen.getByText('DEF-002')).toBeInTheDocument();
+    expect(screen.getAllByText('DEF-001')).toHaveLength(2);
+    expect(screen.getAllByText('DEF-002')).toHaveLength(2);
 
     // Click Remediated card
     const remediatedCard = screen.getByRole('button', { name: /Telah Diremediasi/i });
     fireEvent.click(remediatedCard);
 
     // DEF-002 is remediated, DEF-001 is open
-    expect(screen.queryByText('DEF-001')).not.toBeInTheDocument();
-    expect(screen.getByText('DEF-002')).toBeInTheDocument();
+    expect(screen.queryAllByText('DEF-001')).toHaveLength(0);
+    expect(screen.getAllByText('DEF-002')).toHaveLength(2);
   });
 });

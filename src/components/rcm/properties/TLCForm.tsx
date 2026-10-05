@@ -48,7 +48,7 @@ export function TLCForm({ data, onChange, disabled = false }: TLCFormProps) {
                 value={data[field.key] || 'N'} 
                 onValueChange={(v) => onChange(field.key, v)}
               >
-                <SelectTrigger className="h-8 text-xs w-full bg-slate-50/50">
+                <SelectTrigger className="h-11 min-h-[44px] text-base md:text-xs w-full bg-slate-50/50">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

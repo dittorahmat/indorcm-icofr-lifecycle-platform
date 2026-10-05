@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, Layers, ExternalLink } from 'lucide-react';
 import type { Control } from '@shared/types';
+import { MobileDesktopBanner } from '@/components/layout/MobileDesktopBanner';
 
 interface ControlsTableProps {
   controls: Control[];
@@ -50,7 +51,11 @@ export function ControlsTable({
   }
 
   return (
-    <div className="border border-slate-200 rounded-lg overflow-x-auto max-w-full touch-pan-x overscroll-x-contain shadow-sm">
+    <>
+    <div className="md:hidden mb-3">
+      <MobileDesktopBanner recordCount={controls.length} />
+    </div>
+    <div className="border border-slate-200 rounded-lg overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint shadow-sm">
       <Table>
         <TableHeader className="bg-slate-50">
           <TableRow>
@@ -112,7 +117,7 @@ export function ControlsTable({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-7 text-xs text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 gap-1 px-2"
+                  className="min-h-[44px] text-xs text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 gap-1 px-2"
                   onClick={() => {
                     const targetPath = matrixType === 'tlc' ? '/rcm/tlc' : '/rcm/itgc';
                     window.open(`${targetPath}?search=${encodeURIComponent(ctrl.code)}`, '_blank');
@@ -128,5 +133,6 @@ export function ControlsTable({
         </TableBody>
       </Table>
     </div>
+    </>
   );
 }

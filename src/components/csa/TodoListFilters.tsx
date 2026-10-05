@@ -42,7 +42,7 @@ export function TodoListFilters({
         </div>
       </div>
 
-      <div className="flex flex-row flex-wrap items-center justify-between gap-2">
+      <div className="flex flex-col min-[420px]:flex-row min-[420px]:items-center flex-wrap justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0 flex-wrap">
           <div className="flex items-center border rounded-md p-0.5 bg-slate-50 shrink-0">
             <Button variant="ghost" size="icon" className="h-11 w-11 sm:h-9 sm:w-9 rounded-md min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0" onClick={onPrevMonth} aria-label={t('common:calendar.prevMonth', { defaultValue: 'Bulan sebelumnya' })}>

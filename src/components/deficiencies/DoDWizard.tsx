@@ -184,7 +184,7 @@ export function DoDWizard({ isOpen, setIsOpen, onComplete, isAggregate = false, 
                     value={exposureValue} 
                     onChange={(e) => setExposureValue(e.target.value)} 
                     placeholder={t('wizard.box3.exposurePlaceholder')}
-                    className="h-11 sm:h-9 min-h-[44px] sm:min-h-0 text-base sm:text-xs"
+                    className="h-11 sm:h-9 min-h-[44px] sm:min-h-0 text-base sm:text-sm"
                   />
                   {performanceMateriality && (
                     <div className="text-xs flex flex-col justify-center">
@@ -289,7 +289,7 @@ export function DoDWizard({ isOpen, setIsOpen, onComplete, isAggregate = false, 
                     value={rationale}
                     onChange={(e) => setRationale(e.target.value)}
                     placeholder={t('wizard.result.rationalePlaceholder')}
-                    className="text-base sm:text-xs h-20"
+                    className="text-base sm:text-sm h-20"
                   />
                 </div>
               </div>

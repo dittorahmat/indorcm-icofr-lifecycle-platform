@@ -185,11 +185,11 @@ export function VerificationEditDialog({
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit, handleError)} className="space-y-6">
             <Tabs defaultValue="tod" className="w-full">
-              <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-                <TabsTrigger value="tod">{t('rcm:verification.groups.tod')}</TabsTrigger>
-                <TabsTrigger value="basic">{t('rcm:verification.groups.info')}</TabsTrigger>
-                <TabsTrigger value="ipo">{t('rcm:matrix.sections.compliance')}</TabsTrigger>
-                <TabsTrigger value="nature">{t('rcm:matrix.groups.metadata')}</TabsTrigger>
+              <TabsList className="flex w-full overflow-x-auto max-w-full touch-pan-x overscroll-x-contain sm:grid sm:grid-cols-2 lg:grid-cols-4 min-h-[44px] [&_[role=tab]]:min-h-[44px]">
+                <TabsTrigger value="tod" className="min-h-[44px]">{t('rcm:verification.groups.tod')}</TabsTrigger>
+                <TabsTrigger value="basic" className="min-h-[44px]">{t('rcm:verification.groups.info')}</TabsTrigger>
+                <TabsTrigger value="ipo" className="min-h-[44px]">{t('rcm:matrix.sections.compliance')}</TabsTrigger>
+                <TabsTrigger value="nature" className="min-h-[44px]">{t('rcm:matrix.groups.metadata')}</TabsTrigger>
               </TabsList>
 
               <TabsContent value="tod" className="space-y-4 pt-4">
@@ -268,7 +268,7 @@ export function VerificationEditDialog({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>{t('rcm:verification.columns.kk_ref')}</FormLabel>
-                        <FormControl><textarea className="flex min-h-[40px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" {...field} /></FormControl>
+                        <FormControl><textarea className="flex min-h-[44px] w-full rounded-md border border-input bg-background px-3 py-2 text-base md:text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -304,7 +304,7 @@ export function VerificationEditDialog({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t('rcm:verification.columns.control_name')}</FormLabel>
-                      <FormControl><textarea className="flex min-h-[40px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm" {...field} /></FormControl>
+                      <FormControl><textarea className="flex min-h-[44px] w-full rounded-md border border-input bg-background px-3 py-2 text-base md:text-sm" {...field} /></FormControl>
                     </FormItem>
                   )}
                 />
@@ -324,7 +324,7 @@ export function VerificationEditDialog({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t('rcm:matrix.supporting_docs')}</FormLabel>
-                      <FormControl><textarea className="flex min-h-[40px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm" {...field} /></FormControl>
+                      <FormControl><textarea className="flex min-h-[44px] w-full rounded-md border border-input bg-background px-3 py-2 text-base md:text-sm" {...field} /></FormControl>
                     </FormItem>
                   )}
                 />
@@ -434,7 +434,7 @@ export function VerificationEditDialog({
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>{t('rcm:matrix.effective_period')}</FormLabel>
-                          <FormControl><textarea className="flex min-h-[40px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm" {...field} /></FormControl>
+                          <FormControl><textarea className="flex min-h-[44px] w-full rounded-md border border-input bg-background px-3 py-2 text-base md:text-sm" {...field} /></FormControl>
                         </FormItem>
                       )}
                     />

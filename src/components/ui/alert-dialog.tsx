@@ -34,7 +34,7 @@ const AlertDialogContent = React.forwardRef<
     <AlertDialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed left-[50%] top-[50%] z-[1000] grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-[0.96] data-[state=open]:zoom-in-[0.96] data-[state=open]:duration-[250ms] data-[state=closed]:duration-[150ms] ease-[cubic-bezier(0.22,1,0.36,1)] sm:rounded-lg",
+        "fixed left-[50%] top-[50%] z-[1000] grid w-[calc(100%-1.5rem)] sm:w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-4 sm:p-6 shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-[0.96] data-[state=open]:zoom-in-[0.96] data-[state=open]:duration-[250ms] data-[state=closed]:duration-[150ms] ease-[cubic-bezier(0.22,1,0.36,1)] rounded-lg overflow-y-auto max-h-[92dvh] sm:max-h-[90vh] scrollbar-hover",
         className
       )}
       {...props}

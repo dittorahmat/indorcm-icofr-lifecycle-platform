@@ -31,6 +31,7 @@
     "labelCategory": "Kategori",
     "labelDepts": "Pilih Departemen Terkait",
     "submit": "Unggah Dokumen",
+    "extracting": "Mengekstrak PDF...",
     "success": "Dokumen berhasil diunggah",
     "error": "Gagal unggah"
   },

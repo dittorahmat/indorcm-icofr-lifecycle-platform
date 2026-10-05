@@ -130,7 +130,10 @@
     "desktopBanner": {
       "title": "Read-only view on mobile",
       "description": "The full table needs a wide screen. Open on desktop to edit this data."
-    }
+    },
+    "summary": "Summary",
+    "showFullTable": "View Full Table",
+    "hideFullTable": "Hide Full Table"
   },
   "emailSettings": {
     "title": "Email Notification Settings",

@@ -343,7 +343,7 @@ export function MaterialityJustificationModal({
               disabled={isLocked}
               rows={3}
               placeholder={t('scoping:justification.supplementaryNotesPlaceholder')}
-              className="text-xs rounded-md border-border bg-background focus:ring-primary"
+              className="min-h-[44px] text-base sm:text-sm rounded-md border-border bg-background focus:ring-primary"
             />
           </div>
         </div>

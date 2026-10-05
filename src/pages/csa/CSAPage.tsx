@@ -21,6 +21,7 @@ import { useTranslation } from 'react-i18next';
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 import { WorkflowPanel } from '@/components/workflow/WorkflowPanel';
 import { CSARecordCard } from '@/components/csa/CSARecordCard';
+import { MobileDesktopBanner } from '@/components/layout/MobileDesktopBanner';
 
 function CSARecordRow({ record: initialRecord, process }: { record: CSARecord, process?: BPMProcess }) {
   const [isExpanded, setIsExpanded] = React.useState(false);
@@ -405,6 +406,7 @@ export function CSAPage() {
 
         {/* MOBILE VIEW: Executive Summary & Card Stack */}
         <div className="block md:hidden space-y-4">
+          <MobileDesktopBanner recordCount={filteredRecords.length} />
           {/* Executive Summary Card */}
           {records?.items && records.items.length > 0 && (
             <div className="p-4 bg-card border rounded-lg shadow-sm space-y-3" data-testid="csa-mobile-executive-summary">

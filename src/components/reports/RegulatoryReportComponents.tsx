@@ -84,12 +84,12 @@ export function FindingsReport({ deficiencies = [], controls = [] }: { deficienc
               {t('findings.subtitle', { defaultValue: 'FORMAT DAFTAR TEMUAN' })} — {MOCK_COMPANY}
             </p>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <Button size="sm" variant="outline" onClick={handleExportExcel} disabled={isExportingExcel || deficiencies.length === 0} className="min-h-[44px] text-xs font-bold">
+          <div className="flex flex-col min-[420px]:flex-row min-[420px]:items-center gap-2 shrink-0 w-full sm:w-auto">
+            <Button size="sm" variant="outline" onClick={handleExportExcel} disabled={isExportingExcel || deficiencies.length === 0} className="min-h-[44px] text-xs font-bold w-full min-[420px]:w-auto justify-center">
               {isExportingExcel ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Download className="h-3.5 w-3.5 mr-1.5" />}
               {t('findings.exportExcel', { defaultValue: 'Ekspor Excel' })}
             </Button>
-            <Button size="sm" variant="outline" onClick={() => window.print()} className="min-h-[44px] text-xs font-bold">
+            <Button size="sm" variant="outline" onClick={() => window.print()} className="min-h-[44px] text-xs font-bold w-full min-[420px]:w-auto justify-center">
               <Printer className="h-3.5 w-3.5 mr-1.5" /> {t('findings.print', { defaultValue: 'Cetak' })}
             </Button>
           </div>
@@ -166,8 +166,9 @@ export function FindingsReport({ deficiencies = [], controls = [] }: { deficienc
 export { DoDLampiran10Report, DoDLampiran10Report as DoDReport } from './DoDLampiran10Report';
 
 export function ChangeLogReport() {
-  const { t } = useTranslation('reports');
+  const { t } = useTranslation(['reports', 'common']);
   const [isExportingExcel, setIsExportingExcel] = React.useState(false);
+  const [showFullTable, setShowFullTable] = React.useState(false);
   const { data: logs, isLoading } = useQuery({
     queryKey: ['regulatory-change-logs'],
     queryFn: async () => {
@@ -277,7 +278,31 @@ export function ChangeLogReport() {
         </div>
 
         {/* Responsive Table Wrapper */}
-        <div className="rounded-lg border overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint bg-white print:border-slate-300">
+        <div className="md:hidden space-y-3" data-testid="changelog-mobile-cards">
+          {(logs ?? []).slice(0, 10).map((log, index) => {
+            const meta = getRowMetadata(log);
+            return (
+              <div key={log.id} className="rounded-lg border border-slate-200 bg-white p-4 space-y-1.5 shadow-sm">
+                <div className="flex items-start justify-between gap-2">
+                  <span className="font-mono text-xs font-bold text-slate-900">#{index + 1} · {meta.refAfter}</span>
+                  <span className="text-xs font-medium text-slate-500">{log.effectiveDate ? format(log.effectiveDate, 'dd/MM/yyyy') : '-'}</span>
+                </div>
+                <p className="text-xs font-bold text-slate-800 leading-snug line-clamp-2">{meta.process} · {meta.subProcess}</p>
+                <p className="text-xs text-slate-500 leading-snug line-clamp-2">{meta.descAfter}</p>
+              </div>
+            );
+          })}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setShowFullTable((v) => !v)}
+            aria-expanded={showFullTable}
+            className="w-full min-h-[44px] text-xs font-bold gap-2 bg-white"
+          >
+            {showFullTable ? t('common:mobile.hideFullTable', { defaultValue: 'Sembunyikan Tabel Penuh' }) : t('common:mobile.showFullTable', { defaultValue: 'Lihat Tabel Penuh' })}
+          </Button>
+        </div>
+        <div className={`rounded-lg border bg-white max-w-full overflow-x-auto touch-pan-x overscroll-x-contain table-scroll-hint ${showFullTable ? 'block' : 'hidden'} md:block print:block`}>
           <Table className="min-w-[1200px] print:min-w-0 print:w-full print:text-xs">
             <TableHeader className="bg-slate-50 border-b print:bg-transparent">
               <TableRow>

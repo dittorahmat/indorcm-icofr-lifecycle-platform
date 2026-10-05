@@ -536,7 +536,7 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
                                                                     </PopoverTrigger>
                                                                     <PopoverContent className="w-[calc(100vw-2rem)] max-w-[420px] p-0 rounded-lg border-slate-200 shadow-xl overflow-hidden" align="start">
                                                                         <Command>
-                                                                            <CommandInput placeholder="Cari FSLI / GL Benchmark..." className="h-10 text-xs" />
+                                                                            <CommandInput placeholder="Cari FSLI / GL Benchmark..." className="h-10 min-h-[44px] text-base md:text-sm" />
                                                                             <CommandList className="max-h-60 overflow-y-auto">
                                                                                 <CommandEmpty className="py-4 text-center text-xs text-slate-400">
                                                                                     FSLI tidak ditemukan.

@@ -27,6 +27,7 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { useConfirm } from '@/hooks/use-confirm';
 import type { ApplicationDocument, ITGCArea } from '@shared/types';
+import { MobileDesktopBanner } from '@/components/layout/MobileDesktopBanner';
 
 interface ITGCEvidenceLibraryProps {
   applicationId: string;
@@ -209,7 +210,11 @@ export function ITGCEvidenceLibrary({
           <p className="text-xs text-slate-400">{t('rcm:application_detail.drop_file_hint')}</p>
         </div>
       ) : (
-        <div className="border border-slate-200 rounded-lg overflow-x-auto max-w-full touch-pan-x overscroll-x-contain shadow-sm">
+        <>
+        <div className="md:hidden mb-3">
+          <MobileDesktopBanner recordCount={documents.length} />
+        </div>
+        <div className="border border-slate-200 rounded-lg overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint shadow-sm">
           <Table>
             <TableHeader className="bg-slate-50">
               <TableRow>
@@ -268,7 +273,7 @@ export function ITGCEvidenceLibrary({
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-7 w-7 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                        className="min-h-[44px] min-w-[44px] p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
                         title={t('rcm:application_detail.delete')}
                         onClick={async () => {
                           const ok = await confirm({
@@ -290,6 +295,7 @@ export function ITGCEvidenceLibrary({
             </TableBody>
           </Table>
         </div>
+        </>
       )}
     </div>
   );

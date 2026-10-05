@@ -108,7 +108,7 @@ export function BPMDiagramList({
   };
 
   return (
-    <div className="border border-slate-200 rounded-[2.5rem] bg-white shadow-xl shadow-slate-100 overflow-hidden flex flex-col">
+    <div className="border border-slate-200 rounded-lg bg-white shadow-sm overflow-hidden flex flex-col">
       {/* Top Toolbar: Batch Actions & Expand/Collapse All */}
       <div className="bg-slate-50/70 px-6 py-3 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-3">

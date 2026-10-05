@@ -75,13 +75,13 @@ export function LoginPage() {
         className="w-full max-w-md px-4"
       >
         <Card className="border-slate-200 shadow-lg bg-white">
-          <CardHeader className="space-y-1 text-center pb-8 pt-10">
-            <div className="flex justify-center mb-6">
-              <div className="h-16 w-16 bg-slate-900 rounded-xl flex items-center justify-center shadow-md shadow-slate-200">
-                <Shield className="h-8 w-8 text-white" />
+          <CardHeader className="space-y-1 text-center px-4 sm:px-6 pb-6 pt-8 sm:pb-8 sm:pt-10">
+            <div className="flex justify-center mb-4 sm:mb-6">
+              <div className="h-14 w-14 sm:h-16 sm:w-16 bg-slate-900 rounded-xl flex items-center justify-center shadow-md shadow-slate-200">
+                <Shield className="h-7 w-7 sm:h-8 sm:w-8 text-white" />
               </div>
             </div>
-            <CardTitle className="text-3xl font-display font-extrabold tracking-tight text-slate-900">{t('appName')}</CardTitle>
+            <CardTitle className="text-2xl sm:text-3xl font-display font-extrabold tracking-tight text-slate-900">{t('appName')}</CardTitle>
             <CardDescription className="text-xs font-bold text-slate-500 uppercase tracking-wider mt-2">
               {t('subtitle')}
             </CardDescription>
@@ -123,7 +123,7 @@ export function LoginPage() {
 
               <Button
                 type="submit"
-                className="w-full"
+                className="w-full h-11 min-h-[44px] text-base sm:text-sm font-semibold"
                 disabled={isLoading}
               >
                 {isLoading ? (

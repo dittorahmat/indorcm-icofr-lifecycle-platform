@@ -61,7 +61,7 @@ export function ITGCForm({ data, onChange, disabled = false }: ITGCFormProps) {
             value={data.itgcDomain || ''} 
             onValueChange={(v) => onChange('itgcDomain', v)}
           >
-            <SelectTrigger className="h-9 text-xs bg-white">
+            <SelectTrigger className="h-11 min-h-[44px] text-base md:text-xs bg-white">
               <SelectValue placeholder="Pilih Area ITGC..." />
             </SelectTrigger>
             <SelectContent>
@@ -87,7 +87,7 @@ export function ITGCForm({ data, onChange, disabled = false }: ITGCFormProps) {
               value={data.automatedControlType || ''} 
               onValueChange={(v) => onChange('automatedControlType', v)}
             >
-              <SelectTrigger className="h-9 text-xs bg-white">
+              <SelectTrigger className="h-11 min-h-[44px] text-base md:text-xs bg-white">
                 <SelectValue placeholder="Pilih Tipe..." />
               </SelectTrigger>
               <SelectContent>
@@ -104,7 +104,7 @@ export function ITGCForm({ data, onChange, disabled = false }: ITGCFormProps) {
               value={data.supportingApp || ''}
               onChange={(e) => onChange('supportingApp', e.target.value)}
               placeholder="Misal: SAP, Oracle, dll"
-              className="h-9 text-xs bg-white"
+              className="h-11 min-h-[44px] text-base md:text-xs bg-white"
             />
           </div>
         </div>
@@ -148,7 +148,7 @@ export function ITGCForm({ data, onChange, disabled = false }: ITGCFormProps) {
                   value={currentAssertions[a.key] || 'N'} 
                   onValueChange={(v) => handleAssertionChange(a.key, v)}
                 >
-                  <SelectTrigger className="h-7 text-xs w-16 bg-slate-50">
+                  <SelectTrigger className="h-11 min-h-[44px] text-base md:text-xs w-16 bg-slate-50">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>

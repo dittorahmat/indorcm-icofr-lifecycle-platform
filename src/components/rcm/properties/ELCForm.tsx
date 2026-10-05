@@ -86,7 +86,7 @@ export function ELCForm({ data, onChange, disabled = false }: ELCFormProps) {
                     value={currentMapping.includes(p.id) ? 'Y' : 'N'} 
                     onValueChange={(v) => handleToggle(p.id, v)}
                   >
-                    <SelectTrigger className="h-7 text-xs w-16 bg-white">
+                    <SelectTrigger className="h-11 min-h-[44px] text-base md:text-xs w-16 bg-white">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>

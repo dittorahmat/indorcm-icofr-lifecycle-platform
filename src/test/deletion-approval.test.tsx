@@ -89,19 +89,25 @@ describe('Unified Maker-Checker Deletion & Confirmation Flow', () => {
     );
 
     // Verify Approved simulation has "Request Deletion" title
+    // Dual-render: mobile cards + desktop table both mount in jsdom (3 sims x 2 views)
     const deleteButtons = screen.getAllByRole('button').filter(btn => btn.querySelector('svg.lucide-trash-2'));
-    expect(deleteButtons).toHaveLength(3);
+    expect(deleteButtons).toHaveLength(6);
 
-    // Button 1 (Approved) -> Request Deletion
+    // Button 1 (Approved, mobile) -> Request Deletion
     expect(deleteButtons[0]).toHaveAttribute('title', 'Request Deletion');
     expect(deleteButtons[0]).not.toBeDisabled();
 
-    // Button 2 (Draft) -> Delete
+    // Button 2 (Draft, mobile) -> Delete
     expect(deleteButtons[1]).toHaveAttribute('title', 'Delete');
     expect(deleteButtons[1]).not.toBeDisabled();
 
-    // Button 3 (Pending Deletion Approval) -> Disabled to prevent duplicate requests
+    // Button 3 (Pending Deletion Approval, mobile) -> Disabled to prevent duplicate requests
     expect(deleteButtons[2]).toBeDisabled();
+
+    // Desktop duplicates mirror the same states
+    expect(deleteButtons[3]).toHaveAttribute('title', 'Request Deletion');
+    expect(deleteButtons[4]).toHaveAttribute('title', 'Delete');
+    expect(deleteButtons[5]).toBeDisabled();
   });
 
   it('triggers onDelete callback when action button is clicked', () => {

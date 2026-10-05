@@ -73,7 +73,7 @@ export function ControlAccordionItem({
         <div className="flex items-center gap-4 flex-1">
           <div className="flex items-center gap-2">
             <Select disabled={isLocked} value={ctrl.data.classification || 'TLC'} onValueChange={(v: ControlLevel) => onUpdateSpecificControl(ctrl.index, 'classification', v)}>
-              <SelectTrigger className="h-7 w-[80px] text-xs font-bold uppercase shadow-sm">
+              <SelectTrigger className="h-11 min-h-[44px] w-[80px] text-base md:text-xs font-bold uppercase shadow-sm">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

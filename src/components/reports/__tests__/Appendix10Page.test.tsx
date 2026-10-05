@@ -127,8 +127,8 @@ describe('Appendix10Page (Lampiran 10 Dedicated Route)', () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByText('DEF-001')).toBeInTheDocument();
-    expect(screen.getByText('Segregation of duties deficiency in GL posting')).toBeInTheDocument();
+    expect(screen.getAllByText('DEF-001')).toHaveLength(2);
+    expect(screen.getAllByText('Segregation of duties deficiency in GL posting')).toHaveLength(2);
     expect(screen.getByText('Beban Operasional / Kas & Bank')).toBeInTheDocument();
     expect(screen.getByText('Ekspor Excel Lampiran 10')).toBeInTheDocument();
   });

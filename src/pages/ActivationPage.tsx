@@ -133,7 +133,7 @@ export function ActivationPage() {
                 <Input
                   readOnly
                   value={status?.machineId || 'Fetching...'}
-                  className="bg-muted font-mono text-xs min-w-0 h-11 min-[420px]:h-10 min-h-[44px] min-[420px]:min-h-0"
+                  className="bg-muted font-mono text-base min-[420px]:text-xs min-w-0 h-11 min-[420px]:h-10 min-h-[44px] min-[420px]:min-h-0"
                 />
                 <Button variant="outline" size="icon" onClick={handleCopyMachineId} aria-label="Copy machine ID" className="h-11 w-11 min-h-[44px] min-w-[44px] shrink-0 self-start min-[420px]:self-auto">
                   {copied ? <CheckCircle2 className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
@@ -147,7 +147,7 @@ export function ActivationPage() {
                 <textarea
                   id="licenseKey"
                   placeholder="Enter your encrypted license key here..."
-                  className="w-full min-h-[120px] p-3 rounded-md border border-input bg-transparent text-xs font-mono focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full min-h-[120px] p-3 rounded-md border border-input bg-transparent text-base sm:text-xs font-mono focus:outline-none focus:ring-2 focus:ring-primary"
                   value={licenseKey}
                   onChange={(e) => setLicenseKey(e.target.value)}
                   disabled={isLoading}
@@ -156,7 +156,7 @@ export function ActivationPage() {
 
               <Button
                 type="submit"
-                className="w-full"
+                className="w-full h-11 min-h-[44px] font-semibold"
                 disabled={isLoading || !licenseKey}
               >
                 {isLoading ? (

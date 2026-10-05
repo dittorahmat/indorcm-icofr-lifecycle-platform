@@ -133,7 +133,7 @@ export function SampleEvidenceCard({
         render={({ field: f }) => (
           <FormItem>
             <FormControl>
-              <Input {...f} disabled={isReadOnly} className="min-h-[44px] text-xs bg-white" placeholder={t('common:placeholders.notes')} />
+              <Input {...f} disabled={isReadOnly} className="min-h-[44px] text-base md:text-sm bg-white" placeholder={t('common:placeholders.notes')} />
             </FormControl>
             <FormMessage />
           </FormItem>

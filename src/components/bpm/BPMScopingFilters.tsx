@@ -79,7 +79,7 @@ export function BPMScopingFilters({
               </PopoverTrigger>
               <PopoverContent className="w-[calc(100vw-2rem)] max-w-[320px] min-w-0 p-0 rounded-lg border-slate-200 shadow-xl" align="start">
                 <Command>
-                  <CommandInput placeholder={t('bpm:searchFsli')} className="h-9 text-xs" />
+                  <CommandInput placeholder={t('bpm:searchFsli')} className="h-9 min-h-[44px] text-base md:text-sm" />
                   <CommandList className="max-h-60 overflow-y-auto">
                     <CommandEmpty className="py-3 text-center text-xs text-slate-500">
                       {t('bpm:noSubProcesses')}
@@ -155,7 +155,7 @@ export function BPMScopingFilters({
               </PopoverTrigger>
               <PopoverContent className="w-[calc(100vw-2rem)] max-w-[360px] min-w-0 p-0 rounded-lg border-slate-200 shadow-xl" align="start">
                 <Command>
-                  <CommandInput placeholder={t('bpm:searchGl')} className="h-9 text-xs" />
+                  <CommandInput placeholder={t('bpm:searchGl')} className="h-9 min-h-[44px] text-base md:text-sm" />
                   <CommandList className="max-h-60 overflow-y-auto">
                     <CommandEmpty className="py-3 text-center text-xs text-slate-500">
                       {t('bpm:noSubProcesses')}
