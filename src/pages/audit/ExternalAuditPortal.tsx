@@ -42,8 +42,8 @@ export function ExternalAuditPortal() {
   return (
     <AppLayout container>
       <div className="space-y-6 sm:space-y-8">
-        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-          <div className="min-w-0">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 flex-wrap min-w-0 max-w-full">
+          <div className="min-w-0 max-w-full">
             <div className="flex flex-wrap items-center gap-2 mb-2">
               <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">KAP Portal</Badge>
               <span className="text-xs text-muted-foreground">SK-5 Chapter VIII: External Attestation</span>

@@ -35,7 +35,7 @@ export function ITGCTabContent({
       exit={{ opacity: 0, x: -20 }}
       className="space-y-6"
     >
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-4 sm:p-5 rounded-lg border border-slate-200 shadow-sm">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 flex-wrap min-w-0 max-w-full bg-white p-4 sm:p-5 rounded-lg border border-slate-200 shadow-sm">
         <div className="relative flex-1 group">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
           <Input 

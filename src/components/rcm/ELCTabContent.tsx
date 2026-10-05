@@ -26,9 +26,9 @@ export function ELCTabContent({ elcControls, onEditControl, onCreateControl }: E
       exit={{ opacity: 0, x: -20 }}
       className="space-y-8"
     >
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-slate-900 p-5 sm:p-6 rounded-lg text-white shadow-sm border border-slate-800 relative">
-        <div className="space-y-1 relative z-10">
-          <h3 className="text-lg sm:text-xl font-bold tracking-tight text-white">{t('matrix.title_elc')}</h3>
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 flex-wrap min-w-0 max-w-full bg-slate-900 p-5 sm:p-6 rounded-lg text-white shadow-sm border border-slate-800 relative">
+        <div className="space-y-1 relative z-10 min-w-0">
+          <h3 className="text-lg sm:text-xl font-bold tracking-tight text-white truncate min-w-0 max-w-full">{t('matrix.title_elc')}</h3>
           <p className="text-slate-300 text-xs sm:text-sm font-normal leading-relaxed max-w-xl">
             {t('matrix.subtitle_elc')}
           </p>

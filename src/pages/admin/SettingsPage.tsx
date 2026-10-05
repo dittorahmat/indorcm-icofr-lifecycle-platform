@@ -99,8 +99,8 @@ export function SettingsPage() {
   return (
     <AppLayout container>
       <div className="max-w-4xl mx-auto space-y-8">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3">
-          <div className="min-w-0">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3 flex-wrap min-w-0 max-w-full">
+          <div className="min-w-0 max-w-full">
             <h1 className="text-3xl font-bold tracking-tight truncate">System Settings</h1>
             <p className="text-muted-foreground">Manage organization metadata and regulatory configurations.</p>
           </div>

@@ -41,7 +41,7 @@ export function ErrorFallback({
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-[100dvh] flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
         {/* Error card */}
         <Card className="relative border border-border shadow-sm bg-card">

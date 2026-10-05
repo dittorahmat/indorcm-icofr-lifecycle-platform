@@ -132,7 +132,7 @@ export function NotificationsPage() {
   return (
     <AppLayout container>
       <div className="max-w-4xl mx-auto space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 flex-wrap min-w-0 max-w-full">
           <div className="min-w-0">
             <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3 min-w-0">
               <div className="bg-indigo-100 p-2.5 rounded-lg shrink-0">

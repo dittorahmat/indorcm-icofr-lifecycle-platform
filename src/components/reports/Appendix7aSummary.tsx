@@ -40,7 +40,7 @@ export const Appendix7aSummary = React.forwardRef<HTMLDivElement, Appendix7aSumm
     const summaryRows = Object.entries(controlStats);
 
     return (
-      <div ref={ref} className="p-4 sm:p-8 lg:p-12 bg-white text-slate-900 font-sans print:p-0 w-full min-h-screen max-w-full overflow-x-hidden">
+      <div ref={ref} className="p-4 sm:p-8 lg:p-12 bg-white text-slate-900 font-sans print:p-0 w-full min-h-[100dvh] max-w-full overflow-x-hidden">
         <ReportHeader 
           title="Kertas Kerja Evaluasi Pengendalian (CSA) - Summary"
           subProcess={bpmProcessName}

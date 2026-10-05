@@ -328,8 +328,8 @@ export function CSAPage() {
   return (
     <AppLayout container>
       <div className="space-y-6 pb-6 md:pb-8 pt-4">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
-          <div>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 flex-wrap min-w-0 max-w-full">
+          <div className="min-w-0 max-w-full">
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-slate-900 flex items-center gap-3 sm:gap-4">
               <div className="p-2.5 sm:p-3 bg-indigo-600 rounded-lg shadow-lg sm:shadow-xl shadow-indigo-200 ring-2 sm:ring-4 ring-indigo-50 shrink-0">
                  <History className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
@@ -408,7 +408,7 @@ export function CSAPage() {
           {/* Executive Summary Card */}
           {records?.items && records.items.length > 0 && (
             <div className="p-4 bg-card border rounded-lg shadow-sm space-y-3" data-testid="csa-mobile-executive-summary">
-              <div className="flex items-center justify-between border-b pb-2 flex-wrap gap-2">
+              <div className="flex flex-col min-[420px]:flex-row min-[420px]:items-center justify-between border-b pb-2 flex-wrap gap-2 min-w-0">
                 <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                   <ShieldCheck className="h-4 w-4 text-primary" />
                   {t('page.summary.title', { defaultValue: 'Ringkasan Eksekutif Pengujian' })}

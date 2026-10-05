@@ -98,13 +98,13 @@ export function ApplicationDetailDialog({
         <DialogContent className="max-w-5xl w-[94vw] max-h-[92vh] flex flex-col p-0 overflow-hidden shadow-2xl border-slate-200">
           {/* Header */}
           <div className="bg-slate-900 text-white p-4 sm:p-6 border-b border-slate-800 shrink-0">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="space-y-1.5">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 flex-wrap min-w-0 max-w-full">
+              <div className="space-y-1.5 min-w-0 max-w-full">
                 <div className="flex items-center gap-2.5 flex-wrap">
                   <div className="p-2 bg-indigo-600/30 rounded-lg border border-indigo-400/30 text-indigo-400">
                     <Server className="h-5 w-5" />
                   </div>
-                  <DialogTitle className="text-xl font-bold tracking-tight text-white">
+                  <DialogTitle className="text-xl font-bold tracking-tight text-white truncate min-w-0 max-w-full">
                     {application?.name}
                   </DialogTitle>
                   {application?.isSignificant && (

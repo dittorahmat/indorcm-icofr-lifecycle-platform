@@ -153,7 +153,7 @@ export function ITGCEvidenceLibrary({
   return (
     <div className="space-y-5">
       {/* Domain Description Banner */}
-      <div className="p-4 bg-slate-50 rounded-lg border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="p-4 bg-slate-50 rounded-lg border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4 flex-wrap min-w-0 max-w-full">
         <div className="space-y-1">
           <h4 className="text-sm font-semibold text-slate-800 flex items-center gap-2">
             <ShieldCheck className="h-4 w-4 text-indigo-600" />

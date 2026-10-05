@@ -35,7 +35,7 @@ export function RCMPageHeader({
 }: RCMPageHeaderProps) {
   return (
     <div className="p-4 pb-2 space-y-3 shrink-0 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 z-10 print:hidden">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 flex-wrap min-w-0 max-w-full">
         <div className="flex items-center gap-2 min-w-0">
           <SidebarTrigger className="h-11 w-11 min-h-[44px] min-w-[44px] text-slate-700 dark:text-slate-300 shrink-0 rounded-md" />
           <div className="min-w-0">

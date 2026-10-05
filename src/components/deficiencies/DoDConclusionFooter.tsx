@@ -73,7 +73,7 @@ export function DoDConclusionFooter({
 
   return (
     <div className="bg-card border border-border rounded-lg p-4 space-y-4">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-border pb-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 flex-wrap min-w-0 border-b border-border pb-4">
         <div>
           <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-1">
             {t('worksheet.conclusion.computedSeverity')}

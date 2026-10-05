@@ -229,7 +229,7 @@ export function BPMPage() {
             </motion.div>
 
             <motion.div variants={itemVariants} className="space-y-6">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-lg border border-slate-200 shadow-sm max-w-full">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 flex-wrap min-w-0 bg-white p-4 rounded-lg border border-slate-200 shadow-sm max-w-full">
                 <div className="flex-1 w-full md:max-w-md relative group">
                   <Label htmlFor="bpm-search" className="sr-only">Search BPM Processes</Label>
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
