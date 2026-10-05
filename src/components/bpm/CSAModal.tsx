@@ -54,7 +54,7 @@ export function CSAModal({
   });
 return (
   <Dialog open={isOpen} onOpenChange={onOpenChange}>
-    <DialogContent className="max-w-[95vw] w-full h-[90vh] flex flex-col p-0 overflow-hidden">
+    <DialogContent className="max-w-[95vw] w-full h-[90dvh] sm:h-[90vh] flex flex-col p-0 overflow-hidden">
       <DialogHeader className="p-4 sm:p-6 border-b bg-slate-50/50 shrink-0">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between flex-wrap gap-2">
           <div className="space-y-1 min-w-0">

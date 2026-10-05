@@ -109,7 +109,59 @@ export function SOCMonitoringPage() {
                 <div className="px-4 pt-4 sm:px-0 sm:pt-0">
                   <MobileDesktopBanner recordCount={appsData?.items?.length} />
                 </div>
-                <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint">
+                <div className="block md:hidden space-y-3 px-4 sm:px-0">
+                  {isLoadingApps ? (
+                    <p className="text-center py-8 text-xs text-muted-foreground">Loading...</p>
+                  ) : !appsData?.items.length ? (
+                    <p className="text-center py-8 text-xs text-muted-foreground">No applications found. Click "Add Application" to start.</p>
+                  ) : (
+                    appsData.items.map((app) => (
+                      <div key={app.id} className="rounded-lg border border-border bg-card p-4 shadow-sm">
+                        <div className="flex items-start justify-between gap-2 flex-wrap">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedAppDetail(app)}
+                            className="min-w-0 text-left text-xs font-bold text-foreground hover:text-indigo-600 hover:underline min-h-[44px]"
+                          >
+                            {app.name}
+                          </button>
+                          <Badge
+                            variant="outline"
+                            className={app.isSignificant
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200 font-bold text-xs shrink-0"
+                              : "bg-slate-50 text-slate-500 border-slate-200 text-xs shrink-0"
+                            }
+                          >
+                            {app.isSignificant ? "Yes" : "No"}
+                          </Badge>
+                        </div>
+                        <div className="mt-2 flex items-center gap-2 flex-wrap">
+                          <Badge variant={app.criticality === 'High' ? 'destructive' : 'default'} className="text-xs">
+                            {app.criticality}
+                          </Badge>
+                          <Badge className={
+                            app.statusITGC === 'Effective' ? "bg-green-100 text-green-700 shrink-0" :
+                            app.statusITGC === 'Ineffective' ? "bg-red-100 text-red-700 shrink-0" : "bg-muted text-slate-500 shrink-0"
+                          }>
+                            {app.statusITGC || 'Not Tested'}
+                          </Badge>
+                          <span className="text-xs text-muted-foreground">
+                            {t('rcm:application_detail.linkedControls', { defaultValue: 'Kontrol' })}: <span className="font-bold">{app.linkedControlCount || 0}</span>
+                          </span>
+                        </div>
+                        <div className="mt-3 flex gap-2">
+                          <Button variant="outline" size="sm" className="flex-1 min-h-[44px] text-xs font-semibold" onClick={() => setSelectedAppDetail(app)}>
+                            {t('rcm:application_detail.title', { defaultValue: 'Details' })}
+                          </Button>
+                          <Button variant="ghost" size="sm" aria-label={t('common:actions.edit', { defaultValue: 'Edit application' })} className="min-h-[44px] min-w-[44px] px-3" onClick={() => setEditingApp(app)}>
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+                <div className="hidden md:block overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint">
                 <Table className="min-w-[880px]">
                   <TableHeader>
                     <TableRow>
@@ -340,7 +392,37 @@ export function SOCMonitoringPage() {
                 <div className="px-4 pt-4 sm:px-0 sm:pt-0">
                   <MobileDesktopBanner recordCount={socData?.length} />
                 </div>
-                <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint">
+                <div className="block md:hidden space-y-3 px-4 sm:px-0">
+                  {isLoadingSOC ? (
+                    <p className="text-center py-8 text-xs text-muted-foreground">Loading SOC data...</p>
+                  ) : !socData?.length ? (
+                    <p className="text-center py-8 text-xs text-muted-foreground">No SOC reports found. Register a vendor and report to begin.</p>
+                  ) : (
+                    socData.map((soc) => (
+                      <div key={soc.id} className="rounded-lg border border-border bg-card p-4 shadow-sm">
+                        <div className="flex items-start justify-between gap-2 flex-wrap">
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold text-foreground leading-snug">{soc.vendorName}</p>
+                            <p className="mt-0.5 text-xs text-muted-foreground">{soc.reportType}</p>
+                          </div>
+                          <Badge className={
+                            soc.status === 'Valid' ? "bg-green-100 text-green-700 hover:bg-green-100 shrink-0" :
+                            "bg-red-100 text-red-700 hover:bg-red-100 shrink-0"
+                          }>
+                            {soc.status}
+                          </Badge>
+                        </div>
+                        <p className="mt-2 text-xs text-muted-foreground">
+                          {new Date(soc.periodStart).toLocaleDateString()} - {new Date(soc.periodEnd).toLocaleDateString()}
+                        </p>
+                        <Button variant="ghost" size="sm" onClick={() => setSelectedReport(soc)} className="mt-2 w-full min-h-[44px] gap-2 text-xs font-semibold text-indigo-600 hover:bg-indigo-50">
+                          <FileSearch className="h-4 w-4" /> Review
+                        </Button>
+                      </div>
+                    ))
+                  )}
+                </div>
+                <div className="hidden md:block overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint">
                 <Table className="min-w-[720px]">
                   <TableHeader>
                     <TableRow>

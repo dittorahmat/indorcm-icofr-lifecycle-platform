@@ -52,9 +52,9 @@ export function COSOHeatmap({ principleStatuses }: COSOHeatmapProps) {
   return (
     <Card className="col-span-full border-2 shadow-sm">
       <CardHeader className="bg-slate-50/50 border-b">
-        <CardTitle className="flex items-center gap-2">
-          <ShieldCheck className="h-5 w-5 text-indigo-600" />
-          COSO 17 Principles Heatmap (Lampiran 1)
+        <CardTitle className="flex items-center gap-2 flex-wrap min-w-0">
+          <ShieldCheck className="h-5 w-5 text-indigo-600 shrink-0" />
+          <span className="min-w-0 break-words">COSO 17 Principles Heatmap (Lampiran 1)</span>
         </CardTitle>
         <CardDescription>
           Status pemenuhan 17 Prinsip COSO berdasarkan hasil pengujian pengendalian ELC dan TLC.

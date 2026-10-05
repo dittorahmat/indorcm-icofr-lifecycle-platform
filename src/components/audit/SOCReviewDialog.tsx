@@ -50,7 +50,7 @@ export function SOCReviewDialog({ report, isOpen, onClose, onSave }: SOCReviewDi
 
   return (
     <Dialog open={isOpen} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="sm:max-w-[650px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[650px] max-h-[92dvh] sm:max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileSearch className="h-5 w-5 text-primary" />

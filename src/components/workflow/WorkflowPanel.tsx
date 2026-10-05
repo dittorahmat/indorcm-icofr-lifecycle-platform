@@ -379,7 +379,7 @@ export function WorkflowPanel({
 
           <Collapsible open={isHistoryOpen} onOpenChange={setIsHistoryOpen} className="space-y-3">
             <CollapsibleTrigger asChild>
-              <Button variant="ghost" className="w-full justify-between h-9 px-3 rounded-lg text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-slate-700 hover:bg-slate-100">
+              <Button variant="ghost" className="w-full justify-between h-11 sm:h-9 min-h-[44px] px-3 rounded-lg text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-slate-700 hover:bg-slate-100">
                 <span className="flex items-center gap-2">
                   {t('workflow:history')} ({history?.length ?? 0})
                 </span>

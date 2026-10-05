@@ -246,7 +246,7 @@ export function TODVerificationDialog({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 overflow-hidden flex flex-col md:flex-row">
         {/* Left Column: Editable Design Context (RCM) */}
-        <ScrollArea className="w-full md:w-1/2 border-b md:border-b-0 md:border-r bg-slate-50/50 max-h-[38vh] md:max-h-none">
+        <ScrollArea className="w-full md:w-1/2 border-b md:border-b-0 md:border-r bg-slate-50/50 max-h-[38dvh] md:max-h-none">
           <TODDesignContextFields form={form} />
         </ScrollArea>
 
@@ -266,7 +266,7 @@ export function TODVerificationDialog({
     <>
       {isMobile ? (
         <Sheet open={open} onOpenChange={handleOpenChange}>
-          <SheetContent side="bottom" className="h-[92vh] max-h-[92vh] p-0 flex flex-col border-t rounded-t-lg overflow-hidden bg-background">
+          <SheetContent side="bottom" className="h-[92dvh] max-h-[92dvh] p-0 flex flex-col border-t rounded-t-lg overflow-hidden bg-background">
             <SheetHeader className="p-3.5 sm:p-4 bg-mancity-pattern text-primary-foreground shrink-0 text-left">
               {headerContent}
             </SheetHeader>

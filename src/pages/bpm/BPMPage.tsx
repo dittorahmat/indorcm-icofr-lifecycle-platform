@@ -256,7 +256,7 @@ export function BPMPage() {
                 </div>
               </div>
 
-              <ResizablePanelGroup direction={isMobile ? "vertical" : "horizontal"} className="min-h-[480px] md:min-h-[600px] border border-slate-200 rounded-lg bg-white overflow-hidden shadow-xl shadow-slate-100 max-w-full">
+              <ResizablePanelGroup direction={isMobile ? "vertical" : "horizontal"} className="min-h-[320px] md:min-h-[600px] border border-slate-200 rounded-lg bg-white overflow-hidden shadow-xl shadow-slate-100 max-w-full">
                 <ResizablePanel defaultSize={selectedProcess ? 70 : 100} minSize={30}>
                   <BPMDiagramList 
                     bpmLoading={bpmLoading}
@@ -297,15 +297,15 @@ export function BPMPage() {
                 
                 {selectedProcess && (
                   <>
-                    <ResizableHandle withHandle />
+                    <ResizableHandle withHandle className="hidden md:flex" />
                     <ResizablePanel defaultSize={30} minSize={20} className="bg-slate-50/30">
                       <div className="h-full flex flex-col">
-                        <div className="p-4 border-b bg-white flex flex-col min-[380px]:flex-row min-[380px]:items-center justify-between gap-2">
-                           <div className="flex flex-col min-w-0">
+                        <div className="p-4 border-b bg-white flex flex-row items-center justify-between gap-2">
+                           <div className="flex flex-col min-w-0 flex-1">
                               <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Selected Process</span>
-                              <span className="text-sm font-bold text-slate-900 truncate max-w-full min-[380px]:max-w-[200px]">{selectedProcess.name}</span>
+                              <span className="text-sm font-bold text-slate-900 truncate max-w-[200px] sm:max-w-full">{selectedProcess.name}</span>
                            </div>
-                            <Button variant="ghost" size="icon" aria-label="Close selected process" className="h-11 w-11 min-h-[44px] min-w-[44px] sm:h-8 sm:w-8 sm:min-h-0 sm:min-w-0 rounded-md shrink-0" onClick={() => setSelectedProcess(null)}>
+                            <Button variant="ghost" size="icon" aria-label="Close selected process" className="h-10 w-10 min-h-[44px] min-w-[44px] sm:h-8 sm:w-8 sm:min-h-0 sm:min-w-0 rounded-md shrink-0" onClick={() => setSelectedProcess(null)}>
                               <XIcon className="h-4 w-4" />
                            </Button>
                         </div>

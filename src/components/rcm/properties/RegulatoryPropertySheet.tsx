@@ -214,9 +214,9 @@ export function RegulatoryPropertySheet({
   return (
     <>
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="w-[95vw] max-w-[1000px] h-[90vh] overflow-hidden flex flex-col p-0">
-        <DialogHeader className="p-6 border-b bg-slate-50/50">
-          <div className="flex items-center justify-between flex-wrap gap-2">
+      <DialogContent className="w-[95vw] max-w-[1000px] h-[90dvh] sm:h-[90vh] overflow-hidden flex flex-col p-0">
+        <DialogHeader className="p-4 sm:p-6 border-b bg-slate-50/50">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between flex-wrap gap-2 min-w-0 max-w-full">
             <div className="flex flex-col gap-1">
               <DialogTitle className="flex items-center gap-2 text-xl">
                 {canHaveRcm ? <ShieldAlert className="h-5 w-5 text-indigo-600" /> : <Database className="h-5 w-5" />}
@@ -448,11 +448,11 @@ export function RegulatoryPropertySheet({
               : "Delete this Risk-Control mapping row? Data associated with this row will be lost from the TLC Matrix permanently after sync."}
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel onClick={() => setDeleteConfirm(null)}>{t('common:actions.cancel')}</AlertDialogCancel>
+        <AlertDialogFooter className="flex-col-reverse sm:flex-row gap-2">
+          <AlertDialogCancel onClick={() => setDeleteConfirm(null)} className="w-full sm:w-auto h-11 sm:h-10 min-h-[44px] justify-center"> {t('common:actions.cancel')}</AlertDialogCancel>
           <AlertDialogAction 
             onClick={() => deleteConfirm?.type === 'risk' ? executeRemoveRisk(deleteConfirm.id!) : executeRemoveControl(deleteConfirm!.index!)}
-            className="bg-red-600 hover:bg-red-700 text-white font-bold"
+            className="bg-red-600 hover:bg-red-700 text-white font-bold w-full sm:w-auto h-11 sm:h-10 min-h-[44px] justify-center"
           >
             {t('common:actions.delete')}
           </AlertDialogAction>
@@ -468,8 +468,8 @@ export function RegulatoryPropertySheet({
             {t('common:unsavedChanges.description')}
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel onClick={() => setIsConfirmDiscardOpen(false)}>
+        <AlertDialogFooter className="flex-col-reverse sm:flex-row gap-2">
+          <AlertDialogCancel onClick={() => setIsConfirmDiscardOpen(false)} className="w-full sm:w-auto h-11 sm:h-10 min-h-[44px] justify-center">
             {t('common:unsavedChanges.stay')}
           </AlertDialogCancel>
           <AlertDialogAction 
@@ -477,7 +477,7 @@ export function RegulatoryPropertySheet({
               setIsConfirmDiscardOpen(false);
               onClose();
             }}
-            className="bg-red-600 hover:bg-red-700 text-white font-bold"
+            className="bg-red-600 hover:bg-red-700 text-white font-bold w-full sm:w-auto h-11 sm:h-10 min-h-[44px] justify-center"
           >
             {t('common:unsavedChanges.discard')}
           </AlertDialogAction>

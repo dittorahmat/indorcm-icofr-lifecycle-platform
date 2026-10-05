@@ -125,11 +125,11 @@ export function TODEvaluationFormSection({
         <Textarea
           {...form.register('comment')}
           placeholder={t('csa_hub:tod.overallCommentPlaceholder')}
-          className="min-h-[80px] text-xs border-slate-200 rounded-lg p-3"
+          className="min-h-[80px] text-base sm:text-xs border-slate-200 rounded-lg p-3"
         />
       </div>
 
-      <div className="pt-4 border-t flex flex-col sm:flex-row justify-end gap-2.5 sm:gap-3 sticky bottom-0 bg-white pb-2 sm:pb-4 z-20">
+      <div className="pt-4 border-t flex flex-col-reverse sm:flex-row justify-end gap-2.5 sm:gap-3 sticky bottom-0 bg-white pb-2 sm:pb-4 z-20">
         <Button
           type="button"
           variant="ghost"

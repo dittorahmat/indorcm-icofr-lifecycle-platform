@@ -137,7 +137,7 @@ export function AddApplicationDialog({ isOpen, onOpenChange, initialData }: AddA
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[550px] max-h-[92dvh] sm:max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{initialData ? 'Edit Application' : 'Add New Application'}</DialogTitle>
           <DialogDescription>

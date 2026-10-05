@@ -251,15 +251,15 @@ export function DoDWizard({ isOpen, setIsOpen, onComplete, isAggregate = false, 
               {exposureValue && performanceMateriality && (
                 <div className="text-left bg-muted/50 p-3 rounded-lg border border-muted text-xs space-y-1">
                   <p className="font-bold uppercase text-muted-foreground mb-1">{t('wizard.result.quantComparison')}</p>
-                  <div className="flex justify-between flex-wrap gap-2">
-                    <span>{t('wizard.result.exposureValue')}</span>
-                    <span className="font-mono font-bold">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(parseFloat(exposureValue))}</span>
+                  <div className="flex flex-col min-[420px]:flex-row min-[420px]:items-center min-[420px]:justify-between flex-wrap gap-1 min-[420px]:gap-2 min-w-0">
+                    <span className="min-w-0">{t('wizard.result.exposureValue')}</span>
+                    <span className="font-mono font-bold break-words">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(parseFloat(exposureValue))}</span>
                   </div>
-                  <div className="flex justify-between border-b border-muted pb-1 mb-1 flex-wrap gap-2">
-                    <span>{t('wizard.result.pmThreshold')}</span>
-                    <span className="font-mono">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(performanceMateriality)}</span>
+                  <div className="flex flex-col min-[420px]:flex-row min-[420px]:items-center min-[420px]:justify-between border-b border-muted pb-1 mb-1 flex-wrap gap-1 min-[420px]:gap-2 min-w-0">
+                    <span className="min-w-0">{t('wizard.result.pmThreshold')}</span>
+                    <span className="font-mono break-words">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(performanceMateriality)}</span>
                   </div>
-                  <div className="flex justify-between text-orange-600 font-bold flex-wrap gap-2">
+                  <div className="flex flex-col min-[420px]:flex-row min-[420px]:items-center min-[420px]:justify-between text-orange-600 font-bold flex-wrap gap-1 min-[420px]:gap-2 min-w-0">
                     <span>{t('wizard.result.conclusion')}</span>
                     <span>{parseFloat(exposureValue) >= performanceMateriality ? t('wizard.result.material') : t('wizard.result.immaterial')}</span>
                   </div>
@@ -289,7 +289,7 @@ export function DoDWizard({ isOpen, setIsOpen, onComplete, isAggregate = false, 
                     value={rationale}
                     onChange={(e) => setRationale(e.target.value)}
                     placeholder={t('wizard.result.rationalePlaceholder')}
-                    className="text-xs h-20"
+                    className="text-base sm:text-xs h-20"
                   />
                 </div>
               </div>
@@ -304,7 +304,7 @@ export function DoDWizard({ isOpen, setIsOpen, onComplete, isAggregate = false, 
         <DialogFooter className="flex-col-reverse sm:flex-row gap-2">
           {step === 'RESULT' ? (
             <div className="w-full space-y-2">
-              <Button onClick={handleFinish} disabled={!rationale || selectedAssertions.length === 0} className="w-full min-h-[44px]">{t('wizard.result.applyButton')}</Button>
+              <Button onClick={handleFinish} disabled={!rationale || selectedAssertions.length === 0} className="w-full sm:w-auto min-h-[44px] h-11 sm:h-10 justify-center">{t('wizard.result.applyButton')}</Button>
               <p className="text-xs text-center text-muted-foreground uppercase font-bold tracking-tight">Ref: Gambar 5 SK-5/DKU.MBU/11/2024 (Hal. 73)</p>
             </div>
           ) : (

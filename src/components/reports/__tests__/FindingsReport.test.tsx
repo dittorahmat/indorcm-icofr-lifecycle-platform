@@ -45,14 +45,16 @@ const controls = [{ id: 'CTRL-001', code: 'PRC-001', name: 'Kontrol Uji' }];
 describe('FindingsReport (Lampiran 9)', () => {
   it('renders deficiency rows resolved against controls', () => {
     render(<FindingsReport deficiencies={deficiencies} controls={controls} />);
-    expect(screen.getByText('DEF-001')).toBeInTheDocument();
-    expect(screen.getByText('Temuan uji satu')).toBeInTheDocument();
+    // Dual-render: mobile cards (block md:hidden) + desktop table (hidden md:block)
+    // both render in jsdom, so shared values appear twice.
+    expect(screen.getAllByText('DEF-001')).toHaveLength(2);
+    expect(screen.getAllByText('Temuan uji satu')).toHaveLength(2);
     expect(screen.getByText('PRC-001 - Kontrol Uji')).toBeInTheDocument();
   });
 
   it('shows empty state when there are no deficiencies', () => {
     render(<FindingsReport deficiencies={[]} controls={[]} />);
-    expect(screen.getByText('Belum ada data temuan.')).toBeInTheDocument();
+    expect(screen.getAllByText('Belum ada data temuan.')).toHaveLength(2);
   });
 
   it('exports visible rows to a single-sheet Excel file', async () => {

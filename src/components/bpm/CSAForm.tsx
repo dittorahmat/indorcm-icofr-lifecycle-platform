@@ -411,8 +411,8 @@ export function CSAForm({
                 </div>
                 </div>
 
-                <div className="border rounded-lg overflow-hidden shadow-md">
-                <Table>
+                <div className="border rounded-lg overflow-x-auto max-w-full touch-pan-x overscroll-x-contain shadow-md">
+                <Table className="min-w-[880px]">
                 <TableHeader className="bg-mancity-pattern text-primary-foreground">
                 <TableRow className="divide-x divide-white/10 hover:bg-transparent">
                 <TableHead className="text-xs font-black text-primary-foreground py-4 px-4 min-w-[200px]">{t('csa_hub:form.table.transactionDetail')}</TableHead>
@@ -494,7 +494,7 @@ export function CSAForm({
                                       variant={res.evidenceUrl ? "secondary" : "outline"} 
                                       size="icon" 
                                       className={cn(
-                                        "h-8 w-8 rounded-lg transition-all", 
+                                        "h-11 w-11 sm:h-8 sm:w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 rounded-lg transition-all shrink-0", 
                                         res.evidenceUrl ? "bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100" : "border-dashed border-slate-300 text-slate-400 hover:border-slate-400 hover:text-primary"
                                       )}
                                       onClick={() => !isReadOnly && onFileUpload(sIdx, cId)}
@@ -523,7 +523,7 @@ export function CSAForm({
                                         type="button"
                                         variant="default" 
                                         size="icon" 
-                                        className="h-8 w-8 rounded-lg bg-mancity-pattern hover:opacity-90 text-primary-foreground shadow-sm"
+                                        className="h-11 w-11 sm:h-8 sm:w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 rounded-lg bg-mancity-pattern hover:opacity-90 text-primary-foreground shadow-sm shrink-0"
                                         onClick={() => window.open(res.evidenceUrl, '_blank')}
                                       >
                                         <Eye className="h-4 w-4" />
@@ -552,7 +552,7 @@ export function CSAForm({
                           <Input 
                             {...f} 
                             disabled={isReadOnly} 
-                            className="h-8 text-xs border-transparent hover:border-slate-200 focus:border-slate-400 bg-transparent transition-all"
+                            className="h-11 sm:h-8 min-h-[44px] sm:min-h-0 text-base sm:text-xs border-transparent hover:border-slate-200 focus:border-slate-400 bg-transparent transition-all"
                             placeholder={t('common:placeholders.notes')}
                           />
                         )} />
@@ -577,9 +577,9 @@ export function CSAForm({
                 </Table>
                 </div>
 
-                <div className="flex justify-between items-center bg-slate-100 p-5 rounded-lg border border-slate-200 shadow-inner flex-wrap gap-2">
-                <div className="flex gap-10">
-                <div className="text-center border-r pr-10 border-slate-300">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center bg-slate-100 p-4 sm:p-5 rounded-lg border border-slate-200 shadow-inner flex-wrap gap-3">
+                <div className="flex flex-wrap gap-6 sm:gap-10">
+                <div className="text-center border-r pr-6 sm:pr-10 border-slate-300">
                 <p className="text-xs font-black uppercase text-slate-400 tracking-widest">{t('csa_hub:page.table.samples')}</p>
                 <p className="text-2xl font-black text-slate-700">{watchSamples.length}</p>
                 </div>

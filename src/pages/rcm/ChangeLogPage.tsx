@@ -10,6 +10,7 @@ import { History, ArrowRight, User, Calendar, AlertCircle, Download, Loader2 } f
 import type { ChangeLog } from '@shared/types';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
+import { MobileDesktopBanner } from '@/components/layout/MobileDesktopBanner';
 import { exportRegulatoryTableToExcel } from '@/lib/rcm-excel-export';
 import {
   changeLogRegulatoryColumns,
@@ -99,8 +100,45 @@ export function ChangeLogPage() {
               <CardTitle>Master Change Log</CardTitle>
               <CardDescription>Comprehensive record of all structural changes to RCM, BPM, and Control Definitions.</CardDescription>
             </CardHeader>
-            <CardContent className="p-0 sm:p-6">
-              <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain">
+            <CardContent className="p-4 sm:p-6">
+              <div className="mb-4 md:hidden">
+                <MobileDesktopBanner recordCount={logs.length} />
+              </div>
+              <div className="block md:hidden space-y-3">
+                {isLoading ? (
+                  Array.from({ length: 3 }).map((_, i) => (
+                    <Skeleton key={i} className="h-24 w-full rounded-lg" />
+                  ))
+                ) : logs.length > 0 ? (
+                  logs.sort((a, b) => b.timestamp - a.timestamp).map((log) => (
+                    <div key={log.id} className="rounded-lg border border-border bg-card p-4 shadow-sm">
+                      <div className="flex items-start justify-between gap-2 flex-wrap">
+                        <span className="font-mono text-xs text-muted-foreground">{log.id.substring(0, 8)}...</span>
+                        <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 text-xs shrink-0">
+                          {log.approvedBy || "System"}
+                        </Badge>
+                      </div>
+                      <p className="mt-2 text-xs text-foreground leading-relaxed">{log.descriptionAfter}</p>
+                      <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
+                        <span className="inline-flex items-center gap-1 font-medium">
+                          <Calendar className="h-3 w-3" />
+                          {new Date(log.effectiveDate).toLocaleDateString()}
+                        </span>
+                        <span className="inline-flex items-center gap-1">
+                          <User className="h-3 w-3" />
+                          {log.userId}
+                        </span>
+                        <Badge variant="outline" className="text-xs">{log.entityType}</Badge>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-center py-8 text-xs text-muted-foreground">
+                    {t('changeLog.empty', { defaultValue: 'Belum ada perubahan tercatat.' })}
+                  </p>
+                )}
+              </div>
+              <div className="hidden md:block overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint">
               <Table className="min-w-[720px]">
                 <TableHeader>
                   <TableRow className="bg-muted/50 hover:bg-muted/50">

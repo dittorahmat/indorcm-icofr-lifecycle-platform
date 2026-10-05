@@ -275,7 +275,7 @@ export function DoDWorksheetDialog({
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="max-w-4xl w-[calc(100vw-2rem)] max-h-[92dvh] flex flex-col p-0 overflow-hidden bg-background border border-border rounded-lg shadow-xl">
         <DialogHeader className="p-4 sm:p-6 border-b border-border bg-card">
-          <div className="flex flex-col min-[480px]:flex-row min-[480px]:items-center justify-between gap-2">
+          <div className="flex flex-col min-[480px]:flex-row min-[480px]:items-center justify-between flex-wrap gap-2 min-w-0 max-w-full">
             <div className="flex items-center gap-2">
               <div className="p-2 bg-primary/10 rounded-md text-primary">
                 <ShieldAlert className="h-5 w-5" />

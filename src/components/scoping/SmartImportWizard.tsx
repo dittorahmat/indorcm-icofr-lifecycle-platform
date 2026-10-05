@@ -359,7 +359,7 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
             }
         }}>
             <DialogContent className="w-[calc(100vw-1.5rem)] sm:w-full sm:max-w-[90vw] lg:max-w-[1100px] h-[92dvh] sm:h-[85vh] flex flex-col p-0 overflow-hidden border shadow-2xl rounded-lg">
-                <DialogHeader className="px-4 sm:px-8 py-4 sm:py-6 bg-mancity-pattern text-primary-foreground flex flex-row items-center justify-between gap-3 flex-wrap">
+                <DialogHeader className="px-4 sm:px-8 py-4 sm:py-6 bg-mancity-pattern text-primary-foreground flex flex-col sm:flex-row sm:items-center justify-between gap-3 flex-wrap">
                     <div className="space-y-1 min-w-0">
                         <DialogTitle className="text-lg sm:text-2xl font-black uppercase tracking-tight flex items-center gap-3 text-primary-foreground">
                             <Zap className="h-6 w-6 text-primary-foreground" />
@@ -411,7 +411,7 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
                                             <div className="bg-slate-50 p-4 sm:p-6 rounded-lg border border-slate-200 space-y-4">
                                                 <div className="flex flex-wrap items-center justify-between gap-2">
                                                     <h4 className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">Pilih Tipe RCM</h4>
-                                                    <Button variant="outline" size="sm" onClick={downloadTemplate} className="h-7 text-xs font-bold gap-2 uppercase tracking-widest rounded-full">
+                                                     <Button variant="outline" size="sm" onClick={downloadTemplate} className="h-11 sm:h-7 min-h-[44px] sm:min-h-0 text-xs font-bold gap-2 uppercase tracking-widest rounded-full">
                                                         <Download className="h-3 w-3" /> Template {rcmType}
                                                     </Button>
                                                 </div>
@@ -443,7 +443,7 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
                                             </div>
 
                                             <div className={cn(
-                                                "pt-8 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4 transition-all duration-500",
+                                                "pt-8 border-t border-slate-100 flex flex-col sm:flex-row justify-between sm:items-center gap-4 transition-all duration-500",
                                                 (tbFile || rcmFile) ? "opacity-100 translate-y-0" : "opacity-40 translate-y-2 pointer-events-none"
                                             )}>
                                                 <div className="flex items-center gap-3 text-xs font-bold text-slate-500 bg-slate-50 px-5 py-2.5 rounded-full border border-slate-200">
@@ -452,7 +452,7 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
                                                 </div>
                                                 <Button 
                                                     size="lg" 
-                                                    className="rounded-lg px-6 sm:px-12 font-black uppercase tracking-[0.15em] gap-3 bg-indigo-600 hover:bg-indigo-700 text-white shadow-xl h-12 sm:h-14 text-xs transition-all active:scale-95 w-full md:w-auto min-h-[44px]"
+                                                    className="rounded-lg px-6 sm:px-12 font-black uppercase tracking-[0.15em] gap-3 bg-indigo-600 hover:bg-indigo-700 text-white shadow-xl h-12 sm:h-14 text-xs transition-all active:scale-95 w-full sm:w-auto min-h-[44px]"
                                                     onClick={handleProcessAI}
                                                     disabled={isProcessing}
                                                 >
@@ -481,7 +481,7 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
                                                 </div>
                                             </div>
                                             <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 pt-4">
-                                                <Button variant="ghost" onClick={() => setStep(1)} className="text-slate-400 font-bold uppercase tracking-widest text-xs min-h-[44px]">Back to Upload</Button>
+                                                <Button variant="ghost" onClick={() => setStep(1)} className="text-slate-400 font-bold uppercase tracking-widest text-xs min-h-[44px] w-full sm:w-auto justify-center">Back to Upload</Button>
                                                 <Button onClick={() => setStep(3)} className="rounded-lg px-6 sm:px-10 min-h-[44px] h-11 font-black uppercase tracking-widest bg-mancity-pattern text-primary-foreground hover:opacity-90 shadow-lg text-xs w-full sm:w-auto">Next: View Summary</Button>
                                             </div>
                                         </motion.div>
@@ -630,7 +630,7 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
                                             <div className="flex flex-col items-center justify-center py-10 text-center gap-6 bg-indigo-50/30 rounded-[3rem] border-2 border-dashed border-indigo-100">
                                                 <div className="h-16 w-16 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg"><ShieldCheck className="h-8 w-8" /></div>
                                                 <div className="space-y-1"><h2 className="text-xl font-black text-slate-900 uppercase">{t('rcm:migration.baselining.ready_title')}</h2><p className="text-xs text-slate-500 max-w-sm mx-auto">{t('rcm:migration.baselining.ready_desc')}</p></div>
-                                                <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-4"><Button variant="ghost" onClick={() => setStep(2)} className="text-xs font-bold text-slate-400 uppercase tracking-widest min-h-[44px]">Review Mapping</Button><Button size="lg" onClick={handleFinalize} className="rounded-lg px-6 sm:px-12 font-black uppercase tracking-widest bg-emerald-600 hover:bg-emerald-700 shadow-xl text-white min-h-[44px] h-12 sm:h-14 text-xs w-full sm:w-auto">Finalize Baseline</Button></div>
+                                                <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-4"><Button variant="ghost" onClick={() => setStep(2)} className="text-xs font-bold text-slate-400 uppercase tracking-widest min-h-[44px] w-full sm:w-auto justify-center">Review Mapping</Button><Button size="lg" onClick={handleFinalize} className="rounded-lg px-6 sm:px-12 font-black uppercase tracking-widest bg-emerald-600 hover:bg-emerald-700 shadow-xl text-white min-h-[44px] h-12 sm:h-14 text-xs w-full sm:w-auto">Finalize Baseline</Button></div>
                                             </div>
                                         </motion.div>
                                     )}

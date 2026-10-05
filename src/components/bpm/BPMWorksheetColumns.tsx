@@ -45,7 +45,7 @@ export function createWorksheetColumns({
         <Button
           variant="ghost"
           size="icon"
-          className="h-7 w-7 text-slate-300 hover:text-red-600 transition-colors"
+          className="h-11 w-11 sm:h-7 sm:w-7 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 text-slate-300 hover:text-red-600 transition-colors shrink-0"
           onClick={async () => {
             const ok = await confirm({
               title: t('common:actions.deletePermanently'),
@@ -73,7 +73,7 @@ export function createWorksheetColumns({
       header: 'No. BPM',
       cell: ({ row, getValue }) => (
         <Input 
-          className="h-8 text-xs border-slate-200 focus:border-slate-400 bg-white px-2 font-mono uppercase w-[100px]"
+          className="h-11 md:h-9 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 focus:border-slate-400 bg-white px-2 font-mono uppercase w-[100px]"
           placeholder="BPM-001"
           defaultValue={getValue<string>()}
           onBlur={(e) => debouncedUpdate(row.original.id, 'bpmCode', e.target.value)}
@@ -93,7 +93,7 @@ export function createWorksheetColumns({
             variant={diagram ? "default" : "outline"} 
             size="sm" 
             className={cn(
-              "h-7 text-xs gap-1.5 uppercase font-bold mx-2",
+              "h-11 sm:h-7 min-h-[44px] sm:min-h-0 text-xs gap-1.5 uppercase font-bold mx-2",
               diagram ? "bg-mancity-pattern hover:opacity-90 text-primary-foreground shadow-sm" : "text-slate-400 border-slate-200"
             )}
             onClick={() => {
@@ -142,7 +142,7 @@ export function createWorksheetColumns({
       header: t('worksheet.columns.controlName'),
       cell: ({ row, getValue }) => (
         <Input 
-          className="h-8 text-xs border-slate-200 focus:border-slate-400 bg-white px-2 font-medium text-slate-900 min-w-[200px]"
+          className="h-11 md:h-9 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 focus:border-slate-400 bg-white px-2 font-medium text-slate-900 min-w-[200px]"
           defaultValue={getValue<string>()}
           onBlur={(e) => debouncedUpdate(row.original.id, 'name', e.target.value)}
         />
@@ -153,7 +153,7 @@ export function createWorksheetColumns({
       header: t('worksheet.columns.location'),
       cell: ({ row, getValue }) => (
         <Input 
-          className="h-8 text-xs border-slate-200 focus:border-slate-400 bg-white px-2 min-w-[100px]"
+          className="h-11 md:h-9 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 focus:border-slate-400 bg-white px-2 min-w-[100px]"
           placeholder="Lokasi..."
           defaultValue={getValue<string>()}
           onBlur={(e) => debouncedUpdate(row.original.id, 'location', e.target.value)}
@@ -165,7 +165,7 @@ export function createWorksheetColumns({
       header: 'Proses Bisnis (Aktivitas)',
       cell: ({ row, getValue }) => (
         <textarea 
-          className="w-full min-h-[60px] text-xs border border-slate-200 focus:ring-1 focus:ring-slate-400 bg-white p-2 resize-none min-w-[250px] rounded-md"
+          className="w-full min-h-[60px] text-base md:text-xs border border-slate-200 focus:ring-1 focus:ring-slate-400 bg-white p-2 resize-none min-w-[250px] rounded-md"
           placeholder="Deskripsikan aktivitas..."
           defaultValue={getValue<string>()}
           onBlur={(e) => debouncedUpdate(row.original.id, 'description', e.target.value)}
@@ -180,7 +180,7 @@ export function createWorksheetColumns({
           value={getValue<boolean>() ? 'Y' : 'T'} 
           onValueChange={(v) => updateMutation.mutate({ id: row.original.id, data: { isFraudRelated: v === 'Y' } })}
         >
-          <SelectTrigger className="h-7 text-xs border-slate-200 bg-white">
+          <SelectTrigger className="h-11 md:h-7 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 bg-white w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -195,7 +195,7 @@ export function createWorksheetColumns({
       header: 'Referensi',
       cell: ({ row, getValue }) => (
         <Input 
-          className="h-8 text-xs border-slate-200 focus:border-indigo-300 bg-white px-2 min-w-[120px]"
+          className="h-11 md:h-9 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 focus:border-indigo-300 bg-white px-2 min-w-[120px]"
           defaultValue={getValue<string>()}
           onBlur={(e) => debouncedUpdate(row.original.id, 'reference', e.target.value)}
         />
@@ -209,7 +209,7 @@ export function createWorksheetColumns({
         return (
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className="h-8 w-full justify-start font-normal px-2 text-xs gap-2 border-slate-200 bg-white">
+              <Button variant="outline" size="sm" className="h-11 md:h-8 min-h-[44px] md:min-h-0 w-full justify-start font-normal px-2 text-base md:text-xs gap-2 border-slate-200 bg-white">
                 <Shield className={cn("h-3.5 w-3.5", selectedIds.length > 0 ? "text-indigo-600" : "text-slate-300")} />
                 {selectedIds.length > 0 ? `${selectedIds.length} Linked` : "Select ELC..."}
               </Button>
@@ -252,7 +252,7 @@ export function createWorksheetColumns({
       header: 'Dokumen Pendukung',
       cell: ({ row, getValue }) => (
         <Input 
-          className="h-8 text-xs border-slate-200 focus:border-indigo-300 bg-white px-2 min-w-[150px]"
+          className="h-11 md:h-9 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 focus:border-indigo-300 bg-white px-2 min-w-[150px]"
           defaultValue={getValue<string>()}
           onBlur={(e) => debouncedUpdate(row.original.id, 'supportingDocs', e.target.value)}
         />
@@ -266,7 +266,7 @@ export function createWorksheetColumns({
           value={getValue<boolean>() ? 'Y' : 'T'} 
           onValueChange={(v) => updateMutation.mutate({ id: row.original.id, data: { isKeyControl: v === 'Y' } })}
         >
-          <SelectTrigger className="h-7 text-xs border-slate-200 bg-white">
+          <SelectTrigger className="h-11 md:h-7 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 bg-white w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -281,7 +281,7 @@ export function createWorksheetColumns({
       header: 'IPO',
       cell: ({ row, getValue }) => (
         <Input 
-          className="h-8 text-xs border-slate-200 focus:border-indigo-300 bg-white px-2 min-w-[100px]"
+          className="h-11 md:h-9 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 focus:border-indigo-300 bg-white px-2 min-w-[100px]"
           defaultValue={(getValue<string[]>() || []).join(', ')}
           onBlur={(e) => debouncedUpdate(row.original.id, 'ipos', e.target.value.split(',').map(s => s.trim()))}
         />
@@ -292,7 +292,7 @@ export function createWorksheetColumns({
       header: 'Asersi',
       cell: ({ row, getValue }) => (
         <Input 
-          className="h-8 text-xs border-slate-200 focus:border-indigo-300 bg-white px-2 min-w-[100px]"
+          className="h-11 md:h-9 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 focus:border-indigo-300 bg-white px-2 min-w-[100px]"
           defaultValue={(getValue<string[]>() || []).join(', ')}
           onBlur={(e) => debouncedUpdate(row.original.id, 'assertions', e.target.value.split(',').map(s => s.trim()))}
         />
@@ -306,7 +306,7 @@ export function createWorksheetColumns({
           value={getValue<string>()} 
           onValueChange={(v: ControlType) => updateMutation.mutate({ id: row.original.id, data: { type: v } })}
         >
-          <SelectTrigger className="h-7 text-xs border-slate-200 bg-white">
+          <SelectTrigger className="h-11 md:h-7 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 bg-white w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

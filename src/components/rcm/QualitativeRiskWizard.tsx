@@ -36,7 +36,7 @@ export function QualitativeRiskWizard({ onApply }: QualitativeRiskWizardProps) {
           <Wand2 className="h-3 w-3" /> Wizard (Table 11)
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[550px] max-h-[92dvh] sm:max-h-[90vh] overflow-y-auto">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
           <DialogHeader>
             <DialogTitle>Qualitative Risk Assessment Wizard</DialogTitle>

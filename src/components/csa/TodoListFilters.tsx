@@ -42,24 +42,28 @@ export function TodoListFilters({
         </div>
       </div>
 
-      <div className="flex flex-col min-[420px]:flex-row min-[420px]:items-center min-[420px]:justify-between sm:justify-end gap-2 flex-wrap">
-        <div className="flex items-center border rounded-md p-0.5 bg-slate-50 shrink-0">
-          <Button variant="ghost" size="icon" className="h-11 w-11 sm:h-9 sm:w-9 rounded-md min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0" onClick={onPrevMonth}>
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="sm" className="h-11 sm:h-9 px-2.5 sm:px-3 text-xs font-semibold min-h-[44px] sm:min-h-0" onClick={onToday}>
-            {t('common:calendar.today')}
-          </Button>
-          <Button variant="ghost" size="icon" className="h-11 w-11 sm:h-9 sm:w-9 rounded-md min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0" onClick={onNextMonth}>
-            <ChevronRight className="h-4 w-4" />
-          </Button>
+      <div className="flex flex-row flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0 flex-wrap">
+          <div className="flex items-center border rounded-md p-0.5 bg-slate-50 shrink-0">
+            <Button variant="ghost" size="icon" className="h-11 w-11 sm:h-9 sm:w-9 rounded-md min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0" onClick={onPrevMonth} aria-label={t('common:calendar.prevMonth', { defaultValue: 'Bulan sebelumnya' })}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="sm" className="h-11 sm:h-9 px-2.5 sm:px-3 text-xs font-semibold min-h-[44px] sm:min-h-0" onClick={onToday}>
+              {t('common:calendar.today')}
+            </Button>
+            <Button variant="ghost" size="icon" className="h-11 w-11 sm:h-9 sm:w-9 rounded-md min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0" onClick={onNextMonth} aria-label={t('common:calendar.nextMonth', { defaultValue: 'Bulan berikutnya' })}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+          <h2 className="text-xs sm:text-sm font-bold text-slate-700 truncate min-w-0">
+            {format(currentDate, 'MMMM yyyy')}
+          </h2>
         </div>
-        <h2 className="text-xs sm:text-sm font-bold text-slate-700 ml-1 sm:ml-2 truncate">
-          {format(currentDate, 'MMMM yyyy')}
-        </h2>
-        <div className="h-4 w-[1px] bg-slate-200 mx-1 shrink-0 hidden min-[420px]:block" />
-        <Button variant="ghost" size="icon" className="h-11 w-11 sm:h-9 sm:w-9 text-slate-500 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 shrink-0 rounded-md"><Search className="h-4 w-4" /></Button>
-        <Button variant="ghost" size="icon" className="h-11 w-11 sm:h-9 sm:w-9 text-slate-500 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 shrink-0 rounded-md"><Printer className="h-4 w-4" /></Button>
+        <div className="flex items-center gap-1 shrink-0 ml-auto">
+          <div className="h-4 w-[1px] bg-slate-200 mx-1 shrink-0 hidden min-[420px]:block" />
+          <Button variant="ghost" size="icon" aria-label={t('common:actions.search', { defaultValue: 'Cari' })} className="h-11 w-11 sm:h-9 sm:w-9 text-slate-500 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 shrink-0 rounded-md"><Search className="h-4 w-4" /></Button>
+          <Button variant="ghost" size="icon" aria-label={t('common:actions.print', { defaultValue: 'Cetak' })} className="h-11 w-11 sm:h-9 sm:w-9 text-slate-500 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 shrink-0 rounded-md"><Printer className="h-4 w-4" /></Button>
+        </div>
       </div>
     </div>
   );

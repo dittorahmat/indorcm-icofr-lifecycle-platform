@@ -315,7 +315,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                                   <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.risk_rating')}</FormLabel>
                                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
-                                      <SelectTrigger className="text-xs h-9 border-slate-200"><SelectValue /></SelectTrigger>
+                                      <SelectTrigger className="text-base sm:text-xs h-11 sm:h-9 min-h-[44px] sm:min-h-0 border-slate-200"><SelectValue /></SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
                                       <SelectItem value="High" className="text-xs text-rose-600 font-bold">High</SelectItem>
@@ -330,7 +330,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                               control={form.control}
                               name="isFraudRelated"
                               render={({ field }) => (
-                                <FormItem className="flex flex-row items-center justify-between rounded-lg border border-slate-200 p-2 h-9 bg-white mt-auto flex-wrap gap-2">
+                                <FormItem className="flex flex-row items-center justify-between rounded-lg border border-slate-200 p-2 min-h-[44px] bg-white mt-auto flex-wrap gap-2">
                                   <FormLabel className="text-xs font-black uppercase text-slate-400 mb-0">{t('matrix.is_fraud')}</FormLabel>
                                   <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                                 </FormItem>
@@ -347,7 +347,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                                   <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.type')}</FormLabel>
                                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
-                                      <SelectTrigger className="text-xs h-9 border-slate-200"><SelectValue /></SelectTrigger>
+                                      <SelectTrigger className="text-base sm:text-xs h-11 sm:h-9 min-h-[44px] sm:min-h-0 border-slate-200"><SelectValue /></SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
                                       <SelectItem value="Preventive" className="text-xs">Preventive</SelectItem>
@@ -365,7 +365,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                                   <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.nature')}</FormLabel>
                                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
-                                      <SelectTrigger className="text-xs h-9 border-slate-200"><SelectValue /></SelectTrigger>
+                                      <SelectTrigger className="text-base sm:text-xs h-11 sm:h-9 min-h-[44px] sm:min-h-0 border-slate-200"><SelectValue /></SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
                                       <SelectItem value="Manual" className="text-xs">Manual</SelectItem>
@@ -409,7 +409,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                                 <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.frequency')}</FormLabel>
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                   <FormControl>
-                                    <SelectTrigger className="text-xs h-9 border-slate-200"><SelectValue /></SelectTrigger>
+                                    <SelectTrigger className="text-base sm:text-xs h-11 sm:h-9 min-h-[44px] sm:min-h-0 border-slate-200"><SelectValue /></SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
                                     <SelectItem value="Annual" className="text-xs">Annual</SelectItem>

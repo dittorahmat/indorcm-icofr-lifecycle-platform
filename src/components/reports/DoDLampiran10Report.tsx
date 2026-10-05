@@ -35,6 +35,7 @@ import {
   ShieldAlert,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { MobileDesktopBanner } from '@/components/layout/MobileDesktopBanner';
 import { cn } from '@/lib/utils';
 import { exportRegulatoryTableToExcel } from '@/lib/rcm-excel-export';
 import { Loader2 } from 'lucide-react';
@@ -534,6 +535,9 @@ export function DoDLampiran10Report({
         </div>
 
         {/* 24-Column Tabular Formal Worksheet */}
+        <div className="md:hidden">
+          <MobileDesktopBanner recordCount={filteredRows.length} />
+        </div>
         <div className="rounded-lg border border-border overflow-hidden bg-background max-w-full">
           <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint">
             <Table className="min-w-[2000px] border-collapse print:min-w-0 print:w-full print:text-xs">

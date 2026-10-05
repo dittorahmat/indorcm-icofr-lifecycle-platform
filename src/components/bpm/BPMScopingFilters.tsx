@@ -62,7 +62,7 @@ export function BPMScopingFilters({
                   disabled={snapLoading || simLoading}
                   className="w-full bg-slate-50 border-slate-200 h-11 sm:h-10 min-h-[44px] sm:min-h-0 text-xs font-bold uppercase tracking-wider rounded-lg focus:bg-white transition-all shadow-sm justify-between px-3"
                 >
-                  <span className="truncate">
+                  <span className="truncate min-w-0 flex-1 text-left">
                     {snapLoading ? (
                       <span className="flex items-center">
                         <Loader2 className="h-3 w-3 animate-spin mr-2" />
@@ -138,7 +138,7 @@ export function BPMScopingFilters({
                   disabled={!selectedFsli || snapLoading}
                   className="w-full bg-slate-50 border-slate-200 h-11 sm:h-10 min-h-[44px] sm:min-h-0 text-xs font-bold uppercase tracking-wider rounded-lg focus:bg-white transition-all shadow-sm justify-between px-3"
                 >
-                  <span className="truncate">
+                  <span className="truncate min-w-0 flex-1 text-left">
                     {snapLoading ? (
                       <span className="flex items-center">
                         <Loader2 className="h-3 w-3 animate-spin mr-2" />

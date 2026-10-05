@@ -145,7 +145,7 @@ export function FiscalYearSelector() {
         <SelectTrigger 
           aria-label={translate('common:placeholders.year', { defaultValue: 'Year' })}
           className={cn(
-            "h-10 sm:h-9 min-h-[44px] sm:min-h-0 w-auto min-w-[64px] sm:min-w-[100px] px-2 sm:px-3 rounded-lg border-none font-bold text-xs shadow-sm transition-all flex items-center justify-center shrink-0",
+            "h-10 sm:h-9 min-h-[44px] sm:min-h-0 w-auto min-w-[64px] max-w-[90px] sm:max-w-none sm:min-w-[100px] px-2 sm:px-3 rounded-lg border-none font-bold text-base sm:text-xs shadow-sm transition-all flex items-center justify-center shrink-0 truncate",
             isDark 
               ? "bg-slate-800 text-slate-100 hover:bg-slate-700" 
               : "bg-white/10 text-white hover:bg-white/20"
@@ -194,7 +194,7 @@ export function FiscalYearSelector() {
                   setNewYearInput(e.target.value);
                   setErrorMessage('');
                 }}
-                className="col-span-3 text-sm font-semibold"
+                className="col-span-3 text-base sm:text-sm font-semibold"
               />
               {errorMessage && (
                 <span className="text-xs text-destructive font-medium mt-1">

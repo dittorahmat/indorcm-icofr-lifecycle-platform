@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { useTranslation } from 'react-i18next';
 import { exportRegulatoryTableToExcel } from '@/lib/rcm-excel-export';
 import { mapWbsRows, wbsColumns, wbsFilename } from '@/lib/wbs-excel-export';
+import { MobileDesktopBanner } from '@/components/layout/MobileDesktopBanner';
 import type { WBSReport } from '@shared/types';
 import { motion } from 'framer-motion';
 
@@ -66,7 +67,7 @@ export function WBSPage() {
 
   return (
     <AppLayout container>
-      <div className="space-y-6 min-w-0 pb-[calc(3.5rem+env(safe-area-inset-bottom,0px))] md:pb-0">
+      <div className="space-y-6 min-w-0">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="min-w-0">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Whistleblowing Recap</h1>
@@ -135,8 +136,41 @@ export function WBSPage() {
             </div>
             <CardDescription>Recap of reports from Whistleblowing System affecting Financial Reporting.</CardDescription>
           </CardHeader>
-          <CardContent className="p-0 sm:p-6">
-            <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint rounded-lg">
+          <CardContent className="p-4 sm:p-6">
+            <div className="mb-4 md:hidden">
+              <MobileDesktopBanner recordCount={mockWBS.length} />
+            </div>
+            <div className="block md:hidden space-y-3">
+              {mockWBS.map((report) => (
+                <div key={report.id} className="rounded-lg border border-border bg-card p-4 shadow-sm">
+                  <div className="flex items-start justify-between gap-2 flex-wrap">
+                    <div className="min-w-0">
+                      <p className="text-xs font-mono text-muted-foreground">{new Date(report.reportDate).toLocaleDateString()} · {report.id}</p>
+                      <p className="mt-1 text-xs font-semibold text-foreground leading-snug">{report.description}</p>
+                    </div>
+                    <Badge className={
+                      report.status === 'Investigating' ? "bg-amber-100 text-amber-700 hover:bg-amber-100 shrink-0" :
+                      report.status === 'Confirmed' ? "bg-red-100 text-red-700 hover:bg-red-100 shrink-0" :
+                      "bg-green-100 text-green-700 hover:bg-green-100 shrink-0"
+                    }>
+                      {report.status}
+                    </Badge>
+                  </div>
+                  <div className="mt-2 flex items-center justify-between gap-2 flex-wrap">
+                    <Badge variant="outline" className="text-xs">{report.category}</Badge>
+                    <span className="text-xs font-mono font-bold text-red-600">{formatCurrency(report.impactMagnitude)}</span>
+                  </div>
+                  {(report.relatedControlIds?.length ?? 0) > 0 ? (
+                    <div className="mt-2 flex gap-1 flex-wrap">
+                      {report.relatedControlIds?.map(c => (
+                        <Badge key={c} variant="secondary" className="text-xs">{c}</Badge>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+            <div className="hidden md:block overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint rounded-lg">
             <Table className="min-w-[720px]">
               <TableHeader>
                 <TableRow>

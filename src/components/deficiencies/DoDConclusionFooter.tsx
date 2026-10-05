@@ -100,7 +100,7 @@ export function DoDConclusionFooter({
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between flex-wrap gap-3 pt-1 min-w-0 max-w-full">
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <UserCheck className="h-4 w-4 text-primary" />
           <span>{t('worksheet.conclusion.signOff')}</span>

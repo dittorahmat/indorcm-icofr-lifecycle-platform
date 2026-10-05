@@ -235,12 +235,12 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
                   <TabsContent value="tod" className="space-y-6 sm:space-y-8 m-0 outline-none">
                     <TODSixPillarForm form={form} t={t} />
                     
-                    <div className="pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-                       <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider">
-                          <Target className="h-4 w-4 text-indigo-500 shrink-0" />
-                          Final Audit Verdict
-                       </div>
-                      <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 w-full sm:w-auto">
+                    <div className="pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 flex-wrap min-w-0">
+                        <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider min-w-0">
+                           <Target className="h-4 w-4 text-indigo-500 shrink-0" />
+                           Final Audit Verdict
+                        </div>
+                      <div className="flex flex-col-reverse sm:flex-row gap-2.5 sm:gap-3 w-full sm:w-auto">
                         <Button 
                           type="submit" 
                           disabled={isAuthenticating || mutation.isPending} 
@@ -323,7 +323,7 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
                                     {...field} 
                                     onChange={e => field.onChange(parseInt(e.target.value, 10))} 
                                     className={cn(
-                                      "h-11 font-bold rounded-lg transition-all text-xs", 
+                                      "h-11 font-bold rounded-lg transition-all text-base sm:text-xs", 
                                       field.value !== undefined && field.value < suggestion.min 
                                         ? "border-rose-300 bg-rose-50 focus:ring-rose-500/20" 
                                         : "bg-slate-50 border-slate-200 focus:bg-white"
@@ -345,7 +345,7 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
                               </FormLabel>
                               <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
-                                  <SelectTrigger className="h-11 font-semibold rounded-lg bg-slate-50 border-slate-200 focus:bg-white transition-all text-xs">
+                                  <SelectTrigger className="h-11 font-semibold rounded-lg bg-slate-50 border-slate-200 focus:bg-white transition-all text-base sm:text-xs">
                                     <SelectValue />
                                   </SelectTrigger>
                                 </FormControl>
@@ -371,7 +371,7 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
                               <Textarea 
                                 {...field} 
                                 className={cn(
-                                  "min-h-[90px] text-xs font-normal rounded-lg resize-none transition-all p-3",
+                                  "min-h-[90px] text-base sm:text-xs font-normal rounded-lg resize-none transition-all p-3",
                                   form.watch('sampleSize')! < suggestion.min && !field.value 
                                     ? "border-rose-300 bg-rose-50/30 focus:ring-rose-500/20" 
                                     : "bg-slate-50 border-slate-200 focus:bg-white"
@@ -419,19 +419,19 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
                           <Textarea 
                             placeholder={t('toe.placeholder')} 
                             {...field} 
-                            className="min-h-[100px] text-xs font-normal bg-slate-50 border-slate-200 focus:bg-white rounded-lg transition-all resize-none p-3.5" 
+                            className="min-h-[100px] text-base sm:text-xs font-normal bg-slate-50 border-slate-200 focus:bg-white rounded-lg transition-all resize-none p-3.5" 
                           />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
 
-                    <div className="pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-                       <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider">
-                          <Fingerprint className="h-4 w-4 text-indigo-500 shrink-0" />
-                          Certified Evidence Submission
-                       </div>
-                      <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 w-full sm:w-auto">
+                    <div className="pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 flex-wrap min-w-0">
+                        <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider min-w-0">
+                           <Fingerprint className="h-4 w-4 text-indigo-500 shrink-0" />
+                           Certified Evidence Submission
+                        </div>
+                      <div className="flex flex-col-reverse sm:flex-row gap-2.5 sm:gap-3 w-full sm:w-auto">
                         <Button 
                           type="submit" 
                           disabled={isAuthenticating || mutation.isPending} 

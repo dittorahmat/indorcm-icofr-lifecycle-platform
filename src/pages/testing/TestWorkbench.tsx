@@ -243,7 +243,7 @@ export function TestWorkbench() {
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between sm:justify-end gap-2.5 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 shrink-0 flex-wrap">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2.5 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 shrink-0 flex-wrap min-w-0">
                       <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                         {isCsaIneffective ? (
                           <Badge className="bg-amber-500 text-white border-none text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded">

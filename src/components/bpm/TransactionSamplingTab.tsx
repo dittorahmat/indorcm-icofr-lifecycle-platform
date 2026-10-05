@@ -111,7 +111,7 @@ export function TransactionSamplingTab({ noGL, bpmProcessId, year: propYear, onS
           </div>
           <Button 
             variant="outline" 
-            className="h-9 text-xs gap-2 border-dashed"
+            className="h-11 sm:h-9 min-h-[44px] sm:min-h-0 text-xs gap-2 border-dashed w-full sm:w-auto justify-center"
             onClick={() => setIsUploadModalOpen(true)}
           >
             <Upload className="h-4 w-4" /> {t('csa_hub:upload.button')}
@@ -119,7 +119,7 @@ export function TransactionSamplingTab({ noGL, bpmProcessId, year: propYear, onS
 
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-9 w-9 text-slate-400 hover:text-red-600 hover:bg-red-50">
+              <Button variant="ghost" size="icon" className="h-11 w-11 sm:h-9 sm:w-9 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 text-slate-400 hover:text-red-600 hover:bg-red-50 shrink-0">
                 <Trash2 className="h-4 w-4" />
               </Button>
             </AlertDialogTrigger>

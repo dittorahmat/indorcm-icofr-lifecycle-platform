@@ -59,7 +59,8 @@ export function ComplianceCharts({ barData, deficiencyBySeverity, isLoading }: C
           <CardDescription className="text-xs font-medium text-slate-500 mt-1">{t('charts.controlsByProcess.description')}</CardDescription>
         </CardHeader>
         <CardContent className="pt-5 sm:pt-8 px-2 sm:px-6 pb-4 sm:pb-6">
-          <div className="h-[260px] sm:h-[300px] w-full min-w-0">
+          <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain">
+            <div className="h-[220px] sm:h-[300px] w-full min-w-[480px] sm:min-w-0">
             {isLoading ? <Skeleton className="h-full w-full rounded-xl" /> : barData.length === 0 ? (
               <div className="h-full flex items-center justify-center text-slate-400 text-xs font-bold uppercase tracking-wider">{t('charts.noData')}</div>
             ) : (
@@ -119,6 +120,7 @@ export function ComplianceCharts({ barData, deficiencyBySeverity, isLoading }: C
                 </BarChart>
               </ResponsiveContainer>
             )}
+            </div>
           </div>
         </CardContent>
       </Card>

@@ -20,6 +20,7 @@ import { ReportExportPanel } from '@/components/reports/ReportExportPanel';
 import { ManagementAssessment } from '@/components/reports/ManagementAssessment';
 import { RegulatoryAppendices } from '@/components/reports/RegulatoryAppendices';
 import { PageHeader } from '@/components/layout/PageHeader';
+import { MobileDesktopBanner } from '@/components/layout/MobileDesktopBanner';
 
 export function ReportsPage() {
   const { t } = useTranslation('reports');
@@ -101,6 +102,10 @@ export function ReportsPage() {
   const isEffective = mwCount === 0;
 
   const isLoading = summaryLoading || settingsLoading || dataLoading;
+
+  const filteredTests = (testsData || [])
+    .filter((tr) => testTypeFilter === 'ALL' || tr.testType === testTypeFilter)
+    .filter((tr) => testStatusFilter === 'ALL' || tr.result === testStatusFilter);
 
   if (isLoading) {
     return (
@@ -208,7 +213,46 @@ export function ReportsPage() {
                 <CardDescription className="text-xs">{t('testing.description')}</CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
-                <div className="rounded-lg border border-slate-200 overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint shadow-sm bg-white">
+                <div className="mb-4 md:hidden">
+                  <MobileDesktopBanner recordCount={filteredTests.length} />
+                </div>
+                <div className="block md:hidden space-y-3">
+                  {filteredTests.map((test, index) => {
+                    const control = controlsData?.find(c => c.id === test.controlId);
+                    const rcm = rcmData?.find(r => r.id === control?.rcmId);
+                    return (
+                      <div key={test.id} className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+                        <div className="flex items-start justify-between gap-2 flex-wrap">
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold text-primary leading-none">{control?.code || '???'}</p>
+                            <p className="mt-1 text-xs font-semibold text-slate-800 leading-snug">{control?.name || 'Unknown Control'}</p>
+                            <p className="mt-1 text-xs text-muted-foreground">{rcm?.process || 'N/A'} / {rcm?.subProcess || 'N/A'}</p>
+                          </div>
+                          <Badge variant="outline" className={cn(
+                            "text-xs uppercase font-bold shrink-0",
+                            test.result === 'Effective' ? "bg-green-100 text-green-700 border-green-200" : "bg-red-100 text-red-700 border-red-200"
+                          )}>
+                            {test.result}
+                          </Badge>
+                        </div>
+                        <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
+                          <span className="font-mono font-bold">{test.testType}</span>
+                          <span aria-hidden="true">·</span>
+                          <span className="font-mono">{test.method || '-'}</span>
+                          <span aria-hidden="true">·</span>
+                          <span>{test.testType === 'TOE' ? (test.sampleSize ?? '-') : 'N/A'} {t('testing.table.sample')}</span>
+                        </div>
+                        {test.comments ? (
+                          <p className="mt-2 text-xs text-muted-foreground leading-relaxed line-clamp-3">"{test.comments}"</p>
+                        ) : null}
+                      </div>
+                    );
+                  })}
+                  {filteredTests.length === 0 ? (
+                    <p className="text-center py-8 text-xs text-muted-foreground">{t('testing.empty', { defaultValue: 'Belum ada hasil pengujian.' })}</p>
+                  ) : null}
+                </div>
+                <div className="hidden md:block rounded-lg border border-slate-200 overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint shadow-sm bg-white">
                   <Table className="min-w-[880px]">
                     <TableHeader className="bg-slate-50/80">
                       <TableRow>

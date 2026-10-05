@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 const StatCard = ({ icon, title, value }: { icon: React.ReactNode; title: string; value: string }) => (
   <Card className="bg-card">
     <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-0 pb-2 gap-2">
-      <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground min-w-0 truncate">{title}</CardTitle>
+      <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground min-w-0 truncate" title={title}>{title}</CardTitle>
       <span className="shrink-0">{icon}</span>
     </CardHeader>
     <CardContent>

@@ -37,13 +37,21 @@ export function TodoListGrid({
             const isCurrentMonth = isSameMonth(day, currentDate);
             
             return (
-              <div 
-                key={idx} 
+              <button
+                key={idx}
+                type="button"
+                aria-label={format(day, 'd MMMM yyyy')}
                 className={cn(
-                  "min-h-[72px] sm:min-h-[140px] border-r border-b p-0.5 sm:p-1 transition-colors hover:bg-slate-100/50 group bg-white min-w-0",
+                  "min-h-[72px] sm:min-h-[140px] border-r border-b p-0.5 sm:p-1 transition-colors hover:bg-slate-100/50 group bg-white min-w-0 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
                   !isCurrentMonth && "bg-slate-50/50 text-slate-300"
                 )}
                 onClick={() => onSelectDate(day)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onSelectDate(day);
+                  }
+                }}
               >
                 <div className="flex justify-center sm:justify-start mb-0.5 sm:mb-1 sm:px-1">
                   <span className={cn(
@@ -96,7 +104,7 @@ export function TodoListGrid({
                     </p>
                   )}
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>

@@ -95,7 +95,7 @@ export function ApplicationDetailDialog({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-5xl w-[94vw] max-h-[92vh] flex flex-col p-0 overflow-hidden shadow-2xl border-slate-200">
+        <DialogContent className="max-w-5xl w-[94vw] max-h-[92dvh] sm:max-h-[92vh] flex flex-col p-0 overflow-hidden shadow-2xl border-slate-200">
           {/* Header */}
           <div className="bg-slate-900 text-white p-4 sm:p-6 border-b border-slate-800 shrink-0">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 flex-wrap min-w-0 max-w-full">
@@ -329,7 +329,7 @@ export function ApplicationDetailDialog({
       {/* In-App File Preview Modal */}
       {previewFile && (
         <Dialog open={!!previewFile} onOpenChange={(open) => !open && setPreviewFile(null)}>
-          <DialogContent className="max-w-4xl w-[90vw] max-h-[90vh] flex flex-col p-0 overflow-hidden shadow-2xl">
+          <DialogContent className="max-w-4xl w-[90vw] max-h-[90dvh] sm:max-h-[90vh] flex flex-col p-0 overflow-hidden shadow-2xl">
             <div className="bg-slate-900 text-white px-5 py-3.5 flex items-center justify-between shrink-0 flex-wrap gap-2">
               <div className="flex items-center gap-2 truncate">
                 <FileText className="h-4 w-4 text-blue-400 shrink-0" />
@@ -352,13 +352,13 @@ export function ApplicationDetailDialog({
                 <iframe
                   src={previewFile.url}
                   title={previewFile.name}
-                  className="w-full h-[70vh] border border-slate-200 rounded-md bg-white"
+                  className="w-full h-[70dvh] sm:h-[70vh] border border-slate-200 rounded-md bg-white"
                 />
               ) : previewFile.url.match(/\.(png|jpe?g|webp|svg|gif)$/i) || previewFile.type.startsWith('image/') ? (
                 <img
                   src={previewFile.url}
                   alt={previewFile.name}
-                  className="max-h-[70vh] max-w-full object-contain rounded shadow-sm"
+                  className="max-h-[70dvh] sm:max-h-[70vh] max-w-full object-contain rounded shadow-sm"
                 />
               ) : (
                 <div className="text-center p-8 space-y-3">

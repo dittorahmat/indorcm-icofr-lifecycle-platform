@@ -294,7 +294,7 @@ export function AppSidebar(): JSX.Element {
             <SidebarMenuItem>
               <SidebarMenuButton 
                 onClick={toggleChat} 
-                className="h-9 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] font-semibold text-sm"
+                className="h-11 sm:h-9 min-h-[44px] sm:min-h-0 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] font-semibold text-sm"
                 title={t('items.aiAssistant')}
               >
                 <Bot className="h-4 w-4 text-primary" />
@@ -370,7 +370,7 @@ export function AppSidebar(): JSX.Element {
             <SidebarMenuItem>
               <SidebarMenuButton
                 onClick={handleLogout}
-                className="h-9 px-3 rounded-md text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-all active:scale-[0.98] font-semibold text-sm"
+                className="h-11 sm:h-9 min-h-[44px] sm:min-h-0 px-3 rounded-md text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-all active:scale-[0.98] font-semibold text-sm"
               >
                 <LogOut className="h-4 w-4 shrink-0" />
                 <span>{t('items.logout')}</span>

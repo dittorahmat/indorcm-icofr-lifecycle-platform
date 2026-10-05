@@ -39,7 +39,8 @@ describe('Lampiran11Report (Appendix 11)', () => {
     render(<Lampiran11Report deficiencies={deficiencies as any} controls={[]} />);
     expect(screen.getByText('Kesimpulan: Tidak Efektif')).toBeInTheDocument();
     expect(screen.getByText('CD: 1 | SD: 0 | MW: 1 | Total: 2')).toBeInTheDocument();
-    expect(screen.getByText('DEF-001')).toBeInTheDocument();
+    // Dual-render: mobile cards + desktop table both render in jsdom.
+    expect(screen.getAllByText('DEF-001')).toHaveLength(2);
     expect(screen.queryByText('DEF-002')).not.toBeInTheDocument();
   });
 

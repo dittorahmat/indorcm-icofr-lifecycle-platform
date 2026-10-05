@@ -516,11 +516,11 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
             </div>
           </div>
           <DialogFooter className="flex-col-reverse sm:flex-row gap-2">
-            <Button variant="outline" onClick={() => setIsAddingApp(false)} className="w-full sm:w-auto min-h-[44px] sm:min-h-0">Cancel</Button>
+            <Button variant="outline" onClick={() => setIsAddingApp(false)} className="w-full sm:w-auto h-11 sm:h-10 min-h-[44px] justify-center">Cancel</Button>
             <Button 
               disabled={!newAppName || createAppMutation.isPending}
               onClick={() => createAppMutation.mutate(newAppName)}
-              className="w-full sm:w-auto min-h-[44px] sm:min-h-0"
+              className="w-full sm:w-auto h-11 sm:h-10 min-h-[44px] justify-center"
             >
               Add Application
             </Button>
@@ -529,7 +529,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
       </Dialog>
 
       <Dialog open={isBpmModalOpen} onOpenChange={(open) => !open && handleCloseDiagram()}>
-        <DialogContent className="w-full sm:max-w-[95vw] h-[90vh] flex flex-col p-0 overflow-hidden">
+        <DialogContent className="w-full sm:max-w-[95vw] h-[90dvh] sm:h-[90vh] flex flex-col p-0 overflow-hidden">
           <DialogHeader className="p-4 sm:p-6 pb-2 sm:pb-2 shrink-0">
             <DialogTitle className="flex items-center gap-2 text-base sm:text-xl min-w-0 truncate">
               <WorkflowIcon className="h-5 w-5 text-primary" />

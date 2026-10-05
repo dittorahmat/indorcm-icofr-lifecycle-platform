@@ -95,7 +95,31 @@ export function FindingsReport({ deficiencies = [], controls = [] }: { deficienc
           </div>
         </div>
 
-        <div className="rounded-lg border overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint bg-white">
+        <MobileDesktopBanner recordCount={deficiencies.length} />
+
+        <div className="block md:hidden space-y-3">
+          {deficiencies.length === 0 ? (
+            <p className="text-center py-8 text-xs text-muted-foreground font-medium">
+              {t('findings.empty', { defaultValue: 'Belum ada data temuan.' })}
+            </p>
+          ) : (
+            deficiencies.map((d: any, index: number) => (
+              <div key={d.id || index} className="rounded-lg border border-border bg-card p-4 shadow-sm">
+                <div className="flex items-start justify-between gap-2 flex-wrap">
+                  <span className="font-mono text-xs font-bold">{d.id || `DEF-${String(index + 1).padStart(3, '0')}`}</span>
+                  {severityBadge(d.severity)}
+                </div>
+                <p className="mt-2 text-xs text-foreground leading-relaxed">{d.description || '-'}</p>
+                <div className="mt-2 flex items-center justify-between gap-2 text-xs text-muted-foreground flex-wrap">
+                  <span>{d.status || '-'}</span>
+                  <span className="font-mono">{typeof d.exposureValue === 'number' ? new Intl.NumberFormat('id-ID').format(d.exposureValue) : '-'}</span>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        <div className="hidden md:block rounded-lg border overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint bg-white">
           <Table className="min-w-[1100px]">
             <TableHeader className="bg-slate-50 border-b">
               <TableRow>
@@ -449,7 +473,35 @@ export function Lampiran11Report({ deficiencies = [], controls = [] }: { deficie
           ))}
         </div>
 
-        <div className="rounded-lg border overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint bg-white">
+        <MobileDesktopBanner recordCount={significant.length} />
+
+        <div className="block md:hidden space-y-3">
+          {significant.length === 0 ? (
+            <p className="text-center py-8 text-xs text-muted-foreground font-medium">
+              {t('assessment.noDeficiencies')}
+            </p>
+          ) : (
+            significant.map((d, index) => (
+              <div key={d.id || index} className="rounded-lg border border-border bg-card p-4 shadow-sm">
+                <div className="flex items-start justify-between gap-2 flex-wrap">
+                  <span className="font-mono text-xs font-bold">{d.id || `DEF-${String(index + 1).padStart(3, '0')}`}</span>
+                  <Badge variant="outline" className={d.severity === 'Material Weakness'
+                    ? 'bg-red-50 text-red-700 border-red-300 font-semibold text-xs rounded-md shrink-0'
+                    : 'bg-amber-50 text-amber-700 border-amber-300 font-semibold text-xs rounded-md shrink-0'}>
+                    {d.severity === 'Material Weakness' ? 'MW' : 'SD'}
+                  </Badge>
+                </div>
+                <p className="mt-2 text-xs text-foreground leading-relaxed">{d.description || '-'}</p>
+                <div className="mt-2 flex items-center justify-between gap-2 text-xs text-muted-foreground flex-wrap">
+                  <span>{d.status || '-'}</span>
+                  <span className="font-mono">{typeof d.exposureValue === 'number' ? new Intl.NumberFormat('id-ID').format(d.exposureValue) : '-'}</span>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        <div className="hidden md:block rounded-lg border overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint bg-white">
           <Table className="min-w-[800px]">
             <TableHeader className="bg-slate-50 border-b">
               <TableRow>
