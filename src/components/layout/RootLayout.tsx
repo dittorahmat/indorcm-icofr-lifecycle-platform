@@ -49,10 +49,10 @@ export function RootLayout(): JSX.Element {
 
   return (
     <MotionConfig reducedMotion="user">
-    <SidebarProvider className="h-dvh flex flex-col bg-background text-foreground min-w-0 overflow-hidden">
+    <SidebarProvider className="h-dvh flex flex-col bg-background text-foreground min-w-0 max-w-full overflow-hidden">
       <MainHeader />
       <LicenseBanner />
-      <div className="flex-1 relative flex flex-col min-h-0 min-w-0 w-full max-w-full overflow-hidden overflow-x-hidden pb-[calc(3.5rem+env(safe-area-inset-bottom,0px))] md:pb-0">
+      <div className="flex-1 relative flex flex-col min-h-0 min-w-0 w-full max-w-full overflow-y-auto overflow-x-hidden pb-[calc(3.5rem+env(safe-area-inset-bottom,0px))] md:pb-0">
         <Outlet />
       </div>
 

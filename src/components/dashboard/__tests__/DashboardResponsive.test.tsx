@@ -80,4 +80,24 @@ describe('Dashboard Mobile Responsiveness & Anti-Slop Integrity', () => {
     expect(html).not.toContain('text-[10px]');
     expect(html).not.toContain('text-[11px]');
   });
+
+  it('renders ActionCenter with flex protection and badge containment', async () => {
+    const { ActionCenter } = await import('../ActionCenter');
+    const { MemoryRouter } = await import('react-router-dom');
+    const { container } = render(
+      <MemoryRouter>
+        <ActionCenter csaCompletion={75} openDeficienciesCount={3} />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByText('75%')).toBeInTheDocument();
+    expect(screen.getByText('3')).toBeInTheDocument();
+
+    // Verify truncate protection classes on titles
+    const titles = container.querySelectorAll('h4');
+    expect(titles.length).toBeGreaterThan(0);
+    titles.forEach(title => {
+      expect(title.className).toContain('truncate');
+    });
+  });
 });

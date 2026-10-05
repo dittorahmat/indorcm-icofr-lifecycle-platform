@@ -38,11 +38,11 @@ export function ActionCenter({ csaCompletion, openDeficienciesCount }: ActionCen
           <div className="h-10 w-10 shrink-0 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center group-hover:bg-mancity-pattern group-hover:text-primary-foreground transition-all duration-300 shadow-sm border border-slate-200">
             <ClipboardCheck className="h-5 w-5" aria-hidden="true" />
           </div>
-          <div className="flex-1 min-w-0">
-            <h4 className="font-bold text-slate-900 text-sm leading-tight">{t('actionCenter.csa.title')}</h4>
+          <div className="flex-1 min-w-0 pr-1">
+            <h4 className="font-bold text-slate-900 text-sm leading-tight truncate">{t('actionCenter.csa.title')}</h4>
             <p className="text-xs text-slate-500 font-medium mt-1 line-clamp-2 sm:line-clamp-1">{t('actionCenter.csa.description')}</p>
           </div>
-          <div className="text-right shrink-0">
+          <div className="text-right shrink-0 min-w-[56px]">
             <div className="text-xs font-bold text-slate-900">{csaCompletion}%</div>
             <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('actionCenter.status.complete', { defaultValue: 'Complete' })}</div>
           </div>
@@ -58,12 +58,12 @@ export function ActionCenter({ csaCompletion, openDeficienciesCount }: ActionCen
             <div className="h-10 w-10 shrink-0 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center group-hover:bg-destructive group-hover:text-destructive-foreground transition-all duration-300 shadow-sm border border-destructive/20">
               <AlertTriangle className="h-5 w-5" aria-hidden="true" />
             </div>
-            <div className="flex-1 min-w-0">
-              <h4 className="font-bold text-slate-900 text-sm leading-tight">{t('actionCenter.deficiency.title')}</h4>
+            <div className="flex-1 min-w-0 pr-1">
+              <h4 className="font-bold text-slate-900 text-sm leading-tight truncate">{t('actionCenter.deficiency.title')}</h4>
               <p className="text-xs text-destructive font-medium mt-1 line-clamp-2 sm:line-clamp-1">{t('actionCenter.deficiency.description')}</p>
             </div>
-            <div className="text-right shrink-0">
-              <Badge className="bg-destructive text-destructive-foreground border-none font-bold text-xs h-5 px-1.5 flex items-center justify-center rounded-md">{openDeficienciesCount}</Badge>
+            <div className="text-right shrink-0 min-w-[40px] flex justify-end">
+              <Badge className="bg-destructive text-destructive-foreground border-none font-bold text-xs h-5 px-1.5 flex items-center justify-center rounded-md shrink-0">{openDeficienciesCount}</Badge>
             </div>
           </button>
         )}
@@ -77,11 +77,11 @@ export function ActionCenter({ csaCompletion, openDeficienciesCount }: ActionCen
           <div className="h-10 w-10 shrink-0 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center group-hover:bg-mancity-pattern group-hover:text-primary-foreground transition-all duration-300 shadow-sm border border-slate-200">
             <FileText className="h-5 w-5" aria-hidden="true" />
           </div>
-          <div className="flex-1 min-w-0">
-            <h4 className="font-bold text-slate-900 text-sm leading-tight">{t('actionCenter.reports.title')}</h4>
+          <div className="flex-1 min-w-0 pr-1">
+            <h4 className="font-bold text-slate-900 text-sm leading-tight truncate">{t('actionCenter.reports.title')}</h4>
             <p className="text-xs text-slate-500 font-medium mt-1 line-clamp-2 sm:line-clamp-1">{t('actionCenter.reports.description')}</p>
           </div>
-          <div className="text-right shrink-0">
+          <div className="text-right shrink-0 min-w-[24px]">
              <ArrowUpRight className="h-4 w-4 text-slate-300 group-hover:text-slate-900 transition-colors ml-auto" aria-hidden="true" />
           </div>
         </button>

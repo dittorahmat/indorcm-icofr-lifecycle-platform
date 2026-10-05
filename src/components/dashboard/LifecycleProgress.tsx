@@ -78,7 +78,7 @@ export function LifecycleProgress({ currentStage = 'evaluasi', workingYear = '20
         <div
           role="region"
           aria-label={t('lifecycle.title')}
-          className="relative flex items-center gap-2 overflow-x-auto pb-1.5 pt-1 no-scrollbar -mx-1 px-1 touch-pan-x scroll-smooth overscroll-x-contain [mask-image:linear-gradient(to_right,black_calc(100%-2rem),transparent)]"
+          className="relative flex items-center gap-2 overflow-x-auto pb-1.5 pt-1 no-scrollbar w-full max-w-full touch-pan-x scroll-smooth overscroll-x-contain"
         >
           {stages.map((stage, idx) => {
             const isCompleted = idx < currentIdx;

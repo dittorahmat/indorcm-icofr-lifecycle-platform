@@ -56,12 +56,12 @@ export function AppLayout({
       }>
         <AppSidebar />
       </Suspense>
-      <SidebarInset className={cn("flex flex-col min-h-0 min-w-0 w-full max-w-full bg-background overflow-hidden overflow-x-clip", className)}>
+      <SidebarInset className={cn("flex flex-col min-h-0 min-w-0 w-full max-w-full bg-background overflow-y-auto overflow-x-hidden", className)}>
         <div className={cn(
-          "flex-1 flex flex-col min-h-0 min-w-0 max-w-full overflow-x-clip",
+          "flex-1 flex flex-col min-h-0 min-w-0 w-full max-w-full",
           "pb-[calc(3.5rem+env(safe-area-inset-bottom,0px))] md:pb-0",
           !noScroll && "scrollbar-hover",
-          container && "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-8",
+          container && "max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-8",
           contentClassName
         )}>          {children}
         </div>

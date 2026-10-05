@@ -48,9 +48,9 @@ export function ComplianceCharts({ barData, deficiencyBySeverity, isLoading }: C
   }, [deficiencyBySeverity]);
 
   return (
-    <div className="grid grid-cols-1 gap-4 lg:gap-6 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 lg:gap-6 lg:grid-cols-3 min-w-0 w-full max-w-full">
       {/* BAR CHART: CONTROLS BY PROCESS */}
-      <Card className="lg:col-span-2 border-slate-200 shadow-xs overflow-hidden bg-white rounded-lg">
+      <Card className="lg:col-span-2 border-slate-200 shadow-xs overflow-hidden bg-white rounded-lg min-w-0 w-full max-w-full">
         <CardHeader className="bg-slate-50 border-b py-4 sm:py-5 px-4 sm:px-6">
           <div className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4 text-slate-900" />
@@ -58,9 +58,9 @@ export function ComplianceCharts({ barData, deficiencyBySeverity, isLoading }: C
           </div>
           <CardDescription className="text-xs font-medium text-slate-500 mt-1">{t('charts.controlsByProcess.description')}</CardDescription>
         </CardHeader>
-        <CardContent className="pt-5 sm:pt-8 px-2 sm:px-6 pb-4 sm:pb-6">
-          <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain">
-            <div className="h-[220px] sm:h-[300px] w-full min-w-[480px] sm:min-w-0">
+        <CardContent className="pt-5 sm:pt-8 px-2 sm:px-6 pb-4 sm:pb-6 min-w-0 w-full max-w-full">
+          <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain scrollbar-hover">
+            <div className="h-[220px] sm:h-[300px] w-full min-w-[320px] sm:min-w-0">
             {isLoading ? <Skeleton className="h-full w-full rounded-xl" /> : barData.length === 0 ? (
               <div className="h-full flex items-center justify-center text-slate-400 text-xs font-bold uppercase tracking-wider">{t('charts.noData')}</div>
             ) : (
@@ -126,7 +126,7 @@ export function ComplianceCharts({ barData, deficiencyBySeverity, isLoading }: C
       </Card>
 
       {/* PIE CHART: DEFICIENCIES */}
-      <Card className="border-slate-200 shadow-xs overflow-hidden bg-white rounded-lg">
+      <Card className="border-slate-200 shadow-xs overflow-hidden bg-white rounded-lg min-w-0 w-full max-w-full">
         <CardHeader className="bg-slate-50 border-b py-4 sm:py-5 px-4 sm:px-6">
           <div className="flex items-center gap-2">
             <PieChartIcon className="h-4 w-4 text-rose-600" />
@@ -134,8 +134,8 @@ export function ComplianceCharts({ barData, deficiencyBySeverity, isLoading }: C
           </div>
           <CardDescription className="text-xs font-medium text-slate-500 mt-1">{t('charts.deficienciesBySeverity.description')}</CardDescription>
         </CardHeader>
-        <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6 pb-4 sm:pb-6">
-          <div className="min-h-[300px] sm:min-h-[360px] w-full flex flex-col items-center justify-between relative">
+        <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6 pb-4 sm:pb-6 min-w-0 w-full max-w-full">
+          <div className="min-h-[300px] sm:min-h-[360px] w-full max-w-full flex flex-col items-center justify-between relative min-w-0">
             {isLoading ? (
               <div className="flex-1 flex items-center justify-center">
                 <Loader2 className="h-10 w-10 sm:h-12 sm:w-12 text-slate-900 animate-spin" aria-hidden="true" />
@@ -144,7 +144,7 @@ export function ComplianceCharts({ barData, deficiencyBySeverity, isLoading }: C
               <div className="flex-1 flex items-center justify-center text-slate-400 text-xs font-bold uppercase tracking-wider">{t('charts.noDeficiencies')}</div>
             ) : (
               <>
-                <div className="w-full h-[190px] sm:h-[220px] relative shrink-0">
+                <div className="w-full max-w-[260px] sm:max-w-full h-[190px] sm:h-[220px] relative shrink-0 mx-auto flex items-center justify-center min-w-0">
                   <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                     <PieChart>
                       <Pie 

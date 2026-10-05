@@ -201,11 +201,11 @@ export function Dashboard() {
         />
 
         {/* MAIN DASHBOARD CONTENT */}
-        <div className="grid grid-cols-1 gap-4 lg:gap-6 lg:grid-cols-12">
+        <div className="grid grid-cols-1 gap-4 lg:gap-6 lg:grid-cols-12 min-w-0 w-full max-w-full">
           
           {/* ACTION CENTER & OPERATIONAL METRICS (Priority 1 on mobile, Right column on desktop) */}
-          <div className="lg:col-span-4 space-y-6 order-1 lg:order-2">
-            <motion.div variants={itemVariants}>
+          <div className="lg:col-span-4 space-y-6 order-1 lg:order-2 min-w-0 w-full max-w-full">
+            <motion.div variants={itemVariants} className="min-w-0 w-full max-w-full">
               <ActionCenter 
                 csaCompletion={csaCompletion}
                 openDeficienciesCount={openDeficiencies.length}
@@ -213,12 +213,12 @@ export function Dashboard() {
             </motion.div>
 
             {/* SECONDARY METRICS (Optimized grid) */}
-             <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
+             <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4 min-w-0 w-full max-w-full">
                 {[
                   { label: t('kpis.remediationVelocity'), value: t('kpis.remediationAvgDays', { days: remediationVelocity }), icon: TrendingUp, color: 'text-blue-600', bg: 'bg-blue-50' },
                   { label: t('kpis.line2Validation'), value: t('kpis.line2Percent', { percent: line2Percent }), icon: ShieldCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' }
                 ].map((metric, i) => (
-                 <div key={i} className="group p-4 md:p-5 bg-white border border-slate-200 rounded-lg shadow-xs hover:shadow-sm transition-all duration-200 cursor-pointer flex items-center gap-4">
+                 <div key={i} className="group p-4 md:p-5 bg-white border border-slate-200 rounded-lg shadow-xs hover:shadow-sm transition-all duration-200 cursor-pointer flex items-center gap-4 min-w-0">
                     <div className={cn("h-10 w-10 rounded-md flex items-center justify-center transition-colors group-hover:bg-slate-900 group-hover:text-white shrink-0 shadow-xs border border-slate-100", metric.bg)}>
                         <metric.icon className="h-5 w-5" />
                     </div>
@@ -233,13 +233,13 @@ export function Dashboard() {
                ))}
             </motion.div>
 
-            <motion.div variants={itemVariants} className="p-3 bg-slate-50 rounded-lg border border-slate-200 border-dashed">
-              <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider text-center">
+            <motion.div variants={itemVariants} className="p-3 bg-slate-50 rounded-lg border border-slate-200 border-dashed min-w-0 w-full max-w-full">
+              <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider text-center truncate">
                 Compliance Engine v2.4.0 — BUMN Standard
               </p>
             </motion.div>
 
-            <motion.div variants={itemVariants}>
+            <motion.div variants={itemVariants} className="min-w-0 w-full max-w-full">
               <CSARealizationTable 
                 controls={controlsData?.items || []} 
                 isLoading={isLoading} 
@@ -248,8 +248,8 @@ export function Dashboard() {
           </div>
 
           {/* ANALYTICAL CHARTS & COSO MATRICES (Priority 2 on mobile, Left column on desktop) */}
-          <div className="lg:col-span-8 space-y-6 order-2 lg:order-1">
-            <motion.div variants={itemVariants}>
+          <div className="lg:col-span-8 space-y-6 order-2 lg:order-1 min-w-0 w-full max-w-full">
+            <motion.div variants={itemVariants} className="min-w-0 w-full max-w-full">
               <React.Suspense fallback={<Skeleton className="h-[380px] w-full rounded-lg" />}>
                 <ComplianceCharts 
                   barData={barData} 
@@ -259,7 +259,7 @@ export function Dashboard() {
               </React.Suspense>
             </motion.div>
 
-            <motion.div variants={itemVariants}>
+            <motion.div variants={itemVariants} className="min-w-0 w-full max-w-full">
               <COSOCoverageGrid 
                 cosoCoverage={cosoCoverage}
                 isLoading={isLoading}

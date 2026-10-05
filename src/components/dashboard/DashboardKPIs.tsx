@@ -28,16 +28,16 @@ export function DashboardKPIs({ controlsCount, openDeficienciesCount, cosoPercen
   const { t } = useTranslation('dashboard');
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 min-w-0 w-full max-w-full">
       {/* Executive Cycle Readiness Card */}
-      <motion.div variants={itemVariants} className="min-w-0 w-full sm:col-span-2 lg:col-span-1">
+      <motion.div variants={itemVariants} className="min-w-0 w-full max-w-full sm:col-span-2 lg:col-span-1">
         <Card className="bg-mancity-pattern text-primary-foreground border border-primary/20 shadow-xs overflow-hidden relative group rounded-lg">
           <CardHeader className="p-3.5 sm:p-4 pb-1 sm:pb-2">
             <div className="flex items-center justify-between flex-wrap gap-2">
-              <CardTitle className="text-xs font-bold uppercase tracking-wider text-primary-foreground/90 flex items-center gap-1.5">
+              <CardTitle className="text-xs font-bold uppercase tracking-wider text-primary-foreground/90 flex items-center gap-1.5 truncate">
                 <Clock className="h-3.5 w-3.5 shrink-0" aria-hidden="true" /> {t('kpis.cycleReadiness')}
               </CardTitle>
-              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-white/20 text-white border border-white/20">
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-white/20 text-white border border-white/20 shrink-0">
                 FY {workingYear}
               </span>
             </div>
@@ -61,7 +61,7 @@ export function DashboardKPIs({ controlsCount, openDeficienciesCount, cosoPercen
       </motion.div>
 
       {/* KPI Metric Cards: 1 column on mobile (<640px), 3 cols on sm, 3 cols on lg */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 sm:contents gap-2.5 sm:gap-4 col-span-1 sm:col-span-2 lg:col-span-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 sm:contents gap-2.5 sm:gap-4 col-span-1 sm:col-span-2 lg:col-span-3 min-w-0 w-full max-w-full">
         {[
           { 
             title: t('kpis.controlCoverage'), 
