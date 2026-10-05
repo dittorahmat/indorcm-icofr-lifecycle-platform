@@ -1,6 +1,8 @@
 {
   "matrix": {
     "title_tlc": "Transaction Level Control Matrix",
+    "open_matrix_tlc": "Open TLC Matrix",
+    "open_matrix_itgc": "Open ITGC Matrix",
     "title_elc": "Entity Level Control Matrix",
     "title_itgc": "IT General Control Matrix",
     "subtitle_elc": "Entity Level Control Matrix (17 COSO Principles) - SK-5 Lampiran 5 a.",
@@ -280,6 +282,10 @@
   },
   "actions": {
     "export_excel": "Export Excel",
-    "export_success": "Excel file downloaded successfully"
+    "export_success": "Excel file downloaded successfully",
+    "search_matrix": "Search matrix...",
+    "print": "Print",
+    "refresh": "Refresh",
+    "save": "Save"
   }
 }

@@ -399,15 +399,15 @@ export function VerificationDesignPage({ embedded, filterBpmId, workingYear, noG
   if (embedded) {
     return (
       <div className="flex flex-col h-full bg-white">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 px-4 py-3 border-b bg-slate-50 shrink-0">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 flex-1 min-w-0 w-full md:max-w-md">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3 border-b bg-slate-50 shrink-0">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 flex-1 min-w-0 w-full sm:max-w-md">
             <div className="relative w-full min-w-0">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-              <Input 
-                placeholder="Search matrix..." 
-                className="pl-8 bg-white border-slate-200 h-11 sm:h-8 min-h-[44px] sm:min-h-0 text-base sm:text-xs font-medium w-full" 
-                value={searchTerm} 
-                onChange={(e) => setSearchTerm(e.target.value)} 
+              <Input
+                placeholder={t('rcm:actions.search_matrix', { defaultValue: 'Search matrix...' })}
+                className="pl-8 bg-white border-slate-200 h-11 sm:h-8 min-h-[44px] sm:min-h-0 text-base sm:text-xs font-medium w-full"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto shrink-0">
@@ -424,7 +424,7 @@ export function VerificationDesignPage({ embedded, filterBpmId, workingYear, noG
             </Button>
             </div>
           </div>
-          <span className="order-first md:order-none truncate min-w-0 max-w-full text-xs font-black text-slate-400 uppercase tracking-wider">
+          <span className="order-first sm:order-none truncate min-w-0 max-w-full text-xs font-black text-slate-400 uppercase tracking-wider">
             {t('rcm:verification.title')}
           </span>
         </div>

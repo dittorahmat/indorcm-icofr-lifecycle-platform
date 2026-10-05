@@ -77,7 +77,10 @@
     "description": "Consolidated results of control design and operating effectiveness testing.",
     "effective": "Effective",
     "ineffective": "Ineffective",
+    "referenceTitle": "Regulatory Reference",
+    "referenceDesc": "SK-5 Chapter V & Appendix 8",
     "filters": {
+      "title": "Results Filters",
       "type": "Test Type",
       "status": "Status"
     },
@@ -139,6 +142,7 @@
     "printA4": "Print Report (A4/A3)",
     "empty": "No control deficiency evaluation records found, or no records match the active filters.",
     "filters": {
+      "title": "Search & Filters",
       "allSeverities": "All Severities (CD, SD, MW)",
       "controlDeficiency": "Control Deficiency (CD)",
       "significantDeficiency": "Significant Deficiency (SD)",
@@ -153,7 +157,13 @@
       "materialWeakness": "Material Weakness (MW)",
       "significantDeficiency": "Significant Deficiency (SD)",
       "controlDeficiency": "Control Deficiency (CD)",
-      "remediatedCount": "Remediated Prior to Year-End"
+      "remediatedCount": "Remediated Prior to Year-End",
+      "activeFilter": "Active",
+      "filterHintAll": "Click to show all deficiencies (Reset Filters)",
+      "filterHintMW": "Click to filter Material Weakness (MW)",
+      "filterHintSD": "Click to filter Significant Deficiency (SD)",
+      "filterHintCD": "Click to filter Control Deficiency (CD)",
+      "filterHintRemediated": "Click to filter deficiencies remediated before year-end"
     },
     "table": {
       "groupFinding": "Deficiency Overview",

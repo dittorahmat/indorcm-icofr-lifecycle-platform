@@ -1,6 +1,8 @@
 {
   "matrix": {
     "title_tlc": "Matriks RCM TLC",
+    "open_matrix_tlc": "Buka Matriks TLC",
+    "open_matrix_itgc": "Buka Matriks ITGC",
     "title_elc": "Matriks RCM ELC",
     "title_itgc": "Matriks RCM ITGC",
     "subtitle_elc": "Entity Level Control Matrix (17 Prinsip COSO) - SK-5 Lampiran 5 a.",
@@ -279,6 +281,10 @@
   },
   "actions": {
     "export_excel": "Export Excel",
-    "export_success": "File Excel berhasil diunduh"
+    "export_success": "File Excel berhasil diunduh",
+    "search_matrix": "Cari matriks...",
+    "print": "Cetak",
+    "refresh": "Muat Ulang",
+    "save": "Simpan"
   }
 }

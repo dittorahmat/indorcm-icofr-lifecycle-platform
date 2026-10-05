@@ -359,8 +359,8 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
 
   return (
     <AppLayout container={false} noScroll className="bg-slate-100/30">
-      <div className="flex flex-col flex-1 min-h-0 min-w-0 p-4 md:p-6 space-y-4 overflow-hidden">
-        <div className="shrink-0">
+      <div className="flex flex-col flex-1 min-h-0 min-w-0 p-4 md:p-6 space-y-4 overflow-y-auto md:overflow-hidden">
+        <div>
           <ScopingEditorHeader 
             simState={simState}
             isLocked={isLocked}

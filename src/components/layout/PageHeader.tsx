@@ -22,13 +22,13 @@ export function PageHeader({ title, description, children, className, badge }: P
           {badge}
         </div>
         {description && (
-          <p className="text-muted-foreground text-xs sm:text-sm font-medium">
+          <p className="text-muted-foreground text-xs sm:text-sm font-medium line-clamp-1 sm:line-clamp-none">
             {description}
           </p>
         )}
       </div>
       {children && (
-        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto shrink-0 min-w-0">
+        <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 min-w-0 max-w-full flex-nowrap sm:flex-wrap overflow-x-auto sm:overflow-visible touch-pan-x overscroll-x-contain pb-1 sm:pb-0 [&>*]:shrink-0">
           {children}
         </div>
       )}

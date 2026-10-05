@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, Filter, Save, Loader2, Printer, Download } from 'lucide-react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
+import { useTranslation } from 'react-i18next';
 
 interface RCMPageHeaderProps {
   title: string;
@@ -33,9 +34,10 @@ export function RCMPageHeader({
   metadata,
   children
 }: RCMPageHeaderProps) {
+  const { t } = useTranslation('rcm');
   return (
     <div className="p-4 pb-2 space-y-3 shrink-0 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 z-10 print:hidden">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 flex-wrap min-w-0 max-w-full">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 flex-wrap min-w-0 max-w-full">
         <div className="flex items-center gap-2 min-w-0">
           <SidebarTrigger className="h-11 w-11 min-h-[44px] min-w-[44px] text-slate-700 dark:text-slate-300 shrink-0 rounded-md" />
           <div className="min-w-0">
@@ -43,7 +45,7 @@ export function RCMPageHeader({
             <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wider mt-1 truncate min-w-0">{subtitle}</p>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-2 max-w-full flex-nowrap sm:flex-wrap overflow-x-auto sm:overflow-visible touch-pan-x overscroll-x-contain pb-1 sm:pb-0 [&>*]:shrink-0">
           {children}
           {onExport && (
             <Button 
@@ -57,18 +59,18 @@ export function RCMPageHeader({
           )}
           {onPrint && (
             <Button variant="outline" size="xs" onClick={onPrint} className="bg-white h-9 sm:h-7 min-h-[44px] sm:min-h-0 text-xs font-bold text-slate-600 border-slate-200">
-              <Printer className="h-3.5 w-3.5 sm:h-3 sm:w-3 mr-1.5" /> Print
+              <Printer className="h-3.5 w-3.5 sm:h-3 sm:w-3 mr-1.5" /> {t('actions.print')}
             </Button>
           )}
           {onRefresh && (
             <Button variant="outline" size="xs" onClick={onRefresh} className="bg-white h-9 sm:h-7 min-h-[44px] sm:min-h-0 text-xs font-bold">
-              <Filter className="h-3.5 w-3.5 sm:h-3 sm:w-3 mr-1.5" /> Refresh
+              <Filter className="h-3.5 w-3.5 sm:h-3 sm:w-3 mr-1.5" /> {t('actions.refresh')}
             </Button>
           )}
           {onSave && (
-            <Button onClick={onSave} disabled={isSaving} size="xs" className="bg-indigo-600 hover:bg-indigo-700 shadow-md h-11 sm:h-7 min-h-[44px] sm:min-h-0 text-xs font-bold px-4 w-full sm:w-auto justify-center">
+            <Button onClick={onSave} disabled={isSaving} size="xs" className="bg-indigo-600 hover:bg-indigo-700 shadow-md h-11 sm:h-7 min-h-[44px] sm:min-h-0 text-xs font-bold px-4 justify-center">
               {isSaving ? <Loader2 className="h-3 w-3 mr-1.5 animate-spin" /> : <Save className="h-3 w-3 mr-1.5" />}
-              Save
+              {t('actions.save')}
             </Button>
           )}
         </div>
@@ -77,11 +79,11 @@ export function RCMPageHeader({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div className="relative max-w-md w-full">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-          <Input 
-            placeholder="Search matrix..." 
-            className="pl-8 bg-white border-slate-200 h-10 sm:h-8 min-h-[44px] sm:min-h-0 text-base sm:text-xs font-medium" 
-            value={searchTerm} 
-            onChange={(e) => onSearchChange(e.target.value)} 
+          <Input
+            placeholder={t('actions.search_matrix')}
+            className="pl-8 bg-white border-slate-200 h-10 sm:h-8 min-h-[44px] sm:min-h-0 text-base sm:text-xs font-medium"
+            value={searchTerm}
+            onChange={(e) => onSearchChange(e.target.value)}
           />
         </div>
         {metadata && (

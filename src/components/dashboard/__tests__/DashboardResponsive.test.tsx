@@ -25,9 +25,9 @@ describe('Dashboard Mobile Responsiveness & Anti-Slop Integrity', () => {
       />
     );
 
-    // Verify grid has responsive layout definition
+    // Verify grid stays glanceable on mobile: 2-col base densified (never single stacked column)
     const grid = container.firstChild as HTMLElement;
-    expect(grid.className).toContain('grid-cols-1');
+    expect(grid.className).toContain('grid-cols-2');
     expect(grid.className).toContain('lg:grid-cols-4');
 
     // Verify text renders cleanly

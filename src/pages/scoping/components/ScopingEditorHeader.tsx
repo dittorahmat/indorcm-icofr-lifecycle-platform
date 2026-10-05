@@ -111,8 +111,8 @@ export function ScopingEditorHeader({
       </div>
 
       {/* HERO STATS BAR */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-3">
-        <div className="relative group overflow-hidden bg-mancity-pattern rounded-lg p-2.5 text-primary-foreground shadow-md shadow-blue-100/50">
+      <div className="flex sm:grid sm:grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-3 overflow-x-auto sm:overflow-visible touch-pan-x overscroll-x-contain no-scrollbar -mx-1 px-1 pb-1 sm:pb-0">
+        <div className="relative group overflow-hidden bg-mancity-pattern rounded-lg p-2.5 text-primary-foreground shadow-md shadow-blue-100/50 min-w-[210px] sm:min-w-0 flex-1 shrink-0">
            <div className="absolute top-0 right-0 w-16 h-16 bg-white/10 rounded-full -mr-8 -mt-8 group-hover:scale-110 transition-transform" />
             <p className="text-xs font-bold uppercase tracking-widest text-primary-foreground/70 mb-0.5 flex items-center gap-1">
               <Target className="h-2.5 w-2.5 text-primary-foreground/60" /> {t('params.omValue')} (OM)
@@ -125,7 +125,7 @@ export function ScopingEditorHeader({
            </div>
         </div>
 
-        <div className="relative group overflow-hidden bg-white border border-slate-200 rounded-lg p-2.5 shadow-sm hover:shadow-md transition-all">
+        <div className="relative group overflow-hidden bg-white border border-slate-200 rounded-lg p-2.5 shadow-sm hover:shadow-md transition-all min-w-[210px] sm:min-w-0 flex-1 shrink-0">
            <div className="absolute top-0 right-0 w-16 h-16 bg-blue-50/50 rounded-full -mr-8 -mt-8 group-hover:scale-110 transition-transform" />
             <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-0.5 flex items-center gap-1">
               <TrendingUp className="h-2.5 w-2.5 text-blue-500" /> {t('params.pmValue')} (PM)
@@ -138,7 +138,7 @@ export function ScopingEditorHeader({
            </div>
         </div>
 
-        <div className="relative group overflow-hidden bg-white border border-slate-200 rounded-lg p-2.5 shadow-sm hover:shadow-md transition-all">
+        <div className="relative group overflow-hidden bg-white border border-slate-200 rounded-lg p-2.5 shadow-sm hover:shadow-md transition-all min-w-[190px] sm:min-w-0 flex-1 shrink-0">
            <div className="absolute top-0 right-0 w-16 h-16 bg-rose-50/50 rounded-full -mr-8 -mt-8 group-hover:scale-110 transition-transform" />
             <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-0.5 flex items-center gap-1">
               <ShieldAlert className="h-2.5 w-2.5 text-rose-500" /> {t('params.locations')}

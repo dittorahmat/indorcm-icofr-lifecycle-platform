@@ -46,7 +46,7 @@ export function ITGCTabContent({
           />
         </div>
         <Button onClick={() => navigate('/rcm/itgc')} variant="outline" className="h-10 min-h-[44px] gap-2 border-indigo-200 text-indigo-700 hover:bg-indigo-50 transition-all font-bold text-xs uppercase tracking-wider px-4 rounded-lg shrink-0">
-          <Fingerprint className="h-4 w-4" /> Buka Matriks ITGC
+          <Fingerprint className="h-4 w-4" /> {t('matrix.open_matrix_itgc')}
         </Button>
       </div>
 

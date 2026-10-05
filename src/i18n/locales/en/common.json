@@ -132,6 +132,8 @@
       "description": "The full table needs a wide screen. Open on desktop to edit this data."
     },
     "summary": "Summary",
+    "showFilters": "Show Filters",
+    "hideFilters": "Hide",
     "showFullTable": "View Full Table",
     "hideFullTable": "Hide Full Table"
   },

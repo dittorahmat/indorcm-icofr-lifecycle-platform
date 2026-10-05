@@ -132,6 +132,8 @@
       "description": "Tabel lengkap membutuhkan layar lebar. Buka di desktop untuk mengedit data ini."
     },
     "summary": "Ringkasan",
+    "showFilters": "Tampilkan Filter",
+    "hideFilters": "Sembunyikan",
     "showFullTable": "Lihat Tabel Penuh",
     "hideFullTable": "Sembunyikan Tabel Penuh"
   },

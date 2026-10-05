@@ -78,7 +78,7 @@ export function WBSPage() {
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
           <Card className="bg-amber-50 border-amber-200">
             <CardHeader className="pb-2">
               <CardTitle className="text-xs font-bold uppercase text-amber-800">Total Indicators</CardTitle>

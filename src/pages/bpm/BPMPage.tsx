@@ -25,6 +25,7 @@ import { motion, Variants } from 'framer-motion';
 import { useConfirm } from '@/hooks/use-confirm';
 
 import { PageHeader } from '@/components/layout/PageHeader';
+import { CollapsibleFilterCard } from '@/components/layout/CollapsibleFilterCard';
 import { 
   ResizableHandle, 
   ResizablePanel, 
@@ -161,27 +162,32 @@ export function BPMPage() {
         </motion.div>
 
         <motion.div variants={itemVariants}>
-          <BPMScopingFilters
-            selectedFsli={selectedFsli}
-            setSelectedFsli={setSelectedFsli}
-            selectedAccountKey={selectedAccountKey}
-            setSelectedAccountKey={setSelectedAccountKey}
-            setSelectedBpmId={setSelectedBpmId}
-            snapLoading={snapLoading}
-            simLoading={simLoading}
-            significantFsliNames={significantFsliNames}
-            glNumbers={glNumbers}
-            selectedGLRow={selectedGLRow}
-            isAssertionDirty={isAssertionDirty}
-          />
+          <CollapsibleFilterCard
+            title={t('selectionTitle')}
+            layout="section"
+            testId="bpm-scoping-filters"
+          >
+            <BPMScopingFilters
+              selectedFsli={selectedFsli}
+              setSelectedFsli={setSelectedFsli}
+              selectedAccountKey={selectedAccountKey}
+              setSelectedAccountKey={setSelectedAccountKey}
+              setSelectedBpmId={setSelectedBpmId}
+              snapLoading={snapLoading}
+              simLoading={simLoading}
+              significantFsliNames={significantFsliNames}
+              glNumbers={glNumbers}
+              selectedGLRow={selectedGLRow}
+              isAssertionDirty={isAssertionDirty}
+            />
+            <BPMStatusBanner
+              activeSim={activeSim}
+              activeSnap={activeSnap}
+              snapLoading={snapLoading}
+              viewYear={viewYear}
+            />
+          </CollapsibleFilterCard>
         </motion.div>
-
-        <BPMStatusBanner
-          activeSim={activeSim}
-          activeSnap={activeSnap}
-          snapLoading={snapLoading}
-          viewYear={viewYear}
-        />
 
         {!activeSim ? null : !selectedAccountKey ? (
           <motion.div 

@@ -56,9 +56,9 @@ export function ExternalAuditPortal() {
           </Button>
         </div>
 
-        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
+        <div className="grid gap-2 sm:gap-6 grid-cols-3 md:grid-cols-3">
           <Card>
-            <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between flex-wrap pb-2 gap-2 min-w-0 max-w-full">
+            <CardHeader className="flex flex-row items-center justify-between flex-wrap pb-2 gap-2 min-w-0 max-w-full">
               <CardTitle className="text-sm font-medium min-w-0 truncate">Management Conclusion</CardTitle>
               <ShieldCheck className="h-4 w-4 text-green-600 shrink-0" />
             </CardHeader>
@@ -68,7 +68,7 @@ export function ExternalAuditPortal() {
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between flex-wrap pb-2 gap-2 min-w-0 max-w-full">
+            <CardHeader className="flex flex-row items-center justify-between flex-wrap pb-2 gap-2 min-w-0 max-w-full">
               <CardTitle className="text-sm font-medium min-w-0 truncate">Open Deficiencies</CardTitle>
               <AlertTriangle className="h-4 w-4 text-orange-600 shrink-0" />
             </CardHeader>
@@ -78,7 +78,7 @@ export function ExternalAuditPortal() {
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between flex-wrap pb-2 gap-2 min-w-0 max-w-full">
+            <CardHeader className="flex flex-row items-center justify-between flex-wrap pb-2 gap-2 min-w-0 max-w-full">
               <CardTitle className="text-sm font-medium min-w-0 truncate">Scope Coverage</CardTitle>
               <FileCheck className="h-4 w-4 text-blue-600 shrink-0" />
             </CardHeader>

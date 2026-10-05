@@ -22,6 +22,7 @@ import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 import { WorkflowPanel } from '@/components/workflow/WorkflowPanel';
 import { CSARecordCard } from '@/components/csa/CSARecordCard';
 import { MobileDesktopBanner } from '@/components/layout/MobileDesktopBanner';
+import { CollapsibleFilterCard } from '@/components/layout/CollapsibleFilterCard';
 
 function CSARecordRow({ record: initialRecord, process }: { record: CSARecord, process?: BPMProcess }) {
   const [isExpanded, setIsExpanded] = React.useState(false);
@@ -346,26 +347,32 @@ export function CSAPage() {
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 bg-white p-3.5 sm:p-6 rounded-lg border shadow-sm ring-1 ring-slate-200/50">
-          <div className="relative flex-1 max-w-none sm:max-w-md">
-            <Label htmlFor="csa-search" className="sr-only">Search CSA Records</Label>
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-            <Input 
-              id="csa-search"
-              placeholder={t('page.searchPlaceholder')} 
-              className="pl-10 h-11 min-h-[44px] bg-slate-50/50 border-slate-200 rounded-lg focus:ring-indigo-500 transition-all text-base sm:text-sm" 
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-            />
+        <CollapsibleFilterCard
+          title={t('page.filtersTitle')}
+          layout="section"
+          testId="csa-filters"
+        >
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 bg-white p-3.5 sm:p-6 rounded-lg border shadow-sm ring-1 ring-slate-200/50">
+            <div className="relative flex-1 max-w-none sm:max-w-md">
+              <Label htmlFor="csa-search" className="sr-only">Search CSA Records</Label>
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Input
+                id="csa-search"
+                placeholder={t('page.searchPlaceholder')}
+                className="pl-10 h-11 min-h-[44px] bg-slate-50/50 border-slate-200 rounded-lg focus:ring-indigo-500 transition-all text-base sm:text-sm"
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <div className="flex items-center gap-2.5 px-3.5 sm:px-5 py-2.5 sm:py-3 bg-indigo-50/70 rounded-lg border border-indigo-100 shadow-xs shrink-0">
+               <ShieldCheck className="h-4 w-4 sm:h-5 sm:w-5 text-indigo-600 shrink-0" />
+               <div className="flex flex-col min-w-0">
+                  <span className="text-xs font-bold uppercase text-indigo-700 tracking-wider leading-none truncate">{t('page.modeBadge')}</span>
+                  <span className="text-xs font-medium text-indigo-500 uppercase tracking-tight mt-0.5 truncate">{t('page.modeSubtitle')}</span>
+               </div>
+            </div>
           </div>
-          <div className="flex items-center gap-2.5 px-3.5 sm:px-5 py-2.5 sm:py-3 bg-indigo-50/70 rounded-lg border border-indigo-100 shadow-xs shrink-0">
-             <ShieldCheck className="h-4 w-4 sm:h-5 sm:w-5 text-indigo-600 shrink-0" />
-             <div className="flex flex-col min-w-0">
-                <span className="text-xs font-bold uppercase text-indigo-700 tracking-wider leading-none truncate">{t('page.modeBadge')}</span>
-                <span className="text-xs font-medium text-indigo-500 uppercase tracking-tight mt-0.5 truncate">{t('page.modeSubtitle')}</span>
-             </div>
-          </div>
-        </div>
+        </CollapsibleFilterCard>
 
         {/* DESKTOP VIEW: Table */}
         <div className="hidden md:block border rounded-lg bg-white shadow-sm overflow-x-auto max-w-full touch-pan-x overscroll-x-contain">
@@ -420,7 +427,7 @@ export function CSAPage() {
                 </Badge>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-center">
+              <div className="grid grid-cols-2 gap-2 text-center">
                 <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 rounded-md">
                   <span className="text-xs font-medium text-emerald-700 dark:text-emerald-300 block">
                     {t('page.summary.effective', { defaultValue: 'Efektif' })}

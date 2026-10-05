@@ -36,6 +36,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { MobileDesktopBanner } from '@/components/layout/MobileDesktopBanner';
+import { CollapsibleFilterCard } from '@/components/layout/CollapsibleFilterCard';
 import { cn } from '@/lib/utils';
 import { exportRegulatoryTableToExcel } from '@/lib/rcm-excel-export';
 import { Loader2 } from 'lucide-react';
@@ -381,7 +382,7 @@ export function DoDLampiran10Report({
         </div>
 
         {/* KPI Counter Cards (Interactive Filters) */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3 print:grid-cols-5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 print:grid-cols-5">
           {/* Card 1: Total (Reset all filters) */}
           <button
             type="button"
@@ -395,12 +396,12 @@ export function DoDLampiran10Report({
                 ? "bg-slate-100 border-slate-400 ring-2 ring-slate-400/40 shadow-sm"
                 : "bg-slate-50 border-slate-200 hover:bg-slate-100/70 hover:border-slate-300"
             )}
-            title="Klik untuk menampilkan semua defisiensi (Reset Filter)"
+            title={t('dodReport.summary.filterHintAll')}
           >
             <div className="text-xs font-semibold text-slate-600 uppercase flex items-center justify-between flex-wrap gap-2">
               <span>{t('dodReport.summary.totalEvaluated')}</span>
               {severityFilter === 'ALL' && remediationFilter === 'ALL' && (
-                <span className="text-xs font-bold text-slate-600 bg-white px-1.5 py-0.5 rounded border border-slate-200">Aktif</span>
+                <span className="text-xs font-bold text-slate-600 bg-white px-1.5 py-0.5 rounded border border-slate-200">{t('dodReport.summary.activeFilter')}</span>
               )}
             </div>
             <div className="text-lg font-bold text-slate-900 mt-1">{totalCount}</div>
@@ -418,12 +419,12 @@ export function DoDLampiran10Report({
                 ? "bg-red-100 border-red-400 ring-2 ring-red-400/40 shadow-sm"
                 : "bg-red-50 border-red-200 hover:bg-red-100/70 hover:border-red-300"
             )}
-            title="Klik untuk memfilter Material Weakness (MW)"
+            title={t('dodReport.summary.filterHintMW')}
           >
             <div className="text-xs font-semibold text-red-700 uppercase flex items-center justify-between flex-wrap gap-2">
               <span>{t('dodReport.summary.materialWeakness')}</span>
               {severityFilter === 'Material Weakness' && (
-                <span className="text-xs font-bold text-red-700 bg-white px-1.5 py-0.5 rounded border border-red-200">Aktif</span>
+                <span className="text-xs font-bold text-red-700 bg-white px-1.5 py-0.5 rounded border border-red-200">{t('dodReport.summary.activeFilter')}</span>
               )}
             </div>
             <div className="text-lg font-bold text-red-700 mt-1">{mwCount}</div>
@@ -441,12 +442,12 @@ export function DoDLampiran10Report({
                 ? "bg-amber-100 border-amber-400 ring-2 ring-amber-400/40 shadow-sm"
                 : "bg-amber-50 border-amber-200 hover:bg-amber-100/70 hover:border-amber-300"
             )}
-            title="Klik untuk memfilter Significant Deficiency (SD)"
+            title={t('dodReport.summary.filterHintSD')}
           >
             <div className="text-xs font-semibold text-amber-700 uppercase flex items-center justify-between flex-wrap gap-2">
               <span>{t('dodReport.summary.significantDeficiency')}</span>
               {severityFilter === 'Significant Deficiency' && (
-                <span className="text-xs font-bold text-amber-700 bg-white px-1.5 py-0.5 rounded border border-amber-200">Aktif</span>
+                <span className="text-xs font-bold text-amber-700 bg-white px-1.5 py-0.5 rounded border border-amber-200">{t('dodReport.summary.activeFilter')}</span>
               )}
             </div>
             <div className="text-lg font-bold text-amber-700 mt-1">{sdCount}</div>
@@ -464,12 +465,12 @@ export function DoDLampiran10Report({
                 ? "bg-blue-100 border-blue-400 ring-2 ring-blue-400/40 shadow-sm"
                 : "bg-blue-50 border-blue-200 hover:bg-blue-100/70 hover:border-blue-300"
             )}
-            title="Klik untuk memfilter Control Deficiency (CD)"
+            title={t('dodReport.summary.filterHintCD')}
           >
             <div className="text-xs font-semibold text-blue-700 uppercase flex items-center justify-between flex-wrap gap-2">
               <span>{t('dodReport.summary.controlDeficiency')}</span>
               {severityFilter === 'Control Deficiency' && (
-                <span className="text-xs font-bold text-blue-700 bg-white px-1.5 py-0.5 rounded border border-blue-200">Aktif</span>
+                <span className="text-xs font-bold text-blue-700 bg-white px-1.5 py-0.5 rounded border border-blue-200">{t('dodReport.summary.activeFilter')}</span>
               )}
             </div>
             <div className="text-lg font-bold text-blue-700 mt-1">{cdCount}</div>
@@ -487,12 +488,12 @@ export function DoDLampiran10Report({
                 ? "bg-emerald-100 border-emerald-400 ring-2 ring-emerald-400/40 shadow-sm"
                 : "bg-emerald-50 border-emerald-200 hover:bg-emerald-100/70 hover:border-emerald-300"
             )}
-            title="Klik untuk memfilter defisiensi yang telah diremediasi sebelum akhir tahun"
+            title={t('dodReport.summary.filterHintRemediated')}
           >
             <div className="text-xs font-semibold text-emerald-700 uppercase flex items-center justify-between flex-wrap gap-2">
               <span>{t('dodReport.summary.remediatedCount')}</span>
               {remediationFilter === 'REMEDIATED' && (
-                <span className="text-xs font-bold text-emerald-700 bg-white px-1.5 py-0.5 rounded border border-emerald-200">Aktif</span>
+                <span className="text-xs font-bold text-emerald-700 bg-white px-1.5 py-0.5 rounded border border-emerald-200">{t('dodReport.summary.activeFilter')}</span>
               )}
             </div>
             <div className="text-lg font-bold text-emerald-700 mt-1">{remediatedCount}</div>
@@ -500,7 +501,13 @@ export function DoDLampiran10Report({
         </div>
 
         {/* Interactive Filter Bar */}
-        <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 print:hidden bg-muted/40 p-3 rounded-md border border-border">
+        <CollapsibleFilterCard
+          title={t('dodReport.filters.title')}
+          layout="section"
+          testId="dod-filters"
+          className="print:hidden"
+        >
+          <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 print:hidden bg-muted/40 p-3 rounded-md border border-border">
           <div className="relative flex-1 min-w-0 w-full sm:w-auto sm:min-w-[220px]">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -533,7 +540,8 @@ export function DoDLampiran10Report({
               <SelectItem value="NOT_REMEDIATED" className="text-xs">{t('dodReport.filters.notRemediated')}</SelectItem>
             </SelectContent>
           </Select>
-        </div>
+          </div>
+        </CollapsibleFilterCard>
 
         {/* 24-Column Tabular Formal Worksheet */}
         <div className="md:hidden">

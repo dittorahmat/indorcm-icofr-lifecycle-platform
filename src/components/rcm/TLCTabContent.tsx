@@ -47,7 +47,7 @@ export function TLCTabContent({
           />
         </div>
         <Button onClick={() => navigate('/rcm/tlc')} className="h-10 min-h-[44px] gap-2 bg-mancity-pattern hover:opacity-90 shadow-sm transition-all font-bold text-xs uppercase tracking-wider px-4 rounded-lg text-primary-foreground shrink-0">
-          <LayoutDashboard className="h-4 w-4" /> Buka Matriks Horizontal
+          <LayoutDashboard className="h-4 w-4" /> {t('matrix.open_matrix_tlc')}
         </Button>
       </div>
 

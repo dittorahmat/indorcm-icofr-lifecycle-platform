@@ -20,6 +20,7 @@ import { ReportExportPanel } from '@/components/reports/ReportExportPanel';
 import { ManagementAssessment } from '@/components/reports/ManagementAssessment';
 import { RegulatoryAppendices } from '@/components/reports/RegulatoryAppendices';
 import { PageHeader } from '@/components/layout/PageHeader';
+import { CollapsibleFilterCard } from '@/components/layout/CollapsibleFilterCard';
 import { MobileDesktopBanner } from '@/components/layout/MobileDesktopBanner';
 
 export function ReportsPage() {
@@ -154,9 +155,14 @@ export function ReportsPage() {
           </TabsContent>
 
           <TabsContent value="audit" className="pt-6 space-y-6">
-            <div className="flex flex-wrap items-center justify-between gap-4 bg-slate-50 p-4 rounded-lg border border-slate-200 no-print shadow-sm">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 w-full sm:w-auto">
-                <div className="space-y-1.5">
+            <CollapsibleFilterCard
+              title={t('testing.filters.title')}
+              testId="reports-audit-filters"
+              className="no-print"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 w-full sm:w-auto">
+                  <div className="space-y-1.5">
                   <p className="text-xs font-bold uppercase tracking-wider text-slate-400">{t('testing.filters.type')}</p>
                   <div className="flex gap-1 flex-wrap">
                     {['ALL', 'TOD', 'TOE'].map(t => (
@@ -191,8 +197,8 @@ export function ReportsPage() {
               </div>
               <div className="text-left sm:text-right space-y-2 w-full sm:w-auto min-w-0">
                 <div>
-                  <p className="text-xs font-bold text-indigo-600 uppercase tracking-wide">Regulatory Reference</p>
-                  <p className="text-xs text-slate-500 font-medium">SK-5 Bab V & Lampiran 8</p>
+                  <p className="text-xs font-bold text-indigo-600 uppercase tracking-wide">{t('testing.referenceTitle')}</p>
+                  <p className="text-xs text-slate-500 font-medium">{t('testing.referenceDesc')}</p>
                 </div>
                 <Button
                   variant="outline"
@@ -205,7 +211,8 @@ export function ReportsPage() {
                   {t('actions.exportExcel')}
                 </Button>
               </div>
-            </div>
+              </div>
+            </CollapsibleFilterCard>
 
             <Card className="border-slate-200 shadow-sm overflow-hidden">
               <CardHeader className="bg-slate-50/50 border-b py-4">

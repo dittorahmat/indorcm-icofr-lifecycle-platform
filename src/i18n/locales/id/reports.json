@@ -77,7 +77,10 @@
     "description": "Hasil konsolidasi pengujian rancangan dan efektivitas operasi kontrol.",
     "effective": "Efektif",
     "ineffective": "Tidak Efektif",
+    "referenceTitle": "Referensi Regulasi",
+    "referenceDesc": "SK-5 Bab V & Lampiran 8",
     "filters": {
+      "title": "Filter Hasil",
       "type": "Tipe Uji",
       "status": "Status"
     },
@@ -138,6 +141,7 @@
     "printA4": "Cetak Laporan (A4/A3)",
     "empty": "Belum ada data evaluasi defisiensi pengendalian atau tidak ada data yang cocok dengan filter aktif.",
     "filters": {
+      "title": "Pencarian & Filter",
       "allSeverities": "Semua Tingkat (CD, SD, MW)",
       "controlDeficiency": "Defisiensi Pengendalian (CD)",
       "significantDeficiency": "Defisiensi Signifikan (SD)",
@@ -152,7 +156,13 @@
       "materialWeakness": "Kelemahan Material (MW)",
       "significantDeficiency": "Defisiensi Signifikan (SD)",
       "controlDeficiency": "Defisiensi Pengendalian (CD)",
-      "remediatedCount": "Telah Diremediasi Sebelum Akhir Tahun"
+      "remediatedCount": "Telah Diremediasi Sebelum Akhir Tahun",
+      "activeFilter": "Aktif",
+      "filterHintAll": "Klik untuk menampilkan semua defisiensi (Reset Filter)",
+      "filterHintMW": "Klik untuk memfilter Kelemahan Material (MW)",
+      "filterHintSD": "Klik untuk memfilter Defisiensi Signifikan (SD)",
+      "filterHintCD": "Klik untuk memfilter Defisiensi Pengendalian (CD)",
+      "filterHintRemediated": "Klik untuk memfilter defisiensi yang telah diremediasi sebelum akhir tahun"
     },
     "table": {
       "groupFinding": "Data Defisiensi Pengendalian",
