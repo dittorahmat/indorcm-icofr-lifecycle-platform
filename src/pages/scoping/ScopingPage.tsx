@@ -255,7 +255,7 @@ export function ScopingPage() {
         </Tabs>
 
         <Dialog open={isCreating} onOpenChange={setIsCreating}>
-          <DialogContent className="sm:max-w-[425px] w-[calc(100vw-2rem)] max-h-[90dvh] overflow-y-auto border-none shadow-2xl rounded-lg overflow-hidden p-0 ring-1 ring-primary/20">
+          <DialogContent className="sm:max-w-[425px] w-[calc(100vw-2rem)] max-h-[90dvh] overflow-y-auto border-none shadow-2xl rounded-lg p-0 ring-1 ring-primary/20">
             <div className="bg-mancity-pattern p-4 sm:p-6 text-primary-foreground">
               <DialogHeader>
                 <DialogTitle className="font-display font-extrabold text-2xl tracking-tight uppercase">{t('scoping:simulation.createNew')}</DialogTitle>
@@ -431,7 +431,7 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
         </div>
 
         <Dialog open={isWorkflowOpen} onOpenChange={setIsWorkflowOpen}>
-          <DialogContent className="sm:max-w-[500px] w-[calc(100vw-2rem)] max-h-[90dvh] overflow-y-auto p-0 border-none overflow-hidden bg-transparent">
+          <DialogContent className="sm:max-w-[500px] w-[calc(100vw-2rem)] max-h-[90dvh] overflow-y-auto p-0 border-none bg-transparent">
              <DialogTitle className="sr-only">Workflow Actions</DialogTitle>
              <DialogDescription className="sr-only">
                Manage simulation lifecycle states and approvals.

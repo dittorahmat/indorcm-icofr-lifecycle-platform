@@ -136,7 +136,7 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
       <Card className="overflow-hidden lg:col-span-3 border-slate-200 shadow-sm rounded-lg">
         <CardHeader className="bg-slate-50/50 border-b py-4 sm:py-6 px-4 sm:px-8">
-          <div className="flex flex-wrap sm:flex-nowrap justify-between items-start gap-3">
+          <div className="flex flex-col min-[420px]:flex-row min-[420px]:items-start justify-between gap-3 flex-wrap min-w-0">
             <div className="space-y-1 min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2 mb-1">
                 <Badge variant="outline" className="font-mono text-xs font-bold text-indigo-600 bg-indigo-50/50 border-indigo-100">
@@ -246,7 +246,7 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
                           disabled={isAuthenticating || mutation.isPending} 
                           onClick={() => { form.setValue('testType', 'TOD'); form.setValue('result', 'Ineffective'); }} 
                           variant="outline" 
-                          className="h-11 px-6 sm:px-8 rounded-lg font-bold text-xs uppercase tracking-wider border-rose-200 text-rose-600 hover:bg-rose-50 transition-all min-h-[44px] justify-center"
+                          className="h-11 px-6 sm:px-8 rounded-lg font-bold text-xs uppercase tracking-wider border-rose-200 text-rose-600 hover:bg-rose-50 transition-all w-full sm:w-auto justify-center min-h-[44px]"
                         >
                           {isAuthenticating ? <Loader2 className="h-4 w-4 animate-spin mr-2"/> : <AlertTriangle className="h-4 w-4 mr-2"/>} 
                           {t('actions.ineffective')}
@@ -255,7 +255,7 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
                           type="submit" 
                           disabled={isAuthenticating || mutation.isPending} 
                           onClick={() => { form.setValue('testType', 'TOD'); form.setValue('result', 'Effective'); }} 
-                          className="h-11 px-6 sm:px-8 rounded-lg font-bold text-xs uppercase tracking-wider bg-mancity-pattern hover:opacity-90 shadow-sm transition-all text-primary-foreground min-h-[44px] justify-center"
+                          className="h-11 px-6 sm:px-8 rounded-lg font-bold text-xs uppercase tracking-wider bg-mancity-pattern hover:opacity-90 shadow-sm transition-all text-primary-foreground w-full sm:w-auto justify-center min-h-[44px]"
                         >
                           {isAuthenticating ? <Loader2 className="h-4 w-4 animate-spin mr-2"/> : <ShieldCheck className="h-4 w-4 mr-2"/>} 
                           {t('actions.effective')}
@@ -437,7 +437,7 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
                           disabled={isAuthenticating || mutation.isPending} 
                           onClick={() => { form.setValue('testType', 'TOE'); form.setValue('result', 'Ineffective'); }} 
                           variant="outline" 
-                          className="h-11 px-6 sm:px-8 rounded-lg font-bold text-xs uppercase tracking-wider border-rose-200 text-rose-600 hover:bg-rose-50 transition-all min-h-[44px] justify-center"
+                          className="h-11 px-6 sm:px-8 rounded-lg font-bold text-xs uppercase tracking-wider border-rose-200 text-rose-600 hover:bg-rose-50 transition-all w-full sm:w-auto justify-center min-h-[44px]"
                         >
                           {isAuthenticating ? <Loader2 className="h-4 w-4 animate-spin mr-2"/> : <AlertTriangle className="h-4 w-4 mr-2"/>} 
                           {t('actions.ineffective')}
@@ -446,7 +446,7 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
                           type="submit" 
                           disabled={isAuthenticating || mutation.isPending} 
                           onClick={() => { form.setValue('testType', 'TOE'); form.setValue('result', 'Effective'); }} 
-                          className="h-11 px-6 sm:px-8 rounded-lg font-bold text-xs uppercase tracking-wider bg-mancity-pattern hover:opacity-90 shadow-sm transition-all text-primary-foreground min-h-[44px] justify-center"
+                          className="h-11 px-6 sm:px-8 rounded-lg font-bold text-xs uppercase tracking-wider bg-mancity-pattern hover:opacity-90 shadow-sm transition-all text-primary-foreground w-full sm:w-auto justify-center min-h-[44px]"
                         >
                           {isAuthenticating ? <Loader2 className="h-4 w-4 animate-spin mr-2"/> : <ShieldCheck className="h-4 w-4 mr-2"/>} 
                           {t('actions.effective')}

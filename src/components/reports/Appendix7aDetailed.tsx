@@ -131,7 +131,7 @@ export const Appendix7aDetailed = React.forwardRef<HTMLDivElement, Appendix7aDet
 
           {/* Section III: Kesimpulan & Sign-off */}
           <div className="space-y-6 pt-8">
-             <div className="p-6 bg-mancity-pattern text-primary-foreground rounded-xl shadow-xl flex justify-between items-center flex-wrap gap-2">
+             <div className="p-6 bg-mancity-pattern text-primary-foreground rounded-xl shadow-xl flex flex-col sm:flex-row sm:justify-between sm:items-center flex-wrap gap-2 min-w-0">
                 <div className="space-y-1">
                    <p className="text-xs font-black text-primary-foreground/60 uppercase tracking-widest">Simpulan Akhir Efektivitas</p>
                    <h3 className="text-2xl font-black uppercase text-primary-foreground">{record.result}</h3>
@@ -143,7 +143,7 @@ export const Appendix7aDetailed = React.forwardRef<HTMLDivElement, Appendix7aDet
              </div>
 
              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 border-2 border-slate-900 bg-white rounded-lg overflow-hidden min-h-[10rem] h-auto lg:h-40">
-                <div className="border-r-2 border-slate-900 p-4 flex flex-col">
+                <div className="border-b-2 sm:border-b-0 sm:border-r-2 last:border-b-0 border-slate-900 p-4 flex flex-col">
                    <span className="text-xs font-black uppercase text-slate-400">Dikerjakan Oleh (Auditee)</span>
                    <div className="flex-1 border-b border-slate-100 flex items-center justify-center text-xs text-slate-300">Digital Signature Verified</div>
                    <div className="flex justify-between text-xs font-black uppercase mt-2 flex-wrap gap-2">
@@ -151,7 +151,7 @@ export const Appendix7aDetailed = React.forwardRef<HTMLDivElement, Appendix7aDet
                       <span>{format(new Date(record.assessmentDate), 'dd/MM/yy')}</span>
                    </div>
                 </div>
-                <div className="border-r-2 border-slate-900 p-4 flex flex-col bg-slate-50/50">
+                <div className="border-b-2 sm:border-b-0 sm:border-r-2 last:border-b-0 border-slate-900 p-4 flex flex-col bg-slate-50/50">
                    <span className="text-xs font-black uppercase text-slate-400">Direview Oleh (Lini 2)</span>
                    <div className="flex-1 border-b border-slate-100" />
                    <div className="flex justify-between text-xs font-black uppercase mt-2 flex-wrap gap-2">

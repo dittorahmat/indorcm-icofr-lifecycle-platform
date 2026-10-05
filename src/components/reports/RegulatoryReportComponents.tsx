@@ -468,12 +468,12 @@ export function Lampiran11Report({ deficiencies = [], controls = [] }: { deficie
               {t('assessment.title', { defaultValue: 'Asesmen Manajemen' })} — {MOCK_COMPANY}
             </p>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <Button size="sm" variant="outline" onClick={handleExportExcel} disabled={isExportingExcel} className="min-h-[44px] text-xs font-bold">
+          <div className="flex flex-col min-[420px]:flex-row min-[420px]:items-center gap-2 shrink-0 w-full sm:w-auto">
+            <Button size="sm" variant="outline" onClick={handleExportExcel} disabled={isExportingExcel} className="min-h-[44px] text-xs font-bold w-full min-[420px]:w-auto justify-center">
               {isExportingExcel ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Download className="h-3.5 w-3.5 mr-1.5" />}
               {t('assessment.exportExcel', { defaultValue: 'Ekspor Excel' })}
             </Button>
-            <Button size="sm" variant="outline" onClick={() => window.print()} className="min-h-[44px] text-xs font-bold">
+            <Button size="sm" variant="outline" onClick={() => window.print()} className="min-h-[44px] text-xs font-bold w-full min-[420px]:w-auto justify-center">
               <Printer className="h-3.5 w-3.5 mr-1.5" /> {t('changeLog.printA4', { defaultValue: 'Cetak' })}
             </Button>
           </div>

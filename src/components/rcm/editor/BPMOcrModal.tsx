@@ -215,7 +215,7 @@ export const BPMOcrModal: React.FC<BPMOcrModalProps> = ({
         {parsedDiagram ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 lg:h-[640px] mt-4">
             {/* Left Column: Source image preview */}
-            <div className="border border-border rounded-xl overflow-hidden bg-muted/30 flex flex-col p-3 gap-3 min-h-[280px] lg:min-h-0">
+            <div className="border border-border rounded-xl overflow-hidden bg-muted/30 flex flex-col p-3 gap-3 min-h-[280px] lg:min-h-0 min-h-0 overflow-y-auto">
               <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
                 {t('bpm:ocr.originalImage')}
               </span>
@@ -230,7 +230,7 @@ export const BPMOcrModal: React.FC<BPMOcrModalProps> = ({
             </div>
 
             {/* Right Column: staging mini-canvas + edge list + node edits */}
-            <div className="flex flex-col border border-border rounded-xl overflow-hidden bg-card shadow-sm">
+            <div className="flex flex-col border border-border rounded-xl overflow-y-auto lg:overflow-hidden bg-card shadow-sm min-h-0">
               <div className="bg-muted px-4 py-2 border-b border-border flex justify-between items-center flex-wrap gap-2">
                 <span className="text-xs font-black text-foreground uppercase tracking-wider">
                   {t('bpm:ocr.shapeDetection')}
@@ -265,7 +265,7 @@ export const BPMOcrModal: React.FC<BPMOcrModalProps> = ({
                 </div>
               )}
 
-              <div className="h-[230px] border-b border-border relative bg-white mt-3 mx-3 rounded-lg overflow-hidden shrink-0">
+              <div className="h-[200px] sm:h-[230px] border-b border-border relative bg-white mt-3 mx-3 rounded-lg overflow-hidden shrink-0">
                 <ReactFlow
                   nodes={stagingNodes}
                   edges={stagingEdges}

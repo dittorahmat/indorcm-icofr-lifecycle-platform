@@ -54,7 +54,7 @@ export function ScopingHealthDashboard({ glData, scopingCompliance }: ScopingHea
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex justify-between items-center mb-2 flex-wrap gap-2">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-2 flex-wrap gap-2 min-w-0 max-w-full">
             <span className="text-xs text-muted-foreground">{t('health.balanceCheck')}</span>
             {balanceStatus.isBalanced ? (
               <Badge className="bg-green-600 text-xs">BALANCED</Badge>
@@ -79,7 +79,7 @@ export function ScopingHealthDashboard({ glData, scopingCompliance }: ScopingHea
       {/* Benford's Law Analysis */}
       <Card className="md:col-span-2">
         <CardHeader className="pb-0">
-          <div className="flex justify-between items-start flex-wrap gap-2">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start flex-wrap gap-2 min-w-0 max-w-full">
             <div>
               <CardTitle className="text-xs font-bold uppercase flex items-center gap-2 text-primary">
                 <BarChart3 className="h-4 w-4" />
@@ -93,23 +93,25 @@ export function ScopingHealthDashboard({ glData, scopingCompliance }: ScopingHea
           </div>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-4 items-center">
-            <div className="h-[120px] flex-1">
+          <div className="flex flex-col sm:flex-row gap-4 sm:items-center min-w-0">
+            <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain min-w-0 flex-1">
+              <div className="min-w-[280px] h-[120px]">
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={benfordData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis dataKey="digit" fontSize={9} axisLine={false} tickLine={false} />
+                  <XAxis dataKey="digit" fontSize={12} axisLine={false} tickLine={false} />
                   <YAxis hide />
                   <Tooltip 
-                    contentStyle={{ fontSize: '10px', borderRadius: '8px' }}
+                    contentStyle={{ fontSize: '12px', borderRadius: '8px' }}
                     formatter={(val: number) => [`${val}%`]}
                   />
                   <Bar dataKey="actual" name={t('intake.benford.actual')} fill="#3b82f6" radius={[2, 2, 0, 0]} barSize={12} />
                   <Line type="monotone" dataKey="standard" name={t('intake.benford.standard')} stroke="#ef4444" strokeWidth={1.5} dot={false} />
                 </ComposedChart>
               </ResponsiveContainer>
+              </div>
             </div>
-            <div className="w-48 p-3 rounded-lg bg-slate-50 border border-slate-100 text-xs text-slate-600 leading-relaxed">
+            <div className="w-full sm:w-48 shrink-0 p-3 rounded-lg bg-slate-50 border border-slate-100 text-xs text-slate-600 leading-relaxed">
               <div className="flex items-center gap-1 font-bold text-amber-700 mb-1">
                 <AlertCircle className="h-3 w-3" /> GUIDANCE
               </div>

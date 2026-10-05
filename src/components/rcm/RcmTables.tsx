@@ -17,8 +17,9 @@ export const RcmTlcTable: React.FC<RcmTableProps> = ({ items, isLoading, onEdit 
   if (items.length === 0) return <div className="p-8 text-center text-muted-foreground">No TLC mappings found for this process.</div>;
 
   return (
-    <div className="rounded-md border bg-white overflow-hidden">
-      <Table>
+    <div className="rounded-md border bg-white max-w-full overflow-hidden">
+      <div className="hidden md:block overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint">
+      <Table className="min-w-[720px]">
         <TableHeader className="bg-slate-50">
           <TableRow>
             <TableHead className="w-[100px]">Code</TableHead>
@@ -85,6 +86,35 @@ export const RcmTlcTable: React.FC<RcmTableProps> = ({ items, isLoading, onEdit 
           ))}
         </TableBody>
       </Table>
+      </div>
+      <div className="md:hidden p-3 space-y-3">
+        {items.map((item, idx) => (
+          <div
+            key={`${item.mappingId}-${idx}`}
+            className="rounded-md border border-border bg-white p-3 space-y-2 cursor-pointer"
+            onClick={() => onEdit(item)}
+          >
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <span className="text-xs font-bold text-indigo-700">{item.controlCode}</span>
+              <Badge variant="outline" className={
+                item.riskRating === 'High' ? 'border-red-200 bg-red-50 text-red-700 text-xs' :
+                item.riskRating === 'Medium' ? 'border-orange-200 bg-orange-50 text-orange-700 text-xs' :
+                'border-green-200 bg-green-50 text-green-700 text-xs'
+              }>
+                {item.riskRating}
+              </Badge>
+            </div>
+            <div className="text-xs font-medium text-slate-900">{item.mappedControlName || item.baseControlName}</div>
+            <div className="flex items-center gap-2 flex-wrap text-xs text-muted-foreground">
+              <span>{item.controlNature}</span>
+              <span aria-hidden="true">•</span>
+              <span>{item.controlType}</span>
+              <span aria-hidden="true">•</span>
+              <span>{item.frequency}</span>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

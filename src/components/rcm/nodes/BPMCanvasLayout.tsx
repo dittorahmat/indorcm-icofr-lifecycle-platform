@@ -25,10 +25,10 @@ export const BPMCanvasHeader = ({ subProcess, year, version = '1.0', isDraft, no
   return (
     <div className="w-full bg-white border-2 border-slate-800 mb-6 overflow-hidden">
       {/* Table Header Style like Appendix 4 */}
-      <div className="grid grid-cols-12 border-b-2 border-slate-800">
+      <div className="grid grid-cols-1 sm:grid-cols-12 border-b-2 border-slate-800">
         {/* Logo Section */}
-        <div className="col-span-3 border-r-2 border-slate-800 p-4 flex flex-col items-center justify-center gap-2 bg-slate-50/50">
-           <div className="w-20 h-20 bg-white rounded border shadow-sm flex items-center justify-center overflow-hidden p-1">
+        <div className="col-span-1 sm:col-span-3 border-r-2 border-slate-800 p-4 sm:p-6 flex flex-col items-center justify-center gap-2 bg-slate-50/50">
+           <div className="w-12 h-12 sm:w-20 sm:h-20 bg-white rounded border shadow-sm flex items-center justify-center overflow-hidden p-1">
               {settings?.logoUrl ? (
                 <img src={settings.logoUrl} alt="Logo" className="w-full h-full object-contain" />
               ) : (
@@ -41,8 +41,8 @@ export const BPMCanvasHeader = ({ subProcess, year, version = '1.0', isDraft, no
         </div>
 
         {/* Title Section */}
-        <div className="col-span-6 border-r-2 border-slate-800 p-6 flex flex-col items-center justify-center text-center">
-           <h1 className="text-xl font-black uppercase tracking-tight text-slate-900">
+        <div className="col-span-1 sm:col-span-6 border-r-2 border-slate-800 p-4 sm:p-6 flex flex-col items-center justify-center text-center">
+           <h1 className="text-base sm:text-xl font-black uppercase tracking-tight text-slate-900">
              Business Process Mapping (BPM)
            </h1>
            <div className="mt-2 h-0.5 w-16 bg-indigo-600" />
@@ -52,7 +52,7 @@ export const BPMCanvasHeader = ({ subProcess, year, version = '1.0', isDraft, no
         </div>
 
         {/* Metadata Section */}
-        <div className="col-span-3 grid grid-rows-4 text-xs uppercase font-bold">
+        <div className="col-span-1 sm:col-span-3 grid grid-rows-4 text-xs uppercase font-bold">
            <div className="border-b border-slate-800 px-3 flex items-center justify-between flex-wrap gap-2">
               <span className="text-slate-400 font-black">Versi</span>
               <span className="text-slate-900">{version}</span>
@@ -73,16 +73,16 @@ export const BPMCanvasHeader = ({ subProcess, year, version = '1.0', isDraft, no
       </div>
 
       {/* Second Row: Lifecycle Detail */}
-      <div className="grid grid-cols-12 bg-mancity-pattern text-primary-foreground py-2 px-4">
-         <div className="col-span-4 flex items-center gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-12 bg-mancity-pattern text-primary-foreground py-2 px-4">
+         <div className="col-span-1 sm:col-span-4 flex items-center gap-3">
             <span className="text-xs font-black opacity-60 uppercase tracking-widest">Siklus:</span>
             <span className="text-xs font-bold truncate">ICOFR LIFECYCLE</span>
          </div>
-         <div className="col-span-4 flex items-center gap-3 border-x border-white/20 px-4">
+         <div className="col-span-1 sm:col-span-4 flex items-center gap-3 border-x border-white/20 px-4">
             <span className="text-xs font-black opacity-60 uppercase tracking-widest">FSLI:</span>
             <span className="text-xs font-bold">{fsliName || "TBD"}</span>
          </div>
-         <div className="col-span-4 flex items-center justify-end gap-2">
+         <div className="col-span-1 sm:col-span-4 flex items-center justify-end gap-2">
             <ShieldCheck className="h-4 w-4 text-emerald-400" />
             <span className="text-xs font-black tracking-tighter">APPENDIX 4 - SK-5/2024</span>
          </div>

@@ -357,13 +357,13 @@ export function DoDLampiran10Report({
             </p>
           </div>
 
-          <div className="flex items-center gap-2 print:hidden shrink-0">
+          <div className="flex flex-col min-[420px]:flex-row min-[420px]:items-center gap-2 w-full md:w-auto shrink-0 print:hidden">
             <Button
               variant="outline"
               size="sm"
               onClick={handleExportExcel}
               disabled={isExporting}
-              className="text-xs font-semibold rounded-md h-9 gap-1.5"
+              className="text-xs font-semibold rounded-md h-11 min-[420px]:h-9 min-h-[44px] min-[420px]:min-h-0 w-full min-[420px]:w-auto justify-center gap-1.5"
             >
               {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
               {t('dodReport.exportExcel')}
@@ -372,7 +372,7 @@ export function DoDLampiran10Report({
               variant="outline"
               size="sm"
               onClick={handlePrint}
-              className="text-xs font-semibold rounded-md h-9 gap-1.5"
+              className="text-xs font-semibold rounded-md h-11 min-[420px]:h-9 min-h-[44px] min-[420px]:min-h-0 w-full min-[420px]:w-auto justify-center gap-1.5"
             >
               <Printer className="h-4 w-4" />
               {t('dodReport.printA4')}

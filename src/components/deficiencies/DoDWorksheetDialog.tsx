@@ -298,7 +298,7 @@ export function DoDWorksheetDialog({
         <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-5">
           <Tabs defaultValue="matrix" className="w-full">
             <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain no-scrollbar -mx-1 px-1 mb-4">
-            <TabsList className="flex sm:grid w-max min-w-full sm:w-full sm:grid-cols-2 lg:grid-cols-3 bg-muted/50 p-1 rounded-md min-h-[44px] max-w-full gap-1">
+            <TabsList className="flex sm:grid w-max min-w-full sm:w-full sm:grid-cols-3 bg-muted/50 p-1 rounded-md min-h-[44px] max-w-full gap-1">
               <TabsTrigger value="matrix" className="px-4 text-xs font-semibold rounded min-h-[44px] flex items-center justify-center flex-1 sm:flex-none whitespace-nowrap min-w-[140px] sm:min-w-0">
                 1. {t('worksheet.tabs.evaluation')}
               </TabsTrigger>

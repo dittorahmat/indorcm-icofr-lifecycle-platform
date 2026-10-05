@@ -85,8 +85,8 @@ export const Appendix7aSummary = React.forwardRef<HTMLDivElement, Appendix7aSumm
           {/* Section II: Ringkasan Efektivitas Kontrol */}
           <div className="space-y-4">
             <h2 className="text-xs font-black uppercase tracking-widest text-slate-400 border-b pb-1">II. Ringkasan Efektivitas Per Aktivitas Kontrol</h2>
-            <div className="border-2 border-slate-900 overflow-x-auto max-w-full rounded-lg touch-pan-x overscroll-x-contain table-scroll-hint">
-              <Table>
+            <div className="border-2 border-slate-900 overflow-x-auto max-w-full rounded-lg touch-pan-x overscroll-x-contain table-scroll-hint min-w-0">
+              <Table className="min-w-[560px]">
                 <TableHeader className="bg-mancity-pattern">
                   <TableRow className="hover:bg-transparent">
                     <TableHead className="text-xs font-black text-primary-foreground w-10 text-center">NO</TableHead>

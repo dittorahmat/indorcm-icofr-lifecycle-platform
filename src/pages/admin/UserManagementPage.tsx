@@ -213,10 +213,10 @@ export function UserManagementPage() {
       <Tabs defaultValue="users" className="space-y-4">
         <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain no-scrollbar -mx-1 px-1">
         <TabsList className="flex w-max min-w-full sm:w-auto gap-1 min-h-[44px]">
-          <TabsTrigger value="users" className="gap-2 min-h-[44px] px-4 text-xs font-semibold flex-1 sm:flex-none whitespace-nowrap min-w-[160px] sm:min-w-0">
+          <TabsTrigger value="users" className="gap-2 min-h-[44px] px-4 text-xs font-semibold flex-1 sm:flex-none whitespace-nowrap min-w-[140px] sm:min-w-0">
             <Users className="h-4 w-4" /> User Management
           </TabsTrigger>
-          <TabsTrigger value="departments" className="gap-2 min-h-[44px] px-4 text-xs font-semibold flex-1 sm:flex-none whitespace-nowrap min-w-[160px] sm:min-w-0">
+          <TabsTrigger value="departments" className="gap-2 min-h-[44px] px-4 text-xs font-semibold flex-1 sm:flex-none whitespace-nowrap min-w-[140px] sm:min-w-0">
             <LayoutGrid className="h-4 w-4" /> Departments
           </TabsTrigger>
         </TabsList>

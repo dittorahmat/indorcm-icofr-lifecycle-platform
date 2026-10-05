@@ -126,7 +126,7 @@ export function DeficiencyCard({ deficiency, actionPlan, draggable = true }: Def
         
         <CardHeader
           {...(draggable ? listeners : {})}
-          className="flex flex-row items-start justify-between p-5 pb-3 cursor-grab active:cursor-grabbing select-none flex-wrap gap-2"
+          className="flex flex-col min-[420px]:flex-row min-[420px]:items-start justify-between p-5 pb-3 cursor-grab active:cursor-grabbing select-none flex-wrap gap-2 min-w-0"
         >
           <div className="space-y-2 w-full pr-2">
              <div className="flex flex-wrap items-center gap-1.5">
@@ -158,7 +158,7 @@ export function DeficiencyCard({ deficiency, actionPlan, draggable = true }: Def
              </div>
 
              {/* PROMINENT CONTROL HEADER */}
-             <CardTitle className="text-sm font-display font-extrabold leading-snug text-slate-900 group-hover/card:text-indigo-600 transition-colors">
+              <CardTitle className="text-sm font-display font-extrabold leading-snug text-slate-900 group-hover/card:text-indigo-600 transition-colors break-words min-w-0">
                {deficiency.controlName || deficiency.description}
              </CardTitle>
           </div>

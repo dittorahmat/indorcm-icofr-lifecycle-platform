@@ -157,7 +157,7 @@ export function SetBenchmarkModal({ snapshot: initialSnapshot, isOpen, onOpenCha
                 />
               </div>
             </div>
-            <div className="overflow-auto flex-1">
+            <div className="overflow-x-auto overflow-y-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint flex-1 min-w-0">
               {isLoading ? (
                 <div className="h-full w-full flex flex-col items-center justify-center gap-2 text-muted-foreground py-20">
                   <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
@@ -169,7 +169,7 @@ export function SetBenchmarkModal({ snapshot: initialSnapshot, isOpen, onOpenCha
                   <p className="text-xs font-medium">{t('benchmarkModal.noResults')}</p>
                 </div>
               ) : (
-                <Table>
+                <Table className="min-w-[480px]">
                   <TableHeader className="sticky top-0 bg-slate-50 z-10 border-b border-slate-200 shadow-sm">
                     <TableRow>
                       <TableHead className="w-[60px] text-center font-black uppercase text-xs tracking-widest">{t('benchmarkModal.colSelect')}</TableHead>

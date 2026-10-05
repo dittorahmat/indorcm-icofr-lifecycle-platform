@@ -134,7 +134,7 @@ export function SignificantLocationModal({
                 </span>
               </div>
             </div>
-            <div className="text-right">
+            <div className="text-left sm:text-right">
               <p className="text-xs text-blue-500 uppercase font-bold tracking-tight">{t('locationModal.totalBasisValue')}</p>
               <p className="text-xl font-black text-primary">
                 Rp {analysisResults.reduce((sum, r) => sum + r.balance, 0).toLocaleString('id-ID')}

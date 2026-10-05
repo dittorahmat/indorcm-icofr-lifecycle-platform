@@ -85,7 +85,7 @@ export function MaterialityParamsCard({
 
   return (
     <Card className="border-slate-200 shadow-sm overflow-hidden w-full h-full bg-white flex flex-col">
-      <CardHeader className="py-3 border-b border-slate-100 bg-slate-50/50 flex flex-row items-center justify-between px-4 shrink-0 flex-wrap gap-2">
+      <CardHeader className="py-3 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center sm:justify-between px-4 shrink-0 flex-wrap gap-2 min-w-0">
         <CardTitle className="text-xs uppercase font-bold text-slate-500 tracking-[0.2em] flex items-center gap-2">
           <Settings2 className="h-3.5 w-3.5 text-slate-900" /> {t('params.title')}
         </CardTitle>

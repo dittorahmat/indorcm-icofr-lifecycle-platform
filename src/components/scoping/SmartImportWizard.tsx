@@ -606,14 +606,14 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
                                                             <div className="space-y-4 relative z-10">
                                                                 <div className="space-y-1">
                                                                     <p className="text-xs font-black uppercase tracking-[0.2em] text-indigo-400">Calculated OM</p>
-                                                                    <p className="text-2xl font-mono font-black tracking-tighter">
+                                                                    <p className="text-lg sm:text-2xl font-mono font-black tracking-tighter break-all min-w-0">
                                                                         Rp {calculateOM(uniqueFsliData.find(f => f.name === selectedBasis)?.total || 0, omPercentage, getGroupMultiplier(locationCount)).toLocaleString()}
                                                                     </p>
                                                                 </div>
                                                                 <div className="h-px bg-slate-800" />
                                                                 <div className="space-y-1">
                                                                     <p className="text-xs font-black uppercase tracking-[0.2em] text-amber-400">Performance Materiality (PM)</p>
-                                                                    <p className="text-2xl font-mono font-black tracking-tighter text-amber-50">
+                                                                    <p className="text-lg sm:text-2xl font-mono font-black tracking-tighter text-amber-50 break-all min-w-0">
                                                                         Rp {calculatePM(calculateOM(uniqueFsliData.find(f => f.name === selectedBasis)?.total || 0, omPercentage, getGroupMultiplier(locationCount)), haircutPercentage).toLocaleString()}
                                                                     </p>
                                                                 </div>
@@ -627,7 +627,7 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
                                                 </div>
                                             )}
 
-                                            <div className="flex flex-col items-center justify-center py-10 text-center gap-6 bg-indigo-50/30 rounded-[3rem] border-2 border-dashed border-indigo-100">
+                                            <div className="flex flex-col items-center justify-center py-10 text-center gap-6 bg-indigo-50/30 rounded-lg border-2 border-dashed border-indigo-100">
                                                 <div className="h-16 w-16 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg"><ShieldCheck className="h-8 w-8" /></div>
                                                 <div className="space-y-1"><h2 className="text-xl font-black text-slate-900 uppercase">{t('rcm:migration.baselining.ready_title')}</h2><p className="text-xs text-slate-500 max-w-sm mx-auto">{t('rcm:migration.baselining.ready_desc')}</p></div>
                                                 <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-4"><Button variant="ghost" onClick={() => setStep(2)} className="text-xs font-bold text-slate-400 uppercase tracking-widest min-h-[44px] w-full sm:w-auto justify-center">Review Mapping</Button><Button size="lg" onClick={handleFinalize} className="rounded-lg px-6 sm:px-12 font-black uppercase tracking-widest bg-emerald-600 hover:bg-emerald-700 shadow-xl text-white min-h-[44px] h-12 sm:h-14 text-xs w-full sm:w-auto">Finalize Baseline</Button></div>

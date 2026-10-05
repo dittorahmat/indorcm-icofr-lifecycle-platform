@@ -299,7 +299,7 @@ export function BPMPage() {
                   <>
                     <ResizableHandle withHandle className="hidden md:flex" />
                     <ResizablePanel defaultSize={30} minSize={20} className="bg-slate-50/30">
-                      <div className="h-full flex flex-col">
+                      <div className="h-full flex flex-col min-h-0 overflow-y-auto">
                         <div className="p-4 border-b bg-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 flex-wrap">
                            <div className="flex flex-col min-w-0 flex-1">
                               <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Selected Process</span>

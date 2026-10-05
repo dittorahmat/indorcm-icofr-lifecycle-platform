@@ -105,11 +105,11 @@ export const BPMDocumentView: React.FC<BPMDocumentViewProps> = ({
         />
       </div>
 
-      <div className="fixed bottom-8 right-8 flex gap-2 print:hidden">
-        <Button size="lg" className="shadow-2xl gap-2" onClick={onClose}>
+      <div className="fixed inset-x-4 bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] flex flex-col gap-2 sm:inset-x-auto sm:right-8 sm:bottom-8 sm:flex-row print:hidden">
+        <Button size="lg" className="shadow-2xl gap-2 w-full sm:w-auto" onClick={onClose}>
           <Workflow className="h-5 w-5" /> Back to Editor
         </Button>
-        <Button size="lg" variant="secondary" className="shadow-2xl gap-2" onClick={onExportToImage}>
+        <Button size="lg" variant="secondary" className="shadow-2xl gap-2 w-full sm:w-auto" onClick={onExportToImage}>
           <FileText className="h-5 w-5" /> Print / Export PDF
         </Button>
       </div>

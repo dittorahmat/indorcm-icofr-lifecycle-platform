@@ -92,8 +92,8 @@ export function ExternalAuditPortal() {
         <Tabs defaultValue="review">
           <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain no-scrollbar -mx-1 px-1">
           <TabsList className="flex w-max min-w-full sm:w-auto sm:inline-flex justify-start gap-1 min-h-[44px]">
-            <TabsTrigger value="review" className="px-4 text-xs sm:text-sm min-h-[44px] flex-1 sm:flex-none whitespace-nowrap min-w-[180px] sm:min-w-0 flex items-center justify-center">1. Working Paper Review</TabsTrigger>
-            <TabsTrigger value="opinion" className="px-4 text-xs sm:text-sm min-h-[44px] flex-1 sm:flex-none whitespace-nowrap min-w-[180px] sm:min-w-0 flex items-center justify-center">2. Audit Opinion</TabsTrigger>
+            <TabsTrigger value="review" className="px-4 text-xs sm:text-sm min-h-[44px] flex-1 sm:flex-none whitespace-nowrap min-w-[140px] sm:min-w-0 flex items-center justify-center">1. Working Paper Review</TabsTrigger>
+            <TabsTrigger value="opinion" className="px-4 text-xs sm:text-sm min-h-[44px] flex-1 sm:flex-none whitespace-nowrap min-w-[140px] sm:min-w-0 flex items-center justify-center">2. Audit Opinion</TabsTrigger>
           </TabsList>
           </div>
           

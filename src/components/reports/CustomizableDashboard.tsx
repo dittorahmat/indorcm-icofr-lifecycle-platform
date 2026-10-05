@@ -285,6 +285,8 @@ export function CustomizableDashboard({ summaryData, isEffective }: Customizable
         return <div className="flex items-center justify-center h-full text-slate-400 text-xs">No data available</div>;
       }
       return (
+        <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain min-w-0">
+          <div className="min-w-[280px] h-[220px]">
         <ResponsiveContainer width="100%" height="90%">
           <BarChart data={dataPayload} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <XAxis dataKey="name" stroke="#888888" fontSize={12} fontWeight={600} />
@@ -293,6 +295,8 @@ export function CustomizableDashboard({ summaryData, isEffective }: Customizable
             <Bar dataKey="count" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
+          </div>
+        </div>
       );
     }
 
@@ -302,17 +306,21 @@ export function CustomizableDashboard({ summaryData, isEffective }: Customizable
         return <div className="flex items-center justify-center h-full text-slate-400 text-xs">No data available</div>;
       }
       return (
+        <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain min-w-0">
+          <div className="min-w-[280px] h-[220px]">
         <ResponsiveContainer width="100%" height="90%">
           <PieChart>
-            <Pie data={dataPayload} dataKey="count" nameKey="name" cx="50%" cy="50%" outerRadius={36} label={{ fontSize: 12, fontWeight: 600 }}>
+            <Pie data={dataPayload} dataKey="count" nameKey="name" cx="50%" cy="50%" outerRadius="60%" label={{ fontSize: 12, fontWeight: 600 }}>
               {dataPayload.map((entry: any, index: number) => (
                 <Cell key={`cell-${index}`} fill={entry.name === 'Open' || entry.name === 'High' ? '#ef4444' : (entry.name === 'Medium' || entry.name === 'In Progress' ? '#f59e0b' : '#10b981')} />
               ))}
             </Pie>
             <ChartTooltip />
-            <Legend wrapperStyle={{ fontSize: 8 }} />
+            <Legend wrapperStyle={{ fontSize: 12 }} />
           </PieChart>
         </ResponsiveContainer>
+          </div>
+        </div>
       );
     }
 
@@ -344,11 +352,11 @@ export function CustomizableDashboard({ summaryData, isEffective }: Customizable
           )}
         </div>
         
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col min-[420px]:flex-row min-[420px]:items-center gap-2 w-full sm:w-auto">
           <Button 
             variant="outline" 
             size="sm" 
-            className="gap-1.5 text-xs font-bold bg-white text-slate-700"
+            className="gap-1.5 text-xs font-bold bg-white text-slate-700 w-full min-[420px]:w-auto justify-center min-h-[44px]"
             onClick={handleAddCustomWidget}
           >
             <Plus className="h-3.5 w-3.5 text-slate-500" />
@@ -358,7 +366,7 @@ export function CustomizableDashboard({ summaryData, isEffective }: Customizable
           <Button 
             variant="outline" 
             size="sm" 
-            className="gap-1.5 text-xs font-bold"
+            className="gap-1.5 text-xs font-bold w-full min-[420px]:w-auto justify-center min-h-[44px]"
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
           >
             <Settings2 className="h-3.5 w-3.5" />
@@ -368,7 +376,7 @@ export function CustomizableDashboard({ summaryData, isEffective }: Customizable
           <Button 
             variant="ghost" 
             size="sm" 
-            className="gap-1.5 text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 font-bold"
+            className="gap-1.5 text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 font-bold w-full min-[420px]:w-auto justify-center min-h-[44px]"
             onClick={handleResetLayout}
           >
             <RotateCcw className="h-3.5 w-3.5" />

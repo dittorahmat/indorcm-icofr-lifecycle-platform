@@ -123,7 +123,8 @@ function AnalyticsTab() {
           <CardDescription>{t('aiHub.trendDesc')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="h-[300px]">
+          <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain min-w-0">
+          <div className="min-w-[300px] h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={aviationTrendData}>
                 <defs>
@@ -147,6 +148,7 @@ function AnalyticsTab() {
                 <Area yAxisId="right" type="monotone" dataKey="billed" name="Billed (IDR B)" stroke="#0284c7" fillOpacity={1} fill="url(#colorMiles)" strokeWidth={2} />
               </AreaChart>
             </ResponsiveContainer>
+          </div>
           </div>
         </CardContent>
       </Card>
@@ -186,7 +188,8 @@ function AnalyticsTab() {
           <CardDescription>{t('aiHub.otpDesc')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="h-[150px]">
+          <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain min-w-0">
+          <div className="min-w-[300px] h-[150px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={otpData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" />
@@ -196,6 +199,7 @@ function AnalyticsTab() {
                 <Bar dataKey="otp" name="OTP %" fill="#0284c7" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
+          </div>
           </div>
           <p className="text-center text-xs mt-3 font-mono text-slate-500 uppercase tracking-widest font-semibold">{t('aiHub.otpTarget', { value: '90%' })}</p>
         </CardContent>
@@ -357,7 +361,7 @@ function AIDrilldownView({ useCase, onBack }: { useCase: any, onBack: () => void
           </div>
         </CardHeader>
 
-        <CardContent className="p-6 space-y-8 flex-1 overflow-auto">
+        <CardContent className="p-4 sm:p-6 space-y-8 flex-1 overflow-auto">
 
         {/* Metric Row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -386,7 +390,8 @@ function AIDrilldownView({ useCase, onBack }: { useCase: any, onBack: () => void
             <span className="text-xs font-mono text-slate-500">Visualization: {data.chart.type.toUpperCase()}</span>
           </div>
           
-          <div className="h-[300px] w-full bg-slate-50/50 rounded-lg border border-slate-200 p-4">
+          <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain min-w-0">
+          <div className="min-w-[300px] h-[300px] w-full bg-slate-50/50 rounded-lg border border-slate-200 p-4">
             <ResponsiveContainer width="100%" height="100%">
               {data.chart.type === 'bar' ? (
                 <BarChart data={data.chart.data}>
@@ -425,6 +430,7 @@ function AIDrilldownView({ useCase, onBack }: { useCase: any, onBack: () => void
                 <div className="flex items-center justify-center h-full text-slate-400 text-xs">Unsupported chart type</div>
               )}
             </ResponsiveContainer>
+          </div>
           </div>
         </div>
 

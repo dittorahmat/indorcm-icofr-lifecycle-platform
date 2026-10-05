@@ -212,7 +212,7 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <Card className="lg:col-span-3">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 flex-wrap gap-2">
+            <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-0 flex-wrap gap-2 min-w-0">
               <div>
                 <CardTitle className="text-xl">{t('intake.results.title')}</CardTitle>
                 <CardDescription>
@@ -234,8 +234,8 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
               </Button>
             </CardHeader>
             <CardContent>
-              <div className="max-h-[400px] overflow-auto overscroll-x-contain touch-pan-x max-w-full border rounded-md">
-                <Table>
+              <div className="max-h-[400px] overflow-x-auto overflow-y-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint min-w-0 border rounded-md">
+                <Table className="min-w-[560px]">
                   <TableHeader className="sticky top-0 bg-background z-10">
                     <TableRow>
                       <TableHead>{t('intake.table.code')}</TableHead>
@@ -285,7 +285,7 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex justify-between items-center flex-wrap gap-2">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center flex-wrap gap-2 min-w-0">
                   <span className="text-xs">{t('intake.integrity.balanceCheck')}</span>
                   {balanceStatus?.isBalanced ? (
                     <Badge className="bg-green-600">{t('intake.integrity.balanced')}</Badge>
@@ -308,21 +308,23 @@ export function GLDataIntake({ onDataImported, pmThreshold }: GLDataIntakeProps)
                 <CardDescription className="text-xs">{t('intake.benford.description')}</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-[300px] w-full mt-4">
+                <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain min-w-0 w-full mt-4">
+                  <div className="min-w-[320px] h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <ComposedChart data={benfordData}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                      <XAxis dataKey="digit" fontSize={10} />
-                      <YAxis fontSize={10} tickFormatter={(val) => `${val}%`} />
+                      <XAxis dataKey="digit" fontSize={12} />
+                      <YAxis fontSize={12} tickFormatter={(val) => `${val}%`} />
                       <Tooltip 
-                        contentStyle={{ fontSize: '10px' }}
+                        contentStyle={{ fontSize: '12px' }}
                         formatter={(val: number) => [`${val}%`]}
                       />
-                      <Legend iconSize={8} wrapperStyle={{ fontSize: '10px' }} />
+                      <Legend iconSize={8} wrapperStyle={{ fontSize: '12px' }} />
                       <Bar dataKey="actual" name={t('intake.benford.actual')} fill="#3b82f6" radius={[2, 2, 0, 0]} />
                       <Line type="monotone" dataKey="standard" name={t('intake.benford.standard')} stroke="#ef4444" strokeWidth={2} dot={{ r: 2 }} />
                     </ComposedChart>
                   </ResponsiveContainer>
+                  </div>
                 </div>
                 <div className="mt-4 p-3 rounded bg-muted/30 border text-xs flex gap-2">
                   <AlertCircle className="h-4 w-4 shrink-0 text-muted-foreground" />
