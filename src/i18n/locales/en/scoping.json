@@ -66,6 +66,8 @@
   "purgeConfirm": "This will permanently delete ALL simulations and GL snapshots. Continue?",
   "params": {
     "title": "Scoping Parameters",
+    "show": "Show Parameters",
+    "hide": "Hide Parameters",
     "locations": "Significant Locations",
     "omLabel": "% OM (Overall Materiality)",
     "haircutLabel": "% Haircut (PM)",

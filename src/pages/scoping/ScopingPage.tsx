@@ -23,6 +23,7 @@ import { cn } from '@/lib/utils';
 import { api } from '@/lib/api-client';
 import { useQueryClient } from '@tanstack/react-query';
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 import { SmartImportWizard } from '@/components/scoping/SmartImportWizard';
 import { RolloverPrompt } from '@/components/layout/RolloverPrompt';
@@ -315,9 +316,23 @@ export function ScopingPage() {
 
 function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulation, onBack: () => void }) {
   const { t } = useTranslation('scoping');
+  const isMobile = useIsMobile();
   const queryClient = useQueryClient();
-  const [isParamsOpen, setIsParamsOpen] = React.useState(true);
+  const [isParamsOpen, setIsParamsOpen] = React.useState(!isMobile);
   const [isWorkflowOpen, setIsWorkflowOpen] = React.useState(false);
+
+  // Sync initial state when isMobile resolves if user hasn't explicitly toggled
+  const hasUserToggledRef = React.useRef(false);
+  React.useEffect(() => {
+    if (!hasUserToggledRef.current) {
+      setIsParamsOpen(!isMobile);
+    }
+  }, [isMobile]);
+
+  const handleToggleParams = React.useCallback(() => {
+    hasUserToggledRef.current = true;
+    setIsParamsOpen(prev => !prev);
+  }, []);
 
   const {
     simState, setSimState, mergedGlData, entityHierarchy, selectedEntityCodes, setSelectedEntityCodes,
@@ -355,7 +370,7 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
             omValue={omValue}
             pmValue={pmValue}
             isParamsOpen={isParamsOpen}
-            onToggleParams={() => setIsParamsOpen(!isParamsOpen)}
+            onToggleParams={handleToggleParams}
           />
         </div>
 
@@ -371,7 +386,10 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
                 omValue={omValue}
                 pmValue={pmValue}
                 isLocked={isLocked}
-                onClose={() => setIsParamsOpen(false)}
+                onClose={() => {
+                  hasUserToggledRef.current = true;
+                  setIsParamsOpen(false);
+                }}
                 draftBasis={draftBasis}
                 setDraftBasis={setDraftBasis}
                 draftOmPercentage={draftOmPercentage}
@@ -391,18 +409,21 @@ function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulati
               </div>
             </div>
           ) : (
-            <div 
-              className="w-full md:w-8 shrink-0 flex flex-row md:flex-col items-center justify-center md:justify-start py-3 md:py-6 px-4 md:px-0 border border-slate-200 bg-white hover:bg-slate-50 hover:border-indigo-200 rounded-xl cursor-pointer transition-all shadow-sm hover:shadow-md group min-h-0 gap-2 md:gap-4 select-none"
-              onClick={() => setIsParamsOpen(true)}
-              title={t('params.show', 'Show Parameters')}
+            <button
+              type="button"
+              className="w-full md:w-8 shrink-0 flex flex-row md:flex-col items-center justify-center md:justify-start py-3 md:py-6 px-4 md:px-0 border border-slate-200 bg-white hover:bg-slate-50 hover:border-indigo-200 rounded-xl cursor-pointer transition-all shadow-sm hover:shadow-md group min-h-[44px] gap-2 md:gap-4 select-none focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
+              onClick={handleToggleParams}
+              title={t('params.show', { defaultValue: 'Show Parameters' })}
+              aria-label={t('params.show', { defaultValue: 'Show Parameters' })}
+              aria-expanded={false}
             >
-              <Settings2 className="h-4 w-4 text-slate-400 group-hover:text-indigo-600 transition-colors duration-200" />
+              <Settings2 className="h-4 w-4 text-slate-500 group-hover:text-indigo-600 transition-colors duration-200 shrink-0" />
               <span 
-                className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-indigo-600 transition-colors duration-200 md:[writing-mode:vertical-rl]" 
+                className="text-xs font-bold uppercase tracking-wider text-slate-700 group-hover:text-indigo-600 transition-colors duration-200 md:[writing-mode:vertical-rl]" 
               >
-                {t('params.title', 'Parameters')}
+                {t('params.title', { defaultValue: 'Parameters' })}
               </span>
-            </div>
+            </button>
           )}
 
           <div className="flex-grow min-h-0 min-w-0 flex flex-col">

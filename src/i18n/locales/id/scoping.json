@@ -66,6 +66,8 @@
   "purgeConfirm": "Ini akan menghapus seluruh simulasi dan snapshot GL secara permanen. Lanjutkan?",
   "params": {
     "title": "Parameter Scoping",
+    "show": "Tampilkan Parameter",
+    "hide": "Sembunyikan Parameter",
     "locations": "Lokasi Signifikan",
     "omLabel": "% OM (Materialitas Keseluruhan)",
     "haircutLabel": "% Haircut (PM)",
