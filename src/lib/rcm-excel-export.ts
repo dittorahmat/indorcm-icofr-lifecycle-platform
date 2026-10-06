@@ -206,3 +206,25 @@ export async function exportRegulatoryTableToExcel(
   XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
   XLSX.writeFile(workbook, filename);
 }
+
+export interface SimpleTableExportOptions {
+  filename: string;
+  sheetName?: string;
+}
+
+/**
+ * Generic single-sheet writer for plain keyed-row exports (e.g. GL scoping grid).
+ * .tsx callers MUST use this via useExcelExport — never `import * as XLSX` directly.
+ * Lazy-loads xlsx at click time so it stays out of the initial bundle.
+ */
+export async function exportSimpleTableToExcel(
+  rows: Array<Record<string, unknown>>,
+  options: SimpleTableExportOptions,
+): Promise<void> {
+  const { filename, sheetName = 'Sheet1' } = options;
+  const XLSX = await import('xlsx');
+  const worksheet = XLSX.utils.json_to_sheet(rows);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+  XLSX.writeFile(workbook, filename);
+}

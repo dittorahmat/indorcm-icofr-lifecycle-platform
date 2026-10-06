@@ -58,12 +58,6 @@ function isBadgeNodeType(type?: string | null) {
   return !!type && NON_SELECTABLE_BADGE_TYPES.has(type);
 }
 
-// Shared mobile viewport hook (single source: hooks/use-mobile).
-// Edit chrome is hidden via CSS; canvas interactions are gated via this flag.
-function useIsMobileViewport() {
-  return useIsMobile();
-}
-
 export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmProcessId: propBpmProcessId }: BPMEditorProps) {
   const { t } = useTranslation(['risklibrary', 'common', 'bpm']);
   const [documentView, setDocumentView] = useState(false);
@@ -246,7 +240,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
 
   // Read-only inspection contract on small viewports: same canvas, no edits.
   // (Placed after useBPMEditorState so isLocked is in scope.)
-  const isMobileView = useIsMobileViewport();
+  const isMobileView = useIsMobile();
   const [mobileInspectId, setMobileInspectId] = useState<string | null>(null);
   const isTouchReadOnly = isLocked || isMobileView;
   const mobileInspectNode = mobileInspectId ? nodes.find(n => n.id === mobileInspectId) ?? null : null;

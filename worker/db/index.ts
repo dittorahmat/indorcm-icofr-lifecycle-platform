@@ -6,7 +6,6 @@ import { drizzle as drizzlePgJs } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { PgDatabase } from 'drizzle-orm/pg-core';
 import * as schema from './schema';
-import { sql } from 'drizzle-orm';
 
 import { AsyncLocalStorage } from 'node:async_hooks';
 
@@ -16,39 +15,13 @@ export type DrizzleDb = PgDatabase<any, typeof schema>;
 let dbInstance: DrizzleDb | null = null;
 let lastUrl: string | null = null;
 let hasLoggedDriver = false;
-let isDbFixed = false;
 
 // AsyncLocalStorage to share request-scoped DB instance and connection pool
 export const dbLocalStorage = new AsyncLocalStorage<{ db: DrizzleDb; pool?: Pool }>();
 
-/**
- * @deprecated Single source of truth is now versioned drizzle/*.sql
- * (see 0048_consolidate_runtime_ddl.sql). Kept for one-off CLI repair only.
- * MUST NOT run automatically per-request: multi-isolate Workers + swallowed
- * errors (.catch(()=>{})) hide drift. Run `npx drizzle-kit push/migrate` instead.
- */
-export const fixDatabaseSchema = async (db: DrizzleDb) => {
-  if (isDbFixed) return;
-  try {
-    await db.execute(sql`ALTER TABLE icofr.gl_snapshots ADD COLUMN IF NOT EXISTS year integer;`);
-    await db.execute(sql`ALTER TABLE icofr.gl_snapshots ADD COLUMN IF NOT EXISTS "benchmarkFsliNames" jsonb;`);
-    await db.execute(sql`ALTER TABLE icofr."account_assertions" ADD COLUMN IF NOT EXISTS "year" integer;`);
-    await db.execute(sql`ALTER TABLE icofr."audit_logs" ADD COLUMN IF NOT EXISTS "change_category" text;`);
-    await db.execute(sql`ALTER TABLE icofr."documents" ADD COLUMN IF NOT EXISTS "metadata" jsonb;`);
-    await db.execute(sql`ALTER TABLE icofr."documents" ADD COLUMN IF NOT EXISTS "status" text DEFAULT 'completed';`);
-    await db.execute(sql`ALTER TABLE icofr."documents" ADD COLUMN IF NOT EXISTS "indexing_progress" integer DEFAULT 100;`);
-    await db.execute(sql`ALTER TABLE icofr."transaction_details" ADD COLUMN IF NOT EXISTS "bpm_process_id" text;`);
-    await db.execute(sql`CREATE TABLE IF NOT EXISTS icofr."user_preferences" (
-      "user_id" text PRIMARY KEY NOT NULL,
-      "layout" jsonb,
-      "updated_at" timestamp DEFAULT now() NOT NULL
-    );`);
-    isDbFixed = true;
-    console.log('✅ On-premise database schema auto-migrations applied successfully.');
-  } catch (err) {
-    console.warn('⚠️ Auto schema fix failed:', err);
-  }
-};
+// Schema discipline: the single source of DDL truth is versioned drizzle/*.sql
+// (runtime DDL consolidated in 0048_consolidate_runtime_ddl.sql).
+// Run `npx drizzle-kit push` / `npx drizzle-kit migrate` after schema changes.
 
 export const createDbAndPool = (url?: string): { db: DrizzleDb; pool?: Pool } => {
   const dbUrl = url || (typeof process !== 'undefined' ? process.env.DATABASE_URL : undefined);
@@ -112,10 +85,6 @@ export const createDbAndPool = (url?: string): { db: DrizzleDb; pool?: Pool } =>
 
     db = drizzleWs(pool, { schema }) as any;
   }
-
-  // Tech-debt fix: do NOT auto-mutate schema per connection.
-  // Schema changes must go through versioned drizzle migrations.
-  // One-off repair: import { fixDatabaseSchema } in a CLI script explicitly.
 
   return { db, pool };
 };

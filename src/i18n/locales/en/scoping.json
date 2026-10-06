@@ -53,6 +53,7 @@
     "tabIntegrity": "Data Integrity",
     "notesLabel": "Review Notes & Feedback",
     "notesPlaceholder": "Enter your feedback or notes for the Line 2 team...",
+    "notesHint": "Note: Rejection requires a reason to be provided.",
     "rejectBtn": "Reject & Return",
     "approveToKomutBtn": "Approve to Chairman",
     "approveFinalBtn": "Approve Baseline"

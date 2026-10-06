@@ -23,12 +23,15 @@ import { WorkflowPanel } from '@/components/workflow/WorkflowPanel';
 import { CSARecordCard } from '@/components/csa/CSARecordCard';
 import { MobileDesktopBanner } from '@/components/layout/MobileDesktopBanner';
 import { CollapsibleFilterCard } from '@/components/layout/CollapsibleFilterCard';
+import { useExcelExport } from '@/lib/useExcelExport';
+import { buildCsaRecordSummaryRows, exportCsaRecordToExcel } from '@/lib/csa-excel-export';
 
 function CSARecordRow({ record: initialRecord, process }: { record: CSARecord, process?: BPMProcess }) {
   const [isExpanded, setIsExpanded] = React.useState(false);
   const [selectedControl, setSelectedControl] = React.useState<Control | null>(null);
   const [isExportingPDF, setIsExportingPDF] = React.useState(false);
-  const [isExportingXLS, setIsExportingXLS] = React.useState(false);
+  const { isExporting: isExportingXLS, exportNow: exportXlsNow } =
+    useExcelExport<Record<string, string>>();
   const { t } = useTranslation(['csa_hub', 'common']);
   const { workingYear } = useFiscalYearStore();
   
@@ -92,39 +95,30 @@ function CSARecordRow({ record: initialRecord, process }: { record: CSARecord, p
 
   const handleExportXLS = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsExportingXLS(true);
     const toastId = toast.loading("Generating Excel Report...");
-    try {
-      const XLSX = await import('xlsx');
-      
-      // Prepare Data
-      const summaryData = [
-        { "Field": "Process Name", "Value": process?.name },
-        { "Field": "Period", "Value": initialRecord.period },
-        { "Field": "Assessment Date", "Value": format(new Date(initialRecord.assessmentDate), 'yyyy-MM-dd HH:mm') },
-        { "Field": "Overall Result", "Value": initialRecord.result },
-        { "Field": "Comments", "Value": initialRecord.comments || "" }
-      ];
-
-      const samplesData = (record.samples || []).map((s, idx) => ({
-        "No": idx + 1,
-        "Sample Ref": s.sampleRef,
-        "Result": s.controlResults ? "Mapped" : "Empty",
-        "ITAC Match": s.itacMatch ? "Yes" : "N/A"
-      }));
-
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summaryData), 'Summary');
-      if (samplesData.length > 0) {
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(samplesData), 'Samples');
-      }
-
-      XLSX.writeFile(wb, `CSA_Report_${process?.name || 'Export'}_${initialRecord.period}.xlsx`);
+    const exported = await exportXlsNow({
+      rows: buildCsaRecordSummaryRows({
+        processName: process?.name || 'N/A',
+        period: initialRecord.period,
+        assessmentDate: initialRecord.assessmentDate,
+        result: initialRecord.result,
+        comments: initialRecord.comments,
+        samples: record.samples || [],
+      }),
+      filename: `CSA_Report_${process?.name || 'Export'}_${initialRecord.period}.xlsx`,
+      exportFn: (rows, opts) => exportCsaRecordToExcel({
+        processName: process?.name || 'N/A',
+        period: initialRecord.period,
+        assessmentDate: initialRecord.assessmentDate,
+        result: initialRecord.result,
+        comments: initialRecord.comments,
+        samples: record.samples || [],
+        filename: opts.filename,
+      }),
+      onError: () => toast.error("Failed to generate Excel", { id: toastId }),
+    });
+    if (exported) {
       toast.success("Excel exported successfully", { id: toastId });
-    } catch (err: any) {
-      toast.error("Failed to generate Excel", { id: toastId });
-    } finally {
-      setIsExportingXLS(false);
     }
   };
 
@@ -427,7 +421,7 @@ export function CSAPage() {
                 </Badge>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 text-center">
+              <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-2 text-center">
                 <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 rounded-md">
                   <span className="text-xs font-medium text-emerald-700 dark:text-emerald-300 block">
                     {t('page.summary.effective', { defaultValue: 'Efektif' })}

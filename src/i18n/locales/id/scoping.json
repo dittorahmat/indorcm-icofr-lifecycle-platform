@@ -53,6 +53,7 @@
     "tabIntegrity": "Integritas Data",
     "notesLabel": "Review Notes & Feedback",
     "notesPlaceholder": "Masukkan umpan balik atau catatan Anda untuk tim Lini 2...",
+    "notesHint": "Catatan: Penolakan wajib disertai alasan.",
     "rejectBtn": "Tolak & Kembalikan",
     "approveToKomutBtn": "Setujui ke Komut",
     "approveFinalBtn": "Setujui Baseline"

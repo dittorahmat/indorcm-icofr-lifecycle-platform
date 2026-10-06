@@ -451,7 +451,11 @@ export function RegulatoryPropertySheet({
         <AlertDialogFooter className="flex-col-reverse sm:flex-row gap-2">
           <AlertDialogCancel onClick={() => setDeleteConfirm(null)} className="w-full sm:w-auto h-11 sm:h-10 min-h-[44px] justify-center"> {t('common:actions.cancel')}</AlertDialogCancel>
           <AlertDialogAction 
-            onClick={() => deleteConfirm?.type === 'risk' ? executeRemoveRisk(deleteConfirm.id!) : executeRemoveControl(deleteConfirm!.index!)}
+            onClick={() => {
+              if (!deleteConfirm) return;
+              if (deleteConfirm.type === 'risk' && deleteConfirm.id !== undefined) executeRemoveRisk(deleteConfirm.id);
+              else if (deleteConfirm.type === 'control' && deleteConfirm.index !== undefined) executeRemoveControl(deleteConfirm.index);
+            }}
             className="bg-red-600 hover:bg-red-700 text-white font-bold w-full sm:w-auto h-11 sm:h-10 min-h-[44px] justify-center"
           >
             {t('common:actions.delete')}

@@ -25,10 +25,15 @@ describe('Dashboard Mobile Responsiveness & Anti-Slop Integrity', () => {
       />
     );
 
-    // Verify grid stays glanceable on mobile: 2-col base densified (never single stacked column)
+    // Mobile-first: single-column base (no page-level horizontal scroll at
+    // 320px); densified columns only at/above the 420px breakpoint.
     const grid = container.firstChild as HTMLElement;
-    expect(grid.className).toContain('grid-cols-2');
+    expect(grid.className).toContain('grid-cols-1');
     expect(grid.className).toContain('lg:grid-cols-4');
+
+    // Inner KPI strip stacks below 420px, densifies at/above it.
+    const innerStrip = grid.querySelector('.min-\\[420px\\]\\:grid-cols-3');
+    expect(innerStrip).not.toBeNull();
 
     // Verify text renders cleanly
     expect(screen.getByText('120')).toBeInTheDocument();

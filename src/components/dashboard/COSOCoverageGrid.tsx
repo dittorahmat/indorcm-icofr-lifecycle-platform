@@ -43,7 +43,7 @@ export function COSOCoverageGrid({ cosoCoverage, isLoading }: COSOCoverageGridPr
                   <div className={cn("h-2.5 w-2.5 rounded-full shrink-0", comp.color)} />
                   <span className="text-xs font-bold uppercase tracking-wider text-slate-500 truncate leading-none">{comp.name}</span>
                 </div>
-                <div className="grid grid-cols-2 min-[340px]:grid-cols-3 gap-2 min-w-0">
+                <div className="grid grid-cols-2 min-[420px]:grid-cols-3 gap-2 min-w-0">
                   {comp.principles.map(pNum => {
                     const c = cosoCoverage.find(cov => cov.principle === pNum);
                     const isCovered = (c?.count ?? 0) > 0;

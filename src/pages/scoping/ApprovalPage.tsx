@@ -87,6 +87,8 @@ export function ApprovalPage() {
     return false;
   }) || [];
 
+  const selectedSimId = selectedSim?.id;
+
   return (
     <AppLayout container>
       <div className="space-y-6">
@@ -262,22 +264,22 @@ export function ApprovalPage() {
                   onChange={(e) => setNote(e.target.value)}
                   className="min-h-[100px]"
                 />
-                <p className="text-xs text-muted-foreground">Note: Rejection requires a reason to be provided.</p>
+                <p className="text-xs text-muted-foreground">{t('approval.notesHint')}</p>
               </div>
               <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-between sm:items-center gap-2 w-full">
                 <Button variant="outline" onClick={() => setIsReviewOpen(false)} className="w-full sm:w-auto min-h-[44px]">Cancel</Button>
                 <div className="flex flex-col-reverse sm:flex-row gap-2 w-full sm:w-auto">
                   <Button 
                     variant="destructive" 
-                    onClick={() => rejectMutation.mutate(selectedSim!.id)}
-                    disabled={rejectMutation.isPending || !note}
+                    onClick={() => { if (selectedSimId) rejectMutation.mutate(selectedSimId); }}
+                    disabled={rejectMutation.isPending || !note || !selectedSimId}
                     className="gap-2 w-full sm:w-auto min-h-[44px]"
                   >
                     <XCircle className="h-4 w-4" /> {selectedSim?.status === 'Pending Deletion Approval' ? 'Reject Deletion' : t('approval.rejectBtn')}
                   </Button>
                   <Button 
-                    onClick={() => approveMutation.mutate(selectedSim!.id)}
-                    disabled={approveMutation.isPending}
+                    onClick={() => { if (selectedSimId) approveMutation.mutate(selectedSimId); }}
+                    disabled={approveMutation.isPending || !selectedSimId}
                     className={cn(
                       "gap-2 w-full sm:w-auto min-h-[44px]",
                       selectedSim?.status === 'Pending Deletion Approval'

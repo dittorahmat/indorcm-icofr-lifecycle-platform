@@ -382,7 +382,7 @@ export function DoDLampiran10Report({
         </div>
 
         {/* KPI Counter Cards (Interactive Filters) */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 print:grid-cols-5">
+        <div className="grid grid-cols-1 min-[420px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 print:grid-cols-5">
           {/* Card 1: Total (Reset all filters) */}
           <button
             type="button"

@@ -1,5 +1,6 @@
 import type { CSARecord } from '@shared/types';
 import type { RegulatoryExportColumn } from './rcm-excel-export';
+import { format } from 'date-fns';
 
 export interface CsaSummaryLabels {
   no: string;
@@ -107,4 +108,66 @@ export function csaAppendixFilename(layout: 'detailed' | 'summary', reference: s
   const safe = (value: string) => value.replace(/[^A-Za-z0-9._-]+/g, '-').replace(/-+/g, '-');
   const suffix = layout === 'detailed' ? 'Detailed' : 'Summary';
   return `CSA_Appendix7a_${suffix}_${safe(reference)}_${safe(period)}.xlsx`;
+}
+
+// ---------------------------------------------------------------------------
+// Per-record workbook export (Summary + Samples sheets).
+// Single writer for CSARecordCard / CSAPage — .tsx callers MUST go through
+// useExcelExport + this function, never `import * as XLSX` directly.
+// ---------------------------------------------------------------------------
+
+export interface CsaRecordSampleInput {
+  sampleRef?: string | null;
+  controlResults?: unknown;
+  itacMatch?: boolean | null;
+}
+
+export interface CsaRecordExportInput {
+  processName: string;
+  /** Omitted by some callers (e.g. CSAPage) — row is skipped when absent. */
+  bpmProcessId?: string | null;
+  period: string;
+  assessmentDate: number | string | Date;
+  result: string;
+  comments?: string | null;
+  samples: CsaRecordSampleInput[];
+}
+
+export function buildCsaRecordSummaryRows(input: CsaRecordExportInput): Array<Record<string, string>> {
+  const rows: Array<Record<string, string>> = [
+    { Field: 'Process Name', Value: input.processName || 'N/A' },
+  ];
+  if (input.bpmProcessId) {
+    rows.push({ Field: 'Process ID', Value: input.bpmProcessId });
+  }
+  rows.push(
+    { Field: 'Period', Value: input.period },
+    { Field: 'Assessment Date', Value: format(new Date(input.assessmentDate), 'yyyy-MM-dd HH:mm') },
+    { Field: 'Overall Result', Value: input.result },
+    { Field: 'Comments', Value: input.comments || '' },
+  );
+  return rows;
+}
+
+export function buildCsaRecordSampleRows(samples: CsaRecordSampleInput[]): Array<Record<string, unknown>> {
+  return samples.map((s, idx) => ({
+    No: idx + 1,
+    'Sample Ref': s.sampleRef,
+    Result: s.controlResults ? 'Mapped' : 'Empty',
+    'ITAC Match': s.itacMatch ? 'Yes' : 'N/A',
+  }));
+}
+
+/** Writes the 2-sheet workbook. Lazy-loads xlsx at click time. */
+export async function exportCsaRecordToExcel(
+  input: CsaRecordExportInput & { filename: string },
+): Promise<void> {
+  const XLSX = await import('xlsx');
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(buildCsaRecordSummaryRows(input)), 'Summary');
+  const sampleRows = buildCsaRecordSampleRows(input.samples);
+  if (sampleRows.length > 0) {
+    XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(sampleRows), 'Samples');
+  }
+  XLSX.writeFile(workbook, input.filename);
 }

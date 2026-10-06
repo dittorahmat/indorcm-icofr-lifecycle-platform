@@ -56,7 +56,7 @@ export function ExternalAuditPortal() {
           </Button>
         </div>
 
-        <div className="grid gap-2 sm:gap-6 grid-cols-3 md:grid-cols-3">
+        <div className="grid gap-2 sm:gap-6 grid-cols-1 sm:grid-cols-3">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between flex-wrap pb-2 gap-2 min-w-0 max-w-full">
               <CardTitle className="text-sm font-medium min-w-0 truncate">Management Conclusion</CardTitle>

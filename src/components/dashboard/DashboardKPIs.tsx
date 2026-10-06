@@ -28,7 +28,7 @@ export function DashboardKPIs({ controlsCount, openDeficienciesCount, cosoPercen
   const { t } = useTranslation('dashboard');
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 min-w-0 w-full max-w-full">
+    <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 min-w-0 w-full max-w-full">
       {/* Executive Cycle Readiness Card */}
       <motion.div variants={itemVariants} className="min-w-0 w-full max-w-full col-span-2 lg:col-span-1">
         <Card className="bg-mancity-pattern text-primary-foreground border border-primary/20 shadow-xs overflow-hidden relative group rounded-lg">
@@ -61,7 +61,7 @@ export function DashboardKPIs({ controlsCount, openDeficienciesCount, cosoPercen
       </motion.div>
 
       {/* KPI Metric Cards: 3 columns even on mobile so values stay glanceable */}
-      <div className="grid grid-cols-3 sm:contents gap-2.5 sm:gap-4 col-span-2 lg:col-span-3 min-w-0 w-full max-w-full">
+      <div className="grid grid-cols-1 min-[420px]:grid-cols-3 sm:contents gap-2.5 sm:gap-4 col-span-2 lg:col-span-3 min-w-0 w-full max-w-full">
         {[
           { 
             title: t('kpis.controlCoverage'), 

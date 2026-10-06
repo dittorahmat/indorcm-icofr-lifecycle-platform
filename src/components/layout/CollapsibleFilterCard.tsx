@@ -37,9 +37,9 @@ export function CollapsibleFilterCard({
   const { t } = useTranslation('common');
   const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = React.useState(
-    typeof window !== 'undefined' && window.innerWidth < 768
-      ? defaultOpenMobile
-      : defaultOpenDesktop
+    // Single viewport source: useIsMobile() (MOBILE_BREAKPOINT).
+    // Corrected post-mount by the sync effect below once the hook resolves.
+    isMobile ? defaultOpenMobile : defaultOpenDesktop
   );
   const hasUserToggledRef = React.useRef(false);
 

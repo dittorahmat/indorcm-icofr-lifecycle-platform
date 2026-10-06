@@ -2,9 +2,9 @@ import { Hono } from "hono";
 import type { HonoEnv } from '../app';
 import { ok, bad, notFound } from '../lib/utils';
 import { getDb } from '../db';
-import { 
+import {
   user, organization, auditLogs, member, departments,
-  testRecords, testSamples, userPreferences
+  userPreferences
 } from '../db/schema';
 import { eq, sql, and } from 'drizzle-orm';
 import type { Settings } from "@shared/types";
@@ -457,6 +457,9 @@ users.put('/users/me/notification-preferences', async (c) => {
 });
 
 // --- DEV TOOLS (Admin Only, non-production, POST + confirm token) ---
+// Discipline: no runtime DDL here. Single source of DDL truth is versioned
+// drizzle/*.sql (see 0048_consolidate_runtime_ddl.sql). Legacy one-off
+// repair/migration endpoints (e.g. /dev/fix-db) were removed after consolidation.
 function assertDevAllowed(c: any): { allowed: boolean; reason?: string } {
   const env = (c.env?.ENV || c.env?.NODE_ENV || (typeof process !== 'undefined' ? process.env.NODE_ENV : '')) as string;
   if (env === 'production') return { allowed: false, reason: 'Disabled in production. Use versioned drizzle migrations + CLI scripts.' };
@@ -470,65 +473,6 @@ function assertConfirmToken(c: any): boolean {
   return got === expected;
 }
 
-users.post('/dev/fix-db', rbac(['Admin']), async (c) => {
-  const gate = assertDevAllowed(c);
-  if (!gate.allowed) return bad(c, gate.reason || 'Forbidden');
-  if (!assertConfirmToken(c)) return bad(c, 'Missing or invalid x-dev-confirm token');
-  const db = getDb(c.env.DATABASE_URL);
-  try {
-    await db.execute(sql`ALTER TABLE simulations ADD COLUMN IF NOT EXISTS significant_accounts jsonb;`);
-    await db.execute(sql`ALTER TABLE "user" ADD COLUMN IF NOT EXISTS "language" text DEFAULT 'en';`);
-    await db.execute(sql`ALTER TABLE applications ADD COLUMN IF NOT EXISTS itgc_areas jsonb DEFAULT '[]';`);
-    await db.execute(sql`ALTER TABLE applications ADD COLUMN IF NOT EXISTS business_owners jsonb DEFAULT '[]';`);
-    await db.execute(sql`ALTER TABLE applications ADD COLUMN IF NOT EXISTS application_owners jsonb DEFAULT '[]';`);
-    await db.execute(sql`ALTER TABLE applications ADD COLUMN IF NOT EXISTS architecture_doc_url text;`);
-    await db.execute(sql`ALTER TABLE applications ADD COLUMN IF NOT EXISTS architecture_doc_name text;`);
-    await db.execute(sql`ALTER TABLE notifications ADD COLUMN IF NOT EXISTS type text DEFAULT 'info';`);
-    await db.execute(sql`ALTER TABLE gl_snapshots ADD COLUMN IF NOT EXISTS year integer;`);
-    await db.execute(sql`ALTER TABLE gl_snapshots ADD COLUMN IF NOT EXISTS "benchmarkFsliNames" jsonb;`);
-    await db.execute(sql`ALTER TABLE "account_assertions" ADD COLUMN IF NOT EXISTS "year" integer;`);
-    await db.execute(sql`ALTER TABLE "audit_logs" ADD COLUMN IF NOT EXISTS "change_category" text;`);
-    await db.execute(sql`ALTER TABLE "documents" ADD COLUMN IF NOT EXISTS "metadata" jsonb;`);
-    await db.execute(sql`CREATE TABLE IF NOT EXISTS "user_preferences" (
-      "user_id" text PRIMARY KEY NOT NULL,
-      "layout" jsonb,
-      "updated_at" timestamp DEFAULT now() NOT NULL
-    );`);
-    
-    // Task 3.4: Legacy Data Migration
-    const legacyTests = await db.select().from(testRecords);
-    let migratedCount = 0;
-    
-    for (const test of legacyTests) {
-        const existingSamples = await db.select().from(testSamples).where(eq(testSamples.testRecordId, test.id)).limit(1);
-        if (existingSamples.length === 0) {
-            await db.insert(testSamples).values({
-                id: crypto.randomUUID(),
-                organizationId: test.organizationId,
-                testRecordId: test.id,
-                sampleRef: 'LEGACY-SUMMARY',
-                attrA: true,
-                attrB: true,
-                attrC: true,
-                attrD: true,
-                status: test.result === 'Effective' || test.result === 'Pass' ? 'Pass' : 'Fail',
-                comments: 'Auto-generated from legacy test record result.'
-            });
-            migratedCount++;
-        }
-    }
-
-
-    return ok(c, { 
-        message: "Database fixed and legacy tests migrated!",
-        migratedTests: migratedCount
-    });
-  } catch (e: any) {
-    return ok(c, { error: e.message });
-  }
-});
-
-
 users.post('/dev/re-seed', rbac(['Admin']), async (c) => {
   const gate = assertDevAllowed(c);
   if (!gate.allowed) return bad(c, gate.reason || 'Forbidden');
@@ -541,7 +485,7 @@ users.post('/dev/re-seed', rbac(['Admin']), async (c) => {
     return ok(c, { message: isSyncOnly ? 'Auth synced!' : 'Database re-seeded successfully' });
   } catch (e: any) {
     console.error('Seed error:', e);
-    return ok(c, { error: e.message });
+    return bad(c, 'DEV_SEED_FAILED', 500);
   }
 });
 
@@ -577,7 +521,8 @@ users.post('/dev/purge-all', rbac(['Admin']), async (c) => {
 
     return ok(c, { message: "All business data purged. Fresh start!" });
   } catch (e: any) {
-    return ok(c, { error: e.message });
+    console.error('Purge-all error:', e);
+    return bad(c, 'DEV_PURGE_FAILED', 500);
   }
 });
 
@@ -591,7 +536,8 @@ users.post('/dev/purge-scoping', rbac(['Admin']), async (c) => {
     const result = await scopingService.purgeData(c.get('organizationId'), c.get('userId'));
     return ok(c, result);
   } catch (e: any) {
-    return ok(c, { error: e.message });
+    console.error('Purge-scoping error:', e);
+    return bad(c, 'DEV_PURGE_FAILED', 500);
   }
 });
 

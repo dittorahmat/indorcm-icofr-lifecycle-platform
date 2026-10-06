@@ -16,7 +16,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Filter, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import * as XLSX from 'xlsx';
+import { useExcelExport } from '@/lib/useExcelExport';
+import { exportSimpleTableToExcel } from '@/lib/rcm-excel-export';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
@@ -63,6 +64,7 @@ export const GLDataGrid = React.memo(function GLDataGrid({
 }: GLDataGridProps) {
   const { t } = useTranslation(['scoping', 'common']);
   const [showFullTable, setShowFullTable] = React.useState(false);
+  const { exportNow: exportGridNow } = useExcelExport<Record<string, unknown>>();
   
   const { data: currentUser } = useQuery({
     queryKey: ['auth-me'],
@@ -150,9 +152,9 @@ export const GLDataGrid = React.memo(function GLDataGrid({
     getRowId: (row) => row.id, // Stable UUID from database
   });
 
-  const handleExportExcel = () => {
+  const handleExportExcel = async () => {
     const rows = table.getRowModel().rows;
-    const exportData: any[] = [];
+    const exportData: Array<Record<string, unknown>> = [];
 
     rows.forEach(row => {
       // Header FSLI
@@ -207,13 +209,18 @@ export const GLDataGrid = React.memo(function GLDataGrid({
       }
     });
 
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Significant Accounts");
-    
-    // Save file
-    XLSX.writeFile(workbook, `Significant_Account_Identification_${new Date().toISOString().split('T')[0]}.xlsx`);
-    toast.success(t('intake.notifications.exported'));
+    const exported = await exportGridNow({
+      rows: exportData,
+      filename: `Significant_Account_Identification_${new Date().toISOString().split('T')[0]}.xlsx`,
+      exportFn: (rows, opts) => exportSimpleTableToExcel(rows, {
+        filename: opts.filename,
+        sheetName: 'Significant Accounts',
+      }),
+      onError: () => toast.error(t('intake.notifications.exportFailed', { defaultValue: 'Export failed' })),
+    });
+    if (exported) {
+      toast.success(t('intake.notifications.exported'));
+    }
   };
 
   return (

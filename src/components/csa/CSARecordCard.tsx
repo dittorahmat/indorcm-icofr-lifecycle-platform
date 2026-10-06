@@ -24,7 +24,8 @@ import { CSAReviewMatrix } from '@/components/csa/CSAReviewMatrix';
 import { TODVerificationDialog } from '@/components/csa/TODVerificationDialog';
 import { EvidenceCaptureButton } from '@/components/csa/EvidenceCaptureButton';
 import { WorkflowPanel } from '@/components/workflow/WorkflowPanel';
-import * as XLSX from 'xlsx';
+import { useExcelExport } from '@/lib/useExcelExport';
+import { buildCsaRecordSummaryRows, exportCsaRecordToExcel } from '@/lib/csa-excel-export';
 
 interface CSARecordCardProps {
   record: CSARecord;
@@ -35,7 +36,8 @@ export function CSARecordCard({ record: initialRecord, process }: CSARecordCardP
   const [isExpanded, setIsExpanded] = useState(false);
   const [selectedControl, setSelectedControl] = useState<Control | null>(null);
   const [isExportingPDF, setIsExportingPDF] = useState(false);
-  const [isExportingXLS, setIsExportingXLS] = useState(false);
+  const { isExporting: isExportingXLS, exportNow: exportXlsNow } =
+    useExcelExport<Record<string, string>>();
 
   const { t } = useTranslation(['csa_hub', 'common']);
   const { workingYear } = useFiscalYearStore();
@@ -96,37 +98,35 @@ export function CSARecordCard({ record: initialRecord, process }: CSARecordCardP
 
   const handleExportXLS = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsExportingXLS(true);
     const toastId = toast.loading(t('common:notifications.exportingExcel', { defaultValue: 'Mengekspor Excel...' }));
-    try {
-      const summaryData = [
-        { "Field": "Process Name", "Value": process?.name || 'N/A' },
-        { "Field": "Process ID", "Value": initialRecord.bpmProcessId },
-        { "Field": "Period", "Value": initialRecord.period },
-        { "Field": "Assessment Date", "Value": format(new Date(initialRecord.assessmentDate), 'yyyy-MM-dd HH:mm') },
-        { "Field": "Overall Result", "Value": initialRecord.result },
-        { "Field": "Comments", "Value": initialRecord.comments || "" }
-      ];
-
-      const samplesData = (record.samples || []).map((s, idx) => ({
-        "No": idx + 1,
-        "Sample Ref": s.sampleRef,
-        "Result": s.controlResults ? "Mapped" : "Empty",
-        "ITAC Match": s.itacMatch ? "Yes" : "N/A"
-      }));
-
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summaryData), 'Summary');
-      if (samplesData.length > 0) {
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(samplesData), 'Samples');
-      }
-
-      XLSX.writeFile(wb, `CSA_Report_${process?.name || 'Export'}_${initialRecord.period}.xlsx`);
+    const exported = await exportXlsNow({
+      rows: buildCsaRecordSummaryRows({
+        processName: process?.name || 'N/A',
+        bpmProcessId: initialRecord.bpmProcessId,
+        period: initialRecord.period,
+        assessmentDate: initialRecord.assessmentDate,
+        result: initialRecord.result,
+        comments: initialRecord.comments,
+        samples: record.samples || [],
+      }),
+      filename: `CSA_Report_${process?.name || 'Export'}_${initialRecord.period}.xlsx`,
+      exportFn: (rows, opts) => exportCsaRecordToExcel({
+        processName: process?.name || 'N/A',
+        bpmProcessId: initialRecord.bpmProcessId,
+        period: initialRecord.period,
+        assessmentDate: initialRecord.assessmentDate,
+        result: initialRecord.result,
+        comments: initialRecord.comments,
+        samples: record.samples || [],
+        filename: opts.filename,
+      }),
+      onError: () => toast.error(
+        t('common:notifications.exportFailed', { defaultValue: 'Gagal mengekspor Excel' }),
+        { id: toastId },
+      ),
+    });
+    if (exported) {
       toast.success(t('common:notifications.exportSuccess', { defaultValue: 'Excel berhasil diunduh' }), { id: toastId });
-    } catch (err: any) {
-      toast.error(err.message || t('common:notifications.exportFailed', { defaultValue: 'Gagal mengekspor Excel' }), { id: toastId });
-    } finally {
-      setIsExportingXLS(false);
     }
   };
 
