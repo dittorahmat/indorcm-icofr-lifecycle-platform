@@ -27,10 +27,11 @@ export default tseslint.config(
       ...importPlugin.configs.recommended.rules,
       ...importPlugin.configs.typescript.rules,
       'prefer-const': 'off',
-      "react-hooks/rules-of-hooks": "error", 
+      "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "error",
-      '@typescript-eslint/no-unused-vars': "off",
-      '@typescript-eslint/no-explicit-any': 'off',
+      // Tech-debt gate (warn-first, escalate to error per-module as `any` is removed):
+      '@typescript-eslint/no-unused-vars': "warn",
+      '@typescript-eslint/no-explicit-any': 'warn',
       'react-refresh/only-export-components': [
         'error',
         { allowConstantExport: true },

@@ -20,5 +20,24 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
       '@shared': path.resolve(__dirname, './shared'),
     },
+    // Tech-debt gate: run with `vitest run --coverage` (requires @vitest/coverage-v8).
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html'],
+      exclude: [
+        '**/node_modules/**',
+        '**/dist/**',
+        'shared/mock-data.ts',
+        'src/test/setup.ts',
+        '**/*.test.*',
+        '**/__tests__/**',
+      ],
+      thresholds: {
+        lines: 50,
+        branches: 40,
+        functions: 40,
+        statements: 50,
+      },
+    },
   },
 });

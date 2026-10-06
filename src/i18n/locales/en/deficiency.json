@@ -237,5 +237,12 @@
       "saveButton": "Save & Certify DoD Worksheet",
       "cancelButton": "Cancel"
     }
+  },
+  "toast": {
+    "planUpdated": "Action plan updated.",
+    "updateFailed": "Update failed: {{message}}",
+    "severityUpdated": "Deficiency severity updated based on DoD assessment.",
+    "aggregateSaved": "Aggregate deficiency analysis saved (Lampiran 10).",
+    "workflowUpdated": "Workflow status updated."
   }
 }

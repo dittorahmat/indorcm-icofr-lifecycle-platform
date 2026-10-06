@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import type { HonoEnv } from '../app';
-import { ok, notFound } from '../lib/utils';
+import { ok, bad, notFound } from '../lib/utils';
 import { getDb } from '../db';
 import { 
   deficiencies, actionPlans, auditLogs, aggregateDeficiencies, 
@@ -192,10 +192,10 @@ remediation.post('/actionplans/:id/workflow', async (c) => {
   } else if (body.action === "Approve") {
     nextStatus = "Resolved";
   } else if (body.action === "Reject") {
-    if (!body.note) return notFound(c, "Rejection requires a note"); // Using notFound as a placeholder for bad, but should be bad.
+    if (!body.note) return bad(c, "NOTE_REQUIRED", 400, "Rejection requires a note");
     nextStatus = "Ineffective";
   } else if (body.action === "Rollback") {
-    if (!body.note) return notFound(c, "Rollback requires a note");
+    if (!body.note) return bad(c, "NOTE_REQUIRED", 400, "Rollback requires a note");
     nextStatus = "Ineffective";
   }
 

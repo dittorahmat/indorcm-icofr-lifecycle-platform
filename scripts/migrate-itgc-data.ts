@@ -1,6 +1,6 @@
 import { neon } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-http';
-import * as schema from './worker/db/schema';
+import * as schema from '../worker/db/schema';
 import { sql } from 'drizzle-orm';
 
 // Bun secara otomatis membaca file .env, jadi kita tidak butuh dotenv.config()

@@ -1,9 +1,11 @@
 import postgres from 'postgres';
 import { drizzle } from 'drizzle-orm/postgres-js';
-import * as schema from './worker/db/schema';
+import * as schema from '../worker/db/schema';
 import { eq, and } from 'drizzle-orm';
 
-const dbUrl = process.env.DATABASE_URL || "postgres://indorcm:indorcm_secure_pass@localhost:5432/indorcm_icofr";
+// Tech-debt fix: no hardcoded credentials. Require DATABASE_URL from env (.dev.vars/.env).
+const dbUrl = process.env.DATABASE_URL;
+if (!dbUrl) throw new Error('DATABASE_URL_MISSING: set DATABASE_URL in .dev.vars/.env before running seed-kur-transactions');
 
 const queryClient = postgres(dbUrl);
 const db = drizzle(queryClient, { schema });

@@ -323,16 +323,21 @@ export const createApp = () => {
     await next();
   });
 
-  // Global Error Handler (Sanitized to prevent SQL/internal schema leaks - M-05 fix)
+  // Global Error Handler: AppError -> safe code+message; unknown -> sanitized 500 (M-05: no SQL/schema leaks)
   app.onError((err, c) => {
     console.error(`[HONO ERROR] ${err.message}`, err.stack);
     const cause = (err as any).cause;
     if (cause) {
       console.error(`[HONO ERROR CAUSE]`, cause);
     }
-    return c.json({ 
-      success: false, 
-      error: 'Internal Error', 
+    const status = (err as any)?.status;
+    const code = (err as any)?.code;
+    if (typeof status === 'number' && status >= 400 && status < 500 && typeof code === 'string') {
+      return c.json({ success: false, error: code, message: err.message }, status as any);
+    }
+    return c.json({
+      success: false,
+      error: 'Internal Error',
       message: 'An internal error occurred while processing the request.'
     }, 500);
   });

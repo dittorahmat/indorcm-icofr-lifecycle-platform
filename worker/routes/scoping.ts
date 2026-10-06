@@ -167,8 +167,9 @@ scoping.post('/simulations/:id/submit', rbac(['Line 2', 'Admin']), async (c) => 
     );
     return ok(c, updated);
   } catch (e: any) {
-    if (e.message === 'Simulation not found') return notFound(c, e.message);
-    return bad(c, e.message);
+    if (e?.code === 'SIMULATION_NOT_FOUND' || e?.status === 404) return notFound(c, e.code || 'SIMULATION_NOT_FOUND', e.message);
+    if (e instanceof Error) return bad(c, 'SUBMIT_FAILED', 400, e.message);
+    return bad(c, 'SUBMIT_FAILED', 400);
   }
 });
 

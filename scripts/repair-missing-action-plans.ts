@@ -1,5 +1,5 @@
-import { getDb } from './worker/db';
-import { deficiencies, actionPlans } from './worker/db/schema';
+import { getDb } from '../worker/db';
+import { deficiencies, actionPlans } from '../worker/db/schema';
 import { eq, notInArray, sql } from 'drizzle-orm';
 
 async function repair() {

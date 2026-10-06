@@ -456,9 +456,24 @@ users.put('/users/me/notification-preferences', async (c) => {
   return ok(c, { success: true, preferences: updatedPrefs });
 });
 
-// --- DEV TOOLS (Admin Only) ---
+// --- DEV TOOLS (Admin Only, non-production, POST + confirm token) ---
+function assertDevAllowed(c: any): { allowed: boolean; reason?: string } {
+  const env = (c.env?.ENV || c.env?.NODE_ENV || (typeof process !== 'undefined' ? process.env.NODE_ENV : '')) as string;
+  if (env === 'production') return { allowed: false, reason: 'Disabled in production. Use versioned drizzle migrations + CLI scripts.' };
+  return { allowed: true };
+}
 
-users.get('/dev/fix-db', rbac(['Admin']), async (c) => {
+function assertConfirmToken(c: any): boolean {
+  const expected = c.env?.DEV_CONFIRM_TOKEN || (typeof process !== 'undefined' ? process.env.DEV_CONFIRM_TOKEN : '');
+  if (!expected) return true;
+  const got = c.req.header('x-dev-confirm') || c.req.query('confirm');
+  return got === expected;
+}
+
+users.post('/dev/fix-db', rbac(['Admin']), async (c) => {
+  const gate = assertDevAllowed(c);
+  if (!gate.allowed) return bad(c, gate.reason || 'Forbidden');
+  if (!assertConfirmToken(c)) return bad(c, 'Missing or invalid x-dev-confirm token');
   const db = getDb(c.env.DATABASE_URL);
   try {
     await db.execute(sql`ALTER TABLE simulations ADD COLUMN IF NOT EXISTS significant_accounts jsonb;`);
@@ -514,7 +529,10 @@ users.get('/dev/fix-db', rbac(['Admin']), async (c) => {
 });
 
 
-users.get('/dev/re-seed', rbac(['Admin']), async (c) => {
+users.post('/dev/re-seed', rbac(['Admin']), async (c) => {
+  const gate = assertDevAllowed(c);
+  if (!gate.allowed) return bad(c, gate.reason || 'Forbidden');
+  if (!assertConfirmToken(c)) return bad(c, 'Missing or invalid x-dev-confirm token');
   const mode = c.req.query('mode') || 'full';
   const isSyncOnly = mode === 'auth';
   
@@ -527,7 +545,10 @@ users.get('/dev/re-seed', rbac(['Admin']), async (c) => {
   }
 });
 
-users.get('/dev/purge-all', rbac(['Admin']), async (c) => {
+users.post('/dev/purge-all', rbac(['Admin']), async (c) => {
+  const gate = assertDevAllowed(c);
+  if (!gate.allowed) return bad(c, gate.reason || 'Forbidden');
+  if (!assertConfirmToken(c)) return bad(c, 'Missing or invalid x-dev-confirm token');
   const db = getDb(c.env.DATABASE_URL);
   try {
     await db.execute(sql`DELETE FROM bpm_diagrams`);
@@ -560,7 +581,10 @@ users.get('/dev/purge-all', rbac(['Admin']), async (c) => {
   }
 });
 
-users.delete('/dev/purge-scoping', rbac(['Admin']), async (c) => {
+users.post('/dev/purge-scoping', rbac(['Admin']), async (c) => {
+  const gate = assertDevAllowed(c);
+  if (!gate.allowed) return bad(c, gate.reason || 'Forbidden');
+  if (!assertConfirmToken(c)) return bad(c, 'Missing or invalid x-dev-confirm token');
   const db = getDb(c.env.DATABASE_URL);
   const scopingService = new ScopingService(db);
   try {

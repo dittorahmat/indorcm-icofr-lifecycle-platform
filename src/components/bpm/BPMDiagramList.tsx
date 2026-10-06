@@ -332,7 +332,7 @@ export function BPMDiagramList({
                               </span>
                               {hasChildren && (
                                 <span className="text-xs text-indigo-600 font-bold">
-                                  • {process.children!.length} {t('bpm:hierarchy.subProcessesCount', 'sub-proses')}
+                                  • {(process.children ?? []).length} {t('bpm:hierarchy.subProcessesCount', 'sub-proses')}
                                 </span>
                               )}
                             </div>
@@ -399,7 +399,7 @@ export function BPMDiagramList({
                     {/* Sub-Processes Nested Rows */}
                     {hasChildren &&
                       isExpanded &&
-                      process.children!.map((sub, childIdx) => {
+                      (process.children ?? []).map((sub, childIdx) => {
                         const isChildSelected = selectedProcessIds.includes(sub.id);
 
                         return (
@@ -601,7 +601,7 @@ export function BPMDiagramList({
                   </Badge>
                   {hasChildren && (
                     <span className="text-xs text-indigo-600 font-bold">
-                      • {process.children!.length} {t('bpm:hierarchy.subProcessesCount', 'sub-proses')}
+                      • {(process.children ?? []).length} {t('bpm:hierarchy.subProcessesCount', 'sub-proses')}
                     </span>
                   )}
                 </div>
@@ -639,7 +639,7 @@ export function BPMDiagramList({
 
                 {hasChildren && isExpanded && (
                   <div className="space-y-2 pl-2 border-l-2 border-slate-100">
-                    {process.children!.map((sub) => (
+                    {(process.children ?? []).map((sub) => (
                       <div
                         key={sub.id}
                         className="rounded-md border border-slate-200 bg-slate-50 p-3 space-y-2"

@@ -237,5 +237,12 @@
       "saveButton": "Simpan & Sahkan Kertas Kerja DoD",
       "cancelButton": "Batal"
     }
+  },
+  "toast": {
+    "planUpdated": "Rencana aksi diperbarui.",
+    "updateFailed": "Pembaruan gagal: {{message}}",
+    "severityUpdated": "Tingkat keparahan defisiensi diperbarui berdasarkan asesmen DoD.",
+    "aggregateSaved": "Analisis defisiensi agregat tersimpan (Lampiran 10).",
+    "workflowUpdated": "Status alur kerja diperbarui."
   }
 }

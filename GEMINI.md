@@ -38,7 +38,7 @@ IndoGRC Pro is a production-grade web application designed to digitize the ICOFR
     *   `testing/`: TOD & TOE testing workbench with 6 pilar evaluation.
     *   `deficiencies/`: Kanban board, DoD Wizard, and Aggregate Analysis.
     *   `reports/`: Regulatory reports, WBS recap, and digital sign-off.
-*   `shared/`: `types.ts` (Source of Truth), compliance utilities.
+*   `shared/`: `types/` per-domain (`common`, `org`, `scoping`, `rcm-bpm`, `csa-testing`, `deficiency`, `user`) + barrel `types.ts` (Source of Truth), `constants/` (data-blob materialitas dkk), compliance utilities.
 
 ## Mandat Penyelesaian Tahap & Anti-AI Slop (CRITICAL)
 
@@ -64,17 +64,27 @@ Setiap kali melakukan penambahan komponen, modifikasi antarmuka frontend, menyel
         *   **Kalender/heatmap padat:** Di bawah `sm`, ringkas visual padat (indikator dot/hitungan, label hari 1 huruf, sel lebih pendek); detail penuh hanya di `sm+`.
         *   **Aman dari bottom nav:** Pastikan konten tidak tertutup `MobileBottomNav` (`pb-[calc(3.5rem+env(safe-area-inset-bottom,0px))] md:pb-0` di level layout); CTA kritis jangan diparkir di area terpotong.
         *   **Verifikasi viewport (Bukan Sekadar jsdom):** `npm test` berjalan di jsdom yang TIDAK menghitung layout CSS nyata, mengabaikan media query Tailwind, dan tidak mendeteksi overflow visual. Agen DILARANG menganggap `npm test` hijau sebagai bukti tampilan responsif mobile telah berhasil. Periksa secara analitis bounding box dan kalkulasi layout di 320px dan 360px; scroll horizontal halaman dilarang keras (hanya boleh di dalam container tabel/chart yang disengaja). Uji empty/loading/error state di lebar sempit.
-3.  **Sinkronisasi Skema Database:** Jika ada perubahan pada `worker/db/schema.ts`, jalankan `npx drizzle-kit push` untuk menerapkan perubahan ke database PostgreSQL secara langsung.
+3.  **Sinkronisasi Skema Database:** Jika ada perubahan pada `worker/db/schema.ts`, jalankan `npx drizzle-kit push` untuk menerapkan perubahan ke database PostgreSQL secara langsung. **Satu-satunya sumber DDL adalah `drizzle/*.sql` versioned** — dilarang `ALTER TABLE` runtime (`fixDatabaseSchema` auto-run, `/dev/fix-db`), DDL sekali-pakai di route, atau migrasi ad-hoc tanpa nomor urut + snapshot + journal entry.
 4.  **Lokalisasi Penuh (i18n):** Periksa seluruh file yang dimodifikasi. Pastikan **TIDAK ADA** teks hardcoded (Inggris maupun Indonesia). Gunakan `useTranslation` dan file di `src/i18n/locales/**`.
 5.  **Integritas Tipe:** Jalankan `npm run type-check`. Perbaiki semua error TS sebelum melangkah maju.
 6.  **Standar Kode (Lint):** Jalankan `npm run lint`. Pastikan tidak ada peringatan atau error yang tersisa.
 7.  **Verifikasi Kompilasi (Build):** Jalankan `npm run build`. Perubahan dianggap gagal jika proses build tidak berhasil.
 8.  **Pengujian Otomatis (Test):** Jalankan `npm test`. Tambahkan unit test baru jika Anda menambahkan fitur baru atau melakukan perubahan di suatu fitur untuk mencegah regresi.
+9.  **Deteksi Code Smell (Wajib tiap perubahan):** Sebelum dianggap selesai, pindai file yang disentuh terhadap katalog ini dan perbaiki yang ditemukan:
+    *   **God file/module:** `>500 LOC` wajib pertimbangkan pecah (hook + sub-komponen); `>800 LOC` beku fitur sampai dipecah. Larang 10+ `useState` dalam satu komponen tanpa ekstraksi hook.
+    *   **`any` / `as any` / `as unknown as [any]`:** Dilarang menambah baru. Gunakan tipe domain dari `shared/types/*` (`common`, `org`, `scoping`, `rcm-bpm`, `csa-testing`, `deficiency`, `user`). `no-explicit-any` dalam mode `warn` — nol warning baru.
+    *   **Non-null assertion (`!`):** Dilarang pada data server (`children!`, `row!`). Gunakan `?? []` / `?.` + fallback.
+    *   **Mirror server-state:** Dilarang `useQuery` → `useState` + `useEffect` sync dan assignment ref di render body. Gunakan cache React Query (`setQueryData`) untuk optimistic update.
+    *   **Duplikasi terlarang:** Export Excel hanya via `src/lib/useExcelExport.ts` (larang `XLSX.*` langsung di `.tsx`); layout BPM hanya via `utils/bpm-auto-layout`; viewport mobile hanya via `hooks/use-mobile`; error HTTP hanya via `AppError` + `ok/bad/notFound` (`worker/lib/utils.ts`).
+    *   **GET mutating & tanpa guard:** Dilarang endpoint `GET` yang mengubah data; operasi destruktif wajib `POST/DELETE` + `rbac` + env-guard non-prod + token konfirmasi.
+    *   **String-match error & status salah:** Dilarang `e.message === '...'` untuk branching dan `notFound` untuk validasi 400. Gunakan `AppError(code, message, status)`.
+    *   **Skrip tercecer & kredensial:** Dilarang file `*.ts` one-off di root repo atau kredensial hardcoded. Wajib di `scripts/` + `DATABASE_URL` dari env.
+10. **Penghapusan Tech Debt (Boy Scout Rule):** Setiap menyentuh modul, tinggalkan lebih bersih: (a) ekstrak 1 hook/komponen jika file >500 LOC, (b) ganti minimal 1 `any` dengan tipe domain, (c) pindahkan 1 string hardcoded ke `i18n`, (d) tambah/co-lokasi 1 test untuk logika yang diubah. Perubahan yang menambah `as any` baru, duplikat export-excel/layout, atau tabel tanpa test pendamping dianggap gagal walau build hijau.
 
 ## Development Conventions
 
 *   **Regulatory Compliance:** Any UI or data model change MUST refer to Regulation SK-5/DKU.MBU/11/2024.
-*   **Type Safety:** Shared types in `shared/types.ts` are the source of truth.
+*   **Type Safety:** Shared types in `shared/types/*` (barrel `shared/types.ts`) are the source of truth. Import from the domain module (`common`, `org`, `scoping`, `rcm-bpm`, `csa-testing`, `deficiency`, `user`) — never re-introduce a god `types.ts` or `any` shims.
 *   **Auditability:** Every entity mutation should be accompanied by an entry in the `auditTrail` and `ChangeLog`.
 *   **Design Quality & Accessibility (Mandat design-taste-frontend):** Hindari segala bentuk "AI Slop". Patuhi aturan minimum font 12px, border-radius enterprise, dan surface kontras tinggi.
 *   **Mobile-Responsive (Mandat better-interface):** Setiap edit `src/**/*.tsx` wajib mobile-first dan lolos checklist di Mandat Penyelesaian Tahap poin 2 (grid satu kolom di base, tabel dalam `overflow-x-auto`, footer dialog stack, verifikasi 320px/360px).

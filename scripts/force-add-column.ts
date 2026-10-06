@@ -1,4 +1,4 @@
-import { getDb } from './worker/db';
+import { getDb } from '../worker/db';
 import { sql } from 'drizzle-orm';
 import { readFileSync } from 'fs';
 

@@ -1,9 +1,10 @@
 import { neon } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-http';
-import * as schema from './worker/db/schema';
+import * as schema from '../worker/db/schema';
 import { eq } from 'drizzle-orm';
 
-const url = process.env.DATABASE_URL || "postgres://indouser:indopassword@localhost:5432/indorcm_db";
+const url = process.env.DATABASE_URL;
+if (!url) throw new Error('DATABASE_URL_MISSING: set DATABASE_URL before running check-simulations');
 
 async function check() {
     console.log("🔍 Checking Simulations Content...");

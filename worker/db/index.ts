@@ -21,6 +21,12 @@ let isDbFixed = false;
 // AsyncLocalStorage to share request-scoped DB instance and connection pool
 export const dbLocalStorage = new AsyncLocalStorage<{ db: DrizzleDb; pool?: Pool }>();
 
+/**
+ * @deprecated Single source of truth is now versioned drizzle/*.sql
+ * (see 0048_consolidate_runtime_ddl.sql). Kept for one-off CLI repair only.
+ * MUST NOT run automatically per-request: multi-isolate Workers + swallowed
+ * errors (.catch(()=>{})) hide drift. Run `npx drizzle-kit push/migrate` instead.
+ */
 export const fixDatabaseSchema = async (db: DrizzleDb) => {
   if (isDbFixed) return;
   try {
@@ -107,8 +113,9 @@ export const createDbAndPool = (url?: string): { db: DrizzleDb; pool?: Pool } =>
     db = drizzleWs(pool, { schema }) as any;
   }
 
-  // Trigger schema check/fix asynchronously
-  fixDatabaseSchema(db).catch(() => {});
+  // Tech-debt fix: do NOT auto-mutate schema per connection.
+  // Schema changes must go through versioned drizzle migrations.
+  // One-off repair: import { fixDatabaseSchema } in a CLI script explicitly.
 
   return { db, pool };
 };

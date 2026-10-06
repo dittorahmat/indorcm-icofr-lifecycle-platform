@@ -1,6 +1,6 @@
-import { getDb } from './worker/db/index';
-import * as schema from './worker/db/schema';
-import { BpmService } from './worker/services/bpm-service';
+import { getDb } from '../worker/db/index';
+import * as schema from '../worker/db/schema';
+import { BpmService } from '../worker/services/bpm-service';
 import { eq } from 'drizzle-orm';
 
 async function backfillBpmNodes() {

@@ -311,17 +311,14 @@ export function DeficiencyBoard() {
                            simulationsData?.items[0]; // Fallback
   const pmValue = activeSimulation?.pmValue;
 
-  const [actionPlans, setActionPlans] = React.useState<ActionPlan[]>([]);
+  // Server state is the source of truth (no local mirror). Stable ref via useMemo.
+  const actionPlans = React.useMemo(() => actionPlansData?.items ?? [], [actionPlansData?.items]);
 
-  React.useEffect(() => {
-    if (actionPlansData?.items) {
-      setActionPlans(actionPlansData.items);
-    }
-  }, [actionPlansData]);
-
-  // Mutable mirror for rollback snapshots inside mutation callbacks.
+  // Snapshot ref for optimistic-rollback, synced in effect (never in render body).
   const actionPlansRef = React.useRef<ActionPlan[]>([]);
-  actionPlansRef.current = actionPlans;
+  React.useEffect(() => {
+    actionPlansRef.current = actionPlans;
+  }, [actionPlans]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -337,12 +334,12 @@ export function DeficiencyBoard() {
       });
     },
     onSuccess: () => {
-      toast.success("Action plan updated.");
+      toast.success(t('toast.planUpdated', 'Action plan updated.'));
       queryClient.invalidateQueries({ queryKey: ['actionplans'] });
       queryClient.invalidateQueries({ queryKey: ['deficiencies'] });
     },
     onError: (error) => {
-      toast.error(`Update failed: ${error.message}`);
+      toast.error(t('toast.updateFailed', { message: error.message, defaultValue: `Update failed: ${error.message}` }));
       queryClient.invalidateQueries({ queryKey: ['actionplans'] });
     },
   });
@@ -358,7 +355,7 @@ export function DeficiencyBoard() {
     }) => 
       api(`/api/deficiencies/${payload.id}`, { method: 'PUT', body: JSON.stringify(payload) }),
     onSuccess: () => {
-      toast.success("Deficiency severity updated based on DoD assessment.");
+      toast.success(t('toast.severityUpdated', 'Deficiency severity updated based on DoD assessment.'));
       queryClient.invalidateQueries({ queryKey: ['deficiencies'] });
     },
   });
@@ -367,7 +364,7 @@ export function DeficiencyBoard() {
     mutationFn: (data: Partial<AggregateDeficiency>) => 
       api(`/api/aggregatedeficiencies`, { method: 'POST', body: JSON.stringify(data) }),
     onSuccess: () => {
-      toast.success("Aggregate deficiency analysis saved (Lampiran 10).");
+      toast.success(t('toast.aggregateSaved', 'Aggregate deficiency analysis saved (Lampiran 10).'));
       queryClient.invalidateQueries({ queryKey: ['aggregatedeficiencies'] });
       setAggregateMode(false);
       setSelectedDeficiencies([]);
@@ -394,7 +391,7 @@ export function DeficiencyBoard() {
       };
     },
     onSuccess: () => {
-      toast.success("Workflow status updated.");
+      toast.success(t('toast.workflowUpdated', 'Workflow status updated.'));
       queryClient.invalidateQueries({ queryKey: ['actionplans'] });
       queryClient.invalidateQueries({ queryKey: ['deficiencies'] });
     },
@@ -403,9 +400,6 @@ export function DeficiencyBoard() {
       // strands a card in the wrong governance column.
       if (context?.serverPlans) {
         queryClient.setQueryData(['actionplans'], context.serverPlans);
-      }
-      if (context?.localSnapshot) {
-        setActionPlans(context.localSnapshot);
       }
       toast.error(error.message);
       queryClient.invalidateQueries({ queryKey: ['actionplans'] });
@@ -483,17 +477,18 @@ export function DeficiencyBoard() {
       return;
     }
 
-    // Optimistic UI update (rolled back in workflowMutation.onError).
-    setActionPlans(previousPlans => {
-      const activeIndex = previousPlans.findIndex(ap => ap.id === active.id);
-      if (activeIndex === -1) return previousPlans;
-      const newPlans = [...previousPlans];
-      newPlans[activeIndex] = {
-        ...newPlans[activeIndex],
+    // Optimistic UI update via query cache (rolled back in workflowMutation.onError).
+    queryClient.setQueryData<{ items: ActionPlan[] }>(['actionplans'], (prev) => {
+      if (!prev?.items) return prev as { items: ActionPlan[] };
+      const activeIndex = prev.items.findIndex(ap => ap.id === active.id);
+      if (activeIndex === -1) return prev;
+      const newItems = [...prev.items];
+      newItems[activeIndex] = {
+        ...newItems[activeIndex],
         workflowStatus: overStatus as DeficiencyWorkflowStatus,
-        status: overStatus === 'Resolved' ? 'Resolved' : newPlans[activeIndex].status
+        status: overStatus === 'Resolved' ? 'Resolved' : newItems[activeIndex].status
       };
-      return newPlans;
+      return { ...prev, items: newItems };
     });
 
     workflowMutation.mutate({
@@ -501,7 +496,7 @@ export function DeficiencyBoard() {
       action: resolution.action,
       note: resolution.note
     });
-  }, [actionPlans, userRole, workflowMutation]);
+  }, [actionPlans, userRole, workflowMutation, queryClient]);
 
   const isLoading = deficienciesLoading || actionPlansLoading;
 

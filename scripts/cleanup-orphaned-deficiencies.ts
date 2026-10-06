@@ -1,5 +1,5 @@
-import { getDb } from './worker/db';
-import { deficiencies, actionPlans } from './worker/db/schema';
+import { getDb } from '../worker/db';
+import { deficiencies, actionPlans } from '../worker/db/schema';
 import { isNull, and, inArray } from 'drizzle-orm';
 
 async function cleanup() {

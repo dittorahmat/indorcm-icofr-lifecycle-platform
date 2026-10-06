@@ -34,6 +34,7 @@ import { useBPMEditorState } from './editor/hooks/useBPMEditorState';
 import { useBPMNodeOperations } from './editor/hooks/useBPMNodeOperations';
 import { useBPMCanvasDragGuides } from './editor/hooks/useBPMCanvasDragGuides';
 import { useBPMCanvasHandlers } from './editor/hooks/useBPMCanvasHandlers';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { exportBpmToPdf } from './editor/utils/export-bpm-pdf';
 import { sanitizeNodesForSave, sanitizeEdgesForSave } from './editor/utils/sanitize-bpm-nodes';
 
@@ -57,20 +58,10 @@ function isBadgeNodeType(type?: string | null) {
   return !!type && NON_SELECTABLE_BADGE_TYPES.has(type);
 }
 
-// Mobile (<md) viewport detection for the read-only inspection contract.
+// Shared mobile viewport hook (single source: hooks/use-mobile).
 // Edit chrome is hidden via CSS; canvas interactions are gated via this flag.
 function useIsMobileViewport() {
-  const [isMobile, setIsMobile] = useState(
-    () => typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches
-  );
-  useEffect(() => {
-    const mq = window.matchMedia('(max-width: 767px)');
-    const onChange = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    setIsMobile(mq.matches);
-    mq.addEventListener('change', onChange);
-    return () => mq.removeEventListener('change', onChange);
-  }, []);
-  return isMobile;
+  return useIsMobile();
 }
 
 export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmProcessId: propBpmProcessId }: BPMEditorProps) {

@@ -6,6 +6,7 @@ import {
 import type { DrizzleDb } from '../db';
 import type { MaterialitySimulation, SimulationStatus } from '@shared/types';
 import { AuditService } from './audit-service';
+import { AppError, SIMULATION_NOT_FOUND } from '../lib/utils';
 
 export class ScopingService {
   private audit: AuditService;
@@ -19,7 +20,7 @@ export class ScopingService {
    */
   async submitSimulation(orgId: string, userId: string, userRole: string, id: string, body: Partial<MaterialitySimulation>) {
     const [existing] = await this.db.select().from(simulations).where(and(eq(simulations.id, id), eq(simulations.organizationId, orgId))).limit(1);
-    if (!existing) throw new Error('Simulation not found');
+    if (!existing) throw new AppError(SIMULATION_NOT_FOUND, 'Simulation not found', 404);
 
     const history = (existing.history as any[]) || [];
     const newHistoryEntry = {
