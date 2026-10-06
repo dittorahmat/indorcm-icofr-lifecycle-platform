@@ -183,7 +183,6 @@
       "error": "Failed to create assessment. Please try again."
     }
   },
-
   "migration": {
     "title": "Smart Migration Workspace",
     "description": "AI-assisted ingestion for brownfield ICOFR data. Reconstruct your hierarchies and establish a compliant baseline from legacy Excel files.",
@@ -198,14 +197,24 @@
       "upload_rcm": "Upload Risk Control Matrix",
       "upload_rcm_desc": "Drop your existing RCM legacy data",
       "ai_ready": "AI is ready to process your fragmented entity data.",
-      "process_btn": "Process with AI"
+      "process_btn": "Process with AI",
+      "selectRcmType": "Select RCM Type",
+      "templateBtn": "Template {{type}}",
+      "uploadPrompt": "Upload files to begin AI analysis",
+      "emptyFiles": "Please upload at least one file to process.",
+      "typeTlc": "TLC (Transactional)",
+      "typeElc": "ELC (Entity Level)",
+      "typeItgc": "ITGC (IT General)"
     },
     "normalization": {
       "ai_thinking": "AI is thinking...",
       "ai_suggestion": "AI Suggestion (Confidence: {{confidence}}%)",
       "cross_check_title": "Financial-Control Coverage",
       "unmitigated": "Unmitigated",
-      "qual_candidate": "Qual. Candidate"
+      "qual_candidate": "Qual. Candidate",
+      "fix_errors_first": "Fix {{count}} errors first",
+      "backToUpload": "Back to Upload",
+      "nextSummary": "Next: View Summary"
     },
     "intelligence": {
       "title": "Migration Intelligence",
@@ -223,11 +232,31 @@
       "finalize_btn": "Finalize & Set Baseline",
       "processing": "Establishing Regulatory Baseline...",
       "success": "Migration Baseline established successfully!",
-      "notification": "Corporate Migration Baseline established. Historical data is now live."
+      "notification": "Corporate Migration Baseline established. Historical data is now live.",
+      "reviewMapping": "Review Mapping"
     },
     "backlog": {
       "title": "Migration Backlog",
       "drag_hint": "Drag items to place onto canvas"
+    },
+    "importForCycle": "Import for Cycle",
+    "toasts": {
+      "tbParseError": "TB Parse Error",
+      "rcmParseError": "RCM Parse Error",
+      "extractionComplete": "Extraction complete!",
+      "processingFailed": "Processing failed"
+    },
+    "materiality": {
+      "title": "Materiality Configuration",
+      "description": "Set baseline parameters for quantitative scoping",
+      "omPercent": "Overall Materiality %",
+      "haircutPercent": "Haircut %",
+      "calculatedOm": "Calculated OM",
+      "performanceMateriality": "Performance Materiality (PM)",
+      "groupMultiplierNote": "Based on {{multiplier}}x Group Multiplier",
+      "selectBenchmark": "Select Benchmark Basis",
+      "searchPlaceholder": "Search FSLI / GL Benchmark...",
+      "emptyResult": "No FSLI found."
     }
   },
   "applications": {

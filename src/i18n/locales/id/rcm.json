@@ -197,14 +197,24 @@
       "upload_rcm": "Unggah Matriks RCM",
       "upload_rcm_desc": "Tarik & lepas data legacy RCM Anda",
       "ai_ready": "AI siap memproses data entitas Anda yang terfragmentasi.",
-      "process_btn": "Proses dengan AI"
+      "process_btn": "Proses dengan AI",
+      "selectRcmType": "Pilih Tipe RCM",
+      "templateBtn": "Template {{type}}",
+      "uploadPrompt": "Unggah berkas untuk memulai analisis AI",
+      "emptyFiles": "Unggah minimal satu berkas untuk diproses.",
+      "typeTlc": "TLC (Transaksional)",
+      "typeElc": "ELC (Tingkat Entitas)",
+      "typeItgc": "ITGC (Pengendalian Umum TI)"
     },
     "normalization": {
       "ai_thinking": "AI sedang berpikir...",
       "ai_suggestion": "Saran AI (Tingkat Keyakinan: {{confidence}}%)",
       "cross_check_title": "Cakupan Finansial-Kontrol",
       "unmitigated": "Tanpa Mitigasi",
-      "qual_candidate": "Kandidat Kualitatif"
+      "qual_candidate": "Kandidat Kualitatif",
+      "fix_errors_first": "Perbaiki {{count}} kesalahan terlebih dahulu",
+      "backToUpload": "Kembali ke Unggahan",
+      "nextSummary": "Berikutnya: Lihat Ringkasan"
     },
     "intelligence": {
       "title": "Intelijen Migrasi",
@@ -222,11 +232,31 @@
       "finalize_btn": "Finalisasi & Tetapkan Baseline",
       "processing": "Menetapkan Baseline Regulatif...",
       "success": "Baseline Migrasi berhasil ditetapkan!",
-      "notification": "Baseline Migrasi Korporat telah ditetapkan. Data historis kini aktif."
+      "notification": "Baseline Migrasi Korporat telah ditetapkan. Data historis kini aktif.",
+      "reviewMapping": "Tinjau Pemetaan"
     },
     "backlog": {
       "title": "Backlog Migrasi",
       "drag_hint": "Tarik item untuk diletakkan di kanvas"
+    },
+    "importForCycle": "Impor untuk Siklus",
+    "toasts": {
+      "tbParseError": "Galat Parse TB",
+      "rcmParseError": "Galat Parse RCM",
+      "extractionComplete": "Ekstraksi selesai!",
+      "processingFailed": "Pemrosesan gagal"
+    },
+    "materiality": {
+      "title": "Konfigurasi Materialitas",
+      "description": "Tetapkan parameter dasar untuk scoping kuantitatif",
+      "omPercent": "Materialitas Keseluruhan %",
+      "haircutPercent": "Haircut %",
+      "calculatedOm": "OM Terkalkulasi",
+      "performanceMateriality": "Materialitas Kinerja (PM)",
+      "groupMultiplierNote": "Berdasarkan Pengali Grup {{multiplier}}x",
+      "selectBenchmark": "Pilih Basis Benchmark",
+      "searchPlaceholder": "Cari FSLI / GL Benchmark...",
+      "emptyResult": "FSLI tidak ditemukan."
     }
   },
   "applications": {
