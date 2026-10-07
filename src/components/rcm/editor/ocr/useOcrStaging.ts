@@ -9,7 +9,7 @@ import {
   layoutOcrDiagram,
 } from '@/utils/ocr-layout';
 import type { OcrLayoutWarning, OcrRawEdge, OcrRawNode } from '@/utils/ocr-layout';
-import type { TranslateFn } from './ocr-types';
+import type { OcrAppendDirection, OcrImportMode, TranslateFn } from './ocr-types';
 
 export interface OcrParsedDiagram {
   nodes: OcrRawNode[];
@@ -19,9 +19,10 @@ export interface OcrParsedDiagram {
 interface UseOcrStagingParams {
   isOpen: boolean;
   isDirty?: boolean;
+  hasExistingNodes?: boolean;
   t: TranslateFn;
   onClose: () => void;
-  onApply: (nodes: Node[], edges: Edge[]) => void;
+  onApply: (nodes: Node[], edges: Edge[], mode?: OcrImportMode, direction?: OcrAppendDirection) => void;
 }
 
 function errorMessage(err: unknown): string {
@@ -82,7 +83,7 @@ function toFallbackNodes(nodes: OcrRawNode[]): Node[] {
   }));
 }
 
-export function useOcrStaging({ isOpen, isDirty, t, onClose, onApply }: UseOcrStagingParams) {
+export function useOcrStaging({ isOpen, isDirty, hasExistingNodes = false, t, onClose, onApply }: UseOcrStagingParams) {
   const confirm = useConfirm();
   const [ocrFile, setOcrFile] = React.useState<File | null>(null);
   const [isProcessingOcr, setIsProcessingOcr] = React.useState(false);
@@ -93,6 +94,8 @@ export function useOcrStaging({ isOpen, isDirty, t, onClose, onApply }: UseOcrSt
   const [stagingNodes, setStagingNodes, onStagingNodesChange] = useNodesState([]);
   const [stagingEdges, setStagingEdges, onStagingEdgesChange] = useEdgesState([]);
   const [stagingRfInstance, setStagingRfInstance] = React.useState<{ fitView: (opts?: { padding?: number }) => void } | null>(null);
+  const [importMode, setImportMode] = React.useState<OcrImportMode>('overwrite');
+  const [appendDirection, setAppendDirection] = React.useState<OcrAppendDirection>('below');
 
   const initializeStagingFromParsed = React.useCallback(
     (parsed: OcrParsedDiagram) => {
@@ -176,11 +179,14 @@ export function useOcrStaging({ isOpen, isDirty, t, onClose, onApply }: UseOcrSt
     setOcrPreviewUrl(null);
     setStagingWarnings([]);
     setWarningsDismissed(false);
+    setImportMode('overwrite');
+    setAppendDirection('below');
   }, []);
 
   const handleApply = React.useCallback(async () => {
     if (stagingNodes.length === 0 && stagingEdges.length === 0 && !parsedDiagram) return;
-    if (isDirty) {
+    // Only prompt confirmation if overwriting an existing non-empty canvas or when dirty
+    if (hasExistingNodes && importMode === 'overwrite' && isDirty) {
       const ok = await confirm({
         title: t('common:unsavedChanges.title'),
         description: t('bpm:ocr.confirmOverwrite'),
@@ -190,10 +196,10 @@ export function useOcrStaging({ isOpen, isDirty, t, onClose, onApply }: UseOcrSt
       });
       if (!ok) return;
     }
-    onApply(stagingNodes, stagingEdges);
+    onApply(stagingNodes, stagingEdges, importMode, appendDirection);
     resetStaging();
     onClose();
-  }, [stagingNodes, stagingEdges, parsedDiagram, isDirty, confirm, t, onApply, resetStaging, onClose]);
+  }, [stagingNodes, stagingEdges, parsedDiagram, hasExistingNodes, importMode, isDirty, confirm, t, onApply, appendDirection, resetStaging, onClose]);
 
   const updateNodeType = React.useCallback(
     (id: string, type: string) => {
@@ -270,6 +276,10 @@ export function useOcrStaging({ isOpen, isDirty, t, onClose, onApply }: UseOcrSt
     warningsDismissed,
     stagingNodes,
     stagingEdges,
+    importMode,
+    appendDirection,
+    setImportMode,
+    setAppendDirection,
     setWarningsDismissed,
     setStagingRfInstance,
     onStagingNodesChange,

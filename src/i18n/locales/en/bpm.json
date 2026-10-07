@@ -467,6 +467,18 @@
       "applySuccess": "Diagram successfully applied to workspace canvas."
     },
     "confirmOverwrite": "The canvas has unsaved changes. Applying the OCR result will replace the entire diagram. Continue?",
+    "importMode": {
+      "title": "Import Target Mode",
+      "overwrite": "Overwrite Diagram",
+      "overwriteDesc": "Replaces all existing elements on the canvas with the OCR result.",
+      "append": "Append to Canvas",
+      "appendDesc": "Keeps existing canvas elements and adds the OCR result without overlap.",
+      "directionTitle": "Placement Direction",
+      "directionBelow": "Below (Vertical)",
+      "directionBelowDesc": "Placed below the bottom-most boundary of existing flow.",
+      "directionRight": "Right (Horizontal)",
+      "directionRightDesc": "Placed to the right of the right-most boundary of existing flow."
+    },
     "warnings": {
       "title": "Layout Warnings"
     },

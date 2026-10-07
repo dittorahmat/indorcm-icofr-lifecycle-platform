@@ -470,6 +470,18 @@
       "applySuccess": "Diagram berhasil diterapkan ke workspace canvas."
     },
     "confirmOverwrite": "Kanvas memiliki perubahan yang belum disimpan. Menerapkan hasil OCR akan mengganti seluruh diagram. Lanjutkan?",
+    "importMode": {
+      "title": "Mode Target Impor",
+      "overwrite": "Timpa Seluruh Diagram",
+      "overwriteDesc": "Mengganti semua elemen yang ada di kanvas dengan hasil OCR.",
+      "append": "Tambahkan ke Diagram (Append)",
+      "appendDesc": "Mempertahankan elemen kanvas yang ada dan menambahkan hasil OCR tanpa bertumpukan.",
+      "directionTitle": "Arah Penempatan",
+      "directionBelow": "Ke Bawah (Vertikal)",
+      "directionBelowDesc": "Ditempatkan di bawah batas terbawah dari alur yang sudah ada.",
+      "directionRight": "Ke Kanan (Horizontal)",
+      "directionRightDesc": "Ditempatkan di sebelah kanan batas terkanan dari alur yang sudah ada."
+    },
     "warnings": {
       "title": "Peringatan Layout"
     },

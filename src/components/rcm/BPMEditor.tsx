@@ -299,6 +299,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
         nodeTypes={bpmNodeTypes}
         edgeTypes={bpmEdgeTypes}
         isDirty={isDirty}
+        hasExistingNodes={nodes.length > 0}
       />
     </div>
   );

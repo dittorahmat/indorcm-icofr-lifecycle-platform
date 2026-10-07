@@ -15,20 +15,23 @@ import { OcrEdgesTab } from './ocr/OcrEdgesTab';
 import { OcrElementsTab } from './ocr/OcrElementsTab';
 import { OcrReviewView } from './ocr/OcrReviewView';
 import { OcrUploadView } from './ocr/OcrUploadView';
+import { OcrImportModeSelector } from './ocr/OcrImportModeSelector';
 import { useOcrStaging } from './ocr/useOcrStaging';
+import type { OcrAppendDirection, OcrImportMode } from './ocr/ocr-types';
 
 interface BPMOcrModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onApply: (nodes: Node[], edges: Edge[]) => void;
+  onApply: (nodes: Node[], edges: Edge[], mode?: OcrImportMode, direction?: OcrAppendDirection) => void;
   nodeTypes: NodeTypes;
   edgeTypes: EdgeTypes;
   isDirty?: boolean;
+  hasExistingNodes?: boolean;
 }
 
-export function BPMOcrModal({ isOpen, onClose, onApply, nodeTypes, edgeTypes, isDirty }: BPMOcrModalProps) {
+export function BPMOcrModal({ isOpen, onClose, onApply, nodeTypes, edgeTypes, isDirty, hasExistingNodes = false }: BPMOcrModalProps) {
   const { t } = useTranslation(['bpm', 'common']);
-  const staging = useOcrStaging({ isOpen, isDirty, t, onClose, onApply });
+  const staging = useOcrStaging({ isOpen, isDirty, hasExistingNodes, t, onClose, onApply });
   const { parsedDiagram, stagingNodes, stagingEdges, isProcessingOcr } = staging;
 
   return (
@@ -99,6 +102,16 @@ export function BPMOcrModal({ isOpen, onClose, onApply, nodeTypes, edgeTypes, is
             onFileChange={(e) => void staging.handleOcrFileChange(e)}
             onClearPreview={staging.resetStaging}
             onStartOcr={() => void staging.handleStartOcr()}
+          />
+        )}
+
+        {parsedDiagram && hasExistingNodes && (
+          <OcrImportModeSelector
+            importMode={staging.importMode}
+            appendDirection={staging.appendDirection}
+            onImportModeChange={staging.setImportMode}
+            onAppendDirectionChange={staging.setAppendDirection}
+            hasExistingNodes={hasExistingNodes}
           />
         )}
 

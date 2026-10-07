@@ -5,6 +5,8 @@ import { toast } from 'sonner';
 import { MarkerType } from 'reactflow';
 import { deriveLabelFromId } from '@/utils/ocr-layout';
 import { getStandardNodeDimensions } from '@/utils/bpm-constants';
+import { calculateAppendOffset, remapElementsForAppend } from '@/utils/bpm-ocr-append';
+import type { OcrAppendDirection, OcrImportMode } from '../ocr/ocr-types';
 
 interface UseBPMCanvasHandlersProps {
   isLocked: boolean;
@@ -146,8 +148,22 @@ export function useBPMCanvasHandlers({
   );
 
   const handleApplyOcr = useCallback(
-    (stagedNodes: any[], stagedEdges: any[]) => {
-      const finalNodes = stagedNodes.map((node: any) => {
+    (stagedNodes: any[], stagedEdges: any[], mode: OcrImportMode = 'overwrite', direction: OcrAppendDirection = 'below') => {
+      let candidateNodes = stagedNodes;
+      let candidateEdges = stagedEdges;
+
+      if (mode === 'append' && nodes.length > 0) {
+        const offset = calculateAppendOffset({
+          direction,
+          existingNodes: nodes,
+          newNodes: stagedNodes,
+        });
+        const remapped = remapElementsForAppend(stagedNodes, stagedEdges, offset);
+        candidateNodes = remapped.nodes;
+        candidateEdges = remapped.edges;
+      }
+
+      const finalNodes = candidateNodes.map((node: any) => {
         const isSwimlane = node.type === 'swimlane';
         const isNodeLocked = !!node.data?.isLocked;
         const resolvedDept = node.data?.department?.trim() || node.data?.label?.trim() || deriveLabelFromId(node.id);
@@ -188,7 +204,7 @@ export function useBPMCanvasHandlers({
         return baseNode;
       });
 
-      const standardEdges = stagedEdges.map((e: any) => ({
+      const standardEdges = candidateEdges.map((e: any) => ({
         id: e.id,
         source: e.source,
         target: e.target,
@@ -200,16 +216,19 @@ export function useBPMCanvasHandlers({
         style: { strokeWidth: 2, stroke: '#0f172a' },
       }));
 
-      pushState(finalNodes, standardEdges);
-      setNodes(finalNodes);
-      setEdges(standardEdges);
+      const mergedNodes = mode === 'append' ? [...nodes, ...finalNodes] : finalNodes;
+      const mergedEdges = mode === 'append' ? [...edges, ...standardEdges] : standardEdges;
+
+      pushState(mergedNodes, mergedEdges);
+      setNodes(mergedNodes);
+      setEdges(mergedEdges);
       setDirty(true);
       toast.success(t('bpm:ocr.toast.applySuccess'));
       setTimeout(() => {
         rfInstance?.fitView?.({ padding: 0.15, duration: 300 });
       }, 150);
     },
-    [isLocked, t, pushState, setNodes, setEdges, setDirty, rfInstance, toggleNodeLock, updateNodeData, handleSwimlaneResizeEnd]
+    [nodes, edges, isLocked, t, pushState, setNodes, setEdges, setDirty, rfInstance, toggleNodeLock, updateNodeData, handleSwimlaneResizeEnd]
   );
 
   return {
