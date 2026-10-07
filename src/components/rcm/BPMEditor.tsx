@@ -15,6 +15,8 @@ import { BPMOcrModal } from './editor/BPMOcrModal';
 import { BPMCanvasExportOverlay } from './editor/BPMCanvasExportOverlay';
 import { BPMCanvas } from './editor/BPMCanvas';
 import { bpmEdgeTypes, bpmNodeTypes } from './editor/bpm-canvas-types';
+import { BPMCanvasSheetTabBar } from './editor/BPMCanvasSheetTabBar';
+import { useBPMSheets } from './editor/hooks/useBPMSheets';
 import { useBPMEditorState } from './editor/hooks/useBPMEditorState';
 import { useBPMNodeOperations } from './editor/hooks/useBPMNodeOperations';
 import { useBPMCanvasDragGuides } from './editor/hooks/useBPMCanvasDragGuides';
@@ -141,6 +143,16 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
     handleSwimlaneResizeEnd,
   });
 
+  const sheetsManager = useBPMSheets({
+    diagram,
+    nodes,
+    edges,
+    setNodes,
+    setEdges,
+    defaultStartNodeLabel: t('bpm:editor.nodes.start'),
+    defaultSheetLabel: 'Sheet 1',
+  });
+
   const persistence = useBPMEditorPersistence({
     diagramId,
     subProcess,
@@ -149,6 +161,8 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
     diagramMetadata: diagram?.metadata,
     nodes,
     edges,
+    sheets: sheetsManager.sheets,
+    activeSheetId: sheetsManager.activeSheetId,
     selectedGLs,
     signatures,
     globalScale,
@@ -158,6 +172,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
     resetDirty,
     t,
   });
+
 
   // Keyboard Delete flows through here: clear stale selection/editing refs for
   // removed nodes so the worksheet can never dangle on a deleted node.
@@ -227,7 +242,19 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
               />
             </div>
 
+            {/* Sheet Tabs Bar (Multi-Sheet Navigation) */}
+            <BPMCanvasSheetTabBar
+              sheets={sheetsManager.sheets}
+              activeSheetId={sheetsManager.activeSheetId}
+              isLocked={isLocked}
+              onSelectSheet={sheetsManager.switchSheet}
+              onAddSheet={sheetsManager.addSheet}
+              onRenameSheet={sheetsManager.renameSheet}
+              onRemoveSheet={sheetsManager.removeSheet}
+            />
+
             <BPMCanvas
+
               nodes={nodes}
               edges={edges}
               globalScale={globalScale}

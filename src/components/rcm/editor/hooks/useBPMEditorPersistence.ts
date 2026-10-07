@@ -17,6 +17,8 @@ export interface BpmSavePayload {
   metadata: {
     signatures: Record<string, string>;
     globalScale: number;
+    sheets?: any[];
+    activeSheetId?: string;
   };
 }
 
@@ -28,6 +30,8 @@ interface UseBPMEditorPersistenceParams {
   diagramMetadata?: Record<string, unknown>;
   nodes: Node[];
   edges: Edge[];
+  sheets?: any[];
+  activeSheetId?: string;
   selectedGLs: string[];
   signatures: Record<string, string>;
   globalScale: number;
@@ -37,6 +41,7 @@ interface UseBPMEditorPersistenceParams {
   resetDirty: () => void;
   t: TranslateFn;
 }
+
 
 function errorMessage(err: unknown, fallback: string): string {
   return err instanceof Error ? err.message || fallback : fallback;
@@ -50,9 +55,12 @@ export function useBPMEditorPersistence({
   diagramMetadata,
   nodes,
   edges,
+  sheets,
+  activeSheetId,
   selectedGLs,
   signatures,
   globalScale,
+
   rfInstance,
   diagram,
   setIsExporting,
@@ -92,9 +100,15 @@ export function useBPMEditorPersistence({
       subProcess,
       year: diagramYear || parseInt(workingYear),
       noGLs: selectedGLs,
-      metadata: { ...diagramMetadata, signatures, globalScale },
+      metadata: {
+        ...diagramMetadata,
+        signatures,
+        globalScale,
+        sheets,
+        activeSheetId,
+      },
     };
-  }, [nodes, edges, subProcess, diagramYear, workingYear, selectedGLs, diagramMetadata, signatures, globalScale]);
+  }, [nodes, edges, subProcess, diagramYear, workingYear, selectedGLs, diagramMetadata, signatures, globalScale, sheets, activeSheetId]);
 
   const handleSave = React.useCallback(() => {
     saveMutation.mutate(buildPayload());
@@ -106,12 +120,14 @@ export function useBPMEditorPersistence({
       subProcess,
       diagram,
       diagramId,
+      sheets,
       t,
       onStart: () => setIsExporting(true),
       onFinish: () => setIsExporting(false),
       onLogExport: (filename: string) => logExportMutation.mutateAsync(filename),
     });
-  }, [rfInstance, subProcess, diagram, diagramId, t, setIsExporting, logExportMutation]);
+  }, [rfInstance, subProcess, diagram, diagramId, sheets, t, setIsExporting, logExportMutation]);
+
 
   return { saveMutation, handleSave, exportToImage };
 }

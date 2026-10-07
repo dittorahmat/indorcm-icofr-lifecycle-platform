@@ -82,7 +82,29 @@ export function OcrImportModeSelector({
             </p>
           </div>
         </Label>
+
+        <Label
+          htmlFor="mode-new-sheet"
+          className={cn(
+            'flex items-start gap-3 rounded-md border p-3 cursor-pointer transition-all sm:col-span-2',
+            importMode === 'new_sheet'
+              ? 'border-emerald-600 bg-emerald-50/30 ring-1 ring-emerald-600 text-slate-900'
+              : 'border-border bg-white hover:bg-slate-50 text-slate-700'
+          )}
+        >
+          <RadioGroupItem value="new_sheet" id="mode-new-sheet" className="mt-0.5 shrink-0" />
+          <div className="space-y-1 select-none">
+            <div className="flex items-center gap-1.5 text-xs font-semibold">
+              <Layers className="h-4 w-4 text-primary" />
+              <span>Multi-Sheet Baru (Lembar Terpisah)</span>
+            </div>
+            <p className="text-xs text-muted-foreground font-normal leading-relaxed">
+              Buat sheet/halaman baru untuk hasil impor ini tanpa mengubah atau menimpa sheet yang sudah ada.
+            </p>
+          </div>
+        </Label>
       </RadioGroup>
+
 
       {/* Sub-direction selection if Append is chosen */}
       {importMode === 'append' && (

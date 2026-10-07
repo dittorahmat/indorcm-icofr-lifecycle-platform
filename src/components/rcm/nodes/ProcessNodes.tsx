@@ -165,23 +165,53 @@ export const PredefinedProcessNode = ({ data, selected, type }: NodeProps) => {
 
 export const OffPageRefNode = ({ data, selected, type }: NodeProps) => {
   const { style, fontClass } = getNodeStyles(data, 56);
+  const hasTargetSheet = !!data.targetSheetId;
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (data.targetSheetId && typeof data.onJumpToSheet === 'function') {
+      e.stopPropagation();
+      data.onJumpToSheet(data.targetSheetId, data.targetNodeId);
+    }
+  };
+
   return (
     <NodeTooltip data={data} type={type} selected={selected}>
       <div 
         style={style}
-        className={cn("h-14 relative flex items-center justify-center transition-all", selected && "scale-105")}
+        onClick={hasTargetSheet ? handleClick : undefined}
+        role={hasTargetSheet ? "button" : undefined}
+        tabIndex={hasTargetSheet ? 0 : undefined}
+        title={hasTargetSheet ? `Lompat ke sheet: ${data.targetSheetName || data.targetSheetId}` : undefined}
+        className={cn(
+          "h-14 relative flex items-center justify-center transition-all",
+          selected && "scale-105",
+          hasTargetSheet && "cursor-pointer group"
+        )}
       >
         <EightConnectionHandles isLocked={data.isLocked} selected={selected} />
         <svg width="100%" height="100%" viewBox="0 0 56 56" preserveAspectRatio="none" className="absolute inset-0">
-          <path d="M0 0 L56 0 L56 30 L28 56 L0 30 Z" fill="white" stroke="#0f172a" strokeWidth="2" />
+          <path
+            d="M0 0 L56 0 L56 30 L28 56 L0 30 Z"
+            fill={hasTargetSheet ? "#f0fdf4" : "white"}
+            stroke={hasTargetSheet ? "#16a34a" : "#0f172a"}
+            strokeWidth={hasTargetSheet ? "2.5" : "2"}
+          />
         </svg>
-        <div className="absolute inset-0 flex items-center justify-center pb-4 px-1 z-10">
-          <span className={cn("font-black text-slate-700 text-center whitespace-pre-wrap break-words", fontClass)}>{data.label}</span>
+        <div className="absolute inset-0 flex flex-col items-center justify-center pb-4 px-1 z-10 pointer-events-none">
+          <span className={cn("font-black text-slate-800 text-center whitespace-pre-wrap break-words leading-tight text-xs", fontClass)}>
+            {data.label || (data.direction === 'in' ? 'Dari hal X' : 'Ke hal X')}
+          </span>
+          {data.targetSheetName && (
+            <span className="text-[10px] font-bold text-emerald-700 truncate max-w-[50px] leading-none">
+              {data.targetSheetName}
+            </span>
+          )}
         </div>
       </div>
     </NodeTooltip>
   );
 };
+
 
 export const ReferenceNode = ({ data, selected, type }: NodeProps) => {
   const { style, fontClass } = getNodeStyles(data, 40);

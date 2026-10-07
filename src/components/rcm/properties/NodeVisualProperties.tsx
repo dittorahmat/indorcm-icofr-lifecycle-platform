@@ -48,7 +48,25 @@ export function NodeVisualProperties({
             />
           </div>
         )}
+        {selectedNode.type === 'off-page-ref' && (
+          <div className="space-y-2">
+            <Label className="text-xs font-medium text-slate-700 uppercase">Target Sheet (Halaman Tujuan)</Label>
+            <Input
+              disabled={isLocked}
+              placeholder="Contoh: Sheet 2 / Fase Gudang"
+              value={selectedNode.data.targetSheetName || selectedNode.data.targetSheetId || ''}
+              onChange={(e) =>
+                onUpdateNodeData(selectedNode.id, {
+                  targetSheetName: e.target.value,
+                  targetSheetId: e.target.value,
+                })
+              }
+              className="h-10 text-sm bg-white"
+            />
+          </div>
+        )}
       </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 pt-4 border-t border-slate-100">
         <div className="space-y-2">
           <Label className="text-xs font-medium text-slate-700 uppercase">Node Scale Override</Label>

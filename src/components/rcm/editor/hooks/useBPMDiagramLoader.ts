@@ -71,6 +71,7 @@ export function useBPMDiagramLoader({
         }
         return baseNode;
       });
+
       setNodes(initialNodesWithHandlers);
       setEdges(
         (diagram.edges || []).map((edge) => ({
