@@ -25,3 +25,17 @@ Setiap kali menyelesaikan sebuah fitur, perbaikan bug, atau fase pengembangan, A
 *   **Design Quality & Accessibility:** Minimum font size is 12px (text-xs). Use Shadcn/UI Design Tokens (--primary, --sidebar, etc.) instead of hardcoded hex colors.
 *   **Data Persistence:** Always run drizzle migrations using `npx drizzle-kit push` after schema changes.
 *   **Localization:** All UI strings MUST be localized using `src/i18n/**`.
+
+## Agent skills
+
+### Issue tracker
+
+Issues and specs are tracked in GitHub Issues. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Canonical 5-role triage vocabulary. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context documentation layout (`GLOSSARY.md` and `docs/adr/`). See `docs/agents/domain.md`.

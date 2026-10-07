@@ -1,72 +1,19 @@
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
-import { BPMProcess, BPMProcessWithChildren, User, BPMDiagram, Settings, AccountAssertion } from '@shared/types';
+import { BPMProcess, BPMProcessWithChildren, User, BPMDiagram, Settings } from '@shared/types';
 import { MOCK_DEPARTMENTS } from '@shared/mock-data';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { useUnsavedChangesContext } from '@/context/UnsavedChangesContext';
 import { useConfirm } from '@/hooks/use-confirm';
-import { useAccountAssertions, useActiveSimulation, useSimulationSnapshot } from '@/hooks/use-bpm';
+import { useActiveSimulation, useSimulationSnapshot } from '@/hooks/use-bpm';
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 import { toast } from 'sonner';
+import { buildProcessTree } from '../utils/bpm-process-tree';
+import { useBPMAssertions } from './useBPMAssertions';
 
-export function buildProcessTree(
-  items: BPMProcess[],
-  searchTerm = ""
-): BPMProcessWithChildren[] {
-  const itemMap = new Map<string, BPMProcessWithChildren>();
-  const rootItems: BPMProcessWithChildren[] = [];
-
-  // Initialize map with copies and empty children arrays
-  items.forEach(item => {
-    itemMap.set(item.id, { ...item, children: [] });
-  });
-
-  // Build tree hierarchy
-  items.forEach(item => {
-    const current = itemMap.get(item.id)!;
-    if (item.parentId && itemMap.has(item.parentId)) {
-      const parent = itemMap.get(item.parentId)!;
-      parent.children = parent.children || [];
-      parent.children.push(current);
-    } else {
-      rootItems.push(current);
-    }
-  });
-
-  if (!searchTerm.trim()) {
-    return rootItems;
-  }
-
-  const query = searchTerm.toLowerCase().trim();
-  const filterNode = (node: BPMProcessWithChildren): BPMProcessWithChildren | null => {
-    const nameMatches = node.name.toLowerCase().includes(query) || (node.bpmCode && node.bpmCode.toLowerCase().includes(query));
-    const matchingChildren: BPMProcessWithChildren[] = [];
-
-    if (node.children) {
-      for (const child of node.children) {
-        const filteredChild = filterNode(child);
-        if (filteredChild) {
-          matchingChildren.push(filteredChild);
-        }
-      }
-    }
-
-    if (nameMatches || matchingChildren.length > 0) {
-      return {
-        ...node,
-        children: nameMatches ? (node.children || []) : matchingChildren
-      };
-    }
-    return null;
-  };
-
-  return rootItems
-    .map(filterNode)
-    .filter((node): node is BPMProcessWithChildren => node !== null);
-}
+export { buildProcessTree, type BPMProcessWithChildren };
 
 export function useBPMPage() {
   const { t } = useTranslation(['bpm', 'common', 'rcm']);
@@ -96,7 +43,16 @@ export function useBPMPage() {
   const [searchTerm, setSearchTerm] = React.useState("");
   const [selectedProcess, setSelectedProcess] = React.useState<BPMProcess | null>(null);
 
-  const [localAssertion, setLocalAssertion] = React.useState<Partial<AccountAssertion>>({});
+  const {
+    localAssertion,
+    setLocalAssertion,
+    accountAssertion,
+    assertionLoading,
+    isAssertionDirty,
+    updateAssertionMutation,
+    handleAssertionChange,
+    handleSaveAssertions
+  } = useBPMAssertions(selectedFsli, selectedAccountKey);
 
   const handleOpenDiagram = (diagramId: string, subProcess: string, bpmProcessId?: string) => {
     setSearchParams(prev => {
@@ -165,64 +121,6 @@ export function useBPMPage() {
     queryFn: () => api<Settings>('/api/settings'),
   });
 
-  const { assertion: accountAssertion, isLoading: assertionLoading } = useAccountAssertions(
-    selectedFsli,
-    selectedAccountKey.split(' ||| ')[0]
-  );
-
-  React.useEffect(() => {
-    if (accountAssertion !== undefined) {
-      if (accountAssertion === null) {
-        setLocalAssertion({
-          assertionE: 'N', assertionC: 'N', assertionA: 'N',
-          assertionCo: 'N', assertionRo: 'N', assertionVa: 'N',
-          assertionPd: 'N'
-        });
-      } else {
-        setLocalAssertion(accountAssertion);
-      }
-    }
-  }, [accountAssertion]);
-
-  const updateAssertionMutation = useMutation({
-    mutationFn: (data: Partial<AccountAssertion>) => api('/api/account-assertions', {
-      method: 'POST',
-      body: JSON.stringify({
-        fsliName: selectedFsli,
-        noGL: selectedAccountKey.split(' ||| ')[0],
-        ...data
-      })
-    }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['account-assertions'] });
-      toast.success("Account assertions updated");
-    }
-  });
-
-  const isAssertionDirty = React.useMemo(() => {
-    if (!accountAssertion) {
-      return Object.values(localAssertion).some(v => v === 'Y');
-    }
-    return (
-      localAssertion.assertionE !== (accountAssertion.assertionE || 'N') ||
-      localAssertion.assertionC !== (accountAssertion.assertionC || 'N') ||
-      localAssertion.assertionA !== (accountAssertion.assertionA || 'N') ||
-      localAssertion.assertionCo !== (accountAssertion.assertionCo || 'N') ||
-      localAssertion.assertionRo !== (accountAssertion.assertionRo || 'N') ||
-      localAssertion.assertionVa !== (accountAssertion.assertionVa || 'N') ||
-      localAssertion.assertionPd !== (accountAssertion.assertionPd || 'N')
-    );
-  }, [localAssertion, accountAssertion]);
-
-  useUnsavedChanges(isAssertionDirty);
-
-  const handleAssertionChange = (field: keyof AccountAssertion, value: string) => {
-    setLocalAssertion(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleSaveAssertions = () => {
-    updateAssertionMutation.mutate(localAssertion);
-  };
 
   const glLookupMap = React.useMemo(() => {
     if (!activeSnap || !activeSnap.rows) return new Map<string, string>();
