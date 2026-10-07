@@ -1,0 +1,38 @@
+# bpm-multi-page-ocr Specification
+
+## Purpose
+Enables end-to-end OCR diagram extraction from multi-page PDF documents, generating structured multi-sheet BPM diagrams with automatically paired Off-Page connectors.
+
+## Requirements
+
+### Requirement: Multi-Page PDF Document Detection and Page Rendering
+The system SHALL detect the total number of pages in an uploaded PDF document and extract each page into an image for OCR processing.
+
+#### Scenario: Single-page PDF or image upload
+- **WHEN** a user uploads an image or a 1-page PDF
+- **THEN** the system SHALL process the single page as a standard single diagram import without pagination overhead
+
+#### Scenario: Multi-page PDF upload
+- **WHEN** a user uploads a PDF containing multiple pages (e.g. 3 pages)
+- **THEN** the system SHALL detect all pages, report total page count, and render each page sequentially into an optimized high-resolution image
+
+### Requirement: Batch OCR Processing with Progress Feedback
+The system SHALL process multi-page PDFs through the vision OCR engine with clear progress feedback for each page.
+
+#### Scenario: Progressive OCR extraction
+- **WHEN** OCR processing begins for a multi-page PDF
+- **THEN** the system SHALL display progress (e.g. "Menganalisis halaman X dari Y...") and handle partial failures gracefully
+
+### Requirement: Automatic Off-Page Connector Linking Across Pages
+The system SHALL inspect recognized Off-Page Reference nodes and automatically establish target page/sheet links based on text patterns.
+
+#### Scenario: Linking "Ke hal X" to destination sheet
+- **WHEN** an outgoing connector node on page 1 contains text pointing to page 2 (e.g. "Ke hal 2" or "Ke Hal 2")
+- **THEN** the system SHALL populate `targetSheetId` / `targetSheetName` linking to sheet 2, enabling immediate jump navigation upon diagram import
+
+### Requirement: Multi-Sheet Canvas Population
+The system SHALL apply multi-page OCR results as discrete sheets within the BPM Editor.
+
+#### Scenario: Applying multi-page OCR to canvas
+- **WHEN** a user confirms and applies the multi-page OCR review
+- **THEN** the system SHALL create discrete diagram sheets for each processed page, preserve all nodes and edges within each respective sheet, and activate Sheet 1

@@ -6,6 +6,8 @@ import {
   updateSheetInList,
   createNewSheet,
 } from '../utils/diagram-sheet-adapter';
+import { pairOffPageConnectors } from '../utils/connector-link-matcher';
+
 
 interface UseBPMSheetsParams {
   diagram: any;
@@ -129,6 +131,22 @@ export function useBPMSheets({
     [sheets, activeSheetId, setNodes, setEdges]
   );
 
+  // Import and populate multiple sheets (e.g. from multi-page OCR)
+  const importMultipleSheets = React.useCallback(
+    (newSheets: BPMDiagramSheet[]) => {
+      if (!newSheets || newSheets.length === 0) return;
+      const paired = pairOffPageConnectors(newSheets);
+
+      setSheets(paired);
+      setIsMultiSheet(true);
+      setActiveSheetId(paired[0].id);
+      setNodes((paired[0].nodes as Node[]) || []);
+      setEdges((paired[0].edges as Edge[]) || []);
+    },
+    [setNodes, setEdges]
+  );
+
+
   return {
     sheets,
     setSheets,
@@ -141,5 +159,7 @@ export function useBPMSheets({
     addSheet,
     renameSheet,
     removeSheet,
+    importMultipleSheets,
   };
 }
+

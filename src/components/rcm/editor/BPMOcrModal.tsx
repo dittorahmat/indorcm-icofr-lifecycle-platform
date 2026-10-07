@@ -22,8 +22,15 @@ import type { OcrAppendDirection, OcrImportMode } from './ocr/ocr-types';
 interface BPMOcrModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onApply: (nodes: Node[], edges: Edge[], mode?: OcrImportMode, direction?: OcrAppendDirection) => void;
+  onApply: (
+    nodes: Node[],
+    edges: Edge[],
+    mode?: OcrImportMode,
+    direction?: OcrAppendDirection,
+    sheets?: any[]
+  ) => void;
   nodeTypes: NodeTypes;
+
   edgeTypes: EdgeTypes;
   isDirty?: boolean;
   hasExistingNodes?: boolean;
@@ -47,9 +54,13 @@ export function BPMOcrModal({ isOpen, onClose, onApply, nodeTypes, edgeTypes, is
         {parsedDiagram ? (
           <OcrReviewView
             ocrPreviewUrl={staging.ocrPreviewUrl}
+            totalPages={staging.ocrPageImages.length}
+            activePage={staging.activeReviewPage}
+            onSelectPage={staging.handleSelectReviewPage}
             stagingNodes={stagingNodes}
             stagingEdges={stagingEdges}
             stagingWarnings={staging.stagingWarnings}
+
             warningsDismissed={staging.warningsDismissed}
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
@@ -98,12 +109,14 @@ export function BPMOcrModal({ isOpen, onClose, onApply, nodeTypes, edgeTypes, is
         ) : (
           <OcrUploadView
             isProcessingOcr={isProcessingOcr}
+            ocrProgressText={staging.ocrProgressText}
             ocrPreviewUrl={staging.ocrPreviewUrl}
             onFileChange={(e) => void staging.handleOcrFileChange(e)}
             onClearPreview={staging.resetStaging}
             onStartOcr={() => void staging.handleStartOcr()}
           />
         )}
+
 
         {parsedDiagram && hasExistingNodes && (
           <OcrImportModeSelector

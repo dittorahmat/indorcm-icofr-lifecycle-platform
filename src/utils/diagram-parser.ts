@@ -5,46 +5,57 @@ import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 /**
- * Converts a PDF file page into a compressed base64 PNG data URL.
+ * Returns total number of pages in a PDF file.
  */
-export async function renderPdfPageToImage(file: File, pageNumber: number = 1): Promise<string> {
+export async function getPdfPageCount(file: File): Promise<number> {
   const arrayBuffer = await file.arrayBuffer();
   const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
   const pdf = await loadingTask.promise;
-  
-  if (pageNumber < 1 || pageNumber > pdf.numPages) {
-    throw new Error(`Invalid page number: ${pageNumber}. Total pages: ${pdf.numPages}`);
-  }
-
-  const page = await pdf.getPage(pageNumber);
-  
-  // Use a standard viewport scale of 2.0 for clear text parsing by the Vision model
-  const viewport = page.getViewport({ scale: 2.0 });
-  
-  const canvas = document.createElement('canvas');
-  const context = canvas.getContext('2d');
-  if (!context) {
-    throw new Error('Could not get 2D canvas context');
-  }
-
-  canvas.width = viewport.width;
-  canvas.height = viewport.height;
-
-  const renderContext = {
-    canvasContext: context,
-    viewport: viewport,
-  };
-
-  await page.render(renderContext).promise;
-  
-  const dataUrl = canvas.toDataURL('image/png');
-  
-  // Clean up references
-  canvas.width = 0;
-  canvas.height = 0;
-  
-  return dataUrl;
+  return pdf.numPages;
 }
+
+/**
+ * Converts all or selected pages of a PDF into compressed base64 image strings.
+ */
+export async function renderAllPdfPagesToImages(
+  file: File,
+  onProgress?: (current: number, total: number) => void
+): Promise<string[]> {
+  const arrayBuffer = await file.arrayBuffer();
+  const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+  const pdf = await loadingTask.promise;
+  const total = pdf.numPages;
+  const results: string[] = [];
+
+  for (let pageNumber = 1; pageNumber <= total; pageNumber++) {
+    onProgress?.(pageNumber, total);
+    const page = await pdf.getPage(pageNumber);
+    const viewport = page.getViewport({ scale: 2.0 });
+
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    if (!context) {
+      throw new Error('Could not get 2D canvas context');
+    }
+
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+
+    await page.render({
+      canvasContext: context,
+      viewport: viewport,
+    }).promise;
+
+    const dataUrl = canvas.toDataURL('image/png');
+    canvas.width = 0;
+    canvas.height = 0;
+
+    results.push(dataUrl);
+  }
+
+  return results;
+}
+
 
 /**
  * Compresses and scales down an image (File or base64 DataURL) so that its maximum dimension

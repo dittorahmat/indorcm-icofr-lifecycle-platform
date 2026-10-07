@@ -11,3 +11,11 @@ export interface OcrModalStaging {
   stagingEdges: Edge[];
   nodeTypes: NodeTypes;
 }
+
+export interface OcrParsedPage {
+  pageNumber: number;
+  previewUrl: string;
+  nodes: Node[];
+  edges: Edge[];
+}
+

@@ -22,8 +22,15 @@ interface UseOcrStagingParams {
   hasExistingNodes?: boolean;
   t: TranslateFn;
   onClose: () => void;
-  onApply: (nodes: Node[], edges: Edge[], mode?: OcrImportMode, direction?: OcrAppendDirection) => void;
+  onApply: (
+    nodes: Node[],
+    edges: Edge[],
+    mode?: OcrImportMode,
+    direction?: OcrAppendDirection,
+    sheets?: any[]
+  ) => void;
 }
+
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
@@ -129,49 +136,114 @@ export function useOcrStaging({ isOpen, isDirty, hasExistingNodes = false, t, on
     }
   }, [isOpen]);
 
+  const [ocrPageImages, setOcrPageImages] = React.useState<string[]>([]);
+  const [activeReviewPage, setActiveReviewPage] = React.useState<number>(1);
+  const [parsedPages, setParsedPages] = React.useState<Map<number, { nodes: Node[]; edges: Edge[] }>>(new Map());
+  const [ocrProgressText, setOcrProgressText] = React.useState<string>('');
+
   const handleOcrFileChange = React.useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file) return;
       setOcrFile(file);
+      setParsedPages(new Map());
+      setActiveReviewPage(1);
 
       try {
         setIsProcessingOcr(true);
-        let base64Image = '';
         if (file.type === 'application/pdf') {
-          const { renderPdfPageToImage } = await import('@/utils/diagram-parser');
-          base64Image = await renderPdfPageToImage(file, 1);
+          const { renderAllPdfPagesToImages } = await import('@/utils/diagram-parser');
+          setOcrProgressText('Mengekstrak halaman PDF...');
+          const images = await renderAllPdfPagesToImages(file, (curr, tot) => {
+            setOcrProgressText(`Mengekstrak halaman ${curr} dari ${tot}...`);
+          });
+          setOcrPageImages(images);
+          setOcrPreviewUrl(images[0] || null);
+          if (images.length > 1) {
+            setImportMode('new_sheet');
+          }
         } else {
           const { compressAndScaleImage } = await import('@/utils/diagram-parser');
-          base64Image = await compressAndScaleImage(file, 2048);
+          const base64Image = await compressAndScaleImage(file, 2048);
+          setOcrPageImages([base64Image]);
+          setOcrPreviewUrl(base64Image);
         }
-        setOcrPreviewUrl(base64Image);
       } catch (err: unknown) {
         toast.error(t('bpm:ocr.toast.fileError', { message: errorMessage(err) }));
       } finally {
         setIsProcessingOcr(false);
+        setOcrProgressText('');
       }
     },
     [t],
   );
 
   const handleStartOcr = React.useCallback(async () => {
-    if (!ocrPreviewUrl) return;
+    if (ocrPageImages.length === 0) return;
 
     try {
       setIsProcessingOcr(true);
-      const res = await api<{ nodes: OcrRawNode[]; edges: OcrRawEdge[] }>('/api/bpm-diagrams/ocr', {
-        method: 'POST',
-        body: JSON.stringify({ image: ocrPreviewUrl }),
-      });
-      setParsedDiagram(res);
-      toast.success(t('bpm:ocr.toast.ocrSuccess'));
+      const newParsedMap = new Map<number, { nodes: Node[]; edges: Edge[] }>();
+
+      for (let i = 0; i < ocrPageImages.length; i++) {
+        const pageNum = i + 1;
+        setOcrProgressText(`Menganalisis halaman ${pageNum} dari ${ocrPageImages.length}...`);
+        const res = await api<{ nodes: OcrRawNode[]; edges: OcrRawEdge[] }>('/api/bpm-diagrams/ocr', {
+          method: 'POST',
+          body: JSON.stringify({ image: ocrPageImages[i] }),
+        });
+
+        const laidOut = layoutOcrDiagram(res);
+        newParsedMap.set(pageNum, {
+          nodes: toStagingNodes(laidOut),
+          edges: toStagingEdges(laidOut.edges),
+        });
+
+        // Set the primary parsed diagram to page 1 for initial review
+        if (pageNum === 1) {
+          setParsedDiagram(res);
+          setStagingNodes(toStagingNodes(laidOut));
+          setStagingEdges(toStagingEdges(laidOut.edges));
+        }
+      }
+
+      setParsedPages(newParsedMap);
+      toast.success(
+        ocrPageImages.length > 1
+          ? `Berhasil menganalisis ${ocrPageImages.length} halaman diagram!`
+          : t('bpm:ocr.toast.ocrSuccess')
+      );
     } catch (err: unknown) {
       toast.error(t('bpm:ocr.toast.ocrError', { message: errorMessage(err) }));
     } finally {
       setIsProcessingOcr(false);
+      setOcrProgressText('');
     }
-  }, [ocrPreviewUrl, t]);
+  }, [ocrPageImages, t, setStagingNodes, setStagingEdges]);
+
+  // Switch reviewed page within OCR modal
+  const handleSelectReviewPage = React.useCallback(
+    (targetPage: number) => {
+      if (targetPage === activeReviewPage) return;
+      // 1. Save changes of current page
+      setParsedPages((prev) => {
+        const next = new Map(prev);
+        next.set(activeReviewPage, { nodes: stagingNodes, edges: stagingEdges });
+        return next;
+      });
+
+      // 2. Load target page
+      const targetData = parsedPages.get(targetPage);
+      if (targetData) {
+        setStagingNodes(targetData.nodes);
+        setStagingEdges(targetData.edges);
+      }
+      setActiveReviewPage(targetPage);
+      setOcrPreviewUrl(ocrPageImages[targetPage - 1] || null);
+    },
+    [activeReviewPage, stagingNodes, stagingEdges, parsedPages, ocrPageImages, setStagingNodes, setStagingEdges]
+  );
+
 
   const resetStaging = React.useCallback(() => {
     setParsedDiagram(null);
@@ -196,10 +268,35 @@ export function useOcrStaging({ isOpen, isDirty, hasExistingNodes = false, t, on
       });
       if (!ok) return;
     }
-    onApply(stagingNodes, stagingEdges, importMode, appendDirection);
+
+    // If multi-page PDF was analyzed, construct an array of sheets
+    if (parsedPages.size > 1) {
+      // 1. Ensure current active page state is saved to map
+      const mergedMap = new Map(parsedPages);
+      mergedMap.set(activeReviewPage, { nodes: stagingNodes, edges: stagingEdges });
+
+      const generatedSheets: any[] = [];
+      const sortedPageKeys = Array.from(mergedMap.keys()).sort((a, b) => a - b);
+      sortedPageKeys.forEach((pgKey, idx) => {
+        const pgData = mergedMap.get(pgKey);
+        generatedSheets.push({
+          id: `sheet-page-${pgKey}-${Date.now().toString(36)}`,
+          name: `Fase ${pgKey} (Halaman ${pgKey})`,
+          order: idx,
+          nodes: pgData?.nodes || [],
+          edges: pgData?.edges || [],
+        });
+      });
+
+      onApply(stagingNodes, stagingEdges, importMode, appendDirection, generatedSheets);
+    } else {
+      onApply(stagingNodes, stagingEdges, importMode, appendDirection);
+    }
+
     resetStaging();
     onClose();
-  }, [stagingNodes, stagingEdges, parsedDiagram, hasExistingNodes, importMode, isDirty, confirm, t, onApply, appendDirection, resetStaging, onClose]);
+  }, [stagingNodes, stagingEdges, parsedDiagram, hasExistingNodes, importMode, isDirty, confirm, t, onApply, appendDirection, resetStaging, onClose, parsedPages, activeReviewPage]);
+
 
   const updateNodeType = React.useCallback(
     (id: string, type: string) => {
@@ -284,7 +381,13 @@ export function useOcrStaging({ isOpen, isDirty, hasExistingNodes = false, t, on
     setStagingRfInstance,
     onStagingNodesChange,
     onStagingEdgesChange,
+    ocrPageImages,
+    activeReviewPage,
+    parsedPages,
+    ocrProgressText,
+    handleSelectReviewPage,
     handleOcrFileChange,
+
     handleStartOcr,
     handleApply,
     resetStaging,
@@ -296,3 +399,4 @@ export function useOcrStaging({ isOpen, isDirty, hasExistingNodes = false, t, on
     handleStagingConnect,
   };
 }
+

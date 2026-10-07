@@ -70,6 +70,11 @@ export interface BPMNode {
     regulatoryPairs?: any[]; // For universal mapping (multiple Risk-Control pairs)
     hasLinkage?: boolean;
     relatedElcNames?: string[];
+    targetSheetId?: string;
+    targetSheetName?: string;
+    sourceSheetId?: string;
+    sourceSheetName?: string;
+    direction?: 'in' | 'out';
   };
 }
 

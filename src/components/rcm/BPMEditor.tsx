@@ -115,6 +115,16 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
     setDirty,
   });
 
+  const sheetsManager = useBPMSheets({
+    diagram,
+    nodes,
+    edges,
+    setNodes,
+    setEdges,
+    defaultStartNodeLabel: t('bpm:editor.nodes.start'),
+    defaultSheetLabel: 'Sheet 1',
+  });
+
   const { onNodesDelete, onEdgesDelete, onDragOver, onDrop, handleApplyOcr } = useBPMCanvasHandlers({
     isLocked,
     rfInstance: view.rfInstance,
@@ -127,6 +137,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
     toggleNodeLock,
     updateNodeData,
     handleSwimlaneResizeEnd,
+    onImportMultipleSheets: sheetsManager.importMultipleSheets,
     t,
   });
 
@@ -143,15 +154,6 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
     handleSwimlaneResizeEnd,
   });
 
-  const sheetsManager = useBPMSheets({
-    diagram,
-    nodes,
-    edges,
-    setNodes,
-    setEdges,
-    defaultStartNodeLabel: t('bpm:editor.nodes.start'),
-    defaultSheetLabel: 'Sheet 1',
-  });
 
   const persistence = useBPMEditorPersistence({
     diagramId,

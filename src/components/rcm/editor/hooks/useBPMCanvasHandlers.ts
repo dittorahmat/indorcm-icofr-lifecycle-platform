@@ -20,8 +20,10 @@ interface UseBPMCanvasHandlersProps {
   toggleNodeLock: (id: string) => void;
   updateNodeData: (id: string, partial: any) => void;
   handleSwimlaneResizeEnd: (laneId: string, params: any) => void;
+  onImportMultipleSheets?: (sheets: any[]) => void;
   t: (key: string, options?: any) => string;
 }
+
 
 export function useBPMCanvasHandlers({
   isLocked,
@@ -35,8 +37,10 @@ export function useBPMCanvasHandlers({
   toggleNodeLock,
   updateNodeData,
   handleSwimlaneResizeEnd,
+  onImportMultipleSheets,
   t,
 }: UseBPMCanvasHandlersProps) {
+
   const onNodesDelete = useCallback(
     (deleted: any[]) => {
       if (deleted.length > 0) {
@@ -148,9 +152,26 @@ export function useBPMCanvasHandlers({
   );
 
   const handleApplyOcr = useCallback(
-    (stagedNodes: any[], stagedEdges: any[], mode: OcrImportMode = 'overwrite', direction: OcrAppendDirection = 'below') => {
+    (
+      stagedNodes: any[],
+      stagedEdges: any[],
+      mode: OcrImportMode = 'overwrite',
+      direction: OcrAppendDirection = 'below',
+      extraSheets?: any[]
+    ) => {
+      if (Array.isArray(extraSheets) && extraSheets.length > 1 && onImportMultipleSheets) {
+        onImportMultipleSheets(extraSheets);
+        setDirty(true);
+        toast.success(t('bpm:ocr.toast.applySuccess'));
+        setTimeout(() => {
+          rfInstance?.fitView?.({ padding: 0.15, duration: 300 });
+        }, 150);
+        return;
+      }
+
       let candidateNodes = stagedNodes;
       let candidateEdges = stagedEdges;
+
 
       if (mode === 'append' && nodes.length > 0) {
         const offset = calculateAppendOffset({

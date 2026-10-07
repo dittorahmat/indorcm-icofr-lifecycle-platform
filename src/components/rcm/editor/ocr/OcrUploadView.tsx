@@ -4,13 +4,21 @@ import { Button } from '@/components/ui/button';
 
 interface OcrUploadViewProps {
   isProcessingOcr: boolean;
+  ocrProgressText?: string;
   ocrPreviewUrl: string | null;
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onClearPreview: () => void;
   onStartOcr: () => void;
 }
 
-export function OcrUploadView({ isProcessingOcr, ocrPreviewUrl, onFileChange, onClearPreview, onStartOcr }: OcrUploadViewProps) {
+export function OcrUploadView({
+  isProcessingOcr,
+  ocrProgressText,
+  ocrPreviewUrl,
+  onFileChange,
+  onClearPreview,
+  onStartOcr,
+}: OcrUploadViewProps) {
   const { t } = useTranslation(['bpm', 'common']);
 
   return (
@@ -18,9 +26,10 @@ export function OcrUploadView({ isProcessingOcr, ocrPreviewUrl, onFileChange, on
       {isProcessingOcr ? (
         <div className="flex flex-col items-center gap-3">
           <RefreshCw className="h-10 w-10 text-emerald-500 animate-spin" />
-          <p className="text-sm font-bold text-slate-700">{t('bpm:ocr.analyzing')}</p>
+          <p className="text-sm font-bold text-slate-700">{ocrProgressText || t('bpm:ocr.analyzing')}</p>
           <p className="text-xs text-slate-400">{t('bpm:ocr.aiMapping')}</p>
         </div>
+
       ) : ocrPreviewUrl ? (
         <div className="flex flex-col items-center w-full gap-4">
           <div className="border border-slate-200 rounded-xl p-2 max-w-md bg-white shadow-sm overflow-hidden flex justify-center items-center h-48 w-full">
