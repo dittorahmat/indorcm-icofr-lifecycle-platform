@@ -72,6 +72,10 @@ export const DEFAULT_NODE_SPACING = {
   topOffset: 60
 };
 
+// Safe ceiling for orthogonal edge waypoints: routes must never cross into
+// swimlane headers. Single locality shared by the canvas router and OCR layout.
+export const SAFE_HEADER_CEILING = 100;
+
 export function getStandardNodeDimensions(type: string): NodeDimension {
   return DEFAULT_NODE_DIMENSIONS[type] || { width: 160, height: 56 };
 }
