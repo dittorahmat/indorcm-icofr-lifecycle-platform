@@ -4,7 +4,6 @@ import { api } from '@/lib/api-client';
 import { useConfirm } from '@/hooks/use-confirm';
 import { useUnsavedChangesContext } from '@/context/UnsavedChangesContext';
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
-import type { RCMType } from '@/pages/scoping/services/rcm-parser';
 import { useSmartImportFiles } from './useSmartImportFiles';
 import { useSmartImportMateriality } from './useSmartImportMateriality';
 import type {
@@ -25,11 +24,10 @@ export function useSmartImport({ isOpen, onOpenChange, onSuccess, t }: UseSmartI
   const [isModified, setIsDirtyLocal] = React.useState(false);
   const [step, setStep] = React.useState<WizardStep>(1);
   const [fiscalYear, setFiscalYear] = React.useState(workingYear);
-  const [rcmType, setRcmType] = React.useState<RCMType>('TLC');
 
   const markMutated = React.useCallback(() => setIsDirtyLocal(true), []);
 
-  const files = useSmartImportFiles({ rcmType, t, onMutated: markMutated });
+  const files = useSmartImportFiles({ t, onMutated: markMutated });
   const materiality = useSmartImportMateriality(files.parsedTbData);
 
   React.useEffect(() => {
@@ -138,11 +136,9 @@ export function useSmartImport({ isOpen, onOpenChange, onSuccess, t }: UseSmartI
   return {
     step,
     fiscalYear,
-    rcmType,
     isModified,
     files,
     materiality,
-    setRcmType,
     goToStep,
     handleDialogOpenChange,
     handleFinalize,

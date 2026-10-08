@@ -11,10 +11,12 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
+import { FileUp } from 'lucide-react';
 import { RCMPageHeader } from '@/components/rcm/RCMPageHeader';
 import { RCMTable, RCMColumnGroup } from '@/components/rcm/RCMTable';
 import { RCMGroupRow } from '@/components/rcm/RCMGroupRow';
 import { RCMEditDialog } from '@/components/rcm/RCMEditDialog';
+import { RCMImportWizardModal } from '@/components/rcm/import/RCMImportWizardModal';
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 import { RolloverPrompt } from '@/components/layout/RolloverPrompt';
 import { Card, CardContent } from '@/components/ui/card';
@@ -58,6 +60,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
   const [searchTerm, setSearchTerm] = React.useState('');
   const [editingItem, setEditingItem] = React.useState<RCMMatrixItem | null>(null);
   const [isRolloverOpen, setIsRolloverOpen] = React.useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = React.useState(false);
 
   const rolloverMutation = useMutation({
     mutationFn: (data: { sourceYear: string, targetYear: string, force?: boolean }) => 
@@ -282,7 +285,17 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
             { label: t('matrix.company'), value: items[0]?.companyName || "N/A" },
             { label: t('matrix.location'), value: items[0]?.locationCode || "N/A" }
           ]}
-        />
+        >
+          <Button
+            variant="outline"
+            size="xs"
+            onClick={() => setIsImportModalOpen(true)}
+            className="bg-indigo-50 hover:bg-indigo-100/80 text-indigo-800 border-indigo-300 h-9 sm:h-7 min-h-[44px] sm:min-h-0 text-xs font-bold shadow-sm"
+          >
+            <FileUp className="h-3.5 w-3.5 sm:h-3 sm:w-3 mr-1.5 text-indigo-600" />
+            {t('rcm:actions.import_rcm', { defaultValue: 'Import RCM' })}
+          </Button>
+        </RCMPageHeader>
       )}
 
       {items.length === 0 && !isLoading && (
@@ -338,6 +351,15 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
         year={workingYear}
         prevYear={(parseInt(workingYear) - 1).toString()}
         isLoading={rolloverMutation.isPending}
+      />
+
+      <RCMImportWizardModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        workingYear={workingYear}
+        onSuccess={() => {
+          queryClient.invalidateQueries({ queryKey: ['rcm-matrix-tlc'] });
+        }}
       />
     </div>
   );

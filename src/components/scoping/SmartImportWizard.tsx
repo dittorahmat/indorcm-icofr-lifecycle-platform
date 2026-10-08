@@ -13,10 +13,8 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
   const {
     step,
     fiscalYear,
-    rcmType,
     files,
     materiality,
-    setRcmType,
     goToStep,
     handleDialogOpenChange,
     handleFinalize,
@@ -39,13 +37,9 @@ export function SmartImportWizard({ isOpen, onOpenChange, onSuccess }: SmartImpo
       {step === 1 && (
         <IngestionStep
           key="ingestion"
-          rcmType={rcmType}
           tbFile={files.tbFile}
-          rcmFile={files.rcmFile}
           isProcessing={files.isProcessing}
-          onRcmTypeChange={setRcmType}
           onSelectTbFile={files.selectTbFile}
-          onSelectRcmFile={files.selectRcmFile}
           onProcess={() => void files.handleProcessAI(goToNormalization)}
         />
       )}

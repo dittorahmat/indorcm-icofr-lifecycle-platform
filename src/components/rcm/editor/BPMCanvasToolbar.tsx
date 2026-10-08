@@ -30,6 +30,7 @@ export interface BPMCanvasToolbarProps {
   onAutoArrange: () => void;
   onOpenDocumentView: () => void;
   onOpenOcrDialog: () => void;
+  onOpenRcmImportDialog?: () => void;
   onScaleChange: (scale: number) => void;
   onFitView?: () => void;
   onToggleFullscreen?: () => void;
@@ -54,6 +55,7 @@ export const BPMCanvasToolbar: React.FC<BPMCanvasToolbarProps> = ({
   onAutoArrange,
   onOpenDocumentView,
   onOpenOcrDialog,
+  onOpenRcmImportDialog,
   onScaleChange,
   onFitView,
   onToggleFullscreen,
@@ -222,16 +224,31 @@ export const BPMCanvasToolbar: React.FC<BPMCanvasToolbarProps> = ({
         )}
 
         {!isLocked && (
-          <Button 
-            size="sm" 
-            variant="outline" 
-            className="h-9 gap-1.5 bg-white border-slate-200 hover:bg-slate-50 transition-all font-bold text-xs uppercase tracking-widest px-2.5 rounded-xl shadow-sm shrink-0"
-            onClick={onOpenOcrDialog}
-            title={t('bpm:ocr.importButton')}
-          >
-            <Upload className="h-3.5 w-3.5 text-emerald-500" />
-            <span className="hidden md:inline">{t('bpm:ocr.importButton')}</span>
-          </Button>
+          <>
+            {onOpenRcmImportDialog && (
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="h-9 gap-1.5 bg-white border-slate-200 hover:bg-slate-50 transition-all font-bold text-xs uppercase tracking-widest px-2.5 rounded-xl shadow-sm shrink-0"
+                onClick={onOpenRcmImportDialog}
+                title={t('bpm:editor.actions.importRcm', { defaultValue: 'Import RCM' })}
+              >
+                <LinkIcon className="h-3.5 w-3.5 text-indigo-600" />
+                <span className="hidden md:inline">{t('bpm:editor.actions.importRcm', { defaultValue: 'Import RCM' })}</span>
+              </Button>
+            )}
+
+            <Button 
+              size="sm" 
+              variant="outline" 
+              className="h-9 gap-1.5 bg-white border-slate-200 hover:bg-slate-50 transition-all font-bold text-xs uppercase tracking-widest px-2.5 rounded-xl shadow-sm shrink-0"
+              onClick={onOpenOcrDialog}
+              title={t('bpm:ocr.importButton')}
+            >
+              <Upload className="h-3.5 w-3.5 text-emerald-500" />
+              <span className="hidden md:inline">{t('bpm:ocr.importButton')}</span>
+            </Button>
+          </>
         )}
 
         {isLocked && (

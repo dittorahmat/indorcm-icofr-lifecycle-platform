@@ -6,6 +6,7 @@ export function useBPMEditorView() {
   const [isExporting, setIsExporting] = React.useState(false);
   const [isFullscreen, setIsFullscreen] = React.useState(false);
   const [isOcrDialogOpen, setIsOcrDialogOpen] = React.useState(false);
+  const [isRcmImportDialogOpen, setIsRcmImportDialogOpen] = React.useState(false);
   const [rfInstance, setRfInstance] = React.useState<ReactFlowInstance | null>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
@@ -47,11 +48,13 @@ export function useBPMEditorView() {
     isExporting,
     isFullscreen,
     isOcrDialogOpen,
+    isRcmImportDialogOpen,
     rfInstance,
     containerRef,
     setDocumentView,
     setIsExporting,
     setIsOcrDialogOpen,
+    setIsRcmImportDialogOpen,
     setRfInstance,
     handleFitView,
     toggleFullscreen,
