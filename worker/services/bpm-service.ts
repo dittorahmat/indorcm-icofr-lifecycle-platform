@@ -8,7 +8,6 @@ import type { BPMProcess } from "@shared/types";
 import { AuditService } from './audit-service';
 import { extractBaseId, makeGlSpecificId, parseSequenceNumber } from './bpm/bpm-utils';
 import { BpmSyncManager } from './bpm/bpm-sync';
-import { BpmWorkflowManager } from './bpm/bpm-workflow';
 import { BpmHydrator } from './bpm/bpm-hydrator';
 
 export { extractBaseId, makeGlSpecificId };
@@ -16,20 +15,17 @@ export { extractBaseId, makeGlSpecificId };
 export class BpmService {
   private auditService: AuditService;
   private syncManager: BpmSyncManager;
-  private workflowManager: BpmWorkflowManager;
   private hydrator: BpmHydrator;
 
   constructor(private db: DrizzleDb) {
     this.auditService = new AuditService(db);
     this.syncManager = new BpmSyncManager(db);
-    this.workflowManager = new BpmWorkflowManager(db);
     this.hydrator = new BpmHydrator(db);
   }
 
   private setTxDb(tx: DrizzleDb) {
     this.db = tx;
     this.syncManager.setDb(tx);
-    this.workflowManager.setDb(tx);
     this.hydrator.setDb(tx);
   }
 
@@ -422,10 +418,6 @@ export class BpmService {
     const nextControlId = `${controlPrefix}${(maxCtrl + 1).toString().padStart(4, '0')}`;
 
     return { nextRiskId, nextControlId, bpmCode };
-  }
-
-  async handleWorkflowAction(orgId: string, userId: string, role: string, id: string, body: { action: any, note: string, assigneeId?: string }) {
-    return await this.workflowManager.handleWorkflowAction(orgId, userId, role, id, body);
   }
 
   async createProcess(orgId: string, userId: string, body: Partial<BPMProcess>) {

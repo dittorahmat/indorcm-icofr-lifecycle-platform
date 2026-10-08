@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import type { Edge, EdgeTypes, Node, NodeTypes } from 'reactflow';
+import type { EdgeTypes, NodeTypes } from 'reactflow';
 import { Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,18 +17,12 @@ import { OcrReviewView } from './ocr/OcrReviewView';
 import { OcrUploadView } from './ocr/OcrUploadView';
 import { OcrImportModeSelector } from './ocr/OcrImportModeSelector';
 import { useOcrStaging } from './ocr/useOcrStaging';
-import type { OcrAppendDirection, OcrImportMode } from './ocr/ocr-types';
+import type { OcrApplyRequest } from './ocr/ocr-types';
 
 interface BPMOcrModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onApply: (
-    nodes: Node[],
-    edges: Edge[],
-    mode?: OcrImportMode,
-    direction?: OcrAppendDirection,
-    sheets?: any[]
-  ) => void;
+  onApply: (request: OcrApplyRequest) => void;
   nodeTypes: NodeTypes;
 
   edgeTypes: EdgeTypes;

@@ -2,13 +2,12 @@ import { Hono } from "hono";
 import type { HonoEnv } from '../../app';
 import { ok, bad, notFound } from '../../lib/utils';
 import { getDb } from '../../db';
-import { csaRecords, csaSamples, controls, bpmProcesses } from '../../db/schema';
+import { csaRecords, csaSamples, controls } from '../../db/schema';
 import { eq, and, SQL, sql } from 'drizzle-orm';
 import { CsaDomainService } from "../../services/csa-domain-service";
-import { DeficiencyService } from "../../services/deficiency-service";
-import { AuditService } from "../../services/audit-service";
+import { runWorkflowTransition } from "../../services/workflow/workflow-drizzle-adapter";
 import { generateCsaPdf } from "../../lib/csa-pdf";
-import { WorkflowTransitionEngine } from "../../services/workflow/workflow-transition-engine";
+import type { WorkflowAction } from '@shared/types';
 
 export const csaRecordsRoute = new Hono<HonoEnv>();
 
@@ -45,113 +44,19 @@ csaRecordsRoute.post('/csa', async (c) => {
 csaRecordsRoute.post('/csa/:id/workflow', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const id = c.req.param('id');
-  const orgId = c.get('organizationId')!;
-  const userId = c.get('userId')!;
-  const role = c.get('userRole')!;
-  const body = await c.req.json<{ action: any, note: string, assigneeId?: string }>();
+  const body = await c.req.json<{ action: WorkflowAction; note?: string; assigneeId?: string }>();
 
-  const existing = await db.select().from(csaRecords).where(and(eq(csaRecords.id, id), eq(csaRecords.organizationId, orgId))).limit(1);
-  if (existing.length === 0) return notFound(c, 'CSA record not found');
-
-  const csaRecord = existing[0];
-  const currentStatus = csaRecord.workflowStatus || (csaRecord.line2Status === 'Validated' ? 'Validated' : (csaRecord.isDraft ? 'Draft' : 'In Review'));
-  const transitionEngine = new WorkflowTransitionEngine(db, new AuditService(db));
-  const transition = await transitionEngine.executeTransition({
+  const result = await runWorkflowTransition(db, c.env, {
     entityType: 'CSA',
     entityId: id,
-    currentStatus,
+    organizationId: c.get('organizationId'),
+    userId: c.get('userId'),
+    role: c.get('userRole'),
     action: body.action,
     note: body.note,
-    assigneeId: body.assigneeId
-  }, {
-    organizationId,
-    userId,
-    role
+    assigneeId: body.assigneeId,
   });
-
-  const nextStatus = transition.nextStatus;
-  const currentHistory = (csaRecord.workflowHistory as any[]) || [];
-  const newHistory = [transition.historyEntry, ...currentHistory];
-
-  const updateData: any = {
-    workflowStatus: nextStatus,
-    workflowHistory: newHistory,
-    isDraft: nextStatus === 'Draft',
-    line2Status: nextStatus === 'Validated' ? 'Validated' : (nextStatus === 'Draft' ? 'Pending' : 'In Review')
-  };
-
-  if (nextStatus === 'Validated') {
-    updateData.line2ValidatedBy = userId;
-    updateData.line2ValidatedDate = new Date();
-
-    if (csaRecord.result === 'Ineffective') {
-      const defService = new DeficiencyService(db);
-      if (csaRecord.controlId) {
-        await defService.createAutoDeficiency({
-          organizationId: orgId,
-          controlId: csaRecord.controlId,
-          description: `Hasil CSA Ineffective untuk periode ${csaRecord.period}.`,
-          source: 'Lini 2 - CSA Validation',
-          userId,
-          period: csaRecord.period
-        });
-      } else {
-        const samples = await db.select().from(csaSamples).where(eq(csaSamples.csaRecordId, id));
-        const failedControlIds = new Set<string>();
-        for (const sample of samples) {
-          if (sample.controlResults && typeof sample.controlResults === 'object') {
-            for (const [ctrlId, val] of Object.entries<any>(sample.controlResults)) {
-              if (val && val.implemented === false) {
-                failedControlIds.add(ctrlId);
-              }
-            }
-          }
-        }
-
-        let bpmProcessName = "Sub-Proses Bisnis";
-        if (csaRecord.bpmProcessId) {
-          const bpm = await db.query.bpmProcesses.findFirst({
-            where: eq(bpmProcesses.id, csaRecord.bpmProcessId),
-            columns: { name: true, noGL: true }
-          });
-          if (bpm) {
-            bpmProcessName = `${bpm.name} (${bpm.noGL})`;
-          }
-        }
-
-        let description = `Hasil CSA Ineffective untuk proses ${bpmProcessName} (periode ${csaRecord.period}).`;
-        if (failedControlIds.size > 0) {
-          description += ` Kontrol gagal: ${Array.from(failedControlIds).join(', ')}.`;
-        }
-
-        await defService.createAutoDeficiency({
-          organizationId: orgId,
-          controlId: null,
-          description,
-          source: 'Lini 2 - CSA Validation',
-          userId,
-          period: csaRecord.period
-        });
-      }
-    }
-
-    const auditService = new AuditService(db);
-    await auditService.logAction({
-      organizationId: orgId,
-      userId,
-      action: 'SIGN_OFF_CSA',
-      entityType: 'Control',
-      entityId: csaRecord.controlId || csaRecord.id,
-      description: `Validated CSA for ${csaRecord.period} with result: ${csaRecord.result}`,
-      dataAfter: { csaId: id, ...csaRecord, ...updateData },
-      isRegulatory: true,
-      effectiveDate: new Date(),
-      approvedBy: userId
-    });
-  }
-
-  await db.update(csaRecords).set(updateData).where(eq(csaRecords.id, id));
-  return ok(c, { success: true, nextStatus });
+  return ok(c, result);
 });
 
 csaRecordsRoute.delete('/csa/:id', async (c) => {

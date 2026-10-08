@@ -1,15 +1,72 @@
-import { eq, and, or, sql, like, inArray, aliasedTable } from 'drizzle-orm';
-import { 
-  rcms, controls, rcmControls, bpmProcesses, bpmDiagrams, bpmNodeRcms, 
-  accountAssertions, todEvaluations
+import { eq, and, or, sql, like, inArray, aliasedTable, type SQL } from 'drizzle-orm';
+import {
+  rcms, controls, rcmControls, bpmProcesses, bpmDiagrams, bpmNodeRcms,
+  accountAssertions, todEvaluations, organization
 } from '../db/schema';
 import type { DrizzleDb } from '../db';
-import type { RCM } from '@shared/types';
-import { AuditService } from './audit-service';
-import { DeficiencyService } from './deficiency-service';
+import type {
+  CreateVerificationDesignBody,
+  VerificationBatchUpdateItem,
+  VerificationDesignPatchBody,
+} from '@shared/types';
+import {
+  applyAssertionFallback, applyBatchUpdate, applyVerificationDesignPatch, createVerificationDesign,
+  matchesNoGL, projectVerificationRow,
+} from './rcm-matrix-write';
+import { createMatrixWriteDeps } from './rcm-matrix-drizzle';
 
+interface TodPilarFields {
+  pilarObjective: string | null;
+  pilarTiming: string | null;
+  pilarAuthority: string | null;
+  pilarReliability: string | null;
+  pilarCoverage: string | null;
+  pilarEvidence: string | null;
+  kkReference: string | null;
+  conclusion: string | null;
+  comment: string | null;
+  evaluatorId: string | null;
+}
+
+/** Thin facade over the rcm-matrix-write domain module (arch-09 T4).
+ *  Matrix reads stay here; verification writes (allow-lists, TOD upsert via
+ *  decideTest, auto-deficiency, consolidated batch) live behind the domain
+ *  seam. Routes are thin adapters. */
 export class RcmMatrixService {
   constructor(private db: DrizzleDb) {}
+
+  private async attachTods<T extends { controlId: string }>(orgId: string, rows: T[]): Promise<(T & TodPilarFields)[]> {
+    const controlIds = rows.map(r => r.controlId);
+    const tods: (typeof todEvaluations.$inferSelect)[] = controlIds.length > 0
+      ? await this.db.select().from(todEvaluations)
+        .where(and(
+          inArray(todEvaluations.controlId, controlIds),
+          eq(todEvaluations.organizationId, orgId)
+        ))
+      : [];
+    const todMap = new Map<string, typeof todEvaluations.$inferSelect>(tods.map(t => [t.controlId, t]));
+    return rows.map(row => {
+      const tod = todMap.get(row.controlId);
+      return {
+        ...row,
+        pilarObjective: tod?.pilarObjective ?? null,
+        pilarTiming: tod?.pilarTiming ?? null,
+        pilarAuthority: tod?.pilarAuthority ?? null,
+        pilarReliability: tod?.pilarReliability ?? null,
+        pilarCoverage: tod?.pilarCoverage ?? null,
+        pilarEvidence: tod?.pilarEvidence ?? null,
+        kkReference: tod?.kkReference ?? null,
+        conclusion: tod?.conclusion ?? null,
+        comment: tod?.comment ?? null,
+        evaluatorId: tod?.evaluatorId ?? null,
+      };
+    });
+  }
+
+  private async orgMeta(orgId: string): Promise<{ companyName: string; locationCode: string }> {
+    const org = await this.db.select().from(organization).where(eq(organization.id, orgId)).then((rows) => rows[0]);
+    return { companyName: org?.name ?? 'N/A', locationCode: org?.entityCode ?? 'N/A' };
+  }
 
   async getTlcMatrix(orgId: string, bpmProcessId?: string, year?: string, noGL?: string) {
     const parentProcess = aliasedTable(bpmProcesses, "parent_process");
@@ -85,73 +142,33 @@ export class RcmMatrixService {
       eq(bpmProcesses.organizationId, accountAssertions.organizationId)
     ));
 
-    let finalConditions = and(
+    const conds: SQL[] = [
       eq(rcmControls.organizationId, orgId),
       eq(controls.level, 'TLC')
-    );
-
-    if (bpmProcessId && bpmProcessId !== 'undefined') {
-      finalConditions = and(finalConditions, eq(controls.bpmProcessId, bpmProcessId)) as any;
-    }
-    
-    if (year) {
-      finalConditions = and(finalConditions, eq(rcms.year, parseInt(year))) as any;
-    }
-
+    ];
+    if (bpmProcessId && bpmProcessId !== 'undefined') conds.push(eq(controls.bpmProcessId, bpmProcessId));
+    if (year) conds.push(eq(rcms.year, parseInt(year)));
     if (noGL && noGL !== 'undefined') {
-      finalConditions = and(
-        finalConditions,
-        or(
-          like(rcms.id, `%-${noGL}`),
-          sql`${controls.fsliCodes}::jsonb ? ${noGL}`
-        )
-      ) as any;
+      conds.push(or(
+        like(rcms.id, `%-${noGL}`),
+        sql`${controls.fsliCodes}::jsonb ? ${noGL}`
+      ) as SQL);
     }
 
-    const results = await query.where(finalConditions);
-
-    const controlIds = results.map(r => r.controlId);
-    let tods: any[] = [];
-    if (controlIds.length > 0) {
-      tods = await this.db.select().from(todEvaluations)
-        .where(and(
-          inArray(todEvaluations.controlId, controlIds),
-          eq(todEvaluations.organizationId, orgId)
-        ));
-    }
-
-    const todMap = new Map();
-    tods.forEach(t => todMap.set(t.controlId, t));
-
-    return results.map(row => {
-      const tod = todMap.get(row.controlId);
-      return {
-        ...row,
-        pilarObjective: tod?.pilarObjective,
-        pilarTiming: tod?.pilarTiming,
-        pilarAuthority: tod?.pilarAuthority,
-        pilarReliability: tod?.pilarReliability,
-        pilarCoverage: tod?.pilarCoverage,
-        pilarEvidence: tod?.pilarEvidence,
-        kkReference: tod?.kkReference,
-        conclusion: tod?.conclusion,
-        comment: tod?.comment,
-        evaluatorId: tod?.evaluatorId,
-      };
-    });
+    const results = await query.where(and(...conds));
+    const withTods = await this.attachTods(orgId, results);
+    const org = await this.orgMeta(orgId);
+    return withTods.map((row) => ({ ...applyAssertionFallback(row), ...org }));
   }
 
   async getElcMatrix(orgId: string, year?: string) {
     const parentProcess = aliasedTable(bpmProcesses, "parent_process");
 
-    let finalConditions = and(
+    const conds: SQL[] = [
       eq(rcmControls.organizationId, orgId),
       eq(controls.level, 'ELC')
-    );
-
-    if (year) {
-      finalConditions = and(finalConditions, eq(rcms.year, parseInt(year))) as any;
-    }
+    ];
+    if (year) conds.push(eq(rcms.year, parseInt(year)));
 
     const results = await this.db.select({
       mappingId: rcmControls.id,
@@ -218,54 +235,22 @@ export class RcmMatrixService {
       eq(bpmDiagrams.subProcess, bpmProcesses.name)
     ))
     .leftJoin(parentProcess, eq(bpmProcesses.parentId, parentProcess.id))
-    .where(finalConditions);
+    .where(and(...conds));
 
-    const controlIds = results.map(r => r.controlId);
-    let tods: any[] = [];
-    if (controlIds.length > 0) {
-      tods = await this.db.select().from(todEvaluations)
-        .where(and(
-          inArray(todEvaluations.controlId, controlIds),
-          eq(todEvaluations.organizationId, orgId)
-        ));
-    }
-
-    const todMap = new Map();
-    tods.forEach(t => todMap.set(t.controlId, t));
-
-    return results.map(row => {
-      const tod = todMap.get(row.controlId);
-      return {
-        ...row,
-        pilarObjective: tod?.pilarObjective,
-        pilarTiming: tod?.pilarTiming,
-        pilarAuthority: tod?.pilarAuthority,
-        pilarReliability: tod?.pilarReliability,
-        pilarCoverage: tod?.pilarCoverage,
-        pilarEvidence: tod?.pilarEvidence,
-        kkReference: tod?.kkReference,
-        conclusion: tod?.conclusion,
-        comment: tod?.comment,
-        evaluatorId: tod?.evaluatorId,
-      };
-    });
+    const withTods = await this.attachTods(orgId, results);
+    const org = await this.orgMeta(orgId);
+    return withTods.map((row) => ({ ...row, ...org }));
   }
 
   async getItgcMatrix(orgId: string, year?: string, bpmProcessId?: string) {
     const parentProcess = aliasedTable(bpmProcesses, "parent_process");
 
-    let finalConditions = and(
+    const conds: SQL[] = [
       eq(rcmControls.organizationId, orgId),
       eq(controls.level, 'ITGC')
-    );
-
-    if (year) {
-      finalConditions = and(finalConditions, eq(rcms.year, parseInt(year))) as any;
-    }
-
-    if (bpmProcessId && bpmProcessId !== 'undefined') {
-      finalConditions = and(finalConditions, eq(controls.bpmProcessId, bpmProcessId)) as any;
-    }
+    ];
+    if (year) conds.push(eq(rcms.year, parseInt(year)));
+    if (bpmProcessId && bpmProcessId !== 'undefined') conds.push(eq(controls.bpmProcessId, bpmProcessId));
 
     const results = await this.db.select({
       mappingId: rcmControls.id,
@@ -309,152 +294,62 @@ export class RcmMatrixService {
     .innerJoin(controls, eq(rcmControls.controlId, controls.id))
     .leftJoin(bpmNodeRcms, eq(rcms.id, bpmNodeRcms.rcmId))
     .leftJoin(bpmDiagrams, eq(bpmNodeRcms.diagramId, bpmDiagrams.id))
-    .leftJoin(bpmProcesses, or(
-      eq(controls.bpmProcessId, bpmProcesses.id),
-      eq(bpmDiagrams.subProcess, bpmProcesses.name)
-    ))
     .leftJoin(parentProcess, eq(bpmProcesses.parentId, parentProcess.id))
-    .where(finalConditions);
+    .where(and(...conds));
 
-    const controlIds = results.map(r => r.controlId);
-    let tods: any[] = [];
-    if (controlIds.length > 0) {
-      tods = await this.db.select().from(todEvaluations)
-        .where(and(
-          inArray(todEvaluations.controlId, controlIds),
-          eq(todEvaluations.organizationId, orgId)
-        ));
-    }
+    const withTods = await this.attachTods(orgId, results);
+    const org = await this.orgMeta(orgId);
+    return withTods.map((row) => ({ ...row, ...org }));
+  }
 
-    const todMap = new Map();
-    tods.forEach(t => todMap.set(t.controlId, t));
+  async getVerificationDesign(orgId: string, filters: { bpmProcessId?: string; year?: string; noGL?: string }) {
+    const { bpmProcessId, year, noGL } = filters;
+    const results = await this.db.query.rcmControls.findMany({
+      where: and(
+        eq(rcmControls.organizationId, orgId),
+        bpmProcessId && bpmProcessId !== 'undefined' ? eq(rcmControls.rcmId, bpmProcessId) : undefined,
+        year && year !== 'undefined' ? eq(rcmControls.year, parseInt(year)) : undefined
+      ),
+      with: {
+        rcm: true,
+        control: {
+          with: {
+            todEvaluations: true
+          }
+        }
+      }
+    });
+    const org = await this.orgMeta(orgId);
+    return results
+      .filter((m) => matchesNoGL(m.control?.fsliCodes ?? null, noGL))
+      .map((m) => projectVerificationRow(
+        {
+          ...m,
+          control: m.control ? {
+            code: m.control.code,
+            fsliCodes: m.control.fsliCodes,
+            todEvaluations: m.control.todEvaluations,
+          } : null,
+        },
+        { name: org.companyName, entityCode: org.locationCode },
+      ));
+  }
 
-    return results.map(row => {
-      const tod = todMap.get(row.controlId);
-      return {
-        ...row,
-        pilarObjective: tod?.pilarObjective,
-        pilarTiming: tod?.pilarTiming,
-        pilarAuthority: tod?.pilarAuthority,
-        pilarReliability: tod?.pilarReliability,
-        pilarCoverage: tod?.pilarCoverage,
-        pilarEvidence: tod?.pilarEvidence,
-        kkReference: tod?.kkReference,
-        conclusion: tod?.conclusion,
-        comment: tod?.comment,
-        evaluatorId: tod?.evaluatorId,
-      };
+  /** Write seam delegates — allow-lists, TOD decideTest, deficiency fan-out and
+   *  consolidated batch live in the domain module. AppError propagates to onError. */
+  async patchVerificationDesign(orgId: string, userId: string, mappingId: string, body: VerificationDesignPatchBody) {
+    return applyVerificationDesignPatch(createMatrixWriteDeps(this.db, orgId), {
+      mappingId, organizationId: orgId, userId, body,
     });
   }
 
-  async saveVerificationDesign(orgId: string, userId: string, body: any) {
-    const {
-      createNewRcm,
-      rcmId: existingRcmId,
-      process,
-      subProcess,
-      riskDescription,
-      riskRating,
-      isFraudRelated,
-      controlCode,
-      controlName,
-      controlDescription,
-      supportingDocs,
-      isKeyControl,
-      ipoC, ipoA, ipoV, ipoRa,
-      assertionE, assertionC, assertionA, assertionCo, assertionVa, assertionRo, assertionPd,
-      controlType, controlNature, automatedControlType, frequency,
-      supportingApp, applicationId, executingFunction, executorRole, affectedFsliItem, effectivePeriod,
-      bpmProcessId,
-      pilarObjective, pilarTiming, pilarAuthority, pilarReliability, pilarCoverage, pilarEvidence,
-      kkReference, conclusion, comment,
-    } = body;
+  async batchUpdateMatrix(orgId: string, items: VerificationBatchUpdateItem[]) {
+    return applyBatchUpdate(createMatrixWriteDeps(this.db, orgId), { items, organizationId: orgId });
+  }
 
-    let finalRcmId = existingRcmId;
-
-    if (createNewRcm) {
-      if (!process || !subProcess || !riskDescription) {
-        throw new Error('Process, Sub-Process, and Risk Description are required when creating a new RCM.');
-      }
-      finalRcmId = crypto.randomUUID();
-      await this.db.insert(rcms).values({
-        id: finalRcmId,
-        organizationId: orgId,
-        process: process || 'New Process',
-        subProcess: subProcess || 'New Sub-Process',
-        riskDescription: riskDescription || 'New Risk',
-        isFraudRelated: isFraudRelated ?? false,
-        riskRating: riskRating || 'Medium',
-        status: 'Active',
-      } as any);
-    }
-
-    if (!finalRcmId) {
-      throw new Error('An existing RCM must be selected or a new one must be created.');
-    }
-
-    const newControlId = crypto.randomUUID();
-    const generatedCode = controlCode || `C-${newControlId.substring(0, 8)}`;
-
-    await this.db.insert(controls).values({
-      id: newControlId,
-      organizationId: orgId,
-      rcmId: finalRcmId,
-      code: generatedCode,
-      name: controlName || 'New Control',
-      description: controlDescription,
-      level: 'TLC',
-      bpmProcessId: bpmProcessId || null,
-    } as any);
-
-    const newMappingId = crypto.randomUUID();
-    await this.db.insert(rcmControls).values({
-      id: newMappingId,
-      organizationId: orgId,
-      rcmId: finalRcmId,
-      controlId: newControlId,
-      controlName,
-      controlDescription,
-      supportingDocs,
-      isKeyControl: isKeyControl ?? false,
-      ipoC: ipoC || 'N', ipoA: ipoA || 'N', ipoV: ipoV || 'N', ipoRa: ipoRa || 'N',
-      assertionE: assertionE || 'N', assertionC: assertionC || 'N', assertionA: assertionA || 'N',
-      assertionCo: assertionCo || 'N', assertionVa: assertionVa || 'N',
-      assertionRo: assertionRo || 'N', assertionPd: assertionPd || 'N',
-      controlType, controlNature, automatedControlType, frequency,
-      supportingApp, applicationId, executingFunction, executorRole, affectedFsliItem, effectivePeriod,
-    } as any);
-
-    const newTodId = crypto.randomUUID();
-    await this.db.insert(todEvaluations).values({
-      id: newTodId,
-      organizationId: orgId,
-      controlId: newControlId,
-      evaluatorId: userId,
-      csaId: null,
-      pilarObjective, pilarTiming, pilarAuthority, pilarReliability, pilarCoverage, pilarEvidence,
-      kkReference, conclusion, comment,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    } as any);
-
-    if (conclusion === 'Ineffective') {
-      const defService = new DeficiencyService(this.db);
-      await defService.createAutoDeficiency({
-        organizationId: orgId,
-        controlId: newControlId,
-        description: `Hasil Verifikasi Desain (TOD) Ineffective untuk kontrol baru: ${comment || 'No justification provided.'}`,
-        source: 'Lini 2 - TOD Review',
-        userId,
-        period: 'TOD-Evaluation'
-      });
-    }
-
-    return { 
-      success: true, 
-      mappingId: newMappingId,
-      controlId: newControlId,
-      rcmId: finalRcmId,
-    };
+  async saveVerificationDesign(orgId: string, userId: string, body: CreateVerificationDesignBody) {
+    return createVerificationDesign(createMatrixWriteDeps(this.db, orgId), {
+      ...body, organizationId: orgId, userId,
+    });
   }
 }

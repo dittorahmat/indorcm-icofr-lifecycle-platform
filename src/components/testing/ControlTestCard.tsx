@@ -37,6 +37,7 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
   const form = useForm<TestFormValues>({
     resolver: zodResolver(testSchema) as any,
     defaultValues: {
+      testType: "TOD",
       method: "Inspection",
       homogeneityJustification: "",
       evaluationAttributes: {
@@ -111,7 +112,7 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
     mutation.mutate({
       organizationId: control.organizationId,
       controlId: control.id,
-      period: "2024-Q1",
+      period: new Date().getFullYear().toString(),
       ...values,
     } as any);
   };
@@ -195,7 +196,15 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
             )}
           </AnimatePresence>
 
-          <Tabs defaultValue="tod" className="w-full">
+          <Tabs
+            defaultValue="tod"
+            className="w-full"
+            onValueChange={(tab) =>
+              form.setValue('testType', tab === 'toe' ? 'TOE' : 'TOD', {
+                shouldValidate: false,
+              })
+            }
+          >
             <div className="bg-slate-100/70 p-1 border border-slate-200 rounded-lg w-full sm:w-fit mb-6 sm:mb-8 overflow-x-auto max-w-full touch-pan-x overscroll-x-contain no-scrollbar">
               <TabsList className="bg-transparent h-auto p-0 flex gap-1 w-max min-w-full sm:w-auto">
                 <TabsTrigger 
@@ -222,7 +231,7 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
                     <div className="pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 flex-wrap min-w-0">
                       <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider min-w-0">
                         <Target className="h-4 w-4 text-indigo-500 shrink-0" />
-                        Final Audit Verdict
+                        {t('actions.finalVerdict')}
                       </div>
                       <div className="flex flex-col-reverse sm:flex-row gap-2.5 sm:gap-3 w-full sm:w-auto">
                         <Button 
@@ -249,10 +258,11 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
                   </TabsContent>
 
                   <TabsContent value="toe" className="space-y-6 sm:space-y-8 m-0 outline-none">
-                    <TOETabContent 
-                      suggestion={suggestion} 
-                      isAuthenticating={isAuthenticating} 
-                      isPending={mutation.isPending} 
+                    <TOETabContent
+                      control={control}
+                      suggestion={suggestion}
+                      isAuthenticating={isAuthenticating}
+                      isPending={mutation.isPending}
                     />
                   </TabsContent>
                 </motion.div>

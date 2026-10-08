@@ -64,6 +64,8 @@ const mockDeficiency: Deficiency = {
   id: 'DEF-TEST-001',
   organizationId: 'org-1',
   controlId: 'ctrl-1',
+  bpmProcessId: null,
+  period: null,
   description: 'Prosedur rekonsiliasi bank tidak dijalankan secara tepat waktu.',
   severity: 'Significant Deficiency',
   identifiedDate: Date.now(),

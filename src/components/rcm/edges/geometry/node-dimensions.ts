@@ -1,11 +1,17 @@
-export interface Point {
-  x: number;
-  y: number;
-}
+import {
+  resolveAbsolutePosition,
+  resolveNodeDimensions,
+  type CanvasNodeSnapshot,
+  type DimensionSource,
+  type GeometryDims,
+  type GeometryPoint,
+} from './bpm-geometry';
+
+export type { GeometryPoint as Point } from './bpm-geometry';
 
 export interface Segment {
-  p1: Point;
-  p2: Point;
+  p1: GeometryPoint;
+  p2: GeometryPoint;
 }
 
 // Nodes that must lock connection points at exact center/apex
@@ -20,82 +26,28 @@ export const FIXED_CENTER_TYPES = new Set([
   'archive'
 ]);
 
-export function getNodeDimensions(node: {
-  width?: number;
-  height?: number;
-  type?: string;
-  data?: { nodeScaleOverride?: string };
-}) {
-  if (node.width && node.height) {
-    return { width: node.width, height: node.height };
-  }
-
-  let width = 160;
-  let height = 56;
-
-  switch (node.type) {
-    case 'start':
-    case 'end':
-      width = 120;
-      height = 40;
-      break;
-    case 'decision':
-      width = 110;
-      height = 110;
-      break;
-    case 'document':
-      width = 130;
-      height = 48;
-      break;
-    case 'archive':
-      width = 64;
-      height = 64;
-      break;
-    case 'data-media':
-      width = 100;
-      height = 80;
-      break;
-    case 'reference':
-      width = 40;
-      height = 40;
-      break;
-    default:
-      width = 160;
-      height = 56;
-  }
-
-  const nodeScale = node.data?.nodeScaleOverride || 'md';
-  if (nodeScale === 'sm') {
-    width = Math.round(width * 0.8);
-    height = Math.round(height * 0.8);
-  } else if (nodeScale === 'lg') {
-    width = Math.round(width * 1.25);
-    height = Math.round(height * 1.25);
-  }
-
-  return { width, height };
+export function getNodeDimensions(node: DimensionSource): GeometryDims {
+  return resolveNodeDimensions(node);
 }
 
 export function getNodeAbsolutePosition(
-  node: { position?: { x: number; y: number }; parentId?: string; parentNode?: string },
-  nodeInternals: Map<string, any>
-): Point {
+  node: CanvasNodeSnapshot | null | undefined,
+  nodeInternals: ReadonlyMap<string, CanvasNodeSnapshot> | undefined
+): GeometryPoint {
   if (!node) return { x: 0, y: 0 };
-  
-  let x = node.position?.x ?? 0;
-  let y = node.position?.y ?? 0;
-  
-  let parentId = node.parentId || node.parentNode;
-  while (parentId) {
-    const parentNode = nodeInternals.get(parentId);
-    if (parentNode) {
-      x += parentNode.position?.x ?? 0;
-      y += parentNode.position?.y ?? 0;
-      parentId = parentNode.parentId || parentNode.parentNode;
-    } else {
-      break;
+
+  return resolveAbsolutePosition(
+    { x: node.position?.x ?? 0, y: node.position?.y ?? 0 },
+    node.parentId ?? node.parentNode ?? null,
+    (id) => {
+      const parent = nodeInternals?.get(id);
+      if (!parent) {
+        return undefined;
+      }
+      return {
+        pos: { x: parent.position?.x ?? 0, y: parent.position?.y ?? 0 },
+        parentId: parent.parentId ?? parent.parentNode ?? null,
+      };
     }
-  }
-  
-  return { x, y };
+  );
 }

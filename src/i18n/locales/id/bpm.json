@@ -467,7 +467,14 @@
       "fileError": "Gagal memproses file: {{message}}",
       "ocrSuccess": "Diagram berhasil diterjemahkan! Silakan tinjau hasilnya.",
       "ocrError": "AI OCR Gagal: {{message}}",
+      "multiPageSuccess": "Berhasil menganalisis {{count}} halaman diagram!",
       "applySuccess": "Diagram berhasil diterapkan ke workspace canvas."
+    },
+    "sheetName": "Fase {{page}} (Halaman {{page}})",
+    "progress": {
+      "extractPdf": "Mengekstrak halaman PDF...",
+      "extractPage": "Mengekstrak halaman {{current}} dari {{total}}...",
+      "analyzePage": "Menganalisis halaman {{current}} dari {{total}}..."
     },
     "confirmOverwrite": "Kanvas memiliki perubahan yang belum disimpan. Menerapkan hasil OCR akan mengganti seluruh diagram. Lanjutkan?",
     "importMode": {

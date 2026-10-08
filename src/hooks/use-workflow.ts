@@ -2,58 +2,55 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { WorkflowAction } from '@shared/types';
+import { workflowEndpointFor, type WorkflowEntityType } from '@shared/workflow-transitions';
 import { useTranslation } from 'react-i18next';
 
-export function useWorkflow(entityType: 'BPM' | 'ACTION_PLAN' | 'SCOPING' | 'RCM_CHANGE' | 'CSA', entityId: string) {
+interface WorkflowResponse {
+  success: boolean;
+  nextStatus: string;
+  deficiencyId: string | null;
+}
+
+interface ExecuteActionInput {
+  action: WorkflowAction;
+  note: string;
+  assigneeId?: string;
+}
+
+const INVALIDATED_KEYS: Record<WorkflowEntityType, string[][]> = {
+  BPM: [['bpm-processes']],
+  ACTION_PLAN: [['actionplans'], ['deficiencies']],
+  SCOPING: [['simulations']],
+  RCM_CHANGE: [['rcm-matrix-tlc'], ['controls'], ['changelogs']],
+  CSA: [['csa-records']],
+};
+
+export function useWorkflow(entityType: WorkflowEntityType, entityId: string) {
   const queryClient = useQueryClient();
   const { t } = useTranslation('common');
 
   const workflowMutation = useMutation({
-    mutationFn: async ({ action, note, assigneeId }: { action: WorkflowAction, note: string, assigneeId?: string }) => {
-      let endpoint = '';
-      switch (entityType) {
-        case 'BPM': 
-          endpoint = `/api/bpm-processes/${entityId}/workflow`;
-          break;
-        case 'ACTION_PLAN':
-          endpoint = `/api/actionplans/${entityId}/workflow`;
-          break;
-        case 'SCOPING':
-          endpoint = `/api/simulations/${entityId}/workflow`;
-          break;
-        case 'RCM_CHANGE':
-          endpoint = `/api/rcm/${entityId}/workflow`;
-          break;
-        case 'CSA':
-          endpoint = `/api/csa/${entityId}/workflow`;
-          break;
-      }
-        
-      return await api<any>(endpoint, {
+    mutationFn: async ({ action, note, assigneeId }: ExecuteActionInput) => {
+      // Single route table: endpoint taxonomy cannot drift from the server.
+      const endpoint = workflowEndpointFor(entityType, entityId);
+      return await api<WorkflowResponse>(endpoint, {
         method: 'POST',
         body: JSON.stringify({ action, note, assigneeId })
       });
     },
     onSuccess: () => {
+      for (const queryKey of INVALIDATED_KEYS[entityType]) {
+        queryClient.invalidateQueries({ queryKey });
+      }
       if (entityType === 'BPM') {
-        queryClient.invalidateQueries({ queryKey: ['bpm-processes'] });
         queryClient.invalidateQueries({ queryKey: ['bpm-process', entityId] });
-      } else if (entityType === 'ACTION_PLAN') {
-        queryClient.invalidateQueries({ queryKey: ['actionplans'] });
-        queryClient.invalidateQueries({ queryKey: ['deficiencies'] });
-      } else if (entityType === 'SCOPING') {
-        queryClient.invalidateQueries({ queryKey: ['simulations'] });
-      } else if (entityType === 'RCM_CHANGE') {
-        queryClient.invalidateQueries({ queryKey: ['rcm-matrix-tlc'] });
-        queryClient.invalidateQueries({ queryKey: ['controls'] });
-        queryClient.invalidateQueries({ queryKey: ['changelogs'] });
-      } else if (entityType === 'CSA') {
-        queryClient.invalidateQueries({ queryKey: ['csa-records'] });
+      }
+      if (entityType === 'CSA') {
         queryClient.invalidateQueries({ queryKey: ['csa-record-detail', entityId] });
       }
       toast.success(t('notifications.updated'));
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(error.message);
     }
   });

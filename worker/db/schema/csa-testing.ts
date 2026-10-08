@@ -157,6 +157,8 @@ export const deficiencies = pgTable("deficiencies", {
 	id: text("id").primaryKey(),
 	organizationId: text("organization_id").notNull().references(() => organization.id),
 	controlId: text("control_id").references(() => controls.id),
+	bpmProcessId: text("bpm_process_id").references(() => bpmProcesses.id),
+	period: text("period"),
 	description: text("description").notNull(),
 	severity: text("severity").notNull(), // Control Deficiency, Significant, Material Weakness
 	identifiedDate: timestamp("identified_date"),

@@ -2,13 +2,40 @@ import { Hono } from "hono";
 import type { HonoEnv } from '../../app';
 import { ok, bad } from '../../lib/utils';
 import { getDb } from '../../db';
-import { csaSamples, todEvaluations, testRecords, testSamples } from '../../db/schema';
+import { csaSamples, todEvaluations, testRecords, testSamples, controls } from '../../db/schema';
 import { eq, and, desc, SQL } from 'drizzle-orm';
 import type { TestRecord } from "@shared/types";
+import type { DrizzleDb } from '../../db';
 import { DeficiencyService } from "../../services/deficiency-service";
+import {
+  decideTest,
+  type TestingControl,
+  type TestingVerdict,
+  type TodPillars,
+} from "@shared/testing-decision";
 import { rbac } from "../../lib/guard";
 
 export const csaSamplesTestingRoute = new Hono<HonoEnv>();
+
+/** Shared TOD deficiency policy for insert and update branches: one typed event. */
+async function triggerTodDeficiency(
+  db: DrizzleDb,
+  orgId: string,
+  controlId: string | null,
+  userId: string,
+  conclusion: unknown,
+): Promise<void> {
+  if (conclusion !== 'Ineffective') return;
+  const defService = new DeficiencyService(db);
+  await defService.createAutoDeficiency({
+    organizationId: orgId,
+    controlId,
+    bpmProcessId: null,
+    period: 'TOD-Evaluation',
+    source: 'Lini 2 - TOD Review',
+    userId,
+  });
+}
 
 csaSamplesTestingRoute.get('/csa/samples', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
@@ -68,6 +95,14 @@ csaSamplesTestingRoute.get('/tod-evaluations', async (c) => {
   return ok(c, { items });
 });
 
+/** Maps a TOD free-text pilar onto the testing-decision seam input.
+ *  Pillars are free-text justification (Lampiran 8) — a non-empty string
+ *  counts as satisfied. Boolean true is accepted for forward-compat. */
+function todPilarFlag(value: unknown): boolean {
+  if (typeof value === 'string') return value.trim() !== '';
+  return value === true;
+}
+
 csaSamplesTestingRoute.post('/tod-evaluations', rbac(['Line 2', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
@@ -75,6 +110,34 @@ csaSamplesTestingRoute.post('/tod-evaluations', rbac(['Line 2', 'Admin']), async
   const body = await c.req.json<any>();
 
   if (!body.csaId || !body.controlId) return bad(c, "csaId and controlId are required");
+
+  const claimedConclusion: TestingVerdict =
+    body.conclusion === 'Ineffective' ? 'Ineffective' : 'Effective';
+
+  // Server recomputes the verdict through the single testing-decision
+  // seam — body.conclusion is treated as a claim, never as the decision.
+  const controlRow = await db.query.controls.findFirst({
+    where: and(eq(controls.id, body.controlId), eq(controls.organizationId, orgId)),
+    columns: { frequency: true, riskRating: true, nature: true },
+  });
+  const todPillars: TodPillars = {
+    objective: todPilarFlag(body.pilarObjective),
+    timing: todPilarFlag(body.pilarTiming),
+    authority: todPilarFlag(body.pilarAuthority),
+    reliability: todPilarFlag(body.pilarReliability),
+    coverage: todPilarFlag(body.pilarCoverage),
+    evidence: todPilarFlag(body.pilarEvidence),
+  };
+  const decision = decideTest(toTestingControl(controlRow), {
+    testType: 'TOD',
+    claimedResult: claimedConclusion,
+    todPillars,
+  });
+
+  if (!decision.isValid) {
+    return bad(c, 'Invalid TOD evaluation');
+  }
+  const conclusion = decision.verdict ?? claimedConclusion;
 
   const existing = await db.select().from(todEvaluations).where(and(
     eq(todEvaluations.csaId, body.csaId),
@@ -94,7 +157,7 @@ csaSamplesTestingRoute.post('/tod-evaluations', rbac(['Line 2', 'Admin']), async
     pilarCoverage: body.pilarCoverage,
     pilarEvidence: body.pilarEvidence,
     kkReference: body.kkReference,
-    conclusion: body.conclusion,
+    conclusion,
     comment: body.comment,
     updatedAt: new Date(),
   };
@@ -103,34 +166,14 @@ csaSamplesTestingRoute.post('/tod-evaluations', rbac(['Line 2', 'Admin']), async
     await db.update(todEvaluations)
       .set(values)
       .where(eq(todEvaluations.id, existing[0].id));
-    
-    if (body.conclusion === 'Ineffective') {
-      const defService = new DeficiencyService(db);
-      await defService.createAutoDeficiency({
-        organizationId: orgId,
-        controlId: body.controlId,
-        description: `Hasil Verifikasi Desain (TOD) Ineffective.`,
-        source: 'Lini 2 - TOD Review',
-        userId,
-        period: 'TOD-Evaluation'
-      });
-    }
+
+    await triggerTodDeficiency(db, orgId, body.controlId, userId, conclusion);
     return ok(c, { ...existing[0], ...values });
   } else {
     const newId = crypto.randomUUID();
     await db.insert(todEvaluations).values({ id: newId, ...values, createdAt: new Date() });
-    
-    if (body.conclusion === 'Ineffective') {
-      const defService = new DeficiencyService(db);
-      await defService.createAutoDeficiency({
-        organizationId: orgId,
-        controlId: body.controlId,
-        description: `Hasil Verifikasi Desain (TOD) Ineffective.`,
-        source: 'Lini 2 - TOD Review',
-        userId,
-        period: 'TOD-Evaluation'
-      });
-    }
+
+    await triggerTodDeficiency(db, orgId, body.controlId, userId, conclusion);
     return ok(c, { id: newId, ...values });
   }
 });
@@ -148,20 +191,102 @@ csaSamplesTestingRoute.get('/tests', async (c) => {
   return ok(c, { items });
 });
 
+const KNOWN_FREQUENCIES = [
+  'Annual',
+  'Semi-Annual',
+  'Quarterly',
+  'Monthly',
+  'Weekly',
+  'Daily',
+  'Ad-hoc',
+] as const;
+
+/** Maps a control row onto the testing-decision seam input. Null when the
+ *  row is missing or unrecognised — sampling-minimum is then skipped while
+ *  Zero-Tolerance and 6-pilar TOD are still enforced. */
+function toTestingControl(
+  row: { frequency: string | null; riskRating: string | null; nature: string | null } | undefined,
+): TestingControl | null {
+  if (!row) return null;
+  if (
+    !(KNOWN_FREQUENCIES as readonly string[]).includes(row.frequency ?? '') ||
+    (row.riskRating !== 'High' && row.riskRating !== 'Medium' && row.riskRating !== 'Low') ||
+    typeof row.nature !== 'string'
+  ) {
+    return null;
+  }
+  return {
+    frequency: row.frequency as TestingControl['frequency'],
+    riskRating: row.riskRating,
+    nature: row.nature,
+  };
+}
+
 csaSamplesTestingRoute.post('/tests', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const userId = c.get('userId');
   const body = await c.req.json<any>();
 
+  if (!body.controlId) return bad(c, 'controlId is required');
+
+  const testType = body.testType === 'TOD' ? 'TOD' : 'TOE';
+  const claimedResult: TestingVerdict =
+    body.result === 'Ineffective' ? 'Ineffective' : 'Effective';
+
+  // Server recomputes the verdict through the single testing-decision
+  // seam — body.result is treated as a claim, never as the decision.
+  const controlRow = await db.query.controls.findFirst({
+    where: and(eq(controls.id, body.controlId), eq(controls.organizationId, orgId)),
+    columns: { frequency: true, riskRating: true, nature: true },
+  });
+  const todPillars: TodPillars | undefined =
+    testType === 'TOD'
+      ? {
+          objective: body.todPilarObjective !== false,
+          timing: body.todPilarTiming !== false,
+          authority: body.todPilarAuthority !== false,
+          reliability: body.todPilarReliability !== false,
+          coverage: body.todPilarCoverage !== false,
+          evidence: body.todPilarEvidence !== false,
+        }
+      : undefined;
+  const decision = decideTest(toTestingControl(controlRow), {
+    testType,
+    claimedResult,
+    sampleSize: typeof body.sampleSize === 'number' ? body.sampleSize : undefined,
+    homogeneityJustification:
+      typeof body.homogeneityJustification === 'string'
+        ? body.homogeneityJustification
+        : undefined,
+    samples: Array.isArray(body.samples)
+      ? body.samples.filter(
+          (s: { status?: unknown }) => s && (s.status === 'Pass' || s.status === 'Fail'),
+        )
+      : [],
+    todPillars,
+  });
+
+  if (!decision.isValid) {
+    return bad(
+      c,
+      'Sample size is below Table 22 minimum without homogeneity justification',
+    );
+  }
+  const result = decision.verdict ?? claimedResult;
+  const period =
+    typeof body.period === 'string' && body.period.trim() !== ''
+      ? body.period
+      : new Date().getFullYear().toString();
+
   const id = crypto.randomUUID();
   const newRecord = {
     id,
     organizationId: orgId,
-    controlId: body.controlId!,
-    testType: body.testType || 'TOE',
-    period: body.period || new Date().getFullYear().toString(),
-    result: body.result || 'Effective',
+    controlId: body.controlId,
+    testType,
+    period,
+    result,
     testedBy: userId,
     testDate: new Date(),
     sampleSize: body.sampleSize || 0,
@@ -179,15 +304,17 @@ csaSamplesTestingRoute.post('/tests', async (c) => {
 
   await db.insert(testRecords).values(newRecord as any);
 
-  if (body.result === 'Ineffective') {
+  if (result === 'Ineffective') {
     const defService = new DeficiencyService(db);
     await defService.createAutoDeficiency({
       organizationId: orgId,
-      controlId: body.controlId!,
-      description: `Hasil Pengujian ${body.testType} Ineffective: ${body.comments || 'No comments.'}`,
+      controlId: body.controlId,
+      bpmProcessId: null,
+      period,
       source: 'Lini 3 - Audit',
       userId,
-      period: body.period || new Date().getFullYear().toString()
+      testType,
+      detail: typeof body.comments === 'string' ? body.comments : undefined,
     });
   }
 

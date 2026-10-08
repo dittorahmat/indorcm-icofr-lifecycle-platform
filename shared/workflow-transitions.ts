@@ -1,55 +1,28 @@
-import { WorkflowAction, UserRole } from '@shared/types';
-import { AppError } from '../../lib/utils';
+import type { UserRole, WorkflowAction } from './types';
 
+/**
+ * Single source of truth for ICOFR workflow transitions (arch-09 T2, SK-5/DKU.MBU/11/2024).
+ * Server validation, persistence mapping and client blueprints all derive from
+ * this table — no parallel taxonomies. Pure data + pure decision, no I/O, no throws:
+ * callers map a failed decision onto AppError (server) or toast/i18n (client).
+ */
 export type WorkflowEntityType = 'BPM' | 'ACTION_PLAN' | 'SCOPING' | 'RCM_CHANGE' | 'CSA';
 
-export interface TransitionRequest {
-  entityType: WorkflowEntityType;
-  entityId: string;
-  currentStatus: string;
-  action: WorkflowAction;
-  note?: string;
-  assigneeId?: string;
-}
-
-export interface TransitionContext {
-  organizationId: string;
-  userId: string;
-  role: UserRole;
-}
-
-export interface TransitionResult {
-  success: boolean;
-  fromStatus: string;
-  nextStatus: string;
-  historyEntry: {
-    id: string;
-    action: WorkflowAction;
-    fromStatus: string;
-    toStatus: string;
-    userId: string;
-    role: string;
-    timestamp: number;
-    note: string;
-    assigneeId?: string;
-  };
-}
-
-interface StepRule {
+export interface StepRule {
   allowedActions: WorkflowAction[];
-  nextStatus: Record<WorkflowAction, string>;
-  requiredRole?: Record<WorkflowAction, UserRole[]>;
+  nextStatus: Partial<Record<WorkflowAction, string>>;
+  requiredRole?: Partial<Record<WorkflowAction, UserRole[]>>;
   requiresNote?: WorkflowAction[];
 }
 
-const STATE_RULES: Record<WorkflowEntityType, Record<string, StepRule>> = {
+export const WORKFLOW_TRANSITION_RULES: Record<WorkflowEntityType, Record<string, StepRule>> = {
   BPM: {
-    'Draft': {
+    Draft: {
       allowedActions: ['Submit'],
       nextStatus: { Submit: 'In Review' },
       requiredRole: { Submit: ['Line 1', 'Line 2', 'Admin'] },
     },
-    'Rejected': {
+    Rejected: {
       allowedActions: ['Submit'],
       nextStatus: { Submit: 'In Review' },
       requiredRole: { Submit: ['Line 1', 'Line 2', 'Admin'] },
@@ -66,7 +39,7 @@ const STATE_RULES: Record<WorkflowEntityType, Record<string, StepRule>> = {
       requiredRole: { Reject: ['Line 2', 'Admin'], Approve: ['Line 2', 'Admin'] },
       requiresNote: ['Reject'],
     },
-    'Resolved': {
+    Resolved: {
       allowedActions: ['Rollback'],
       nextStatus: { Rollback: 'In Review' },
       requiredRole: { Rollback: ['Line 2', 'Admin'] },
@@ -74,7 +47,7 @@ const STATE_RULES: Record<WorkflowEntityType, Record<string, StepRule>> = {
     },
   },
   ACTION_PLAN: {
-    'Ineffective': {
+    Ineffective: {
       allowedActions: ['Submit'],
       nextStatus: { Submit: 'In Review' },
       requiredRole: { Submit: ['Line 1', 'Line 2', 'Admin'] },
@@ -91,7 +64,7 @@ const STATE_RULES: Record<WorkflowEntityType, Record<string, StepRule>> = {
       requiredRole: { Reject: ['Line 2', 'Admin'], Approve: ['Line 2', 'Admin'] },
       requiresNote: ['Reject'],
     },
-    'Resolved': {
+    Resolved: {
       allowedActions: ['Rollback'],
       nextStatus: { Rollback: 'Ineffective' },
       requiredRole: { Rollback: ['Line 2', 'Admin'] },
@@ -99,7 +72,7 @@ const STATE_RULES: Record<WorkflowEntityType, Record<string, StepRule>> = {
     },
   },
   SCOPING: {
-    'Draft': {
+    Draft: {
       allowedActions: ['Submit'],
       nextStatus: { Submit: 'Pending CFO' },
       requiredRole: { Submit: ['Line 1', 'Line 2', 'Admin'] },
@@ -116,7 +89,7 @@ const STATE_RULES: Record<WorkflowEntityType, Record<string, StepRule>> = {
       requiredRole: { Reject: ['Line 2', 'Admin'], Approve: ['Line 2', 'Admin'] },
       requiresNote: ['Reject'],
     },
-    'Approved': {
+    Approved: {
       allowedActions: ['Rollback'],
       nextStatus: { Rollback: 'Draft' },
       requiredRole: { Rollback: ['Line 2', 'Admin'] },
@@ -124,7 +97,7 @@ const STATE_RULES: Record<WorkflowEntityType, Record<string, StepRule>> = {
     },
   },
   RCM_CHANGE: {
-    'Draft': {
+    Draft: {
       allowedActions: ['Submit'],
       nextStatus: { Submit: 'In Review' },
       requiredRole: { Submit: ['Line 1', 'Line 2', 'Admin'] },
@@ -135,7 +108,7 @@ const STATE_RULES: Record<WorkflowEntityType, Record<string, StepRule>> = {
       requiredRole: { Reject: ['Line 2', 'Admin'], Approve: ['Line 2', 'Admin'] },
       requiresNote: ['Reject'],
     },
-    'Approved': {
+    Approved: {
       allowedActions: ['Rollback'],
       nextStatus: { Rollback: 'In Review' },
       requiredRole: { Rollback: ['Line 2', 'Admin'] },
@@ -143,7 +116,7 @@ const STATE_RULES: Record<WorkflowEntityType, Record<string, StepRule>> = {
     },
   },
   CSA: {
-    'Draft': {
+    Draft: {
       allowedActions: ['Submit'],
       nextStatus: { Submit: 'In Review' },
       requiredRole: { Submit: ['Line 1', 'Line 2', 'Admin'] },
@@ -154,7 +127,7 @@ const STATE_RULES: Record<WorkflowEntityType, Record<string, StepRule>> = {
       requiredRole: { Reject: ['Line 2', 'Admin'], Approve: ['Line 2', 'Admin'] },
       requiresNote: ['Reject'],
     },
-    'Validated': {
+    Validated: {
       allowedActions: ['Rollback'],
       nextStatus: { Rollback: 'In Review' },
       requiredRole: { Rollback: ['Line 2', 'Admin'] },
@@ -163,81 +136,71 @@ const STATE_RULES: Record<WorkflowEntityType, Record<string, StepRule>> = {
   },
 };
 
-export class WorkflowTransitionEngine {
-  constructor(
-    private db?: any,
-    private auditService?: { logAction: (params: any) => Promise<any> }
-  ) {}
+export type TransitionDecision =
+  | { ok: true; nextStatus: string }
+  | { ok: false; code: 'UNSUPPORTED_ENTITY' | 'INVALID_ACTION' | 'FORBIDDEN_TRANSITION' | 'NOTE_REQUIRED'; message: string; status: number };
 
-  async executeTransition(
-    request: TransitionRequest,
-    context: TransitionContext
-  ): Promise<TransitionResult> {
-    const { entityType, entityId, currentStatus, action, note, assigneeId } = request;
-    const { organizationId, userId, role } = context;
+export interface DecideTransitionInput {
+  entityType: WorkflowEntityType;
+  currentStatus: string;
+  action: WorkflowAction;
+  role: UserRole;
+  note?: string;
+}
 
-    const entityRules = STATE_RULES[entityType];
-    if (!entityRules) {
-      throw new AppError('UNSUPPORTED_ENTITY', `Unsupported entity type "${entityType}"`, 400);
-    }
-
-    const stepRule = entityRules[currentStatus];
-    if (!stepRule || !stepRule.allowedActions.includes(action)) {
-      throw new AppError(
-        'INVALID_ACTION',
-        `Invalid action "${action}" for status "${currentStatus}" on entity "${entityType}"`,
-        400
-      );
-    }
-
-    // Role check
-    const allowedRoles = stepRule.requiredRole?.[action];
-    if (allowedRoles && !allowedRoles.includes(role)) {
-      throw new AppError(
-        'FORBIDDEN_TRANSITION',
-        `Unauthorized role "${role}" for action "${action}" on ${entityType}`,
-        403
-      );
-    }
-
-    // Note requirement check
-    if (stepRule.requiresNote?.includes(action) && (!note || !note.trim())) {
-      throw new AppError('NOTE_REQUIRED', `Note is required when performing action "${action}"`, 400);
-    }
-
-    const nextStatus = stepRule.nextStatus[action];
-    const historyEntry = {
-      id: crypto.randomUUID(),
-      action,
-      fromStatus: currentStatus,
-      toStatus: nextStatus,
-      userId,
-      role,
-      timestamp: Date.now(),
-      note: note || '',
-      assigneeId,
-    };
-
-    if (this.auditService) {
-      await this.auditService.logAction({
-        organizationId,
-        userId,
-        action: 'WORKFLOW_TRANSITION',
-        entityType,
-        entityId,
-        description: `Workflow transition from "${currentStatus}" to "${nextStatus}" via "${action}"`,
-        dataAfter: { fromStatus: currentStatus, toStatus: nextStatus, action, note, assigneeId },
-        isRegulatory: true,
-        effectiveDate: new Date(),
-        approvedBy: userId,
-      });
-    }
-
+/** Pure validation + next-status decision. No I/O, no throws. */
+export function decideTransition(input: DecideTransitionInput): TransitionDecision {
+  const { entityType, currentStatus, action, role, note } = input;
+  const entityRules = WORKFLOW_TRANSITION_RULES[entityType];
+  if (!entityRules) {
     return {
-      success: true,
-      fromStatus: currentStatus,
-      nextStatus,
-      historyEntry,
+      ok: false, code: 'UNSUPPORTED_ENTITY', status: 400,
+      message: `Unsupported entity type "${entityType}"`,
     };
   }
+  const stepRule = entityRules[currentStatus];
+  const nextStatus = stepRule?.nextStatus[action];
+  if (!stepRule || !stepRule.allowedActions.includes(action) || !nextStatus) {
+    return {
+      ok: false, code: 'INVALID_ACTION', status: 400,
+      message: `Invalid action "${action}" for status "${currentStatus}" on entity "${entityType}"`,
+    };
+  }
+  const allowedRoles = stepRule.requiredRole?.[action];
+  if (allowedRoles && !allowedRoles.includes(role)) {
+    return {
+      ok: false, code: 'FORBIDDEN_TRANSITION', status: 403,
+      message: `Unauthorized role "${role}" for action "${action}" on ${entityType}`,
+    };
+  }
+  if (stepRule.requiresNote?.includes(action) && (!note || !note.trim())) {
+    return {
+      ok: false, code: 'NOTE_REQUIRED', status: 400,
+      message: `Note is required when performing action "${action}"`,
+    };
+  }
+  return { ok: true, nextStatus };
+}
+
+/** Client blueprint source: allowed actions for one step. Unknown step → no actions. */
+export function allowedActionsFor(entityType: WorkflowEntityType, currentStatus: string): WorkflowAction[] {
+  return WORKFLOW_TRANSITION_RULES[entityType]?.[currentStatus]?.allowedActions ?? [];
+}
+
+/** Client dialog source: whether this action requires a note at this step. */
+export function requiresNoteFor(entityType: WorkflowEntityType, currentStatus: string, action: WorkflowAction): boolean {
+  return WORKFLOW_TRANSITION_RULES[entityType]?.[currentStatus]?.requiresNote?.includes(action) ?? false;
+}
+
+const WORKFLOW_ENDPOINT_PREFIX: Record<WorkflowEntityType, string> = {
+  BPM: '/api/bpm-processes',
+  ACTION_PLAN: '/api/actionplans',
+  SCOPING: '/api/simulations',
+  RCM_CHANGE: '/api/rcm',
+  CSA: '/api/csa',
+};
+
+/** Client + server share one route table so URLs stay byte-identical. */
+export function workflowEndpointFor(entityType: WorkflowEntityType, entityId: string): string {
+  return `${WORKFLOW_ENDPOINT_PREFIX[entityType]}/${entityId}/workflow`;
 }

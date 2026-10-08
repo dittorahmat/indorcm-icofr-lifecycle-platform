@@ -464,7 +464,14 @@
       "fileError": "Failed to process file: {{message}}",
       "ocrSuccess": "Diagram successfully translated! Please review the results.",
       "ocrError": "AI OCR Failed: {{message}}",
+      "multiPageSuccess": "Successfully analyzed {{count}} diagram pages!",
       "applySuccess": "Diagram successfully applied to workspace canvas."
+    },
+    "sheetName": "Phase {{page}} (Page {{page}})",
+    "progress": {
+      "extractPdf": "Extracting PDF pages...",
+      "extractPage": "Extracting page {{current}} of {{total}}...",
+      "analyzePage": "Analyzing page {{current}} of {{total}}..."
     },
     "confirmOverwrite": "The canvas has unsaved changes. Applying the OCR result will replace the entire diagram. Continue?",
     "importMode": {

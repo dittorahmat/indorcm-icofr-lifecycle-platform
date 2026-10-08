@@ -1,33 +1,16 @@
 // ocr-layout.ts — deterministic OCR auto-layout (no dependencies, pure TS)
 import { getStandardNodeDimensions, DEFAULT_SWIMLANE_DIMENSIONS } from './bpm-constants';
+import { validateOcrResponse, deriveLabelFromId } from './ocr-validate';
+import type { OcrRawNode, OcrRawEdge, OcrLayoutWarning } from './ocr-validate';
+import {
+  orderLanes,
+  computeLaneWidths,
+  computeUniformHeight,
+  buildDepthMap,
+} from './ocr-lane-geometry';
 
-export interface OcrRawNode {
-  id: string;
-  type: string;
-  label: string;
-  position: { x: number; y: number };
-  parentId?: string;
-  department?: string;
-  function?: string;
-  width?: number;
-  height?: number;
-}
-
-export interface OcrRawEdge {
-  id: string;
-  source: string;
-  target: string;
-  sourceHandle?: string;
-  targetHandle?: string;
-  label?: string;
-}
-
-export interface OcrLayoutWarning {
-  code: 'orphan-edge' | 'unlabeled-node' | 'missing-dims' | 'unknown-parent';
-  message: string;
-  nodeId?: string;
-  edgeId?: string;
-}
+export type { OcrRawNode, OcrRawEdge, OcrLayoutWarning } from './ocr-validate';
+export { deriveLabelFromId, validateOcrResponse } from './ocr-validate';
 
 export interface OcrLayoutNode {
   id: string;
@@ -51,192 +34,6 @@ const GAP_X = DEFAULT_SWIMLANE_DIMENSIONS.gapX;
 const HEADER_H = DEFAULT_SWIMLANE_DIMENSIONS.headerHeight;
 const GAP_Y = DEFAULT_SWIMLANE_DIMENSIONS.gapY;
 const LANE_MIN_W = DEFAULT_SWIMLANE_DIMENSIONS.minWidth;
-const LANE_MIN_H = DEFAULT_SWIMLANE_DIMENSIONS.defaultHeight;
-const V_STEP_DEFAULT = 126;
-const FOOTER_PAD = 120;
-
-export function deriveLabelFromId(id: string): string {
-  if (!id) return '';
-  const cleaned = id.replace(/^(swimlane|lane)[-_]/i, '').replace(/[-_]/g, ' ').trim();
-  return cleaned ? cleaned.toUpperCase() : '';
-}
-
-function getNodeDimensions(type: string): { width: number; height: number } {
-  return getStandardNodeDimensions(type);
-}
-
-function medianOf(values: number[]): number {
-  if (values.length === 0) return 0;
-  const sorted = [...values].sort((a, b) => a - b);
-  const mid = Math.floor(sorted.length / 2);
-  if (sorted.length % 2 === 1) return sorted[mid];
-  return (sorted[mid - 1] + sorted[mid]) / 2;
-}
-
-export function validateOcrResponse(raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[] }): OcrLayoutWarning[] {
-  const warnings: OcrLayoutWarning[] = [];
-  const idSet = new Set<string>(raw.nodes.map((n) => n.id));
-  const swimlaneIdSet = new Set<string>(raw.nodes.filter((n) => n.type === 'swimlane').map((n) => n.id));
-
-  for (const e of raw.edges) {
-    const missingSource = !idSet.has(e.source);
-    const missingTarget = !idSet.has(e.target);
-    if (missingSource || missingTarget) {
-      const missing = missingSource && missingTarget ? `source ${e.source} and target ${e.target}` : missingSource ? `source ${e.source}` : `target ${e.target}`;
-      warnings.push({
-        code: 'orphan-edge',
-        message: `Edge ${e.id} references unknown node: ${missing}`,
-        edgeId: e.id,
-      });
-    }
-  }
-
-  for (const n of raw.nodes) {
-    const isSwimlane = n.type === 'swimlane';
-    const effectiveLabel = isSwimlane
-      ? (n.label?.trim() || n.department?.trim() || deriveLabelFromId(n.id))
-      : n.label?.trim();
-
-    if (!effectiveLabel) {
-      warnings.push({
-        code: 'unlabeled-node',
-        message: `Node ${n.id} has empty label`,
-        nodeId: n.id,
-      });
-    }
-  }
-
-  for (const n of raw.nodes) {
-    if (n.type === 'swimlane') {
-      const missW = n.width === undefined || n.width === null;
-      const missH = n.height === undefined || n.height === null;
-      const belowMin = n.width !== undefined && n.width !== null && n.width < LANE_MIN_W;
-      if (missW || missH || belowMin) {
-        const reason = missW && missH ? 'missing width and height' : missW ? 'missing width' : missH ? 'missing height' : `width ${n.width} below minimum ${LANE_MIN_W}`;
-        warnings.push({
-          code: 'missing-dims',
-          message: `Lane ${n.id} has ${reason}`,
-          nodeId: n.id,
-        });
-      }
-    }
-  }
-
-  for (const n of raw.nodes) {
-    if (n.parentId !== undefined && n.parentId !== null && n.parentId !== '' && !swimlaneIdSet.has(n.parentId)) {
-      warnings.push({
-        code: 'unknown-parent',
-        message: `Node ${n.id} references unknown parent ${n.parentId}`,
-        nodeId: n.id,
-      });
-    }
-  }
-
-  return warnings;
-}
-
-interface LaneSortMeta {
-  id: string;
-  median: number;
-  min: number;
-}
-
-function orderLanes(lanes: OcrRawNode[], childMap: Map<string, OcrRawNode[]>): OcrRawNode[] {
-  const metas: LaneSortMeta[] = lanes.map((lane) => {
-    const children = childMap.get(lane.id) ?? [];
-    const xs: number[] = [lane.position.x, ...children.map((c) => c.position.x)];
-    return { id: lane.id, median: medianOf(xs), min: Math.min(...xs) };
-  });
-  const metaById = new Map<string, LaneSortMeta>(metas.map((m) => [m.id, m]));
-  return [...lanes].sort((a, b) => {
-    const ma = metaById.get(a.id);
-    const mb = metaById.get(b.id);
-    if (!ma || !mb) return a.id.localeCompare(b.id);
-    if (ma.median !== mb.median) return ma.median - mb.median;
-    if (ma.min !== mb.min) return ma.min - mb.min;
-    return a.id.localeCompare(b.id);
-  });
-}
-
-function computeLaneWidths(sortedLanes: OcrRawNode[], childMap: Map<string, OcrRawNode[]>): Map<string, number> {
-  const out = new Map<string, number>();
-  let globalMaxNodeWidth = 0;
-
-  for (const lane of sortedLanes) {
-    const children = childMap.get(lane.id) ?? [];
-    for (const c of children) {
-      const d = getNodeDimensions(c.type);
-      if (d.width > globalMaxNodeWidth) globalMaxNodeWidth = d.width;
-    }
-  }
-
-  // Uniform equalized width for all lanes: at least LANE_MIN_W, or comfortably wide for the largest node
-  const uniformWidth = Math.max(LANE_MIN_W, globalMaxNodeWidth + 180);
-
-  for (const lane of sortedLanes) {
-    out.set(lane.id, uniformWidth);
-  }
-  return out;
-}
-
-function computeUniformHeight(sortedLanes: OcrRawNode[], childMap: Map<string, OcrRawNode[]>): number {
-  if (sortedLanes.length === 0) return LANE_MIN_H;
-  let maxH = LANE_MIN_H;
-  for (const lane of sortedLanes) {
-    const count = (childMap.get(lane.id) ?? []).length;
-    const h = HEADER_H + count * V_STEP_DEFAULT + FOOTER_PAD;
-    if (h > maxH) maxH = h;
-  }
-  return Math.max(LANE_MIN_H, maxH);
-}
-
-function buildDepthMap(children: OcrRawNode[], intraEdges: OcrRawEdge[]): Map<string, number> {
-  const depth = new Map<string, number>();
-  const incoming = new Map<string, number>();
-  const idSet = new Set(children.map((c) => c.id));
-  for (const c of children) incoming.set(c.id, 0);
-  for (const e of intraEdges) {
-    if (idSet.has(e.target)) {
-      incoming.set(e.target, (incoming.get(e.target) ?? 0) + 1);
-    }
-  }
-  const outgoing = new Map<string, string[]>();
-  for (const c of children) outgoing.set(c.id, []);
-  for (const e of intraEdges) {
-    if (idSet.has(e.source) && idSet.has(e.target)) {
-      const arr = outgoing.get(e.source);
-      if (arr) arr.push(e.target);
-    }
-  }
-  const queue: string[] = [];
-  for (const c of children) {
-    if ((incoming.get(c.id) ?? 0) === 0) {
-      depth.set(c.id, 0);
-      queue.push(c.id);
-    }
-  }
-  let head = 0;
-  while (head < queue.length) {
-    const cur = queue[head++];
-    const curD = depth.get(cur) ?? 0;
-    const succs = outgoing.get(cur) ?? [];
-    for (const nxt of succs) {
-      if (!depth.has(nxt)) {
-        depth.set(nxt, curD + 1);
-        queue.push(nxt);
-      }
-    }
-  }
-  let maxD = -1;
-  for (const v of depth.values()) if (v > maxD) maxD = v;
-  const unvisited = children.filter((c) => !depth.has(c.id));
-  unvisited.sort((a, b) => a.position.y - b.position.y || a.position.x - b.position.x);
-  for (const u of unvisited) {
-    maxD += 1;
-    depth.set(u.id, maxD);
-  }
-  return depth;
-}
 
 export function layoutOcrDiagram(raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[] }): OcrLayoutResult {
   const warnings = validateOcrResponse(raw);
@@ -343,65 +140,10 @@ export function layoutOcrDiagram(raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[]
     });
   }
 
-  // Compute global topological rank across all nodes to synchronize Y coordinates across lanes
-  const nonSwimlaneNodes = downgraded.filter((n) => n.type !== 'swimlane');
-  const globalInDegree = new Map<string, number>();
-  const globalAdjacency = new Map<string, string[]>();
-  const nonSwimlaneIdSet = new Set(nonSwimlaneNodes.map((n) => n.id));
-
-  for (const n of nonSwimlaneNodes) {
-    globalInDegree.set(n.id, 0);
-    globalAdjacency.set(n.id, []);
-  }
-
-  for (const e of filteredEdges) {
-    if (nonSwimlaneIdSet.has(e.source) && nonSwimlaneIdSet.has(e.target)) {
-      globalInDegree.set(e.target, (globalInDegree.get(e.target) ?? 0) + 1);
-      globalAdjacency.get(e.source)?.push(e.target);
-    }
-  }
-
-  const globalRank = new Map<string, number>();
-  const queue: string[] = [];
-  const maxAllowedDepth = nonSwimlaneNodes.length;
-
-  for (const n of nonSwimlaneNodes) {
-    if ((globalInDegree.get(n.id) ?? 0) === 0) {
-      globalRank.set(n.id, 0);
-      queue.push(n.id);
-    }
-  }
-
-  let head = 0;
-  while (head < queue.length) {
-    const u = queue[head++];
-    const r = globalRank.get(u) ?? 0;
-    if (r >= maxAllowedDepth) continue; // cycle guard
-    const neighbors = globalAdjacency.get(u) ?? [];
-    for (const v of neighbors) {
-      const nextRank = r + 1;
-      const currentRank = globalRank.get(v);
-      if (currentRank === undefined || nextRank > currentRank) {
-        if (nextRank <= maxAllowedDepth) {
-          globalRank.set(v, nextRank);
-          queue.push(v);
-        }
-      }
-    }
-  }
-
-  let maxAssignedRank = 0;
-  for (const r of globalRank.values()) {
-    if (r > maxAssignedRank) maxAssignedRank = r;
-  }
-
-  const unranked = nonSwimlaneNodes.filter((n) => !globalRank.has(n.id));
-  unranked.sort((a, b) => a.position.y - b.position.y);
-  for (const n of unranked) {
-    maxAssignedRank += 1;
-    globalRank.set(n.id, maxAssignedRank);
-  }
-
+  // Vertical placement is driven solely by per-lane depth (buildDepthMap
+  // below): each swimlane starts immediately under its header instead of
+  // cascading on a global rank. No global topological pass is kept here —
+  // an unused rank would only waste depth and confuse the next reader.
   // Use local intra-lane depth for vertical positioning so each swimlane starts
   // immediately below its header (HEADER_OFFSET) rather than cascading in a giant staircase
   const ROW_HEIGHT = 100;
@@ -441,7 +183,7 @@ export function layoutOcrDiagram(raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[]
       const count = groupNodes.length;
       for (let i = 0; i < count; i++) {
         const child = groupNodes[i];
-        const dims = getNodeDimensions(child.type);
+        const dims = getStandardNodeDimensions(child.type);
 
         let relX = Math.round((pos.width - dims.width) / 2);
         let nodeY = targetY;
@@ -492,7 +234,7 @@ export function layoutOcrDiagram(raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[]
   const topY = uniformHeight + 80;
   let curX = 0;
   for (const node of sortedTop) {
-    const dims = getNodeDimensions(node.type);
+    const dims = getStandardNodeDimensions(node.type);
     const x = curX;
     nodesOut.push({
       id: node.id,

@@ -4,6 +4,7 @@ import {
   calculateNodesBoundingBox,
   calculateAppendOffset,
   remapElementsForAppend,
+  resetOcrAppendSequence,
   APPEND_GAP_X,
   APPEND_GAP_Y,
 } from './bpm-ocr-append';
@@ -91,6 +92,7 @@ describe('bpm-ocr-append utility', () => {
     });
 
     it('preserves relative coordinates for children inside parent swimlane', () => {
+
       const parentSwimlane: Node = {
         id: 'swim_1',
         type: 'swimlane',
@@ -116,6 +118,17 @@ describe('bpm-ocr-append utility', () => {
       expect(nodes[1].id).toBe('pfx_1_child_1');
       expect(nodes[1].parentId).toBe('pfx_0_swim_1'); // remapped parentId!
       expect(nodes[1].position).toEqual({ x: 50, y: 100 }); // preserved relative position!
+    });
+
+    it('uses stable clock-free prefixes by default (deterministic after reset)', () => {
+      resetOcrAppendSequence();
+      const first = remapElementsForAppend(incomingNodes, incomingEdges, { dx: 0, dy: 0 });
+      resetOcrAppendSequence();
+      const replay = remapElementsForAppend(incomingNodes, incomingEdges, { dx: 0, dy: 0 });
+
+      expect(first).toEqual(replay);
+      expect(first.nodes[0].id).toBe('ocr_append_1_0_1');
+      expect(first.edges[0].id).toBe('ocr_append_1_edge_0_e1-2');
     });
   });
 });

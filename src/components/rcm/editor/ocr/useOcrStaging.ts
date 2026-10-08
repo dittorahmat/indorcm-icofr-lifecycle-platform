@@ -4,12 +4,9 @@ import { addEdge, MarkerType, useEdgesState, useNodesState } from 'reactflow';
 import type { Connection, Edge, Node } from 'reactflow';
 import { api } from '@/lib/api-client';
 import { useConfirm } from '@/hooks/use-confirm';
-import {
-  deriveLabelFromId,
-  layoutOcrDiagram,
-} from '@/utils/ocr-layout';
+import { stageRawDiagram } from './ocr-node-normalize';
 import type { OcrLayoutWarning, OcrRawEdge, OcrRawNode } from '@/utils/ocr-layout';
-import type { OcrAppendDirection, OcrImportMode, TranslateFn } from './ocr-types';
+import type { OcrAppendDirection, OcrApplyRequest, OcrImportMode, TranslateFn } from './ocr-types';
 
 export interface OcrParsedDiagram {
   nodes: OcrRawNode[];
@@ -22,72 +19,12 @@ interface UseOcrStagingParams {
   hasExistingNodes?: boolean;
   t: TranslateFn;
   onClose: () => void;
-  onApply: (
-    nodes: Node[],
-    edges: Edge[],
-    mode?: OcrImportMode,
-    direction?: OcrAppendDirection,
-    sheets?: any[]
-  ) => void;
+  onApply: (request: OcrApplyRequest) => void;
 }
 
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
-}
-
-function toStagingNodes(laidOut: ReturnType<typeof layoutOcrDiagram>): Node[] {
-  return laidOut.nodes.map((n) => {
-    const isSwimlane = n.type === 'swimlane';
-    const resolvedDept = n.department?.trim() || n.label?.trim() || deriveLabelFromId(n.id);
-    const resolvedLabel = n.label?.trim() || resolvedDept;
-    return {
-      id: n.id,
-      type: n.type,
-      position: { x: n.position.x, y: n.position.y },
-      parentId: n.parentId,
-      width: n.width,
-      height: n.height,
-      style: isSwimlane ? { width: n.width || 400, height: n.height || 1200 } : undefined,
-      zIndex: isSwimlane ? -1 : 10,
-      dragHandle: isSwimlane ? '.swimlane-drag-handle' : undefined,
-      draggable: true,
-      data: isSwimlane
-        ? {
-            label: resolvedLabel,
-            department: resolvedDept,
-            function: n.function?.trim() || '',
-            isLocked: false,
-          }
-        : { label: n.label, type: n.type },
-    };
-  });
-}
-
-function toStagingEdges(edges: OcrRawEdge[]): Edge[] {
-  return edges.map((e) => ({
-    id: e.id,
-    source: e.source,
-    target: e.target,
-    sourceHandle: e.sourceHandle,
-    targetHandle: e.targetHandle,
-    label: e.label || '',
-    type: 'bridge',
-    markerEnd: { type: MarkerType.ArrowClosed, width: 20, height: 20, color: '#0f172a' },
-    style: { strokeWidth: 2, stroke: '#0f172a' },
-  }));
-}
-
-function toFallbackNodes(nodes: OcrRawNode[]): Node[] {
-  return nodes.map((n) => ({
-    id: String(n.id),
-    type: String(n.type || 'activity'),
-    position: { x: Number(n.position?.x ?? 0), y: Number(n.position?.y ?? 0) },
-    parentId: n.parentId,
-    style: n.type === 'swimlane' ? { width: n.width || 400, height: n.height || 1000 } : undefined,
-    zIndex: n.type === 'swimlane' ? -1 : 10,
-    data: { label: n.label || '', type: n.type },
-  }));
 }
 
 export function useOcrStaging({ isOpen, isDirty, hasExistingNodes = false, t, onClose, onApply }: UseOcrStagingParams) {
@@ -106,18 +43,12 @@ export function useOcrStaging({ isOpen, isDirty, hasExistingNodes = false, t, on
 
   const initializeStagingFromParsed = React.useCallback(
     (parsed: OcrParsedDiagram) => {
-      try {
-        const result = layoutOcrDiagram(parsed);
-        const actionableWarnings = (result.warnings || []).filter((w) => w.code !== 'missing-dims');
-        setStagingWarnings(actionableWarnings);
-        setWarningsDismissed(false);
-        setStagingNodes(toStagingNodes(result));
-        setStagingEdges(toStagingEdges(result.edges));
-      } catch (err: unknown) {
-        setStagingWarnings([{ code: 'unknown-parent', message: errorMessage(err) || 'Layout failed' }]);
-        setStagingNodes(toFallbackNodes(parsed.nodes || []));
-        setStagingEdges(toStagingEdges(parsed.edges || []));
-      }
+      const result = stageRawDiagram(parsed);
+      const actionableWarnings = (result.warnings || []).filter((w) => w.code !== 'missing-dims');
+      setStagingWarnings(actionableWarnings);
+      setWarningsDismissed(false);
+      setStagingNodes(result.nodes);
+      setStagingEdges(result.edges);
     },
     [setStagingNodes, setStagingEdges],
   );
@@ -153,9 +84,9 @@ export function useOcrStaging({ isOpen, isDirty, hasExistingNodes = false, t, on
         setIsProcessingOcr(true);
         if (file.type === 'application/pdf') {
           const { renderAllPdfPagesToImages } = await import('@/utils/diagram-parser');
-          setOcrProgressText('Mengekstrak halaman PDF...');
+          setOcrProgressText(t('bpm:ocr.progress.extractPdf'));
           const images = await renderAllPdfPagesToImages(file, (curr, tot) => {
-            setOcrProgressText(`Mengekstrak halaman ${curr} dari ${tot}...`);
+            setOcrProgressText(t('bpm:ocr.progress.extractPage', { current: curr, total: tot }));
           });
           setOcrPageImages(images);
           setOcrPreviewUrl(images[0] || null);
@@ -187,30 +118,30 @@ export function useOcrStaging({ isOpen, isDirty, hasExistingNodes = false, t, on
 
       for (let i = 0; i < ocrPageImages.length; i++) {
         const pageNum = i + 1;
-        setOcrProgressText(`Menganalisis halaman ${pageNum} dari ${ocrPageImages.length}...`);
+        setOcrProgressText(t('bpm:ocr.progress.analyzePage', { current: pageNum, total: ocrPageImages.length }));
         const res = await api<{ nodes: OcrRawNode[]; edges: OcrRawEdge[] }>('/api/bpm-diagrams/ocr', {
           method: 'POST',
           body: JSON.stringify({ image: ocrPageImages[i] }),
         });
 
-        const laidOut = layoutOcrDiagram(res);
+        const staged = stageRawDiagram(res);
         newParsedMap.set(pageNum, {
-          nodes: toStagingNodes(laidOut),
-          edges: toStagingEdges(laidOut.edges),
+          nodes: staged.nodes,
+          edges: staged.edges,
         });
 
         // Set the primary parsed diagram to page 1 for initial review
         if (pageNum === 1) {
           setParsedDiagram(res);
-          setStagingNodes(toStagingNodes(laidOut));
-          setStagingEdges(toStagingEdges(laidOut.edges));
+          setStagingNodes(staged.nodes);
+          setStagingEdges(staged.edges);
         }
       }
 
       setParsedPages(newParsedMap);
       toast.success(
         ocrPageImages.length > 1
-          ? `Berhasil menganalisis ${ocrPageImages.length} halaman diagram!`
+          ? t('bpm:ocr.toast.multiPageSuccess', { count: ocrPageImages.length })
           : t('bpm:ocr.toast.ocrSuccess')
       );
     } catch (err: unknown) {
@@ -269,29 +200,17 @@ export function useOcrStaging({ isOpen, isDirty, hasExistingNodes = false, t, on
       if (!ok) return;
     }
 
-    // If multi-page PDF was analyzed, construct an array of sheets
-    if (parsedPages.size > 1) {
-      // 1. Ensure current active page state is saved to map
-      const mergedMap = new Map(parsedPages);
-      mergedMap.set(activeReviewPage, { nodes: stagingNodes, edges: stagingEdges });
-
-      const generatedSheets: any[] = [];
-      const sortedPageKeys = Array.from(mergedMap.keys()).sort((a, b) => a - b);
-      sortedPageKeys.forEach((pgKey, idx) => {
-        const pgData = mergedMap.get(pgKey);
-        generatedSheets.push({
-          id: `sheet-page-${pgKey}-${Date.now().toString(36)}`,
-          name: `Fase ${pgKey} (Halaman ${pgKey})`,
-          order: idx,
-          nodes: pgData?.nodes || [],
-          edges: pgData?.edges || [],
-        });
-      });
-
-      onApply(stagingNodes, stagingEdges, importMode, appendDirection, generatedSheets);
-    } else {
-      onApply(stagingNodes, stagingEdges, importMode, appendDirection);
-    }
+    // Multi-page PDFs fan out to sheets inside the single import adapter,
+    // which also flushes the review page under edit and pairs off-page links.
+    onApply({
+      nodes: stagingNodes,
+      edges: stagingEdges,
+      mode: importMode,
+      direction: appendDirection,
+      pages: parsedPages.size > 1 ? parsedPages : undefined,
+      activePage: activeReviewPage,
+      formatSheetName: (page) => t('bpm:ocr.sheetName', { page }),
+    });
 
     resetStaging();
     onClose();
