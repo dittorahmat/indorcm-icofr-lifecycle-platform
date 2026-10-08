@@ -1,8 +1,11 @@
 import type { BPMEdgeRoutingMode } from '../../../../../shared/types';
 import type { Point, Segment } from './node-dimensions';
+import { SAFE_HEADER_CEILING } from '../../../../utils/bpm-constants';
 
-// Safe ceiling limit: waypoints must never cross into swimlane headers (top 100px)
-export const SAFE_HEADER_CEILING = 100;
+// Safe ceiling limit: waypoints must never cross into swimlane headers (top 100px).
+// Single definition lives in utils/bpm-constants; re-exported here so existing
+// canvas callers keep working byte-identically.
+export { SAFE_HEADER_CEILING };
 
 export interface OrthogonalPathResult {
   path: string;
