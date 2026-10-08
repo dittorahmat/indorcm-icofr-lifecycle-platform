@@ -1,0 +1,155 @@
+import type { RCMFlavor } from './rcm-import-types';
+
+export const RCM_TEMPLATES: Record<RCMFlavor, { filename: string; headers: string[]; sampleRow: string[] }> = {
+  TLC: {
+    filename: 'Template_RCM_TLC_Lampiran5b.csv',
+    headers: [
+      'No',
+      'Informasi_Proses_Bisnis',
+      'Informasi_Sub_proses_Bisnis',
+      'Ref_Langkah_BPM',
+      'Risiko_Aktivitas_Pengendalian',
+      'Risiko_Terkait_Fraud',
+      'Penilaian_Risiko',
+      'Referensi_Pengendalian',
+      'Nama_Aktivitas_Pengendalian',
+      'Deskripsi_Aktivitas_Pengendalian',
+      'Dokumen_Pendukung',
+      'Pengendalian_Utama',
+      'IPO_C',
+      'IPO_A',
+      'IPO_V',
+      'IPO_RA',
+      'Asersi_C',
+      'Asersi_E',
+      'Asersi_A',
+      'Asersi_CO',
+      'Asersi_RO',
+      'Asersi_VA',
+      'Asersi_PD',
+      'Tipe_Pengendalian',
+      'Sifat_Pengendalian',
+      'Frekuensi_Pengendalian',
+      'Aplikasi_Pendukung',
+      'Fungsi_Pelaksana',
+      'Pelaku_Pengendalian',
+      'Akun_Signifikan_FSLI',
+      'Periode_Efektif',
+    ],
+    sampleRow: [
+      '1',
+      'Procure-to-Pay',
+      'Pengadaan Barang/Jasa',
+      '1.2',
+      'Risiko vendor fiktif atau tidak tersertifikasi',
+      'Ya',
+      'High',
+      'CTRL-P2P-001',
+      'Verifikasi Vendor Due Diligence',
+      'Pemeriksaan kelayakan vendor baru oleh tim procurement sebelum pendaftaran master data.',
+      'Formulir Uji Tuntas & SIUP',
+      'Ya',
+      'Y', 'Y', 'Y', 'N',
+      'Y', 'Y', 'Y', 'Y', 'N', 'Y', 'N',
+      'Preventif',
+      'Manual',
+      'Setiap Terjadi Transaksi',
+      'SAP ERP',
+      'Procurement',
+      'Staff Pengadaan',
+      'Beban Usaha / Utang Usaha',
+      '2026-Q1',
+    ],
+  },
+  ELC: {
+    filename: 'Template_RCM_ELC_Lampiran5a.csv',
+    headers: [
+      'No',
+      'Prinsip_COSO',
+      'Informasi_Proses_Bisnis',
+      'Informasi_Sub_proses_Bisnis',
+      'Risiko_Aktivitas_Pengendalian',
+      'Referensi_Pengendalian',
+      'Nama_Aktivitas_Pengendalian',
+      'Deskripsi_Aktivitas_Pengendalian',
+      'Frekuensi_Pengendalian',
+      'Dokumen_Pendukung',
+      'Fungsi_Pelaksana',
+      'Pelaku_Pengendalian',
+      'Periode_Efektif',
+    ],
+    sampleRow: [
+      '1',
+      '1',
+      'Tata Kelola & Nilai Etika',
+      'Integritas & Nilai Etika Perusahaan',
+      'Risiko pelanggaran kode etik oleh insan BUMN tanpa sanksi tegas',
+      'CTRL-ELC-001',
+      'Sosialisasi & Pakta Integritas Tahunan',
+      'Penandatanganan pakta integritas dan pelatihan kode etik tahunan seluruh pegawai.',
+      'Tahunan',
+      'Dokumen Pakta Integritas & Daftar Hadir',
+      'Human Capital / GRC',
+      'Seluruh Karyawan',
+      '2026',
+    ],
+  },
+  ITGC: {
+    filename: 'Template_RCM_ITGC_Lampiran5c.csv',
+    headers: [
+      'No',
+      'Domain_ITGC',
+      'Informasi_Proses_Bisnis',
+      'Informasi_Sub_proses_Bisnis',
+      'Risiko_Aktivitas_Pengendalian',
+      'Aplikasi_IT',
+      'Referensi_Pengendalian',
+      'Nama_Aktivitas_Pengendalian',
+      'Deskripsi_Aktivitas_Pengendalian',
+      'Tipe_Pengendalian',
+      'Sifat_Pengendalian',
+      'Frekuensi_Pengendalian',
+      'Dokumen_Pendukung',
+      'Fungsi_Pelaksana',
+      'Pelaku_Pengendalian',
+      'Periode_Efektif',
+    ],
+    sampleRow: [
+      '1',
+      'Manage Access',
+      'Manajemen Hak Akses Sistem',
+      'User Provisioning & Deprovisioning',
+      'Risiko akses pengguna tidak sah pada sistem keuangan inti',
+      'SAP ERP',
+      'CTRL-ITGC-001',
+      'Review Hak Akses Pengguna Triwulanan',
+      'Audit berkala hak akses superuser dan pemblokiran akun pegawai yang mutasi/resign.',
+      'Detektif',
+      'Manual',
+      'Triwulanan',
+      'Laporan User Access Review',
+      'IT Security',
+      'IT Security Officer',
+      '2026-Q1',
+    ],
+  },
+};
+
+export function downloadRCMTemplate(flavor: RCMFlavor): void {
+  const config = RCM_TEMPLATES[flavor];
+  const csvContent = [
+    config.headers.join(';'),
+    config.sampleRow.join(';'),
+  ].join('\r\n');
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = window.URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.setAttribute('hidden', '');
+  anchor.setAttribute('href', url);
+  anchor.setAttribute('download', config.filename);
+  document.body.appendChild(anchor);
+  anchor.click();
+  document.body.removeChild(anchor);
+  window.URL.revokeObjectURL(url);
+}

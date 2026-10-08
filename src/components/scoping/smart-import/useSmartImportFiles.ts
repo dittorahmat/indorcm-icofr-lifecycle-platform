@@ -2,8 +2,6 @@ import * as React from 'react';
 import { toast } from 'sonner';
 import { parseGLFile } from '@/pages/scoping/services/gl-parser';
 import type { SheetCandidate } from '@/pages/scoping/services/gl-parser';
-import { parseRCMFile } from '@/pages/scoping/services/rcm-parser';
-import type { RCMType } from '@/pages/scoping/services/rcm-parser';
 import type {
   ParsedTbRow,
   StagingRow,
@@ -11,7 +9,6 @@ import type {
 } from './smart-import-types';
 
 interface UseSmartImportFilesParams {
-  rcmType: RCMType;
   t: TranslateFn;
   onMutated: () => void;
 }
@@ -21,9 +18,8 @@ export function toErrorMessage(err: unknown): string {
   return String(err);
 }
 
-export function useSmartImportFiles({ rcmType, t, onMutated }: UseSmartImportFilesParams) {
+export function useSmartImportFiles({ t, onMutated }: UseSmartImportFilesParams) {
   const [tbFile, setTbFile] = React.useState<File | null>(null);
-  const [rcmFile, setRcmFile] = React.useState<File | null>(null);
   const [isProcessing, setIsProcessing] = React.useState(false);
 
   const [stagingData, setStagingData] = React.useState<StagingRow[]>([]);
@@ -41,14 +37,6 @@ export function useSmartImportFiles({ rcmType, t, onMutated }: UseSmartImportFil
     [onMutated],
   );
 
-  const selectRcmFile = React.useCallback(
-    (file: File) => {
-      setRcmFile(file);
-      onMutated();
-    },
-    [onMutated],
-  );
-
   const updateStagingRow = React.useCallback((id: string, field: string, value: unknown) => {
     setStagingData((prev) =>
       prev.map((r) => (r.id === id ? ({ ...r, [field]: value } as StagingRow) : r)),
@@ -57,7 +45,8 @@ export function useSmartImportFiles({ rcmType, t, onMutated }: UseSmartImportFil
 
   const resetFiles = React.useCallback(() => {
     setTbFile(null);
-    setRcmFile(null);
+    setStagingData([]);
+    setParsedTbData([]);
   }, []);
 
   const processTbWithSheet = React.useCallback(
@@ -109,18 +98,6 @@ export function useSmartImportFiles({ rcmType, t, onMutated }: UseSmartImportFil
       try {
         const ok = await processTbWithSheet(pendingTargetFile, sheetName);
         if (ok) {
-          if (rcmFile && stagingData.length === 0) {
-            const rcmResult = await parseRCMFile(rcmFile, rcmType);
-            if (rcmResult.success) {
-              setStagingData(rcmResult.rows as StagingRow[]);
-            } else {
-              toast.error(
-                `${t('rcm:migration.toasts.rcmParseError', { defaultValue: 'RCM Parse Error' })}: ${rcmResult.error}`,
-              );
-              setIsProcessing(false);
-              return;
-            }
-          }
           setIsProcessing(false);
           onMutated();
           onComplete();
@@ -133,12 +110,12 @@ export function useSmartImportFiles({ rcmType, t, onMutated }: UseSmartImportFil
         setIsProcessing(false);
       }
     },
-    [pendingTargetFile, processTbWithSheet, rcmFile, stagingData.length, rcmType, onMutated, t],
+    [pendingTargetFile, processTbWithSheet, onMutated, t],
   );
 
   const handleProcessAI = React.useCallback(
     async (onComplete: () => void) => {
-      if (!tbFile && !rcmFile) {
+      if (!tbFile) {
         toast.error(t('rcm:migration.ingestion.emptyFiles', { defaultValue: 'Please upload at least one file to process.' }));
         return;
       }
@@ -146,24 +123,9 @@ export function useSmartImportFiles({ rcmType, t, onMutated }: UseSmartImportFil
       setIsProcessing(true);
 
       try {
-        if (tbFile) {
-          const tbSuccess = await processTbWithSheet(tbFile);
-          if (!tbSuccess) {
-            return;
-          }
-        }
-
-        if (rcmFile) {
-          const rcmResult = await parseRCMFile(rcmFile, rcmType);
-          if (rcmResult.success) {
-            setStagingData(rcmResult.rows as StagingRow[]);
-          } else {
-            toast.error(
-              `${t('rcm:migration.toasts.rcmParseError', { defaultValue: 'RCM Parse Error' })}: ${rcmResult.error}`,
-            );
-            setIsProcessing(false);
-            return;
-          }
+        const tbSuccess = await processTbWithSheet(tbFile);
+        if (!tbSuccess) {
+          return;
         }
 
         setIsProcessing(false);
@@ -177,12 +139,11 @@ export function useSmartImportFiles({ rcmType, t, onMutated }: UseSmartImportFil
         setIsProcessing(false);
       }
     },
-    [tbFile, rcmFile, processTbWithSheet, rcmType, onMutated, t],
+    [tbFile, processTbWithSheet, onMutated, t],
   );
 
   return {
     tbFile,
-    rcmFile,
     isProcessing,
     stagingData,
     parsedTbData,
@@ -191,7 +152,6 @@ export function useSmartImportFiles({ rcmType, t, onMutated }: UseSmartImportFil
     pendingTargetFile,
     setSheetModalOpen,
     selectTbFile,
-    selectRcmFile,
     updateStagingRow,
     resetFiles,
     handleSheetSelected,

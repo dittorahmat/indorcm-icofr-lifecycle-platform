@@ -12,6 +12,7 @@ import { BPMCanvasToolbar } from './editor/BPMCanvasToolbar';
 import { BPMDocumentView } from './editor/BPMDocumentView';
 import { BPMNodeInspectSheet } from './editor/BPMNodeInspectSheet';
 import { BPMOcrModal } from './editor/BPMOcrModal';
+import { RCMImportWizardModal } from './import/RCMImportWizardModal';
 import { BPMCanvasExportOverlay } from './editor/BPMCanvasExportOverlay';
 import { BPMCanvas } from './editor/BPMCanvas';
 import { bpmEdgeTypes, bpmNodeTypes } from './editor/bpm-canvas-types';
@@ -237,6 +238,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
                 onToggleFullscreen={view.toggleFullscreen}
                 onOpenDocumentView={() => view.setDocumentView(true)}
                 onOpenOcrDialog={() => view.setIsOcrDialogOpen(true)}
+                onOpenRcmImportDialog={() => view.setIsRcmImportDialogOpen(true)}
                 onScaleChange={(scale) => setGlobalScale(scale)}
                 onSelectedGLsChange={setSelectedGLs}
                 onSwitchGLContext={handleSwitchGLContext}
@@ -329,6 +331,28 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
         edgeTypes={bpmEdgeTypes}
         isDirty={isDirty}
         hasExistingNodes={nodes.length > 0}
+      />
+
+      {/* --- RCM Spreadsheet Import & BPM Auto-Link Dialog --- */}
+      <RCMImportWizardModal
+        isOpen={view.isRcmImportDialogOpen}
+        onClose={() => view.setIsRcmImportDialogOpen(false)}
+        diagramId={diagramId}
+        bpmProcessId={bpmProcess?.id}
+        subProcessName={subProcess}
+        workingYear={workingYear}
+        bpmNodes={nodes.map((n) => ({
+          id: n.id,
+          label: n.data?.label || n.id,
+          type: n.type || 'activity',
+        }))}
+        onSuccess={() => {
+          persistence.handleSave();
+        }}
+        onAddBpmNode={(nodeLabel) => {
+          createActivityNode(nodeLabel);
+          return nodes[nodes.length - 1]?.id || String(Date.now());
+        }}
       />
     </div>
   );
