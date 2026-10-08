@@ -15,6 +15,19 @@ export interface BoundingBox {
 export const APPEND_GAP_X = 200;
 export const APPEND_GAP_Y = 160;
 
+let ocrAppendSequence = 0;
+
+// Stable, clock-free prefix for append remaps. Deterministic within a session
+// (no Date.now), so repeated imports never collide with existing canvas ids.
+export function nextOcrAppendPrefix(): string {
+  ocrAppendSequence += 1;
+  return `ocr_append_${ocrAppendSequence}`;
+}
+
+export function resetOcrAppendSequence(): void {
+  ocrAppendSequence = 0;
+}
+
 /**
  * Calculates bounding box of a collection of React Flow nodes.
  * Takes node widths/heights into account (fallback to default sizes if undefined).
@@ -104,13 +117,14 @@ export function remapElementsForAppend(
   incomingNodes: Node[],
   incomingEdges: Edge[],
   offset: { dx: number; dy: number },
-  idPrefix = `ocr_${Date.now()}`
+  idPrefix?: string
 ): { nodes: Node[]; edges: Edge[] } {
+  const prefix = idPrefix ?? nextOcrAppendPrefix();
   const idMap = new Map<string, string>();
 
   // 1. Generate unique IDs for all incoming nodes
   incomingNodes.forEach((node, index) => {
-    const newId = `${idPrefix}_${index}_${node.id}`;
+    const newId = `${prefix}_${index}_${node.id}`;
     idMap.set(node.id, newId);
   });
 
@@ -139,7 +153,7 @@ export function remapElementsForAppend(
 
   // 3. Remap edges: update id, source, and target
   const remappedEdges: Edge[] = incomingEdges.map((edge, index) => {
-    const newEdgeId = `${idPrefix}_edge_${index}_${edge.id}`;
+    const newEdgeId = `${prefix}_edge_${index}_${edge.id}`;
     const newSource = idMap.get(edge.source) || edge.source;
     const newTarget = idMap.get(edge.target) || edge.target;
 

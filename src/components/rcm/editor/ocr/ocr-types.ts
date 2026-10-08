@@ -19,3 +19,22 @@ export interface OcrParsedPage {
   edges: Edge[];
 }
 
+export interface OcrStagedPage {
+  nodes: Node[];
+  edges: Edge[];
+}
+
+export type OcrStagedPages = Map<number, OcrStagedPage> | Record<number, OcrStagedPage>;
+
+// Single apply request crossing the modal → canvas boundary. The OCR-import
+// adapter decides sheets vs canvas from `pages`; callers never branch.
+export interface OcrApplyRequest {
+  nodes: Node[];
+  edges: Edge[];
+  mode?: OcrImportMode;
+  direction?: OcrAppendDirection;
+  pages?: OcrStagedPages;
+  activePage?: number;
+  formatSheetName?: (page: number) => string;
+}
+
