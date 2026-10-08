@@ -7,7 +7,6 @@ import {
   type DeficiencyTriggerEvent,
   type DeficiencyTriggerStore,
 } from '../deficiency-trigger';
-import { toTriggerEvent } from '../deficiency-service';
 
 type StoredDeficiency = {
   id: string;
@@ -208,33 +207,5 @@ describe('deficiency-trigger seam (structured find-or-create)', () => {
     );
     expect(bpmOnly).toContain('Persetujuan Kredit');
     expect(bpmOnly).toContain('2025-Q1');
-  });
-});
-
-describe('toTriggerEvent (RCM legacy compatibility)', () => {
-  it('passes structured events through untouched', () => {
-    const event = csaEvent({ controlId: 'CTRL-A' });
-    expect(toTriggerEvent(event)).toBe(event);
-  });
-
-  it('maps legacy hand-built input onto a BPM-null structured event', () => {
-    const mapped = toTriggerEvent({
-      organizationId: 'org-test',
-      controlId: 'CTRL-A',
-      description: 'Hasil Verifikasi Desain (TOD) Ineffective untuk kontrol baru.',
-      source: 'Lini 2 - TOD Review',
-      userId: 'user-2',
-      period: 'TOD-Evaluation',
-    });
-
-    expect(mapped).toEqual({
-      organizationId: 'org-test',
-      controlId: 'CTRL-A',
-      bpmProcessId: null,
-      period: 'TOD-Evaluation',
-      source: 'Lini 2 - TOD Review',
-      userId: 'user-2',
-      description: 'Hasil Verifikasi Desain (TOD) Ineffective untuk kontrol baru.',
-    });
   });
 });

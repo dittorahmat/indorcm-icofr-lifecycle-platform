@@ -20,9 +20,6 @@ export interface DeficiencyTriggerEvent {
   failedControlIds?: string[];
   testType?: 'TOD' | 'TOE';
   detail?: string;
-  /** Verbatim description for not-yet-migrated callers (RCM matrix).
-   *  @deprecated T4 migrates the last callers, then this field is removed. */
-  description?: string;
 }
 
 /** Structured dedup key: one open deficiency per key. Replaces LIKE-%period% matching. */
@@ -97,7 +94,6 @@ function bpmDisplayName(bpm: BpmProcessMeta | null): string {
 }
 
 function baseDescription(event: DeficiencyTriggerEvent, bpm: BpmProcessMeta | null): string {
-  if (event.description) return event.description;
   switch (event.source) {
     case 'Lini 2 - TOD Review':
       return `Hasil Verifikasi Desain (TOD) Ineffective.${event.detail ? ` ${event.detail}` : ''}`;
@@ -116,7 +112,7 @@ export function buildDeficiencyDescription(
   bpm: BpmProcessMeta | null,
 ): string {
   let description = baseDescription(event, bpm);
-  if (event.failedControlIds && event.failedControlIds.length > 0 && !event.description) {
+  if (event.failedControlIds && event.failedControlIds.length > 0) {
     description += ` Kontrol gagal: ${event.failedControlIds.join(', ')}.`;
   }
   if (control && !description.startsWith('[')) {

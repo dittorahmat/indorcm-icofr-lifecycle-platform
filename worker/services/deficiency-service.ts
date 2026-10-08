@@ -6,42 +6,9 @@ import {
   type BpmProcessMeta,
   type ControlMeta,
   type DeficiencyDedupKey,
-  type DeficiencySource,
   type DeficiencyTriggerEvent,
   type DeficiencyTriggerStore,
 } from './deficiency-trigger';
-
-/** Legacy hand-built input from not-yet-migrated callers (RCM matrix).
- *  Dedup is still structural — only the description stays verbatim.
- *  @deprecated Pass a DeficiencyTriggerEvent instead; T4 removes this shape. */
-export interface LegacyAutoDeficiencyInput {
-  organizationId: string;
-  controlId: string | null;
-  description: string;
-  source: DeficiencySource;
-  userId: string;
-  period: string;
-}
-
-function isTriggerEvent(input: DeficiencyTriggerEvent | LegacyAutoDeficiencyInput): input is DeficiencyTriggerEvent {
-  return 'bpmProcessId' in input || 'failedControlIds' in input || 'testType' in input;
-}
-
-/** Maps legacy hand-built input onto the structured event. Pure — unit-tested without a DB. */
-export function toTriggerEvent(
-  input: DeficiencyTriggerEvent | LegacyAutoDeficiencyInput,
-): DeficiencyTriggerEvent {
-  if (isTriggerEvent(input)) return input;
-  return {
-    organizationId: input.organizationId,
-    controlId: input.controlId,
-    bpmProcessId: null,
-    period: input.period,
-    source: input.source,
-    userId: input.userId,
-    description: input.description,
-  };
-}
 
 /** Drizzle-backed persistence for the deficiency-trigger seam. No LIKE matching. */
 class DrizzleDeficiencyStore implements DeficiencyTriggerStore {
@@ -119,8 +86,8 @@ class DrizzleDeficiencyStore implements DeficiencyTriggerStore {
 export class DeficiencyService {
   constructor(private db: DrizzleDb) {}
 
-  async createAutoDeficiency(input: DeficiencyTriggerEvent | LegacyAutoDeficiencyInput): Promise<string> {
-    const { id } = await triggerDeficiency(toTriggerEvent(input), new DrizzleDeficiencyStore(this.db));
+  async createAutoDeficiency(input: DeficiencyTriggerEvent): Promise<string> {
+    const { id } = await triggerDeficiency(input, new DrizzleDeficiencyStore(this.db));
     return id;
   }
 }
