@@ -1,0 +1,93 @@
+import { describe, it, expect } from 'vitest';
+import {
+  decideTransition,
+  allowedActionsFor,
+  workflowEndpointFor,
+  requiresNoteFor,
+  type WorkflowEntityType,
+} from './workflow-transitions';
+
+const line1 = 'Line 1';
+const line2 = 'Line 2';
+
+/** Canonical contract: one decision table for all five ICOFR entity types. */
+describe('workflow-transitions single source (T2 RED)', () => {
+  it('routes BPM Draft → Submit → In Review', () => {
+    const d = decideTransition({ entityType: 'BPM', currentStatus: 'Draft', action: 'Submit', role: line1 });
+    expect(d).toEqual({ ok: true, nextStatus: 'In Review' });
+  });
+
+  it('routes ACTION_PLAN Resolved → Rollback → Ineffective with note', () => {
+    const d = decideTransition({
+      entityType: 'ACTION_PLAN', currentStatus: 'Resolved', action: 'Rollback', role: line2, note: 'reopen',
+    });
+    expect(d).toEqual({ ok: true, nextStatus: 'Ineffective' });
+  });
+
+  it('routes SCOPING through CFO → Komut → Approved', () => {
+    expect(decideTransition({ entityType: 'SCOPING', currentStatus: 'Draft', action: 'Submit', role: line1 }))
+      .toEqual({ ok: true, nextStatus: 'Pending CFO' });
+    expect(decideTransition({ entityType: 'SCOPING', currentStatus: 'Pending CFO', action: 'Review', role: line2 }))
+      .toEqual({ ok: true, nextStatus: 'Pending Komut' });
+    expect(decideTransition({ entityType: 'SCOPING', currentStatus: 'Pending Komut', action: 'Approve', role: line2 }))
+      .toEqual({ ok: true, nextStatus: 'Approved' });
+  });
+
+  it('routes RCM_CHANGE Draft → Submit → In Review → Approve → Approved', () => {
+    expect(decideTransition({ entityType: 'RCM_CHANGE', currentStatus: 'Draft', action: 'Submit', role: line1 }))
+      .toEqual({ ok: true, nextStatus: 'In Review' });
+    expect(decideTransition({ entityType: 'RCM_CHANGE', currentStatus: 'In Review', action: 'Approve', role: line2 }))
+      .toEqual({ ok: true, nextStatus: 'Approved' });
+  });
+
+  it('routes CSA In Review → Approve → Validated', () => {
+    const d = decideTransition({ entityType: 'CSA', currentStatus: 'In Review', action: 'Approve', role: line2 });
+    expect(d).toEqual({ ok: true, nextStatus: 'Validated' });
+  });
+
+  it('rejects CSA Draft → Approve as invalid action', () => {
+    const d = decideTransition({ entityType: 'CSA', currentStatus: 'Draft', action: 'Approve', role: line2 });
+    expect(d.ok).toBe(false);
+    if (!d.ok) expect(d.code).toBe('INVALID_ACTION');
+  });
+
+  it('rejects Line 1 approving RCM_CHANGE with 403', () => {
+    const d = decideTransition({ entityType: 'RCM_CHANGE', currentStatus: 'In Review', action: 'Approve', role: line1 });
+    expect(d.ok).toBe(false);
+    if (!d.ok) {
+      expect(d.code).toBe('FORBIDDEN_TRANSITION');
+      expect(d.status).toBe(403);
+    }
+  });
+
+  it('requires a note for Reject', () => {
+    const d = decideTransition({ entityType: 'BPM', currentStatus: 'In Review', action: 'Reject', role: line2, note: '  ' });
+    expect(d.ok).toBe(false);
+    if (!d.ok) expect(d.code).toBe('NOTE_REQUIRED');
+    expect(requiresNoteFor('BPM', 'In Review', 'Reject')).toBe(true);
+    expect(requiresNoteFor('BPM', 'Draft', 'Submit')).toBe(false);
+  });
+
+  it('rejects unknown entity and unknown status', () => {
+    const bad = decideTransition({
+      entityType: 'UNKNOWN' as WorkflowEntityType, currentStatus: 'Draft', action: 'Submit', role: line1,
+    });
+    expect(bad.ok).toBe(false);
+    const stranded = decideTransition({ entityType: 'CSA', currentStatus: 'Nope', action: 'Submit', role: line1 });
+    expect(stranded.ok).toBe(false);
+  });
+
+  it('exposes allowed actions per step for client blueprints', () => {
+    expect(allowedActionsFor('CSA', 'In Review')).toEqual(['Reject', 'Approve']);
+    expect(allowedActionsFor('CSA', 'Validated')).toEqual(['Rollback']);
+    expect(allowedActionsFor('CSA', 'Nope')).toEqual([]);
+  });
+
+  it('builds byte-identical workflow endpoints per entity', () => {
+    expect(workflowEndpointFor('BPM', 'p1')).toBe('/api/bpm-processes/p1/workflow');
+    expect(workflowEndpointFor('ACTION_PLAN', 'a1')).toBe('/api/actionplans/a1/workflow');
+    expect(workflowEndpointFor('SCOPING', 's1')).toBe('/api/simulations/s1/workflow');
+    expect(workflowEndpointFor('RCM_CHANGE', 'r1')).toBe('/api/rcm/r1/workflow');
+    expect(workflowEndpointFor('CSA', 'c1')).toBe('/api/csa/c1/workflow');
+  });
+});

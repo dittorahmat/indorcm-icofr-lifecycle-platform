@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { History, Lock, Unlock, Loader2, ChevronDown, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { History, Lock, Unlock, Loader2, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { WorkflowHistoryTimeline } from './WorkflowHistoryTimeline';
@@ -62,8 +62,6 @@ export function WorkflowPanel({
   }, [users?.items]);
 
   const isLocked = isWorkflowLocked(currentStatus);
-  const isBypassMode = import.meta.env.VITE_ENABLE_WORKFLOW_APPROVAL === 'false';
-  const isAlreadyFinalized = currentStatus === 'Approved' || currentStatus === 'Resolved' || currentStatus === 'Validated';
 
   const handleActionClick = async (actionId: WorkflowAction) => {
     if (isDirty) {
@@ -86,7 +84,7 @@ export function WorkflowPanel({
       setIsNoteDialogOpen(true);
     } else {
       executeAction({ action: actionId, note: '' }, {
-        onSuccess: (data: any) => {
+        onSuccess: (data: { nextStatus: string }) => {
           onStatusChange?.(data.nextStatus);
         }
       });
@@ -99,13 +97,10 @@ export function WorkflowPanel({
     if (!config) return;
     if (config.needsNote && !note.trim()) return;
 
-    if (beforeAction) {
-      const canProceed = await beforeAction(pendingActionId);
-      if (!canProceed) return;
-    }
-
+    // beforeAction already gated handleActionClick before the dialog opened —
+    // invoking it again here would double-fire caller side-effects.
     executeAction({ action: pendingActionId, note, assigneeId: selectedAssigneeId || undefined }, {
-      onSuccess: (data: any) => {
+      onSuccess: (data: { nextStatus: string }) => {
         onStatusChange?.(data.nextStatus);
         setIsNoteDialogOpen(false);
         setNote('');
@@ -115,45 +110,9 @@ export function WorkflowPanel({
     });
   };
 
-  const handleBypass = () => {
-    if (isDirty) {
-      toast.warning(t('common:unsavedChanges.title'), {
-        description: t('common:unsavedChanges.description')
-      });
-      return;
-    }
-
-    executeAction({ action: 'Approve', note: 'Bypassed via Demo Mode' }, {
-      onSuccess: (data: any) => {
-        onStatusChange?.(data.nextStatus);
-        toast.success("Demo Mode: Document approved instantly");
-      }
-    });
-  };
-
   const renderButtons = () => {
-    if (isBypassMode && !isAlreadyFinalized) {
-      return (
-        <div className="w-full space-y-3">
-          <div className="p-3 bg-amber-50 border border-amber-100 rounded-lg flex items-start gap-3">
-            <AlertCircle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
-            <div className="space-y-1">
-              <p className="text-xs font-bold text-amber-800 uppercase tracking-wider">Demo Mode Active</p>
-              <p className="text-xs text-amber-700 leading-relaxed font-medium">Standard approval workflow is bypassed. You can instantly finalize this document.</p>
-            </div>
-          </div>
-          <Button 
-            className="w-full gap-2 font-black text-xs uppercase tracking-widest h-10 bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-100"
-            onClick={handleBypass}
-            disabled={isPending}
-          >
-            {isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
-            Bypass & Finalize Approval
-          </Button>
-        </div>
-      );
-    }
-
+    // Every action routes through the transactional engine via useWorkflow —
+    // no demo bypass may skip validation.
     return currentStep.actions.map((action) => {
       const Icon = action.icon;
       const shadcnVariant = (action.variant === 'outline' || action.variant === 'destructive') ? action.variant : 'default';

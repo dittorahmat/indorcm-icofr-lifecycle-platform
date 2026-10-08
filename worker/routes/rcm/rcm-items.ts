@@ -1,11 +1,11 @@
 import { Hono } from "hono";
 import type { HonoEnv } from '../../app';
-import { ok, bad, notFound } from '../../lib/utils';
+import { ok } from '../../lib/utils';
 import { getDb } from '../../db';
-import { rcms } from '../../db/schema';
-import { eq, and } from 'drizzle-orm';
 import { RcmService } from "../../services/rcm-service";
+import { runWorkflowTransition } from "../../services/workflow/workflow-drizzle-adapter";
 import { rbac } from "../../lib/guard";
+import type { WorkflowAction } from "@shared/types";
 
 export const rcmItemsRoute = new Hono<HonoEnv>();
 
@@ -67,59 +67,21 @@ rcmItemsRoute.post('/rcm/:id/approve-change', rbac(['Line 2', 'Admin']), async (
 rcmItemsRoute.post('/rcm/:id/workflow', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const id = c.req.param('id');
-  const orgId = c.get('organizationId');
-  const userId = c.get('userId');
-  const role = c.get('userRole');
-  const body = await c.req.json<{ action: string; note: string; assigneeId?: string; category?: string; effectiveDate?: string }>();
+  const body = await c.req.json<{ action: WorkflowAction; note?: string; assigneeId?: string; category?: string; effectiveDate?: string }>();
 
-  const existing = await db.select().from(rcms).where(and(eq(rcms.id, id), eq(rcms.organizationId, orgId))).limit(1);
-  if (existing.length === 0) return notFound(c, 'RCM not found');
-
-  const rcmRecord = existing[0];
-  const currentStatus = rcmRecord.workflowStatus || "Draft";
-  let nextStatus = currentStatus;
-
-  if (body.action === "Submit") {
-    nextStatus = "In Review";
-  } else if (body.action === "Approve") {
-    nextStatus = "Approved";
-  } else if (body.action === "Reject") {
-    if (!body.note) return bad(c, "Rejection requires a note");
-    nextStatus = "Draft";
-  } else if (body.action === "Rollback") {
-    if (!body.note) return bad(c, "Rollback requires a note");
-    nextStatus = "In Review";
-  }
-
-  const historyEntry = {
-    id: crypto.randomUUID(),
+  const result = await runWorkflowTransition(db, c.env, {
+    entityType: 'RCM_CHANGE',
+    entityId: id,
+    organizationId: c.get('organizationId'),
+    userId: c.get('userId'),
+    role: c.get('userRole'),
     action: body.action,
-    fromStatus: currentStatus,
-    toStatus: nextStatus,
-    userId,
-    role,
-    timestamp: Date.now(),
-    note: body.note || ''
-  };
-
-  const currentHistory = (rcmRecord.workflowHistory as Array<Record<string, unknown>>) || [];
-  const newHistory = [historyEntry, ...currentHistory];
-
-  const updateData = {
-    workflowStatus: nextStatus,
-    workflowHistory: newHistory,
-    status: nextStatus === 'Approved' ? 'Active' : (nextStatus === 'In Review' ? 'Pending Change Approval' : 'Draft')
-  };
-
-  await db.update(rcms).set(updateData).where(eq(rcms.id, id));
-
-  if (nextStatus === 'Approved') {
-    const rcmService = new RcmService(db);
-    const effDate = body.effectiveDate ? new Date(body.effectiveDate) : new Date();
-    await rcmService.approveChange(orgId, userId, id, body.category || 'Maintenance', effDate);
-  }
-
-  return ok(c, { success: true, nextStatus });
+    note: body.note,
+    assigneeId: body.assigneeId,
+    category: body.category,
+    effectiveDate: body.effectiveDate,
+  });
+  return ok(c, result);
 });
 
 rcmItemsRoute.delete('/rcm/:id', rbac(['Line 2', 'Admin']), async (c) => {
