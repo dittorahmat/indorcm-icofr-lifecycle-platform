@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import type { HonoEnv } from '../../app';
 import { ok, bad, notFound } from '../../lib/utils';
 import { getDb } from '../../db';
-import { csaRecords, csaSamples, controls, bpmProcesses } from '../../db/schema';
+import { csaRecords, csaSamples, controls } from '../../db/schema';
 import { eq, and, SQL, sql } from 'drizzle-orm';
 import { CsaDomainService } from "../../services/csa-domain-service";
 import { DeficiencyService } from "../../services/deficiency-service";
@@ -90,17 +90,18 @@ csaRecordsRoute.post('/csa/:id/workflow', async (c) => {
         await defService.createAutoDeficiency({
           organizationId: orgId,
           controlId: csaRecord.controlId,
-          description: `Hasil CSA Ineffective untuk periode ${csaRecord.period}.`,
+          bpmProcessId: csaRecord.bpmProcessId,
+          period: csaRecord.period,
           source: 'Lini 2 - CSA Validation',
           userId,
-          period: csaRecord.period
         });
       } else {
         const samples = await db.select().from(csaSamples).where(eq(csaSamples.csaRecordId, id));
         const failedControlIds = new Set<string>();
         for (const sample of samples) {
-          if (sample.controlResults && typeof sample.controlResults === 'object') {
-            for (const [ctrlId, val] of Object.entries<any>(sample.controlResults)) {
+          const results = sample.controlResults as Record<string, { implemented?: boolean } | null> | null;
+          if (results && typeof results === 'object') {
+            for (const [ctrlId, val] of Object.entries(results)) {
               if (val && val.implemented === false) {
                 failedControlIds.add(ctrlId);
               }
@@ -108,29 +109,14 @@ csaRecordsRoute.post('/csa/:id/workflow', async (c) => {
           }
         }
 
-        let bpmProcessName = "Sub-Proses Bisnis";
-        if (csaRecord.bpmProcessId) {
-          const bpm = await db.query.bpmProcesses.findFirst({
-            where: eq(bpmProcesses.id, csaRecord.bpmProcessId),
-            columns: { name: true, noGL: true }
-          });
-          if (bpm) {
-            bpmProcessName = `${bpm.name} (${bpm.noGL})`;
-          }
-        }
-
-        let description = `Hasil CSA Ineffective untuk proses ${bpmProcessName} (periode ${csaRecord.period}).`;
-        if (failedControlIds.size > 0) {
-          description += ` Kontrol gagal: ${Array.from(failedControlIds).join(', ')}.`;
-        }
-
         await defService.createAutoDeficiency({
           organizationId: orgId,
           controlId: null,
-          description,
+          bpmProcessId: csaRecord.bpmProcessId,
+          period: csaRecord.period,
           source: 'Lini 2 - CSA Validation',
           userId,
-          period: csaRecord.period
+          failedControlIds: Array.from(failedControlIds),
         });
       }
     }

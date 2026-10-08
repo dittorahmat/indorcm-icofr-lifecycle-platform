@@ -1,6 +1,6 @@
-import { 
-  csaRecords, csaSamples, csaSchedules, testRecords, 
-  user, member, todEvaluations, controls, bpmProcesses
+import {
+  csaRecords, csaSamples, csaSchedules, testRecords,
+  user, member, todEvaluations, controls
 } from '../db/schema';
 import { eq, and, desc, SQL } from 'drizzle-orm';
 import type { DrizzleDb } from '../db';
@@ -137,15 +137,15 @@ export class CsaDomainService {
     }
 
     if (!isDraft && newCsa.result === 'Ineffective') {
-      // ARCHITECTURAL DECISION (OPTION B - BPM-Centric Single Card):
-      // Instead of polluting the Kanban board with multiple cards for a single assessment session,
-      // we generate exactly 1 consolidated deficiency card per CSA BPM assessment.
-      // Retesting will occur in context on the whole BPM sheet (CSATabContent).
+      // BPM-centric single card: one consolidated deficiency per CSA BPM
+      // assessment. Description/policy live in the deficiency-trigger module;
+      // this caller passes a typed event only.
       const failedControlIds = new Set<string>();
       if (body.samples && Array.isArray(body.samples)) {
         for (const sample of body.samples) {
-          if (sample.controlResults && typeof sample.controlResults === 'object') {
-            for (const [ctrlId, val] of Object.entries<any>(sample.controlResults)) {
+          const results = sample.controlResults as Record<string, { implemented?: boolean } | null> | null;
+          if (results && typeof results === 'object') {
+            for (const [ctrlId, val] of Object.entries(results)) {
               if (val && val.implemented === false) {
                 failedControlIds.add(ctrlId);
               }
@@ -154,30 +154,14 @@ export class CsaDomainService {
         }
       }
 
-      // Fetch BPM Process Name for prominent title
-      let bpmProcessName = "Sub-Proses Bisnis";
-      if (newCsa.bpmProcessId) {
-        const bpm = await this.db.query.bpmProcesses.findFirst({
-          where: eq(bpmProcesses.id, newCsa.bpmProcessId),
-          columns: { name: true, noGL: true }
-        });
-        if (bpm) {
-          bpmProcessName = `${bpm.name} (${bpm.noGL})`;
-        }
-      }
-
-      let description = `Hasil CSA Ineffective untuk proses ${bpmProcessName} (periode ${newCsa.period}).`;
-      if (failedControlIds.size > 0) {
-        description += ` Kontrol gagal: ${Array.from(failedControlIds).join(', ')}.`;
-      }
-
       await this.defService.createAutoDeficiency({
         organizationId: orgId,
         controlId: null,
-        description,
+        bpmProcessId: newCsa.bpmProcessId,
+        period: newCsa.period,
         source: 'Lini 1 - CSA',
         userId,
-        period: newCsa.period
+        failedControlIds: Array.from(failedControlIds),
       });
     }
 
