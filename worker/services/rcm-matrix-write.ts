@@ -113,6 +113,47 @@ export function toTodDecisionInput(body: VerificationPatchBody): TestingDecision
   };
 }
 
+/** Single TOD upsert + typed-deficiency seam shared by the patch and
+ *  create paths. Recomputes the verdict via decideTest, upserts the TOD row
+ *  by control, and raises one typed event on Ineffective. No behavior
+ *  change — pure extraction of the duplicated block. */
+async function persistTodAndRaise(
+  deps: RcmMatrixWriteDeps,
+  args: {
+    organizationId: string;
+    userId: string;
+    controlId: string;
+    body: Record<string, unknown>;
+  },
+): Promise<VerificationPatchResult> {
+  const verdict = decideTest(null, toTodDecisionInput(args.body as VerificationPatchBody)).verdict ?? 'Effective';
+  const todPatch: Partial<TodEvalRow> = {
+    ...(pickDefined(args.body, LINI2_FIELDS) as Partial<TodEvalRow>),
+    conclusion: verdict,
+  };
+  const existing = await deps.store.findTod(args.controlId, args.organizationId);
+  if (existing) {
+    await deps.store.updateTod(existing.id, todPatch);
+  } else {
+    const newId = deps.newId ?? (() => crypto.randomUUID());
+    await deps.store.insertTod({
+      id: newId(), organizationId: args.organizationId, controlId: args.controlId,
+      pilarObjective: null, pilarTiming: null, pilarAuthority: null,
+      pilarReliability: null, pilarCoverage: null, pilarEvidence: null,
+      kkReference: null, conclusion: null, comment: null,
+      ...todPatch, evaluatorId: args.userId,
+    });
+  }
+  if (verdict !== 'Ineffective') return { todVerdict: verdict, deficiencyId: null };
+  const comment = args.body['comment'];
+  const deficiencyId = await deps.effects.raiseDeficiency({
+    organizationId: args.organizationId, controlId: args.controlId, bpmProcessId: null,
+    period: TOD_EVALUATION_PERIOD, source: 'Lini 2 - TOD Review', userId: args.userId,
+    ...(typeof comment === 'string' && comment.trim() !== '' ? { detail: comment } : {}),
+  });
+  return { todVerdict: verdict, deficiencyId };
+}
+
 export async function applyVerificationDesignPatch(
   deps: RcmMatrixWriteDeps,
   input: VerificationPatchInput,
@@ -123,29 +164,12 @@ export async function applyVerificationDesignPatch(
   const lini1Patch = pickDefined(body, LINI1_FIELDS);
   if (Object.keys(lini1Patch).length > 0) await deps.store.updateMapping(input.mappingId, lini1Patch);
   if (!LINI2_FIELDS.some((f) => body[f] !== undefined)) return { todVerdict: null, deficiencyId: null };
-  const verdict = decideTest(null, toTodDecisionInput(input.body)).verdict ?? 'Effective';
-  const existing = await deps.store.findTod(mapping.controlId, input.organizationId);
-  const todPatch: Partial<TodEvalRow> = { ...(pickDefined(body, LINI2_FIELDS) as Partial<TodEvalRow>), conclusion: verdict };
-  if (existing) {
-    await deps.store.updateTod(existing.id, todPatch);
-  } else {
-    const newId = deps.newId ?? (() => crypto.randomUUID());
-    await deps.store.insertTod({
-      id: newId(), organizationId: input.organizationId, controlId: mapping.controlId,
-      pilarObjective: null, pilarTiming: null, pilarAuthority: null,
-      pilarReliability: null, pilarCoverage: null, pilarEvidence: null,
-      kkReference: null, conclusion: null, comment: null,
-      ...todPatch, evaluatorId: input.userId,
-    });
-  }
-  if (verdict !== 'Ineffective') return { todVerdict: verdict, deficiencyId: null };
-  const comment = body.comment;
-  const deficiencyId = await deps.effects.raiseDeficiency({
-    organizationId: input.organizationId, controlId: mapping.controlId, bpmProcessId: null,
-    period: TOD_EVALUATION_PERIOD, source: 'Lini 2 - TOD Review', userId: input.userId,
-    ...(typeof comment === 'string' && comment.trim() !== '' ? { detail: comment } : {}),
+  return persistTodAndRaise(deps, {
+    organizationId: input.organizationId,
+    userId: input.userId,
+    controlId: mapping.controlId,
+    body,
   });
-  return { todVerdict: verdict, deficiencyId };
 }
 
 /** Consolidated batch write: one mapping read, then one mapping pass and one
@@ -213,23 +237,11 @@ export async function createVerificationDesign(
     id: newMappingId, organizationId: input.organizationId, rcmId: finalRcmId,
     controlId: newControlId, ...pickDefined(input as Record<string, unknown>, LINI1_FIELDS),
   });
-  const verdict = decideTest(null, toTodDecisionInput(input)).verdict ?? 'Effective';
-  const base: Partial<TodEvalRow> = pickDefined(input as Record<string, unknown>, LINI2_FIELDS) as Partial<TodEvalRow>;
-  base.conclusion = verdict;
-  await deps.store.insertTod({
-    id: newId(), organizationId: input.organizationId, controlId: newControlId,
-    pilarObjective: null, pilarTiming: null, pilarAuthority: null,
-    pilarReliability: null, pilarCoverage: null, pilarEvidence: null,
-    kkReference: null, conclusion: null, comment: null,
-    ...base, evaluatorId: input.userId,
+  const { todVerdict, deficiencyId } = await persistTodAndRaise(deps, {
+    organizationId: input.organizationId,
+    userId: input.userId,
+    controlId: newControlId,
+    body: input as Record<string, unknown>,
   });
-  if (verdict !== 'Ineffective') {
-    return { todVerdict: verdict, deficiencyId: null, mappingId: newMappingId, controlId: newControlId, rcmId: finalRcmId };
-  }
-  const deficiencyId = await deps.effects.raiseDeficiency({
-    organizationId: input.organizationId, controlId: newControlId, bpmProcessId: null,
-    period: TOD_EVALUATION_PERIOD, source: 'Lini 2 - TOD Review', userId: input.userId,
-    ...(typeof input.comment === 'string' && input.comment.trim() !== '' ? { detail: input.comment } : {}),
-  });
-  return { todVerdict: verdict, deficiencyId, mappingId: newMappingId, controlId: newControlId, rcmId: finalRcmId };
+  return { todVerdict, deficiencyId, mappingId: newMappingId, controlId: newControlId, rcmId: finalRcmId };
 }
