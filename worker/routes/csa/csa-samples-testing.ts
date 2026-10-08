@@ -5,10 +5,31 @@ import { getDb } from '../../db';
 import { csaSamples, todEvaluations, testRecords, testSamples } from '../../db/schema';
 import { eq, and, desc, SQL } from 'drizzle-orm';
 import type { TestRecord } from "@shared/types";
+import type { DrizzleDb } from '../../db';
 import { DeficiencyService } from "../../services/deficiency-service";
 import { rbac } from "../../lib/guard";
 
 export const csaSamplesTestingRoute = new Hono<HonoEnv>();
+
+/** Shared TOD deficiency policy for insert and update branches: one typed event. */
+async function triggerTodDeficiency(
+  db: DrizzleDb,
+  orgId: string,
+  controlId: string | null,
+  userId: string,
+  conclusion: unknown,
+): Promise<void> {
+  if (conclusion !== 'Ineffective') return;
+  const defService = new DeficiencyService(db);
+  await defService.createAutoDeficiency({
+    organizationId: orgId,
+    controlId,
+    bpmProcessId: null,
+    period: 'TOD-Evaluation',
+    source: 'Lini 2 - TOD Review',
+    userId,
+  });
+}
 
 csaSamplesTestingRoute.get('/csa/samples', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
@@ -103,34 +124,14 @@ csaSamplesTestingRoute.post('/tod-evaluations', rbac(['Line 2', 'Admin']), async
     await db.update(todEvaluations)
       .set(values)
       .where(eq(todEvaluations.id, existing[0].id));
-    
-    if (body.conclusion === 'Ineffective') {
-      const defService = new DeficiencyService(db);
-      await defService.createAutoDeficiency({
-        organizationId: orgId,
-        controlId: body.controlId,
-        description: `Hasil Verifikasi Desain (TOD) Ineffective.`,
-        source: 'Lini 2 - TOD Review',
-        userId,
-        period: 'TOD-Evaluation'
-      });
-    }
+
+    await triggerTodDeficiency(db, orgId, body.controlId, userId, body.conclusion);
     return ok(c, { ...existing[0], ...values });
   } else {
     const newId = crypto.randomUUID();
     await db.insert(todEvaluations).values({ id: newId, ...values, createdAt: new Date() });
-    
-    if (body.conclusion === 'Ineffective') {
-      const defService = new DeficiencyService(db);
-      await defService.createAutoDeficiency({
-        organizationId: orgId,
-        controlId: body.controlId,
-        description: `Hasil Verifikasi Desain (TOD) Ineffective.`,
-        source: 'Lini 2 - TOD Review',
-        userId,
-        period: 'TOD-Evaluation'
-      });
-    }
+
+    await triggerTodDeficiency(db, orgId, body.controlId, userId, body.conclusion);
     return ok(c, { id: newId, ...values });
   }
 });
@@ -183,11 +184,13 @@ csaSamplesTestingRoute.post('/tests', async (c) => {
     const defService = new DeficiencyService(db);
     await defService.createAutoDeficiency({
       organizationId: orgId,
-      controlId: body.controlId!,
-      description: `Hasil Pengujian ${body.testType} Ineffective: ${body.comments || 'No comments.'}`,
+      controlId: body.controlId,
+      bpmProcessId: null,
+      period: body.period || new Date().getFullYear().toString(),
       source: 'Lini 3 - Audit',
       userId,
-      period: body.period || new Date().getFullYear().toString()
+      testType: body.testType === 'TOD' ? 'TOD' : 'TOE',
+      detail: typeof body.comments === 'string' ? body.comments : undefined,
     });
   }
 
