@@ -51,17 +51,27 @@ export const RISK_FIELDS = ['riskDescription', 'riskRating', 'isFraudRelated'] a
 
 export type AssertionRow = Partial<Record<string, string | null>>;
 
+type AssertionPilar = 'E' | 'C' | 'A' | 'Co' | 'Va' | 'Ro' | 'Pd';
+
+/** Minimal read surface: explicit assertion columns + FSLI defaults.
+ *  Matrix rows carry additional drizzle scalars that flow through
+ *  the spread below untouched. */
+export type AssertionFallbackSource = {
+  [K in `assertion${AssertionPilar}` | `def${AssertionPilar}`]?: string | null;
+};
+
 /** Prefers the explicit assertion over the account (FSLI) default. Empty,
  *  null and undefined all fall back (legacy `||` semantics). */
-export function applyAssertionFallback(row: Record<string, unknown>): AssertionRow {
-  const out: AssertionRow = { ...row };
-  for (const key of ['E', 'C', 'A', 'Co', 'Va', 'Ro', 'Pd']) {
+export function applyAssertionFallback(row: AssertionFallbackSource): AssertionRow {
+  const overrides: AssertionRow = {};
+  for (const key of ['E', 'C', 'A', 'Co', 'Va', 'Ro', 'Pd'] as const) {
     const explicit = row[`assertion${key}`];
     if (explicit === undefined || explicit === null || explicit === '') {
-      out[`assertion${key}`] = (row[`def${key}`] as string | null) ?? null;
+      const fallback = row[`def${key}`];
+      overrides[`assertion${key}`] = typeof fallback === 'string' ? fallback : null;
     }
   }
-  return out;
+  return { ...row, ...overrides };
 }
 
 export function matchesNoGL(fsliCodes: string[] | null | undefined, noGL: string | undefined): boolean {

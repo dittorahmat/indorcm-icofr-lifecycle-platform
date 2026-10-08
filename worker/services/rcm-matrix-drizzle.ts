@@ -124,8 +124,11 @@ export class DrizzleMatrixWriteStore implements RcmMatrixWriteStore {
     for (const u of updates) {
       const patch: { riskDescription?: string; riskRating?: string | null; isFraudRelated?: boolean } = {};
       if (typeof u.patch.riskDescription === 'string') patch.riskDescription = u.patch.riskDescription;
-      if (typeof u.patch.riskRating === 'string' || u.patch.riskRating === null) {
-        patch.riskRating = u.patch.riskRating;
+      const riskRating: unknown = u.patch.riskRating;
+      if (typeof riskRating === 'string') {
+        patch.riskRating = riskRating;
+      } else if (riskRating === null) {
+        patch.riskRating = null;
       }
       if (typeof u.patch.isFraudRelated === 'boolean') patch.isFraudRelated = u.patch.isFraudRelated;
       if (Object.keys(patch).length === 0) continue;

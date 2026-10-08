@@ -11,7 +11,7 @@ import { AlertTriangle, Info, FileText, Target, ChevronRight, Fingerprint, Loade
 import { cn } from '@/lib/utils';
 import { RegulatorySamplingTable } from './RegulatorySamplingTable';
 import { SampleRange } from '@/lib/compliance-utils';
-import { requiresHomogeneityJustification } from '@shared/testing-decision';
+import { requiresHomogeneityJustification, type TestingControl } from '@shared/testing-decision';
 import { TestFormValues } from './test-schema';
 import { TestableControl } from './testing-compliance-engine';
 
@@ -31,8 +31,8 @@ export function TOETabContent({ control, suggestion, isAuthenticating, isPending
   // the same rule the server enforces on insert.
   const isBelowMin = requiresHomogeneityJustification(
     {
-      frequency: control.frequency as TestableControl['frequency'],
-      riskRating: control.riskRating as TestableControl['riskRating'],
+      frequency: control.frequency as TestingControl['frequency'],
+      riskRating: control.riskRating as TestingControl['riskRating'],
       nature: control.nature as string,
     },
     sampleSize,

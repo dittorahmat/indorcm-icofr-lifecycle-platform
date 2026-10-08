@@ -25,6 +25,7 @@ function seedSnapshot(over: Partial<WorkflowEntitySnapshot> = {}): WorkflowEntit
     createdBy: 'creator-1',
     name: 'Entity 1',
     planStatus: 'Draft',
+    failedControlIds: null,
     ...over,
   };
 }
@@ -74,6 +75,7 @@ function createFakes() {
     },
     notify: async ({ userId, link }) => {
       notifications.push({ userId, link });
+      return 'notif-test-1';
     },
   };
   const deps: WorkflowTransitionDeps = { store, effects, now: () => 1000, newId: () => 'hist-1' };

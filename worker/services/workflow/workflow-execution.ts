@@ -82,7 +82,7 @@ export interface WorkflowNotification {
 export interface WorkflowTransitionEffects {
   audit(entry: WorkflowAuditEntry): Promise<void>;
   raiseDeficiency(event: DeficiencyTriggerEvent): Promise<{ id: string; created: boolean }>;
-  notify(message: WorkflowNotification): Promise<void>;
+  notify(message: WorkflowNotification): Promise<string>;
 }
 
 export interface WorkflowTransitionDeps {
@@ -182,7 +182,7 @@ export async function executeWorkflowTransition(
   }
 
   const decision = decideTransition({ entityType, currentStatus: snapshot.status, action, role, note: input.note });
-  if (!decision.ok) {
+  if (decision.ok === false) {
     throw new AppError(decision.code, decision.message, decision.status);
   }
   const fromStatus = snapshot.status;
