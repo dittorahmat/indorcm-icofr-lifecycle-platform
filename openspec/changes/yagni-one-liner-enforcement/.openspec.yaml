@@ -1,0 +1,9 @@
+schema: spec-driven
+created: 2026-10-08
+triage: ready-for-agent
+source: to-spec
+adr: docs/adr/0002-yagni-one-liner-enforcement.md
+glossary:
+  - YAGNI-Violation
+  - One-Liner
+  - Abstraksi Sekali-Pakai

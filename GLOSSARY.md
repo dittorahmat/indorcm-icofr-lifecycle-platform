@@ -19,3 +19,12 @@ Daftar aktivitas pengendalian yang telah dicatat dalam RCM namun belum ditautkan
 
 ### Auto-Reconciliation / Auto-Link
 Mekanisme pencocokan baris kontrol dalam berkas impor RCM terhadap simpul diagram BPM yang ada menggunakan referensi kode simpul (`Ref_Langkah_BPM`) dan kemiripan semantik label teks alur, dilengkapi dialog pratinjau konfirmasi sebelum komit ke basis data.
+
+### YAGNI-Violation (Pelanggaran YAGNI)
+Abstraksi yang ditambahkan untuk kebutuhan hipotetis ("nanti mungkin butuh") tanpa pemakai nyata hari ini: hook generik, wrapper, util, opsi config, file/komponen baru yang hanya dipakai sekali, atau prop/callback tanpa pemakai. Dilarang kecuali memenuhi salah satu pengecualian: (a) dipakai ≥2 tempat, (b) butuh unit test tersendiri, atau (c) memecah god-file `>400 LOC`. Keputusan enforcement: `docs/adr/0002-yagni-one-liner-enforcement.md`.
+
+### One-Liner (Solusi Inline Pilihan)
+Penyelesaian kasus nyata hari ini dengan satu ekspresi inline tanpa ekstraksi baru: inline expression, early return, optional chaining, `.map` langsung. Pilihan default atas abstraksi baru; dikalahkan oleh pengecualian (b) untuk komputasi bisnis yang wajib tinggal di modul murni teruji.
+
+### Abstraksi Sekali-Pakai (Single-Use Abstraction)
+File/fungsi/hook/tipe/komponen baru yang hanya memiliki satu pemakai dan tidak memiliki test pendamping yang menguncinya. Dianggap YAGNI-violation dan wajib di-inline, kecuali untuk memecah god-file `>400 LOC`.
