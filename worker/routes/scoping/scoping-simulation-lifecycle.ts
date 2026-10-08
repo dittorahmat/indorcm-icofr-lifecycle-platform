@@ -9,9 +9,11 @@ import {
 import { eq, and } from 'drizzle-orm';
 import type {
   SimulationStatus,
+  WorkflowAction,
 } from "@shared/types";
 import { AuditService } from "../../services/audit-service";
 import { createNotificationAndSendEmail } from '../../services/email';
+import { runWorkflowTransition } from "../../services/workflow/workflow-drizzle-adapter";
 import { rbac } from "../../lib/guard";
 
 const simulationLifecycle = new Hono<HonoEnv>();
@@ -200,72 +202,20 @@ simulationLifecycle.post('/simulations/:id/request-deletion', async (c) => {
 
 simulationLifecycle.post('/simulations/:id/workflow', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
-  const orgId = c.get('organizationId');
-  const userId = c.get('userId');
-  const userRole = c.get('userRole');
   const id = c.req.param('id');
-  const { action, note, assigneeId } = await c.req.json<{ action: string, note?: string, assigneeId?: string }>();
+  const { action, note, assigneeId } = await c.req.json<{ action: WorkflowAction; note?: string; assigneeId?: string }>();
 
-  const [sim] = await db.select().from(simulations).where(and(eq(simulations.id, id), eq(simulations.organizationId, orgId))).limit(1);
-  if (!sim) return notFound(c, 'Simulation not found');
-
-  const history = (sim.workflowHistory as Array<Record<string, unknown>>) || [];
-  const currentStatus = sim.workflowStatus || 'Draft';
-  let nextStatus = currentStatus;
-
-  // Simple State Machine for Scoping
-  if (action === 'Submit') nextStatus = 'Pending CFO';
-  else if (action === 'Review') nextStatus = 'Pending Komut';
-  else if (action === 'Approve') nextStatus = 'Approved';
-  else if (action === 'Reject') nextStatus = 'Rejected';
-  else if (action === 'Rollback') nextStatus = 'Draft';
-
-  const newHistoryEntry = {
-    id: crypto.randomUUID(),
-    fromStatus: currentStatus,
-    toStatus: nextStatus,
+  const result = await runWorkflowTransition(db, c.env, {
+    entityType: 'SCOPING',
+    entityId: id,
+    organizationId: c.get('organizationId'),
+    userId: c.get('userId'),
+    role: c.get('userRole'),
     action,
-    role: userRole,
-    userId,
+    note,
     assigneeId,
-    timestamp: Date.now(),
-    note: note || `${action} action performed`
-  };
-
-  await db.update(simulations)
-    .set({
-      workflowStatus: nextStatus,
-      workflowHistory: [...history, newHistoryEntry],
-      updatedAt: new Date() as never,
-      // Keep legacy status synced for now
-      status: nextStatus as never
-    })
-    .where(and(eq(simulations.id, id), eq(simulations.organizationId, orgId)));
-
-  // Notifications
-  if (nextStatus === 'Approved') {
-    await createNotificationAndSendEmail({
-      db,
-      orgId,
-      userId: sim.createdBy!,
-      message: `Your scoping simulation "${sim.name}" has been fully approved.`,
-      type: 'success',
-      link: `/scoping?id=${id}`,
-      env: c.env,
-    });
-  } else if (nextStatus === 'Rejected') {
-    await createNotificationAndSendEmail({
-      db,
-      orgId,
-      userId: sim.createdBy!,
-      message: `Scoping simulation "${sim.name}" was rejected: ${note}`,
-      type: 'error',
-      link: `/scoping?id=${id}`,
-      env: c.env,
-    });
-  }
-
-  return ok(c, { nextStatus });
+  });
+  return ok(c, result);
 });
 
 export default simulationLifecycle;

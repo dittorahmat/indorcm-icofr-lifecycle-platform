@@ -3,7 +3,9 @@ import type { HonoEnv } from '../app';
 import { ok, bad, notFound } from '../lib/utils';
 import { getDb } from '../db';
 import { BpmService } from "../services/bpm-service";
+import { runWorkflowTransition } from "../services/workflow/workflow-drizzle-adapter";
 import { rbac } from "../lib/guard";
+import type { WorkflowAction } from "@shared/types";
 import { AIService } from "../services/ai-service";
 import { SchemaType } from "@google/generative-ai";
 import { jsonrepair } from "jsonrepair";
@@ -394,22 +396,20 @@ bpm.patch('/bpm-processes/:id', rbac(['Line 1', 'Admin']), async (c) => {
 
 bpm.post('/bpm-processes/:id/workflow', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
-  const bpmService = new BpmService(db);
   const id = c.req.param('id');
-  const body = await c.req.json();
+  const body = await c.req.json<{ action: WorkflowAction; note?: string; assigneeId?: string }>();
 
-  try {
-    const result = await bpmService.handleWorkflowAction(
-      c.get('organizationId')!,
-      c.get('userId')!,
-      c.get('userRole')!,
-      id!,
-      body
-    );
-    return ok(c, result);
-  } catch (e: any) {
-    return bad(c, e.message);
-  }
+  const result = await runWorkflowTransition(db, c.env, {
+    entityType: 'BPM',
+    entityId: id,
+    organizationId: c.get('organizationId'),
+    userId: c.get('userId'),
+    role: c.get('userRole'),
+    action: body.action,
+    note: body.note,
+    assigneeId: body.assigneeId,
+  });
+  return ok(c, result);
 });
 
 bpm.delete('/bpm-processes/:id', rbac(['Line 1', 'Admin']), async (c) => {

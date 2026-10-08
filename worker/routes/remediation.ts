@@ -1,15 +1,16 @@
 import { Hono } from "hono";
 import type { HonoEnv } from '../app';
-import { ok, bad, notFound } from '../lib/utils';
+import { ok, notFound } from '../lib/utils';
 import { getDb } from '../db';
 import { 
   deficiencies, actionPlans, auditLogs, aggregateDeficiencies, 
   organization, notifications, controls, rcms
 } from '../db/schema';
 import { eq, and, SQL } from 'drizzle-orm';
-import type { Deficiency, ActionPlan, AggregateDeficiency } from "@shared/types";
+import type { Deficiency, ActionPlan, AggregateDeficiency, WorkflowAction } from "@shared/types";
 import { AuditService } from "../services/audit-service";
 import { createNotificationAndSendEmail } from "../services/email";
+import { runWorkflowTransition } from "../services/workflow/workflow-drizzle-adapter";
 
 const remediation = new Hono<HonoEnv>();
 
@@ -173,75 +174,19 @@ remediation.put('/actionplans/:id', async (c) => {
 remediation.post('/actionplans/:id/workflow', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const id = c.req.param('id');
-  const orgId = c.get('organizationId')!;
-  const userId = c.get('userId')!;
-  const role = c.get('userRole')!;
-  const body = await c.req.json<{ action: any, note: string, assigneeId?: string }>();
+  const body = await c.req.json<{ action: WorkflowAction; note?: string; assigneeId?: string }>();
 
-  const existing = await db.select().from(actionPlans).where(and(eq(actionPlans.id, id), eq(actionPlans.organizationId, orgId))).limit(1);
-  if (existing.length === 0) return notFound(c, 'Action Plan not found');
-
-  const plan = existing[0];
-  const currentStatus = (plan.workflowStatus as any) || "Ineffective";
-  let nextStatus = currentStatus;
-
-  if (body.action === "Submit") {
-    nextStatus = "In Review";
-  } else if (body.action === "Review") {
-    nextStatus = "In Approval";
-  } else if (body.action === "Approve") {
-    nextStatus = "Resolved";
-  } else if (body.action === "Reject") {
-    if (!body.note) return bad(c, "NOTE_REQUIRED", 400, "Rejection requires a note");
-    nextStatus = "Ineffective";
-  } else if (body.action === "Rollback") {
-    if (!body.note) return bad(c, "NOTE_REQUIRED", 400, "Rollback requires a note");
-    nextStatus = "Ineffective";
-  }
-
-  const historyEntry = {
-    id: crypto.randomUUID(),
+  const result = await runWorkflowTransition(db, c.env, {
+    entityType: 'ACTION_PLAN',
+    entityId: id,
+    organizationId: c.get('organizationId'),
+    userId: c.get('userId'),
+    role: c.get('userRole'),
     action: body.action,
-    fromStatus: currentStatus,
-    toStatus: nextStatus,
-    userId,
-    role,
-    timestamp: Date.now(),
-    note: body.note
-  };
-
-  const currentHistory = (plan.workflowHistory as any[]) || [];
-  const newHistory = [historyEntry, ...currentHistory];
-
-  const updateData: any = {
-    workflowStatus: nextStatus,
-    workflowHistory: newHistory,
-    status: nextStatus === 'Resolved' ? 'Resolved' : plan.status 
-  };
-
-  if (nextStatus === 'Resolved') {
-     updateData.actualCompletionDate = new Date();
-     if (plan.deficiencyId) {
-        await db.update(deficiencies).set({ status: 'Remediated' }).where(eq(deficiencies.id, plan.deficiencyId));
-     }
-  }
-
-  await db.update(actionPlans).set(updateData).where(eq(actionPlans.id, id));
-
-  if (nextStatus !== currentStatus) {
-    const targetUserId = body.assigneeId || plan.ownerId || userId;
-    await createNotificationAndSendEmail({
-      db,
-      orgId,
-      userId: targetUserId,
-      message: `Status Rencana Aksi berubah menjadi ${nextStatus}. ${body.note ? 'Catatan: ' + body.note : ''}`,
-      type: body.action === 'Reject' ? 'error' : (body.action === 'Approve' ? 'success' : 'info'),
-      link: '/deficiencies',
-      env: c.env,
-    });
-  }
-
-  return ok(c, { success: true, nextStatus });
+    note: body.note,
+    assigneeId: body.assigneeId,
+  });
+  return ok(c, result);
 });
 
 remediation.get('/aggregatedeficiencies', async (c) => {
