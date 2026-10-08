@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { hasFailSample } from '@shared/testing-decision';
 
 export const testSampleSchema = z.object({
   id: z.string().optional(),
@@ -49,10 +50,12 @@ export const testSchema = z.object({
     }
   }
   
-  // Zero Tolerance enforcement: if any sample is Fail, result must be Ineffective
+  // Zero Tolerance enforcement (adapter over the testing-decision seam):
+  // if any sample fails, the overall result must be Ineffective.
+  // Below-minimum sampling is owned by decideTest (needs control context),
+  // not by this structural schema.
   if (data.testType === 'TOE' && data.samples.length > 0) {
-    const hasFail = data.samples.some(s => s.status === 'Fail');
-    if (hasFail && data.result === 'Effective') {
+    if (hasFailSample(data.samples) && data.result === 'Effective') {
         ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: "Overall result must be Ineffective if any sample fails (Zero Tolerance)",

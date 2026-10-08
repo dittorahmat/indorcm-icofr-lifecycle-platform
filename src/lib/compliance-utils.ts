@@ -1,4 +1,4 @@
-import { ControlFrequency, Control, GLRow, BenchmarkBasis } from "@shared/types";
+import { GLRow } from "@shared/types";
 import { 
   getGroupMultiplier, 
   calculateBenchmarkValue, 
@@ -11,115 +11,18 @@ export {
   calculateRiskRating 
 };
 
-// Module-level time constants (millisecond equivalents)
-export const DAY_MS = 86400000;
-export const WEEK_MS = DAY_MS * 7;
-export const MONTH_MS = DAY_MS * 30;
-export const QUARTER_MS = MONTH_MS * 3;
-
-/**
- * Panduan Penentuan Jumlah Sampel berdasarkan Tabel 22 (Hal 56)
- * Dipengaruhi oleh Frekuensi dan Tingkat Risiko
- */
-export interface SampleRange {
-  min: number;
-  max: number;
-  label: string;
-}
-
-export function getSuggestedSampleRange(
-  frequency: ControlFrequency,
-  riskRating: "High" | "Medium" | "Low",
-  nature: string
-): SampleRange {
-  if (nature === "Automated") {
-    return { min: 1, max: 1, label: "1 (Test of One)" };
-  }
-
-  const isHigh = riskRating === "High";
-
-  switch (frequency) {
-    case "Annual":
-      return { min: 1, max: 1, label: "1" };
-    case "Semi-Annual":
-      // SK-5 doesn't explicitly list Semi-Annual in Table 22, mapping to Quarterly or higher based on conservatism
-      return isHigh ? { min: 2, max: 3, label: "2 - 3" } : { min: 1, max: 2, label: "1 - 2" };
-    case "Quarterly":
-      // Table 22: Kuartalan (4 population) -> 2 sampai 3 samples
-      return isHigh ? { min: 3, max: 3, label: "3" } : { min: 2, max: 2, label: "2" };
-    case "Monthly":
-      // Table 22: Bulanan (12 population) -> 2 sampai 5 samples
-      return isHigh ? { min: 5, max: 5, label: "5" } : { min: 2, max: 3, label: "2 - 3" };
-    case "Weekly":
-      // Table 22: Mingguan (52 population) -> 5 sampai 15 samples
-      return isHigh ? { min: 15, max: 15, label: "15" } : { min: 5, max: 8, label: "5 - 8" };
-    case "Daily":
-      // Table 22: Harian (250 population) -> 15 sampai 40 samples
-      return isHigh ? { min: 40, max: 40, label: "40" } : { min: 15, max: 20, label: "15 - 20" };
-    case "Ad-hoc":
-      // Table 22: Lebih dari sekali dalam satu hari (>250 population) -> 30 sampai 60 samples
-      return isHigh ? { min: 60, max: 60, label: "60" } : { min: 30, max: 45, label: "30 - 45" };
-    default:
-      return { min: 1, max: 1, label: "1" };
-  }
-}
-
-/**
- * Penentuan Jumlah Sampel Remediasi berdasarkan Tabel 23 (Hal 70)
- */
-export function getRemediationSampleSize(frequency: ControlFrequency): number {
-  switch (frequency) {
-    case "Annual": return 1;
-    case "Semi-Annual": return 1;
-    case "Quarterly": return 2;
-    case "Monthly": return 2;
-    case "Weekly": return 5;
-    case "Daily": return 15;
-    case "Ad-hoc": return 25;
-    default: return 1;
-  }
-}
-
-/**
- * Validasi Periode Minimum Pengujian Remediasi berdasarkan Tabel 23 (Hal 60)
- */
-export function getMinRemediationPeriod(frequency: ControlFrequency): { value: number; unit: 'days' | 'weeks' | 'months' | 'quarters' } {
-  switch (frequency) {
-    case "Annual": return { value: 1, unit: 'quarters' }; 
-    case "Semi-Annual": return { value: 1, unit: 'quarters' };
-    case "Quarterly": return { value: 2, unit: 'quarters' };
-    case "Monthly": return { value: 3, unit: 'months' };
-    case "Weekly": return { value: 5, unit: 'weeks' };
-    case "Daily": return { value: 30, unit: 'days' };
-    case "Ad-hoc": return { value: 15, unit: 'days' }; // 25 times over multiple days (approx 15 days for testing)
-    default: return { value: 1, unit: 'days' };
-  }
-}
-
-export function isReadyForRemediationTest(
-  frequency: ControlFrequency,
-  remediationDate: number
-): { isReady: boolean; message: string } {
-  const min = getMinRemediationPeriod(frequency);
-  const now = Date.now();
-  const diff = now - remediationDate;
-
-  let requiredMs = 0;
-  if (min.unit === 'days') requiredMs = min.value * DAY_MS;
-  else if (min.unit === 'weeks') requiredMs = min.value * WEEK_MS;
-  else if (min.unit === 'months') requiredMs = min.value * MONTH_MS;
-  else if (min.unit === 'quarters') requiredMs = min.value * QUARTER_MS;
-
-  const isReady = diff >= requiredMs;
-  const waitText = `${min.value} ${min.unit}`;
-
-  return {
-    isReady,
-    message: isReady 
-      ? "Periode tunggu minimum terpenuhi (Tabel 23)." 
-      : `Belum memenuhi periode tunggu minimum (${waitText}) sejak perbaikan.`
-  };
-}
+// Sampling tables (SK-5 Table 22/23) live in the single testing-decision
+// module so client pre-flight and the server insert path share one seam.
+// Re-exported here for existing import sites.
+export {
+  getSuggestedSampleRange,
+  getRemediationSampleSize,
+  getMinRemediationPeriod,
+  isReadyForRemediationTest,
+  type SampleRange,
+  type ControlFrequency as SamplingControlFrequency,
+  type RiskRating as SamplingRiskRating,
+} from '@shared/testing-decision';
 
 /**
  * Pemetaan COBIT 2019 ke Area ITGC berdasarkan Tabel 1 (Hal 16)
@@ -339,13 +242,24 @@ export interface SheetMeta {
   hidden: boolean;
 }
 
+interface WorkbookSheetMeta {
+  name?: string;
+  Hidden?: number;
+  hidden?: number;
+}
+
+interface WorkbookLike {
+  Workbook?: { Sheets?: WorkbookSheetMeta[] };
+  SheetNames?: string[];
+}
+
 /**
  * Extract sheet metadata from XLSX workbook including hidden status
  */
-export function getWorkbookSheetsMeta(workbook: any): SheetMeta[] {
+export function getWorkbookSheetsMeta(workbook: WorkbookLike): SheetMeta[] {
   const wbSheets = workbook.Workbook?.Sheets || [];
   return (workbook.SheetNames || []).map((name: string, idx: number) => {
-    const meta = wbSheets[idx] || wbSheets.find((s: any) => s.name === name);
+    const meta = wbSheets[idx] || wbSheets.find((s) => s.name === name);
     // Hidden: 1 = Hidden, 2 = VeryHidden
     const isHidden = meta?.Hidden === 1 || meta?.Hidden === 2 || meta?.hidden === 1 || meta?.hidden === 2;
     return {
@@ -527,5 +441,7 @@ export const TEST_RESULT_MAP = {
 } as const;
 
 export function getTestResultLabel(result: string): { label: string; variant: string; color: string } {
-  return (TEST_RESULT_MAP as any)[result] || { label: result, variant: "outline", color: "text-slate-500" };
+  const entry: { label: string; variant: string; color: string } | undefined =
+    (TEST_RESULT_MAP as Record<string, { label: string; variant: string; color: string }>)[result];
+  return entry || { label: result, variant: "outline", color: "text-slate-500" };
 }

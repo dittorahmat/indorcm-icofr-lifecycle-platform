@@ -11,19 +11,33 @@ import { AlertTriangle, Info, FileText, Target, ChevronRight, Fingerprint, Loade
 import { cn } from '@/lib/utils';
 import { RegulatorySamplingTable } from './RegulatorySamplingTable';
 import { SampleRange } from '@/lib/compliance-utils';
+import { requiresHomogeneityJustification } from '@shared/testing-decision';
 import { TestFormValues } from './test-schema';
+import { TestableControl } from './testing-compliance-engine';
 
 interface TOETabContentProps {
+  control: TestableControl;
   suggestion: SampleRange;
   isAuthenticating: boolean;
   isPending: boolean;
 }
 
-export function TOETabContent({ suggestion, isAuthenticating, isPending }: TOETabContentProps) {
+export function TOETabContent({ control, suggestion, isAuthenticating, isPending }: TOETabContentProps) {
   const { t } = useTranslation('testing');
   const form = useFormContext<TestFormValues>();
   const sampleSize = form.watch('sampleSize');
-  const isBelowMin = sampleSize !== undefined && sampleSize < suggestion.min;
+  const homogeneityJustification = form.watch('homogeneityJustification');
+  // Verdict display is an adapter over the testing-decision seam —
+  // the same rule the server enforces on insert.
+  const isBelowMin = requiresHomogeneityJustification(
+    {
+      frequency: control.frequency as TestableControl['frequency'],
+      riskRating: control.riskRating as TestableControl['riskRating'],
+      nature: control.nature as string,
+    },
+    sampleSize,
+    homogeneityJustification,
+  );
 
   return (
     <div className="space-y-6 sm:space-y-8 m-0 outline-none">
@@ -74,7 +88,7 @@ export function TOETabContent({ suggestion, isAuthenticating, isPending }: TOETa
                       )} 
                     />
                     <div className="absolute inset-y-0 right-3.5 flex items-center text-xs font-semibold text-slate-400 uppercase tracking-tight">
-                      Units
+                      {t('toe.units')}
                     </div>
                   </div>
                 </FormControl>
@@ -130,17 +144,17 @@ export function TOETabContent({ suggestion, isAuthenticating, isPending }: TOETa
           <div className="flex items-center justify-between flex-wrap gap-2">
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2">
               <Target className="h-4 w-4 text-indigo-500" />
-              Regulatory Note
+              {t('toe.regulatoryNote')}
             </h4>
-            <Badge variant="outline" className="text-xs font-semibold border-indigo-200 text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded">SAMPLE BASIS</Badge>
+            <Badge variant="outline" className="text-xs font-semibold border-indigo-200 text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded">{t('toe.sampleBasis')}</Badge>
           </div>
           <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-xs space-y-3">
             <p className="text-xs text-slate-600 font-normal leading-relaxed">
-              Pengambilan sampel harus didasarkan pada populasi transaksi selama periode penilaian untuk memastikan efektivitas operasional yang konsisten.
+              {t('toe.regulatoryBody')}
             </p>
             <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between flex-wrap gap-2">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Requirement</span>
-              <span className="text-xs font-bold text-indigo-600 uppercase flex items-center gap-1">Zero Tolerance <ChevronRight className="h-3.5 w-3.5" /></span>
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('toe.requirement')}</span>
+              <span className="text-xs font-bold text-indigo-600 uppercase flex items-center gap-1">{t('toe.zeroTolerance')} <ChevronRight className="h-3.5 w-3.5" /></span>
             </div>
           </div>
         </div>
@@ -149,7 +163,7 @@ export function TOETabContent({ suggestion, isAuthenticating, isPending }: TOETa
       <div className="space-y-3.5 pt-2">
         <div className="flex items-center gap-2 px-0.5 mb-1">
           <div className="h-2 w-2 rounded-full bg-indigo-500" />
-          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">Transaction Sample Testing</h4>
+          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">{t('toe.transactionSampleTesting')}</h4>
         </div>
         <RegulatorySamplingTable control={form.control} t={t} />
       </div>
@@ -171,7 +185,7 @@ export function TOETabContent({ suggestion, isAuthenticating, isPending }: TOETa
       <div className="pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 flex-wrap min-w-0">
         <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider min-w-0">
           <Fingerprint className="h-4 w-4 text-indigo-500 shrink-0" />
-          Certified Evidence Submission
+          {t('toe.certifiedSubmission')}
         </div>
         <div className="flex flex-col-reverse sm:flex-row gap-2.5 sm:gap-3 w-full sm:w-auto">
           <Button 
