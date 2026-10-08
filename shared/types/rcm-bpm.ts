@@ -135,4 +135,76 @@ export interface RCM extends Omit<InferSelectModel<typeof schema.rcms>, 'auditTr
   };
 }
 
+/** Lini 1 (preparer) verification-design fields. The allow-list partition is
+ *  owned by the rcm-matrix-write domain module (arch-09 T4); unknown keys in
+ *  a request body never reach the store. */
+export interface VerificationLini1Fields {
+  controlName?: string | null;
+  controlDescription?: string | null;
+  supportingDocs?: string | null;
+  isKeyControl?: boolean | null;
+  ipoC?: string | null;
+  ipoA?: string | null;
+  ipoV?: string | null;
+  ipoRa?: string | null;
+  assertionE?: string | null;
+  assertionC?: string | null;
+  assertionA?: string | null;
+  assertionCo?: string | null;
+  assertionVa?: string | null;
+  assertionRo?: string | null;
+  assertionPd?: string | null;
+  controlType?: string | null;
+  controlNature?: string | null;
+  automatedControlType?: string | null;
+  frequency?: string | null;
+  supportingApp?: string | null;
+  applicationId?: string | null;
+  executingFunction?: string | null;
+  executorRole?: string | null;
+  affectedFsliItem?: string | null;
+  effectivePeriod?: string | null;
+}
+
+/** Lini 2 (TOD review) verification-design fields. */
+export interface VerificationLini2Fields {
+  pilarObjective?: string | null;
+  pilarTiming?: string | null;
+  pilarAuthority?: string | null;
+  pilarReliability?: string | null;
+  pilarCoverage?: string | null;
+  pilarEvidence?: string | null;
+  kkReference?: string | null;
+  conclusion?: string | null;
+  comment?: string | null;
+}
+
+/** PATCH /rcm-matrix/verification-design/:mappingId body (typed, no `any`). */
+export interface VerificationDesignPatchBody extends VerificationLini1Fields, VerificationLini2Fields {
+  [field: string]: string | boolean | null | undefined;
+}
+
+/** POST /rcm-matrix/:type/batch-update item. `automatedSubNature` is a FE
+ *  alias converging onto the `automatedControlType` column. */
+export interface VerificationBatchUpdateItem {
+  mappingId?: string;
+  riskDescription?: string;
+  riskRating?: string;
+  isFraudRelated?: boolean;
+  [field: string]: string | boolean | null | undefined;
+}
+
+/** POST /rcm-matrix/verification-design body (create path). */
+export interface CreateVerificationDesignBody extends VerificationDesignPatchBody {
+  createNewRcm?: boolean;
+  rcmId?: string;
+  process?: string;
+  subProcess?: string;
+  riskDescription?: string;
+  riskRating?: string;
+  isFraudRelated?: boolean;
+  controlCode?: string;
+  bpmProcessId?: string | null;
+}
+
 

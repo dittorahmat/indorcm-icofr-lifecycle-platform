@@ -2,7 +2,7 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 import { getDb } from '../db';
-import { csaRecords, csaSamples, controls, deficiencies, bpmProcesses } from '../db/schema';
+import { csaRecords, csaSamples } from '../db/schema';
 import { eq, and } from 'drizzle-orm';
 import { DeficiencyService } from '../services/deficiency-service';
 
@@ -37,8 +37,9 @@ export async function backfillCsaDeficiencies(databaseUrl?: string) {
     const failedControlIds = new Set<string>();
 
     for (const sample of samples) {
-      if (sample.controlResults && typeof sample.controlResults === 'object') {
-        for (const [ctrlId, val] of Object.entries<any>(sample.controlResults)) {
+      const results = sample.controlResults as Record<string, { implemented?: boolean } | null> | null;
+      if (results && typeof results === 'object') {
+        for (const [ctrlId, val] of Object.entries(results)) {
           if (val && val.implemented === false) {
             failedControlIds.add(ctrlId);
           }
@@ -46,31 +47,17 @@ export async function backfillCsaDeficiencies(databaseUrl?: string) {
       }
     }
 
-    let bpmProcessName = "Sub-Proses Bisnis";
-    if (record.bpmProcessId) {
-      const bpm = await db.query.bpmProcesses.findFirst({
-        where: eq(bpmProcesses.id, record.bpmProcessId),
-        columns: { name: true, noGL: true }
-      });
-      if (bpm) {
-        bpmProcessName = `${bpm.name} (${bpm.noGL})`;
-      }
-    }
+    console.log(`👉 Record ${record.id} (${record.period}): consolidating ${failedControlIds.size} failed control(s) for ${record.bpmProcessId ?? 'BPM assessment'}`);
 
-    let description = `Hasil CSA Ineffective untuk proses ${bpmProcessName} (periode ${record.period}).`;
-    if (failedControlIds.size > 0) {
-      description += ` Kontrol gagal: ${Array.from(failedControlIds).join(', ')}.`;
-    }
-
-    console.log(`👉 Record ${record.id} (${record.period}): consolidating ${failedControlIds.size} failed control(s) for ${bpmProcessName}`);
-
+    // Typed event only — description/policy live in the deficiency-trigger module.
     const defId = await defService.createAutoDeficiency({
       organizationId: record.organizationId,
       controlId: null,
-      description,
+      bpmProcessId: record.bpmProcessId,
+      period: record.period,
       source: 'Lini 1 - CSA',
       userId: record.assessedBy || 'SYSTEM',
-      period: record.period
+      failedControlIds: Array.from(failedControlIds),
     });
 
     console.log(`   ✅ Created/Verified consolidated deficiency ${defId}`);
