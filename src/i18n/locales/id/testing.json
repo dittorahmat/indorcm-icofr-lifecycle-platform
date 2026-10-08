@@ -39,7 +39,15 @@
     "homogeneity": "Justifikasi Homogenitas (Mandatori Bab V 1.3.a)",
     "homogeneityPlaceholder": "Jelaskan mengapa populasi dianggap homogen (misalnya sistem, personel, SOP yang sama)...",
     "comments": "Komentar TOE",
-    "placeholder": "Masukkan hasil TOE, detail sampel, dan deviasi..."
+    "placeholder": "Masukkan hasil TOE, detail sampel, dan deviasi...",
+    "units": "Unit",
+    "regulatoryNote": "Catatan Regulasi",
+    "sampleBasis": "DASAR SAMPEL",
+    "regulatoryBody": "Pengambilan sampel harus didasarkan pada populasi transaksi selama periode penilaian untuk memastikan efektivitas operasional yang konsisten.",
+    "requirement": "Persyaratan",
+    "zeroTolerance": "Toleransi Nol",
+    "transactionSampleTesting": "Pengujian Sampel Transaksi",
+    "certifiedSubmission": "Penyampaian Bukti Tersertifikasi"
   },
   "attributes": {
     "title": "Atribut Evaluasi (Mandatori Tabel 21)",
@@ -54,6 +62,7 @@
     "method": "Metode Pengujian",
     "effective": "Efektif",
     "ineffective": "Tidak Efektif",
+    "finalVerdict": "Putusan Audit Final",
     "submitting": "Mengirim..."
   },
   "history": {
