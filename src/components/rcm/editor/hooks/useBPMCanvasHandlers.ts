@@ -2,11 +2,11 @@ import { useCallback } from 'react';
 import type { Dispatch, SetStateAction, DragEvent } from 'react';
 import type { Node, Edge } from 'reactflow';
 import { toast } from 'sonner';
-import { MarkerType } from 'reactflow';
-import { deriveLabelFromId } from '@/utils/ocr-layout';
 import { getStandardNodeDimensions } from '@/utils/bpm-constants';
-import { calculateAppendOffset, remapElementsForAppend } from '@/utils/bpm-ocr-append';
-import type { OcrAppendDirection, OcrImportMode } from '../ocr/ocr-types';
+import type { BPMDiagramSheet } from '@shared/types';
+import { applyOcrImport } from '../ocr/ocr-import-adapter';
+import { enrichCanvasNodes } from '../ocr/ocr-node-normalize';
+import type { OcrApplyRequest } from '../ocr/ocr-types';
 
 interface UseBPMCanvasHandlersProps {
   isLocked: boolean;
@@ -42,7 +42,7 @@ export function useBPMCanvasHandlers({
 }: UseBPMCanvasHandlersProps) {
 
   const onNodesDelete = useCallback(
-    (deleted: any[]) => {
+    (deleted: Node[]) => {
       if (deleted.length > 0) {
         pushState(nodes, edges);
         setDirty(true);
@@ -53,7 +53,7 @@ export function useBPMCanvasHandlers({
   );
 
   const onEdgesDelete = useCallback(
-    (deleted: any[]) => {
+    (deleted: Edge[]) => {
       if (deleted.length > 0) {
         pushState(nodes, edges);
         setDirty(true);
@@ -152,15 +152,23 @@ export function useBPMCanvasHandlers({
   );
 
   const handleApplyOcr = useCallback(
-    (
-      stagedNodes: any[],
-      stagedEdges: any[],
-      mode: OcrImportMode = 'overwrite',
-      direction: OcrAppendDirection = 'below',
-      extraSheets?: any[]
-    ) => {
-      if (Array.isArray(extraSheets) && extraSheets.length > 1 && onImportMultipleSheets) {
-        onImportMultipleSheets(extraSheets);
+    (request: OcrApplyRequest) => {
+      const out = applyOcrImport({
+        stagedNodes: request.nodes,
+        stagedEdges: request.edges,
+        mode: request.mode ?? 'overwrite',
+        direction: request.direction ?? 'below',
+        existingNodes: nodes,
+        existingEdges: edges,
+        pages: request.pages,
+        activePage: request.activePage,
+        formatSheetName: request.formatSheetName,
+      });
+
+      if (out.kind === 'sheets' && onImportMultipleSheets) {
+        // boundary: ReactFlow runtime sheets share element shape with the
+        // persisted BPMDiagramSheet store; shape locked by ocr-import-adapter.test.ts.
+        onImportMultipleSheets(out.sheets as BPMDiagramSheet[]);
         setDirty(true);
         toast.success(t('bpm:ocr.toast.applySuccess'));
         setTimeout(() => {
@@ -169,87 +177,26 @@ export function useBPMCanvasHandlers({
         return;
       }
 
-      let candidateNodes = stagedNodes;
-      let candidateEdges = stagedEdges;
-
-
-      if (mode === 'append' && nodes.length > 0) {
-        const offset = calculateAppendOffset({
-          direction,
-          existingNodes: nodes,
-          newNodes: stagedNodes,
-        });
-        const remapped = remapElementsForAppend(stagedNodes, stagedEdges, offset);
-        candidateNodes = remapped.nodes;
-        candidateEdges = remapped.edges;
-      }
-
-      const finalNodes = candidateNodes.map((node: any) => {
-        const isSwimlane = node.type === 'swimlane';
-        const isNodeLocked = !!node.data?.isLocked;
-        const resolvedDept = node.data?.department?.trim() || node.data?.label?.trim() || deriveLabelFromId(node.id);
-        const resolvedLabel = node.data?.label?.trim() || resolvedDept;
-        const baseNode: any = {
-          id: node.id,
-          type: node.type,
-          position: { x: node.position.x, y: node.position.y },
-          parentId: node.parentId,
-          width: node.width,
-          height: node.height,
-          draggable: !isLocked && !isNodeLocked,
-          zIndex: isSwimlane ? -1 : (node.zIndex ?? 10),
-          dragHandle: isSwimlane ? '.swimlane-drag-handle' : undefined,
-          style: isSwimlane 
-            ? { width: node.width || 400, height: node.height || 1200, ...(node.style || {}) } 
-            : (node.style ? { ...node.style } : undefined),
-          data: isSwimlane
-            ? {
-                label: resolvedLabel,
-                department: resolvedDept,
-                function: node.data?.function?.trim() || '',
-                isLocked: false,
-                onToggleLock: () => toggleNodeLock(node.id),
-                onChangeDepartment: (v: string) => updateNodeData(node.id, { department: v }),
-                onChangeFunction: (v: string) => updateNodeData(node.id, { function: v }),
-                onResizeEnd: (params: any) => handleSwimlaneResizeEnd(node.id, params),
-              }
-            : {
-                label: node.data?.label || '',
-                type: node.type,
-                regulatoryPairs: [] as any[],
-                role: t('bpm:editor.roles.default'),
-                isLocked: false,
-                onToggleLock: () => toggleNodeLock(node.id),
-              },
-        };
-        return baseNode;
+      const canvasNodes = out.kind === 'canvas' ? out.nodes : request.nodes;
+      const canvasEdges = out.kind === 'canvas' ? out.edges : request.edges;
+      const finalNodes = enrichCanvasNodes(canvasNodes, {
+        isLocked,
+        defaultRole: t('bpm:editor.roles.default'),
+        toggleNodeLock,
+        updateNodeData,
+        handleSwimlaneResizeEnd,
       });
 
-      const standardEdges = candidateEdges.map((e: any) => ({
-        id: e.id,
-        source: e.source,
-        target: e.target,
-        sourceHandle: e.sourceHandle,
-        targetHandle: e.targetHandle,
-        label: e.label || '',
-        type: 'bridge',
-        markerEnd: { type: MarkerType.ArrowClosed, width: 20, height: 20, color: '#0f172a' },
-        style: { strokeWidth: 2, stroke: '#0f172a' },
-      }));
-
-      const mergedNodes = mode === 'append' ? [...nodes, ...finalNodes] : finalNodes;
-      const mergedEdges = mode === 'append' ? [...edges, ...standardEdges] : standardEdges;
-
-      pushState(mergedNodes, mergedEdges);
-      setNodes(mergedNodes);
-      setEdges(mergedEdges);
+      pushState(finalNodes, canvasEdges);
+      setNodes(finalNodes);
+      setEdges(canvasEdges);
       setDirty(true);
       toast.success(t('bpm:ocr.toast.applySuccess'));
       setTimeout(() => {
         rfInstance?.fitView?.({ padding: 0.15, duration: 300 });
       }, 150);
     },
-    [nodes, edges, isLocked, t, pushState, setNodes, setEdges, setDirty, rfInstance, toggleNodeLock, updateNodeData, handleSwimlaneResizeEnd]
+    [nodes, edges, isLocked, t, pushState, setNodes, setEdges, setDirty, rfInstance, toggleNodeLock, updateNodeData, handleSwimlaneResizeEnd, onImportMultipleSheets]
   );
 
   return {

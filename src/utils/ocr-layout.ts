@@ -140,65 +140,10 @@ export function layoutOcrDiagram(raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[]
     });
   }
 
-  // Compute global topological rank across all nodes to synchronize Y coordinates across lanes
-  const nonSwimlaneNodes = downgraded.filter((n) => n.type !== 'swimlane');
-  const globalInDegree = new Map<string, number>();
-  const globalAdjacency = new Map<string, string[]>();
-  const nonSwimlaneIdSet = new Set(nonSwimlaneNodes.map((n) => n.id));
-
-  for (const n of nonSwimlaneNodes) {
-    globalInDegree.set(n.id, 0);
-    globalAdjacency.set(n.id, []);
-  }
-
-  for (const e of filteredEdges) {
-    if (nonSwimlaneIdSet.has(e.source) && nonSwimlaneIdSet.has(e.target)) {
-      globalInDegree.set(e.target, (globalInDegree.get(e.target) ?? 0) + 1);
-      globalAdjacency.get(e.source)?.push(e.target);
-    }
-  }
-
-  const globalRank = new Map<string, number>();
-  const queue: string[] = [];
-  const maxAllowedDepth = nonSwimlaneNodes.length;
-
-  for (const n of nonSwimlaneNodes) {
-    if ((globalInDegree.get(n.id) ?? 0) === 0) {
-      globalRank.set(n.id, 0);
-      queue.push(n.id);
-    }
-  }
-
-  let head = 0;
-  while (head < queue.length) {
-    const u = queue[head++];
-    const r = globalRank.get(u) ?? 0;
-    if (r >= maxAllowedDepth) continue; // cycle guard
-    const neighbors = globalAdjacency.get(u) ?? [];
-    for (const v of neighbors) {
-      const nextRank = r + 1;
-      const currentRank = globalRank.get(v);
-      if (currentRank === undefined || nextRank > currentRank) {
-        if (nextRank <= maxAllowedDepth) {
-          globalRank.set(v, nextRank);
-          queue.push(v);
-        }
-      }
-    }
-  }
-
-  let maxAssignedRank = 0;
-  for (const r of globalRank.values()) {
-    if (r > maxAssignedRank) maxAssignedRank = r;
-  }
-
-  const unranked = nonSwimlaneNodes.filter((n) => !globalRank.has(n.id));
-  unranked.sort((a, b) => a.position.y - b.position.y);
-  for (const n of unranked) {
-    maxAssignedRank += 1;
-    globalRank.set(n.id, maxAssignedRank);
-  }
-
+  // Vertical placement is driven solely by per-lane depth (buildDepthMap
+  // below): each swimlane starts immediately under its header instead of
+  // cascading on a global rank. No global topological pass is kept here —
+  // an unused rank would only waste depth and confuse the next reader.
   // Use local intra-lane depth for vertical positioning so each swimlane starts
   // immediately below its header (HEADER_OFFSET) rather than cascading in a giant staircase
   const ROW_HEIGHT = 100;
