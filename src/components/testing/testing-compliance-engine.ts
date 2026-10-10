@@ -1,8 +1,7 @@
 import { Control, ControlFrequency } from '@shared/types';
 import { isReadyForRemediationTest } from '@/lib/compliance-utils';
 import {
-  decideTest,
-  type TestingControl,
+  decideFromControl,
   type TodPillars,
 } from '@shared/testing-decision';
 import { TestFormValues } from './test-schema';
@@ -18,14 +17,6 @@ export interface EvaluationResult {
 }
 
 export type TestableControl = Pick<Control, 'frequency' | 'riskRating' | 'nature'>;
-
-function toTestingControl(control: TestableControl): TestingControl {
-  return {
-    frequency: control.frequency as TestingControl['frequency'],
-    riskRating: control.riskRating as TestingControl['riskRating'],
-    nature: control.nature as string,
-  };
-}
 
 function toTodPillars(values: TestFormValues): TodPillars {
   return {
@@ -48,14 +39,17 @@ export function evaluateTestSubmission(
   control: TestableControl,
   values: TestFormValues,
 ): EvaluationResult {
-  const decision = decideTest(toTestingControl(control), {
-    testType: values.testType,
-    claimedResult: values.result,
-    sampleSize: values.sampleSize,
-    homogeneityJustification: values.homogeneityJustification,
-    samples: values.samples,
-    todPillars: values.testType === 'TOD' ? toTodPillars(values) : undefined,
-  });
+  const decision = decideFromControl(
+    { frequency: control.frequency, riskRating: control.riskRating, nature: control.nature },
+    {
+      testType: values.testType,
+      claimedResult: values.result,
+      sampleSize: values.sampleSize,
+      homogeneityJustification: values.homogeneityJustification,
+      samples: values.samples,
+      todPillars: values.testType === 'TOD' ? toTodPillars(values) : undefined,
+    },
+  );
 
   if (!decision.isValid) {
     return {

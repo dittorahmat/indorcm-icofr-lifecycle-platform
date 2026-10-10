@@ -147,6 +147,45 @@ export interface TestingControl {
   nature: string;
 }
 
+/** Raw control shape as read from callers or DB rows. */
+export interface RawTestingControl {
+  frequency: unknown;
+  riskRating: unknown;
+  nature: unknown;
+}
+
+const KNOWN_FREQUENCIES: readonly string[] = [
+  'Annual',
+  'Semi-Annual',
+  'Quarterly',
+  'Monthly',
+  'Weekly',
+  'Daily',
+  'Ad-hoc',
+];
+
+/**
+ * Validates a raw control onto the decision seam. Null when the row is
+ * missing or unrecognised — sampling-minimum is then skipped while
+ * Zero-Tolerance and 6-pilar TOD are still enforced.
+ */
+export function normalizeTestingControl(row: RawTestingControl | null | undefined): TestingControl | null {
+  if (!row || typeof row !== 'object') return null;
+  if (
+    typeof row.frequency !== 'string' ||
+    !(KNOWN_FREQUENCIES as readonly string[]).includes(row.frequency) ||
+    (row.riskRating !== 'High' && row.riskRating !== 'Medium' && row.riskRating !== 'Low') ||
+    typeof row.nature !== 'string'
+  ) {
+    return null;
+  }
+  return {
+    frequency: row.frequency as ControlFrequency,
+    riskRating: row.riskRating,
+    nature: row.nature,
+  };
+}
+
 /** Minimal sample surface the decision needs. */
 export interface DecisionSample {
   status: 'Pass' | 'Fail';
@@ -254,4 +293,26 @@ export function decideTest(
   }
 
   return { isValid: true, verdict: input.claimedResult };
+}
+
+/**
+ * Row adapter: normalizes a DB/caller row, then decides. One-line forward
+ * for worker seams; unrecognised rows fall back to the null-control path.
+ */
+export function decideFromRow(
+  row: RawTestingControl | null | undefined,
+  input: TestingDecisionInput,
+): TestingDecision {
+  return decideTest(normalizeTestingControl(row), input);
+}
+
+/**
+ * Control adapter: normalizes a caller-shaped control (extra fields
+ * ignored), then decides. One-line forward for client pre-flight seams.
+ */
+export function decideFromControl(
+  control: RawTestingControl,
+  input: TestingDecisionInput,
+): TestingDecision {
+  return decideTest(normalizeTestingControl(control), input);
 }

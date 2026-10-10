@@ -8,8 +8,7 @@ import type { TestRecord } from "@shared/types";
 import type { DrizzleDb } from '../../db';
 import { DeficiencyService } from "../../services/deficiency-service";
 import {
-  decideTest,
-  type TestingControl,
+  decideFromRow,
   type TestingVerdict,
   type TodPillars,
 } from "@shared/testing-decision";
@@ -128,7 +127,7 @@ csaSamplesTestingRoute.post('/tod-evaluations', rbac(['Line 2', 'Admin']), async
     coverage: todPilarFlag(body.pilarCoverage),
     evidence: todPilarFlag(body.pilarEvidence),
   };
-  const decision = decideTest(toTestingControl(controlRow), {
+  const decision = decideFromRow(controlRow, {
     testType: 'TOD',
     claimedResult: claimedConclusion,
     todPillars,
@@ -191,37 +190,6 @@ csaSamplesTestingRoute.get('/tests', async (c) => {
   return ok(c, { items });
 });
 
-const KNOWN_FREQUENCIES = [
-  'Annual',
-  'Semi-Annual',
-  'Quarterly',
-  'Monthly',
-  'Weekly',
-  'Daily',
-  'Ad-hoc',
-] as const;
-
-/** Maps a control row onto the testing-decision seam input. Null when the
- *  row is missing or unrecognised — sampling-minimum is then skipped while
- *  Zero-Tolerance and 6-pilar TOD are still enforced. */
-function toTestingControl(
-  row: { frequency: string | null; riskRating: string | null; nature: string | null } | undefined,
-): TestingControl | null {
-  if (!row) return null;
-  if (
-    !(KNOWN_FREQUENCIES as readonly string[]).includes(row.frequency ?? '') ||
-    (row.riskRating !== 'High' && row.riskRating !== 'Medium' && row.riskRating !== 'Low') ||
-    typeof row.nature !== 'string'
-  ) {
-    return null;
-  }
-  return {
-    frequency: row.frequency as TestingControl['frequency'],
-    riskRating: row.riskRating,
-    nature: row.nature,
-  };
-}
-
 csaSamplesTestingRoute.post('/tests', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
@@ -251,7 +219,7 @@ csaSamplesTestingRoute.post('/tests', async (c) => {
           evidence: body.todPilarEvidence !== false,
         }
       : undefined;
-  const decision = decideTest(toTestingControl(controlRow), {
+  const decision = decideFromRow(controlRow, {
     testType,
     claimedResult,
     sampleSize: typeof body.sampleSize === 'number' ? body.sampleSize : undefined,

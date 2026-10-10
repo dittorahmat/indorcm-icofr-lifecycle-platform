@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
+  decideFromControl,
+  decideFromRow,
   decideTest,
   getSuggestedSampleRange,
   hasFailSample,
   isTodPillarFailure,
+  normalizeTestingControl,
   requiresHomogeneityJustification,
   type TestingControl,
 } from './testing-decision';
@@ -115,5 +118,62 @@ describe('testing-decision seam (SK-5 Table 22/23, Zero-Tolerance, 6-pilar TOD)'
       requiresHomogeneityJustification(MONTHLY_HIGH, 3, 'homogeneous population'),
     ).toBe(false);
     expect(requiresHomogeneityJustification(MONTHLY_HIGH, 5, '')).toBe(false);
+  });
+
+  it('normalizes raw control rows: valid passes, missing or unrecognised yields null', () => {
+    expect(
+      normalizeTestingControl({ frequency: 'Monthly', riskRating: 'High', nature: 'Manual' }),
+    ).toEqual(MONTHLY_HIGH);
+    expect(normalizeTestingControl(undefined)).toBeNull();
+    expect(normalizeTestingControl(null)).toBeNull();
+    expect(
+      normalizeTestingControl({ frequency: 'Fortnightly', riskRating: 'High', nature: 'Manual' }),
+    ).toBeNull();
+    expect(
+      normalizeTestingControl({ frequency: 'Monthly', riskRating: 'Critical', nature: 'Manual' }),
+    ).toBeNull();
+    expect(
+      normalizeTestingControl({ frequency: 'Monthly', riskRating: 'High', nature: null }),
+    ).toBeNull();
+  });
+
+  it('decideFromRow enforces the minimum for valid rows and skips it for null rows', () => {
+    const belowMin = {
+      testType: 'TOE',
+      claimedResult: 'Effective',
+      sampleSize: 3,
+      homogeneityJustification: '',
+      samples: [],
+    } as const;
+    expect(
+      decideFromRow({ frequency: 'Monthly', riskRating: 'High', nature: 'Manual' }, belowMin).isValid,
+    ).toBe(false);
+    expect(
+      decideFromRow({ frequency: 'Fortnightly', riskRating: 'High', nature: 'Manual' }, belowMin).isValid,
+    ).toBe(true);
+    const zeroTolerance = {
+      testType: 'TOE',
+      claimedResult: 'Effective',
+      sampleSize: 5,
+      samples: [{ status: 'Fail' as const }],
+    };
+    expect(decideFromRow(undefined, zeroTolerance).verdict).toBe('Ineffective');
+  });
+
+  it('decideFromControl accepts caller-shaped controls with extra fields', () => {
+    const callerShaped = {
+      frequency: 'Monthly',
+      riskRating: 'High',
+      nature: 'Manual',
+      id: 'ctrl-1',
+      description: 'Rekonsiliasi harian',
+    };
+    const decision = decideFromControl(callerShaped, {
+      testType: 'TOE',
+      claimedResult: 'Effective',
+      sampleSize: 5,
+      samples: [],
+    });
+    expect(decision).toEqual({ isValid: true, verdict: 'Effective' });
   });
 });

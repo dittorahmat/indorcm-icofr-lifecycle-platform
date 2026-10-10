@@ -11,7 +11,8 @@ import { Badge } from '@/components/ui/badge';
 import { api } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
 import { getSuggestedSampleRange } from '@/lib/compliance-utils';
-import type { Control, TestRecord, ControlFrequency } from '@shared/types';
+import { normalizeTestingControl } from '@shared/testing-decision';
+import type { Control, TestRecord } from '@shared/types';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertTriangle, Clock, Loader2, ShieldCheck, Target } from 'lucide-react';
@@ -62,10 +63,15 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
   const { isDirty } = form.formState;
   useUnsavedChanges(isDirty);
 
+  const normalizedControl = normalizeTestingControl({
+    frequency: control.frequency,
+    riskRating: control.riskRating,
+    nature: control.nature,
+  });
   const suggestion = getSuggestedSampleRange(
-    control.frequency as ControlFrequency, 
-    control.riskRating as "High" | "Medium" | "Low", 
-    control.nature as string
+    normalizedControl?.frequency ?? 'Annual',
+    normalizedControl?.riskRating ?? 'Low',
+    normalizedControl?.nature ?? '',
   );
 
   const remediationStatus = getRemediationReadiness(control, openDeficiencyDate);
