@@ -40,3 +40,23 @@ _Avoid_: full text search (generik)
 ### Lexeme FTS
 Pencarian kata berstemming Bahasa Indonesia via kolom `tsvector` + `plainto_tsquery('indonesian', …)` + index GIN (contoh: `documents.fts_tokens`). Hanya untuk korpus dokumen, bukan untuk substring kode/nama.
 _Avoid_: full text search (generik)
+
+### AI Suggestion Popover
+Popup saran AI yang bisa diklik untuk auto-populate pada Textarea Risk/Control di property sheet simpul BPM.
+_Avoid_: tooltip, AI tooltip
+
+### Suggestion Context
+Triple konteks pembentuk saran AI: GL (`bpmProcess.noGL`/`currentGL`) + Proses BPM (`bpmProcess.name`/`subProcess`) + Label Node (`node.data.label`).
+_Avoid_: GL/BPM/Node (generik)
+
+### Risk Suggestion
+Kandidat deskripsi risiko (`riskDescription`) berbahasa Indonesia yang dihasilkan LLM dari Suggestion Context.
+_Avoid_: AI risk, saran risiko (generik)
+
+### Control Suggestion
+Kandidat deskripsi pengendalian (`controlDescription`) berbahasa Indonesia yang dihasilkan LLM dari Suggestion Context ditambah Risk terpilih pada pair yang sama.
+_Avoid_: AI control
+
+### Suggestion Source
+Asal nilai Risk/Control yang dicatat di audit trail: `ai` (LLM), `library` (Risk Library Lampiran 2), atau `manual` (ketikan user).
+_Avoid_: AI source (generik)

@@ -15,21 +15,15 @@ import { useTranslation } from 'react-i18next';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { X, ShieldAlert, ShieldCheck, Database, Trash2, PlusCircle, AlertTriangle, RefreshCw, History, Layout, Lock } from 'lucide-react';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Accordion } from '@/components/ui/accordion';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
-import type { QualitativeLevel } from '@shared/types';
 
 import { EntityHistoryList } from './EntityHistoryList';
 import { NodeVisualProperties } from './NodeVisualProperties';
-import { ControlAccordionItem } from './ControlAccordionItem';
+import { RiskGroupCard } from './RiskGroupCard';
+import type { AiSuggestionContext } from './useAiSuggestions';
 
 interface RegulatoryPropertySheetProps {
   selectedNode: Node | null;
@@ -43,6 +37,7 @@ interface RegulatoryPropertySheetProps {
   isLocked?: boolean;
   bpmProcessId?: string;
   nodes?: Node[];
+  suggestionBase?: Omit<AiSuggestionContext, 'nodeLabel' | 'riskDescription'>;
 }
 
 export function RegulatoryPropertySheet({
@@ -56,7 +51,8 @@ export function RegulatoryPropertySheet({
   isDirty = false,
   isLocked = false,
   bpmProcessId,
-  nodes = []
+  nodes = [],
+  suggestionBase,
 }: RegulatoryPropertySheetProps) {
   const { t } = useTranslation(['bpm', 'rcm', 'common', 'risklibrary']);
   const [isConfirmDiscardOpen, setIsConfirmDiscardOpen] = useState(false);
@@ -131,6 +127,19 @@ export function RegulatoryPropertySheet({
     nextPairs[pairIndex] = updated;
     onUpdateNodeData(selectedNode.id, { regulatoryPairs: nextPairs });
   };
+
+  const applyRiskDescription = (riskKey: string, description: string, source: 'ai' | 'manual') => {
+    const nextPairs = pairs.map((p) => {
+      const match = (p.riskId === riskKey) || (p._tempRiskId === riskKey);
+      if (!match) return p;
+      return { ...p, riskDescription: description, riskSource: source };
+    });
+    onUpdateNodeData(selectedNode.id, { regulatoryPairs: nextPairs });
+  };
+
+  const riskSuggestBase: AiSuggestionContext | null = suggestionBase?.bpmName
+    ? { ...suggestionBase, bpmName: suggestionBase.bpmName, nodeLabel: selectedNode?.data?.label || '' }
+    : null;
 
   const generateNewIds = (type: 'risk' | 'control', offset: number = 0) => {
     if (!sequenceData || !sequenceData.bpmCode) {
@@ -277,102 +286,25 @@ export function RegulatoryPropertySheet({
                   )}
 
                   {groupedRisks.map((group, gIdx) => (
-                    <div key={group.risk._tempRiskId || group.risk.riskId || `g-${gIdx}`} className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-                      <div className="bg-red-50/30 border-2 border-red-100 rounded-lg overflow-hidden shadow-sm shadow-red-50">
-                        <div className="bg-red-600 px-4 py-2 flex justify-between items-center text-white flex-wrap gap-2">
-                          <div className="flex items-center gap-2">
-                            <AlertTriangle className="h-4 w-4" />
-                            <h3 className="text-xs font-black uppercase tracking-widest">{t('rcm:matrix.properties.id_risiko')} #{gIdx + 1}</h3>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-2">
-                              {duplicateRiskIds.has(group.risk.riskId?.trim()) && (
-                                <Badge variant="destructive" className="h-5 px-1.5 text-xs font-semibold uppercase">
-                                  Duplikat ID!
-                                </Badge>
-                              )}
-                              <Input 
-                                disabled={isLocked}
-                                className={cn(
-                                  "h-7 w-40 bg-red-800 border-none text-xs font-mono text-white focus-visible:ring-red-400 placeholder:text-red-400",
-                                  duplicateRiskIds.has(group.risk.riskId?.trim()) && "ring-2 ring-amber-300 bg-red-950 font-black"
-                                )}
-                                value={group.risk.riskId || ''} 
-                                onChange={(e) => updateAllPairsForRisk(group.risk._tempRiskId || group.risk.riskId, 'riskId', e.target.value)}
-                                placeholder="PENDING ID"
-                              />
-                            </div>
-                            <Button disabled={isLocked} variant="ghost" size="icon" className="h-6 w-6 text-red-200 hover:text-white hover:bg-red-700" onClick={() => setDeleteConfirm({ type: 'risk', id: group.risk._tempRiskId || group.risk.riskId })}>
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        </div>
-                        <div className="p-5 space-y-4">
-                          <div className="space-y-2">
-                            <Label className="text-xs font-black uppercase text-red-900/50">{t('rcm:matrix.properties.deskripsi_risiko')}</Label>
-                            <Textarea 
-                              disabled={isLocked}
-                              value={group.risk.riskDescription || ''} 
-                              onChange={(e) => updateAllPairsForRisk(group.risk._tempRiskId || group.risk.riskId, 'riskDescription', e.target.value)}
-                              className="min-h-[80px] text-sm border-red-200 bg-white focus-visible:ring-red-500"
-                              placeholder={t('common:placeholders.description')}
-                            />
-                          </div>
-
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label className="text-xs font-black uppercase text-red-900/50">{t('rcm:matrix.properties.terkait_fraud')}</Label>
-                              <Select disabled={isLocked} value={group.risk.isFraudRelated ? 'Yes' : 'No'} onValueChange={(v) => updateAllPairsForRisk(group.risk._tempRiskId || group.risk.riskId, 'isFraudRelated', v === 'Yes')}>
-                                <SelectTrigger className="h-9 text-sm bg-white border-red-200"><SelectValue /></SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="Yes">{t('common:yes')}</SelectItem>
-                                  <SelectItem value="No">{t('common:no')}</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div className="space-y-2">
-                              <Label className="text-xs font-black uppercase text-red-900/50">{t('rcm:matrix.properties.risk_rating_label')}</Label>
-                              <Select disabled={isLocked} value={group.risk.riskRating || 'Low'} onValueChange={(v: QualitativeLevel) => updateAllPairsForRisk(group.risk._tempRiskId || group.risk.riskId, 'riskRating', v)}>
-                                <SelectTrigger className="h-9 text-sm bg-white border-red-200"><SelectValue /></SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="Low">Low</SelectItem>
-                                  <SelectItem value="Medium">Medium</SelectItem>
-                                  <SelectItem value="High">High</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </div>
-
-                          <div className="pt-2">
-                            <Button 
-                              disabled={isLocked}
-                              variant="outline" 
-                              className="w-full h-10 border-2 border-dashed border-indigo-200 bg-indigo-50/50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs gap-2" 
-                              onClick={() => addControlToRisk(group.risk._tempRiskId || group.risk.riskId)}
-                            >
-                              <PlusCircle className="h-4 w-4" /> {t('rcm:matrix.properties.add_control')}
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-
-                      <Accordion type="single" collapsible className="ml-8 space-y-4">
-                        {group.controls.map((ctrl, cIdx) => (
-                          <ControlAccordionItem
-                            key={ctrl.data._tempControlId || `ctrl-${ctrl.index}`}
-                            ctrl={ctrl}
-                            cIdx={cIdx}
-                            isLocked={isLocked}
-                            duplicateControlIds={duplicateControlIds}
-                            pairs={pairs}
-                            onUpdateSpecificControl={updateSpecificControl}
-                            onDeleteControl={(idx) => setDeleteConfirm({ type: 'control', index: idx })}
-                            onUpdateNodeData={onUpdateNodeData}
-                            selectedNodeId={selectedNode.id}
-                          />
-                        ))}
-                      </Accordion>
-                    </div>
+                    <RiskGroupCard
+                      key={group.risk._tempRiskId || group.risk.riskId || `g-${gIdx}`}
+                      group={group}
+                      gIdx={gIdx}
+                      isLocked={isLocked}
+                      isDuplicateRiskId={duplicateRiskIds.has(group.risk.riskId?.trim())}
+                      duplicateControlIds={duplicateControlIds}
+                      pairs={pairs}
+                      riskSuggestBase={riskSuggestBase}
+                      selectedNodeId={selectedNode.id}
+                      nodeLabel={selectedNode.data?.label || ''}
+                      onUpdateRiskField={updateAllPairsForRisk}
+                      onApplyRiskDescription={applyRiskDescription}
+                      onAddControl={addControlToRisk}
+                      onUpdateSpecificControl={updateSpecificControl}
+                      onDeleteControl={(idx) => setDeleteConfirm({ type: 'control', index: idx })}
+                      onRequestDeleteRisk={(id) => setDeleteConfirm({ type: 'risk', id })}
+                      onUpdateNodeData={onUpdateNodeData}
+                    />
                   ))}
 
                   <Button disabled={isLocked} variant="outline" className="w-full h-14 border-dashed border-2 bg-indigo-50/30 hover:bg-indigo-50 hover:border-indigo-300 text-indigo-600 gap-2 font-black uppercase tracking-widest text-xs" onClick={addNewRisk}>

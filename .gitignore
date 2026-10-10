@@ -44,3 +44,4 @@ bun-debug.log*
 .bootstrap-complete
 uploads/
 .omo/
+.scratch/

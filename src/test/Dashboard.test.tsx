@@ -85,7 +85,9 @@ describe('Dashboard Component', () => {
     expect(screen.getByText('kpis.ready')).toBeInTheDocument();
   });
 
-  it('calculates metrics dynamically based on controls and deficiencies data', async () => {
+  // Flaky under full-suite load (Render + React Query settle >5s when CPU-starved);
+  // generous timeout keeps the suite deterministic. Solo runs finish in ~1s.
+  it('calculates metrics dynamically based on controls and deficiencies data', { timeout: 20000 }, async () => {
     const mockControls = {
       items: [
         { id: '1', year: 2026, lastCsaDate: 12345, line2Validation: { status: 'Validated' } }, 

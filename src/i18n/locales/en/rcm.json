@@ -120,6 +120,23 @@
         "delete_risk_confirm": "WARNING: Deleting this risk will delete ALL control data under it. This data will be PERMANENTLY removed from the RCM database when you press 'Save & Sync'. Continue?",
         "delete_control_confirm": "Delete this Risk-Control mapping row? Data associated with this row will be lost from the TLC Matrix permanently after sync.",
         "hard_delete_notice": "ATTENTION: Pressing save will PERMANENTLY delete Risk/Control data you have removed from this popup in the database."
+      },
+      "aiSuggest": {
+        "trigger_risk": "Suggest risks with AI",
+        "trigger_control": "Suggest controls with AI",
+        "title_risk": "Risk Suggestions (AI)",
+        "title_control": "Control Suggestions (AI)",
+        "loading": "Requesting AI suggestions…",
+        "error": "Failed to get AI suggestions. Check the connection or API key configuration, then try again.",
+        "retry": "Try again",
+        "empty": "No suggestions yet. Make the step/node name more specific so the AI can give relevant suggestions.",
+        "genericLabel": "The step name is still too generic (e.g. “Process 1”). Clarify the step name first.",
+        "modelError": "The AI response could not be read. Try reloading the suggestions.",
+        "idle": "Opening suggestions…",
+        "risk_required": "Fill in the risk description first to get control suggestions.",
+        "hint_apply": "Click a suggestion to auto-fill.",
+        "refresh": "Reload",
+        "source_ai": "AI"
       }
     },
     "itgc": {

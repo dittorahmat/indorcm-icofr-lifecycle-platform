@@ -187,6 +187,13 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
     [onNodesDelete, selection],
   );
 
+  const suggestionGlDesc = useMemo(() => {
+    const found = glOptions.find((o) => o.value === currentGL);
+    const parts = (found?.label || '').split('•');
+    const desc = parts.length > 1 ? parts.slice(1).join('•').trim() : '';
+    return desc && desc !== 'No Description' ? desc : '';
+  }, [glOptions, currentGL]);
+
   if (isDiagramLoading)
     return (
       <div className="flex h-full items-center justify-center">
@@ -314,6 +321,11 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
           isLocked={isLocked}
           bpmProcessId={bpmProcess?.id}
           nodes={nodes}
+          suggestionBase={{
+            glCode: currentGL ?? '',
+            glDesc: suggestionGlDesc,
+            bpmName: bpmProcess?.name ?? subProcess,
+          }}
         />
 
         {/* Mobile read-only node inspector (bottom sheet; opens on mobile tap only) */}

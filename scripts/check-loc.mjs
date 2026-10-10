@@ -40,8 +40,8 @@ function countLines(path) {
   try {
     const text = readFileSync(path, 'utf-8');
     if (!text) return 0;
-    // Match the mandate's canonical method `(Get-Content <file> | Measure-Object -Line).Lines`,
-    // which ignores blank lines.
+    // Canonical: non-blank lines only. (Raw `(Get-Content <file> | Measure-Object -Line).Lines`
+    // counts blank lines too, so it always reads slightly higher.)
     return text.split('\n').filter((line) => line.trim() !== '').length;
   } catch {
     return -1;

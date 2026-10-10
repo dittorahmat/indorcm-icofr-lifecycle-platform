@@ -14,6 +14,8 @@ import { TLCForm } from './TLCForm';
 import { ELCForm } from './ELCForm';
 import { ITGCForm } from './ITGCForm';
 import { SignificantApplicationCombobox } from '../SignificantApplicationCombobox';
+import { AiSuggestionPopover } from './AiSuggestionPopover';
+import type { AiSuggestionContext } from './useAiSuggestions';
 
 interface ControlAccordionItemProps {
   ctrl: { data: any; index: number };
@@ -25,6 +27,8 @@ interface ControlAccordionItemProps {
   onDeleteControl: (index: number) => void;
   onUpdateNodeData: (id: string, data: any) => void;
   selectedNodeId: string;
+  suggestionBase?: AiSuggestionContext | null;
+  nodeLabel?: string;
 }
 
 const normalizeControlType = (val?: string) => {
@@ -63,9 +67,23 @@ export function ControlAccordionItem({
   onUpdateSpecificControl,
   onDeleteControl,
   onUpdateNodeData,
-  selectedNodeId
+  selectedNodeId,
+  suggestionBase = null,
+  nodeLabel = ''
 }: ControlAccordionItemProps) {
   const { t } = useTranslation(['bpm', 'rcm', 'common']);
+
+  const applyControlDescription = (description: string, source: 'ai' | 'manual') => {
+    const nextPairs = [...pairs];
+    nextPairs[ctrl.index] = { ...nextPairs[ctrl.index], controlDescription: description, controlSource: source };
+    onUpdateNodeData(selectedNodeId, { regulatoryPairs: nextPairs });
+  };
+
+  const riskDescription: string = typeof ctrl.data?.riskDescription === 'string' ? ctrl.data.riskDescription.trim() : '';
+  const controlSuggestContext: AiSuggestionContext | null =
+    suggestionBase && riskDescription
+      ? { ...suggestionBase, nodeLabel: nodeLabel || suggestionBase.nodeLabel, riskDescription }
+      : null;
 
   return (
     <AccordionItem value={ctrl.data._tempControlId || `ctrl-${ctrl.index}`} className="bg-white border rounded-xl shadow-sm overflow-hidden">
@@ -111,11 +129,29 @@ export function ControlAccordionItem({
       </AccordionTrigger>
       <AccordionContent className="p-4 space-y-4">
         <div className="space-y-1.5">
-          <Label className="text-xs font-medium text-slate-600">{t('rcm:matrix.properties.deskripsi_prosedur')}</Label>
+          <div className="flex items-center justify-between gap-2 min-w-0">
+            <Label className="text-xs font-medium text-slate-600">{t('rcm:matrix.properties.deskripsi_prosedur')}</Label>
+            <div className="flex items-center gap-1.5 shrink-0">
+              {ctrl.data?.controlSource === 'ai' && (
+                <Badge variant="outline" className="h-5 px-1.5 text-xs font-semibold border-amber-300 text-amber-700 bg-amber-50">
+                  {t('rcm:matrix.aiSuggest.source_ai')}
+                </Badge>
+              )}
+              {suggestionBase && (
+                <AiSuggestionPopover
+                  kind="control"
+                  context={controlSuggestContext ?? { ...suggestionBase, nodeLabel: nodeLabel || suggestionBase.nodeLabel }}
+                  disabled={isLocked}
+                  blocked={!controlSuggestContext}
+                  onApply={(desc) => applyControlDescription(desc, 'ai')}
+                />
+              )}
+            </div>
+          </div>
           <Textarea 
             disabled={isLocked}
             value={ctrl.data.controlDescription || ''} 
-            onChange={(e) => onUpdateSpecificControl(ctrl.index, 'controlDescription', e.target.value)}
+            onChange={(e) => applyControlDescription(e.target.value, 'manual')}
             className="min-h-[80px] text-sm"
             placeholder={t('common:placeholders.description')}
           />

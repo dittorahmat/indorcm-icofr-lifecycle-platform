@@ -120,6 +120,23 @@
         "delete_risk_confirm": "PERINGATAN: Menghapus risiko ini akan menghapus SELURUH data kontrol di bawahnya. Data ini akan terhapus secara PERMANEN dari database RCM saat Anda menekan tombol 'Save & Sync'. Lanjutkan?",
         "delete_control_confirm": "Hapus baris mapping Risiko-Kontrol ini? Data terkait baris ini akan hilang dari Matrix TLC secara permanen setelah sinkronisasi.",
         "hard_delete_notice": "PERHATIAN: Menekan tombol simpan akan menghapus data Risiko/Kontrol yang sudah Anda buang dari popup ini secara PERMANEN di database."
+      },
+      "aiSuggest": {
+        "trigger_risk": "Sarankan risiko dengan AI",
+        "trigger_control": "Sarankan kontrol dengan AI",
+        "title_risk": "Saran Risiko (AI)",
+        "title_control": "Saran Kontrol (AI)",
+        "loading": "Meminta saran AI…",
+        "error": "Gagal mendapatkan saran AI. Periksa koneksi atau konfigurasi kunci API, lalu coba lagi.",
+        "retry": "Coba lagi",
+        "empty": "Belum ada saran. Perspesifik nama langkah/node agar AI dapat memberi saran yang relevan.",
+        "genericLabel": "Nama langkah masih terlalu umum (mis. “Proses 1”). Perjelas nama langkah terlebih dahulu.",
+        "modelError": "Respons AI tidak dapat dibaca. Coba muat ulang saran.",
+        "idle": "Membuka saran…",
+        "risk_required": "Isi deskripsi risiko terlebih dahulu untuk mendapatkan saran kontrol.",
+        "hint_apply": "Klik saran untuk mengisi otomatis.",
+        "refresh": "Muat ulang",
+        "source_ai": "AI"
       }
     },
     "itgc": {

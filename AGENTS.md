@@ -71,14 +71,14 @@ Setiap kali melakukan penambahan komponen, modifikasi antarmuka frontend, menyel
 7.  **Verifikasi Kompilasi (Build):** Jalankan `npm run build`. Perubahan dianggap gagal jika proses build tidak berhasil.
 8.  **Pengujian Otomatis (Test):** Jalankan `npm test`. Tambahkan unit test baru jika Anda menambahkan fitur baru atau melakukan perubahan di suatu fitur untuk mencegah regresi.
 9.  **Deteksi Code Smell (Wajib tiap perubahan):** Sebelum dianggap selesai, pindai file yang disentuh terhadap katalog ini dan perbaiki yang ditemukan:
-    *   **God file/module (anti-regresi DoDLampiran10 937 LOC):** batas dihitung via `(Get-Content <file> | Measure-Object -Line).Lines` (blank line tidak dihitung, mengikuti perilaku cmdlet tersebut).
+    *   **God file/module (anti-regresi DoDLampiran10 937 LOC):** batas dihitung via `scripts/check-loc.mjs` (**baris non-kosong**; total mentah `(Get-Content <file> | Measure-Object -Line).Lines` selalu sedikit lebih tinggi karena termasuk blank line).
         *   **Soft Limit 400 LOC** (`src/**/*.tsx`, `src/**/*.ts`, `worker/**/*.ts`): file tersentuh yang `>400 LOC` WAJIB dipecah dalam perubahan yang sama (ekstrak minimal 1 hook + 1 sub-komponen). Menambah fitur ke file `>400 LOC` tanpa memecah = gagal walau build hijau.
         *   **Hard Limit 600 LOC:** beku total — dilarang menambah logika baru sampai didekomposisi di bawah 400 LOC.
         *   **File baru maks 350 LOC.** Jika scaffold melebihi itu, kirim sejak awal sebagai split (mis. `types.ts` + `useX.ts` + `XHeader.tsx` + `XTable.tsx` + orkestrator `≤150 LOC`).
         *   **Structural caps (`*.tsx`):** maks 7 `useState` per komponen (dulu 10); orkestrator hanya komposisi (dilarang inline table/dialog/form JSX `>50` baris); tabel `>12` kolom wajib column-config + `.map` + row sub-komponen; blok JSX yang diduplikasi `≥3x` wajib config-driven (contoh pelanggaran: 14x `TooltipProvider` copy-paste di DoD).
         *   **Pengecualian sempit:** `shared/mock-data.ts`, `shared/constants/**` data-blob, `src/components/ui/**` (vendor shadcn), `**/*.test.*`, `**/*.spec.*`, `drizzle/*.sql`, file generated. Selain itu tidak ada pengecualian.
         *   **Grandfather (deadline saat disentuh):** file existing `>400 LOC` (contoh terkini: `bpm-service.ts` ~566, `RCMEditDialog.tsx` 550, `TodoListPage.tsx` 544, `WorkflowPanel.tsx` 543, `RegulatoryReportComponents.tsx` 542) hanya boleh menerima bug-fix minimal; fitur baru wajib pecah dulu. Setiap sentuhan harus menurunkan LOC atau mengekstrak `≥1` modul.
-    *   **`any` / `as any` / escape-cast (`as never`, `as unknown as X`):** Dilarang menambah baru. Gunakan tipe domain dari `shared/types/*` (`common`, `org`, `scoping`, `rcm-bpm`, `csa-testing`, `deficiency`, `user`). `no-explicit-any` dalam mode `warn` — nol warning baru. Escape-cast hanya diizinkan di boundary API/parser eksternal dengan komentar `// boundary: <alasan>` + test pendamping yang mengunci bentuk datanya; `as never` untuk membungkam error tipe dilarang keras.
+    *   **`any` / `as any` / escape-cast (`as never`, `as unknown as X`):** Dilarang menambah baru. Gunakan tipe domain dari `shared/types/*` (`common`, `org`, `scoping`, `rcm-bpm`, `csa-testing`, `deficiency`, `user`). `no-explicit-any` dalam mode `warn` — nol warning baru (cek otomatis: `npm run check:any-delta -- <file-tersentuh...>`). Escape-cast hanya diizinkan di boundary API/parser eksternal dengan komentar `// boundary: <alasan>` + test pendamping yang menguncinya; `as never` untuk membungkam error tipe dilarang keras.
     *   **Non-null assertion (`!`):** Dilarang pada data server (`children!`, `row!`). Gunakan `?? []` / `?.` + fallback.
     *   **Mirror server-state:** Dilarang `useQuery` → `useState` + `useEffect` sync dan assignment ref di render body. Gunakan cache React Query (`setQueryData`) untuk optimistic update.
     *   **Duplikasi terlarang:** Export Excel hanya via `src/lib/useExcelExport.ts` (larang `XLSX.*` langsung di `.tsx`); layout BPM hanya via `utils/bpm-auto-layout`; viewport mobile hanya via `hooks/use-mobile`; error HTTP hanya via `AppError` + `ok/bad/notFound` (`worker/lib/utils.ts`).
@@ -101,9 +101,9 @@ Setiap kali melakukan penambahan komponen, modifikasi antarmuka frontend, menyel
 *   **Data Loss Prevention:** Implement `UnSavedChanges` warning for any form or editor state to prevent accidental data loss, following the `useUnsavedChanges` hook pattern.
 *   **Navigation & Alerts:** Integrate critical workflows into the Sidebar menu and provide real-time feedback via a Notification Bell where appropriate.
 *   **File Size & Modularization Threshold (Max LOC Rule — diperketat pasca-DoD 937 LOC):**
-    *   **Soft Limit (400 LOC):** `src/**/*.tsx`, `src/**/*.ts`, `worker/**/*.ts` tidak boleh melebihi 400 baris (cara hitung: `(Get-Content <file> | Measure-Object -Line).Lines`). File tersentuh yang melebihi 400 LOC WAJIB dipecah dalam PR yang sama (pola wajib: orkestrator `≤150 LOC` + `useX.ts` hook + `types.ts` + sub-komponen per area, tiap file baru `≤350 LOC`).
+    *   **Soft Limit (400 LOC):** `src/**/*.tsx`, `src/**/*.ts`, `worker/**/*.ts` tidak boleh melebihi 400 baris (cara hitung: **baris non-kosong**, persis seperti `scripts/check-loc.mjs` — bukan total mentah `Measure-Object -Line`). File tersentuh yang melebihi 400 LOC WAJIB dipecah dalam PR yang sama (pola wajib: orkestrator `≤150 LOC` + `useX.ts` hook + `types.ts` + sub-komponen per area, tiap file baru `≤350 LOC`).
     *   **Hard Limit (600 LOC):** File `>600 LOC` beku total dari penambahan fungsional sampai didekomposisi di bawah 400 LOC. Pengecualian hanya untuk data-blob (`shared/mock-data.ts`, `shared/constants/**`), vendor (`src/components/ui/**`), test (`*.test.*`), dan `drizzle/*.sql`.
-    *   **LOC Gate (wajib sebelum type-check):** jalankan `npm run check:loc -- <file-tersentuh...>` (gagal jika ada file tersentuh `>400 LOC`; `npm run check:loc -- --all` untuk pindaian repo, gagal jika ada file `>600 LOC`). Cantumkan hitungan file tersentuh di ringkasan PR. Skrip memakai metode hitung yang sama dengan `(Get-Content <file> | Measure-Object -Line).Lines`.
+    *   **LOC Gate (wajib sebelum type-check):** jalankan `npm run check:loc -- <file-tersentuh...>` (gagal jika ada file tersentuh `>400 LOC`; `npm run check:loc -- --all` untuk pindaian repo, gagal jika ada file `>600 LOC`). Cantumkan hitungan file tersentuh di ringkasan PR. Skrip menghitung **baris non-kosong** (bukan total mentah `Measure-Object -Line`).
         Perubahan yang menaikkan file melewati 400/600 LOC tanpa split, atau tanpa bukti gate, dianggap gagal walau `npm test` hijau (jsdom tidak mendeteksi god-file).
     *   **Single Responsibility:** Separate orchestrator containers from isolated presentation widgets, modals, and business/state calculation logic. Duplikasi JSX `≥3x` (tooltip, sel tabel, kartu KPI, dialog) wajib diganti config-array + `.map`; tabel `>12` kolom wajib column-config + row sub-komponen.
     *   **Backend route split (pola baku):** Route domain `>400 LOC` dipecah menjadi `worker/routes/<domain>/` berisi satu sub-app Hono per area (`scoping-simulations.ts`, `scoping-snapshots.ts`, …) + barrel `worker/routes/<domain>.ts` yang me-mount semuanya via `.route('/', subApp)`. URL route harus byte-identical (tidak ada perubahan path/prefix); `default export` barrel tidak berubah sehingga `worker/app.ts` tidak disentuh.
@@ -115,3 +115,17 @@ Setiap kali melakukan penambahan komponen, modifikasi antarmuka frontend, menyel
     *   Run `type-check` per tsconfig (`tsconfig.app.json`, then `tsconfig.worker.json`) instead of the combined script when memory is constrained.
     *   If Node itself OOMs (JS heap), raise the heap first: `$env:NODE_OPTIONS="--max-old-space-size=4096"`.
     *   NEVER run two heavy commands in parallel (e.g. `build` + `test` at once) — concurrent Node processes exhaust OS RAM and crash with native `node::Realloc` assertion failures. Run them sequentially.
+
+## Agent skills
+
+### Issue tracker
+
+Issues and specs live as GitHub issues in this repo (`gh` CLI infers the repo from the clone). See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Five canonical roles mapped 1:1 to tracker labels (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: root `GLOSSARY.md` + `docs/adr/`. Read both before exploring an area; use glossary vocabulary in outputs. See `docs/agents/domain.md`.

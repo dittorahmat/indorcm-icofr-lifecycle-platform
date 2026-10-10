@@ -6,6 +6,7 @@ import { userRoutes } from './user-routes';
 import notifications from './routes/notifications';
 import license from './routes/license';
 import aiDocs from './routes/ai-docs';
+import aiSuggest from './routes/ai-suggest';
 import rcm from './routes/rcm';
 import bpm from './routes/bpm';
 import scoping from './routes/scoping';
@@ -376,6 +377,7 @@ export const createApp = () => {
   app.route('/api', csa);
   app.route('/api', migration);
   app.route('/api', aiDocs);
+  app.route('/api', aiSuggest);
     
   // Legacy function routes
   userRoutes(app);
