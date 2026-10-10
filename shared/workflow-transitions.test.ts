@@ -121,6 +121,11 @@ describe('workflow-transitions single source (T2 RED)', () => {
     expect(statusBadgeTone('Nope')).toBe('neutral');
   });
 
+  it('preserves legacy badge tones for statuses outside the canonical table', () => {
+    expect(statusBadgeTone('Pending Review')).toBe('info');
+    expect(statusBadgeTone('Pending Approval')).toBe('warning');
+  });
+
   it('exposes invalidation keys for every entity', () => {
     expect(workflowInvalidationKeysFor('BPM')).toContainEqual(['bpm-processes']);
     expect(workflowInvalidationKeysFor('CSA')).toContainEqual(['csa-records']);

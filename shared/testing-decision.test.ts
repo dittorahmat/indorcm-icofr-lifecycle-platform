@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
   decideFromControl,
-  decideFromRow,
   decideTest,
   getSuggestedSampleRange,
   hasFailSample,
@@ -137,7 +136,7 @@ describe('testing-decision seam (SK-5 Table 22/23, Zero-Tolerance, 6-pilar TOD)'
     ).toBeNull();
   });
 
-  it('decideFromRow enforces the minimum for valid rows and skips it for null rows', () => {
+  it('decideFromControl enforces the minimum for valid controls and skips it for missing rows', () => {
     const belowMin = {
       testType: 'TOE',
       claimedResult: 'Effective',
@@ -146,18 +145,20 @@ describe('testing-decision seam (SK-5 Table 22/23, Zero-Tolerance, 6-pilar TOD)'
       samples: [],
     } as const;
     expect(
-      decideFromRow({ frequency: 'Monthly', riskRating: 'High', nature: 'Manual' }, belowMin).isValid,
+      decideFromControl({ frequency: 'Monthly', riskRating: 'High', nature: 'Manual' }, belowMin).isValid,
     ).toBe(false);
     expect(
-      decideFromRow({ frequency: 'Fortnightly', riskRating: 'High', nature: 'Manual' }, belowMin).isValid,
+      decideFromControl({ frequency: 'Fortnightly', riskRating: 'High', nature: 'Manual' }, belowMin).isValid,
     ).toBe(true);
+    expect(decideFromControl(undefined, belowMin).isValid).toBe(true);
+    expect(decideFromControl(null, belowMin).isValid).toBe(true);
     const zeroTolerance = {
       testType: 'TOE',
       claimedResult: 'Effective',
       sampleSize: 5,
       samples: [{ status: 'Fail' as const }],
     };
-    expect(decideFromRow(undefined, zeroTolerance).verdict).toBe('Ineffective');
+    expect(decideFromControl(undefined, zeroTolerance).verdict).toBe('Ineffective');
   });
 
   it('decideFromControl accepts caller-shaped controls with extra fields', () => {

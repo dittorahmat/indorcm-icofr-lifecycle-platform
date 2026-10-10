@@ -8,7 +8,7 @@ import type { TestRecord } from "@shared/types";
 import type { DrizzleDb } from '../../db';
 import { DeficiencyService } from "../../services/deficiency-service";
 import {
-  decideFromRow,
+  decideFromControl,
   type TestingVerdict,
   type TodPillars,
 } from "@shared/testing-decision";
@@ -127,7 +127,7 @@ csaSamplesTestingRoute.post('/tod-evaluations', rbac(['Line 2', 'Admin']), async
     coverage: todPilarFlag(body.pilarCoverage),
     evidence: todPilarFlag(body.pilarEvidence),
   };
-  const decision = decideFromRow(controlRow, {
+  const decision = decideFromControl(controlRow, {
     testType: 'TOD',
     claimedResult: claimedConclusion,
     todPillars,
@@ -219,7 +219,7 @@ csaSamplesTestingRoute.post('/tests', async (c) => {
           evidence: body.todPilarEvidence !== false,
         }
       : undefined;
-  const decision = decideFromRow(controlRow, {
+  const decision = decideFromControl(controlRow, {
     testType,
     claimedResult,
     sampleSize: typeof body.sampleSize === 'number' ? body.sampleSize : undefined,

@@ -296,22 +296,13 @@ export function decideTest(
 }
 
 /**
- * Row adapter: normalizes a DB/caller row, then decides. One-line forward
- * for worker seams; unrecognised rows fall back to the null-control path.
- */
-export function decideFromRow(
-  row: RawTestingControl | null | undefined,
-  input: TestingDecisionInput,
-): TestingDecision {
-  return decideTest(normalizeTestingControl(row), input);
-}
-
-/**
- * Control adapter: normalizes a caller-shaped control (extra fields
- * ignored), then decides. One-line forward for client pre-flight seams.
+ * Control adapter: normalizes a caller-shaped control or DB row (extra
+ * fields ignored; missing or unrecognised rows fall back to the
+ * null-control path), then decides. Single one-line forward for every
+ * client pre-flight and worker seam.
  */
 export function decideFromControl(
-  control: RawTestingControl,
+  control: RawTestingControl | null | undefined,
   input: TestingDecisionInput,
 ): TestingDecision {
   return decideTest(normalizeTestingControl(control), input);
