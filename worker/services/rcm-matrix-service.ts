@@ -11,7 +11,7 @@ import type {
 } from '@shared/types';
 import {
   applyAssertionFallback, applyBatchUpdate, applyVerificationDesignPatch, createVerificationDesign,
-  matchesNoGL, projectVerificationRow,
+  getCosoComponent, matchesNoGL, projectVerificationRow,
 } from './rcm-matrix-write';
 import { createMatrixWriteDeps } from './rcm-matrix-drizzle';
 
@@ -216,14 +216,6 @@ export class RcmMatrixService {
       affectedFsliItem: rcmControls.affectedFsliItem,
       effectivePeriod: rcmControls.effectivePeriod,
       cosoPrinciples: rcmControls.cosoPrinciples,
-      cosoComponent: sql<string>`CASE 
-        WHEN ${rcmControls.cosoPrinciples}::text ILIKE '%P1%' OR ${rcmControls.cosoPrinciples}::text ILIKE '%P2%' OR ${rcmControls.cosoPrinciples}::text ILIKE '%P3%' OR ${rcmControls.cosoPrinciples}::text ILIKE '%P4%' OR ${rcmControls.cosoPrinciples}::text ILIKE '%P5%' THEN 'Control Environment'
-        WHEN ${rcmControls.cosoPrinciples}::text ILIKE '%P6%' OR ${rcmControls.cosoPrinciples}::text ILIKE '%P7%' OR ${rcmControls.cosoPrinciples}::text ILIKE '%P8%' OR ${rcmControls.cosoPrinciples}::text ILIKE '%P9%' THEN 'Risk Assessment'
-        WHEN ${rcmControls.cosoPrinciples}::text ILIKE '%P10%' OR ${rcmControls.cosoPrinciples}::text ILIKE '%P11%' OR ${rcmControls.cosoPrinciples}::text ILIKE '%P12%' THEN 'Control Activities'
-        WHEN ${rcmControls.cosoPrinciples}::text ILIKE '%P13%' OR ${rcmControls.cosoPrinciples}::text ILIKE '%P14%' OR ${rcmControls.cosoPrinciples}::text ILIKE '%P15%' THEN 'Information & Communication'
-        WHEN ${rcmControls.cosoPrinciples}::text ILIKE '%P16%' OR ${rcmControls.cosoPrinciples}::text ILIKE '%P17%' THEN 'Monitoring Activities'
-        ELSE 'Entity-Level Control'
-      END`,
     })
     .from(rcmControls)
     .innerJoin(rcms, eq(rcmControls.rcmId, rcms.id))
@@ -239,7 +231,7 @@ export class RcmMatrixService {
 
     const withTods = await this.attachTods(orgId, results);
     const org = await this.orgMeta(orgId);
-    return withTods.map((row) => ({ ...row, ...org }));
+    return withTods.map((row) => ({ ...row, cosoComponent: getCosoComponent(row.cosoPrinciples), ...org }));
   }
 
   async getItgcMatrix(orgId: string, year?: string, bpmProcessId?: string) {

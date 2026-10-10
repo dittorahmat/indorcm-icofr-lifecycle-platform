@@ -79,6 +79,28 @@ export function matchesNoGL(fsliCodes: string[] | null | undefined, noGL: string
   return Array.isArray(fsliCodes) && fsliCodes.includes(noGL);
 }
 
+/** COSO principle ranges per SK-5/DKU.MBU/11/2024 Lampiran 5 a (17 principles).
+ *  Stored as numbers ([10,14]); first matching range wins, mirroring the
+ *  original SQL CASE order. Unknown/empty maps to 'Entity-Level Control'. */
+const COSO_COMPONENT_RANGES: Array<{ max: number; component: string }> = [
+  { max: 5, component: 'Control Environment' },
+  { max: 9, component: 'Risk Assessment' },
+  { max: 12, component: 'Control Activities' },
+  { max: 15, component: 'Information & Communication' },
+  { max: 17, component: 'Monitoring Activities' },
+];
+
+export function getCosoComponent(principles: unknown): string {
+  const list = Array.isArray(principles) ? principles : [];
+  for (const p of list) {
+    const n = typeof p === 'number' ? p : typeof p === 'string' ? parseInt(p.replace(/^P/i, ''), 10) : NaN;
+    if (!Number.isInteger(n) || n < 1 || n > 17) continue;
+    const hit = COSO_COMPONENT_RANGES.find((r) => n <= r.max);
+    if (hit) return hit.component;
+  }
+  return 'Entity-Level Control';
+}
+
 export interface VerificationSourceControl {
   code?: string | null;
   fsliCodes?: string[] | null;

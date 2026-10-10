@@ -4,9 +4,9 @@
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.account": {
+    "icofr.account": {
       "name": "account",
-      "schema": "",
+      "schema": "icofr",
       "columns": {
         "id": {
           "name": "id",
@@ -109,9 +109,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.account_assertions": {
+    "icofr.account_assertions": {
       "name": "account_assertions",
-      "schema": "",
+      "schema": "icofr",
       "columns": {
         "id": {
           "name": "id",
@@ -227,9 +227,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.action_plans": {
+    "icofr.action_plans": {
       "name": "action_plans",
-      "schema": "",
+      "schema": "icofr",
       "columns": {
         "id": {
           "name": "id",
@@ -377,9 +377,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.aggregate_deficiencies": {
+    "icofr.aggregate_deficiencies": {
       "name": "aggregate_deficiencies",
-      "schema": "",
+      "schema": "icofr",
       "columns": {
         "id": {
           "name": "id",
@@ -495,9 +495,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.applications": {
+    "icofr.applications": {
       "name": "applications",
-      "schema": "",
+      "schema": "icofr",
       "columns": {
         "id": {
           "name": "id",
@@ -572,9 +572,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.audit_logs": {
+    "icofr.audit_logs": {
       "name": "audit_logs",
-      "schema": "",
+      "schema": "icofr",
       "columns": {
         "id": {
           "name": "id",
@@ -698,9 +698,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.bpm_diagrams": {
+    "icofr.bpm_diagrams": {
       "name": "bpm_diagrams",
-      "schema": "",
+      "schema": "icofr",
       "columns": {
         "id": {
           "name": "id",
@@ -804,9 +804,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.bpm_exports": {
+    "icofr.bpm_exports": {
       "name": "bpm_exports",
-      "schema": "",
+      "schema": "icofr",
       "columns": {
         "id": {
           "name": "id",
@@ -894,9 +894,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.bpm_node_rcms": {
+    "icofr.bpm_node_rcms": {
       "name": "bpm_node_rcms",
-      "schema": "",
+      "schema": "icofr",
       "columns": {
         "id": {
           "name": "id",
@@ -977,9 +977,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.bpm_processes": {
+    "icofr.bpm_processes": {
       "name": "bpm_processes",
-      "schema": "",
+      "schema": "icofr",
       "columns": {
         "id": {
           "name": "id",
@@ -1122,9 +1122,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.controls": {
+    "icofr.controls": {
       "name": "controls",
-      "schema": "",
+      "schema": "icofr",
       "columns": {
         "id": {
           "name": "id",
@@ -1416,9 +1416,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.csa_records": {
+    "icofr.csa_records": {
       "name": "csa_records",
-      "schema": "",
+      "schema": "icofr",
       "columns": {
         "id": {
           "name": "id",
@@ -1721,9 +1721,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.csa_samples": {
+    "icofr.csa_samples": {
       "name": "csa_samples",
-      "schema": "",
+      "schema": "icofr",
       "columns": {
         "id": {
           "name": "id",
@@ -1844,9 +1844,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.csa_schedules": {
+    "icofr.csa_schedules": {
       "name": "csa_schedules",
-      "schema": "",
+      "schema": "icofr",
       "columns": {
         "id": {
           "name": "id",
@@ -1959,9 +1959,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.deficiencies": {
+    "icofr.deficiencies": {
       "name": "deficiencies",
-      "schema": "",
+      "schema": "icofr",
       "columns": {
         "id": {
           "name": "id",
@@ -2083,9 +2083,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.departments": {
+    "icofr.departments": {
       "name": "departments",
-      "schema": "",
+      "schema": "icofr",
       "columns": {
         "id": {
           "name": "id",
@@ -2128,9 +2128,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.document_departments": {
+    "icofr.document_departments": {
       "name": "document_departments",
-      "schema": "",
+      "schema": "icofr",
       "columns": {
         "id": {
           "name": "id",
@@ -2205,9 +2205,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.document_fslis": {
+    "icofr.document_fslis": {
       "name": "document_fslis",
-      "schema": "",
+      "schema": "icofr",
       "columns": {
         "id": {
           "name": "id",
@@ -2269,9 +2269,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.document_gls": {
+    "icofr.document_gls": {
       "name": "document_gls",
-      "schema": "",
+      "schema": "icofr",
       "columns": {
         "id": {
           "name": "id",
@@ -2333,9 +2333,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.documents": {
+    "icofr.documents": {
       "name": "documents",
-      "schema": "",
+      "schema": "icofr",
       "columns": {
         "id": {
           "name": "id",
@@ -2428,9 +2428,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.gl_rows": {
+    "icofr.gl_rows": {
       "name": "gl_rows",
-      "schema": "",
+      "schema": "icofr",
       "columns": {
         "id": {
           "name": "id",
@@ -2560,9 +2560,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.gl_snapshots": {
+    "icofr.gl_snapshots": {
       "name": "gl_snapshots",
-      "schema": "",
+      "schema": "icofr",
       "columns": {
         "id": {
           "name": "id",
@@ -2630,9 +2630,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.materiality": {
+    "icofr.materiality": {
       "name": "materiality",
-      "schema": "",
+      "schema": "icofr",
       "columns": {
         "id": {
           "name": "id",
@@ -2705,9 +2705,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.member": {
+    "icofr.member": {
       "name": "member",
-      "schema": "",
+      "schema": "icofr",
       "columns": {
         "id": {
           "name": "id",
@@ -2775,9 +2775,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.notifications": {
+    "icofr.notifications": {
       "name": "notifications",
-      "schema": "",
+      "schema": "icofr",
       "columns": {
         "id": {
           "name": "id",
@@ -2866,9 +2866,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.organization": {
+    "icofr.organization": {
       "name": "organization",
-      "schema": "",
+      "schema": "icofr",
       "columns": {
         "id": {
           "name": "id",
@@ -2929,9 +2929,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.rcm_controls": {
+    "icofr.rcm_controls": {
       "name": "rcm_controls",
-      "schema": "",
+      "schema": "icofr",
       "columns": {
         "id": {
           "name": "id",
@@ -3194,9 +3194,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.rcms": {
+    "icofr.rcms": {
       "name": "rcms",
-      "schema": "",
+      "schema": "icofr",
       "columns": {
         "id": {
           "name": "id",
@@ -3307,9 +3307,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.session": {
+    "icofr.session": {
       "name": "session",
-      "schema": "",
+      "schema": "icofr",
       "columns": {
         "id": {
           "name": "id",
@@ -3396,9 +3396,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.simulation_account_applications": {
+    "icofr.simulation_account_applications": {
       "name": "simulation_account_applications",
-      "schema": "",
+      "schema": "icofr",
       "columns": {
         "id": {
           "name": "id",
@@ -3479,9 +3479,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.simulations": {
+    "icofr.simulations": {
       "name": "simulations",
-      "schema": "",
+      "schema": "icofr",
       "columns": {
         "id": {
           "name": "id",
@@ -3669,9 +3669,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.soc_evaluations": {
+    "icofr.soc_evaluations": {
       "name": "soc_evaluations",
-      "schema": "",
+      "schema": "icofr",
       "columns": {
         "id": {
           "name": "id",
@@ -3808,9 +3808,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.soc_reports": {
+    "icofr.soc_reports": {
       "name": "soc_reports",
-      "schema": "",
+      "schema": "icofr",
       "columns": {
         "id": {
           "name": "id",
@@ -3903,9 +3903,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.system_licenses": {
+    "icofr.system_licenses": {
       "name": "system_licenses",
-      "schema": "",
+      "schema": "icofr",
       "columns": {
         "id": {
           "name": "id",
@@ -3958,9 +3958,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.test_records": {
+    "icofr.test_records": {
       "name": "test_records",
-      "schema": "",
+      "schema": "icofr",
       "columns": {
         "id": {
           "name": "id",
@@ -4089,9 +4089,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.transaction_details": {
+    "icofr.transaction_details": {
       "name": "transaction_details",
-      "schema": "",
+      "schema": "icofr",
       "columns": {
         "id": {
           "name": "id",
@@ -4207,9 +4207,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.transaction_uploads": {
+    "icofr.transaction_uploads": {
       "name": "transaction_uploads",
-      "schema": "",
+      "schema": "icofr",
       "columns": {
         "id": {
           "name": "id",
@@ -4291,9 +4291,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.user": {
+    "icofr.user": {
       "name": "user",
-      "schema": "",
+      "schema": "icofr",
       "columns": {
         "id": {
           "name": "id",
@@ -4379,9 +4379,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.vendors": {
+    "icofr.vendors": {
       "name": "vendors",
-      "schema": "",
+      "schema": "icofr",
       "columns": {
         "id": {
           "name": "id",
@@ -4443,9 +4443,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.verification": {
+    "icofr.verification": {
       "name": "verification",
-      "schema": "",
+      "schema": "icofr",
       "columns": {
         "id": {
           "name": "id",
@@ -4494,16 +4494,18 @@
     }
   },
   "enums": {
-    "public.owner_acceptance": {
+    "icofr.owner_acceptance": {
       "name": "owner_acceptance",
-      "schema": "public",
+      "schema": "icofr",
       "values": [
         "Accepted",
         "Rejected"
       ]
     }
   },
-  "schemas": {},
+  "schemas": {
+    "icofr": "icofr"
+  },
   "sequences": {},
   "roles": {},
   "policies": {},

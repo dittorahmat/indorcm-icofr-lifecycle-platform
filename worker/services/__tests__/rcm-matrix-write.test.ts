@@ -9,6 +9,7 @@ import {
   applyBatchUpdate,
   applyVerificationDesignPatch,
   createVerificationDesign,
+  getCosoComponent,
   matchesNoGL,
   projectVerificationRow,
   toTodDecisionInput,
@@ -332,6 +333,18 @@ describe('rcm-matrix-write seam (consolidated verification writes)', () => {
     expect(matchesNoGL(['GL-200'], 'GL-100')).toBe(false);
     expect(matchesNoGL(null, 'GL-100')).toBe(false);
     expect(matchesNoGL(['GL-100'], undefined)).toBe(true);
+  });
+
+  it('getCosoComponent maps numeric principles to SK-5 components', () => {
+    expect(getCosoComponent([1])).toBe('Control Environment');
+    expect(getCosoComponent([5])).toBe('Control Environment');
+    expect(getCosoComponent([6])).toBe('Risk Assessment');
+    expect(getCosoComponent([10, 14])).toBe('Control Activities');
+    expect(getCosoComponent([13])).toBe('Information & Communication');
+    expect(getCosoComponent([17])).toBe('Monitoring Activities');
+    expect(getCosoComponent([])).toBe('Entity-Level Control');
+    expect(getCosoComponent(null)).toBe('Entity-Level Control');
+    expect(getCosoComponent([99])).toBe('Entity-Level Control');
   });
 
   it('create validates the RCM choice and enforces 6-pilar on the fresh TOD', async () => {

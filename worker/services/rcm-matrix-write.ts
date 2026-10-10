@@ -11,7 +11,7 @@ import {
  *  live here. Routes and the service facade are thin adapters at this seam. */
 export {
   CONTROL_FIELDS_MAP, LINI1_FIELDS, LINI2_FIELDS,
-  applyAssertionFallback, matchesNoGL, projectVerificationRow,
+  applyAssertionFallback, getCosoComponent, matchesNoGL, projectVerificationRow,
 } from './rcm-matrix-projection';
 export type { BatchUpdateItem, CreateVerificationBody, VerificationPatchBody } from './rcm-matrix-projection';
 

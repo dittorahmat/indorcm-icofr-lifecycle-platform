@@ -23,7 +23,7 @@ csaRecordsRoute.get('/csa', async (c) => {
   let conditions: SQL = eq(csaRecords.organizationId, orgId);
   if (controlId) conditions = and(conditions, eq(csaRecords.controlId, controlId)) as SQL;
   if (period) conditions = and(conditions, eq(csaRecords.period, period)) as SQL;
-  if (year) conditions = and(conditions, sql`${csaRecords.period} LIKE ${'%' + year + '%'}`) as SQL;
+  if (year) conditions = and(conditions, sql`${csaRecords.period} LIKE ${year + '%'}`) as SQL;
   if (bpmProcessId) conditions = and(conditions, eq(csaRecords.bpmProcessId, bpmProcessId)) as SQL;
   if (scheduleId) conditions = and(conditions, eq(csaRecords.scheduleId, scheduleId)) as SQL;
 

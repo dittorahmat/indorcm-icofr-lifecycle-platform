@@ -22,7 +22,9 @@
     "cf-typegen": "wrangler types",
     "release:whitelabel": "npx tsx scripts/release-whitelabel.ts",
     "db:wipeout": "npx tsx worker/db/wipeout-demo.ts",
-    "db:backfill-bpm": "npx tsx scripts/backfill-controls-bpm.ts"
+    "db:backfill-bpm": "npx tsx scripts/backfill-controls-bpm.ts",
+    "db:extensions": "psql \"$DATABASE_URL\" -f scripts/db-extensions.sql",
+    "db:check": "node scripts/db-check.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

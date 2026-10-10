@@ -240,13 +240,6 @@ export class AIService {
     queryVector: number[],
     limit = 5
   ) {
-    // Extract keywords > 2 chars for title regex matching
-    const keywords = query
-      .replace(/[^a-zA-Z0-9\s]/g, ' ')
-      .split(/\s+/)
-      .filter(w => w.length > 2)
-      .join('|') || 'nomatch';
-
     const result = await db.execute(sql`
       WITH vector_search AS (
         SELECT id, ROW_NUMBER() OVER (ORDER BY embedding <=> ${sql.raw(`'${JSON.stringify(queryVector)}'::vector`)}) as rank
@@ -268,10 +261,7 @@ export class AIService {
         FROM icofr.document_chunks c
         JOIN icofr.documents d ON c.document_id = d.id
         WHERE c.organization_id = ${orgId}
-        AND (
-          d.title ILIKE ${'%' + query + '%'}
-          OR d.title ~* ${keywords}
-        )
+        AND d.title ILIKE ${'%' + query + '%'}
         LIMIT 50
       )
       SELECT 

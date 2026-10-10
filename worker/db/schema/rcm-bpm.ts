@@ -41,6 +41,7 @@ export const bpmProcesses = pgTable("bpm_processes", {
 		noGLIdx: index("bpm_processes_no_gl_idx").on(table.noGL),
 		yearIdx: index("bpm_processes_year_idx").on(table.year),
 		parentIdIdx: index("bpm_processes_parent_id_idx").on(table.parentId),
+		nameTrgmIdx: index("bpm_processes_name_trgm_idx").using("gin", table.name.op("gin_trgm_ops")),
 	};
 });
 
@@ -71,6 +72,12 @@ export const rcms = pgTable("rcms", {
 	auditTrail: jsonb("audit_trail"), // Legacy support
 	workflowStatus: text("workflow_status").default("Draft"),
 	workflowHistory: jsonb("workflow_history").$type<any[]>().default([]),
+}, (table) => {
+	return {
+		orgIdx: index("rcms_org_idx").on(table.organizationId),
+		subProcessTrgmIdx: index("rcms_sub_process_trgm_idx").using("gin", table.subProcess.op("gin_trgm_ops")),
+		idTrgmIdx: index("rcms_id_trgm_idx").using("gin", table.id.op("gin_trgm_ops")),
+	};
 });
 
 export const controls = pgTable("controls", {
@@ -127,6 +134,10 @@ export const controls = pgTable("controls", {
 	// Migration Metadata
 	isMigrated: boolean("is_migrated").default(false),
 	aiGuessedFields: jsonb("ai_guessed_fields").$type<string[]>().default([]),
+}, (table) => {
+	return {
+		fsliCodesGinIdx: index("controls_fsli_codes_gin_idx").using("gin", table.fsliCodes),
+	};
 });
 
 export const bpmNodeRcms = pgTable("bpm_node_rcms", {
@@ -176,6 +187,10 @@ export const rcmControls = pgTable("rcm_controls", {
 	itgcDomain: text("itgc_domain"), // Access, Changes, Development, Operations
 	itgcAssertions: jsonb("itgc_assertions"), // JSON mapping for IT assertions
 	automatedControlType: text("automated_control_type"), // Column xxvii
+}, (table) => {
+	return {
+		cosoPrinciplesGinIdx: index("rcm_controls_coso_principles_gin_idx").using("gin", table.cosoPrinciples),
+	};
 });
 
 export const bpmExports = pgTable("bpm_exports", {

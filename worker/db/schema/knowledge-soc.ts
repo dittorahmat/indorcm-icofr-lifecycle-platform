@@ -39,6 +39,7 @@ export const documents = pgTable("documents", {
 }, (table) => ({
 	embeddingIdx: index("doc_embedding_idx").using("hnsw", table.embedding.op("vector_cosine_ops")),
 	ftsIdx: index("doc_fts_idx").using("gin", table.ftsTokens),
+	titleTrgmIdx: index("documents_title_trgm_idx").using("gin", table.title.op("gin_trgm_ops")),
 }));
 
 export const documentDepartments = pgTable("document_departments", {

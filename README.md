@@ -48,9 +48,9 @@ For detailed mock data documentation, see [`docs/MOCK-DATA-COAL-MINING.md`](docs
 - **Forms**: React Hook Form + Zod.
 
 ### Backend
-- **Server**: Hono (Edge-ready API).
-- **Persistence**: Cloudflare Durable Objects (IndexedEntity pattern).
-- **Edge-Optimized**: Native Cloudflare Workers deployment.
+- **Server**: Hono (API). Lokal/on-prem via `@hono/node-server` (`worker/serve-local.ts`, port `3001`); edge via Cloudflare Workers.
+- **Persistence**: PostgreSQL (skema `icofr`) via Drizzle ORM — triple-driver: `postgres-js` (TCP on-prem langsung), `neon-http` (Workers stateless), `neon-serverless` Pool (WebSocket + transaksi). Lihat `worker/db/index.ts`.
+- **Search**: pgvector HNSW (semantic) + `tsvector` GIN Lexeme FTS (korpus dokumen, config `indonesian`) + `pg_trgm` GIN Trigram Search (substring `ILIKE`). Detail: `docs/adr/0003-pg-trgm-for-substring-search.md`.
 
 ## Design Context
 
@@ -71,14 +71,15 @@ Corporate, State-Owned Enterprise (BUMN) professional standard. Clean, structure
 
 ## Installation
 
-1.  **Prerequisites**: Node.js 18+ or Bun.
+1.  **Prerequisites**: Node.js 22+ (`engines` di `package.json`), `psql` client (untuk `db:extensions`), dan Bun (untuk `deploy.sh` VPS / entrypoint Docker).
 2.  **Clone and Install**:
     ```bash
     git clone <repo-url>
-    bun install
+    npm install
     ```
 3.  **Setup**:
-    - Run `bun cf-typegen` to generate Worker types.
+    - Run `npm run cf-typegen` to generate Worker types.
+    - Configure `DATABASE_URL` (Postgres, lihat § Database & Extensions), lalu `npm run db:extensions`.
 
 ## AI Chatbot Assistant
 
@@ -165,16 +166,20 @@ IndoGRC Pro supports offline, on-premise deployment using Docker. For enterprise
 
 ### 1. Deployment via Docker Compose
 
-Create a `docker-compose.yml` file or use the provided one:
+Gunakan `docker-compose.yml` di repo (image `pgvector/pgvector:pg15` — wajib, karena menyediakan ekstensi `vector` + `pg_trgm`; `postgres:15-alpine` polos **tidak** cukup):
 
 ```yaml
 services:
   db:
-    image: postgres:15-alpine
+    image: pgvector/pgvector:pg15
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_PASSWORD=your_secure_password
+      - POSTGRES_USER=indouser
+      - POSTGRES_PASSWORD=indopassword
+      - POSTGRES_DB=indorcm_db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U indouser -d indorcm_db"]
   app:
     build: .
     ports:
@@ -182,11 +187,14 @@ services:
     volumes:
       - /etc/machine-id:/host_machine_id:ro
     environment:
-      - DATABASE_URL=postgres://user:pass@db:5432/db
+      - DATABASE_URL=postgres://indouser:indopassword@db:5432/indorcm_db
       - LICENSE_PUBLIC_KEY=your_public_key_here
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 ```
+
+Urutan boot (`docker-entrypoint.sh`): `db-extensions` → `drizzle-kit push` → seed admin (`scripts/run-seed.ts`, `admin@bumn.go.id`) → `server.js`. VPS non-Docker memakai `deploy.sh` (fetch/pull `--ff-only`, migrasi kondisional bila `worker/db|drizzle` berubah, `rsync dist/client/` → `/var/www/icofr`, `pm2`, health gate `/api/settings`).
 
 ### 2. System Activation
 
@@ -196,6 +204,27 @@ Upon first boot, the application will enter **Activation Mode**:
 3. Copy this ID and send it to your vendor/administrator.
 4. Paste the provided **License Key** into the activation form.
 5. Once validated, the application will be fully unlocked.
+
+### 4. Database & Extensions (WAJIB sebelum migrasi)
+
+Satu-satunya sumber DDL adalah `drizzle/*.sql` versioned. Namun `CREATE EXTENSION` membutuhkan hak superuser/owner yang tidak dimiliki role aplikasi — jadi ekstensi disiapkan terpisah **sebelum** `drizzle-kit push`:
+
+```bash
+psql "$DATABASE_URL" -f scripts/db-extensions.sql
+# atau:
+npm run db:extensions
+```
+
+Isi: `vector` (dibutuhkan migrasi 0041/0042, RAG embeddings) + `pg_trgm` (dibutuhkan migrasi 0050, Trigram Search, ADR-0003). Idempoten (`IF NOT EXISTS`). Tanpa langkah ini, DB fresh gagal dengan `type "vector" does not exist` dan index trigram tidak terbentuk (query `ILIKE '%…%'` jatuh ke Seq Scan).
+
+Verifikasi:
+
+```bash
+psql "$DATABASE_URL" -c "\dx"                                # vector + pg_trgm terdaftar
+psql "$DATABASE_URL" -c "SELECT indexname FROM pg_indexes WHERE indexname LIKE '%trgm%';"
+```
+
+Alur rollout on-prem: `docker compose up` (entrypoint menjalankan extensions → push → seed otomatis) atau VPS: `deploy.sh` (extensions → conditional push → build → `pm2` + Apache `/var/www/icofr`).
 
 ### 3. Subscription Management
 
@@ -221,8 +250,11 @@ If you are the application vendor, use the included utility to generate keys:
 
 ## Development
 
--   **Start Dev Server**: `bun dev` (Frontend: `http://localhost:3000`).
--   **Quality**: `bun lint` and `bun x tsc --noEmit`.
+-   **Start Dev Server**: `npm run dev` (Frontend: `http://localhost:3000`).
+-   **Quality**: `npm run lint`, `npm run type-check` (`type-check:app` + `type-check:worker`), `npm run check:loc`.
+-   **Test**: `npm test` (vitest).
+-   **Build**: `npm run build` (`sync-guide` + `type-check` + vite build).
+-   **DB**: `npm run db:extensions` (superuser, sebelum push), `npm run db:check` (gate drift skema vs `drizzle/meta`, wajib hijau), migrasi via `drizzle-kit push` setelah ubah `worker/db/schema.ts`.
 
 ## License
 MIT License.

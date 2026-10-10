@@ -173,6 +173,8 @@ if [ "$NEW_REV" != "$OLD_REV" ]; then
             log "FATAL: DATABASE_URL kosong, migrasi dibatalkan"
             exit 1
         fi
+        log "Memastikan ekstensi DB (vector, pg_trgm, ADR-0003)..."
+        psql "$DATABASE_URL" -f scripts/db-extensions.sql || { log "FATAL: db-extensions gagal"; exit 1; }
         bunx drizzle-kit push --force || { log "FATAL: drizzle push gagal"; exit 1; }
     else
         log "Skema tidak berubah, migrasi dilewati."

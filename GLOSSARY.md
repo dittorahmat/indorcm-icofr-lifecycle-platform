@@ -28,3 +28,15 @@ Penyelesaian kasus nyata hari ini dengan satu ekspresi inline tanpa ekstraksi ba
 
 ### Abstraksi Sekali-Pakai (Single-Use Abstraction)
 File/fungsi/hook/tipe/komponen baru yang hanya memiliki satu pemakai dan tidak memiliki test pendamping yang menguncinya. Dianggap YAGNI-violation dan wajib di-inline, kecuali untuk memecah god-file `>400 LOC`.
+
+### Seq Scan
+Rencana eksekusi Postgres yang membaca seluruh tabel (atau partisi) baris demi baris karena tidak ada index yang dapat melayani predikat query.
+_Avoid_: full table scan
+
+### Trigram Search
+Pencarian substring/fuzzy case-insensitive (`ILIKE '%kata%'`) yang dipercepat index GIN `gin_trgm_ops` dari ekstensi `pg_trgm`. Pilihan baku untuk kolom nama/judul pendek.
+_Avoid_: full text search (generik)
+
+### Lexeme FTS
+Pencarian kata berstemming Bahasa Indonesia via kolom `tsvector` + `plainto_tsquery('indonesian', …)` + index GIN (contoh: `documents.fts_tokens`). Hanya untuk korpus dokumen, bukan untuk substring kode/nama.
+_Avoid_: full text search (generik)

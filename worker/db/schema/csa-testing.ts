@@ -1,4 +1,4 @@
-import { text, integer, timestamp, boolean, doublePrecision, jsonb } from "drizzle-orm/pg-core";
+import { text, integer, timestamp, boolean, doublePrecision, jsonb, index } from "drizzle-orm/pg-core";
 import { pgTable } from "./types";
 import { organization, user } from "./auth";
 import { controls, bpmProcesses } from "./rcm-bpm";
@@ -66,6 +66,10 @@ export const csaRecords = pgTable("csa_records", {
 	line2ValidatedDate: timestamp("line2_validated_date"),
 	workflowStatus: text("workflow_status").default("Draft"),
 	workflowHistory: jsonb("workflow_history").$type<any[]>().default([]),
+}, (table) => {
+	return {
+		orgPeriodIdx: index("csa_records_org_period_idx").on(table.organizationId, table.period),
+	};
 });
 
 export const csaSamples = pgTable("csa_samples", {

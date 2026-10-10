@@ -1,4 +1,4 @@
-import { eq, and, sql, gte, lte, or } from "drizzle-orm";
+import { eq, and, sql, gte, lte, or, ilike } from "drizzle-orm";
 import { DrizzleDb } from "../../db";
 import { 
   rcms, 
@@ -83,7 +83,7 @@ export const AIToolExecutor = {
     .$dynamic();
 
     if (subProcess) {
-      query = query.where(sql`LOWER(${rcms.subProcess}) LIKE LOWER(${`%${subProcess}%`})`);
+      query = query.where(ilike(rcms.subProcess, `%${subProcess}%`));
     }
     if (riskRating) {
       query = query.where(eq(rcms.riskRating, riskRating));
@@ -108,7 +108,7 @@ export const AIToolExecutor = {
     .from(bpmProcesses)
     .where(and(
       eq(bpmProcesses.organizationId, ctx.orgId),
-      sql`LOWER(${bpmProcesses.name}) LIKE LOWER(${`%${query}%`})`
+      ilike(bpmProcesses.name, `%${query}%`)
     ))
     .limit(10);
 

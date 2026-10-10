@@ -7,6 +7,9 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
+    // threads: the default forks pool hangs on Node 26 (tinypool worker
+    // timeout, 0 tests collected). Threads is behavior-identical for jsdom.
+    pool: 'threads',
     setupFiles: ['./src/test/setup.ts'],
     exclude: [
       '**/node_modules/**',
