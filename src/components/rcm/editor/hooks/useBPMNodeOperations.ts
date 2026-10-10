@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import type { Node, Edge } from 'reactflow';
 import { getStandardNodeDimensions, DEFAULT_SWIMLANE_DIMENSIONS } from '@/utils/bpm-constants';
+import { linkedIdsOf, regulatoryPairsOf } from '../utils/bpm-control-linkage';
 
 interface UseBPMNodeOperationsProps {
   isLocked: boolean;
@@ -63,11 +64,7 @@ export function useBPMNodeOperations({
         if (!targetNode || targetNode.type === 'swimlane') return updatedNodes;
 
         // Sync badges if needed
-        const pairs =
-          targetNode.data.regulatoryPairs ||
-          (targetNode.data.regulatoryData ? [targetNode.data.regulatoryData] : []);
-        const riskIds = Array.from(new Set(pairs.map((p: any) => p.riskId).filter(Boolean)));
-        const controlIds = Array.from(new Set(pairs.map((p: any) => p.controlId).filter(Boolean)));
+        const { riskIds, controlIds } = linkedIdsOf(regulatoryPairsOf(targetNode.data));
 
         const badgeId = `badge_${nodeId}`;
         let finalNodes = [...updatedNodes];

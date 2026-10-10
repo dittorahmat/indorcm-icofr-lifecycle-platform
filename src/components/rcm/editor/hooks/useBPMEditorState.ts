@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import type { Settings, BPMProcess } from '@shared/types';
 import { useActiveSimulation, useSimulationSnapshot } from '@/hooks/use-bpm';
 import { useConfirm } from '@/hooks/use-confirm';
+import { unmappedControlsFrom } from '../utils/bpm-control-linkage';
 
 interface UseBPMEditorStateProps {
   diagramId: string;
@@ -207,23 +208,7 @@ export function useBPMEditorState({
 
   const unmappedControls = useMemo(() => {
     if (!matrixData?.items) return [];
-
-    const mappedRiskIds = new Set<string>();
-    nodes.forEach((node) => {
-      const nodePairs =
-        node.data?.regulatoryPairs || (node.data?.regulatoryData ? [node.data.regulatoryData] : []);
-      nodePairs.forEach((pair: any) => {
-        if (pair.riskId) mappedRiskIds.add(pair.riskId);
-      });
-
-      if (node.data?.risks && !node.data?.regulatoryPairs && !node.data?.regulatoryData) {
-        node.data.risks.forEach((r: any) => mappedRiskIds.add(r.rcmId));
-      }
-    });
-
-    return matrixData.items.filter(
-      (item) => !mappedRiskIds.has(item.rcmId || item.mappingId?.split(':')[0] || item.riskId || item.id)
-    );
+    return unmappedControlsFrom(matrixData.items, nodes);
   }, [matrixData, nodes]);
 
   const isWorkflowLocked = useMemo(() => {
