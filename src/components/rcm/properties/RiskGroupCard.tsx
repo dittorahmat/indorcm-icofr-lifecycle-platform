@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 import type { QualitativeLevel } from '@shared/types';
 import { ControlAccordionItem } from './ControlAccordionItem';
 import { RiskDescriptionField } from './RiskDescriptionField';
-import type { AiSuggestionContext } from './useAiSuggestions';
+import type { AiSuggestionContext } from './AiSuggestionPopover';
 
 export interface RiskGroupData {
   risk: {

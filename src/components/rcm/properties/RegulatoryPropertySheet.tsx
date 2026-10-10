@@ -23,7 +23,7 @@ import { api } from '@/lib/api-client';
 import { EntityHistoryList } from './EntityHistoryList';
 import { NodeVisualProperties } from './NodeVisualProperties';
 import { RiskGroupCard } from './RiskGroupCard';
-import type { AiSuggestionContext } from './useAiSuggestions';
+import type { AiSuggestionContext } from './AiSuggestionPopover';
 
 interface RegulatoryPropertySheetProps {
   selectedNode: Node | null;

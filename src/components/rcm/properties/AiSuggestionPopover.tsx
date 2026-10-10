@@ -1,11 +1,44 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useQuery } from '@tanstack/react-query';
 import { Check, Lightbulb, Loader2, RotateCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { api } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
 import { Command, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { useAiSuggestions, type AiSuggestKind, type AiSuggestionContext } from './useAiSuggestions';
+
+export type AiSuggestKind = 'risk' | 'control';
+
+export interface AiSuggestionContext {
+  glCode?: string;
+  glDesc?: string;
+  bpmName: string;
+  nodeLabel: string;
+  riskDescription?: string;
+}
+
+export interface AiSuggestionItem {
+  description: string;
+  rationale: string;
+}
+
+export interface AiSuggestionResult {
+  kind: AiSuggestKind;
+  items: AiSuggestionItem[];
+  emptyReason: string | null;
+}
+
+function contextHash(kind: AiSuggestKind, ctx: AiSuggestionContext): string {
+  return JSON.stringify([
+    kind,
+    ctx.glCode ?? '',
+    ctx.glDesc ?? '',
+    ctx.bpmName,
+    ctx.nodeLabel,
+    kind === 'control' ? (ctx.riskDescription ?? '') : '',
+  ]);
+}
 
 interface AiSuggestionPopoverProps {
   kind: AiSuggestKind;
@@ -25,7 +58,25 @@ const EMPTY_REASON_KEYS: Record<string, string> = {
 export function AiSuggestionPopover({ kind, context, disabled = false, blocked = false, onApply }: AiSuggestionPopoverProps) {
   const { t } = useTranslation(['rcm', 'common']);
   const [open, setOpen] = useState(false);
-  const query = useAiSuggestions(kind, context);
+  const query = useQuery({
+    queryKey: ['ai-suggest-risk-controls', contextHash(kind, context)],
+    queryFn: () =>
+      api<AiSuggestionResult>('/api/ai/suggest-risk-controls', {
+        method: 'POST',
+        body: JSON.stringify({
+          kind,
+          noGL: context.glCode ?? '',
+          glDesc: context.glDesc ?? '',
+          bpmName: context.bpmName,
+          nodeLabel: context.nodeLabel,
+          riskDescription: context.riskDescription ?? '',
+        }),
+      }),
+    enabled: false,
+    staleTime: 30 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
+    retry: 1,
+  });
   const { data, isFetching, isError, refetch } = query;
 
   useEffect(() => {
