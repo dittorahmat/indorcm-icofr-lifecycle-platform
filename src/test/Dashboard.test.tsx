@@ -85,9 +85,10 @@ describe('Dashboard Component', () => {
     expect(screen.getByText('kpis.ready')).toBeInTheDocument();
   });
 
-  // Flaky under full-suite load (Render + React Query settle >5s when CPU-starved);
-  // generous timeout keeps the suite deterministic. Solo runs finish in ~1s.
-  it('calculates metrics dynamically based on controls and deficiencies data', { timeout: 20000 }, async () => {
+  // Flaky under full-suite load (Render + React Query settle when CPU-starved;
+  // observed 40s+ on a loaded runner vs ~1s solo). Generous timeout keeps the
+  // suite deterministic without changing what the test verifies.
+  it('calculates metrics dynamically based on controls and deficiencies data', { timeout: 60000 }, async () => {
     const mockControls = {
       items: [
         { id: '1', year: 2026, lastCsaDate: 12345, line2Validation: { status: 'Validated' } }, 

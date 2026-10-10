@@ -1,0 +1,45 @@
+name: Verify
+
+# Gate repo AGENTS.md: type-check + lint + test berjalan di CI untuk tiap PR,
+# bukan hanya atas disiplin lokal. Push ke main ikut dijaga karena deploy.yml
+# berjalan untuk tiap push main (mencegah direct-push yang melewati PR).
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: type-check, lint, test
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type-check (app + worker)
+        run: npm run type-check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test

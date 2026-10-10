@@ -46,6 +46,7 @@ Setiap kali melakukan penambahan komponen, modifikasi antarmuka frontend, menyel
 
 1.  **Mandat Wajib Penggunaan Skill `design-taste-frontend` (Strict Enforcement):**
     *   Setiap kali membuat atau memodifikasi komponen/tampilan antarmuka (`src/**/*.tsx`), Anda **WAJIB** secara eksplisit mengaktifkan dan mematuhi seluruh panduan dari skill `design-taste-frontend`.
+    *   **Cakupan pemicu:** mandat ini berlaku ketika JSX/visual berubah (kelas, struktur, teks tampil). Edit logika-only tanpa perubahan visual (import, tipe, deps array, pemindahan fungsi murni) cukup mematuhi substansi checklist tanpa aktivasi skill eksplisit; cantumkan `no visual change` di ringkasan perubahan.
     *   **Anti-AI Slop Checklist:**
         *   **No sub-12px font:** Dilarang keras menggunakan font di bawah 12px (`text-[8px]`, `text-[9px]`, `text-[10px]`, `text-[11px]`). Gunakan minimal `text-xs` (12px) dengan font-weight tegas (`font-medium` / `font-semibold`).
         *   **No decorative italic:** Dilarang menggunakan font miring (`italic`) pada data tabel audit, label regulasi, keterangan status, atau watermark audit. Teks kepatuhan BUMN harus tegas dan objektif.
@@ -54,7 +55,7 @@ Setiap kali melakukan penambahan komponen, modifikasi antarmuka frontend, menyel
         *   **Institutional border radius:** Seluruh card, modal, dialog, sheet, dan button wajib menggunakan border-radius enterprise institusional (`rounded-md` atau `rounded-lg`). Dilarang menggunakan kurva melingkar ekstrem/mainan (`rounded-2xl`, `rounded-3xl`, `rounded-[2rem]`).
         *   **Design system tokens:** Gunakan token Shadcn / Tailwind semantik (`--primary`, `--muted`, `--border`, dsb.), dilarang hardcoded warna neon/gradien ungu-pink acak.
 2.  **Mandat Mobile-Responsive via Skill `better-interface` (Strict Enforcement):**
-    *   Setiap kali membuat atau memodifikasi komponen/tampilan frontend dan komponennya (`src/**/*.tsx`), Anda **WAJIB** mengaktifkan skill `better-interface` (yang mengorkestrasi `better-accessibility`, `better-layout`, `better-typography`, `better-colors`, `better-ui`, `better-writing`) dan menerapkan hasil review-nya sebelum dianggap selesai.
+    *   Setiap kali membuat atau memodifikasi komponen/tampilan frontend dan komponennya (`src/**/*.tsx`), Anda **WAJIB** mengaktifkan skill `better-interface` (yang mengorkestrasi `better-accessibility`, `better-layout`, `better-typography`, `better-colors`, `better-ui`, `better-writing`) dan menerapkan hasil review-nya sebelum dianggap selesai. Cakupan pemicu mengikuti butir 1 (hanya ketika JSX/visual berubah).
     *   **Mobile-Responsive Checklist (320px → desktop):**
         *   **Mobile-first grid:** Base selalu satu kolom (`grid-cols-1` / `flex-col`); tambah kolom hanya di breakpoint (`sm:` / `md:` / `lg:` atau `min-[420px]:`). Dilarang `grid-cols-2/3/4` tetap di base 320px.
         *   **Tabel & Chart lebar aman:** Tabel dengan `min-w-[...]` atau grafik Recharts (`<ResponsiveContainer>`, `<BarChart>`, `<PieChart>`) WAJIB di dalam wrapper `overflow-x-auto max-w-full touch-pan-x overscroll-x-contain min-w-0`. Recharts dilarang dipasang dengan `min-w-[Xpx]` di level card container utama tanpa scroll wrapper mandiri, dan Pie/Donut Chart wajib simetris (`cx="50%"`, `cy="50%"`) tanpa offset yang menekan chart ke luar viewport.

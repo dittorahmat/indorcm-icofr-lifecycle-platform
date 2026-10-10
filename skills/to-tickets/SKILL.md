@@ -37,6 +37,8 @@ Break the work into **tracer bullet** tickets.
 
 Give each ticket its **blocking edges**: the other tickets that must complete before it can start. A ticket with no blockers can start immediately.
 
+Give each ticket an explicit **slice scope**: acceptance criteria bind the slice, and an "Out of slice scope" line names the full-vision remainder on purpose — so later review judges the slice contract, not the vision.
+
 **Wide refactors are the exception to vertical slicing.** A **wide refactor** is one mechanical change (rename a column, retype a shared symbol) whose **blast radius** fans across the whole codebase, so a single edit breaks thousands of call sites at once and no vertical slice can land green. Don't force it into a tracer bullet; sequence it as **expand–contract**. First expand: add the new form beside the old so nothing breaks. Then migrate the call sites over in batches sized by blast radius (per package, per directory), each batch its own ticket blocked by the expand, keeping CI green batch to batch because the old form still exists. Finally contract: delete the old form once no caller remains, in a ticket blocked by every migrate batch. When even the batches can't stay green alone, keep the sequence but let them share an integration branch that all block a final integrate-and-verify ticket; green is promised only there.
 
 ### 4. Quiz the user
@@ -74,6 +76,8 @@ Do NOT close or modify any parent issue.
 
 **Blocked by:** the numbers/titles of the tickets that gate this one, or "None (can start immediately)".
 
+**Out of slice scope:** the full-vision remainder deliberately left for later, so review judges this slice contract, not the vision.
+
 **Status:** ready-for-agent
 
 - [ ] Acceptance criterion 1
@@ -99,6 +103,10 @@ The end-to-end behaviour this ticket makes work, from the user's perspective, no
 ## Blocked by
 
 - A reference to each blocking ticket, or "None (can start immediately)". Omit this section when blockers were set as native edges.
+
+## Out of slice scope
+
+- The full-vision remainder deliberately left for later, so review judges this slice contract, not the vision.
 
 </issue-template>
 
