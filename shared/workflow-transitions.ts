@@ -204,3 +204,41 @@ const WORKFLOW_ENDPOINT_PREFIX: Record<WorkflowEntityType, string> = {
 export function workflowEndpointFor(entityType: WorkflowEntityType, entityId: string): string {
   return `${WORKFLOW_ENDPOINT_PREFIX[entityType]}/${entityId}/workflow`;
 }
+
+/** Presentation tone per status. Single map validated against the canonical table. */
+export type StatusBadgeTone = 'neutral' | 'info' | 'warning' | 'success' | 'danger';
+
+const STATUS_BADGE_TONES: Record<string, StatusBadgeTone> = {
+  Draft: 'neutral',
+  Ineffective: 'neutral',
+  'In Review': 'info',
+  'Pending CFO': 'info',
+  'In Approval': 'warning',
+  'Pending Komut': 'warning',
+  Resolved: 'success',
+  Approved: 'success',
+  Validated: 'success',
+  Rejected: 'danger',
+};
+
+export function statusBadgeTone(status: string): StatusBadgeTone {
+  return STATUS_BADGE_TONES[status] ?? 'neutral';
+}
+
+/** Lock derives from the table: editable exactly where Submit is allowed. */
+export function isWorkflowLockedFor(entityType: WorkflowEntityType, currentStatus: string): boolean {
+  return !allowedActionsFor(entityType, currentStatus).includes('Submit');
+}
+
+const WORKFLOW_INVALIDATION_KEYS: Record<WorkflowEntityType, string[][]> = {
+  BPM: [['bpm-processes']],
+  ACTION_PLAN: [['actionplans'], ['deficiencies']],
+  SCOPING: [['simulations']],
+  RCM_CHANGE: [['rcm-matrix-tlc'], ['controls'], ['changelogs']],
+  CSA: [['csa-records']],
+};
+
+/** Client cache keys refreshed after a transition. Single table beside the routes. */
+export function workflowInvalidationKeysFor(entityType: WorkflowEntityType): string[][] {
+  return WORKFLOW_INVALIDATION_KEYS[entityType] ?? [];
+}

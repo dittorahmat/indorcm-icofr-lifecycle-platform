@@ -2,7 +2,11 @@ import { describe, it, expect } from 'vitest';
 import {
   decideTransition,
   allowedActionsFor,
+  isWorkflowLockedFor,
+  statusBadgeTone,
   workflowEndpointFor,
+  workflowInvalidationKeysFor,
+  WORKFLOW_TRANSITION_RULES,
   requiresNoteFor,
   type WorkflowEntityType,
 } from './workflow-transitions';
@@ -89,5 +93,39 @@ describe('workflow-transitions single source (T2 RED)', () => {
     expect(workflowEndpointFor('SCOPING', 's1')).toBe('/api/simulations/s1/workflow');
     expect(workflowEndpointFor('RCM_CHANGE', 'r1')).toBe('/api/rcm/r1/workflow');
     expect(workflowEndpointFor('CSA', 'c1')).toBe('/api/csa/c1/workflow');
+  });
+
+  it('derives lock from the table: unlocked exactly where Submit is allowed', () => {
+    const entities = ['BPM', 'ACTION_PLAN', 'SCOPING', 'RCM_CHANGE', 'CSA'] as WorkflowEntityType[];
+    for (const entity of entities) {
+      for (const status of Object.keys(WORKFLOW_TRANSITION_RULES[entity] ?? {})) {
+        const canSubmit = allowedActionsFor(entity, status).includes('Submit');
+        expect(isWorkflowLockedFor(entity, status)).toBe(!canSubmit);
+      }
+    }
+    expect(isWorkflowLockedFor('BPM', 'Draft')).toBe(false);
+    expect(isWorkflowLockedFor('BPM', 'Rejected')).toBe(false);
+    expect(isWorkflowLockedFor('ACTION_PLAN', 'Ineffective')).toBe(false);
+    expect(isWorkflowLockedFor('BPM', 'In Review')).toBe(true);
+    expect(isWorkflowLockedFor('CSA', 'Nope')).toBe(true);
+  });
+
+  it('covers every canonical status with a badge tone', () => {
+    expect(statusBadgeTone('Draft')).toBe('neutral');
+    expect(statusBadgeTone('Rejected')).toBe('danger');
+    expect(statusBadgeTone('In Review')).toBe('info');
+    expect(statusBadgeTone('In Approval')).toBe('warning');
+    expect(statusBadgeTone('Resolved')).toBe('success');
+    expect(statusBadgeTone('Approved')).toBe('success');
+    expect(statusBadgeTone('Validated')).toBe('success');
+    expect(statusBadgeTone('Nope')).toBe('neutral');
+  });
+
+  it('exposes invalidation keys for every entity', () => {
+    expect(workflowInvalidationKeysFor('BPM')).toContainEqual(['bpm-processes']);
+    expect(workflowInvalidationKeysFor('CSA')).toContainEqual(['csa-records']);
+    for (const entity of ['BPM', 'ACTION_PLAN', 'SCOPING', 'RCM_CHANGE', 'CSA'] as WorkflowEntityType[]) {
+      expect(workflowInvalidationKeysFor(entity).length).toBeGreaterThan(0);
+    }
   });
 });
