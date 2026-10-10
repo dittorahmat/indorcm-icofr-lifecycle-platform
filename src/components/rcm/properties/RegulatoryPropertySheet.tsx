@@ -73,7 +73,7 @@ export function RegulatoryPropertySheet({
 
   const pairs = useMemo(() => {
     return regulatoryPairsOf(selectedNode?.data);
-  }, [selectedNode?.data?.regulatoryPairs, selectedNode?.data?.regulatoryData]);
+  }, [selectedNode?.data]);
 
   const groupedRisks = useMemo(() => {
     if (!selectedNode) return [];
