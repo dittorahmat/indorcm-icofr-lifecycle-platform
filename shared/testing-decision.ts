@@ -307,3 +307,70 @@ export function decideFromControl(
 ): TestingDecision {
   return decideTest(normalizeTestingControl(control), input);
 }
+
+/** Raw form/body surface for a test submission. Unknowns are normalized;
+ *  anything unrecognised falls back to the seam defaults. */
+export interface TestSubmissionValues {
+  testType: unknown;
+  result?: unknown;
+  claimedResult?: unknown;
+  sampleSize?: unknown;
+  homogeneityJustification?: unknown;
+  samples?: unknown;
+  todPilarObjective?: unknown;
+  todPilarTiming?: unknown;
+  todPilarAuthority?: unknown;
+  todPilarReliability?: unknown;
+  todPilarCoverage?: unknown;
+  todPilarEvidence?: unknown;
+}
+
+function pillarSatisfied(value: unknown): boolean {
+  return value !== false;
+}
+
+function cleanSamples(value: unknown): DecisionSample[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter(
+    (s): s is DecisionSample =>
+      typeof s === 'object' && s !== null && ((s as { status?: unknown }).status === 'Pass' || (s as { status?: unknown }).status === 'Fail'),
+  );
+}
+
+/**
+ * Form constructor: normalizes caller-shaped submission values (client
+ * form or worker body) and decides in one call. TOD pillars attach only
+ * for TOD; TOE carries samples and the Table 22 minimum. Adapters forward
+ * the verdict without re-branching on test type.
+ */
+export function decideFromForm(
+  control: RawTestingControl | null | undefined,
+  values: TestSubmissionValues,
+): TestingDecision {
+  const testType: TestType = values.testType === 'TOD' ? 'TOD' : 'TOE';
+  const claimed: TestingVerdict =
+    values.result === 'Ineffective' || values.claimedResult === 'Ineffective' ? 'Ineffective' : 'Effective';
+  const sampleSize = typeof values.sampleSize === 'number' ? values.sampleSize : undefined;
+  const homogeneityJustification =
+    typeof values.homogeneityJustification === 'string' ? values.homogeneityJustification : undefined;
+  const samples = cleanSamples(values.samples);
+  const todPillars: TodPillars | undefined =
+    testType === 'TOD'
+      ? {
+          objective: pillarSatisfied(values.todPilarObjective),
+          timing: pillarSatisfied(values.todPilarTiming),
+          authority: pillarSatisfied(values.todPilarAuthority),
+          reliability: pillarSatisfied(values.todPilarReliability),
+          coverage: pillarSatisfied(values.todPilarCoverage),
+          evidence: pillarSatisfied(values.todPilarEvidence),
+        }
+      : undefined;
+  return decideFromControl(control, {
+    testType,
+    claimedResult: claimed,
+    sampleSize,
+    homogeneityJustification,
+    samples,
+    todPillars,
+  });
+}

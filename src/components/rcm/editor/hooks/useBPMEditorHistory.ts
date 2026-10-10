@@ -13,8 +13,8 @@ interface UseBPMEditorHistoryParams {
   setDirty: (dirty: boolean) => void;
   canUndo: boolean;
   canRedo: boolean;
-  executeUndo: (nodes: Node[], edges: Edge[], setNodes: React.Dispatch<React.SetStateAction<Node[]>>, setEdges: React.Dispatch<React.SetStateAction<Edge[]>>) => void;
-  executeRedo: (nodes: Node[], edges: Edge[], setNodes: React.Dispatch<React.SetStateAction<Node[]>>, setEdges: React.Dispatch<React.SetStateAction<Edge[]>>) => void;
+  executeUndo: () => void;
+  executeRedo: () => void;
   rfInstance: { fitView: (opts: { padding: number; duration?: number }) => void } | null;
   t: TranslateFn;
 }
@@ -35,17 +35,17 @@ export function useBPMEditorHistory({
 }: UseBPMEditorHistoryParams) {
   const handleUndo = React.useCallback(() => {
     if (!canUndo) return;
-    executeUndo(nodes, edges, setNodes, setEdges);
+    executeUndo();
     setDirty(true);
     toast.info(t('bpm:editor.toast.undo', { defaultValue: 'Perubahan dibatalkan (Undo)' }));
-  }, [canUndo, executeUndo, nodes, edges, setNodes, setEdges, setDirty, t]);
+  }, [canUndo, executeUndo, setDirty, t]);
 
   const handleRedo = React.useCallback(() => {
     if (!canRedo) return;
-    executeRedo(nodes, edges, setNodes, setEdges);
+    executeRedo();
     setDirty(true);
     toast.info(t('bpm:editor.toast.redo', { defaultValue: 'Perubahan diulang (Redo)' }));
-  }, [canRedo, executeRedo, nodes, edges, setNodes, setEdges, setDirty, t]);
+  }, [canRedo, executeRedo, setDirty, t]);
 
   const handleAutoArrange = React.useCallback(() => {
     if (nodes.length === 0) return;

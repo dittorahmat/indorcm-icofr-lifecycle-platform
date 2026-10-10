@@ -9,6 +9,7 @@ import type { DrizzleDb } from '../../db';
 import { DeficiencyService } from "../../services/deficiency-service";
 import {
   decideFromControl,
+  decideFromForm,
   type TestingVerdict,
   type TodPillars,
 } from "@shared/testing-decision";
@@ -208,31 +209,18 @@ csaSamplesTestingRoute.post('/tests', async (c) => {
     where: and(eq(controls.id, body.controlId), eq(controls.organizationId, orgId)),
     columns: { frequency: true, riskRating: true, nature: true },
   });
-  const todPillars: TodPillars | undefined =
-    testType === 'TOD'
-      ? {
-          objective: body.todPilarObjective !== false,
-          timing: body.todPilarTiming !== false,
-          authority: body.todPilarAuthority !== false,
-          reliability: body.todPilarReliability !== false,
-          coverage: body.todPilarCoverage !== false,
-          evidence: body.todPilarEvidence !== false,
-        }
-      : undefined;
-  const decision = decideFromControl(controlRow, {
-    testType,
-    claimedResult,
-    sampleSize: typeof body.sampleSize === 'number' ? body.sampleSize : undefined,
-    homogeneityJustification:
-      typeof body.homogeneityJustification === 'string'
-        ? body.homogeneityJustification
-        : undefined,
-    samples: Array.isArray(body.samples)
-      ? body.samples.filter(
-          (s: { status?: unknown }) => s && (s.status === 'Pass' || s.status === 'Fail'),
-        )
-      : [],
-    todPillars,
+  const decision = decideFromForm(controlRow, {
+    testType: body.testType,
+    result: body.result,
+    sampleSize: body.sampleSize,
+    homogeneityJustification: body.homogeneityJustification,
+    samples: body.samples,
+    todPilarObjective: body.todPilarObjective,
+    todPilarTiming: body.todPilarTiming,
+    todPilarAuthority: body.todPilarAuthority,
+    todPilarReliability: body.todPilarReliability,
+    todPilarCoverage: body.todPilarCoverage,
+    todPilarEvidence: body.todPilarEvidence,
   });
 
   if (!decision.isValid) {

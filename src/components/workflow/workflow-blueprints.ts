@@ -2,9 +2,7 @@ import {
   WorkflowAction,
 } from '@shared/types';
 import {
-  allowedActionsFor,
-  isWorkflowLockedFor,
-  requiresNoteFor,
+  forEntity,
   statusBadgeTone,
   WORKFLOW_TRANSITION_RULES,
   type WorkflowEntityType,
@@ -79,8 +77,9 @@ const UI_HINTS: Record<WorkflowEntityType, Partial<Record<WorkflowAction, UiHint
 function buildBlueprint(entityType: WorkflowEntityType): WorkflowBlueprint {
   const steps: WorkflowBlueprint['steps'] = {};
   for (const status of Object.keys(WORKFLOW_TRANSITION_RULES[entityType])) {
+    const view = forEntity(entityType, status);
     steps[status] = {
-      actions: allowedActionsFor(entityType, status).map((action) => {
+      actions: view.actions.map((action) => {
         const hint = UI_HINTS[entityType][action] ?? { labelKey: `workflow:${action}`, icon: Send };
         return {
           id: action,
@@ -88,7 +87,7 @@ function buildBlueprint(entityType: WorkflowEntityType): WorkflowBlueprint {
           variant: hint.variant,
           icon: hint.icon,
           needsAssignee: hint.needsAssignee,
-          needsNote: requiresNoteFor(entityType, status, action),
+          needsNote: view.requiresNote[action] ?? false,
         };
       }),
     };
@@ -122,5 +121,5 @@ export function getStatusBadgeClass(status: string): string {
 }
 
 export function isWorkflowLocked(entityType: WorkflowEntityType, status: string): boolean {
-  return isWorkflowLockedFor(entityType, status);
+  return forEntity(entityType, status).locked;
 }

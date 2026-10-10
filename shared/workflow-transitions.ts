@@ -244,3 +244,29 @@ const WORKFLOW_INVALIDATION_KEYS: Record<WorkflowEntityType, string[][]> = {
 export function workflowInvalidationKeysFor(entityType: WorkflowEntityType): string[][] {
   return WORKFLOW_INVALIDATION_KEYS[entityType] ?? [];
 }
+
+/** Single per-entity view: actions, note requirements, lock, badge tone, and
+ *  cache keys behind one interface. Client adapters (blueprints, panels,
+ *  hooks) read this instead of switching on entity/status themselves. */
+export interface EntityWorkflowView {
+  actions: WorkflowAction[];
+  requiresNote: Partial<Record<WorkflowAction, boolean>>;
+  locked: boolean;
+  badgeTone: StatusBadgeTone;
+  invalidationKeys: string[][];
+}
+
+export function forEntity(entityType: WorkflowEntityType, currentStatus: string): EntityWorkflowView {
+  const actions = allowedActionsFor(entityType, currentStatus);
+  const requiresNote: Partial<Record<WorkflowAction, boolean>> = {};
+  for (const action of actions) {
+    requiresNote[action] = requiresNoteFor(entityType, currentStatus, action);
+  }
+  return {
+    actions,
+    requiresNote,
+    locked: isWorkflowLockedFor(entityType, currentStatus),
+    badgeTone: statusBadgeTone(currentStatus),
+    invalidationKeys: workflowInvalidationKeysFor(entityType),
+  };
+}

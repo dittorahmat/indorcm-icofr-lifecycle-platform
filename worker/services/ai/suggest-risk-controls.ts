@@ -1,5 +1,8 @@
 import { jsonrepair } from 'jsonrepair';
 import { AppError } from '../../lib/utils';
+import { isGenericNodeLabel } from '@shared/suggest-guards';
+
+export { isGenericNodeLabel };
 
 export type SuggestKind = 'risk' | 'control';
 export type SuggestionSource = 'ai' | 'library' | 'manual';
@@ -53,14 +56,6 @@ export const SUGGEST_RESPONSE_SCHEMA = {
   },
   required: ['items'],
 };
-
-const GENERIC_NODE_LABEL_PATTERN = /^(proses|langkah|langkah_kerja|step|process|node|activity|aktivitas|task|tahap)[\s._-]*\d*$/i;
-
-export function isGenericNodeLabel(label: string): boolean {
-  const trimmed = label.trim();
-  if (trimmed.length < 4) return true;
-  return GENERIC_NODE_LABEL_PATTERN.test(trimmed);
-}
 
 function asTrimmedString(value: unknown): string {
   return typeof value === 'string' ? value.trim() : '';

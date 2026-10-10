@@ -1,12 +1,10 @@
 import React, { useMemo } from 'react';
-import { useEdgesState, useNodesState } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { useUnsavedChangesContext } from '@/context/UnsavedChangesContext';
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
-import { useCanvasHistory } from '@/hooks/use-canvas-history';
 import { RegulatoryPropertySheet } from './properties/RegulatoryPropertySheet';
 import { BPMCanvasToolbar } from './editor/BPMCanvasToolbar';
 import { BPMDocumentView } from './editor/BPMDocumentView';
@@ -18,6 +16,7 @@ import { BPMCanvas } from './editor/BPMCanvas';
 import { bpmEdgeTypes, bpmNodeTypes } from './editor/bpm-canvas-types';
 import { BPMCanvasSheetTabBar } from './editor/BPMCanvasSheetTabBar';
 import { useBPMSheets } from './editor/hooks/useBPMSheets';
+import { useBPMDiagram } from './editor/hooks/useBPMDiagram';
 import { useBPMEditorState } from './editor/hooks/useBPMEditorState';
 import { useBPMNodeOperations } from './editor/hooks/useBPMNodeOperations';
 import { useBPMCanvasDragGuides } from './editor/hooks/useBPMCanvasDragGuides';
@@ -41,8 +40,19 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
   const { t } = useTranslation(['risklibrary', 'common', 'bpm']);
   const { setDirty, resetDirty } = useUnsavedChangesContext();
 
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const {
+    nodes,
+    setNodes,
+    onNodesChange,
+    edges,
+    setEdges,
+    onEdgesChange,
+    pushState,
+    canUndo,
+    canRedo,
+    undoDiagram: executeUndo,
+    redoDiagram: executeRedo,
+  } = useBPMDiagram({ maxHistory: 30 });
 
   const view = useBPMEditorView();
 
@@ -84,8 +94,6 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
 
   // Sync isDirty with global context using the unique ID hook
   useUnsavedChanges(isDirty || view.isExporting);
-
-  const { canUndo, canRedo, pushState, undo: executeUndo, redo: executeRedo } = useCanvasHistory(nodes, edges, { maxHistory: 30 });
 
   const history = useBPMEditorHistory({
     nodes,

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   decideTransition,
   allowedActionsFor,
+  forEntity,
   isWorkflowLockedFor,
   statusBadgeTone,
   workflowEndpointFor,
@@ -132,5 +133,33 @@ describe('workflow-transitions single source (T2 RED)', () => {
     for (const entity of ['BPM', 'ACTION_PLAN', 'SCOPING', 'RCM_CHANGE', 'CSA'] as WorkflowEntityType[]) {
       expect(workflowInvalidationKeysFor(entity).length).toBeGreaterThan(0);
     }
+  });
+
+  it('answers actions, notes, lock, tone, and keys through one forEntity view', () => {
+    const bpmDraft = forEntity('BPM', 'Draft');
+    expect(bpmDraft.actions).toEqual(['Submit']);
+    expect(bpmDraft.requiresNote).toEqual({ Submit: false });
+    expect(bpmDraft.locked).toBe(false);
+    expect(bpmDraft.badgeTone).toBe('neutral');
+    expect(bpmDraft.invalidationKeys).toContainEqual(['bpm-processes']);
+
+    const bpmReview = forEntity('BPM', 'In Review');
+    expect(bpmReview.actions).toEqual(['Reject', 'Review']);
+    expect(bpmReview.requiresNote).toEqual({ Reject: true, Review: false });
+    expect(bpmReview.locked).toBe(true);
+    expect(bpmReview.badgeTone).toBe('info');
+
+    const scopingKomut = forEntity('SCOPING', 'Pending Komut');
+    expect(scopingKomut.actions).toEqual(['Reject', 'Approve']);
+    expect(scopingKomut.badgeTone).toBe('warning');
+  });
+
+  it('returns an empty locked view for unknown statuses', () => {
+    const view = forEntity('CSA', 'Nope');
+    expect(view.actions).toEqual([]);
+    expect(view.requiresNote).toEqual({});
+    expect(view.locked).toBe(true);
+    expect(view.badgeTone).toBe('neutral');
+    expect(view.invalidationKeys).toContainEqual(['csa-records']);
   });
 });

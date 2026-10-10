@@ -1,9 +1,6 @@
 import { Control, ControlFrequency } from '@shared/types';
 import { isReadyForRemediationTest } from '@/lib/compliance-utils';
-import {
-  decideFromControl,
-  type TodPillars,
-} from '@shared/testing-decision';
+import { decideFromForm } from '@shared/testing-decision';
 import { TestFormValues } from './test-schema';
 
 export interface EvaluationResult {
@@ -18,37 +15,19 @@ export interface EvaluationResult {
 
 export type TestableControl = Pick<Control, 'frequency' | 'riskRating' | 'nature'>;
 
-function toTodPillars(values: TestFormValues): TodPillars {
-  return {
-    objective: values.todPilarObjective,
-    timing: values.todPilarTiming,
-    authority: values.todPilarAuthority,
-    reliability: values.todPilarReliability,
-    coverage: values.todPilarCoverage,
-    evidence: values.todPilarEvidence,
-  };
-}
-
 /**
  * Client pre-flight adapter over the single testing-decision seam.
  * All Table 22/23, Zero-Tolerance and 6-pilar rules live in
- * `@shared/testing-decision`; this adapter only maps form values
- * to the seam input and seam verdicts to form errors.
+ * `@shared/testing-decision`; this adapter only forwards the form to
+ * the seam and maps seam verdicts to form errors.
  */
 export function evaluateTestSubmission(
   control: TestableControl,
   values: TestFormValues,
 ): EvaluationResult {
-  const decision = decideFromControl(
+  const decision = decideFromForm(
     { frequency: control.frequency, riskRating: control.riskRating, nature: control.nature },
-    {
-      testType: values.testType,
-      claimedResult: values.result,
-      sampleSize: values.sampleSize,
-      homogeneityJustification: values.homogeneityJustification,
-      samples: values.samples,
-      todPillars: values.testType === 'TOD' ? toTodPillars(values) : undefined,
-    },
+    values,
   );
 
   if (!decision.isValid) {

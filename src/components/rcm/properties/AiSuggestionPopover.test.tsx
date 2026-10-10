@@ -117,6 +117,17 @@ describe('AiSuggestionPopover', () => {
     expect(mockedApi).not.toHaveBeenCalled();
   });
 
+  it('skips the fetch for generic labels via the shared gate', async () => {
+    const user = userEvent.setup();
+    renderPopover({ context: { ...CONTEXT, nodeLabel: 'Proses 1' } });
+
+    await user.click(screen.getByRole('button', { name: /sarankan risiko|Suggest risks/i }));
+    await waitFor(() => {
+      expect(screen.getByText(/too generic|Perspesifik nama langkah/i)).toBeInTheDocument();
+    });
+    expect(mockedApi).not.toHaveBeenCalled();
+  });
+
   it('renders a disabled trigger when locked', () => {
     renderPopover({ disabled: true });
     expect(screen.getByRole('button', { name: /sarankan risiko|Suggest risks/i })).toBeDisabled();
