@@ -15,6 +15,7 @@ import { ELCForm } from './ELCForm';
 import { ITGCForm } from './ITGCForm';
 import { SignificantApplicationCombobox } from '../SignificantApplicationCombobox';
 import { AiSuggestionPopover, type AiSuggestionContext } from './AiSuggestionPopover';
+import { suggestGate } from '@shared/suggest-guards';
 
 interface ControlAccordionItemProps {
   ctrl: { data: any; index: number };
@@ -83,6 +84,14 @@ export function ControlAccordionItem({
     suggestionBase && riskDescription
       ? { ...suggestionBase, nodeLabel: nodeLabel || suggestionBase.nodeLabel, riskDescription }
       : null;
+  // Same fetch-gating seam as the worker: control-without-risk (or generic
+  // label) never triggers an LLM round-trip on either side.
+  const suggestBlocked = suggestGate({
+    kind: 'control',
+    bpmName: suggestionBase?.bpmName ?? '',
+    nodeLabel: nodeLabel || suggestionBase?.nodeLabel || '',
+    riskDescription,
+  }).blocked;
 
   return (
     <AccordionItem value={ctrl.data._tempControlId || `ctrl-${ctrl.index}`} className="bg-white border rounded-xl shadow-sm overflow-hidden">
@@ -141,7 +150,7 @@ export function ControlAccordionItem({
                   kind="control"
                   context={controlSuggestContext ?? { ...suggestionBase, nodeLabel: nodeLabel || suggestionBase.nodeLabel }}
                   disabled={isLocked}
-                  blocked={!controlSuggestContext}
+                  blocked={suggestBlocked}
                   onApply={(desc) => applyControlDescription(desc, 'ai')}
                 />
               )}

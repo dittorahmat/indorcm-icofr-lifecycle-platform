@@ -7,6 +7,7 @@ import { api } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
 import { Command, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { suggestGate } from '@shared/suggest-guards';
 
 export type AiSuggestKind = 'risk' | 'control';
 
@@ -58,6 +59,15 @@ const EMPTY_REASON_KEYS: Record<string, string> = {
 export function AiSuggestionPopover({ kind, context, disabled = false, blocked = false, onApply }: AiSuggestionPopoverProps) {
   const { t } = useTranslation(['rcm', 'common']);
   const [open, setOpen] = useState(false);
+  // Single fetch-gating seam shared with the worker: generic labels and
+  // missing context skip the LLM round-trip on both sides.
+  const gate = suggestGate({
+    kind,
+    bpmName: context.bpmName,
+    nodeLabel: context.nodeLabel,
+    riskDescription: context.riskDescription ?? '',
+  });
+  const gated = blocked || gate.blocked;
   const query = useQuery({
     queryKey: ['ai-suggest-risk-controls', contextHash(kind, context)],
     queryFn: () =>
@@ -80,10 +90,10 @@ export function AiSuggestionPopover({ kind, context, disabled = false, blocked =
   const { data, isFetching, isError, refetch } = query;
 
   useEffect(() => {
-    if (open && !blocked && !disabled && data === undefined && !isFetching && !isError) {
+    if (open && !gated && !disabled && data === undefined && !isFetching && !isError) {
       void refetch();
     }
-  }, [open, blocked, disabled, data, isFetching, isError, refetch]);
+  }, [open, gated, disabled, data, isFetching, isError, refetch]);
 
   const handleOpenChange = (next: boolean) => {
     setOpen(next);
@@ -128,7 +138,11 @@ export function AiSuggestionPopover({ kind, context, disabled = false, blocked =
             </p>
           </div>
           <CommandList className="max-h-[280px]">
-            {blocked ? (
+            {gate.reason === 'GENERIC_LABEL' || gate.reason === 'MISSING_CONTEXT' ? (
+              <p className="p-3 text-xs text-slate-500">
+                {t('rcm:matrix.aiSuggest.genericLabel', { defaultValue: 'Belum ada saran. Perspesifik nama langkah/node agar AI dapat memberi saran yang relevan.' })}
+              </p>
+            ) : blocked || gate.reason === 'RISK_REQUIRED' ? (
               <p className="p-3 text-xs text-slate-500">
                 {t('rcm:matrix.aiSuggest.risk_required', { defaultValue: 'Isi deskripsi risiko terlebih dahulu untuk mendapatkan saran kontrol.' })}
               </p>
@@ -184,7 +198,7 @@ export function AiSuggestionPopover({ kind, context, disabled = false, blocked =
             <span className="text-xs text-slate-400">
               {t('rcm:matrix.aiSuggest.hint_apply', { defaultValue: 'Klik saran untuk mengisi otomatis.' })}
             </span>
-            {!isFetching && !blocked && data !== undefined && (
+            {!isFetching && !gated && data !== undefined && (
               <button
                 type="button"
                 onClick={() => void refetch()}
