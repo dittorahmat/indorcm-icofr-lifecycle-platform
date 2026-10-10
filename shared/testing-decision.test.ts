@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   decideFromControl,
+  decideFromForm,
   decideTest,
   getSuggestedSampleRange,
   hasFailSample,
@@ -160,7 +161,6 @@ describe('testing-decision seam (SK-5 Table 22/23, Zero-Tolerance, 6-pilar TOD)'
     };
     expect(decideFromControl(undefined, zeroTolerance).verdict).toBe('Ineffective');
   });
-
   it('decideFromControl accepts caller-shaped controls with extra fields', () => {
     const callerShaped = {
       frequency: 'Monthly',
@@ -175,6 +175,52 @@ describe('testing-decision seam (SK-5 Table 22/23, Zero-Tolerance, 6-pilar TOD)'
       sampleSize: 5,
       samples: [],
     });
+    expect(decision).toEqual({ isValid: true, verdict: 'Effective' });
+  });
+
+  it('decideFromForm normalizes a full TOE form in one call', () => {
+    const decision = decideFromForm(MONTHLY_HIGH, {
+      testType: 'TOE',
+      result: 'Effective',
+      sampleSize: 5,
+      homogeneityJustification: '',
+      samples: [{ status: 'Pass' }],
+      extraField: 'ignored',
+    });
+    expect(decision).toEqual({ isValid: true, verdict: 'Effective' });
+  });
+
+  it('decideFromForm drops non-numeric sample sizes and non-array samples', () => {
+    const decision = decideFromForm(MONTHLY_HIGH, {
+      testType: 'TOE',
+      result: 'Effective',
+      sampleSize: '5',
+      samples: 'not-an-array',
+    });
+    expect(decision.isValid).toBe(false);
+    expect(decision.code).toBe('BELOW_MIN_JUSTIFICATION_REQUIRED');
+  });
+
+  it('decideFromForm ignores pillars for TOE and enforces them for TOD', () => {
+    const toe = decideFromForm(MONTHLY_HIGH, {
+      testType: 'TOE',
+      result: 'Effective',
+      sampleSize: 5,
+      samples: [],
+      todPilarObjective: false,
+    });
+    expect(toe).toEqual({ isValid: true, verdict: 'Effective' });
+
+    const tod = decideFromForm(MONTHLY_HIGH, {
+      testType: 'TOD',
+      result: 'Effective',
+      todPilarObjective: false,
+    });
+    expect(tod).toEqual({ isValid: true, verdict: 'Ineffective' });
+  });
+
+  it('decideFromForm treats missing pillars as satisfied (worker body compatible)', () => {
+    const decision = decideFromForm(MONTHLY_HIGH, { testType: 'TOD', result: 'Effective' });
     expect(decision).toEqual({ isValid: true, verdict: 'Effective' });
   });
 });
