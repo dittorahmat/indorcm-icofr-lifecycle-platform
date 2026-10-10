@@ -23,7 +23,8 @@ import { api } from '@/lib/api-client';
 import { EntityHistoryList } from './EntityHistoryList';
 import { NodeVisualProperties } from './NodeVisualProperties';
 import { RiskGroupCard } from './RiskGroupCard';
-import type { AiSuggestionContext } from './useAiSuggestions';
+import { regulatoryPairsOf } from '../editor/utils/bpm-control-linkage';
+import type { AiSuggestionContext } from './AiSuggestionPopover';
 
 interface RegulatoryPropertySheetProps {
   selectedNode: Node | null;
@@ -71,9 +72,8 @@ export function RegulatoryPropertySheet({
   });
 
   const pairs = useMemo(() => {
-    return selectedNode?.data?.regulatoryPairs || 
-           (selectedNode?.data?.regulatoryData ? [selectedNode?.data?.regulatoryData] : []);
-  }, [selectedNode?.data?.regulatoryPairs, selectedNode?.data?.regulatoryData]);
+    return regulatoryPairsOf(selectedNode?.data);
+  }, [selectedNode?.data]);
 
   const groupedRisks = useMemo(() => {
     if (!selectedNode) return [];
@@ -149,8 +149,8 @@ export function RegulatoryPropertySheet({
     let maxVal = type === 'risk' ? sequenceData.nextRiskSeq - 1 : sequenceData.nextControlSeq - 1;
 
     nodes.forEach(node => {
-        const nodePairs = node.data?.regulatoryPairs || (node.data?.regulatoryData ? [node.data.regulatoryData] : []);
-        nodePairs.forEach((p: any) => {
+        const nodePairs = regulatoryPairsOf(node.data);
+        nodePairs.forEach((p) => {
            const id = type === 'risk' ? (p.riskId || p._tempRiskId) : (p.controlId || p._tempControlId);
            if (id && typeof id === 'string' && id.startsWith(`${type === 'risk' ? 'R' : 'C'}-${bpmCode}-`)) {
               const parts = id.split('-');

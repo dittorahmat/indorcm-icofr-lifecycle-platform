@@ -66,6 +66,12 @@ function asTrimmedString(value: unknown): string {
   return typeof value === 'string' ? value.trim() : '';
 }
 
+/** Parses the raw kind field. Rejects anything but risk/control with AppError(400). */
+export function parseSuggestKind(value: unknown): SuggestKind {
+  if (value === 'risk' || value === 'control') return value;
+  throw new AppError('INVALID_SUGGEST_REQUEST', 'kind harus "risk" atau "control".', 400);
+}
+
 /** Validates the raw request body. Throws AppError(400) on invalid input. */
 export function validateSuggestInput(body: unknown, kind: SuggestKind): SuggestionContext {
   if (!body || typeof body !== 'object') {

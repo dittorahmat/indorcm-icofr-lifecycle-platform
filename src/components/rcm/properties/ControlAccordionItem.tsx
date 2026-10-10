@@ -14,8 +14,7 @@ import { TLCForm } from './TLCForm';
 import { ELCForm } from './ELCForm';
 import { ITGCForm } from './ITGCForm';
 import { SignificantApplicationCombobox } from '../SignificantApplicationCombobox';
-import { AiSuggestionPopover } from './AiSuggestionPopover';
-import type { AiSuggestionContext } from './useAiSuggestions';
+import { AiSuggestionPopover, type AiSuggestionContext } from './AiSuggestionPopover';
 
 interface ControlAccordionItemProps {
   ctrl: { data: any; index: number };

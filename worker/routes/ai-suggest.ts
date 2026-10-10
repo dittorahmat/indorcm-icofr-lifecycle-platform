@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import type { HonoEnv } from '../app';
 import { ok, bad, AppError } from '../lib/utils';
 import { AIService } from '../services/ai-service';
-import { SUGGEST_RESPONSE_SCHEMA, suggestRiskControls, type SuggestKind } from '../services/ai/suggest-risk-controls';
+import { SUGGEST_RESPONSE_SCHEMA, parseSuggestKind, suggestRiskControls } from '../services/ai/suggest-risk-controls';
 
 const aiSuggestApp = new Hono<HonoEnv>();
 
@@ -22,8 +22,6 @@ aiSuggestApp.post('/ai/suggest-risk-controls', async (c) => {
   } catch {
     return bad(c, 'Invalid request body');
   }
-
-  const kind: SuggestKind = body.kind === 'control' ? 'control' : 'risk';
 
   const clientId = c.req.header('X-Forwarded-For') || c.req.header('CF-Connecting-IP') || 'unknown';
   const now = Date.now();
@@ -50,6 +48,7 @@ aiSuggestApp.post('/ai/suggest-risk-controls', async (c) => {
   });
 
   try {
+    const kind = parseSuggestKind(body.kind);
     const result = await suggestRiskControls(body, kind, async (prompt) => {
       const res = await aiService.generateChatResponse({
         messages: [{ role: 'user', content: prompt }],

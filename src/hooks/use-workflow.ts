@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { WorkflowAction } from '@shared/types';
-import { workflowEndpointFor, type WorkflowEntityType } from '@shared/workflow-transitions';
+import { workflowEndpointFor, workflowInvalidationKeysFor, type WorkflowEntityType } from '@shared/workflow-transitions';
 import { useTranslation } from 'react-i18next';
 
 interface WorkflowResponse {
@@ -16,14 +16,6 @@ interface ExecuteActionInput {
   note: string;
   assigneeId?: string;
 }
-
-const INVALIDATED_KEYS: Record<WorkflowEntityType, string[][]> = {
-  BPM: [['bpm-processes']],
-  ACTION_PLAN: [['actionplans'], ['deficiencies']],
-  SCOPING: [['simulations']],
-  RCM_CHANGE: [['rcm-matrix-tlc'], ['controls'], ['changelogs']],
-  CSA: [['csa-records']],
-};
 
 export function useWorkflow(entityType: WorkflowEntityType, entityId: string) {
   const queryClient = useQueryClient();
@@ -39,7 +31,7 @@ export function useWorkflow(entityType: WorkflowEntityType, entityId: string) {
       });
     },
     onSuccess: () => {
-      for (const queryKey of INVALIDATED_KEYS[entityType]) {
+      for (const queryKey of workflowInvalidationKeysFor(entityType)) {
         queryClient.invalidateQueries({ queryKey });
       }
       if (entityType === 'BPM') {

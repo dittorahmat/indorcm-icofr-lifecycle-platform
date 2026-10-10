@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Eye } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
+import { regulatoryPairsOf } from './utils/bpm-control-linkage';
 
 interface InspectNode {
   id: string;
@@ -20,10 +21,9 @@ interface BPMNodeInspectSheetProps {
 export function BPMNodeInspectSheet({ node, onClose }: BPMNodeInspectSheetProps) {
   const { t } = useTranslation(['bpm', 'common']);
 
-  const pairs: any[] = useMemo(() => {
+  const pairs = useMemo(() => {
     if (!node?.data) return [];
-    return node.data.regulatoryPairs ||
-      (node.data.regulatoryData ? [node.data.regulatoryData] : []);
+    return regulatoryPairsOf(node.data);
   }, [node]);
 
   const groupedRisks = useMemo(() => {

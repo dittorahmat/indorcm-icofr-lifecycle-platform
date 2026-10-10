@@ -147,6 +147,45 @@ export interface TestingControl {
   nature: string;
 }
 
+/** Raw control shape as read from callers or DB rows. */
+export interface RawTestingControl {
+  frequency: unknown;
+  riskRating: unknown;
+  nature: unknown;
+}
+
+const KNOWN_FREQUENCIES: readonly string[] = [
+  'Annual',
+  'Semi-Annual',
+  'Quarterly',
+  'Monthly',
+  'Weekly',
+  'Daily',
+  'Ad-hoc',
+];
+
+/**
+ * Validates a raw control onto the decision seam. Null when the row is
+ * missing or unrecognised — sampling-minimum is then skipped while
+ * Zero-Tolerance and 6-pilar TOD are still enforced.
+ */
+export function normalizeTestingControl(row: RawTestingControl | null | undefined): TestingControl | null {
+  if (!row || typeof row !== 'object') return null;
+  if (
+    typeof row.frequency !== 'string' ||
+    !(KNOWN_FREQUENCIES as readonly string[]).includes(row.frequency) ||
+    (row.riskRating !== 'High' && row.riskRating !== 'Medium' && row.riskRating !== 'Low') ||
+    typeof row.nature !== 'string'
+  ) {
+    return null;
+  }
+  return {
+    frequency: row.frequency as ControlFrequency,
+    riskRating: row.riskRating,
+    nature: row.nature,
+  };
+}
+
 /** Minimal sample surface the decision needs. */
 export interface DecisionSample {
   status: 'Pass' | 'Fail';
@@ -254,4 +293,17 @@ export function decideTest(
   }
 
   return { isValid: true, verdict: input.claimedResult };
+}
+
+/**
+ * Control adapter: normalizes a caller-shaped control or DB row (extra
+ * fields ignored; missing or unrecognised rows fall back to the
+ * null-control path), then decides. Single one-line forward for every
+ * client pre-flight and worker seam.
+ */
+export function decideFromControl(
+  control: RawTestingControl | null | undefined,
+  input: TestingDecisionInput,
+): TestingDecision {
+  return decideTest(normalizeTestingControl(control), input);
 }

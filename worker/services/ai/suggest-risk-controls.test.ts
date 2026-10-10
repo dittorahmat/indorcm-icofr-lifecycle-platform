@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import {
   buildSuggestPrompt,
   isGenericNodeLabel,
+  parseSuggestKind,
   parseSuggestResponse,
   suggestRiskControls,
   validateSuggestInput,
@@ -105,6 +106,26 @@ describe('parseSuggestResponse', () => {
     const res = parseSuggestResponse('bukan json {{{', 'control');
     expect(res.items).toHaveLength(0);
     expect(res.emptyReason).toBe('MODEL_INVALID_JSON');
+  });
+});
+
+describe('parseSuggestKind', () => {
+  it('accepts risk and control', () => {
+    expect(parseSuggestKind('risk')).toBe('risk');
+    expect(parseSuggestKind('control')).toBe('control');
+  });
+
+  it('rejects missing or unknown kinds with AppError 400', () => {
+    for (const bad of [undefined, null, '', 'risks', 'CONTROL', 42]) {
+      try {
+        parseSuggestKind(bad);
+        expect.unreachable(`expected AppError for kind=${String(bad)}`);
+      } catch (e) {
+        expect(e).toBeInstanceOf(AppError);
+        expect((e as AppError).code).toBe('INVALID_SUGGEST_REQUEST');
+        expect((e as AppError).status).toBe(400);
+      }
+    }
   });
 });
 

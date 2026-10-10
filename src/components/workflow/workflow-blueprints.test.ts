@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { WORKFLOW_BLUEPRINTS } from './workflow-blueprints';
+import { WORKFLOW_BLUEPRINTS, getStatusBadgeClass, isWorkflowLocked } from './workflow-blueprints';
 import {
   allowedActionsFor,
   requiresNoteFor,
@@ -35,5 +35,21 @@ describe('workflow blueprints derive from single source', () => {
     for (const entity of ENTITIES) {
       expect(WORKFLOW_BLUEPRINTS[entity].steps['NoSuchStatus']).toBeUndefined();
     }
+  });
+
+  it('derives lock from the canonical table per entity', () => {
+    expect(isWorkflowLocked('BPM', 'Draft')).toBe(false);
+    expect(isWorkflowLocked('BPM', 'Rejected')).toBe(false);
+    expect(isWorkflowLocked('ACTION_PLAN', 'Ineffective')).toBe(false);
+    expect(isWorkflowLocked('BPM', 'In Review')).toBe(true);
+    expect(isWorkflowLocked('SCOPING', 'Approved')).toBe(true);
+  });
+
+  it('maps badge classes from a single tone table', () => {
+    expect(getStatusBadgeClass('Draft')).toContain('bg-slate-100');
+    expect(getStatusBadgeClass('Rejected')).toContain('bg-rose-50');
+    expect(getStatusBadgeClass('In Review')).toContain('bg-blue-50');
+    expect(getStatusBadgeClass('In Approval')).toContain('bg-amber-50');
+    expect(getStatusBadgeClass('Resolved')).toContain('bg-emerald-50');
   });
 });

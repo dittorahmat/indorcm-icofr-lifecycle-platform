@@ -3,8 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { AiSuggestionPopover } from './AiSuggestionPopover';
-import type { AiSuggestionContext } from './useAiSuggestions';
+import { AiSuggestionPopover, type AiSuggestionContext } from './AiSuggestionPopover';
 
 interface RiskDescriptionFieldProps {
   riskKey: string;

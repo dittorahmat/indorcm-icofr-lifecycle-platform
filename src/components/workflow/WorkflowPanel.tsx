@@ -61,7 +61,7 @@ export function WorkflowPanel({
     return Array.from(new Map(users.items.map(item => [item.id, item])).values());
   }, [users?.items]);
 
-  const isLocked = isWorkflowLocked(currentStatus);
+  const isLocked = isWorkflowLocked(entityType, currentStatus);
 
   const handleActionClick = async (actionId: WorkflowAction) => {
     if (isDirty) {

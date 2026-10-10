@@ -1,8 +1,7 @@
 import React from 'react';
 import { toast } from 'sonner';
 import { api } from '@/lib/api-client';
-import { parseRCMSpreadsheet } from './rcm-spreadsheet-parser';
-import { reconcileRcmWithBpmNodes } from './rcm-reconciliation-matcher';
+import { importRcmFileText } from './rcm-ingestion';
 import type { BPMNodeOption, RCMFlavor, RCMImportParsedRow } from './rcm-import-types';
 
 interface UseRCMImportWizardParams {
@@ -35,15 +34,14 @@ export function useRCMImportWizard({
       setSelectedFile(file);
       try {
         const text = await file.text();
-        const { rows, errors } = parseRCMSpreadsheet(text, flavor);
+        const { rows, errors } = importRcmFileText(text, flavor, bpmNodes);
 
         if (errors.length > 0 && rows.length === 0) {
           toast.error(errors[0]);
           return;
         }
 
-        const reconciled = reconcileRcmWithBpmNodes(rows, bpmNodes);
-        setParsedRows(reconciled);
+        setParsedRows(rows);
         setStep(2);
       } catch (err: unknown) {
         toast.error('Gagal membaca file spreadsheet RCM.');

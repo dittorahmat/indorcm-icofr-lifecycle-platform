@@ -3,7 +3,9 @@ import {
 } from '@shared/types';
 import {
   allowedActionsFor,
+  isWorkflowLockedFor,
   requiresNoteFor,
+  statusBadgeTone,
   WORKFLOW_TRANSITION_RULES,
   type WorkflowEntityType,
 } from '@shared/workflow-transitions';
@@ -107,30 +109,18 @@ export function getWorkflowStep(entityType: WorkflowEntityType, currentStatus: s
   return blueprint?.steps[currentStatus] || { actions: [] };
 }
 
+const BADGE_CLASS_BY_TONE: Record<string, string> = {
+  neutral: 'bg-slate-100 text-slate-700 border-slate-200',
+  info: 'bg-blue-50 text-blue-700 border-blue-200',
+  warning: 'bg-amber-50 text-amber-700 border-amber-200',
+  success: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  danger: 'bg-rose-50 text-rose-700 border-rose-200',
+};
+
 export function getStatusBadgeClass(status: string): string {
-  switch (status) {
-    case 'Draft':
-    case 'Ineffective':
-      return 'bg-slate-100 text-slate-700 border-slate-200';
-    case 'Pending Review':
-    case 'In Review':
-    case 'Pending CFO':
-      return 'bg-blue-50 text-blue-700 border-blue-200';
-    case 'Pending Approval':
-    case 'In Approval':
-    case 'Pending Komut':
-      return 'bg-amber-50 text-amber-700 border-amber-200';
-    case 'Approved':
-    case 'Resolved':
-    case 'Validated':
-      return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-    case 'Rejected':
-      return 'bg-rose-50 text-rose-700 border-rose-200';
-    default:
-      return 'bg-slate-50 text-slate-600';
-  }
+  return BADGE_CLASS_BY_TONE[statusBadgeTone(status)] ?? 'bg-slate-50 text-slate-600';
 }
 
-export function isWorkflowLocked(status: string): boolean {
-  return status !== 'Draft' && status !== 'Rejected' && status !== 'Ineffective';
+export function isWorkflowLocked(entityType: WorkflowEntityType, status: string): boolean {
+  return isWorkflowLockedFor(entityType, status);
 }

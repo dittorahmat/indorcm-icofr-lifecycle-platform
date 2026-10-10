@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { BPMDiagram } from '@shared/types';
+import { regulatoryPairsOf } from '@/components/rcm/editor/utils/bpm-control-linkage';
 
 export function useCSADiagramLink(diagram?: BPMDiagram, propControls: any[] = []) {
   const bpmRiskControlPairs = useMemo(() => {
@@ -7,8 +8,7 @@ export function useCSADiagramLink(diagram?: BPMDiagram, propControls: any[] = []
     const pairs: { riskId: string; riskName: string; controlId: string; controlName: string; code: string }[] = [];
     
     diagram.nodes.forEach((node: any) => {
-      const nodePairs = node.data?.regulatoryPairs || 
-                       (node.data?.regulatoryData ? [node.data.regulatoryData] : []);
+      const nodePairs = regulatoryPairsOf(node.data);
       
       if ((node.type === 'activity' || node.type === 'automated-activity') && nodePairs.length > 0) {
         nodePairs.forEach((reg: any) => {
