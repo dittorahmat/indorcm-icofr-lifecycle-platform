@@ -1,6 +1,6 @@
 import { AppError } from '../lib/utils';
 import { decideTest, isPilarSatisfied, type TestingDecisionInput } from '@shared/testing-decision';
-import { eventForVerdict } from './deficiency-trigger';
+import { eventForVerdict, TOD_EVALUATION_PERIOD } from './deficiency-trigger';
 import type { DeficiencyTriggerEvent } from './deficiency-trigger';
 import {
   CONTROL_FIELDS_MAP, LINI1_FIELDS, LINI2_FIELDS, RISK_FIELDS,
@@ -16,7 +16,7 @@ export {
 } from './rcm-matrix-projection';
 export type { BatchUpdateItem, CreateVerificationBody, VerificationPatchBody } from './rcm-matrix-projection';
 
-export const TOD_EVALUATION_PERIOD = 'TOD-Evaluation';
+export { TOD_EVALUATION_PERIOD };
 
 export interface RcmMappingRef {
   id: string;

@@ -70,6 +70,9 @@ export interface DeficiencyTriggerStore {
 }
 
 export const DEFICIENCY_SEVERITY = 'Control Deficiency';
+/** Period label for TOD-evaluation deficiencies. Single locality: every
+ *  TOD path (matrix write, TOD route) keys its dedup on this constant. */
+export const TOD_EVALUATION_PERIOD = 'TOD-Evaluation';
 const FALLBACK_PROCESS_NAME = 'Sub-Proses Bisnis';
 
 export function normalizeId(value: string | null | undefined): string | null {

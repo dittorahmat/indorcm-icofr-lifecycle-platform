@@ -31,14 +31,17 @@ export function substringMatch(column: PgColumn, term: string): SQL<unknown> {
   return ilike(column, substringPattern(term));
 }
 
-/** Lexeme predicate for the document corpus only. Config indonesian is
- *  inline (byte-identical to the proven query); both corpus helpers live
- *  here so the config has exactly one home, locked by tests. */
-export function corpusMatch(tsvectorColumn: SQL | PgColumn, term: string): SQL<unknown> {
-  return sql`${tsvectorColumn} @@ plainto_tsquery('indonesian', ${term})`;
+/** Lexeme predicate for the document corpus only. The raw-fragment
+ *  parameter keeps the corpus seam distinct from the drizzle-column
+ *  substring seam: passing a PgColumn here is a type error, so a swapped
+ *  seam is caught at compile time. Config indonesian is inline
+ *  (byte-identical to the proven query); both corpus helpers live here
+ *  so the config has exactly one home, locked by tests. */
+export function corpusMatch(tsvectorFragment: SQL, term: string): SQL<unknown> {
+  return sql`${tsvectorFragment} @@ plainto_tsquery('indonesian', ${term})`;
 }
 
 /** ts_rank_cd ordering paired with corpusMatch. */
-export function corpusRank(tsvectorColumn: SQL | PgColumn, term: string): SQL<unknown> {
-  return sql`ts_rank_cd(${tsvectorColumn}, plainto_tsquery('indonesian', ${term}))`;
+export function corpusRank(tsvectorFragment: SQL, term: string): SQL<unknown> {
+  return sql`ts_rank_cd(${tsvectorFragment}, plainto_tsquery('indonesian', ${term}))`;
 }

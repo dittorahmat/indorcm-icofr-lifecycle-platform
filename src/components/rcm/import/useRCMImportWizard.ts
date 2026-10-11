@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { api } from '@/lib/api-client';
 import { buildRcmImportPayload, importRcmFileText, linkRowToNode } from './rcm-ingestion';
@@ -23,6 +24,7 @@ export function useRCMImportWizard({
   onClose,
   onAddBpmNode,
 }: UseRCMImportWizardParams) {
+  const { t } = useTranslation(['rcm', 'common']);
   const [step, setStep] = React.useState<1 | 2 | 3>(1);
   const [flavor, setFlavor] = React.useState<RCMFlavor>('TLC');
   const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
@@ -37,7 +39,10 @@ export function useRCMImportWizard({
         const staged = importRcmFileText(text, flavor, bpmNodes);
 
         if (!staged.canProceed) {
-          toast.error(staged.errors[0] ?? 'Gagal membaca file spreadsheet RCM.');
+          toast.error(
+            staged.errors[0] ??
+              t('rcm:importWizard.emptyFile', { defaultValue: 'Gagal membaca file spreadsheet RCM.' }),
+          );
           return;
         }
 
@@ -47,7 +52,7 @@ export function useRCMImportWizard({
         toast.error('Gagal membaca file spreadsheet RCM.');
       }
     },
-    [flavor, bpmNodes]
+    [flavor, bpmNodes, t]
   );
 
   const handleUpdateRowNodeLink = React.useCallback(

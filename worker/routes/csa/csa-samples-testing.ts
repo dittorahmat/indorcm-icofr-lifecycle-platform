@@ -11,7 +11,7 @@ import {
   decideFromForm,
   type TestingVerdict,
 } from "@shared/testing-decision";
-import { eventForVerdict } from "../../services/deficiency-trigger";
+import { eventForVerdict, TOD_EVALUATION_PERIOD } from "../../services/deficiency-trigger";
 import { rbac } from "../../lib/guard";
 
 export const csaSamplesTestingRoute = new Hono<HonoEnv>();
@@ -28,7 +28,7 @@ async function triggerTodDeficiency(
     verdict: conclusion,
     organizationId: orgId,
     controlId,
-    period: 'TOD-Evaluation',
+    period: TOD_EVALUATION_PERIOD,
     userId,
   });
   if (!event) return;
