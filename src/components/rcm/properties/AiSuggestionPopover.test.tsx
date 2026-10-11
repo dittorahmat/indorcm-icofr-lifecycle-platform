@@ -106,9 +106,9 @@ describe('AiSuggestionPopover', () => {
     });
   });
 
-  it('shows the fill-risk hint without fetching when blocked', async () => {
+  it('shows the fill-risk hint without fetching when the shared gate blocks', async () => {
     const user = userEvent.setup();
-    renderPopover({ kind: 'control', blocked: true });
+    renderPopover({ kind: 'control', context: { ...CONTEXT } });
 
     await user.click(screen.getByRole('button', { name: /Sarankan kontrol|Suggest controls/i }));
     await waitFor(() => {
