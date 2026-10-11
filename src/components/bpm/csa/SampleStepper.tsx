@@ -88,7 +88,7 @@ export function SampleStepper({
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <Select value={String(safeStep)} onValueChange={(v) => onStepChange(Number(v))} disabled={isReadOnly && false}>
+            <Select value={String(safeStep)} onValueChange={(v) => onStepChange(Number(v))} disabled={isReadOnly}>
               <SelectTrigger className="flex-1 min-h-[44px] text-xs font-bold bg-white" aria-label={t('csa_hub:form.mobile.jumpTo', { defaultValue: 'Jump to sample' }) as string}>
                 <SelectValue />
               </SelectTrigger>

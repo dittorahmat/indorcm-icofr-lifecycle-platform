@@ -57,6 +57,15 @@ export default tseslint.config(
           // This rule is a good backup to prevent setters inside memoization hooks.
           "selector": "CallExpression[callee.name=/^set[A-Z]/] > :function[parent.callee.name='useMemo'], CallExpression[callee.name=/^set[A-Z]/] > :function[parent.callee.name='useCallback']",
           "message": "State setters should not be called inside useMemo or useCallback. These hooks are for memoization, not for side effects."
+        },
+        {
+          // Constant-outcome boolean operators: `x || true` is always true and
+          // `x && false` is always false, so the left side is dead logic.
+          // (Found live in the RCM importer as `...includes(...) || true`.)
+          // Write the intended default explicitly instead (`?? true` for
+          // nullish defaults, or a plain boolean expression).
+          "selector": "LogicalExpression[operator='||'] > Literal[value=true], LogicalExpression[operator='&&'] > Literal[value=false]",
+          "message": "Constant-outcome boolean: `|| true` is always true and `&& false` is always false. Use `??` for nullish defaults or simplify the expression."
         }
       ],
     },

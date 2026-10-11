@@ -93,6 +93,8 @@ Setiap kali melakukan penambahan komponen, modifikasi antarmuka frontend, menyel
 
 *   **Regulatory Compliance:** Any UI or data model change MUST refer to Regulation SK-5/DKU.MBU/11/2024.
 *   **Type Safety:** Shared types in `shared/types/*` (barrel `shared/types.ts`) are the source of truth. Import from the domain module (`common`, `org`, `scoping`, `rcm-bpm`, `csa-testing`, `deficiency`, `user`) — never re-introduce a god `types.ts` or `any` shims.
+*   **Import Layering:** `shared/` is importable by both `src/` and `worker/`; never import `src/` from `worker/` or `worker/` from `src/` in product code — shared logic lives in `shared/` (precedent: `shared/control-linkage.ts` leveraged by editor hooks and bpm-sync/hydrator). Integration tests (`src/test/**`, `**/*.test.*`) are the sole exception and may import `worker/` services against a test database.
+*   **Review Standards:** Judgement-call rules the reviewer enforces live in `CODING_STANDARDS.md` (read at review time, not implementation).
 *   **Auditability:** Every entity mutation should be accompanied by an entry in the `auditTrail` and `ChangeLog`.
 *   **Design Quality & Accessibility (Mandat design-taste-frontend):** Hindari segala bentuk "AI Slop". Patuhi aturan minimum font 12px, border-radius enterprise, dan surface kontras tinggi.
 *   **Mobile-Responsive (Mandat better-interface):** Setiap edit `src/**/*.tsx` wajib mobile-first dan lolos checklist di Mandat Penyelesaian Tahap poin 2 (grid satu kolom di base, tabel dalam `overflow-x-auto`, footer dialog stack, verifikasi 320px/360px).
