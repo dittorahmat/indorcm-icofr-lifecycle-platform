@@ -81,7 +81,7 @@ export function RCMReconciliationStep({
                   </TableCell>
                   <TableCell className="text-xs">
                     <p className="font-semibold text-slate-800 truncate max-w-[200px]">{row.controlName}</p>
-                    <p className="text-muted-foreground font-mono text-[11px]">{row.controlCode || '-'}</p>
+                    <p className="text-muted-foreground font-mono font-medium text-xs">{row.controlCode || '-'}</p>
                   </TableCell>
                   <TableCell className="text-xs font-mono text-slate-600">
                     {row.bpmNodeRef || <span className="text-muted-foreground">-</span>}
