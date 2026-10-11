@@ -23,7 +23,7 @@
     "types": "warn",
     "enumMembers": "warn",
     "namespaceMembers": "warn",
-    "duplicates": "off"
+    "duplicates": "off" // reason: `export *` barrels (shared/types, db/schema) collide by design; enable if the team wants the signal
   },
   "ignoreBinaries": [
     "psql", // reason: system Postgres client shelled out by `db:extensions`, not an npm dep

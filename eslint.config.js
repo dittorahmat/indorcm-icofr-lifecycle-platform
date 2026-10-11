@@ -34,6 +34,8 @@ const CONSTANT_BOOLEAN = {
 
 // Mechanical anti-AI-slop guards (AGENTS.md Anti-AI Slop Checklist, enforced).
 // Judgement-call items (decorative italic, design tokens) stay prose in AGENTS.md.
+// Each pattern is matched on both plain string literals (className="…") and
+// template-literal static parts (cn(`…${x}`)) so interpolation can't evade it.
 const ANTISLOP = [
   {
     "selector": "Literal[value=/text-\\[(8|9|10|11)px\\]/]",
@@ -50,6 +52,22 @@ const ANTISLOP = [
   {
     "selector": "Literal[value=/animate-(pulse|ping|bounce)/]",
     "message": "No distracting animations on static badges/cards/buttons: animation only for isolated loading state (`<Skeleton />`, `Loader2 animate-spin`). Add an `// eslint-disable-next-line no-restricted-syntax -- loading state` with reason if this is one."
+  },
+  {
+    "selector": "TemplateElement[value.raw=/text-\\[(8|9|10|11)px\\]/]",
+    "message": "No sub-12px font (template-literal part): use at least `text-xs` (12px) with `font-medium`/`font-semibold`."
+  },
+  {
+    "selector": "TemplateElement[value.raw=/backdrop-(blur|filter)/]",
+    "message": "No backdrop-blur/glassmorphism (template-literal part): use a solid surface with `border border-border`."
+  },
+  {
+    "selector": "TemplateElement[value.raw=/rounded-(2xl|3xl)/]",
+    "message": "Institutional border radius (template-literal part): use `rounded-md`/`rounded-lg`, never `rounded-2xl`/`rounded-3xl`."
+  },
+  {
+    "selector": "TemplateElement[value.raw=/animate-(pulse|ping|bounce)/]",
+    "message": "No distracting animations (template-literal part): animation only for isolated loading state with an eslint-disable reason."
   },
 ];
 
