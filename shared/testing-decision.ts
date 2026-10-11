@@ -325,8 +325,16 @@ export interface TestSubmissionValues {
   todPilarEvidence?: unknown;
 }
 
-function pillarSatisfied(value: unknown): boolean {
-  return value !== false;
+/**
+ * Single free-text pilar normalizer (Lampiran 8): pillars are free-text
+ * justification — a non-empty string counts as satisfied. Boolean true is
+ * accepted for forward-compat with boolean form fields. Anything else
+ * (missing, empty, non-string) counts as unsatisfied: there is no silent
+ * default to satisfied.
+ */
+export function isPilarSatisfied(value: unknown): boolean {
+  if (typeof value === 'string') return value.trim() !== '';
+  return value === true;
 }
 
 function cleanSamples(value: unknown): DecisionSample[] {
@@ -357,12 +365,12 @@ export function decideFromForm(
   const todPillars: TodPillars | undefined =
     testType === 'TOD'
       ? {
-          objective: pillarSatisfied(values.todPilarObjective),
-          timing: pillarSatisfied(values.todPilarTiming),
-          authority: pillarSatisfied(values.todPilarAuthority),
-          reliability: pillarSatisfied(values.todPilarReliability),
-          coverage: pillarSatisfied(values.todPilarCoverage),
-          evidence: pillarSatisfied(values.todPilarEvidence),
+          objective: isPilarSatisfied(values.todPilarObjective),
+          timing: isPilarSatisfied(values.todPilarTiming),
+          authority: isPilarSatisfied(values.todPilarAuthority),
+          reliability: isPilarSatisfied(values.todPilarReliability),
+          coverage: isPilarSatisfied(values.todPilarCoverage),
+          evidence: isPilarSatisfied(values.todPilarEvidence),
         }
       : undefined;
   return decideFromControl(control, {

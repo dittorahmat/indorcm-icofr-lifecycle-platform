@@ -1,5 +1,5 @@
 import { AppError } from '../lib/utils';
-import { decideTest, type TestingDecisionInput } from '@shared/testing-decision';
+import { decideTest, isPilarSatisfied, type TestingDecisionInput } from '@shared/testing-decision';
 import type { DeficiencyTriggerEvent } from './deficiency-trigger';
 import {
   CONTROL_FIELDS_MAP, LINI1_FIELDS, LINI2_FIELDS, RISK_FIELDS,
@@ -94,21 +94,18 @@ function pickDefined(body: Record<string, unknown>, fields: readonly string[]): 
   return patch;
 }
 
-function pilarFlag(value: unknown): boolean {
-  return typeof value === 'string' && value.trim() !== '';
-}
-
 /** Maps an RCM verification row onto the testing-decision seam. Control is
  *  always null (row may be missing) so Table 22 minimum is skipped while
- *  Zero-Tolerance and the 6-pilar TOD rule are still enforced. */
+ *  Zero-Tolerance and the 6-pilar TOD rule are still enforced. Pilar
+ *  normalization is the shared seam semantics (no local variant). */
 export function toTodDecisionInput(body: VerificationPatchBody): TestingDecisionInput {
   return {
     testType: 'TOD',
     claimedResult: body.conclusion === 'Ineffective' ? 'Ineffective' : 'Effective',
     todPillars: {
-      objective: pilarFlag(body.pilarObjective), timing: pilarFlag(body.pilarTiming),
-      authority: pilarFlag(body.pilarAuthority), reliability: pilarFlag(body.pilarReliability),
-      coverage: pilarFlag(body.pilarCoverage), evidence: pilarFlag(body.pilarEvidence),
+      objective: isPilarSatisfied(body.pilarObjective), timing: isPilarSatisfied(body.pilarTiming),
+      authority: isPilarSatisfied(body.pilarAuthority), reliability: isPilarSatisfied(body.pilarReliability),
+      coverage: isPilarSatisfied(body.pilarCoverage), evidence: isPilarSatisfied(body.pilarEvidence),
     },
   };
 }

@@ -5,6 +5,7 @@ import {
   decideTest,
   getSuggestedSampleRange,
   hasFailSample,
+  isPilarSatisfied,
   isTodPillarFailure,
   normalizeTestingControl,
   requiresHomogeneityJustification,
@@ -219,8 +220,45 @@ describe('testing-decision seam (SK-5 Table 22/23, Zero-Tolerance, 6-pilar TOD)'
     expect(tod).toEqual({ isValid: true, verdict: 'Ineffective' });
   });
 
-  it('decideFromForm treats missing pillars as satisfied (worker body compatible)', () => {
+  it('decideFromForm forces Ineffective when TOD pillars are missing (no silent default)', () => {
     const decision = decideFromForm(MONTHLY_HIGH, { testType: 'TOD', result: 'Effective' });
-    expect(decision).toEqual({ isValid: true, verdict: 'Effective' });
+    expect(decision).toEqual({ isValid: true, verdict: 'Ineffective' });
+  });
+
+  it('isPilarSatisfied owns the single free-text pilar semantics (Lampiran 8)', () => {
+    expect(isPilarSatisfied('justifikasi tertulis')).toBe(true);
+    expect(isPilarSatisfied(true)).toBe(true);
+    expect(isPilarSatisfied('')).toBe(false);
+    expect(isPilarSatisfied('   ')).toBe(false);
+    expect(isPilarSatisfied(false)).toBe(false);
+    expect(isPilarSatisfied(undefined)).toBe(false);
+    expect(isPilarSatisfied(null)).toBe(false);
+    expect(isPilarSatisfied(1)).toBe(false);
+  });
+
+  it('decideFromForm accepts non-empty string pillars and boolean true uniformly', () => {
+    const fromStrings = decideFromForm(MONTHLY_HIGH, {
+      testType: 'TOD',
+      result: 'Effective',
+      todPilarObjective: 'obj',
+      todPilarTiming: 'time',
+      todPilarAuthority: 'auth',
+      todPilarReliability: 'rel',
+      todPilarCoverage: 'cov',
+      todPilarEvidence: 'evi',
+    });
+    expect(fromStrings).toEqual({ isValid: true, verdict: 'Effective' });
+
+    const fromBooleans = decideFromForm(MONTHLY_HIGH, {
+      testType: 'TOD',
+      result: 'Effective',
+      todPilarObjective: true,
+      todPilarTiming: true,
+      todPilarAuthority: true,
+      todPilarReliability: true,
+      todPilarCoverage: true,
+      todPilarEvidence: true,
+    });
+    expect(fromBooleans).toEqual({ isValid: true, verdict: 'Effective' });
   });
 });
