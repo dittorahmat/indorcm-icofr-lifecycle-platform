@@ -22,3 +22,16 @@ lint because each side compiled in isolation.
 Check: for every code crossing a seam in the diff, point at the single
 producer module and at one test per consuming side asserting the literal.
 Precedents: `SuggestGateReason`, `TestingDecisionCode`, `DeficiencySource`.
+
+## Handling a new Knip finding (`npm run knip`)
+
+Warn-first: a finding never fails CI by itself. For each new finding, do
+exactly one of: delete the dead file/export/dependency (verify the full
+suite after), or register it in `knip.jsonc` (`ignore`/`ignoreDependencies`)
+with a `// reason:` comment naming why it is intentionally kept (vendor
+stock, applied migration history, ops runbook, live-lib pairing). Never
+add a reason-free entry, and escalate a warning-free type to `"error"` in
+`knip.jsonc` rules once it stays clean — that is how the baseline burns
+down to a failing gate. Knip does not track `manualChunks` entries in
+`vite.config.ts`: after removing a dependency, the build must still pass —
+a stale chunk entry breaks Rollup resolution (caught live with `uuid`).

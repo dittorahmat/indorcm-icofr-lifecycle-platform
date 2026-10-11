@@ -1,0 +1,63 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  // Dead-code audit (retro #46). Scope is product code only: `src/` (app),
+  // `worker/` (API) and `shared/` (both). One-off ops scripts (`scripts/`,
+  // `worker/scripts/`, `worker/db/*migrate*/*seed*/*fix*`) run manually via
+  // tsx and are versioned runbooks, not product surface — deliberately out
+  // of `project` so the audit stays focused (see ticket #46).
+  // NOTE: `entry`/`project` REPLACE Knip defaults (not merged) — keep complete.
+  // NOTE 2: run via `npm run knip` (encodes KNIP_DISABLE_RAW_TRANSFER for
+  // Windows, where oxc raw-transfer crashes; native parser is used instead).
+  "entry": ["worker/index.ts", "worker/serve-local.ts"],
+  "project": ["src/**/*.{ts,tsx}", "worker/**/*.ts", "shared/**/*.ts"],
+  // Day-one warn-first: warnings print but exit 0, so CI stays green while
+  // the baseline burns down. Flip a triaged-clean type "warn" -> "error".
+  "rules": {
+    "files": "warn",
+    "dependencies": "warn",
+    "devDependencies": "warn",
+    "unlisted": "warn",
+    "binaries": "warn",
+    "unresolved": "warn",
+    "exports": "warn",
+    "types": "warn",
+    "enumMembers": "warn",
+    "namespaceMembers": "warn",
+    "duplicates": "off"
+  },
+  "ignoreBinaries": [
+    "psql", // reason: system Postgres client shelled out by `db:extensions`, not an npm dep
+    "wrangler" // reason: deploy/typegen toolchain invoked via npx, no dep entry by design
+  ],
+  // Justified exceptions only (triaged 2026-10-11, see ticket #46).
+  "ignore": [
+    "src/components/ui/*", // reason: vendor shadcn stock (AGENTS.md vendor exemption); kept as compilable design-system inventory
+    "worker/db/migrate-2024.ts", // reason: applied one-shot migration, kept as history
+    "worker/db/migrate-assertions-2025.ts", // reason: applied one-shot migration, kept as history
+    "worker/db/fix-year-2025.ts", // reason: applied one-shot data fix, kept as history
+    "worker/scripts/backfill-csa-deficiencies.ts", // reason: ops backfill runbook, run manually when consolidating CSA deficiencies
+    "worker/services/migration/ai-prompts.ts", // reason: migration runbook module (see below)
+    "worker/services/migration/cross-checker.ts", // reason: migration runbook module
+    "worker/services/migration/header-mapper.ts", // reason: migration runbook module
+    "worker/services/migration/kb-indexer.ts", // reason: migration runbook module
+    "worker/services/migration/reconstructor.ts" // reason: migration runbook module
+  ],
+  // Deps kept with reason: consumed only by ignored vendor stock, by ops
+  // scripts outside knip scope, or paired with a live lib (triaged 2026-10-11).
+  "ignoreDependencies": [
+    "@radix-ui/react-aspect-ratio", // reason: ui stock only (aspect-ratio.tsx)
+    "@radix-ui/react-context-menu", // reason: ui stock only (context-menu.tsx)
+    "@radix-ui/react-hover-card", // reason: ui stock only (hover-card.tsx)
+    "@radix-ui/react-menubar", // reason: ui stock only (menubar.tsx)
+    "@radix-ui/react-navigation-menu", // reason: ui stock only (navigation-menu.tsx)
+    "@radix-ui/react-slider", // reason: ui stock only (slider.tsx)
+    "@radix-ui/react-toast", // reason: ui stock only (no live toaster uses it; app uses sonner)
+    "@radix-ui/react-toggle", // reason: ui stock only (toggle.tsx)
+    "@radix-ui/react-toggle-group", // reason: ui stock only (toggle-group.tsx)
+    "embla-carousel-react", // reason: ui stock only (carousel.tsx)
+    "input-otp", // reason: ui stock only (input-otp.tsx)
+    "vaul", // reason: ui stock only (drawer.tsx)
+    "@inquirer/prompts", // reason: ops scripts in scripts/ (outside knip project scope)
+    "@types/react-grid-layout" // reason: paired with live `react-grid-layout` lib used by ReportDashboard
+  ]
+}
