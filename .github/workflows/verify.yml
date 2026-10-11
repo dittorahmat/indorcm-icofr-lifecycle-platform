@@ -44,5 +44,13 @@ jobs:
       - name: Test
         run: npm test
 
+      - name: Setup Bun (lockfile sync check)
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.2.15
+
+      - name: Lockfile sync check (bun frozen)
+        run: bun install --frozen-lockfile
+
       - name: Dead-code audit (Knip, warn-first)
         run: npm run knip

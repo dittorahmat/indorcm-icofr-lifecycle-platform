@@ -96,6 +96,7 @@ Setiap kali melakukan penambahan komponen, modifikasi antarmuka frontend, menyel
 *   **Mobile-Responsive (Mandat better-interface):** Setiap edit `src/**/*.tsx` wajib mobile-first dan lolos checklist di Mandat Penyelesaian Tahap poin 2 (grid satu kolom di base, tabel dalam `overflow-x-auto`, footer dialog stack, verifikasi 320px/360px).
 *   **Actionable Dashboard:** The Dashboard must function as an "Action Center," prioritizing urgent tasks (remediation, pending validation) to drive the ICOFR lifecycle.
 *   **Data Persistence:** Always generate and run drizzle migrations using `npx drizzle-kit push` after schema changes.
+*   **Dependency Lockfiles:** This repo carries TWO lockfiles (`package-lock.json` for npm, `bun.lock` for bun — Cloudflare builds install via `bun install --frozen-lockfile`). Every dependency change MUST sync both (`npm install …` + `bun install`); CI fails otherwise.
 *   **Localization:** Support multi-language (English/Indonesian) using `src/i18n/**`. All UI strings **MUST** be localized.
 *   **Data Loss Prevention:** Implement `UnSavedChanges` warning for any form or editor state to prevent accidental data loss, following the `useUnsavedChanges` hook pattern.
 *   **Navigation & Alerts:** Integrate critical workflows into the Sidebar menu and provide real-time feedback via a Notification Bell where appropriate.
