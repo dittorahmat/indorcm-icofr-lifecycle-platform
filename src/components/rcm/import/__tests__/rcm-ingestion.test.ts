@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { importRcmFileText } from '../rcm-ingestion';
+import {
+  buildRcmImportPayload,
+  importRcmFileText,
+  linkRowToNode,
+  requiresBpmReconciliation,
+} from '../rcm-ingestion';
 import type { BPMNodeOption } from '../rcm-import-types';
 
 const NODES: BPMNodeOption[] = [
@@ -55,5 +60,68 @@ describe('rcm-ingestion seam (parse + reconcile behind one interface)', () => {
     const { rows, errors } = importRcmFileText('proses_bisnis,risiko', 'TLC', NODES);
     expect(rows).toEqual([]);
     expect(errors.length).toBeGreaterThan(0);
+  });
+
+  it('stages match stats, invalid counts and proceed gating in one result', () => {
+    const staged = importRcmFileText(TLC_CSV, 'TLC', NODES);
+    expect(staged.matchStats).toEqual({ matched: 1, suggested: 0, unmatched: 1 });
+    expect(staged.invalidRowCount).toBe(0);
+    expect(staged.canProceed).toBe(true);
+
+    const empty = importRcmFileText('proses_bisnis,risiko', 'TLC', NODES);
+    expect(empty.canProceed).toBe(false);
+    expect(empty.matchStats).toEqual({ matched: 0, suggested: 0, unmatched: 0 });
+  });
+
+  it('honors the key-control column instead of defaulting everything to key', () => {
+    const csv = [
+      'proses_bisnis,sub_proses,risiko,nama_aktivitas_pengendalian,pengendalian_utama',
+      'Setoran,Setoran Teller,Risiko A,Kontrol Kunci,ya',
+      'Setoran,Setoran Teller,Risiko B,Kontrol Biasa,tidak',
+    ].join('\n');
+    const { rows } = importRcmFileText(csv, 'TLC', []);
+    expect(rows[0].isKeyControl).toBe(true);
+    expect(rows[1].isKeyControl).toBe(false);
+  });
+
+  it('linkRowToNode owns the manual link status transition', () => {
+    const { rows } = importRcmFileText(TLC_CSV, 'TLC', NODES);
+    const linked = linkRowToNode(rows, 'row-2', 'node-1');
+    expect(linked.find((r) => r.id === 'row-2')).toMatchObject({
+      targetBpmNodeId: 'node-1',
+      matchStatus: 'matched',
+    });
+    expect(linked.find((r) => r.id === 'row-1')?.targetBpmNodeId).toBe('node-2');
+
+    const unlinked = linkRowToNode(linked, 'row-2', undefined);
+    expect(unlinked.find((r) => r.id === 'row-2')).toMatchObject({
+      targetBpmNodeId: undefined,
+      matchStatus: 'unmatched',
+    });
+  });
+
+  it('buildRcmImportPayload shapes the commit body in one place', () => {
+    const { rows } = importRcmFileText(TLC_CSV, 'TLC', NODES);
+    expect(
+      buildRcmImportPayload({
+        flavor: 'TLC',
+        workingYear: '2025',
+        bpmProcessId: 'bpm-1',
+        diagramId: 'diag-1',
+        rows,
+      }),
+    ).toEqual({
+      rcmType: 'TLC',
+      year: '2025',
+      bpmProcessId: 'bpm-1',
+      diagramId: 'diag-1',
+      rows,
+    });
+  });
+
+  it('requiresBpmReconciliation locks the ELC-vs-TLC step-3 gate', () => {
+    expect(requiresBpmReconciliation('TLC')).toBe(true);
+    expect(requiresBpmReconciliation('ELC')).toBe(false);
+    expect(requiresBpmReconciliation('ITGC')).toBe(false);
   });
 });
