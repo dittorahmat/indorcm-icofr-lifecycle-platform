@@ -202,7 +202,7 @@ export const OffPageRefNode = ({ data, selected, type }: NodeProps) => {
             {data.label || (data.direction === 'in' ? 'Dari hal X' : 'Ke hal X')}
           </span>
           {data.targetSheetName && (
-            <span className="text-[10px] font-bold text-emerald-700 truncate max-w-[50px] leading-none">
+            <span className="text-xs font-bold text-emerald-700 truncate max-w-[50px] leading-none">
               {data.targetSheetName}
             </span>
           )}

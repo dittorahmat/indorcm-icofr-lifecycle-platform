@@ -113,7 +113,7 @@ export default ({ mode }: { mode: string }) => {
             'vendor-framer': ['framer-motion'],
             'vendor-lucide': ['lucide-react'],
             'vendor-tanstack': ['@tanstack/react-query', '@tanstack/react-table'],
-            'vendor-utils': ['date-fns', 'uuid', 'clsx', 'tailwind-merge'],
+            'vendor-utils': ['date-fns', 'clsx', 'tailwind-merge'],
             'vendor-ui': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-select', '@radix-ui/react-tabs'],
             'vendor-xlsx': ['xlsx'],
           }

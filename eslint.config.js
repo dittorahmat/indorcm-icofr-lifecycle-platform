@@ -5,6 +5,72 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 import importPlugin from 'eslint-plugin-import'
 
+// Render-body state-setter guards (shared by the base and anti-slop blocks below).
+const RENDER_BODY_SETTERS = [
+  {
+    // This selector is more precise. In plain English, it means:
+    // "Inside a function component (named in PascalCase), find any `set...` call,
+    // but EXCLUDE any calls that are inside a nested function definition (like an event handler)."
+    // This correctly finds the bug while ignoring the false positive.
+    "selector": ":function[id.name=/^[A-Z]/] CallExpression[callee.name=/^set[A-Z]/]:not(ArrowFunctionExpression CallExpression, FunctionExpression CallExpression)",
+    "message": "State setters should not be called directly in the component's render body. This will cause an infinite render loop. Use useEffect or an event handler instead."
+  },
+  {
+    // This rule is a good backup to prevent setters inside memoization hooks.
+    "selector": "CallExpression[callee.name=/^set[A-Z]/] > :function[parent.callee.name='useMemo'], CallExpression[callee.name=/^set[A-Z]/] > :function[parent.callee.name='useCallback']",
+    "message": "State setters should not be called inside useMemo or useCallback. These hooks are for memoization, not for side effects."
+  },
+];
+
+// Constant-outcome boolean operators (see message). Global: applies everywhere including tests.
+const CONSTANT_BOOLEAN = {
+  // `x || true` is always true and `x && false` is always false, so the left
+  // side is dead logic. (Found live in the RCM importer as `...includes(...) || true`.)
+  // Write the intended default explicitly instead (`?? true` for nullish
+  // defaults, or a plain boolean expression).
+  "selector": "LogicalExpression[operator='||'] > Literal[value=true], LogicalExpression[operator='&&'] > Literal[value=false]",
+  "message": "Constant-outcome boolean: `|| true` is always true and `&& false` is always false. Use `??` for nullish defaults or simplify the expression."
+};
+
+// Mechanical anti-AI-slop guards (AGENTS.md Anti-AI Slop Checklist, enforced).
+// Judgement-call items (decorative italic, design tokens) stay prose in AGENTS.md.
+// Each pattern is matched on both plain string literals (className="…") and
+// template-literal static parts (cn(`…${x}`)) so interpolation can't evade it.
+const ANTISLOP = [
+  {
+    "selector": "Literal[value=/text-\\[(8|9|10|11)px\\]/]",
+    "message": "No sub-12px font: use at least `text-xs` (12px) with `font-medium`/`font-semibold`. (Legit exception: none — bump the size.)"
+  },
+  {
+    "selector": "Literal[value=/backdrop-(blur|filter)/]",
+    "message": "No backdrop-blur/glassmorphism: use a solid surface (`bg-background`, `bg-card`, `bg-slate-50`) with `border border-border`."
+  },
+  {
+    "selector": "Literal[value=/rounded-(2xl|3xl)/]",
+    "message": "Institutional border radius: cards, modals, dialogs, sheets and buttons use `rounded-md`/`rounded-lg`, never `rounded-2xl`/`rounded-3xl`."
+  },
+  {
+    "selector": "Literal[value=/animate-(pulse|ping|bounce)/]",
+    "message": "No distracting animations on static badges/cards/buttons: animation only for isolated loading state (`<Skeleton />`, `Loader2 animate-spin`). Add an `// eslint-disable-next-line no-restricted-syntax -- loading state` with reason if this is one."
+  },
+  {
+    "selector": "TemplateElement[value.raw=/text-\\[(8|9|10|11)px\\]/]",
+    "message": "No sub-12px font (template-literal part): use at least `text-xs` (12px) with `font-medium`/`font-semibold`."
+  },
+  {
+    "selector": "TemplateElement[value.raw=/backdrop-(blur|filter)/]",
+    "message": "No backdrop-blur/glassmorphism (template-literal part): use a solid surface with `border border-border`."
+  },
+  {
+    "selector": "TemplateElement[value.raw=/rounded-(2xl|3xl)/]",
+    "message": "Institutional border radius (template-literal part): use `rounded-md`/`rounded-lg`, never `rounded-2xl`/`rounded-3xl`."
+  },
+  {
+    "selector": "TemplateElement[value.raw=/animate-(pulse|ping|bounce)/]",
+    "message": "No distracting animations (template-literal part): animation only for isolated loading state with an eslint-disable reason."
+  },
+];
+
 export default tseslint.config(
   { ignores: ['dist', 'dist-whitelabel'] },
   {
@@ -45,19 +111,8 @@ export default tseslint.config(
       // CHANGED: Replaced the flawed rule with a more intelligent one.
       "no-restricted-syntax": [
         "error",
-        {
-          // This selector is more precise. In plain English, it means:
-          // "Inside a function component (named in PascalCase), find any `set...` call,
-          // but EXCLUDE any calls that are inside a nested function definition (like an event handler)."
-          // This correctly finds the bug while ignoring the false positive.
-          "selector": ":function[id.name=/^[A-Z]/] CallExpression[callee.name=/^set[A-Z]/]:not(ArrowFunctionExpression CallExpression, FunctionExpression CallExpression)",
-          "message": "State setters should not be called directly in the component's render body. This will cause an infinite render loop. Use useEffect or an event handler instead."
-        },
-        {
-          // This rule is a good backup to prevent setters inside memoization hooks.
-          "selector": "CallExpression[callee.name=/^set[A-Z]/] > :function[parent.callee.name='useMemo'], CallExpression[callee.name=/^set[A-Z]/] > :function[parent.callee.name='useCallback']",
-          "message": "State setters should not be called inside useMemo or useCallback. These hooks are for memoization, not for side effects."
-        }
+        ...RENDER_BODY_SETTERS,
+        CONSTANT_BOOLEAN,
       ],
     },
     settings: {
@@ -73,6 +128,21 @@ export default tseslint.config(
     files: ['src/components/ui/**/*.{ts,tsx}'],
     rules: {
       'react-refresh/only-export-components': 'off',
+    },
+  },
+  // Mechanical anti-slop enforcement for product frontend code. Test files
+  // assert the absence of these patterns via string literals, so they are
+  // excluded here (their assertions are the complementary enforcement).
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['**/*.test.*', '**/*.spec.*', 'src/test/**'],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        ...RENDER_BODY_SETTERS,
+        CONSTANT_BOOLEAN,
+        ...ANTISLOP,
+      ],
     },
   },
 )

@@ -47,13 +47,9 @@ Setiap kali melakukan penambahan komponen, modifikasi antarmuka frontend, menyel
 1.  **Mandat Wajib Penggunaan Skill `design-taste-frontend` (Strict Enforcement):**
     *   Setiap kali membuat atau memodifikasi komponen/tampilan antarmuka (`src/**/*.tsx`), Anda **WAJIB** secara eksplisit mengaktifkan dan mematuhi seluruh panduan dari skill `design-taste-frontend`.
     *   **Cakupan pemicu:** mandat ini berlaku ketika JSX/visual berubah (kelas, struktur, teks tampil). Edit logika-only tanpa perubahan visual (import, tipe, deps array, pemindahan fungsi murni) cukup mematuhi substansi checklist tanpa aktivasi skill eksplisit; cantumkan `no visual change` di ringkasan perubahan.
-    *   **Anti-AI Slop Checklist:**
-        *   **No sub-12px font:** Dilarang keras menggunakan font di bawah 12px (`text-[8px]`, `text-[9px]`, `text-[10px]`, `text-[11px]`). Gunakan minimal `text-xs` (12px) dengan font-weight tegas (`font-medium` / `font-semibold`).
-        *   **No decorative italic:** Dilarang menggunakan font miring (`italic`) pada data tabel audit, label regulasi, keterangan status, atau watermark audit. Teks kepatuhan BUMN harus tegas dan objektif.
-        *   **No backdrop-blur / glassmorphism:** Dilarang menggunakan `backdrop-blur`, `backdrop-filter`, atau frosted glass semu. Gunakan surface background solid yang bersih (`bg-background`, `bg-card`, `bg-slate-50`) dengan `border border-border`.
-        *   **No distracting animations:** Dilarang menggunakan `animate-pulse`, `animate-ping`, atau `animate-bounce` pada badge statis, counter sidebar, kartu, atau button. Animasi hanya diizinkan untuk loading state terisolasi (`<Skeleton />` atau `Loader2 className="animate-spin"`).
-        *   **Institutional border radius:** Seluruh card, modal, dialog, sheet, dan button wajib menggunakan border-radius enterprise institusional (`rounded-md` atau `rounded-lg`). Dilarang menggunakan kurva melingkar ekstrem/mainan (`rounded-2xl`, `rounded-3xl`, `rounded-[2rem]`).
-        *   **Design system tokens:** Gunakan token Shadcn / Tailwind semantik (`--primary`, `--muted`, `--border`, dsb.), dilarang hardcoded warna neon/gradien ungu-pink acak.
+    *   **Anti-AI Slop Checklist (mekanis — ditegakkan `npm run lint`, lihat `eslint.config.js` blok `ANTISLOP`):** font minimal `text-xs` (12px) + font-weight tegas; tanpa `backdrop-blur`/glassmorphism; radius institusional (`rounded-md`/`rounded-lg`); animasi hanya untuk loading state terisolasi.
+        *   **No decorative italic (judgement call, tetap di sini):** Dilarang menggunakan font miring (`italic`) pada data tabel audit, label regulasi, keterangan status, atau watermark audit. Teks kepatuhan BUMN harus tegas dan objektif.
+        *   **Design system tokens (judgement call, tetap di sini):** Gunakan token Shadcn / Tailwind semantik (`--primary`, `--muted`, `--border`, dsb.), dilarang hardcoded warna neon/gradien ungu-pink acak.
 2.  **Mandat Mobile-Responsive via Skill `better-interface` (Strict Enforcement):**
     *   Setiap kali membuat atau memodifikasi komponen/tampilan frontend dan komponennya (`src/**/*.tsx`), Anda **WAJIB** mengaktifkan skill `better-interface` (yang mengorkestrasi `better-accessibility`, `better-layout`, `better-typography`, `better-colors`, `better-ui`, `better-writing`) dan menerapkan hasil review-nya sebelum dianggap selesai. Cakupan pemicu mengikuti butir 1 (hanya ketika JSX/visual berubah).
     *   **Mobile-Responsive Checklist (320px → desktop):**
@@ -93,11 +89,14 @@ Setiap kali melakukan penambahan komponen, modifikasi antarmuka frontend, menyel
 
 *   **Regulatory Compliance:** Any UI or data model change MUST refer to Regulation SK-5/DKU.MBU/11/2024.
 *   **Type Safety:** Shared types in `shared/types/*` (barrel `shared/types.ts`) are the source of truth. Import from the domain module (`common`, `org`, `scoping`, `rcm-bpm`, `csa-testing`, `deficiency`, `user`) — never re-introduce a god `types.ts` or `any` shims.
+*   **Import Layering:** `shared/` is importable by both `src/` and `worker/`; never import `src/` from `worker/` or `worker/` from `src/` in product code — shared logic lives in `shared/` (precedent: `shared/control-linkage.ts` leveraged by editor hooks and bpm-sync/hydrator). Integration tests (`src/test/**`, `**/*.test.*`) are the sole exception and may import `worker/` services against a test database.
+*   **Review Standards:** Judgement-call rules the reviewer enforces live in `CODING_STANDARDS.md` (read at review time, not implementation).
 *   **Auditability:** Every entity mutation should be accompanied by an entry in the `auditTrail` and `ChangeLog`.
 *   **Design Quality & Accessibility (Mandat design-taste-frontend):** Hindari segala bentuk "AI Slop". Patuhi aturan minimum font 12px, border-radius enterprise, dan surface kontras tinggi.
 *   **Mobile-Responsive (Mandat better-interface):** Setiap edit `src/**/*.tsx` wajib mobile-first dan lolos checklist di Mandat Penyelesaian Tahap poin 2 (grid satu kolom di base, tabel dalam `overflow-x-auto`, footer dialog stack, verifikasi 320px/360px).
 *   **Actionable Dashboard:** The Dashboard must function as an "Action Center," prioritizing urgent tasks (remediation, pending validation) to drive the ICOFR lifecycle.
 *   **Data Persistence:** Always generate and run drizzle migrations using `npx drizzle-kit push` after schema changes.
+*   **Dependency Lockfiles:** This repo carries TWO lockfiles (`package-lock.json` for npm, `bun.lock` for bun — Cloudflare builds install via `bun install --frozen-lockfile`). Every dependency change MUST sync both (`npm install …` + `bun install`); CI fails otherwise.
 *   **Localization:** Support multi-language (English/Indonesian) using `src/i18n/**`. All UI strings **MUST** be localized.
 *   **Data Loss Prevention:** Implement `UnSavedChanges` warning for any form or editor state to prevent accidental data loss, following the `useUnsavedChanges` hook pattern.
 *   **Navigation & Alerts:** Integrate critical workflows into the Sidebar menu and provide real-time feedback via a Notification Bell where appropriate.
