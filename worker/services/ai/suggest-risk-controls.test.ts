@@ -1,12 +1,12 @@
 import { describe, it, expect, vi } from 'vitest';
 import {
   buildSuggestPrompt,
-  isGenericNodeLabel,
   parseSuggestKind,
   parseSuggestResponse,
   suggestRiskControls,
   validateSuggestInput,
 } from './suggest-risk-controls';
+import { isGenericNodeLabel } from '@shared/suggest-guards';
 import { AppError } from '../../lib/utils';
 
 const CTX = {
@@ -130,12 +130,12 @@ describe('parseSuggestKind', () => {
 });
 
 describe('suggestRiskControls', () => {
-  it('skips the LLM for generic labels', async () => {
+  it('skips the LLM for generic labels with the shared gate reason', async () => {
     const generate = vi.fn();
     const res = await suggestRiskControls({ ...CTX, nodeLabel: 'Proses 1' }, 'risk', generate);
     expect(generate).not.toHaveBeenCalled();
     expect(res.items).toHaveLength(0);
-    expect(res.emptyReason).toBe('NODE_LABEL_TOO_GENERIC');
+    expect(res.emptyReason).toBe('GENERIC_LABEL');
   });
 
   it('calls generate once with the built prompt for specific labels', async () => {

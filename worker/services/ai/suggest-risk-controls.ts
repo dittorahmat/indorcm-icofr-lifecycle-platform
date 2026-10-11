@@ -1,8 +1,6 @@
 import { jsonrepair } from 'jsonrepair';
 import { AppError } from '../../lib/utils';
-import { isGenericNodeLabel } from '@shared/suggest-guards';
-
-export { isGenericNodeLabel };
+import { suggestGate } from '@shared/suggest-guards';
 
 export type SuggestKind = 'risk' | 'control';
 export type SuggestionSource = 'ai' | 'library' | 'manual';
@@ -158,11 +156,10 @@ export function parseSuggestResponse(raw: string, kind: SuggestKind): SuggestRes
 
 export type GenerateFn = (prompt: string) => Promise<string>;
 
-const GENERIC_LABEL_REASON = 'NODE_LABEL_TOO_GENERIC';
-
 /**
  * Orchestrates one suggestion round. Pure except for the injected `generate`.
- * Returns an empty result without calling the LLM when the node label is generic.
+ * Gating delegates wholly to the shared `suggestGate` seam, so the worker and
+ * the client adapter block on identical reasons without calling the LLM.
  */
 export async function suggestRiskControls(
   body: unknown,
@@ -170,8 +167,14 @@ export async function suggestRiskControls(
   generate: GenerateFn,
 ): Promise<SuggestResult> {
   const ctx = validateSuggestInput(body, kind);
-  if (isGenericNodeLabel(ctx.nodeLabel)) {
-    return { kind, items: [], emptyReason: GENERIC_LABEL_REASON };
+  const gate = suggestGate({
+    kind,
+    bpmName: ctx.bpmName,
+    nodeLabel: ctx.nodeLabel,
+    riskDescription: ctx.riskDescription,
+  });
+  if (gate.blocked) {
+    return { kind, items: [], emptyReason: gate.reason };
   }
   const raw = await generate(buildSuggestPrompt(ctx, kind));
   return parseSuggestResponse(raw, kind);

@@ -45,18 +45,16 @@ interface AiSuggestionPopoverProps {
   kind: AiSuggestKind;
   context: AiSuggestionContext;
   disabled?: boolean;
-  /** When true (control with empty risk), show a hint instead of fetching. */
-  blocked?: boolean;
   onApply: (description: string) => void;
 }
 
 const EMPTY_REASON_KEYS: Record<string, string> = {
-  NODE_LABEL_TOO_GENERIC: 'genericLabel',
+  GENERIC_LABEL: 'genericLabel',
   MODEL_EMPTY: 'empty',
   MODEL_INVALID_JSON: 'modelError',
 };
 
-export function AiSuggestionPopover({ kind, context, disabled = false, blocked = false, onApply }: AiSuggestionPopoverProps) {
+export function AiSuggestionPopover({ kind, context, disabled = false, onApply }: AiSuggestionPopoverProps) {
   const { t } = useTranslation(['rcm', 'common']);
   const [open, setOpen] = useState(false);
   // Single fetch-gating seam shared with the worker: generic labels and
@@ -67,7 +65,7 @@ export function AiSuggestionPopover({ kind, context, disabled = false, blocked =
     nodeLabel: context.nodeLabel,
     riskDescription: context.riskDescription ?? '',
   });
-  const gated = blocked || gate.blocked;
+  const gated = gate.blocked;
   const query = useQuery({
     queryKey: ['ai-suggest-risk-controls', contextHash(kind, context)],
     queryFn: () =>
@@ -142,7 +140,7 @@ export function AiSuggestionPopover({ kind, context, disabled = false, blocked =
               <p className="p-3 text-xs text-slate-500">
                 {t('rcm:matrix.aiSuggest.genericLabel', { defaultValue: 'Belum ada saran. Perspesifik nama langkah/node agar AI dapat memberi saran yang relevan.' })}
               </p>
-            ) : blocked || gate.reason === 'RISK_REQUIRED' ? (
+            ) : gate.reason === 'RISK_REQUIRED' ? (
               <p className="p-3 text-xs text-slate-500">
                 {t('rcm:matrix.aiSuggest.risk_required', { defaultValue: 'Isi deskripsi risiko terlebih dahulu untuk mendapatkan saran kontrol.' })}
               </p>

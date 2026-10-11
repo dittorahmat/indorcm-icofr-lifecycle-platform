@@ -5,6 +5,7 @@ import { getDb } from '../db';
 import { csaRecords, csaSamples } from '../db/schema';
 import { eq, and } from 'drizzle-orm';
 import { DeficiencyService } from '../services/deficiency-service';
+import { collectFailedControlIds } from '../services/deficiency-trigger';
 
 export async function backfillCsaDeficiencies(databaseUrl?: string) {
   const url = databaseUrl || process.env.DATABASE_URL;
@@ -34,20 +35,9 @@ export async function backfillCsaDeficiencies(databaseUrl?: string) {
       .from(csaSamples)
       .where(eq(csaSamples.csaRecordId, record.id));
 
-    const failedControlIds = new Set<string>();
+    const failedControlIds = collectFailedControlIds(samples);
 
-    for (const sample of samples) {
-      const results = sample.controlResults as Record<string, { implemented?: boolean } | null> | null;
-      if (results && typeof results === 'object') {
-        for (const [ctrlId, val] of Object.entries(results)) {
-          if (val && val.implemented === false) {
-            failedControlIds.add(ctrlId);
-          }
-        }
-      }
-    }
-
-    console.log(`👉 Record ${record.id} (${record.period}): consolidating ${failedControlIds.size} failed control(s) for ${record.bpmProcessId ?? 'BPM assessment'}`);
+    console.log(`👉 Record ${record.id} (${record.period}): consolidating ${failedControlIds.length} failed control(s) for ${record.bpmProcessId ?? 'BPM assessment'}`);
 
     // Typed event only — description/policy live in the deficiency-trigger module.
     const defId = await defService.createAutoDeficiency({
@@ -57,7 +47,7 @@ export async function backfillCsaDeficiencies(databaseUrl?: string) {
       period: record.period,
       source: 'Lini 1 - CSA',
       userId: record.assessedBy || 'SYSTEM',
-      failedControlIds: Array.from(failedControlIds),
+      failedControlIds,
     });
 
     console.log(`   ✅ Created/Verified consolidated deficiency ${defId}`);

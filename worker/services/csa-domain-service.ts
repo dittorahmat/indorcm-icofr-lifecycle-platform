@@ -7,6 +7,7 @@ import type { DrizzleDb } from '../db';
 import type { CSARecord, TestRecord } from "@shared/types";
 import { AuditService } from './audit-service';
 import { DeficiencyService } from './deficiency-service';
+import { collectFailedControlIds, eventForVerdict } from './deficiency-trigger';
 import { createNotificationAndSendEmail } from './email';
 
 export class CsaDomainService {
@@ -138,31 +139,20 @@ export class CsaDomainService {
 
     if (!isDraft && newCsa.result === 'Ineffective') {
       // BPM-centric single card: one consolidated deficiency per CSA BPM
-      // assessment. Description/policy live in the deficiency-trigger module;
-      // this caller passes a typed event only.
-      const failedControlIds = new Set<string>();
-      if (body.samples && Array.isArray(body.samples)) {
-        for (const sample of body.samples) {
-          const results = sample.controlResults as Record<string, { implemented?: boolean } | null> | null;
-          if (results && typeof results === 'object') {
-            for (const [ctrlId, val] of Object.entries(results)) {
-              if (val && val.implemented === false) {
-                failedControlIds.add(ctrlId);
-              }
-            }
-          }
-        }
-      }
-
-      await this.defService.createAutoDeficiency({
+      // assessment. Verdict-to-event mapping and the failed-ids collection
+      // live in the deficiency-trigger module; this caller passes a
+      // verdict + snapshot only.
+      const samples = Array.isArray(body.samples) ? body.samples : [];
+      const csaEvent = eventForVerdict('Lini 1 - CSA', {
+        verdict: newCsa.result,
         organizationId: orgId,
         controlId: null,
         bpmProcessId: newCsa.bpmProcessId,
         period: newCsa.period,
-        source: 'Lini 1 - CSA',
         userId,
-        failedControlIds: Array.from(failedControlIds),
+        failedControlIds: collectFailedControlIds(samples),
       });
+      if (csaEvent) await this.defService.createAutoDeficiency(csaEvent);
     }
 
     await this.auditService.logAction({

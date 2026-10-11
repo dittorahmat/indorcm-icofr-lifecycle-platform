@@ -1,5 +1,6 @@
 import { AppError } from '../lib/utils';
-import { decideTest, type TestingDecisionInput } from '@shared/testing-decision';
+import { decideTest, isPilarSatisfied, type TestingDecisionInput } from '@shared/testing-decision';
+import { eventForVerdict, TOD_EVALUATION_PERIOD } from './deficiency-trigger';
 import type { DeficiencyTriggerEvent } from './deficiency-trigger';
 import {
   CONTROL_FIELDS_MAP, LINI1_FIELDS, LINI2_FIELDS, RISK_FIELDS,
@@ -15,7 +16,7 @@ export {
 } from './rcm-matrix-projection';
 export type { BatchUpdateItem, CreateVerificationBody, VerificationPatchBody } from './rcm-matrix-projection';
 
-export const TOD_EVALUATION_PERIOD = 'TOD-Evaluation';
+export { TOD_EVALUATION_PERIOD };
 
 export interface RcmMappingRef {
   id: string;
@@ -94,21 +95,18 @@ function pickDefined(body: Record<string, unknown>, fields: readonly string[]): 
   return patch;
 }
 
-function pilarFlag(value: unknown): boolean {
-  return typeof value === 'string' && value.trim() !== '';
-}
-
 /** Maps an RCM verification row onto the testing-decision seam. Control is
  *  always null (row may be missing) so Table 22 minimum is skipped while
- *  Zero-Tolerance and the 6-pilar TOD rule are still enforced. */
+ *  Zero-Tolerance and the 6-pilar TOD rule are still enforced. Pilar
+ *  normalization is the shared seam semantics (no local variant). */
 export function toTodDecisionInput(body: VerificationPatchBody): TestingDecisionInput {
   return {
     testType: 'TOD',
     claimedResult: body.conclusion === 'Ineffective' ? 'Ineffective' : 'Effective',
     todPillars: {
-      objective: pilarFlag(body.pilarObjective), timing: pilarFlag(body.pilarTiming),
-      authority: pilarFlag(body.pilarAuthority), reliability: pilarFlag(body.pilarReliability),
-      coverage: pilarFlag(body.pilarCoverage), evidence: pilarFlag(body.pilarEvidence),
+      objective: isPilarSatisfied(body.pilarObjective), timing: isPilarSatisfied(body.pilarTiming),
+      authority: isPilarSatisfied(body.pilarAuthority), reliability: isPilarSatisfied(body.pilarReliability),
+      coverage: isPilarSatisfied(body.pilarCoverage), evidence: isPilarSatisfied(body.pilarEvidence),
     },
   };
 }
@@ -146,11 +144,16 @@ async function persistTodAndRaise(
   }
   if (verdict !== 'Ineffective') return { todVerdict: verdict, deficiencyId: null };
   const comment = args.body['comment'];
-  const deficiencyId = await deps.effects.raiseDeficiency({
-    organizationId: args.organizationId, controlId: args.controlId, bpmProcessId: null,
-    period: TOD_EVALUATION_PERIOD, source: 'Lini 2 - TOD Review', userId: args.userId,
-    ...(typeof comment === 'string' && comment.trim() !== '' ? { detail: comment } : {}),
+  const todEvent = eventForVerdict('Lini 2 - TOD Review', {
+    verdict,
+    organizationId: args.organizationId,
+    controlId: args.controlId,
+    period: TOD_EVALUATION_PERIOD,
+    userId: args.userId,
+    ...(typeof comment === 'string' ? { detail: comment } : {}),
   });
+  if (!todEvent) return { todVerdict: verdict, deficiencyId: null };
+  const deficiencyId = await deps.effects.raiseDeficiency(todEvent);
   return { todVerdict: verdict, deficiencyId };
 }
 

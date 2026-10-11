@@ -1,7 +1,8 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { api } from '@/lib/api-client';
-import { importRcmFileText } from './rcm-ingestion';
+import { buildRcmImportPayload, importRcmFileText, linkRowToNode } from './rcm-ingestion';
 import type { BPMNodeOption, RCMFlavor, RCMImportParsedRow } from './rcm-import-types';
 
 interface UseRCMImportWizardParams {
@@ -23,6 +24,7 @@ export function useRCMImportWizard({
   onClose,
   onAddBpmNode,
 }: UseRCMImportWizardParams) {
+  const { t } = useTranslation(['rcm', 'common']);
   const [step, setStep] = React.useState<1 | 2 | 3>(1);
   const [flavor, setFlavor] = React.useState<RCMFlavor>('TLC');
   const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
@@ -34,35 +36,28 @@ export function useRCMImportWizard({
       setSelectedFile(file);
       try {
         const text = await file.text();
-        const { rows, errors } = importRcmFileText(text, flavor, bpmNodes);
+        const staged = importRcmFileText(text, flavor, bpmNodes);
 
-        if (errors.length > 0 && rows.length === 0) {
-          toast.error(errors[0]);
+        if (!staged.canProceed) {
+          toast.error(
+            staged.errors[0] ??
+              t('rcm:importWizard.emptyFile', { defaultValue: 'Gagal membaca file spreadsheet RCM.' }),
+          );
           return;
         }
 
-        setParsedRows(rows);
+        setParsedRows(staged.rows);
         setStep(2);
       } catch (err: unknown) {
         toast.error('Gagal membaca file spreadsheet RCM.');
       }
     },
-    [flavor, bpmNodes]
+    [flavor, bpmNodes, t]
   );
 
   const handleUpdateRowNodeLink = React.useCallback(
     (rowId: string, targetNodeId?: string) => {
-      setParsedRows((prev) =>
-        prev.map((r) =>
-          r.id === rowId
-            ? {
-                ...r,
-                targetBpmNodeId: targetNodeId,
-                matchStatus: targetNodeId ? 'matched' : 'unmatched',
-              }
-            : r
-        )
-      );
+      setParsedRows((prev) => linkRowToNode(prev, rowId, targetNodeId));
     },
     []
   );
@@ -98,13 +93,15 @@ export function useRCMImportWizard({
         };
       }>('/api/rcm/import', {
         method: 'POST',
-        body: JSON.stringify({
-          rcmType: flavor,
-          year: workingYear,
-          bpmProcessId,
-          diagramId,
-          rows: parsedRows,
-        }),
+        body: JSON.stringify(
+          buildRcmImportPayload({
+            flavor,
+            workingYear,
+            bpmProcessId,
+            diagramId,
+            rows: parsedRows,
+          }),
+        ),
       });
 
       if (res.success) {

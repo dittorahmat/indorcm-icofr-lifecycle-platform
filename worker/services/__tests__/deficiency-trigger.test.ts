@@ -4,6 +4,8 @@ import {
   triggerDeficiency,
   buildDedupKey,
   buildDeficiencyDescription,
+  collectFailedControlIds,
+  eventForVerdict,
   type DeficiencyTriggerEvent,
   type DeficiencyTriggerStore,
 } from '../deficiency-trigger';
@@ -192,8 +194,7 @@ describe('deficiency-trigger seam (structured find-or-create)', () => {
     });
   });
 
-  it('buildDeficiencyDescription prefixes control code/name and names the BPM process', () => {
-    const withControl = buildDeficiencyDescription(
+  it('buildDeficiencyDescription prefixes control code/name and names the BPM process', () => {    const withControl = buildDeficiencyDescription(
       csaEvent({ controlId: 'CTRL-A', bpmProcessId: null }),
       { code: 'CTRL-A', name: 'Otorisasi Kredit' },
       null,
@@ -207,5 +208,72 @@ describe('deficiency-trigger seam (structured find-or-create)', () => {
     );
     expect(bpmOnly).toContain('Persetujuan Kredit');
     expect(bpmOnly).toContain('2025-Q1');
+  });
+
+  it('eventForVerdict returns null unless the verdict is Ineffective', () => {
+    const base = {
+      organizationId: 'org-test',
+      controlId: 'CTRL-A',
+      userId: 'user-1',
+    } as const;
+    expect(eventForVerdict('Lini 2 - TOD Review', { ...base, verdict: 'Effective' })).toBeNull();
+    expect(eventForVerdict('Lini 2 - TOD Review', { ...base, verdict: null })).toBeNull();
+    expect(eventForVerdict('Lini 2 - TOD Review', { ...base, verdict: undefined })).toBeNull();
+  });
+
+  it('eventForVerdict maps an Ineffective verdict + snapshot onto a typed event', () => {
+    const event = eventForVerdict('Lini 3 - Audit', {
+      verdict: 'Ineffective',
+      organizationId: 'org-test',
+      controlId: 'CTRL-A',
+      period: '2025',
+      userId: 'user-3',
+      testType: 'TOE',
+      detail: 'Sampel SMP-02 gagal.',
+    });
+    expect(event).toEqual({
+      organizationId: 'org-test',
+      controlId: 'CTRL-A',
+      bpmProcessId: null,
+      period: '2025',
+      source: 'Lini 3 - Audit',
+      userId: 'user-3',
+      testType: 'TOE',
+      detail: 'Sampel SMP-02 gagal.',
+    });
+  });
+
+  it('eventForVerdict carries failedControlIds only when non-empty', () => {
+    const withFailed = eventForVerdict('Lini 1 - CSA', {
+      verdict: 'Ineffective',
+      organizationId: 'org-test',
+      bpmProcessId: 'BPM-1',
+      period: '2025-Q1',
+      userId: 'user-1',
+      failedControlIds: ['CTRL-A'],
+    });
+    expect(withFailed?.failedControlIds).toEqual(['CTRL-A']);
+
+    const withoutFailed = eventForVerdict('Lini 1 - CSA', {
+      verdict: 'Ineffective',
+      organizationId: 'org-test',
+      bpmProcessId: 'BPM-1',
+      period: '2025-Q1',
+      userId: 'user-1',
+      failedControlIds: [],
+    });
+    expect(withoutFailed).not.toHaveProperty('failedControlIds');
+  });
+
+  it('collectFailedControlIds gathers implemented=false ids with dedup, skipping the rest', () => {
+    expect(
+      collectFailedControlIds([
+        { controlResults: { 'CTRL-A': { implemented: false }, 'CTRL-B': { implemented: true } } },
+        { controlResults: { 'CTRL-A': { implemented: false }, 'CTRL-C': null } },
+        { controlResults: null },
+        { controlResults: 'not-an-object' },
+      ]),
+    ).toEqual(['CTRL-A']);
+    expect(collectFailedControlIds([])).toEqual([]);
   });
 });

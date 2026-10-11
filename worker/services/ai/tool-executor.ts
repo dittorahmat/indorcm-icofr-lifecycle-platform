@@ -1,4 +1,4 @@
-import { eq, and, sql, gte, lte, or, ilike } from "drizzle-orm";
+import { eq, and, sql, gte, lte, or } from "drizzle-orm";
 import { DrizzleDb } from "../../db";
 import { 
   rcms, 
@@ -12,6 +12,7 @@ import {
   csaRecords
 } from "../../db/schema";
 import { StrategicAnalystService } from "./strategic-analyst-service";
+import { substringMatch } from "../search-patterns";
 
 export interface ToolContext {
   db: DrizzleDb;
@@ -83,7 +84,7 @@ export const AIToolExecutor = {
     .$dynamic();
 
     if (subProcess) {
-      query = query.where(ilike(rcms.subProcess, `%${subProcess}%`));
+      query = query.where(substringMatch(rcms.subProcess, subProcess));
     }
     if (riskRating) {
       query = query.where(eq(rcms.riskRating, riskRating));
@@ -108,7 +109,7 @@ export const AIToolExecutor = {
     .from(bpmProcesses)
     .where(and(
       eq(bpmProcesses.organizationId, ctx.orgId),
-      ilike(bpmProcesses.name, `%${query}%`)
+      substringMatch(bpmProcesses.name, query)
     ))
     .limit(10);
 

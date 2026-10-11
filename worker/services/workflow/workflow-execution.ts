@@ -1,6 +1,6 @@
 import { decideTransition, type WorkflowEntityType } from '@shared/workflow-transitions';
 import type { UserRole, WorkflowAction, WorkflowHistoryEntry } from '@shared/types';
-import type { DeficiencyTriggerEvent } from '../deficiency-trigger';
+import { eventForVerdict, type DeficiencyTriggerEvent } from '../deficiency-trigger';
 import { AppError } from '../../lib/utils';
 
 /**
@@ -221,16 +221,17 @@ export async function executeWorkflowTransition(
 
   let deficiencyId: string | null = null;
   if (entityType === 'CSA' && nextStatus === 'Validated') {
-    if (snapshot.result === 'Ineffective') {
-      const raised = await deps.effects.raiseDeficiency({
-        organizationId,
-        controlId: snapshot.controlId,
-        bpmProcessId: snapshot.bpmProcessId,
-        period: snapshot.period ?? '',
-        source: 'Lini 2 - CSA Validation',
-        userId,
-        ...(snapshot.failedControlIds ? { failedControlIds: snapshot.failedControlIds } : {}),
-      });
+    const csaEvent = eventForVerdict('Lini 2 - CSA Validation', {
+      verdict: snapshot.result,
+      organizationId,
+      controlId: snapshot.controlId,
+      bpmProcessId: snapshot.bpmProcessId,
+      period: snapshot.period ?? undefined,
+      userId,
+      ...(snapshot.failedControlIds ? { failedControlIds: snapshot.failedControlIds } : {}),
+    });
+    if (csaEvent) {
+      const raised = await deps.effects.raiseDeficiency(csaEvent);
       deficiencyId = raised.id;
     }
     await deps.effects.audit({

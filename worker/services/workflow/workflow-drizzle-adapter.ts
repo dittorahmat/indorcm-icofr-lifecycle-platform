@@ -6,6 +6,7 @@ import {
 import type { WorkflowEntityType } from '@shared/workflow-transitions';
 import { AuditService } from '../audit-service';
 import { DeficiencyService } from '../deficiency-service';
+import { collectFailedControlIds } from '../deficiency-trigger';
 import { RcmService } from '../rcm-service';
 import { createNotificationAndSendEmail } from '../email';
 import {
@@ -24,21 +25,6 @@ function historyOf(row: { workflowHistory: unknown }): WorkflowEntitySnapshot['h
 
 function textOf(value: string | null | undefined): string | null {
   return value ?? null;
-}
-
-/** Legacy aggregate-CSA scan: failed control ids from sample results. Narrowed from unknown, no any. */
-export function collectFailedControlIds(samples: { controlResults: unknown }[]): string[] {
-  const failed = new Set<string>();
-  for (const sample of samples) {
-    const results = sample.controlResults;
-    if (!results || typeof results !== 'object') continue;
-    for (const [controlId, value] of Object.entries(results) as [string, unknown][]) {
-      if (value && typeof value === 'object' && (value as { implemented?: unknown }).implemented === false) {
-        failed.add(controlId);
-      }
-    }
-  }
-  return [...failed];
 }
 
 class DrizzleWorkflowStore implements WorkflowTransitionStore {

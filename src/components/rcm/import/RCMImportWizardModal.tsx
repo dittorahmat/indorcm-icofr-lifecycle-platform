@@ -13,6 +13,7 @@ import { RCMIngestionStep } from './RCMIngestionStep';
 import { RCMValidationStep } from './RCMValidationStep';
 import { RCMReconciliationStep } from './RCMReconciliationStep';
 import { useRCMImportWizard } from './useRCMImportWizard';
+import { requiresBpmReconciliation } from './rcm-ingestion';
 import type { RCMImportWizardModalProps } from './rcm-import-types';
 
 export function RCMImportWizardModal({
@@ -49,6 +50,8 @@ export function RCMImportWizardModal({
     onAddBpmNode,
   });
 
+  const showReconciliation = requiresBpmReconciliation(flavor);
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => (!isSubmitting && !open ? onClose() : undefined)}>
       <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-4xl p-4 sm:p-6 max-h-[90vh] flex flex-col overflow-hidden">
@@ -64,7 +67,7 @@ export function RCMImportWizardModal({
           <span className={step === 1 ? 'text-indigo-600 font-bold' : ''}>1. Pilih & Unggah</span>
           <ChevronRight className="h-3 w-3 shrink-0" />
           <span className={step === 2 ? 'text-indigo-600 font-bold' : ''}>2. Validasi Data</span>
-          {flavor === 'TLC' && (
+          {showReconciliation && (
             <>
               <ChevronRight className="h-3 w-3 shrink-0" />
               <span className={step === 3 ? 'text-indigo-600 font-bold' : ''}>3. Pemetaan BPM</span>
@@ -87,7 +90,7 @@ export function RCMImportWizardModal({
             <RCMValidationStep flavor={flavor} rows={parsedRows} />
           )}
 
-          {step === 3 && flavor === 'TLC' && (
+          {step === 3 && showReconciliation && (
             <RCMReconciliationStep
               rows={parsedRows}
               bpmNodes={bpmNodes}
@@ -120,7 +123,7 @@ export function RCMImportWizardModal({
               </Button>
             )}
 
-            {step === 2 && flavor === 'TLC' && (
+            {step === 2 && showReconciliation && (
               <Button
                 onClick={() => setStep(3)}
                 className="w-full sm:w-auto h-11 sm:h-10 min-h-[44px] bg-indigo-600 hover:bg-indigo-700 text-white"
@@ -129,7 +132,7 @@ export function RCMImportWizardModal({
               </Button>
             )}
 
-            {((step === 2 && flavor !== 'TLC') || step === 3) && (
+            {((step === 2 && !showReconciliation) || step === 3) && (
               <Button
                 onClick={handleCommit}
                 disabled={isSubmitting || parsedRows.length === 0}

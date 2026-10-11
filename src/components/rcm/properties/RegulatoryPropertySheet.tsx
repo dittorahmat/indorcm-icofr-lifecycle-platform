@@ -23,7 +23,7 @@ import { api } from '@/lib/api-client';
 import { EntityHistoryList } from './EntityHistoryList';
 import { NodeVisualProperties } from './NodeVisualProperties';
 import { RiskGroupCard } from './RiskGroupCard';
-import { regulatoryPairsOf } from '../editor/utils/bpm-control-linkage';
+import { BPM_NON_SYNC_NODE_TYPES, regulatoryPairsOf } from '@shared/control-linkage';
 import type { AiSuggestionContext } from './AiSuggestionPopover';
 
 interface RegulatoryPropertySheetProps {
@@ -61,8 +61,7 @@ export function RegulatoryPropertySheet({
 
   const canHaveRcm = useMemo(() => {
     if (!selectedNode) return false;
-    const skipTypes = ['start', 'end', 'reference', 'swimlane'];
-    return !skipTypes.includes(selectedNode.type);
+    return !BPM_NON_SYNC_NODE_TYPES.includes(selectedNode.type);
   }, [selectedNode]);
 
   const { data: sequenceData } = useQuery({

@@ -67,7 +67,7 @@ export function parseRCMSpreadsheet(
       controlName: controlName || `Kontrol #${i}`,
       controlDescription: controlDesc || undefined,
       supportingDocs: getCol(rawCells, ['dokumen_pendukung', 'supporting_docs']) || undefined,
-      isKeyControl: ['ya', 'y', 'true', '1'].includes(getCol(rawCells, ['pengendalian_utama', 'key_control']).toLowerCase()) || true,
+      isKeyControl: ['ya', 'y', 'true', '1'].includes(getCol(rawCells, ['pengendalian_utama', 'key_control']).toLowerCase()),
       controlType: getCol(rawCells, ['tipe_pengendalian', 'preventif_detektif', 'type']) || 'Preventif',
       controlNature: getCol(rawCells, ['sifat_pengendalian', 'nature']) || 'Manual',
       frequency: getCol(rawCells, ['frekuensi', 'frequency']) || 'Bulanan',

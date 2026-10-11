@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import type { Node, Edge } from 'reactflow';
 import { getStandardNodeDimensions, DEFAULT_SWIMLANE_DIMENSIONS } from '@/utils/bpm-constants';
-import { linkedIdsOf, regulatoryPairsOf } from '../utils/bpm-control-linkage';
+import { linkedIdsOf, regulatoryPairsOf } from '@shared/control-linkage';
 
 interface UseBPMNodeOperationsProps {
   isLocked: boolean;
