@@ -1,5 +1,6 @@
 import { AppError } from '../lib/utils';
 import { decideTest, isPilarSatisfied, type TestingDecisionInput } from '@shared/testing-decision';
+import { eventForVerdict } from './deficiency-trigger';
 import type { DeficiencyTriggerEvent } from './deficiency-trigger';
 import {
   CONTROL_FIELDS_MAP, LINI1_FIELDS, LINI2_FIELDS, RISK_FIELDS,
@@ -143,11 +144,16 @@ async function persistTodAndRaise(
   }
   if (verdict !== 'Ineffective') return { todVerdict: verdict, deficiencyId: null };
   const comment = args.body['comment'];
-  const deficiencyId = await deps.effects.raiseDeficiency({
-    organizationId: args.organizationId, controlId: args.controlId, bpmProcessId: null,
-    period: TOD_EVALUATION_PERIOD, source: 'Lini 2 - TOD Review', userId: args.userId,
-    ...(typeof comment === 'string' && comment.trim() !== '' ? { detail: comment } : {}),
+  const todEvent = eventForVerdict('Lini 2 - TOD Review', {
+    verdict,
+    organizationId: args.organizationId,
+    controlId: args.controlId,
+    period: TOD_EVALUATION_PERIOD,
+    userId: args.userId,
+    ...(typeof comment === 'string' ? { detail: comment } : {}),
   });
+  if (!todEvent) return { todVerdict: verdict, deficiencyId: null };
+  const deficiencyId = await deps.effects.raiseDeficiency(todEvent);
   return { todVerdict: verdict, deficiencyId };
 }
 

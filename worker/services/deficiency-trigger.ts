@@ -125,6 +125,62 @@ export function buildActionPlanDescription(source: DeficiencySource, period: str
   return `Rencana tindak lanjut atas temuan ${source} (${period.trim()})`;
 }
 
+/** Aggregate-CSA scan: failed control ids from sample results. Narrowed
+ *  from unknown, no any. Single locality for the collection policy every
+ *  CSA path (domain service, workflow snapshot, backfill) shares. */
+export function collectFailedControlIds(samples: { controlResults: unknown }[]): string[] {
+  const failed = new Set<string>();
+  for (const sample of samples) {
+    const results = sample.controlResults;
+    if (!results || typeof results !== 'object') continue;
+    for (const [controlId, value] of Object.entries(results) as [string, unknown][]) {
+      if (value && typeof value === 'object' && (value as { implemented?: unknown }).implemented === false) {
+        failed.add(controlId);
+      }
+    }
+  }
+  return [...failed];
+}
+
+/** Verdict snapshot a caller hands to the verdict-to-event seam. */
+export interface VerdictSnapshot {
+  verdict: unknown;
+  organizationId: string;
+  controlId?: string | null;
+  bpmProcessId?: string | null;
+  period?: string;
+  userId: string;
+  failedControlIds?: string[];
+  testType?: 'TOD' | 'TOE';
+  detail?: string;
+}
+
+/**
+ * Single Ineffective-verdict-to-event seam. Returns null unless the verdict
+ * is Ineffective, so callers never re-decide whether a deficiency is
+ * warranted and never hand-build the event shape. Source/period defaults
+ * and the failed-ids/detail passthrough live here.
+ */
+export function eventForVerdict(
+  source: DeficiencySource,
+  snapshot: VerdictSnapshot,
+): DeficiencyTriggerEvent | null {
+  if (snapshot.verdict !== 'Ineffective') return null;
+  return {
+    organizationId: snapshot.organizationId,
+    controlId: snapshot.controlId ?? null,
+    bpmProcessId: snapshot.bpmProcessId ?? null,
+    period: snapshot.period ?? '',
+    source,
+    userId: snapshot.userId,
+    ...(snapshot.failedControlIds && snapshot.failedControlIds.length > 0
+      ? { failedControlIds: snapshot.failedControlIds }
+      : {}),
+    ...(snapshot.testType ? { testType: snapshot.testType } : {}),
+    ...(snapshot.detail && snapshot.detail.trim() !== '' ? { detail: snapshot.detail } : {}),
+  };
+}
+
 export function yearEndDueDate(now: Date = new Date()): Date {
   return new Date(now.getFullYear(), 11, 31, 23, 59, 59);
 }

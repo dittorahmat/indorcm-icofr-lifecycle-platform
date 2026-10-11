@@ -11,11 +11,12 @@ import {
   decideFromForm,
   type TestingVerdict,
 } from "@shared/testing-decision";
+import { eventForVerdict } from "../../services/deficiency-trigger";
 import { rbac } from "../../lib/guard";
 
 export const csaSamplesTestingRoute = new Hono<HonoEnv>();
 
-/** Shared TOD deficiency policy for insert and update branches: one typed event. */
+/** Shared TOD deficiency policy for insert and update branches: one verdict + snapshot at the seam. */
 async function triggerTodDeficiency(
   db: DrizzleDb,
   orgId: string,
@@ -23,16 +24,16 @@ async function triggerTodDeficiency(
   userId: string,
   conclusion: unknown,
 ): Promise<void> {
-  if (conclusion !== 'Ineffective') return;
-  const defService = new DeficiencyService(db);
-  await defService.createAutoDeficiency({
+  const event = eventForVerdict('Lini 2 - TOD Review', {
+    verdict: conclusion,
     organizationId: orgId,
     controlId,
-    bpmProcessId: null,
     period: 'TOD-Evaluation',
-    source: 'Lini 2 - TOD Review',
     userId,
   });
+  if (!event) return;
+  const defService = new DeficiencyService(db);
+  await defService.createAutoDeficiency(event);
 }
 
 csaSamplesTestingRoute.get('/csa/samples', async (c) => {
@@ -242,18 +243,18 @@ csaSamplesTestingRoute.post('/tests', async (c) => {
 
   await db.insert(testRecords).values(newRecord as any);
 
-  if (result === 'Ineffective') {
+  const auditEvent = eventForVerdict('Lini 3 - Audit', {
+    verdict: result,
+    organizationId: orgId,
+    controlId: body.controlId,
+    period,
+    userId,
+    testType,
+    ...(typeof body.comments === 'string' ? { detail: body.comments } : {}),
+  });
+  if (auditEvent) {
     const defService = new DeficiencyService(db);
-    await defService.createAutoDeficiency({
-      organizationId: orgId,
-      controlId: body.controlId,
-      bpmProcessId: null,
-      period,
-      source: 'Lini 3 - Audit',
-      userId,
-      testType,
-      detail: typeof body.comments === 'string' ? body.comments : undefined,
-    });
+    await defService.createAutoDeficiency(auditEvent);
   }
 
   if (body.samples && Array.isArray(body.samples) && body.samples.length > 0) {
