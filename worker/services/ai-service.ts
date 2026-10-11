@@ -2,6 +2,7 @@ import { GoogleGenerativeAI, Part } from "@google/generative-ai";
 import { sql } from "drizzle-orm";
 import { documentChunks, documents } from "../db/schema";
 import type { DrizzleDb } from "../db";
+import { corpusMatch, corpusRank, substringPattern } from "./search-patterns";
 
 export type AIProvider = "gemini" | "openai-compatible";
 
@@ -249,10 +250,10 @@ export class AIService {
         LIMIT 50
       ),
       text_search AS (
-        SELECT id, ROW_NUMBER() OVER (ORDER BY ts_rank_cd(fts_tokens, plainto_tsquery('indonesian', ${query})) DESC) as rank
+        SELECT id, ROW_NUMBER() OVER (ORDER BY ${corpusRank(sql.raw('fts_tokens'), query)} DESC) as rank
         FROM icofr.document_chunks
         WHERE organization_id = ${orgId}
-        AND fts_tokens @@ plainto_tsquery('indonesian', ${query})
+        AND ${corpusMatch(sql.raw('fts_tokens'), query)}
         ORDER BY rank
         LIMIT 50
       ),
@@ -261,7 +262,7 @@ export class AIService {
         FROM icofr.document_chunks c
         JOIN icofr.documents d ON c.document_id = d.id
         WHERE c.organization_id = ${orgId}
-        AND d.title ILIKE ${'%' + query + '%'}
+        AND d.title ILIKE ${substringPattern(query)}
         LIMIT 50
       )
       SELECT 
