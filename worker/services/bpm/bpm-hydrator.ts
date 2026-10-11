@@ -1,7 +1,11 @@
 import { rcms, rcmControls, bpmNodeRcms } from '../../db/schema';
 import { eq, and } from 'drizzle-orm';
 import type { DrizzleDb } from '../../db';
-import { extractBaseId, makeGlSpecificId } from './bpm-utils';
+import {
+  BPM_NON_SYNC_NODE_TYPES,
+  extractBaseId,
+  makeGlSpecificId,
+} from '@shared/control-linkage';
 
 export class BpmHydrator {
   constructor(private db: DrizzleDb) {}
@@ -11,9 +15,8 @@ export class BpmHydrator {
   }
 
   async hydrateDiagramNodes(diagramId: string, nodes: any[], noGL?: string) {
-    const skipTypes = ['start', 'end', 'reference', 'swimlane'];
     return await Promise.all(nodes.map(async (node: any) => {
-      if (node.type && !skipTypes.includes(node.type)) {
+      if (node.type && !BPM_NON_SYNC_NODE_TYPES.includes(node.type)) {
         const allMappings = await this.db.select({
           risk: rcms,
           map: rcmControls

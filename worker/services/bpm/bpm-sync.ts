@@ -1,7 +1,7 @@
 import { rcms, rcmControls, controls, bpmNodeRcms, bpmDiagrams, bpmProcesses } from '../../db/schema';
 import { eq, and, inArray, sql } from 'drizzle-orm';
 import type { DrizzleDb } from '../../db';
-import { extractBaseId, makeGlSpecificId } from './bpm-utils';
+import { collectNodeSyncEntries, extractBaseId, makeGlSpecificId } from '@shared/control-linkage';
 
 export class BpmSyncManager {
   constructor(private db: DrizzleDb) {}
@@ -20,112 +20,17 @@ export class BpmSyncManager {
     subProcessName: string,
     year: number | null
   ) {
-    const activeRiskControlPairs = new Set<string>();
-    const activeRiskIds = new Set<string>();
-    const activeControlIds = new Set<string>();
-
-    const skipTypes = ['start', 'end', 'reference', 'swimlane'];
-
-    // 1. Collect all risk entries and control entries to sync
-    interface RiskEntryToSync {
-      riskId: string;
-      reg: any;
-      nodeId: string;
-    }
-
-    interface ControlEntryToSync {
-      ctrlId: string;
-      riskId: string;
-      reg: any;
-      noGL: string | null;
-      nodeLabel?: string;
-    }
-
-    const risksToSyncMap = new Map<string, RiskEntryToSync>();
-    const controlsToSyncMap = new Map<string, ControlEntryToSync>();
-    const nodeRcmPairsToInsert: { id: string; organizationId: string; diagramId: string; nodeId: string; rcmId: string }[] = [];
-    const insertedRiskIdsForNode = new Set<string>();
-
-    for (const node of nodes) {
-      const nodePairs = node.data?.regulatoryPairs || 
-                       (node.data?.regulatoryData ? [node.data.regulatoryData] : []);
-
-      if (node.type && !skipTypes.includes(node.type) && nodePairs.length > 0) {
-        for (const reg of nodePairs) {
-          const rawRiskId = reg.riskId;
-          const rawCtrlId = reg.controlId;
-
-          if (rawRiskId && rawCtrlId) {
-            const baseRiskId = extractBaseId(rawRiskId);
-            const baseCtrlId = extractBaseId(rawCtrlId);
-
-            for (const gl of glCodes) {
-              const riskId = makeGlSpecificId(baseRiskId, gl);
-              const ctrlId = makeGlSpecificId(baseCtrlId, gl);
-
-              activeRiskIds.add(riskId);
-              activeControlIds.add(ctrlId);
-              activeRiskControlPairs.add(`${riskId}:${ctrlId}`);
-
-              risksToSyncMap.set(riskId, { riskId, reg, nodeId: node.id });
-              controlsToSyncMap.set(ctrlId, {
-                ctrlId,
-                riskId,
-                reg,
-                noGL: gl || null,
-                nodeLabel: node.data?.label,
-              });
-
-              const pairKey = `${node.id}:${riskId}`;
-              if (!insertedRiskIdsForNode.has(pairKey)) {
-                nodeRcmPairsToInsert.push({
-                  id: crypto.randomUUID(),
-                  organizationId: orgId,
-                  diagramId,
-                  nodeId: node.id,
-                  rcmId: riskId,
-                });
-                insertedRiskIdsForNode.add(pairKey);
-              }
-            }
-          }
-        }
-      }
-
-      // Legacy support for nodes with only .risks
-      if (node.type && !skipTypes.includes(node.type) && node.data?.risks && !node.data?.regulatoryPairs && !node.data?.regulatoryData) {
-        for (const riskEntry of node.data.risks) {
-          const baseRiskId = extractBaseId(riskEntry.rcmId);
-          for (const gl of glCodes) {
-            const riskId = makeGlSpecificId(baseRiskId, gl);
-            activeRiskIds.add(riskId);
-
-            risksToSyncMap.set(riskId, { riskId, reg: riskEntry, nodeId: node.id });
-
-            const pairKey = `${node.id}:${riskId}`;
-            if (!insertedRiskIdsForNode.has(pairKey)) {
-              nodeRcmPairsToInsert.push({
-                id: crypto.randomUUID(),
-                organizationId: orgId,
-                diagramId,
-                nodeId: node.id,
-                rcmId: riskId,
-              });
-              insertedRiskIdsForNode.add(pairKey);
-            }
-
-            if (riskEntry.controlIds) {
-              riskEntry.controlIds.forEach((ctrlIdEntry: string) => {
-                const ctrlId = makeGlSpecificId(extractBaseId(ctrlIdEntry), gl);
-                activeRiskControlPairs.add(`${riskId}:${ctrlId}`);
-                activeRiskIds.add(riskId);
-                activeControlIds.add(ctrlId);
-              });
-            }
-          }
-        }
-      }
-    }
+    // 1. Collect all risk entries and control entries to sync. The walk
+    // over node data (precedence, legacy fallback, GL fan-out) lives in
+    // the shared control-linkage seam; the manager only persists.
+    const {
+      risksToSync: risksToSyncMap,
+      controlsToSync: controlsToSyncMap,
+      nodeRcmPairs: nodeRcmPairsToInsert,
+      activeRiskIds,
+      activeControlIds,
+      activeRiskControlPairs,
+    } = collectNodeSyncEntries(nodes, glCodes, { organizationId: orgId, diagramId });
 
     // 2. Batch sync risks (1 SELECT instead of N SELECTs)
     const allRiskIds = Array.from(risksToSyncMap.keys());

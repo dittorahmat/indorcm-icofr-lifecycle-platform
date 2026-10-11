@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import type { Settings, BPMProcess } from '@shared/types';
 import { useActiveSimulation, useSimulationSnapshot } from '@/hooks/use-bpm';
 import { useConfirm } from '@/hooks/use-confirm';
-import { unmappedControlsFrom } from '../utils/bpm-control-linkage';
+import { unmappedControlsFrom } from '@shared/control-linkage';
 
 interface UseBPMEditorStateProps {
   diagramId: string;

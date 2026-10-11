@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { BPMDiagram } from '@shared/types';
-import { regulatoryPairsOf } from '@/components/rcm/editor/utils/bpm-control-linkage';
+import { regulatoryPairsOf } from '@shared/control-linkage';
 
 export function useCSADiagramLink(diagram?: BPMDiagram, propControls: any[] = []) {
   const bpmRiskControlPairs = useMemo(() => {
