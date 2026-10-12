@@ -68,7 +68,12 @@ aiSuggestApp.post('/ai/suggest-risk-controls', async (c) => {
         action: result.cacheHit ? 'AI_SUGGEST_CACHE_HIT' : 'AI_SUGGEST_GENERATE',
         entityType: 'AiSuggest',
         entityId: cacheKey,
-        dataAfter: { cacheHit: result.cacheHit ?? false, kind },
+        dataAfter: {
+          cacheHit: result.cacheHit ?? false,
+          kind,
+          kbVersion: versions.kbVersion,
+          simulationId: versions.simulationId,
+        },
       });
     } catch {
       // Audit must never fail the suggestion response.
