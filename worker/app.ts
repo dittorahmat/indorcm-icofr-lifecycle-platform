@@ -55,6 +55,10 @@ export interface HonoEnv {
     AI_BASE_URL?: string;
     AI_EMBEDDING_MODEL?: string;
     AI_CHAT_MODEL?: string;
+    AI_CACHE_TTL_SUGGEST_MS?: string;
+    AI_CACHE_TTL_CHAT_MS?: string;
+    AI_CACHE_TTL_RETRIEVAL_MS?: string;
+    AI_CACHE_TTL_EMBEDDING_MS?: string;
     DOCUMENTS_BUCKET: any;
     LICENSE_PUBLIC_KEY?: string;
     PARTNER_PUBLIC_KEY?: string;

@@ -174,7 +174,12 @@ if [ "$NEW_REV" != "$OLD_REV" ]; then
             exit 1
         fi
         log "Memastikan ekstensi DB (vector, pg_trgm, ADR-0003)..."
-        psql "$DATABASE_URL" -f scripts/db-extensions.sql || { log "FATAL: db-extensions gagal"; exit 1; }
+        if command -v psql >/dev/null 2>&1; then
+            psql "$DATABASE_URL" -f scripts/db-extensions.sql || { log "FATAL: db-extensions gagal"; exit 1; }
+        else
+            log "psql tidak ada, setup ekstensi via driver node..."
+            node --input-type=module -e 'import postgres from "postgres"; const sql = postgres(process.env.DATABASE_URL); await sql.unsafe("CREATE EXTENSION IF NOT EXISTS vector"); await sql.unsafe("CREATE EXTENSION IF NOT EXISTS pg_trgm"); await sql.end(); console.log("db-extensions ok (node)");' || { log "FATAL: db-extensions via node gagal"; exit 1; }
+        fi
         bunx drizzle-kit push --force || { log "FATAL: drizzle push gagal"; exit 1; }
     else
         log "Skema tidak berubah, migrasi dilewati."

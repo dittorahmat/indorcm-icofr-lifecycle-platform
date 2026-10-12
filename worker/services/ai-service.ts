@@ -3,8 +3,51 @@ import { sql } from "drizzle-orm";
 import { documentChunks, documents } from "../db/schema";
 import type { DrizzleDb } from "../db";
 import { corpusMatch, corpusRank, substringPattern } from "./search-patterns";
+import {
+  buildEmbeddingCacheKey,
+  buildRetrievalCacheKey,
+  resolveAiCacheTtlMs,
+  MemoryAiCacheStore,
+} from "@shared/ai-cache";
+import type { AiCacheStore, AiCacheVersions } from "@shared/ai-cache";
 
 export type AIProvider = "gemini" | "openai-compatible";
+
+export interface RetrievalRow {
+  id: string;
+  content: string;
+  title: string;
+  category: string;
+  score: number;
+}
+
+export interface HybridSearchQueryDeps {
+  store?: AiCacheStore;
+  runQuery?: (input: { orgId: string; query: string; limit: number }) => Promise<RetrievalRow[]>;
+}
+
+/** Phase-2 placeholder: process-memory caches. T4 promotes to Postgres. */
+const aiEmbeddingCache = new MemoryAiCacheStore();
+const aiRetrievalCache = new MemoryAiCacheStore();
+
+/** Shared suggest response cache (one per process; keyed per org + versions). */
+export const suggestResponseCache = new MemoryAiCacheStore();
+
+export function clearAiServiceCaches(): void {
+  aiEmbeddingCache.clear();
+  aiRetrievalCache.clear();
+  suggestResponseCache.clear();
+}
+
+/** Per-org invalidation: KB document change or new Approved simulation. */
+export function invalidateAiCachesForOrg(orgId: string): number {
+  const prefix = `${orgId}:`;
+  return (
+    aiEmbeddingCache.invalidateByPrefix(prefix) +
+    aiRetrievalCache.invalidateByPrefix(prefix) +
+    suggestResponseCache.invalidateByPrefix(prefix)
+  );
+}
 
 export interface AIConfig {
   provider: AIProvider;
@@ -12,17 +55,29 @@ export interface AIConfig {
   baseUrl?: string;
   embeddingModel?: string;
   chatModel?: string;
+  cacheScope?: { orgId: string; kbVersion?: string; simulationId?: string };
 }
 
 export class AIService {
   private config: AIConfig;
   private genAI?: GoogleGenerativeAI;
 
+  /** Last-call cache flags for audit/response labelling. */
+  lastEmbeddingCacheHit = false;
+  lastRetrievalCacheHit = false;
+
   constructor(config: AIConfig) {
     this.config = config;
     if (config.provider === "gemini") {
       this.genAI = new GoogleGenerativeAI(config.apiKey);
     }
+  }
+
+  private cacheVersions(): AiCacheVersions {
+    return {
+      kbVersion: this.config.cacheScope?.kbVersion ?? "",
+      simulationId: this.config.cacheScope?.simulationId ?? "",
+    };
   }
 
   /**
@@ -59,9 +114,32 @@ export class AIService {
   }
 
   /**
-   * Generates a vector embedding.
+   * Generates a vector embedding. Identical text per organization reuses the
+   * AI Embedding Cache without calling the provider twice.
    */
-  async generateEmbedding(text: string): Promise<number[]> {
+  async generateEmbedding(text: string, opts?: { orgId?: string }): Promise<number[]> {
+    this.lastEmbeddingCacheHit = false;
+    const orgId = opts?.orgId ?? this.config.cacheScope?.orgId;
+    const versions = this.cacheVersions();
+    if (orgId) {
+      const model = this.config.embeddingModel
+        ?? (this.config.provider === "gemini" ? "gemini-embedding-2" : "nomic-embed-text");
+      const key = buildEmbeddingCacheKey(orgId, text, model);
+      const hit = aiEmbeddingCache.get(key, versions);
+      const values = (hit?.payload as { values?: unknown } | null)?.values;
+      if (Array.isArray(values)) {
+        this.lastEmbeddingCacheHit = true;
+        return values as number[];
+      }
+      const fresh = await this.fetchEmbeddingFromProvider(text);
+      aiEmbeddingCache.set(key, { payload: { values: fresh } }, resolveAiCacheTtlMs("embedding", {}), versions);
+      return fresh;
+    }
+    return this.fetchEmbeddingFromProvider(text);
+  }
+
+  /** Provider call behind the embedding cache. Overridable in tests. */
+  protected async fetchEmbeddingFromProvider(text: string): Promise<number[]> {
     if (this.config.provider === "gemini") {
       return this.callWithRetry(async () => {
         const model = this.genAI!.getGenerativeModel({ 
@@ -234,13 +312,43 @@ export class AIService {
     return chunks;
   }
 
+  // NOTE: tool-path chat responses are never cached — tool outputs read live
+  // application data (scoping simulations, testing stats, deficiencies) that
+  // must not go stale. Prefix-cost savings arrive via embedding + retrieval
+  // caches; Line 1 materiality redaction stays upstream of any cache read.
   async hybridSearch(
-    db: DrizzleDb,
+    db: DrizzleDb | undefined,
     orgId: string,
     query: string,
     queryVector: number[],
-    limit = 5
-  ) {
+    limit = 5,
+    deps?: HybridSearchQueryDeps
+  ): Promise<RetrievalRow[]> {
+    const versions = this.cacheVersions();
+    this.lastRetrievalCacheHit = false;
+    const key = buildRetrievalCacheKey(orgId, `${query}::${limit}`, versions);
+    const store = deps?.store ?? aiRetrievalCache;
+    const hit = store.get(key, versions);
+    const cached = hit?.payload as { rows?: unknown } | null;
+    if (cached && Array.isArray(cached.rows)) {
+      this.lastRetrievalCacheHit = true;
+      return cached.rows as RetrievalRow[];
+    }
+    const fresh = deps?.runQuery
+      ? await deps.runQuery({ orgId, query, limit })
+      : await this.runHybridSearchQuery(db, orgId, query, queryVector, limit);
+    store.set(key, { payload: { rows: fresh } }, resolveAiCacheTtlMs("retrieval", {}), versions);
+    return fresh;
+  }
+
+  protected async runHybridSearchQuery(
+    db: DrizzleDb | undefined,
+    orgId: string,
+    query: string,
+    queryVector: number[],
+    limit: number
+  ): Promise<RetrievalRow[]> {
+    if (!db) throw new Error("hybridSearch requires a database handle");
     const result = await db.execute(sql`
       WITH vector_search AS (
         SELECT id, ROW_NUMBER() OVER (ORDER BY embedding <=> ${sql.raw(`'${JSON.stringify(queryVector)}'::vector`)}) as rank
@@ -284,13 +392,7 @@ export class AIService {
     `);
 
     const rows = Array.isArray(result) ? result : (result as any)?.rows || [];
-    return rows as unknown as {
-      id: string;
-      content: string;
-      title: string;
-      category: string;
-      score: number;
-    }[];
+    return rows as unknown as RetrievalRow[];
   }
 
   static situationalChunking(content: string, metadata: { title: string; category?: string }): string {
