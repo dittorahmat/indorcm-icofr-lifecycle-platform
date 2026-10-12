@@ -7,6 +7,7 @@ import { execSync } from 'node:child_process';
 import { cpSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
+import postgres from 'postgres';
 
 const repo = resolve(import.meta.dirname, '..');
 const work = mkdtempSync(join(tmpdir(), 'icofr-db-check-'));
@@ -38,3 +39,28 @@ if (failed) {
   process.exit(1);
 }
 console.log('[db:check] OK: schema.ts in sync with drizzle/meta (no drift).');
+
+// Live extension gate: vector + pg_trgm must exist or drizzle-kit push fails
+// with cryptic errors (e.g. 42704 ResolveOpClass). Skipped when DATABASE_URL
+// is absent (offline CI still gets the drift gate above).
+if (process.env.DATABASE_URL) {
+  try {
+    const sql = postgres(process.env.DATABASE_URL);
+    const rows = await sql.unsafe(
+      "SELECT extname FROM pg_extension WHERE extname IN ('vector','pg_trgm')",
+    );
+    await sql.end();
+    const have = new Set(rows.map((r) => r.extname));
+    const missing = ['vector', 'pg_trgm'].filter((e) => !have.has(e));
+    if (missing.length > 0) {
+      console.error(`[db:check] FAIL: missing DB extensions: ${missing.join(', ')}. Run \`npm run db:extensions\` first.`);
+      process.exit(1);
+    }
+    console.log('[db:check] OK: extensions vector + pg_trgm present.');
+  } catch (e) {
+    console.error(`[db:check] FAIL: extension check errored: ${e.code ?? ''} ${e.message ?? e}`);
+    process.exit(1);
+  }
+} else {
+  console.log('[db:check] SKIP: DATABASE_URL absent, extension gate skipped.');
+}

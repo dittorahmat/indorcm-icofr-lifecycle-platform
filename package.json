@@ -25,7 +25,8 @@
     "release:whitelabel": "npx tsx scripts/release-whitelabel.ts",
     "db:wipeout": "npx tsx worker/db/wipeout-demo.ts",
     "db:backfill-bpm": "npx tsx scripts/backfill-controls-bpm.ts",
-    "db:extensions": "psql \"$DATABASE_URL\" -f scripts/db-extensions.sql",
+    "db:extensions": "node scripts/db-extensions.mjs",
+    "db:extensions:psql": "psql \"$DATABASE_URL\" -f scripts/db-extensions.sql",
     "db:check": "node scripts/db-check.mjs"
   },
   "dependencies": {
