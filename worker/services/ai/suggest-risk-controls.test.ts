@@ -146,3 +146,36 @@ describe('suggestRiskControls', () => {
     expect(res.items).toHaveLength(1);
   });
 });
+
+describe('suggestRiskControls with AI Response Cache', () => {
+  it('returns cached payload without calling generate twice', async () => {
+    const { MemoryAiCacheStore } = await import('@shared/ai-cache');
+    const store = new MemoryAiCacheStore();
+    const versions = { kbVersion: '', simulationId: '' };
+    const generate = vi.fn().mockResolvedValue(JSON.stringify({ items: [{ description: 'R', rationale: 'x' }] }));
+    const first = await suggestRiskControls(CTX, 'risk', generate, {
+      store, key: 'k1', ttlMs: 60_000, versions,
+    });
+    const second = await suggestRiskControls(CTX, 'risk', generate, {
+      store, key: 'k1', ttlMs: 60_000, versions,
+    });
+    expect(generate).toHaveBeenCalledTimes(1);
+    expect(first.cacheHit).toBe(false);
+    expect(second.cacheHit).toBe(true);
+    expect(second.items).toHaveLength(1);
+  });
+
+  it('misses after version bump', async () => {
+    const { MemoryAiCacheStore } = await import('@shared/ai-cache');
+    const store = new MemoryAiCacheStore();
+    const generate = vi.fn().mockResolvedValue(JSON.stringify({ items: [{ description: 'R', rationale: 'x' }] }));
+    await suggestRiskControls(CTX, 'risk', generate, {
+      store, key: 'k2', ttlMs: 60_000, versions: { kbVersion: '', simulationId: '' },
+    });
+    const res = await suggestRiskControls(CTX, 'risk', generate, {
+      store, key: 'k2', ttlMs: 60_000, versions: { kbVersion: 'kb-2', simulationId: '' },
+    });
+    expect(generate).toHaveBeenCalledTimes(2);
+    expect(res.cacheHit).toBe(false);
+  });
+});

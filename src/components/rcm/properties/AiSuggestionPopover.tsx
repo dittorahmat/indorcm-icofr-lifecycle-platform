@@ -28,6 +28,7 @@ export interface AiSuggestionResult {
   kind: AiSuggestKind;
   items: AiSuggestionItem[];
   emptyReason: string | null;
+  cacheHit?: boolean;
 }
 
 function contextHash(kind: AiSuggestKind, ctx: AiSuggestionContext): string {

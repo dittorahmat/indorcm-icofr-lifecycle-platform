@@ -1,6 +1,7 @@
 import { jsonrepair } from 'jsonrepair';
 import { AppError } from '../../lib/utils';
 import { suggestGate } from '@shared/suggest-guards';
+import type { AiCacheStore, AiCacheVersions } from '@shared/ai-cache';
 
 export type SuggestKind = 'risk' | 'control';
 export type SuggestionSource = 'ai' | 'library' | 'manual';
@@ -30,6 +31,14 @@ export interface SuggestResult {
   kind: SuggestKind;
   items: SuggestionItem[];
   emptyReason: string | null;
+  cacheHit?: boolean;
+}
+
+export interface SuggestCacheOptions {
+  store: AiCacheStore;
+  key: string;
+  ttlMs: number;
+  versions: AiCacheVersions;
 }
 
 export const MAX_SUGGESTIONS = 3;
@@ -165,6 +174,7 @@ export async function suggestRiskControls(
   body: unknown,
   kind: SuggestKind,
   generate: GenerateFn,
+  cache?: SuggestCacheOptions,
 ): Promise<SuggestResult> {
   const ctx = validateSuggestInput(body, kind);
   const gate = suggestGate({
@@ -174,8 +184,20 @@ export async function suggestRiskControls(
     riskDescription: ctx.riskDescription,
   });
   if (gate.blocked) {
-    return { kind, items: [], emptyReason: gate.reason };
+    return { kind, items: [], emptyReason: gate.reason, cacheHit: false };
+  }
+  if (cache) {
+    const hit = cache.store.get(cache.key, cache.versions);
+    const payload = hit?.payload as SuggestResult | undefined;
+    if (payload && payload.kind === kind && Array.isArray(payload.items)) {
+      return { kind, items: payload.items, emptyReason: payload.emptyReason ?? null, cacheHit: true };
+    }
   }
   const raw = await generate(buildSuggestPrompt(ctx, kind));
-  return parseSuggestResponse(raw, kind);
+  const result = parseSuggestResponse(raw, kind);
+  const shaped: SuggestResult = { ...result, cacheHit: false };
+  if (cache) {
+    cache.store.set(cache.key, { payload: { kind, items: result.items, emptyReason: result.emptyReason } }, cache.ttlMs, cache.versions);
+  }
+  return shaped;
 }
