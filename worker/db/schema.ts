@@ -5,4 +5,5 @@ export * from "./schema/gl-scoping";
 export * from "./schema/rcm-bpm";
 export * from "./schema/csa-testing";
 export * from "./schema/knowledge-soc";
+export * from "./schema/ai-cache";
 export * from "./schema/relations";
