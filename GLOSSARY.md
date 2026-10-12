@@ -60,3 +60,15 @@ _Avoid_: AI control
 ### Suggestion Source
 Asal nilai Risk/Control yang dicatat di audit trail: `ai` (LLM), `library` (Risk Library Lampiran 2), atau `manual` (ketikan user).
 _Avoid_: AI source (generik)
+
+### AI Response Cache
+Cache exact-match app-side untuk jawaban AI per `organizationId`, diikat ke versi Knowledge Base + simulasi Approved aktif agar angka OM/PM tidak basi.
+_Avoid_: prompt cache (generik), suggestion cache
+
+### AI Embedding Cache
+Pakai ulang vektor embedding untuk teks identik pada chat, retrieval, dan indexing dokumen agar tidak membayar embedding yang sama dua kali.
+_Avoid_: vector cache (generik)
+
+### Provider Prompt Cache Adapter
+Optimasi opsional di belakang seam `AiCache`: memakai cache prefix bawaan provider (mis. Gemini `cachedContent`) bila tersedia, no-op bila tidak.
+_Avoid_: Gemini cache (spesifik-vendor sebagai istilah umum)
