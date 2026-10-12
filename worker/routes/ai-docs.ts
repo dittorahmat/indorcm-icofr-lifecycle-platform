@@ -133,6 +133,7 @@ aiDocsApp.post('/documents', async (c) => {
             baseUrl: c.env.AI_BASE_URL,
             embeddingModel: c.env.AI_EMBEDDING_MODEL,
             chatModel: c.env.AI_CHAT_MODEL,
+            cacheScope: { orgId, kbVersion: '', simulationId: '' },
           });
           const chunks = AIService.splitIntoChunks(content);
           
@@ -312,6 +313,7 @@ aiDocsApp.post('/ai/chat', async (c) => {
     baseUrl: c.env.AI_BASE_URL,
     embeddingModel: c.env.AI_EMBEDDING_MODEL,
     chatModel: c.env.AI_CHAT_MODEL,
+    cacheScope: { orgId, kbVersion: '', simulationId: '' },
   });
 
   try {
@@ -321,6 +323,7 @@ aiDocsApp.post('/ai/chat', async (c) => {
     console.error('Retrieval failed, falling back to basic prompt:', e.message);
     retrievalResults = [];
   }
+  const sourcesCached = aiService.lastRetrievalCacheHit;
 
   const knowledgeBase = (retrievalResults && retrievalResults.length > 0)
     ? retrievalResults.map(r => AIService.situationalChunking(r.content, { title: r.title, category: r.category })).join('\n\n')
@@ -417,6 +420,7 @@ ${knowledgeBase}
     return ok(c, {
       response: responseText,
       sources: sources,
+      sourcesCached,
       pendingAction: pendingAction
     });
 
