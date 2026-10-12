@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { AIService, clearAiServiceCaches } from './ai-service';
+import { AIService, clearAiServiceCaches, invalidateAiCachesForOrg, suggestResponseCache } from './ai-service';
 
 const SCOPE = { orgId: 'org-1', kbVersion: '', simulationId: '' };
 
@@ -73,5 +73,28 @@ describe('AIService retrieval cache', () => {
     await v2.hybridSearch(undefined, 'org-1', 'prosedur kas', [0.1], 10, { runQuery });
     expect(runnerCalls).toBe(2);
     expect(v2.lastRetrievalCacheHit).toBe(false);
+  });
+});
+
+describe('invalidateAiCachesForOrg', () => {
+  beforeEach(() => {
+    clearAiServiceCaches();
+  });
+
+  it('drops only the invalidated org entries across all layers', async () => {
+    const service = new EmbeddingStubService({ provider: 'gemini', apiKey: 'test', cacheScope: SCOPE });
+    await service.generateEmbedding('Halo kas');
+    const runQuery = async () => RETRIEVAL_ROWS;
+    await service.hybridSearch(undefined, 'org-1', 'prosedur kas', [0.1], 10, { runQuery });
+    suggestResponseCache.set('org-1:suggest:aaa', { payload: { kind: 'risk', items: [], emptyReason: null } }, 60_000, SCOPE);
+    suggestResponseCache.set('org-2:suggest:bbb', { payload: { kind: 'risk', items: [], emptyReason: null } }, 60_000, SCOPE);
+
+    const removed = invalidateAiCachesForOrg('org-1');
+
+    expect(removed).toBe(3);
+    await service.generateEmbedding('Halo kas');
+    expect(service.calls).toBe(2);
+    expect(service.lastEmbeddingCacheHit).toBe(false);
+    expect(suggestResponseCache.get('org-2:suggest:bbb', SCOPE)?.payload).toBeDefined();
   });
 });

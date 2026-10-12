@@ -30,9 +30,23 @@ export interface HybridSearchQueryDeps {
 const aiEmbeddingCache = new MemoryAiCacheStore();
 const aiRetrievalCache = new MemoryAiCacheStore();
 
+/** Shared suggest response cache (one per process; keyed per org + versions). */
+export const suggestResponseCache = new MemoryAiCacheStore();
+
 export function clearAiServiceCaches(): void {
   aiEmbeddingCache.clear();
   aiRetrievalCache.clear();
+  suggestResponseCache.clear();
+}
+
+/** Per-org invalidation: KB document change or new Approved simulation. */
+export function invalidateAiCachesForOrg(orgId: string): number {
+  const prefix = `${orgId}:`;
+  return (
+    aiEmbeddingCache.invalidateByPrefix(prefix) +
+    aiRetrievalCache.invalidateByPrefix(prefix) +
+    suggestResponseCache.invalidateByPrefix(prefix)
+  );
 }
 
 export interface AIConfig {

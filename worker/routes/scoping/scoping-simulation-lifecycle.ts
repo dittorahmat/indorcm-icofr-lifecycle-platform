@@ -12,6 +12,7 @@ import type {
   WorkflowAction,
 } from "@shared/types";
 import { AuditService } from "../../services/audit-service";
+import { invalidateAiCachesForOrg } from "../../services/ai-service";
 import { createNotificationAndSendEmail } from '../../services/email';
 import { runWorkflowTransition } from "../../services/workflow/workflow-drizzle-adapter";
 import { rbac } from "../../lib/guard";
@@ -84,6 +85,11 @@ simulationLifecycle.post('/simulations/:id/approve', rbac(['CFO', 'Commissioner'
       ...(nextStatus === 'Approved' ? { approvedBy: userId, approvedDate: new Date().getTime() } : {})
     })
     .where(and(eq(simulations.id, id), eq(simulations.organizationId, orgId)));
+
+  if (nextStatus === 'Approved') {
+    // Materiality baseline changed: drop this org's AI caches (version bump covers reads too).
+    invalidateAiCachesForOrg(orgId);
+  }
 
   // Notify creator
   await createNotificationAndSendEmail({

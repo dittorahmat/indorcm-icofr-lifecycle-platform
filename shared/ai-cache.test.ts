@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import {
   buildSuggestCacheKey,
   buildEmbeddingCacheKey,
+  buildRetrievalCacheKey,
+  checkDailyRateLimit,
   resolveAiCacheTtlMs,
   MemoryAiCacheStore,
   NoopProviderPromptCacheAdapter,
@@ -72,5 +74,48 @@ describe('NoopProviderPromptCacheAdapter', () => {
   it('always reports a miss so portable path stays authoritative', async () => {
     const adapter = new NoopProviderPromptCacheAdapter();
     await expect(adapter.get('any')).resolves.toBeNull();
+  });
+});
+
+describe('MemoryAiCacheStore.invalidateByPrefix', () => {
+  it('clears only entries of the given organization', () => {
+    const store = new MemoryAiCacheStore();
+    const versions = { kbVersion: '', simulationId: '' };
+    store.set('org-1:suggest:aaa', { payload: 1 }, 60_000, versions);
+    store.set('org-2:suggest:bbb', { payload: 2 }, 60_000, versions);
+    expect(store.invalidateByPrefix('org-1:')).toBe(1);
+    expect(store.get('org-1:suggest:aaa', versions)).toBeNull();
+    expect(store.get('org-2:suggest:bbb', versions)?.payload).toBe(2);
+  });
+});
+
+describe('checkDailyRateLimit', () => {
+  it('allows 100 hits then blocks, and resets after the window', () => {
+    const store = new Map<string, { count: number; resetDate: number }>();
+    for (let i = 0; i < 100; i += 1) {
+      expect(checkDailyRateLimit(store, 'c1', 1_000).allowed).toBe(true);
+    }
+    expect(checkDailyRateLimit(store, 'c1', 1_000).allowed).toBe(false);
+    expect(checkDailyRateLimit(store, 'c1', 1_000 + 86_400_001).allowed).toBe(true);
+  });
+
+  it('counts cache hits like any other hit: check runs before cache lookup', () => {
+    const store = new Map<string, { count: number; resetDate: number }>();
+    const first = checkDailyRateLimit(store, 'c2', 1_000);
+    const second = checkDailyRateLimit(store, 'c2', 1_000);
+    expect(first.count).toBe(1);
+    expect(second.count).toBe(2);
+  });
+});
+
+describe('buildRetrievalCacheKey', () => {
+  it('is case-insensitive and version-bound', () => {
+    const v = { kbVersion: '', simulationId: '' };
+    expect(buildRetrievalCacheKey('org-1', 'Prosedur Kas::10', v)).toBe(
+      buildRetrievalCacheKey('org-1', 'prosedur kas::10', v),
+    );
+    expect(buildRetrievalCacheKey('org-1', 'prosedur kas::10', v)).not.toBe(
+      buildRetrievalCacheKey('org-1', 'prosedur kas::10', { ...v, kbVersion: 'kb-2' }),
+    );
   });
 });

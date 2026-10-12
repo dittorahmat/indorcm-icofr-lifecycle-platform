@@ -123,9 +123,48 @@ export class MemoryAiCacheStore implements AiCacheStore {
     this.entries.set(key, { payload: entry.payload, expiresAt: Date.now() + ttlMs, versions });
   }
 
+  /** Removes entries whose key starts with prefix (per-org invalidation). Returns removed count. */
+  invalidateByPrefix(prefix: string): number {
+    let removed = 0;
+    for (const key of this.entries.keys()) {
+      if (key.startsWith(prefix)) {
+        this.entries.delete(key);
+        removed += 1;
+      }
+    }
+    return removed;
+  }
+
   clear(): void {
     this.entries.clear();
   }
+}
+
+export interface RateLimitState {
+  count: number;
+  resetDate: number;
+}
+
+/**
+ * Daily rate-limit check shared by AI routes. Cache hits count like any
+ * other hit: callers run this BEFORE the cache lookup so abuse semantics
+ * stay stable whether the answer comes from cache or provider.
+ */
+export function checkDailyRateLimit(
+  store: Map<string, RateLimitState>,
+  key: string,
+  nowMs: number,
+  limit = 100,
+  windowMs = 86_400_000,
+): { allowed: boolean; count: number } {
+  let state = store.get(key);
+  if (!state || nowMs > state.resetDate) {
+    state = { count: 0, resetDate: nowMs + windowMs };
+    store.set(key, state);
+  }
+  if (state.count >= limit) return { allowed: false, count: state.count };
+  state.count += 1;
+  return { allowed: true, count: state.count };
 }
 
 export interface ProviderPromptCache {

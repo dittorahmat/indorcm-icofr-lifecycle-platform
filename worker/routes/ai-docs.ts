@@ -3,11 +3,11 @@ import type { HonoEnv } from '../app';
 import { ok, bad, notFound } from '../lib/utils';
 import { getDb } from '../db';
 import { getStorageBucket } from '../lib/storage';
-import { documents, documentDepartments, documentGls, documentFslis, user, documentChunks, csaSchedules } from '../db/schema';
+import { documents, documentDepartments, documentGls, documentFslis, user, documentChunks, csaSchedules, simulations } from '../db/schema';
 import { eq, and, desc, sql } from 'drizzle-orm';
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { ICOFR_KNOWLEDGE_BASE } from '../knowledge-base';
-import { AIService } from '../services/ai-service';
+import { AIService, invalidateAiCachesForOrg } from '../services/ai-service';
+import { getAiCacheVersions, createDocMarkerLoader, createApprovedSimulationLoader } from '../services/ai/ai-cache-versions';
+import { checkDailyRateLimit } from '@shared/ai-cache';
 
 import { ICOFR_TOOLS } from '../services/ai/tool-definitions';
 import { AIToolExecutor, ToolContext } from '../services/ai/tool-executor';
@@ -196,6 +196,9 @@ aiDocsApp.post('/documents', async (c) => {
       });
     }
 
+    // KB changed: drop this org's chat/retrieval/suggest caches (version bump covers reads too).
+    invalidateAiCachesForOrg(orgId);
+
     return ok(c, { ...newDoc, success: true });
 
   } catch (error: any) {
@@ -220,7 +223,10 @@ aiDocsApp.delete('/documents/:id', async (c) => {
   }
 
   await db.delete(documents).where(eq(documents.id, id));
-  
+
+  // KB changed: drop this org's chat/retrieval/suggest caches.
+  invalidateAiCachesForOrg(orgId);
+
   return ok(c, { success: true });
 });
 
@@ -270,8 +276,8 @@ aiDocsApp.post('/ai/chat', async (c) => {
   const { message, conversationHistory = [] } = body;
 
   const clientId = c.req.header('X-Forwarded-For') || c.req.header('CF-Connecting-IP') || 'unknown';
-  const now = Date.now();
-  const dayMs = 86400000;
+
+  // Contract: cache hits count toward the daily limit — checked before cache lookup.
 
   // Handle direct action confirmation (Agentic Action)
   if ((body as any).actionConfirmation) {
@@ -286,17 +292,10 @@ aiDocsApp.post('/ai/chat', async (c) => {
     }
   }
 
-  let rateLimitData = rateLimitStore.get(clientId);
-  if (!rateLimitData || now > rateLimitData.resetDate) {
-    rateLimitData = { count: 0, resetDate: now + dayMs };
-    rateLimitStore.set(clientId, rateLimitData);
-  }
-
-  if (rateLimitData.count >= 100) {
+  const checked = checkDailyRateLimit(rateLimitStore, clientId, Date.now());
+  if (!checked.allowed) {
     return bad(c, 'Rate limit exceeded.', 429);
   }
-
-  rateLimitData.count++;
 
   const context = (body as any).context;
   const pageContext = context?.path ? `\nPengguna saat ini sedang melihat halaman: ${context.path}` : '';
@@ -307,13 +306,17 @@ aiDocsApp.post('/ai/chat', async (c) => {
   const orgId = c.get('organizationId');
 
   let retrievalResults: any[] = [];
+  const versions = await getAiCacheVersions({
+    loadDocMarker: createDocMarkerLoader(db),
+    loadApprovedSimulationId: createApprovedSimulationLoader(db),
+  }, orgId);
   const aiService = new AIService({
     provider: (c.env.AI_PROVIDER as any) || "gemini",
     apiKey: apiKey,
     baseUrl: c.env.AI_BASE_URL,
     embeddingModel: c.env.AI_EMBEDDING_MODEL,
     chatModel: c.env.AI_CHAT_MODEL,
-    cacheScope: { orgId, kbVersion: '', simulationId: '' },
+    cacheScope: { orgId, kbVersion: versions.kbVersion, simulationId: versions.simulationId },
   });
 
   try {
@@ -421,6 +424,10 @@ ${knowledgeBase}
       response: responseText,
       sources: sources,
       sourcesCached,
+      // Chat contract: cacheHit mirrors the retrieval-prefix hit. Full tool-path
+      // responses are never cached (live data); prefix savings arrive via
+      // embedding + retrieval caches.
+      cacheHit: sourcesCached,
       pendingAction: pendingAction
     });
 
