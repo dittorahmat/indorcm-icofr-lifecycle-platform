@@ -1,6 +1,5 @@
 // ocr-layout.ts — deterministic OCR auto-layout (no dependencies, pure TS)
-import { getStandardNodeDimensions, DEFAULT_SWIMLANE_DIMENSIONS } from './bpm-constants';
-import { canonicalizeHandleId } from '@/components/rcm/edges/geometry/bpm-geometry';
+import { getStandardNodeDimensions, DEFAULT_SWIMLANE_DIMENSIONS, canonicalizeHandleId } from './bpm-constants';
 import { validateOcrResponse, deriveLabelFromId } from './ocr-validate';
 import type { OcrRawNode, OcrRawEdge, OcrLayoutWarning } from './ocr-validate';
 import {
