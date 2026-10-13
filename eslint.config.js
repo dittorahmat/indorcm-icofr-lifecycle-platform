@@ -71,6 +71,24 @@ const ANTISLOP = [
   },
 ];
 
+// Shared-header squeeze guard (Deficiency Board desktop collapse, issue #59).
+// A global `[&>*]:shrink-0` child lock stops every flex child from shrinking,
+// so a wide actions block squeezes the title to min-content (one letter per
+// line). Actions must wrap/scroll inside their own capped container instead.
+// Same Literal + TemplateElement pairing as ANTISLOP so interpolation can't
+// evade it. Test/spec files are excluded from this block (see below) because
+// they assert the absence of the pattern.
+const HEADER_SQUEEZE = [
+  {
+    "selector": "Literal[value=/\\[&>\\*\\]:shrink-0/]",
+    "message": "No global `[&>*]:shrink-0` child lock: it prevents flex children from shrinking and squeezes titles to min-content. Cap + wrap the actions container instead (`sm:max-w-[58%] sm:flex-wrap sm:justify-end`). Add an `// eslint-disable-next-line no-restricted-syntax -- <reason>` only with a proven need."
+  },
+  {
+    "selector": "TemplateElement[value.raw=/\\[&>\\*\\]:shrink-0/]",
+    "message": "No global `[&>*]:shrink-0` child lock (template-literal part): cap + wrap the actions container instead."
+  },
+];
+
 export default tseslint.config(
   { ignores: ['dist', 'dist-whitelabel'] },
   {
@@ -142,6 +160,7 @@ export default tseslint.config(
         ...RENDER_BODY_SETTERS,
         CONSTANT_BOOLEAN,
         ...ANTISLOP,
+        ...HEADER_SQUEEZE,
       ],
     },
   },
