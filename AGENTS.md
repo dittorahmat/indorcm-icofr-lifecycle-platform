@@ -116,6 +116,7 @@ Setiap kali melakukan penambahan komponen, modifikasi antarmuka frontend, menyel
     *   Unix `head`/`tail` do not exist in PowerShell — use `Select-Object -First/-Last` (or `Get-Content ... | Select-Object`), and only on files already written to disk, never on live heavy-command output.
     *   Run `type-check` per tsconfig (`tsconfig.app.json`, then `tsconfig.worker.json`) instead of the combined script when memory is constrained.
     *   If Node itself OOMs (JS heap), raise the heap first: `$env:NODE_OPTIONS="--max-old-space-size=4096"`.
+    *   If `vite build` dies during chunk rendering with esbuild `fatal error: runtime: cannot allocate memory` (observed 2026-10-13: 1313 modules transformed, then native OOM), it is container RAM, not code: validate bundling with `npx vite build --minify false` and treat CI as the final build gate.
     *   NEVER run two heavy commands in parallel (e.g. `build` + `test` at once) — concurrent Node processes exhaust OS RAM and crash with native `node::Realloc` assertion failures. Run them sequentially.
 
 ## Agent skills
