@@ -1,6 +1,6 @@
 import { MarkerType } from 'reactflow';
 import type { Edge, Node } from 'reactflow';
-import { canonicalizeHandleId } from '@/components/rcm/edges/geometry/bpm-geometry';
+import { canonicalizeHandleId } from '@/utils/bpm-constants';
 import {
   deriveLabelFromId,
   layoutOcrDiagram,

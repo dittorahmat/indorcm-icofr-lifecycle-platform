@@ -1,23 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { render } from '@testing-library/react';
-import { ReactFlowProvider } from 'reactflow';
-import type { ReactNode } from 'react';
+import {
+  renderBpmNode as renderNode,
+  renderedHandleIds as handleIds,
+  bpmNodeWrapperProps as wrapperProps,
+} from '@/test/render-bpm-node';
 import { ActivityNode, DecisionNode, StartEndNode } from '../ProcessNodes';
-
-function renderNode(ui: ReactNode) {
-  return render(<ReactFlowProvider>{ui}</ReactFlowProvider>);
-}
-
-function handleIds(container: HTMLElement): string[] {
-  return Array.from(container.querySelectorAll('[data-handleid]'))
-    .map((el) => el.getAttribute('data-handleid') || '')
-    .filter(Boolean);
-}
 
 const activityData = { label: 'Kerja', role: 'Staf', isLocked: false };
 const decisionData = { label: 'Setuju?', isLocked: false };
-// React Flow v11 NodeProps carries wrapper positioning props; tests supply fixtures.
-const wrapperProps = { zIndex: 10, isConnectable: true, xPos: 0, yPos: 0, dragging: false };
 
 describe('node connection handles (canonical DOM coverage)', () => {
   it('activity exposes the full 8-point canonical set', () => {
