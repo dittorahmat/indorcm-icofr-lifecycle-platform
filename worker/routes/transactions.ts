@@ -2,10 +2,10 @@ import { Hono } from "hono";
 import type { HonoEnv } from '../app';
 import { ok, bad, notFound } from '../lib/utils';
 import { getDb } from '../db';
-import { 
+import {
   transactionDetails, transactionUploads
 } from '../db/schema';
-import { eq, and, sql, gte, lte } from 'drizzle-orm';
+import { eq, and, sql, gte, lte, SQL } from 'drizzle-orm';
 
 const transactions = new Hono<HonoEnv>();
 
@@ -117,6 +117,20 @@ transactions.delete('/transaction-details/:noGL', async (c) => {
 
   await db.delete(transactionDetails).where(deleteConditions);
   return ok(c, { success: true });
+});
+
+transactions.get('/transaction-uploads', async (c) => {
+  const db = getDb(c.env.DATABASE_URL);
+  const orgId = c.get('organizationId');
+  const noGL = c.req.query('noGL');
+
+  let conditions: SQL = eq(transactionUploads.organizationId, orgId);
+  if (noGL) {
+    conditions = and(conditions, eq(transactionUploads.noGL, noGL)) as SQL;
+  }
+
+  const items = await db.select().from(transactionUploads).where(conditions);
+  return ok(c, { items });
 });
 
 transactions.post('/transaction-details/upload', async (c) => {

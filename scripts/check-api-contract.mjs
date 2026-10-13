@@ -309,11 +309,6 @@ const { calls, unresolved } = collectFrontend();
 // ':param' wildcards any single segment.
 const ALLOWLIST = [
   { method: 'PUT', path: ['csa', ':param'], reason: 'PUT /csa/:id lands with feat/csa-unassessed-worklist; drop after merge' },
-  { method: 'PUT', path: ['controls', ':param', 'bpm-update'], reason: 'suspected dead call in BPMWorksheet (backend serves PUT /controls/:id); product triage pending' },
-  { method: 'GET', path: ['transaction-uploads'], reason: 'history fetch 404s on modal open; product triage pending' },
-  { method: 'POST', path: ['client-errors'], reason: 'telemetry endpoint never built; client re-queues on failure — decide drop vs build' },
-  { method: 'DELETE', path: ['notifications'], reason: 'clear-all should be POST /notifications/clear-all; confirm intended verb' },
-  { method: 'DELETE', path: ['dev', 'purge-scoping'], reason: 'backend serves POST /dev/purge-scoping; confirm intended verb' },
 ];
 
 function allowlisted(call) {

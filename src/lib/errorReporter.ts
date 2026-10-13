@@ -119,19 +119,11 @@ class ErrorReporter {
   private async flush(): Promise<void> {
     if (this.queue.length === 0 || !this.isEnabled) return;
 
-    const currentQueue = [...this.queue];
+    // Sink unwired: no POST /api/client-errors backend exists, so a flush
+    // would only produce 404 noise and drop the batch anyway. Park the batch
+    // here (bounded by maxQueueSize) until a telemetry sink is built.
+    // See issue #73 before re-enabling network delivery.
     this.queue = [];
-
-    try {
-      await fetch("/api/client-errors", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(currentQueue),
-      });
-    } catch (e) {
-      // Restore queue in case of network failure, avoiding console.error call to prevent potential circular log loops
-      this.queue = [...currentQueue, ...this.queue].slice(0, this.maxQueueSize);
-    }
   }
 
   public dispose(): void {
