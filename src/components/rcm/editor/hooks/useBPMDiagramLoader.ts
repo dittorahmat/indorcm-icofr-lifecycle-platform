@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { MarkerType } from 'reactflow';
 import type { Edge, Node } from 'reactflow';
+import { canonicalizeHandleId } from '@/components/rcm/edges/geometry/bpm-geometry';
 
 interface DiagramLike {
   nodes?: Node[];
@@ -76,6 +77,14 @@ export function useBPMDiagramLoader({
       setEdges(
         (diagram.edges || []).map((edge) => ({
           ...edge,
+          // Repair-on-load (once per diagram): legacy OCR edges may persist
+          // non-existent handle ids (source `left`, target `right`, ...).
+          // Map them to the canonical canvas ids; unknown handles drop to
+          // undefined so geometry fallback derives the side from positions.
+          sourceHandle:
+            (edge.sourceHandle ? canonicalizeHandleId(edge.sourceHandle, true) : null) ?? undefined,
+          targetHandle:
+            (edge.targetHandle ? canonicalizeHandleId(edge.targetHandle, false) : null) ?? undefined,
           type: 'bridge',
           markerEnd: {
             type: MarkerType.ArrowClosed,

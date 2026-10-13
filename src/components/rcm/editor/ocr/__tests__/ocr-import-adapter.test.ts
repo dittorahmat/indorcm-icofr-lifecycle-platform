@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import type { Node, Edge } from 'reactflow';
 import type { OcrRawNode, OcrRawEdge } from '@/utils/ocr-layout';
-import { stageRawDiagram } from '../ocr-node-normalize';
+import { stageRawDiagram, normalizeRawEdges } from '../ocr-node-normalize';
 import { applyOcrImport, buildOcrSheets } from '../ocr-import-adapter';
 
 function pageOneRaw(): { nodes: OcrRawNode[]; edges: OcrRawEdge[] } {
@@ -191,5 +191,50 @@ describe('ocr-import-adapter seam', () => {
       activePage: 1,
     });
     expect(out.kind).toBe('canvas');
+  });
+
+  it('repairs legacy handle aliases to the canonical canvas ids', () => {
+    const edges = normalizeRawEdges([
+      { id: 'e1', source: 'a', target: 'b', sourceHandle: 'left', targetHandle: 'right' },
+      { id: 'e2', source: 'a', target: 'b', sourceHandle: 'top', targetHandle: 'bottom' },
+      { id: 'e3', source: 'a', target: 'b', sourceHandle: 'right', targetHandle: 'left' },
+    ]);
+    expect(edges[0].sourceHandle).toBe('left-src');
+    expect(edges[0].targetHandle).toBe('right-tgt');
+    expect(edges[1].sourceHandle).toBe('top-src');
+    expect(edges[1].targetHandle).toBe('bottom-tgt');
+    expect(edges[2].sourceHandle).toBe('right');
+    expect(edges[2].targetHandle).toBe('left');
+  });
+
+  it('emits only canonical handle ids from the staged diagram', () => {
+    const { edges } = staged(pageOneRaw());
+    const canonicalSource = new Set([
+      'top-src',
+      'bottom',
+      'left-src',
+      'right',
+      't-l-src',
+      't-r-src',
+      'b-l-src',
+      'b-r-src',
+      'no',
+      'yes',
+    ]);
+    const canonicalTarget = new Set([
+      'top',
+      'bottom-tgt',
+      'left',
+      'right-tgt',
+      't-l',
+      't-r',
+      'b-l',
+      'b-r',
+    ]);
+    expect(edges.length).toBeGreaterThan(0);
+    for (const e of edges) {
+      if (e.sourceHandle) expect(canonicalSource.has(String(e.sourceHandle))).toBe(true);
+      if (e.targetHandle) expect(canonicalTarget.has(String(e.targetHandle))).toBe(true);
+    }
   });
 });
