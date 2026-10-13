@@ -100,7 +100,10 @@
     "multiControl": "Tabel CSA Multi-Kontrol",
     "zeroTolerance": "Zero Tolerance: Satu kegagalan mengakibatkan status Ineffective.",
     "evidenceCount": "Poin Verifikasi",
-    "submit": "Submit & Sign-off (Manager)"
+    "submit": "Submit & Sign-off (Manager)",
+    "draftSaved": "Draft berhasil disimpan",
+    "signOffSuccess": "CSA Sign-off berhasil",
+    "saveFailed": "Gagal menyimpan CSA: {{message}}"
   },
   "upload": {
     "instruction": "Sesuai SK-5 Bab IV, lampirkan detail transaksi (ERP snippet) untuk mendukung sampling audit.",

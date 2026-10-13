@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { CSARecord, BPMDiagram, BPMProcess } from '@shared/types';
 import { promptBiometricAuth } from '@/lib/forensic-utils';
 import { useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useCSAForm, CSAFormValues } from './csa/use-csa-form';
 export type { CSAFormValues };
 import { useCSADiagramLink } from './csa/use-csa-diagram-link';
@@ -25,6 +26,7 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
   const confirm = useConfirm();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
+  const { t } = useTranslation(['csa_hub']);
   const [view, setView] = useState<'list' | 'form'>('list');
   const [activeCsaId, setActiveCsaId] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -204,7 +206,7 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
       return api<CSARecord>(url, { method, body: JSON.stringify(data) });
     },
     onSuccess: (response: any, variables: any) => {
-      toast.success(variables.isDraft ? "Draft saved successfully" : "CSA Sign-off successful");
+      toast.success(variables.isDraft ? t('assessment.draftSaved') : t('assessment.signOffSuccess'));
       queryClient.invalidateQueries({ queryKey: ['csa-list'] });
       queryClient.invalidateQueries({ queryKey: ['csa-schedules'] });
       
@@ -218,7 +220,14 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
         setActiveCsaId(id);
         form.reset(form.getValues(), { keepDirty: false });
       }
-    }
+    },
+    onError: (err: unknown) => {
+      toast.error(
+        t('assessment.saveFailed', {
+          message: err instanceof Error ? err.message : String(err),
+        }),
+      );
+    },
   });
 
   const uploadMutation = useMutation({

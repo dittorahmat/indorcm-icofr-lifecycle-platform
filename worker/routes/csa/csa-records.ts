@@ -41,8 +41,23 @@ csaRecordsRoute.post('/csa', async (c) => {
   return ok(c, result);
 });
 
-csaRecordsRoute.post('/csa/:id/workflow', async (c) => {
+csaRecordsRoute.put('/csa/:id', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
+  const orgId = c.get('organizationId');
+  const userId = c.get('userId');
+  const id = c.req.param('id');
+  const existing = await db.select({ id: csaRecords.id }).from(csaRecords).where(and(
+    eq(csaRecords.id, id),
+    eq(csaRecords.organizationId, orgId)
+  )).limit(1);
+  if (existing.length === 0) return notFound(c, 'CSA Record not found');
+  const body = await c.req.json<any>();
+  const service = new CsaDomainService(db);
+  const result = await service.saveCsaRecord(orgId, userId, { ...body, id }, c.env);
+  return ok(c, result);
+});
+
+csaRecordsRoute.post('/csa/:id/workflow', async (c) => {  const db = getDb(c.env.DATABASE_URL);
   const id = c.req.param('id');
   const body = await c.req.json<{ action: WorkflowAction; note?: string; assigneeId?: string }>();
 

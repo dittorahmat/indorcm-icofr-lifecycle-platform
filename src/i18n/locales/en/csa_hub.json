@@ -100,7 +100,10 @@
     "multiControl": "Multi-Control CSA Table",
     "zeroTolerance": "Zero Tolerance: Any failure results in Ineffective status.",
     "evidenceCount": "Verification Points",
-    "submit": "Submit & Sign-off (Manager)"
+    "submit": "Submit & Sign-off (Manager)",
+    "draftSaved": "Draft saved successfully",
+    "signOffSuccess": "CSA Sign-off successful",
+    "saveFailed": "Failed to save CSA: {{message}}"
   },
   "upload": {
     "instruction": "Per SK-5 Chapter IV, attach transaction details (ERP snippet) to support audit sampling.",
