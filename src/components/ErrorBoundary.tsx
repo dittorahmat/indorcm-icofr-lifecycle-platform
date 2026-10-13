@@ -1,5 +1,4 @@
 import React, { Component, ErrorInfo, ReactNode } from "react";
-import { errorReporter } from "@/lib/errorReporter";
 import { ErrorFallback } from "./ErrorFallback";
 
 interface Props {
@@ -29,22 +28,9 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // Update state with error info
+    // Update state with error info (rendered via ErrorFallback; client
+    // telemetry was removed — no sink ever existed — see issue #73).
     this.setState({ errorInfo });
-
-    // Report error to backend
-    errorReporter.report({
-      message: error.message,
-      stack: error.stack || "",
-      componentStack: errorInfo.componentStack,
-      errorBoundary: true,
-      errorBoundaryProps: {
-        componentName: this.constructor.name,
-      },
-      url: window.location.href,
-      timestamp: new Date().toISOString(),
-      level: "error",
-    });
   }
 
   private retry = () => {

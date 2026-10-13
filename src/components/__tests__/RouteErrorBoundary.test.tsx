@@ -9,12 +9,6 @@ vi.mock('react-router-dom', () => ({
   isRouteErrorResponse: vi.fn().mockReturnValue(false),
 }));
 
-vi.mock('@/lib/errorReporter', () => ({
-  errorReporter: {
-    report: vi.fn(),
-  },
-}));
-
 describe('RouteErrorBoundary', () => {
   const originalLocation = window.location;
 
