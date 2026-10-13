@@ -1,8 +1,8 @@
 // scripts/check-any-delta.mjs — "no new `any`" gate (no deps, runs on plain node).
 // Usage:
-//   node scripts/check-any-delta.mjs <touched-files...>
+//   node scripts/check-any-delta.mjs [--base <ref>] <touched-files...>
 // Fails when a touched file contains MORE `any`/escape-cast occurrences than
-// its HEAD version. New files are compared against a zero baseline.
+// its <base> version (default HEAD). New files are compared against a zero baseline.
 // Deleted/unreadable files are skipped.
 import { readFileSync } from 'node:fs';
 import { execSync } from 'node:child_process';
@@ -21,17 +21,28 @@ function countSmells(text) {
   return n;
 }
 
-function headContent(path) {
+function headContent(path, base) {
   try {
-    return execSync('git show HEAD:' + JSON.stringify(path), { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'] });
+    return execSync('git show ' + base + ':' + JSON.stringify(path), { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'] });
   } catch {
     return null;
   }
 }
 
-const files = process.argv.slice(2).filter((a) => a !== '--all');
+let base = 'HEAD';
+const files = [];
+{
+  const args = process.argv.slice(2);
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--base' && args[i + 1]) {
+      base = args[++i];
+    } else if (args[i] !== '--all' && !args[i].startsWith('--')) {
+      files.push(args[i]);
+    }
+  }
+}
 if (files.length === 0) {
-  console.log('check-any-delta: no files given. Usage: node scripts/check-any-delta.mjs <files...>');
+  console.log('check-any-delta: no files given. Usage: node scripts/check-any-delta.mjs [--base <ref>] <files...>');
   process.exit(1);
 }
 
@@ -44,8 +55,8 @@ for (const f of files) {
     console.log('SKIP  ' + f + ' (unreadable, likely deleted)');
     continue;
   }
-  const base = headContent(f);
-  const baseCount = base === null ? 0 : countSmells(base);
+  const baseText = headContent(f, base);
+  const baseCount = baseText === null ? 0 : countSmells(baseText);
   const nowCount = countSmells(now);
   if (nowCount > baseCount) {
     console.log('FAIL  ' + f + ' — any/escape-cast ' + baseCount + ' -> ' + nowCount + ' (+' + (nowCount - baseCount) + ')');
