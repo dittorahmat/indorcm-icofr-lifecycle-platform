@@ -17,6 +17,7 @@ describe('transactions barrel routes', () => {
 
     expect(routePaths).toContain('GET /transaction-details');
     expect(routePaths).toContain('POST /transaction-details');
+    expect(routePaths).toContain('GET /transaction-uploads');
     expect(routePaths).toContain('DELETE /transaction-details/:noGL');
     expect(routePaths).toContain('POST /transaction-details/upload');
   });

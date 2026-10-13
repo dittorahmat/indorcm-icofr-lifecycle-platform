@@ -109,10 +109,13 @@ export function NotificationsPage() {
   });
 
   const clearAllMutation = useMutation({
-    mutationFn: () => api('/api/notifications', { method: 'DELETE' }),
+    mutationFn: () => api('/api/notifications/clear-all', { method: 'POST' }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications-full'] });
       toast.success(t('notifications.clearAll'));
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : t('common:notifications.error'));
     },
   });
 
