@@ -25,6 +25,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          # Full history: the delta gates diff the PR against its base.
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -43,6 +46,24 @@ jobs:
 
       - name: Test
         run: npm test
+
+      - name: Repo gates (delta + API contract)
+        # any-delta / i18n compare the PR diff against its base; the API
+        # contract is whole-tree and runs on every event. check:loc stays
+        # local-only: grandfathered >400 LOC bug-fixes need human judgement,
+        # which CI cannot supply (see docs/agents/guardrails.md).
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE="origin/${{ github.base_ref }}"
+          else
+            BASE="HEAD~1"
+          fi
+          FILES=$(git diff --name-only "$BASE"...HEAD -- src shared worker scripts 2>/dev/null | tr '\n' ' ' || true)
+          if [ -n "$FILES" ]; then
+            node scripts/check-any-delta.mjs --base "$BASE" $FILES
+            node scripts/check-i18n.mjs --base "$BASE" $FILES
+          fi
+          node scripts/check-api-contract.mjs
 
       - name: Setup Bun (lockfile sync check)
         uses: oven-sh/setup-bun@v2

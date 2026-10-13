@@ -138,3 +138,34 @@ describe('User Preferences API Routes', () => {
     expect(mockUpdate).toHaveBeenCalled();
   });
 });
+
+describe('users barrel URL lock', () => {
+  it('keeps every users URL byte-identical', async () => {
+    const mod = await import('../users');
+    const routePaths = (mod.default.routes as Array<{ method: string; path: string }>).map(
+      (r) => `${r.method} ${r.path}`,
+    );
+
+    expect(routePaths).toContain('GET /user/me');
+    expect(routePaths).toContain('GET /user/preferences');
+    expect(routePaths).toContain('PUT /user/preferences');
+    expect(routePaths).toContain('GET /users');
+    expect(routePaths).toContain('POST /users');
+    expect(routePaths).toContain('PUT /users/:id');
+    expect(routePaths).toContain('DELETE /users/:id');
+    expect(routePaths).toContain('GET /departments');
+    expect(routePaths).toContain('POST /departments');
+    expect(routePaths).toContain('PUT /departments/:id');
+    expect(routePaths).toContain('DELETE /departments/:id');
+    expect(routePaths).toContain('PUT /user/profile');
+    expect(routePaths).toContain('GET /settings');
+    expect(routePaths).toContain('PUT /settings');
+    expect(routePaths).toContain('POST /settings/test-email');
+    expect(routePaths).toContain('POST /settings/test-webhook');
+    expect(routePaths).toContain('GET /users/me/notification-preferences');
+    expect(routePaths).toContain('PUT /users/me/notification-preferences');
+    expect(routePaths).toContain('POST /dev/re-seed');
+    expect(routePaths).toContain('POST /dev/purge-all');
+    expect(routePaths).toContain('POST /dev/purge-scoping');
+  });
+});

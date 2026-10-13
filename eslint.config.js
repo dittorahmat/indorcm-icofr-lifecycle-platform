@@ -4,6 +4,7 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 import importPlugin from 'eslint-plugin-import'
+import localRules from './eslint-local/index.js'
 
 // Render-body state-setter guards (shared by the base and anti-slop blocks below).
 const RENDER_BODY_SETTERS = [
@@ -105,6 +106,7 @@ export default tseslint.config(
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
       'import': importPlugin,
+      'local': localRules,
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
@@ -151,10 +153,14 @@ export default tseslint.config(
   // Mechanical anti-slop enforcement for product frontend code. Test files
   // assert the absence of these patterns via string literals, so they are
   // excluded here (their assertions are the complementary enforcement).
+  // local/mutation-requires-onerror stays warn-first (legacy baseline: 50
+  // sites at introduction) — reviewer enforces onError on touched code per
+  // CODING_STANDARDS.md; escalate to error once the baseline burns to zero.
   {
     files: ['src/**/*.{ts,tsx}'],
     ignores: ['**/*.test.*', '**/*.spec.*', 'src/test/**'],
     rules: {
+      'local/mutation-requires-onerror': 'warn',
       "no-restricted-syntax": [
         "error",
         ...RENDER_BODY_SETTERS,

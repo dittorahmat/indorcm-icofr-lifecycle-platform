@@ -2,6 +2,13 @@
 
 Issues and specs for this repo live as GitHub issues. Use the `gh` CLI for all operations.
 
+## CLI version notes
+
+- `gh issue create` has **no `--json` flag** (at least through 2.83): capture the
+  printed URL and extract the number instead of `--json number --jq .number`.
+- Sub-issues need `gh` 2.94+ for `--parent`; on older CLIs use the `Part of #<parent>`
+  fallback below.
+
 ## Conventions
 
 - **Create an issue**: `gh issue create --title "..." --body "..."`. Use a heredoc for multi-line bodies.

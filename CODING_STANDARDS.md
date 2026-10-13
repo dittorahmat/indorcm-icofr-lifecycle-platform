@@ -23,6 +23,17 @@ Check: for every code crossing a seam in the diff, point at the single
 producer module and at one test per consuming side asserting the literal.
 Precedents: `SuggestGateReason`, `TestingDecisionCode`, `DeficiencySource`.
 
+## Write mutations surface failures
+
+Every `useMutation` that performs a write must carry an `onError` handler
+surfacing the server error to the user (toast). Silent failures lose user
+data — the missing-PUT post-mortem was only visible in the console.
+Enforcement is split: `local/mutation-requires-onerror` (warn-first in
+`eslint.config.js`; run plain `npx eslint` to see the baseline) flags the
+pattern mechanically, and the reviewer requires `onError` on every touched
+call site. Legacy sites burn down boy-scout on touch; escalate the rule to
+`error` once the baseline hits zero.
+
 ## Handling a new Knip finding (`npm run knip`)
 
 Warn-first: a finding never fails CI by itself. For each new finding, do
