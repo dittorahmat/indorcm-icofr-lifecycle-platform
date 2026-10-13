@@ -244,8 +244,7 @@
     }
   },
   "page": {
-    "title": "Laporan CSA & Proses TOE",
-    "description": "Arsip historis Control Self-Assessment. Gunakan modul ini untuk melakukan verifikasi desain regulatif (Lampiran 8) untuk akuntabilitas Lini 2.",
+    "title": "Laporan CSA & Proses TOE",    "description": "Arsip historis Control Self-Assessment. Gunakan modul ini untuk melakukan verifikasi desain regulatif (Lampiran 8) untuk akuntabilitas Lini 2.",
     "searchPlaceholder": "Cari berdasarkan sub-proses atau periode...",
     "filtersTitle": "Pencarian & Filter",
     "modeBadge": "Auditor Lini 2",
@@ -278,6 +277,26 @@
       "uploadError": "Gagal mengunggah. File tetap tersimpan untuk dicoba lagi.",
       "openEvidence": "Buka bukti",
       "attachedCount": "{{count}} bukti terlampir"
+    },
+    "tabs": {
+      "assessed": "Sudah Dinilai",
+      "unassessed": "Belum Dinilai"
+    },
+    "worklist": {
+      "loading": "Memuat daftar control...",
+      "error": "Gagal memuat daftar control.",
+      "retry": "Coba Lagi",
+      "emptyNoControls": "Belum ada control untuk tahun ini. Impor RCM terlebih dahulu.",
+      "emptyAllAssessed": "Semua control tahun ini sudah dinilai.",
+      "count": "{{count}} control belum dinilai",
+      "cta": "Lakukan CSA",
+      "table": {
+        "process": "Sub-Proses Bisnis",
+        "code": "Kode",
+        "control": "Control",
+        "risk": "Risiko",
+        "action": "Aksi"
+      }
     }
   }
 }

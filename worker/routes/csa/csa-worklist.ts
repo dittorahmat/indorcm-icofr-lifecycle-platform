@@ -33,6 +33,7 @@ csaWorklistRoute.get('/csa/worklist', async (c) => {
       name: controls.name,
       level: controls.level,
       bpmProcessName: bpmProcesses.name,
+      noGL: bpmProcesses.noGL,
     })
     .from(controls)
     .leftJoin(bpmProcesses, eq(controls.bpmProcessId, bpmProcesses.id))
@@ -88,8 +89,9 @@ csaWorklistRoute.get('/csa/worklist', async (c) => {
     level: item.level,
     bpmProcessId: item.bpmProcessId,
     bpmProcessName: item.bpmProcessName,
+    noGL: item.noGL,
     riskDescription: riskByControl.get(item.id) ?? null,
   }));
 
-  return ok(c, { items });
+  return ok(c, { items, totalControls: controlRows.length });
 });

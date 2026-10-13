@@ -43,7 +43,14 @@ export interface CSAWorklistItem {
   level: string | null;
   bpmProcessId: string | null;
   bpmProcessName: string | null;
+  noGL: string | null;
   riskDescription: string | null;
+}
+
+/** Respons endpoint worklist: item belum-dinilai + total control tahun itu. */
+export interface CSAWorklistResponse {
+  items: CSAWorklistItem[];
+  totalControls: number;
 }
 
 export type TestSample = InferSelectModel<typeof schema.testSamples>;

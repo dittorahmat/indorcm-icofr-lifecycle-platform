@@ -14,18 +14,18 @@ export interface WorklistItemLike {
   name: string;
 }
 
-export interface WorklistGroup {
+export interface WorklistGroup<T extends WorklistItemLike = WorklistItemLike> {
   key: string;
   title: string | null;
-  items: WorklistItemLike[];
+  items: T[];
 }
 
 export type WorklistEmptyKind = 'no-controls' | 'all-assessed';
 
 const UNLINKED_KEY = 'unlinked';
 
-export function groupWorklistByProcess(items: WorklistItemLike[]): WorklistGroup[] {
-  const groups = new Map<string, WorklistGroup>();
+export function groupWorklistByProcess<T extends WorklistItemLike>(items: T[]): WorklistGroup<T>[] {
+  const groups = new Map<string, WorklistGroup<T>>();
   for (const item of items) {
     const key = item.bpmProcessId ?? UNLINKED_KEY;
     const existing = groups.get(key);
