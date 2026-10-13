@@ -48,6 +48,7 @@ import { BPMEditor } from '../rcm/BPMEditor';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
+import { useWorksheetControlUpdate } from './use-worksheet-control-update';
 import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 import { useUnsavedChangesContext } from '@/context/UnsavedChangesContext';
 import { useConfirm } from '@/hooks/use-confirm';
@@ -180,13 +181,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
     }
   });
 
-  const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string, data: Partial<Control> }) => 
-      api(`/api/controls/${id}/bpm-update`, { method: 'PUT', body: JSON.stringify(data) }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bpm-controls'] });
-    }
-  });
+  const updateMutation = useWorksheetControlUpdate();
 
   const [standardProcedure, setStandardProcedure] = React.useState("");
   const [bpmCode, setBpmCode] = React.useState("");

@@ -17,6 +17,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useConfirm } from '@/hooks/use-confirm';
+import { usePurgeScoping } from './use-purge-scoping';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
@@ -77,6 +78,7 @@ export function ScopingPage() {
   } = useScopingPage();
 
   const confirm = useConfirm();
+  const { purgeScoping } = usePurgeScoping();
   const [isImportWizardOpen, setIsImportWizardOpen] = React.useState(false);
   const [isRolloverOpen, setIsRolloverOpen] = React.useState(false);
 
@@ -227,19 +229,7 @@ export function ScopingPage() {
                   variant="destructive"
                   size="sm"
                   className="gap-2 h-11 sm:h-8 min-h-[44px] sm:min-h-0 w-full sm:w-auto font-bold text-xs uppercase tracking-widest bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-100 transition-all shadow-none rounded-md"
-                  onClick={async () => {
-                    const ok = await confirm({
-                      title: t('scoping:resetDataButton'),
-                      description: t('scoping:purgeConfirm'),
-                      variant: 'destructive'
-                    });
-                    if (ok) {
-                      api('/api/dev/purge-scoping', { method: 'DELETE' }).then(() => {
-                        queryClient.invalidateQueries();
-                        toast.success(t('common:notifications.purged'));
-                      });
-                    }
-                  }}
+                  onClick={() => void purgeScoping()}
                 >
                   <Trash2 className="h-3.5 w-3.5" /> {t('scoping:resetDataButton')}
                 </Button>

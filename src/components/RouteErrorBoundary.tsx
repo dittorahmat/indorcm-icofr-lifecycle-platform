@@ -1,44 +1,10 @@
 import { useRouteError, isRouteErrorResponse } from 'react-router-dom';
-import { useEffect } from 'react';
-import { errorReporter } from '@/lib/errorReporter';
 import { isChunkLoadError, clearChunkReloadGuards } from '@/lib/lazyWithRetry';
 import { ErrorFallback } from './ErrorFallback';
 
 export function RouteErrorBoundary() {
   const error = useRouteError();
   const isChunkError = isChunkLoadError(error);
-
-  useEffect(() => {
-    if (error) {
-      let errorMessage = 'Unknown route error';
-      let errorStack = '';
-
-      if (isRouteErrorResponse(error)) {
-        errorMessage = `Route Error ${error.status}: ${error.statusText}`;
-        if (error.data) {
-          errorMessage += ` - ${JSON.stringify(error.data)}`;
-        }
-      } else if (error instanceof Error) {
-        errorMessage = error.message;
-        errorStack = error.stack || '';
-      } else if (typeof error === 'string') {
-        errorMessage = error;
-      } else {
-        errorMessage = JSON.stringify(error);
-      }
-
-      errorReporter.report({
-        message: errorMessage,
-        stack: errorStack,
-        url: window.location.href,
-        timestamp: new Date().toISOString(),
-        source: 'react-router',
-        category: isChunkError ? 'network' : 'client',
-        error: error,
-        level: "error",
-      });
-    }
-  }, [error, isChunkError]);
 
   // Render error UI using shared ErrorFallback component
   if (isRouteErrorResponse(error)) {
