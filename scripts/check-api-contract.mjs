@@ -308,7 +308,6 @@ const { calls, unresolved } = collectFrontend();
 // follow-up. New unmatched calls still fail. Paths are post-/api segments,
 // ':param' wildcards any single segment.
 const ALLOWLIST = [
-  { method: 'PUT', path: ['csa', ':param'], reason: 'PUT /csa/:id lands with feat/csa-unassessed-worklist; drop after merge' },
 ];
 
 function allowlisted(call) {
