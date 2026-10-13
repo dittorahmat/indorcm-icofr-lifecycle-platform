@@ -33,6 +33,24 @@ export interface CSARecord extends Omit<InferSelectModel<typeof schema.csaRecord
   assessmentDate: number;
   capturedAt: number | null;
   line2ValidatedDate: number | null;
+};
+
+/** Satu baris worklist "Belum Dinilai" CSA hub: control tanpa record non-draft. */
+export interface CSAWorklistItem {
+  controlId: string;
+  code: string;
+  name: string;
+  level: string | null;
+  bpmProcessId: string | null;
+  bpmProcessName: string | null;
+  noGL: string | null;
+  riskDescription: string | null;
+}
+
+/** Respons endpoint worklist: item belum-dinilai + total control tahun itu. */
+export interface CSAWorklistResponse {
+  items: CSAWorklistItem[];
+  totalControls: number;
 }
 
 export type TestSample = InferSelectModel<typeof schema.testSamples>;

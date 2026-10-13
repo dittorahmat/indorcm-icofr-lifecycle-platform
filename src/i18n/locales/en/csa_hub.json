@@ -100,7 +100,10 @@
     "multiControl": "Multi-Control CSA Table",
     "zeroTolerance": "Zero Tolerance: Any failure results in Ineffective status.",
     "evidenceCount": "Verification Points",
-    "submit": "Submit & Sign-off (Manager)"
+    "submit": "Submit & Sign-off (Manager)",
+    "draftSaved": "Draft saved successfully",
+    "signOffSuccess": "CSA Sign-off successful",
+    "saveFailed": "Failed to save CSA: {{message}}"
   },
   "upload": {
     "instruction": "Per SK-5 Chapter IV, attach transaction details (ERP snippet) to support audit sampling.",
@@ -275,6 +278,38 @@
       "uploadError": "Upload failed. The file is kept so you can retry.",
       "openEvidence": "Open evidence",
       "attachedCount": "{{count}} evidence attached"
+    },
+    "tabs": {
+      "assessed": "Assessed",
+      "unassessed": "Unassessed"
+    },
+    "worklist": {
+      "loading": "Loading control list...",
+      "error": "Failed to load the control list.",
+      "retry": "Retry",
+      "emptyNoControls": "No controls for this year yet. Import the RCM first.",
+      "emptyAllAssessed": "All controls for this year have been assessed.",
+      "count": "{{count}} controls unassessed",
+      "cta": "Start CSA",
+      "table": {
+        "process": "Business Sub-Process",
+        "code": "Code",
+        "control": "Control",
+        "risk": "Risk",
+        "action": "Action"
+      },
+      "searchPlaceholder": "Search sub-process, control, or code...",
+      "ctaReadOnly": "Only Line 1 can start a CSA"
+    },
+    "row": {
+      "pdfLoading": "Generating PDF Report...",
+      "pdfFailed": "Failed to generate PDF",
+      "pdfDone": "PDF exported successfully",
+      "xlsLoading": "Generating Excel Report...",
+      "xlsFailed": "Failed to generate Excel",
+      "xlsDone": "Excel exported successfully",
+      "todSynced": "RCM Design & TOD Evaluation synced successfully",
+      "todSyncFailed": "Failed to sync design changes"
     }
   }
 }
