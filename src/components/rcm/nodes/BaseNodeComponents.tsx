@@ -57,26 +57,45 @@ export const NodeTooltip = ({ children, data, type, selected }: { children: Reac
 };
 
 // --- Universal 8-Point Connection Handles (Visio-Like) ---
-export const EightConnectionHandles = ({ isLocked, selected }: { isLocked?: boolean, selected?: boolean }) => {
+export const EightConnectionHandles = ({
+  isLocked,
+  selected,
+  sidesOnly,
+}: {
+  isLocked?: boolean;
+  selected?: boolean;
+  sidesOnly?: boolean;
+}) => {
   if (isLocked) return null;
-  const handleBase = "w-2 h-2 bg-white border border-slate-600 rounded-full shadow-sm transition-all z-20 pointer-events-auto";
-  const hoverStyle = selected 
-    ? "opacity-90 scale-110 border-primary bg-primary/20" 
+  // 8px dot, 18px hitbox via ::before so drops land easily at low zoom.
+  // Institutional radius (rounded-full only for the dot itself), semantic tokens.
+  const handleBase =
+    "relative w-2 h-2 bg-white border border-slate-600 rounded-full shadow-sm transition-all z-20 pointer-events-auto before:absolute before:-inset-[5px] before:content-['']";
+  const hoverStyle = selected
+    ? "opacity-90 scale-110 border-primary bg-primary/20"
     : "opacity-0 group-hover:opacity-70 hover:!opacity-100 hover:scale-125 hover:border-primary";
 
   return (
     <>
       {/* 1. Top Left */}
-      <Handle type="target" position={Position.Top} id="t-l" style={{ left: "0%" }} className={cn(handleBase, hoverStyle, "!translate-x-0")} />
-      <Handle type="source" position={Position.Top} id="t-l-src" style={{ left: "0%" }} className={cn(handleBase, hoverStyle, "!translate-x-0")} />
+      {!sidesOnly && (
+        <>
+          <Handle type="target" position={Position.Top} id="t-l" style={{ left: "0%" }} className={cn(handleBase, hoverStyle, "!translate-x-0")} />
+          <Handle type="source" position={Position.Top} id="t-l-src" style={{ left: "0%" }} className={cn(handleBase, hoverStyle, "!translate-x-0")} />
+        </>
+      )}
 
       {/* 2. Top Center */}
       <Handle type="target" position={Position.Top} id="top" style={{ left: "50%" }} className={cn(handleBase, hoverStyle)} />
       <Handle type="source" position={Position.Top} id="top-src" style={{ left: "50%" }} className={cn(handleBase, hoverStyle)} />
 
       {/* 3. Top Right */}
-      <Handle type="target" position={Position.Top} id="t-r" style={{ left: "100%" }} className={cn(handleBase, hoverStyle, "!-translate-x-full")} />
-      <Handle type="source" position={Position.Top} id="t-r-src" style={{ left: "100%" }} className={cn(handleBase, hoverStyle, "!-translate-x-full")} />
+      {!sidesOnly && (
+        <>
+          <Handle type="target" position={Position.Top} id="t-r" style={{ left: "100%" }} className={cn(handleBase, hoverStyle, "!-translate-x-full")} />
+          <Handle type="source" position={Position.Top} id="t-r-src" style={{ left: "100%" }} className={cn(handleBase, hoverStyle, "!-translate-x-full")} />
+        </>
+      )}
 
       {/* 4. Middle Left */}
       <Handle type="target" position={Position.Left} id="left" style={{ top: "50%" }} className={cn(handleBase, hoverStyle)} />
@@ -87,16 +106,24 @@ export const EightConnectionHandles = ({ isLocked, selected }: { isLocked?: bool
       <Handle type="source" position={Position.Right} id="right" style={{ top: "50%" }} className={cn(handleBase, hoverStyle)} />
 
       {/* 6. Bottom Left */}
-      <Handle type="target" position={Position.Bottom} id="b-l" style={{ left: "0%" }} className={cn(handleBase, hoverStyle, "!translate-x-0")} />
-      <Handle type="source" position={Position.Bottom} id="b-l-src" style={{ left: "0%" }} className={cn(handleBase, hoverStyle, "!translate-x-0")} />
+      {!sidesOnly && (
+        <>
+          <Handle type="target" position={Position.Bottom} id="b-l" style={{ left: "0%" }} className={cn(handleBase, hoverStyle, "!translate-x-0")} />
+          <Handle type="source" position={Position.Bottom} id="b-l-src" style={{ left: "0%" }} className={cn(handleBase, hoverStyle, "!translate-x-0")} />
+        </>
+      )}
 
       {/* 7. Bottom Center */}
       <Handle type="source" position={Position.Bottom} id="bottom" style={{ left: "50%" }} className={cn(handleBase, hoverStyle)} />
       <Handle type="target" position={Position.Bottom} id="bottom-tgt" style={{ left: "50%" }} className={cn(handleBase, hoverStyle)} />
 
       {/* 8. Bottom Right */}
-      <Handle type="target" position={Position.Bottom} id="b-r" style={{ left: "100%" }} className={cn(handleBase, hoverStyle, "!-translate-x-full")} />
-      <Handle type="source" position={Position.Bottom} id="b-r-src" style={{ left: "100%" }} className={cn(handleBase, hoverStyle, "!-translate-x-full")} />
+      {!sidesOnly && (
+        <>
+          <Handle type="target" position={Position.Bottom} id="b-r" style={{ left: "100%" }} className={cn(handleBase, hoverStyle, "!-translate-x-full")} />
+          <Handle type="source" position={Position.Bottom} id="b-r-src" style={{ left: "100%" }} className={cn(handleBase, hoverStyle, "!-translate-x-full")} />
+        </>
+      )}
 
       {/* Visio-like Quick Connect Directional Arrows */}
       <div className="pointer-events-none absolute inset-0 z-40 opacity-0 transition-opacity group-hover:opacity-100">

@@ -19,7 +19,12 @@ export const StartEndNode = ({ data, selected, type }: NodeProps) => {
           selected && "ring-4 border-primary shadow-lg scale-105"
         )}
       >
-        <Handle type={data.type === 'start' ? "source" : "target"} position={data.type === 'start' ? Position.Bottom : Position.Top} className="w-3 h-3 border-2 border-white bg-slate-400" />
+        <Handle
+          type={data.type === 'start' ? "source" : "target"}
+          position={data.type === 'start' ? Position.Bottom : Position.Top}
+          id={data.type === 'start' ? "bottom" : "top"}
+          className="w-3 h-3 border-2 border-white bg-slate-400"
+        />
         <span className={cn(
           "font-bold uppercase tracking-wider block whitespace-pre-wrap break-words",
           fontClass,
@@ -91,9 +96,12 @@ export const DecisionNode = ({ data, selected, type }: NodeProps) => {
     <NodeTooltip data={data} type={type} selected={selected}>
       <div 
         style={{ width: `${boxSize}px`, height: `${boxSize}px` }}
-        className={cn("relative flex items-center justify-center transition-all", selected && "scale-105")}
+        className={cn("relative flex items-center justify-center transition-all group", selected && "scale-105")}
       >
-        <Handle type="target" position={Position.Top} id="top" className="z-10" />
+        {/* Canonical side pairs so every stored handle id exists in the DOM.
+            Corners are omitted (sidesOnly): they would float outside the diamond.
+            Legacy decision aliases no/yes are kept for stored-edge compat. */}
+        <EightConnectionHandles isLocked={data.isLocked} selected={selected} sidesOnly />
         <div className={cn(
           "absolute inset-0 border-2 rotate-45 transform shadow-md flex items-center justify-center bg-white",
           selected ? "border-primary ring-4 ring-primary/20 bg-primary/5" : "border-slate-800"
@@ -102,7 +110,6 @@ export const DecisionNode = ({ data, selected, type }: NodeProps) => {
         </div>
         <Handle type="source" position={Position.Left} id="no" className="z-10" />
         <Handle type="source" position={Position.Right} id="yes" className="z-10" />
-        <Handle type="source" position={Position.Bottom} id="bottom" className="z-10" />
         {data.isLocked && (
           <div className="absolute top-0 right-0 bg-amber-50 border border-amber-200 text-amber-600 rounded-full p-0.5 shadow-sm z-20">
             <Lock className="h-3 w-3" />

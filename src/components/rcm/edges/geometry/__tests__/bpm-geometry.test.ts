@@ -6,6 +6,11 @@ import {
   distributePoint,
   resolveAbsolutePosition,
   resolveAnchor,
+  canonicalHandleForSide,
+  canonicalizeHandleId,
+  repairStoredEdgeHandles,
+  CANONICAL_SOURCE_HANDLES,
+  CANONICAL_TARGET_HANDLES,
   SAFE_HEADER_CEILING,
 } from '../bpm-geometry';
 import { getOrthogonalPath } from '../orthogonal-router';
@@ -218,6 +223,95 @@ describe('resolveAnchor (canvas snapshot to plain anchor)', () => {
       (id) => (id === 'lane-a' ? { pos: { x: 400, y: 60 } } : undefined)
     );
     expect(anchor.pos).toEqual({ x: 410, y: 70 });
+  });
+});
+
+describe('canonical handle ids (Q5 single source of truth)', () => {
+  it('exposes the canvas handle ids from EightConnectionHandles per side and role', () => {
+    expect(canonicalHandleForSide('left', true)).toBe('left-src');
+    expect(canonicalHandleForSide('left', false)).toBe('left');
+    expect(canonicalHandleForSide('right', true)).toBe('right');
+    expect(canonicalHandleForSide('right', false)).toBe('right-tgt');
+    expect(canonicalHandleForSide('top', true)).toBe('top-src');
+    expect(canonicalHandleForSide('top', false)).toBe('top');
+    expect(canonicalHandleForSide('bottom', true)).toBe('bottom');
+    expect(canonicalHandleForSide('bottom', false)).toBe('bottom-tgt');
+    expect(canonicalHandleForSide('top-left', true)).toBe('t-l-src');
+    expect(canonicalHandleForSide('top-left', false)).toBe('t-l');
+    expect(canonicalHandleForSide('top-right', true)).toBe('t-r-src');
+    expect(canonicalHandleForSide('top-right', false)).toBe('t-r');
+    expect(canonicalHandleForSide('bottom-left', true)).toBe('b-l-src');
+    expect(canonicalHandleForSide('bottom-left', false)).toBe('b-l');
+    expect(canonicalHandleForSide('bottom-right', true)).toBe('b-r-src');
+    expect(canonicalHandleForSide('bottom-right', false)).toBe('b-r');
+  });
+
+  it('keeps handles that are already canonical untouched', () => {
+    expect(canonicalizeHandleId('right', true)).toBe('right');
+    expect(canonicalizeHandleId('left', false)).toBe('left');
+    expect(canonicalizeHandleId('bottom', true)).toBe('bottom');
+    expect(canonicalizeHandleId('top', false)).toBe('top');
+    expect(canonicalizeHandleId('left-src', true)).toBe('left-src');
+    expect(canonicalizeHandleId('right-tgt', false)).toBe('right-tgt');
+  });
+
+  it('repairs legacy OCR aliases to the canonical id for the same side and role', () => {
+    expect(canonicalizeHandleId('left', true)).toBe('left-src');
+    expect(canonicalizeHandleId('right', false)).toBe('right-tgt');
+    expect(canonicalizeHandleId('top', true)).toBe('top-src');
+    expect(canonicalizeHandleId('bottom', false)).toBe('bottom-tgt');
+    expect(canonicalizeHandleId('m-l-src', true)).toBe('left-src');
+    expect(canonicalizeHandleId('m-r-src', true)).toBe('right');
+    expect(canonicalizeHandleId('t-c-src', true)).toBe('top-src');
+    expect(canonicalizeHandleId('b-c-tgt', false)).toBe('bottom-tgt');
+  });
+
+  it('maps quick-connect drag ids to the persisted canonical id', () => {
+    expect(canonicalizeHandleId('qc-top', true)).toBe('top-src');
+    expect(canonicalizeHandleId('qc-right', true)).toBe('right');
+    expect(canonicalizeHandleId('qc-bottom', true)).toBe('bottom');
+    expect(canonicalizeHandleId('qc-left', true)).toBe('left-src');
+  });
+
+  it('preserves decision node source aliases that exist in the DOM', () => {
+    expect(canonicalizeHandleId('no', true)).toBe('no');
+    expect(canonicalizeHandleId('yes', true)).toBe('yes');
+  });
+
+  it('leaves missing handles alone so geometry fallback can decide', () => {
+    expect(canonicalizeHandleId(undefined, true)).toBeNull();
+    expect(canonicalizeHandleId(null, false)).toBeNull();
+    expect(canonicalizeHandleId('mystery-handle', true)).toBeNull();
+  });
+
+  it('repairs both ends of a stored legacy OCR edge in one call', () => {
+    expect(
+      repairStoredEdgeHandles({ sourceHandle: 'left', targetHandle: 'right' }),
+    ).toEqual({ sourceHandle: 'left-src', targetHandle: 'right-tgt' });
+    expect(
+      repairStoredEdgeHandles({ sourceHandle: 'top', targetHandle: 'bottom' }),
+    ).toEqual({ sourceHandle: 'top-src', targetHandle: 'bottom-tgt' });
+    expect(
+      repairStoredEdgeHandles({ sourceHandle: 'right', targetHandle: 'left' }),
+    ).toEqual({ sourceHandle: 'right', targetHandle: 'left' });
+    expect(repairStoredEdgeHandles({})).toEqual({});
+  });
+
+  it('covers every side in both canonical tables', () => {
+    const sides = [
+      'top',
+      'bottom',
+      'left',
+      'right',
+      'top-left',
+      'top-right',
+      'bottom-left',
+      'bottom-right',
+    ] as const;
+    for (const side of sides) {
+      expect(typeof CANONICAL_SOURCE_HANDLES[side]).toBe('string');
+      expect(typeof CANONICAL_TARGET_HANDLES[side]).toBe('string');
+    }
   });
 });
 

@@ -1,5 +1,6 @@
 import { MarkerType } from 'reactflow';
 import type { Edge, Node } from 'reactflow';
+import { canonicalizeHandleId } from '@/components/rcm/edges/geometry/bpm-geometry';
 import {
   deriveLabelFromId,
   layoutOcrDiagram,
@@ -68,8 +69,8 @@ export function normalizeRawEdges(edges: OcrRawEdge[]): Edge[] {
     id: e.id,
     source: e.source,
     target: e.target,
-    sourceHandle: e.sourceHandle,
-    targetHandle: e.targetHandle,
+    sourceHandle: canonicalizeHandleId(e.sourceHandle, true) ?? undefined,
+    targetHandle: canonicalizeHandleId(e.targetHandle, false) ?? undefined,
     label: e.label || '',
     ...bridgeEdgeStyle(),
   }));
