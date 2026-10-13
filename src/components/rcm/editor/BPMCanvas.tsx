@@ -1,11 +1,12 @@
 import * as React from 'react';
-import ReactFlow, { addEdge, Background, Controls, MarkerType, MiniMap } from 'reactflow';
+import ReactFlow, { addEdge, Background, ConnectionMode, Controls, MarkerType, MiniMap } from 'reactflow';
 import type { Connection, Edge, EdgeTypes, Node, NodeTypes } from 'reactflow';
 import { useTranslation } from 'react-i18next';
 import { Eye } from 'lucide-react';
 import { BPMCanvasAlignmentGuides } from './BPMCanvasAlignmentGuides';
 import { BPMSelectionHUD } from './BPMSelectionHUD';
 import { BPMShapePalette } from './BPMShapePalette';
+import { canonicalizeHandleId } from '../edges/edge-routing-utils';
 import { isBadgeNodeType } from './bpm-editor-constants';
 
 interface BPMCanvasProps {
@@ -67,6 +68,9 @@ export function BPMCanvas(props: BPMCanvasProps) {
     subProcess,
   } = props;
   const { t } = useTranslation(['bpm', 'common']);
+  // True while a connection drag is in flight: all handles are revealed
+  // so drops land easily at low zoom (Q6). Reset on drop or cancel.
+  const [isConnecting, setIsConnecting] = React.useState(false);
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden">
@@ -85,12 +89,20 @@ export function BPMCanvas(props: BPMCanvasProps) {
       </div>
 
       {/* ReactFlow Canvas Viewport */}
-      <div className="flex-1 relative h-full w-full overflow-hidden">
+      <div
+        className={
+          'flex-1 relative h-full w-full overflow-hidden' +
+          (isConnecting ? ' [&_.react-flow__handle]:opacity-100 [&_.react-flow__handle]:scale-110' : '')
+        }
+      >
         <ReactFlow
           nodes={nodes}
           edges={edges}
           minZoom={0.02}
           maxZoom={2.5}
+          connectionRadius={32}
+          connectionMode={ConnectionMode.Loose}
+          connectionLineStyle={{ stroke: '#2563eb', strokeWidth: 2, strokeDasharray: '6 4' }}
           style={
             {
               '--bpm-global-width-scale': globalScale / 100,
@@ -116,10 +128,20 @@ export function BPMCanvas(props: BPMCanvasProps) {
               : (params: Connection) => {
                   props.pushState(nodes, edges);
                   props.setDirty(true);
+                  // Persist canonical handle ids (qc-* drags included) so the
+                  // arrow can never invert vs the drag direction (Q5).
+                  const repairedSource = params.sourceHandle
+                    ? (canonicalizeHandleId(params.sourceHandle, true) ?? undefined)
+                    : params.sourceHandle;
+                  const repairedTarget = params.targetHandle
+                    ? (canonicalizeHandleId(params.targetHandle, false) ?? undefined)
+                    : params.targetHandle;
                   props.setEdges((eds) =>
                     addEdge(
                       {
                         ...params,
+                        sourceHandle: repairedSource,
+                        targetHandle: repairedTarget,
                         type: 'bridge',
                         markerEnd: {
                           type: MarkerType.ArrowClosed,
@@ -134,6 +156,10 @@ export function BPMCanvas(props: BPMCanvasProps) {
                   );
                 }
           }
+          onConnectStart={() => {
+            if (!isTouchReadOnly) setIsConnecting(true);
+          }}
+          onConnectEnd={() => setIsConnecting(false)}
           onNodeClick={(_, node) => {
             // Select only: never opens the worksheet. Users can drag,
             // lock, or delete straight from the selection HUD.
@@ -171,6 +197,17 @@ export function BPMCanvas(props: BPMCanvasProps) {
               Jangan aktifkan toolbar/palette/Controls di mobile tanpa RFC audit. */}
           <div className="hidden md:block">
             <Controls />
+          </div>
+          {/* Q6 exception (locked): zoom/fit Controls are view actions, not edit.
+              Compact variant (no interactive toggle), lifted above MobileBottomNav. */}
+          <div className="md:hidden">
+            <Controls
+              showZoom
+              showFitView
+              showInteractive={false}
+              position="bottom-right"
+              style={{ marginBottom: 'calc(3.5rem + env(safe-area-inset-bottom, 0px))' }}
+            />
           </div>
           <div className="hidden md:block">
             <MiniMap />
