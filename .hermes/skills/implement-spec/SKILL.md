@@ -16,8 +16,6 @@ Communication to and from subagents should be sparse. Communicate primarily thro
 
 **Implementer subagents** should be run in the background where possible for maximum concurrency.
 
-**Single-session fallback:** when parallel subagents or worktrees are unavailable (one session, memory-capped runner), implement the frontier tickets sequentially, directly on the integration branch, one ticket per commit. Keep the per-ticket gates (TDD red-green, type-check, lint, build, focused tests); run the full suite before resolving tickets. Concurrency is an accelerator, never a correctness requirement.
-
 ## Steps
 
 1. Read the spec and tickets to understand the task graph.
