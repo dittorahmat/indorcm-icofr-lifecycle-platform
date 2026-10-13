@@ -45,7 +45,7 @@ export function BoardToolbar({
         )
       }
     >
-      <div className="flex flex-col sm:flex-row sm:items-end md:items-center gap-4 w-full sm:w-auto">
+      <div className="flex min-w-0 max-w-full flex-col gap-3 sm:gap-4 w-full lg:w-auto lg:flex-row lg:flex-wrap lg:items-center">
         <div className="flex flex-col gap-1.5 min-w-0 max-w-full">
           <span className="text-xs font-black uppercase text-slate-400 tracking-widest ml-1">
             {t('sources.label', 'Finding Source')}
