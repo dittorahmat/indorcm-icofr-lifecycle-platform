@@ -47,11 +47,11 @@ function assesses(record: WorklistRecordLike, control: WorklistControlLike, scop
 }
 
 /** Control dalam scope org+tahun yang tidak dinilai record non-draft mana pun. */
-export function unassessedControlsFrom(
-  controls: WorklistControlLike[],
+export function unassessedControlsFrom<T extends WorklistControlLike>(
+  controls: T[],
   records: WorklistRecordLike[],
   scope: WorklistScope,
-): WorklistControlLike[] {
+): T[] {
   return controls.filter(
     (control) =>
       control.organizationId === scope.organizationId &&

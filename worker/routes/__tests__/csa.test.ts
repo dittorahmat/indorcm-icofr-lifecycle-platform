@@ -18,6 +18,7 @@ describe('CSA barrel routes and sub-apps', () => {
     expect(routePaths).toContain('GET /csa');
     expect(routePaths).toContain('POST /csa');
     expect(routePaths).toContain('PUT /csa/:id');
+    expect(routePaths).toContain('GET /csa/worklist');
     expect(routePaths).toContain('POST /csa/:id/workflow');
     expect(routePaths).toContain('DELETE /csa/:id');
     expect(routePaths).toContain('GET /csa/:id/export-pdf');
