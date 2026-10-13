@@ -209,6 +209,7 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
       toast.success(variables.isDraft ? t('assessment.draftSaved') : t('assessment.signOffSuccess'));
       queryClient.invalidateQueries({ queryKey: ['csa-list'] });
       queryClient.invalidateQueries({ queryKey: ['csa-schedules'] });
+      queryClient.invalidateQueries({ queryKey: ['csa-worklist'] });
       
       if (!variables.isDraft) {
         setView('list');

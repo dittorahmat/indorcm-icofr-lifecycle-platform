@@ -297,7 +297,19 @@
         "control": "Control",
         "risk": "Risk",
         "action": "Action"
-      }
+      },
+      "searchPlaceholder": "Search sub-process, control, or code...",
+      "ctaReadOnly": "Only Line 1 can start a CSA"
+    },
+    "row": {
+      "pdfLoading": "Generating PDF Report...",
+      "pdfFailed": "Failed to generate PDF",
+      "pdfDone": "PDF exported successfully",
+      "xlsLoading": "Generating Excel Report...",
+      "xlsFailed": "Failed to generate Excel",
+      "xlsDone": "Excel exported successfully",
+      "todSynced": "RCM Design & TOD Evaluation synced successfully",
+      "todSyncFailed": "Failed to sync design changes"
     }
   }
 }

@@ -42,6 +42,16 @@ describe('csa-worklist seam (derive belum-dinilai dari record)', () => {
     expect(unassessedControlsFrom(controls, records, SCOPE)).toEqual(controls);
   });
 
+  it('treats a record with unknown draft state as not finalized', () => {
+    const controls = [
+      { id: 'c1', organizationId: 'org-bumn-default', year: 2027, bpmProcessId: 'p1' },
+    ];
+    const records = [
+      { organizationId: 'org-bumn-default', controlId: null, bpmProcessId: 'p1', period: '2027-Q1', isDraft: null },
+    ];
+    expect(unassessedControlsFrom(controls, records, SCOPE)).toEqual(controls);
+  });
+
   it('ignores records from another year, org, or BPM', () => {
     const controls = [
       { id: 'c1', organizationId: 'org-bumn-default', year: 2027, bpmProcessId: 'p1' },

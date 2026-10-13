@@ -26,29 +26,29 @@ export function useCsaWorklist(): {
   refetch: () => void;
 } {
   const { workingYear } = useFiscalYearStore();
-  const query = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['csa-worklist', workingYear],
     queryFn: () => api<CSAWorklistResponse>(`/api/csa/worklist?year=${workingYear}`),
   });
 
   return useMemo(() => {
-    const items = query.data?.items ?? [];
+    const items = data?.items ?? [];
     const groups = groupWorklistByProcess(
       items.map((item) => ({ ...item, id: item.controlId })),
     );
     const emptyKind =
-      !query.isLoading && items.length === 0
-        ? classifyWorklistEmpty((query.data?.totalControls ?? 0) > 0)
+      !isLoading && items.length === 0
+        ? classifyWorklistEmpty((data?.totalControls ?? 0) > 0)
         : null;
     return {
       groups,
       emptyKind,
       total: items.length,
-      isLoading: query.isLoading,
-      isError: query.isError,
+      isLoading,
+      isError,
       refetch: () => {
-        void query.refetch();
+        void refetch();
       },
     };
-  }, [query]);
+  }, [data, isLoading, isError, refetch]);
 }

@@ -296,7 +296,19 @@
         "control": "Control",
         "risk": "Risiko",
         "action": "Aksi"
-      }
+      },
+      "searchPlaceholder": "Cari sub-proses, control, atau kode...",
+      "ctaReadOnly": "Hanya Lini 1 yang dapat memulai CSA"
+    },
+    "row": {
+      "pdfLoading": "Membuat laporan PDF...",
+      "pdfFailed": "Gagal membuat PDF",
+      "pdfDone": "PDF berhasil diekspor",
+      "xlsLoading": "Membuat laporan Excel...",
+      "xlsFailed": "Gagal membuat Excel",
+      "xlsDone": "Excel berhasil diekspor",
+      "todSynced": "Desain RCM & evaluasi TOD berhasil disinkron",
+      "todSyncFailed": "Gagal menyinkronkan perubahan desain"
     }
   }
 }

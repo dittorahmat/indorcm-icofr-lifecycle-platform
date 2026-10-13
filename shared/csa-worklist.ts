@@ -34,7 +34,7 @@ function inScopeYear(period: string, year: number): boolean {
 
 function assesses(record: WorklistRecordLike, control: WorklistControlLike, scope: WorklistScope): boolean {
   if (record.organizationId !== scope.organizationId) return false;
-  if (record.isDraft === true) return false;
+  if (record.isDraft !== false) return false;
   if (!inScopeYear(record.period, scope.year)) return false;
   if (
     control.bpmProcessId !== null &&

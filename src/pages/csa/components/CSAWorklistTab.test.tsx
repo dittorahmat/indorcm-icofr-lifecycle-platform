@@ -23,6 +23,16 @@ vi.mock('@tanstack/react-query', () => ({
   useQueryClient: () => ({ invalidateQueries: vi.fn() }),
 }));
 
+const sessionRole = vi.hoisted(() => ({ role: 'Line 1' as string | undefined }));
+
+vi.mock('@/lib/auth-client', () => ({
+  authClient: {
+    useSession: () => ({
+      data: sessionRole.role ? { user: { role: sessionRole.role } } : null,
+    }),
+  },
+}));
+
 import { useCsaWorklist } from '../utils/use-csa-worklist';
 
 const GROUPS = [
@@ -48,6 +58,7 @@ const BASE = { total: 3, emptyKind: null, isLoading: false, isError: false, refe
 describe('CSAWorklistTab', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    sessionRole.role = 'Line 1';
   });
 
   it('dual-renders each item in the desktop table AND the mobile cards', () => {
@@ -92,5 +103,41 @@ describe('CSAWorklistTab', () => {
     render(<CSAWorklistTab />);
     fireEvent.click(screen.getByText('worklist.retry'));
     expect(refetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('filters groups and items by the search query', () => {
+    vi.mocked(useCsaWorklist).mockReturnValue({ ...BASE, groups: GROUPS });
+    render(<CSAWorklistTab />);
+
+    fireEvent.change(screen.getByPlaceholderText('worklist.searchPlaceholder'), {
+      target: { value: 'dukcapil' },
+    });
+    expect(screen.getAllByText('Validasi Dukcapil')).toHaveLength(2);
+    expect(screen.queryByText('Wawancara Lapangan')).not.toBeInTheDocument();
+    expect(screen.queryByText('Pelunasan Dipercepat')).not.toBeInTheDocument();
+  });
+
+  it('disables the CTA for the Line 2 read-only role', () => {
+    sessionRole.role = 'Line 2';
+    vi.mocked(useCsaWorklist).mockReturnValue({ ...BASE, groups: GROUPS });
+    render(<CSAWorklistTab />);
+
+    const buttons = screen.getAllByText('worklist.cta').map((el) => el.closest('button'));
+    expect(buttons.length).toBeGreaterThan(0);
+    for (const button of buttons) {
+      expect(button).toBeDisabled();
+    }
+  });
+
+  it('keeps the CTA enabled for Line 1 executors', () => {
+    sessionRole.role = 'Line 1';
+    vi.mocked(useCsaWorklist).mockReturnValue({ ...BASE, groups: GROUPS });
+    render(<CSAWorklistTab />);
+
+    const buttons = screen.getAllByText('worklist.cta').map((el) => el.closest('button'));
+    expect(buttons.length).toBeGreaterThan(0);
+    for (const button of buttons) {
+      expect(button).not.toBeDisabled();
+    }
   });
 });

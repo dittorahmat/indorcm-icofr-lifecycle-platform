@@ -1,5 +1,5 @@
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { CSARecord, BPMProcess, Control } from '@shared/types';
 import { TableCell, TableRow } from '@/components/ui/table';
@@ -29,6 +29,7 @@ export function CSARecordRow({ record: initialRecord, process }: { record: CSARe
     useExcelExport<Record<string, string>>();
   const { t } = useTranslation(['csa_hub', 'common']);
   const { workingYear } = useFiscalYearStore();
+  const queryClient = useQueryClient();
   
   const { evaluations, saveMutation } = useTOD(initialRecord.id);
 
@@ -62,14 +63,14 @@ export function CSARecordRow({ record: initialRecord, process }: { record: CSARe
   const handleExportPDF = async (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsExportingPDF(true);
-    const toastId = toast.loading("Generating PDF Report...");
+    const toastId = toast.loading(t('row.pdfLoading'));
     try {
       const response = await fetch(`/api/csa/${initialRecord.id}/export-pdf`, {
         headers: {
           'X-Mock-Role': localStorage.getItem('mockRole') || 'Line 2'
         }
       });
-      if (!response.ok) throw new Error("Failed to generate PDF");
+      if (!response.ok) throw new Error(t('row.pdfFailed'));
       
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
@@ -80,7 +81,7 @@ export function CSARecordRow({ record: initialRecord, process }: { record: CSARe
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-      toast.success("PDF exported successfully", { id: toastId });
+      toast.success(t('row.pdfDone'), { id: toastId });
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : String(err), { id: toastId });
     } finally {
@@ -90,7 +91,7 @@ export function CSARecordRow({ record: initialRecord, process }: { record: CSARe
 
   const handleExportXLS = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    const toastId = toast.loading("Generating Excel Report...");
+    const toastId = toast.loading(t('row.xlsLoading'));
     const exported = await exportXlsNow({
       rows: buildCsaRecordSummaryRows({
         processName: process?.name || 'N/A',
@@ -110,10 +111,10 @@ export function CSARecordRow({ record: initialRecord, process }: { record: CSARe
         samples: record.samples || [],
         filename: opts.filename,
       }),
-      onError: () => toast.error("Failed to generate Excel", { id: toastId }),
+      onError: () => toast.error(t('row.xlsFailed'), { id: toastId }),
     });
     if (exported) {
-      toast.success("Excel exported successfully", { id: toastId });
+      toast.success(t('row.xlsDone'), { id: toastId });
     }
   };
 
@@ -205,7 +206,10 @@ export function CSARecordRow({ record: initialRecord, process }: { record: CSARe
                          currentStatus={record.workflowStatus || (record.line2Status === 'Validated' ? 'Validated' : (record.isDraft ? 'Draft' : 'In Review'))}
                          history={record.workflowHistory || []}
                          onStatusChange={(newStatus) => {
-                           record.workflowStatus = newStatus;
+                           queryClient.setQueryData<CSARecord>(
+                             ['csa-record-detail', record.id],
+                             (old) => (old ? { ...old, workflowStatus: newStatus } : old),
+                           );
                          }}
                        />
                      </div>
@@ -276,10 +280,10 @@ export function CSARecordRow({ record: initialRecord, process }: { record: CSARe
                 saveMutation.mutateAsync(todPayload)
               ]);
 
-              toast.success("RCM Design & TOD Evaluation synced successfully");
+              toast.success(t('row.todSynced'));
               setSelectedControl(null);
             } catch (err) {
-              toast.error("Failed to sync design changes");
+              toast.error(t('row.todSyncFailed'));
             }
           }}
           isPending={saveMutation.isPending}

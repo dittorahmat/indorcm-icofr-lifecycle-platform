@@ -28,10 +28,9 @@ vi.mock('react-i18next', () => ({
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
 
+let client: QueryClient;
+
 function wrapper() {
-  const client = new QueryClient({
-    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
-  });
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
     <MemoryRouter>
       <QueryClientProvider client={client}>{children}</QueryClientProvider>
@@ -44,6 +43,9 @@ function wrapper() {
 describe('useCSA save mutation', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    client = new QueryClient({
+      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    });
     vi.mocked(api).mockImplementation((url: string, init?: RequestInit) =>
       init?.method === 'POST'
         ? Promise.reject(new Error('Simpan gagal: boom'))
@@ -60,5 +62,22 @@ describe('useCSA save mutation', () => {
 
     await waitFor(() => expect(vi.mocked(toast.error)).toHaveBeenCalled());
     expect(vi.mocked(toast.error).mock.calls[0][0]).toContain('boom');
+  });
+
+  it('invalidates the worklist after a successful save', async () => {
+    vi.mocked(api).mockImplementation((url: string, init?: RequestInit) =>
+      init?.method === 'POST'
+        ? Promise.resolve({ id: 'csa-9' })
+        : Promise.resolve({ items: [] }),
+    );
+    const spy = vi.spyOn(client, 'invalidateQueries');
+    const { result } = renderHook(() => useCSA({ bpmProcessId: 'p1' }), { wrapper: wrapper() });
+
+    act(() => {
+      result.current.createMutation.mutate({ period: '2027-Q1', result: 'Effective', isDraft: true });
+    });
+
+    await waitFor(() => expect(vi.mocked(toast.success)).toHaveBeenCalled());
+    expect(spy).toHaveBeenCalledWith({ queryKey: ['csa-worklist'] });
   });
 });
