@@ -283,6 +283,12 @@
       "assessed": "Assessed",
       "unassessed": "Unassessed"
     },
+    "resultFilter": {
+      "label": "Filter by assessment result",
+      "all": "All",
+      "effective": "Effective",
+      "ineffective": "Ineffective"
+    },
     "worklist": {
       "loading": "Loading control list...",
       "error": "Failed to load the control list.",

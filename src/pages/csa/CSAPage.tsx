@@ -16,12 +16,16 @@ import { CSARecordCard } from '@/components/csa/CSARecordCard';
 import { MobileDesktopBanner } from '@/components/layout/MobileDesktopBanner';
 import { CollapsibleFilterCard } from '@/components/layout/CollapsibleFilterCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { cn } from '@/lib/utils';
 import { CSARecordRow } from './components/CSARecordRow';
 import { CSAWorklistTab } from './components/CSAWorklistTab';
+
+type CSAResultFilter = 'all' | 'Effective' | 'Ineffective';
 
 
 export function CSAPage() {
   const [searchTerm, setSearchTerm] = React.useState("");
+  const [resultFilter, setResultFilter] = React.useState<CSAResultFilter>('all');
   const { t } = useTranslation(['csa_hub', 'common']);
   const { workingYear } = useFiscalYearStore();
 
@@ -35,17 +39,37 @@ export function CSAPage() {
     queryFn: () => api<{ items: BPMProcess[] }>(`/api/bpm-processes?year=${workingYear}`),
   });
 
-  const filteredRecords = React.useMemo(() => {
+  const assessedBase = React.useMemo(() => {
     if (!records?.items) return [];
+    const term = searchTerm.toLowerCase();
     return records.items.filter(r => {
-      // Logic requirement: Only Effective CSA records are eligible for TOE / regulatory review
-      if (r.result !== 'Effective') return false;
+      // Assessed scope covers concluded outcomes only (Effective + Ineffective).
+      // Records with No Transaction stay hidden. TOE / regulatory review
+      // eligibility remains Effective-only downstream.
+      if (r.result !== 'Effective' && r.result !== 'Ineffective') return false;
 
       const process = processes?.items.find(p => p.id === r.bpmProcessId);
-      return process?.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-             r.period.toLowerCase().includes(searchTerm.toLowerCase());
+      return (process?.name ?? '').toLowerCase().includes(term) ||
+             r.period.toLowerCase().includes(term);
     });
   }, [records, processes, searchTerm]);
+
+  const resultCounts = React.useMemo(() => ({
+    all: assessedBase.length,
+    Effective: assessedBase.filter(r => r.result === 'Effective').length,
+    Ineffective: assessedBase.filter(r => r.result === 'Ineffective').length,
+  }), [assessedBase]);
+
+  const resultFilterOptions: { value: CSAResultFilter; label: string; count: number }[] = [
+    { value: 'all', label: t('page.resultFilter.all', { defaultValue: 'Semua' }), count: resultCounts.all },
+    { value: 'Effective', label: t('page.resultFilter.effective', { defaultValue: 'Efektif' }), count: resultCounts.Effective },
+    { value: 'Ineffective', label: t('page.resultFilter.ineffective', { defaultValue: 'Tidak Efektif' }), count: resultCounts.Ineffective },
+  ];
+
+  const filteredRecords = React.useMemo(() => {
+    if (resultFilter === 'all') return assessedBase;
+    return assessedBase.filter(r => r.result === resultFilter);
+  }, [assessedBase, resultFilter]);
 
   return (
     <AppLayout container>
@@ -104,6 +128,42 @@ export function CSAPage() {
             </TabsTrigger>
           </TabsList>
           <TabsContent value="assessed" className="space-y-4 mt-4 min-w-0">
+        <div
+          role="group"
+          aria-label={t('page.resultFilter.label', { defaultValue: 'Filter hasil penilaian' })}
+          data-testid="csa-result-filter"
+          className="flex flex-wrap gap-2"
+        >
+          {resultFilterOptions.map((opt) => {
+            const isActive = resultFilter === opt.value;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                aria-pressed={isActive}
+                data-testid={`csa-result-filter-${opt.value.toLowerCase()}`}
+                onClick={() => setResultFilter(opt.value)}
+                className={cn(
+                  "inline-flex items-center gap-2 rounded-md border px-3 min-h-[44px] text-xs font-bold uppercase tracking-wider transition-colors",
+                  isActive
+                    ? "bg-indigo-600 border-indigo-600 text-white shadow-sm"
+                    : "bg-white border-slate-200 text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200"
+                )}
+              >
+                <span>{opt.label}</span>
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    "text-xs font-bold border-transparent",
+                    isActive ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"
+                  )}
+                >
+                  {opt.count}
+                </Badge>
+              </button>
+            );
+          })}
+        </div>
         {/* DESKTOP VIEW: Table */}
         <div className="hidden md:block border rounded-lg bg-white shadow-sm overflow-x-auto max-w-full touch-pan-x overscroll-x-contain">
           <Table className="min-w-[720px]">
@@ -171,7 +231,7 @@ export function CSAPage() {
                     {t('page.summary.ineffective', { defaultValue: 'Defisiensi' })}
                   </span>
                   <span className="text-lg font-bold text-red-800 dark:text-red-200">
-                    {records.items.filter(r => r.result !== 'Effective').length}
+                    {records.items.filter(r => r.result === 'Ineffective').length}
                   </span>
                 </div>
               </div>

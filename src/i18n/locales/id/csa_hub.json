@@ -282,6 +282,12 @@
       "assessed": "Sudah Dinilai",
       "unassessed": "Belum Dinilai"
     },
+    "resultFilter": {
+      "label": "Filter hasil penilaian",
+      "all": "Semua",
+      "effective": "Efektif",
+      "ineffective": "Tidak Efektif"
+    },
     "worklist": {
       "loading": "Memuat daftar control...",
       "error": "Gagal memuat daftar control.",
