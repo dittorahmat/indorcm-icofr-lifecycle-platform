@@ -25,3 +25,7 @@ killed the host, while the same `tsc` redirected to a file exited 0).
 - NEVER run two heavy commands in parallel (e.g. `build` + `test` at once) —
   concurrent Node processes exhaust OS RAM and crash with native
   `node::Realloc` assertion failures. Run them sequentially.
+- If a command is known to exceed the tool's foreground timeout (~120s),
+  start it in the background instead of timing out in the foreground: full
+  `npm test` (~130s observed 2026-10-14) and a cold `npm run build` (>120s)
+  always run in background; read the redirected log file when notified.
