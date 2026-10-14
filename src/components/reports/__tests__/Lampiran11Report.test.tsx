@@ -8,9 +8,11 @@ vi.mock('@/lib/rcm-excel-export', () => ({
   exportRegulatoryTableToExcel: vi.fn(),
 }));
 
+import { strictT } from '@/test/mock-i18n';
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, options?: any) => options?.defaultValue ?? key,
+    t: strictT,
   }),
 }));
 

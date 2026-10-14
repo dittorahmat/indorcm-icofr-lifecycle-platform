@@ -10,10 +10,13 @@ vi.mock('@/lib/api-client', () => ({
   api: vi.fn(),
 }));
 
+import { validateI18nKey } from '@/test/mock-i18n';
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, defaultOrOptions?: any) => {
       if (typeof defaultOrOptions === 'string') return defaultOrOptions;
+      validateI18nKey(key);
       if (defaultOrOptions && typeof defaultOrOptions === 'object' && defaultOrOptions.defaultValue) {
         return defaultOrOptions.defaultValue;
       }

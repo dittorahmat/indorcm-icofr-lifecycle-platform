@@ -4,9 +4,11 @@ import { describe, it, expect, vi } from 'vitest';
 import { BPMDiagramList } from '../BPMDiagramList';
 import type { BPMProcessWithChildren, BPMDiagram } from '@shared/types';
 
+import { strictT } from '@/test/mock-i18n';
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, opts?: any) => opts?.defaultValue || key,
+    t: strictT,
   }),
 }));
 

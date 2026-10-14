@@ -87,4 +87,10 @@ i18n
     },
   });
 
+if (import.meta.env.DEV) {
+  i18n.on('missingKey', (lngs, ns, key) => {
+    console.error(`[i18n] missing key "${ns}:${key}" (lng: ${lngs})`);
+  });
+}
+
 export default i18n;

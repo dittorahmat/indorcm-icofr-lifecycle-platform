@@ -12,9 +12,11 @@ vi.mock('@/components/bpm/CSAModal', () => ({
     props.isOpen ? <div data-testid="csa-modal" data-bpm={props.bpmProcessId ?? ''} /> : null,
 }));
 
+import { strictT } from '@/test/mock-i18n';
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string) => key,
+    t: strictT,
     i18n: { language: 'en' },
   }),
 }));
@@ -77,31 +79,31 @@ describe('CSAWorklistTab', () => {
     render(<CSAWorklistTab />);
 
     expect(screen.queryByTestId('csa-modal')).not.toBeInTheDocument();
-    fireEvent.click(screen.getAllByText('worklist.cta')[0]);
+    fireEvent.click(screen.getAllByText('page.worklist.cta')[0]);
     expect(screen.getByTestId('csa-modal')).toHaveAttribute('data-bpm', 'p1');
   });
 
   it('distinguishes the two empty states', () => {
     vi.mocked(useCsaWorklist).mockReturnValue({ ...BASE, groups: [], emptyKind: 'no-controls' });
     const { unmount } = render(<CSAWorklistTab />);
-    expect(screen.getByText('worklist.emptyNoControls')).toBeInTheDocument();
+    expect(screen.getByText('page.worklist.emptyNoControls')).toBeInTheDocument();
     unmount();
 
     vi.mocked(useCsaWorklist).mockReturnValue({ ...BASE, groups: [], emptyKind: 'all-assessed' });
     render(<CSAWorklistTab />);
-    expect(screen.getByText('worklist.emptyAllAssessed')).toBeInTheDocument();
+    expect(screen.getByText('page.worklist.emptyAllAssessed')).toBeInTheDocument();
   });
 
   it('shows loading and error states with a retry action', () => {
     vi.mocked(useCsaWorklist).mockReturnValue({ ...BASE, groups: [], isLoading: true });
     const { unmount } = render(<CSAWorklistTab />);
-    expect(screen.getByText('worklist.loading')).toBeInTheDocument();
+    expect(screen.getByText('page.worklist.loading')).toBeInTheDocument();
     unmount();
 
     const refetch = vi.fn();
     vi.mocked(useCsaWorklist).mockReturnValue({ ...BASE, groups: [], isError: true, refetch });
     render(<CSAWorklistTab />);
-    fireEvent.click(screen.getByText('worklist.retry'));
+    fireEvent.click(screen.getByText('page.worklist.retry'));
     expect(refetch).toHaveBeenCalledTimes(1);
   });
 
@@ -109,7 +111,7 @@ describe('CSAWorklistTab', () => {
     vi.mocked(useCsaWorklist).mockReturnValue({ ...BASE, groups: GROUPS });
     render(<CSAWorklistTab />);
 
-    fireEvent.change(screen.getByPlaceholderText('worklist.searchPlaceholder'), {
+    fireEvent.change(screen.getByPlaceholderText('page.worklist.searchPlaceholder'), {
       target: { value: 'dukcapil' },
     });
     expect(screen.getAllByText('Validasi Dukcapil')).toHaveLength(2);
@@ -122,7 +124,7 @@ describe('CSAWorklistTab', () => {
     vi.mocked(useCsaWorklist).mockReturnValue({ ...BASE, groups: GROUPS });
     render(<CSAWorklistTab />);
 
-    const buttons = screen.getAllByText('worklist.cta').map((el) => el.closest('button'));
+    const buttons = screen.getAllByText('page.worklist.cta').map((el) => el.closest('button'));
     expect(buttons.length).toBeGreaterThan(0);
     for (const button of buttons) {
       expect(button).toBeDisabled();
@@ -134,10 +136,11 @@ describe('CSAWorklistTab', () => {
     vi.mocked(useCsaWorklist).mockReturnValue({ ...BASE, groups: GROUPS });
     render(<CSAWorklistTab />);
 
-    const buttons = screen.getAllByText('worklist.cta').map((el) => el.closest('button'));
+    const buttons = screen.getAllByText('page.worklist.cta').map((el) => el.closest('button'));
     expect(buttons.length).toBeGreaterThan(0);
     for (const button of buttons) {
       expect(button).not.toBeDisabled();
     }
   });
+
 });

@@ -5,9 +5,11 @@ import { CSARealizationTable } from '../components/dashboard/CSARealizationTable
 import type { Control } from '@shared/types';
 
 // Mock translations
+import { strictT } from '@/test/mock-i18n';
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string) => key,
+    t: strictT,
   }),
 }));
 
@@ -80,13 +82,13 @@ describe('CSARealizationTable Component', () => {
 
     // Check Annual Group
     // Populasi is 1 control, target is 1, completed is 1/1
-    expectInBothViews('realizationTable.frequencies.Annual');
+    expectInBothViews('Annual');
     expectInBothViews('1 realizationTable.controlsCount');
     expectInBothViews('1 / 1 (100%)');
 
     // Check Monthly Group
     // Populasi is 2 controls, target is 2 - 5, completed is 1/2 (c2 is pending = completed progress, c3 is rejected = incomplete)
-    expectInBothViews('realizationTable.frequencies.Monthly');
+    expectInBothViews('Monthly');
     expectInBothViews('2 realizationTable.controlsCount');
     expectInBothViews('1 / 2 (50%)');
   });

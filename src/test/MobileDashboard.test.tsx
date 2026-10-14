@@ -4,9 +4,12 @@ import React from 'react';
 import { LifecycleProgress } from '@/components/dashboard/LifecycleProgress';
 import { DashboardKPIs } from '@/components/dashboard/DashboardKPIs';
 
+import { validateI18nKey } from '@/test/mock-i18n';
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, params?: any) => {
+      validateI18nKey(key);
       if (params) {
         return `${key}:${JSON.stringify(params)}`;
       }

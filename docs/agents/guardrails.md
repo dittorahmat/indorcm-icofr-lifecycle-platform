@@ -10,7 +10,7 @@ scripts (no deps) plus route-lock tests. Run them before pushing; CI
 | --- | --- | --- |
 | LOC | `npm run check:loc -- <files...>` | Touched `src`/`worker` file `>400` non-empty lines fails — except grandfathered files that strictly shrink vs HEAD (bug-fix paydown). `--all` scans the repo (fails on `>600`). Local-only: deeper grandfather judgement stays human. |
 | any | `npm run check:any-delta -- [--base <ref>] <files...>` | More `any`/`as any`/`as never`/`as unknown as X` than base fails. Base defaults to `HEAD`; CI passes `--base origin/<base-ref>`. |
-| i18n | `npm run check:i18n -- [--base <ref>] <files...>` | More hardcoded first-arg `toast.*("…")` literals than base fails. Dynamic args (`err.message`, `t('key')`) never match. Test files excluded (literals are assertions there). Narrow by design: covers the observed silent-English failure mode, not all UI strings — the reviewer enforces the rest. |
+| i18n | `npm run check:i18n -- [--base <ref>] <files...>` | (a) More hardcoded first-arg `toast.*("…")` literals than base fails. Dynamic args (`err.message`, `t('key')`) never match. (b) Any NEW static `t('key')` missing from the `en` locale bundle fails (delta vs base; pre-existing misses grandfathered). Dynamic keys skipped; missing-in-`id`-but-present-in-`en` allowed (English fallback). Test files excluded. Dev logs missing keys via `missingKey` in `src/i18n/config.ts`. |
 
 ## Contract gates (whole tree)
 
@@ -26,3 +26,19 @@ scripts (no deps) plus route-lock tests. Run them before pushing; CI
 requires `onError` user feedback on every touched call site
 (`CODING_STANDARDS.md`); legacy sites burn down boy-scout on touch. Escalate
 the rule to `error` once `npx eslint src` reports zero hits.
+
+## Local pre-commit (fast gates, no new deps)
+
+`.githooks/pre-commit` runs `check:any-delta` + `check:i18n` on staged files
+only (seconds; full type-check/lint/test stay in CI). Enable once per clone:
+
+`git config core.hooksPath .githooks`
+
+## Tests use the strict i18n mock
+
+`src/test/mock-i18n.ts` (`strictT` / `validateI18nKey`) resolves `t()` calls
+against the real `en` bundles and throws on a missing key — an identity
+`(key) => key` mock can never disagree with a wrong key (CSA worklist
+post-mortem). New/edited tests must use the helper, never a fresh identity
+mock. Custom translated-text assertions keep their tables and add one
+`validateI18nKey(key)` line.

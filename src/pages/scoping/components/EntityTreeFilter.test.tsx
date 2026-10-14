@@ -4,9 +4,11 @@ import { EntityTreeFilter } from './EntityTreeFilter';
 import { EntityNode } from '../utils/hierarchy-utils';
 
 // Mock i18next
+import { strictT } from '@/test/mock-i18n';
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string) => key,
+    t: strictT,
   }),
 }));
 
@@ -37,7 +39,7 @@ describe('EntityTreeFilter', () => {
         onSelectionChange={() => {}} 
       />
     );
-    expect(screen.getByText('scoping:filter.entityLabel')).toBeDefined();
+    expect(screen.getByText('Entity Filter')).toBeDefined();
   });
 
   it('should call onSelectionChange when toggling a node', () => {
@@ -51,7 +53,7 @@ describe('EntityTreeFilter', () => {
     );
     
     // Open popover
-    fireEvent.click(screen.getByText('scoping:filter.entityLabel'));
+    fireEvent.click(screen.getByText('Entity Filter'));
     
     // Find Anak 1 checkbox (it will have id filter-A1)
     // In our implementation, we use Checkbox which might render as a button

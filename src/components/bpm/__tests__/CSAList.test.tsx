@@ -5,9 +5,11 @@ import { CSAList } from '../CSAList';
 import type { CSARecord } from '@shared/types';
 
 // Mock i18n (returns defaultValue so assertions read naturally)
+import { strictT } from '@/test/mock-i18n';
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, opts?: any) => opts?.defaultValue || key,
+    t: strictT,
   }),
 }));
 

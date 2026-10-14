@@ -17,10 +17,14 @@ vi.mock('sonner', () => ({
   toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn(), loading: vi.fn() },
 }));
 
+import { validateI18nKey } from '@/test/mock-i18n';
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, opts?: Record<string, unknown>) =>
-      opts?.message ? `${key}:${String(opts.message)}` : key,
+    t: (key: string, opts?: Record<string, unknown>) => {
+      validateI18nKey(key);
+      return opts?.message ? `${key}:${String(opts.message)}` : key;
+    },
     i18n: { language: 'en' },
   }),
 }));

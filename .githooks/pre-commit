@@ -1,0 +1,11 @@
+#!/bin/sh
+# .githooks/pre-commit — fast repo gates on staged files (no new deps).
+# Enable once per clone: git config core.hooksPath .githooks
+# Runs only the deterministic delta gates (seconds). Full type-check / lint /
+# test stay in CI (verify.yml) — they take minutes on this repo.
+STAGED=$(git diff --cached --name-only --diff-filter=ACMR -- src shared worker scripts | tr '\n' ' ')
+if [ -z "$STAGED" ]; then
+  exit 0
+fi
+node scripts/check-any-delta.mjs $STAGED || exit 1
+node scripts/check-i18n.mjs $STAGED || exit 1

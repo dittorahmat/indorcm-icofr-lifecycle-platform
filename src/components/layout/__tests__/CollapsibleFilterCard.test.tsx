@@ -4,9 +4,12 @@ import { describe, it, expect, vi } from 'vitest';
 import { CollapsibleFilterCard } from '../CollapsibleFilterCard';
 import { useIsMobile } from '@/hooks/use-mobile';
 
+import { validateI18nKey } from '@/test/mock-i18n';
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) => {
+      validateI18nKey(key);
       if (key === 'mobile.showFilters') return 'Show Filters';
       if (key === 'mobile.hideFilters') return 'Hide';
       return key;

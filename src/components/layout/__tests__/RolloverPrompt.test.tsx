@@ -4,9 +4,12 @@ import { describe, it, expect, vi } from 'vitest';
 import { RolloverPrompt } from '../RolloverPrompt';
 
 // Mock react-i18next
+import { validateI18nKey } from '@/test/mock-i18n';
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, options?: any) => {
+      validateI18nKey(key);
       if (key === 'rollover.title') return 'Rollover Fiscal Year Data';
       if (key === 'rollover.description') {
         return `No data found for the selected fiscal year ${options?.year}. Would you like to copy from previous year ${options?.prevYear}?`;
