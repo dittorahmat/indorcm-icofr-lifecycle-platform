@@ -53,6 +53,8 @@ export interface RCMImportWizardModalProps {
   subProcessName?: string;
   workingYear: string;
   bpmNodes?: BPMNodeOption[];
+  /** Preset flavor selected when the dialog opens. Defaults to TLC for existing callers. */
+  initialFlavor?: RCMFlavor;
   onSuccess?: () => void;
   onAddBpmNode?: (nodeLabel: string, controlName: string) => string;
 }

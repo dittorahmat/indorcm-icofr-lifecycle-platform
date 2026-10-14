@@ -23,6 +23,7 @@ export function RCMImportWizardModal({
   bpmProcessId,
   workingYear,
   bpmNodes = [],
+  initialFlavor,
   onSuccess,
   onAddBpmNode,
 }: RCMImportWizardModalProps) {
@@ -45,6 +46,7 @@ export function RCMImportWizardModal({
     bpmProcessId,
     workingYear,
     bpmNodes,
+    initialFlavor,
     onSuccess,
     onClose,
     onAddBpmNode,
