@@ -4,10 +4,12 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { api } from '@/lib/api-client';
 import { Control, Organization } from '@shared/types';
 import { Check, Edit3, Settings2 } from 'lucide-react';
+import { FileUp } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { RCMPageHeader } from '@/components/rcm/RCMPageHeader';
 import { RCMTable, RCMColumnGroup } from '@/components/rcm/RCMTable';
 import { RCMEditDialog } from '@/components/rcm/RCMEditDialog';
+import { RCMImportWizardModal } from '@/components/rcm/import/RCMImportWizardModal';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
@@ -31,6 +33,7 @@ export function RCMELCPage({ embedded = false, workingYearOverride, relevantFsli
   const [selectedOrgId, setSelectedOrgId] = React.useState<string>('all');
   const [editingItem, setEditingItem] = React.useState<any | null>(null);
   const [isRolloverOpen, setIsRolloverOpen] = React.useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = React.useState(false);
 
   const rolloverMutation = useMutation({
     mutationFn: (data: { sourceYear: string, targetYear: string, force?: boolean }) => 
@@ -169,7 +172,17 @@ export function RCMELCPage({ embedded = false, workingYearOverride, relevantFsli
           onRefresh={() => queryClient.invalidateQueries({ queryKey: ['controls-elc'] })}
           onExport={() => exportRCMToExcel(elcItems, { matrixType: 'ELC', filename: `RCM_ELC_Matrix_${workingYear}_${new Date().toISOString().split('T')[0]}.xlsx` })}
           exportLabel={t('rcm:actions.export_excel', 'Export Excel')}
-        />
+        >
+          <Button
+            variant="outline"
+            size="xs"
+            onClick={() => setIsImportModalOpen(true)}
+            className="bg-indigo-50 hover:bg-indigo-100/80 text-indigo-800 border-indigo-300 h-9 sm:h-7 min-h-[44px] sm:min-h-0 text-xs font-bold shadow-sm"
+          >
+            <FileUp className="h-3.5 w-3.5 sm:h-3 sm:w-3 mr-1.5 text-indigo-600" />
+            {t('rcm:actions.import_rcm', { defaultValue: 'Import RCM' })}
+          </Button>
+        </RCMPageHeader>
       )}
       {elcItems.length === 0 && !isLoadingControls && (
         <div className="p-6 pb-2">
@@ -224,6 +237,16 @@ export function RCMELCPage({ embedded = false, workingYearOverride, relevantFsli
         year={workingYear}
         prevYear={(parseInt(workingYear) - 1).toString()}
         isLoading={rolloverMutation.isPending}
+      />
+
+      <RCMImportWizardModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        workingYear={workingYear}
+        initialFlavor="ELC"
+        onSuccess={() => {
+          queryClient.invalidateQueries({ queryKey: ['controls-elc'] });
+        }}
       />
     </div>
   );

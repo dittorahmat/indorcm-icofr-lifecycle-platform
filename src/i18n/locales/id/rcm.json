@@ -328,6 +328,7 @@
   },
   "actions": {
     "export_excel": "Export Excel",
+    "import_rcm": "Impor RCM",
     "export_success": "File Excel berhasil diunduh",
     "search_matrix": "Cari matriks...",
     "print": "Cetak",

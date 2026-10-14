@@ -4,6 +4,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { api } from '@/lib/api-client';
 import { RCMControlMapping } from '@shared/types';
 import { Edit3, Check, Shield } from 'lucide-react';
+import { FileUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -11,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { RCMPageHeader } from '@/components/rcm/RCMPageHeader';
 import { RCMTable, RCMColumnGroup } from '@/components/rcm/RCMTable';
 import { RCMEditDialog } from '@/components/rcm/RCMEditDialog';
+import { RCMImportWizardModal } from '@/components/rcm/import/RCMImportWizardModal';
 import { exportRCMToExcel } from '@/lib/rcm-excel-export';
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 
@@ -49,6 +51,7 @@ export function RCMITGCPage({ embedded = false, filterBpmId, workingYearOverride
   const workingYear = workingYearOverride || globalWorkingYear;
   const [searchTerm, setSearchTerm] = React.useState('');
   const [editingItem, setEditingItem] = React.useState<RCMMatrixItem | null>(null);
+  const [isImportModalOpen, setIsImportModalOpen] = React.useState(false);
 
   const { data: matrixData, isLoading } = useQuery({
     queryKey: ['rcm-matrix-itgc', filterBpmId, workingYear],
@@ -198,7 +201,17 @@ export function RCMITGCPage({ embedded = false, filterBpmId, workingYearOverride
             { label: t('matrix.company'), value: items[0]?.companyName || "N/A" },
             { label: t('matrix.location'), value: items[0]?.locationCode || "N/A" }
           ]}
-        />
+        >
+          <Button
+            variant="outline"
+            size="xs"
+            onClick={() => setIsImportModalOpen(true)}
+            className="bg-indigo-50 hover:bg-indigo-100/80 text-indigo-800 border-indigo-300 h-9 sm:h-7 min-h-[44px] sm:min-h-0 text-xs font-bold shadow-sm"
+          >
+            <FileUp className="h-3.5 w-3.5 sm:h-3 sm:w-3 mr-1.5 text-indigo-600" />
+            {t('rcm:actions.import_rcm', { defaultValue: 'Import RCM' })}
+          </Button>
+        </RCMPageHeader>
       )}
 
       <RCMTable 
@@ -214,6 +227,16 @@ export function RCMITGCPage({ embedded = false, filterBpmId, workingYearOverride
         data={editingItem}
         onSave={(values) => saveMutation.mutate(values)}
         isSaving={saveMutation.isPending}
+      />
+
+      <RCMImportWizardModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        workingYear={workingYear}
+        initialFlavor="ITGC"
+        onSuccess={() => {
+          queryClient.invalidateQueries({ queryKey: ['rcm-matrix-itgc'] });
+        }}
       />
     </div>
   );
