@@ -48,7 +48,7 @@ export function CSAWorklistTab() {
       <div className="border rounded-lg bg-white shadow-sm p-6 flex flex-col items-center gap-3" data-testid="worklist-loading">
         <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
         <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-          {t('worklist.loading')}
+          {t('page.worklist.loading')}
         </span>
       </div>
     );
@@ -59,10 +59,10 @@ export function CSAWorklistTab() {
       <div className="border rounded-lg bg-white shadow-sm p-6 flex flex-col items-start gap-3">
         <p className="text-sm font-medium text-slate-600 flex items-center gap-2">
           <AlertTriangle className="h-4 w-4 text-amber-600" />
-          {t('worklist.error')}
+          {t('page.worklist.error')}
         </p>
         <Button variant="outline" size="sm" onClick={refetch} className="h-11 md:h-8 min-h-[44px] text-xs font-bold">
-          {t('worklist.retry')}
+          {t('page.worklist.retry')}
         </Button>
       </div>
     );
@@ -73,7 +73,7 @@ export function CSAWorklistTab() {
       <div className="border rounded-lg bg-white shadow-sm p-6 flex items-center gap-3">
         <ClipboardList className="h-5 w-5 text-indigo-600 shrink-0" />
         <p className="text-sm font-medium text-slate-600">
-          {emptyKind === 'no-controls' ? t('worklist.emptyNoControls') : t('worklist.emptyAllAssessed')}
+          {emptyKind === 'no-controls' ? t('page.worklist.emptyNoControls') : t('page.worklist.emptyAllAssessed')}
         </p>
       </div>
     );
@@ -91,14 +91,14 @@ export function CSAWorklistTab() {
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <Input
             id="csa-worklist-search"
-            placeholder={t('worklist.searchPlaceholder')}
+            placeholder={t('page.worklist.searchPlaceholder')}
             className="pl-10 h-11 min-h-[44px] bg-slate-50/50 border-slate-200 rounded-lg text-base sm:text-sm"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         <Badge variant="outline" className="text-xs font-semibold bg-white self-start sm:self-auto">
-          {t('worklist.count', { count: total })}
+          {t('page.worklist.count', { count: total })}
         </Badge>
       </div>
 
@@ -107,10 +107,10 @@ export function CSAWorklistTab() {
         <Table className="min-w-[720px]">
           <TableHeader className="bg-slate-50 border-b border-slate-200">
             <TableRow className="hover:bg-transparent">
-              <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-500 py-4 pl-6">{t('worklist.table.code')}</TableHead>
-              <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-500">{t('worklist.table.control')}</TableHead>
-              <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-500">{t('worklist.table.risk')}</TableHead>
-              <TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-slate-500 pr-6">{t('worklist.table.action')}</TableHead>
+              <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-500 py-4 pl-6">{t('page.worklist.table.code')}</TableHead>
+              <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-500">{t('page.worklist.table.control')}</TableHead>
+              <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-500">{t('page.worklist.table.risk')}</TableHead>
+              <TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-slate-500 pr-6">{t('page.worklist.table.action')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -136,11 +136,11 @@ export function CSAWorklistTab() {
                         size="sm"
                         onClick={openWorkspace(item)}
                         disabled={readOnly}
-                        title={readOnly ? t('worklist.ctaReadOnly') : undefined}
+                        title={readOnly ? t('page.worklist.ctaReadOnly') : undefined}
                         className="h-11 md:h-8 min-h-[44px] text-xs gap-1.5 font-bold shadow-sm"
                       >
                         <Play className="h-3.5 w-3.5" />
-                        {t('worklist.cta')}
+                        {t('page.worklist.cta')}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -168,11 +168,11 @@ export function CSAWorklistTab() {
                 size="sm"
                 onClick={openWorkspace(item)}
                 disabled={readOnly}
-                title={readOnly ? t('worklist.ctaReadOnly') : undefined}
+                title={readOnly ? t('page.worklist.ctaReadOnly') : undefined}
                 className="h-11 min-h-[44px] w-full text-xs gap-1.5 font-bold shadow-sm"
               >
                 <Play className="h-3.5 w-3.5" />
-                {t('worklist.cta')}
+                {t('page.worklist.cta')}
               </Button>
             </div>
           )),

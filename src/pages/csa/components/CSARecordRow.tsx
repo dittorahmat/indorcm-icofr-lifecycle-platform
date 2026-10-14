@@ -63,14 +63,14 @@ export function CSARecordRow({ record: initialRecord, process }: { record: CSARe
   const handleExportPDF = async (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsExportingPDF(true);
-    const toastId = toast.loading(t('row.pdfLoading'));
+    const toastId = toast.loading(t('page.row.pdfLoading'));
     try {
       const response = await fetch(`/api/csa/${initialRecord.id}/export-pdf`, {
         headers: {
           'X-Mock-Role': localStorage.getItem('mockRole') || 'Line 2'
         }
       });
-      if (!response.ok) throw new Error(t('row.pdfFailed'));
+      if (!response.ok) throw new Error(t('page.row.pdfFailed'));
       
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
@@ -81,7 +81,7 @@ export function CSARecordRow({ record: initialRecord, process }: { record: CSARe
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-      toast.success(t('row.pdfDone'), { id: toastId });
+      toast.success(t('page.row.pdfDone'), { id: toastId });
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : String(err), { id: toastId });
     } finally {
@@ -91,7 +91,7 @@ export function CSARecordRow({ record: initialRecord, process }: { record: CSARe
 
   const handleExportXLS = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    const toastId = toast.loading(t('row.xlsLoading'));
+    const toastId = toast.loading(t('page.row.xlsLoading'));
     const exported = await exportXlsNow({
       rows: buildCsaRecordSummaryRows({
         processName: process?.name || 'N/A',
@@ -111,10 +111,10 @@ export function CSARecordRow({ record: initialRecord, process }: { record: CSARe
         samples: record.samples || [],
         filename: opts.filename,
       }),
-      onError: () => toast.error(t('row.xlsFailed'), { id: toastId }),
+      onError: () => toast.error(t('page.row.xlsFailed'), { id: toastId }),
     });
     if (exported) {
-      toast.success(t('row.xlsDone'), { id: toastId });
+      toast.success(t('page.row.xlsDone'), { id: toastId });
     }
   };
 
@@ -280,10 +280,10 @@ export function CSARecordRow({ record: initialRecord, process }: { record: CSARe
                 saveMutation.mutateAsync(todPayload)
               ]);
 
-              toast.success(t('row.todSynced'));
+              toast.success(t('page.row.todSynced'));
               setSelectedControl(null);
             } catch (err) {
-              toast.error(t('row.todSyncFailed'));
+              toast.error(t('page.row.todSyncFailed'));
             }
           }}
           isPending={saveMutation.isPending}

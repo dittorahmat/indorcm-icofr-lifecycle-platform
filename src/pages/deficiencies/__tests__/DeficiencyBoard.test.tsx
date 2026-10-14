@@ -70,10 +70,15 @@ vi.mock('@/context/AuthContext', () => ({
   useAuth: () => ({ user: { role: 'Admin' } }),
 }));
 
+import { validateI18nKey } from '@/test/mock-i18n';
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, opts?: unknown) =>
-      typeof opts === 'string' ? opts : ((opts as { defaultValue?: string })?.defaultValue || key),
+    t: (key: string, opts?: unknown) => {
+      if (typeof opts === 'string') return opts;
+      validateI18nKey(key);
+      return ((opts as { defaultValue?: string })?.defaultValue || key);
+    },
   }),
 }));
 

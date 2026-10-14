@@ -6,9 +6,11 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useScopingPage, useScopingEditor } from '../hooks/useScopingPage';
 
 // Mock react-i18next
+import { strictT } from '@/test/mock-i18n';
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, options?: any) => (typeof options === 'object' && options?.defaultValue) ? options.defaultValue : key,
+    t: strictT,
   }),
 }));
 

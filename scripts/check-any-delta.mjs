@@ -48,6 +48,12 @@ if (files.length === 0) {
 
 let errors = 0;
 for (const f of files) {
+  // Code gate: prose files may name this command, and that mention alone
+  // would count as a smell — hence the extension skip below.
+  if (!/\.(tsx|ts|jsx|js|mjs|cjs|mts|cts)$/.test(f.replace(/\\/g, '/'))) {
+    console.log('SKIP  ' + f + ' (not a code file)');
+    continue;
+  }
   let now;
   try {
     now = readFileSync(f, 'utf-8');

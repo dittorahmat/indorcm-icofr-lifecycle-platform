@@ -66,7 +66,7 @@ export interface CSAFormProps {
 export const RESULT_LABEL_KEYS: Record<string, string> = {
   Effective: 'csa_hub:form.effective',
   Ineffective: 'csa_hub:form.ineffective',
-  'No Transaction': 'csa_hub:form.notransaction',
+  'No Transaction': 'csa_hub:form.noTransaction',
 };
 
 export const RESULT_OPTIONS = ['Effective', 'Ineffective', 'No Transaction'];

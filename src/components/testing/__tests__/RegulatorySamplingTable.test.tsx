@@ -5,9 +5,11 @@ import { RegulatorySamplingTable } from '../RegulatorySamplingTable';
 import { useForm } from 'react-hook-form';
 import { TestFormValues } from '../test-schema';
 
+import { strictT } from '@/test/mock-i18n';
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, options?: any) => options?.defaultValue || key,
+    t: strictT,
   }),
 }));
 

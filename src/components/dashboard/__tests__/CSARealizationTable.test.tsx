@@ -4,9 +4,11 @@ import { render } from '@testing-library/react';
 import { CSARealizationTable } from '../CSARealizationTable';
 import { Control } from '@shared/types';
 
+import { strictT } from '@/test/mock-i18n';
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, options?: any) => options?.defaultValue || key,
+    t: strictT,
   }),
 }));
 

@@ -16,9 +16,12 @@ vi.stubGlobal('ResizeObserver', class {
   disconnect() {}
 });
 
+import { validateI18nKey } from '@/test/mock-i18n';
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, options?: any) => {
+      validateI18nKey(key);
       const translations: Record<string, string> = {
         'aiHub.badge': 'Continuous Monitoring',
         'aiHub.eyebrow': 'ICOFR Aviation Analytics',

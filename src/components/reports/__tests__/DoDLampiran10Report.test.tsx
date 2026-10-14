@@ -9,9 +9,12 @@ vi.mock('@/lib/rcm-excel-export', () => ({
   exportRegulatoryTableToExcel: vi.fn(),
 }));
 
+import { validateI18nKey } from '@/test/mock-i18n';
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) => {
+      validateI18nKey(key);
       const translations: Record<string, string> = {
         'dodReport.title': 'LAMPIRAN 10',
         'dodReport.subtitle': 'ILUSTRASI DOKUMENTASI KERTAS KERJA PENENTUAN TINGKAT DEFISIENSI PENGENDALIAN',

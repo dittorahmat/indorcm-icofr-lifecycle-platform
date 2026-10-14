@@ -28,9 +28,11 @@ vi.mock('@/lib/api-client', () => ({
   api: vi.fn(),
 }));
 
+import { strictT } from '@/test/mock-i18n';
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, opts?: any) => opts?.defaultValue || key,
+    t: strictT,
     i18n: { language: 'id' },
   }),
 }));

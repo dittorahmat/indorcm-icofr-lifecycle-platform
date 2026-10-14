@@ -9,9 +9,12 @@ vi.mock('@/lib/api-client', () => ({
   api: vi.fn(),
 }));
 
+import { validateI18nKey } from '@/test/mock-i18n';
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, options?: any) => {
+      validateI18nKey(key);
       if (key === 'logView.empty') return 'Belum ada riwayat perubahan yang disetujui (Lampiran 6) untuk sub-proses ini.';
       if (key === 'logView.title') return 'Lampiran 6: Log Perubahan BPM & RCM';
       if (key === 'logView.subtitle') return 'Histori Persetujuan & Modifikasi Pengendalian';

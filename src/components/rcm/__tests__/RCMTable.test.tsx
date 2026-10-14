@@ -4,9 +4,11 @@ import { describe, it, expect, vi } from 'vitest';
 import { RCMTable, RCMColumnGroup } from '../RCMTable';
 
 // Mock i18n
+import { strictT } from '@/test/mock-i18n';
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, options?: any) => options?.defaultValue || key,
+    t: strictT,
   }),
 }));
 

@@ -5,9 +5,12 @@ import { DashboardKPIs } from '../DashboardKPIs';
 import { COSOCoverageGrid } from '../COSOCoverageGrid';
 import { LifecycleProgress } from '../LifecycleProgress';
 
+import { validateI18nKey } from '@/test/mock-i18n';
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, options?: any) => {
+      validateI18nKey(key);
       if (options?.year) return `Year ${options.year}`;
       return options?.defaultValue || key;
     },
