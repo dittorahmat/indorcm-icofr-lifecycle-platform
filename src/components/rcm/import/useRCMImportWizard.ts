@@ -12,6 +12,8 @@ interface UseRCMImportWizardParams {
   bpmNodes?: BPMNodeOption[];
   /** Preset flavor selected when the dialog opens (e.g. ELC page opens as ELC). Still switchable inside. */
   initialFlavor?: RCMFlavor;
+  /** Dialog open flag. Flavor re-syncs to the preset on every false→true transition. */
+  isOpen?: boolean;
   onSuccess?: () => void;
   onClose: () => void;
   onAddBpmNode?: (nodeLabel: string, controlName: string) => string;
@@ -23,6 +25,7 @@ export function useRCMImportWizard({
   workingYear,
   bpmNodes = [],
   initialFlavor,
+  isOpen,
   onSuccess,
   onClose,
   onAddBpmNode,
@@ -37,6 +40,12 @@ export function useRCMImportWizard({
   React.useEffect(() => {
     if (initialFlavor) setFlavor(initialFlavor);
   }, [initialFlavor]);
+
+  const wasOpen = React.useRef(false);
+  React.useEffect(() => {
+    if (isOpen && !wasOpen.current) setFlavor(initialFlavor ?? 'TLC');
+    wasOpen.current = isOpen ?? false;
+  }, [isOpen, initialFlavor]);
 
   const handleFileSelect = React.useCallback(
     async (file: File) => {

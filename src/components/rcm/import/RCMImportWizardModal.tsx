@@ -47,6 +47,7 @@ export function RCMImportWizardModal({
     workingYear,
     bpmNodes,
     initialFlavor,
+    isOpen,
     onSuccess,
     onClose,
     onAddBpmNode,

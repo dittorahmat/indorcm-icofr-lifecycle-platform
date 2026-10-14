@@ -54,4 +54,20 @@ describe('useRCMImportWizard initialFlavor preset', () => {
     rerender({ preset: 'ITGC' });
     expect(result.current.flavor).toBe('ITGC');
   });
+
+  it('resets to the page preset every time the dialog reopens', () => {
+    const { result, rerender } = renderHook(
+      ({ open }: { open: boolean }) =>
+        useRCMImportWizard({ ...baseParams, initialFlavor: 'ELC', isOpen: open }),
+      { initialProps: { open: false } },
+    );
+    rerender({ open: true });
+    act(() => {
+      result.current.setFlavor('TLC');
+    });
+    expect(result.current.flavor).toBe('TLC');
+    rerender({ open: false });
+    rerender({ open: true });
+    expect(result.current.flavor).toBe('ELC');
+  });
 });
