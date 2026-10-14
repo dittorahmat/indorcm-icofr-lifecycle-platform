@@ -328,6 +328,7 @@
   },
   "actions": {
     "export_excel": "Export Excel",
+    "import_rcm": "Import RCM",
     "export_success": "Excel file downloaded successfully",
     "search_matrix": "Search matrix...",
     "print": "Print",

@@ -10,6 +10,10 @@ interface UseRCMImportWizardParams {
   bpmProcessId?: string;
   workingYear: string;
   bpmNodes?: BPMNodeOption[];
+  /** Preset flavor selected when the dialog opens (e.g. ELC page opens as ELC). Still switchable inside. */
+  initialFlavor?: RCMFlavor;
+  /** Dialog open flag. Flavor re-syncs to the preset on every false→true transition. */
+  isOpen?: boolean;
   onSuccess?: () => void;
   onClose: () => void;
   onAddBpmNode?: (nodeLabel: string, controlName: string) => string;
@@ -20,16 +24,28 @@ export function useRCMImportWizard({
   bpmProcessId,
   workingYear,
   bpmNodes = [],
+  initialFlavor,
+  isOpen,
   onSuccess,
   onClose,
   onAddBpmNode,
 }: UseRCMImportWizardParams) {
   const { t } = useTranslation(['rcm', 'common']);
   const [step, setStep] = React.useState<1 | 2 | 3>(1);
-  const [flavor, setFlavor] = React.useState<RCMFlavor>('TLC');
+  const [flavor, setFlavor] = React.useState<RCMFlavor>(initialFlavor ?? 'TLC');
   const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
   const [parsedRows, setParsedRows] = React.useState<RCMImportParsedRow[]>([]);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+  React.useEffect(() => {
+    if (initialFlavor) setFlavor(initialFlavor);
+  }, [initialFlavor]);
+
+  const wasOpen = React.useRef(false);
+  React.useEffect(() => {
+    if (isOpen && !wasOpen.current) setFlavor(initialFlavor ?? 'TLC');
+    wasOpen.current = isOpen ?? false;
+  }, [isOpen, initialFlavor]);
 
   const handleFileSelect = React.useCallback(
     async (file: File) => {
