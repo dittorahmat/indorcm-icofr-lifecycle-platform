@@ -1,19 +1,27 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
+import { definePageQueryMock, resetPageQueryStore } from '@/test/mock-page-queries';
 import { CSAPage } from './CSAPage';
-import { useQuery } from '@tanstack/react-query';
+import type { CSARecord, BPMProcess } from '@shared/types';
 import React from 'react';
+
+type TestCsaRecord = Pick<CSARecord, 'id' | 'bpmProcessId' | 'period' | 'result' | 'assessmentDate' | 'samples' | 'comments'>;
+type TestBpmProcess = Pick<BPMProcess, 'id' | 'name'>;
+
+// Mutable query backing store: per-test data without per-test mock plumbing.
+const csaPageQueryState = vi.hoisted(() => ({
+  records: new Array<TestCsaRecord>(),
+  processes: new Array<TestBpmProcess>(),
+}));
 
 // Mock the components and hooks that depend on external context
 vi.mock('@/components/layout/AppLayout', () => ({
   AppLayout: ({ children }: { children: React.ReactNode }) => <div data-testid="app-layout">{children}</div>,
 }));
 
-vi.mock('@tanstack/react-query', () => ({
-  useQuery: vi.fn().mockReturnValue({ data: { items: [] }, isLoading: false }),
-  useMutation: vi.fn().mockReturnValue({ mutateAsync: vi.fn(), isPending: false }),
-  useQueryClient: vi.fn().mockReturnValue({ invalidateQueries: vi.fn() }),
-}));
+vi.mock('@tanstack/react-query', () =>
+  definePageQueryMock(csaPageQueryState, { recordsKey: 'csa-records-all', processesKey: 'bpm-processes-all' }),
+);
 
 vi.mock('@/lib/api-client', () => ({
   api: vi.fn(),
@@ -75,21 +83,18 @@ describe('CSAPage', () => {
   });
 
   it('dual-renders each Effective record in desktop table AND mobile card', () => {
-    const record = {
+    const record: TestCsaRecord = {
       id: 'csa-1',
       bpmProcessId: 'proc-1',
       period: '2026-Q3',
       result: 'Effective',
-      assessmentDate: new Date('2026-09-01T10:00:00').toISOString(),
+      assessmentDate: new Date('2026-09-01T10:00:00').getTime(),
       samples: [],
       comments: '',
     };
-    const process = { id: 'proc-1', name: 'Procure to Pay' };
-    vi.mocked(useQuery).mockImplementation(({ queryKey }: any) => {
-      if (queryKey[0] === 'csa-records-all') return { data: { items: [record] }, isLoading: false } as any;
-      if (queryKey[0] === 'bpm-processes-all') return { data: { items: [process] }, isLoading: false } as any;
-      return { data: undefined, isLoading: false } as any;
-    });
+    const process: TestBpmProcess = { id: 'proc-1', name: 'Procure to Pay' };
+    csaPageQueryState.records = [record];
+    csaPageQueryState.processes = [process];
 
     try {
       const { container } = render(<CSAPage />);
@@ -115,7 +120,77 @@ describe('CSAPage', () => {
       expect(mobileCard).toBeInTheDocument();
       expect(mobileCard?.closest('.block.md\\:hidden')).not.toBeNull();
     } finally {
-      vi.mocked(useQuery).mockReturnValue({ data: { items: [] }, isLoading: false } as any);
+      resetPageQueryStore(csaPageQueryState);
+    }
+  });
+
+  it('shows Ineffective records in Assessed, hides No Transaction, with count badges', () => {
+    const stamp = new Date('2026-09-01T10:00:00').getTime();
+    const items: TestCsaRecord[] = [
+      { id: 'csa-eff', bpmProcessId: 'proc-1', period: '2026-Q3', result: 'Effective', assessmentDate: stamp, samples: [], comments: '' },
+      { id: 'csa-ineff', bpmProcessId: 'proc-2', period: '2026-Q3', result: 'Ineffective', assessmentDate: stamp, samples: [], comments: '' },
+      { id: 'csa-notx', bpmProcessId: 'proc-3', period: '2026-Q3', result: 'No Transaction', assessmentDate: stamp, samples: [], comments: '' },
+    ];
+    const processes: TestBpmProcess[] = [
+      { id: 'proc-1', name: 'Procure to Pay' },
+      { id: 'proc-2', name: 'Order to Cash' },
+      { id: 'proc-3', name: 'Record to Report' },
+    ];
+    csaPageQueryState.records = items;
+    csaPageQueryState.processes = processes;
+
+    try {
+      render(<CSAPage />);
+
+      // Both concluded outcomes dual-render (desktop row + mobile card)
+      expect(screen.getAllByText('Procure to Pay')).toHaveLength(2);
+      expect(screen.getAllByText('Order to Cash')).toHaveLength(2);
+      // No Transaction stays out of the Assessed scope
+      expect(screen.queryByText('Record to Report')).not.toBeInTheDocument();
+
+      // Count badges track the search-filtered assessed base
+      expect(screen.getByTestId('csa-result-filter-all')).toHaveTextContent('2');
+      expect(screen.getByTestId('csa-result-filter-effective')).toHaveTextContent('1');
+      expect(screen.getByTestId('csa-result-filter-ineffective')).toHaveTextContent('1');
+
+      // Mobile executive summary counts Ineffective only as deficiency
+      const summary = screen.getByTestId('csa-mobile-executive-summary');
+      expect(within(summary).getAllByText('1')).toHaveLength(2);
+    } finally {
+      resetPageQueryStore(csaPageQueryState);
+    }
+  });
+
+  it('filters Assessed records through the result pills', () => {
+    const stamp = new Date('2026-09-01T10:00:00').getTime();
+    const items: TestCsaRecord[] = [
+      { id: 'csa-eff', bpmProcessId: 'proc-1', period: '2026-Q3', result: 'Effective', assessmentDate: stamp, samples: [], comments: '' },
+      { id: 'csa-ineff', bpmProcessId: 'proc-2', period: '2026-Q3', result: 'Ineffective', assessmentDate: stamp, samples: [], comments: '' },
+    ];
+    const processes: TestBpmProcess[] = [
+      { id: 'proc-1', name: 'Procure to Pay' },
+      { id: 'proc-2', name: 'Order to Cash' },
+    ];
+    csaPageQueryState.records = items;
+    csaPageQueryState.processes = processes;
+
+    try {
+      render(<CSAPage />);
+
+      fireEvent.click(screen.getByTestId('csa-result-filter-ineffective'));
+      expect(screen.queryByText('Procure to Pay')).not.toBeInTheDocument();
+      expect(screen.getAllByText('Order to Cash')).toHaveLength(2);
+      expect(screen.getByTestId('csa-result-filter-ineffective')).toHaveAttribute('aria-pressed', 'true');
+
+      fireEvent.click(screen.getByTestId('csa-result-filter-effective'));
+      expect(screen.getAllByText('Procure to Pay')).toHaveLength(2);
+      expect(screen.queryByText('Order to Cash')).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByTestId('csa-result-filter-all'));
+      expect(screen.getAllByText('Procure to Pay')).toHaveLength(2);
+      expect(screen.getAllByText('Order to Cash')).toHaveLength(2);
+    } finally {
+      resetPageQueryStore(csaPageQueryState);
     }
   });
 });

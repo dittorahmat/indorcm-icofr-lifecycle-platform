@@ -42,3 +42,13 @@ against the real `en` bundles and throws on a missing key — an identity
 post-mortem). New/edited tests must use the helper, never a fresh identity
 mock. Custom translated-text assertions keep their tables and add one
 `validateI18nKey(key)` line.
+
+## Page tests use the shared query mock
+
+`src/test/mock-page-queries.ts` (`definePageQueryMock` /
+`resetPageQueryStore`) is the single mock shape for page tests that need
+per-key `useQuery` data. New/edited page tests must pair it with one
+`vi.hoisted` store per file — never a fresh per-test
+`vi.mocked(useQuery).mockImplementation(({ queryKey }: any) …)` (the `any`
+plumbing trips `check:any-delta`; CSA hub post-mortem). Legacy per-test
+plumbing burns down boy-scout on touch.
