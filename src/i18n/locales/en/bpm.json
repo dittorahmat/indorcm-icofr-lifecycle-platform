@@ -232,6 +232,7 @@
     "lockedWarning": "This diagram is locked because the workflow has been submitted or the period is locked. Changes cannot be saved.",
     "nodes": {
       "start": "Start",
+      "end": "End",
       "activity": "New Activity",
       "automated": "System Process",
       "decision": "Decision?",

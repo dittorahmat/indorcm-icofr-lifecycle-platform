@@ -9,16 +9,18 @@ import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 import type { 
   MaterialitySimulation, GLRow, GLSnapshot, QualitativeLevel, Department, Application, SignificantAccount 
 } from '@shared/types';
-import { 
-  getGroupMultiplier, 
-  calculateBenchmarkValue, 
-  calculateOM, 
-  calculatePM, 
-  identifySignificantAccounts,
-  calculateScopingCompliance,
-  getRowScopeClassification
-} from '../services/materiality-calc';
-import { buildEntityHierarchy, calculateRollupBalances } from '../utils/hierarchy-utils';
+import {
+  apiErrorMessage,
+  appMappingsFromItems,
+  computeMaterialityView,
+  deptMappingsFromAccounts,
+  draftFingerprint,
+  isEditorLocked,
+  isScopingDirty,
+  originalFingerprint,
+} from './scoping-materiality-view';
+import { buildEntityHierarchy } from '../utils/hierarchy-utils';
+import { useMaterialityParams } from './use-materiality-params';
 
 export function useScopingPage() {
   const { t } = useTranslation(['scoping', 'common']);
@@ -68,8 +70,8 @@ export function useScopingPage() {
       queryClient.invalidateQueries({ queryKey: ['simulations'] });
       toast.success(t('common:notifications.deleted'));
     },
-    onError: (err: any) => {
-      toast.error(err.message || 'Failed to delete simulation');
+    onError: (err: unknown) => {
+      toast.error(apiErrorMessage(err, 'Failed to delete simulation'));
     }
   });
 
@@ -79,8 +81,8 @@ export function useScopingPage() {
       queryClient.invalidateQueries({ queryKey: ['simulations'] });
       toast.success(t('scoping:delete.requestDeletionSuccess'));
     },
-    onError: (err: any) => {
-      toast.error(err.message || 'Failed to request deletion');
+    onError: (err: unknown) => {
+      toast.error(apiErrorMessage(err, 'Failed to request deletion'));
     }
   });
 
@@ -123,8 +125,8 @@ export function useScopingPage() {
       queryClient.invalidateQueries();
       toast.success(t('scoping:rollover.success'));
     },
-    onError: (err: any) => {
-      toast.error(t('scoping:rollover.error', { error: err.message }));
+    onError: (err: unknown) => {
+      toast.error(t('scoping:rollover.error', { error: apiErrorMessage(err, 'Rollover failed') }));
     }
   });
 
@@ -164,23 +166,14 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
   const [isAppMappingsTouched, setIsAppMappingsTouched] = React.useState(false);
   const [isDeptMappingsTouched, setIsDeptMappingsTouched] = React.useState(false);
 
-  // Draft parameter inputs for manual trigger
-  const [draftBasis, setDraftBasis] = React.useState(initialSimulation.basis || '');
-  const [draftOmPercentage, setDraftOmPercentage] = React.useState(initialSimulation.omPercentage || 0);
-  const [draftHaircutPercentage, setDraftHaircutPercentage] = React.useState(initialSimulation.haircutPercentage || 0);
-
-  // Active parameter values used for calculations
-  const [activeBasis, setActiveBasis] = React.useState(initialSimulation.basis || '');
-  const [activeOmPercentage, setActiveOmPercentage] = React.useState(initialSimulation.omPercentage || 0);
-  const [activeHaircutPercentage, setActiveHaircutPercentage] = React.useState(initialSimulation.haircutPercentage || 0);
-
-  const [isRecalculating, setIsRecalculating] = React.useState(false);
-
-  const isStale = React.useMemo(() => {
-    return draftBasis !== activeBasis ||
-           draftOmPercentage !== activeOmPercentage ||
-           draftHaircutPercentage !== activeHaircutPercentage;
-  }, [draftBasis, activeBasis, draftOmPercentage, activeOmPercentage, draftHaircutPercentage, activeHaircutPercentage]);
+  const params = useMaterialityParams(initialSimulation, setSimState);
+  const {
+    draftBasis, setDraftBasis,
+    draftOmPercentage, setDraftOmPercentage,
+    draftHaircutPercentage, setDraftHaircutPercentage,
+    activeBasis, activeOmPercentage, activeHaircutPercentage,
+    syncTo, applyDraft,
+  } = params;
 
   // Queries
   const { data: departments } = useQuery({
@@ -195,7 +188,7 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
 
   const { data: initialMappings } = useQuery({
     queryKey: ['sim-app-mappings', initialSimulation.id],
-    queryFn: () => api<{ items: any[] }>(`/api/simulations/${initialSimulation.id}/account-applications`),
+    queryFn: () => api<{ items: { accountCode: string; applicationId: string }[] }>(`/api/simulations/${initialSimulation.id}/account-applications`),
     enabled: !!initialSimulation.id
   });
 
@@ -206,52 +199,26 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
   });
 
   // Memoize initial app mappings for comparison
-  const initialAppMappings = React.useMemo(() => {
-    if (!initialMappings?.items) return {};
-    const map: Record<string, string[]> = {};
-    initialMappings.items.forEach(m => {
-      if (!map[m.accountCode]) map[m.accountCode] = [];
-      map[m.accountCode].push(m.applicationId);
-    });
-    return map;
-  }, [initialMappings]);
+  const initialAppMappings = React.useMemo(() => appMappingsFromItems(initialMappings?.items), [initialMappings]);
 
   // Dirty state tracking
   const isDirty = React.useMemo(() => {
-    if (simState.workflowStatus !== 'Draft' && simState.workflowStatus !== 'Rejected') {
+    if (isEditorLocked(simState.workflowStatus)) {
       return false;
     }
-
-    const initialDeptMappings: Record<string, string[]> = {};
-    initialSimulation.significantAccounts?.forEach(sa => {
-      if (sa.fsliCode && sa.assignedDepartmentIds) {
-        initialDeptMappings[sa.fsliCode] = sa.assignedDepartmentIds;
-      }
-    });
-
-    const currentState = {
-      assessmentData: simState.assessmentData || {},
-      locationCount: simState.locationCount || 0,
-      omPercentage: draftOmPercentage || 0,
-      haircutPercentage: draftHaircutPercentage || 0,
-      basis: draftBasis || '',
-      appMappings: localAppMappings || {},
-      deptMappings: localDeptMappings || {},
-      materialityJustification: simState.materialityJustification || null
-    };
-
-    const originalState = {
-      assessmentData: initialSimulation.assessmentData || {},
-      locationCount: initialSimulation.locationCount || 0,
-      omPercentage: initialSimulation.omPercentage || 0,
-      haircutPercentage: initialSimulation.haircutPercentage || 0,
-      basis: initialSimulation.basis || '',
-      appMappings: initialAppMappings || {},
-      deptMappings: initialDeptMappings || {},
-      materialityJustification: initialSimulation.materialityJustification || null
-    };
-
-    return JSON.stringify(currentState) !== JSON.stringify(originalState);
+    return isScopingDirty(
+      draftFingerprint({
+        assessmentData: simState.assessmentData,
+        locationCount: simState.locationCount,
+        draftBasis,
+        draftOmPercentage,
+        draftHaircutPercentage,
+        appMappings: localAppMappings,
+        deptMappings: localDeptMappings,
+        materialityJustification: simState.materialityJustification,
+      }),
+      originalFingerprint({ initial: initialSimulation, initialAppMappings }),
+    );
   }, [simState, localAppMappings, localDeptMappings, initialSimulation, initialAppMappings, draftOmPercentage, draftHaircutPercentage, draftBasis]);
 
 
@@ -262,24 +229,14 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
     if (initialSimulation.id !== lastSimIdRef.current) {
       lastSimIdRef.current = initialSimulation.id;
       setSimState(initialSimulation);
-      setDraftBasis(initialSimulation.basis || '');
-      setDraftOmPercentage(initialSimulation.omPercentage || 0);
-      setDraftHaircutPercentage(initialSimulation.haircutPercentage || 0);
-      setActiveBasis(initialSimulation.basis || '');
-      setActiveOmPercentage(initialSimulation.omPercentage || 0);
-      setActiveHaircutPercentage(initialSimulation.haircutPercentage || 0);
+      syncTo(initialSimulation);
       setIsAppMappingsTouched(false);
       setIsDeptMappingsTouched(false);
     } else if (!isDirty) {
       setSimState(initialSimulation);
-      setDraftBasis(initialSimulation.basis || '');
-      setDraftOmPercentage(initialSimulation.omPercentage || 0);
-      setDraftHaircutPercentage(initialSimulation.haircutPercentage || 0);
-      setActiveBasis(initialSimulation.basis || '');
-      setActiveOmPercentage(initialSimulation.omPercentage || 0);
-      setActiveHaircutPercentage(initialSimulation.haircutPercentage || 0);
+      syncTo(initialSimulation);
     }
-  }, [initialSimulation, isDirty]);
+  }, [initialSimulation, isDirty, syncTo]);
 
   // Effects
   React.useEffect(() => {
@@ -293,24 +250,13 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
 
   React.useEffect(() => {
     if (initialMappings?.items && !isAppMappingsTouched) {
-      const map: Record<string, string[]> = {};
-      initialMappings.items.forEach(m => {
-        if (!map[m.accountCode]) map[m.accountCode] = [];
-        map[m.accountCode].push(m.applicationId);
-      });
-      setLocalAppMappings(map);
+      setLocalAppMappings(appMappingsFromItems(initialMappings.items));
     }
   }, [initialMappings, isAppMappingsTouched]);
 
   React.useEffect(() => {
     if (initialSimulation.significantAccounts && !isDeptMappingsTouched) {
-      const map: Record<string, string[]> = {};
-      initialSimulation.significantAccounts.forEach(sa => {
-        if (sa.fsliCode && sa.assignedDepartmentIds) {
-          map[sa.fsliCode] = sa.assignedDepartmentIds;
-        }
-      });
-      setLocalDeptMappings(map);
+      setLocalDeptMappings(deptMappingsFromAccounts(initialSimulation.significantAccounts));
     }
   }, [initialSimulation.significantAccounts, isDeptMappingsTouched]);
 
@@ -325,74 +271,25 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
     return glData.filter(row => selectedEntityCodes.includes(row.entityCode || 'UNKNOWN'));
   }, [glData, selectedEntityCodes]);
 
-  // Calculations
-  const calculateValues = React.useMemo(() => {
-    if (filteredGlData.length === 0 || !snapshot) return { omValue: 0, pmValue: 0, multiplier: 1, benchmarkValue: 0 };
-    const benchmarkValue = calculateBenchmarkValue(filteredGlData, activeBasis);
-    const multiplier = 1; // getGroupMultiplier(simState.locationCount || 1) - DEFERRED
-    const omValue = calculateOM(benchmarkValue, activeOmPercentage, multiplier);
-    const pmValue = calculatePM(omValue, activeHaircutPercentage);
-    return { omValue, pmValue, multiplier, benchmarkValue };
-  }, [filteredGlData, snapshot, activeBasis, activeOmPercentage, activeHaircutPercentage]);
-
-  const { omValue, pmValue, multiplier, benchmarkValue } = calculateValues;
-
-  const mergedGlData = React.useMemo(() => {
-    return filteredGlData.map(row => {
-      const scopeClassification = getRowScopeClassification({
-        row,
-        pmValue,
-        assessmentData: simState.assessmentData,
-        selectedEntityCodes,
-        allGlRows: glData
-      });
-      return {
-        ...row,
-        assignedDepartmentIds: localDeptMappings[row.noGL] || [],
-        scopeClassification
-      };
+  // Calculations: one materiality view behind a single seam
+  const { omValue, pmValue, multiplier, benchmarkValue, mergedGlData, significantAccounts, scopingCompliance } = React.useMemo(() => {
+    return computeMaterialityView({
+      filteredRows: filteredGlData,
+      allRows: glData,
+      snapshotPresent: !!snapshot,
+      basis: activeBasis,
+      omPercentage: activeOmPercentage,
+      haircutPercentage: activeHaircutPercentage,
+      assessmentData: simState.assessmentData,
+      selectedEntityCodes,
+      deptMappings: localDeptMappings,
     });
-  }, [filteredGlData, localDeptMappings, pmValue, simState.assessmentData, selectedEntityCodes, glData]);
-
-  const significantAccounts = React.useMemo(() => {
-    return identifySignificantAccounts({
-      glData: mergedGlData,
-      pmValue,
-      assessmentData: simState.assessmentData
-    });
-  }, [mergedGlData, simState.assessmentData, pmValue]);
-
-  const scopingCompliance = React.useMemo(() => {
-    if (glData.length === 0) return null;
-    return calculateScopingCompliance(glData, selectedEntityCodes);
-  }, [glData, selectedEntityCodes]);
+  }, [filteredGlData, glData, snapshot, activeBasis, activeOmPercentage, activeHaircutPercentage, simState.assessmentData, selectedEntityCodes, localDeptMappings]);
 
   React.useEffect(() => {
     setDirty(isDirty);
     return () => resetDirty();
   }, [isDirty, setDirty, resetDirty]);
-
-  const handleRecalculate = React.useCallback((om?: number, haircut?: number) => {
-    setIsRecalculating(true);
-    const targetOm = om !== undefined ? om : draftOmPercentage;
-    const targetHaircut = haircut !== undefined ? haircut : draftHaircutPercentage;
-
-    setDraftOmPercentage(targetOm);
-    setDraftHaircutPercentage(targetHaircut);
-
-    setTimeout(() => {
-      setActiveBasis(draftBasis);
-      setActiveOmPercentage(targetOm);
-      setActiveHaircutPercentage(targetHaircut);
-      setSimState(prev => ({
-        ...prev,
-        basis: draftBasis,
-        omPercentage: targetOm,
-        haircutPercentage: targetHaircut
-      }));
-      setIsRecalculating(false);
-    }, 500);
-  }, [draftBasis, draftOmPercentage, draftHaircutPercentage]);
 
   // Mutations
   const updateSimMutation = useMutation({
@@ -408,40 +305,22 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
         finalBasis = draftBasis;
         finalOmPct = draftOmPercentage;
         finalHaircutPct = draftHaircutPercentage;
-        const bVal = calculateBenchmarkValue(filteredGlData, draftBasis);
-        finalOmValue = calculateOM(bVal, draftOmPercentage, 1);
-        finalPmValue = calculatePM(finalOmValue, draftHaircutPercentage);
-
-        const tempMerged = filteredGlData.map(row => {
-          const scopeClassification = getRowScopeClassification({
-            row,
-            pmValue: finalPmValue,
-            assessmentData: simState.assessmentData,
-            selectedEntityCodes,
-            allGlRows: glData
-          });
-          return {
-            ...row,
-            assignedDepartmentIds: localDeptMappings[row.noGL] || [],
-            scopeClassification
-          };
-        });
-
-        finalSignificantAccounts = identifySignificantAccounts({
-          glData: tempMerged,
-          pmValue: finalPmValue,
-          assessmentData: simState.assessmentData
-        });
-
-        setActiveBasis(draftBasis);
-        setActiveOmPercentage(draftOmPercentage);
-        setActiveHaircutPercentage(draftHaircutPercentage);
-        setSimState(prev => ({
-          ...prev,
+        const draftView = computeMaterialityView({
+          filteredRows: filteredGlData,
+          allRows: glData,
+          snapshotPresent: !!snapshot,
           basis: draftBasis,
           omPercentage: draftOmPercentage,
-          haircutPercentage: draftHaircutPercentage
-        }));
+          haircutPercentage: draftHaircutPercentage,
+          assessmentData: simState.assessmentData,
+          selectedEntityCodes,
+          deptMappings: localDeptMappings,
+        });
+        finalOmValue = draftView.omValue;
+        finalPmValue = draftView.pmValue;
+        finalSignificantAccounts = draftView.significantAccounts;
+
+        applyDraft(draftBasis, draftOmPercentage, draftHaircutPercentage);
       }
 
       await api(`/api/simulations/${simState.id}`, { 
@@ -497,16 +376,16 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
     localAppMappings,
     localDeptMappings,
     isDirty,
-    isLocked: simState.workflowStatus !== 'Draft' && simState.workflowStatus !== 'Rejected',
-    draftBasis,
-    setDraftBasis,
-    draftOmPercentage,
-    setDraftOmPercentage,
-    draftHaircutPercentage,
-    setDraftHaircutPercentage,
-    isStale,
-    isRecalculating,
-    handleRecalculate,
+    isLocked: isEditorLocked(simState.workflowStatus),
+    draftBasis: params.draftBasis,
+    setDraftBasis: params.setDraftBasis,
+    draftOmPercentage: params.draftOmPercentage,
+    setDraftOmPercentage: params.setDraftOmPercentage,
+    draftHaircutPercentage: params.draftHaircutPercentage,
+    setDraftHaircutPercentage: params.setDraftHaircutPercentage,
+    isStale: params.isStale,
+    isRecalculating: params.isRecalculating,
+    handleRecalculate: params.handleRecalculate,
     mutations: {
       save: updateSimMutation,
     },

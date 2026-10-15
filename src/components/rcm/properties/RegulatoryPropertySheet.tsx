@@ -23,14 +23,16 @@ import { api } from '@/lib/api-client';
 import { EntityHistoryList } from './EntityHistoryList';
 import { NodeVisualProperties } from './NodeVisualProperties';
 import { RiskGroupCard } from './RiskGroupCard';
-import { BPM_NON_SYNC_NODE_TYPES, regulatoryPairsOf } from '@shared/control-linkage';
+import { BPM_NON_SYNC_NODE_TYPES } from '@shared/control-linkage';
 import type { AiSuggestionContext } from './AiSuggestionPopover';
+import { useRegulatoryPairs } from './useRegulatoryPairs';
+import type { PairSequenceData } from './useRegulatoryPairs';
 
 interface RegulatoryPropertySheetProps {
   selectedNode: Node | null;
   isOpen: boolean;
   onClose: () => void;
-  onUpdateNodeData: (id: string, data: any) => void;
+  onUpdateNodeData: (id: string, data: Record<string, unknown>) => void;
   onDeleteNode: (id: string) => void;
   onSave: () => void;
   isSaving?: boolean;
@@ -66,38 +68,30 @@ export function RegulatoryPropertySheet({
 
   const { data: sequenceData } = useQuery({
     queryKey: ['bpm-next-sequences', bpmProcessId],
-    queryFn: () => api<{nextRiskSeq: number, nextControlSeq: number, bpmCode: string}>(`/api/bpm-processes/${bpmProcessId}/next-sequences`),
+    queryFn: () => api<PairSequenceData>(`/api/bpm-processes/${bpmProcessId}/next-sequences`),
     enabled: !!bpmProcessId
   });
 
-  const pairs = useMemo(() => {
-    return regulatoryPairsOf(selectedNode?.data);
-  }, [selectedNode?.data]);
-
-  const groupedRisks = useMemo(() => {
-    if (!selectedNode) return [];
-    const groups: Record<string, { risk: any, controls: { data: any, index: number }[] }> = {};
-    
-    pairs.forEach((p: any, index: number) => {
-      const rId = p._tempRiskId || p.riskId || `R-GROUP-${index}`;
-      if (!groups[rId]) {
-        groups[rId] = { risk: p, controls: [] };
-      }
-      groups[rId].controls.push({ data: p, index });
-    });
-    
-    return Object.values(groups);
-  }, [pairs, selectedNode]);
-
-  const duplicateRiskIds = useMemo(() => {
-    const riskIds: string[] = pairs.map((p: any) => p.riskId?.trim()).filter(Boolean);
-    return new Set<string>(riskIds.filter((id: string, idx: number) => riskIds.indexOf(id) !== idx));
-  }, [pairs]);
-
-  const duplicateControlIds = useMemo(() => {
-    const ctrlIds: string[] = pairs.map((p: any) => p.controlId?.trim()).filter(Boolean);
-    return new Set<string>(ctrlIds.filter((id: string, idx: number) => ctrlIds.indexOf(id) !== idx));
-  }, [pairs]);
+  const linkage = useRegulatoryPairs({
+    nodeId: selectedNode?.id ?? '',
+    nodeData: selectedNode?.data,
+    nodes,
+    sequenceData,
+    onUpdateNodeData,
+  });
+  const {
+    pairs,
+    groupedRisks,
+    duplicateRiskIds,
+    duplicateControlIds,
+    updateAllPairsForRisk,
+    updateSpecificControl,
+    applyRiskDescription,
+    addNewRisk,
+    addControlToRisk,
+    removePairAt,
+    removeRisk,
+  } = linkage;
 
   const handleClose = () => {
     if (isDirty) {
@@ -109,113 +103,15 @@ export function RegulatoryPropertySheet({
 
   if (!selectedNode) return null;
 
-  const updateAllPairsForRisk = (riskKey: string, field: string, value: any) => {
-    const nextPairs = pairs.map((p: any) => {
-      const match = (p.riskId === riskKey) || (p._tempRiskId === riskKey);
-      if (!match) return p;
-
-      const updated = { ...p, [field]: value };
-      return updated;
-    });
-    onUpdateNodeData(selectedNode.id, { regulatoryPairs: nextPairs });
-  };
-
-  const updateSpecificControl = (pairIndex: number, field: string, value: any) => {
-    const nextPairs = [...pairs];
-    const updated = { ...nextPairs[pairIndex], [field]: value };
-    nextPairs[pairIndex] = updated;
-    onUpdateNodeData(selectedNode.id, { regulatoryPairs: nextPairs });
-  };
-
-  const applyRiskDescription = (riskKey: string, description: string, source: 'ai' | 'manual') => {
-    const nextPairs = pairs.map((p) => {
-      const match = (p.riskId === riskKey) || (p._tempRiskId === riskKey);
-      if (!match) return p;
-      return { ...p, riskDescription: description, riskSource: source };
-    });
-    onUpdateNodeData(selectedNode.id, { regulatoryPairs: nextPairs });
-  };
-
-  const riskSuggestBase: AiSuggestionContext | null = suggestionBase?.bpmName
-    ? { ...suggestionBase, bpmName: suggestionBase.bpmName, nodeLabel: selectedNode?.data?.label || '' }
-    : null;
-
-  const generateNewIds = (type: 'risk' | 'control', offset: number = 0) => {
-    if (!sequenceData || !sequenceData.bpmCode) {
-       return `${type === 'risk' ? 'R' : 'C'}-${crypto.randomUUID().substring(0, 8)}`;
-    }
-    const bpmCode = sequenceData.bpmCode;
-    let maxVal = type === 'risk' ? sequenceData.nextRiskSeq - 1 : sequenceData.nextControlSeq - 1;
-
-    nodes.forEach(node => {
-        const nodePairs = regulatoryPairsOf(node.data);
-        nodePairs.forEach((p) => {
-           const id = type === 'risk' ? (p.riskId || p._tempRiskId) : (p.controlId || p._tempControlId);
-           if (id && typeof id === 'string' && id.startsWith(`${type === 'risk' ? 'R' : 'C'}-${bpmCode}-`)) {
-              const parts = id.split('-');
-              const seq = parseInt(parts[2], 10);
-              if (!isNaN(seq) && seq > maxVal) maxVal = seq;
-           }
-        });
-    });
-
-    return `${type === 'risk' ? 'R' : 'C'}-${bpmCode}-${(maxVal + 1 + offset).toString().padStart(4, '0')}`;
-  };
-
-  const addNewRisk = () => {
-    const tempId = generateNewIds('risk');
-    const ctrlId = generateNewIds('control');
-    const nextPairs = [...pairs, {
-      _tempRiskId: tempId,
-      _tempControlId: ctrlId,
-      riskId: tempId,
-      controlId: ctrlId,
-      riskDescription: '',
-      controlDescription: '',
-      isFraudRelated: false,
-      riskRating: 'Low',
-      isKeyControl: false,
-      classification: 'TLC',
-      controlType: 'Preventif',
-      controlNature: 'Manual',
-      frequency: 'Bulanan',
-      ipoC: 'N', ipoA: 'N', ipoV: 'N', ipoRa: 'N'
-    }];
-    onUpdateNodeData(selectedNode.id, { regulatoryPairs: nextPairs });
-  };
-
-  const addControlToRisk = (riskKey: string) => {
-    const template = pairs.find((p: any) => (p.riskId === riskKey || p._tempRiskId === riskKey));
-    const ctrlId = generateNewIds('control');
-    const nextPairs = [...pairs, {
-      ...template,
-      controlId: ctrlId,
-      _tempControlId: ctrlId,
-      controlDescription: '',
-      isKeyControl: false,
-      controlType: 'Preventif',
-      controlNature: 'Manual',
-      frequency: 'Bulanan',
-      ipoC: 'N', ipoA: 'N', ipoV: 'N', ipoRa: 'N',
-      cosoPrinciples: [],
-      itgcAssertions: {}
-    }];
-    onUpdateNodeData(selectedNode.id, { regulatoryPairs: nextPairs });
-  };
-
-  const removePair = (index: number) => {
-    const nextPairs = pairs.filter((_: any, i: number) => i !== index);
-    onUpdateNodeData(selectedNode.id, { regulatoryPairs: nextPairs });
-  };
+  const riskSuggestBase = linkage.suggestBaseFor(suggestionBase, selectedNode?.data?.label || '');
 
   const executeRemoveRisk = (riskKey: string) => {
-    const nextPairs = pairs.filter((p: any) => (p.riskId !== riskKey && p._tempRiskId !== riskKey));
-    onUpdateNodeData(selectedNode.id, { regulatoryPairs: nextPairs });
+    removeRisk(riskKey);
     setDeleteConfirm(null);
   };
 
   const executeRemoveControl = (index: number) => {
-    removePair(index);
+    removePairAt(index);
     setDeleteConfirm(null);
   };
 
@@ -245,10 +141,10 @@ export function RegulatoryPropertySheet({
           <div className="px-4 sm:px-6 border-b bg-white max-w-full overflow-x-auto touch-pan-x overscroll-x-contain no-scrollbar">
             <TabsList className="bg-transparent h-auto min-h-12 gap-4 sm:gap-6 flex w-max min-w-full">
               <TabsTrigger value="properties" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2">
-                <Layout className="h-4 w-4" /> Properties
+                <Layout className="h-4 w-4" /> {t('rcm:matrix.properties.tabs.properties')}
               </TabsTrigger>
               <TabsTrigger value="history" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2">
-                <History className="h-4 w-4" /> Change Log (Lampiran 6)
+                <History className="h-4 w-4" /> {t('rcm:matrix.properties.tabs.changelog')}
               </TabsTrigger>
             </TabsList>
           </div>
@@ -290,7 +186,7 @@ export function RegulatoryPropertySheet({
                       group={group}
                       gIdx={gIdx}
                       isLocked={isLocked}
-                      isDuplicateRiskId={duplicateRiskIds.has(group.risk.riskId?.trim())}
+                      isDuplicateRiskId={duplicateRiskIds.has(group.risk.riskId?.trim() ?? '')}
                       duplicateControlIds={duplicateControlIds}
                       pairs={pairs}
                       riskSuggestBase={riskSuggestBase}
@@ -317,16 +213,16 @@ export function RegulatoryPropertySheet({
                <div className="space-y-4">
                   <div className="flex flex-col gap-1 mb-6">
                     <h4 className="text-xs font-black uppercase text-slate-700 tracking-wider flex items-center gap-2">
-                      <History className="h-3 w-3" /> Audit Trail (Lampiran 6)
+                      <History className="h-3 w-3" /> {t('rcm:matrix.properties.audit_trail')}
                     </h4>
-                    <p className="text-xs text-slate-500">Riwayat perubahan regulasi untuk seluruh risiko/kontrol pada node ini.</p>
+                    <p className="text-xs text-slate-500">{t('rcm:matrix.properties.audit_trail_desc')}</p>
                   </div>
 
-                  {Array.from(new Set(pairs.map((p: any) => p.controlId))).map((cId: any) => (
+                  {Array.from(new Set(pairs.map((p) => (typeof p.controlId === 'string' ? p.controlId : '')))).map((cId) => (
                     <div key={cId} className="space-y-3">
                        <div className="flex items-center gap-2">
                           <div className="h-1.5 w-1.5 rounded-full bg-indigo-400" />
-                          <span className="text-xs font-bold text-slate-500 font-mono">Entity: {cId}</span>
+                          <span className="text-xs font-bold text-slate-500 font-mono">{t('rcm:matrix.properties.history.entity', { id: cId })}</span>
                        </div>
                        <EntityHistoryList entityId={cId} />
                     </div>
@@ -374,9 +270,9 @@ export function RegulatoryPropertySheet({
             {deleteConfirm?.type === 'risk' ? t('rcm:matrix.properties.warnings.delete_risk_confirm') : t('rcm:matrix.properties.warnings.delete_control_confirm')}
           </AlertDialogTitle>
           <AlertDialogDescription>
-            {deleteConfirm?.type === 'risk' 
-              ? "WARNING: Deleting this risk will delete ALL control data under it. This data will be PERMANENTLY removed from the RCM database when you press 'Save & Sync'." 
-              : "Delete this Risk-Control mapping row? Data associated with this row will be lost from the TLC Matrix permanently after sync."}
+            {deleteConfirm?.type === 'risk'
+              ? t('rcm:matrix.properties.warnings.delete_risk_desc')
+              : t('rcm:matrix.properties.warnings.delete_control_desc')}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="flex-col-reverse sm:flex-row gap-2">

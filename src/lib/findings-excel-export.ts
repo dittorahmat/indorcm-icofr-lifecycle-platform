@@ -1,5 +1,4 @@
 import { format } from 'date-fns';
-import type { Deficiency } from '@shared/types';
 import type { RegulatoryExportColumn } from './rcm-excel-export';
 
 export interface FindingsColumnLabels {
@@ -17,6 +16,22 @@ export interface FindingsColumnLabels {
 
 const FALLBACK = '-';
 
+import type { Control, Deficiency } from '@shared/types';
+
+export type FindingExportRow = Partial<
+  Pick<Deficiency, 'id' | 'description' | 'exposureValue' | 'identifiedBy' | 'identifiedDate' | 'controlId'>
+> & {
+  // Display-level widening: report rows and fixtures carry plain strings
+  // where the domain type uses literal unions.
+  severity?: string;
+  status?: string;
+  source?: string | null;
+  controlCode?: string | null;
+  controlName?: string | null;
+};
+
+export type FindingControlRef = Partial<Pick<Control, 'id' | 'code' | 'name'>>;
+
 export function findingsColumns(labels: FindingsColumnLabels): RegulatoryExportColumn[] {
   return [
     { key: 'no', header: labels.no, numeric: true },
@@ -33,8 +48,8 @@ export function findingsColumns(labels: FindingsColumnLabels): RegulatoryExportC
 }
 
 export function mapFindingsRows(
-  deficiencies: Deficiency[],
-  resolveControlName: (d: Deficiency) => string,
+  deficiencies: FindingExportRow[],
+  resolveControlName: (d: FindingExportRow) => string,
 ): Record<string, unknown>[] {
   return deficiencies.map((d, index) => ({
     no: index + 1,
@@ -51,8 +66,8 @@ export function mapFindingsRows(
 }
 
 export function resolveFindingControlName(
-  d: Deficiency,
-  controls: Array<{ id?: string; code?: string; name?: string }>,
+  d: FindingExportRow,
+  controls: Array<FindingControlRef>,
 ): string {
   const match = controls.find((c) => (d.controlId && c.id === d.controlId) || (d.controlCode && c.code === d.controlCode));
   if (match) return `${match.code || match.id || ''} - ${match.name || ''}`.trim().replace(/^- /, '');

@@ -6,7 +6,6 @@ constant-outcome booleans) belong in `eslint.config.js` as
 `no-restricted-syntax` selectors instead — never here.
 
 ## Seam codes are produced once, asserted on both sides
-
 When a reason or error code crosses a module seam (worker ↔ client, route ↔
 service, module ↔ test), exactly one module produces the literal and every
 side that reads it asserts that literal in its own tests. A test that
@@ -46,3 +45,12 @@ add a reason-free entry, and escalate a warning-free type to `"error"` in
 down to a failing gate. Knip does not track `manualChunks` entries in
 `vite.config.ts`: after removing a dependency, the build must still pass —
 a stale chunk entry breaks Rollup resolution (caught live with `uuid`).
+
+## Dynamic i18n keys ride on literal unions, not free strings
+
+`check:i18n` skips template-literal `t()` keys, so a typo in
+``t(`bpm:ipo.tooltip.${key}.label`)`` is invisible to every gate. Dynamic
+segments must come from an `as const` union (e.g. `tip: 'c' | 'a' | 'v' |
+'ra'`) so `tsc` rejects unknown segments, and the reviewer spot-checks one
+rendered key per union against the `en` bundle. Precedent:
+`RCMComplianceTab.tsx` (`IPO_ITEMS` / `ASSERTION_ITEMS`).
