@@ -12,6 +12,7 @@ import type { QualitativeLevel } from '@shared/types';
 import { ControlAccordionItem } from './ControlAccordionItem';
 import { RiskDescriptionField } from './RiskDescriptionField';
 import type { AiSuggestionContext } from './AiSuggestionPopover';
+import type { RegulatoryPair } from '@shared/control-linkage';
 
 export interface RiskGroupData {
   risk: {
@@ -22,7 +23,7 @@ export interface RiskGroupData {
     isFraudRelated?: boolean;
     riskRating?: string;
   };
-  controls: { data: { _tempControlId?: string }; index: number }[];
+  controls: { data: RegulatoryPair; index: number }[];
 }
 
 interface RiskGroupCardProps {
@@ -146,7 +147,7 @@ export function RiskGroupCard({
       <Accordion type="single" collapsible className="ml-8 space-y-4">
         {group.controls.map((ctrl, cIdx) => (
           <ControlAccordionItem
-            key={ctrl.data._tempControlId || `ctrl-${ctrl.index}`}
+            key={typeof ctrl.data._tempControlId === 'string' ? ctrl.data._tempControlId : `ctrl-${ctrl.index}`}
             ctrl={ctrl}
             cIdx={cIdx}
             isLocked={isLocked}

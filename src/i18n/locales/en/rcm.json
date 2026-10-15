@@ -33,6 +33,20 @@
     "affected_fsli_item": "Affected FSLI Item",
     "effective_period": "Effective Period",
     "save_success": "Matrix data successfully saved",
+    "validation": {
+      "control_name_required": "Control name is required"
+    },
+    "dialog": {
+      "workflow_tab": "Approval & Workflow",
+      "workbench_subtitle": "Standardized Auditor Workbench - SK-5",
+      "fsli": "Financial Item (FSLI)",
+      "no_gl": "No GL",
+      "bpm_code": "BPM Code",
+      "regulatory_title": "Regulatory Context",
+      "regulatory_desc": "Process identity data above is read-only and pulled directly from the Business Process Mapping (BPM) master data to preserve audit trail integrity.",
+      "saving": "Saving...",
+      "update_mapping": "Update Mapping"
+    },
     "filter_subsidiary": "Subsidiary",
     "filter_all": "All",
     "is_key_control": "Key Control?",
@@ -110,6 +124,13 @@
       "save_changes": "Save Changes",
       "pending_sync": "Pending Sync",
       "synced": "Synced",
+      "tabs": {
+        "properties": "Properties",
+        "changelog": "Change Log (Lampiran 6)"
+      },
+      "history": {
+        "entity": "Entity: {{id}}"
+      },
       "fraud_related_q": "Fraud Related?",
       "classification_label": "Control Classification",
       "ipo_section": "Information Processing Objective (IPO)",
@@ -119,6 +140,8 @@
         "unsaved_changes": "There are changes that haven't been synced to the Matrix. Close this popup anyway?",
         "delete_risk_confirm": "WARNING: Deleting this risk will delete ALL control data under it. This data will be PERMANENTLY removed from the RCM database when you press 'Save & Sync'. Continue?",
         "delete_control_confirm": "Delete this Risk-Control mapping row? Data associated with this row will be lost from the TLC Matrix permanently after sync.",
+        "delete_risk_desc": "WARNING: Deleting this risk will delete ALL control data under it. This data will be PERMANENTLY removed from the RCM database when you press 'Save & Sync'.",
+        "delete_control_desc": "Delete this Risk-Control mapping row? Data associated with this row will be lost from the TLC Matrix permanently after sync.",
         "hard_delete_notice": "ATTENTION: Pressing save will PERMANENTLY delete Risk/Control data you have removed from this popup in the database."
       },
       "aiSuggest": {

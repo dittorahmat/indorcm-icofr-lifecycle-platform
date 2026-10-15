@@ -1,141 +1,64 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { 
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription 
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription
 } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { 
-  Form, FormControl, FormField, FormItem, FormLabel, FormMessage 
+import {
+  Form, FormControl, FormField, FormItem, FormLabel, FormMessage
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { 
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { useTranslation } from 'react-i18next';
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { cn } from '@/lib/utils';
 import { Info, ShieldAlert, CheckCircle2, History } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { SignificantApplicationCombobox } from './SignificantApplicationCombobox';
 import { WorkflowPanel } from '../workflow/WorkflowPanel';
-
-const formSchema = z.object({
-  // Identity
-  id: z.string().optional(),
-  mappingId: z.string(),
-  processName: z.string().nullable().optional(),
-  subProcessName: z.string().nullable().optional(),
-  fsliName: z.string().nullable().optional(),
-  noGL: z.string().nullable().optional(),
-  bpmCode: z.string().nullable().optional(),
-  
-  // Risk & Control
-  riskDescription: z.string().nullable().optional(),
-  isFraudRelated: z.boolean(),
-  riskRating: z.string().nullable().optional(),
-  controlCode: z.string().nullable().optional(),
-  mappedControlName: z.string().min(1, "Nama kontrol wajib diisi"),
-  mappedControlDescription: z.string().nullable().optional(),
-  supportingDocs: z.string().nullable().optional(),
-  isKeyControl: z.boolean(),
-  controlType: z.string().nullable().optional(),
-  controlNature: z.string().nullable().optional(),
-  applicationId: z.string().nullable().optional(),
-  automatedSubNature: z.string().nullable().optional(),
-  frequency: z.string().nullable().optional(),
-  supportingApp: z.string().nullable().optional(),
-  executingFunction: z.string().nullable().optional(),
-  executorRole: z.string().nullable().optional(),
-  affectedFsliItem: z.string().nullable().optional(),
-  effectivePeriod: z.string().nullable().optional(),
-
-  // Compliance (IPO)
-  ipoC: z.boolean(),
-  ipoA: z.boolean(),
-  ipoV: z.boolean(),
-  ipoRa: z.boolean(),
-
-  // Compliance (Assertions)
-  assertionE: z.boolean(),
-  assertionC: z.boolean(),
-  assertionA: z.boolean(),
-  assertionCo: z.boolean(),
-  assertionVa: z.boolean(),
-  assertionRo: z.boolean(),
-  assertionPd: z.boolean(),
-  
-  // ITGC specific
-  itgcDomain: z.string().nullable().optional(),
-});
-
-type FormValues = z.infer<typeof formSchema>;
+import { RCMComplianceTab } from './RCMComplianceTab';
+import {
+  createRcmFormSchema,
+  defaultRcmValues,
+  resolveRcmWorkflowStatus,
+  valuesFromData,
+} from './rcm-form-schema';
+import type { RcmDialogSource, RcmFormValues } from './rcm-form-schema';
 
 interface RCMEditDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  data: any;
-  onSave: (values: FormValues) => void;
+  data: RcmDialogSource | null;
+  onSave: (values: RcmFormValues) => void;
   isSaving?: boolean;
 }
 
 export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RCMEditDialogProps) {
-  const { t } = useTranslation(['rcm', 'bpm']);
-  
-  const form = useForm<FormValues>({
+  const { t } = useTranslation(['rcm', 'bpm', 'risklibrary', 'common']);
+
+  const formSchema = React.useMemo(() => createRcmFormSchema((key: string) => t(key)), [t]);
+
+  const form = useForm<RcmFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      id: '',
-      mappingId: '',
-      isFraudRelated: false,
-      isKeyControl: false,
-      ipoC: false,
-      ipoA: false,
-      ipoV: false,
-      ipoRa: false,
-      assertionE: false,
-      assertionC: false,
-      assertionA: false,
-      assertionCo: false,
-      assertionVa: false,
-      assertionRo: false,
-      assertionPd: false,
-    },
+    defaultValues: defaultRcmValues,
   });
 
   // Reset form when data changes
   React.useEffect(() => {
     if (data && open) {
-      const parseBool = (val: any) => val === 'Y' || val === true || val === 'true';
-
-      form.reset({
-        ...data,
-        isFraudRelated: parseBool(data.isFraudRelated),
-        isKeyControl: parseBool(data.isKeyControl),
-        ipoC: parseBool(data.ipoC),
-        ipoA: parseBool(data.ipoA),
-        ipoV: parseBool(data.ipoV),
-        ipoRa: parseBool(data.ipoRa),
-        assertionE: parseBool(data.assertionE),
-        assertionC: parseBool(data.assertionC),
-        assertionA: parseBool(data.assertionA),
-        assertionCo: parseBool(data.assertionCo),
-        assertionVa: parseBool(data.assertionVa),
-        assertionRo: parseBool(data.assertionRo),
-        assertionPd: parseBool(data.assertionPd),
-      });
+      form.reset(valuesFromData(data));
     }
   }, [data, open, form]);
 
   useUnsavedChanges(form.formState.isDirty && open);
 
-  const handleSubmit = (values: FormValues) => {
+  const handleSubmit = (values: RcmFormValues) => {
     onSave(values);
   };
 
@@ -152,7 +75,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                   {t('matrix.control_name')}: {data?.controlCode || '-'}
                 </DialogTitle>
                 <DialogDescription className="text-xs font-bold uppercase tracking-wider text-slate-500 mt-0.5 truncate">
-                  Standardized Auditor Workbench - SK-5
+                  {t('matrix.dialog.workbench_subtitle')}
                 </DialogDescription>
              </div>
           </div>
@@ -163,29 +86,29 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
             <Tabs defaultValue="general" className="flex-1 flex flex-col min-h-0 overflow-hidden">
               <div className="px-3 sm:px-6 bg-slate-50 border-b border-slate-200 overflow-x-auto shrink-0">
                 <TabsList className="bg-transparent h-11 sm:h-12 p-0 gap-4 sm:gap-8 justify-start w-max">
-                  <TabsTrigger 
-                    value="general" 
+                  <TabsTrigger
+                    value="general"
                     className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-indigo-600 data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none h-full px-0 font-bold uppercase text-xs tracking-wider"
                   >
                     <Info className="h-3.5 w-3.5 mr-2" /> {t('matrix.sections.general')}
                   </TabsTrigger>
-                  <TabsTrigger 
-                    value="risk" 
+                  <TabsTrigger
+                    value="risk"
                     className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-indigo-600 data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none h-full px-0 font-black uppercase text-xs tracking-wider"
                   >
                     <ShieldAlert className="h-3.5 w-3.5 mr-2" /> {t('matrix.sections.risk_control')}
                   </TabsTrigger>
-                  <TabsTrigger 
-                    value="compliance" 
+                  <TabsTrigger
+                    value="compliance"
                     className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-indigo-600 data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none h-full px-0 font-black uppercase text-xs tracking-wider"
                   >
                     <CheckCircle2 className="h-3.5 w-3.5 mr-2" /> {t('matrix.sections.compliance')}
                   </TabsTrigger>
-                  <TabsTrigger 
-                    value="workflow" 
+                  <TabsTrigger
+                    value="workflow"
                     className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-indigo-600 data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none h-full px-0 font-black uppercase text-xs tracking-wider"
                   >
-                    <History className="h-3.5 w-3.5 mr-2" /> Approval & Workflow
+                    <History className="h-3.5 w-3.5 mr-2" /> {t('matrix.dialog.workflow_tab')}
                   </TabsTrigger>
                 </TabsList>
               </div>
@@ -201,7 +124,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.process_info')}</FormLabel>
-                              <FormControl><Input {...field} readOnly className="bg-slate-50 border-slate-200 min-h-[44px] text-base md:text-sm font-semibold text-slate-700" /></FormControl>
+                              <FormControl><Input {...field} value={field.value ?? ''} readOnly className="bg-slate-50 border-slate-200 min-h-[44px] text-base md:text-sm font-semibold text-slate-700" /></FormControl>
                             </FormItem>
                           )}
                         />
@@ -211,7 +134,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.sub_process')}</FormLabel>
-                              <FormControl><Input {...field} readOnly className="bg-slate-50 border-slate-200 min-h-[44px] text-base md:text-sm font-semibold text-slate-700" /></FormControl>
+                              <FormControl><Input {...field} value={field.value ?? ''} readOnly className="bg-slate-50 border-slate-200 min-h-[44px] text-base md:text-sm font-semibold text-slate-700" /></FormControl>
                             </FormItem>
                           )}
                         />
@@ -222,8 +145,8 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                           name="fsliName"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-xs font-black uppercase text-slate-400">Financial Item (FSLI)</FormLabel>
-                              <FormControl><Input {...field} readOnly className="bg-slate-50 border-slate-200 min-h-[44px] text-base md:text-sm font-semibold text-slate-700" /></FormControl>
+                              <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.dialog.fsli')}</FormLabel>
+                              <FormControl><Input {...field} value={field.value ?? ''} readOnly className="bg-slate-50 border-slate-200 min-h-[44px] text-base md:text-sm font-semibold text-slate-700" /></FormControl>
                             </FormItem>
                           )}
                         />
@@ -233,8 +156,8 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                             name="noGL"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="text-xs font-black uppercase text-slate-400">No GL</FormLabel>
-                                <FormControl><Input {...field} readOnly className="bg-slate-50 border-slate-200 min-h-[44px] text-base md:text-sm font-mono font-bold text-indigo-700" /></FormControl>
+                                <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.dialog.no_gl')}</FormLabel>
+                                <FormControl><Input {...field} value={field.value ?? ''} readOnly className="bg-slate-50 border-slate-200 min-h-[44px] text-base md:text-sm font-mono font-bold text-indigo-700" /></FormControl>
                               </FormItem>
                             )}
                           />
@@ -243,23 +166,23 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                             name="bpmCode"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="text-xs font-black uppercase text-slate-400">BPM Code</FormLabel>
-                                <FormControl><Input {...field} readOnly className="bg-slate-50 border-slate-200 min-h-[44px] text-base md:text-sm font-mono font-bold text-indigo-700" /></FormControl>
+                                <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.dialog.bpm_code')}</FormLabel>
+                                <FormControl><Input {...field} value={field.value ?? ''} readOnly className="bg-slate-50 border-slate-200 min-h-[44px] text-base md:text-sm font-mono font-bold text-indigo-700" /></FormControl>
                               </FormItem>
                             )}
                           />
                         </div>
                       </div>
                    </div>
-                   
+
                    <div className="bg-indigo-50/50 border border-indigo-100 rounded-lg p-4 flex items-start gap-3">
                       <div className="bg-white p-1.5 rounded-full shadow-sm">
                          <Info className="h-4 w-4 text-indigo-600" />
                       </div>
                       <div>
-                         <p className="text-xs font-bold text-indigo-900 leading-tight">Regulatory Context</p>
+                         <p className="text-xs font-bold text-indigo-900 leading-tight">{t('matrix.dialog.regulatory_title')}</p>
                          <p className="text-xs text-indigo-700 mt-1 leading-relaxed opacity-80">
-                           Data Identitas Proses di atas bersifat read-only dan ditarik langsung dari master data Business Process Mapping (BPM) untuk menjaga integritas audit trail.
+                           {t('matrix.dialog.regulatory_desc')}
                          </p>
                       </div>
                    </div>
@@ -275,12 +198,12 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.risk_description')}</FormLabel>
-                              <FormControl><Textarea {...field} rows={3} className="min-h-[44px] text-base md:text-sm border-slate-200 focus:border-indigo-300 transition-all leading-normal" /></FormControl>
+                              <FormControl><Textarea {...field} value={field.value ?? ''} rows={3} className="min-h-[44px] text-base md:text-sm border-slate-200 focus:border-indigo-300 transition-all leading-normal" /></FormControl>
                             </FormItem>
                           )}
                         />
                       </div>
-                      
+
                       <div className="col-span-12 sm:col-span-6 space-y-4">
                         <FormField
                           control={form.control}
@@ -288,7 +211,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.control_name')}</FormLabel>
-                              <FormControl><Input {...field} className="min-h-[44px] text-base md:text-sm border-slate-200 font-bold" /></FormControl>
+                              <FormControl><Input {...field} value={field.value ?? ''} className="min-h-[44px] text-base md:text-sm border-slate-200 font-bold" /></FormControl>
                               <FormMessage className="text-xs" />
                             </FormItem>
                           )}
@@ -299,7 +222,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.control_description')}</FormLabel>
-                              <FormControl><Textarea {...field} rows={5} className="min-h-[44px] text-base md:text-sm border-slate-200 leading-relaxed" /></FormControl>
+                              <FormControl><Textarea {...field} value={field.value ?? ''} rows={5} className="min-h-[44px] text-base md:text-sm border-slate-200 leading-relaxed" /></FormControl>
                             </FormItem>
                           )}
                         />
@@ -313,14 +236,14 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                               render={({ field }) => (
                                 <FormItem>
                                   <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.risk_rating')}</FormLabel>
-                                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <Select onValueChange={field.onChange} defaultValue={field.value ?? undefined}>
                                     <FormControl>
                                       <SelectTrigger className="text-base sm:text-xs h-11 sm:h-9 min-h-[44px] sm:min-h-0 border-slate-200"><SelectValue /></SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                      <SelectItem value="High" className="text-xs text-rose-600 font-bold">High</SelectItem>
-                                      <SelectItem value="Medium" className="text-xs text-amber-600 font-bold">Medium</SelectItem>
-                                      <SelectItem value="Low" className="text-xs text-emerald-600 font-bold">Low</SelectItem>
+                                      <SelectItem value="High" className="text-xs text-rose-600 font-bold">{t('risklibrary:form.high')}</SelectItem>
+                                      <SelectItem value="Medium" className="text-xs text-amber-600 font-bold">{t('risklibrary:form.medium')}</SelectItem>
+                                      <SelectItem value="Low" className="text-xs text-emerald-600 font-bold">{t('risklibrary:form.low')}</SelectItem>
                                     </SelectContent>
                                   </Select>
                                 </FormItem>
@@ -345,13 +268,13 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                               render={({ field }) => (
                                 <FormItem>
                                   <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.type')}</FormLabel>
-                                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <Select onValueChange={field.onChange} defaultValue={field.value ?? undefined}>
                                     <FormControl>
                                       <SelectTrigger className="text-base sm:text-xs h-11 sm:h-9 min-h-[44px] sm:min-h-0 border-slate-200"><SelectValue /></SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                      <SelectItem value="Preventive" className="text-xs">Preventive</SelectItem>
-                                      <SelectItem value="Detective" className="text-xs">Detective</SelectItem>
+                                      <SelectItem value="Preventive" className="text-xs">{t('matrix.options.type.preventive')}</SelectItem>
+                                      <SelectItem value="Detective" className="text-xs">{t('matrix.options.type.detective')}</SelectItem>
                                     </SelectContent>
                                   </Select>
                                 </FormItem>
@@ -363,16 +286,16 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                               render={({ field }) => (
                                 <FormItem>
                                   <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.nature')}</FormLabel>
-                                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <Select onValueChange={field.onChange} defaultValue={field.value ?? undefined}>
                                     <FormControl>
                                       <SelectTrigger className="text-base sm:text-xs h-11 sm:h-9 min-h-[44px] sm:min-h-0 border-slate-200"><SelectValue /></SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                      <SelectItem value="Manual" className="text-xs">Manual</SelectItem>
-                                      <SelectItem value="Automated" className="text-xs">Automated</SelectItem>
-                                      <SelectItem value="ITDM - IPE" className="text-xs">ITDM - IPE</SelectItem>
-                                      <SelectItem value="ITDM - EUC" className="text-xs">ITDM - EUC</SelectItem>
-                                      <SelectItem value="MRC" className="text-xs">MRC</SelectItem>
+                                      <SelectItem value="Manual" className="text-xs">{t('matrix.options.nature.manual')}</SelectItem>
+                                      <SelectItem value="Automated" className="text-xs">{t('matrix.options.nature.automated')}</SelectItem>
+                                      <SelectItem value="ITDM - IPE" className="text-xs">{t('matrix.options.nature.itdm_ipe')}</SelectItem>
+                                      <SelectItem value="ITDM - EUC" className="text-xs">{t('matrix.options.nature.itdm_euc')}</SelectItem>
+                                      <SelectItem value="MRC" className="text-xs">{t('matrix.options.nature.mrc')}</SelectItem>
                                     </SelectContent>
                                   </Select>
                                 </FormItem>
@@ -388,8 +311,8 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                                 <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.significant_application', { defaultValue: 'Significant Application' })}</FormLabel>
                                 <FormControl>
                                   <SignificantApplicationCombobox
-                                    value={field.value}
-                                    appName={form.watch('supportingApp')}
+                                    value={field.value ?? null}
+                                    appName={form.watch('supportingApp') ?? ''}
                                     onChange={(appId, appName) => {
                                       field.onChange(appId);
                                       form.setValue('supportingApp', appName || '', { shouldDirty: true });
@@ -400,25 +323,25 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                               </FormItem>
                             )}
                           />
-                         
+
                          <FormField
                             control={form.control}
                             name="frequency"
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel className="text-xs font-black uppercase text-slate-400">{t('matrix.frequency')}</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <Select onValueChange={field.onChange} defaultValue={field.value ?? undefined}>
                                   <FormControl>
                                     <SelectTrigger className="text-base sm:text-xs h-11 sm:h-9 min-h-[44px] sm:min-h-0 border-slate-200"><SelectValue /></SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
-                                    <SelectItem value="Annual" className="text-xs">Annual</SelectItem>
-                                    <SelectItem value="Semi-Annual" className="text-xs">Semi-Annual</SelectItem>
-                                    <SelectItem value="Quarterly" className="text-xs">Quarterly</SelectItem>
-                                    <SelectItem value="Monthly" className="text-xs">Monthly</SelectItem>
-                                    <SelectItem value="Weekly" className="text-xs">Weekly</SelectItem>
-                                    <SelectItem value="Daily" className="text-xs">Daily</SelectItem>
-                                    <SelectItem value="Ad-hoc" className="text-xs">Ad-hoc</SelectItem>
+                                    <SelectItem value="Annual" className="text-xs">{t('matrix.options.frequency.annual')}</SelectItem>
+                                    <SelectItem value="Semi-Annual" className="text-xs">{t('matrix.options.frequency.semi_annual')}</SelectItem>
+                                    <SelectItem value="Quarterly" className="text-xs">{t('matrix.options.frequency.quarterly')}</SelectItem>
+                                    <SelectItem value="Monthly" className="text-xs">{t('matrix.options.frequency.monthly')}</SelectItem>
+                                    <SelectItem value="Weekly" className="text-xs">{t('matrix.options.frequency.weekly')}</SelectItem>
+                                    <SelectItem value="Daily" className="text-xs">{t('matrix.options.frequency.daily')}</SelectItem>
+                                    <SelectItem value="Ad-hoc" className="text-xs">{t('matrix.options.frequency.adhoc')}</SelectItem>
                                   </SelectContent>
                                 </Select>
                               </FormItem>
@@ -429,99 +352,8 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                 </TabsContent>
 
                 {/* Compliance Tab */}
-                 <TabsContent value="compliance" className="m-0 space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                    <div className="space-y-4">
-                       <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
-                          <Badge className="bg-blue-600 text-xs font-black">IPO</Badge>
-                          <h3 className="text-xs font-black uppercase tracking-widest text-slate-700">{t('matrix.ipo')}</h3>
-                       </div>
-                       <TooltipProvider>
-                            <div className="grid grid-cols-1 min-[380px]:grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-                             {[
-                               { name: 'ipoC', label: 'C', desc: t('bpm:ipo.tooltip.c.label'), tooltip: t('bpm:ipo.tooltip.c.desc') },
-                               { name: 'ipoA', label: 'A', desc: t('bpm:ipo.tooltip.a.label'), tooltip: t('bpm:ipo.tooltip.a.desc') },
-                               { name: 'ipoV', label: 'V', desc: t('bpm:ipo.tooltip.v.label'), tooltip: t('bpm:ipo.tooltip.v.desc') },
-                               { name: 'ipoRa', label: 'RA', desc: t('bpm:ipo.tooltip.ra.label'), tooltip: t('bpm:ipo.tooltip.ra.desc') }
-                             ].map(item => (
-                               <FormField
-                                key={item.name}
-                                control={form.control}
-                                name={item.name as any}
-                                render={({ field }) => (
-                                  <FormItem className="flex items-center gap-3 space-y-0 rounded-xl border border-slate-100 bg-slate-50/50 p-3 hover:bg-blue-50/30 transition-colors">
-                                    <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                                    <div className="leading-none flex-1">
-                                       <div className="flex items-center gap-1.5">
-                                          <FormLabel className="text-xs font-black text-blue-700 cursor-default">{item.label}</FormLabel>
-                                          <Tooltip>
-                                             <TooltipTrigger asChild>
-                                                <button type="button" className="cursor-help text-slate-300 hover:text-blue-500 transition-colors focus:outline-none">
-                                                   <Info className="h-3 w-3" />
-                                                </button>
-                                             </TooltipTrigger>
-                                             <TooltipContent side="top" className="max-w-[280px] p-3 rounded-xl shadow-xl border-none bg-slate-900 text-white z-[1100]">
-                                                <p className="text-xs font-bold text-blue-400">{item.label} - {item.desc}</p>
-                                                <p className="text-xs mt-1 text-slate-300 leading-relaxed">"{item.tooltip}"</p>
-                                             </TooltipContent>
-                                          </Tooltip>
-                                       </div>
-                                       <p className="text-xs text-slate-400 font-bold uppercase mt-1 line-clamp-1">{item.desc}</p>
-                                    </div>
-                                  </FormItem>
-                                )}
-                              />
-                             ))}
-                          </div>
-                       </TooltipProvider>
-                    </div>
-
-                   <div className="space-y-4">
-                       <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
-                          <Badge className="bg-indigo-600 text-xs font-black">ASERSi</Badge>
-                          <h3 className="text-xs font-black uppercase tracking-widest text-slate-700">{t('matrix.assertions')}</h3>
-                       </div>
-                       <TooltipProvider>
-                            <div className="grid grid-cols-1 min-[380px]:grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-                             {[
-                               { name: 'assertionE', label: 'E/O', desc: t('bpm:assertions.tooltip.eo.label'), tooltip: t('bpm:assertions.tooltip.eo.desc') },
-                               { name: 'assertionC', label: 'C', desc: t('bpm:assertions.tooltip.c.label'), tooltip: t('bpm:assertions.tooltip.c.desc') },
-                               { name: 'assertionA', label: 'A', desc: t('bpm:assertions.tooltip.a.label'), tooltip: t('bpm:assertions.tooltip.a.desc') },
-                               { name: 'assertionCo', label: 'CO', desc: t('bpm:assertions.tooltip.co.label'), tooltip: t('bpm:assertions.tooltip.co.desc') },
-                               { name: 'assertionVa', label: 'V/A', desc: t('bpm:assertions.tooltip.va.label'), tooltip: t('bpm:assertions.tooltip.va.desc') },
-                               { name: 'assertionRo', label: 'R&O', desc: t('bpm:assertions.tooltip.ro.label'), tooltip: t('bpm:assertions.tooltip.ro.desc') },
-                               { name: 'assertionPd', label: 'PD', desc: t('bpm:assertions.tooltip.pd.label'), tooltip: t('bpm:assertions.tooltip.pd.desc') }
-                             ].map(item => (
-                               <FormField
-                                key={item.name}
-                                control={form.control}
-                                name={item.name as any}
-                                render={({ field }) => (
-                                  <FormItem className="flex items-center gap-3 space-y-0 rounded-xl border border-slate-100 bg-slate-50/50 p-3 hover:bg-indigo-50/30 transition-colors">
-                                    <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                                    <div className="leading-none flex-1">
-                                       <div className="flex items-center gap-1.5">
-                                          <FormLabel className="text-xs font-black text-indigo-700 cursor-default">{item.label}</FormLabel>
-                                          <Tooltip>
-                                             <TooltipTrigger asChild>
-                                                <button type="button" className="cursor-help text-slate-300 hover:text-indigo-500 transition-colors focus:outline-none">
-                                                   <Info className="h-3 w-3" />
-                                                </button>
-                                             </TooltipTrigger>
-                                             <TooltipContent side="top" className="max-w-[280px] p-3 rounded-xl shadow-xl border-none bg-slate-900 text-white z-[1100]">
-                                                <p className="text-xs font-bold text-indigo-400">{item.label} - {item.desc}</p>
-                                                <p className="text-xs mt-1 text-slate-300 leading-relaxed">"{item.tooltip}"</p>
-                                             </TooltipContent>
-                                          </Tooltip>
-                                       </div>
-                                       <p className="text-xs text-slate-400 font-bold uppercase mt-1 line-clamp-1">{item.desc}</p>
-                                    </div>
-                                  </FormItem>
-                                )}
-                              />
-                             ))}
-                          </div>
-                       </TooltipProvider>
-                    </div>
+                <TabsContent value="compliance" className="m-0 space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <RCMComplianceTab form={form} t={(key: string) => t(key)} />
                 </TabsContent>
 
                 {/* Workflow & Approval Tab */}
@@ -529,9 +361,9 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                    <div className="space-y-4">
                       <WorkflowPanel
                         entityType="RCM_CHANGE"
-                        entityId={data?.rcmId || data?.id || ''}
-                        currentStatus={data?.workflowStatus || (data?.status === 'Pending Change Approval' ? 'In Review' : (data?.status === 'Active' ? 'Approved' : 'Draft'))}
-                        history={data?.workflowHistory || []}
+                        entityId={data?.rcmId || (typeof data?.id === 'string' ? data.id : '') || ''}
+                        currentStatus={resolveRcmWorkflowStatus(data ?? {})}
+                        history={data?.workflowHistory ?? []}
                         onStatusChange={(newStatus) => {
                           if (data) {
                             data.workflowStatus = newStatus;
@@ -549,16 +381,16 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                   <div className="flex items-center gap-2">
                     {form.formState.isDirty && (
                       <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-300 font-semibold text-xs uppercase px-2 py-0.5">
-                        Unsaved Changes
+                        {t('common:unsavedChanges.title')}
                       </Badge>
                     )}
                   </div>
                    <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
                     <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto h-11 sm:h-9 min-h-[44px] sm:min-h-0 text-xs font-bold px-4 sm:px-6 rounded-md">
-                      Cancel
+                      {t('common:actions.cancel')}
                     </Button>
                     <Button type="submit" disabled={isSaving || !form.formState.isDirty} className="w-full sm:w-auto h-11 sm:h-9 min-h-[44px] sm:min-h-0 bg-indigo-600 hover:bg-indigo-700 text-xs font-bold px-4 sm:px-8 shadow-sm rounded-md">
-                      {isSaving ? "Saving..." : "Update Mapping"}
+                      {isSaving ? t('matrix.dialog.saving') : t('matrix.dialog.update_mapping')}
                     </Button>
                   </div>
                </div>

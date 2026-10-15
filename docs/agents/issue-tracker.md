@@ -2,6 +2,21 @@
 
 Issues and specs for this repo live as GitHub issues. Use the `gh` CLI for all operations.
 
+## When `api.github.com` is unreachable
+
+Diagnosis (2026-10-15, NAT64 egress): TCP to `api.github.com:443` opens but
+the TLS handshake hangs, while `github.com:443` answers in <1s from the same
+host — including via `curl`, so this is egress SNI/IP filtering, not a `gh`
+bug, proxy setting, or IPv6 issue. No proxy is configured (`git config
+--global --get-regexp proxy` empty, WinHTTP direct). Nothing in user space
+can fix the filter; do not reinstall `gh`, do not set proxy vars blindly.
+
+Fallback (all `gh` operations): push the branch with `git` transport
+(`git push -u origin <branch>`, `github.com` works), then do PR
+create/checks-watch/merge from a host with API access or the web UI:
+`gh pr create --fill`, `gh pr checks --watch`, `gh pr merge --merge`.
+Record the pushed branch name so the handoff is one line.
+
 ## CLI version notes
 
 - `gh issue create` has **no `--json` flag** (at least through 2.83): capture the

@@ -66,7 +66,7 @@ Setiap kali melakukan penambahan komponen, modifikasi antarmuka frontend, menyel
 3.  **Sinkronisasi Skema Database:** Jika ada perubahan pada `worker/db/schema.ts`, jalankan `npx drizzle-kit push` untuk menerapkan perubahan ke database PostgreSQL secara langsung. Pastikan ekstensi `vector` + `pg_trgm` aktif dulu via `npm run db:extensions` (detail: `scripts/db-extensions.sql`); `npm run db:check` mengunci keduanya (drift + ekstensi). **Satu-satunya sumber DDL adalah `drizzle/*.sql` versioned** — dilarang `ALTER TABLE` runtime (`fixDatabaseSchema` auto-run, `/dev/fix-db`), DDL sekali-pakai di route, atau migrasi ad-hoc tanpa nomor urut + snapshot + journal entry.
 4.  **Lokalisasi Penuh (i18n):** Periksa seluruh file yang dimodifikasi. Pastikan **TIDAK ADA** teks hardcoded (Inggris maupun Indonesia). Gunakan `useTranslation` dan file di `src/i18n/locales/**`. Jalankan `npm run check:i18n -- <file-tersentuh...>` — key `t()` statis baru yang hilang dari bundle `en` = gagal (detail gate: `docs/agents/guardrails.md`).
 5.  **Integritas Tipe:** Jalankan `npm run type-check`. Perbaiki semua error TS sebelum melangkah maju.
-6.  **Standar Kode (Lint):** Jalankan `npm run lint`. Pastikan tidak ada peringatan atau error yang tersisa.
+6.  **Standar Kode (Lint):** Jalankan `npm run lint`. Pastikan tidak ada peringatan atau error yang tersisa. Untuk iterasi cepat saat development, gunakan `npx eslint <file-tersentuh…>` (detik); `npm run lint` penuh hanya sebagai gate final sebelum commit.
 7.  **Verifikasi Kompilasi (Build):** Jalankan `npm run build`. Perubahan dianggap gagal jika proses build tidak berhasil.
 8.  **Pengujian Otomatis (Test):** Jalankan `npm test`. Tambahkan unit test baru jika Anda menambahkan fitur baru atau melakukan perubahan di suatu fitur untuk mencegah regresi.
 9.  **Deteksi Code Smell (Wajib tiap perubahan):** Sebelum dianggap selesai, pindai file yang disentuh terhadap katalog ini dan perbaiki yang ditemukan:
@@ -90,7 +90,7 @@ Setiap kali melakukan penambahan komponen, modifikasi antarmuka frontend, menyel
 ## Development Conventions
 
 *   **Regulatory Compliance:** Any UI or data model change MUST refer to Regulation SK-5/DKU.MBU/11/2024.
-*   **Type Safety:** Shared types in `shared/types/*` (barrel `shared/types.ts`) are the source of truth. Import from the domain module (`common`, `org`, `scoping`, `rcm-bpm`, `csa-testing`, `deficiency`, `user`) — never re-introduce a god `types.ts` or `any` shims.
+*   **Type Safety:** Shared types in `shared/types/*` (barrel `shared/types.ts`) are the source of truth. Import from the domain module (`common`, `org`, `scoping`, `rcm-bpm`, `csa-testing`, `deficiency`, `user`) — never re-introduce a god `types.ts` or `any` shims. Type archaeology order: read `shared/types/<domain>` first (watch for `Omit` + re-add patterns), then verify raw columns in `worker/db/schema/**` — never the reverse.
 *   **Import Layering:** `shared/` is importable by both `src/` and `worker/`; never import `src/` from `worker/` or `worker/` from `src/` in product code — shared logic lives in `shared/` (precedent: `shared/control-linkage.ts` leveraged by editor hooks and bpm-sync/hydrator). Integration tests (`src/test/**`, `**/*.test.*`) are the sole exception and may import `worker/` services against a test database.
 *   **Review Standards:** Judgement-call rules the reviewer enforces live in `CODING_STANDARDS.md` (read at review time, not implementation).
 *   **Auditability:** Every entity mutation should be accompanied by an entry in the `auditTrail` and `ChangeLog`.

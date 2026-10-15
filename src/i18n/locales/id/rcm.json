@@ -33,6 +33,20 @@
     "affected_fsli_item": "Item Laporan Keuangan yang Terdampak",
     "effective_period": "Periode Efektif",
     "save_success": "Data matriks berhasil disimpan",
+    "validation": {
+      "control_name_required": "Nama kontrol wajib diisi"
+    },
+    "dialog": {
+      "workflow_tab": "Persetujuan & Alur Kerja",
+      "workbench_subtitle": "Standardized Auditor Workbench - SK-5",
+      "fsli": "Item Keuangan (FSLI)",
+      "no_gl": "No GL",
+      "bpm_code": "Kode BPM",
+      "regulatory_title": "Konteks Regulasi",
+      "regulatory_desc": "Data Identitas Proses di atas bersifat read-only dan ditarik langsung dari master data Business Process Mapping (BPM) untuk menjaga integritas audit trail.",
+      "saving": "Menyimpan...",
+      "update_mapping": "Perbarui Pemetaan"
+    },
     "filter_subsidiary": "Anak Perusahaan",
     "filter_all": "Semua",
     "is_key_control": "Kontrol Utama?",
@@ -110,6 +124,13 @@
       "save_changes": "Simpan Perubahan",
       "pending_sync": "Menunggu Sinkronisasi",
       "synced": "Tersinkronisasi",
+      "tabs": {
+        "properties": "Properti",
+        "changelog": "Change Log (Lampiran 6)"
+      },
+      "history": {
+        "entity": "Entity: {{id}}"
+      },
       "fraud_related_q": "Terkait Fraud?",
       "classification_label": "Klasifikasi Kontrol",
       "ipo_section": "Information Processing Objective (IPO)",
@@ -119,6 +140,8 @@
         "unsaved_changes": "Terdapat perubahan yang belum disinkronkan ke Matrix. Tetap tutup popup ini?",
         "delete_risk_confirm": "PERINGATAN: Menghapus risiko ini akan menghapus SELURUH data kontrol di bawahnya. Data ini akan terhapus secara PERMANEN dari database RCM saat Anda menekan tombol 'Save & Sync'. Lanjutkan?",
         "delete_control_confirm": "Hapus baris mapping Risiko-Kontrol ini? Data terkait baris ini akan hilang dari Matrix TLC secara permanen setelah sinkronisasi.",
+        "delete_risk_desc": "PERINGATAN: Menghapus risiko ini akan menghapus SELURUH data kontrol di bawahnya. Data ini akan terhapus secara PERMANEN dari database RCM saat Anda menekan tombol 'Save & Sync'.",
+        "delete_control_desc": "Hapus baris mapping Risiko-Kontrol ini? Data terkait baris ini akan hilang dari Matrix TLC secara permanen setelah sinkronisasi.",
         "hard_delete_notice": "PERHATIAN: Menekan tombol simpan akan menghapus data Risiko/Kontrol yang sudah Anda buang dari popup ini secara PERMANEN di database."
       },
       "aiSuggest": {

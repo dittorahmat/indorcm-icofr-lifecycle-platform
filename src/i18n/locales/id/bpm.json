@@ -235,6 +235,7 @@
     "lockedWarning": "Diagram ini terkunci karena status alur kerja (workflow) atau periode telah dikunci. Perubahan tidak dapat disimpan.",
     "nodes": {
       "start": "Mulai",
+      "end": "Selesai",
       "activity": "Aktivitas Baru",
       "automated": "Proses Sistem",
       "decision": "Keputusan?",
