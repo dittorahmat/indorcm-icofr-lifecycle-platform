@@ -170,4 +170,43 @@ export default tseslint.config(
       ],
     },
   },
+  // Import layering (AGENTS.md, retro 2026-10-16): shared/ is importable by
+  // both tiers; product code never crosses src/ <-> worker/. Integration
+  // tests (src/test/**, **/*.test.*) are the sole exception, hence ignores.
+  {
+    files: ['worker/**/*.ts'],
+    ignores: ['**/*.test.*', '**/*.spec.*'],
+    rules: {
+      'import/no-restricted-paths': [
+        'error',
+        {
+          zones: [
+            {
+              target: './worker',
+              from: './src',
+              message: 'Import layering: worker/ must not import src/ — shared logic lives in shared/.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/test/**', '**/*.test.*', '**/*.spec.*'],
+    rules: {
+      'import/no-restricted-paths': [
+        'error',
+        {
+          zones: [
+            {
+              target: './src',
+              from: './worker',
+              message: 'Import layering: src/ must not import worker/ — shared logic lives in shared/ (integration tests under src/test/** are exempt).',
+            },
+          ],
+        },
+      ],
+    },
+  },
 )

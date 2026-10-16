@@ -88,9 +88,11 @@ describe('Dashboard Component', () => {
     expect(screen.getByText('kpis.ready')).toBeInTheDocument();
   });
 
-  // Flaky under full-suite load (Render + React Query settle when CPU-starved;
-  // observed 40s+ on a loaded runner vs ~1s solo). Generous timeout keeps the
-  // suite deterministic without changing what the test verifies.
+  // Load-sensitive (retro 2026-10-16): testing-library waitFor defaults to a
+  // 1s timeout, which starves under full-suite CPU contention even though the
+  // test timeout is 60s (observed empty <div /> past 60s in a 258s suite run
+  // vs ~1s solo). Explicit waitFor budget keeps the suite deterministic
+  // without changing what the test verifies.
   it('calculates metrics dynamically based on controls and deficiencies data', { timeout: 60000 }, async () => {
     const mockControls = {
       items: [
@@ -135,6 +137,6 @@ describe('Dashboard Component', () => {
       expect(screen.getByText(/kpis.line2Percent:{"percent":33.3}/)).toBeInTheDocument();
       // Remediation velocity -> 10 days (2026-01-11 to 2026-01-01)
       expect(screen.getByText(/kpis.remediationAvgDays:{"days":10}/)).toBeInTheDocument();
-    });
+    }, { timeout: 30000, interval: 100 });
   });
 });
