@@ -271,20 +271,27 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
     return glData.filter(row => selectedEntityCodes.includes(row.entityCode || 'UNKNOWN'));
   }, [glData, selectedEntityCodes]);
 
-  // Calculations: one materiality view behind a single seam
-  const { omValue, pmValue, multiplier, benchmarkValue, mergedGlData, significantAccounts, scopingCompliance } = React.useMemo(() => {
+  // Calculations: one materiality view behind a single seam.
+  // buildView concentrates the wiring (rows + snapshot + entities + mappings)
+  // so the memo and the save-time draft promotion share one call shape.
+  const buildView = React.useCallback((basis: string, omPercentage: number, haircutPercentage: number) => {
     return computeMaterialityView({
       filteredRows: filteredGlData,
       allRows: glData,
       snapshotPresent: !!snapshot,
-      basis: activeBasis,
-      omPercentage: activeOmPercentage,
-      haircutPercentage: activeHaircutPercentage,
+      basis,
+      omPercentage,
+      haircutPercentage,
       assessmentData: simState.assessmentData,
       selectedEntityCodes,
       deptMappings: localDeptMappings,
+      entityCount: simState.locationCount ?? selectedEntityCodes.length,
     });
-  }, [filteredGlData, glData, snapshot, activeBasis, activeOmPercentage, activeHaircutPercentage, simState.assessmentData, selectedEntityCodes, localDeptMappings]);
+  }, [filteredGlData, glData, snapshot, simState.assessmentData, simState.locationCount, selectedEntityCodes, localDeptMappings]);
+
+  const { omValue, pmValue, multiplier, benchmarkValue, mergedGlData, significantAccounts, scopingCompliance } = React.useMemo(() => {
+    return buildView(activeBasis, activeOmPercentage, activeHaircutPercentage);
+  }, [buildView, activeBasis, activeOmPercentage, activeHaircutPercentage]);
 
   React.useEffect(() => {
     setDirty(isDirty);
@@ -305,17 +312,7 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
         finalBasis = draftBasis;
         finalOmPct = draftOmPercentage;
         finalHaircutPct = draftHaircutPercentage;
-        const draftView = computeMaterialityView({
-          filteredRows: filteredGlData,
-          allRows: glData,
-          snapshotPresent: !!snapshot,
-          basis: draftBasis,
-          omPercentage: draftOmPercentage,
-          haircutPercentage: draftHaircutPercentage,
-          assessmentData: simState.assessmentData,
-          selectedEntityCodes,
-          deptMappings: localDeptMappings,
-        });
+        const draftView = buildView(draftBasis, draftOmPercentage, draftHaircutPercentage);
         finalOmValue = draftView.omValue;
         finalPmValue = draftView.pmValue;
         finalSignificantAccounts = draftView.significantAccounts;

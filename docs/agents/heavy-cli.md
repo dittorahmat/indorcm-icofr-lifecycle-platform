@@ -43,3 +43,11 @@ killed the host, while the same `tsc` redirected to a file exited 0).
   start it in the background instead of timing out in the foreground: full
   `npm test` (~130s observed 2026-10-14) and a cold `npm run build` (>120s)
   always run in background; read the redirected log file when notified.
+  Foreground with an explicit `timeout` ≥ 600000 is an acceptable alternative
+  when the caller blocks on the result (observed 2026-10-17: cold build timed
+  out at 120s, warm retry finished in 28s).
+- Parallel editing subagents share one working copy: scope verification per
+  workstream only (`npx eslint <owned files>`, targeted `vitest` on owned
+  suites). Whole-repo `type-check`/`test` run only after the join — otherwise
+  in-flight edits from a sibling workstream pollute the result (observed
+  2026-10-17: ingestion workstream's `tsc` flagged half-edited CSA files).

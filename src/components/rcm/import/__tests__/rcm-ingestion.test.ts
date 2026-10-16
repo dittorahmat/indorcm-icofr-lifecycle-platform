@@ -1,11 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildRcmImportPayload,
+  buildRcmTemplateCsv,
   importRcmFileText,
   linkRowToNode,
+  RCM_MATCH_AUTO_THRESHOLD,
+  RCM_MATCH_SUGGEST_THRESHOLD,
   requiresBpmReconciliation,
+  summarizeRcmRows,
 } from '../rcm-ingestion';
-import type { BPMNodeOption } from '../rcm-import-types';
+import type { BPMNodeOption, RCMFlavor } from '../rcm-import-types';
 
 const NODES: BPMNodeOption[] = [
   { id: 'node-1', label: '1.1 Penerimaan Kas Teller', type: 'activity' },
@@ -123,5 +127,95 @@ describe('rcm-ingestion seam (parse + reconcile behind one interface)', () => {
     expect(requiresBpmReconciliation('TLC')).toBe(true);
     expect(requiresBpmReconciliation('ELC')).toBe(false);
     expect(requiresBpmReconciliation('ITGC')).toBe(false);
+  });
+});
+
+describe('rcm-ingestion CONTRACT (template → parse → reconcile through the seam)', () => {
+  const alignedNodes: Record<RCMFlavor, BPMNodeOption[]> = {
+    TLC: [{ id: '1.2', label: '1.2 Verifikasi Vendor Due Diligence', type: 'activity' }],
+    ELC: [{ id: 'elc-1', label: 'Sosialisasi Pakta Integritas Tahunan', type: 'activity' }],
+    ITGC: [{ id: 'itgc-1', label: 'Review Hak Akses Pengguna Triwulanan', type: 'activity' }],
+  };
+
+  for (const flavor of ['TLC', 'ELC', 'ITGC'] as const) {
+    it(`${flavor} template sample parses with zero unmatched on aligned nodes`, () => {
+      const staged = importRcmFileText(buildRcmTemplateCsv(flavor), flavor, alignedNodes[flavor]);
+      expect(staged.errors).toEqual([]);
+      expect(staged.rows).toHaveLength(1);
+      expect(staged.rows[0].matchStatus).toBe('matched');
+      expect(staged.matchStats).toEqual({ matched: 1, suggested: 0, unmatched: 0 });
+      expect(staged.invalidRowCount).toBe(0);
+      expect(staged.canProceed).toBe(true);
+    });
+  }
+
+  it('exports the documented token-overlap threshold values', () => {
+    expect(RCM_MATCH_SUGGEST_THRESHOLD).toBe(0.25);
+    expect(RCM_MATCH_AUTO_THRESHOLD).toBe(0.6);
+  });
+
+  const csvWithControls = (controlNames: string[]): string =>
+    [
+      'proses_bisnis,sub_proses,risiko,nama_aktivitas_pengendalian',
+      ...controlNames.map((c) => `Setoran,Setoran Teller,Risiko umum,${c}`),
+    ].join('\n');
+
+  it('marks overlap exactly at the suggest threshold (1/4 = 0.25) as suggested', () => {
+    const nodes: BPMNodeOption[] = [{ id: 'n4', label: 'Alpha Beta Gamma Delta', type: 'activity' }];
+    const staged = importRcmFileText(csvWithControls(['Alpha']), 'TLC', nodes);
+    expect(staged.rows[0].matchStatus).toBe('suggested');
+  });
+
+  it('leaves overlap below the suggest threshold (1/5 = 0.2) unmatched', () => {
+    const nodes: BPMNodeOption[] = [
+      { id: 'n5', label: 'Alpha Beta Gamma Delta Epsilon', type: 'activity' },
+    ];
+    const staged = importRcmFileText(csvWithControls(['Alpha']), 'TLC', nodes);
+    expect(staged.rows[0].matchStatus).toBe('unmatched');
+  });
+
+  it('marks overlap exactly at the auto threshold (3/5 = 0.6) as matched', () => {
+    const nodes: BPMNodeOption[] = [
+      { id: 'n5', label: 'Alpha Beta Gamma Delta Epsilon', type: 'activity' },
+    ];
+    const staged = importRcmFileText(csvWithControls(['Alpha Beta Gamma']), 'TLC', nodes);
+    expect(staged.rows[0].matchStatus).toBe('matched');
+  });
+
+  it('marks overlap below the auto threshold (2/5 = 0.4) as suggested', () => {
+    const nodes: BPMNodeOption[] = [
+      { id: 'n5', label: 'Alpha Beta Gamma Delta Epsilon', type: 'activity' },
+    ];
+    const staged = importRcmFileText(csvWithControls(['Alpha Beta']), 'TLC', nodes);
+    expect(staged.rows[0].matchStatus).toBe('suggested');
+  });
+
+  it('gates step-3 reconciliation to TLC while ELC/ITGC skip it', () => {
+    expect(requiresBpmReconciliation('TLC')).toBe(true);
+    expect(requiresBpmReconciliation('ELC')).toBe(false);
+    expect(requiresBpmReconciliation('ITGC')).toBe(false);
+  });
+
+  it('lets ELC/ITGC proceed to commit with no BPM nodes staged', () => {
+    const elc = importRcmFileText(buildRcmTemplateCsv('ELC'), 'ELC', []);
+    const itgc = importRcmFileText(buildRcmTemplateCsv('ITGC'), 'ITGC', []);
+    expect(elc.canProceed).toBe(true);
+    expect(elc.invalidRowCount).toBe(0);
+    expect(itgc.canProceed).toBe(true);
+    expect(itgc.invalidRowCount).toBe(0);
+  });
+
+  it('summarizeRcmRows mirrors staged counts for step-view adapters', () => {
+    const staged = importRcmFileText(TLC_CSV, 'TLC', NODES);
+    expect(summarizeRcmRows(staged.rows)).toEqual({
+      matchStats: staged.matchStats,
+      invalidRowCount: staged.invalidRowCount,
+      canProceed: true,
+    });
+    expect(summarizeRcmRows([])).toEqual({
+      matchStats: { matched: 0, suggested: 0, unmatched: 0 },
+      invalidRowCount: 0,
+      canProceed: false,
+    });
   });
 });

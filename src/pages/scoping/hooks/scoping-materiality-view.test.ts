@@ -67,6 +67,47 @@ describe('scoping-materiality-view seam (OM/PM view + dirty fingerprint)', () =>
     expect(isScopingDraftDirtyAfterOmChange(clean, original)).toBe(true);
   });
 
+  it('scales OM by the Table-25 group multiplier', () => {
+    const view = computeMaterialityView({
+      filteredRows: ROWS, allRows: ROWS, snapshotPresent: true, basis: 'Kas dan Setara Kas', omPercentage: 5,
+      haircutPercentage: 50, assessmentData: {}, selectedEntityCodes: ['E1', 'E2', 'E3'], deptMappings: {},
+      entityCount: 3,
+    });
+    expect(view.multiplier).toBe(2);
+    expect(view.benchmarkValue).toBe(1500);
+    expect(view.omValue).toBe(150);
+    expect(view.pmValue).toBe(75);
+  });
+
+  it('falls back to selected entities when entityCount is omitted', () => {
+    const view = computeMaterialityView({
+      filteredRows: ROWS, allRows: ROWS, snapshotPresent: true, basis: 'Kas dan Setara Kas', omPercentage: 5,
+      haircutPercentage: 50, assessmentData: {}, selectedEntityCodes: ['E1', 'E2'], deptMappings: {},
+    });
+    expect(view.multiplier).toBe(1.5);
+    expect(view.omValue).toBe(112.5);
+  });
+
+  it('ignores key order in the dirty fingerprint', () => {
+    const original = originalFingerprint({ initial: SIM, initialAppMappings: {} });
+    const clean = draftFingerprint({
+      assessmentData: {}, locationCount: 1, draftBasis: 'Kas dan Setara Kas', draftOmPercentage: 5,
+      draftHaircutPercentage: 50, appMappings: {}, deptMappings: {}, materialityJustification: null,
+    });
+    const reordered = {
+      ...clean,
+      appMappings: { b: ['x'], a: ['y'] },
+      deptMappings: { d2: ['u'], d1: ['v'] },
+    };
+    const reorderedOriginal = {
+      ...original,
+      appMappings: { a: ['y'], b: ['x'] },
+      deptMappings: { d1: ['v'], d2: ['u'] },
+    };
+    expect(isScopingDirty(reordered, reorderedOriginal)).toBe(false);
+    expect(isScopingDirty({ ...reordered, omPercentage: 9 }, reorderedOriginal)).toBe(true);
+  });
+
   it('locks the editor outside Draft/Rejected', () => {
     expect(isEditorLocked('Draft')).toBe(false);
     expect(isEditorLocked('Rejected')).toBe(false);

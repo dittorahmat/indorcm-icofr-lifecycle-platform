@@ -47,13 +47,17 @@ export function findingsColumns(labels: FindingsColumnLabels): RegulatoryExportC
   ];
 }
 
+export function findingRowId(d: FindingExportRow, index: number): string {
+  return d.id || `DEF-${String(index + 1).padStart(3, '0')}`;
+}
+
 export function mapFindingsRows(
   deficiencies: FindingExportRow[],
   resolveControlName: (d: FindingExportRow) => string,
 ): Record<string, unknown>[] {
   return deficiencies.map((d, index) => ({
     no: index + 1,
-    ref: d.id || `DEF-${String(index + 1).padStart(3, '0')}`,
+    ref: findingRowId(d, index),
     description: d.description || FALLBACK,
     control: resolveControlName(d) || FALLBACK,
     severity: d.severity || FALLBACK,

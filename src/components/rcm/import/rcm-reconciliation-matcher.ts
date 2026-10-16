@@ -1,5 +1,14 @@
 import type { BPMNodeOption, RCMImportParsedRow } from './rcm-import-types';
 
+/**
+ * Token-overlap thresholds for Auto-Reconciliation (SK-5 Lampiran 5).
+ *
+ * Scores are the fraction of a BPM node label's significant tokens (>2 chars)
+ * also present in the RCM row's control name + description.
+ */
+export const RCM_MATCH_SUGGEST_THRESHOLD = 0.25;
+export const RCM_MATCH_AUTO_THRESHOLD = 0.6;
+
 export function reconcileRcmWithBpmNodes(
   rows: RCMImportParsedRow[],
   bpmNodes: BPMNodeOption[]
@@ -65,10 +74,10 @@ export function reconcileRcmWithBpmNodes(
       }
     }
 
-    if (bestScore >= 0.25 && candidateNodeId) {
+    if (bestScore >= RCM_MATCH_SUGGEST_THRESHOLD && candidateNodeId) {
       return {
         ...row,
-        matchStatus: bestScore >= 0.6 ? 'matched' : 'suggested',
+        matchStatus: bestScore >= RCM_MATCH_AUTO_THRESHOLD ? 'matched' : 'suggested',
         targetBpmNodeId: candidateNodeId,
       };
     }
