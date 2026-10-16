@@ -89,5 +89,25 @@ if (typeof window !== 'undefined') {
       dispatchEvent: vi.fn(),
     })),
   });
+
+  // Recharts ResponsiveContainer requires ResizeObserver (Dashboard CI fail 2026-10-17).
+  // configurable:true so per-file vi.stubGlobal can still override (e.g. cmdk popover test).
+  if (typeof window.ResizeObserver === 'undefined') {
+    class ResizeObserverStub {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    }
+    Object.defineProperty(window, 'ResizeObserver', {
+      writable: true,
+      configurable: true,
+      value: ResizeObserverStub,
+    });
+    Object.defineProperty(globalThis, 'ResizeObserver', {
+      writable: true,
+      configurable: true,
+      value: ResizeObserverStub,
+    });
+  }
 }
 
