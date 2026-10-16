@@ -14,10 +14,20 @@ export interface AiCacheVersions {
 
 export interface SuggestCacheContext {
   noGL?: unknown;
+  /** Client alias: accepted and mapped to noGL by normalizeSuggestContext. */
+  glCode?: unknown;
   glDesc?: unknown;
   bpmName?: unknown;
   nodeLabel?: unknown;
   riskDescription?: unknown;
+}
+
+export interface NormalizedSuggestContext {
+  noGL: string;
+  glDesc: string;
+  bpmName: string;
+  nodeLabel: string;
+  riskDescription: string;
 }
 
 interface CacheEntry {
@@ -43,19 +53,37 @@ function versionsSuffix(versions: AiCacheVersions): string {
   return `${versions.kbVersion}::${versions.simulationId}`;
 }
 
+/**
+ * Single normalization behind the suggestion seam: trims every field and
+ * maps the client `glCode` alias to the server `noGL` name so the popover
+ * pre-flight hash, the route gate, and the cache lookup leverage identical
+ * context. Pass-through for existing server payloads (already `noGL`).
+ */
+export function normalizeSuggestContext(ctx: SuggestCacheContext): NormalizedSuggestContext {
+  const noGL = textOf(ctx.noGL) || textOf(ctx.glCode);
+  return {
+    noGL,
+    glDesc: textOf(ctx.glDesc),
+    bpmName: textOf(ctx.bpmName),
+    nodeLabel: textOf(ctx.nodeLabel),
+    riskDescription: textOf(ctx.riskDescription),
+  };
+}
+
 export function buildSuggestCacheKey(
   orgId: string,
   kind: string,
   ctx: SuggestCacheContext,
   versions: AiCacheVersions,
 ): string {
+  const n = normalizeSuggestContext(ctx);
   const normalized = [
     kind.trim(),
-    textOf(ctx.noGL),
-    textOf(ctx.glDesc),
-    textOf(ctx.bpmName),
-    textOf(ctx.nodeLabel),
-    kind === 'control' ? textOf(ctx.riskDescription) : '',
+    n.noGL,
+    n.glDesc,
+    n.bpmName,
+    n.nodeLabel,
+    kind === 'control' ? n.riskDescription : '',
   ].join('|');
   return `${orgId}:suggest:${hashStable(`${normalized}::${versionsSuffix(versions)}`)}`;
 }

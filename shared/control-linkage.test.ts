@@ -1,13 +1,22 @@
 import { describe, expect, it } from 'vitest';
 import {
+  applyRiskDescriptionTo,
   BPM_NON_SYNC_NODE_TYPES,
   collectNodeSyncEntries,
+  duplicateIdSet,
   extractBaseId,
+  groupPairsByRisk,
   linkedIdsOf,
   makeGlSpecificId,
   mappedRiskIdsFromNodes,
+  matchesRiskKey,
   regulatoryPairsOf,
+  removePairAtIndex,
+  removeRiskFrom,
+  riskKeyOf,
   unmappedControlsFrom,
+  updateAllPairsForRisk,
+  updatePairAt,
 } from './control-linkage';
 
 describe('control-linkage seam (Control Linkage locality)', () => {
@@ -129,5 +138,42 @@ describe('control-linkage seam (Control Linkage locality)', () => {
     expect(entries.activeRiskControlPairs).toEqual(new Set(['R-5:C-5']));
     expect(entries.activeControlIds).toEqual(new Set(['C-5']));
     expect(entries.controlsToSync.size).toBe(0);
+  });
+});
+describe('pair-editing seam', () => {
+  it('riskKeyOf prefers temp id over persisted id', () => {
+    expect(riskKeyOf({ _tempRiskId: 'T-1', riskId: 'R-1' })).toBe('T-1');
+    expect(riskKeyOf({ riskId: 'R-1' })).toBe('R-1');
+    expect(riskKeyOf({})).toBeNull();
+  });
+  it('matchesRiskKey targets temp or persisted without cross-hit', () => {
+    const pairs = [{ riskId: 'R-1' }, { _tempRiskId: 'T-2', riskId: 'R-2' }];
+    expect(updateAllPairsForRisk(pairs, 'T-2', 'riskRating', 'High')).toEqual([
+      { riskId: 'R-1' },
+      { _tempRiskId: 'T-2', riskId: 'R-2', riskRating: 'High' },
+    ]);
+    expect(matchesRiskKey(pairs[0], 'R-2')).toBe(false);
+  });
+  it('groupPairsByRisk groups by canonical key; duplicateIdSet trims', () => {
+    const pairs = [
+      { _tempRiskId: 'T-1', controlId: 'C-1' },
+      { riskId: 'R-1', controlId: ' C-1 ' },
+      { riskId: 'R-1', controlId: 'C-1' },
+    ];
+    expect(groupPairsByRisk(pairs)).toHaveLength(2);
+    expect(duplicateIdSet(pairs, 'controlId')).toEqual(new Set(['C-1']));
+  });
+  it('removeRiskFrom + removePairAtIndex + updatePairAt + applyRiskDescriptionTo', () => {
+    const pairs = [
+      { riskId: 'R-1', controlDescription: 'a' },
+      { riskId: 'R-2', controlDescription: 'b' },
+    ];
+    expect(removeRiskFrom(pairs, 'R-1')).toEqual([{ riskId: 'R-2', controlDescription: 'b' }]);
+    expect(removePairAtIndex(pairs, 0)).toEqual([{ riskId: 'R-2', controlDescription: 'b' }]);
+    expect(updatePairAt(pairs, 1, 'controlDescription', 'c')[1]).toMatchObject({ controlDescription: 'c' });
+    expect(applyRiskDescriptionTo(pairs, 'R-2', 'desc', 'ai')).toEqual([
+      { riskId: 'R-1', controlDescription: 'a' },
+      { riskId: 'R-2', controlDescription: 'b', riskDescription: 'desc', riskSource: 'ai' },
+    ]);
   });
 });

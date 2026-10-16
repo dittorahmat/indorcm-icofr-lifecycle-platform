@@ -1,6 +1,15 @@
 import { useMemo } from 'react';
-import { regulatoryPairsOf } from '@shared/control-linkage';
-import type { NodeDataLike, RegulatoryPair } from '@shared/control-linkage';
+import {
+  applyRiskDescriptionTo,
+  duplicateIdSet,
+  groupPairsByRisk,
+  regulatoryPairsOf,
+  removePairAtIndex,
+  removeRiskFrom,
+  updateAllPairsForRisk,
+  updatePairAt,
+} from '@shared/control-linkage';
+import type { NodeDataLike, RegulatoryPair, RiskGroup } from '@shared/control-linkage';
 import type { AiSuggestionContext } from './AiSuggestionPopover';
 import type { RiskGroupData } from './RiskGroupCard';
 
@@ -20,38 +29,12 @@ export interface UseRegulatoryPairsParams {
   onUpdateNodeData: (id: string, data: Record<string, unknown>) => void;
 }
 
+export { duplicateIdSet, groupPairsByRisk };
+export type { RiskGroup };
+
 function str(p: RegulatoryPair, key: string): string | undefined {
   const v = p[key];
   return typeof v === 'string' ? v : undefined;
-}
-
-export function groupPairsByRisk(pairs: readonly RegulatoryPair[]): RiskGroupData[] {
-  const groups = new Map<string, RiskGroupData>();
-  pairs.forEach((p, index) => {
-    const key = str(p, '_tempRiskId') || str(p, 'riskId') || `R-GROUP-${groups.size}`;
-    let group = groups.get(key);
-    if (!group) {
-      group = {
-        risk: {
-          _tempRiskId: str(p, '_tempRiskId'),
-          riskId: str(p, 'riskId'),
-          riskDescription: str(p, 'riskDescription'),
-          riskSource: str(p, 'riskSource'),
-          isFraudRelated: p['isFraudRelated'] === true,
-          riskRating: str(p, 'riskRating'),
-        },
-        controls: [],
-      };
-      groups.set(key, group);
-    }
-    group.controls.push({ data: p, index });
-  });
-  return [...groups.values()];
-}
-
-export function duplicateIdSet(pairs: readonly RegulatoryPair[], key: 'riskId' | 'controlId'): Set<string> {
-  const ids = pairs.map((p) => str(p, key)?.trim()).filter((id): id is string => Boolean(id));
-  return new Set(ids.filter((id, idx) => ids.indexOf(id) !== idx));
 }
 
 export function generatePairId(
@@ -120,61 +103,37 @@ export function suggestBaseFor(base: SuggestionBase | undefined, nodeLabel: stri
   return { ...base, nodeLabel };
 }
 
+/** Thin React adapter: memoised views + commit; mutation lives in control-linkage. */
 export function useRegulatoryPairs({ nodeId, nodeData, nodes, sequenceData, onUpdateNodeData }: UseRegulatoryPairsParams) {
   const pairs = useMemo(() => regulatoryPairsOf(nodeData), [nodeData]);
-  const groupedRisks = useMemo(() => groupPairsByRisk(pairs), [pairs]);
+  const groupedRisks: RiskGroupData[] = useMemo(() => groupPairsByRisk(pairs), [pairs]);
   const duplicateRiskIds = useMemo(() => duplicateIdSet(pairs, 'riskId'), [pairs]);
   const duplicateControlIds = useMemo(() => duplicateIdSet(pairs, 'controlId'), [pairs]);
 
   const commit = (nextPairs: RegulatoryPair[]) => onUpdateNodeData(nodeId, { regulatoryPairs: nextPairs });
-
-  const updateAllPairsForRisk = (riskKey: string, field: string, value: unknown) => {
-    commit(pairs.map((p) => (str(p, 'riskId') === riskKey || str(p, '_tempRiskId') === riskKey ? { ...p, [field]: value } : p)));
-  };
-
-  const updateSpecificControl = (pairIndex: number, field: string, value: unknown) => {
-    const nextPairs = [...pairs];
-    nextPairs[pairIndex] = { ...nextPairs[pairIndex], [field]: value };
-    commit(nextPairs);
-  };
-
-  const applyRiskDescription = (riskKey: string, description: string, source: 'ai' | 'manual') => {
-    commit(
-      pairs.map((p) =>
-        str(p, 'riskId') === riskKey || str(p, '_tempRiskId') === riskKey ? { ...p, riskDescription: description, riskSource: source } : p,
-      ),
-    );
-  };
-
-  const addNewRisk = () => {
-    commit([...pairs, newRiskTemplate(generatePairId('risk', sequenceData, nodes), generatePairId('control', sequenceData, nodes))]);
-  };
-
-  const addControlToRisk = (riskKey: string) => {
-    const template = pairs.find((p) => str(p, 'riskId') === riskKey || str(p, '_tempRiskId') === riskKey);
-    commit([...pairs, controlTemplateFor(template, generatePairId('control', sequenceData, nodes))]);
-  };
-
-  const removePairAt = (index: number) => {
-    commit(pairs.filter((_, i) => i !== index));
-  };
-
-  const removeRisk = (riskKey: string) => {
-    commit(pairs.filter((p) => str(p, 'riskId') !== riskKey && str(p, '_tempRiskId') !== riskKey));
-  };
 
   return {
     pairs,
     groupedRisks,
     duplicateRiskIds,
     duplicateControlIds,
-    updateAllPairsForRisk,
-    updateSpecificControl,
-    applyRiskDescription,
-    addNewRisk,
-    addControlToRisk,
-    removePairAt,
-    removeRisk,
+    updateAllPairsForRisk: (riskKey: string, field: string, value: unknown) =>
+      commit(updateAllPairsForRisk(pairs, riskKey, field, value)),
+    updateSpecificControl: (pairIndex: number, field: string, value: unknown) =>
+      commit(updatePairAt(pairs, pairIndex, field, value)),
+    applyRiskDescription: (riskKey: string, description: string, source: 'ai' | 'manual') =>
+      commit(applyRiskDescriptionTo(pairs, riskKey, description, source)),
+    addNewRisk: () => {
+      commit([...pairs, newRiskTemplate(generatePairId('risk', sequenceData, nodes), generatePairId('control', sequenceData, nodes))]);
+    },
+    addControlToRisk: (riskKey: string) => {
+      const template = pairs.find(
+        (p) => str(p, 'riskId') === riskKey || str(p, '_tempRiskId') === riskKey,
+      );
+      commit([...pairs, controlTemplateFor(template, generatePairId('control', sequenceData, nodes))]);
+    },
+    removePairAt: (index: number) => commit(removePairAtIndex(pairs, index)),
+    removeRisk: (riskKey: string) => commit(removeRiskFrom(pairs, riskKey)),
     suggestBaseFor,
   };
 }

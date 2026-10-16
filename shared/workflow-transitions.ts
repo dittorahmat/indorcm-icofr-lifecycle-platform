@@ -270,3 +270,26 @@ export function forEntity(entityType: WorkflowEntityType, currentStatus: string)
     invalidationKeys: workflowInvalidationKeysFor(entityType),
   };
 }
+
+/** Every status in the canonical table for one entity. Tone and blueprint
+ *  coverage tests iterate this so parallel taxonomies cannot drift. */
+export function workflowStatusesFor(entityType: WorkflowEntityType): string[] {
+  return Object.keys(WORKFLOW_TRANSITION_RULES[entityType] ?? {});
+}
+
+/**
+ * Pure CSA snapshot-status derivation behind the canonical seam. The Drizzle
+ * adapter owns row access; the fallback policy (legacy line2Status/isDraft
+ * columns when workflowStatus is null) lives here so every CSA path shares
+ * one tested derivation instead of an inline ternary.
+ */
+export function csaSnapshotStatus(
+  workflowStatus: string | null | undefined,
+  line2Status: unknown,
+  isDraft: unknown,
+): string {
+  if (workflowStatus) return workflowStatus;
+  if (line2Status === 'Validated') return 'Validated';
+  if (isDraft === true) return 'Draft';
+  return 'In Review';
+}

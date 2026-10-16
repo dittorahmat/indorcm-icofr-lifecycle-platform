@@ -297,3 +297,103 @@ export function collectNodeSyncEntries(
 
   return { risksToSync, controlsToSync, nodeRcmPairs, activeRiskIds, activeControlIds, activeRiskControlPairs };
 }
+
+/* Pair-editing locality: key-resolution + grouping + mutation behind one seam.
+ * The property-sheet hook stays a thin React adapter (state + commit). */
+
+function pairText(pair: RegulatoryPair, key: string): string | undefined {
+  const v = pair[key];
+  return typeof v === 'string' ? v : undefined;
+}
+
+/** Canonical risk identity: temp id wins over persisted id. */
+export function riskKeyOf(pair: RegulatoryPair): string | null {
+  return pairText(pair, '_tempRiskId') ?? pairText(pair, 'riskId') ?? null;
+}
+
+export function matchesRiskKey(pair: RegulatoryPair, riskKey: string): boolean {
+  return pairText(pair, 'riskId') === riskKey || pairText(pair, '_tempRiskId') === riskKey;
+}
+
+export interface RiskGroup {
+  risk: {
+    _tempRiskId?: string;
+    riskId?: string;
+    riskDescription?: string;
+    riskSource?: string;
+    isFraudRelated?: boolean;
+    riskRating?: string;
+  };
+  controls: { data: RegulatoryPair; index: number }[];
+}
+
+export function groupPairsByRisk(pairs: readonly RegulatoryPair[]): RiskGroup[] {
+  const groups = new Map<string, RiskGroup>();
+  pairs.forEach((p, index) => {
+    const key = riskKeyOf(p) ?? `R-GROUP-${groups.size}`;
+    let group = groups.get(key);
+    if (!group) {
+      group = {
+        risk: {
+          _tempRiskId: pairText(p, '_tempRiskId'),
+          riskId: pairText(p, 'riskId'),
+          riskDescription: pairText(p, 'riskDescription'),
+          riskSource: pairText(p, 'riskSource'),
+          isFraudRelated: p['isFraudRelated'] === true,
+          riskRating: pairText(p, 'riskRating'),
+        },
+        controls: [],
+      };
+      groups.set(key, group);
+    }
+    group.controls.push({ data: p, index });
+  });
+  return [...groups.values()];
+}
+
+export function duplicateIdSet(
+  pairs: readonly RegulatoryPair[],
+  key: 'riskId' | 'controlId',
+): Set<string> {
+  const ids = pairs.map((p) => pairText(p, key)?.trim()).filter((id): id is string => Boolean(id));
+  return new Set(ids.filter((id, idx) => ids.indexOf(id) !== idx));
+}
+
+export function updateAllPairsForRisk(
+  pairs: readonly RegulatoryPair[],
+  riskKey: string,
+  field: string,
+  value: unknown,
+): RegulatoryPair[] {
+  return pairs.map((p) => (matchesRiskKey(p, riskKey) ? { ...p, [field]: value } : p));
+}
+
+export function updatePairAt(
+  pairs: readonly RegulatoryPair[],
+  pairIndex: number,
+  field: string,
+  value: unknown,
+): RegulatoryPair[] {
+  const next = [...pairs];
+  next[pairIndex] = { ...next[pairIndex], [field]: value };
+  return next;
+}
+
+export function applyRiskDescriptionTo(
+  pairs: readonly RegulatoryPair[],
+  riskKey: string,
+  description: string,
+  source: 'ai' | 'manual',
+): RegulatoryPair[] {
+  return pairs.map((p) =>
+    matchesRiskKey(p, riskKey) ? { ...p, riskDescription: description, riskSource: source } : p,
+  );
+}
+
+export function removeRiskFrom(pairs: readonly RegulatoryPair[], riskKey: string): RegulatoryPair[] {
+  return pairs.filter((p) => !matchesRiskKey(p, riskKey));
+}
+
+export function removePairAtIndex(pairs: readonly RegulatoryPair[], index: number): RegulatoryPair[] {
+  return pairs.filter((_, i) => i !== index);
+}

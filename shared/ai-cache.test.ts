@@ -4,6 +4,7 @@ import {
   buildEmbeddingCacheKey,
   buildRetrievalCacheKey,
   checkDailyRateLimit,
+  normalizeSuggestContext,
   resolveAiCacheTtlMs,
   MemoryAiCacheStore,
   NoopProviderPromptCacheAdapter,
@@ -116,6 +117,27 @@ describe('buildRetrievalCacheKey', () => {
     );
     expect(buildRetrievalCacheKey('org-1', 'prosedur kas::10', v)).not.toBe(
       buildRetrievalCacheKey('org-1', 'prosedur kas::10', { ...v, kbVersion: 'kb-2' }),
+    );
+  });
+});
+
+describe('normalizeSuggestContext parity', () => {
+  it('maps client glCode to server noGL with identical keys', () => {
+    const client = { glCode: ' 10008 ', glDesc: 'Kas', bpmName: 'Teller', nodeLabel: 'terima uang' };
+    const server = { noGL: '10008', glDesc: 'Kas', bpmName: 'Teller', nodeLabel: 'terima uang' };
+    expect(normalizeSuggestContext(client)).toEqual(normalizeSuggestContext(server));
+    expect(buildSuggestCacheKey('org-1', 'risk', client, VERSIONS)).toBe(
+      buildSuggestCacheKey('org-1', 'risk', server, VERSIONS),
+    );
+  });
+  it('control kind includes trimmed riskDescription, risk kind ignores it', () => {
+    const withRisk = { noGL: '1', bpmName: 'B', nodeLabel: 'N', riskDescription: '  r  ' };
+    const withoutRisk = { noGL: '1', bpmName: 'B', nodeLabel: 'N', riskDescription: 'other' };
+    expect(buildSuggestCacheKey('o', 'risk', withRisk, VERSIONS)).toBe(
+      buildSuggestCacheKey('o', 'risk', withoutRisk, VERSIONS),
+    );
+    expect(buildSuggestCacheKey('o', 'control', withRisk, VERSIONS)).not.toBe(
+      buildSuggestCacheKey('o', 'control', withoutRisk, VERSIONS),
     );
   });
 });

@@ -6,7 +6,7 @@ import { AuditService } from '../services/audit-service';
 import { AIService, suggestResponseCache } from '../services/ai-service';
 import { SUGGEST_RESPONSE_SCHEMA, parseSuggestKind, suggestRiskControls } from '../services/ai/suggest-risk-controls';
 import { getAiCacheVersions, createDocMarkerLoader, createApprovedSimulationLoader } from '../services/ai/ai-cache-versions';
-import { buildSuggestCacheKey, resolveAiCacheTtlMs, checkDailyRateLimit } from '@shared/ai-cache';
+import { buildSuggestCacheKey, normalizeSuggestContext, resolveAiCacheTtlMs, checkDailyRateLimit } from '@shared/ai-cache';
 
 const aiSuggestApp = new Hono<HonoEnv>();
 
@@ -51,7 +51,7 @@ aiSuggestApp.post('/ai/suggest-risk-controls', async (c) => {
       loadDocMarker: createDocMarkerLoader(db),
       loadApprovedSimulationId: createApprovedSimulationLoader(db),
     }, orgId);
-    const cacheKey = buildSuggestCacheKey(orgId, kind, body, versions);
+    const cacheKey = buildSuggestCacheKey(orgId, kind, normalizeSuggestContext(body), versions);
     const ttlMs = resolveAiCacheTtlMs('suggest', { AI_CACHE_TTL_SUGGEST_MS: c.env.AI_CACHE_TTL_SUGGEST_MS });
     const result = await suggestRiskControls(body, kind, async (prompt) => {
       const res = await aiService.generateChatResponse({
