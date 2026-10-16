@@ -308,6 +308,16 @@ export function decideFromControl(
   return decideTest(normalizeTestingControl(control), input);
 }
 
+/**
+ * Explicit no-sampling entry for rows without a control (RCM verification
+ * patch, TOD matrix write). Table 22 minimum is skipped by construction;
+ * Zero-Tolerance and the 6-pilar TOD rule are still enforced. Prefer this
+ * over `decideTest(null, …)` so the skip is visible at the call site.
+ */
+export function decideWithoutControlSampling(input: TestingDecisionInput): TestingDecision {
+  return decideTest(null, input);
+}
+
 /** Raw form/body surface for a test submission. Unknowns are normalized;
  *  anything unrecognised falls back to the seam defaults. */
 export interface TestSubmissionValues {

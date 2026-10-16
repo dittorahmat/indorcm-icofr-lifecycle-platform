@@ -12,19 +12,10 @@ import type { QualitativeLevel } from '@shared/types';
 import { ControlAccordionItem } from './ControlAccordionItem';
 import { RiskDescriptionField } from './RiskDescriptionField';
 import type { AiSuggestionContext } from './AiSuggestionPopover';
-import type { RegulatoryPair } from '@shared/control-linkage';
+import type { RiskGroup } from '@shared/control-linkage';
+import { riskKeyOf } from '@shared/control-linkage';
 
-export interface RiskGroupData {
-  risk: {
-    _tempRiskId?: string;
-    riskId?: string;
-    riskDescription?: string;
-    riskSource?: string;
-    isFraudRelated?: boolean;
-    riskRating?: string;
-  };
-  controls: { data: RegulatoryPair; index: number }[];
-}
+export type RiskGroupData = RiskGroup;
 
 interface RiskGroupCardProps {
   group: RiskGroupData;
@@ -64,7 +55,7 @@ export function RiskGroupCard({
   onUpdateNodeData,
 }: RiskGroupCardProps) {
   const { t } = useTranslation(['bpm', 'rcm', 'common']);
-  const riskKey = group.risk._tempRiskId || group.risk.riskId || `g-${gIdx}`;
+  const riskKey = riskKeyOf(group.risk) ?? `g-${gIdx}`;
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">

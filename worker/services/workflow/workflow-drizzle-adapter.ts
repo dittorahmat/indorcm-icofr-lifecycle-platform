@@ -4,6 +4,7 @@ import {
   actionPlans, bpmProcesses, csaRecords, csaSamples, deficiencies, rcms, simulations,
 } from '../../db/schema';
 import type { WorkflowEntityType } from '@shared/workflow-transitions';
+import { csaSnapshotStatus } from '@shared/workflow-transitions';
 import { AuditService } from '../audit-service';
 import { DeficiencyService } from '../deficiency-service';
 import { collectFailedControlIds } from '../deficiency-trigger';
@@ -45,7 +46,7 @@ class DrizzleWorkflowStore implements WorkflowTransitionStore {
         failedControlIds = collectFailedControlIds(samples);
       }
       return {
-        status: row.workflowStatus ?? (row.line2Status === 'Validated' ? 'Validated' : row.isDraft ? 'Draft' : 'In Review'),
+        status: csaSnapshotStatus(row.workflowStatus, row.line2Status, row.isDraft),
         history: historyOf(row),
         controlId: textOf(row.controlId),
         bpmProcessId: textOf(row.bpmProcessId),

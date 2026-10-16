@@ -1,5 +1,5 @@
 import { AppError } from '../lib/utils';
-import { decideTest, isPilarSatisfied, type TestingDecisionInput } from '@shared/testing-decision';
+import { decideWithoutControlSampling, isPilarSatisfied, type TestingDecisionInput } from '@shared/testing-decision';
 import { eventForVerdict, TOD_EVALUATION_PERIOD } from './deficiency-trigger';
 import type { DeficiencyTriggerEvent } from './deficiency-trigger';
 import {
@@ -124,7 +124,7 @@ async function persistTodAndRaise(
     body: Record<string, unknown>;
   },
 ): Promise<VerificationPatchResult> {
-  const verdict = decideTest(null, toTodDecisionInput(args.body as VerificationPatchBody)).verdict ?? 'Effective';
+  const verdict = decideWithoutControlSampling(toTodDecisionInput(args.body as VerificationPatchBody)).verdict ?? 'Effective';
   const todPatch: Partial<TodEvalRow> = {
     ...(pickDefined(args.body, LINI2_FIELDS) as Partial<TodEvalRow>),
     conclusion: verdict,

@@ -2,11 +2,13 @@ import { describe, it, expect } from 'vitest';
 import {
   decideTransition,
   allowedActionsFor,
+  csaSnapshotStatus,
   forEntity,
   isWorkflowLockedFor,
   statusBadgeTone,
   workflowEndpointFor,
   workflowInvalidationKeysFor,
+  workflowStatusesFor,
   WORKFLOW_TRANSITION_RULES,
   requiresNoteFor,
   type WorkflowEntityType,
@@ -161,5 +163,32 @@ describe('workflow-transitions single source (T2 RED)', () => {
     expect(view.locked).toBe(true);
     expect(view.badgeTone).toBe('neutral');
     expect(view.invalidationKeys).toContainEqual(['csa-records']);
+  });
+});
+
+describe('workflow single-table coverage', () => {
+  const entities: WorkflowEntityType[] = ['BPM', 'ACTION_PLAN', 'SCOPING', 'RCM_CHANGE', 'CSA'];
+  it('every canonical status resolves a non-default tone intent', () => {
+    for (const e of entities) {
+      for (const s of workflowStatusesFor(e)) {
+        expect(typeof statusBadgeTone(s)).toBe('string');
+        expect(forEntity(e, s).badgeTone).toBe(statusBadgeTone(s));
+      }
+    }
+  });
+  it('forEntity badge tone matches the shared tone map (no blueprint drift)', () => {
+    expect(forEntity('CSA', 'Validated').badgeTone).toBe('success');
+    expect(forEntity('CSA', 'Draft').locked).toBe(false);
+    expect(forEntity('BPM', 'In Review').locked).toBe(true);
+  });
+});
+
+describe('csaSnapshotStatus', () => {
+  it('prefers workflowStatus, then legacy columns', () => {
+    expect(csaSnapshotStatus('Approved', 'Draft', true)).toBe('Approved');
+    expect(csaSnapshotStatus(null, 'Validated', true)).toBe('Validated');
+    expect(csaSnapshotStatus(null, 'Draft', true)).toBe('Draft');
+    expect(csaSnapshotStatus(null, 'Draft', false)).toBe('In Review');
+    expect(csaSnapshotStatus(undefined, undefined, undefined)).toBe('In Review');
   });
 });

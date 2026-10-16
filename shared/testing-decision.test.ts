@@ -3,6 +3,7 @@ import {
   decideFromControl,
   decideFromForm,
   decideTest,
+  decideWithoutControlSampling,
   getSuggestedSampleRange,
   hasFailSample,
   isPilarSatisfied,
@@ -260,5 +261,32 @@ describe('testing-decision seam (SK-5 Table 22/23, Zero-Tolerance, 6-pilar TOD)'
       todPilarEvidence: true,
     });
     expect(fromBooleans).toEqual({ isValid: true, verdict: 'Effective' });
+  });
+});
+
+describe('decideWithoutControlSampling', () => {
+  it('skips Table 22 minimum but keeps Zero-Tolerance', () => {
+    const belowMin = decideWithoutControlSampling({
+      testType: 'TOE',
+      claimedResult: 'Effective',
+      sampleSize: 0,
+      samples: [],
+    });
+    expect(belowMin).toEqual({ isValid: true, verdict: 'Effective' });
+    const withFail = decideWithoutControlSampling({
+      testType: 'TOE',
+      claimedResult: 'Effective',
+      sampleSize: 0,
+      samples: [{ status: 'Fail' }],
+    });
+    expect(withFail).toEqual({ isValid: true, verdict: 'Ineffective' });
+  });
+  it('keeps 6-pilar TOD enforcement without a control', () => {
+    const d = decideWithoutControlSampling({
+      testType: 'TOD',
+      claimedResult: 'Effective',
+      todPillars: { objective: true, timing: false, authority: true, reliability: true, coverage: true, evidence: true },
+    });
+    expect(d).toEqual({ isValid: true, verdict: 'Ineffective' });
   });
 });

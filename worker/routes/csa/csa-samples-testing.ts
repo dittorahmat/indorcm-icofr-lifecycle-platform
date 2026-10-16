@@ -2,39 +2,21 @@ import { Hono } from "hono";
 import type { HonoEnv } from '../../app';
 import { ok, bad } from '../../lib/utils';
 import { getDb } from '../../db';
-import { csaSamples, todEvaluations, testRecords, testSamples, controls } from '../../db/schema';
+import { csaSamples, todEvaluations, testRecords, testSamples } from '../../db/schema';
 import { eq, and, desc, SQL } from 'drizzle-orm';
 import type { TestRecord } from "@shared/types";
-import type { DrizzleDb } from '../../db';
-import { DeficiencyService } from "../../services/deficiency-service";
+import type { TestingVerdict } from "@shared/testing-decision";
 import {
-  decideFromForm,
-  type TestingVerdict,
-} from "@shared/testing-decision";
-import { eventForVerdict, TOD_EVALUATION_PERIOD } from "../../services/deficiency-trigger";
+  decideTestSubmission,
+  decideTestingRecord,
+  decideTodEvaluation,
+  fetchTestingControl,
+  triggerAuditDeficiency,
+  triggerTodDeficiency,
+} from "../../services/csa-verdict";
 import { rbac } from "../../lib/guard";
 
 export const csaSamplesTestingRoute = new Hono<HonoEnv>();
-
-/** Shared TOD deficiency policy for insert and update branches: one verdict + snapshot at the seam. */
-async function triggerTodDeficiency(
-  db: DrizzleDb,
-  orgId: string,
-  controlId: string | null,
-  userId: string,
-  conclusion: unknown,
-): Promise<void> {
-  const event = eventForVerdict('Lini 2 - TOD Review', {
-    verdict: conclusion,
-    organizationId: orgId,
-    controlId,
-    period: TOD_EVALUATION_PERIOD,
-    userId,
-  });
-  if (!event) return;
-  const defService = new DeficiencyService(db);
-  await defService.createAutoDeficiency(event);
-}
 
 csaSamplesTestingRoute.get('/csa/samples', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
@@ -104,20 +86,8 @@ csaSamplesTestingRoute.post('/tod-evaluations', rbac(['Line 2', 'Admin']), async
 
   // Server recomputes the verdict through the single testing-decision
   // seam — body.conclusion is treated as a claim, never as the decision.
-  const controlRow = await db.query.controls.findFirst({
-    where: and(eq(controls.id, body.controlId), eq(controls.organizationId, orgId)),
-    columns: { frequency: true, riskRating: true, nature: true },
-  });
-  const decision = decideFromForm(controlRow, {
-    testType: 'TOD',
-    result: body.conclusion,
-    todPilarObjective: body.pilarObjective,
-    todPilarTiming: body.pilarTiming,
-    todPilarAuthority: body.pilarAuthority,
-    todPilarReliability: body.pilarReliability,
-    todPilarCoverage: body.pilarCoverage,
-    todPilarEvidence: body.pilarEvidence,
-  });
+  const controlRow = await fetchTestingControl(db, body.controlId, orgId);
+  const decision = decideTodEvaluation(controlRow, body);
 
   if (!decision.isValid || decision.verdict === undefined) {
     return bad(c, 'Invalid TOD evaluation');
@@ -188,23 +158,8 @@ csaSamplesTestingRoute.post('/tests', async (c) => {
 
   // Server recomputes the verdict through the single testing-decision
   // seam — body.result is treated as a claim, never as the decision.
-  const controlRow = await db.query.controls.findFirst({
-    where: and(eq(controls.id, body.controlId), eq(controls.organizationId, orgId)),
-    columns: { frequency: true, riskRating: true, nature: true },
-  });
-  const decision = decideFromForm(controlRow, {
-    testType: body.testType,
-    result: body.result,
-    sampleSize: body.sampleSize,
-    homogeneityJustification: body.homogeneityJustification,
-    samples: body.samples,
-    todPilarObjective: body.todPilarObjective,
-    todPilarTiming: body.todPilarTiming,
-    todPilarAuthority: body.todPilarAuthority,
-    todPilarReliability: body.todPilarReliability,
-    todPilarCoverage: body.todPilarCoverage,
-    todPilarEvidence: body.todPilarEvidence,
-  });
+  const controlRow = await fetchTestingControl(db, body.controlId, orgId);
+  const decision = decideTestSubmission(controlRow, body);
 
   if (!decision.isValid || decision.verdict === undefined) {
     return bad(
@@ -243,19 +198,15 @@ csaSamplesTestingRoute.post('/tests', async (c) => {
 
   await db.insert(testRecords).values(newRecord as any);
 
-  const auditEvent = eventForVerdict('Lini 3 - Audit', {
+  await triggerAuditDeficiency(db, {
     verdict: result,
     organizationId: orgId,
     controlId: body.controlId,
     period,
     userId,
     testType,
-    ...(typeof body.comments === 'string' ? { detail: body.comments } : {}),
+    comments: body.comments,
   });
-  if (auditEvent) {
-    const defService = new DeficiencyService(db);
-    await defService.createAutoDeficiency(auditEvent);
-  }
 
   if (body.samples && Array.isArray(body.samples) && body.samples.length > 0) {
     const samplesToInsert = body.samples.map((s: any) => ({
@@ -300,15 +251,8 @@ csaSamplesTestingRoute.post('/csa/testing-records', async (c) => {
 
   // Server recomputes the verdict through the single testing-decision
   // seam — body.result is treated as a claim, never as the decision.
-  const controlRow = await db.query.controls.findFirst({
-    where: and(eq(controls.id, body.controlId), eq(controls.organizationId, orgId)),
-    columns: { frequency: true, riskRating: true, nature: true },
-  });
-  const decision = decideFromForm(controlRow, {
-    testType: body.testType,
-    result: body.result,
-    sampleSize: body.sampleSize,
-  });
+  const controlRow = await fetchTestingControl(db, body.controlId, orgId);
+  const decision = decideTestingRecord(controlRow, body);
 
   if (!decision.isValid || decision.verdict === undefined) {
     return bad(
