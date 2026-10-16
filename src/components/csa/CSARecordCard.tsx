@@ -19,15 +19,13 @@ import { CSAReviewMatrix } from '@/components/csa/CSAReviewMatrix';
 import { TODVerificationDialog } from '@/components/csa/TODVerificationDialog';
 import { EvidenceCaptureButton } from '@/components/csa/EvidenceCaptureButton';
 import { WorkflowPanel } from '@/components/workflow/WorkflowPanel';
-import { useExcelExport } from '@/lib/useExcelExport';
-import { buildCsaRecordSummaryRows, exportCsaRecordToExcel } from '@/lib/csa-excel-export';
-import { useCsaRecordDetail } from '@/pages/csa/components/useCsaRecordDetail';
 import {
+  useCsaAssessedDetail,
   findTodEvaluation,
   isValidAssessmentDate,
   resolveWorkflowStatus,
   type MatrixControl,
-} from '@/pages/csa/components/csa-record-detail';
+} from '@/pages/csa/components/csa-assessed-detail';
 
 interface CSARecordCardProps {
   record: CSARecord;
@@ -37,9 +35,6 @@ interface CSARecordCardProps {
 export function CSARecordCard({ record: initialRecord, process }: CSARecordCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [selectedControl, setSelectedControl] = useState<MatrixControl | null>(null);
-  const [isExportingPDF, setIsExportingPDF] = useState(false);
-  const { isExporting: isExportingXLS, exportNow: exportXlsNow } =
-    useExcelExport<Record<string, string>>();
 
   const { t } = useTranslation(['csa_hub', 'common']);
   const {
@@ -50,7 +45,11 @@ export function CSARecordCard({ record: initialRecord, process }: CSARecordCardP
     saveMutation,
     applyWorkflowStatus,
     saveDual,
-  } = useCsaRecordDetail({
+    exportPdf,
+    exportXls,
+    isExportingPdf,
+    isExportingXls,
+  } = useCsaAssessedDetail({
     recordId: initialRecord.id,
     bpmProcessId: initialRecord.bpmProcessId,
     isExpanded,
@@ -60,59 +59,34 @@ export function CSARecordCard({ record: initialRecord, process }: CSARecordCardP
 
   const handleExportPDF = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsExportingPDF(true);
     const toastId = toast.loading(t('common:notifications.exportingPdf', { defaultValue: 'Mengekspor PDF...' }));
     try {
-      const res = await fetch(`/api/csa/${initialRecord.id}/export-pdf`, {
-        headers: { 'X-Mock-Role': localStorage.getItem('mockRole') || 'Line 2' }
+      await exportPdf({
+        processName: process?.name,
+        period: initialRecord.period,
+        failureMessage: t('common:notifications.exportFailed', { defaultValue: 'Gagal mengekspor PDF' }),
       });
-      if (!res.ok) throw new Error(t('common:notifications.exportFailed', { defaultValue: 'Gagal mengekspor PDF' }));
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `CSA_${process?.name || 'Report'}_${initialRecord.period}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
       toast.success(t('common:notifications.exportSuccess', { defaultValue: 'PDF berhasil diunduh' }), { id: toastId });
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : t('common:notifications.exportFailed', { defaultValue: 'Gagal mengekspor PDF' }), { id: toastId });
-    } finally {
-      setIsExportingPDF(false);
     }
   };
 
   const handleExportXLS = async (e: React.MouseEvent) => {
     e.stopPropagation();
     const toastId = toast.loading(t('common:notifications.exportingExcel', { defaultValue: 'Mengekspor Excel...' }));
-    const exported = await exportXlsNow({
-      rows: buildCsaRecordSummaryRows({
-        processName: process?.name || 'N/A',
-        bpmProcessId: initialRecord.bpmProcessId,
-        period: initialRecord.period,
-        assessmentDate: initialRecord.assessmentDate,
-        result: initialRecord.result,
-        comments: initialRecord.comments,
-        samples: record.samples || [],
-      }),
-      filename: `CSA_Report_${process?.name || 'Export'}_${initialRecord.period}.xlsx`,
-      exportFn: (rows, opts) => exportCsaRecordToExcel({
-        processName: process?.name || 'N/A',
-        bpmProcessId: initialRecord.bpmProcessId,
-        period: initialRecord.period,
-        assessmentDate: initialRecord.assessmentDate,
-        result: initialRecord.result,
-        comments: initialRecord.comments,
-        samples: record.samples || [],
-        filename: opts.filename,
-      }),
-      onError: () => toast.error(
-        t('common:notifications.exportFailed', { defaultValue: 'Gagal mengekspor Excel' }),
-        { id: toastId },
-      ),
-    });
+    const exported = await exportXls({
+      processName: process?.name,
+      bpmProcessId: initialRecord.bpmProcessId,
+      period: initialRecord.period,
+      assessmentDate: initialRecord.assessmentDate,
+      result: initialRecord.result,
+      comments: initialRecord.comments,
+      samples: record.samples || [],
+    }, () => toast.error(
+      t('common:notifications.exportFailed', { defaultValue: 'Gagal mengekspor Excel' }),
+      { id: toastId },
+    ));
     if (exported) {
       toast.success(t('common:notifications.exportSuccess', { defaultValue: 'Excel berhasil diunduh' }), { id: toastId });
     }
@@ -182,21 +156,21 @@ export function CSARecordCard({ record: initialRecord, process }: CSARecordCardP
           <Button 
             variant="outline"
             size="sm"
-            disabled={isExportingPDF}
+            disabled={isExportingPdf}
             className="flex-1 min-h-[44px] text-xs font-semibold gap-1.5 border-border"
             onClick={handleExportPDF}
           >
-            {isExportingPDF ? <Loader2 className="h-4 w-4 animate-spin" /> : <Printer className="h-4 w-4" />}
+            {isExportingPdf ? <Loader2 className="h-4 w-4 animate-spin" /> : <Printer className="h-4 w-4" />}
             <span>PDF</span>
           </Button>
           <Button 
             variant="outline"
             size="sm"
-            disabled={isExportingXLS}
+            disabled={isExportingXls}
             className="flex-1 min-h-[44px] text-xs font-semibold gap-1.5 border-border"
             onClick={handleExportXLS}
           >
-            {isExportingXLS ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+            {isExportingXls ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
             <span>XLS</span>
           </Button>
           <Button

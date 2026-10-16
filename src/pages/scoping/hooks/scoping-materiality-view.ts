@@ -3,6 +3,7 @@ import {
   calculateOM,
   calculatePM,
   calculateScopingCompliance,
+  getGroupMultiplier,
   getRowScopeClassification,
   identifySignificantAccounts,
 } from '../services/materiality-calc';
@@ -51,6 +52,8 @@ export interface MaterialityViewInputs {
   assessmentData: MaterialitySimulation['assessmentData'];
   selectedEntityCodes: string[];
   deptMappings: Record<string, string[]>;
+  /** Group size for Table-25 multiplier. Falls back to selected entities when omitted. */
+  entityCount?: number;
 }
 
 export function computeMaterialityView(inputs: MaterialityViewInputs) {
@@ -59,7 +62,8 @@ export function computeMaterialityView(inputs: MaterialityViewInputs) {
     return { omValue: 0, pmValue: 0, multiplier: 1, benchmarkValue: 0, mergedGlData: [], significantAccounts: [], scopingCompliance: null };
   }
   const benchmarkValue = calculateBenchmarkValue(filteredRows, basis);
-  const multiplier = 1;
+  const entityCount = inputs.entityCount ?? selectedEntityCodes.length ?? 1;
+  const multiplier = getGroupMultiplier(Math.max(1, entityCount));
   const omValue = calculateOM(benchmarkValue, omPercentage, multiplier);
   const pmValue = calculatePM(omValue, haircutPercentage);
   const mergedGlData = filteredRows.map((row) => ({
@@ -114,8 +118,20 @@ export function originalFingerprint({ initial, initialAppMappings }: OriginalFin
   };
 }
 
+function stableStringify(value: unknown): string {
+  if (value === null || value === undefined) return JSON.stringify(value);
+  if (Array.isArray(value)) return `[${value.map((v) => stableStringify(v)).join(',')}]`;
+  if (typeof value === 'object') {
+    const entries = Object.entries(value as Record<string, unknown>)
+      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+      .map(([k, v]) => `${JSON.stringify(k)}:${stableStringify(v)}`);
+    return `{${entries.join(',')}}`;
+  }
+  return JSON.stringify(value);
+}
+
 export function isScopingDirty(draft: ReturnType<typeof draftFingerprint>, original: ReturnType<typeof originalFingerprint>): boolean {
-  return JSON.stringify(draft) !== JSON.stringify(original);
+  return stableStringify(draft) !== stableStringify(original);
 }
 
 export function isEditorLocked(workflowStatus: MaterialitySimulation['workflowStatus']): boolean {

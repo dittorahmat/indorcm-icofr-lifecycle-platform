@@ -4,6 +4,7 @@ import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import type { RCMFlavor, RCMImportParsedRow } from './rcm-import-types';
+import { summarizeRcmRows } from './rcm-ingestion';
 
 interface RCMValidationStepProps {
   flavor: RCMFlavor;
@@ -12,8 +13,8 @@ interface RCMValidationStepProps {
 
 export function RCMValidationStep({ flavor, rows }: RCMValidationStepProps) {
   const { t } = useTranslation(['rcm', 'common']);
-  const validCount = rows.filter((r) => r.isValid).length;
-  const invalidCount = rows.length - validCount;
+  const { invalidRowCount: invalidCount } = summarizeRcmRows(rows);
+  const validCount = rows.length - invalidCount;
 
   return (
     <div className="space-y-4">

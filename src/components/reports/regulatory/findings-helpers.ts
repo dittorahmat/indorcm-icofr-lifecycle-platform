@@ -1,14 +1,15 @@
 import type { FindingControlRef, FindingExportRow } from '@/lib/findings-excel-export';
 
-export function findingRowId(d: FindingExportRow, index: number): string {
-  return d.id || `DEF-${String(index + 1).padStart(3, '0')}`;
-}
-
-export function resolveFindingControlName(d: FindingExportRow, controls: readonly FindingControlRef[]): string {
-  const match = controls.find((c) => (d.controlId && c.id === d.controlId) || (d.controlCode && c.code === d.controlCode));
-  if (match) return `${match.code || ''} - ${match.name || ''}`;
-  return d.controlName || d.controlCode || '-';
-}
+/** Single-owner re-exports: the canonical findings-presentation seam lives in
+ *  `@/lib/findings-excel-export` (shared by the on-screen table and the Excel
+ *  path). This module keeps screen-only formatting plus the severity tone map. */
+export {
+  findingRowId,
+  findingsColumns,
+  findingsFilename,
+  mapFindingsRows,
+  resolveFindingControlName,
+} from '@/lib/findings-excel-export';
 
 export function formatExposureValue(exposureValue: unknown): string {
   return typeof exposureValue === 'number' ? new Intl.NumberFormat('id-ID').format(exposureValue) : '-';
@@ -21,3 +22,5 @@ export function findingSeverityTone(severity: string | undefined): FindingSeveri
   if (severity === 'Significant Deficiency') return 'sd';
   return 'cd';
 }
+
+export type { FindingControlRef, FindingExportRow };

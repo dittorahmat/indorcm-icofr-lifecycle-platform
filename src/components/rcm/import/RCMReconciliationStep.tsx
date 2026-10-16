@@ -5,6 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { BPMNodeOption, RCMImportParsedRow } from './rcm-import-types';
+import { summarizeRcmRows } from './rcm-ingestion';
 
 interface RCMReconciliationStepProps {
   rows: RCMImportParsedRow[];
@@ -21,9 +22,9 @@ export function RCMReconciliationStep({
 }: RCMReconciliationStepProps) {
   const { t } = useTranslation(['rcm', 'common', 'bpm']);
 
-  const matchedCount = rows.filter((r) => r.matchStatus === 'matched').length;
-  const suggestedCount = rows.filter((r) => r.matchStatus === 'suggested').length;
-  const unmatchedCount = rows.filter((r) => !r.matchStatus || r.matchStatus === 'unmatched').length;
+  const {
+    matchStats: { matched: matchedCount, suggested: suggestedCount, unmatched: unmatchedCount },
+  } = summarizeRcmRows(rows);
 
   return (
     <div className="space-y-4">

@@ -10,6 +10,7 @@ import { MobileDesktopBanner } from '@/components/layout/MobileDesktopBanner';
 import { MOCK_COMPANY } from '../mock-regulatory-data';
 import { useExcelExport } from '@/lib/useExcelExport';
 import type { FindingControlRef, FindingExportRow } from '@/lib/findings-excel-export';
+import { findingsColumns, findingsFilename } from '@/lib/findings-excel-export';
 import { findingRowId, formatExposureValue, resolveFindingControlName } from './findings-helpers';
 import { ReportSeverityBadge } from './severity-badge';
 
@@ -24,29 +25,28 @@ export function FindingsReport({ deficiencies = [], controls = [] }: FindingsRep
   const { t } = useTranslation('reports');
   const { isExporting: isExportingExcel, exportNow } = useExcelExport<FindingExportRow>();
 
-  const col = (key: string, header: string, numeric = false) => ({ key, header, numeric });
-  const columns = [
-    col('no', t('findings.columns.no', { defaultValue: 'No' }), true),
-    col('ref', t('findings.columns.ref', { defaultValue: 'Ref. Temuan' })),
-    col('description', t('findings.columns.description', { defaultValue: 'Deskripsi Temuan' })),
-    col('control', t('findings.columns.control', { defaultValue: 'Kontrol Terkait' })),
-    col('severity', t('findings.columns.severity', { defaultValue: 'Tingkat' })),
-    col('exposure', t('findings.columns.exposure', { defaultValue: 'Nilai Eksposur' }), true),
-    col('identifiedBy', t('findings.columns.identifiedBy', { defaultValue: 'Ditemukan Oleh' })),
-    col('identifiedDate', t('findings.columns.identifiedDate', { defaultValue: 'Tanggal Temuan' })),
-    col('source', t('findings.columns.source', { defaultValue: 'Sumber' })),
-    col('status', t('findings.columns.status', { defaultValue: 'Status' })),
-  ];
+  const columns = findingsColumns({
+    no: t('findings.columns.no', { defaultValue: 'No' }),
+    ref: t('findings.columns.ref', { defaultValue: 'Ref. Temuan' }),
+    description: t('findings.columns.description', { defaultValue: 'Deskripsi Temuan' }),
+    control: t('findings.columns.control', { defaultValue: 'Kontrol Terkait' }),
+    severity: t('findings.columns.severity', { defaultValue: 'Tingkat' }),
+    exposure: t('findings.columns.exposure', { defaultValue: 'Nilai Eksposur' }),
+    identifiedBy: t('findings.columns.identifiedBy', { defaultValue: 'Ditemukan Oleh' }),
+    identifiedDate: t('findings.columns.identifiedDate', { defaultValue: 'Tanggal Temuan' }),
+    source: t('findings.columns.source', { defaultValue: 'Sumber' }),
+    status: t('findings.columns.status', { defaultValue: 'Status' }),
+  });
 
   const handleExportExcel = async () => {
     if (deficiencies.length === 0) return;
     await exportNow({
       rows: deficiencies,
-      filename: `Lampiran_9_Daftar_Temuan_${new Date().getFullYear()}.xlsx`,
+      filename: findingsFilename(new Date().getFullYear()),
       sheetName: t('findings.title', { defaultValue: 'Lampiran 9' }),
       exportFn: async (rows) => {
         const { exportRegulatoryTableToExcel } = await import('@/lib/rcm-excel-export');
-        const { mapFindingsRows, resolveFindingControlName, findingsFilename } = await import('@/lib/findings-excel-export');
+        const { mapFindingsRows, resolveFindingControlName } = await import('@/lib/findings-excel-export');
         const mapped = mapFindingsRows(rows as FindingRow[], (d) => resolveFindingControlName(d, controls));
         await exportRegulatoryTableToExcel(mapped, {
           title: t('findings.title', { defaultValue: 'LAMPIRAN 9' }),

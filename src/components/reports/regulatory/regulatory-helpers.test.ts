@@ -42,6 +42,27 @@ describe('regulatory report helpers (one appendix per module)', () => {
     expect(findingSeverityTone('other')).toBe('cd');
   });
 
+  it('keeps screen and Excel resolvers in parity (single seam)', async () => {
+    const screen = await import('./findings-helpers');
+    const lib = await import('@/lib/findings-excel-export');
+    const controls = [
+      { id: 'c1', code: 'C-01', name: 'Opname' },
+      { id: 'c2', name: 'Tanpa kode' },
+    ];
+    const cases = [
+      { controlId: 'c1' },
+      { controlId: 'c2' },
+      { controlCode: 'C-01' },
+      { controlName: 'Manual' },
+      {},
+    ];
+    for (const [i, d] of cases.entries()) {
+      expect(screen.resolveFindingControlName(d, controls)).toBe(lib.resolveFindingControlName(d, controls));
+      expect(screen.findingRowId(d, i)).toBe(lib.findingRowId(d, i));
+    }
+    expect(screen.resolveFindingControlName({ controlId: 'c2' }, controls)).toBe('c2 - Tanpa kode');
+  });
+
   it('summarizes Lampiran 11 effectiveness from severities', () => {
     const items = [
       { severity: 'Material Weakness' },

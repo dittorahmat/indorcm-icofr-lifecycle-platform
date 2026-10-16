@@ -11,22 +11,17 @@ import { CSAReviewMatrix } from '@/components/csa/CSAReviewMatrix';
 import { TODVerificationDialog } from '@/components/csa/TODVerificationDialog';
 import { useTranslation } from 'react-i18next';
 import { WorkflowPanel } from '@/components/workflow/WorkflowPanel';
-import { useExcelExport } from '@/lib/useExcelExport';
-import { buildCsaRecordSummaryRows, exportCsaRecordToExcel } from '@/lib/csa-excel-export';
-import { useCsaRecordDetail } from './useCsaRecordDetail';
 import {
+  useCsaAssessedDetail,
   findTodEvaluation,
   isValidAssessmentDate,
   resolveWorkflowStatus,
   type MatrixControl,
-} from './csa-record-detail';
+} from './csa-assessed-detail';
 
 export function CSARecordRow({ record: initialRecord, process }: { record: CSARecord, process?: BPMProcess }) {
   const [isExpanded, setIsExpanded] = React.useState(false);
   const [selectedControl, setSelectedControl] = React.useState<MatrixControl | null>(null);
-  const [isExportingPDF, setIsExportingPDF] = React.useState(false);
-  const { isExporting: isExportingXLS, exportNow: exportXlsNow } =
-    useExcelExport<Record<string, string>>();
   const { t } = useTranslation(['csa_hub', 'common']);
   const {
     fullRecord,
@@ -36,7 +31,11 @@ export function CSARecordRow({ record: initialRecord, process }: { record: CSARe
     saveMutation,
     applyWorkflowStatus,
     saveDual,
-  } = useCsaRecordDetail({
+    exportPdf,
+    exportXls,
+    isExportingPdf,
+    isExportingXls,
+  } = useCsaAssessedDetail({
     recordId: initialRecord.id,
     bpmProcessId: initialRecord.bpmProcessId,
     isExpanded,
@@ -46,59 +45,31 @@ export function CSARecordRow({ record: initialRecord, process }: { record: CSARe
 
   const handleExportPDF = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsExportingPDF(true);
     const toastId = toast.loading(t('page.row.pdfLoading'));
     try {
-      const response = await fetch(`/api/csa/${initialRecord.id}/export-pdf`, {
-        headers: {
-          'X-Mock-Role': localStorage.getItem('mockRole') || 'Line 2'
-        }
+      await exportPdf({
+        processName: process?.name,
+        period: initialRecord.period,
+        failureMessage: t('page.row.pdfFailed'),
       });
-      if (!response.ok) throw new Error(t('page.row.pdfFailed'));
-      
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `CSA_${process?.name || 'Report'}_${initialRecord.period}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
       toast.success(t('page.row.pdfDone'), { id: toastId });
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : String(err), { id: toastId });
-    } finally {
-      setIsExportingPDF(false);
     }
   };
 
   const handleExportXLS = async (e: React.MouseEvent) => {
     e.stopPropagation();
     const toastId = toast.loading(t('page.row.xlsLoading'));
-    const exported = await exportXlsNow({
-      rows: buildCsaRecordSummaryRows({
-        processName: process?.name || 'N/A',
-        bpmProcessId: initialRecord.bpmProcessId,
-        period: initialRecord.period,
-        assessmentDate: initialRecord.assessmentDate,
-        result: initialRecord.result,
-        comments: initialRecord.comments,
-        samples: record.samples || [],
-      }),
-      filename: `CSA_Report_${process?.name || 'Export'}_${initialRecord.period}.xlsx`,
-      exportFn: (rows, opts) => exportCsaRecordToExcel({
-        processName: process?.name || 'N/A',
-        bpmProcessId: initialRecord.bpmProcessId,
-        period: initialRecord.period,
-        assessmentDate: initialRecord.assessmentDate,
-        result: initialRecord.result,
-        comments: initialRecord.comments,
-        samples: record.samples || [],
-        filename: opts.filename,
-      }),
-      onError: () => toast.error(t('page.row.xlsFailed'), { id: toastId }),
-    });
+    const exported = await exportXls({
+      processName: process?.name,
+      bpmProcessId: initialRecord.bpmProcessId,
+      period: initialRecord.period,
+      assessmentDate: initialRecord.assessmentDate,
+      result: initialRecord.result,
+      comments: initialRecord.comments,
+      samples: record.samples || [],
+    }, () => toast.error(t('page.row.xlsFailed'), { id: toastId }));
     if (exported) {
       toast.success(t('page.row.xlsDone'), { id: toastId });
     }
@@ -150,19 +121,19 @@ export function CSARecordRow({ record: initialRecord, process }: { record: CSARe
               variant="outline" 
               size="sm" 
               onClick={handleExportPDF}
-              disabled={isExportingPDF}
+              disabled={isExportingPdf}
               className="h-11 md:h-8 min-h-[44px] md:min-h-0 text-xs gap-1.5 border-slate-200 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 font-bold shadow-sm"
             >
-              {isExportingPDF ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Printer className="h-3.5 w-3.5" />} PDF
+              {isExportingPdf ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Printer className="h-3.5 w-3.5" />} PDF
             </Button>
             <Button 
               variant="outline" 
               size="sm" 
               onClick={handleExportXLS}
-              disabled={isExportingXLS}
+              disabled={isExportingXls}
               className="h-11 md:h-8 min-h-[44px] md:min-h-0 text-xs gap-1.5 border-slate-200 font-bold shadow-sm"
             >
-              {isExportingXLS ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />} XLS
+              {isExportingXls ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />} XLS
             </Button>
           </div>
         </TableCell>
