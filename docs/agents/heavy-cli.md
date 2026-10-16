@@ -9,9 +9,15 @@ killed the host, while the same `tsc` redirected to a file exited 0).
   (`Select-Object -Last`, `tail`, `head`). Redirect to a file first, then
   read the file in chunks:
   `npx tsc --noEmit -p tsconfig.app.json > $env:TEMP\opencode\tsc-app.log 2>&1; echo "EXIT:$LASTEXITCODE"`.
-- Unix `head`/`tail` do not exist in PowerShell — use
-  `Select-Object -First/-Last` (or `Get-Content ... | Select-Object`), and
-  only on files already written to disk, never on live heavy-command output.
+- No Unix coreutils in PowerShell (`head`/`tail`, `uniq`, `sort`, `grep`,
+  `tail -n`, pipes like `sort | uniq -c | sort -rn`): none exist on win32
+  pwsh and each fails the command outright (observed 2026-10-16: `uniq`
+  killed a hot-spot `git log` pipeline; bare `tail` killed a test-log read).
+  PowerShell-native equivalents only, and only on files already written to
+  disk, never on live heavy-command output:
+  `Get-Content <file> | Select-Object -First/-Last N` (head/tail),
+  `... | Group-Object | Sort-Object Count -Descending` (uniq -c + sort),
+  `Select-String -Path <file> -Pattern ...` (grep).
 - Run `type-check` per tsconfig (`tsconfig.app.json`, then
   `tsconfig.worker.json`) instead of the combined script when memory is
   constrained.
