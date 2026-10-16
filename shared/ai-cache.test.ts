@@ -1,11 +1,15 @@
 import { describe, it, expect } from 'vitest';
 import {
   buildSuggestCacheKey,
+  buildSuggestContextHash,
   buildEmbeddingCacheKey,
   buildRetrievalCacheKey,
   checkDailyRateLimit,
+  isCacheUnversioned,
   normalizeSuggestContext,
   resolveAiCacheTtlMs,
+  sharedAiRateLimitStore,
+  trimText,
   MemoryAiCacheStore,
   NoopProviderPromptCacheAdapter,
 } from './ai-cache';
@@ -139,5 +143,22 @@ describe('normalizeSuggestContext parity', () => {
     expect(buildSuggestCacheKey('o', 'control', withRisk, VERSIONS)).not.toBe(
       buildSuggestCacheKey('o', 'control', withoutRisk, VERSIONS),
     );
+  });
+  it('shares one normalized hash between popover query-key and route cache-key', () => {
+    const client = { glCode: ' 10008 ', glDesc: 'Kas', bpmName: 'Teller', nodeLabel: 'terima uang' };
+    const server = { noGL: '10008', glDesc: 'Kas', bpmName: 'Teller', nodeLabel: 'terima uang' };
+    expect(buildSuggestContextHash('risk', client)).toBe(buildSuggestContextHash('risk', server));
+    expect(trimText('  x  ')).toBe('x');
+    expect(trimText(42)).toBe('');
+  });
+  it('flags empty versions as explicitly unversioned', () => {
+    expect(isCacheUnversioned({ kbVersion: '', simulationId: '' })).toBe(true);
+    expect(isCacheUnversioned(VERSIONS)).toBe(false);
+    expect(isCacheUnversioned({ kbVersion: 'kb-1', simulationId: '' })).toBe(false);
+  });
+  it('isolates rate-limit buckets per route namespace', () => {
+    sharedAiRateLimitStore.clear();
+    expect(checkDailyRateLimit(sharedAiRateLimitStore, 'suggest:c1', 1_000).allowed).toBe(true);
+    expect(checkDailyRateLimit(sharedAiRateLimitStore, 'chat:c1', 1_000).count).toBe(1);
   });
 });

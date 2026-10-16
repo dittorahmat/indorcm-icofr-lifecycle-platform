@@ -9,6 +9,8 @@
  * rejection stays with input validation; this module only gates.
  */
 
+import { trimText } from './ai-cache';
+
 export type SuggestGateReason = 'MISSING_CONTEXT' | 'GENERIC_LABEL' | 'RISK_REQUIRED' | null;
 
 export interface SuggestGateInput {
@@ -31,17 +33,13 @@ export function isGenericNodeLabel(label: string): boolean {
   return GENERIC_NODE_LABEL_PATTERN.test(trimmed);
 }
 
-function textOf(value: unknown): string {
-  return typeof value === 'string' ? value.trim() : '';
-}
-
 /** Fetch gate: missing context, generic label, then control-without-risk. */
 export function suggestGate(input: SuggestGateInput): SuggestGate {
-  const bpmName = textOf(input.bpmName);
-  const nodeLabel = textOf(input.nodeLabel);
+  const bpmName = trimText(input.bpmName);
+  const nodeLabel = trimText(input.nodeLabel);
   if (!bpmName || !nodeLabel) return { blocked: true, reason: 'MISSING_CONTEXT' };
   if (isGenericNodeLabel(nodeLabel)) return { blocked: true, reason: 'GENERIC_LABEL' };
-  if (input.kind === 'control' && !textOf(input.riskDescription)) {
+  if (input.kind === 'control' && !trimText(input.riskDescription)) {
     return { blocked: true, reason: 'RISK_REQUIRED' };
   }
   return { blocked: false, reason: null };

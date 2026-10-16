@@ -7,14 +7,12 @@ import { AIService } from '../../services/ai-service';
 import type { RetrievalRow } from '../../services/ai-service';
 import { AuditService } from '../../services/audit-service';
 import { getAiCacheVersions, createDocMarkerLoader, createApprovedSimulationLoader } from '../../services/ai/ai-cache-versions';
-import { checkDailyRateLimit } from '@shared/ai-cache';
+import { checkDailyRateLimit, isCacheUnversioned, sharedAiRateLimitStore } from '@shared/ai-cache';
 
 import { ICOFR_TOOLS } from '../../services/ai/tool-definitions';
 import { AIToolExecutor, ToolContext } from '../../services/ai/tool-executor';
 
 const aiChatApp = new Hono<HonoEnv>();
-
-const rateLimitStore = new Map<string, { count: number; resetDate: number }>();
 
 // --- AI Chatbot Routes ---
 
@@ -41,7 +39,7 @@ aiChatApp.post('/ai/chat', async (c) => {
   const clientId = c.req.header('X-Forwarded-For') || c.req.header('CF-Connecting-IP') || 'unknown';
 
   // Contract: cache hits count toward the daily limit — checked before cache lookup.
-  const checked = checkDailyRateLimit(rateLimitStore, clientId, Date.now());
+  const checked = checkDailyRateLimit(sharedAiRateLimitStore, `chat:${clientId}`, Date.now());
   if (!checked.allowed) {
     return bad(c, 'Rate limit exceeded.', 429);
   }
@@ -79,6 +77,11 @@ aiChatApp.post('/ai/chat', async (c) => {
     embeddingModel: c.env.AI_EMBEDDING_MODEL,
     chatModel: c.env.AI_CHAT_MODEL,
     cacheScope: { orgId, kbVersion: versions.kbVersion, simulationId: versions.simulationId },
+    ttlEnv: {
+      AI_CACHE_TTL_EMBEDDING_MS: c.env.AI_CACHE_TTL_EMBEDDING_MS,
+      AI_CACHE_TTL_RETRIEVAL_MS: c.env.AI_CACHE_TTL_RETRIEVAL_MS,
+      AI_CACHE_TTL_CHAT_MS: c.env.AI_CACHE_TTL_CHAT_MS,
+    },
   });
 
   try {
@@ -89,6 +92,7 @@ aiChatApp.post('/ai/chat', async (c) => {
     retrievalResults = [];
   }
   const sourcesCached = aiService.lastRetrievalCacheHit;
+  const unversioned = isCacheUnversioned(versions);
 
   const knowledgeBase = (retrievalResults && retrievalResults.length > 0)
     ? retrievalResults.map(r => AIService.situationalChunking(r.content, { title: r.title, category: r.category })).join('\n\n')
@@ -197,6 +201,8 @@ ${knowledgeBase}
           kbVersion: versions.kbVersion,
           simulationId: versions.simulationId,
           sourcesCount: sources.length,
+          unversioned,
+          cacheSkipped: 'tool-path',
         },
       });
     } catch {

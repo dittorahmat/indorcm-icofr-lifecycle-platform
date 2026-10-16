@@ -11,6 +11,7 @@ export type { CSAFormValues };
 import { useCSADiagramLink } from './csa/use-csa-diagram-link';
 import { useConfirm } from './use-confirm';
 import { checkSignOff } from './csa/sign-off-guard';
+import { resolvePostSaveView, shouldEnterForm, shouldFetchList } from './csa/csa-view-transition';
 import { buildEvidenceFormData, compressEvidenceImage } from './csa/use-evidence-upload';
 import type { CSAEvidenceMeta } from '@shared/types';
 
@@ -64,7 +65,7 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
       if (year) params.append('year', year.toString());
       return api<{ items: CSARecord[] }>(`/api/csa?${params.toString()}`);
     },
-    enabled: !!bpmProcessId && view === 'list'
+    enabled: shouldFetchList(view, !!bpmProcessId)
   });
 
   const { data: linkedScheduleRecord, isLoading: isCheckingSchedule } = useQuery({
@@ -137,21 +138,23 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
   }, [initialSamples.length, isInitialized, view, activeCsaId]);
 
   useEffect(() => {
-    if (isInitialized || manualViewOverride.current === 'list') return;
-
-    if (scheduleId) {
-      if (isCheckingSchedule) return;
-
+    if (
+      shouldEnterForm({
+        scheduleId: scheduleId ?? null,
+        linkedRecordId: linkedScheduleRecord?.id ?? null,
+        initialSamplesCount: initialSamples.length,
+        override: manualViewOverride.current,
+        isInitialized,
+        isCheckingSchedule,
+      })
+    ) {
       if (linkedScheduleRecord) {
         setActiveCsaId(linkedScheduleRecord.id);
         setView('form');
         setIsInitialized(true);
-      } else if (initialSamples.length > 0) {
+      } else {
         initializeFromSamples(initialSamples);
       }
-    } 
-    else if (initialSamples.length > 0 && view !== 'form') {
-      initializeFromSamples(initialSamples);
     }
   }, [scheduleId, linkedScheduleRecord, isCheckingSchedule, initialSamples, isInitialized, view, initializeFromSamples]);
 
@@ -211,7 +214,7 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
       queryClient.invalidateQueries({ queryKey: ['csa-schedules'] });
       queryClient.invalidateQueries({ queryKey: ['csa-worklist'] });
       
-      if (!variables.isDraft) {
+      if (resolvePostSaveView(!!variables.isDraft) === 'list') {
         setView('list');
         setActiveCsaId(null);
         setIsInitialized(true);
@@ -263,6 +266,7 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
       toast.success("Assessment deleted successfully");
       queryClient.invalidateQueries({ queryKey: ['csa-list'] });
       queryClient.invalidateQueries({ queryKey: ['csa-schedules'] });
+      queryClient.invalidateQueries({ queryKey: ['csa-worklist'] });
     }
   });
 

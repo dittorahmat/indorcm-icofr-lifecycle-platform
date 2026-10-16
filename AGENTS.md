@@ -129,3 +129,7 @@ Five canonical roles mapped 1:1 to tracker labels (`needs-triage`, `needs-info`,
 ### Domain docs
 
 Single-context: root `GLOSSARY.md` + `docs/adr/`. Read both before exploring an area; use glossary vocabulary in outputs. See `docs/agents/domain.md`.
+
+### CSA hub flow
+
+Belum-Dinilai is derive-from-existence across worklist → row → view-transition. Read `docs/agents/csa-hub.md` before touching `shared/csa-worklist.ts`, `useCsaWorklist`, `CSARecordRow/Card`, or `useCSA`.

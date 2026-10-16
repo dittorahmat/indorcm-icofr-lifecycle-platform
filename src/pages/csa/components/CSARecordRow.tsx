@@ -1,7 +1,5 @@
 import React from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/lib/api-client';
-import { CSARecord, BPMProcess, Control } from '@shared/types';
+import { CSARecord, BPMProcess } from '@shared/types';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,15 +9,17 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { CSAReviewMatrix } from '@/components/csa/CSAReviewMatrix';
 import { TODVerificationDialog } from '@/components/csa/TODVerificationDialog';
-import { useTOD } from '@/hooks/use-tod';
 import { useTranslation } from 'react-i18next';
-import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 import { WorkflowPanel } from '@/components/workflow/WorkflowPanel';
 import { useExcelExport } from '@/lib/useExcelExport';
 import { buildCsaRecordSummaryRows, exportCsaRecordToExcel } from '@/lib/csa-excel-export';
-
-/** TLC matrix row: Control columns plus the mapping identifiers the API joins in. */
-type MatrixControl = Control & { controlId: string; mappingId: string };
+import { useCsaRecordDetail } from './useCsaRecordDetail';
+import {
+  findTodEvaluation,
+  isValidAssessmentDate,
+  resolveWorkflowStatus,
+  type MatrixControl,
+} from './csa-record-detail';
 
 export function CSARecordRow({ record: initialRecord, process }: { record: CSARecord, process?: BPMProcess }) {
   const [isExpanded, setIsExpanded] = React.useState(false);
@@ -28,37 +28,21 @@ export function CSARecordRow({ record: initialRecord, process }: { record: CSARe
   const { isExporting: isExportingXLS, exportNow: exportXlsNow } =
     useExcelExport<Record<string, string>>();
   const { t } = useTranslation(['csa_hub', 'common']);
-  const { workingYear } = useFiscalYearStore();
-  const queryClient = useQueryClient();
-  
-  const { evaluations, saveMutation } = useTOD(initialRecord.id);
-
-  // Fetch full details (with samples) when expanded
-  const { data: fullRecord, isLoading: isRecordLoading } = useQuery({
-    queryKey: ['csa-record-detail', initialRecord.id],
-    queryFn: () => api<CSARecord>(`/api/csa/${initialRecord.id}`),
-    enabled: isExpanded
+  const {
+    fullRecord,
+    isRecordLoading,
+    controls,
+    evaluations,
+    saveMutation,
+    applyWorkflowStatus,
+    saveDual,
+  } = useCsaRecordDetail({
+    recordId: initialRecord.id,
+    bpmProcessId: initialRecord.bpmProcessId,
+    isExpanded,
   });
 
   const record = fullRecord || initialRecord;
-
-  // Fetch all control mappings for this process to build the matrix
-  const { data: matrixData } = useQuery({
-    queryKey: ['rcm-matrix-tlc-process', initialRecord.bpmProcessId, workingYear],
-    queryFn: () => api<{ items: MatrixControl[] }>(`/api/rcm-matrix/tlc?bpmProcessId=${initialRecord.bpmProcessId}&year=${workingYear}`),
-    enabled: isExpanded && !!initialRecord.bpmProcessId
-  });
-
-  const controls = React.useMemo(() => {
-    if (!matrixData?.items) return [];
-    const seen = new Set<string>();
-    return matrixData.items.filter((item: MatrixControl) => {
-      const id = item.controlId || item.id;
-      if (!id || seen.has(id)) return false;
-      seen.add(id);
-      return true;
-    });
-  }, [matrixData?.items]);
 
   const handleExportPDF = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -95,6 +79,7 @@ export function CSARecordRow({ record: initialRecord, process }: { record: CSARe
     const exported = await exportXlsNow({
       rows: buildCsaRecordSummaryRows({
         processName: process?.name || 'N/A',
+        bpmProcessId: initialRecord.bpmProcessId,
         period: initialRecord.period,
         assessmentDate: initialRecord.assessmentDate,
         result: initialRecord.result,
@@ -104,6 +89,7 @@ export function CSARecordRow({ record: initialRecord, process }: { record: CSARe
       filename: `CSA_Report_${process?.name || 'Export'}_${initialRecord.period}.xlsx`,
       exportFn: (rows, opts) => exportCsaRecordToExcel({
         processName: process?.name || 'N/A',
+        bpmProcessId: initialRecord.bpmProcessId,
         period: initialRecord.period,
         assessmentDate: initialRecord.assessmentDate,
         result: initialRecord.result,
@@ -149,7 +135,9 @@ export function CSARecordRow({ record: initialRecord, process }: { record: CSARe
           )}>{initialRecord.result}</Badge>
         </TableCell>
         <TableCell className="text-xs text-slate-500 font-medium">
-          {format(new Date(initialRecord.assessmentDate), 'dd MMM yyyy HH:mm')}
+          {isValidAssessmentDate(initialRecord.assessmentDate)
+            ? format(new Date(initialRecord.assessmentDate), 'dd MMM yyyy HH:mm')
+            : '-'}
         </TableCell>
         <TableCell className="text-center">
            <Badge variant="outline" className="font-black text-xs bg-white border-slate-200">
@@ -203,14 +191,9 @@ export function CSARecordRow({ record: initialRecord, process }: { record: CSARe
                        <WorkflowPanel
                          entityType="CSA"
                          entityId={record.id}
-                         currentStatus={record.workflowStatus || (record.line2Status === 'Validated' ? 'Validated' : (record.isDraft ? 'Draft' : 'In Review'))}
+                         currentStatus={resolveWorkflowStatus(record)}
                          history={record.workflowHistory || []}
-                         onStatusChange={(newStatus) => {
-                           queryClient.setQueryData<CSARecord>(
-                             ['csa-record-detail', record.id],
-                             (old) => (old ? { ...old, workflowStatus: newStatus } : old),
-                           );
-                         }}
+                         onStatusChange={(newStatus) => applyWorkflowStatus(record.id, newStatus)}
                        />
                      </div>
                   </div>
@@ -226,63 +209,13 @@ export function CSARecordRow({ record: initialRecord, process }: { record: CSARe
           onOpenChange={(open) => !open && setSelectedControl(null)}
           control={selectedControl}
           csaId={record.id}
-          initialData={evaluations.find(e => e.controlId === selectedControl.controlId)}
+          initialData={findTodEvaluation(evaluations, selectedControl)}
           onSave={async (values) => {
             try {
-              // Orchestrate dual save
-              const rcmPayload = {
-                mappingId: selectedControl.mappingId,
-                riskDescription: values.riskDescription,
-                isFraudRelated: values.isFraudRelated,
-                riskRating: values.riskRating,
-                controlName: values.mappedControlName,
-                controlDescription: values.mappedControlDescription,
-                supportingDocs: values.supportingDocs,
-                isKeyControl: values.isKeyControl,
-                controlType: values.controlType,
-                controlNature: values.controlNature,
-                automatedSubNature: values.automatedSubNature,
-                frequency: values.frequency,
-                supportingApp: values.supportingApp,
-                executingFunction: values.executingFunction,
-                executorRole: values.executorRole,
-                affectedFsliItem: values.affectedFsliItem,
-                effectivePeriod: values.effectivePeriod,
-                ipoC: values.ipoC,
-                ipoA: values.ipoA,
-                ipoV: values.ipoV,
-                ipoRa: values.ipoRa,
-                assertionE: values.assertionE,
-                assertionC: values.assertionC,
-                assertionA: values.assertionA,
-                assertionCo: values.assertionCo,
-                assertionVa: values.assertionVa,
-                assertionRo: values.assertionRo,
-                assertionPd: values.assertionPd,
-              };
-
-              const todPayload = {
-                controlId: selectedControl.controlId,
-                pilarObjective: values.pilarObjective,
-                pilarTiming: values.pilarTiming,
-                pilarAuthority: values.pilarAuthority,
-                pilarReliability: values.pilarReliability,
-                pilarCoverage: values.pilarCoverage,
-                pilarEvidence: values.pilarEvidence,
-                kkReference: values.kkReference,
-                conclusion: values.conclusion,
-                comment: values.comment,
-              };
-
-              // Run both updates
-              await Promise.all([
-                api('/api/rcm-matrix/tlc/batch-update', { method: 'POST', body: JSON.stringify({ items: [rcmPayload] }) }),
-                saveMutation.mutateAsync(todPayload)
-              ]);
-
+              await saveDual(selectedControl, values);
               toast.success(t('page.row.todSynced'));
               setSelectedControl(null);
-            } catch (err) {
+            } catch {
               toast.error(t('page.row.todSyncFailed'));
             }
           }}

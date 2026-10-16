@@ -121,7 +121,12 @@ aiDocumentsApp.post('/documents', async (c) => {
             baseUrl: c.env.AI_BASE_URL,
             embeddingModel: c.env.AI_EMBEDDING_MODEL,
             chatModel: c.env.AI_CHAT_MODEL,
+            // Indexing path is explicitly unversioned: chunks are written before the KB marker exists.
             cacheScope: { orgId, kbVersion: '', simulationId: '' },
+            ttlEnv: {
+              AI_CACHE_TTL_EMBEDDING_MS: c.env.AI_CACHE_TTL_EMBEDDING_MS,
+              AI_CACHE_TTL_RETRIEVAL_MS: c.env.AI_CACHE_TTL_RETRIEVAL_MS,
+            },
           });
           const chunks = AIService.splitIntoChunks(content);
 

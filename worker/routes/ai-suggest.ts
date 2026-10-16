@@ -6,11 +6,9 @@ import { AuditService } from '../services/audit-service';
 import { AIService, suggestResponseCache } from '../services/ai-service';
 import { SUGGEST_RESPONSE_SCHEMA, parseSuggestKind, suggestRiskControls } from '../services/ai/suggest-risk-controls';
 import { getAiCacheVersions, createDocMarkerLoader, createApprovedSimulationLoader } from '../services/ai/ai-cache-versions';
-import { buildSuggestCacheKey, normalizeSuggestContext, resolveAiCacheTtlMs, checkDailyRateLimit } from '@shared/ai-cache';
+import { buildSuggestCacheKey, normalizeSuggestContext, resolveAiCacheTtlMs, checkDailyRateLimit, isCacheUnversioned, sharedAiRateLimitStore } from '@shared/ai-cache';
 
 const aiSuggestApp = new Hono<HonoEnv>();
-
-const rateLimitStore = new Map<string, { count: number; resetDate: number }>();
 
 // POST /ai/suggest-risk-controls — manual Lightbulb-triggered Risk/Control
 // suggestions for BPM node property sheets. Body: { kind, noGL, glDesc, bpmName, nodeLabel, riskDescription? }
@@ -30,7 +28,7 @@ aiSuggestApp.post('/ai/suggest-risk-controls', async (c) => {
   const clientId = c.req.header('X-Forwarded-For') || c.req.header('CF-Connecting-IP') || 'unknown';
 
   // Contract: cache hits count toward the daily limit — checked before cache lookup.
-  const limit = checkDailyRateLimit(rateLimitStore, clientId, Date.now());
+  const limit = checkDailyRateLimit(sharedAiRateLimitStore, `suggest:${clientId}`, Date.now());
   if (!limit.allowed) {
     return bad(c, 'Rate limit exceeded.', 429);
   }
@@ -52,6 +50,7 @@ aiSuggestApp.post('/ai/suggest-risk-controls', async (c) => {
       loadApprovedSimulationId: createApprovedSimulationLoader(db),
     }, orgId);
     const cacheKey = buildSuggestCacheKey(orgId, kind, normalizeSuggestContext(body), versions);
+    const unversioned = isCacheUnversioned(versions);
     const ttlMs = resolveAiCacheTtlMs('suggest', { AI_CACHE_TTL_SUGGEST_MS: c.env.AI_CACHE_TTL_SUGGEST_MS });
     const result = await suggestRiskControls(body, kind, async (prompt) => {
       const res = await aiService.generateChatResponse({
@@ -73,6 +72,7 @@ aiSuggestApp.post('/ai/suggest-risk-controls', async (c) => {
           kind,
           kbVersion: versions.kbVersion,
           simulationId: versions.simulationId,
+          unversioned,
         },
       });
     } catch {
