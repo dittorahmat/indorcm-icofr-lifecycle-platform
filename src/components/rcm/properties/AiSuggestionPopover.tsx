@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Command, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { suggestGate } from '@shared/suggest-guards';
-import { normalizeSuggestContext } from '@shared/ai-cache';
+import { buildSuggestContextHash } from '@shared/ai-cache';
 
 export type AiSuggestKind = 'risk' | 'control';
 
@@ -33,8 +33,7 @@ export interface AiSuggestionResult {
 }
 
 function contextHash(kind: AiSuggestKind, ctx: AiSuggestionContext): string {
-  const n = normalizeSuggestContext({ ...ctx, noGL: ctx.glCode });
-  return JSON.stringify([kind, n.noGL, n.glDesc, n.bpmName, n.nodeLabel, kind === 'control' ? n.riskDescription : '']);
+  return buildSuggestContextHash(kind, { ...ctx, noGL: ctx.glCode });
 }
 
 interface AiSuggestionPopoverProps {

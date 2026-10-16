@@ -2,12 +2,14 @@ import { jsonrepair } from 'jsonrepair';
 import { AppError } from '../../lib/utils';
 import { suggestGate } from '@shared/suggest-guards';
 import type { AiCacheStore, AiCacheVersions } from '@shared/ai-cache';
+import { normalizeSuggestContext, trimText } from '@shared/ai-cache';
 
 export type SuggestKind = 'risk' | 'control';
 export type SuggestionSource = 'ai' | 'library' | 'manual';
 
 export interface SuggestionContextInput {
   noGL?: unknown;
+  glCode?: unknown;
   glDesc?: unknown;
   bpmName?: unknown;
   nodeLabel?: unknown;
@@ -64,10 +66,6 @@ export const SUGGEST_RESPONSE_SCHEMA = {
   required: ['items'],
 };
 
-function asTrimmedString(value: unknown): string {
-  return typeof value === 'string' ? value.trim() : '';
-}
-
 /** Parses the raw kind field. Rejects anything but risk/control with AppError(400). */
 export function parseSuggestKind(value: unknown): SuggestKind {
   if (value === 'risk' || value === 'control') return value;
@@ -80,12 +78,13 @@ export function validateSuggestInput(body: unknown, kind: SuggestKind): Suggesti
     throw new AppError('INVALID_SUGGEST_REQUEST', 'Request body harus berupa objek JSON.', 400);
   }
   const input = body as SuggestionContextInput;
+  const norm = normalizeSuggestContext(input);
   const ctx: SuggestionContext = {
-    noGL: asTrimmedString(input.noGL),
-    glDesc: asTrimmedString(input.glDesc),
-    bpmName: asTrimmedString(input.bpmName),
-    nodeLabel: asTrimmedString(input.nodeLabel),
-    riskDescription: asTrimmedString(input.riskDescription),
+    noGL: norm.noGL,
+    glDesc: norm.glDesc,
+    bpmName: norm.bpmName,
+    nodeLabel: norm.nodeLabel,
+    riskDescription: norm.riskDescription,
   };
   if (!ctx.bpmName) throw new AppError('INVALID_SUGGEST_REQUEST', 'bpmName wajib diisi.', 400);
   if (!ctx.nodeLabel) throw new AppError('INVALID_SUGGEST_REQUEST', 'nodeLabel wajib diisi.', 400);
@@ -133,11 +132,11 @@ export function buildSuggestPrompt(ctx: SuggestionContext, kind: SuggestKind): s
 function sanitizeItem(raw: unknown): SuggestionItem | null {
   if (!raw || typeof raw !== 'object') return null;
   const { description, rationale } = raw as { description?: unknown; rationale?: unknown };
-  const desc = asTrimmedString(description);
+  const desc = trimText(description);
   if (!desc) return null;
   return {
     description: truncate(desc, MAX_DESCRIPTION_LENGTH),
-    rationale: truncate(asTrimmedString(rationale), MAX_RATIONALE_LENGTH),
+    rationale: truncate(trimText(rationale), MAX_RATIONALE_LENGTH),
   };
 }
 

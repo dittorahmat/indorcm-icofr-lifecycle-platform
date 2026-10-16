@@ -21,6 +21,13 @@ describe('validateSuggestInput', () => {
     expect(validateSuggestInput(CTX, 'risk')).toMatchObject({ noGL: '10008-000318', nodeLabel: 'menerima uang dari nasabah' });
   });
 
+  it('maps client glCode alias to noGL', () => {
+    const { noGL: _omit, ...rest } = CTX;
+    expect(validateSuggestInput({ ...rest, glCode: ' 10008-000318 ' }, 'risk')).toMatchObject({
+      noGL: '10008-000318',
+    });
+  });
+
   it('rejects non-object bodies with AppError 400', () => {
     try {
       validateSuggestInput(null, 'risk');

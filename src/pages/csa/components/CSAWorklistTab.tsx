@@ -11,6 +11,7 @@ import { AlertTriangle, ClipboardList, Loader2, Play, Search } from 'lucide-reac
 import { CSAModal } from '@/components/bpm/CSAModal';
 import { authClient } from '@/lib/auth-client';
 import { useCsaWorklist, type WorklistTabItem } from '../utils/use-csa-worklist';
+import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 
 /**
  * Tab "Belum Dinilai" CSA hub: control tanpa record non-draft, dikelompokkan
@@ -22,6 +23,7 @@ export function CSAWorklistTab() {
   const { t } = useTranslation(['csa_hub', 'common']);
   const queryClient = useQueryClient();
   const { groups, emptyKind, total, isLoading, isError, refetch } = useCsaWorklist();
+  const { workingYear } = useFiscalYearStore();
   const [selected, setSelected] = React.useState<WorklistTabItem | null>(null);
   const [searchTerm, setSearchTerm] = React.useState('');
   const { data: session } = authClient.useSession();
@@ -185,7 +187,7 @@ export function CSAWorklistTab() {
           onOpenChange={(open) => {
             if (!open) {
               setSelected(null);
-              void queryClient.invalidateQueries({ queryKey: ['csa-worklist'] });
+              void queryClient.invalidateQueries({ queryKey: ['csa-worklist', workingYear] });
             }
           }}
           noGL={selected.noGL ?? ''}

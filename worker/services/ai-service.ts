@@ -56,6 +56,7 @@ export interface AIConfig {
   embeddingModel?: string;
   chatModel?: string;
   cacheScope?: { orgId: string; kbVersion?: string; simulationId?: string };
+  ttlEnv?: Record<string, string | undefined>;
 }
 
 export class AIService {
@@ -113,6 +114,10 @@ export class AIService {
     throw new Error("Max retries reached");
   }
 
+  private ttlEnv(): Record<string, string | undefined> {
+    return this.config.ttlEnv ?? {};
+  }
+
   /**
    * Generates a vector embedding. Identical text per organization reuses the
    * AI Embedding Cache without calling the provider twice.
@@ -132,7 +137,7 @@ export class AIService {
         return values as number[];
       }
       const fresh = await this.fetchEmbeddingFromProvider(text);
-      aiEmbeddingCache.set(key, { payload: { values: fresh } }, resolveAiCacheTtlMs("embedding", {}), versions);
+      aiEmbeddingCache.set(key, { payload: { values: fresh } }, resolveAiCacheTtlMs("embedding", this.ttlEnv()), versions);
       return fresh;
     }
     return this.fetchEmbeddingFromProvider(text);
@@ -337,7 +342,7 @@ export class AIService {
     const fresh = deps?.runQuery
       ? await deps.runQuery({ orgId, query, limit })
       : await this.runHybridSearchQuery(db, orgId, query, queryVector, limit);
-    store.set(key, { payload: { rows: fresh } }, resolveAiCacheTtlMs("retrieval", {}), versions);
+    store.set(key, { payload: { rows: fresh } }, resolveAiCacheTtlMs("retrieval", this.ttlEnv()), versions);
     return fresh;
   }
 

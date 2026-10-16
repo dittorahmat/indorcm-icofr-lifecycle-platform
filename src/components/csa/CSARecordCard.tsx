@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CSARecord, BPMProcess, Control } from '@shared/types';
+import { CSARecord, BPMProcess } from '@shared/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { 
@@ -10,22 +10,24 @@ import {
   Loader2, 
   Layers,
   Calendar,
-  FileSpreadsheet
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import { useQuery } from '@tanstack/react-query';
-import { api } from '@/lib/api-client';
-import { useTOD } from '@/hooks/use-tod';
-import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 import { CSAReviewMatrix } from '@/components/csa/CSAReviewMatrix';
 import { TODVerificationDialog } from '@/components/csa/TODVerificationDialog';
 import { EvidenceCaptureButton } from '@/components/csa/EvidenceCaptureButton';
 import { WorkflowPanel } from '@/components/workflow/WorkflowPanel';
 import { useExcelExport } from '@/lib/useExcelExport';
 import { buildCsaRecordSummaryRows, exportCsaRecordToExcel } from '@/lib/csa-excel-export';
+import { useCsaRecordDetail } from '@/pages/csa/components/useCsaRecordDetail';
+import {
+  findTodEvaluation,
+  isValidAssessmentDate,
+  resolveWorkflowStatus,
+  type MatrixControl,
+} from '@/pages/csa/components/csa-record-detail';
 
 interface CSARecordCardProps {
   record: CSARecord;
@@ -34,41 +36,27 @@ interface CSARecordCardProps {
 
 export function CSARecordCard({ record: initialRecord, process }: CSARecordCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [selectedControl, setSelectedControl] = useState<Control | null>(null);
+  const [selectedControl, setSelectedControl] = useState<MatrixControl | null>(null);
   const [isExportingPDF, setIsExportingPDF] = useState(false);
   const { isExporting: isExportingXLS, exportNow: exportXlsNow } =
     useExcelExport<Record<string, string>>();
 
   const { t } = useTranslation(['csa_hub', 'common']);
-  const { workingYear } = useFiscalYearStore();
-  const { evaluations, saveMutation } = useTOD(initialRecord.id);
-
-  // Fetch full details (with samples) when expanded
-  const { data: fullRecord, isLoading: isRecordLoading } = useQuery({
-    queryKey: ['csa-record-detail', initialRecord.id],
-    queryFn: () => api<CSARecord>(`/api/csa/${initialRecord.id}`),
-    enabled: isExpanded,
+  const {
+    fullRecord,
+    isRecordLoading,
+    controls,
+    evaluations,
+    saveMutation,
+    applyWorkflowStatus,
+    saveDual,
+  } = useCsaRecordDetail({
+    recordId: initialRecord.id,
+    bpmProcessId: initialRecord.bpmProcessId,
+    isExpanded,
   });
 
   const record = fullRecord || initialRecord;
-
-  // Fetch control mappings for this process
-  const { data: matrixData } = useQuery({
-    queryKey: ['rcm-matrix-tlc-process', initialRecord.bpmProcessId, workingYear],
-    queryFn: () => api<{ items: any[] }>(`/api/rcm-matrix/tlc?bpmProcessId=${initialRecord.bpmProcessId}&year=${workingYear}`),
-    enabled: isExpanded && !!initialRecord.bpmProcessId,
-  });
-
-  const controls = React.useMemo(() => {
-    if (!matrixData?.items) return [];
-    const seen = new Set<string>();
-    return matrixData.items.filter((item: any) => {
-      const id = item.controlId || item.id;
-      if (!id || seen.has(id)) return false;
-      seen.add(id);
-      return true;
-    });
-  }, [matrixData?.items]);
 
   const handleExportPDF = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -89,8 +77,8 @@ export function CSARecordCard({ record: initialRecord, process }: CSARecordCardP
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
       toast.success(t('common:notifications.exportSuccess', { defaultValue: 'PDF berhasil diunduh' }), { id: toastId });
-    } catch (err: any) {
-      toast.error(err.message || t('common:notifications.exportFailed', { defaultValue: 'Gagal mengekspor PDF' }), { id: toastId });
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : t('common:notifications.exportFailed', { defaultValue: 'Gagal mengekspor PDF' }), { id: toastId });
     } finally {
       setIsExportingPDF(false);
     }
@@ -183,7 +171,9 @@ export function CSARecordCard({ record: initialRecord, process }: CSARecordCardP
           <div className="col-span-2 flex items-center gap-1.5 text-muted-foreground pt-1">
             <Calendar className="h-3.5 w-3.5 shrink-0" />
             <span className="font-medium text-xs">
-              {format(new Date(initialRecord.assessmentDate), 'dd MMM yyyy HH:mm')}
+              {isValidAssessmentDate(initialRecord.assessmentDate)
+                ? format(new Date(initialRecord.assessmentDate), 'dd MMM yyyy HH:mm')
+                : '-'}
             </span>
           </div>
         </div>
@@ -235,17 +225,15 @@ export function CSARecordCard({ record: initialRecord, process }: CSARecordCardP
                 record={record} 
                 controls={controls}
                 todEvaluations={evaluations}
-                onControlClick={setSelectedControl}
+                onControlClick={(control) => setSelectedControl(control as MatrixControl)}
               />
               <div className="pt-2">
                 <WorkflowPanel
                   entityType="CSA"
                   entityId={record.id}
-                  currentStatus={(record as any).workflowStatus || ((record as any).line2Status === 'Validated' ? 'Validated' : ((record as any).isDraft ? 'Draft' : 'In Review'))}
-                  history={(record as any).workflowHistory || []}
-                  onStatusChange={(newStatus) => {
-                    (record as any).workflowStatus = newStatus;
-                  }}
+                  currentStatus={resolveWorkflowStatus(record)}
+                  history={record.workflowHistory || []}
+                  onStatusChange={(newStatus) => applyWorkflowStatus(record.id, newStatus)}
                 />
               </div>
               <div className="pt-2 border-t border-border/60" onClick={e => e.stopPropagation()}>
@@ -262,63 +250,14 @@ export function CSARecordCard({ record: initialRecord, process }: CSARecordCardP
           onOpenChange={(open) => !open && setSelectedControl(null)}
           control={selectedControl}
           csaId={record.id}
-          initialData={evaluations.find(e => e.controlId === (selectedControl as any).controlId)}
+          initialData={findTodEvaluation(evaluations, selectedControl)}
           onSave={async (values) => {
             try {
-              const rcmPayload = {
-                mappingId: (selectedControl as any).mappingId,
-                riskDescription: values.riskDescription,
-                isFraudRelated: values.isFraudRelated,
-                riskRating: values.riskRating,
-                controlName: values.mappedControlName,
-                controlDescription: values.mappedControlDescription,
-                supportingDocs: values.supportingDocs,
-                isKeyControl: values.isKeyControl,
-                controlType: values.controlType,
-                controlNature: values.controlNature,
-                automatedSubNature: values.automatedSubNature,
-                frequency: values.frequency,
-                supportingApp: values.supportingApp,
-                executingFunction: values.executingFunction,
-                executorRole: values.executorRole,
-                affectedFsliItem: values.affectedFsliItem,
-                effectivePeriod: values.effectivePeriod,
-                ipoC: values.ipoC,
-                ipoA: values.ipoA,
-                ipoV: values.ipoV,
-                ipoRa: values.ipoRa,
-                assertionE: values.assertionE,
-                assertionC: values.assertionC,
-                assertionA: values.assertionA,
-                assertionCo: values.assertionCo,
-                assertionVa: values.assertionVa,
-                assertionRo: values.assertionRo,
-                assertionPd: values.assertionPd,
-              };
-
-              const todPayload = {
-                controlId: (selectedControl as any).controlId,
-                pilarObjective: values.pilarObjective,
-                pilarTiming: values.pilarTiming,
-                pilarAuthority: values.pilarAuthority,
-                pilarReliability: values.pilarReliability,
-                pilarCoverage: values.pilarCoverage,
-                pilarEvidence: values.pilarEvidence,
-                kkReference: values.kkReference,
-                conclusion: values.conclusion,
-                comment: values.comment,
-              };
-
-              // Run both updates
-              await Promise.all([
-                api('/api/rcm-matrix/tlc/batch-update', { method: 'POST', body: JSON.stringify({ items: [rcmPayload] }) }),
-                saveMutation.mutateAsync(todPayload)
-              ]);
-
+              await saveDual(selectedControl, values);
               setSelectedControl(null);
               toast.success(t('tod.saveSuccess', { defaultValue: 'Evaluasi berhasil disimpan' }));
-            } catch (err: any) {
-              toast.error(err.message || t('tod.saveError', { defaultValue: 'Gagal menyimpan evaluasi' }));
+            } catch (err: unknown) {
+              toast.error(err instanceof Error ? err.message : t('tod.saveError', { defaultValue: 'Gagal menyimpan evaluasi' }));
             }
           }}
           isPending={saveMutation.isPending}

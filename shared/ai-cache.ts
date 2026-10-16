@@ -36,11 +36,11 @@ interface CacheEntry {
   versions: AiCacheVersions;
 }
 
-function textOf(value: unknown): string {
+/** Single trimming helper behind every AI seam. */
+export function trimText(value: unknown): string {
   return typeof value === 'string' ? value.trim() : '';
 }
 
-/** Deterministic djb2 hex — no new dependency for hashing. */
 function hashStable(input: string): string {
   let hash = 5381;
   for (let i = 0; i < input.length; i += 1) {
@@ -60,14 +60,35 @@ function versionsSuffix(versions: AiCacheVersions): string {
  * context. Pass-through for existing server payloads (already `noGL`).
  */
 export function normalizeSuggestContext(ctx: SuggestCacheContext): NormalizedSuggestContext {
-  const noGL = textOf(ctx.noGL) || textOf(ctx.glCode);
+  const noGL = trimText(ctx.noGL) || trimText(ctx.glCode);
   return {
     noGL,
-    glDesc: textOf(ctx.glDesc),
-    bpmName: textOf(ctx.bpmName),
-    nodeLabel: textOf(ctx.nodeLabel),
-    riskDescription: textOf(ctx.riskDescription),
+    glDesc: trimText(ctx.glDesc),
+    bpmName: trimText(ctx.bpmName),
+    nodeLabel: trimText(ctx.nodeLabel),
+    riskDescription: trimText(ctx.riskDescription),
   };
+}
+
+export function suggestNormalizedString(kind: string, ctx: SuggestCacheContext): string {
+  const n = normalizeSuggestContext(ctx);
+  return [
+    kind.trim(),
+    n.noGL,
+    n.glDesc,
+    n.bpmName,
+    n.nodeLabel,
+    kind === 'control' ? n.riskDescription : '',
+  ].join('|');
+}
+
+/** Client query-key hash: same normalized string, without org/versions. */
+export function buildSuggestContextHash(kind: string, ctx: SuggestCacheContext): string {
+  return hashStable(suggestNormalizedString(kind, ctx));
+}
+
+export function isCacheUnversioned(versions: AiCacheVersions): boolean {
+  return !versions.kbVersion && !versions.simulationId;
 }
 
 export function buildSuggestCacheKey(
@@ -76,29 +97,11 @@ export function buildSuggestCacheKey(
   ctx: SuggestCacheContext,
   versions: AiCacheVersions,
 ): string {
-  const n = normalizeSuggestContext(ctx);
-  const normalized = [
-    kind.trim(),
-    n.noGL,
-    n.glDesc,
-    n.bpmName,
-    n.nodeLabel,
-    kind === 'control' ? n.riskDescription : '',
-  ].join('|');
-  return `${orgId}:suggest:${hashStable(`${normalized}::${versionsSuffix(versions)}`)}`;
+  return `${orgId}:suggest:${hashStable(`${suggestNormalizedString(kind, ctx)}::${versionsSuffix(versions)}`)}`;
 }
 
 export function buildEmbeddingCacheKey(orgId: string, text: string, model: string): string {
   return `${orgId}:emb:${hashStable(`${model}::${text.trim()}`)}`;
-}
-
-export function buildChatCacheKey(
-  orgId: string,
-  prefixHash: string,
-  message: string,
-  versions: AiCacheVersions,
-): string {
-  return `${orgId}:chat:${hashStable(`${prefixHash}::${message.trim()}::${versionsSuffix(versions)}`)}`;
 }
 
 export function buildRetrievalCacheKey(
@@ -172,6 +175,9 @@ export interface RateLimitState {
   count: number;
   resetDate: number;
 }
+
+/** Shared per-process rate-limit store behind the AI seam. Bucket keys are namespaced per route (`suggest:<ip>`, `chat:<ip>`). */
+export const sharedAiRateLimitStore = new Map<string, RateLimitState>();
 
 /**
  * Daily rate-limit check shared by AI routes. Cache hits count like any

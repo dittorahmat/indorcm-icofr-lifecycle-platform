@@ -30,8 +30,8 @@ export function CSAPage() {
   const { workingYear } = useFiscalYearStore();
 
   const { data: records, isLoading } = useQuery({
-    queryKey: ['csa-records-all'],
-    queryFn: () => api<{ items: CSARecord[] }>('/api/csa'),
+    queryKey: ['csa-records-all', workingYear],
+    queryFn: () => api<{ items: CSARecord[] }>(`/api/csa?year=${workingYear}`),
   });
 
   const { data: processes } = useQuery({
