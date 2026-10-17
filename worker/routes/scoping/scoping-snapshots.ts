@@ -5,6 +5,7 @@ import { getDb } from '../../db';
 import {
   glSnapshots, glRows,
 } from '../../db/schema';
+import { ScopingService, type GlRowIngest } from '../../services/scoping-service';
 import { eq, and, type SQL } from 'drizzle-orm';
 
 const snapshotRoutes = new Hono<HonoEnv>();
@@ -31,52 +32,36 @@ snapshotRoutes.get('/gl-snapshots', async (c) => {
 snapshotRoutes.post('/gl-snapshots', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
-  // Boundary rows keep the legacy `any` element type (grandfathered): the
-  // upload payload shape varies per GL template version.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { filename, rows, year } = await c.req.json<{ filename: string, rows: any[], year?: number }>();
+  // Boundary payload: the upload template's columns vary per GL extract, so
+  // extra columns are dropped by this explicit row map.
+  const { filename, rows, year } = await c.req.json<{ filename: string, rows: GlRowIngest[], year?: number | null }>();
 
-  const snapshotId = crypto.randomUUID();
-  const now = new Date();
-
-  // 1. Create the snapshot record
-  await db.insert(glSnapshots).values({
-    id: snapshotId,
-    organizationId: orgId,
+  const { id, uploadDate } = await new ScopingService(db).createGlSnapshot(orgId, {
     filename,
-    uploadDate: now,
+    year,
     status: 'Draft',
     isActive: false,
-    year: year ? parseInt(String(year)) : null,
-    benchmarkFsliNames: null,
+    rows: rows.map((row) => ({
+      ymd: row.ymd,
+      entityCode: row.entityCode,
+      parentEntityCode: row.parentEntityCode,
+      entityId: row.entityId,
+      noGL: row.noGL,
+      glDesc: row.glDesc,
+      currency: row.currency,
+      balance: row.balance,
+      fsliBalance: row.fsliBalance,
+      fsliCode: row.fsliCode,
+      fsliName: row.fsliName,
+      category: row.category,
+      subKategori: row.subKategori,
+      noUrut: row.noUrut,
+      assignedDepartmentIds: row.assignedDepartmentIds || [],
+      ownerAcceptance: row.ownerAcceptance,
+    })),
   });
 
-  // 2. Insert rows in batches to avoid overwhelming the DB
-  const batchSize = 100;
-  for (let i = 0; i < rows.length; i += batchSize) {
-    const batch = rows.slice(i, i + batchSize).map((r) => ({
-      id: crypto.randomUUID(),
-      snapshotId,
-      organizationId: orgId,
-      ymd: r.ymd,
-      entityCode: r.entityCode,
-      noGL: r.noGL,
-      glDesc: r.glDesc,
-      currency: r.currency,
-      balance: r.balance,
-      fsliBalance: r.fsliBalance,
-      fsliCode: r.fsliCode,
-      fsliName: r.fsliName,
-      category: r.category,
-      subKategori: r.subKategori,
-      noUrut: r.noUrut,
-      assignedDepartmentIds: r.assignedDepartmentIds || [],
-      ownerAcceptance: r.ownerAcceptance
-    }));
-    await db.insert(glRows).values(batch);
-  }
-
-  return ok(c, { id: snapshotId, filename, uploadDate: now, status: 'Draft' });
+  return ok(c, { id, filename, uploadDate, status: 'Draft' });
 });
 
 snapshotRoutes.get('/gl-snapshots/:id', async (c) => {
@@ -112,10 +97,8 @@ snapshotRoutes.post('/gl-snapshots/:id/set-active', async (c) => {
   const id = c.req.param('id');
   const orgId = c.get('organizationId');
 
-  // Reset all to false first
-  await db.update(glSnapshots).set({ isActive: false }).where(eq(glSnapshots.organizationId, orgId));
-  // Set current to true
-  await db.update(glSnapshots).set({ isActive: true }).where(and(eq(glSnapshots.id, id), eq(glSnapshots.organizationId, orgId)));
+  // Single owner of the activation rule (+ its audit entry).
+  await new ScopingService(db).setActiveSnapshot(orgId, c.get('userId'), id);
 
   return ok(c, { success: true });
 });
