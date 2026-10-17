@@ -45,7 +45,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { MobileDesktopBanner } from "@/components/layout/MobileDesktopBanner";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { UserRole, UserLevel } from "@shared/types";
+import { USER_ROLE_OPTIONS, USER_LEVEL_OPTIONS } from "@shared/role-options";
 
 interface User {
   id: string;
@@ -64,6 +66,7 @@ interface Department {
 }
 
 export function UserManagementPage() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   
   // State for Users
@@ -252,12 +255,9 @@ export function UserManagementPage() {
                         <Select name="role" defaultValue="Line 1">
                           <SelectTrigger><SelectValue /></SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="Line 1">Line 1</SelectItem>
-                            <SelectItem value="Line 2">Line 2</SelectItem>
-                            <SelectItem value="Line 3">Line 3</SelectItem>
-                            <SelectItem value="CFO">CFO</SelectItem>
-                            <SelectItem value="Komisaris">Commissioner</SelectItem>
-                            <SelectItem value="Admin">Admin</SelectItem>
+                            {USER_ROLE_OPTIONS.map((option) => (
+                              <SelectItem key={option.value} value={option.value}>{t(option.labelKey, { defaultValue: option.fallback })}</SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </div>
@@ -265,9 +265,9 @@ export function UserManagementPage() {
                         <Select name="level" defaultValue="Staff">
                           <SelectTrigger><SelectValue /></SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="Staff">Staff</SelectItem>
-                            <SelectItem value="Manager">Manager</SelectItem>
-                            <SelectItem value="Head">Head</SelectItem>
+                            {USER_LEVEL_OPTIONS.map((option) => (
+                              <SelectItem key={option.value} value={option.value}>{t(option.labelKey, { defaultValue: option.fallback })}</SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </div>
@@ -407,12 +407,9 @@ export function UserManagementPage() {
                     <Select name="role" defaultValue={editingUser.role}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Line 1">Line 1</SelectItem>
-                        <SelectItem value="Line 2">Line 2</SelectItem>
-                        <SelectItem value="Line 3">Line 3</SelectItem>
-                        <SelectItem value="CFO">CFO</SelectItem>
-                        <SelectItem value="Komisaris">Commissioner</SelectItem>
-                        <SelectItem value="Admin">Admin</SelectItem>
+                        {USER_ROLE_OPTIONS.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>{t(option.labelKey, { defaultValue: option.fallback })}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -420,9 +417,9 @@ export function UserManagementPage() {
                     <Select name="level" defaultValue={editingUser.level}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Staff">Staff</SelectItem>
-                        <SelectItem value="Manager">Manager</SelectItem>
-                        <SelectItem value="Head">Head</SelectItem>
+                        {USER_LEVEL_OPTIONS.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>{t(option.labelKey, { defaultValue: option.fallback })}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
