@@ -9,3 +9,4 @@ if [ -z "$STAGED" ]; then
 fi
 node scripts/check-any-delta.mjs $STAGED || exit 1
 node scripts/check-i18n.mjs $STAGED || exit 1
+node scripts/check-worker-strings.mjs $STAGED || exit 1

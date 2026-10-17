@@ -107,6 +107,7 @@ for (const f of files) {
       console.log(`OK    ${f} — ${lines} LOC over soft limit ${SOFT} but shrunk vs HEAD ${base} (grandfather paydown)${extra}`);
     } else {
       console.log(`FAIL  ${f} — ${lines} LOC exceeds soft limit ${SOFT} (split in this change)${extra}`);
+      console.log(`      target: orchestrator <=150 LOC + per-area files <=350 LOC (extract 1 hook + 1 sub-component; see AGENTS.md "Soft Limit")`);
       errors += 1;
     }
   } else if (lines > SOFT) {

@@ -21,6 +21,7 @@
     "check:any-delta": "node scripts/check-any-delta.mjs",
     "check:i18n": "node scripts/check-i18n.mjs",
     "check:api-contract": "node scripts/check-api-contract.mjs",
+    "check:worker-strings": "node scripts/check-worker-strings.mjs",
     "preview": "bun run build && vite preview --host 0.0.0.0 --port 4173",
     "deploy": "bun run build && wrangler deploy",
     "cf-typegen": "wrangler types",
