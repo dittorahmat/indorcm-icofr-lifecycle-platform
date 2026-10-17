@@ -122,10 +122,17 @@ describe('BPM Hierarchical Process & Sub-Process Logic', () => {
     beforeEach(() => {
       vi.restoreAllMocks();
       mockDb = {
-        select: vi.fn(),
+        // Default chainable stub: the service resolves `targetExists` before the
+        // pure plan runs, so an unmocked `select` must not dereference undefined.
+        select: vi.fn(() => ({
+          from: vi.fn(() => ({ where: vi.fn(() => ({ limit: vi.fn().mockResolvedValue([]) })) })),
+        })),
         update: vi.fn(),
         insert: vi.fn(),
         delete: vi.fn(),
+        // Every mutating cascade is wrapped in `inTransaction`; run the callback
+        // against the same mock handle the service then writes through.
+        transaction: vi.fn(async (cb: (tx: unknown) => Promise<unknown>) => cb(mockDb)),
       };
       bpmService = new BpmService(mockDb as any);
     });
@@ -137,7 +144,7 @@ describe('BPM Hierarchical Process & Sub-Process Logic', () => {
           targetParentId: 'parent-1',
           processIds: [],
         })
-      ).rejects.toThrow('Tidak ada proses yang dipilih');
+      ).rejects.toMatchObject({ code: 'BPM_REORGANIZE_EMPTY', status: 400 });
     });
 
     it('throws error in demote mode if targetParentId is missing or targets itself', async () => {
@@ -146,7 +153,7 @@ describe('BPM Hierarchical Process & Sub-Process Logic', () => {
           action: 'demote',
           processIds: ['proc-1'],
         })
-      ).rejects.toThrow('Proses Induk tujuan wajib dipilih');
+      ).rejects.toMatchObject({ code: 'BPM_DEMOTE_TARGET_REQUIRED', status: 400 });
 
       await expect(
         bpmService.batchReorganizeProcesses('org-1', 'user-1', {
@@ -154,7 +161,7 @@ describe('BPM Hierarchical Process & Sub-Process Logic', () => {
           targetParentId: 'proc-1',
           processIds: ['proc-1', 'proc-2'],
         })
-      ).rejects.toThrow('tidak dapat dijadikan sub-proses dari dirinya sendiri');
+      ).rejects.toMatchObject({ code: 'BPM_SELF_PARENT', status: 400 });
     });
 
     it('successfully demotes selected processes to sub-processes under target parent', async () => {

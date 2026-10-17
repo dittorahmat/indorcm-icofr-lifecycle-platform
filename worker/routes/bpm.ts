@@ -179,12 +179,8 @@ bpm.get('/bpm-processes/:id/next-sequences', async (c) => {
   const id = c.req.param('id');
   const orgId = c.get('organizationId')!;
 
-  try {
-    const result = await bpmService.getNextSequences(orgId, id!);
-    return ok(c, result);
-  } catch (e: any) {
-    return bad(c, e.message);
-  }
+  const result = await bpmService.getNextSequences(orgId, id!);
+  return ok(c, result);
 });
 
 bpm.post('/bpm-processes', rbac(['Line 1', 'Admin']), async (c) => {
@@ -200,16 +196,12 @@ bpm.post('/bpm-processes/batch-reorganize', rbac(['Line 1', 'Admin']), async (c)
   const bpmService = new BpmService(db);
   const body = await c.req.json();
 
-  try {
-    const result = await bpmService.batchReorganizeProcesses(
-      c.get('organizationId')!,
-      c.get('userId')!,
-      body
-    );
-    return ok(c, result);
-  } catch (e: any) {
-    return bad(c, e.message);
-  }
+  const result = await bpmService.batchReorganizeProcesses(
+    c.get('organizationId')!,
+    c.get('userId')!,
+    body
+  );
+  return ok(c, result);
 });
 
 bpm.patch('/bpm-processes/:id', rbac(['Line 1', 'Admin']), async (c) => {
@@ -218,12 +210,8 @@ bpm.patch('/bpm-processes/:id', rbac(['Line 1', 'Admin']), async (c) => {
   const id = c.req.param('id');
   const body = await c.req.json();
 
-  try {
-    const result = await bpmService.updateProcess(c.get('organizationId')!, id!, body);
-    return ok(c, result);
-  } catch (e: any) {
-    return bad(c, e.message);
-  }
+  const result = await bpmService.updateProcess(c.get('organizationId')!, id!, body);
+  return ok(c, result);
 });
 
 bpm.post('/bpm-processes/:id/workflow', async (c) => {
