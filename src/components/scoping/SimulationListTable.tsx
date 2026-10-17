@@ -16,6 +16,7 @@ import { api } from '@/lib/api-client';
 
 import { useSimulationSnapshot } from '@/hooks/use-bpm';
 import { MobileDesktopBanner } from '@/components/layout/MobileDesktopBanner';
+import { formatIDR } from '@/components/reports/dod/dod-format';
 
 interface SimulationListTableProps {
   data: MaterialitySimulation[];
@@ -73,7 +74,7 @@ export function SimulationListTable({ data, onSelect, onDelete, isLoading }: Sim
             </div>
             <div className="flex items-center justify-between gap-2 flex-wrap">
               <span className="text-xs font-black uppercase tracking-wider text-slate-500">{sim.basis}</span>
-              <span className="font-mono text-xs font-bold text-[#417dc1]">Rp {sim.pmValue?.toLocaleString('id-ID') || 0}</span>
+              <span className="font-mono text-xs font-bold text-[#417dc1]">{formatIDR(sim.pmValue ?? 0)}</span>
             </div>
             <div className="flex gap-2 flex-wrap">
               <Button variant="outline" className="flex-1 min-h-[44px] text-xs font-bold" onClick={() => onSelect(sim.id)}>
@@ -132,7 +133,7 @@ export function SimulationListTable({ data, onSelect, onDelete, isLoading }: Sim
                 </Badge>
               </TableCell>
               <TableCell className="text-right font-mono text-xs font-black text-[#417dc1]">
-                Rp {sim.pmValue?.toLocaleString('id-ID') || 0}
+                {formatIDR(sim.pmValue ?? 0)}
               </TableCell>
               <TableCell onClick={(e) => e.stopPropagation()}>
                 <Button 

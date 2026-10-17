@@ -14,6 +14,7 @@ import { GLSnapshot } from '@shared/types';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { Calculator, Save, AlertCircle, Loader2, Search } from 'lucide-react';
+import { formatIDR } from '@/components/reports/dod/dod-format';
 import { cn } from '@/lib/utils';
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { useTranslation } from 'react-i18next';
@@ -196,7 +197,7 @@ export function SetBenchmarkModal({ snapshot: initialSnapshot, isOpen, onOpenCha
                         </TableCell>
                         <TableCell className="text-xs font-bold text-slate-700 uppercase tracking-tight">{item.name}</TableCell>
                         <TableCell className="text-right font-mono text-xs text-slate-600 font-medium">
-                          Rp {item.total.toLocaleString('id-ID')}
+                          {formatIDR(item.total)}
                         </TableCell>
                       </TableRow>
                     ))}
@@ -217,7 +218,7 @@ export function SetBenchmarkModal({ snapshot: initialSnapshot, isOpen, onOpenCha
               <div className="space-y-1">
                 <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">{t('benchmarkModal.totalValue')}</p>
                 <p className="text-xl font-mono font-black text-slate-900 tracking-tighter">
-                  Rp {totalSelectedValue.toLocaleString('id-ID')}
+                  {formatIDR(totalSelectedValue)}
                 </p>
               </div>
             </div>

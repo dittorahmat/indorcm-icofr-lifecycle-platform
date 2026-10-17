@@ -36,6 +36,12 @@ views, duplicated normalizers, mirror server-state).
    then update the backlog below. Every round must leave the environment
    stricter than it found it.
 
+**Rounds 8+ skip recon when the previous round left unlanded candidates with
+evidence.** Round 7's reports still described five unfixed hot-spots in full
+(evidence, seam, test plan, blast radius), so round 8 used the report sections
+*directly* as the workstream briefs — no re-discovery, no new recon agents. Only
+run a fresh recon when the backlog is exhausted or a new area is in scope.
+
 ## Hot-spot reports (context pointers)
 
 - `docs/agents/arch-hotspots-client.md` — `src/**` + client `shared/**`.
@@ -51,6 +57,20 @@ reports stay as the evidence snapshot of the round that produced them.
 | 5 | `arch/deepen-5-plus-retro` / #90 | suggest normalize seam, CSA record-row twin seam, worklist grouping, view-transition lock, unversioned cache TTL |
 | 6 | `arch/deepen-6-plus-retro` / #91 | CSA assessed-detail (Row/Card thin adapters), findings presentation seam, materiality `getGroupMultiplier` via `entityCount`, scoping `buildView`, RCM ingestion contract |
 | 7 | `arch/deepen-7-review` | worker C5 effectiveness single-source · worker C3 BPM OCR seam + node-type parity · worker C1 `migration.ts` route split + materiality seam + guarded rollover · client C1 worksheet control-scope seam · client C5 year-scoped CSA keys + single evidence compressor · client C2 role/level single-source |
+| 8 | `arch/deepen-8-review` (stacked on #92) | worker C6 `bpm-service.ts` 559 → 306 + `bpm-match` / `bpm-process-hierarchy` / `bpm-diagrams` seams · worker C4 simulation lifecycle on the canonical table, `as never` 9 → 0 · client C3 one testing-row + column owner · client C6 `SettingsPage` 478 → 59, cache-as-draft · client C4 one IDR owner. Gate added: `check:worker-strings` |
+
+## Round 8 follow-ups (disclosed, deliberately not landed)
+
+- **Integration-test mocks must mirror the service's transaction handle.** Round
+  8 wrapped `createDiagram`/`deleteDiagram`/`deleteProcess`/
+  `batchReorganizeProcesses` in one transaction; the two hand-rolled `src/test`
+  mocks predated that and lacked `db.transaction`. When a service gains an
+  `inTransaction` wrapper, its mocks need `transaction: vi.fn((cb) => cb(db))`.
+- **`deleteProcess` no longer calls the public `deleteDiagram`** (it calls the
+  diagram seam directly), so tests assert the cascade's *effect*, not a spy on
+  the sibling method. `dod-format.ts#getSeverityMeta`'s hardcoded labels are the
+  client-C8 item, untouched here.
+
 
 ## Round 7 follow-ups (disclosed, deliberately not landed)
 
@@ -69,28 +89,33 @@ reports stay as the evidence snapshot of the round that produced them.
 - **`worker/app.ts:312`** reads the ICOFR role from `member.role` while
   `worker/db/seed.ts:81` writes `'admin'|'member'` there — possible pre-existing
   role-source mismatch, outside every workstream's owned files.
+- **`shared/workflow-transitions.ts` SCOPING row does not describe the
+  materiality-simulation lifecycle.** The table declares `Pending CFO` →
+  `Reject: 'Draft'` with `requiredRole: Line 2/Admin`, while production (and the
+  UI) uses CFO at `Pending CFO`, Commissioner at `Pending Komut`, and rejects to
+  `'Rejected'`; `Rejected` and `Pending Deletion Approval` are absent from its
+  SCOPING rows. Round 8 converged only the *Approved* path onto the table and
+  preserved production behaviour. Resolving it is a domain decision (extend the
+  table vs change the flow), not an architecture drive-by.
 - **Grandfathered hardcoded string** `use-evidence-upload.ts:114`
   (`toast.success('Bukti berhasil diunggah')`, key already exists): the
   `check:i18n` toast rule forces its fix on the next touch of that file.
 
 
-## Open backlog (candidates from the round-7 reports)
+## Open backlog
 
-Round 7 landed worker C5, C3, C1 and client C1, C5, C2 (see the round log).
+Rounds 7–8 landed worker C1, C3, C4, C5, C6 and client C1, C2, C3, C4, C5, C6
+(see the round log). Remaining candidates below; the reports hold the evidence.
 
 Worker (see `arch-hotspots-worker.md` for evidence): C2 `users.ts` split +
-single webhook payload builder · C4 simulation lifecycle vs canonical
-`shared/workflow-transitions.ts` · C6 `bpm-service.ts` (559) match/hierarchy
-split + typed errors · C7 one matrix read builder (TLC/ELC/ITGC) · C8
+single webhook payload builder · C7 one matrix read builder (TLC/ELC/ITGC) · C8
 infrastructure SOC dedupe · C9 one CSA test-record write seam · C10 `rbac`
 coverage on mutating endpoints.
 
-Client (`arch-hotspots-client.md`): C3 `ReportsPage` test-row derivation ×3 +
-disagreeing export column sets · C4 IDR money formatted 8 ways (two without a
-locale) · C6 `SettingsPage` mirror server-state + 3× webhook card · C7
-`SOCMonitoringPage` (513) badge matrices per view · C8 severity
-tone/label/class across 5 modules · C9 `CustomizableDashboard` layout algebra
-· C10 4-IPO/7-assertion field set declared 8× with 3 label schemes.
+Client (`arch-hotspots-client.md`): C7 `SOCMonitoringPage` (513) badge matrices
+per view · C8 severity tone/label/class across 5 modules (incl.
+`dod-format.ts#getSeverityMeta`) · C9 `CustomizableDashboard` layout algebra ·
+C10 4-IPO/7-assertion field set declared 8× with 3 label schemes.
 
 ## Environment backlog (mechanical guards these rounds earned)
 
@@ -119,9 +144,11 @@ precedent that failed in production or shipped green-but-wrong.
   `local/mutation-requires-onerror`: warn-first, escalate once the baseline
   hits zero. Precedent: the `bpm.ts` mutating `all` endpoint and the unguarded
   `migration.ts` year-clone.
-- [ ] **Worker string gate.** `check:i18n` cannot see strings `throw`n from
-  `worker/**` and rendered by `bad(c, e.message)`. Force `AppError(code, …)`.
-  Precedent: three Indonesian sentences thrown from `bpm-service.ts`.
+- [x] **Worker string gate.** `scripts/check-worker-strings.mjs` (delta mode,
+  `npm run check:worker-strings`) fails on new prose in a worker code slot
+  (`bad(c, '…')`, `throw new Error('…')`) — wired into `.githooks/pre-commit`
+  and the CI "Repo gates" step. Baseline 81 findings, grandfathered by the
+  delta; whole-tree inventory via report mode. Landed in round 8.
 - [ ] **Duplicate-body detector.** A review-time script flagging
   structurally-similar blocks in `worker/**`. Precedent: 3 matrix selects, 2
   SOC inserts, 2 year clones, 2 webhook payload sets.

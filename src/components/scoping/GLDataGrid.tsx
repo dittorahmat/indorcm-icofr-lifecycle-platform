@@ -23,6 +23,7 @@ import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { Option } from '@/components/ui/multi-select';
 import { useTranslation } from 'react-i18next';
+import { formatIDRPlain } from '@/components/reports/dod/dod-format';
 import { sortGLHierarchically } from '@/lib/compliance-utils';
 import { buildGLDataGridColumns } from './GLDataGridColumns';
 import { GLDataGridToolbar } from './GLDataGridToolbar';
@@ -258,7 +259,7 @@ export const GLDataGrid = React.memo(function GLDataGrid({
                   </div>
                   <p className="text-xs font-bold text-slate-800 leading-snug line-clamp-2">{row.glDesc || row.fsliName || '-'}</p>
                   <p className="text-xs font-mono font-bold text-primary">
-                    {(row.balance ?? 0).toLocaleString('id-ID')}
+                    {formatIDRPlain(row.balance ?? 0)}
                   </p>
                 </div>
               );

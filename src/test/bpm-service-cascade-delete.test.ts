@@ -14,6 +14,8 @@ describe('BpmService - Cascade Deletion & Foreign Key Decoupling', () => {
       insert: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
+      // Both cascades run inside `inTransaction`; run the callback on the same handle.
+      transaction: vi.fn(async (cb: (tx: unknown) => Promise<unknown>) => cb(mockDb)),
     };
 
     bpmService = new BpmService(mockDb as any);
@@ -61,9 +63,6 @@ describe('BpmService - Cascade Deletion & Foreign Key Decoupling', () => {
         .mockReturnValueOnce({ from: vi.fn().mockReturnValue({ where: selectOtherWhere }) })
         .mockReturnValueOnce({ from: vi.fn().mockReturnValue({ where: selectDiagWhere }) });
 
-      // Mock deleteDiagram
-      const deleteDiagramSpy = vi.spyOn(bpmService, 'deleteDiagram').mockResolvedValue({ success: true });
-
       // Mock update (controls & csaRecords decoupling)
       const updateWhere = vi.fn().mockResolvedValue([]);
       const updateSet = vi.fn().mockReturnValue({ where: updateWhere });
@@ -76,7 +75,12 @@ describe('BpmService - Cascade Deletion & Foreign Key Decoupling', () => {
       const result = await bpmService.deleteProcess('org-1', 'proc-1');
 
       expect(result).toEqual({ success: true });
-      expect(deleteDiagramSpy).toHaveBeenCalledWith('org-1', 'diag-vendor');
+      // deleteProcess now calls the diagram seam directly (not the public
+      // deleteDiagram), so the cascade is asserted through its effect:
+      // decouple rcms.diagramId, then delete bpmNodeRcms and bpmDiagrams.
+      expect(mockDb.update).toHaveBeenCalledWith(rcms);
+      expect(mockDb.delete).toHaveBeenCalledWith(bpmNodeRcms);
+      expect(mockDb.delete).toHaveBeenCalledWith(bpmDiagrams);
       expect(mockDb.update).toHaveBeenCalledWith(controls);
       expect(mockDb.update).toHaveBeenCalledWith(csaRecords);
       expect(mockDb.delete).toHaveBeenCalledWith(bpmProcessGlCodes);
@@ -98,8 +102,6 @@ describe('BpmService - Cascade Deletion & Foreign Key Decoupling', () => {
         .mockReturnValueOnce({ from: vi.fn().mockReturnValue({ where: selectTargetWhere }) })
         .mockReturnValueOnce({ from: vi.fn().mockReturnValue({ where: selectOtherWhere }) });
 
-      const deleteDiagramSpy = vi.spyOn(bpmService, 'deleteDiagram').mockResolvedValue({ success: true });
-
       const updateWhere = vi.fn().mockResolvedValue([]);
       const updateSet = vi.fn().mockReturnValue({ where: updateWhere });
       mockDb.update.mockReturnValue({ set: updateSet });
@@ -110,7 +112,9 @@ describe('BpmService - Cascade Deletion & Foreign Key Decoupling', () => {
       const result = await bpmService.deleteProcess('org-1', 'proc-1');
 
       expect(result).toEqual({ success: true });
-      expect(deleteDiagramSpy).not.toHaveBeenCalled();
+      // The diagram cascade is skipped entirely, so none of its writes happen.
+      expect(mockDb.delete).not.toHaveBeenCalledWith(bpmNodeRcms);
+      expect(mockDb.delete).not.toHaveBeenCalledWith(bpmDiagrams);
       expect(mockDb.delete).toHaveBeenCalledWith(bpmProcessGlCodes);
       expect(mockDb.delete).toHaveBeenCalledWith(bpmProcesses);
     });

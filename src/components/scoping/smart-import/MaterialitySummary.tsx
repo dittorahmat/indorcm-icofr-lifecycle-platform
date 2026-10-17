@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { AlertCircle, Calculator } from 'lucide-react';
+import { formatIDR } from '@/components/reports/dod/dod-format';
 
 interface MaterialitySummaryProps {
   omValue: number;
@@ -21,7 +22,7 @@ export function MaterialitySummary({ omValue, pmValue, groupMultiplier }: Materi
             {t('rcm:migration.materiality.calculatedOm')}
           </p>
           <p className="text-lg sm:text-2xl font-mono font-black tracking-tighter break-all min-w-0">
-            Rp {omValue.toLocaleString()}
+            {formatIDR(omValue)}
           </p>
         </div>
         <div className="h-px bg-slate-800" />
@@ -30,7 +31,7 @@ export function MaterialitySummary({ omValue, pmValue, groupMultiplier }: Materi
             {t('rcm:migration.materiality.performanceMateriality')}
           </p>
           <p className="text-lg sm:text-2xl font-mono font-black tracking-tighter text-amber-50 break-all min-w-0">
-            Rp {pmValue.toLocaleString()}
+            {formatIDR(pmValue)}
           </p>
         </div>
       </div>

@@ -20,6 +20,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { MaterialitySimulation, GLSnapshot, UserRole } from '@shared/types';
 import { GLDataGrid } from '@/components/scoping/GLDataGrid';
+import { formatIDR } from '@/components/reports/dod/dod-format';
 import { ApprovalHistoryTimeline } from '@/components/scoping/ApprovalHistoryTimeline';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -142,8 +143,8 @@ export function ApprovalPage() {
                     <TableCell>{sim.basis}</TableCell>
                     <TableCell className="text-right text-xs font-medium">{sim.omPercentage}%</TableCell>
                     <TableCell className="text-right text-xs font-medium">{sim.haircutPercentage}%</TableCell>
-                    <TableCell className="text-right font-mono text-xs">Rp {sim.omValue.toLocaleString('id-ID')}</TableCell>
-                    <TableCell className="text-right font-mono text-xs">Rp {sim.pmValue.toLocaleString('id-ID')}</TableCell>
+                    <TableCell className="text-right font-mono text-xs">{formatIDR(sim.omValue)}</TableCell>
+                    <TableCell className="text-right font-mono text-xs">{formatIDR(sim.pmValue)}</TableCell>
                     <TableCell className="text-right">
                       <Button variant="ghost" size="sm" onClick={() => { setSelectedSim(sim); setIsReviewOpen(true); }} className="gap-2">
                         <Eye className="h-4 w-4" /> Review
@@ -195,11 +196,11 @@ export function ApprovalPage() {
                 </div>
                 <div className="bg-muted/50 rounded-md p-2">
                   <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t('params.omValue')}</p>
-                  <p className="text-xs font-semibold font-mono mt-0.5">Rp {sim.omValue.toLocaleString('id-ID')}</p>
+                  <p className="text-xs font-semibold font-mono mt-0.5">{formatIDR(sim.omValue)}</p>
                 </div>
                 <div className="bg-muted/50 rounded-md p-2">
                   <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t('params.pmValue')}</p>
-                  <p className="text-xs font-semibold font-mono mt-0.5">Rp {sim.pmValue.toLocaleString('id-ID')}</p>
+                  <p className="text-xs font-semibold font-mono mt-0.5">{formatIDR(sim.pmValue)}</p>
                 </div>
               </div>
               <Button className="w-full min-h-[44px] gap-2" onClick={() => { setSelectedSim(sim); setIsReviewOpen(true); }}>

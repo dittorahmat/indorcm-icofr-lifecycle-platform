@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import type { MaterialitySimulation, SimulationStatus } from '@shared/types';
 import { cn } from '@/lib/utils';
 import { SidebarTrigger } from '@/components/ui/sidebar';
+import { formatIDR } from '@/components/reports/dod/dod-format';
 
 interface ScopingEditorHeaderProps {
   simState: MaterialitySimulation;
@@ -118,7 +119,7 @@ export function ScopingEditorHeader({
               <Target className="h-2.5 w-2.5 text-primary-foreground/60" /> {t('params.omValue')} (OM)
             </p>
             <div className="flex items-baseline gap-1.5 flex-wrap">
-               <span className="text-lg font-display font-bold tracking-tight break-all">Rp {omValue.toLocaleString('id-ID')}</span>
+               <span className="text-lg font-display font-bold tracking-tight break-all">{formatIDR(omValue)}</span>
                <Badge variant="outline" className="bg-primary-foreground/10 border-primary-foreground/20 text-primary-foreground text-xs font-mono py-0 px-1">
                 {simState.omPercentage}%
               </Badge>
@@ -131,7 +132,7 @@ export function ScopingEditorHeader({
               <TrendingUp className="h-2.5 w-2.5 text-blue-500" /> {t('params.pmValue')} (PM)
             </p>
             <div className="flex items-baseline gap-1.5 flex-wrap">
-               <span className="text-lg font-display font-bold tracking-tight text-slate-900 break-all">Rp {pmValue.toLocaleString('id-ID')}</span>
+               <span className="text-lg font-display font-bold tracking-tight text-slate-900 break-all">{formatIDR(pmValue)}</span>
                <Badge variant="outline" className="bg-blue-50 border-blue-100 text-blue-700 text-xs font-mono py-0 px-1">
                 -{simState.haircutPercentage}% HC
               </Badge>

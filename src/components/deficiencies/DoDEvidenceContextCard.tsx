@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Layers, AlertTriangle, ShieldCheck, CheckCircle2, XCircle, ExternalLink, Scale } from 'lucide-react';
 import type { DoDEvidenceContext } from '@shared/types';
 import { useTranslation } from 'react-i18next';
+import { formatIDR } from '@/components/reports/dod/dod-format';
 
 interface DoDEvidenceContextCardProps {
   evidenceContext: DoDEvidenceContext;
@@ -82,13 +83,13 @@ export function DoDEvidenceContextCard({
             <div className="flex justify-between items-center flex-wrap gap-2">
               <span className="text-muted-foreground">{t('worksheet.evidence.pmLabel')}:</span>
               <span className="font-mono font-bold text-foreground">
-                {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(pmVal)}
+                {formatIDR(pmVal)}
               </span>
             </div>
             <div className="flex justify-between items-center flex-wrap gap-2">
               <span className="text-muted-foreground">{t('worksheet.evidence.omLabel')}:</span>
               <span className="font-mono font-medium text-muted-foreground">
-                {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(omVal)}
+                {formatIDR(omVal)}
               </span>
             </div>
             <div className="flex justify-between items-center pt-1 border-t border-border flex-wrap gap-2">

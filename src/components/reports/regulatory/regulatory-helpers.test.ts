@@ -35,7 +35,9 @@ describe('regulatory report helpers (one appendix per module)', () => {
     expect(resolveFindingControlName({ controlId: 'c1' }, controls)).toBe('C-01 - Opname');
     expect(resolveFindingControlName({ controlName: 'Manual' }, controls)).toBe('Manual');
     expect(resolveFindingControlName({}, controls)).toBe('-');
-    expect(formatExposureValue(1500)).toBe(new Intl.NumberFormat('id-ID').format(1500));
+    // Known-good literal, not a recomputed expectation: 1500 renders with the
+    // Indonesian dot grouping (`src/components/reports/dod/dod-format.ts` owns it).
+    expect(formatExposureValue(1500)).toBe('1.500');
     expect(formatExposureValue('x')).toBe('-');
     expect(findingSeverityTone('Material Weakness')).toBe('mw');
     expect(findingSeverityTone('Significant Deficiency')).toBe('sd');

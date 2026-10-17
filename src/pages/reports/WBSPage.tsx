@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { exportRegulatoryTableToExcel } from '@/lib/rcm-excel-export';
 import { mapWbsRows, wbsColumns, wbsFilename } from '@/lib/wbs-excel-export';
 import { MobileDesktopBanner } from '@/components/layout/MobileDesktopBanner';
+import { formatIDR } from '@/components/reports/dod/dod-format';
 import type { WBSReport } from '@shared/types';
 import { motion } from 'framer-motion';
 
@@ -39,7 +40,6 @@ const mockWBS: WBSReport[] = [
 export function WBSPage() {
   const { t } = useTranslation('reports');
   const [isExportingExcel, setIsExportingExcel] = React.useState(false);
-  const formatCurrency = (val: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(val);
 
   const handleExportExcel = async () => {
     if (mockWBS.length === 0 || isExportingExcel) return;
@@ -158,7 +158,7 @@ export function WBSPage() {
                   </div>
                   <div className="mt-2 flex items-center justify-between gap-2 flex-wrap">
                     <Badge variant="outline" className="text-xs">{report.category}</Badge>
-                    <span className="text-xs font-mono font-bold text-red-600">{formatCurrency(report.impactMagnitude)}</span>
+                    <span className="text-xs font-mono font-bold text-red-600">{formatIDR(report.impactMagnitude)}</span>
                   </div>
                   {(report.relatedControlIds?.length ?? 0) > 0 ? (
                     <div className="mt-2 flex gap-1 flex-wrap">
@@ -194,7 +194,7 @@ export function WBSPage() {
                       <div className="text-xs text-muted-foreground font-mono mt-1">{report.id}</div>
                     </TableCell>
                     <TableCell className="text-right font-mono text-xs text-red-600 font-bold">
-                      {formatCurrency(report.impactMagnitude)}
+                      {formatIDR(report.impactMagnitude)}
                     </TableCell>
                     <TableCell>
                       <Badge className={

@@ -3,8 +3,7 @@ import type { HonoEnv } from '../../app';
 import { ok, bad, notFound } from '../../lib/utils';
 import { getDb } from '../../db';
 import {
-  simulations, glRows, simulationAccountApplications,
-  applications,
+  simulations, glRows,
 } from '../../db/schema';
 import { eq, and, type SQL } from 'drizzle-orm';
 import type {
@@ -25,9 +24,9 @@ simulationRoutes.get('/simulations', async (c) => {
   const orgId = c.get('organizationId');
   const year = c.req.query('year');
 
-  let conditions: SQL = eq(simulations.organizationId, orgId);
+  let conditions: SQL | undefined = eq(simulations.organizationId, orgId);
   if (year) {
-    conditions = and(conditions, eq(simulations.year, parseInt(year))) as SQL;
+    conditions = and(conditions, eq(simulations.year, parseInt(year)));
   }
 
   const items = await db.select().from(simulations).where(conditions);
@@ -76,30 +75,30 @@ simulationRoutes.post('/simulations', rbac(['Line 2', 'Admin']), async (c) => {
       .from(glRows)
       .where(eq(glRows.snapshotId, glSnapshotId));
 
-    const uniqueFslis = Array.from(new Set(rows.map((r) => r.fsliName).filter(Boolean)) as Set<string>);
+    const uniqueFslis = Array.from(new Set(rows.map((r) => r.fsliName).filter((name): name is string => Boolean(name))));
 
     uniqueFslis.forEach(fsli => {
       assessmentData[fsli] = getQualitativeDefaults(fsli);
     });
   }
 
-  const newSim = {
+  const newSim: typeof simulations.$inferInsert = {
     id, organizationId: orgId,
     name: body.name || "New Simulation",
     year: targetYear,
-    status: "Draft" as never,
+    status: "Draft",
     omValue: body.omValue || 0,
     pmValue: body.pmValue || 0,
     glSnapshotId,
     locationCount: body.locationCount || 1,
     omPercentage: body.omPercentage ?? 5,
     haircutPercentage: body.haircutPercentage ?? 25,
-    basis: (body.basis as never) || "Revenue",
+    basis: body.basis || "Revenue",
     assessmentData,
-    createdAt: new Date() as never,
+    createdAt: new Date(),
     createdBy: userId,
   };
-  await db.insert(simulations).values(newSim as never);
+  await db.insert(simulations).values(newSim);
   return ok(c, newSim);
 });
 
@@ -123,7 +122,7 @@ simulationRoutes.put('/simulations/:id', rbac(['Line 2', 'Admin']), async (c) =>
     const rows = await db.select({ fsliName: glRows.fsliName })
       .from(glRows)
       .where(eq(glRows.snapshotId, snapshotId));
-    const uniqueFslis = Array.from(new Set(rows.map((r) => r.fsliName).filter(Boolean)) as Set<string>);
+    const uniqueFslis = Array.from(new Set(rows.map((r) => r.fsliName).filter((name): name is string => Boolean(name))));
     uniqueFslis.forEach(fsli => {
       finalAssessment[fsli] = getQualitativeDefaults(fsli);
     });
@@ -132,7 +131,7 @@ simulationRoutes.put('/simulations/:id', rbac(['Line 2', 'Admin']), async (c) =>
   await db.update(simulations)
     .set({
       name: body.name,
-      basis: body.basis as never,
+      basis: body.basis,
       omPercentage: body.omPercentage,
       haircutPercentage: body.haircutPercentage,
       locationCount: body.locationCount,
@@ -140,7 +139,7 @@ simulationRoutes.put('/simulations/:id', rbac(['Line 2', 'Admin']), async (c) =>
       pmValue: body.pmValue,
       significantAccounts: body.significantAccounts,
       assessmentData: finalAssessment,
-      updatedAt: new Date() as never,
+      updatedAt: new Date(),
     })
     .where(and(eq(simulations.id, id), eq(simulations.organizationId, orgId)));
 

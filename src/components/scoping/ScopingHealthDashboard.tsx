@@ -14,6 +14,7 @@ import {
 import { GLRow } from '@shared/types';
 import { useTranslation } from 'react-i18next';
 import { ScopingComplianceResult } from '@/pages/scoping/services/materiality-calc';
+import { formatIDR, formatIDRPlain } from '@/components/reports/dod/dod-format';
 
 interface ScopingHealthDashboardProps {
   glData: GLRow[];
@@ -65,7 +66,7 @@ export function ScopingHealthDashboard({ glData, scopingCompliance }: ScopingHea
           <div className="text-right">
             <p className="text-xs text-muted-foreground uppercase">{t('health.netBalance')}</p>
             <p className={cn("font-mono font-bold", balanceStatus.isBalanced ? "text-green-700" : "text-destructive")}>
-              Rp {balanceStatus.total.toLocaleString('id-ID')}
+              {formatIDR(balanceStatus.total)}
             </p>
           </div>
           {!balanceStatus.isBalanced && (
@@ -192,7 +193,7 @@ export function ScopingHealthDashboard({ glData, scopingCompliance }: ScopingHea
                 <ul className="list-disc pl-5 font-medium space-y-0.5">
                   {scopingCompliance.fsliCoverages.filter(c => !c.isCompliant).map(c => (
                     <li key={c.fsliName}>
-                      {c.fsliName}: <span className="font-black">{c.coveragePercentage.toFixed(1)}%</span> (Consolidated: {c.consolidatedBalance.toLocaleString('id-ID')})
+                      {c.fsliName}: <span className="font-black">{c.coveragePercentage.toFixed(1)}%</span> (Consolidated: {formatIDRPlain(c.consolidatedBalance)})
                     </li>
                   ))}
                 </ul>

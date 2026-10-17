@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
+import { formatIDR } from '@/components/reports/dod/dod-format';
 import type { FsliCandidate } from './smart-import-types';
 
 interface BenchmarkSelectProps {
@@ -42,7 +43,7 @@ export function BenchmarkSelect({
               <div className="flex items-center justify-between w-full pr-2 text-left truncate flex-wrap gap-2">
                 <span className="truncate">{selectedBasis}</span>
                 <span className="text-xs text-slate-400 font-mono ml-2 shrink-0">
-                  Rp {(selected?.total || 0).toLocaleString()}
+                  {formatIDR(selected?.total ?? 0)}
                 </span>
               </div>
             ) : (
@@ -78,7 +79,7 @@ export function BenchmarkSelect({
                       />
                       <span className="truncate">{item.name}</span>
                     </div>
-                    <span className="text-xs text-slate-400 font-mono shrink-0 ml-4">Rp {item.total.toLocaleString()}</span>
+                    <span className="text-xs text-slate-400 font-mono shrink-0 ml-4">{formatIDR(item.total)}</span>
                   </CommandItem>
                 ))}
               </CommandGroup>
