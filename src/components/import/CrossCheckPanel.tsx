@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, AlertTriangle, HelpCircle, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { formatIDR } from '@/components/reports/dod/dod-format';
 
 export interface CrossCheckItem {
     accountCode: string;
@@ -37,7 +38,7 @@ export function CrossCheckPanel({ items }: CrossCheckPanelProps) {
                                     <span className="text-sm font-bold text-slate-900">{item.accountName}</span>
                                 </div>
                                 <div className="text-xs text-slate-500 font-medium">
-                                    {t('scoping:table.balance')}: {item.balance.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}
+                                    {t('scoping:table.balance')}: {formatIDR(item.balance)}
                                 </div>
                             </div>
 

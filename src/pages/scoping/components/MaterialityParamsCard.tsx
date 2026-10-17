@@ -11,6 +11,7 @@ import type { MaterialitySimulation, MaterialityJustification } from '@shared/ty
 import { cn } from '@/lib/utils';
 import { MaterialityJustificationModal } from './MaterialityJustificationModal';
 import { isJustificationComplete } from '../services/materiality-justification';
+import { formatIDR } from '@/components/reports/dod/dod-format';
 
 interface MaterialityParamsCardProps {
   simState: MaterialitySimulation;
@@ -226,7 +227,7 @@ export function MaterialityParamsCard({
                 {t('params.benchmarkValue', { basis: simState.basis })} 
                 <Info className="h-3 w-3 opacity-40" />
               </p>
-              <p className="text-xs font-display font-black text-slate-700">Rp {benchmarkValue.toLocaleString('id-ID')}</p>
+              <p className="text-xs font-display font-black text-slate-700">{formatIDR(benchmarkValue)}</p>
             </div>
           </div>
 

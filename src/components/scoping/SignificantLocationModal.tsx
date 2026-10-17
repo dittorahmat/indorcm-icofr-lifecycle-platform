@@ -22,6 +22,7 @@ import { Loader2, Calculator, CheckCircle2, XCircle, AlertCircle } from 'lucide-
 import { cn } from '@/lib/utils';
 import { calculateScopingCompliance } from '@/pages/scoping/services/materiality-calc';
 import { useTranslation } from 'react-i18next';
+import { formatIDR, formatIDRPlain } from '@/components/reports/dod/dod-format';
 
 interface SignificantLocationModalProps {
   simulation: MaterialitySimulation;
@@ -137,7 +138,7 @@ export function SignificantLocationModal({
             <div className="text-left sm:text-right">
               <p className="text-xs text-blue-500 uppercase font-bold tracking-tight">{t('locationModal.totalBasisValue')}</p>
               <p className="text-xl font-black text-primary">
-                Rp {analysisResults.reduce((sum, r) => sum + r.balance, 0).toLocaleString('id-ID')}
+                {formatIDR(analysisResults.reduce((sum, r) => sum + r.balance, 0))}
               </p>
             </div>
           </div>
@@ -206,7 +207,7 @@ export function SignificantLocationModal({
                   <ul className="list-disc pl-4 space-y-0.5">
                     {compliance.fsliCoverages.filter(c => !c.isCompliant).map(c => (
                       <li key={c.fsliName}>
-                        {c.fsliName}: <span className="font-bold">{c.coveragePercentage.toFixed(1)}%</span> (Consolidated: {c.consolidatedBalance.toLocaleString('id-ID')})
+                        {c.fsliName}: <span className="font-bold">{c.coveragePercentage.toFixed(1)}%</span> (Consolidated: {formatIDRPlain(c.consolidatedBalance)})
                       </li>
                     ))}
                   </ul>
@@ -241,7 +242,7 @@ export function SignificantLocationModal({
                     )}>
                       <TableCell className="font-mono font-bold text-slate-900">{row.entityCode}</TableCell>
                       <TableCell className="text-right font-medium">
-                        {row.balance.toLocaleString('id-ID')}
+                        {formatIDRPlain(row.balance)}
                       </TableCell>
                       <TableCell className="text-right text-slate-600">
                         {row.contributionPercentage.toFixed(2)}%

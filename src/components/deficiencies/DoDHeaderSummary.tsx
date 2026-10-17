@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { FileText, ShieldAlert, AlertCircle, Clock, CheckCircle2 } from 'lucide-react';
 import type { Deficiency } from '@shared/types';
 import { useTranslation } from 'react-i18next';
+import { formatIDR } from '@/components/reports/dod/dod-format';
 
 interface DoDHeaderSummaryProps {
   deficiency: Deficiency;
@@ -66,7 +67,7 @@ export function DoDHeaderSummary({
           <div className="flex items-center gap-1.5 bg-muted/40 px-2.5 py-1 rounded-md border border-border">
             <span className="text-muted-foreground">{t('worksheet.header.exposureValue')}:</span>
             <span className="font-mono font-bold text-foreground">
-              {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(exposureValue)}
+              {formatIDR(exposureValue)}
             </span>
           </div>
         </div>

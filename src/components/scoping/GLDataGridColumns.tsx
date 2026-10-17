@@ -7,6 +7,7 @@ import { ChevronDown, ChevronRight, Lock, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
 import { MultiSelect, Option } from '@/components/ui/multi-select';
+import { formatIDRPlain } from '@/components/reports/dod/dod-format';
 import { TFunction } from 'i18next';
 
 export const QUALITATIVE_RULES = [
@@ -191,7 +192,7 @@ export function buildGLDataGridColumns({
             "text-right font-mono text-xs",
             row.getIsGrouped() ? "font-bold text-slate-700" : (Math.abs(val) >= pmValue ? "text-red-600 font-bold" : "text-slate-500")
           )}>
-            {val.toLocaleString('id-ID')}
+            {formatIDRPlain(val)}
           </div>
         );
       },

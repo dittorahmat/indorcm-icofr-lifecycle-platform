@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import { TransactionUploadModal } from './TransactionUploadModal';
+import { formatIDRPlain } from '@/components/reports/dod/dod-format';
 import { toast } from 'sonner';
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 import { 
@@ -199,7 +200,7 @@ export function TransactionSamplingTab({ noGL, bpmProcessId, year: propYear, onS
                    {row.description}
                 </TableCell>
                 <TableCell className="text-xs font-mono font-bold text-right">
-                  {new Intl.NumberFormat('id-ID').format(row.amount || 0)}
+                  {formatIDRPlain(row.amount || 0)}
                 </TableCell>
                 <TableCell className="text-center">
                   <Badge variant="outline" className="text-xs uppercase font-bold">{row.currency}</Badge>
