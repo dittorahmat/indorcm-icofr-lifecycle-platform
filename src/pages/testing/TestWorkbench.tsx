@@ -16,7 +16,13 @@ import {
   Fingerprint, Clock, Lock, ShieldAlert
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { exportRegulatoryTableToExcel } from '@/lib/rcm-excel-export';
+import { useExcelExport } from '@/lib/useExcelExport';
+import {
+  buildTestingRows,
+  testingColumns,
+  toTestingExportRecord,
+  type TestingResultRow,
+} from '@/pages/reports/testing-rows';
 import { ControlTestCard } from '@/components/testing/ControlTestCard';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -49,7 +55,7 @@ export function TestWorkbench() {
   const [showOnlyValidated, setShowOnlyValidated] = React.useState(true);
   const [expandedId, setExpandedId] = React.useState<string | null>(null);
   const [searchTerm, setSearchTerm] = React.useState('');
-  const [isExportingExcel, setIsExportingExcel] = React.useState(false);
+  const { isExporting: isExportingExcel, exportNow } = useExcelExport<TestingResultRow>();
 
   const { data: controlsData, isLoading: controlsLoading } = useQuery({
     queryKey: ['controls'],
@@ -91,42 +97,28 @@ export function TestWorkbench() {
   }) || [];
 
   const handleExportExcel = async () => {
-    if (isExportingExcel) return;
-    setIsExportingExcel(true);
-    try {
-      const visibleIds = new Set(filteredControls.map((c) => c.id));
-      const visibleTests = (testsData?.items || []).filter((tr) => visibleIds.has(tr.controlId));
-      const rows = visibleTests.map((tr, index) => {
-        const control = controlsData?.items.find((c) => c.id === tr.controlId);
-        return {
-          no: index + 1,
-          control: `${control?.code || '-'} - ${control?.name || '-'}`,
-          type: tr.testType,
-          method: tr.method || '-',
-          result: tr.result,
-          date: tr.testDate ? format(tr.testDate, 'yyyy-MM-dd') : '-',
-          sample: tr.testType === 'TOE' ? (tr.sampleSize ?? '-') : 'N/A',
-        };
-      });
-      await exportRegulatoryTableToExcel(rows, {
-        title: t('testing:title', { defaultValue: 'KERTAS KERJA TOD & TOE' }),
-        subtitle: t('testing:description', { defaultValue: '' }),
-        identityLines: [String(new Date().getFullYear())],
-        columns: [
-          { key: 'no', header: t('reports:testing.table.no', { defaultValue: 'No' }), numeric: true },
-          { key: 'control', header: t('reports:testing.table.control', { defaultValue: 'Referensi Kontrol' }) },
-          { key: 'type', header: t('reports:testing.table.type', { defaultValue: 'Tipe' }) },
-          { key: 'method', header: t('reports:testing.table.method', { defaultValue: 'Metode' }) },
-          { key: 'result', header: t('reports:testing.table.result', { defaultValue: 'Hasil' }) },
-          { key: 'date', header: t('testing:testDate', { defaultValue: 'Tanggal Uji' }) },
-          { key: 'sample', header: t('reports:testing.table.sample', { defaultValue: 'Sampel' }), numeric: true },
-        ],
-        filename: `TOD_TOE_Kertas_Kerja_${new Date().getFullYear()}.xlsx`,
-        sheetName: t('testing:title', { defaultValue: 'TOD & TOE' }),
-      });
-    } finally {
-      setIsExportingExcel(false);
-    }
+    const visibleIds = new Set(filteredControls.map((c) => c.id));
+    const rows = buildTestingRows(
+      (testsData?.items || []).filter((test) => visibleIds.has(test.controlId)),
+      { controls: controlsData?.items || [], rcms: [] },
+      { dateFormat: (timestamp) => format(timestamp, 'yyyy-MM-dd') },
+    );
+    await exportNow({
+      rows,
+      filename: `TOD_TOE_Kertas_Kerja_${new Date().getFullYear()}.xlsx`,
+      sheetName: t('testing:title', { defaultValue: 'TOD & TOE' }),
+      exportFn: async (exportRows, opts) => {
+        const { exportRegulatoryTableToExcel } = await import('@/lib/rcm-excel-export');
+        await exportRegulatoryTableToExcel(exportRows.map(toTestingExportRecord), {
+          title: t('testing:title', { defaultValue: 'KERTAS KERJA TOD & TOE' }),
+          subtitle: t('testing:description', { defaultValue: '' }),
+          identityLines: [String(new Date().getFullYear())],
+          columns: testingColumns((key) => t(key)),
+          filename: opts.filename,
+          sheetName: opts.sheetName,
+        });
+      },
+    });
   };
 
   return (

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { api } from '@/lib/api-client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,13 +8,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, Loader2, XCircle, Download } from 'lucide-react';
 import { format } from 'date-fns';
-import { exportRegulatoryTableToExcel } from '@/lib/rcm-excel-export';
-import type { Settings } from '@shared/types';
+import { useExcelExport } from '@/lib/useExcelExport';
+import type { Settings, TestRecord } from '@shared/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 
-import { useReportSummary, useAggregateDeficiencies, useSignOffReport, useExportReport, useReportData } from '@/hooks/use-reports';
+import { useReportSummary, useSignOffReport, useExportReport, useReportData } from '@/hooks/use-reports';
 import { ReportDashboard } from '@/components/reports/ReportDashboard';
 import { ReportExportPanel } from '@/components/reports/ReportExportPanel';
 import { ManagementAssessment } from '@/components/reports/ManagementAssessment';
@@ -22,14 +22,118 @@ import { RegulatoryAppendices } from '@/components/reports/RegulatoryAppendices'
 import { PageHeader } from '@/components/layout/PageHeader';
 import { CollapsibleFilterCard } from '@/components/layout/CollapsibleFilterCard';
 import { MobileDesktopBanner } from '@/components/layout/MobileDesktopBanner';
+import { buildTestingRows, testingColumns, toTestingExportRecord, type TestingResultRow } from './testing-rows';
+
+const TEST_TYPE_FILTERS: ReadonlyArray<'ALL' | TestRecord['testType']> = ['ALL', 'TOD', 'TOE'];
+const TEST_STATUS_FILTERS: ReadonlyArray<'ALL' | TestRecord['result']> = ['ALL', 'Effective', 'Ineffective'];
+
+const RESULT_BADGE_CLASS: Record<TestRecord['result'], string> = {
+  Effective: 'bg-green-100 text-green-700 border-green-200',
+  Ineffective: 'bg-red-100 text-red-700 border-red-200',
+};
+
+/** Mobile adapter over the single derived row. */
+function TestingResultCard({ row }: { row: TestingResultRow }) {
+  const { t } = useTranslation('reports');
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="flex items-start justify-between gap-2 flex-wrap">
+        <div className="min-w-0">
+          <p className="text-xs font-bold text-primary leading-none">{row.controlCode}</p>
+          <p className="mt-1 text-xs font-semibold text-slate-800 leading-snug">{row.controlName}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{row.process} / {row.subProcess}</p>
+        </div>
+        <Badge variant="outline" className={cn('text-xs uppercase font-bold shrink-0', RESULT_BADGE_CLASS[row.result])}>
+          {row.result}
+        </Badge>
+      </div>
+      <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
+        <span className="font-mono font-bold">{row.type}</span>
+        <span aria-hidden="true">·</span>
+        <span className="font-mono">{row.method}</span>
+        <span aria-hidden="true">·</span>
+        <span>{row.sample} {t('testing.table.sample')}</span>
+      </div>
+      {row.notes ? (
+        <p className="mt-2 text-xs text-muted-foreground leading-relaxed line-clamp-3">&quot;{row.notes}&quot;</p>
+      ) : null}
+    </div>
+  );
+}
+
+/** Desktop adapter over the single derived row. */
+function TestingResultTableRow({ row }: { row: TestingResultRow }) {
+  const { t } = useTranslation('reports');
+  return (
+    <TableRow className="hover:bg-muted/30">
+      <TableCell className="text-center text-xs font-medium text-muted-foreground">{row.no}</TableCell>
+      <TableCell className="py-3">
+        <div className="space-y-0.5">
+          <p className="text-xs font-bold text-blue-800 uppercase tracking-tighter">{row.process}</p>
+          <p className="text-xs text-slate-600 line-clamp-1">{row.subProcess}</p>
+        </div>
+      </TableCell>
+      <TableCell className="py-3">
+        <div className="space-y-0.5">
+          <p className="text-xs font-bold text-primary leading-none">{row.controlCode}</p>
+          <p className="text-xs font-medium leading-tight text-slate-700 line-clamp-2">{row.controlName}</p>
+        </div>
+      </TableCell>
+      <TableCell className="text-center">
+        <div className="flex flex-wrap justify-center gap-0.5">
+          {row.assertions.map((assertion) => (
+            <Badge key={assertion} variant="outline" className="text-xs h-3.5 px-1 bg-slate-50">{assertion.substring(0, 1)}</Badge>
+          ))}
+        </div>
+      </TableCell>
+      <TableCell className="text-center">
+        <Badge variant="outline" className={cn(
+          'text-xs h-5',
+          row.type === 'TOD' ? 'border-blue-200 text-blue-700 bg-blue-50' : 'border-purple-200 text-purple-700 bg-purple-50',
+        )}>
+          {row.type}
+        </Badge>
+      </TableCell>
+      <TableCell className="text-center text-xs font-medium text-slate-600 font-mono">{row.method}</TableCell>
+      <TableCell className="text-center">
+        <div className="flex flex-col items-center gap-1">
+          <div className="flex gap-0.5">
+            {[1, 2, 3, 4, 5, 6].map((step) => (
+              <div
+                key={step}
+                className={cn(
+                  'w-1.5 h-3 rounded-full',
+                  step <= row.attributeCount ? 'bg-green-500 shadow-[0_0_4px_rgba(34,197,94,0.5)]' : 'bg-slate-200',
+                )}
+              />
+            ))}
+          </div>
+          <span className="text-xs font-bold text-slate-500">{row.attributeCount}/6 Criteria</span>
+        </div>
+      </TableCell>
+      <TableCell className="text-center text-xs font-mono font-bold text-slate-600">{row.sample}</TableCell>
+      <TableCell className="text-center">
+        <Badge className={cn(
+          'text-xs uppercase font-bold',
+          row.result === 'Effective' ? 'bg-green-100 text-green-700 hover:bg-green-100 border-green-200' : 'bg-red-100 text-red-700 hover:bg-red-100 border-red-200',
+        )} variant="outline">
+          {row.result === 'Effective' ? <><CheckCircle2 className="h-2 w-2 mr-1" /> {t('reports:testing.effective').toUpperCase()}</> : <><XCircle className="h-2 w-2 mr-1" /> {t('reports:testing.ineffective').toUpperCase()}</>}
+        </Badge>
+      </TableCell>
+      <TableCell className="py-3 text-xs text-muted-foreground leading-relaxed">
+        <p className="line-clamp-3">&quot;{row.notes}&quot;</p>
+        <p className="text-xs mt-1 uppercase font-bold">Audit Ref: {row.id.substring(0, 8).toUpperCase()}</p>
+      </TableCell>
+    </TableRow>
+  );
+}
 
 export function ReportsPage() {
   const { t } = useTranslation('reports');
-  const queryClient = useQueryClient();
-  const [testTypeFilter, setTestTypeFilter] = React.useState<'ALL' | 'TOD' | 'TOE'>('ALL');
-  const [testStatusFilter, setTestStatusFilter] = React.useState<'ALL' | 'Effective' | 'Ineffective'>('ALL');
-  const [isExportingTests, setIsExportingTests] = React.useState(false);
-  
+  const [testTypeFilter, setTestTypeFilter] = React.useState<'ALL' | TestRecord['testType']>('ALL');
+  const [testStatusFilter, setTestStatusFilter] = React.useState<'ALL' | TestRecord['result']>('ALL');
+  const { isExporting: isExportingTests, exportNow } = useExcelExport<TestingResultRow>();
+
   const { data: summaryData, isLoading: summaryLoading } = useReportSummary();
   const { rcmData, controlsData, testsData, isLoading: dataLoading } = useReportData();
   const signOffMutation = useSignOffReport();
@@ -48,65 +152,41 @@ export function ReportsPage() {
     await exportReport(format);
   };
 
+  const testingRows = React.useMemo(() => buildTestingRows(
+    testsData,
+    { controls: controlsData, rcms: rcmData },
+    {
+      filter: (test) =>
+        (testTypeFilter === 'ALL' || test.testType === testTypeFilter) &&
+        (testStatusFilter === 'ALL' || test.result === testStatusFilter),
+      dateFormat: (timestamp) => format(timestamp, 'yyyy-MM-dd'),
+    },
+  ), [testsData, controlsData, rcmData, testTypeFilter, testStatusFilter]);
+
   const handleExportTestsExcel = async () => {
-    if (isExportingTests) return;
-    setIsExportingTests(true);
-    try {
-      const filtered = (testsData || [])
-        .filter((tr) => testTypeFilter === 'ALL' || tr.testType === testTypeFilter)
-        .filter((tr) => testStatusFilter === 'ALL' || tr.result === testStatusFilter);
-      const rows = filtered.map((tr, index) => {
-        const control = (controlsData || []).find((c) => c.id === tr.controlId);
-        const rcm = (rcmData || []).find((r) => r.id === (control as any)?.rcmId);
-        const attrCount = tr.evaluationAttributes ? Object.values(tr.evaluationAttributes).filter(Boolean).length : 0;
-        return {
-          no: index + 1,
-          process: `${(rcm as any)?.process || 'N/A'} / ${(rcm as any)?.subProcess || 'N/A'}`,
-          control: `${control?.code || '-'} - ${control?.name || '-'}`,
-          assertion: (control?.assertions || []).join(', ') || '-',
-          type: tr.testType,
-          method: tr.method || '-',
-          criteria: `${attrCount}/6`,
-          sample: tr.testType === 'TOE' ? (tr.sampleSize ?? '-') : 'N/A',
-          result: tr.result,
-          notes: tr.comments || '-',
-          date: tr.testDate ? format(tr.testDate, 'yyyy-MM-dd') : '-',
-        };
-      });
-      await exportRegulatoryTableToExcel(rows, {
-        title: t('testing.title'),
-        subtitle: t('testing.description'),
-        identityLines: [String(new Date().getFullYear()), `${testTypeFilter} / ${testStatusFilter}`],
-        columns: [
-          { key: 'no', header: t('testing.table.no'), numeric: true },
-          { key: 'process', header: t('testing.table.process') },
-          { key: 'control', header: t('testing.table.control') },
-          { key: 'assertion', header: t('testing.table.assertion') },
-          { key: 'type', header: t('testing.table.type') },
-          { key: 'method', header: t('testing.table.method') },
-          { key: 'criteria', header: t('testing.table.criteria') },
-          { key: 'sample', header: t('testing.table.sample') },
-          { key: 'result', header: t('testing.table.result') },
-          { key: 'notes', header: t('testing.table.notes') },
-          { key: 'date', header: t('testing.table.date') },
-        ],
-        filename: `TOD_TOE_Hasil_Pengujian_${testTypeFilter}_${testStatusFilter}_${new Date().getFullYear()}.xlsx`,
-        sheetName: t('testing.title'),
-      });
-    } finally {
-      setIsExportingTests(false);
-    }
+    await exportNow({
+      rows: testingRows,
+      filename: `TOD_TOE_Hasil_Pengujian_${testTypeFilter}_${testStatusFilter}_${new Date().getFullYear()}.xlsx`,
+      sheetName: t('testing.title'),
+      exportFn: async (rows, opts) => {
+        const { exportRegulatoryTableToExcel } = await import('@/lib/rcm-excel-export');
+        await exportRegulatoryTableToExcel(rows.map(toTestingExportRecord), {
+          title: t('testing.title'),
+          subtitle: t('testing.description'),
+          identityLines: [String(new Date().getFullYear()), `${testTypeFilter} / ${testStatusFilter}`],
+          columns: testingColumns((key) => t(key)),
+          filename: opts.filename,
+          sheetName: opts.sheetName,
+        });
+      },
+    });
   };
 
   const isSigned = settings?.isPeriodLocked || false;
-  const mwCount = summaryData?.deficienciesBySeverity?.find((d: any) => d.name === 'Material Weakness')?.count || 0;
+  const mwCount = summaryData?.deficienciesBySeverity?.find((d) => d.name === 'Material Weakness')?.count || 0;
   const isEffective = mwCount === 0;
 
   const isLoading = summaryLoading || settingsLoading || dataLoading;
-
-  const filteredTests = (testsData || [])
-    .filter((tr) => testTypeFilter === 'ALL' || tr.testType === testTypeFilter)
-    .filter((tr) => testStatusFilter === 'ALL' || tr.result === testStatusFilter);
 
   if (isLoading) {
     return (
@@ -165,15 +245,15 @@ export function ReportsPage() {
                   <div className="space-y-1.5">
                   <p className="text-xs font-bold uppercase tracking-wider text-slate-400">{t('testing.filters.type')}</p>
                   <div className="flex gap-1 flex-wrap">
-                    {['ALL', 'TOD', 'TOE'].map(t => (
+                    {TEST_TYPE_FILTERS.map((value) => (
                       <Button 
-                        key={t} 
+                        key={value} 
                         size="sm" 
-                        variant={testTypeFilter === t ? 'default' : 'outline'} 
-                        className={cn("h-11 sm:h-7 min-h-[44px] sm:min-h-0 px-4 sm:px-3 text-xs font-bold", testTypeFilter === t ? "bg-indigo-600" : "bg-white text-slate-600")}
-                        onClick={() => setTestTypeFilter(t as any)}
+                        variant={testTypeFilter === value ? 'default' : 'outline'} 
+                        className={cn("h-11 sm:h-7 min-h-[44px] sm:min-h-0 px-4 sm:px-3 text-xs font-bold", testTypeFilter === value ? "bg-indigo-600" : "bg-white text-slate-600")}
+                        onClick={() => setTestTypeFilter(value)}
                       >
-                        {t}
+                        {value}
                       </Button>
                     ))}
                   </div>
@@ -181,15 +261,15 @@ export function ReportsPage() {
                 <div className="space-y-1.5">
                   <p className="text-xs font-bold uppercase tracking-wider text-slate-400">{t('testing.filters.status')}</p>
                   <div className="flex gap-1 flex-wrap">
-                    {['ALL', 'Effective', 'Ineffective'].map(s => (
+                    {TEST_STATUS_FILTERS.map((value) => (
                       <Button 
-                        key={s} 
+                        key={value} 
                         size="sm" 
-                        variant={testStatusFilter === s ? 'default' : 'outline'} 
-                        className={cn("h-11 sm:h-7 min-h-[44px] sm:min-h-0 px-4 sm:px-3 text-xs font-bold", testStatusFilter === s ? "bg-indigo-600" : "bg-white text-slate-600")}
-                        onClick={() => setTestStatusFilter(s as any)}
+                        variant={testStatusFilter === value ? 'default' : 'outline'} 
+                        className={cn("h-11 sm:h-7 min-h-[44px] sm:min-h-0 px-4 sm:px-3 text-xs font-bold", testStatusFilter === value ? "bg-indigo-600" : "bg-white text-slate-600")}
+                        onClick={() => setTestStatusFilter(value)}
                       >
-                        {s === 'ALL' ? 'ALL' : s === 'Effective' ? t('reports:testing.effective').toUpperCase() : t('reports:testing.ineffective').toUpperCase()}
+                        {value === 'ALL' ? 'ALL' : value === 'Effective' ? t('reports:testing.effective').toUpperCase() : t('reports:testing.ineffective').toUpperCase()}
                       </Button>
                     ))}
                   </div>
@@ -221,41 +301,13 @@ export function ReportsPage() {
               </CardHeader>
               <CardContent className="pt-6">
                 <div className="mb-4 md:hidden">
-                  <MobileDesktopBanner recordCount={filteredTests.length} />
+                  <MobileDesktopBanner recordCount={testingRows.length} />
                 </div>
                 <div className="block md:hidden space-y-3">
-                  {filteredTests.map((test, index) => {
-                    const control = controlsData?.find(c => c.id === test.controlId);
-                    const rcm = rcmData?.find(r => r.id === control?.rcmId);
-                    return (
-                      <div key={test.id} className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-                        <div className="flex items-start justify-between gap-2 flex-wrap">
-                          <div className="min-w-0">
-                            <p className="text-xs font-bold text-primary leading-none">{control?.code || '???'}</p>
-                            <p className="mt-1 text-xs font-semibold text-slate-800 leading-snug">{control?.name || 'Unknown Control'}</p>
-                            <p className="mt-1 text-xs text-muted-foreground">{rcm?.process || 'N/A'} / {rcm?.subProcess || 'N/A'}</p>
-                          </div>
-                          <Badge variant="outline" className={cn(
-                            "text-xs uppercase font-bold shrink-0",
-                            test.result === 'Effective' ? "bg-green-100 text-green-700 border-green-200" : "bg-red-100 text-red-700 border-red-200"
-                          )}>
-                            {test.result}
-                          </Badge>
-                        </div>
-                        <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
-                          <span className="font-mono font-bold">{test.testType}</span>
-                          <span aria-hidden="true">·</span>
-                          <span className="font-mono">{test.method || '-'}</span>
-                          <span aria-hidden="true">·</span>
-                          <span>{test.testType === 'TOE' ? (test.sampleSize ?? '-') : 'N/A'} {t('testing.table.sample')}</span>
-                        </div>
-                        {test.comments ? (
-                          <p className="mt-2 text-xs text-muted-foreground leading-relaxed line-clamp-3">"{test.comments}"</p>
-                        ) : null}
-                      </div>
-                    );
-                  })}
-                  {filteredTests.length === 0 ? (
+                  {testingRows.map((row) => (
+                    <TestingResultCard key={row.id} row={row} />
+                  ))}
+                  {testingRows.length === 0 ? (
                     <p className="text-center py-8 text-xs text-muted-foreground">{t('testing.empty', { defaultValue: 'Belum ada hasil pengujian.' })}</p>
                   ) : null}
                 </div>
@@ -276,79 +328,9 @@ export function ReportsPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {testsData
-                        .filter(t => testTypeFilter === 'ALL' || t.testType === testTypeFilter)
-                        .filter(t => testStatusFilter === 'ALL' || t.result === testStatusFilter)
-                        .map((test, index) => {
-                          const control = controlsData?.find(c => c.id === test.controlId);
-                          const rcm = rcmData?.find(r => r.id === control?.rcmId);
-                          const attrCount = test.evaluationAttributes ? Object.values(test.evaluationAttributes).filter(Boolean).length : 0;
-                          
-                          return (
-                            <TableRow key={test.id} className="hover:bg-muted/30">
-                              <TableCell className="text-center text-xs font-medium text-muted-foreground">{index + 1}</TableCell>
-                              <TableCell className="py-3">
-                                <div className="space-y-0.5">
-                                  <p className="text-xs font-bold text-blue-800 uppercase tracking-tighter">{rcm?.process || 'N/A'}</p>
-                                  <p className="text-xs text-slate-600 line-clamp-1">{rcm?.subProcess || 'N/A'}</p>
-                                </div>
-                              </TableCell>
-                              <TableCell className="py-3">
-                                <div className="space-y-0.5">
-                                  <p className="text-xs font-bold text-primary leading-none">{control?.code || '???'}</p>
-                                  <p className="text-xs font-medium leading-tight text-slate-700 line-clamp-2">{control?.name || 'Unknown Control'}</p>
-                                </div>
-                              </TableCell>
-                              <TableCell className="text-center">
-                                <div className="flex flex-wrap justify-center gap-0.5">
-                                  {(control?.assertions || []).map(a => (
-                                    <Badge key={a} variant="outline" className="text-xs h-3.5 px-1 bg-slate-50">{a.substring(0,1)}</Badge>
-                                  ))}
-                                </div>
-                              </TableCell>
-                              <TableCell className="text-center">
-                                <Badge variant="outline" className={cn(
-                                  "text-xs h-5",
-                                  test.testType === 'TOD' ? "border-blue-200 text-blue-700 bg-blue-50" : "border-purple-200 text-purple-700 bg-purple-50"
-                                )}>
-                                  {test.testType}
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="text-center text-xs font-medium text-slate-600 font-mono">{test.method}</TableCell>
-                              <TableCell className="text-center">
-                                <div className="flex flex-col items-center gap-1">
-                                  <div className="flex gap-0.5">
-                                    {[1, 2, 3, 4, 5, 6].map(i => (
-                                      <div 
-                                        key={i} 
-                                        className={cn(
-                                          "w-1.5 h-3 rounded-full",
-                                          i <= attrCount ? "bg-green-500 shadow-[0_0_4px_rgba(34,197,94,0.5)]" : "bg-slate-200"
-                                        )} 
-                                      />
-                                    ))}
-                                  </div>
-                                  <span className="text-xs font-bold text-slate-500">{attrCount}/6 Criteria</span>
-                                </div>
-                              </TableCell>
-                              <TableCell className="text-center text-xs font-mono font-bold text-slate-600">
-                                {test.testType === 'TOE' ? (test.sampleSize || '-') : 'N/A'}
-                              </TableCell>
-                              <TableCell className="text-center">
-                                <Badge className={cn(
-                                  "text-xs uppercase font-bold",
-                                  test.result === 'Effective' ? "bg-green-100 text-green-700 hover:bg-green-100 border-green-200" : "bg-red-100 text-red-700 hover:bg-red-100 border-red-200"
-                                )} variant="outline">
-                                  {test.result === 'Effective' ? <><CheckCircle2 className="h-2 w-2 mr-1" /> {t('reports:testing.effective').toUpperCase()}</> : <><XCircle className="h-2 w-2 mr-1" /> {t('reports:testing.ineffective').toUpperCase()}</>}
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="py-3 text-xs text-muted-foreground leading-relaxed">
-                                <p className="line-clamp-3">"{test.comments}"</p>
-                                <p className="text-xs mt-1 uppercase font-bold">Audit Ref: {test.id.substring(0,8).toUpperCase()}</p>
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
+                      {testingRows.map((row) => (
+                        <TestingResultTableRow key={row.id} row={row} />
+                      ))}
                     </TableBody>
                   </Table>
                 </div>
