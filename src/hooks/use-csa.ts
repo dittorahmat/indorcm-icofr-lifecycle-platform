@@ -13,6 +13,7 @@ import { useConfirm } from './use-confirm';
 import { checkSignOff } from './csa/sign-off-guard';
 import { resolvePostSaveView, shouldEnterForm, shouldFetchList } from './csa/csa-view-transition';
 import { buildEvidenceFormData, compressEvidenceImage } from './csa/use-evidence-upload';
+import { csaKeysForYear, invalidateCsaYear } from './csa/csa-keys';
 import type { CSAEvidenceMeta } from '@shared/types';
 
 interface UseCSAProps {
@@ -20,14 +21,15 @@ interface UseCSAProps {
   scheduleId?: string;
   initialSamples?: any[];
   controls?: any[];
-  year?: string | number;
+  /** Year-scoped: required so the fetch key and every invalidation share the tuple. */
+  year: string;
 }
 
 export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls: propControls = [], year }: UseCSAProps) {
   const confirm = useConfirm();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
-  const { t } = useTranslation(['csa_hub']);
+  const { t } = useTranslation(['csa_hub', 'common']);
   const [view, setView] = useState<'list' | 'form'>('list');
   const [activeCsaId, setActiveCsaId] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -57,12 +59,13 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
     enabled: !!bpmProcess?.noGL
   });
 
+  const csaKeys = csaKeysForYear(bpmProcessId, year);
   const { data: csaList, isLoading: isListLoading } = useQuery({
-    queryKey: ['csa-list', bpmProcessId, year],
+    queryKey: csaKeys.list,
     queryFn: () => {
       const params = new URLSearchParams();
       if (bpmProcessId) params.append('bpmProcessId', bpmProcessId);
-      if (year) params.append('year', year.toString());
+      params.append('year', year);
       return api<{ items: CSARecord[] }>(`/api/csa?${params.toString()}`);
     },
     enabled: shouldFetchList(view, !!bpmProcessId)
@@ -208,11 +211,9 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
       const method = activeCsaId ? 'PUT' : 'POST';
       return api<CSARecord>(url, { method, body: JSON.stringify(data) });
     },
-    onSuccess: (response: any, variables: any) => {
+    onSuccess: (response, variables) => {
       toast.success(variables.isDraft ? t('assessment.draftSaved') : t('assessment.signOffSuccess'));
-      queryClient.invalidateQueries({ queryKey: ['csa-list'] });
-      queryClient.invalidateQueries({ queryKey: ['csa-schedules'] });
-      queryClient.invalidateQueries({ queryKey: ['csa-worklist'] });
+      void invalidateCsaYear(queryClient, bpmProcessId, year);
       
       if (resolvePostSaveView(!!variables.isDraft) === 'list') {
         setView('list');
@@ -255,18 +256,27 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
         const metaPath = `samples.${variables.sIdx}.controlResults.${variables.cId}.evidenceMeta` as any;
         form.setValue(metaPath, variables.meta, { shouldDirty: true, shouldTouch: true });
       }
-      toast.success("Bukti berhasil diunggah");
+      toast.success(t('page.evidence.uploaded'));
       setActiveUploadRow(null);
+    },
+    onError: () => {
+      toast.error(t('page.evidence.uploadError'));
     }
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => api(`/api/csa/${id}`, { method: 'DELETE' }),
     onSuccess: () => {
-      toast.success("Assessment deleted successfully");
-      queryClient.invalidateQueries({ queryKey: ['csa-list'] });
-      queryClient.invalidateQueries({ queryKey: ['csa-schedules'] });
-      queryClient.invalidateQueries({ queryKey: ['csa-worklist'] });
+      toast.success(t('common:notifications.deleted'));
+      void invalidateCsaYear(queryClient, bpmProcessId, year);
+    },
+    onError: (err: unknown) => {
+      toast.error(
+        t('assessment.deleteFailed', {
+          defaultValue: 'Failed to delete the CSA assessment: {{message}}',
+          message: err instanceof Error ? err.message : String(err),
+        }),
+      );
     }
   });
 
@@ -287,12 +297,12 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
   const onSubmit = async (values: CSAFormValues) => {
     const check = checkSignOff(values);
     if (check.blocked && check.reason === 'missing-evidence') {
-      toast.error("Setiap kontrol yang 'Pass' wajib melampirkan bukti (evidence) sebelum sign-off.");
+      toast.error(t('form.signOffMissingEvidence', { defaultValue: "Setiap kontrol yang 'Pass' wajib melampirkan bukti (evidence) sebelum sign-off." }));
       return;
     }
     const realResult = check.realResult;
     if (check.blocked && check.reason === 'failed-effective') {
-       toast.error("Tidak dapat sign-off sebagai Effective karena terdapat kontrol yang gagal.");
+       toast.error(t('form.signOffFailedEffective', { defaultValue: 'Tidak dapat sign-off sebagai Effective karena terdapat kontrol yang gagal.' }));
        return;
     }
 
@@ -301,7 +311,7 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
     setIsAuthenticating(false);
 
     if (!verified) {
-      toast.error("Sign-off authentication failed");
+      toast.error(t('form.signOffAuthFailed', { defaultValue: 'Sign-off authentication failed' }));
       return;
     }
 
@@ -328,8 +338,8 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
 
   const handleDelete = async (id: string) => {
     const ok = await confirm({
-      title: "Hapus Asesmen",
-      description: "Hapus asesmen ini secara permanen? Data sampel dan bukti juga akan terhapus.",
+      title: t('history.deleteAssessment'),
+      description: t('history.deleteConfirmDesc', { defaultValue: 'Hapus asesmen ini secara permanen? Data sampel dan bukti juga akan terhapus.' }),
       variant: 'destructive'
     });
     if (ok) {
