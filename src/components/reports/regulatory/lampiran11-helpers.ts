@@ -1,4 +1,5 @@
 import type { Deficiency } from '@shared/types';
+import { isSignificantDeficiency, summarizeDeficiencies } from '@shared/deficiency-summary';
 
 export interface EffectivenessSummary {
   mwCount: number;
@@ -10,19 +11,21 @@ export interface EffectivenessSummary {
   aggregateLine: string;
 }
 
+/**
+ * Thin adapter over the shared seam: the counts and the effectiveness
+ * conclusion come from `summarizeDeficiencies`; this module only shapes the
+ * Lampiran 11 view (register rows + the Excel identity line).
+ */
 export function summarizeEffectiveness(items: readonly Deficiency[]): EffectivenessSummary {
-  const mwCount = items.filter((d) => d.severity === 'Material Weakness').length;
-  const sdCount = items.filter((d) => d.severity === 'Significant Deficiency').length;
-  const cdCount = items.filter((d) => d.severity === 'Control Deficiency').length;
-  const significant = items.filter((d) => d.severity !== 'Control Deficiency');
+  const summary = summarizeDeficiencies(items);
   return {
-    mwCount,
-    sdCount,
-    cdCount,
-    total: items.length,
-    isEffective: mwCount === 0,
-    significant: [...significant],
-    aggregateLine: `CD: ${cdCount} | SD: ${sdCount} | MW: ${mwCount} | Total: ${items.length}`,
+    mwCount: summary.mwCount,
+    sdCount: summary.sdCount,
+    cdCount: summary.cdCount,
+    total: summary.total,
+    isEffective: summary.isEffective,
+    significant: items.filter((d) => isSignificantDeficiency(d.severity)),
+    aggregateLine: `CD: ${summary.cdCount} | SD: ${summary.sdCount} | MW: ${summary.mwCount} | Total: ${summary.total}`,
   };
 }
 

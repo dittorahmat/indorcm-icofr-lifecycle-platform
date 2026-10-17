@@ -2,12 +2,13 @@ import { Hono } from "hono";
 import type { HonoEnv } from '../app';
 import { ok, notFound } from '../lib/utils';
 import { getDb } from '../db';
-import { 
-  organization, aggregateDeficiencies, controls, rcms, deficiencies, 
+import {
+  organization, controls, rcms, deficiencies,
   testRecords, bpmExports
 } from '../db/schema';
 import { eq, sql } from 'drizzle-orm';
 import type { Settings } from "@shared/types";
+import { effectivenessScore, summarizeDeficiencies } from '@shared/deficiency-summary';
 
 const reporting = new Hono<HonoEnv>();
 
@@ -23,30 +24,17 @@ reporting.get('/reports/summary', async (c) => {
     db.select().from(deficiencies).where(eq(deficiencies.organizationId, orgId))
   ]);
 
-  const deficienciesBySeverity = [
-    { name: 'Control Deficiency', count: allDeficiencyRecords.filter((d: any) => d.severity === 'Control Deficiency').length },    
-    { name: 'Significant Deficiency', count: allDeficiencyRecords.filter((d: any) => d.severity === 'Significant Deficiency').length },
-    { name: 'Material Weakness', count: allDeficiencyRecords.filter((d: any) => d.severity === 'Material Weakness').length },      
-  ];
-
-  const deficienciesByStatus = [
-    { name: 'Open', count: allDeficiencyRecords.filter((d: any) => d.status === 'Open').length },
-    { name: 'Remediated', count: allDeficiencyRecords.filter((d: any) => d.status === 'Remediated').length },
-    { name: 'Verified', count: allDeficiencyRecords.filter((d: any) => d.status === 'Verified').length },
-    { name: 'Closed', count: allDeficiencyRecords.filter((d: any) => d.status === 'Closed').length },
-  ];
-
-  const openCount = allDeficiencyRecords.filter((d: any) => d.status === 'Open').length;
-  const hasMaterialWeakness = allDeficiencyRecords.some((d: any) => d.severity === 'Material Weakness');
-  const effectiveness = hasMaterialWeakness ? 0 : 100; // Simplified logic for summary
+  // Single owner of the tally + effectiveness conclusion lives in
+  // `@shared/deficiency-summary` (the Lampiran 11 client helper reads it too).
+  const summary = summarizeDeficiencies(allDeficiencyRecords);
 
   return ok(c, {
     totalControls: Number(controlCount[0]?.count || 0),
     totalRcm: Number(rcmCount[0]?.count || 0),
-    openDeficiencies: openCount,
-    effectiveness,
-    deficienciesBySeverity,
-    deficienciesByStatus,
+    openDeficiencies: summary.openCount,
+    effectiveness: effectivenessScore(summary),
+    deficienciesBySeverity: summary.bySeverity,
+    deficienciesByStatus: summary.byStatus,
     allDeficiencies: allDeficiencyRecords
   });
 });
