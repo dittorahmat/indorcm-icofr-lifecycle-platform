@@ -24,6 +24,7 @@ import { VerificationDesignPage } from '@/pages/rcm/VerificationDesignPage';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { Control, User, TransactionDetail, BPMProcess } from '@shared/types';
+import { filterWorksheetControls } from '@shared/worksheet-control-scope';
 import { useTranslation } from 'react-i18next';
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { WorkflowPanel } from '../workflow/WorkflowPanel';
@@ -109,33 +110,7 @@ export function BPMModal({
     queryKey: ['bpm-controls', noGL, bpmProcessId, subProcessName, year],
     queryFn: async () => {
       const all = await api<{ items: Control[] }>(`/api/controls?year=${year}`);
-      return all.items.filter(c => {
-        if (c.year && year && c.year.toString() !== year.toString()) {
-          return false;
-        }
-
-        const cSub = (c.subProcess || "").toLowerCase().trim();
-        const targetSub = (subProcessName || "").toLowerCase().trim();
-
-        // Match 1: Hard ID link (Primary & Strict)
-        if (bpmProcessId && c.bpmProcessId === bpmProcessId) {
-          // If GL is specified, verify control belongs to this GL or has no GL restriction
-          if (noGL && c.fsliCodes && c.fsliCodes.length > 0) {
-            return c.fsliCodes.includes(noGL);
-          }
-          return true;
-        }
-        
-        // Match 2: Name link (Secondary Fallback - MUST also match GL)
-        if (targetSub && cSub === targetSub) {
-          if (noGL && c.fsliCodes && c.fsliCodes.length > 0) {
-            return c.fsliCodes.includes(noGL);
-          }
-          return !noGL;
-        }
-        
-        return false;
-      });
+      return filterWorksheetControls(all.items, { bpmProcessId, subProcessName, noGL, year });
     },
     enabled: isOpen
   });

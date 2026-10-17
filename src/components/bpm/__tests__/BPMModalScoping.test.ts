@@ -1,132 +1,164 @@
-import { describe, it, expect } from 'vitest';
-import { Control } from '@shared/types';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import React from 'react';
+import { render, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { strictT } from '@/test/mock-i18n';
+import { UnsavedChangesProvider } from '@/context/UnsavedChangesContext';
+import { useFiscalYearStore } from '@/store/useFiscalYearStore';
+import type { WorksheetControlLike } from '@shared/worksheet-control-scope';
 
-describe('BPM Modal Controls Strict Scoping Logic', () => {
-  const sampleControls: Control[] = [
-    {
-      id: 'ctrl-1',
-      code: 'CTL-REV-01',
-      name: 'Verifikasi Penerimaan Penjualan',
-      organizationId: 'org-1',
-      bpmProcessId: 'proc-revenue',
-      subProcess: 'Penerimaan Pendapatan',
-      fsliCodes: ['4101'],
-      year: 2026,
-    } as any,
-    {
-      id: 'ctrl-2',
-      code: 'CTL-REC-01',
-      name: 'Rekonsiliasi Bank Harian',
-      organizationId: 'org-1',
-      bpmProcessId: 'proc-treasury',
-      subProcess: 'Rekonsiliasi Kas & Bank',
-      fsliCodes: ['1101'],
-      year: 2026,
-    } as any,
-    {
-      id: 'ctrl-3',
-      code: 'CTL-PETTY-01',
-      name: 'Pencatatan Kas Kecil',
-      organizationId: 'org-1',
-      bpmProcessId: 'proc-petty-cash',
-      subProcess: 'Pengelolaan Kas Kecil',
-      fsliCodes: ['1101'],
-      year: 2026,
-    } as any,
-    {
-      id: 'ctrl-orphan-diff-year',
-      code: 'CTL-OLD-01',
-      name: 'Kontrol Kas Tahun 2025',
-      organizationId: 'org-1',
-      bpmProcessId: 'proc-treasury',
-      subProcess: 'Rekonsiliasi Kas & Bank',
-      fsliCodes: ['1101'],
-      year: 2025,
-    } as any,
-  ];
+/**
+ * Adapter-level wiring for the worksheet control scope.
+ *
+ * The scope predicate itself is tested at its interface in
+ * `shared/worksheet-control-scope.test.ts`; this file asserts only that each
+ * view adapter (Execution Hub `BPMModal`, CSA workspace `CSAModal`) hands the
+ * CSA tab the controls the shared seam produces — with the year guard, the
+ * FSLI restriction, and the documented orphan fallback difference.
+ *
+ * It replaces the previous test that re-declared the filter and asserted
+ * against its own copy (tautological: it could never disagree with production).
+ */
 
-  function filterControls(
-    controls: Control[],
-    params: {
-      noGL: string;
-      bpmProcessId?: string;
-      subProcessName?: string;
-      year: string;
-    }
-  ) {
-    return controls.filter(c => {
-      // 1. Year check
-      if (c.year && params.year && c.year.toString() !== params.year.toString()) {
-        return false;
-      }
+interface Fixture extends WorksheetControlLike {
+  id: string;
+}
 
-      const cSub = (c.subProcess || '').toLowerCase().trim();
-      const targetSub = (params.subProcessName || '').toLowerCase().trim();
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({ t: strictT }),
+}));
 
-      // Match 1: Hard ID link (Primary & Strict)
-      if (params.bpmProcessId && c.bpmProcessId === params.bpmProcessId) {
-        if (params.noGL && c.fsliCodes && c.fsliCodes.length > 0) {
-          return c.fsliCodes.includes(params.noGL);
-        }
-        return true;
-      }
+vi.mock('@/lib/api-client', () => ({ api: vi.fn() }));
 
-      // Match 2: Name link (Secondary Fallback - MUST also match GL)
-      if (targetSub && cSub === targetSub) {
-        if (params.noGL && c.fsliCodes && c.fsliCodes.length > 0) {
-          return c.fsliCodes.includes(params.noGL);
-        }
-        return !params.noGL;
-      }
+vi.mock('sonner', () => ({
+  toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn(), loading: vi.fn() },
+}));
 
-      return false;
-    });
-  }
+/** Captures the `controls` prop each adapter passes to the CSA workspace. */
+const captured = vi.hoisted(() => ({ controls: [] as Fixture[] }));
 
-  it('strictly isolates sub-processes sharing the same GL (no cross-bleeding between treasury & petty cash)', () => {
-    // Open Modal for Treasury under GL 1101
-    const treasuryResults = filterControls(sampleControls, {
+vi.mock('../CSATabContent', () => ({
+  CSATabContent: (props: { controls?: Fixture[] }) => {
+    captured.controls = props.controls ?? [];
+    return null;
+  },
+}));
+
+// Heavy children are irrelevant here and would drag react-flow / react-table
+// into the harness; mocking them keeps the assertion on the adapter wiring.
+vi.mock('../BPMWorksheet', () => ({ BPMWorksheet: () => null }));
+vi.mock('../Lampiran6LogView', () => ({ Lampiran6LogView: () => null }));
+vi.mock('../TransactionSamplingTab', () => ({ TransactionSamplingTab: () => null }));
+vi.mock('../../workflow/WorkflowPanel', () => ({ WorkflowPanel: () => null }));
+vi.mock('@/pages/rcm/RCMELCPage', () => ({ RCMELCPage: () => null }));
+vi.mock('@/pages/rcm/RCMTLCPage', () => ({ RCMTLCPage: () => null }));
+vi.mock('@/pages/rcm/RCMITGCPage', () => ({ RCMITGCPage: () => null }));
+vi.mock('@/pages/rcm/VerificationDesignPage', () => ({ VerificationDesignPage: () => null }));
+
+import { BPMModal } from '../BPMModal';
+import { CSAModal } from '../CSAModal';
+import { api } from '@/lib/api-client';
+
+const REVENUE_SUB = 'Penerimaan Pendapatan';
+const CASH_SUB = 'Rekonsiliasi Kas & Bank';
+
+const controlsFixture: Fixture[] = [
+  { id: 'revenue-2026', year: 2026, bpmProcessId: 'proc-revenue', subProcess: REVENUE_SUB, fsliCodes: ['4101'] },
+  { id: 'treasury-2026', year: 2026, bpmProcessId: 'proc-treasury', subProcess: CASH_SUB, fsliCodes: ['1101'] },
+  { id: 'treasury-2025', year: 2025, bpmProcessId: 'proc-treasury', subProcess: CASH_SUB, fsliCodes: ['1101'] },
+  { id: 'treasury-other-gl', year: 2026, bpmProcessId: 'proc-treasury', subProcess: CASH_SUB, fsliCodes: ['9999'] },
+  { id: 'petty-cash-2026', year: 2026, bpmProcessId: 'proc-petty-cash', subProcess: 'Pengelolaan Kas Kecil', fsliCodes: ['1101'] },
+  { id: 'orphan-cash', year: 2026, fsliCodes: ['1101'] },
+];
+
+function renderWithProviders(element: React.ReactElement) {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+  return render(
+    React.createElement(
+      QueryClientProvider,
+      { client },
+      React.createElement(UnsavedChangesProvider, null, element),
+    ),
+  );
+}
+
+beforeEach(() => {
+  captured.controls = [];
+  vi.clearAllMocks();
+  useFiscalYearStore.setState({ workingYear: '2026' });
+  vi.mocked(api).mockImplementation((path: string) => {
+    if (path.startsWith('/api/controls')) return Promise.resolve({ items: controlsFixture });
+    if (path.startsWith('/api/user/me')) return Promise.resolve({ id: 'user-1', role: 'Line 2' });
+    return Promise.resolve({ items: [] });
+  });
+});
+
+describe('Execution Hub (BPMModal) control scope', () => {
+  it('hands the CSA tab only this process, GL and year, and reads the year-scoped endpoint', async () => {
+    renderWithProviders(React.createElement(BPMModal, {
+      isOpen: true,
+      onOpenChange: () => {},
       noGL: '1101',
+      glDesc: 'Kas dan Setara Kas',
+      fsliName: 'Kas',
       bpmProcessId: 'proc-treasury',
-      subProcessName: 'Rekonsiliasi Kas & Bank',
+      subProcessName: CASH_SUB,
       year: '2026',
-    });
+      initialTab: 'csa',
+    }));
 
-    expect(treasuryResults).toHaveLength(1);
-    expect(treasuryResults[0].id).toBe('ctrl-2');
-
-    // Open Modal for Petty Cash under GL 1101
-    const pettyResults = filterControls(sampleControls, {
-      noGL: '1101',
-      bpmProcessId: 'proc-petty-cash',
-      subProcessName: 'Pengelolaan Kas Kecil',
-      year: '2026',
-    });
-
-    expect(pettyResults).toHaveLength(1);
-    expect(pettyResults[0].id).toBe('ctrl-3');
+    await waitFor(() => expect(captured.controls.map((c) => c.id)).toEqual(['treasury-2026']));
+    expect(vi.mocked(api).mock.calls.some(([path]) => path === '/api/controls?year=2026')).toBe(true);
   });
 
-  it('rejects controls from different GL even if bpmProcessId matches', () => {
-    const wrongGlResults = filterControls(sampleControls, {
-      noGL: '9999', // Different GL
-      bpmProcessId: 'proc-treasury',
-      subProcessName: 'Rekonsiliasi Kas & Bank',
+  it('does not apply the CSA orphan fallback', async () => {
+    renderWithProviders(React.createElement(BPMModal, {
+      isOpen: true,
+      onOpenChange: () => {},
+      noGL: '1101',
+      glDesc: 'Kas dan Setara Kas',
+      fsliName: 'Kas',
+      bpmProcessId: undefined,
+      subProcessName: CASH_SUB,
       year: '2026',
-    });
+      initialTab: 'csa',
+    }));
 
-    expect(wrongGlResults).toHaveLength(0);
+    await waitFor(() => expect(captured.controls.map((c) => c.id)).toEqual(['treasury-2026']));
+  });
+});
+
+describe('CSA workspace (CSAModal) control scope', () => {
+  it('applies the year guard to the CSA scope — cross-year regression', async () => {
+    renderWithProviders(React.createElement(CSAModal, {
+      isOpen: true,
+      onOpenChange: () => {},
+      noGL: '1101',
+      subProcessName: CASH_SUB,
+      bpmProcessId: 'proc-treasury',
+    }));
+
+    await waitFor(() => expect(captured.controls.length).toBeGreaterThan(0));
+
+    const ids = captured.controls.map((c) => c.id);
+    // The pre-seam CSAModal filter had no year guard: `treasury-2025` and
+    // `treasury-other-gl` reached the assessment.
+    expect(ids).toEqual(['treasury-2026', 'orphan-cash']);
+    expect(ids).not.toContain('treasury-2025');
+    expect(ids).not.toContain('treasury-other-gl');
   });
 
-  it('rejects controls from past fiscal years', () => {
-    const year2026Results = filterControls(sampleControls, {
+  it('reads the fiscal-year-scoped controls endpoint', async () => {
+    renderWithProviders(React.createElement(CSAModal, {
+      isOpen: true,
+      onOpenChange: () => {},
       noGL: '1101',
+      subProcessName: CASH_SUB,
       bpmProcessId: 'proc-treasury',
-      subProcessName: 'Rekonsiliasi Kas & Bank',
-      year: '2026',
-    });
+    }));
 
-    const has2025Control = year2026Results.some(c => c.id === 'ctrl-orphan-diff-year');
-    expect(has2025Control).toBe(false);
+    await waitFor(() =>
+      expect(vi.mocked(api).mock.calls.some(([path]) => path === '/api/controls?year=2026')).toBe(true),
+    );
   });
 });
