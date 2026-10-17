@@ -33,7 +33,9 @@
     "hideFullTable": "Sembunyikan Tabel Penuh",
     "keyControl": "Kontrol Utama",
     "assertionsCount": "{{count}} asersi",
-    "worksheetSummary": "Ringkasan Worksheet"
+    "worksheetSummary": "Ringkasan Worksheet",
+    "loading": "Memuat...",
+    "empty": "Tidak ada data."
   },
   "searchFsli": "Cari FSLI...",
   "searchGl": "Cari Akun GL...",
@@ -161,6 +163,9 @@
     "bpmCodeLabel": "Kode BPM",
     "bpmCodePlaceholder": "BPM-001",
     "saveMetadata": "Simpan Metadata",
+    "standardLabel": "Master Prosedur Pengujian (Standard)",
+    "procedurePlaceholder": "Tuliskan langkah-langkah pengujian standar untuk proses ini...",
+    "procedureFootnote": "Prosedur dan Kode ini akan menjadi acuan identitas proses dalam pengerjaan CSA.",
     "loading": "Memuat lembar kerja kontrol...",
     "empty": "Data tidak ditemukan. Klik \"Tambah Baris Baru\" di atas untuk memulai pemetaan.",
     "columns": {

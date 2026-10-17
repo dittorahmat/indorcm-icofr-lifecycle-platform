@@ -8,10 +8,11 @@ import {
 } from "@/components/ui/dialog";
 import { ShieldCheck, Workflow as WorkflowIcon } from 'lucide-react';
 import { CSATabContent } from './CSATabContent';
-import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { Control } from '@shared/types';
+import { filterWorksheetControls } from '@shared/worksheet-control-scope';
+import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 
 interface CSAModalProps {
   isOpen: boolean;
@@ -28,26 +29,21 @@ export function CSAModal({
   subProcessName,
   bpmProcessId
 }: CSAModalProps) {
-  const { t } = useTranslation(['bpm', 'common']);
-  // Fetch controls for this process/GL
+  const workingYear = useFiscalYearStore((state) => state.workingYear);
+  // Fetch controls for this process/GL via the shared worksheet scope. The CSA
+  // workspace additionally admits orphan controls (no process metadata) that are
+  // tagged to this GL — that fallback is the only intended difference from the
+  // BPM worksheet/Execution Hub scope.
   const { data: controls } = useQuery({
-    queryKey: ['bpm-controls', noGL, bpmProcessId, subProcessName],
+    queryKey: ['bpm-controls', noGL, bpmProcessId, subProcessName, workingYear],
     queryFn: async () => {
-      const all = await api<{ items: Control[] }>('/api/controls');
-      return all.items.filter(c => {
-        const cSub = (c.subProcess || "").toLowerCase().trim();
-        const targetSub = (subProcessName || "").toLowerCase().trim();
-
-        // Match 1: Hard ID link (Primary)
-        if (bpmProcessId && c.bpmProcessId === bpmProcessId) return true;
-        
-        // Match 2: Name link (Reliable Fallback)
-        if (targetSub && cSub === targetSub) return true;
-        
-        // Match 3: Orphan link (Fallback for data missing process metadata but linked to GL)
-        if (!c.bpmProcessId && !cSub && c.fsliCodes?.includes(noGL)) return true;
-        
-        return false;
+      const all = await api<{ items: Control[] }>(`/api/controls?year=${workingYear}`);
+      return filterWorksheetControls(all.items, {
+        bpmProcessId,
+        subProcessName,
+        noGL,
+        year: workingYear,
+        allowOrphanFallback: true,
       });
     },
     enabled: isOpen

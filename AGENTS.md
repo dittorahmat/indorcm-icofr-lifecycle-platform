@@ -133,3 +133,7 @@ Single-context: root `GLOSSARY.md` + `docs/adr/`. Read both before exploring an 
 ### CSA hub flow
 
 Belum-Dinilai is derive-from-existence across worklist → row → view-transition. Read `docs/agents/csa-hub.md` before touching `shared/csa-worklist.ts`, `useCsaWorklist`, `CSARecordRow/Card`, or `useCSA`.
+
+### Architecture rounds
+
+Read `docs/agents/architecture.md` before any architecture/deepening work: it holds the round process, the hot-spot reports (`arch-hotspots-client.md`, `arch-hotspots-worker.md`), the landed-round log, and the open environment backlog. Do not re-discover hot-spots from scratch.

@@ -5,30 +5,14 @@ import {
   flexRender,
   ColumnDef,
 } from '@tanstack/react-table';
-import { 
-  Control, ControlAssertion, InformationProcessingObjective, 
-  ControlType, ControlNature, Application, User, BPMProcess
-} from '@shared/types';
-import { 
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
+import { Control, Application, User, BPMProcess } from '@shared/types';
+import { filterWorksheetControls } from '@shared/worksheet-control-scope';
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
-import { 
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
-} from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
-import { 
-  ChevronDown, ChevronUp, Save, 
-  Network, Plus, Trash2, Loader2, PlusCircle, CheckCircle2, XCircle,
-  Database, Info, FileSpreadsheet, Workflow as WorkflowIcon, Shield, Check
-} from 'lucide-react';
-import { 
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Loader2, PlusCircle, Info, FileSpreadsheet, Workflow as WorkflowIcon, Shield } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
@@ -42,18 +26,17 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from '@/components/ui/label';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { BPMEditor } from '../rcm/BPMEditor';
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { useWorksheetControlUpdate } from './use-worksheet-control-update';
-import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 import { useUnsavedChangesContext } from '@/context/UnsavedChangesContext';
 import { useConfirm } from '@/hooks/use-confirm';
 import { createWorksheetColumns } from './BPMWorksheetColumns';
 import { MobileDesktopBanner } from '@/components/layout/MobileDesktopBanner';
+import { BPMWorksheetMobileCards } from './BPMWorksheetMobileCards';
+import { BPMWorksheetProcedurePanel } from './BPMWorksheetProcedurePanel';
 
 interface BPMWorksheetProps {
   bpmProcessId: string;
@@ -109,33 +92,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
     queryKey: ['bpm-controls', noGL, bpmProcessId, subProcessName, workingYear],
     queryFn: async () => {
       const all = await api<{ items: Control[] }>(`/api/controls?year=${workingYear}`);
-      return all.items.filter(c => {
-        // Year check: if control has year specified, it must match workingYear
-        if (c.year && workingYear && c.year.toString() !== workingYear.toString()) {
-          return false;
-        }
-
-        const cSub = (c.subProcess || "").toLowerCase().trim();
-        const targetSub = (subProcessName || "").toLowerCase().trim();
-
-        // Match 1: Hard ID link (Primary & Strict)
-        if (bpmProcessId && c.bpmProcessId === bpmProcessId) {
-          if (noGL && c.fsliCodes && c.fsliCodes.length > 0) {
-            return c.fsliCodes.includes(noGL);
-          }
-          return true;
-        }
-        
-        // Match 2: Name link (Secondary Fallback - MUST also match GL)
-        if (targetSub && cSub === targetSub) {
-          if (noGL && c.fsliCodes && c.fsliCodes.length > 0) {
-            return c.fsliCodes.includes(noGL);
-          }
-          return !noGL;
-        }
-        
-        return false;
-      });
+      return filterWorksheetControls(all.items, { bpmProcessId, subProcessName, noGL, year: workingYear });
     }
   });
 
@@ -335,106 +292,24 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
         </div>
       </div>
 
-      <Collapsible open={isProcedureOpen} onOpenChange={setIsProcedureOpen} className="bg-slate-50 border-b">
-         <CollapsibleContent>
-             <div className="p-4 space-y-3 max-w-4xl mx-auto">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between flex-wrap gap-2">
-                   <div className="flex flex-wrap items-center gap-x-4 gap-y-2 min-w-0">
-                     <Label className="text-xs font-black uppercase text-slate-500 tracking-widest whitespace-nowrap">BPM Code:</Label>
-                     <Input 
-                       className="h-8 text-xs font-mono font-bold uppercase w-32 bg-white"
-                       placeholder="BPM-FIN-01"
-                       value={bpmCode}
-                       onChange={e => setBpmCode(e.target.value)}
-                     />
-                     <div className="h-4 w-[1px] bg-slate-300 mx-2" />
-                     <Label className="text-xs font-black uppercase text-slate-500 tracking-widest">Master Prosedur Pengujian (Standard)</Label>
-                  </div>
-                  <Button 
-                    size="sm" 
-                    className="h-7 text-xs gap-1.5 bg-mancity-pattern hover:opacity-90 text-primary-foreground" 
-                    onClick={handleSaveMetadata}
-                    disabled={updateProcessMutation.isPending}
-                  >
-                    {updateProcessMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
-                    Save Metadata
-                  </Button>
-               </div>
-               <Textarea 
-                 className="min-h-[120px] text-xs font-medium shadow-inner bg-white"
-                 placeholder="Tuliskan langkah-langkah pengujian standar untuk proses ini..."
-                 value={standardProcedure}
-                 onChange={e => setStandardProcedure(e.target.value)}
-               />
-               <p className="text-xs text-slate-400">Prosedur dan Kode ini akan menjadi acuan identitas proses dalam pengerjaan CSA.</p>
-            </div>
-         </CollapsibleContent>
-      </Collapsible>
+      <BPMWorksheetProcedurePanel
+        isOpen={isProcedureOpen}
+        onOpenChange={setIsProcedureOpen}
+        bpmCode={bpmCode}
+        onBpmCodeChange={setBpmCode}
+        standardProcedure={standardProcedure}
+        onStandardProcedureChange={setStandardProcedure}
+        isSaving={updateProcessMutation.isPending}
+        onSave={handleSaveMetadata}
+      />
 
       {/* MOBILE VIEW: Control summary cards */}
-      <div className="md:hidden px-3 pt-3 space-y-3 max-h-[45vh] overflow-y-auto shrink-0" data-testid="bpm-worksheet-mobile-cards">
-        <p className="text-xs font-black uppercase tracking-wider text-slate-500">
-          {t('bpm:mobile.worksheetSummary', { defaultValue: 'Ringkasan Worksheet' })}
-        </p>
-        {isLoading ? (
-          <div className="flex flex-col items-center gap-2 py-8">
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
-            <p className="text-xs text-slate-400 font-medium">Loading...</p>
-          </div>
-        ) : table.getRowModel().rows.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 py-8">
-            <Info className="h-6 w-6 text-slate-300" />
-            <p className="text-xs text-slate-400 font-medium">No records found.</p>
-          </div>
-        ) : (
-          <>
-            {table.getRowModel().rows.map(row => {
-              const c = row.original as any;
-              const assertions = Array.isArray(c.assertions) ? c.assertions : [];
-              return (
-                <div key={row.id} className="rounded-lg border border-slate-200 bg-white p-4 space-y-2 shadow-sm">
-                  <div className="flex items-start justify-between gap-2 flex-wrap">
-                    <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-900 border border-slate-200">
-                      {c.code || '-'}
-                    </span>
-                    {c.isKeyControl && (
-                      <Badge className="bg-indigo-600 text-white font-semibold text-xs shrink-0">
-                        {t('bpm:mobile.keyControl', { defaultValue: 'Kontrol Utama' })}
-                      </Badge>
-                    )}
-                  </div>
-                  <p className="text-xs font-bold text-slate-800 leading-snug line-clamp-2">{c.name || '-'}</p>
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    {c.type && (
-                      <span className="bg-slate-100 px-2 py-0.5 rounded text-xs font-medium text-slate-700">{c.type}</span>
-                    )}
-                    {c.nature && (
-                      <span className="bg-slate-100 px-2 py-0.5 rounded text-xs font-medium text-slate-700">{c.nature}</span>
-                    )}
-                    {assertions.length > 0 && (
-                      <span className="text-xs text-slate-500 font-medium">
-                        {t('bpm:mobile.assertionsCount', { count: assertions.length, defaultValue: `${assertions.length} asersi` })}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setShowFullTable(v => !v)}
-              aria-expanded={showFullTable}
-              className="w-full min-h-[44px] text-xs font-bold gap-2 bg-white"
-            >
-              {showFullTable ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-              {showFullTable
-                ? t('bpm:mobile.hideFullTable', { defaultValue: 'Sembunyikan Tabel Penuh' })
-                : t('bpm:mobile.fullTable', { defaultValue: 'Lihat Tabel Penuh' })}
-            </Button>
-          </>
-        )}
-      </div>
+      <BPMWorksheetMobileCards
+        controls={controls ?? []}
+        isLoading={isLoading}
+        showFullTable={showFullTable}
+        onToggleFullTable={() => setShowFullTable(v => !v)}
+      />
 
       <div className={cn("flex-1 min-h-0 overflow-auto overflow-x-auto max-w-full w-full touch-pan-x overscroll-x-contain table-scroll-hint", !showFullTable && "hidden", "md:block")}>
         {showFullTable && (

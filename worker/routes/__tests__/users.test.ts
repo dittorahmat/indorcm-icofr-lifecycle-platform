@@ -7,16 +7,18 @@ vi.mock('../../db', () => ({
   getDb: vi.fn()
 }));
 
-describe('User Preferences API Routes', () => {
+describe('User API Routes', () => {
   let app: Hono<any>;
   const mockUserId = 'user-123';
 
   beforeEach(() => {
     vi.restoreAllMocks();
     app = new Hono();
-    // Simulate auth middleware setting userId
+    // Simulate auth middleware setting userId + Admin RBAC context
     app.use('*', async (c, next) => {
       c.set('userId', mockUserId);
+      c.set('organizationId', 'org-1');
+      c.set('userRole', 'Admin');
       c.env = { DATABASE_URL: 'postgres://mock' };
       await next();
     });
@@ -136,6 +138,51 @@ describe('User Preferences API Routes', () => {
     const json = await res.json<any>();
     expect(json.success).toBe(true);
     expect(mockUpdate).toHaveBeenCalled();
+  });
+
+  it('POST /api/users rejects an unknown role with 400 and never touches the DB', async () => {
+    vi.mocked(getDb).mockClear();
+    const res = await app.request('/api/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: 'X', email: 'x@bumn.go.id', role: 'Komisaris', level: 'Staff' }),
+    });
+
+    expect(res.status).toBe(400);
+    const json: { success: boolean; error: string } = await res.json();
+    expect(json.success).toBe(false);
+    expect(json.error).toBe('INVALID_USER_ROLE');
+    expect(getDb).not.toHaveBeenCalled();
+  });
+
+  it('POST /api/users rejects an unknown level with 400 and never touches the DB', async () => {
+    vi.mocked(getDb).mockClear();
+    const res = await app.request('/api/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: 'Y', email: 'y@bumn.go.id', role: 'Admin', level: 'Direktur' }),
+    });
+
+    expect(res.status).toBe(400);
+    const json: { success: boolean; error: string } = await res.json();
+    expect(json.success).toBe(false);
+    expect(json.error).toBe('INVALID_USER_LEVEL');
+    expect(getDb).not.toHaveBeenCalled();
+  });
+
+  it('PUT /api/users/:id rejects an unknown role with 400 and never touches the DB', async () => {
+    vi.mocked(getDb).mockClear();
+    const res = await app.request('/api/users/u1', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role: 'Komisaris' }),
+    });
+
+    expect(res.status).toBe(400);
+    const json: { success: boolean; error: string } = await res.json();
+    expect(json.success).toBe(false);
+    expect(json.error).toBe('INVALID_USER_ROLE');
+    expect(getDb).not.toHaveBeenCalled();
   });
 });
 

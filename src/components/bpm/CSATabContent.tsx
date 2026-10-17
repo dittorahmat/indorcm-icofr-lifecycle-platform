@@ -31,36 +31,6 @@ interface CSATabContentProps {
   fieldMode?: boolean;
 }
 
-// Downscale large camera photos before upload (long-edge cap) to keep field
-// uploads usable on slow connections. Falls back to the original file.
-async function maybeCompressImage(file: File): Promise<File> {
-  if (!file.type.startsWith('image/')) return file;
-  try {
-    const bitmap = await createImageBitmap(file);
-    const MAX_EDGE = 1600;
-    const scale = Math.min(1, MAX_EDGE / Math.max(bitmap.width, bitmap.height));
-    if (scale === 1) {
-      bitmap.close();
-      return file;
-    }
-    const canvas = document.createElement('canvas');
-    canvas.width = Math.round(bitmap.width * scale);
-    canvas.height = Math.round(bitmap.height * scale);
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      bitmap.close();
-      return file;
-    }
-    ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-    bitmap.close();
-    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.82));
-    if (!blob) return file;
-    return new File([blob], file.name.replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' });
-  } catch {
-    return file;
-  }
-}
-
 export function CSATabContent({
   noGL,
   controls: propControls = [],
@@ -99,7 +69,7 @@ export function CSATabContent({
     activeCsaId,
     setActiveCsaId
   } = useCSA({ 
-    bpmProcessId: bpmProcessId!, 
+    bpmProcessId: bpmProcessId ?? '', 
     scheduleId, 
     initialSamples, 
     controls: propControls,
@@ -227,15 +197,14 @@ export function CSATabContent({
     setFailedUpload(null);
     uploadMutation.reset();
     // GPS Fase-1: capture location in parallel, never block the upload.
+    // The raw file is handed to useCSA's upload mutation, which compresses it
+    // exactly once through the shared guarded `compressEvidenceImage`.
     const locationPromise = requestFieldLocation();
-    void maybeCompressImage(file).then((finalFile) => {
-      pendingFileRef.current = { ...target, file: finalFile };
-      void locationPromise.then((loc) => {
-        uploadMutation.mutate({
-          ...target,
-          file: finalFile,
-          meta: { lat: loc.lat, lng: loc.lng, accuracyM: loc.accuracyM, capturedAt: loc.capturedAt, gpsStatus: loc.status },
-        });
+    void locationPromise.then((loc) => {
+      uploadMutation.mutate({
+        ...target,
+        file,
+        meta: { lat: loc.lat, lng: loc.lng, accuracyM: loc.accuracyM, capturedAt: loc.capturedAt, gpsStatus: loc.status },
       });
     });
   };

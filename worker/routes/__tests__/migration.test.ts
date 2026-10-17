@@ -18,4 +18,18 @@ describe('migration barrel routes', () => {
     expect(routePaths).toContain('POST /migration/finalize');
     expect(routePaths).toContain('POST /migration/rollover');
   });
+
+  it('registers the two mutating routes as POST and nothing else', () => {
+    // Hono lists a sub-app route twice after `.route('/', subApp)`; dedupe.
+    const migrationRoutes = [...new Set(
+      migration.routes
+        .filter((r) => r.path.startsWith('/migration/'))
+        .map((r) => `${r.method} ${r.path}`),
+    )].sort();
+
+    expect(migrationRoutes).toEqual([
+      'POST /migration/finalize',
+      'POST /migration/rollover',
+    ]);
+  });
 });

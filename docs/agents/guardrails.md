@@ -8,7 +8,7 @@ scripts (no deps) plus route-lock tests. Run them before pushing; CI
 
 | Gate | Command | Rule |
 | --- | --- | --- |
-| LOC | `npm run check:loc -- <files...>` | Touched `src`/`worker` file `>400` non-empty lines fails — except grandfathered files that strictly shrink vs HEAD (bug-fix paydown). `--all` scans the repo (fails on `>600`). Local-only: deeper grandfather judgement stays human. |
+| LOC | `npm run check:loc -- <files...>` | Touched `src`/`worker`/`shared` `.ts`/`.tsx` file `>400` non-empty lines fails — except grandfathered files that strictly shrink vs HEAD (bug-fix paydown). Files outside that scope (locale/data JSON, docs, lockfiles) print `SKIP (out of LOC scope)` and never fail: touched mode applies the same scope as `--all`. `--all` scans the repo (fails on `>600`). Local-only: deeper grandfather judgement stays human. |
 | any | `npm run check:any-delta -- [--base <ref>] <files...>` | More `any`/`as any`/`as never`/`as unknown as X` than base fails. Base defaults to `HEAD`; CI passes `--base origin/<base-ref>`. |
 | i18n | `npm run check:i18n -- [--base <ref>] <files...>` | (a) More hardcoded first-arg `toast.*("…")` literals than base fails. Dynamic args (`err.message`, `t('key')`) never match. (b) Any NEW static `t('key')` missing from the `en` locale bundle fails (delta vs base; pre-existing misses grandfathered). Dynamic keys skipped; missing-in-`id`-but-present-in-`en` allowed (English fallback). Test files excluded. Dev logs missing keys via `missingKey` in `src/i18n/config.ts`. |
 
@@ -18,6 +18,19 @@ scripts (no deps) plus route-lock tests. Run them before pushing; CI
 | --- | --- | --- |
 | Route URLs | `worker/routes/__tests__/<domain>.test.ts` (vitest) | Every barrel asserts its URLs byte-identical. A renamed route fails here instead of 404ing silently on the client. Add URLs to the list when a barrel gains a route; never loosen the list to make it pass. |
 | Frontend→backend | `npm run check:api-contract` | Every frontend `(method, path)` from `api()`/`fetch()` must match a backend Hono route (method-aware: a path served only for GET fails when called with PUT). Triaged gaps live in the script's `ALLOWLIST` — never reason-free. Correlated `cond ? A : B` url/method ternaries pair branch-wise. Skipped by design: the `api()` wrapper itself, `/api/auth/*` (Better Auth), absolute URLs. |
+
+## Route splits keep the barrel and the mount line
+
+A domain route split (`worker/routes/<domain>/` + barrel) preserves URLs only
+if three things stay byte-identical: every URL/method, the barrel's
+`default export` name, and the `worker/app.ts` mount line. `check:api-contract`
+has an EMPTY allowlist — there is no waiver path, so a renamed path fails the
+gate for real instead of 404ing silently on the client.
+
+Trap: Hono lists a `.route('/', subApp)` child's route TWICE in the mounted
+app's `routes` (once for the child, once for the mount). A route-lock test must
+assert with `toContain` / a deduped set, never exact-array equality — observed
+2026-10-17 during the `migration.ts` split.
 
 ## Mutation feedback (warn-first)
 

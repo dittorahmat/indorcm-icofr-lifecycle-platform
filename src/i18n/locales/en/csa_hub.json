@@ -17,7 +17,8 @@
     "excelSummary": "Appendix 7a Excel (Summary)",
     "viewDetail": "View detail",
     "printOptions": "Print options",
-    "deleteAssessment": "Delete assessment"
+    "deleteAssessment": "Delete assessment",
+    "deleteConfirmDesc": "Delete this assessment permanently? Sample data and evidence will also be removed."
   },
   "excel": {
     "no": "No",
@@ -103,7 +104,8 @@
     "submit": "Submit & Sign-off (Manager)",
     "draftSaved": "Draft saved successfully",
     "signOffSuccess": "CSA Sign-off successful",
-    "saveFailed": "Failed to save CSA: {{message}}"
+    "saveFailed": "Failed to save CSA: {{message}}",
+    "deleteFailed": "Failed to delete the CSA assessment: {{message}}"
   },
   "upload": {
     "instruction": "Per SK-5 Chapter IV, attach transaction details (ERP snippet) to support audit sampling.",
@@ -174,6 +176,9 @@
     "needEvidence": "Need Evidence",
     "notStarted": "Not Started",
     "managementRationale": "Management Rationale / Finding Notes",
+    "signOffMissingEvidence": "Every control marked 'Pass' must have evidence attached before sign-off.",
+    "signOffFailedEffective": "Cannot sign off as Effective because at least one control failed.",
+    "signOffAuthFailed": "Sign-off authentication failed",
     "rationalePlaceholder": "Required if status is INEFFECTIVE...",
     "pointVerification": "POINT VERIFICATION",
     "emptyReference": "Empty Reference",

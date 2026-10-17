@@ -1,0 +1,16 @@
+{
+  "users": {
+    "roles": {
+      "cfo": "CFO",
+      "commissioner": "Komisaris",
+      "admin": "Admin",
+      "externalAuditor": "Auditor Eksternal"
+    },
+    "levels": {
+      "staff": "Staf",
+      "manager": "Manajer",
+      "head": "Kepala",
+      "director": "Direktur"
+    }
+  }
+}

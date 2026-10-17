@@ -1,12 +1,80 @@
-import { eq, and, sql } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { 
   bpmDiagrams, rcms, controls, rcmControls, bpmNodeRcms, simulations,
-  glSnapshots, glRows, notifications, auditLogs, user
+  glSnapshots, glRows, notifications, user
 } from '../db/schema';
 import type { DrizzleDb } from '../db';
-import type { MaterialitySimulation, SimulationStatus } from '@shared/types';
+import type { MaterialitySimulation, NewGLRow } from '@shared/types';
 import { AuditService } from './audit-service';
 import { AppError, SIMULATION_NOT_FOUND } from '../lib/utils';
+
+/** Chunk size for GL row inserts (single owner; was duplicated per route). */
+const GL_ROW_BATCH_SIZE = 100;
+
+/**
+ * Parses a client-supplied year (`'2024'` | 2024) into a nullable DB integer.
+ * Single owner of the year normalization the snapshot and TB ingestion share;
+ * a blank / unparseable / zero year stores NULL (legacy snapshot behaviour).
+ */
+export const normalizeYear = (value: string | number | null | undefined): number | null => {
+  const parsed = typeof value === 'number' ? value : parseInt(String(value ?? ''));
+  return parsed ? parsed : null;
+};
+
+export type PeriodRolloverCode = 'ROLLOVER_BAD_YEAR' | 'ROLLOVER_TARGET_DIRTY';
+
+export interface PeriodRolloverInput {
+  sourceYear: string | number | null | undefined;
+  targetYear: string | number | null | undefined;
+  force: boolean;
+  /** True when the target year already holds BPM processes or RCM risks. */
+  targetHasData: boolean;
+}
+
+export type PeriodRolloverPlan =
+  | { ok: true; sourceYear: number; targetYear: number }
+  | { ok: false; code: PeriodRolloverCode; message: string; status: number };
+
+/**
+ * Decides whether a year rollover may run. Pure: the route reads the target
+ * year's existence from the DB and passes it in, so the decision is testable
+ * with no database.
+ */
+export function planPeriodRollover(input: PeriodRolloverInput): PeriodRolloverPlan {
+  const sourceYear = normalizeYear(input.sourceYear);
+  const targetYear = normalizeYear(input.targetYear);
+
+  if (sourceYear === null || targetYear === null || sourceYear === targetYear) {
+    return {
+      ok: false,
+      code: 'ROLLOVER_BAD_YEAR',
+      message: 'Invalid source or target year',
+      status: 400,
+    };
+  }
+
+  if (!input.force && input.targetHasData) {
+    return {
+      ok: false,
+      code: 'ROLLOVER_TARGET_DIRTY',
+      message: 'Data already exists in target year. Use force rollover to override.',
+      status: 409,
+    };
+  }
+
+  return { ok: true, sourceYear, targetYear };
+}
+
+/** GL row payload minus the ids/organization the ingestion service owns. */
+export type GlRowIngest = Omit<NewGLRow, 'id' | 'snapshotId' | 'organizationId'>;
+
+export interface GlSnapshotIngest {
+  filename: string;
+  year?: string | number | null;
+  status: string;
+  isActive: boolean;
+  rows: readonly GlRowIngest[];
+}
 
 export class ScopingService {
   private audit: AuditService;
@@ -22,7 +90,7 @@ export class ScopingService {
     const [existing] = await this.db.select().from(simulations).where(and(eq(simulations.id, id), eq(simulations.organizationId, orgId))).limit(1);
     if (!existing) throw new AppError(SIMULATION_NOT_FOUND, 'Simulation not found', 404);
 
-    const history = (existing.history as any[]) || [];
+    const history = existing.history || [];
     const newHistoryEntry = {
       id: crypto.randomUUID(),
       action: "Submit",
@@ -35,7 +103,7 @@ export class ScopingService {
     await this.db.update(simulations)
       .set({ 
         status: 'Pending CFO', 
-        updatedAt: new Date() as any,
+        updatedAt: new Date(),
         omValue: body.omValue,
         pmValue: body.pmValue,
         significantAccounts: body.significantAccounts,
@@ -89,6 +157,42 @@ export class ScopingService {
     });
 
     return { success: true };
+  }
+
+  /**
+   * Creates a GL snapshot together with its rows in one transaction.
+   * Single owner of the snapshot row shape and the chunked row insert
+   * (used by `POST /gl-snapshots` and the TB half of `POST /migration/finalize`).
+   */
+  async createGlSnapshot(orgId: string, ingest: GlSnapshotIngest): Promise<{ id: string; uploadDate: Date }> {
+    const id = crypto.randomUUID();
+    const uploadDate = new Date();
+
+    await this.db.transaction(async (tx) => {
+      await tx.insert(glSnapshots).values({
+        id,
+        organizationId: orgId,
+        filename: ingest.filename,
+        uploadDate,
+        status: ingest.status,
+        isActive: ingest.isActive,
+        year: normalizeYear(ingest.year),
+        benchmarkFsliNames: null,
+      });
+
+      const rows = ingest.rows.map((row) => ({
+        ...row,
+        id: crypto.randomUUID(),
+        snapshotId: id,
+        organizationId: orgId,
+      }));
+
+      for (let i = 0; i < rows.length; i += GL_ROW_BATCH_SIZE) {
+        await tx.insert(glRows).values(rows.slice(i, i + GL_ROW_BATCH_SIZE));
+      }
+    });
+
+    return { id, uploadDate };
   }
 
   /**
@@ -180,7 +284,7 @@ export class ScopingService {
               timestamp: Date.now(),
               userId,
               description: `Carried forward from year ${prevYear}`
-            }] as any
+            }]
           });
         }
 

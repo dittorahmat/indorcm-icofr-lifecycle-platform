@@ -33,7 +33,9 @@
     "hideFullTable": "Hide Full Table",
     "keyControl": "Key Control",
     "assertionsCount": "{{count}} assertions",
-    "worksheetSummary": "Worksheet Summary"
+    "worksheetSummary": "Worksheet Summary",
+    "loading": "Loading...",
+    "empty": "No records found."
   },
   "searchFsli": "Search FSLI...",
   "searchGl": "Search GL Account...",
@@ -158,6 +160,12 @@
     "title": "Control Activity Matrix (RCM)",
     "description": "Identify risks and control activities at the transaction level.",
     "addRow": "Add Row In Worksheet",
+    "bpmCodeLabel": "BPM Code",
+    "bpmCodePlaceholder": "BPM-FIN-01",
+    "saveMetadata": "Save Metadata",
+    "standardLabel": "Standard Test Procedure (Master)",
+    "procedurePlaceholder": "Enter the standard test steps for this process...",
+    "procedureFootnote": "The procedure and code serve as the process identity reference during CSA work.",
     "loading": "Loading control worksheet...",
     "empty": "No records found for this process. Click \"Add New Row\" above to begin mapping.",
     "columns": {

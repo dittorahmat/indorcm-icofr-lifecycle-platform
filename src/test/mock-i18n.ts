@@ -13,6 +13,7 @@ import csaHubEn from '../i18n/locales/en/csa_hub.json';
 import aiEn from '../i18n/locales/en/ai.json';
 import workflowEn from '../i18n/locales/en/workflow.json';
 import authEn from '../i18n/locales/en/auth.json';
+import adminEn from '../i18n/locales/en/admin.json';
 
 /**
  * Strict i18n mock for tests (test-only, never product code).
@@ -45,6 +46,7 @@ export const BUNDLES: Record<string, unknown> = {
   ai: aiEn,
   workflow: workflowEn,
   auth: authEn,
+  admin: adminEn,
 };
 
 const STATIC_KEY_PATTERN = /^[A-Za-z0-9_:.~-]+$/;

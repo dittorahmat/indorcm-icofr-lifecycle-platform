@@ -55,7 +55,7 @@ import {
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
-import { MaterialitySimulation, BPMProcess, ActionPlan } from "@shared/types";
+import { MaterialitySimulation, BPMProcess, ActionPlan, UserRole } from "@shared/types";
 
 import { authClient } from "@/lib/auth-client";
 import { useFiscalYearStore } from "@/store/useFiscalYearStore";
@@ -77,17 +77,17 @@ function DynamicIcon({ name, className }: { name: string; className?: string }) 
 }
 
 
-function PendingApprovalBadge({ role }: { role: string | null | undefined }) {
+function PendingApprovalBadge({ role }: { role: UserRole | null | undefined }) {
   const { data: simulations } = useQuery({
     queryKey: ['simulations-pending-badge'],
     queryFn: () => api<{ items: MaterialitySimulation[] }>('/api/simulations'),
-    enabled: role === 'CFO' || role === 'Komisaris' || role === 'Admin',
+    enabled: role === 'CFO' || role === 'Commissioner' || role === 'Admin',
     refetchInterval: 30000, // Poll every 30s
   });
 
   const count = simulations?.items.filter(s => {
     if (role === 'CFO') return s.status === 'Pending CFO';
-    if (role === 'Komisaris') return s.status === 'Pending Komut';
+    if (role === 'Commissioner') return s.status === 'Pending Komut';
     if (role === 'Admin') return s.status === 'Pending CFO' || s.status === 'Pending Komut';
     return false;
   }).length || 0;
@@ -124,7 +124,7 @@ export function AppSidebar(): JSX.Element {
   const pathname = location.pathname;
   const { t, i18n } = useTranslation('sidebar');
   const { data: session } = authClient.useSession();
-  const userRole = (session?.user as any)?.role;
+  const userRole: UserRole | undefined = (session?.user as any)?.role;
   const { isPinned, setIsPinned, state, toggleSidebar, setOpen, isMobile, setOpenMobile } = useSidebar();
   const { workingYear } = useFiscalYearStore();
 
@@ -193,7 +193,7 @@ export function AppSidebar(): JSX.Element {
                 <Link to={withYear("/todo")} className="font-semibold text-sm"><ListTodo className="h-4 w-4" /> <span>{t('items.todo')}</span></Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
-            {(userRole === 'Komisaris' || userRole === 'CFO' || userRole === 'Line 2' || userRole === 'Admin') && (
+            {(userRole === 'Commissioner' || userRole === 'CFO' || userRole === 'Line 2' || userRole === 'Admin') && (
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={isActive("/scoping/approval")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
                   <Link to={withYear("/scoping/approval")} className="flex items-center justify-between w-full font-semibold text-sm flex-wrap gap-2">
@@ -328,7 +328,7 @@ export function AppSidebar(): JSX.Element {
             <SidebarMenu className="px-3 gap-1">
               {registeredExtensions.flatMap(ext =>
                 ext.navigation.map((item, idx) => {
-                  if (item.roleRequired && !item.roleRequired.includes(userRole)) {
+                  if (item.roleRequired && !item.roleRequired.includes(userRole ?? '')) {
                     return null;
                   }
                   return (

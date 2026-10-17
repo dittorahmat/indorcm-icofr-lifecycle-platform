@@ -1,0 +1,16 @@
+{
+  "users": {
+    "roles": {
+      "cfo": "CFO",
+      "commissioner": "Commissioner",
+      "admin": "Admin",
+      "externalAuditor": "External Auditor"
+    },
+    "levels": {
+      "staff": "Staff",
+      "manager": "Manager",
+      "head": "Head",
+      "director": "Director"
+    }
+  }
+}

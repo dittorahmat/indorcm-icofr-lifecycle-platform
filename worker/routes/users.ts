@@ -1,6 +1,6 @@
-import { Hono } from "hono";
+import { Hono, type Context } from "hono";
 import type { HonoEnv } from '../app';
-import { ok, bad, notFound } from '../lib/utils';
+import { ok, bad, notFound, AppError } from '../lib/utils';
 import { getDb } from '../db';
 import {
   user, organization, auditLogs, member, departments,
@@ -12,8 +12,13 @@ import { seedDatabase } from '../db/seed';
 import { ScopingService } from '../services/scoping-service';
 import { sendEmail } from '../services/email';
 import { rbac } from '../lib/guard';
+import { isUserLevel, isUserRole } from '@shared/role-options';
 
 const users = new Hono<HonoEnv>();
+
+/** Map a typed `AppError` through `bad()` — this barrel is mounted without `app.onError` in tests. */
+const rejectOption = (c: Context<HonoEnv>, err: AppError) =>
+  bad(c, err.code, err.status, err.message);
 
 // --- User Routes ---
 
@@ -85,17 +90,22 @@ users.get('/users', async (c) => {
 });
 
 users.post('/users', rbac(['Admin']), async (c) => {
-  const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const body = await c.req.json<any>();
-  
+
+  const role = body.role || 'Line 1';
+  if (!isUserRole(role)) return rejectOption(c, new AppError('INVALID_USER_ROLE', `Unknown role: ${String(role)}`, 400));
+  const level = body.level || 'Staff';
+  if (!isUserLevel(level)) return rejectOption(c, new AppError('INVALID_USER_LEVEL', `Unknown level: ${String(level)}`, 400));
+
+  const db = getDb(c.env.DATABASE_URL);
   const id = crypto.randomUUID();
   await db.insert(user).values({
     id,
     name: body.name,
     email: body.email,
     emailVerified: false,
-    level: body.level || 'Staff',
+    level,
     departmentId: body.departmentId,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -105,7 +115,7 @@ users.post('/users', rbac(['Admin']), async (c) => {
     id: crypto.randomUUID(),
     organizationId: orgId,
     userId: id,
-    role: body.role || 'Line 1',
+    role,
     createdAt: new Date(),
   });
 
@@ -113,11 +123,14 @@ users.post('/users', rbac(['Admin']), async (c) => {
 });
 
 users.put('/users/:id', rbac(['Admin']), async (c) => {
-  const db = getDb(c.env.DATABASE_URL);
   const id = c.req.param('id')!;
   const orgId = c.get('organizationId');
   const body = await c.req.json<any>();
-  
+
+  if (body.role !== undefined && !isUserRole(body.role)) return rejectOption(c, new AppError('INVALID_USER_ROLE', `Unknown role: ${String(body.role)}`, 400));
+  if (body.level !== undefined && !isUserLevel(body.level)) return rejectOption(c, new AppError('INVALID_USER_LEVEL', `Unknown level: ${String(body.level)}`, 400));
+
+  const db = getDb(c.env.DATABASE_URL);
   await db.update(user).set({
     name: body.name,
     email: body.email,
@@ -329,60 +342,41 @@ users.post('/settings/test-webhook', rbac(['Admin', 'Line 2']), async (c) => {
     link: '/notifications',
   };
 
+  const webhookPayloads: Record<typeof body.provider, unknown> = {
+    slack: {
+      text: `[SUCCESS] ${testPayload.message}`,
+      blocks: [
+        { type: 'header', text: { type: 'plain_text', text: '✅ IndoGRC Pro - Webhook Test Connection' } },
+        { type: 'section', text: { type: 'mrkdwn', text: testPayload.message } },
+      ],
+    },
+    msTeams: {
+      '@type': 'MessageCard',
+      '@context': 'https://schema.org/extensions',
+      summary: testPayload.title,
+      themeColor: '10B981',
+      title: '✅ IndoGRC Pro - Webhook Test Connection',
+      text: testPayload.message,
+      potentialAction: [
+        { '@type': 'OpenURI', name: 'Buka di IndoGRC Pro', targets: [{ os: 'default', uri: `${appUrl}${testPayload.link}` }] },
+      ],
+    },
+    generic: {
+      event: 'icorf.webhook.test',
+      timestamp: new Date().toISOString(),
+      type: 'success',
+      title: testPayload.title,
+      message: testPayload.message,
+      link: `${appUrl}${testPayload.link}`,
+    },
+  };
+
   try {
-    let response: Response;
-    if (body.provider === 'slack') {
-      response = await fetch(body.webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text: `[SUCCESS] ${testPayload.message}`,
-          blocks: [
-            {
-              type: 'header',
-              text: { type: 'plain_text', text: '✅ IndoGRC Pro - Webhook Test Connection' }
-            },
-            {
-              type: 'section',
-              text: { type: 'mrkdwn', text: testPayload.message }
-            }
-          ]
-        })
-      });
-    } else if (body.provider === 'msTeams') {
-      response = await fetch(body.webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          '@type': 'MessageCard',
-          '@context': 'https://schema.org/extensions',
-          summary: testPayload.title,
-          themeColor: '10B981',
-          title: '✅ IndoGRC Pro - Webhook Test Connection',
-          text: testPayload.message,
-          potentialAction: [
-            {
-              '@type': 'OpenURI',
-              name: 'Buka di IndoGRC Pro',
-              targets: [{ os: 'default', uri: `${appUrl}${testPayload.link}` }]
-            }
-          ]
-        })
-      });
-    } else {
-      response = await fetch(body.webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          event: 'icorf.webhook.test',
-          timestamp: new Date().toISOString(),
-          type: 'success',
-          title: testPayload.title,
-          message: testPayload.message,
-          link: `${appUrl}${testPayload.link}`
-        })
-      });
-    }
+    const response = await fetch(body.webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(webhookPayloads[body.provider]),
+    });
 
     if (!response.ok) {
       return bad(c, `Webhook provider returned HTTP ${response.status}`);

@@ -17,7 +17,8 @@
     "excelSummary": "Excel Appendix 7a (Ringkas)",
     "viewDetail": "Lihat detail",
     "printOptions": "Opsi cetak",
-    "deleteAssessment": "Hapus assessment"
+    "deleteAssessment": "Hapus assessment",
+    "deleteConfirmDesc": "Hapus asesmen ini secara permanen? Data sampel dan bukti juga akan terhapus."
   },
   "excel": {
     "no": "No",
@@ -103,7 +104,8 @@
     "submit": "Submit & Sign-off (Manager)",
     "draftSaved": "Draft berhasil disimpan",
     "signOffSuccess": "CSA Sign-off berhasil",
-    "saveFailed": "Gagal menyimpan CSA: {{message}}"
+    "saveFailed": "Gagal menyimpan CSA: {{message}}",
+    "deleteFailed": "Gagal menghapus asesmen CSA: {{message}}"
   },
   "upload": {
     "instruction": "Sesuai SK-5 Bab IV, lampirkan detail transaksi (ERP snippet) untuk mendukung sampling audit.",
@@ -174,6 +176,9 @@
     "needEvidence": "Butuh Evidence",
     "notStarted": "Belum Dimulai",
     "managementRationale": "Management Rationale / Catatan Temuan",
+    "signOffMissingEvidence": "Setiap kontrol yang 'Pass' wajib melampirkan bukti (evidence) sebelum sign-off.",
+    "signOffFailedEffective": "Tidak dapat sign-off sebagai Effective karena terdapat kontrol yang gagal.",
+    "signOffAuthFailed": "Autentikasi sign-off gagal",
     "rationalePlaceholder": "Wajib diisi jika status INEFFECTIVE...",
     "pointVerification": "POIN VERIFIKASI",
     "emptyReference": "Referensi Kosong",
