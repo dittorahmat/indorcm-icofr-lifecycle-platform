@@ -7,11 +7,16 @@
 // limit passes when this change strictly shrinks it vs HEAD (bug-fix paydown).
 // Growing, flat, crossing, or new-file breaches still fail.
 // Exemptions mirror AGENTS.md/GEMINI.md: data-blobs, shadcn vendor, tests, drizzle SQL, generated.
+// Touched-file mode applies the same scope as the full scan (`src`/`worker`/
+// `shared` `.ts`/`.tsx`): a locale bundle or any other non-source path passed
+// by a caller is outside the LOC contract and must not fail it.
 import { readFileSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 
 const SOFT = 400;
 const HARD = 600;
+
+const IN_SCOPE = /^(src|worker|shared)\/.*\.tsx?$/;
 
 const EXEMPT = [
   /mock-data\.ts$/,
@@ -72,11 +77,17 @@ function smellCounts(path) {
   }
 }
 
-const files = filtered.length > 0 ? filtered : listAll();
 const touchedMode = filtered.length > 0;
+const inScope = (f) => IN_SCOPE.test(f.replace(/\\/g, '/'));
+const files = touchedMode ? filtered.filter(inScope) : listAll();
+const outOfScope = touchedMode ? filtered.filter((f) => !inScope(f)) : [];
 
 let errors = 0;
 let warnings = 0;
+
+for (const f of outOfScope) {
+  console.log(`SKIP  ${f} (out of LOC scope: src/worker/shared .ts/.tsx only)`);
+}
 
 for (const f of files) {
   if (isExempt(f)) continue;

@@ -41,6 +41,36 @@ consuming side asserting identical output on aliased input.
 Precedents: `normalizeSuggestContext`, `suggestNormalizedString`,
 `dedupeMatrixControls`.
 
+## View scope predicates are single-sourced like normalizers
+
+When two views need different rows from the same collection, the difference is
+an explicit, documented option on the ONE predicate — never a forked copy. The
+fork drifts silently the moment one side gains a guard the other lacks.
+
+Why: the worksheet control scope existed three times (`BPMWorksheet`,
+`BPMModal`, `CSAModal`); `CSAModal` had lost the fiscal-year guard and the FSLI
+restriction, so wrong-year controls reached CSA while every gate stayed green.
+
+Check: for a scope filter in the diff, point at the single predicate module and
+at the explicit option that encodes the intended view difference. Precedent:
+`filterWorksheetControls` (`shared/worksheet-control-scope.ts`,
+`allowOrphanFallback`).
+
+## Data-carried i18n keys ride on a literal union and are asserted in the bundle
+
+A key held as data (`{ labelKey }` option lists, config arrays) is invisible to
+`check:i18n`, and `strictT(key, { defaultValue })` short-circuits validation —
+so a key naming a namespace that does not exist renders its fallback forever,
+in every language.
+
+Why: `shared/role-options.ts` referenced `admin:users.roles.*` before any
+`admin` bundle existed, and the guard test could never go red because it passed
+a `defaultValue`.
+
+Check: the key type is a literal union (a typo is a `tsc` error) and one test
+calls `validateI18nKey` on every data-carried key WITHOUT a `defaultValue`.
+Precedent: `UserLabelKey`, `user-options.test.ts`.
+
 ## Twin view modules share one orchestration seam
 When desktop table-row and mobile card render the same record (dual-render
 `hidden md:block` + `block md:hidden`), neither holds fetch, dedupe,
@@ -84,6 +114,25 @@ Enforcement is split: `local/mutation-requires-onerror` (warn-first in
 pattern mechanically, and the reviewer requires `onError` on every touched
 call site. Legacy sites burn down boy-scout on touch; escalate the rule to
 `error` once the baseline hits zero.
+
+## Worker code reachable from `src/test` is type-checked WITHOUT strictNullChecks
+
+`src/test/*.test.ts` may import `worker/**` (the integration-test exception), so
+`tsconfig.app.json` (`"strict": false`) type-checks the whole `worker/app` route
+chain a second time — under settings that change narrowing semantics. There,
+boolean literals collapse to `boolean`: a `{ ok: true } | { ok: false; … }` union
+does NOT narrow under `!plan.ok`, even though `tsconfig.worker.json` (strict)
+accepts exactly the same file. String discriminants, `'code' in plan`, and
+`plan.ok === false` all still narrow.
+
+Why: the round-7 rollover seam compiled clean in the worker project and failed
+only in the app project, as three `TS2339` errors on the failure fields — a late
+and confusing gate for a pattern that reads as correct.
+
+Check: in worker code reachable from `src/test`, a bare negation on a boolean
+discriminant is a smell — use an explicit comparison or a string discriminant.
+Precedents: `worker/routes/migration/rollover.ts`, `workflow-execution.ts`
+(`decision.ok === false`).
 
 ## Handling a new Knip finding (`npm run knip`)
 
