@@ -3,16 +3,16 @@ import type { HonoEnv } from '../app';
 import { ok, bad, notFound, AppError } from '../lib/utils';
 import { getDb } from '../db';
 import {
-  user, organization, auditLogs, member, departments,
+  user, organization, member, departments,
   userPreferences
 } from '../db/schema';
-import { eq, sql, and } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import type { Settings } from "@shared/types";
-import { seedDatabase } from '../db/seed';
-import { ScopingService } from '../services/scoping-service';
 import { sendEmail } from '../services/email';
 import { rbac } from '../lib/guard';
 import { isUserLevel, isUserRole } from '@shared/role-options';
+import { buildWebhookPayload, buildSmtpTestEmailHtml, isWebhookProvider } from '../services/notifications/payloads';
+import devRoutes from './users/dev';
 
 const users = new Hono<HonoEnv>();
 
@@ -307,85 +307,50 @@ users.post('/settings/test-email', rbac(['Admin', 'Line 2']), async (c) => {
     await sendEmail({
       to: currentUser[0].email,
       subject: 'IndoGRC Pro - Test SMTP Connection',
-      html: `
-        <div style="font-family: sans-serif; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
-          <h2 style="color: #1e293b; margin-top: 0; font-size: 20px; border-bottom: 2px solid #22c55e; padding-bottom: 8px;">SMTP Test Connection Successful</h2>
-          <p style="color: #475569; font-size: 15px; line-height: 1.5;">Congratulations! Your custom email server configuration is working perfectly on IndoGRC Pro.</p>
-          <div style="background-color: #f8fafc; padding: 12px; border-radius: 6px; margin: 16px 0; border: 1px solid #f1f5f9;">
-            <p style="margin: 4px 0; font-size: 13px; color: #64748b;"><strong>Sender Address:</strong> ${body.senderEmail || 'info@dsintegra.co.id'}</p>
-            <p style="margin: 4px 0; font-size: 13px; color: #64748b;"><strong>Sender Name:</strong> ${body.senderName || 'IndoGRC Pro'}</p>
-            <p style="margin: 4px 0; font-size: 13px; color: #64748b;"><strong>SMTP Host:</strong> ${body.smtpHost}</p>
-          </div>
-          <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
-          <p style="font-size: 12px; color: #94a3b8; margin-bottom: 0;">This is an automated test email. Please do not reply directly.</p>
-        </div>
-      `,
+      html: buildSmtpTestEmailHtml(body),
       settings: body,
       env: c.env,
     });
     return ok(c, { success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('SMTP Test Error:', error);
-    return bad(c, error.message || 'Failed to send test email');
+    return bad(c, 'SMTP_TEST_FAILED', 502, error instanceof Error ? error.message : 'Failed to send test email');
   }
 });
 
 users.post('/settings/test-webhook', rbac(['Admin', 'Line 2']), async (c) => {
-  const body = await c.req.json<{ provider: 'slack' | 'msTeams' | 'generic'; webhookUrl: string }>();
-  if (!body.webhookUrl) return bad(c, 'Webhook URL is required');
+  const body = await c.req.json<{ provider: unknown; webhookUrl: string }>();
+  if (!body.webhookUrl) return bad(c, 'WEBHOOK_URL_REQUIRED', 400, 'Webhook URL is required');
+  if (!isWebhookProvider(body.provider)) {
+    return bad(c, 'WEBHOOK_PROVIDER_UNKNOWN', 400, 'Unknown webhook provider');
+  }
 
-  const appUrl = c.env.BETTER_AUTH_URL || 'http://localhost:3000';
-  const testPayload = {
+  // The test endpoint sends the SAME body a real notification sends: that is the
+  // point of the button, and the body shape has one owner
+  // (`worker/services/notifications/payloads.ts`).
+  const payload = buildWebhookPayload(body.provider, {
+    appUrl: c.env.BETTER_AUTH_URL || 'http://localhost:3000',
     title: 'IndoGRC Pro - Webhook Test Connection',
     message: 'Selamat! Koneksi webhook notifikasi IndoGRC Pro berhasil terhubung dengan sukses.',
     type: 'success',
     link: '/notifications',
-  };
-
-  const webhookPayloads: Record<typeof body.provider, unknown> = {
-    slack: {
-      text: `[SUCCESS] ${testPayload.message}`,
-      blocks: [
-        { type: 'header', text: { type: 'plain_text', text: '✅ IndoGRC Pro - Webhook Test Connection' } },
-        { type: 'section', text: { type: 'mrkdwn', text: testPayload.message } },
-      ],
-    },
-    msTeams: {
-      '@type': 'MessageCard',
-      '@context': 'https://schema.org/extensions',
-      summary: testPayload.title,
-      themeColor: '10B981',
-      title: '✅ IndoGRC Pro - Webhook Test Connection',
-      text: testPayload.message,
-      potentialAction: [
-        { '@type': 'OpenURI', name: 'Buka di IndoGRC Pro', targets: [{ os: 'default', uri: `${appUrl}${testPayload.link}` }] },
-      ],
-    },
-    generic: {
-      event: 'icorf.webhook.test',
-      timestamp: new Date().toISOString(),
-      type: 'success',
-      title: testPayload.title,
-      message: testPayload.message,
-      link: `${appUrl}${testPayload.link}`,
-    },
-  };
+  });
 
   try {
     const response = await fetch(body.webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(webhookPayloads[body.provider]),
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
-      return bad(c, `Webhook provider returned HTTP ${response.status}`);
+      return bad(c, 'WEBHOOK_TEST_FAILED', 502, `Webhook provider returned HTTP ${response.status}`);
     }
 
     return ok(c, { success: true });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Webhook Test Error:', err);
-    return bad(c, err.message || 'Failed to send test webhook');
+    return bad(c, 'WEBHOOK_TEST_FAILED', 502, err instanceof Error ? err.message : 'Failed to send test webhook');
   }
 });
 
@@ -450,89 +415,7 @@ users.put('/users/me/notification-preferences', async (c) => {
   return ok(c, { success: true, preferences: updatedPrefs });
 });
 
-// --- DEV TOOLS (Admin Only, non-production, POST + confirm token) ---
-// Discipline: no runtime DDL here. Single source of DDL truth is versioned
-// drizzle/*.sql (see 0048_consolidate_runtime_ddl.sql). Legacy one-off
-// repair/migration endpoints (e.g. /dev/fix-db) were removed after consolidation.
-function assertDevAllowed(c: any): { allowed: boolean; reason?: string } {
-  const env = (c.env?.ENV || c.env?.NODE_ENV || (typeof process !== 'undefined' ? process.env.NODE_ENV : '')) as string;
-  if (env === 'production') return { allowed: false, reason: 'Disabled in production. Use versioned drizzle migrations + CLI scripts.' };
-  return { allowed: true };
-}
-
-function assertConfirmToken(c: any): boolean {
-  const expected = c.env?.DEV_CONFIRM_TOKEN || (typeof process !== 'undefined' ? process.env.DEV_CONFIRM_TOKEN : '');
-  if (!expected) return true;
-  const got = c.req.header('x-dev-confirm') || c.req.query('confirm');
-  return got === expected;
-}
-
-users.post('/dev/re-seed', rbac(['Admin']), async (c) => {
-  const gate = assertDevAllowed(c);
-  if (!gate.allowed) return bad(c, gate.reason || 'Forbidden');
-  if (!assertConfirmToken(c)) return bad(c, 'Missing or invalid x-dev-confirm token');
-  const mode = c.req.query('mode') || 'full';
-  const isSyncOnly = mode === 'auth';
-  
-  try {
-    await seedDatabase(c.env.DATABASE_URL, c.env.BETTER_AUTH_SECRET, 'true', isSyncOnly);
-    return ok(c, { message: isSyncOnly ? 'Auth synced!' : 'Database re-seeded successfully' });
-  } catch (e: any) {
-    console.error('Seed error:', e);
-    return bad(c, 'DEV_SEED_FAILED', 500);
-  }
-});
-
-users.post('/dev/purge-all', rbac(['Admin']), async (c) => {
-  const gate = assertDevAllowed(c);
-  if (!gate.allowed) return bad(c, gate.reason || 'Forbidden');
-  if (!assertConfirmToken(c)) return bad(c, 'Missing or invalid x-dev-confirm token');
-  const db = getDb(c.env.DATABASE_URL);
-  try {
-    await db.execute(sql`DELETE FROM bpm_diagrams`);
-    await db.execute(sql`DELETE FROM bpm_node_rcms`);
-    await db.execute(sql`DELETE FROM rcm_controls`);
-    await db.execute(sql`DELETE FROM rcms`);
-    await db.execute(sql`DELETE FROM controls`);
-    await db.execute(sql`DELETE FROM bpm_processes`);
-    await db.execute(sql`DELETE FROM csa_records`);
-    await db.execute(sql`DELETE FROM test_records`);
-    await db.execute(sql`DELETE FROM action_plans`);
-    await db.execute(sql`DELETE FROM deficiencies`);
-    await db.execute(sql`DELETE FROM simulations`);
-    await db.execute(sql`DELETE FROM gl_snapshots`);
-    await db.execute(sql`DELETE FROM gl_rows`);
-    await db.execute(sql`DELETE FROM departments`);
-    await db.execute(sql`DELETE FROM audit_logs`);
-    await db.execute(sql`DELETE FROM aggregate_deficiencies`);
-    await db.execute(sql`DELETE FROM account_assertions`);
-    await db.execute(sql`DELETE FROM vendors`);
-    await db.execute(sql`DELETE FROM soc_reports`);
-    await db.execute(sql`DELETE FROM soc_evaluations`);
-    await db.execute(sql`DELETE FROM csa_schedules`);
-    await db.execute(sql`DELETE FROM transaction_details`);
-    await db.execute(sql`DELETE FROM transaction_uploads`);
-
-    return ok(c, { message: "All business data purged. Fresh start!" });
-  } catch (e: any) {
-    console.error('Purge-all error:', e);
-    return bad(c, 'DEV_PURGE_FAILED', 500);
-  }
-});
-
-users.post('/dev/purge-scoping', rbac(['Admin']), async (c) => {
-  const gate = assertDevAllowed(c);
-  if (!gate.allowed) return bad(c, gate.reason || 'Forbidden');
-  if (!assertConfirmToken(c)) return bad(c, 'Missing or invalid x-dev-confirm token');
-  const db = getDb(c.env.DATABASE_URL);
-  const scopingService = new ScopingService(db);
-  try {
-    const result = await scopingService.purgeData(c.get('organizationId'), c.get('userId'));
-    return ok(c, result);
-  } catch (e: any) {
-    console.error('Purge-scoping error:', e);
-    return bad(c, 'DEV_PURGE_FAILED', 500);
-  }
-});
+// --- DEV TOOLS: extracted to `worker/routes/users/dev.ts` (URLs unchanged) ---
+users.route('/', devRoutes);
 
 export default users;
