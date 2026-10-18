@@ -2,6 +2,7 @@ import { and, eq } from 'drizzle-orm';
 import type { DrizzleDb } from '../db';
 import { controls, testRecords, testSamples } from '../db/schema';
 import { trimText } from '@shared/ai-cache';
+import { booleanField } from '../lib/coerce';
 import {
   decideFromForm,
   type RawTestingControl,
@@ -193,9 +194,6 @@ export interface TestRecordBodyFields {
   todPilarComments?: unknown;
   samples?: unknown;
 }
-
-const booleanField = (value: unknown): boolean | undefined =>
-  typeof value === 'boolean' ? value : undefined;
 
 /** Validates every entry before asserting the shape — never a blind cast. */
 function stringRecordField(value: unknown): Record<string, string> | undefined {
