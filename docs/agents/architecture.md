@@ -103,8 +103,8 @@ reports stay as the evidence snapshot of the round that produced them.
 - **Non-prod env guard on the rollover route** — deliberately NOT added: the
   year-end rollover is a live production feature, so `rbac` is the correct
   guard. Adding a confirmation token would change the client contract.
-- **`check:loc` failure text** should name the split target (barrel ≤15 LOC +
-  ≤350 LOC files) instead of only the violation.
+- [x] **`check:loc` failure text** now names the split target (barrel ≤15 LOC +
+  ≤350 LOC files) instead of only the violation — landed in round 8.
 - **`csaWorklistKey` still has three local owners** (`csa-assessed-detail.ts`,
   `use-csa-worklist.ts`, `CSAWorklistTab.tsx`) — all now carry the year, so it
   is not the round-5 bug, but worklist-only callers need a
@@ -127,19 +127,28 @@ reports stay as the evidence snapshot of the round that produced them.
 
 ## Open backlog
 
-Rounds 7–9 landed worker C1–C7 and client C1–C6. Remaining candidates below;
-the reports hold the evidence.
+**The remaining work is now tracked as GitHub issues** — the register stays the
+index and the reports keep the frozen evidence; the tracker holds the work
+(`docs/agents/issue-tracker.md`, `docs/agents/triage-labels.md`).
 
-Worker (see `arch-hotspots-worker.md` for evidence): C8 infrastructure SOC
-dedupe · C9 one CSA test-record write seam · C10 `rbac` coverage on mutating
-endpoints.
+`ready-for-agent` (each body is a self-contained brief): **#95** worker C8
+infrastructure split + SOC write owner · **#96** worker C9 one CSA test-record
+write seam · **#97** worker C10 `rbac` coverage on mutating endpoints · **#98**
+client C7 `SOCMonitoringPage` (513, no tests) one badge derivation · **#99**
+client C8 severity tone/label/class single-source · **#100** client C9
+`CustomizableDashboard` algebra + prefs · **#101** remove the mutating GET in
+`worker/routes/bpm.ts` · **#102** warn-first eslint rule (no writing GET, writes
+must pass `rbac(`).
 
-Client (`arch-hotspots-client.md`): C7 `SOCMonitoringPage` (513) badge matrices
-per view — **unscheduled, highest client value** · C8 severity tone/label/class
-across 5 modules (incl. `dod-format.ts#getSeverityMeta`) · C9
-`CustomizableDashboard` (488) layout algebra + mirrored prefs · C10 4-IPO +
-7-assertion field set declared in 8 modules with 3 label schemes (labelling is a
-domain decision — `ControlAssertion` has 9 members and no screen derives from it).
+`ready-for-human` (a decision gates the work): **#103** confirm the year-end
+rollover role list (live since #92) · **#104** canonical SCOPING transitions vs
+production `Rejected`/CFO/Commissioner · **#105** the canonical IPO/assertion
+label scheme (8 modules, 3 schemes) · **#106** `worker/app.ts:312` role source vs
+the seeded `member.role`.
+
+Worker C1–C7 and client C1–C6 already landed (see the round log). Every candidate
+still carries its evidence in `arch-hotspots-{client,worker}.md`; read the
+matching report section before starting its issue.
 
 ## Environment backlog (mechanical guards these rounds earned)
 
@@ -173,10 +182,11 @@ precedent that failed in production or shipped green-but-wrong.
   (`bad(c, '…')`, `throw new Error('…')`) — wired into `.githooks/pre-commit`
   and the CI "Repo gates" step. Baseline 81 findings, grandfathered by the
   delta; whole-tree inventory via report mode. Landed in round 8.
-- [ ] **Duplicate-body detector.** A review-time script flagging
-  structurally-similar blocks in `worker/**`. Precedent: 3 matrix selects, 2
-  SOC inserts, 2 year clones, 2 webhook payload sets.
-- [ ] **`check:loc` failure text** names the split target (see follow-ups).
+- [x] **Duplicate-body detector — deferred with reason** (round 9). Its cited
+  precedents (3 matrix selects, 2 webhook payload sets, 2 year clones) were fixed
+  by rounds 8–9, so a fuzzy similarity detector would ship with no live precedent
+  — the speculative abstraction `AGENTS.md`'s YAGNI rule bans. Re-open it when a
+  real duplicate-body drift escapes review again.
 - [ ] **Two tsconfigs, two narrowing semantics.** `src/test/**` integration
   tests pull the `worker/app` chain into `tsconfig.app.json` (`strict: false`),
   so worker code is checked under settings where boolean discriminants stop
