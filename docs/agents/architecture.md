@@ -51,6 +51,19 @@ read, verified and finished. Never report a round as complete because agents wer
 *dispatched*; report it complete when the join gates pass on what actually
 landed, and shrink the round rather than shipping a broken one.
 
+**Branch before you edit (after every merge).** The coordinator lands on `main`
+each time a PR merges and syncs it, so the next slice starts with `main` checked
+out. Create the branch FIRST — editing on `main` and then pushing would bypass the
+PR process the repo's own `verify.yml` note guards against (observed round 10: the
+#96 edits were made on `main` and only caught by checking `git branch
+--show-current` before committing).
+
+**Verify the write, not the appearance.** A commit can silently not happen
+(PowerShell quoting) and a CI run that reports failure can merely have been
+cancelled as superseded. Check `git log`/`rev-list` after committing and
+`status/conclusion/headSha` before diagnosing a red run. Details:
+`docs/agents/heavy-cli.md`.
+
 ## Hot-spot reports (context pointers)
 
 - `docs/agents/arch-hotspots-client.md` — `src/**` + client `shared/**`.

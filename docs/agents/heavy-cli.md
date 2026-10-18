@@ -51,3 +51,15 @@ killed the host, while the same `tsc` redirected to a file exited 0).
   suites). Whole-repo `type-check`/`test` run only after the join — otherwise
   in-flight edits from a sibling workstream pollute the result (observed
   2026-10-17: ingestion workstream's `tsc` flagged half-edited CSA files).
+- Multi-line git messages go through a FILE, never `-m` with embedded quotes:
+  `Set-Content msg.txt …; git commit -F msg.txt`. PowerShell escapes with a
+  backtick, so a `\"` inside a double-quoted `-m` terminates the string, git
+  receives stray arguments, and the command fails while the surrounding output
+  still scrolls as if it worked (observed 2026-10-18: an `-m` body containing
+  `\"\"` left the branch pushed at `main` with NO commit on it).
+- Verify every write landed; never trust the appearance. After a commit check
+  `git log --oneline -1` AND `git rev-list --count origin/main..HEAD`; after a
+  push confirm the ref moved (`33b17b0..d3da715`). Two observed 2026-10-18
+  cases: the silent no-commit above, and `gh run watch` reporting `exit=1` for a
+  run that was merely CANCELLED as superseded by the next push — read
+  `status/conclusion/headSha` before diagnosing a failure.
