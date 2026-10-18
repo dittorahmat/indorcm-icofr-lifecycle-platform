@@ -67,7 +67,8 @@ reports stay as the evidence snapshot of the round that produced them.
 | 6 | `arch/deepen-6-plus-retro` / #91 | CSA assessed-detail (Row/Card thin adapters), findings presentation seam, materiality `getGroupMultiplier` via `entityCount`, scoping `buildView`, RCM ingestion contract |
 | 7 | `arch/deepen-7-review` | worker C5 effectiveness single-source · worker C3 BPM OCR seam + node-type parity · worker C1 `migration.ts` route split + materiality seam + guarded rollover · client C1 worksheet control-scope seam · client C5 year-scoped CSA keys + single evidence compressor · client C2 role/level single-source |
 | 8 | `arch/deepen-8-review` (stacked on #92) | worker C6 `bpm-service.ts` 559 → 306 + `bpm-match` / `bpm-process-hierarchy` / `bpm-diagrams` seams · worker C4 simulation lifecycle on the canonical table, `as never` 9 → 0 · client C3 one testing-row + column owner · client C6 `SettingsPage` 478 → 59, cache-as-draft · client C4 one IDR owner. Gate added: `check:worker-strings` |
-| 9 | `arch/deepen-9-review` | worker C2 `users.ts` 471 → 351 (dev-route split + ONE owner for the three webhook payload shapes) · worker C7 `rcm-matrix-service.ts` 327 → 132 (one builder; per-kind difference as data). Round deliberately cut short — the provider rate limit killed 5 of 5 spawned agents |
+| 9 | `arch/deepen-9-review` / #94 | worker C2 `users.ts` 471 → 351 (dev-route split + ONE owner for the three webhook payload shapes) · worker C7 `rcm-matrix-service.ts` 327 → 132 (one builder; per-kind difference as data). Round deliberately cut short — the provider rate limit killed 5 of 5 spawned agents |
+| 10 | `arch/round10-queue` / #108 | backlog published to the tracker (13 issues, `ready-for-agent` + `ready-for-human`), then the queue worked: **#98** `SOCMonitoringPage` 513 → 146 + one badge seam (zero tests → 21) · **#101** the mutating flow-prefix GET → POST + `rbac(['Admin'])` + tenant-explicit. Issue **#107** filed for the `rcm:soc.*` bundle entries |
 
 ## Round 9 follow-ups (disclosed, deliberately not landed)
 
@@ -127,28 +128,17 @@ reports stay as the evidence snapshot of the round that produced them.
 
 ## Open backlog
 
-**The remaining work is now tracked as GitHub issues** — the register stays the
-index and the reports keep the frozen evidence; the tracker holds the work
-(`docs/agents/issue-tracker.md`, `docs/agents/triage-labels.md`).
+**The backlog lives in the GitHub issue tracker — deliberately not duplicated
+here.** Per-issue state changes every time a PR merges, and a copied list rots
+within a round (this section was already stale once). Query it instead:
 
-`ready-for-agent` (each body is a self-contained brief): **#95** worker C8
-infrastructure split + SOC write owner · **#96** worker C9 one CSA test-record
-write seam · **#97** worker C10 `rbac` coverage on mutating endpoints · **#98**
-client C7 `SOCMonitoringPage` (513, no tests) one badge derivation · **#99**
-client C8 severity tone/label/class single-source · **#100** client C9
-`CustomizableDashboard` algebra + prefs · **#101** remove the mutating GET in
-`worker/routes/bpm.ts` · **#102** warn-first eslint rule (no writing GET, writes
-must pass `rbac(`).
+- `gh issue list --state open --label ready-for-agent` — self-contained briefs;
+  every body points at its `arch-hotspots-*` section for the frozen evidence.
+- `gh issue list --state open --label ready-for-human` — a domain decision gates
+  the work before an agent can proceed.
 
-`ready-for-human` (a decision gates the work): **#103** confirm the year-end
-rollover role list (live since #92) · **#104** canonical SCOPING transitions vs
-production `Rejected`/CFO/Commissioner · **#105** the canonical IPO/assertion
-label scheme (8 modules, 3 schemes) · **#106** `worker/app.ts:312` role source vs
-the seeded `member.role`.
-
-Worker C1–C7 and client C1–C6 already landed (see the round log). Every candidate
-still carries its evidence in `arch-hotspots-{client,worker}.md`; read the
-matching report section before starting its issue.
+The round log below records what **landed**; the reports hold the evidence. If
+the tracker is ever unreachable, `docs/agents/issue-tracker.md` has the fallback.
 
 ## Environment backlog (mechanical guards these rounds earned)
 
