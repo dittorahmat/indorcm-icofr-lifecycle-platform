@@ -173,6 +173,24 @@ export default tseslint.config(
   // Import layering (AGENTS.md, retro 2026-10-16): shared/ is importable by
   // both tiers; product code never crosses src/ <-> worker/. Integration
   // tests (src/test/**, **/*.test.*) are the sole exception, hence ignores.
+  // Route guards (issue #102). A route that writes must not be reachable by GET,
+  // and a mutating route must carry its guard. Warn-first, like
+  // local/mutation-requires-onerror: the reviewer enforces it on touched routes.
+  // Measured baseline in worker/routes at introduction (2026-10-18):
+  //   local/routes-require-rbac  61  -> the burn-down is issue #97
+  //   local/no-writing-get        0  -> READY TO ESCALATE to 'error'; the
+  //     all-writes-must-not-be-GET rule is clean today, so promoting it is the
+  //     maintainer's call rather than something this PR decides.
+  // Scoped to worker/routes so the rules only see route registrations, not every
+  // `.get(`/`.delete(` in the worker.
+  {
+    files: ['worker/routes/**/*.ts'],
+    ignores: ['**/*.test.*', '**/__tests__/**'],
+    rules: {
+      'local/no-writing-get': 'warn',
+      'local/routes-require-rbac': 'warn',
+    },
+  },
   {
     files: ['worker/**/*.ts'],
     ignores: ['**/*.test.*', '**/*.spec.*'],
