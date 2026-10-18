@@ -357,5 +357,69 @@
     "print": "Cetak",
     "refresh": "Muat Ulang",
     "save": "Simpan"
+  },
+  "soc": {
+    "page_title": "Inventaris Aplikasi & Aset TI",
+    "page_description": "Evaluasi Pihak Ketiga dan Aplikasi Signifikan (Bab III.1.5 & 4.3).",
+    "loading": "Memuat...",
+    "loading_reports": "Memuat data SOC...",
+    "itgc_not_tested": "Belum Diuji",
+    "delete_app_title": "Hapus Aplikasi",
+    "delete_app_description": "Yakin ingin menghapus aplikasi \"{{name}}\" dari pustaka? Semua keterkaitan scoping dan RCM untuk aplikasi ini akan ikut terhapus.",
+    "delete_app_success": "Aplikasi dihapus dari pustaka",
+    "delete_app_failed": "Aplikasi gagal dihapus. Silakan coba lagi.",
+    "action": {
+      "add_application": "Tambah Aplikasi",
+      "add_vendor": "Tambah Vendor",
+      "register_soc": "Daftarkan SOC",
+      "review": "Tinjau"
+    },
+    "tab": {
+      "applications": "Aplikasi Signifikan",
+      "reports": "Pemantauan SOC"
+    },
+    "summary": {
+      "valid_reports": "Laporan Valid",
+      "expired_reports": "Kedaluwarsa / Hilang",
+      "total_vendors": "Total Vendor"
+    },
+    "applications": {
+      "title": "Inventaris Aplikasi Signifikan",
+      "description": "Inventaris aset TI yang memengaruhi ICOFR beserta status ITGC-nya (Tabel 1).",
+      "empty": "Belum ada aplikasi. Klik \"Tambah Aplikasi\" untuk memulai."
+    },
+    "reports": {
+      "title": "Repositori Service Organization Control (SOC)",
+      "description": "Tinjauan formal atas laporan asurans pihak ketiga untuk memastikan integritas data pelaporan keuangan.",
+      "empty": "Belum ada laporan SOC. Daftarkan vendor dan laporannya untuk memulai."
+    },
+    "mapping": {
+      "title": "Kepatuhan Tabel 1: Pemetaan COBIT ke ITGC",
+      "description": "Sesuai Tabel 1 SK-5, setiap kontrol TI (COBIT 2019) dipetakan otomatis ke 4 area ITGC utama: Akses ke Program & Data, Perubahan Program, Pengembangan Program, dan Operasi Komputer."
+    },
+    "evaluation": {
+      "reviewed": "Sudah Ditinjau",
+      "pending": "Menunggu Tinjauan"
+    },
+    "table": {
+      "application_name": "Nama Aplikasi",
+      "icofr_scope": "Ruang Lingkup ICOFR (Y/T)",
+      "business_owner": "Pemilik Bisnis",
+      "application_owner": "Pemilik Aplikasi",
+      "architecture": "Arsitektur Aplikasi",
+      "criticality": "Kritisitas",
+      "itgc_status": "Status ITGC",
+      "linked_controls": "Kontrol Terkait",
+      "itgc_areas": "Area ITGC (Pemetaan Tabel 1)",
+      "actions": "Aksi",
+      "no_document": "Tanpa dokumen",
+      "no_mapping": "Tanpa pemetaan",
+      "architecture_doc": "Dokumen Arsitektur",
+      "vendor_name": "Nama Vendor",
+      "report_type": "Jenis Laporan",
+      "coverage_period": "Periode Cakupan",
+      "status": "Status",
+      "evaluation": "Evaluasi"
+    }
   }
 }

@@ -357,5 +357,69 @@
     "print": "Print",
     "refresh": "Refresh",
     "save": "Save"
+  },
+  "soc": {
+    "page_title": "Application Inventory & IT Assets",
+    "page_description": "Evaluation of 3rd Parties and Significant Applications (Bab III.1.5 & 4.3).",
+    "loading": "Loading...",
+    "loading_reports": "Loading SOC data...",
+    "itgc_not_tested": "Not Tested",
+    "delete_app_title": "Remove Application",
+    "delete_app_description": "Are you sure you want to remove application \"{{name}}\" from library? This will delete all scoping and RCM associations for this application.",
+    "delete_app_success": "Application removed from library",
+    "delete_app_failed": "Could not remove the application. Please try again.",
+    "action": {
+      "add_application": "Add Application",
+      "add_vendor": "Add Vendor",
+      "register_soc": "Register SOC",
+      "review": "Review"
+    },
+    "tab": {
+      "applications": "Significant Applications",
+      "reports": "SOC Monitoring"
+    },
+    "summary": {
+      "valid_reports": "Valid Reports",
+      "expired_reports": "Expired / Missing",
+      "total_vendors": "Total Vendors"
+    },
+    "applications": {
+      "title": "Significant Application Inventory",
+      "description": "Inventory of IT assets affecting ICOFR and their ITGC status (Tabel 1).",
+      "empty": "No applications found. Click \"Add Application\" to start."
+    },
+    "reports": {
+      "title": "Service Organization Control (SOC) Repository",
+      "description": "Formal review of third-party assurance reports to ensure financial reporting data integrity.",
+      "empty": "No SOC reports found. Register a vendor and report to begin."
+    },
+    "mapping": {
+      "title": "Table 1 Compliance: COBIT to ITGC Mapping",
+      "description": "In accordance with SK-5 Table 1 regulation, each IT control (COBIT 2019) is automatically mapped to 4 main ITGC areas: Access to Program & Data, Program Change, Program Development, and Computer Operations."
+    },
+    "evaluation": {
+      "reviewed": "Reviewed",
+      "pending": "Pending Review"
+    },
+    "table": {
+      "application_name": "Application Name",
+      "icofr_scope": "ICOFR Scope (Y/N)",
+      "business_owner": "Business Owner",
+      "application_owner": "Application Owner",
+      "architecture": "Application Architecture",
+      "criticality": "Criticality",
+      "itgc_status": "ITGC Status",
+      "linked_controls": "Linked Controls",
+      "itgc_areas": "ITGC Areas (Table 1 Mapping)",
+      "actions": "Actions",
+      "no_document": "No document",
+      "no_mapping": "No mapping",
+      "architecture_doc": "Architecture Document",
+      "vendor_name": "Vendor Name",
+      "report_type": "Report Type",
+      "coverage_period": "Coverage Period",
+      "status": "Status",
+      "evaluation": "Evaluation"
+    }
   }
 }
