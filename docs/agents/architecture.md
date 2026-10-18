@@ -42,6 +42,15 @@ evidence.** Round 7's reports still described five unfixed hot-spots in full
 *directly* as the workstream briefs — no re-discovery, no new recon agents. Only
 run a fresh recon when the backlog is exhausted or a new area is in scope.
 
+**Concurrency ceiling (learned the hard way in round 9).** Spawning agents is
+rate-limited by the provider: 5 of 5 spawns died in round 9, and 4 of 5 in round
+8. Budget a round for **at most 1–2 concurrent subagents**, expect some to die
+mid-task, and have the coordinator take bounded high-value slices directly
+instead. A killed agent is worse than no agent — its partial work still has to be
+read, verified and finished. Never report a round as complete because agents were
+*dispatched*; report it complete when the join gates pass on what actually
+landed, and shrink the round rather than shipping a broken one.
+
 ## Hot-spot reports (context pointers)
 
 - `docs/agents/arch-hotspots-client.md` — `src/**` + client `shared/**`.
@@ -58,9 +67,23 @@ reports stay as the evidence snapshot of the round that produced them.
 | 6 | `arch/deepen-6-plus-retro` / #91 | CSA assessed-detail (Row/Card thin adapters), findings presentation seam, materiality `getGroupMultiplier` via `entityCount`, scoping `buildView`, RCM ingestion contract |
 | 7 | `arch/deepen-7-review` | worker C5 effectiveness single-source · worker C3 BPM OCR seam + node-type parity · worker C1 `migration.ts` route split + materiality seam + guarded rollover · client C1 worksheet control-scope seam · client C5 year-scoped CSA keys + single evidence compressor · client C2 role/level single-source |
 | 8 | `arch/deepen-8-review` (stacked on #92) | worker C6 `bpm-service.ts` 559 → 306 + `bpm-match` / `bpm-process-hierarchy` / `bpm-diagrams` seams · worker C4 simulation lifecycle on the canonical table, `as never` 9 → 0 · client C3 one testing-row + column owner · client C6 `SettingsPage` 478 → 59, cache-as-draft · client C4 one IDR owner. Gate added: `check:worker-strings` |
+| 9 | `arch/deepen-9-review` | worker C2 `users.ts` 471 → 351 (dev-route split + ONE owner for the three webhook payload shapes) · worker C7 `rcm-matrix-service.ts` 327 → 132 (one builder; per-kind difference as data). Round deliberately cut short — the provider rate limit killed 5 of 5 spawned agents |
+
+## Round 9 follow-ups (disclosed, deliberately not landed)
+
+- **`POST /settings/test-webhook` now sends the production payload** the channel
+  adapters send, so the Slack body gained the severity line + action button and
+  the generic body's `event` is `icofr.notification` (was `icorf.webhook.test`).
+  That is the point of a test endpoint — one shape, not two — but it is a visible
+  change for anyone whose receiver filtered on the old event name.
+- **`users.ts` still declares 8 `c.req.json<any>()`** (pre-existing; invisible to
+  `check:any-delta` because its regex matches `: any`/`as any`, not a type
+  argument). Typing each route's body is the remaining `any` work there.
+- **`worker/routes/users.ts` holds six unrelated sub-domains** (profile, admin,
+  departments, settings, notification prefs). Only `/dev/*` was split out; the
+  rest of the route-split pattern is still owed.
 
 ## Round 8 follow-ups (disclosed, deliberately not landed)
-
 - **Integration-test mocks must mirror the service's transaction handle.** Round
   8 wrapped `createDiagram`/`deleteDiagram`/`deleteProcess`/
   `batchReorganizeProcesses` in one transaction; the two hand-rolled `src/test`
@@ -104,18 +127,19 @@ reports stay as the evidence snapshot of the round that produced them.
 
 ## Open backlog
 
-Rounds 7–8 landed worker C1, C3, C4, C5, C6 and client C1, C2, C3, C4, C5, C6
-(see the round log). Remaining candidates below; the reports hold the evidence.
+Rounds 7–9 landed worker C1–C7 and client C1–C6. Remaining candidates below;
+the reports hold the evidence.
 
-Worker (see `arch-hotspots-worker.md` for evidence): C2 `users.ts` split +
-single webhook payload builder · C7 one matrix read builder (TLC/ELC/ITGC) · C8
-infrastructure SOC dedupe · C9 one CSA test-record write seam · C10 `rbac`
-coverage on mutating endpoints.
+Worker (see `arch-hotspots-worker.md` for evidence): C8 infrastructure SOC
+dedupe · C9 one CSA test-record write seam · C10 `rbac` coverage on mutating
+endpoints.
 
 Client (`arch-hotspots-client.md`): C7 `SOCMonitoringPage` (513) badge matrices
-per view · C8 severity tone/label/class across 5 modules (incl.
-`dod-format.ts#getSeverityMeta`) · C9 `CustomizableDashboard` layout algebra ·
-C10 4-IPO/7-assertion field set declared 8× with 3 label schemes.
+per view — **unscheduled, highest client value** · C8 severity tone/label/class
+across 5 modules (incl. `dod-format.ts#getSeverityMeta`) · C9
+`CustomizableDashboard` (488) layout algebra + mirrored prefs · C10 4-IPO +
+7-assertion field set declared in 8 modules with 3 label schemes (labelling is a
+domain decision — `ControlAssertion` has 9 members and no screen derives from it).
 
 ## Environment backlog (mechanical guards these rounds earned)
 
