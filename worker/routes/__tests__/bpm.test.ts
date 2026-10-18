@@ -16,7 +16,9 @@ describe('bpm barrel routes', () => {
     const routePaths = bpm.routes.map((r) => `${r.method} ${r.path}`);
 
     expect(routePaths).toContain('GET /bpm-diagrams');
-    expect(routePaths).toContain('ALL /bpm-diagrams/cleanup-flow-prefix');
+    expect(routePaths).toContain('POST /bpm-diagrams/cleanup-flow-prefix');
+    // The mutating ANY-verb route is gone: cleanup writes, so it is POST-only.
+    expect(routePaths).not.toContain('ALL /bpm-diagrams/cleanup-flow-prefix');
     expect(routePaths).toContain('GET /bpm-diagrams/:id');
     expect(routePaths).toContain('POST /bpm-diagrams');
     expect(routePaths).toContain('PUT /bpm-diagrams/:id');
@@ -33,5 +35,14 @@ describe('bpm barrel routes', () => {
     expect(routePaths).toContain('POST /bpm-processes/:id/workflow');
     expect(routePaths).toContain('DELETE /bpm-processes/:id');
     expect(routePaths).toContain('GET /legacy/bpm-summary');
+  });
+
+  it('has no ALL-verb route left, so a stray GET cannot mutate', () => {
+    // `.all(` is gone, so a GET to that path is absorbed by `GET /bpm-diagrams/:id`
+    // — a read (`getDiagramById`), not a write. This locks the absence of ALL
+    // routes, which is what made a GET rewrite every diagram name in the tenant.
+    expect(bpm.routes.some((r) => r.method === 'ALL')).toBe(false);
+    const getPaths = bpm.routes.filter((r) => r.method === 'GET').map((r) => r.path);
+    expect(getPaths).toContain('/bpm-diagrams/:id');
   });
 });
