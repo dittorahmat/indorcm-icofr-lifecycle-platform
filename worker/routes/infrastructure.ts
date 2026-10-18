@@ -3,10 +3,11 @@ import type { HonoEnv } from '../app';
 import { ok, bad, notFound } from '../lib/utils';
 import { getDb } from '../db';
 import { 
-  applications, applicationDocuments, controls, user, vendors, socReports, socEvaluations
+  applications, applicationDocuments, controls, user, vendors, socReports
 } from '../db/schema';
 import { eq, and, or, desc } from 'drizzle-orm';
 import { getStorageBucket } from '../lib/storage';
+import { createSocEvaluation, type SocEvaluationBody } from '../services/soc-evaluation';
 
 const infrastructure = new Hono<HonoEnv>();
 
@@ -297,52 +298,37 @@ infrastructure.post('/soc-reports', async (c) => {
 infrastructure.post('/soc-reports/:id/evaluate', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
-  const socReportId = c.req.param('id');
-  const body = await c.req.json<any>();
-  
-  const id = crypto.randomUUID();
-  await db.insert(socEvaluations).values({
-    id,
-    organizationId: orgId,
-    socReportId,
-    evaluatedBy: c.get('userId'),
-    attrA: body.attrA ?? false,
-    attrB: body.attrB ?? false,
-    attrC: body.attrC ?? false,
-    attrD: body.attrD ?? false,
-    attrE: body.attrE ?? false,
-    attrF: body.attrF ?? false,
-    attrG: body.attrG ?? false,
-    auditorOpinion: body.auditorOpinion || "",
-    evaluatedAt: new Date(),
-  });
+  const body = await c.req.json<SocEvaluationBody>();
 
-  return ok(c, { id });
+  const created = await createSocEvaluation(db, {
+    orgId,
+    userId: c.get('userId'),
+    socReportId: c.req.param('id'),
+    body,
+  });
+  if (created.outcome === 'rejected') {
+    return bad(c, created.code, created.httpStatus, created.message);
+  }
+
+  return ok(c, { id: created.id });
 });
 
 infrastructure.post('/soc-evaluations', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
-  const body = await c.req.json<any>();
-  
-  const id = crypto.randomUUID();
-  await db.insert(socEvaluations).values({
-    id,
-    organizationId: orgId,
-    socReportId: body.socReportId,
-    evaluatedBy: c.get('userId'),
-    attrA: body.attrA ?? false,
-    attrB: body.attrB ?? false,
-    attrC: body.attrC ?? false,
-    attrD: body.attrD ?? false,
-    attrE: body.attrE ?? false,
-    attrF: body.attrF ?? false,
-    attrG: body.attrG ?? false,
-    auditorOpinion: body.auditorOpinion || "",
-    evaluatedAt: new Date(),
-  });
+  const body = await c.req.json<SocEvaluationBody>();
 
-  return ok(c, { id });
+  const created = await createSocEvaluation(db, {
+    orgId,
+    userId: c.get('userId'),
+    socReportId: body.socReportId,
+    body,
+  });
+  if (created.outcome === 'rejected') {
+    return bad(c, created.code, created.httpStatus, created.message);
+  }
+
+  return ok(c, { id: created.id });
 });
 
 export default infrastructure;
