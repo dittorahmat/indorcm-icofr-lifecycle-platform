@@ -42,6 +42,15 @@ evidence.** Round 7's reports still described five unfixed hot-spots in full
 *directly* as the workstream briefs — no re-discovery, no new recon agents. Only
 run a fresh recon when the backlog is exhausted or a new area is in scope.
 
+**Concurrency ceiling (learned the hard way in round 9).** Spawning agents is
+rate-limited by the provider: 5 of 5 spawns died in round 9, and 4 of 5 in round
+8. Budget a round for **at most 1–2 concurrent subagents**, expect some to die
+mid-task, and have the coordinator take bounded high-value slices directly
+instead. A killed agent is worse than no agent — its partial work still has to be
+read, verified and finished. Never report a round as complete because agents were
+*dispatched*; report it complete when the join gates pass on what actually
+landed, and shrink the round rather than shipping a broken one.
+
 ## Hot-spot reports (context pointers)
 
 - `docs/agents/arch-hotspots-client.md` — `src/**` + client `shared/**`.
@@ -58,9 +67,23 @@ reports stay as the evidence snapshot of the round that produced them.
 | 6 | `arch/deepen-6-plus-retro` / #91 | CSA assessed-detail (Row/Card thin adapters), findings presentation seam, materiality `getGroupMultiplier` via `entityCount`, scoping `buildView`, RCM ingestion contract |
 | 7 | `arch/deepen-7-review` | worker C5 effectiveness single-source · worker C3 BPM OCR seam + node-type parity · worker C1 `migration.ts` route split + materiality seam + guarded rollover · client C1 worksheet control-scope seam · client C5 year-scoped CSA keys + single evidence compressor · client C2 role/level single-source |
 | 8 | `arch/deepen-8-review` (stacked on #92) | worker C6 `bpm-service.ts` 559 → 306 + `bpm-match` / `bpm-process-hierarchy` / `bpm-diagrams` seams · worker C4 simulation lifecycle on the canonical table, `as never` 9 → 0 · client C3 one testing-row + column owner · client C6 `SettingsPage` 478 → 59, cache-as-draft · client C4 one IDR owner. Gate added: `check:worker-strings` |
+| 9 | `arch/deepen-9-review` | worker C2 `users.ts` 471 → 351 (dev-route split + ONE owner for the three webhook payload shapes) · worker C7 `rcm-matrix-service.ts` 327 → 132 (one builder; per-kind difference as data). Round deliberately cut short — the provider rate limit killed 5 of 5 spawned agents |
+
+## Round 9 follow-ups (disclosed, deliberately not landed)
+
+- **`POST /settings/test-webhook` now sends the production payload** the channel
+  adapters send, so the Slack body gained the severity line + action button and
+  the generic body's `event` is `icofr.notification` (was `icorf.webhook.test`).
+  That is the point of a test endpoint — one shape, not two — but it is a visible
+  change for anyone whose receiver filtered on the old event name.
+- **`users.ts` still declares 8 `c.req.json<any>()`** (pre-existing; invisible to
+  `check:any-delta` because its regex matches `: any`/`as any`, not a type
+  argument). Typing each route's body is the remaining `any` work there.
+- **`worker/routes/users.ts` holds six unrelated sub-domains** (profile, admin,
+  departments, settings, notification prefs). Only `/dev/*` was split out; the
+  rest of the route-split pattern is still owed.
 
 ## Round 8 follow-ups (disclosed, deliberately not landed)
-
 - **Integration-test mocks must mirror the service's transaction handle.** Round
   8 wrapped `createDiagram`/`deleteDiagram`/`deleteProcess`/
   `batchReorganizeProcesses` in one transaction; the two hand-rolled `src/test`
@@ -80,8 +103,8 @@ reports stay as the evidence snapshot of the round that produced them.
 - **Non-prod env guard on the rollover route** — deliberately NOT added: the
   year-end rollover is a live production feature, so `rbac` is the correct
   guard. Adding a confirmation token would change the client contract.
-- **`check:loc` failure text** should name the split target (barrel ≤15 LOC +
-  ≤350 LOC files) instead of only the violation.
+- [x] **`check:loc` failure text** now names the split target (barrel ≤15 LOC +
+  ≤350 LOC files) instead of only the violation — landed in round 8.
 - **`csaWorklistKey` still has three local owners** (`csa-assessed-detail.ts`,
   `use-csa-worklist.ts`, `CSAWorklistTab.tsx`) — all now carry the year, so it
   is not the round-5 bug, but worklist-only callers need a
@@ -104,18 +127,28 @@ reports stay as the evidence snapshot of the round that produced them.
 
 ## Open backlog
 
-Rounds 7–8 landed worker C1, C3, C4, C5, C6 and client C1, C2, C3, C4, C5, C6
-(see the round log). Remaining candidates below; the reports hold the evidence.
+**The remaining work is now tracked as GitHub issues** — the register stays the
+index and the reports keep the frozen evidence; the tracker holds the work
+(`docs/agents/issue-tracker.md`, `docs/agents/triage-labels.md`).
 
-Worker (see `arch-hotspots-worker.md` for evidence): C2 `users.ts` split +
-single webhook payload builder · C7 one matrix read builder (TLC/ELC/ITGC) · C8
-infrastructure SOC dedupe · C9 one CSA test-record write seam · C10 `rbac`
-coverage on mutating endpoints.
+`ready-for-agent` (each body is a self-contained brief): **#95** worker C8
+infrastructure split + SOC write owner · **#96** worker C9 one CSA test-record
+write seam · **#97** worker C10 `rbac` coverage on mutating endpoints · **#98**
+client C7 `SOCMonitoringPage` (513, no tests) one badge derivation · **#99**
+client C8 severity tone/label/class single-source · **#100** client C9
+`CustomizableDashboard` algebra + prefs · **#101** remove the mutating GET in
+`worker/routes/bpm.ts` · **#102** warn-first eslint rule (no writing GET, writes
+must pass `rbac(`).
 
-Client (`arch-hotspots-client.md`): C7 `SOCMonitoringPage` (513) badge matrices
-per view · C8 severity tone/label/class across 5 modules (incl.
-`dod-format.ts#getSeverityMeta`) · C9 `CustomizableDashboard` layout algebra ·
-C10 4-IPO/7-assertion field set declared 8× with 3 label schemes.
+`ready-for-human` (a decision gates the work): **#103** confirm the year-end
+rollover role list (live since #92) · **#104** canonical SCOPING transitions vs
+production `Rejected`/CFO/Commissioner · **#105** the canonical IPO/assertion
+label scheme (8 modules, 3 schemes) · **#106** `worker/app.ts:312` role source vs
+the seeded `member.role`.
+
+Worker C1–C7 and client C1–C6 already landed (see the round log). Every candidate
+still carries its evidence in `arch-hotspots-{client,worker}.md`; read the
+matching report section before starting its issue.
 
 ## Environment backlog (mechanical guards these rounds earned)
 
@@ -149,10 +182,11 @@ precedent that failed in production or shipped green-but-wrong.
   (`bad(c, '…')`, `throw new Error('…')`) — wired into `.githooks/pre-commit`
   and the CI "Repo gates" step. Baseline 81 findings, grandfathered by the
   delta; whole-tree inventory via report mode. Landed in round 8.
-- [ ] **Duplicate-body detector.** A review-time script flagging
-  structurally-similar blocks in `worker/**`. Precedent: 3 matrix selects, 2
-  SOC inserts, 2 year clones, 2 webhook payload sets.
-- [ ] **`check:loc` failure text** names the split target (see follow-ups).
+- [x] **Duplicate-body detector — deferred with reason** (round 9). Its cited
+  precedents (3 matrix selects, 2 webhook payload sets, 2 year clones) were fixed
+  by rounds 8–9, so a fuzzy similarity detector would ship with no live precedent
+  — the speculative abstraction `AGENTS.md`'s YAGNI rule bans. Re-open it when a
+  real duplicate-body drift escapes review again.
 - [ ] **Two tsconfigs, two narrowing semantics.** `src/test/**` integration
   tests pull the `worker/app` chain into `tsconfig.app.json` (`strict: false`),
   so worker code is checked under settings where boolean discriminants stop

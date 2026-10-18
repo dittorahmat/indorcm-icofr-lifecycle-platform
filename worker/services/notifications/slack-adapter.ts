@@ -1,4 +1,5 @@
 import type { NotificationChannelAdapter, UnifiedNotificationPayload, DispatchContext } from './types';
+import { buildSlackPayload } from './payloads';
 
 export const slackAdapter: NotificationChannelAdapter = {
   id: 'slack',
@@ -12,50 +13,18 @@ export const slackAdapter: NotificationChannelAdapter = {
     const webhookUrl = context.settings.slackWebhookUrl;
     if (!webhookUrl) return { success: false, error: 'No slack webhook URL' };
 
-    const type = (payload.type || 'info').toUpperCase();
-    const appUrl = context.env.BETTER_AUTH_URL || 'http://localhost:3000';
-
-    const blocks: any[] = [
-      {
-        type: 'header',
-        text: {
-          type: 'plain_text',
-          text: payload.title || ('IndoGRC Pro - ' + type)
-        }
-      },
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: `*Severity:* ${type}\n${payload.message}`
-        }
-      }
-    ];
-
-    if (payload.link) {
-      blocks.push({
-        type: 'actions',
-        elements: [
-          {
-            type: 'button',
-            text: {
-              type: 'plain_text',
-              text: 'Buka di IndoGRC Pro'
-            },
-            url: `${appUrl}${payload.link}`
-          }
-        ]
-      });
-    }
-
-
     const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        text: `[${payload.type || 'info'}] ${payload.message}`,
-        blocks
-      })
+      body: JSON.stringify(
+        buildSlackPayload({
+          appUrl: context.env.BETTER_AUTH_URL || 'http://localhost:3000',
+          message: payload.message,
+          title: payload.title,
+          type: payload.type,
+          link: payload.link,
+        }),
+      ),
     });
 
     if (!response.ok) {
