@@ -2,11 +2,12 @@ import { Hono } from "hono";
 import type { HonoEnv } from '../../app';
 import { ok, bad } from '../../lib/utils';
 import { getDb } from '../../db';
-import { csaSamples, todEvaluations, testRecords, testSamples } from '../../db/schema';
+import { csaSamples, todEvaluations, testRecords } from '../../db/schema';
 import { eq, and, desc, SQL } from 'drizzle-orm';
 import type { TestRecord } from "@shared/types";
 import type { TestingVerdict } from "@shared/testing-decision";
 import {
+  createTestRecord,
   decideTestSubmission,
   decideTestingRecord,
   decideTodEvaluation,
@@ -152,79 +153,30 @@ csaSamplesTestingRoute.post('/tests', async (c) => {
   const userId = c.get('userId');
   const body = await c.req.json<any>();
 
-  if (!body.controlId) return bad(c, 'controlId is required');
-
-  const testType = body.testType === 'TOD' ? 'TOD' : 'TOE';
-
-  // Server recomputes the verdict through the single testing-decision
-  // seam — body.result is treated as a claim, never as the decision.
-  const controlRow = await fetchTestingControl(db, body.controlId, orgId);
-  const decision = decideTestSubmission(controlRow, body);
-
-  if (!decision.isValid || decision.verdict === undefined) {
-    return bad(
-      c,
-      'Sample size is below Table 22 minimum without homogeneity justification',
-    );
-  }
-  const result: TestingVerdict = decision.verdict;
-  const period =
-    typeof body.period === 'string' && body.period.trim() !== ''
-      ? body.period
-      : new Date().getFullYear().toString();
-
-  const id = crypto.randomUUID();
-  const newRecord = {
-    id,
-    organizationId: orgId,
-    controlId: body.controlId,
-    testType,
-    period,
-    result,
-    testedBy: userId,
-    testDate: new Date(),
-    sampleSize: body.sampleSize || 0,
-    comments: body.comments,
-    homogeneityJustification: body.homogeneityJustification,
-    evaluationAttributes: body.evaluationAttributes,
-    todPilarObjective: body.todPilarObjective,
-    todPilarTiming: body.todPilarTiming,
-    todPilarAuthority: body.todPilarAuthority,
-    todPilarReliability: body.todPilarReliability,
-    todPilarCoverage: body.todPilarCoverage,
-    todPilarEvidence: body.todPilarEvidence,
-    todPilarComments: body.todPilarComments,
-  };
-
-  await db.insert(testRecords).values(newRecord as any);
-
-  await triggerAuditDeficiency(db, {
-    verdict: result,
-    organizationId: orgId,
-    controlId: body.controlId,
-    period,
+  const created = await createTestRecord({
+    db,
+    orgId,
     userId,
-    testType,
-    comments: body.comments,
+    body,
+    decide: decideTestSubmission,
+  });
+  if (created.outcome === 'rejected') {
+    return bad(c, created.code, created.httpStatus, created.message);
+  }
+
+  // The ONE deliberate difference from POST /csa/testing-records: a `/tests`
+  // verdict also feeds the Lini 3 audit deficiency.
+  await triggerAuditDeficiency(db, {
+    verdict: created.record.result,
+    organizationId: orgId,
+    controlId: created.record.controlId,
+    period: created.record.period,
+    userId,
+    testType: created.record.testType === 'TOD' ? 'TOD' : 'TOE',
+    comments: created.record.comments,
   });
 
-  if (body.samples && Array.isArray(body.samples) && body.samples.length > 0) {
-    const samplesToInsert = body.samples.map((s: any) => ({
-      id: crypto.randomUUID(),
-      organizationId: orgId,
-      testRecordId: id,
-      sampleRef: s.sampleRef,
-      attrA: s.attrA,
-      attrB: s.attrB,
-      attrC: s.attrC,
-      attrD: s.attrD,
-      status: s.status || 'Pass',
-      comments: s.comments
-    }));
-    await db.insert(testSamples).values(samplesToInsert);
-  }
-
-  return ok(c, newRecord);
+  return ok(c, created.record);
 });
 
 csaSamplesTestingRoute.get('/csa/testing-records', async (c) => {
@@ -247,34 +199,16 @@ csaSamplesTestingRoute.post('/csa/testing-records', async (c) => {
   const userId = c.get('userId');
   const body = await c.req.json<Partial<TestRecord>>();
 
-  if (!body.controlId) return bad(c, 'controlId is required');
-
-  // Server recomputes the verdict through the single testing-decision
-  // seam — body.result is treated as a claim, never as the decision.
-  const controlRow = await fetchTestingControl(db, body.controlId, orgId);
-  const decision = decideTestingRecord(controlRow, body);
-
-  if (!decision.isValid || decision.verdict === undefined) {
-    return bad(
-      c,
-      'Sample size is below Table 22 minimum without homogeneity justification',
-    );
+  const created = await createTestRecord({
+    db,
+    orgId,
+    userId,
+    body,
+    decide: decideTestingRecord,
+  });
+  if (created.outcome === 'rejected') {
+    return bad(c, created.code, created.httpStatus, created.message);
   }
 
-  const id = crypto.randomUUID();
-  const newRecord = {
-    id,
-    organizationId: orgId,
-    controlId: body.controlId,
-    testType: body.testType === 'TOD' ? 'TOD' : 'TOE',
-    period: body.period || new Date().getFullYear().toString(),
-    result: decision.verdict,
-    testedBy: userId,
-    testDate: new Date(),
-    sampleSize: body.sampleSize || 0,
-    comments: body.comments,
-  };
-
-  await db.insert(testRecords).values(newRecord);
-  return ok(c, newRecord);
+  return ok(c, created.record);
 });
