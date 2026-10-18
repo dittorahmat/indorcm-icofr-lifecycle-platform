@@ -1,38 +1,41 @@
-import React from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Network, ShieldCheck, AlertCircle, FileSearch, Plus, Info, Globe, Edit, Trash2 } from 'lucide-react';
-import { api } from '@/lib/api-client';
-import type { SOCReport, Application, Vendor } from '@shared/types';
-import { SOCReviewDialog } from '@/components/audit/SOCReviewDialog';
-import { AddApplicationDialog } from '@/components/rcm/AddApplicationDialog';
-import { AddVendorDialog } from '@/components/audit/AddVendorDialog';
-import { AddSOCReportDialog } from '@/components/audit/AddSOCReportDialog';
-import { ApplicationDetailDialog } from '@/components/rcm/ApplicationDetailDialog';
-import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
-import { toast } from 'sonner';
-import { useConfirm } from '@/hooks/use-confirm';
-
-import { 
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-
 import { PageHeader } from '@/components/layout/PageHeader';
-import { MobileDesktopBanner } from '@/components/layout/MobileDesktopBanner';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AddApplicationDialog } from '@/components/rcm/AddApplicationDialog';
+import { ApplicationDetailDialog } from '@/components/rcm/ApplicationDetailDialog';
+import { AddSOCReportDialog } from '@/components/audit/AddSOCReportDialog';
+import { AddVendorDialog } from '@/components/audit/AddVendorDialog';
+import { SOCReviewDialog } from '@/components/audit/SOCReviewDialog';
+import { useConfirm } from '@/hooks/use-confirm';
+import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
+import type { Application, SOCReport } from '@shared/types';
+import { useSocMonitoring } from './useSocMonitoring';
+import { SignificantApplicationInventory } from './components/SignificantApplicationInventory';
+import { SocMonitoringHeaderActions } from './components/SocMonitoringHeaderActions';
+import { SocMonitoringSummary } from './components/SocMonitoringSummary';
+import { SocRepository } from './components/SocRepository';
+import { Table1ComplianceNote } from './components/Table1ComplianceNote';
 
+/**
+ * Orchestrator for the significant-application inventory + SOC repository
+ * (Bab III.1.5 & 4.3). Data/write live in `useSocMonitoring`, badge decisions
+ * in `soc-monitoring-badges`, both views are thin adapters under `./components`.
+ * This file owns composition + local dialog state only.
+ */
 export function SOCMonitoringPage() {
   const confirm = useConfirm();
-  const { t } = useTranslation(['sidebar', 'rcm', 'scoping', 'common']);
-  const queryClient = useQueryClient();
+  const { t } = useTranslation(['rcm', 'common']);
+  const {
+    applications,
+    socReports,
+    vendors,
+    isLoadingApplications,
+    isLoadingSocReports,
+    removeApplication,
+  } = useSocMonitoring();
+
   const [selectedReport, setSelectedReport] = React.useState<SOCReport | null>(null);
   const [editingApp, setEditingApp] = React.useState<Application | null>(null);
   const [selectedAppDetail, setSelectedAppDetail] = React.useState<Application | null>(null);
@@ -40,462 +43,90 @@ export function SOCMonitoringPage() {
   const [isAddVendorModalOpen, setIsAddVendorModalOpen] = React.useState(false);
   const [isAddSOCModalOpen, setIsAddSOCModalOpen] = React.useState(false);
 
-  // Protected state if any modal is open
-  useUnsavedChanges(isAddAppModalOpen || isAddVendorModalOpen || isAddSOCModalOpen || !!selectedReport || !!editingApp || !!selectedAppDetail);
+  useUnsavedChanges(
+    isAddAppModalOpen || isAddVendorModalOpen || isAddSOCModalOpen ||
+      !!selectedReport || !!editingApp || !!selectedAppDetail,
+  );
 
-  const { data: appsData, isLoading: isLoadingApps } = useQuery({
-    queryKey: ['applications'],
-    queryFn: () => api<{ items: Application[] }>('/api/applications'),
-  });
+  const handleDelete = useCallback(
+    async (application: Application) => {
+      const ok = await confirm({
+        title: t('rcm:soc.delete_app_title', { defaultValue: 'Remove Application' }),
+        description: t('rcm:soc.delete_app_description', {
+          defaultValue:
+            'Are you sure you want to remove application "{{name}}" from library? This will delete all scoping and RCM associations for this application.',
+          name: application.name,
+        }),
+        confirmText: t('common:actions.delete', { defaultValue: 'Delete' }),
+        variant: 'destructive',
+      });
+      if (ok) removeApplication(application.id);
+    },
+    [confirm, removeApplication, t],
+  );
 
-  const deleteAppMutation = useMutation({
-    mutationFn: (id: string) => 
-      api(`/api/applications/${id}`, { method: 'DELETE' }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['applications'] });
-      toast.success("Application removed from library");
-    }
-  });
-
-  const { data: socResponse, isLoading: isLoadingSOC } = useQuery({
-    queryKey: ['soc-reports'],
-    queryFn: () => api<{ items: SOCReport[] }>('/api/soc-reports'),
-  });
-  const socData = socResponse?.items || [];
-
-  const { data: vendorsData } = useQuery({
-    queryKey: ['vendors'],
-    queryFn: () => api<{ items: Vendor[] }>('/api/vendors'),
-  });
-  const vendors = vendorsData?.items || [];
-
-  const validReportsCount = socData?.filter(s => s.status === 'Valid').length || 0;
-  const expiredReportsCount = socData?.filter(s => s.status === 'Expired').length || 0;
+  const validReportsCount = socReports.filter((report) => report.status === 'Valid').length;
+  const expiredReportsCount = socReports.filter((report) => report.status === 'Expired').length;
 
   return (
     <AppLayout container>
       <div className="space-y-6">
-        <PageHeader 
-          title={t('items.applications', { ns: 'sidebar' }) + " & IT Assets"}
-          description="Evaluation of 3rd Parties and Significant Applications (Bab III.1.5 & 4.3)."
+        <PageHeader
+          title={t('rcm:soc.page_title', { defaultValue: 'Application Inventory & IT Assets' })}
+          description={t('rcm:soc.page_description', {
+            defaultValue: 'Evaluation of 3rd Parties and Significant Applications (Bab III.1.5 & 4.3).',
+          })}
         >
-          <Button variant="outline" className="gap-2 bg-white w-full sm:w-auto h-11 sm:h-10 min-h-[44px] justify-center" onClick={() => setIsAddVendorModalOpen(true)}>
-            <Globe className="h-4 w-4" /> Add Vendor
-          </Button>
-          <Button variant="outline" className="gap-2 bg-white w-full sm:w-auto h-11 sm:h-10 min-h-[44px] justify-center" onClick={() => setIsAddSOCModalOpen(true)}>
-            <ShieldCheck className="h-4 w-4" /> Register SOC
-          </Button>
-          <Button className="gap-2 bg-indigo-600 hover:bg-indigo-700 shadow-lg w-full sm:w-auto h-11 sm:h-10 min-h-[44px] justify-center" onClick={() => setIsAddAppModalOpen(true)}>
-            <Plus className="h-4 w-4" /> Add Application
-          </Button>
+          <SocMonitoringHeaderActions
+            onAddVendor={() => setIsAddVendorModalOpen(true)}
+            onRegisterSoc={() => setIsAddSOCModalOpen(true)}
+            onAddApplication={() => setIsAddAppModalOpen(true)}
+          />
         </PageHeader>
 
-          <Tabs defaultValue="apps">
+        <Tabs defaultValue="apps">
           <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain no-scrollbar -mx-1 px-1">
-          <TabsList className="flex w-full sm:w-auto sm:grid sm:grid-cols-2 sm:max-w-[400px] min-w-max sm:min-w-0 gap-1 min-h-[44px]">
-            <TabsTrigger value="apps" className="flex-1 sm:flex-none min-h-[44px] min-w-[140px] sm:min-w-0 px-4 text-xs font-semibold">Significant Applications</TabsTrigger>
-            <TabsTrigger value="soc" className="flex-1 sm:flex-none min-h-[44px] min-w-[140px] sm:min-w-0 px-4 text-xs font-semibold">SOC Monitoring</TabsTrigger>
-          </TabsList>
+            <TabsList className="flex w-full sm:w-auto sm:grid sm:grid-cols-2 sm:max-w-[400px] min-w-max sm:min-w-0 gap-1 min-h-[44px]">
+              <TabsTrigger value="apps" className="flex-1 sm:flex-none min-h-[44px] min-w-[140px] sm:min-w-0 px-4 text-xs font-semibold">
+                {t('rcm:soc.tab.applications', { defaultValue: 'Significant Applications' })}
+              </TabsTrigger>
+              <TabsTrigger value="soc" className="flex-1 sm:flex-none min-h-[44px] min-w-[140px] sm:min-w-0 px-4 text-xs font-semibold">
+                {t('rcm:soc.tab.reports', { defaultValue: 'SOC Monitoring' })}
+              </TabsTrigger>
+            </TabsList>
           </div>
 
-          {/* TAB 1: APPLICATIONS */}
           <TabsContent value="apps" className="space-y-6 pt-4">
-            <Card className="shadow-sm">
-              <CardHeader>
-                <CardTitle>Significant Application Inventory</CardTitle>
-                <CardDescription>Inventory of IT assets affecting ICOFR and their ITGC status (Tabel 1).</CardDescription>
-              </CardHeader>
-              <CardContent className="p-0 sm:p-6">
-                <div className="px-4 pt-4 sm:px-0 sm:pt-0">
-                  <MobileDesktopBanner recordCount={appsData?.items?.length} />
-                </div>
-                <div className="block md:hidden space-y-3 px-4 sm:px-0">
-                  {isLoadingApps ? (
-                    <p className="text-center py-8 text-xs text-muted-foreground">Loading...</p>
-                  ) : !appsData?.items.length ? (
-                    <p className="text-center py-8 text-xs text-muted-foreground">No applications found. Click "Add Application" to start.</p>
-                  ) : (
-                    appsData.items.map((app) => (
-                      <div key={app.id} className="rounded-lg border border-border bg-card p-4 shadow-sm">
-                        <div className="flex items-start justify-between gap-2 flex-wrap">
-                          <button
-                            type="button"
-                            onClick={() => setSelectedAppDetail(app)}
-                            className="min-w-0 text-left text-xs font-bold text-foreground hover:text-indigo-600 hover:underline min-h-[44px]"
-                          >
-                            {app.name}
-                          </button>
-                          <Badge
-                            variant="outline"
-                            className={app.isSignificant
-                              ? "bg-emerald-50 text-emerald-700 border-emerald-200 font-bold text-xs shrink-0"
-                              : "bg-slate-50 text-slate-500 border-slate-200 text-xs shrink-0"
-                            }
-                          >
-                            {app.isSignificant ? "Yes" : "No"}
-                          </Badge>
-                        </div>
-                        <div className="mt-2 flex items-center gap-2 flex-wrap">
-                          <Badge variant={app.criticality === 'High' ? 'destructive' : 'default'} className="text-xs">
-                            {app.criticality}
-                          </Badge>
-                          <Badge className={
-                            app.statusITGC === 'Effective' ? "bg-green-100 text-green-700 shrink-0" :
-                            app.statusITGC === 'Ineffective' ? "bg-red-100 text-red-700 shrink-0" : "bg-muted text-slate-500 shrink-0"
-                          }>
-                            {app.statusITGC || 'Not Tested'}
-                          </Badge>
-                          <span className="text-xs text-muted-foreground">
-                            {t('rcm:application_detail.linkedControls', { defaultValue: 'Kontrol' })}: <span className="font-bold">{app.linkedControlCount || 0}</span>
-                          </span>
-                        </div>
-                        <div className="mt-3 flex gap-2">
-                          <Button variant="outline" size="sm" className="flex-1 min-h-[44px] text-xs font-semibold" onClick={() => setSelectedAppDetail(app)}>
-                            {t('rcm:application_detail.title', { defaultValue: 'Details' })}
-                          </Button>
-                          <Button variant="ghost" size="sm" aria-label={t('common:actions.edit', { defaultValue: 'Edit application' })} className="min-h-[44px] min-w-[44px] px-3" onClick={() => setEditingApp(app)}>
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-                <div className="hidden md:block overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint">
-                <Table className="min-w-[880px]">
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Application Name</TableHead>
-                      <TableHead>ICOFR Scope (Y/N)</TableHead>
-                      <TableHead>Business Owner</TableHead>
-                      <TableHead>Application Owner</TableHead>
-
-                      <TableHead>Application Architecture</TableHead>
-                      <TableHead>Criticality</TableHead>
-                      <TableHead>ITGC Status</TableHead>
-                      <TableHead>Linked Controls</TableHead>
-                      <TableHead>ITGC Areas (Table 1 Mapping)</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {isLoadingApps ? (
-                      <TableRow><TableCell colSpan={10} className="h-24 text-center">Loading...</TableCell></TableRow>
-                    ) : !appsData?.items.length ? (
-                      <TableRow>
-                        <TableCell colSpan={10} className="h-32 text-center text-slate-400">
-                          No applications found. Click "Add Application" to start.
-                        </TableCell>
-                      </TableRow>
-                    ) : appsData.items.map((app) => {
-                      const mappedAreas = app.itgcAreas || [];
-                      const busOwners = app.businessOwners || [];
-                      const appOwners = app.applicationOwners || [];
-                      
-                      return (
-                        <TableRow 
-                          key={app.id} 
-                          className="hover:bg-indigo-50/30 transition-colors cursor-pointer group"
-                          onClick={() => setSelectedAppDetail(app)}
-                        >
-                          <TableCell className="font-semibold text-slate-800 whitespace-nowrap">
-                            <div className="flex items-center gap-2">
-                              <span className="group-hover:text-indigo-600 group-hover:underline transition-colors">
-                                {app.name}
-                              </span>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-11 sm:h-6 min-h-[44px] sm:min-h-0 px-2 sm:px-1.5 text-xs text-indigo-600 hover:bg-indigo-50 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:group-focus-visible:opacity-100 focus-visible:opacity-100 transition-opacity"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedAppDetail(app);
-                                }}
-                              >
-                                {t('rcm:application_detail.title', { defaultValue: 'Details' })}
-                              </Button>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge 
-                              variant="outline" 
-                              className={app.isSignificant 
-                                ? "bg-emerald-50 text-emerald-700 border-emerald-200 font-bold text-xs" 
-                                : "bg-slate-50 text-slate-500 border-slate-200 text-xs"
-                              }
-                            >
-                              {app.isSignificant ? "Yes" : "No"}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex flex-wrap gap-1">
-                              {busOwners.length > 0 ? (
-                                busOwners.map((owner) => (
-                                  <Badge key={owner} variant="secondary" className="text-xs bg-slate-100 text-slate-700 font-normal">
-                                    {owner}
-                                  </Badge>
-                                ))
-                              ) : (
-                                <span className="text-xs text-slate-400">-</span>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex flex-wrap gap-1">
-                              {appOwners.length > 0 ? (
-                                appOwners.map((owner) => (
-                                  <Badge key={owner} variant="secondary" className="text-xs bg-indigo-50 text-indigo-700 font-normal border border-indigo-100">
-                                    {owner}
-                                  </Badge>
-                                ))
-                              ) : (
-                                <span className="text-xs text-slate-400">-</span>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell onClick={(e) => e.stopPropagation()}>
-                            {app.architectureDocUrl || app.architectureDocName ? (
-                              <a 
-                                href={app.architectureDocUrl || "#"} 
-                                target="_blank" 
-                                rel="noreferrer"
-                                download={app.architectureDocName || "Architecture.pdf"}
-                                className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors text-xs font-medium border border-blue-200 max-w-[160px] truncate"
-                                title={app.architectureDocName || "Architecture Document"}
-                              >
-                                <FileSearch className="h-3.5 w-3.5 flex-shrink-0 text-blue-600" />
-                                <span className="truncate">{app.architectureDocName || "Architecture.pdf"}</span>
-                              </a>
-                            ) : (
-                              <span className="text-xs text-slate-400">No document</span>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant={app.criticality === 'High' ? 'destructive' : 'default'} className="text-xs">
-                              {app.criticality}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Badge className={
-                              app.statusITGC === 'Effective' ? "bg-green-100 text-green-700" :
-                              app.statusITGC === 'Ineffective' ? "bg-red-100 text-red-700" : "bg-muted text-slate-500"
-                            }>
-                              {app.statusITGC || 'Not Tested'}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <span className={`font-bold ${app.linkedControlCount === 0 ? 'text-destructive' : 'text-slate-600'}`}>
-                              {app.linkedControlCount || 0}
-                            </span>
-                          </TableCell>
-                          <TableCell>
-                            <TooltipProvider>
-                              <div className="flex gap-1 flex-wrap">
-                                {mappedAreas.map(area => (
-                                  <Tooltip key={area}>
-                                    <TooltipTrigger asChild>
-                                      <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200 uppercase font-black cursor-help">
-                                        {area.split(' ').map(word => word[0]).join('')}
-                                      </Badge>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p className="text-xs">{area}</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                ))}
-                                {mappedAreas.length === 0 && <span className="text-xs text-slate-400">No mapping</span>}
-                              </div>
-                            </TooltipProvider>
-                          </TableCell>
-                          <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                            <div className="flex flex-wrap justify-end gap-1">
-                              <Button variant="ghost" size="icon" aria-label={t('common:actions.edit', { defaultValue: 'Edit application' })} className="h-11 w-11 sm:h-8 sm:w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 text-slate-400 hover:text-indigo-600" onClick={() => setEditingApp(app)}>
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                aria-label={t('common:actions.delete', { defaultValue: 'Remove application' })}
-                                className="h-11 w-11 sm:h-8 sm:w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 text-slate-400 hover:text-destructive" 
-                                onClick={async () => {
-                                  const ok = await confirm({
-                                    title: "Remove Application",
-                                    description: `Are you sure you want to remove application "${app.name}" from library? This will delete all scoping and RCM associations for this application.`,
-                                    confirmText: t('common:actions.delete'),
-                                    variant: 'destructive'
-                                  });
-                                  if (ok) {
-                                    deleteAppMutation.mutate(app.id);
-                                  }
-                                }}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-                </div>
-              </CardContent>
-            </Card>
-
-            <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 flex items-start gap-3">
-              <Info className="h-5 w-5 text-blue-600 mt-0.5" />
-              <div className="space-y-1">
-                <p className="text-xs font-bold text-blue-800 uppercase tracking-wide">Table 1 Compliance: COBIT to ITGC Mapping</p>
-                <p className="text-xs text-blue-700 leading-relaxed">
-                  In accordance with SK-5 Table 1 regulation, each IT control (COBIT 2019) is automatically mapped to 4 main ITGC areas: 
-                  Access to Program & Data, Program Change, Program Development, and Computer Operations.
-                </p>
-              </div>
-            </div>
+            <SignificantApplicationInventory
+              applications={applications}
+              isLoading={isLoadingApplications}
+              onView={setSelectedAppDetail}
+              onEdit={setEditingApp}
+              onDelete={handleDelete}
+            />
+            <Table1ComplianceNote />
           </TabsContent>
 
-          {/* TAB 2: SOC MONITORING */}
           <TabsContent value="soc" className="space-y-6 pt-4">
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-               <Card className="bg-green-50 border-green-200 shadow-sm">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-xs font-bold uppercase text-green-800 flex items-center gap-2">
-                      <ShieldCheck className="h-4 w-4" /> Valid Reports
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent><div className="text-2xl font-bold text-green-900">{validReportsCount}</div></CardContent>
-               </Card>
-               <Card className="bg-red-50 border-red-200 shadow-sm">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-xs font-bold uppercase text-red-800 flex items-center gap-2">
-                      <AlertCircle className="h-4 w-4" /> Expired / Missing
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent><div className="text-2xl font-bold text-red-900">{expiredReportsCount}</div></CardContent>
-               </Card>
-               <Card className="bg-blue-50 border-blue-200 shadow-sm">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-xs font-bold uppercase text-blue-800 flex items-center gap-2">
-                      <Network className="h-4 w-4" /> Total Vendors
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent><div className="text-2xl font-bold text-blue-900">{vendors?.length || 0}</div></CardContent>
-               </Card>
-            </div>
-
-            <Card className="shadow-sm">
-              <CardHeader>
-                <CardTitle>Service Organization Control (SOC) Repository</CardTitle>
-                <CardDescription>Formal review of third-party assurance reports to ensure financial reporting data integrity.</CardDescription>
-              </CardHeader>
-              <CardContent className="p-0 sm:p-6">
-                <div className="px-4 pt-4 sm:px-0 sm:pt-0">
-                  <MobileDesktopBanner recordCount={socData?.length} />
-                </div>
-                <div className="block md:hidden space-y-3 px-4 sm:px-0">
-                  {isLoadingSOC ? (
-                    <p className="text-center py-8 text-xs text-muted-foreground">Loading SOC data...</p>
-                  ) : !socData?.length ? (
-                    <p className="text-center py-8 text-xs text-muted-foreground">No SOC reports found. Register a vendor and report to begin.</p>
-                  ) : (
-                    socData.map((soc) => (
-                      <div key={soc.id} className="rounded-lg border border-border bg-card p-4 shadow-sm">
-                        <div className="flex items-start justify-between gap-2 flex-wrap">
-                          <div className="min-w-0">
-                            <p className="text-xs font-bold text-foreground leading-snug">{soc.vendorName}</p>
-                            <p className="mt-0.5 text-xs text-muted-foreground">{soc.reportType}</p>
-                          </div>
-                          <Badge className={
-                            soc.status === 'Valid' ? "bg-green-100 text-green-700 hover:bg-green-100 shrink-0" :
-                            "bg-red-100 text-red-700 hover:bg-red-100 shrink-0"
-                          }>
-                            {soc.status}
-                          </Badge>
-                        </div>
-                        <p className="mt-2 text-xs text-muted-foreground">
-                          {new Date(soc.periodStart).toLocaleDateString()} - {new Date(soc.periodEnd).toLocaleDateString()}
-                        </p>
-                        <Button variant="ghost" size="sm" onClick={() => setSelectedReport(soc)} className="mt-2 w-full min-h-[44px] gap-2 text-xs font-semibold text-indigo-600 hover:bg-indigo-50">
-                          <FileSearch className="h-4 w-4" /> Review
-                        </Button>
-                      </div>
-                    ))
-                  )}
-                </div>
-                <div className="hidden md:block overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint">
-                <Table className="min-w-[720px]">
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Vendor Name</TableHead>
-                      <TableHead>Report Type</TableHead>
-                      <TableHead>Coverage Period</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Evaluation</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {isLoadingSOC ? (
-                      <TableRow><TableCell colSpan={6} className="h-24 text-center">Loading SOC data...</TableCell></TableRow>
-                    ) : !socData?.length ? (
-                      <TableRow>
-                        <TableCell colSpan={6} className="h-32 text-center text-slate-400">
-                          No SOC reports found. Register a vendor and report to begin.
-                        </TableCell>
-                      </TableRow>
-                    ) : socData.map((soc) => (
-                      <TableRow key={soc.id} className="hover:bg-slate-50/50 transition-colors">
-                        <TableCell className="font-semibold text-slate-800">{soc.vendorName}</TableCell>
-                        <TableCell className="text-xs">{soc.reportType}</TableCell>
-                        <TableCell className="text-xs whitespace-nowrap">
-                          {new Date(soc.periodStart).toLocaleDateString()} - {new Date(soc.periodEnd).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell>
-                          <Badge className={
-                            soc.status === 'Valid' ? "bg-green-100 text-green-700 hover:bg-green-100" :
-                            "bg-red-100 text-red-700 hover:bg-red-100"
-                          }>
-                            {soc.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {soc.evaluation?.id ? (
-                            <Badge variant="outline" className="text-xs gap-1 border-green-200 text-green-700 bg-green-50">
-                              <ShieldCheck className="h-3 w-3" /> Reviewed
-                            </Badge>
-                          ) : (
-                            <Badge variant="outline" className="text-xs gap-1 border-amber-200 text-amber-700 bg-amber-50">
-                              <AlertCircle className="h-3 w-3" /> Pending Review
-                            </Badge>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button variant="ghost" size="sm" onClick={() => setSelectedReport(soc)} className="gap-2 text-indigo-600 hover:bg-indigo-50 h-11 sm:h-8 min-h-[44px] sm:min-h-0 px-3 text-xs font-semibold">
-                            <FileSearch className="h-4 w-4" /> Review
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-                </div>
-              </CardContent>
-            </Card>
+            <SocMonitoringSummary
+              validReports={validReportsCount}
+              expiredReports={expiredReportsCount}
+              totalVendors={vendors.length}
+            />
+            <SocRepository reports={socReports} isLoading={isLoadingSocReports} onReview={setSelectedReport} />
           </TabsContent>
         </Tabs>
 
         {selectedReport && (
-          <SOCReviewDialog 
+          <SOCReviewDialog
             report={selectedReport}
             isOpen={!!selectedReport}
             onClose={() => setSelectedReport(null)}
-            onSave={() => {
-              setSelectedReport(null);
-            }}
+            onSave={() => setSelectedReport(null)}
           />
         )}
 
-        <AddApplicationDialog 
+        <AddApplicationDialog
           isOpen={isAddAppModalOpen || !!editingApp}
           onOpenChange={(open) => {
             if (!open) {
@@ -508,15 +139,9 @@ export function SOCMonitoringPage() {
           initialData={editingApp}
         />
 
-        <AddVendorDialog 
-          isOpen={isAddVendorModalOpen}
-          onOpenChange={setIsAddVendorModalOpen}
-        />
+        <AddVendorDialog isOpen={isAddVendorModalOpen} onOpenChange={setIsAddVendorModalOpen} />
 
-        <AddSOCReportDialog 
-          isOpen={isAddSOCModalOpen}
-          onOpenChange={setIsAddSOCModalOpen}
-        />
+        <AddSOCReportDialog isOpen={isAddSOCModalOpen} onOpenChange={setIsAddSOCModalOpen} />
 
         <ApplicationDetailDialog
           application={selectedAppDetail}
@@ -524,9 +149,9 @@ export function SOCMonitoringPage() {
           onOpenChange={(open) => {
             if (!open) setSelectedAppDetail(null);
           }}
-          onEditApplication={(app) => {
+          onEditApplication={(application) => {
             setSelectedAppDetail(null);
-            setEditingApp(app);
+            setEditingApp(application);
           }}
         />
       </div>

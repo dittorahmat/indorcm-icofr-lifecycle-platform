@@ -28,11 +28,15 @@ bpm.get('/bpm-diagrams', async (c) => {
   return ok(c, { items });
 });
 
-// FIXME(arch): mutating GET, needs verb change + client caller update
-bpm.all('/bpm-diagrams/cleanup-flow-prefix', async (c) => {
+// Maintenance: strips the legacy `Flow: ` prefix from every diagram name in the
+// tenant. POST — not ALL — because it writes, Admin-gated because it rewrites the
+// whole tenant's diagrams, and it requires a real org context instead of silently
+// falling back to a default tenant.
+bpm.post('/bpm-diagrams/cleanup-flow-prefix', rbac(['Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const bpmService = new BpmService(db);
-  const orgId = c.get('organizationId') || 'org_default';
+  const orgId = c.get('organizationId');
+  if (!orgId) return bad(c, 'ORG_CONTEXT_REQUIRED', 400, 'Missing organization context');
   const result = await bpmService.cleanupFlowPrefixes(orgId);
   return ok(c, result);
 });
