@@ -1,8 +1,5 @@
-import { eq, and, or, sql, like, inArray, aliasedTable, type SQL } from 'drizzle-orm';
-import {
-  rcms, controls, rcmControls, bpmProcesses, bpmDiagrams, bpmNodeRcms,
-  accountAssertions, todEvaluations, organization
-} from '../db/schema';
+import { eq, and, inArray } from 'drizzle-orm';
+import { rcmControls, todEvaluations, organization } from '../db/schema';
 import type { DrizzleDb } from '../db';
 import type {
   CreateVerificationDesignBody,
@@ -14,6 +11,7 @@ import {
   getCosoComponent, matchesNoGL, projectVerificationRow,
 } from './rcm-matrix-write';
 import { createMatrixWriteDeps } from './rcm-matrix-drizzle';
+import { buildMatrixSelect, type MatrixReadInput } from './rcm-matrix-select';
 
 interface TodPilarFields {
   pilarObjective: string | null;
@@ -29,9 +27,10 @@ interface TodPilarFields {
 }
 
 /** Thin facade over the rcm-matrix-write domain module (arch-09 T4).
- *  Matrix reads stay here; verification writes (allow-lists, TOD upsert via
- *  decideTest, auto-deficiency, consolidated batch) live behind the domain
- *  seam. Routes are thin adapters. */
+ *  Matrix reads go through the single TLC/ELC/ITGC select builder
+ *  (rcm-matrix-select.ts, arch-09 R9-3) and differ only in their projection
+ *  tail; verification writes (allow-lists, TOD upsert via decideTest,
+ *  auto-deficiency, consolidated batch) live behind the domain seam. */
 export class RcmMatrixService {
   constructor(private db: DrizzleDb) {}
 
@@ -68,229 +67,27 @@ export class RcmMatrixService {
     return { companyName: org?.name ?? 'N/A', locationCode: org?.entityCode ?? 'N/A' };
   }
 
+  /** Every matrix level reads through the one builder: SQL per kind lives in
+   *  the builder, each getter keeps only its own projection tail. */
+  private async readMatrix(input: MatrixReadInput) {
+    const results = await buildMatrixSelect(this.db, input);
+    const withTods = await this.attachTods(input.orgId, results);
+    const org = await this.orgMeta(input.orgId);
+    return { withTods, org };
+  }
+
   async getTlcMatrix(orgId: string, bpmProcessId?: string, year?: string, noGL?: string) {
-    const parentProcess = aliasedTable(bpmProcesses, "parent_process");
-
-    const query = this.db.select({
-      mappingId: rcmControls.id,
-      rcmId: rcms.id,
-      controlId: controls.id,
-      bpmProcessId: bpmProcesses.id,
-      parentId: bpmProcesses.parentId,
-      level: bpmProcesses.level,
-      parentProcessName: sql<string>`COALESCE(${parentProcess.name}, ${bpmProcesses.name}, ${rcms.process})`,
-      parentBpmCode: sql<string>`COALESCE(${parentProcess.bpmCode}, ${bpmProcesses.bpmCode})`,
-      processName: sql<string>`COALESCE(${parentProcess.name}, ${bpmProcesses.name}, ${rcms.process})`,
-      subProcessName: sql<string>`CASE 
-        WHEN ${parentProcess.id} IS NOT NULL THEN ${bpmProcesses.name}
-        ELSE COALESCE(${bpmDiagrams.name}, ${rcms.subProcess}, '-')
-      END`,
-      fsliName: sql<string>`COALESCE(${parentProcess.fsliName}, ${bpmProcesses.fsliName})`,
-      noGL: sql<string>`COALESCE(${noGL || null}, ${parentProcess.noGL}, ${bpmProcesses.noGL})`,
-      riskDescription: rcms.riskDescription,
-      isFraudRelated: rcms.isFraudRelated,
-      riskRating: rcms.riskRating,
-      controlCode: controls.code,
-      baseControlName: controls.name,
-      baseControlDescription: controls.description,
-      mappedControlName: rcmControls.controlName,
-      mappedControlDescription: rcmControls.controlDescription,
-      ipoC: rcmControls.ipoC,
-      ipoA: rcmControls.ipoA,
-      ipoV: rcmControls.ipoV,
-      ipoRa: rcmControls.ipoRa,
-      assertionE: rcmControls.assertionE,
-      assertionC: rcmControls.assertionC,
-      assertionA: rcmControls.assertionA,
-      assertionCo: rcmControls.assertionCo,
-      assertionVa: rcmControls.assertionVa,
-      assertionRo: rcmControls.assertionRo,
-      assertionPd: rcmControls.assertionPd,
-      defE: accountAssertions.assertionE,
-      defC: accountAssertions.assertionC,
-      defA: accountAssertions.assertionA,
-      defCo: accountAssertions.assertionCo,
-      defRo: accountAssertions.assertionRo,
-      defVa: accountAssertions.assertionVa,
-      defPd: accountAssertions.assertionPd,
-      controlType: rcmControls.controlType,
-      controlNature: rcmControls.controlNature,
-      automatedSubNature: rcmControls.automatedControlType,
-      frequency: rcmControls.frequency,
-      isKeyControl: rcmControls.isKeyControl,
-      supportingDocs: rcmControls.supportingDocs,
-      supportingApp: rcmControls.supportingApp,
-      applicationId: rcmControls.applicationId,
-      executingFunction: rcmControls.executingFunction,
-      executorRole: rcmControls.executorRole,
-      affectedFsliItem: rcmControls.affectedFsliItem,
-      effectivePeriod: rcmControls.effectivePeriod,
-    })
-    .from(rcmControls)
-    .innerJoin(rcms, eq(rcmControls.rcmId, rcms.id))
-    .innerJoin(controls, eq(rcmControls.controlId, controls.id))
-    .leftJoin(bpmNodeRcms, eq(rcms.id, bpmNodeRcms.rcmId))
-    .leftJoin(bpmDiagrams, eq(bpmNodeRcms.diagramId, bpmDiagrams.id))
-    .leftJoin(bpmProcesses, or(
-      eq(controls.bpmProcessId, bpmProcesses.id),
-      eq(bpmDiagrams.subProcess, bpmProcesses.name)
-    ))
-    .leftJoin(parentProcess, eq(bpmProcesses.parentId, parentProcess.id))
-    .leftJoin(accountAssertions, and(
-      eq(sql`COALESCE(${parentProcess.fsliName}, ${bpmProcesses.fsliName})`, accountAssertions.fsliName),
-      eq(accountAssertions.noGL, noGL ? noGL : sql`COALESCE(${parentProcess.noGL}, ${bpmProcesses.noGL})`),
-      eq(bpmProcesses.organizationId, accountAssertions.organizationId)
-    ));
-
-    const conds: SQL[] = [
-      eq(rcmControls.organizationId, orgId),
-      eq(controls.level, 'TLC')
-    ];
-    if (bpmProcessId && bpmProcessId !== 'undefined') conds.push(eq(controls.bpmProcessId, bpmProcessId));
-    if (year) conds.push(eq(rcms.year, parseInt(year)));
-    if (noGL && noGL !== 'undefined') {
-      conds.push(or(
-        like(rcms.id, `%-${noGL}`),
-        sql`${controls.fsliCodes}::jsonb ? ${noGL}`
-      ) as SQL);
-    }
-
-    const results = await query.where(and(...conds));
-    const withTods = await this.attachTods(orgId, results);
-    const org = await this.orgMeta(orgId);
+    const { withTods, org } = await this.readMatrix({ kind: 'TLC', orgId, bpmProcessId, year, noGL });
     return withTods.map((row) => ({ ...applyAssertionFallback(row), ...org }));
   }
 
   async getElcMatrix(orgId: string, year?: string) {
-    const parentProcess = aliasedTable(bpmProcesses, "parent_process");
-
-    const conds: SQL[] = [
-      eq(rcmControls.organizationId, orgId),
-      eq(controls.level, 'ELC')
-    ];
-    if (year) conds.push(eq(rcms.year, parseInt(year)));
-
-    const results = await this.db.select({
-      mappingId: rcmControls.id,
-      rcmId: rcms.id,
-      controlId: controls.id,
-      bpmProcessId: bpmProcesses.id,
-      parentId: bpmProcesses.parentId,
-      level: bpmProcesses.level,
-      parentProcessName: sql<string>`COALESCE(${parentProcess.name}, ${bpmProcesses.name}, ${rcms.process})`,
-      parentBpmCode: sql<string>`COALESCE(${parentProcess.bpmCode}, ${bpmProcesses.bpmCode})`,
-      processName: sql<string>`COALESCE(${parentProcess.name}, ${bpmProcesses.name}, ${rcms.process})`,
-      subProcessName: sql<string>`CASE 
-        WHEN ${parentProcess.id} IS NOT NULL THEN ${bpmProcesses.name}
-        ELSE COALESCE(${bpmDiagrams.name}, ${rcms.subProcess}, '-')
-      END`,
-      riskDescription: rcms.riskDescription,
-      isFraudRelated: rcms.isFraudRelated,
-      riskRating: rcms.riskRating,
-      controlCode: controls.code,
-      baseControlName: controls.name,
-      baseControlDescription: controls.description,
-      mappedControlName: rcmControls.controlName,
-      mappedControlDescription: rcmControls.controlDescription,
-      ipoC: rcmControls.ipoC,
-      ipoA: rcmControls.ipoA,
-      ipoV: rcmControls.ipoV,
-      ipoRa: rcmControls.ipoRa,
-      assertionE: rcmControls.assertionE,
-      assertionC: rcmControls.assertionC,
-      assertionA: rcmControls.assertionA,
-      assertionCo: rcmControls.assertionCo,
-      assertionVa: rcmControls.assertionVa,
-      assertionRo: rcmControls.assertionRo,
-      assertionPd: rcmControls.assertionPd,
-      controlType: rcmControls.controlType,
-      controlNature: rcmControls.controlNature,
-      automatedSubNature: rcmControls.automatedControlType,
-      frequency: rcmControls.frequency,
-      isKeyControl: rcmControls.isKeyControl,
-      supportingDocs: rcmControls.supportingDocs,
-      supportingApp: rcmControls.supportingApp,
-      applicationId: rcmControls.applicationId,
-      executingFunction: rcmControls.executingFunction,
-      executorRole: rcmControls.executorRole,
-      affectedFsliItem: rcmControls.affectedFsliItem,
-      effectivePeriod: rcmControls.effectivePeriod,
-      cosoPrinciples: rcmControls.cosoPrinciples,
-    })
-    .from(rcmControls)
-    .innerJoin(rcms, eq(rcmControls.rcmId, rcms.id))
-    .innerJoin(controls, eq(rcmControls.controlId, controls.id))
-    .leftJoin(bpmNodeRcms, eq(rcms.id, bpmNodeRcms.rcmId))
-    .leftJoin(bpmDiagrams, eq(bpmNodeRcms.diagramId, bpmDiagrams.id))
-    .leftJoin(bpmProcesses, or(
-      eq(controls.bpmProcessId, bpmProcesses.id),
-      eq(bpmDiagrams.subProcess, bpmProcesses.name)
-    ))
-    .leftJoin(parentProcess, eq(bpmProcesses.parentId, parentProcess.id))
-    .where(and(...conds));
-
-    const withTods = await this.attachTods(orgId, results);
-    const org = await this.orgMeta(orgId);
+    const { withTods, org } = await this.readMatrix({ kind: 'ELC', orgId, year });
     return withTods.map((row) => ({ ...row, cosoComponent: getCosoComponent(row.cosoPrinciples), ...org }));
   }
 
   async getItgcMatrix(orgId: string, year?: string, bpmProcessId?: string) {
-    const parentProcess = aliasedTable(bpmProcesses, "parent_process");
-
-    const conds: SQL[] = [
-      eq(rcmControls.organizationId, orgId),
-      eq(controls.level, 'ITGC')
-    ];
-    if (year) conds.push(eq(rcms.year, parseInt(year)));
-    if (bpmProcessId && bpmProcessId !== 'undefined') conds.push(eq(controls.bpmProcessId, bpmProcessId));
-
-    const results = await this.db.select({
-      mappingId: rcmControls.id,
-      rcmId: rcms.id,
-      controlId: controls.id,
-      bpmProcessId: bpmProcesses.id,
-      parentId: bpmProcesses.parentId,
-      level: bpmProcesses.level,
-      parentProcessName: sql<string>`COALESCE(${parentProcess.name}, ${bpmProcesses.name}, ${rcms.process})`,
-      parentBpmCode: sql<string>`COALESCE(${parentProcess.bpmCode}, ${bpmProcesses.bpmCode})`,
-      processName: sql<string>`COALESCE(${parentProcess.name}, ${bpmProcesses.name}, ${rcms.process})`,
-      subProcessName: sql<string>`CASE 
-        WHEN ${parentProcess.id} IS NOT NULL THEN ${bpmProcesses.name}
-        ELSE COALESCE(${bpmDiagrams.name}, ${rcms.subProcess}, '-')
-      END`,
-      riskDescription: rcms.riskDescription,
-      isFraudRelated: rcms.isFraudRelated,
-      riskRating: rcms.riskRating,
-      controlCode: controls.code,
-      baseControlName: controls.name,
-      baseControlDescription: controls.description,
-      mappedControlName: rcmControls.controlName,
-      mappedControlDescription: rcmControls.controlDescription,
-      itgcDomain: rcmControls.itgcDomain,
-      itgcAssertions: rcmControls.itgcAssertions,
-      controlType: rcmControls.controlType,
-      controlNature: rcmControls.controlNature,
-      automatedSubNature: rcmControls.automatedControlType,
-      frequency: rcmControls.frequency,
-      isKeyControl: rcmControls.isKeyControl,
-      supportingDocs: rcmControls.supportingDocs,
-      supportingApp: rcmControls.supportingApp,
-      applicationId: rcmControls.applicationId,
-      executingFunction: rcmControls.executingFunction,
-      executorRole: rcmControls.executorRole,
-      affectedFsliItem: rcmControls.affectedFsliItem,
-      effectivePeriod: rcmControls.effectivePeriod,
-    })
-    .from(rcmControls)
-    .innerJoin(rcms, eq(rcmControls.rcmId, rcms.id))
-    .innerJoin(controls, eq(rcmControls.controlId, controls.id))
-    .leftJoin(bpmNodeRcms, eq(rcms.id, bpmNodeRcms.rcmId))
-    .leftJoin(bpmDiagrams, eq(bpmNodeRcms.diagramId, bpmDiagrams.id))
-    .leftJoin(parentProcess, eq(bpmProcesses.parentId, parentProcess.id))
-    .where(and(...conds));
-
-    const withTods = await this.attachTods(orgId, results);
-    const org = await this.orgMeta(orgId);
+    const { withTods, org } = await this.readMatrix({ kind: 'ITGC', orgId, year, bpmProcessId });
     return withTods.map((row) => ({ ...row, ...org }));
   }
 
