@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import type { HonoEnv } from '../app';
 import { ok, bad, notFound } from '../lib/utils';
+import { rbac } from '../lib/guard';
 import { getDb } from '../db';
 import { 
   applications, applicationDocuments, controls, user, vendors, socReports
@@ -20,7 +21,7 @@ infrastructure.get('/applications', async (c) => {
   return ok(c, { items });
 });
 
-infrastructure.post('/applications', async (c) => {
+infrastructure.post('/applications', rbac(['Line 1', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const body = await c.req.json<any>();
@@ -43,7 +44,7 @@ infrastructure.post('/applications', async (c) => {
   return ok(c, { id, name: body.name || "New Application" });
 });
 
-infrastructure.patch('/applications/:id', async (c) => {
+infrastructure.patch('/applications/:id', rbac(['Line 1', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const id = c.req.param('id');
   const orgId = c.get('organizationId');
@@ -68,7 +69,7 @@ infrastructure.patch('/applications/:id', async (c) => {
   return ok(c, { success: true });
 });
 
-infrastructure.delete('/applications/:id', async (c) => {
+infrastructure.delete('/applications/:id', rbac(['Line 1', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const id = c.req.param('id');
   const orgId = c.get('organizationId');
@@ -100,7 +101,7 @@ infrastructure.get('/applications/:id/documents', async (c) => {
   return ok(c, { items });
 });
 
-infrastructure.post('/applications/:id/documents/upload', async (c) => {
+infrastructure.post('/applications/:id/documents/upload', rbac(['Line 1', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const appId = c.req.param('id');
   const orgId = c.get('organizationId');
@@ -164,7 +165,7 @@ infrastructure.post('/applications/:id/documents/upload', async (c) => {
   }
 });
 
-infrastructure.delete('/applications/:id/documents/:docId', async (c) => {
+infrastructure.delete('/applications/:id/documents/:docId', rbac(['Line 1', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const appId = c.req.param('id');
   const docId = c.req.param('docId');
@@ -250,7 +251,7 @@ infrastructure.get('/vendors', async (c) => {
   return ok(c, { items });
 });
 
-infrastructure.post('/vendors', async (c) => {
+infrastructure.post('/vendors', rbac(['Line 1', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const body = await c.req.json<any>();
@@ -272,7 +273,7 @@ infrastructure.get('/soc-reports', async (c) => {
   return ok(c, { items });
 });
 
-infrastructure.post('/soc-reports', async (c) => {
+infrastructure.post('/soc-reports', rbac(['Line 1', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const body = await c.req.json<any>();
@@ -295,7 +296,7 @@ infrastructure.post('/soc-reports', async (c) => {
   return ok(c, { id });
 });
 
-infrastructure.post('/soc-reports/:id/evaluate', async (c) => {
+infrastructure.post('/soc-reports/:id/evaluate', rbac(['Line 2', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const body = await c.req.json<SocEvaluationBody>();
@@ -313,7 +314,7 @@ infrastructure.post('/soc-reports/:id/evaluate', async (c) => {
   return ok(c, { id: created.id });
 });
 
-infrastructure.post('/soc-evaluations', async (c) => {
+infrastructure.post('/soc-evaluations', rbac(['Line 2', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const body = await c.req.json<SocEvaluationBody>();
