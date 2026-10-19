@@ -25,6 +25,7 @@
   "validateAndSignOff": "Validate & Sign Off",
   "rollbackValidation": "Rollback Validation",
   "requestDeletion": "Request Deletion",
+  "approveDeletion": "Approve Deletion",
   "rejectDeletion": "Reject Deletion",
   "quickNotes": {
     "title": "Quick Preset Notes",

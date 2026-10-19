@@ -5,7 +5,7 @@ import { getDb } from '../../db';
 import { simulations } from '../../db/schema';
 import { eq, and } from 'drizzle-orm';
 import type { ApprovalHistoryEntry, WorkflowAction } from "@shared/types";
-import { decideSimulationTransition, resolveSimulationStatus, SIMULATION_DELETION_STATUS } from "@shared/scoping-simulation-status";
+import { decideSimulationTransition, resolveSimulationStatus, simulationStatusColumns, SIMULATION_DELETION_STATUS } from "@shared/scoping-simulation-status";
 import { decideTransition } from "@shared/workflow-transitions";
 import { AuditService } from "../../services/audit-service";
 import { invalidateAiCachesForOrg } from "../../services/ai-service";
@@ -82,8 +82,7 @@ simulationLifecycle.post('/simulations/:id/approve', rbac(['CFO', 'Commissioner'
 
   await db.update(simulations)
     .set({
-      status: decision.nextStatus,
-      workflowStatus: decision.nextStatus,
+      ...simulationStatusColumns(decision.nextStatus),
       history: [...history, newHistoryEntry],
       updatedAt: new Date(),
     })
@@ -121,8 +120,6 @@ simulationLifecycle.post('/simulations/:id/reject', rbac(['CFO', 'Commissioner',
   const status = resolveSimulationStatus(sim);
   const decision = decideSimulationTransition({ status, role: userRole, action: 'Reject', note: body.note });
   if (decision.ok === false) return bad(c, decision.code, decision.status, decision.message);
-  // A rejection always transitions; only Approve can authorise deletion.
-  if (decision.kind !== 'transition') return bad(c, 'SIMULATION_NOT_AWAITING_APPROVAL', 400, `Simulation status "${status}" is not awaiting a rejection`);
 
   const history = Array.isArray(sim.history) ? sim.history : [];
   const newHistoryEntry: ApprovalHistoryEntry = {
@@ -136,8 +133,7 @@ simulationLifecycle.post('/simulations/:id/reject', rbac(['CFO', 'Commissioner',
 
   await db.update(simulations)
     .set({
-      status: decision.nextStatus,
-      workflowStatus: decision.nextStatus,
+      ...simulationStatusColumns(decision.nextStatus),
       history: [...history, newHistoryEntry],
       updatedAt: new Date(),
     })
@@ -195,8 +191,7 @@ simulationLifecycle.post('/simulations/:id/request-deletion', rbac(['Line 2', 'A
 
   await db.update(simulations)
     .set({
-      status: SIMULATION_DELETION_STATUS,
-      workflowStatus: SIMULATION_DELETION_STATUS,
+      ...simulationStatusColumns(SIMULATION_DELETION_STATUS),
       history: [...history, newHistoryEntry],
       updatedAt: new Date(),
     })

@@ -14,7 +14,7 @@ import { ScopingEditorHeader } from './ScopingEditorHeader';
 import { ScopingEditorContent } from './ScopingEditorContent';
 import { MaterialityParamsCard } from './MaterialityParamsCard';
 import type { MaterialitySimulation } from '@shared/types';
-import { isSimulationStatus, resolveSimulationStatus, simulationTimeline } from '@shared/scoping-simulation-status';
+import { isSimulationStatus, resolveSimulationStatus, simulationStatusColumns, simulationTimeline } from '@shared/scoping-simulation-status';
 
 interface ScopingEditorProps {
   simulation: MaterialitySimulation;
@@ -205,7 +205,7 @@ export function ScopingEditor({ simulation, onBack }: ScopingEditorProps) {
                 onStatusChange={(newStatus) => {
                   queryClient.invalidateQueries({ queryKey: ['simulations'] });
                   if (isSimulationStatus(newStatus)) {
-                    setSimState(prev => ({ ...prev, status: newStatus, workflowStatus: newStatus }));
+                    setSimState(prev => ({ ...prev, ...simulationStatusColumns(newStatus) }));
                   }
                   setIsWorkflowOpen(false);
                 }}

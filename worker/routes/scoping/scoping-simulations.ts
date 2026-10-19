@@ -10,6 +10,7 @@ import type {
   MaterialitySimulation,
 } from "@shared/types";
 import { computeSimulationMateriality, basisProblemForSnapshot } from '@shared/scoping-materiality';
+import { simulationStatusColumns } from '@shared/scoping-simulation-status';
 import { ScopingService } from '../../services/scoping-service';
 import { AuditService } from "../../services/audit-service";
 import { getQualitativeDefaults } from '../../services/scoping-defaults';
@@ -114,7 +115,7 @@ simulationRoutes.post('/simulations', rbac(['Line 2', 'Admin']), async (c) => {
     id, organizationId: orgId,
     name: body.name || "New Simulation",
     year: targetYear,
-    status: "Draft",
+    ...simulationStatusColumns('Draft'),
     omValue: materiality.omValue,
     pmValue: materiality.pmValue,
     significantAccounts: materiality.significantAccounts,

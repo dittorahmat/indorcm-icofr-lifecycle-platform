@@ -11,6 +11,9 @@ export type WorkflowEntityType = 'BPM' | 'ACTION_PLAN' | 'SCOPING' | 'RCM_CHANGE
 export interface StepRule {
   allowedActions: WorkflowAction[];
   nextStatus: Partial<Record<WorkflowAction, string>>;
+  /** Authority per action. May also declare an action with no `nextStatus`
+   *  (row deletion) — `decideTransition` rejects it as a transition, while
+   *  `allowedRolesFor`/`allowedRolesAt` still report who may perform it. */
   requiredRole?: Partial<Record<WorkflowAction, UserRole[]>>;
   requiresNote?: WorkflowAction[];
 }

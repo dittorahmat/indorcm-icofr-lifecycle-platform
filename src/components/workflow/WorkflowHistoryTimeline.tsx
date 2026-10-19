@@ -2,12 +2,12 @@ import React from 'react';
 import { WorkflowHistoryEntry, ApprovalHistoryEntry } from '@shared/types';
 import { format } from 'date-fns';
 import { 
-  CheckCircle2, XCircle, Send, MessageSquare, 
-  User, Clock, History, RotateCcw, Search, Trash2, Undo2
+  User, Clock, History
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { useTranslation } from 'react-i18next';
+import { isWorkflowRejection, workflowActionDotClass, workflowActionIcon } from './workflow-action-meta';
 
 interface WorkflowHistoryTimelineProps {
   history: (WorkflowHistoryEntry | ApprovalHistoryEntry)[];
@@ -28,36 +28,6 @@ export function WorkflowHistoryTimeline({ history }: WorkflowHistoryTimelineProp
   // Sort history by timestamp descending (newest first)
   const sortedHistory = [...history].sort((a, b) => b.timestamp - a.timestamp);
 
-  const getActionIcon = (action: string) => {
-    switch (action) {
-      case 'Submit': return <Send className="h-3 w-3" />;
-      case 'Review': return <Search className="h-3 w-3" />;
-      case 'Approve': return <CheckCircle2 className="h-3 w-3" />;
-      case 'Reject': return <XCircle className="h-3 w-3" />;
-      case 'Rollback': return <RotateCcw className="h-3 w-3" />;
-      case 'Update': return <History className="h-3 w-3" />;
-      case 'Request Deletion':
-      case 'Approve Deletion': return <Trash2 className="h-3 w-3" />;
-      case 'Reject Deletion': return <Undo2 className="h-3 w-3" />;
-      default: return <MessageSquare className="h-3 w-3" />;
-    }
-  };
-
-  const getActionColor = (action: string) => {
-    switch (action) {
-      case 'Submit': return 'bg-blue-500';
-      case 'Review': return 'bg-indigo-500';
-      case 'Approve': return 'bg-green-500';
-      case 'Reject': return 'bg-red-500';
-      case 'Rollback': return 'bg-rose-500';
-      case 'Update': return 'bg-amber-500';
-      case 'Request Deletion': return 'bg-amber-600';
-      case 'Approve Deletion': return 'bg-rose-600';
-      case 'Reject Deletion': return 'bg-slate-500';
-      default: return 'bg-slate-500';
-    }
-  };
-
   return (
     <div className="space-y-6 relative before:absolute before:inset-0 before:ml-4 before:-translate-x-px before:h-full before:w-0.5 before:bg-slate-200 dark:before:bg-slate-800">
       {sortedHistory.map((entry, index) => (
@@ -65,9 +35,9 @@ export function WorkflowHistoryTimeline({ history }: WorkflowHistoryTimelineProp
           {/* Timeline Dot */}
           <div className={cn(
             "absolute left-0 mt-1.5 h-8 w-8 rounded-full border-4 border-white flex items-center justify-center text-white shadow-sm z-10 transition-transform group-hover:scale-110",
-            getActionColor(entry.action)
+            workflowActionDotClass(entry.action)
           )}>
-            {getActionIcon(entry.action)}
+            {workflowActionIcon(entry.action)}
           </div>
 
           <div className="flex-1 ml-10">
@@ -98,7 +68,7 @@ export function WorkflowHistoryTimeline({ history }: WorkflowHistoryTimelineProp
                   <p className="text-xs text-slate-400 font-bold uppercase tracking-tighter mb-1">{entry.userId}</p>
                   <p className={cn(
                     "text-xs leading-relaxed",
-                    entry.action === 'Reject' || entry.action === 'Rollback' ? "text-red-700 font-medium not-italic" : "text-slate-600"
+                    isWorkflowRejection(entry.action) || entry.action === 'Rollback' ? "text-red-700 font-medium not-italic" : "text-slate-600"
                   )}>
                     {entry.note || "No comments provided."}
                   </p>

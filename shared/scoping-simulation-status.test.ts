@@ -3,6 +3,8 @@ import {
   decideSimulationTransition,
   isSimulationStatus,
   resolveSimulationStatus,
+  simulationApprovalStages,
+  simulationStatusColumns,
   simulationTimeline,
   SIMULATION_DELETION_STATUS,
 } from './scoping-simulation-status';
@@ -112,8 +114,18 @@ describe('simulation lifecycle derives from the canonical SCOPING table', () => 
     for (const status of ['Draft', 'Pending CFO', 'Pending Komut', 'Approved', 'Rejected', SIMULATION_DELETION_STATUS]) {
       expect(isSimulationStatus(status)).toBe(true);
     }
-    expect(isSimulationStatus('Pending Update Approval')).toBe(false);
+    // Reserved status: no writer produces it, but a legacy row must not resolve
+    // to Draft (which would unlock and allow resubmission).
+    expect(isSimulationStatus('Pending Update Approval')).toBe(true);
     expect(isSimulationStatus(undefined)).toBe(false);
+  });
+
+  it('moves both status columns together', () => {
+    expect(simulationStatusColumns('Pending CFO')).toEqual({ status: 'Pending CFO', workflowStatus: 'Pending CFO' });
+  });
+
+  it('derives the approver queue stages from the table, not a third list', () => {
+    expect(simulationApprovalStages()).toEqual(['Pending CFO', 'Pending Komut', 'Pending Deletion Approval']);
   });
 
   it('resolves the authoritative status column before the legacy mirror', () => {

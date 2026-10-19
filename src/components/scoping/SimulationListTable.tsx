@@ -11,6 +11,7 @@ import { MaterialitySimulation, SimulationStatus } from '@shared/types';
 import { resolveSimulationStatus } from '@shared/scoping-simulation-status';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 import { SignificantLocationModal } from './SignificantLocationModal';
 
 import { useSimulationSnapshot } from '@/hooks/use-bpm';
@@ -25,6 +26,7 @@ interface SimulationListTableProps {
 }
 
 export function SimulationListTable({ data, onSelect, onDelete, isLoading }: SimulationListTableProps) {
+  const { t } = useTranslation(['common', 'workflow']);
   const [locModalOpen, setLocModalOpen] = React.useState(false);
   const [selectedSim, setSelectedSim] = React.useState<MaterialitySimulation | null>(null);
   const [showFullTable, setShowFullTable] = React.useState(false);
@@ -55,6 +57,7 @@ export function SimulationListTable({ data, onSelect, onDelete, isLoading }: Sim
       case 'Pending CFO': return <Badge variant="secondary" className="bg-amber-100 text-amber-700 border-amber-200 font-bold px-3">Review CFO</Badge>;
       case 'Pending Komut': return <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-200 font-bold px-3">Review Komut</Badge>;
       case 'Pending Deletion Approval': return <Badge variant="destructive" className="bg-rose-100 text-rose-800 border-rose-200 font-bold px-3">Pending Deletion</Badge>;
+      case 'Pending Update Approval': return <Badge variant="secondary" className="bg-purple-100 text-purple-700 border-purple-200 font-bold px-3">Pending Update</Badge>;
       case 'Rejected': return <Badge variant="destructive" className="font-bold px-3">Rejected</Badge>;
       default: return <Badge variant="outline" className="font-bold px-3">{status}</Badge>;
     }
@@ -86,7 +89,7 @@ export function SimulationListTable({ data, onSelect, onDelete, isLoading }: Sim
                 size="icon"
                 aria-label="Delete simulation"
                 disabled={status === 'Pending Deletion Approval'}
-                title={status === 'Approved' ? 'Request Deletion' : 'Delete'}
+                title={status === 'Approved' ? t('workflow:requestDeletion', { defaultValue: 'Request Deletion' }) : t('common:actions.delete', { defaultValue: 'Delete' })}
                 className="min-h-[44px] min-w-[44px] text-slate-300 hover:text-red-600 disabled:opacity-30"
                 onClick={() => onDelete(sim.id)}
               >
@@ -175,7 +178,7 @@ export function SimulationListTable({ data, onSelect, onDelete, isLoading }: Sim
                     variant="ghost" 
                     size="icon" 
                     disabled={status === 'Pending Deletion Approval'}
-                    title={status === 'Approved' ? 'Request Deletion' : 'Delete'}
+                    title={status === 'Approved' ? t('workflow:requestDeletion', { defaultValue: 'Request Deletion' }) : t('common:actions.delete', { defaultValue: 'Delete' })}
                     className="min-h-[44px] min-w-[44px] text-slate-300 hover:text-red-600 transition-colors disabled:opacity-30"
                     onClick={() => onDelete(sim.id)}
                   >

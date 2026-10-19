@@ -264,21 +264,28 @@ Two status columns (`simulations.status` and the legacy `workflowStatus`) were
 written by different paths — `/submit` and the approve/reject/deletion routes
 touched only `status`, `/workflow` touched both, and the UI read
 `workflowStatus || status` with the editor locked from `workflowStatus` alone.
-Every SCOPING write now sets both, the workflow adapter loads through
-`resolveSimulationStatus` (authoritative `status` first, mirror as fallback), and
-the screens read the same resolver. The panel also receives
+`simulationStatusColumns` now produces both columns at every write (create,
+submit, approve/reject, deletion request, and the panel's local status update),
+the workflow adapter loads through `resolveSimulationStatus` (authoritative
+`status` first, mirror as fallback), and the screens (list, editor header, shell,
+approval queue, sidebar badge) read the same resolver. The panel also receives
 `simulationTimeline(simState)` — the approval log and the generic workflow log
 merged and deduped — so a CFO decision taken in the panel is visible where the
-approval decision is.
+approval decision is, and the approval queue derives its stages from the table
+(`simulationApprovalStages`) instead of a third status list.
 
 Tests lock the new matrix end to end: the decision contract (`kind:
 'transition' | 'delete'`), the table literals the routes read through,
-`allowedRolesAt` including the non-transition deletion authority, the status set
-and resolver, the timeline merge, and the blueprint labels for the two deletion
-steps.
+`allowedRolesAt` including the non-transition deletion authority, the status
+set/resolver, the two-column writer, the derived approval stages, the timeline
+merge, and the blueprint labels for the two deletion steps.
 
 Deliberately not changed (disclosed):
 
+- **Deletion approval stays on `ApprovalPage`, not in `WorkflowPanel`.** The
+  panel drives status transitions through `/workflow`; approving a deletion
+  removes the row, so it keeps its own destructive surface (and its
+  `APPROVE_DELETION` audit entry). The panel exposes the `Reject Deletion` step.
 - **`/simulations/:id/submit` keeps its narrower `rbac(['Line 2','Admin'])`**
   while the table still admits `Line 1` (the panel's submit path allowed it).
   Submission policy was not the issue; the route now at least rejects any status
@@ -289,6 +296,13 @@ Deliberately not changed (disclosed):
 - **`/simulations/:id/workflow` and `/approve|/reject` remain two entry points**
   for the same transitions; both now read the same table and write the same
   columns. Collapsing them is a route-surface change, not an architecture one.
+- **`Pending Update Approval` stays in the `SimulationStatus` union as a
+  reserved member** (no writer produces it). Removing it would make
+  `resolveSimulationStatus` downgrade a legacy row to `Draft` — unlocked and
+  resubmittable — which is worse than a dead member.
+- **The route wiring is not locked by a database test.** The repo has no scoping
+  lifecycle integration harness; the decision matrix, the two-column writer and
+  the derived stages are unit-tested, and the routes call them.
 
 ## Round 11 follow-ups
 

@@ -1,6 +1,6 @@
 import type { ApprovalHistoryEntry, SimulationStatus, WorkflowAction, WorkflowHistoryEntry } from './types/scoping';
 import type { UserRole } from './types/common';
-import { allowedRolesFor, requiresNoteFor, WORKFLOW_TRANSITION_RULES } from './workflow-transitions';
+import { allowedRolesFor, requiresNoteFor, allowedActionsFor, workflowStatusesFor, WORKFLOW_TRANSITION_RULES } from './workflow-transitions';
 
 /**
  * Single owner of the materiality-simulation approval lifecycle (arch round 8,
@@ -34,6 +34,9 @@ const SIMULATION_STATUS_SET: Record<SimulationStatus, true> = {
   Approved: true,
   Rejected: true,
   'Pending Deletion Approval': true,
+  // Reserved, not part of the simulation flow: no writer produces it, but a
+  // legacy row carrying it must not silently resolve to Draft (unlocked).
+  'Pending Update Approval': true,
 };
 
 export function isSimulationStatus(value: unknown): value is SimulationStatus {
@@ -67,6 +70,23 @@ export function simulationTimeline(row: {
   return [...byId.values()];
 }
 
+/** The two status columns must move together; `status` is authoritative. */
+export function simulationStatusColumns(status: SimulationStatus): {
+  status: SimulationStatus;
+  workflowStatus: SimulationStatus;
+} {
+  return { status, workflowStatus: status };
+}
+
+const DECISION_ACTIONS: readonly WorkflowAction[] = ['Review', 'Approve', 'Reject', 'Reject Deletion'];
+
+/** Steps where an approver, not the preparer, has to act — read from the table. */
+export function simulationApprovalStages(): SimulationStatus[] {
+  return workflowStatusesFor('SCOPING')
+    .filter((status) => allowedActionsFor('SCOPING', status).some((action) => DECISION_ACTIONS.includes(action)))
+    .filter(isSimulationStatus);
+}
+
 export type SimulationDecisionCode =
   | 'SIMULATION_NOT_AWAITING_APPROVAL'
   | 'SIMULATION_ROLE_FORBIDDEN'
@@ -85,6 +105,9 @@ export type SimulationDecision =
   | { ok: true; kind: 'delete' }
   | { ok: false; code: SimulationDecisionCode; message: string; status: number };
 
+/** A rejection can never delete a row, so its caller needs no `kind` branch. */
+export type SimulationRejectDecision = Exclude<SimulationDecision, { ok: true; kind: 'delete' }>;
+
 /** Which canonical action each route button means at each stage. */
 const CANONICAL_ACTION: Partial<Record<SimulationStatus, Record<SimulationReviewAction, WorkflowAction>>> = {
   'Pending CFO': { Approve: 'Review', Reject: 'Reject' },
@@ -101,6 +124,10 @@ function failure(code: SimulationDecisionCode, status: number, message: string):
 }
 
 /** Pure approval/rejection decision for one simulation stage. */
+export function decideSimulationTransition(
+  input: SimulationDecisionInput & { action: 'Reject' },
+): SimulationRejectDecision;
+export function decideSimulationTransition(input: SimulationDecisionInput): SimulationDecision;
 export function decideSimulationTransition(input: SimulationDecisionInput): SimulationDecision {
   const { status, role, action, note } = input;
 
@@ -132,7 +159,6 @@ export function decideSimulationTransition(input: SimulationDecisionInput): Simu
     );
   }
 
-  const historyAction: SimulationHistoryAction =
-    action === 'Reject' && status === SIMULATION_DELETION_STATUS ? 'Reject Deletion' : action;
+  const historyAction: SimulationHistoryAction = canonical === 'Reject Deletion' ? 'Reject Deletion' : action;
   return { ok: true, kind: 'transition', nextStatus, historyAction };
 }

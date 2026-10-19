@@ -25,6 +25,7 @@
   "validateAndSignOff": "Validasi & Sign Off",
   "rollbackValidation": "Rollback Validasi",
   "requestDeletion": "Ajukan Penghapusan",
+  "approveDeletion": "Setujui Penghapusan",
   "rejectDeletion": "Tolak Penghapusan",
   "quickNotes": {
     "title": "Preset Catatan Cepat",

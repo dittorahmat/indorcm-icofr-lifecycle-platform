@@ -56,6 +56,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { MaterialitySimulation, BPMProcess, ActionPlan, UserRole } from "@shared/types";
+import { allowedRolesAt } from "@shared/workflow-transitions";
+import { resolveSimulationStatus, simulationApprovalStages } from "@shared/scoping-simulation-status";
 
 import { authClient } from "@/lib/auth-client";
 import { useFiscalYearStore } from "@/store/useFiscalYearStore";
@@ -85,12 +87,14 @@ function PendingApprovalBadge({ role }: { role: UserRole | null | undefined }) {
     refetchInterval: 30000, // Poll every 30s
   });
 
-  const count = simulations?.items.filter(s => {
-    if (role === 'CFO') return s.status === 'Pending CFO';
-    if (role === 'Commissioner') return s.status === 'Pending Komut';
-    if (role === 'Admin') return s.status === 'Pending CFO' || s.status === 'Pending Komut';
-    return false;
-  }).length || 0;
+  // Same queue as ApprovalPage: stages and authority come from the SCOPING table.
+  const stages = simulationApprovalStages();
+  const count = role
+    ? (simulations?.items.filter(s => {
+        const status = resolveSimulationStatus(s);
+        return stages.includes(status) && allowedRolesAt('SCOPING', status).includes(role);
+      }).length ?? 0)
+    : 0;
 
   if (count === 0) return null;
 

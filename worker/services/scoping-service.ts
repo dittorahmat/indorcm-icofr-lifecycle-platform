@@ -9,7 +9,7 @@ import { AuditService } from './audit-service';
 import { AppError, SIMULATION_NOT_FOUND } from '../lib/utils';
 import { resolveSnapshotStatus } from '@shared/scoping-materiality';
 import { decideTransition } from '@shared/workflow-transitions';
-import { resolveSimulationStatus } from '@shared/scoping-simulation-status';
+import { resolveSimulationStatus, simulationStatusColumns } from '@shared/scoping-simulation-status';
 
 /** Chunk size for GL row inserts (single owner; was duplicated per route). */
 const GL_ROW_BATCH_SIZE = 100;
@@ -126,8 +126,7 @@ export class ScopingService {
 
     await this.db.update(simulations)
       .set({ 
-        status: nextStatus,
-        workflowStatus: nextStatus,
+        ...simulationStatusColumns(nextStatus),
         updatedAt: new Date(),
         omValue: body.omValue,
         pmValue: body.pmValue,

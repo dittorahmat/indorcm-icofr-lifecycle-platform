@@ -18,9 +18,9 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { MaterialitySimulation, GLSnapshot, SimulationStatus } from '@shared/types';
+import { MaterialitySimulation, GLSnapshot } from '@shared/types';
 import { allowedRolesAt } from '@shared/workflow-transitions';
-import { resolveSimulationStatus, simulationTimeline } from '@shared/scoping-simulation-status';
+import { resolveSimulationStatus, simulationApprovalStages, simulationTimeline } from '@shared/scoping-simulation-status';
 import { GLDataGrid } from '@/components/scoping/GLDataGrid';
 import { formatIDR } from '@/components/reports/dod/dod-format';
 import { ApprovalHistoryTimeline } from '@/components/scoping/ApprovalHistoryTimeline';
@@ -79,11 +79,13 @@ export function ApprovalPage() {
 
   // The stages that need a decision and the roles allowed at each of them both
   // come from the canonical SCOPING table — no second role→status map here.
-  const APPROVAL_STAGES: SimulationStatus[] = ['Pending CFO', 'Pending Komut', 'Pending Deletion Approval'];
+  const approvalStages = simulationApprovalStages();
   const pendingSims = simulations?.items.filter(s => {
     const status = resolveSimulationStatus(s);
-    return APPROVAL_STAGES.includes(status) && allowedRolesAt('SCOPING', status).includes(userRole);
+    return approvalStages.includes(status) && allowedRolesAt('SCOPING', status).includes(userRole);
   }) || [];
+  const queue = pendingSims.map(sim => ({ sim, status: resolveSimulationStatus(sim) }));
+  const selectedStatus = selectedSim ? resolveSimulationStatus(selectedSim) : null;
 
   const selectedSimId = selectedSim?.id;
 
@@ -125,16 +127,16 @@ export function ApprovalPage() {
                   <TableRow><TableCell colSpan={8} className="text-center py-10"><Loader2 className="h-8 w-8 animate-spin mx-auto text-muted-foreground" /></TableCell></TableRow>
                 ) : pendingSims.length === 0 ? (
                   <TableRow><TableCell colSpan={8} className="text-center py-10 text-muted-foreground">No simulations pending your review.</TableCell></TableRow>
-                ) : pendingSims.map(sim => (
+                ) : queue.map(({ sim, status }) => (
                   <TableRow key={sim.id}>
                     <TableCell className="font-medium">{sim.name}</TableCell>
                     <TableCell>
                       <Badge variant="secondary" className={cn(
-                        sim.status === 'Pending Deletion Approval' ? "bg-rose-100 text-rose-800 border-rose-200" :
-                        sim.status === 'Pending CFO' ? "bg-amber-100 text-amber-700 border-amber-200" : "bg-blue-100 text-blue-700 border-blue-200"
+                        status === 'Pending Deletion Approval' ? "bg-rose-100 text-rose-800 border-rose-200" :
+                        status === 'Pending CFO' ? "bg-amber-100 text-amber-700 border-amber-200" : "bg-blue-100 text-blue-700 border-blue-200"
                       )}>
-                        {sim.status === 'Pending Deletion Approval' ? (t('status.pendingDeletion', { defaultValue: 'Pending Deletion' })) :
-                         sim.status === 'Pending CFO' ? t('status.pendingCfo') : t('status.pendingKomut')}
+                        {status === 'Pending Deletion Approval' ? (t('status.pendingDeletion', { defaultValue: 'Pending Deletion' })) :
+                         status === 'Pending CFO' ? t('status.pendingCfo') : t('status.pendingKomut')}
                       </Badge>
                     </TableCell>
                     <TableCell>{sim.basis}</TableCell>
@@ -165,17 +167,17 @@ export function ApprovalPage() {
             <div className="h-48 flex items-center justify-center bg-card rounded-lg border p-6 text-center text-muted-foreground text-xs font-medium">
               {t('approval.queueDesc')}
             </div>
-          ) : pendingSims.map(sim => (
+          ) : queue.map(({ sim, status }) => (
             <div key={sim.id} className="bg-card border rounded-lg shadow-sm p-4 space-y-3">
               <div className="flex items-start justify-between gap-2 flex-wrap">
                 <p className="text-sm font-bold leading-tight">{sim.name}</p>
                 <Badge variant="secondary" className={cn(
                   "shrink-0",
-                  sim.status === 'Pending Deletion Approval' ? "bg-rose-100 text-rose-800 border-rose-200" :
-                  sim.status === 'Pending CFO' ? "bg-amber-100 text-amber-700 border-amber-200" : "bg-blue-100 text-blue-700 border-blue-200"
+                  status === 'Pending Deletion Approval' ? "bg-rose-100 text-rose-800 border-rose-200" :
+                  status === 'Pending CFO' ? "bg-amber-100 text-amber-700 border-amber-200" : "bg-blue-100 text-blue-700 border-blue-200"
                 )}>
-                  {sim.status === 'Pending Deletion Approval' ? (t('status.pendingDeletion', { defaultValue: 'Pending Deletion' })) :
-                   sim.status === 'Pending CFO' ? t('status.pendingCfo') : t('status.pendingKomut')}
+                  {status === 'Pending Deletion Approval' ? (t('status.pendingDeletion', { defaultValue: 'Pending Deletion' })) :
+                   status === 'Pending CFO' ? t('status.pendingCfo') : t('status.pendingKomut')}
                 </Badge>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -273,22 +275,22 @@ export function ApprovalPage() {
                     disabled={rejectMutation.isPending || !note || !selectedSimId}
                     className="gap-2 w-full sm:w-auto min-h-[44px]"
                   >
-                    <XCircle className="h-4 w-4" /> {selectedSim?.status === 'Pending Deletion Approval' ? 'Reject Deletion' : t('approval.rejectBtn')}
+                    <XCircle className="h-4 w-4" /> {selectedStatus === 'Pending Deletion Approval' ? t('workflow:rejectDeletion') : t('approval.rejectBtn')}
                   </Button>
                   <Button 
                     onClick={() => { if (selectedSimId) approveMutation.mutate(selectedSimId); }}
                     disabled={approveMutation.isPending || !selectedSimId}
                     className={cn(
                       "gap-2 w-full sm:w-auto min-h-[44px]",
-                      selectedSim?.status === 'Pending Deletion Approval'
+                      selectedStatus === 'Pending Deletion Approval'
                         ? "bg-red-600 hover:bg-red-700"
                         : "bg-green-600 hover:bg-green-700"
                     )}
                   >
                     <UserCheck className="h-4 w-4" /> {
-                      selectedSim?.status === 'Pending Deletion Approval'
-                        ? 'Approve Deletion'
-                        : userRole === 'CFO' ? t('approval.approveToKomutBtn') : t('approval.approveFinalBtn')
+                      selectedStatus === 'Pending Deletion Approval'
+                        ? t('workflow:approveDeletion')
+                        : selectedStatus === 'Pending CFO' ? t('approval.approveToKomutBtn') : t('approval.approveFinalBtn')
                     }
                   </Button>
                 </div>
