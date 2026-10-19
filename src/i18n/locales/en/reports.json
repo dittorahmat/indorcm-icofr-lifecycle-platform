@@ -129,7 +129,42 @@
     "closeCatalog": "Close Catalog",
     "resetLayout": "Reset Layout",
     "addRemoveWidgets": "Add/Remove Widgets",
-    "active": "Active"
+    "active": "Active",
+    "addCustomChart": "Add Custom Chart",
+    "noData": "No data available",
+    "noSummaryMetrics": "No summary metrics available",
+    "unsupported": "Unsupported format",
+    "kpi": {
+      "entityCluster": "Entity Cluster",
+      "lastReview": "Last Review",
+      "conclusion": "Conclusion",
+      "effective": "Effective",
+      "ineffective": "Ineffective",
+      "totalControls": "Total Controls"
+    },
+    "config": {
+      "title": "Widget Configuration",
+      "widgetTitle": "Widget Title",
+      "dataSource": "Data Source",
+      "vizType": "Visualization Type"
+    },
+    "widgets": {
+      "kpiSummary": "Compliance KPI Summary",
+      "riskHeatmap": "Risk Heatmap (SK-5/2024)",
+      "cosoHeatmap": "COSO 17 Principles Heatmap",
+      "deficienciesSeverity": "Deficiencies by Severity",
+      "deficiencyStatus": "Deficiency Status Details",
+      "custom": "Custom Chart Card"
+    },
+    "sources": {
+      "riskRegistry": "Risk Assessment Registry"
+    },
+    "viz": {
+      "summary": "KPI Card Group",
+      "heatmap": "Heatmap Matrix",
+      "bar": "Bar Chart (Column)",
+      "pie": "Donut Chart"
+    }
   },
   "dodReport": {
     "title": "APPENDIX 10",
