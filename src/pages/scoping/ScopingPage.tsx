@@ -8,7 +8,6 @@ import { GLSourceTable } from '@/components/scoping/GLSourceTable';
 import { SimulationListTable } from '@/components/scoping/SimulationListTable';
 import { SetBenchmarkModal } from '@/components/scoping/SetBenchmarkModal';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -21,28 +20,17 @@ import { usePurgeScoping } from './use-purge-scoping';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
-import { api } from '@/lib/api-client';
 import { useQueryClient } from '@tanstack/react-query';
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 import { SmartImportWizard } from '@/components/scoping/SmartImportWizard';
 import { RolloverPrompt } from '@/components/layout/RolloverPrompt';
 
 // New Decomposed Parts
-import { useScopingPage, useScopingEditor } from './hooks/useScopingPage';
-import { parseGLFile } from './services/gl-parser';
-import { MaterialityParamsCard } from './components/MaterialityParamsCard';
+import { useScopingPage } from './hooks/useScopingPage';
 import { ScopingSimulationForm } from './components/ScopingSimulationForm';
-import { ScopingEditorHeader } from './components/ScopingEditorHeader';
-import { ScopingEditorContent } from './components/ScopingEditorContent';
-import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
-import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
-import { WorkflowPanel } from "@/components/workflow/WorkflowPanel";
+import { ScopingEditor } from './components/ScopingEditorShell';
 import { Card, CardContent } from '@/components/ui/card';
-import { isJustificationComplete } from './services/materiality-justification';
-
-import type { MaterialitySimulation } from '@shared/types';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -115,14 +103,9 @@ export function ScopingPage() {
     if (ok) mutations.deleteSnap.mutate(id);
   };
 
-  const filterYear = workingYear;
-
-  const currentYear = new Date().getFullYear();
-  const dynamicYears = React.useMemo(() => {
-    const years = [];
-    for (let y = currentYear - 3; y <= currentYear + 1; y++) years.push(y.toString());
-    return years;
-  }, [currentYear]);
+  // A snapshot is only ready to base a simulation on when a benchmark FSLI
+  // exists, not merely when its status reads "Mapped" (legacy rows can lie).
+  const hasBenchmark = !!activeSnapshot?.benchmarkFsliNames?.length;
 
   if (selectedSimId) {
     const sim = simulations.find(s => s.id === selectedSimId);
@@ -164,12 +147,15 @@ export function ScopingPage() {
               <Button 
                 onClick={() => setIsCreating(true)} 
                 className="h-11 sm:h-10 min-h-[44px] sm:min-h-0 w-full sm:w-auto justify-center gap-2 bg-mancity-pattern text-primary-foreground hover:opacity-90 shadow-md shadow-blue-100 transition-all font-bold text-xs uppercase tracking-wider border-none" 
-                disabled={!activeSnapshot || activeSnapshot.status !== 'Mapped'}
+                disabled={!activeSnapshot || activeSnapshot.status !== 'Mapped' || !hasBenchmark}
               >
                 <Plus className="h-3.5 w-3.5" /> {t('scoping:simulation.createNew')}
               </Button>
             </div>
             {!activeSnapshot && <p className="text-xs font-bold text-rose-500 uppercase tracking-[0.1em]">{t('scoping:emptyState')}</p>}
+            {activeSnapshot && !hasBenchmark && (
+              <p className="text-xs font-bold text-amber-600 uppercase tracking-[0.1em]">{t('scoping:noBenchmarks')}</p>
+            )}
           </div>
         </PageHeader>
 
@@ -300,182 +286,6 @@ export function ScopingPage() {
         />
 
       </motion.div>
-    </AppLayout>
-  );
-}
-
-function ScopingEditor({ simulation, onBack }: { simulation: MaterialitySimulation, onBack: () => void }) {
-  const { t } = useTranslation('scoping');
-  const isMobile = useIsMobile();
-  const queryClient = useQueryClient();
-  const [isParamsOpen, setIsParamsOpen] = React.useState(!isMobile);
-  const [isWorkflowOpen, setIsWorkflowOpen] = React.useState(false);
-
-  // Sync initial state when isMobile resolves if user hasn't explicitly toggled
-  const hasUserToggledRef = React.useRef(false);
-  React.useEffect(() => {
-    if (!hasUserToggledRef.current) {
-      setIsParamsOpen(!isMobile);
-    }
-  }, [isMobile]);
-
-  const handleToggleParams = React.useCallback(() => {
-    hasUserToggledRef.current = true;
-    setIsParamsOpen(prev => !prev);
-  }, []);
-
-  const {
-    simState, setSimState, mergedGlData, entityHierarchy, selectedEntityCodes, setSelectedEntityCodes,
-    omValue, pmValue, multiplier, benchmarkValue, scopingCompliance,
-    departments, applications, localAppMappings, isLocked, mutations, handlers, isDirty,
-    draftBasis, setDraftBasis, draftOmPercentage, setDraftOmPercentage,
-    draftHaircutPercentage, setDraftHaircutPercentage, isStale, isRecalculating, handleRecalculate
-  } = useScopingEditor(simulation);
-
-  const handleOwnerAcceptanceChange = async (noGL: string, acceptance: "Accepted" | "Rejected") => {
-    if (isLocked) return;
-    try {
-      await api(`/api/gl-rows/${noGL}/owner-acceptance`, { method: 'PUT', body: JSON.stringify({ ownerAcceptance: acceptance }) });
-      toast.success(t('intake.notifications.ownerUpdated', { acceptance }));
-    } catch (error) {
-      toast.error(t('intake.notifications.ownerUpdateFailed'));
-    }
-  };
-
-  const handleQuickAddApp = async (name: string, accountCode: string) => {
-     // For now, delegate to existing logic if any, or implement simple version
-     toast.info("Add application functionality extracted to component props");
-  };
-
-  return (
-    <AppLayout container={false} noScroll className="bg-slate-100/30">
-      <div className="flex flex-col flex-1 min-h-0 min-w-0 p-4 md:p-6 space-y-4 overflow-y-auto md:overflow-hidden">
-        <div>
-          <ScopingEditorHeader 
-            simState={simState}
-            isLocked={isLocked}
-            onBack={onBack}
-            onSave={() => mutations.save.mutate(simState)}
-            isSaving={mutations.save.isPending}
-            omValue={omValue}
-            pmValue={pmValue}
-            isParamsOpen={isParamsOpen}
-            onToggleParams={handleToggleParams}
-          />
-        </div>
-
-        <div className="flex flex-col md:flex-row flex-1 min-h-0 min-w-0 gap-4 overflow-y-auto md:overflow-hidden w-full max-w-full pb-[calc(3.5rem+env(safe-area-inset-bottom,0px))] md:pb-0">
-          {isParamsOpen ? (
-            <div className="w-full md:w-[280px] shrink-0 min-h-0">
-              <div className="max-h-[42vh] overflow-y-auto md:max-h-none md:overflow-visible rounded-xl">
-              <MaterialityParamsCard 
-                simState={simState}
-                setSimState={setSimState}
-                multiplier={multiplier}
-                benchmarkValue={benchmarkValue}
-                omValue={omValue}
-                pmValue={pmValue}
-                isLocked={isLocked}
-                onClose={() => {
-                  hasUserToggledRef.current = true;
-                  setIsParamsOpen(false);
-                }}
-                draftBasis={draftBasis}
-                setDraftBasis={setDraftBasis}
-                draftOmPercentage={draftOmPercentage}
-                setDraftOmPercentage={setDraftOmPercentage}
-                draftHaircutPercentage={draftHaircutPercentage}
-                setDraftHaircutPercentage={setDraftHaircutPercentage}
-                isStale={isStale}
-                isRecalculating={isRecalculating}
-                handleRecalculate={handleRecalculate}
-                onSaveJustification={(justification) => {
-                  mutations.save.mutate({
-                    ...simState,
-                    materialityJustification: justification
-                  });
-                }}
-              />
-              </div>
-            </div>
-          ) : (
-            <button
-              type="button"
-              className="w-full md:w-8 shrink-0 flex flex-row md:flex-col items-center justify-center md:justify-start py-3 md:py-6 px-4 md:px-0 border border-slate-200 bg-white hover:bg-slate-50 hover:border-indigo-200 rounded-xl cursor-pointer transition-all shadow-sm hover:shadow-md group min-h-[44px] gap-2 md:gap-4 select-none focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
-              onClick={handleToggleParams}
-              title={t('params.show', { defaultValue: 'Show Parameters' })}
-              aria-label={t('params.show', { defaultValue: 'Show Parameters' })}
-              aria-expanded={false}
-            >
-              <Settings2 className="h-4 w-4 text-slate-500 group-hover:text-indigo-600 transition-colors duration-200 shrink-0" />
-              <span 
-                className="text-xs font-bold uppercase tracking-wider text-slate-700 group-hover:text-indigo-600 transition-colors duration-200 md:[writing-mode:vertical-rl]" 
-              >
-                {t('params.title', { defaultValue: 'Parameters' })}
-              </span>
-            </button>
-          )}
-
-          <div className="flex-grow min-h-0 min-w-0 flex flex-col">
-            <ScopingEditorContent 
-              simState={simState}
-              mergedGlData={mergedGlData}
-              entityHierarchy={entityHierarchy}
-              selectedEntityCodes={selectedEntityCodes}
-              onEntitySelectionChange={setSelectedEntityCodes}
-              omValue={omValue}
-              pmValue={pmValue}
-              isLocked={isLocked}
-              departments={departments}
-              applications={applications}
-              selectedApps={localAppMappings}
-              onAssessmentChange={handlers.onAssessmentChange}
-              onOwnerAcceptanceChange={handleOwnerAcceptanceChange}
-              onAssignDepartments={handlers.onAssignDepartments}
-              onAppsChange={handlers.onAppsChange}
-              onQuickAddApp={handleQuickAddApp}
-              onOpenWorkflow={() => setIsWorkflowOpen(true)}
-              scopingCompliance={scopingCompliance}
-              isRecalculating={isRecalculating}
-            />
-          </div>
-        </div>
-
-        <Dialog open={isWorkflowOpen} onOpenChange={setIsWorkflowOpen}>
-          <DialogContent className="sm:max-w-[500px] w-[calc(100vw-2rem)] max-h-[90dvh] overflow-y-auto p-0 border-none bg-transparent">
-             <DialogTitle className="sr-only">Workflow Actions</DialogTitle>
-             <DialogDescription className="sr-only">
-               Manage simulation lifecycle states and approvals.
-             </DialogDescription>
-             <WorkflowPanel 
-                entityType="SCOPING"
-                entityId={simulation.id}
-                currentStatus={simState.workflowStatus || 'Draft'}
-                history={simState.workflowHistory || []}
-                className="w-full border-none shadow-2xl"
-                isDirty={isDirty}
-                beforeAction={(actionId) => {
-                  if (actionId === 'Submit' || actionId === 'Approve') {
-                    if (!isJustificationComplete(simState.materialityJustification)) {
-                      toast.error(t('scoping:justification.incompleteAlertTitle'), {
-                        description: t('scoping:justification.incompleteAlertDesc')
-                      });
-                      setIsWorkflowOpen(false);
-                      setIsParamsOpen(true);
-                      return false;
-                    }
-                  }
-                  return true;
-                }}
-                onStatusChange={(newStatus) => {
-                  queryClient.invalidateQueries({ queryKey: ['simulations'] });
-                  setSimState(prev => ({ ...prev, workflowStatus: newStatus as any }));
-                  setIsWorkflowOpen(false);
-                }}
-              />
-          </DialogContent>
-        </Dialog>
-      </div>
     </AppLayout>
   );
 }

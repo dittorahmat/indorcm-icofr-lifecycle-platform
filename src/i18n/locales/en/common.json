@@ -59,6 +59,7 @@
     "missingData": "Please complete the data (Date & Sub-Process)",
     "processNotFound": "Process not found or not linked to BPM."
   },
+  "glAccount": "GL Account",
   "placeholders": {
     "search": "Search...",
     "choose": "Choose...",

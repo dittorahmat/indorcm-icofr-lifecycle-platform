@@ -3,12 +3,13 @@ import type { HonoEnv } from '../../app';
 import { ok, bad, notFound } from '../../lib/utils';
 import { getDb } from '../../db';
 import {
-  simulations, glRows,
+  simulations, glRows, glSnapshots,
 } from '../../db/schema';
 import { eq, and, type SQL } from 'drizzle-orm';
 import type {
   MaterialitySimulation,
 } from "@shared/types";
+import { computeSimulationMateriality, basisProblemForSnapshot } from '@shared/scoping-materiality';
 import { ScopingService } from '../../services/scoping-service';
 import { AuditService } from "../../services/audit-service";
 import { getQualitativeDefaults } from '../../services/scoping-defaults';
@@ -67,38 +68,77 @@ simulationRoutes.post('/simulations', rbac(['Line 2', 'Admin']), async (c) => {
 
   const id = crypto.randomUUID();
   const glSnapshotId = body.glSnapshotId || '';
-  let assessmentData: Record<string, unknown> = {};
+  const basis = body.basis || '';
+  const omPercentage = body.omPercentage ?? 5;
+  const haircutPercentage = body.haircutPercentage ?? 25;
+  const locationCount = body.locationCount || 1;
+
+  // Snapshot + rows are read once: the basis is validated against them and the
+  // materiality is derived server-side, so the stored PM can never be a silent 0.
+  const [snapshot] = glSnapshotId
+    ? await db.select({ benchmarkFsliNames: glSnapshots.benchmarkFsliNames })
+        .from(glSnapshots)
+        .where(and(eq(glSnapshots.id, glSnapshotId), eq(glSnapshots.organizationId, orgId)))
+        .limit(1)
+    : [];
+
+  if (glSnapshotId && !snapshot) return bad(c, 'GL_SNAPSHOT_NOT_FOUND', 404);
+  // boundary: `benchmarkFsliNames` is a jsonb column; only this feature writes it, always as a string[].
+  const snapshotBenchmarks = (snapshot?.benchmarkFsliNames as string[] | null) ?? [];
+
+  const rows = glSnapshotId
+    ? await db.select().from(glRows).where(eq(glRows.snapshotId, glSnapshotId))
+    : [];
 
   // Auto-populate qualitative factors from library
+  const assessmentData: Record<string, Record<number, string>> = {};
+  const uniqueFslis = Array.from(new Set(rows.map((r) => r.fsliName).filter((name): name is string => Boolean(name))));
+  uniqueFslis.forEach((fsli) => {
+    assessmentData[fsli] = getQualitativeDefaults(fsli);
+  });
+
   if (glSnapshotId) {
-    const rows = await db.select({ fsliName: glRows.fsliName })
-      .from(glRows)
-      .where(eq(glRows.snapshotId, glSnapshotId));
-
-    const uniqueFslis = Array.from(new Set(rows.map((r) => r.fsliName).filter((name): name is string => Boolean(name))));
-
-    uniqueFslis.forEach(fsli => {
-      assessmentData[fsli] = getQualitativeDefaults(fsli);
-    });
+    const problem = basisProblemForSnapshot({ benchmarks: snapshotBenchmarks, rows, basis });
+    if (problem) {
+      return bad(c, problem, 400, problem === 'MATERIALITY_BASIS_NOT_IN_SNAPSHOT'
+        ? `Basis "${basis}" is not a benchmark of the selected GL snapshot`
+        : `Basis "${basis}" derives no value from the selected GL snapshot`);
+    }
   }
+
+  const materiality = computeSimulationMateriality({
+    rows, basis, omPercentage, haircutPercentage, locationCount, assessmentData,
+  });
 
   const newSim: typeof simulations.$inferInsert = {
     id, organizationId: orgId,
     name: body.name || "New Simulation",
     year: targetYear,
     status: "Draft",
-    omValue: body.omValue || 0,
-    pmValue: body.pmValue || 0,
+    omValue: materiality.omValue,
+    pmValue: materiality.pmValue,
+    significantAccounts: materiality.significantAccounts,
     glSnapshotId,
-    locationCount: body.locationCount || 1,
-    omPercentage: body.omPercentage ?? 5,
-    haircutPercentage: body.haircutPercentage ?? 25,
-    basis: body.basis || "Revenue",
+    locationCount,
+    omPercentage,
+    haircutPercentage,
+    basis,
     assessmentData,
     createdAt: new Date(),
     createdBy: userId,
   };
   await db.insert(simulations).values(newSim);
+
+  await new AuditService(db).logAction({
+    organizationId: orgId,
+    userId,
+    action: 'CREATE',
+    entityType: 'Simulation',
+    entityId: id,
+    description: `Created materiality simulation "${newSim.name}" (PM ${materiality.pmValue})`,
+    dataAfter: newSim,
+  });
+
   return ok(c, newSim);
 });
 

@@ -24,7 +24,7 @@ export function RiskDescriptionField({ riskKey, description, source, suggestCont
         <div className="flex items-center gap-1.5 shrink-0">
           {source === 'ai' && (
             <Badge variant="outline" className="h-5 px-1.5 text-xs font-semibold border-amber-300 text-amber-700 bg-amber-50">
-              {t('rcm:matrix.aiSuggest.source_ai')}
+              {t('rcm:matrix.properties.aiSuggest.source_ai')}
             </Badge>
           )}
           {suggestContext && (

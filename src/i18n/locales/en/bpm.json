@@ -421,6 +421,10 @@
       "datePlaceholder": "Date (DD/MM/YYYY)"
     }
   },
+  "export": {
+    "title": "Exporting Diagram",
+    "generating": "Generating the image, please wait..."
+  },
   "sampling": {
     "title": "Transaction Sampling",
     "description": "Select Journal/GL rows to be tested in this CSA.",

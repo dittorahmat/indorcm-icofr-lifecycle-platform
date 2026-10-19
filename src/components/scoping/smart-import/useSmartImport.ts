@@ -85,6 +85,13 @@ export function useSmartImport({ isOpen, onOpenChange, onSuccess, t }: UseSmartI
     const finalizePromise = (async () => {
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
+      // The snapshot must carry the wizard's benchmark candidates so its status
+      // is honestly `Mapped` and "Create New Simulation" has a basis to offer.
+      const candidates = materiality.uniqueFsliData.map((f) => f.name);
+      const benchmarkFsliNames = materiality.selectedBasis
+        ? [materiality.selectedBasis, ...candidates.filter((name) => name !== materiality.selectedBasis)]
+        : candidates;
+
       await api('/api/migration/finalize', {
         method: 'POST',
         body: JSON.stringify({
@@ -96,6 +103,7 @@ export function useSmartImport({ isOpen, onOpenChange, onSuccess, t }: UseSmartI
             files.parsedTbData.length > 0
               ? {
                   basis: materiality.selectedBasis,
+                  benchmarkFsliNames,
                   omPercentage: materiality.omPercentage,
                   haircutPercentage: materiality.haircutPercentage,
                   locationCount: materiality.locationCount,

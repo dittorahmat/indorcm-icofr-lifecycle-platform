@@ -59,6 +59,7 @@
     "missingData": "Mohon lengkapi data (Tanggal & Sub-Proses)",
     "processNotFound": "Proses tidak ditemukan atau belum ter-link dengan BPM."
   },
+  "glAccount": "Akun GL",
   "placeholders": {
     "search": "Cari...",
     "choose": "Pilih...",

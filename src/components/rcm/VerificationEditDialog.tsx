@@ -26,6 +26,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useUnsavedChangesContext } from '@/context/UnsavedChangesContext';
+import { VerificationPilarFields, type VerificationTextField } from './verification/VerificationPilarFields';
 import { toast } from 'sonner';
 
 const formSchema = z.object({
@@ -83,6 +84,20 @@ export function VerificationEditDialog({
 }: VerificationEditDialogProps) {
   const { t } = useTranslation(['rcm', 'common', 'csa_hub']);
   const { setDirty } = useUnsavedChangesContext();
+
+  /**
+   * The six TOD P-I-L-A-R/evidence areas: one field shape, six names (see
+   * VerificationPilarFields). The `t()` calls stay here so every label key is
+   * static and check:i18n still validates it.
+   */
+  const pilarFields: VerificationTextField<z.infer<typeof formSchema>>[] = [
+    { name: 'pilarObjective', label: t('rcm:verification.columns.p_obj') },
+    { name: 'pilarTiming', label: t('rcm:verification.columns.p_time') },
+    { name: 'pilarAuthority', label: t('rcm:verification.columns.p_auth') },
+    { name: 'pilarReliability', label: t('rcm:verification.columns.p_rel') },
+    { name: 'pilarCoverage', label: t('rcm:verification.columns.p_cov') },
+    { name: 'pilarEvidence', label: t('rcm:verification.columns.p_evid') },
+  ];
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -193,74 +208,7 @@ export function VerificationEditDialog({
               </TabsList>
 
               <TabsContent value="tod" className="space-y-4 pt-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="pilarObjective"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('rcm:verification.columns.p_obj')}</FormLabel>
-                        <FormControl><Textarea placeholder={t('rcm:matrix.placeholders.description')} {...field} className="h-20" /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="pilarTiming"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('rcm:verification.columns.p_time')}</FormLabel>
-                        <FormControl><Textarea placeholder={t('rcm:matrix.placeholders.description')} {...field} className="h-20" /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="pilarAuthority"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('rcm:verification.columns.p_auth')}</FormLabel>
-                        <FormControl><Textarea placeholder={t('rcm:matrix.placeholders.description')} {...field} className="h-20" /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="pilarReliability"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('rcm:verification.columns.p_rel')}</FormLabel>
-                        <FormControl><Textarea placeholder={t('rcm:matrix.placeholders.description')} {...field} className="h-20" /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="pilarCoverage"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('rcm:verification.columns.p_cov')}</FormLabel>
-                        <FormControl><Textarea placeholder={t('rcm:matrix.placeholders.description')} {...field} className="h-20" /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="pilarEvidence"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('rcm:verification.columns.p_evid')}</FormLabel>
-                        <FormControl><Textarea placeholder={t('rcm:matrix.placeholders.description')} {...field} className="h-20" /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                <VerificationPilarFields control={form.control} fields={pilarFields} />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t pt-4">
                   <FormField
                     control={form.control}

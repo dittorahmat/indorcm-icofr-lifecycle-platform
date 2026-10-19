@@ -3,6 +3,7 @@
   "description": "Perform TOD and TOE for in-scope controls according to Regulation SK-5.",
   "filterReady": "Ready for Testing (L2 Validated)",
   "exportExcel": "Export Excel",
+  "searchPlaceholder": "Search controls...",
   "testDate": "Test Date",
   "validatedByL2": "Validated by Line 2:",
   "noControls": "No controls match the current filter.",

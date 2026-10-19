@@ -39,7 +39,6 @@ snapshotRoutes.post('/gl-snapshots', async (c) => {
   const { id, uploadDate } = await new ScopingService(db).createGlSnapshot(orgId, {
     filename,
     year,
-    status: 'Draft',
     isActive: false,
     rows: rows.map((row) => ({
       ymd: row.ymd,

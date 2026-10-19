@@ -211,12 +211,24 @@ simulationLifecycle.post('/simulations/:id/request-deletion', async (c) => {
 simulationLifecycle.post('/simulations/:id/workflow', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const id = requireSimulationId(c);
+  const orgId = c.get('organizationId');
   const { action, note, assigneeId } = await c.req.json<{ action: WorkflowAction; note?: string; assigneeId?: string }>();
+
+  const [sim] = await db.select().from(simulations)
+    .where(and(eq(simulations.id, id), eq(simulations.organizationId, orgId))).limit(1);
+  if (!sim) throw new AppError('SIMULATION_NOT_FOUND', 'Simulation not found', 404);
+
+  // A submit must carry a derived PM — including a simulation with no snapshot
+  // at all, which used to slip past the `glSnapshotId` test and reach CFO review
+  // (and the Asesmen Manajemen) with a silent 0.
+  if (action === 'Submit' && !sim.pmValue) {
+    return bad(c, 'MATERIALITY_NOT_CALCULATED', 400, 'Derive the materiality (snapshot + basis) before submitting the simulation');
+  }
 
   const result = await runWorkflowTransition(db, c.env, {
     entityType: 'SCOPING',
     entityId: id,
-    organizationId: c.get('organizationId'),
+    organizationId: orgId,
     userId: c.get('userId'),
     role: c.get('userRole'),
     action,
