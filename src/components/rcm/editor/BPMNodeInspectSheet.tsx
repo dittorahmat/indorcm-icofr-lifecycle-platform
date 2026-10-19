@@ -5,12 +5,31 @@ import { Button } from '@/components/ui/button';
 import { Eye } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
-import { regulatoryPairsOf } from '@shared/control-linkage';
+import { groupPairsByRisk, regulatoryPairsOf, type NodeDataLike, type RegulatoryPair } from '@shared/control-linkage';
+import { riskRatingTone, type RiskRatingTone } from '@/lib/badge-tone';
+
+/** Text-only rating treatment: the inspector prints the rating without a fill. */
+const RISK_RATING_TEXT_CLASS: Record<RiskRatingTone, string> = {
+  high: 'text-red-700 border-red-200',
+  medium: 'text-amber-700 border-amber-200',
+  low: 'text-emerald-700 border-emerald-200',
+};
+
+/** Pair fields are `unknown` on the canonical pair shape; render only real strings. */
+function pairText(pair: RegulatoryPair, key: string): string | undefined {
+  const value = pair[key];
+  return typeof value === 'string' && value !== '' ? value : undefined;
+}
+
+interface InspectNodeData extends NodeDataLike {
+  label?: string;
+  description?: string;
+}
 
 interface InspectNode {
   id: string;
   type?: string | null;
-  data?: any;
+  data?: InspectNodeData | null;
 }
 
 interface BPMNodeInspectSheetProps {
@@ -26,15 +45,7 @@ export function BPMNodeInspectSheet({ node, onClose }: BPMNodeInspectSheetProps)
     return regulatoryPairsOf(node.data);
   }, [node]);
 
-  const groupedRisks = useMemo(() => {
-    const groups: Record<string, { risk: any; controls: any[] }> = {};
-    pairs.forEach((p: any, index: number) => {
-      const rId = p._tempRiskId || p.riskId || `R-GROUP-${index}`;
-      if (!groups[rId]) groups[rId] = { risk: p, controls: [] };
-      groups[rId].controls.push(p);
-    });
-    return Object.values(groups);
-  }, [pairs]);
+  const groupedRisks = useMemo(() => groupPairsByRisk(pairs), [pairs]);
 
   return (
     <Sheet open={!!node} onOpenChange={(open) => { if (!open) onClose(); }}>
@@ -86,9 +97,7 @@ export function BPMNodeInspectSheet({ node, onClose }: BPMNodeInspectSheetProps)
                           variant="outline"
                           className={cn(
                             "text-xs font-black uppercase",
-                            group.risk.riskRating === 'High' && "text-red-700 border-red-200",
-                            group.risk.riskRating === 'Medium' && "text-amber-700 border-amber-200",
-                            group.risk.riskRating === 'Low' && "text-emerald-700 border-emerald-200"
+                            RISK_RATING_TEXT_CLASS[riskRatingTone(group.risk.riskRating)]
                           )}
                         >
                           {group.risk.riskRating}
@@ -105,24 +114,33 @@ export function BPMNodeInspectSheet({ node, onClose }: BPMNodeInspectSheetProps)
                     )}
 
                     <div className="space-y-2 pt-1">
-                      {group.controls.map((c: any, cIdx: number) => (
-                        <div key={c.controlId || c._tempControlId || `c-${cIdx}`} className="rounded-md border border-emerald-100 bg-white p-3 space-y-1.5">
-                          <Badge className="text-xs font-mono font-bold bg-emerald-50 border border-emerald-200 text-emerald-700">
-                            {c.controlId || c._tempControlId || `C-${cIdx + 1}`}
-                          </Badge>
-                          {c.controlDescription && (
-                            <p className="text-xs text-slate-700 leading-relaxed">{c.controlDescription}</p>
-                          )}
-                          {Array.isArray(c.assertions) && c.assertions.length > 0 && (
-                            <p className="text-xs text-slate-500">
-                              <span className="font-bold uppercase tracking-wider">
-                                {t('bpm:mobile.assertions', { defaultValue: 'Asersi' })}:
-                              </span>{' '}
-                              {c.assertions.join(', ')}
-                            </p>
-                          )}
-                        </div>
-                      ))}
+                      {group.controls.map(({ data: control }, cIdx) => {
+                        const controlId =
+                          pairText(control, 'controlId') ?? pairText(control, '_tempControlId');
+                        const controlDescription = pairText(control, 'controlDescription');
+                        const assertions = control['assertions'];
+                        return (
+                          <div
+                            key={controlId ?? `c-${cIdx}`}
+                            className="rounded-md border border-emerald-100 bg-white p-3 space-y-1.5"
+                          >
+                            <Badge className="text-xs font-mono font-bold bg-emerald-50 border border-emerald-200 text-emerald-700">
+                              {controlId ?? `C-${cIdx + 1}`}
+                            </Badge>
+                            {controlDescription && (
+                              <p className="text-xs text-slate-700 leading-relaxed">{controlDescription}</p>
+                            )}
+                            {Array.isArray(assertions) && assertions.length > 0 && (
+                              <p className="text-xs text-slate-500">
+                                <span className="font-bold uppercase tracking-wider">
+                                  {t('bpm:mobile.assertions', { defaultValue: 'Asersi' })}:
+                                </span>{' '}
+                                {assertions.join(', ')}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 ))
