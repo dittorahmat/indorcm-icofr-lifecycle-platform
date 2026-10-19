@@ -2,6 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 import { ScopingPage } from '../ScopingPage';
+import { UnsavedChangesProvider } from '@/context/UnsavedChangesContext';
+import type { UserRole } from '@shared/types';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useScopingPage, useScopingEditor } from '../hooks/useScopingPage';
 
@@ -12,6 +14,19 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: strictT,
   }),
+}));
+
+/** `/api/user/me` answer for the page's role gate (`useCurrentRole`). */
+const authMe = vi.hoisted(() => ({ role: 'Line 1' as UserRole | undefined }));
+
+/** React Query doubles: stable across renders, so effects keyed on them do not loop. */
+const rqStub = vi.hoisted(() => ({
+  queryClient: { invalidateQueries: (): void => undefined },
+  mutation: {
+    mutate: (): void => undefined,
+    mutateAsync: (): Promise<void> => Promise.resolve(),
+    isPending: false,
+  },
 }));
 
 // Mock hooks
@@ -29,12 +44,13 @@ vi.mock('../hooks/useScopingPage', () => ({
 }));
 
 vi.mock('@tanstack/react-query', () => ({
-  useQueryClient: () => ({
-    invalidateQueries: vi.fn(),
-  }),
-  useQuery: () => ({
-    data: { role: 'Lini 2' },
-  }),
+  // Stable identities: a fresh object per render makes any `[data]`/`[client]`
+  // effect re-run forever (the empty-year view mounts SetBenchmarkModal, which
+  // syncs its selection into state from the query answer).
+  useQueryClient: () => rqStub.queryClient,
+  useQuery: (options: { queryKey?: readonly unknown[] }) =>
+    options?.queryKey?.[0] === 'auth-me' ? { data: { role: authMe.role } } : { data: undefined },
+  useMutation: () => rqStub.mutation,
 }));
 
 vi.mock('@/components/layout/AppLayout', () => ({
@@ -90,24 +106,45 @@ describe('ScopingPage / ScopingEditor responsive behavior', () => {
     workflowHistory: [],
   };
 
+  const scopingPageState = (overrides: Record<string, unknown> = {}) => ({
+    selectedSimId: 'sim-1',
+    setSearchParams: vi.fn(),
+    isCreating: false,
+    setIsCreating: vi.fn(),
+    benchmarkModalSnap: null,
+    setBenchmarkModalSnap: vi.fn(),
+    simulations: [mockSimulation],
+    snapshots: [],
+    activeSnapshot: null,
+    isLoading: false,
+    mutations: {
+      save: { mutate: vi.fn(), isPending: false },
+      // The empty-year render touches the whole mutation surface (snapshot grid,
+      // create form, rollover prompt), so the factory stubs each one.
+      setActiveSnap: { mutate: vi.fn(), isPending: false },
+      createSim: { mutate: vi.fn(), isPending: false },
+      rollover: { mutate: vi.fn(), isPending: false },
+      deleteSim: { mutate: vi.fn(), isPending: false },
+      deleteSnap: { mutate: vi.fn(), isPending: false },
+      requestDeleteSim: { mutate: vi.fn(), isPending: false },
+    },
+    ...overrides,
+  });
+
+  /**
+   * The page's mock surface, behind one cast each: `useScopingPage` returns a rich
+   * object the test only partially specifies, and `useIsMobile` is a plain boolean.
+   * One home for the cast keeps the file's `any` count from growing per test.
+   */
+  const mockScopingPage = (overrides: Record<string, unknown> = {}) =>
+    (useScopingPage as any).mockReturnValue(scopingPageState(overrides));
+  const mockMobile = (isMobile: boolean) => vi.mocked(useIsMobile).mockReturnValue(isMobile);
+
   beforeEach(() => {
     vi.clearAllMocks();
+    authMe.role = 'Line 1';
 
-    (useScopingPage as any).mockReturnValue({
-      selectedSimId: 'sim-1',
-      setSearchParams: vi.fn(),
-      isCreating: false,
-      setIsCreating: vi.fn(),
-      benchmarkModalSnap: null,
-      setBenchmarkModalSnap: vi.fn(),
-      simulations: [mockSimulation],
-      snapshots: [],
-      activeSnapshot: null,
-      isLoading: false,
-      mutations: {
-        save: { mutate: vi.fn(), isPending: false },
-      },
-    });
+    mockScopingPage();
 
     (useScopingEditor as any).mockReturnValue({
       simState: mockSimulation,
@@ -147,7 +184,7 @@ describe('ScopingPage / ScopingEditor responsive behavior', () => {
   });
 
   it('collapses materiality parameters by default on mobile viewport', () => {
-    (useIsMobile as any).mockReturnValue(true);
+    mockMobile(true);
 
     render(<ScopingPage />);
 
@@ -162,7 +199,7 @@ describe('ScopingPage / ScopingEditor responsive behavior', () => {
   });
 
   it('expands materiality parameters by default on desktop viewport', () => {
-    (useIsMobile as any).mockReturnValue(false);
+    mockMobile(false);
 
     render(<ScopingPage />);
 
@@ -172,7 +209,7 @@ describe('ScopingPage / ScopingEditor responsive behavior', () => {
   });
 
   it('allows expanding and collapsing parameters on mobile viewport', () => {
-    (useIsMobile as any).mockReturnValue(true);
+    mockMobile(true);
 
     render(<ScopingPage />);
 
@@ -188,5 +225,32 @@ describe('ScopingPage / ScopingEditor responsive behavior', () => {
     // Click close in the card
     fireEvent.click(screen.getByLabelText('Close parameters'));
     expect(screen.queryByTestId('materiality-params-card')).toBeNull();
+  });
+
+  // #103: the guard admits Line 3 and Admin only, so the card must not invite a
+  // role that could only collect a 403. The list view (not the editor) is the one
+  // that mounts the card, hence the empty year.
+  const renderEmptyYear = (role: UserRole) => {
+    mockScopingPage({ simulations: [], snapshots: [] });
+    mockMobile(false);
+    authMe.role = role;
+
+    render(
+      <UnsavedChangesProvider>
+        <ScopingPage />
+      </UnsavedChangesProvider>,
+    );
+  };
+
+  it('hides the rollover card from a role the guard refuses', () => {
+    renderEmptyYear('Line 1');
+
+    expect(screen.queryByText('rollover.title')).toBeNull();
+  });
+
+  it('shows the rollover card to Line 3 on an empty year', () => {
+    renderEmptyYear('Line 3');
+
+    expect(screen.getByText('rollover.title')).toBeDefined();
   });
 });

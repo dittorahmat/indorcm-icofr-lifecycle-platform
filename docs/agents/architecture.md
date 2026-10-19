@@ -120,6 +120,37 @@ Deliberately kept (disclosed):
   pattern from `reporting.test.ts`), because a new test file starts at a zero
   `check:any-delta` baseline and cannot carry the grandfathered `as any` idiom.
 
+**#103 — the rollover's role policy now has one owner.** The guard travelled as a
+route literal (`['Line 1', 'Line 2', 'Admin']`) while the three entry cards
+(`ScopingPage`, `RCMELCPage`, `RCMTLCPage`) rendered to everyone, so a
+CFO/Commissioner/Line 3/External Auditor could only collect a 403.
+`shared/rollover-roles.ts` owns the list plus `canRunRollover`; the guard reads it
+and `RolloverCard` (one component, three pages — the card's markup was a triple
+copy before this) renders nothing for the rest. Owner decision: internal audit and
+the super admin (`Line 3`, `Admin`) — a **deliberate exception** to
+`OVERSIGHT_ROLES` ("Line 3 may not write operational data anywhere"): the preparers
+do not clone their own year. The exception is therefore pinned *per role* in
+`migration.test.ts` and not by the generic coverage assertion every other barrel
+carries — a generic "Line 3 reaches nothing" assertion would now be false, so
+adding the coverage helper to `migration` later means exempting `/migration/rollover`
+explicitly. `finalize` keeps its own `['Line 2', 'Admin']`.
+
+Two disclosed edges of that change:
+
+- **The guard and the client read the role from different rows.** `rbac` runs on
+  `c.get('userRole')`, which `worker/app.ts` derives from the active organization's
+  `member.role`; `RolloverCard` reads `/api/user/me` → `user.role` (same source as
+  the sidebar). Today a seeded user's `member.role` is Better Auth's
+  `'admin'|'member'`, so the two disagree and the card can appear over a 403 —
+  exactly the class of bug **#106** owns, and the interim fix there (prefer
+  `member.role` when it is a real `UserRole`, else fall back to `user.role`) is what
+  makes the card and the guard agree.
+- **The card's button converged on the ScopingPage idiom** (`h-11 sm:h-10
+  min-h-[44px] … rounded-lg`): the RCM copies carried `h-9 … rounded-xl`, which
+  misses the 44px touch target and the institutional radius both mandates name.
+  Its `p-6 pb-2` wrapper went away with the extraction — the placement margin now
+  rides on the card, so a hidden card cannot leave an empty padded box behind.
+
 ## Round 11 follow-ups
 
 Landed in a follow-up pass on the same branch:

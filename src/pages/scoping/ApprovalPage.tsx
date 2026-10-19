@@ -18,13 +18,14 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { MaterialitySimulation, GLSnapshot, UserRole } from '@shared/types';
+import { MaterialitySimulation, GLSnapshot } from '@shared/types';
 import { GLDataGrid } from '@/components/scoping/GLDataGrid';
 import { formatIDR } from '@/components/reports/dod/dod-format';
 import { ApprovalHistoryTimeline } from '@/components/scoping/ApprovalHistoryTimeline';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 import { useTranslation } from 'react-i18next';
+import { useCurrentRole } from '@/hooks/use-current-role';
 
 export function ApprovalPage() {
   const { t } = useTranslation('scoping');
@@ -33,12 +34,7 @@ export function ApprovalPage() {
   const [isReviewOpen, setIsReviewOpen] = React.useState(false);
   const [note, setNote] = React.useState("");
 
-  const { data: me } = useQuery({
-    queryKey: ['me'],
-    queryFn: () => api<{ role: UserRole }>('/api/user/me'),
-  });
-
-  const userRole = me?.role;
+  const userRole = useCurrentRole();
 
   const { data: simulations, isLoading } = useQuery({
     queryKey: ['simulations-pending'],
