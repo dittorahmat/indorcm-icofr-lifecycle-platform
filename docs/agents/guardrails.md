@@ -29,6 +29,7 @@ after the commit that passed before it.
 | any | `npm run check:any-delta -- [--base <ref>] <files...>` | More `any`/`as any`/`as never`/`as unknown as X` than base fails. Base defaults to the branch point; CI passes `--base origin/<base-ref>`. |
 | i18n | `npm run check:i18n -- [--base <ref>] <files...>` | (a) More hardcoded first-arg `toast.*("…")` literals than base fails. Dynamic args (`err.message`, `t('key')`) never match. (b) Any NEW static `t('key')` missing from the `en` locale bundle fails (delta vs base; pre-existing misses grandfathered). Dynamic keys skipped; missing-in-`id`-but-present-in-`en` allowed (English fallback). Test files excluded. Dev logs missing keys via `missingKey` in `src/i18n/config.ts`. Scope note: this gate does NOT see hardcoded copy in JSX text or `header:`/`placeholder:`/`title:` literals — a detector over those fires ~800 times across ~140 existing files (enum values, dates, tokens), so it would fail the next honest change. That half of the mandate is a reviewer rule in `CODING_STANDARDS.md`. |
 | worker prose | `npm run check:worker-strings -- [--base <ref>] <files...>` | More user-facing prose in a worker **code** slot than base fails — `bad(c, 'Kontrol tidak ditemukan')`, `notFound(c, '…')`, or `throw new Error('…')`. The code belongs on a literal union; prose belongs in the message arg (`AppError(code, message, status)`). Scope `worker/**/*.ts`, test files excluded. Baseline 81 findings (grandfathered by the delta; burn down on touch). Whole-tree inventory: `npm run check:worker-strings` (report mode, exits 0). |
+| route guards | `npm run check:rbac-delta -- [--base <ref>] <files...>` | A touched `worker/routes/**/*.ts` file that declares MORE mutating route registrations (POST/PUT/PATCH/DELETE) without a guard (`rbac(...)` / `assertDevAllowed(...)`) than its base fails. Files outside `worker/routes/**` print `SKIP`. Detection is **not** re-implemented: the gate runs the real `local/routes-require-rbac` rule (`eslint-local/index.js`) in memory over both the working-tree text and the base blob, so the gate and `npm run lint` can never disagree about what an unguarded route is. The rule stays `warn` (baseline 61 → 44 after the first #97 pass, 2026-10-19) so the remainder burns down per area; this gate is the tooth. |
 
 ## Contract gates (whole tree)
 
@@ -57,6 +58,21 @@ assert with `toContain` / a deduped set, never exact-array equality — observed
 requires `onError` user feedback on every touched call site
 (`CODING_STANDARDS.md`); legacy sites burn down boy-scout on touch. Escalate
 the rule to `error` once `npx eslint src` reports zero hits.
+
+`local/routes-require-rbac` (`eslint-local/`, also `warn`) is the same shape for
+`worker/routes/**`: a mutating registration without a guard is reported but does
+not fail the build. Baseline **61** at introduction (2026-10-18) → **44** after
+the first burn-down pass (2026-10-19, issue #97: `remediation` 5,
+`infrastructure` 9, `transactions` 3). Each pass is a **policy** decision — which
+roles may write an area — not a mechanical one: the client side of those routes
+carries no role gate at all, so the evidence is the repo's own precedent
+(`['Line 1','Admin']` for operational data, `['Line 2','Admin']` for testing/
+evaluation, `['Admin']` for config). `check:rbac-delta` (table above) is what
+keeps a touched file from adding a new unguarded route while the rest burns down.
+Each guarded barrel pins its own coverage: the route test asserts that oversight
+roles (`External Auditor`, `Line 3`) get **403** on every mutating route it
+declares — removing an `rbac(...)` makes the handler run and answer 500, so the
+assertion fails instead of passing vacuously.
 
 ## Gates measured and rejected (do not rebuild these)
 

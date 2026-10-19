@@ -177,10 +177,15 @@ export default tseslint.config(
   // and a mutating route must carry its guard. Warn-first, like
   // local/mutation-requires-onerror: the reviewer enforces it on touched routes.
   // Measured baseline in worker/routes at introduction (2026-10-18):
-  //   local/routes-require-rbac  61  -> the burn-down is issue #97
+  //   local/routes-require-rbac  61
   //   local/no-writing-get        0  -> READY TO ESCALATE to 'error'; the
   //     all-writes-must-not-be-GET rule is clean today, so promoting it is the
   //     maintainer's call rather than something this PR decides.
+  // First burn-down pass (2026-10-19, issue #97): 61 -> 44, and
+  // `npm run check:rbac-delta` is now the tooth — a touched worker/routes file
+  // may not INCREASE its unguarded count (the gate runs this very rule in
+  // memory over the working tree and the base blob, so the two can't disagree).
+  // The remaining 44 stay warn-only so the rest can be burned down per area.
   // Scoped to worker/routes so the rules only see route registrations, not every
   // `.get(`/`.delete(` in the worker.
   {
