@@ -20,7 +20,10 @@ import { usePurgeScoping } from './use-purge-scoping';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { api } from '@/lib/api-client';
+import { canRunRollover } from '@shared/rollover-roles';
+import type { UserRole } from '@shared/types';
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 
 import { SmartImportWizard } from '@/components/scoping/SmartImportWizard';
@@ -69,6 +72,12 @@ export function ScopingPage() {
   const { purgeScoping } = usePurgeScoping();
   const [isImportWizardOpen, setIsImportWizardOpen] = React.useState(false);
   const [isRolloverOpen, setIsRolloverOpen] = React.useState(false);
+
+  const { data: me } = useQuery({
+    queryKey: ['auth-me'],
+    queryFn: () => api<{ role: UserRole }>('/api/user/me'),
+  });
+  const canRollover = canRunRollover(me?.role);
 
   const handleDeleteSim = async (id: string) => {
     const sim = simulations.find(s => s.id === id);
@@ -159,7 +168,7 @@ export function ScopingPage() {
           </div>
         </PageHeader>
 
-        {simulations.length === 0 && snapshots.length === 0 && !isLoading && (
+        {canRollover && simulations.length === 0 && snapshots.length === 0 && !isLoading && (
           <motion.div variants={itemVariants}>
             <Card className="bg-teal-50/50 border-teal-200/60 shadow-sm rounded-lg overflow-hidden">
               <CardContent className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 flex-wrap min-w-0">

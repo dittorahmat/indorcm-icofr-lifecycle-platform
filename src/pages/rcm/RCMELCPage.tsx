@@ -2,7 +2,8 @@ import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { api } from '@/lib/api-client';
-import { Control, Organization } from '@shared/types';
+import { Control, Organization, UserRole } from '@shared/types';
+import { canRunRollover } from '@shared/rollover-roles';
 import { Check, Edit3, Settings2 } from 'lucide-react';
 import { FileUp } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -59,6 +60,12 @@ export function RCMELCPage({ embedded = false, workingYearOverride, relevantFsli
     queryFn: () => api<{ organizations: Organization[] }>('/api/auth/organization/list'),
     staleTime: 300000,
   });
+
+  const { data: me } = useQuery({
+    queryKey: ['auth-me'],
+    queryFn: () => api<{ role: UserRole }>('/api/user/me'),
+  });
+  const canRollover = canRunRollover(me?.role);
 
   const saveMutation = useMutation({
     mutationFn: (values: any) => {
@@ -184,7 +191,7 @@ export function RCMELCPage({ embedded = false, workingYearOverride, relevantFsli
           </Button>
         </RCMPageHeader>
       )}
-      {elcItems.length === 0 && !isLoadingControls && (
+      {canRollover && elcItems.length === 0 && !isLoadingControls && (
         <div className="p-6 pb-2">
           <Card className="bg-teal-50/50 border-teal-200/60 shadow-sm rounded-lg overflow-hidden">
             <CardContent className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 flex-wrap min-w-0">

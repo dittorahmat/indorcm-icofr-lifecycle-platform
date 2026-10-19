@@ -120,6 +120,20 @@ Deliberately kept (disclosed):
   pattern from `reporting.test.ts`), because a new test file starts at a zero
   `check:any-delta` baseline and cannot carry the grandfathered `as any` idiom.
 
+**#103 — the rollover's role policy now has one owner.** The guard travelled as a
+route literal (`['Line 1', 'Line 2', 'Admin']`) while the three entry cards
+(`ScopingPage`, `RCMELCPage`, `RCMTLCPage`) rendered to everyone, so a
+CFO/Commissioner/Line 3/External Auditor could only collect a 403.
+`shared/rollover-roles.ts` owns the list plus `canRunRollover`, the guard reads it,
+and the cards hide themselves for the rest. Owner decision: internal audit and the
+super admin (`Line 3`, `Admin`) — a **deliberate exception** to `OVERSIGHT_ROLES`
+("Line 3 may not write operational data anywhere"): the preparers do not clone
+their own year. The exception is therefore pinned *per role* in
+`migration.test.ts` and not by the generic coverage assertion every other barrel
+carries — a generic "Line 3 reaches nothing" assertion would now be false, so
+adding the coverage helper to `migration` later means exempting `/migration/rollover`
+explicitly. `finalize` keeps its own `['Line 2', 'Admin']`.
+
 ## Round 11 follow-ups
 
 Landed in a follow-up pass on the same branch:

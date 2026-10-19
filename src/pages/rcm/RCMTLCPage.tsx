@@ -2,7 +2,7 @@ import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { api } from '@/lib/api-client';
-import { RCMControlMapping } from '@shared/types';
+import { RCMControlMapping, UserRole } from '@shared/types';
 import { 
   Search, RefreshCw, Edit3, AlertTriangle, Check, Shield, Settings2
 } from 'lucide-react';
@@ -21,6 +21,7 @@ import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 import { RolloverPrompt } from '@/components/layout/RolloverPrompt';
 import { Card, CardContent } from '@/components/ui/card';
 import { exportRCMToExcel } from '@/lib/rcm-excel-export';
+import { canRunRollover } from '@shared/rollover-roles';
 
 interface RCMMatrixItem extends RCMControlMapping {
   mappingId: string;
@@ -85,6 +86,12 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
       return res;
     },
   });
+
+  const { data: me } = useQuery({
+    queryKey: ['auth-me'],
+    queryFn: () => api<{ role: UserRole }>('/api/user/me'),
+  });
+  const canRollover = canRunRollover(me?.role);
 
   const saveMutation = useMutation({
     mutationFn: (values: any) => {
@@ -298,7 +305,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
         </RCMPageHeader>
       )}
 
-      {items.length === 0 && !isLoading && (
+      {canRollover && items.length === 0 && !isLoading && (
         <div className="p-6 pb-2">
           <Card className="bg-teal-50/50 border-teal-200/60 shadow-sm rounded-lg overflow-hidden">
             <CardContent className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 flex-wrap min-w-0">

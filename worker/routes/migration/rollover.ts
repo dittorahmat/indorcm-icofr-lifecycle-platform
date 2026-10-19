@@ -6,6 +6,7 @@ import { getDb } from '../../db';
 import * as schema from '../../db/schema';
 import { bad, ok } from '../../lib/utils';
 import { rbac } from '../../lib/guard';
+import { ROLLOVER_ROLES } from '@shared/rollover-roles';
 import { normalizeYear, planPeriodRollover } from '../../services/scoping-service';
 
 interface RolloverBody {
@@ -35,8 +36,11 @@ const rolloverRoutes = new Hono<HonoEnv>();
  * Tenant-wide destructive year clone. Guarded by RBAC; NOT interchangeable with
  * `ScopingService.carryForward` (that one clones diagrams/rcms/controls only —
  * no processes, account assertions, deficiencies or action plans, no `force`).
+ *
+ * Roles are `ROLLOVER_ROLES` (#103): internal audit + super admin, deliberately
+ * narrower than the payload's authors — see `shared/rollover-roles.ts`.
  */
-rolloverRoutes.post('/migration/rollover', rbac(['Line 1', 'Line 2', 'Admin']), async (c) => {
+rolloverRoutes.post('/migration/rollover', rbac(ROLLOVER_ROLES), async (c) => {
   const { sourceYear, targetYear, force } = await c.req.json<RolloverBody>();
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
