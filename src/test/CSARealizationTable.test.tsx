@@ -56,7 +56,7 @@ const mockControls: Control[] = [
     nature: 'Manual',
     cosoPrinciples: [3],
     relatedControlIds: [],
-    assertions: ['Validity'],
+    assertions: ['Existence/Occurrence'],
     ipos: ['Validity'],
     effectiveDate: null,
     lastCsaDate: null, // Incomplete

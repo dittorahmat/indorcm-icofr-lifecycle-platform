@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AccountAssertion } from '@shared/types';
+import { ASSERTION_FIELDS, ASSERTION_TIP, type AssertionField } from '@shared/assertion-fields';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 
@@ -25,6 +26,16 @@ interface BPMAccountAssertionProps {
   isSaving: boolean;
 }
 
+const ASSERTION_COLORS: Record<AssertionField, string> = {
+  assertionE: 'text-primary',
+  assertionC: 'text-blue-600',
+  assertionA: 'text-emerald-600',
+  assertionCo: 'text-amber-600',
+  assertionVa: 'text-purple-600',
+  assertionRo: 'text-rose-600',
+  assertionPd: 'text-slate-600',
+};
+
 export function BPMAccountAssertion({ 
   localAssertion, 
   assertionLoading, 
@@ -35,15 +46,12 @@ export function BPMAccountAssertion({
 }: BPMAccountAssertionProps) {
   const { t } = useTranslation(['bpm', 'common']);
 
-  const assertionFields = [
-    { key: 'assertionE', label: t('assertions.tooltip.eo.label'), desc: t('assertions.tooltip.eo.desc'), color: 'text-primary' },
-    { key: 'assertionC', label: t('assertions.tooltip.c.label'), desc: t('assertions.tooltip.c.desc'), color: 'text-blue-600' },
-    { key: 'assertionA', label: t('assertions.tooltip.a.label'), desc: t('assertions.tooltip.a.desc'), color: 'text-emerald-600' },
-    { key: 'assertionCo', label: t('assertions.tooltip.co.label'), desc: t('assertions.tooltip.co.desc'), color: 'text-amber-600' },
-    { key: 'assertionVa', label: t('assertions.tooltip.va.label'), desc: t('assertions.tooltip.va.desc'), color: 'text-purple-600' },
-    { key: 'assertionRo', label: t('assertions.tooltip.ro.label'), desc: t('assertions.tooltip.ro.desc'), color: 'text-rose-600' },
-    { key: 'assertionPd', label: t('assertions.tooltip.pd.label'), desc: t('assertions.tooltip.pd.desc'), color: 'text-slate-600' },
-  ] as const;
+  const assertionFields = ASSERTION_FIELDS.map((key) => ({
+    key,
+    label: t(`assertions.tooltip.${ASSERTION_TIP[key]}.label`),
+    desc: t(`assertions.tooltip.${ASSERTION_TIP[key]}.desc`),
+    color: ASSERTION_COLORS[key],
+  }));
 
   return (
     <Card className="border-slate-200 shadow-md overflow-hidden rounded-lg bg-white">
@@ -55,7 +63,6 @@ export function BPMAccountAssertion({
             </div>
             <div>
               <CardTitle className="text-sm font-display font-bold uppercase tracking-widest text-slate-900">{t('assertions.title')}</CardTitle>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-0.5">Management Assertions (Tabel 13)</p>
             </div>
           </div>
           <div className="flex items-center gap-2 sm:gap-4 flex-wrap shrink-0">
@@ -101,12 +108,12 @@ export function BPMAccountAssertion({
             <TableBody>
               <TableRow className="divide-x divide-slate-100">
                 {assertionFields.map((field) => {
-                  const val = (localAssertion as any)[field.key] || "N";
+                  const val = localAssertion[field.key] || "N";
                   return (
                     <TableCell key={field.key} className="p-0">
                       <Select 
                         value={val} 
-                        onValueChange={(v) => onAssertionChange(field.key as keyof AccountAssertion, v)} 
+                        onValueChange={(v) => onAssertionChange(field.key, v)} 
                         disabled={assertionLoading}
                       >
                         <SelectTrigger className={cn(

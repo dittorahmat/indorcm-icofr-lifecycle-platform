@@ -21,6 +21,14 @@ import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 import { RolloverPrompt } from '@/components/layout/RolloverPrompt';
 import { RolloverCard } from '@/components/layout/RolloverCard';
 import { exportRCMToExcel } from '@/lib/rcm-excel-export';
+import {
+  ASSERTION_CODE,
+  ASSERTION_FIELDS,
+  ASSERTION_TIP,
+  IPO_CODE,
+  IPO_FIELDS,
+  IPO_TIP,
+} from '@shared/assertion-fields';
 
 interface RCMMatrixItem extends RCMControlMapping {
   mappingId: string;
@@ -96,10 +104,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
       };
 
       // 2. Boolean normalization for IPO & Assertions (text columns in DB)
-      const booleanFields = [
-        'ipoC', 'ipoA', 'ipoV', 'ipoRa',
-        'assertionE', 'assertionC', 'assertionA', 'assertionCo', 'assertionVa', 'assertionRo', 'assertionPd'
-      ];
+      const booleanFields = [...IPO_FIELDS, ...ASSERTION_FIELDS];
 
       booleanFields.forEach(field => {
         if (typeof values[field] === 'boolean') {
@@ -233,25 +238,26 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
     {
       title: 'IPO',
       className: 'bg-blue-600 text-white',
-      columns: [
-        { id: 'ipoC', header: 'C', tooltip: t('bpm:ipo.tooltip.c.desc'), width: '50px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.ipoC === 'Y' ? 'Y' : 'N' },
-        { id: 'ipoA', header: 'A', tooltip: t('bpm:ipo.tooltip.a.desc'), width: '50px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.ipoA === 'Y' ? 'Y' : 'N' },
-        { id: 'ipoV', header: 'V', tooltip: t('bpm:ipo.tooltip.v.desc'), width: '50px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.ipoV === 'Y' ? 'Y' : 'N' },
-        { id: 'ipoRa', header: 'RA', tooltip: t('bpm:ipo.tooltip.ra.desc'), width: '50px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.ipoRa === 'Y' ? 'Y' : 'N' },
-      ]
+      columns: IPO_FIELDS.map((field) => ({
+        id: field,
+        header: IPO_CODE[field],
+        tooltip: t(`bpm:ipo.tooltip.${IPO_TIP[field]}.desc`),
+        width: '50px',
+        className: 'text-center text-xs font-mono text-slate-700',
+        render: (row) => row[field] === 'Y' ? 'Y' : 'N',
+      }))
     },
     {
       title: t('matrix.assertions'),
       className: 'bg-indigo-600 text-white',
-      columns: [
-        { id: 'ae', header: 'E/O', tooltip: t('bpm:assertions.tooltip.eo.desc'), width: '50px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.assertionE === 'Y' ? 'Y' : 'N' },
-        { id: 'ac', header: 'C', tooltip: t('bpm:assertions.tooltip.c.desc'), width: '50px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.assertionC === 'Y' ? 'Y' : 'N' },
-        { id: 'aa', header: 'A', tooltip: t('bpm:assertions.tooltip.a.desc'), width: '50px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.assertionA === 'Y' ? 'Y' : 'N' },
-        { id: 'aco', header: 'CO', tooltip: t('bpm:assertions.tooltip.co.desc'), width: '50px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.assertionCo === 'Y' ? 'Y' : 'N' },
-        { id: 'aro', header: 'R&O', tooltip: t('bpm:assertions.tooltip.ro.desc'), width: '50px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.assertionRo === 'Y' ? 'Y' : 'N' },
-        { id: 'ava', header: 'V/A', tooltip: t('bpm:assertions.tooltip.va.desc'), width: '50px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.assertionVa === 'Y' ? 'Y' : 'N' },
-        { id: 'apd', header: 'PD', tooltip: t('bpm:assertions.tooltip.pd.desc'), width: '50px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.assertionPd === 'Y' ? 'Y' : 'N' },
-      ]
+      columns: ASSERTION_FIELDS.map((field) => ({
+        id: field,
+        header: ASSERTION_CODE[field],
+        tooltip: t(`bpm:assertions.tooltip.${ASSERTION_TIP[field]}.desc`),
+        width: '50px',
+        className: 'text-center text-xs font-mono text-slate-700',
+        render: (row) => row[field] === 'Y' ? 'Y' : 'N',
+      }))
     },
     {
       title: t('matrix.groups.metadata'),

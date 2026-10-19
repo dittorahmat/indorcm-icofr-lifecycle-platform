@@ -74,7 +74,7 @@ const mockDeficiencies: any[] = [
     status: 'Open',
     source: 'Lini 3 - Audit',
     exposureValue: 12_500_000_000,
-    assertions: ['Accuracy', 'Completeness', 'Cut-off'],
+    assertions: ['Accuracy', 'Completeness', 'Cut-Off'],
     compensatingControlIds: [],
     flowchartPath: { 1: true, 2: true, 3: true, 4: true, 5: false, 6: true, 7: false },
     dodWorksheet: {
@@ -83,7 +83,7 @@ const mockDeficiencies: any[] = [
       exposureValue: 12_500_000_000,
       ineffectivePeriod: 'Q1 - Q4 (12 Bulan)',
       isRemediated: false,
-      assertions: ['Accuracy', 'Completeness', 'Cut-off'],
+      assertions: ['Accuracy', 'Completeness', 'Cut-Off'],
       cosoComponent: 'Control Activities',
       boxes: {
         box1: { answer: true, justification: 'Terkait langsung dengan asersi Akurasi dan Kelengkapan' },
@@ -109,7 +109,7 @@ const mockDeficiencies: any[] = [
     status: 'Remediated',
     source: 'Lini 2 - CSA Review',
     exposureValue: 800_000_000,
-    assertions: ['Existence', 'Valuation'],
+    assertions: ['Existence/Occurrence', 'Valuation and Allocation'],
     compensatingControlIds: ['CTRL-COMP-01'],
     dodWorksheet: {
       deficiencyId: 'DEF-002',
@@ -117,7 +117,7 @@ const mockDeficiencies: any[] = [
       exposureValue: 800_000_000,
       ineffectivePeriod: 'Q2 (3 Bulan)',
       isRemediated: true,
-      assertions: ['Existence', 'Valuation'],
+      assertions: ['Existence/Occurrence', 'Valuation and Allocation'],
       cosoComponent: 'Monitoring Activities',
       boxes: {
         box1: { answer: true, justification: 'Terkait asersi E/O dan V/A' },
@@ -165,7 +165,7 @@ const mockControls: any[] = [
     subProcess: 'Stock Taking',
     location: 'Divisi Operasi Tambang',
     fsliCodes: ['Persediaan'],
-    assertions: ['Existence', 'Valuation'],
+    assertions: ['Existence/Occurrence', 'Valuation and Allocation'],
     level: 'TLC',
     nature: 'Manual',
     frequency: 'Monthly',

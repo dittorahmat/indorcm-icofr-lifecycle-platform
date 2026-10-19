@@ -20,8 +20,8 @@ Output JSON format:
 export const REGULATORY_GUESSING_PROMPT = `
 As a GRC Auditor specialized in BUMN SK-5/2024, derive missing metadata based on the Control Description.
 
-Assertions: "Completeness", "Accuracy", "Validity", "Cut-off", "Presentation", "Existence", "Valuation", "Occurrence", "Classification"
-IPO: "Completeness", "Accuracy", "Validity", "Restricted Access", "Availability"
+Assertions: "Completeness", "Accuracy", "Existence/Occurrence", "Cut-Off", "Rights and Obligation", "Valuation and Allocation", "Presentation and Disclosure"
+IPO: "Completeness", "Accuracy", "Validity", "Restricted Access"
 
 Control: {{title}}
 Description: {{description}}

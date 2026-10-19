@@ -13,6 +13,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/
 import { toast } from 'sonner';
 import { api } from '@/lib/api-client';
 import type { Control, Application } from '@shared/types';
+import { toControlAssertions, toInformationProcessingObjectives } from '@shared/assertion-fields';
 import { 
   UploadCloud, ShieldCheck, Loader2, CheckCircle2
 } from 'lucide-react';
@@ -87,8 +88,8 @@ export function ControlEditor({ isOpen, setIsOpen, control }: ControlEditorProps
       frequency: (control?.frequency as any) || 'Monthly',
       riskQuantitative: (control?.riskAssessment as any)?.quantitativeScore || 'Low',
       riskQualitative: (control?.riskAssessment as any)?.qualitativeScore || 'Low',
-      assertions: control?.assertions || [],
-      ipos: control?.ipos || [],
+      assertions: toControlAssertions(control?.assertions),
+      ipos: toInformationProcessingObjectives(control?.ipos),
       cosoPrinciples: control?.cosoPrinciples?.map(Number) || [],
       relatedControlIds: control?.relatedControlIds || [],
       attachmentUrl: control?.attachmentUrl || '',

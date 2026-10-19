@@ -1,0 +1,87 @@
+import { describe, expect, it } from 'vitest';
+import {
+  ALL_ASSERTIONS,
+  ALL_IPOS,
+  ASSERTION_CODE,
+  ASSERTION_FIELD_OF,
+  ASSERTION_FIELDS,
+  ASSERTION_TIP,
+  ASSERTION_VALUE,
+  IPO_CODE,
+  IPO_FIELD_OF,
+  IPO_FIELDS,
+  IPO_TIP,
+  IPO_VALUE,
+  toControlAssertion,
+  toControlAssertions,
+  toInformationProcessingObjective,
+  toInformationProcessingObjectives,
+} from './assertion-fields';
+
+describe('assertion-fields', () => {
+  it('prints the seven Tabel 8 assertions in Lampiran 3 legend order', () => {
+    expect(ASSERTION_FIELDS.map((field) => [ASSERTION_CODE[field], ASSERTION_VALUE[field]])).toEqual([
+      ['C', 'Completeness'],
+      ['A', 'Accuracy'],
+      ['E/O', 'Existence/Occurrence'],
+      ['CO', 'Cut-Off'],
+      ['R&O', 'Rights and Obligation'],
+      ['V/A', 'Valuation and Allocation'],
+      ['PD', 'Presentation and Disclosure'],
+    ]);
+  });
+
+  it('prints the four Tabel 13 IPOs', () => {
+    expect(IPO_FIELDS.map((field) => [IPO_CODE[field], IPO_VALUE[field]])).toEqual([
+      ['C', 'Completeness'],
+      ['A', 'Accuracy'],
+      ['V', 'Validity'],
+      ['RA', 'Restricted Access'],
+    ]);
+  });
+
+  it('keeps the field and union indexes in sync', () => {
+    for (const field of ASSERTION_FIELDS) {
+      expect(ASSERTION_FIELD_OF[ASSERTION_VALUE[field]]).toBe(field);
+    }
+    for (const field of IPO_FIELDS) {
+      expect(IPO_FIELD_OF[IPO_VALUE[field]]).toBe(field);
+    }
+    expect(ALL_ASSERTIONS).toEqual(ASSERTION_FIELDS.map((field) => ASSERTION_VALUE[field]));
+    expect(ALL_IPOS).toEqual(IPO_FIELDS.map((field) => IPO_VALUE[field]));
+  });
+
+  it('gives every field a distinct tooltip key', () => {
+    expect(new Set(ASSERTION_FIELDS.map((field) => ASSERTION_TIP[field])).size).toBe(7);
+    expect(new Set(IPO_FIELDS.map((field) => IPO_TIP[field])).size).toBe(4);
+  });
+
+  it('resolves canonical names, legacy names and short codes', () => {
+    expect(toControlAssertion('Rights and Obligation')).toBe('Rights and Obligation');
+    expect(toControlAssertion('R&O')).toBe('Rights and Obligation');
+    expect(toControlAssertion('Validity')).toBe('Existence/Occurrence');
+    expect(toControlAssertion('Existence')).toBe('Existence/Occurrence');
+    expect(toControlAssertion('Occurrence')).toBe('Existence/Occurrence');
+    expect(toControlAssertion('Valuation')).toBe('Valuation and Allocation');
+    expect(toControlAssertion('Classification')).toBe('Presentation and Disclosure');
+    expect(toControlAssertion('Presentation')).toBe('Presentation and Disclosure');
+    expect(toControlAssertion('Cut-off')).toBeNull();
+    expect(toControlAssertion('Availability')).toBeNull();
+    expect(toControlAssertion(undefined)).toBeNull();
+  });
+
+  it('drops unknown entries when normalising a stored list', () => {
+    expect(toControlAssertions(['Validity', 'Accuracy', 'Availability', 7])).toEqual([
+      'Existence/Occurrence',
+      'Accuracy',
+    ]);
+    expect(toControlAssertions('Accuracy')).toEqual([]);
+  });
+
+  it('resolves IPO names and codes, dropping the removed Availability', () => {
+    expect(toInformationProcessingObjective('Restricted Access')).toBe('Restricted Access');
+    expect(toInformationProcessingObjective('RA')).toBe('Restricted Access');
+    expect(toInformationProcessingObjective('Availability')).toBeNull();
+    expect(toInformationProcessingObjectives(['Validity', 'Availability'])).toEqual(['Validity']);
+  });
+});

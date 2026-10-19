@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Target } from 'lucide-react';
+import { ASSERTION_CODE, ASSERTION_FIELDS, IPO_CODE, IPO_FIELDS } from '@shared/assertion-fields';
 
 export function TODDesignContextFields({ form }: { form: UseFormReturn<any> }) {
   const { t } = useTranslation(['rcm', 'csa_hub', 'common', 'risklibrary']);
@@ -229,15 +230,15 @@ export function TODDesignContextFields({ form }: { form: UseFormReturn<any> }) {
         <div>
           <h4 className="text-xs font-bold uppercase text-slate-500 mb-2.5 tracking-wider">{t('csa_hub:tod.complianceMarkers')}</h4>
           <div className="grid grid-cols-1 min-[380px]:grid-cols-2 sm:grid-cols-4 gap-2">
-            {['ipoC', 'ipoA', 'ipoV', 'ipoRa'].map(f => (
+            {IPO_FIELDS.map(field => (
               <FormField
-                key={f}
+                key={field}
                 control={form.control}
-                name={f as any}
-                render={({ field }) => (
+                name={field}
+                render={({ field: control }) => (
                   <FormItem className="flex items-center justify-between gap-1 space-y-0 p-2 rounded-lg border border-slate-200 bg-white shadow-xs flex-wrap min-w-0 sm:flex-col sm:items-center sm:justify-center">
-                    <FormLabel className="text-xs font-bold uppercase text-slate-700 min-w-0 truncate flex-1 sm:flex-none">{f.replace('ipo', '')}</FormLabel>
-                    <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                    <FormLabel className="text-xs font-bold uppercase text-slate-700 min-w-0 truncate flex-1 sm:flex-none">{IPO_CODE[field]}</FormLabel>
+                    <FormControl><Switch checked={control.value} onCheckedChange={control.onChange} /></FormControl>
                   </FormItem>
                 )}
               />
@@ -245,17 +246,17 @@ export function TODDesignContextFields({ form }: { form: UseFormReturn<any> }) {
           </div>
         </div>
         <div>
-          <span className="text-xs font-semibold uppercase text-slate-400 tracking-wider block mb-2">Asersi Laporan Keuangan</span>
+          <span className="text-xs font-semibold uppercase text-slate-400 tracking-wider block mb-2">{t('rcm:matrix.assertions')}</span>
           <div className="grid grid-cols-1 min-[380px]:grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-1.5">
-            {['assertionE', 'assertionC', 'assertionA', 'assertionCo', 'assertionVa', 'assertionRo', 'assertionPd'].map(f => (
+            {ASSERTION_FIELDS.map(field => (
               <FormField
-                key={f}
+                key={field}
                 control={form.control}
-                name={f as any}
-                render={({ field }) => (
+                name={field}
+                render={({ field: control }) => (
                   <FormItem className="flex flex-col items-center gap-1 space-y-0 p-1.5 rounded-lg border border-slate-200 bg-white shadow-xs">
-                    <FormLabel className="text-xs font-bold text-slate-700">{f.replace('assertion', '').toUpperCase()}</FormLabel>
-                    <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                    <FormLabel className="text-xs font-bold text-slate-700">{ASSERTION_CODE[field]}</FormLabel>
+                    <FormControl><Switch checked={control.value} onCheckedChange={control.onChange} /></FormControl>
                   </FormItem>
                 )}
               />

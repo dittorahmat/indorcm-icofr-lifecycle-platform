@@ -16,16 +16,19 @@ import {
 } from '@/components/ui/tooltip';
 import { checkMark, formatIDR, getSeverityMeta } from './dod-format';
 import type { AssertionKey, BoxKey, FormattedDoDRow } from './dod-types';
+import {
+  ASSERTION_CODE,
+  ASSERTION_FIELDS,
+  ASSERTION_TIP,
+  type AssertionTip,
+} from '@shared/assertion-fields';
 
-const ASSERTION_COLS: Array<{ key: AssertionKey; label: string; tip: string }> = [
-  { key: 'c', label: 'C', tip: 'c' },
-  { key: 'a', label: 'A', tip: 'a' },
-  { key: 'eo', label: 'E/O', tip: 'eo' },
-  { key: 'co', label: 'CO', tip: 'co' },
-  { key: 'ro', label: 'R&O', tip: 'ro' },
-  { key: 'va', label: 'V/A', tip: 'va' },
-  { key: 'pd', label: 'PD', tip: 'pd' },
-];
+const ASSERTION_COLS: Array<{ key: AssertionKey; label: string; tip: AssertionTip }> =
+  ASSERTION_FIELDS.map((field) => ({
+    key: ASSERTION_TIP[field],
+    label: ASSERTION_CODE[field],
+    tip: ASSERTION_TIP[field],
+  }));
 
 const BOX_COLS: Array<{ key: BoxKey; label: string; tip: string }> = [
   { key: 'box1', label: 'B1 (xviii)', tip: 'box1' },

@@ -16,6 +16,7 @@ import { DoDLogicMatrix } from './DoDLogicMatrix';
 import { DoDConclusionFooter } from './DoDConclusionFooter';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { toControlAssertions } from '@shared/assertion-fields';
 
 interface DoDWorksheetDialogProps {
   isOpen: boolean;
@@ -48,7 +49,7 @@ export function DoDWorksheetDialog({
   const [ineffectivePeriod, setIneffectivePeriod] = React.useState<string>('Q2 - Q4 (9 Bulan)');
   const [isRemediated, setIsRemediated] = React.useState<boolean>(deficiency?.status === 'Remediated');
   const [selectedAssertions, setSelectedAssertions] = React.useState<string[]>(
-    deficiency?.assertions || ['Accuracy', 'Completeness']
+    toControlAssertions(deficiency?.assertions ?? ['Accuracy', 'Completeness'])
   );
   const [cosoComponent] = React.useState<string>('Control Activities');
   const [selectedCompensatingId, setSelectedCompensatingId] = React.useState<string | undefined>(
@@ -61,7 +62,7 @@ export function DoDWorksheetDialog({
       setExposureValue(deficiency.exposureValue || 500_000_000);
       setIsRemediated(deficiency.status === 'Remediated');
       if (deficiency.assertions?.length) {
-        setSelectedAssertions(deficiency.assertions);
+        setSelectedAssertions(toControlAssertions(deficiency.assertions));
       }
       if (deficiency.compensatingControlIds?.length) {
         setSelectedCompensatingId(deficiency.compensatingControlIds[0]);

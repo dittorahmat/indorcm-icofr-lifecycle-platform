@@ -8,6 +8,8 @@
     "subtitle_elc": "Entity Level Control Matrix (17 Prinsip COSO) - SK-5 Lampiran 5 a.",
     "subtitle_tlc": "SK-5/DKU.MBU/11/2024 Regulatory Compliance Matrix",
     "subtitle_itgc": "Regulatory Compliance Matrix - ITGC (Lampiran 5.c)",
+    "suggest_template_applied": "Template diterapkan berdasarkan Prinsip COSO {{principle}}.",
+    "suggest_template_select_first": "Pilih minimal satu Prinsip COSO untuk mendapatkan saran template.",
     "no": "No",
     "process_info": "Informasi Proses",
     "sub_process": "Sub Proses",
