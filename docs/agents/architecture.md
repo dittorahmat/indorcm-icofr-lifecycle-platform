@@ -85,6 +85,41 @@ reports stay as the evidence snapshot of the round that produced them.
 | 11 | `arch/round11-bpm-node-registry` | scope: BPM editor + worksheet, 8 candidates landed as 4 batches. **C4** one handle-alias table (`normalizeSide` delegates) · **C7** one severity/rating tone owner `src/lib/badge-tone.ts` (Medium no longer renders as Low in `ControlTestCard`) · **C8** node inspector asks `groupPairsByRisk` instead of re-grouping (5 `any` → 0) · **C6** `useBPMPage` 394 → deleted, split into scoping-selection/hierarchy/mutation hooks + `BPMPage` 452 → 283 · **C1** `shared/bpm-node-registry.ts` one node-type owner (`output` removed, `risk`/`control` renderers added, palette 32 buttons → config array, `useBPMNodeOperations` 4 → 3 `any`) · **C2** `canvas-hydration.ts` one node/edge seam, auto-layout writes canonical handles · **C3** `bpm-diagram-projection.ts` owns signatures + dirty set + save payload (`useBPMEditorState` 324 → 244) · **C5** `worksheet-row.ts` one row shape + one row commit seam (columns `any` 7 → 0, `BPMWorksheet` 390 → 342). Docs: ADR 0008, 8 glossary terms |
 | 12 | `arch/round12-queue` | queue slice from the tracker (rounds 8+ skip recon): **#100** `CustomizableDashboard` 488 → 186 non-empty LOC, `any` 16 → 0. `dashboard-layout.ts` owns the layout algebra (catalog, `defaultLayouts`, `readStoredLayouts` with the id filter + nearest-larger breakpoint fill, `toggleWidget`/`addCustomWidget`/`patchWidget`/`reconcileLayout`, option arrays as data) · the view splits into orchestrator + `DashboardWidgetCard` + `dashboard-widget-body` (typed `DashboardSummary`) · `useDashboardDraft` makes the draft BE the `['user-preferences']` cache entry (mirror removed, `onError` added, the `/api/user/me` role gate retired, `useUserPreferences.ts` deleted). Tests: 18 algebra cases + 4 page cases (mutation-checked). **#97 first pass** (17 guards on `remediation`/`infrastructure`/`transactions`, unguarded in `worker/routes` 61 → 44; C10's `/migration/rollover`, `bpm.ts` cleanup and `dev-guard.ts` were already landed, so two-thirds of its file list was stale) + `check:rbac-delta` (runs the real eslint rule in memory over the working tree and the base blob) + `rbac` retyped as `MiddlewareHandler<HonoEnv, P>` so a guard no longer degrades the handler's path params into `string \| undefined` (one under-indented line in `verify.yml` had also silently disabled CI for four commits — the file would not parse, so every run was a zero-job startup failure; `check:workflows` now owns that failure mode). **#99** extends the C7 tone owner instead of adding a second one: `severityLabelKey`/`severityShortLabelKey` + `SEVERITY_SOLID_CLASS`/`SEVERITY_PANEL_CLASS` replace five local copies (labels as bundle keys, the DoD table's cell converges on the same `dodReport.summary.*` the KPI cards use, and an unknown severity can no longer throw through `config.color`). **#97 second pass** (unguarded 44 → 28: nine guards — both workflow endpoints, `rcm-controls` ×3, `notifications` POST, `license`, `account-assertions`, `scoping` simulations — plus seven *documented* exemptions for session-scoped writes via the new `// rbac-exempt: <reason>` directive, which the rule requires a reason for and reports as stale when left on a guarded route; coverage mechanics extracted to `worker/routes/__tests__/rbac-coverage.ts` and asserted by eight barrels). Two client-supplied authorization bypasses removed: `?bypassWorkflow=true` let any Line 1 caller delete an Approved control or simulation, and no client ever sent it |
 
+## Round 12 follow-ups
+
+**#116** (`arch/issue-81-i18n-keys` — #81's raw-key backlog plus the scoping
+materiality fix cherry-picked from `430c20f`). Code review found three drift
+classes in the cherry-picked half; all three closed on the branch:
+
+- **The "single owner" comment claimed more than the code delivered.**
+  `computeSimulationMateriality` said the client editor's live view shared it, but
+  the view re-composed the same `benchmark → OM → PM` chain from the primitives.
+  `deriveMateriality` now owns that chain and the view calls it; the view still
+  classifies significance over its department/scope-enriched rows on purpose, and
+  the seam comment says so.
+- **A declared benchmark with no rows still derived PM 0.** Membership in
+  `benchmarkFsliNames` alone passed validation, so the stored zero the commit set
+  out to prevent was still reachable. `basisProblemForSnapshot` is now the single
+  producer of both codes (`MATERIALITY_BASIS_NOT_IN_SNAPSHOT`,
+  `MATERIALITY_BASIS_HAS_NO_VALUE`), the create route maps the returned code to its
+  400, and the backfill script dropped its private copy of the check.
+- **Submit was guarded by `sim.glSnapshotId && !sim.pmValue`**, so a simulation with
+  no snapshot at all reached CFO review at 0. The guard is now `!sim.pmValue`.
+
+Deliberately kept (disclosed):
+
+- **`onQuickAddApp` stays.** It feeds `MultiSelect.onCreateNew` in the worksheet's
+  app column — a live affordance whose handler only points the user at the
+  worksheet — so it is not the no-consumer prop the YAGNI rule targets.
+- **`AuditService.logAction` on `POST /simulations`** is unclaimed by the
+  cherry-picked message but required by the auditability rule.
+- **The behaviour only a database can lock** (the editor's auto-save before the
+  transition, the backfill run itself) is covered by seam + handler tests rather
+  than end-to-end: `worker/routes/__tests__/scoping-materiality.test.ts` pins the
+  three code literals through a drizzle stub (the cast-free `Object.create(null)`
+  pattern from `reporting.test.ts`), because a new test file starts at a zero
+  `check:any-delta` baseline and cannot carry the grandfathered `as any` idiom.
+
 ## Round 11 follow-ups
 
 Landed in a follow-up pass on the same branch:
