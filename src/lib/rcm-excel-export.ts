@@ -1,4 +1,10 @@
 import * as XLSX from 'xlsx';
+import {
+  ASSERTION_CODE,
+  ASSERTION_FIELDS,
+  IPO_CODE,
+  IPO_FIELDS,
+} from '@shared/assertion-fields';
 
 export interface RCMExportOptions {
   sheetName?: string;
@@ -83,18 +89,13 @@ export function exportRCMToExcel(data: any[], options: RCMExportOptions = {}) {
       'Supporting Documents': item.supportingDocs || '-',
       'Key Control': item.isKeyControl ? 'Y' : 'N',
       // IPO
-      'IPO - C': item.ipoC === 'Y' ? 'Y' : 'N',
-      'IPO - A': item.ipoA === 'Y' ? 'Y' : 'N',
-      'IPO - V': item.ipoV === 'Y' ? 'Y' : 'N',
-      'IPO - RA': item.ipoRa === 'Y' ? 'Y' : 'N',
+      ...Object.fromEntries(
+        IPO_FIELDS.map((field) => [`IPO - ${IPO_CODE[field]}`, item[field] === 'Y' ? 'Y' : 'N']),
+      ),
       // Assertions
-      'Assertion - E/O': item.assertionE === 'Y' ? 'Y' : 'N',
-      'Assertion - C': item.assertionC === 'Y' ? 'Y' : 'N',
-      'Assertion - A': item.assertionA === 'Y' ? 'Y' : 'N',
-      'Assertion - CO': item.assertionCo === 'Y' ? 'Y' : 'N',
-      'Assertion - R&O': item.assertionRo === 'Y' ? 'Y' : 'N',
-      'Assertion - V/A': item.assertionVa === 'Y' ? 'Y' : 'N',
-      'Assertion - PD': item.assertionPd === 'Y' ? 'Y' : 'N',
+      ...Object.fromEntries(
+        ASSERTION_FIELDS.map((field) => [`Assertion - ${ASSERTION_CODE[field]}`, item[field] === 'Y' ? 'Y' : 'N']),
+      ),
       // Control Attributes
       'Control Type': item.controlType || '-',
       'Control Nature': item.controlNature || '-',

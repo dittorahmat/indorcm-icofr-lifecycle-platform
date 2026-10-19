@@ -13,6 +13,12 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  ASSERTION_FIELDS,
+  ASSERTION_TIP,
+  IPO_FIELDS,
+  IPO_TIP,
+} from '@shared/assertion-fields';
 
 interface CheckboxFieldProps {
   control: any;
@@ -112,29 +118,34 @@ export function BasicInfoTabContent({ form }: { form: UseFormReturn<any> }) {
 }
 
 export function IpoAssertionTabContent({ form }: { form: UseFormReturn<any> }) {
-  const { t } = useTranslation(['rcm', 'common']);
+  const { t } = useTranslation(['rcm', 'common', 'bpm']);
   return (
     <div className="pt-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
         <div className="space-y-2">
           <h4 className="text-xs font-black uppercase text-slate-500 mb-2">{t('rcm:matrix.ipo')}</h4>
           <div className="grid grid-cols-1 min-[380px]:grid-cols-2 gap-2">
-            <CheckboxField control={form.control} name="ipoC" label="Completeness" />
-            <CheckboxField control={form.control} name="ipoA" label="Accuracy" />
-            <CheckboxField control={form.control} name="ipoV" label="Validity" />
-            <CheckboxField control={form.control} name="ipoRa" label="Restricted Access" />
+            {IPO_FIELDS.map((field) => (
+              <CheckboxField
+                key={field}
+                control={form.control}
+                name={field}
+                label={t(`bpm:ipo.tooltip.${IPO_TIP[field]}.label`)}
+              />
+            ))}
           </div>
         </div>
         <div className="space-y-2">
           <h4 className="text-xs font-black uppercase text-slate-500 mb-2">{t('rcm:matrix.assertions')}</h4>
           <div className="grid grid-cols-1 min-[380px]:grid-cols-2 gap-2">
-            <CheckboxField control={form.control} name="assertionE" label="Existence / Occurrence" />
-            <CheckboxField control={form.control} name="assertionC" label="Completeness" />
-            <CheckboxField control={form.control} name="assertionA" label="Accuracy" />
-            <CheckboxField control={form.control} name="assertionCo" label="Cut-Off" />
-            <CheckboxField control={form.control} name="assertionRo" label="Rights & Obligation" />
-            <CheckboxField control={form.control} name="assertionVa" label="Valuation & Allocation" />
-            <CheckboxField control={form.control} name="assertionPd" label="Presentation & Disclosure" />
+            {ASSERTION_FIELDS.map((field) => (
+              <CheckboxField
+                key={field}
+                control={form.control}
+                name={field}
+                label={t(`bpm:assertions.tooltip.${ASSERTION_TIP[field]}.label`)}
+              />
+            ))}
           </div>
         </div>
       </div>

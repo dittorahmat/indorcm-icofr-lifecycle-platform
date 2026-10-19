@@ -15,6 +15,7 @@ import { RCMEditDialog } from '@/components/rcm/RCMEditDialog';
 import { RCMImportWizardModal } from '@/components/rcm/import/RCMImportWizardModal';
 import { exportRCMToExcel } from '@/lib/rcm-excel-export';
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
+import { ASSERTION_FIELDS, IPO_FIELDS } from '@shared/assertion-fields';
 
 interface RCMMatrixItem extends RCMControlMapping {
   mappingId: string;
@@ -76,10 +77,7 @@ export function RCMITGCPage({ embedded = false, filterBpmId, workingYearOverride
       };
 
       // 2. Boolean normalization for IPO & Assertions (text columns in DB)
-      const booleanFields = [
-        'ipoC', 'ipoA', 'ipoV', 'ipoRa',
-        'assertionE', 'assertionC', 'assertionA', 'assertionCo', 'assertionVa', 'assertionRo', 'assertionPd'
-      ];
+      const booleanFields = [...IPO_FIELDS, ...ASSERTION_FIELDS];
 
       booleanFields.forEach(field => {
         if (typeof values[field] === 'boolean') {

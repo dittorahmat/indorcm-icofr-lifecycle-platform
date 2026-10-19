@@ -27,6 +27,12 @@ import { Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useUnsavedChangesContext } from '@/context/UnsavedChangesContext';
 import { VerificationPilarFields, type VerificationTextField } from './verification/VerificationPilarFields';
+import {
+  ASSERTION_FIELDS,
+  ASSERTION_TIP,
+  IPO_FIELDS,
+  IPO_TIP,
+} from '@shared/assertion-fields';
 import { toast } from 'sonner';
 
 const formSchema = z.object({
@@ -82,7 +88,7 @@ export function VerificationEditDialog({
   onSave,
   isSaving
 }: VerificationEditDialogProps) {
-  const { t } = useTranslation(['rcm', 'common', 'csa_hub']);
+  const { t } = useTranslation(['rcm', 'common', 'csa_hub', 'bpm']);
   const { setDirty } = useUnsavedChangesContext();
 
   /**
@@ -297,22 +303,25 @@ export function VerificationEditDialog({
                   <div className="space-y-2">
                     <h4 className="text-sm font-bold uppercase text-slate-500 mb-2">{t('rcm:matrix.ipo')}</h4>
                     <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-2">
-                      <CheckboxField name="ipoC" label="Completeness" />
-                      <CheckboxField name="ipoA" label="Accuracy" />
-                      <CheckboxField name="ipoV" label="Validity" />
-                      <CheckboxField name="ipoRa" label="Restricted Access" />
+                      {IPO_FIELDS.map((field) => (
+                        <CheckboxField
+                          key={field}
+                          name={field}
+                          label={t(`bpm:ipo.tooltip.${IPO_TIP[field]}.label`)}
+                        />
+                      ))}
                     </div>
                   </div>
                   <div className="space-y-2">
                     <h4 className="text-sm font-bold uppercase text-slate-500 mb-2">{t('rcm:matrix.assertions')}</h4>
                     <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-2">
-                      <CheckboxField name="assertionE" label="Existence / Occurrence" />
-                      <CheckboxField name="assertionC" label="Completeness" />
-                      <CheckboxField name="assertionA" label="Accuracy" />
-                      <CheckboxField name="assertionCo" label="Cut-Off" />
-                      <CheckboxField name="assertionRo" label="Rights & Obligation" />
-                      <CheckboxField name="assertionVa" label="Valuation & Allocation" />
-                      <CheckboxField name="assertionPd" label="Presentation & Disclosure" />
+                      {ASSERTION_FIELDS.map((field) => (
+                        <CheckboxField
+                          key={field}
+                          name={field}
+                          label={t(`bpm:assertions.tooltip.${ASSERTION_TIP[field]}.label`)}
+                        />
+                      ))}
                     </div>
                   </div>
                 </div>

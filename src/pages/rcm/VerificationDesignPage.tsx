@@ -18,6 +18,12 @@ import { VerificationEditDialog } from '@/components/rcm/VerificationEditDialog'
 import { AddAssessmentDialog } from '@/components/rcm/AddAssessmentDialog';
 import { authClient } from '@/lib/auth-client';
 import { exportRegulatoryTableToExcel } from '@/lib/rcm-excel-export';
+import {
+  ASSERTION_CODE,
+  ASSERTION_FIELDS,
+  IPO_CODE,
+  IPO_FIELDS,
+} from '@shared/assertion-fields';
 
 interface VerificationMatrixItem {
   id: string;
@@ -173,25 +179,24 @@ export function VerificationDesignPage({ embedded, filterBpmId, workingYear, noG
     {
       title: t('rcm:matrix.ipo'),
       className: 'bg-blue-600 text-white',
-      columns: [
-        { id: 'ipoC', header: 'C', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.ipoC === 'Y' ? 'Y' : 'N' },
-        { id: 'ipoA', header: 'A', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.ipoA === 'Y' ? 'Y' : 'N' },
-        { id: 'ipoV', header: 'V', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.ipoV === 'Y' ? 'Y' : 'N' },
-        { id: 'ipoRa', header: 'RA', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.ipoRa === 'Y' ? 'Y' : 'N' },
-      ]
+      columns: IPO_FIELDS.map((field) => ({
+        id: field,
+        header: IPO_CODE[field],
+        width: '40px',
+        className: 'text-center text-xs font-mono text-slate-700',
+        render: (row) => row[field] === 'Y' ? 'Y' : 'N',
+      }))
     },
     {
       title: t('rcm:matrix.assertions'),
       className: 'bg-indigo-600 text-white',
-      columns: [
-        { id: 'ae', header: 'E/O', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.assertionE === 'Y' ? 'Y' : 'N' },
-        { id: 'ac', header: 'C', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.assertionC === 'Y' ? 'Y' : 'N' },
-        { id: 'aa', header: 'A', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.assertionA === 'Y' ? 'Y' : 'N' },
-        { id: 'aco', header: 'CO', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.assertionCo === 'Y' ? 'Y' : 'N' },
-        { id: 'aro', header: 'R&O', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.assertionRo === 'Y' ? 'Y' : 'N' },
-        { id: 'ava', header: 'V/A', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.assertionVa === 'Y' ? 'Y' : 'N' },
-        { id: 'apd', header: 'PD', width: '40px', className: 'text-center text-xs font-mono text-slate-700', render: (row) => row.assertionPd === 'Y' ? 'Y' : 'N' },
-      ]
+      columns: ASSERTION_FIELDS.map((field) => ({
+        id: field,
+        header: ASSERTION_CODE[field],
+        width: '40px',
+        className: 'text-center text-xs font-mono text-slate-700',
+        render: (row) => row[field] === 'Y' ? 'Y' : 'N',
+      }))
     },
     {
       title: t('rcm:matrix.groups.metadata'),
@@ -297,17 +302,8 @@ export function VerificationDesignPage({ embedded, filterBpmId, workingYear, noG
           col('controlDescription', t('rcm:matrix.control_description', { defaultValue: 'Deskripsi' })),
           col('supportingDocs', t('rcm:matrix.supporting_docs', { defaultValue: 'Dokumen' })),
           col('isKey', t('rcm:verification.columns.is_key', { defaultValue: 'Utama' })),
-          col('ipoC', 'C'),
-          col('ipoA', 'A'),
-          col('ipoV', 'V'),
-          col('ipoRa', 'RA'),
-          col('assertionE', 'E/O'),
-          col('assertionC', 'C'),
-          col('assertionA', 'A'),
-          col('assertionCo', 'CO'),
-          col('assertionRo', 'R&O'),
-          col('assertionVa', 'V/A'),
-          col('assertionPd', 'PD'),
+          ...IPO_FIELDS.map((field) => col(field, IPO_CODE[field])),
+          ...ASSERTION_FIELDS.map((field) => col(field, ASSERTION_CODE[field])),
           col('controlType', t('rcm:matrix.type', { defaultValue: 'Tipe' })),
           col('controlNature', t('rcm:matrix.nature', { defaultValue: 'Sifat' })),
           col('automatedControlType', t('rcm:matrix.automated_type', { defaultValue: 'Jenis Otomatis' })),

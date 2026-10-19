@@ -249,7 +249,7 @@
         "ref": "SK-5/2024 Page 24 Table 8"
       },
       "eo": {
-        "title": "E/O — Existence / Occurrence",
+        "title": "E/O — Existence/Occurrence",
         "desc": "Ensures assets, liabilities, and equity interests exist at the reporting date, and recorded transactions actually occurred during the period.",
         "ref": "SK-5/2024 Page 24 Table 8"
       },
@@ -259,17 +259,17 @@
         "ref": "SK-5/2024 Page 24 Table 8"
       },
       "ro": {
-        "title": "R&O — Rights & Obligations",
+        "title": "R&O — Rights and Obligation",
         "desc": "Ensures the entity holds or controls the rights to assets, and liabilities are legitimate obligations of the entity.",
         "ref": "SK-5/2024 Page 24 Table 8"
       },
       "va": {
-        "title": "V/A — Valuation & Allocation",
+        "title": "V/A — Valuation and Allocation",
         "desc": "Ensures assets, liabilities, and equity interests are included at appropriate amounts and resulting valuation adjustments are properly allocated.",
         "ref": "SK-5/2024 Page 24 Table 8"
       },
       "pd": {
-        "title": "PD — Presentation & Disclosure",
+        "title": "PD — Presentation and Disclosure",
         "desc": "Ensures financial components are appropriately aggregated or disaggregated, clearly described, and relevant disclosures meet reporting standards.",
         "ref": "SK-5/2024 Page 24 Table 8"
       },

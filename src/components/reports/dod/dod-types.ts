@@ -1,4 +1,5 @@
 import type { Control, Deficiency } from '@shared/types';
+import type { AssertionTip } from '@shared/assertion-fields';
 
 export interface DoDLampiran10ReportProps {
   deficiencies?: Deficiency[];
@@ -6,15 +7,8 @@ export interface DoDLampiran10ReportProps {
   fiscalYear?: number;
 }
 
-export interface DoDAssertions {
-  c: boolean;
-  a: boolean;
-  eo: boolean;
-  co: boolean;
-  ro: boolean;
-  va: boolean;
-  pd: boolean;
-}
+/** One boolean per assertion: the keys are the shared scheme's tooltip keys, by construction. */
+export type DoDAssertions = Record<AssertionTip, boolean>;
 
 export interface DoDBoxes {
   box1: boolean;

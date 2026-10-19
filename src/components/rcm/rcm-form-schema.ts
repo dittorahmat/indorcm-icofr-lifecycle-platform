@@ -1,5 +1,6 @@
 import * as z from 'zod';
 import type { WorkflowHistoryEntry } from '@shared/types';
+import { ASSERTION_FIELDS, IPO_FIELDS } from '@shared/assertion-fields';
 
 export type RcmTFunction = (key: string) => string;
 
@@ -64,17 +65,8 @@ export type RcmDialogSource = {
 const BOOL_FIELDS = [
   'isFraudRelated',
   'isKeyControl',
-  'ipoC',
-  'ipoA',
-  'ipoV',
-  'ipoRa',
-  'assertionE',
-  'assertionC',
-  'assertionA',
-  'assertionCo',
-  'assertionVa',
-  'assertionRo',
-  'assertionPd',
+  ...IPO_FIELDS,
+  ...ASSERTION_FIELDS,
 ] as const satisfies readonly (keyof RcmFormValues)[];
 
 export function parseRcmBool(val: unknown): boolean {

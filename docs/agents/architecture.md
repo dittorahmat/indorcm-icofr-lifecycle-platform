@@ -181,6 +181,61 @@ Two disclosed edges:
   a call shape rather than the invariant, so a second reader written through a
   descriptor would slip past it.
 
+**#105 — the IPO/assertion label scheme has one owner.** The seven assertions of
+Tabel 8 and the four IPOs of Tabel 13 were declared in ten modules under three
+label schemes: the RCM tab and both matrices printed the regulation's
+`E/O · C · A · CO · R&O · V/A · PD`, the CSA TOD form printed a drifted
+`E · C · A · CO · VA · RO · PD` (spelled from the column key with
+`f.replace('assertion','')`, behind two `name={f as any}` casts), and the RCM /
+verification dialogs carried long labels with `&`/`/` spellings the regulation
+does not use. The same drift sat in the two bundles that render the long labels
+(`bpm:assertions.tooltip.*.label` and `dodReport.tooltips.*.title`, the latter
+with a plural `Rights & Obligations`); both now read exactly as Tabel 8, and a
+test asserts each bundle label byte-equals its canonical value. Meanwhile the
+unions the screens were meant to derive from (`ControlAssertion`, nine members
+incl. `Validity`/`Classification`/`Occurrence`;
+`InformationProcessingObjective`, five incl. `Availability`) were imported by no
+screen, so a new member was invisible everywhere.
+
+`shared/assertion-fields.ts` now owns the scheme: `ASSERTION_FIELDS`/`IPO_FIELDS`
+in legend order, the short codes, the `bpm:assertions.tooltip.*` /
+`bpm:ipo.tooltip.*` keys, and the exhaustive `Record<union, …>` indexes
+(`ASSERTION_FIELD_OF`, `IPO_FIELD_OF` plus the per-field code/tip/value maps) that
+make a new member a `tsc` error. The unions shrank to the regulation — labels
+verified against `docs/2024peraturan tk eselon i005.pdf` (Tabel 8, printed p.24;
+Tabel 13, printed p.28); `Availability` was dead. The DoD table's column keys
+(`DoDAssertions`) now *are* the scheme's tooltip keys (`Record<AssertionTip,
+boolean>`), and the migration prompt derives its enum list from the module.
+
+Owner decision (recorded): the two contexts do **not** legitimately differ — the
+CSA `E · …` spelling was drift — so one scheme serves both and no predicate needs
+a documented option.
+
+Legacy values: `toControlAssertion`/`toInformationProcessingObjective` (and the
+list forms) resolve, case-insensitively, the names and short codes written before
+the alignment (`Validity → Existence/Occurrence`, `Existence`/`Occurrence` → E/O,
+the pre-#105 lowercase `Cut-off` → `Cut-Off`, `Valuation → Valuation and
+Allocation`, `Presentation`/`Classification` → PD) and drop the removed
+`Availability`. `ControlEditor` and the DoD worksheet dialog decode on load, so an
+old row normalises the next time it is saved.
+
+Deliberately not changed (disclosed):
+
+- **The jsonb `controls.assertions`/`ipos` shape disagrees with itself** — the
+  RCM import writes `{type,value}[]`, the editor writes `string[]`, while
+  `Control.assertions` types it as `ControlAssertion[]`. Pre-existing, and
+  orthogonal to the label scheme.
+- **`ControlService.create` writes `ipo:` where the column is `ipos`** (and its
+  comment claims a schema mapping that does not exist), so a control created
+  through that path persists no IPO. A one-line bug, left out of a label-scheme
+  change.
+- **The IT-assertion vocabulary is a different table.** `properties/ITGCForm.tsx`
+  (Confidentiality/Integrity/Availability/Authenticity) and the ITGC illustration
+  in `reports/mock-regulatory-data.ts` are Tabel 14's CIA set, not Tabel 8's —
+  so they keep their own words and are deliberately not routed through the module.
+- **`useDoDReport`'s matcher stays** its own tolerant predicate (it also accepts
+  Indonesian aliases); it is a decoder, not a label declaration.
+
 ## Round 11 follow-ups
 
 Landed in a follow-up pass on the same branch:

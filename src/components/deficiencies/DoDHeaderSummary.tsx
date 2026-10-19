@@ -4,6 +4,7 @@ import { FileText, ShieldAlert, AlertCircle, Clock, CheckCircle2 } from 'lucide-
 import type { Deficiency } from '@shared/types';
 import { useTranslation } from 'react-i18next';
 import { formatIDR } from '@/components/reports/dod/dod-format';
+import { ALL_ASSERTIONS } from '@shared/assertion-fields';
 
 interface DoDHeaderSummaryProps {
   deficiency: Deficiency;
@@ -16,16 +17,6 @@ interface DoDHeaderSummaryProps {
   onPeriodChange: (val: string) => void;
   onRemediatedChange: (val: boolean) => void;
 }
-
-const ALL_ASSERTIONS = [
-  "Completeness",
-  "Accuracy",
-  "Existence/Occurrence",
-  "Cut-off",
-  "Rights & Obligations",
-  "Valuation/Allocation",
-  "Presentation & Disclosure",
-];
 
 export function DoDHeaderSummary({
   deficiency,

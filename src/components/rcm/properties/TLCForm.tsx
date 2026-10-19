@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Info } from 'lucide-react';
+import { IPO_CODE, IPO_FIELDS, IPO_TIP } from '@shared/assertion-fields';
 
 interface TLCFormProps {
   data: any;
@@ -13,18 +14,18 @@ interface TLCFormProps {
 export function TLCForm({ data, onChange, disabled = false }: TLCFormProps) {
   const { t } = useTranslation(['bpm', 'common']);
 
-  const ipoFields = [
-    { key: 'ipoC', label: 'C', fullName: 'Completeness', tooltip: t('bpm:ipo.tooltip.c.desc') },
-    { key: 'ipoA', label: 'A', fullName: 'Accuracy', tooltip: t('bpm:ipo.tooltip.a.desc') },
-    { key: 'ipoV', label: 'V', fullName: 'Validity', tooltip: t('bpm:ipo.tooltip.v.desc') },
-    { key: 'ipoRa', label: 'RA', fullName: 'Restricted Access', tooltip: t('bpm:ipo.tooltip.ra.desc') }
-  ];
+  const ipoFields = IPO_FIELDS.map((key) => ({
+    key,
+    label: IPO_CODE[key],
+    fullName: t(`bpm:ipo.tooltip.${IPO_TIP[key]}.label`),
+    tooltip: t(`bpm:ipo.tooltip.${IPO_TIP[key]}.desc`),
+  }));
 
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-1 mb-2">
-        <h4 className="text-xs font-black uppercase text-indigo-900 tracking-wider">Information Processing Objective (IPO)</h4>
-        <p className="text-xs text-slate-500">Petakan tujuan pemrosesan informasi untuk kontrol tingkat transaksi ini.</p>
+        <h4 className="text-xs font-black uppercase text-indigo-900 tracking-wider">{t('bpm:ipo.title')}</h4>
+        <p className="text-xs text-slate-500">{t('bpm:ipo.description')}</p>
       </div>
 
       <div className="grid grid-cols-1 min-[420px]:grid-cols-2 sm:grid-cols-4 gap-2 border rounded-lg p-3 bg-white shadow-sm">

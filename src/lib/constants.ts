@@ -1,25 +1,4 @@
-import { 
-  ControlAssertion, 
-  InformationProcessingObjective, 
-  ControlFrequency, 
-  ITGCArea 
-} from '@shared/types';
-
-export const ALL_ASSERTIONS: ControlAssertion[] = [
-  "Completeness", 
-  "Accuracy", 
-  "Validity", 
-  "Cut-off", 
-  "Presentation", 
-  "Existence"
-];
-
-export const ALL_IPOS: InformationProcessingObjective[] = [
-  "Completeness", 
-  "Accuracy", 
-  "Validity", 
-  "Restricted Access"
-];
+import { ControlFrequency, ITGCArea } from '@shared/types';
 
 export const ALL_FREQUENCIES: ControlFrequency[] = [
   "Annual", 

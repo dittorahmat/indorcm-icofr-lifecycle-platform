@@ -77,7 +77,7 @@ const mockDeficiencies = [
     cosoComponent: 'Control Activities',
     businessProcess: 'Perbendaharaan',
     businessUnit: 'Head Office',
-    assertions: ['Accuracy', 'Completeness', 'Existence'],
+    assertions: ['Accuracy', 'Completeness', 'Existence/Occurrence'],
     flowchartPath: { 1: true, 2: true, 3: true, 4: true, 5: false, 6: true, 7: false },
   },
 ];

@@ -5,28 +5,31 @@ import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Info } from 'lucide-react';
 import type { RcmFormValues, RcmTFunction } from './rcm-form-schema';
+import {
+  ASSERTION_CODE,
+  ASSERTION_FIELDS,
+  ASSERTION_TIP,
+  IPO_CODE,
+  IPO_FIELDS,
+  IPO_TIP,
+} from '@shared/assertion-fields';
 
 interface RCMComplianceTabProps {
   form: UseFormReturn<RcmFormValues>;
   t: RcmTFunction;
 }
 
-const IPO_ITEMS = [
-  { name: 'ipoC', label: 'C', tip: 'c' },
-  { name: 'ipoA', label: 'A', tip: 'a' },
-  { name: 'ipoV', label: 'V', tip: 'v' },
-  { name: 'ipoRa', label: 'RA', tip: 'ra' },
-] as const;
+const IPO_ITEMS = IPO_FIELDS.map((name) => ({
+  name,
+  label: IPO_CODE[name],
+  tip: IPO_TIP[name],
+}));
 
-const ASSERTION_ITEMS = [
-  { name: 'assertionE', label: 'E/O', tip: 'eo' },
-  { name: 'assertionC', label: 'C', tip: 'c' },
-  { name: 'assertionA', label: 'A', tip: 'a' },
-  { name: 'assertionCo', label: 'CO', tip: 'co' },
-  { name: 'assertionVa', label: 'V/A', tip: 'va' },
-  { name: 'assertionRo', label: 'R&O', tip: 'ro' },
-  { name: 'assertionPd', label: 'PD', tip: 'pd' },
-] as const;
+const ASSERTION_ITEMS = ASSERTION_FIELDS.map((name) => ({
+  name,
+  label: ASSERTION_CODE[name],
+  tip: ASSERTION_TIP[name],
+}));
 
 export function RCMComplianceTab({ form, t }: RCMComplianceTabProps) {
   return (

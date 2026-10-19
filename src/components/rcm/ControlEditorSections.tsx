@@ -8,7 +8,8 @@ import { Calculator, Lightbulb, ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { ALL_COSO, ALL_ASSERTIONS, ALL_IPOS, ITGC_AREAS } from '@/lib/constants';
+import { ALL_COSO, ITGC_AREAS } from '@/lib/constants';
+import { ALL_ASSERTIONS, ALL_IPOS } from '@shared/assertion-fields';
 import { calculateRiskRating, getSuggestedControl, COBIT_ITGC_MAPPING } from '@/lib/compliance-utils';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
@@ -93,9 +94,9 @@ export const RegulatoryMappingSection = ({ form }: { form: any }) => {
                   const suggestion = getSuggestedControl(firstP);
                   form.setValue('name', suggestion.name);
                   form.setValue('description', suggestion.description);
-                  toast.info(`Template diterapkan berdasarkan Prinsip ${firstP}`);
+                  toast.info(t('matrix.suggest_template_applied', { principle: firstP }));
                 } else {
-                  toast.error("Pilih minimal satu Prinsip COSO untuk mendapatkan saran template.");
+                  toast.error(t('matrix.suggest_template_select_first'));
                 }
               }}
             >
