@@ -2,9 +2,9 @@ import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { api } from '@/lib/api-client';
-import { RCMControlMapping, UserRole } from '@shared/types';
+import { RCMControlMapping } from '@shared/types';
 import { 
-  Search, RefreshCw, Edit3, AlertTriangle, Check, Shield, Settings2
+  Search, RefreshCw, Edit3, AlertTriangle, Check, Shield
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,9 +19,8 @@ import { RCMEditDialog } from '@/components/rcm/RCMEditDialog';
 import { RCMImportWizardModal } from '@/components/rcm/import/RCMImportWizardModal';
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 import { RolloverPrompt } from '@/components/layout/RolloverPrompt';
-import { Card, CardContent } from '@/components/ui/card';
+import { RolloverCard } from '@/components/layout/RolloverCard';
 import { exportRCMToExcel } from '@/lib/rcm-excel-export';
-import { canRunRollover } from '@shared/rollover-roles';
 
 interface RCMMatrixItem extends RCMControlMapping {
   mappingId: string;
@@ -86,12 +85,6 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
       return res;
     },
   });
-
-  const { data: me } = useQuery({
-    queryKey: ['auth-me'],
-    queryFn: () => api<{ role: UserRole }>('/api/user/me'),
-  });
-  const canRollover = canRunRollover(me?.role);
 
   const saveMutation = useMutation({
     mutationFn: (values: any) => {
@@ -305,30 +298,12 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
         </RCMPageHeader>
       )}
 
-      {canRollover && items.length === 0 && !isLoading && (
-        <div className="p-6 pb-2">
-          <Card className="bg-teal-50/50 border-teal-200/60 shadow-sm rounded-lg overflow-hidden">
-            <CardContent className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 flex-wrap min-w-0">
-              <div className="flex gap-3">
-                <div className="bg-teal-500/10 p-2.5 rounded-xl h-10 w-10 flex items-center justify-center text-teal-600 shrink-0">
-                  <Settings2 className="h-5 w-5" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-teal-900 text-sm">{t('scoping:rollover.title')}</h3>
-                  <p className="text-xs text-teal-700/80 mt-1 max-w-2xl leading-relaxed">
-                    {t('scoping:rollover.description', { year: workingYear, prevYear: (parseInt(workingYear) - 1).toString() })}
-                  </p>
-                </div>
-              </div>
-              <Button 
-                onClick={() => setIsRolloverOpen(true)}
-                className="bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs uppercase tracking-wider px-4 py-2 h-9 rounded-xl shrink-0"
-              >
-                {t('scoping:rollover.confirm')}
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+      {items.length === 0 && !isLoading && (
+        <RolloverCard
+          workingYear={workingYear}
+          onOpen={() => setIsRolloverOpen(true)}
+          className="mx-6 mt-6"
+        />
       )}
 
       <RCMTable 

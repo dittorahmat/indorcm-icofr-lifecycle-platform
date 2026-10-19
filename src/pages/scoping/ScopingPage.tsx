@@ -3,7 +3,7 @@ import { motion, Variants } from 'framer-motion';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Trash2, Upload, Database, LayoutGrid, Settings2 } from 'lucide-react';
+import { Plus, Trash2, Upload, Database, LayoutGrid } from 'lucide-react';
 import { GLSourceTable } from '@/components/scoping/GLSourceTable';
 import { SimulationListTable } from '@/components/scoping/SimulationListTable';
 import { SetBenchmarkModal } from '@/components/scoping/SetBenchmarkModal';
@@ -20,20 +20,17 @@ import { usePurgeScoping } from './use-purge-scoping';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/lib/api-client';
-import { canRunRollover } from '@shared/rollover-roles';
-import type { UserRole } from '@shared/types';
+import { useQueryClient } from '@tanstack/react-query';
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 
 import { SmartImportWizard } from '@/components/scoping/SmartImportWizard';
 import { RolloverPrompt } from '@/components/layout/RolloverPrompt';
+import { RolloverCard } from '@/components/layout/RolloverCard';
 
 // New Decomposed Parts
 import { useScopingPage } from './hooks/useScopingPage';
 import { ScopingSimulationForm } from './components/ScopingSimulationForm';
 import { ScopingEditor } from './components/ScopingEditorShell';
-import { Card, CardContent } from '@/components/ui/card';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -72,12 +69,6 @@ export function ScopingPage() {
   const { purgeScoping } = usePurgeScoping();
   const [isImportWizardOpen, setIsImportWizardOpen] = React.useState(false);
   const [isRolloverOpen, setIsRolloverOpen] = React.useState(false);
-
-  const { data: me } = useQuery({
-    queryKey: ['auth-me'],
-    queryFn: () => api<{ role: UserRole }>('/api/user/me'),
-  });
-  const canRollover = canRunRollover(me?.role);
 
   const handleDeleteSim = async (id: string) => {
     const sim = simulations.find(s => s.id === id);
@@ -168,29 +159,9 @@ export function ScopingPage() {
           </div>
         </PageHeader>
 
-        {canRollover && simulations.length === 0 && snapshots.length === 0 && !isLoading && (
+        {simulations.length === 0 && snapshots.length === 0 && !isLoading && (
           <motion.div variants={itemVariants}>
-            <Card className="bg-teal-50/50 border-teal-200/60 shadow-sm rounded-lg overflow-hidden">
-              <CardContent className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 flex-wrap min-w-0">
-                <div className="flex gap-3">
-                  <div className="bg-teal-500/10 p-2.5 rounded-xl h-10 w-10 flex items-center justify-center text-teal-600 shrink-0">
-                    <Settings2 className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-teal-900 text-sm">{t('scoping:rollover.title')}</h3>
-                    <p className="text-xs text-teal-700/80 mt-1 max-w-2xl leading-relaxed">
-                      {t('scoping:rollover.description', { year: workingYear, prevYear: (parseInt(workingYear) - 1).toString() })}
-                    </p>
-                  </div>
-                </div>
-                <Button 
-                  onClick={() => setIsRolloverOpen(true)}
-                  className="bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs uppercase tracking-wider px-4 py-2 h-11 sm:h-10 min-h-[44px] w-full sm:w-auto justify-center rounded-lg shrink-0"
-                >
-                  {t('scoping:rollover.confirm')}
-                </Button>
-              </CardContent>
-            </Card>
+            <RolloverCard workingYear={workingYear} onOpen={() => setIsRolloverOpen(true)} />
           </motion.div>
         )}
 

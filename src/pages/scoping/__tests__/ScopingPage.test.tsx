@@ -3,6 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 import { ScopingPage } from '../ScopingPage';
 import { UnsavedChangesProvider } from '@/context/UnsavedChangesContext';
+import type { UserRole } from '@shared/types';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useScopingPage, useScopingEditor } from '../hooks/useScopingPage';
 
@@ -15,8 +16,8 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
-/** `/api/user/me` answer for the page's single `useQuery` (the rollover gate). */
-const authMe = vi.hoisted(() => ({ role: 'Lini 2' as string | undefined }));
+/** `/api/user/me` answer for the page's role gate (`useCurrentRole`). */
+const authMe = vi.hoisted(() => ({ role: 'Line 1' as UserRole | undefined }));
 
 /** React Query doubles: stable across renders, so effects keyed on them do not loop. */
 const rqStub = vi.hoisted(() => ({
@@ -141,7 +142,7 @@ describe('ScopingPage / ScopingEditor responsive behavior', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    authMe.role = 'Lini 2';
+    authMe.role = 'Line 1';
 
     mockScopingPage();
 
@@ -229,7 +230,7 @@ describe('ScopingPage / ScopingEditor responsive behavior', () => {
   // #103: the guard admits Line 3 and Admin only, so the card must not invite a
   // role that could only collect a 403. The list view (not the editor) is the one
   // that mounts the card, hence the empty year.
-  const renderEmptyYear = (role: string) => {
+  const renderEmptyYear = (role: UserRole) => {
     mockScopingPage({ simulations: [], snapshots: [] });
     mockMobile(false);
     authMe.role = role;
@@ -244,12 +245,12 @@ describe('ScopingPage / ScopingEditor responsive behavior', () => {
   it('hides the rollover card from a role the guard refuses', () => {
     renderEmptyYear('Line 1');
 
-    expect(screen.queryByText('scoping:rollover.title')).toBeNull();
+    expect(screen.queryByText('rollover.title')).toBeNull();
   });
 
   it('shows the rollover card to Line 3 on an empty year', () => {
     renderEmptyYear('Line 3');
 
-    expect(screen.getByText('scoping:rollover.title')).toBeDefined();
+    expect(screen.getByText('rollover.title')).toBeDefined();
   });
 });
