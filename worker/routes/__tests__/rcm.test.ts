@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import rcm from '../rcm';
+import { mutatingRoutes, OVERSIGHT_ROLES, reachableBy } from './rbac-coverage';
 
 /**
  * RCM HTTP contract lock (arch-09 T4). Write behavior (allow-list partition,
@@ -41,5 +42,22 @@ describe('RCM barrel routes and sub-apps', () => {
     expect(routePaths).toContain('PATCH /rcm-matrix/verification-design/:mappingId');
     expect(routePaths).toContain('POST /rcm-matrix/verification-design');
     expect(routePaths).toContain('POST /rcm-matrix/:type/batch-update');
+  });
+});
+
+/**
+ * #97: every mutating route in this barrel must refuse a role that has no
+ * business writing operational data. The subject is the barrel's own route list
+ * and the mechanics live in ./rbac-coverage.
+ */
+describe('rcm mutating routes carry an rbac guard (#97)', () => {
+  it('declares mutating routes for the guard assertions to cover', () => {
+    expect(mutatingRoutes(rcm).length).toBeGreaterThan(0);
+  });
+
+  it('refuses oversight roles on every mutating route', async () => {
+    for (const role of OVERSIGHT_ROLES) {
+      expect(await reachableBy(rcm, role), role).toEqual([]);
+    }
   });
 });

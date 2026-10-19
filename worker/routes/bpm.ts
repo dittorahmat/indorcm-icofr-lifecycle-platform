@@ -218,7 +218,11 @@ bpm.patch('/bpm-processes/:id', rbac(['Line 1', 'Admin']), async (c) => {
   return ok(c, result);
 });
 
-bpm.post('/bpm-processes/:id/workflow', async (c) => {
+// The workflow module enforces which action a role may take (runWorkflowTransition
+// gets the caller's role); this guard only has to admit the roles an action can
+// belong to, so a transition is never blocked by a route-level list. Same union
+// `remediation` uses on its workflow endpoint.
+bpm.post('/bpm-processes/:id/workflow', rbac(['Line 1', 'Line 2', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const id = c.req.param('id');
   const body = await c.req.json<{ action: WorkflowAction; note?: string; assigneeId?: string }>();

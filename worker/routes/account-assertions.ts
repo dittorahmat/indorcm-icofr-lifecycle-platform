@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import type { HonoEnv } from '../app';
 import { ok, bad } from '../lib/utils';
+import { rbac } from '../lib/guard';
 import { getDb } from '../db';
 import { accountAssertions } from '../db/schema';
 import { eq, and } from 'drizzle-orm';
@@ -57,7 +58,7 @@ accountAssertionsRoute.get('/account-assertions', async (c) => {
  * POST /api/account-assertions
  * Atomic upsert for a single account assertion.
  */
-accountAssertionsRoute.post('/account-assertions', async (c) => {
+accountAssertionsRoute.post('/account-assertions', rbac(['Line 1', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const userId = c.get('userId');

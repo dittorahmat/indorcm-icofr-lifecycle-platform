@@ -235,7 +235,12 @@
       },
       "signOff": "Disahkan oleh Tim Lini 3 / Auditor Internal",
       "saveButton": "Simpan & Sahkan Kertas Kerja DoD",
-      "cancelButton": "Batal"
+      "cancelButton": "Batal",
+      "impact": {
+        "mw": "Kelemahan Material berdampak langsung pada Opini Audit Laporan Keuangan",
+        "sd": "Defisiensi Signifikan wajib dilaporkan ke Komite Audit dan Dewan Komisaris",
+        "cd": "Defisiensi Pengendalian operasional, tindak lanjut oleh Process Owner"
+      }
     }
   },
   "toast": {

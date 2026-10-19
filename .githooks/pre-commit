@@ -16,9 +16,17 @@
 # staged blob. Content staged and then edited again is therefore judged as it
 # is on disk; re-stage before committing or the gate is judging something else.
 STAGED=$(git diff --cached --name-only --diff-filter=ACMR -- src shared worker scripts | tr '\n' ' ')
+# Workflow files are checked even when nothing else is staged: a broken one dies
+# silently in CI (startup failure, zero jobs, nothing red), so the check must not
+# depend on the STAGED fast path below.
+WORKFLOWS=$(git diff --cached --name-only --diff-filter=ACMR -- .github/workflows | tr '\n' ' ')
+if [ -n "$WORKFLOWS" ]; then
+  node scripts/check-workflows.mjs || exit 1
+fi
 if [ -z "$STAGED" ]; then
   exit 0
 fi
 node scripts/check-any-delta.mjs $STAGED || exit 1
 node scripts/check-i18n.mjs $STAGED || exit 1
 node scripts/check-worker-strings.mjs $STAGED || exit 1
+node scripts/check-rbac-delta.mjs $STAGED || exit 1

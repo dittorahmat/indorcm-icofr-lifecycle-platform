@@ -64,6 +64,7 @@
     "statement3": "To our knowledge, the financial statements and other financial information included in the financial statements, fairly present in all material respects the financial condition and results of operations for the period presented.",
     "statement4": "We have implemented controls and procedures for the preparation of financial statements deemed necessary to properly prepare and present the financial statements (consolidated) and free from material misstatement.",
     "deficiencyTitle": "Deficiency Details & Remediation Plan",
+    "severity": "Severity",
     "noDeficiencies": "No significant deficiencies or material weaknesses found.",
     "remediationPlan": "Remediation Plan",
     "monitorProgress": "Monitor progress via Deficiency Board",
@@ -129,7 +130,43 @@
     "closeCatalog": "Close Catalog",
     "resetLayout": "Reset Layout",
     "addRemoveWidgets": "Add/Remove Widgets",
-    "active": "Active"
+    "active": "Active",
+    "addCustomChart": "Add Custom Chart",
+    "noData": "No data available",
+    "noSummaryMetrics": "No summary metrics available",
+    "unsupported": "Unsupported format",
+    "saveFailed": "Could not save the dashboard layout. Please try again.",
+    "kpi": {
+      "entityCluster": "Entity Cluster",
+      "lastReview": "Last Review",
+      "conclusion": "Conclusion",
+      "effective": "Effective",
+      "ineffective": "Ineffective",
+      "totalControls": "Total Controls"
+    },
+    "config": {
+      "title": "Widget Configuration",
+      "widgetTitle": "Widget Title",
+      "dataSource": "Data Source",
+      "vizType": "Visualization Type"
+    },
+    "widgets": {
+      "kpiSummary": "Compliance KPI Summary",
+      "riskHeatmap": "Risk Heatmap (SK-5/2024)",
+      "cosoHeatmap": "COSO 17 Principles Heatmap",
+      "deficienciesSeverity": "Deficiencies by Severity",
+      "deficiencyStatus": "Deficiency Status Details",
+      "custom": "Custom Chart Card"
+    },
+    "sources": {
+      "riskRegistry": "Risk Assessment Registry"
+    },
+    "viz": {
+      "summary": "KPI Card Group",
+      "heatmap": "Heatmap Matrix",
+      "bar": "Bar Chart (Column)",
+      "pie": "Donut Chart"
+    }
   },
   "dodReport": {
     "title": "APPENDIX 10",
@@ -151,6 +188,11 @@
       "remediated": "Remediated",
       "notRemediated": "Not Remediated",
       "searchPlaceholder": "Search reference, description, business process..."
+    },
+    "severityShort": {
+      "mw": "MW",
+      "sd": "SD",
+      "cd": "CD"
     },
     "summary": {
       "totalEvaluated": "Total DoD Evaluated",

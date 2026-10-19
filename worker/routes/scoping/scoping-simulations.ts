@@ -171,19 +171,21 @@ simulationRoutes.post('/simulations/:id/submit', rbac(['Line 2', 'Admin']), asyn
   }
 });
 
-simulationRoutes.delete('/simulations/:id', async (c) => {
+simulationRoutes.delete('/simulations/:id', rbac(['Line 2', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const id = c.req.param('id');
   const orgId = c.get('organizationId');
   const userRole = c.get('userRole');
-  const bypassWorkflow = c.req.query('bypassWorkflow') === 'true';
 
   const [sim] = await db.select().from(simulations).where(and(eq(simulations.id, id), eq(simulations.organizationId, orgId))).limit(1);
   if (!sim) return notFound(c, 'Simulation not found');
 
-  // If item is Approved and workflow is NOT bypassed, prevent direct physical deletion
-  if (sim.status === 'Approved' && !bypassWorkflow && userRole !== 'Admin') {
-    return bad(c, 'Cannot delete an Approved simulation directly. Please submit a Deletion Request for approval or confirm deletion with workflow disabled.', 403);
+  // An Approved simulation is not deleted directly (by anyone but Admin): the
+  // `?bypassWorkflow=true` flag that used to allow it was a client-controlled
+  // authorization decision and no client ever sent it. Go through the deletion
+  // request instead.
+  if (sim.status === 'Approved' && userRole !== 'Admin') {
+    return bad(c, 'Cannot delete an Approved simulation directly. Please submit a Deletion Request for approval.', 403);
   }
 
   await db.delete(simulations).where(and(eq(simulations.id, id), eq(simulations.organizationId, orgId)));

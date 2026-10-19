@@ -193,8 +193,11 @@ describe('DoDLampiran10Report Component', () => {
     render(<DoDLampiran10Report deficiencies={mockDeficiencies} controls={mockControls} />);
 
     expect(screen.getByText('Total Evaluasi DoD')).toBeInTheDocument();
-    expect(screen.getByText('Kelemahan Material (MW)')).toBeInTheDocument();
-    expect(screen.getByText('Defisiensi Signifikan (SD)')).toBeInTheDocument();
+    // Since #99 the table's severity cell resolves the same `dodReport.summary.*`
+    // key as this KPI card, where it used to print its own `MW (Kelemahan
+    // Material)` order — so the label is now expected in more than one place.
+    expect(screen.getAllByText('Kelemahan Material (MW)').length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByText('Defisiensi Signifikan (SD)').length).toBeGreaterThanOrEqual(2);
 
     // MW count: 1, SD count: 1, Remediated count: 1, Total: 2
     expect(screen.getByText('2')).toBeInTheDocument();

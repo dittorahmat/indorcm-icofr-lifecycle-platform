@@ -1,7 +1,8 @@
 # Repo guardrails: gates beyond type-check/lint/test
 
 Three gate families live outside `tsc`/`eslint`/`vitest`. All are plain-node
-scripts (no deps) plus route-lock tests. Run them before pushing; CI
+scripts (one, `check:workflows`, needs a YAML parser — see its row) plus
+route-lock tests. Run them before pushing; CI
 (`verify.yml`, step "Repo gates") re-runs the deterministic subset on PRs.
 
 ## Delta gates (touched files vs a base)
@@ -29,6 +30,7 @@ after the commit that passed before it.
 | any | `npm run check:any-delta -- [--base <ref>] <files...>` | More `any`/`as any`/`as never`/`as unknown as X` than base fails. Base defaults to the branch point; CI passes `--base origin/<base-ref>`. |
 | i18n | `npm run check:i18n -- [--base <ref>] <files...>` | (a) More hardcoded first-arg `toast.*("…")` literals than base fails. Dynamic args (`err.message`, `t('key')`) never match. (b) Any NEW static `t('key')` missing from the `en` locale bundle fails (delta vs base; pre-existing misses grandfathered). Dynamic keys skipped; missing-in-`id`-but-present-in-`en` allowed (English fallback). Test files excluded. Dev logs missing keys via `missingKey` in `src/i18n/config.ts`. Scope note: this gate does NOT see hardcoded copy in JSX text or `header:`/`placeholder:`/`title:` literals — a detector over those fires ~800 times across ~140 existing files (enum values, dates, tokens), so it would fail the next honest change. That half of the mandate is a reviewer rule in `CODING_STANDARDS.md`. |
 | worker prose | `npm run check:worker-strings -- [--base <ref>] <files...>` | More user-facing prose in a worker **code** slot than base fails — `bad(c, 'Kontrol tidak ditemukan')`, `notFound(c, '…')`, or `throw new Error('…')`. The code belongs on a literal union; prose belongs in the message arg (`AppError(code, message, status)`). Scope `worker/**/*.ts`, test files excluded. Baseline 81 findings (grandfathered by the delta; burn down on touch). Whole-tree inventory: `npm run check:worker-strings` (report mode, exits 0). |
+| route guards | `npm run check:rbac-delta -- [--base <ref>] <files...>` | A touched `worker/routes/**/*.ts` file that declares MORE mutating route registrations (POST/PUT/PATCH/DELETE) without a guard (`rbac(...)` / `assertDevAllowed(...)`) than its base fails. Files outside `worker/routes/**` print `SKIP`. Detection is **not** re-implemented: the gate runs the real `local/routes-require-rbac` rule (`eslint-local/index.js`) in memory over both the working-tree text and the base blob, so the gate and `npm run lint` can never disagree about what an unguarded route is. The rule stays `warn` (baseline 61 → 44 on 2026-10-19, → 28 on the second pass the same day: nine guards plus seven documented exemptions) so the remainder burns down per area; this gate is the tooth. |
 
 ## Contract gates (whole tree)
 
@@ -36,6 +38,7 @@ after the commit that passed before it.
 | --- | --- | --- |
 | Route URLs | `worker/routes/__tests__/<domain>.test.ts` (vitest) | Every barrel asserts its URLs byte-identical. A renamed route fails here instead of 404ing silently on the client. Add URLs to the list when a barrel gains a route; never loosen the list to make it pass. |
 | Frontend→backend | `npm run check:api-contract` | Every frontend `(method, path)` from `api()`/`fetch()` must match a backend Hono route (method-aware: a path served only for GET fails when called with PUT). Triaged gaps live in the script's `ALLOWLIST` — never reason-free. Correlated `cond ? A : B` url/method ternaries pair branch-wise. Skipped by design: the `api()` wrapper itself, `/api/auth/*` (Better Auth), absolute URLs. |
+| Workflows | `npm run check:workflows` | Every `.github/workflows/*.y{a,}ml` must parse and declare `on:` plus at least one job. Absolute, not delta-shaped: a workflow file is valid or it is not, and an unparseable one fails in the worst way — GitHub refuses the whole file and reports "likely failed because of a workflow file issue" with **0s, zero jobs and no log**, so nothing in this repo turns red and the PR silently stops being verified. Incident 2026-10-19: one under-indented line inside `verify.yml`'s `run: \|` block (commit `57f75cf`) left the gate that verifies everything unverified for four commits (`39200554676`, `39207065068`). Parsed with the `yaml` package rather than a hand-rolled indentation regex, because a guess at what GitHub accepts would fail honest workflows instead. |
 
 ## Route splits keep the barrel and the mount line
 
@@ -57,6 +60,46 @@ assert with `toContain` / a deduped set, never exact-array equality — observed
 requires `onError` user feedback on every touched call site
 (`CODING_STANDARDS.md`); legacy sites burn down boy-scout on touch. Escalate
 the rule to `error` once `npx eslint src` reports zero hits.
+
+`local/routes-require-rbac` (`eslint-local/`, also `warn`) is the same shape for
+`worker/routes/**`: a mutating registration without a guard is reported but does
+not fail the build. Baseline **61** at introduction (2026-10-18) → **44** (first
+burn-down pass, 2026-10-19, issue #97: `remediation` 5, `infrastructure` 9,
+`transactions` 3) → **28** (second pass: `notifications`, `users`, `license`,
+`rcm`, `bpm`, `account-assertions`, `scoping-simulations`). Each pass is a
+**policy** decision — which roles may write an area — not a mechanical one: the
+client side of those routes carries no role gate at all, so the evidence is the
+repo's own precedent (`['Line 1','Admin']` for operational data,
+`['Line 2','Admin']` for testing/evaluation, `['Admin']` for config, and the
+domain's own file where it already answers the question — `scoping` is
+`['Line 2','Admin']`, not Line 1).
+
+Three route shapes do **not** take a role list, and say so in place:
+
+- **Session-scoped writes** — the handler writes strictly the caller's own row
+  (`WHERE userId = c.get('userId')`). A role list here would deny a role its own
+  settings and go stale the day a role is added, so the route carries a reason
+  instead: `// rbac-exempt: self-scoped — writes the caller's own row`. The rule
+  *requires* the reason (an empty directive is still reported) and reports a
+  directive left behind on a route that does carry a guard.
+- **Workflow endpoints** — `runWorkflowTransition` receives the caller's role and
+  decides which action that role may take, so the route guard only has to admit
+  the union of roles an action can belong to (the union `remediation` uses).
+- **Role checks inside the service** — e.g. `ControlService.delete` decides by
+  role; the route guard admits the roles that may attempt it and the service keeps
+  the fine-grained rule. A **client-supplied flag is never such a rule**: the
+  `?bypassWorkflow=true` query parameter that both `controls` and `simulations`
+  accepted let any Line 1 caller delete an Approved record, and no client ever
+  sent it — it is gone.
+
+Each guarded barrel pins its own coverage: the route test asserts that oversight
+roles (`External Auditor`, `Line 3`) get **403** on every mutating route it
+declares — removing an `rbac(...)` makes the handler run and answer 500, so the
+assertion fails instead of passing vacuously. The mechanics live in
+`worker/routes/__tests__/rbac-coverage.ts` (`mutatingRoutes` / `reachableBy`,
+deduped because Hono lists a mounted child's routes twice); a barrel with
+session-scoped writes passes its exempt list there, so the exemption is asserted
+from both sides — a silent new exemption and a stray guard both fail.
 
 ## Gates measured and rejected (do not rebuild these)
 
@@ -83,7 +126,9 @@ taste. The numbers live here so the next retro does not re-derive them.
 
 `.githooks/pre-commit` runs `check:any-delta` + `check:i18n` +
 `check:worker-strings` on staged files only (seconds; full type-check/lint/test
-stay in CI). It is installed automatically: `package.json` `"prepare"` runs
+stay in CI). Workflow edits additionally run `check:workflows`, and they run it
+even when nothing else is staged, because that failure mode is invisible in CI
+(startup failure, zero jobs) rather than red. It is installed automatically: `package.json` `"prepare"` runs
 `scripts/install-hooks.mjs`, so `npm install` / `npm ci` point
 `core.hooksPath` at `.githooks`. Manual fallback if the hook is ever missing:
 

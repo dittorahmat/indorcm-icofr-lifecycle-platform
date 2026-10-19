@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import bpm from '../bpm';
+import { mutatingRoutes, OVERSIGHT_ROLES, reachableBy } from './rbac-coverage';
 
 /**
  * bpm HTTP contract lock. Handlers stay thin adapters; refactors
@@ -44,5 +45,22 @@ describe('bpm barrel routes', () => {
     expect(bpm.routes.some((r) => r.method === 'ALL')).toBe(false);
     const getPaths = bpm.routes.filter((r) => r.method === 'GET').map((r) => r.path);
     expect(getPaths).toContain('/bpm-diagrams/:id');
+  });
+});
+
+/**
+ * #97: every mutating route in this barrel must refuse a role that has no
+ * business writing operational data. The subject is the barrel's own route list
+ * and the mechanics live in ./rbac-coverage.
+ */
+describe('bpm mutating routes carry an rbac guard (#97)', () => {
+  it('declares mutating routes for the guard assertions to cover', () => {
+    expect(mutatingRoutes(bpm).length).toBeGreaterThan(0);
+  });
+
+  it('refuses oversight roles on every mutating route', async () => {
+    for (const role of OVERSIGHT_ROLES) {
+      expect(await reachableBy(bpm, role), role).toEqual([]);
+    }
   });
 });

@@ -48,6 +48,7 @@ users.get('/user/preferences', async (c) => {
   return ok(c, { layout: pref[0].layout });
 });
 
+// rbac-exempt: self-scoped — writes the row keyed by the caller's own userId.
 users.put('/user/preferences', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const userId = c.get('userId');
@@ -195,6 +196,7 @@ users.delete('/departments/:id', rbac(['Admin', 'Line 2']), async (c) => {
   return ok(c, { success: true });
 });
 
+// rbac-exempt: self-scoped — updates the caller's own user row (eq(user.id, userId)).
 users.put('/user/profile', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const userId = c.get('userId');
@@ -376,6 +378,8 @@ users.get('/users/me/notification-preferences', async (c) => {
   return ok(c, { ...defaultPrefs, ...(rows[0].notificationPreferences as any) });
 });
 
+// rbac-exempt: self-scoped — the caller's own preference row. A role list here
+// would lock some roles out of their own notification settings.
 users.put('/users/me/notification-preferences', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const userId = c.get('userId');

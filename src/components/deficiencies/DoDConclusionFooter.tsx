@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { ShieldCheck, AlertCircle, AlertTriangle, Info, Send, UserCheck } from 'lucide-react';
 import type { DeficiencySeverity } from '@shared/types';
 import { useTranslation } from 'react-i18next';
+import { cn } from '@/lib/utils';
+import { SEVERITY_PANEL_CLASS, severityLabelKey, severityTone, type SeverityTone } from '@/lib/badge-tone';
 
 interface DoDConclusionFooterProps {
   computedSeverity: DeficiencySeverity;
@@ -14,6 +16,20 @@ interface DoDConclusionFooterProps {
   isSaving?: boolean;
 }
 
+/** The icon is this surface's own choice; the tone decides which one it gets. */
+const SEVERITY_ICON: Record<SeverityTone, typeof AlertCircle> = {
+  mw: AlertCircle,
+  sd: AlertTriangle,
+  cd: Info,
+};
+
+/** What each severity means for the audit opinion — keys, the bundle owns the prose. */
+const SEVERITY_IMPACT_KEY: Record<SeverityTone, string> = {
+  mw: 'worksheet.conclusion.impact.mw',
+  sd: 'worksheet.conclusion.impact.sd',
+  cd: 'worksheet.conclusion.impact.cd',
+};
+
 export function DoDConclusionFooter({
   computedSeverity,
   governanceRouting,
@@ -22,54 +38,12 @@ export function DoDConclusionFooter({
   onCancel,
   isSaving,
 }: DoDConclusionFooterProps) {
-  const { t } = useTranslation('deficiency');
-
-  const getSeverityBadge = () => {
-    switch (computedSeverity) {
-      case 'Material Weakness':
-        return (
-          <div className="flex items-center gap-2 bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 text-rose-800 dark:text-rose-300 px-3 py-1.5 rounded-md">
-            <AlertCircle className="h-5 w-5 text-rose-600 shrink-0" />
-            <div>
-              <span className="font-extrabold text-sm block tracking-wide uppercase">
-                {computedSeverity}
-              </span>
-              <span className="text-xs text-rose-700 dark:text-rose-400 font-medium">
-                Kelemahan Material berdampak langsung pada Opini Audit Laporan Keuangan
-              </span>
-            </div>
-          </div>
-        );
-      case 'Significant Deficiency':
-        return (
-          <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 text-amber-800 dark:text-amber-300 px-3 py-1.5 rounded-md">
-            <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0" />
-            <div>
-              <span className="font-extrabold text-sm block tracking-wide uppercase">
-                {computedSeverity}
-              </span>
-              <span className="text-xs text-amber-700 dark:text-amber-400 font-medium">
-                Defisiensi Signifikan wajib dilaporkan ke Komite Audit dan Dewan Komisaris
-              </span>
-            </div>
-          </div>
-        );
-      default:
-        return (
-          <div className="flex items-center gap-2 bg-blue-50 dark:bg-blue-950/40 border border-blue-300 dark:border-blue-800 text-blue-800 dark:text-blue-300 px-3 py-1.5 rounded-md">
-            <Info className="h-5 w-5 text-blue-600 shrink-0" />
-            <div>
-              <span className="font-extrabold text-sm block tracking-wide uppercase">
-                {computedSeverity}
-              </span>
-              <span className="text-xs text-blue-700 dark:text-blue-400 font-medium">
-                Defisiensi Pengendalian operasional, tindak lanjut oleh Process Owner
-              </span>
-            </div>
-          </div>
-        );
-    }
-  };
+  const { t } = useTranslation(['deficiency', 'reports']);
+  // Label, prose and tone all come from the one vocabulary owner: this footer
+  // used to carry a third copy of the panel classes, the raw English severity
+  // string as its headline, and two hardcoded Indonesian sentences.
+  const tone = severityTone(computedSeverity);
+  const SeverityIcon = SEVERITY_ICON[tone];
 
   return (
     <div className="bg-card border border-border rounded-lg p-4 space-y-4">
@@ -78,7 +52,17 @@ export function DoDConclusionFooter({
           <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-1">
             {t('worksheet.conclusion.computedSeverity')}
           </span>
-          {getSeverityBadge()}
+          <div className={cn('flex items-center gap-2 border px-3 py-1.5 rounded-md', SEVERITY_PANEL_CLASS[tone])}>
+            <SeverityIcon className="h-5 w-5 shrink-0" aria-hidden="true" />
+            <div>
+              <span className="font-extrabold text-sm block tracking-wide uppercase">
+                {t(severityLabelKey(computedSeverity), { ns: 'reports' })}
+              </span>
+              <span className="text-xs font-medium">
+                {t(SEVERITY_IMPACT_KEY[tone])}
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* Governance Distribution Badge (Table 24) */}

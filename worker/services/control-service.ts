@@ -174,7 +174,7 @@ export class ControlService {
     return { success: true, status: 'Pending Deletion Approval' };
   }
 
-  async delete(orgId: string, id: string, role: string, bypassWorkflow: boolean = false) {
+  async delete(orgId: string, id: string, role: string) {
     const originalDb = this.db;
     return await originalDb.transaction(async (tx) => {
       this.db = tx;
@@ -182,8 +182,13 @@ export class ControlService {
         const [control] = await this.db.select().from(controls).where(and(eq(controls.id, id), eq(controls.organizationId, orgId))).limit(1);
         if (!control) throw new Error('Control not found');
 
-        // Prevent direct deletion of Approved controls unless explicitly bypassed or Admin
-        if (control.bpmStatus === 'Approved' && !bypassWorkflow && role !== 'Admin') {
+        // Prevent direct deletion of Approved controls. There is deliberately no
+        // bypass flag here: the old `?bypassWorkflow=true` query parameter was a
+        // client-controlled authorization decision (any Line 1 caller could delete
+        // an Approved control by adding it to a hand-crafted request) and no client
+        // ever sent it. Deleting an Approved control is Admin's or goes through the
+        // Line 2 deletion-request workflow.
+        if (control.bpmStatus === 'Approved' && role !== 'Admin') {
           throw new Error("Cannot delete an Approved control directly. Please submit a Deletion Request for Line 2 approval or confirm with workflow disabled.");
         }
 

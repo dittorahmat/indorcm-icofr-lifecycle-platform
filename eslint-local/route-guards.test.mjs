@@ -47,6 +47,9 @@ describe('local/routes-require-rbac', () => {
       // Not a route registration.
       'db.delete(t)',
       "cache.delete('/tmp/x')",
+      // A session-scoped write may state that no role applies — with its reason.
+      "// rbac-exempt: self-scoped — writes only the caller's row\napp.put('/user/preferences', handler)",
+      "/* rbac-exempt: self-scoped — the WHERE carries the caller's userId */\napp.post('/notifications/:id/read', handler)",
     ],
     invalid: [
       {
@@ -56,6 +59,21 @@ describe('local/routes-require-rbac', () => {
       {
         code: "app.delete('/x/:id', adminOnly, handler)",
         errors: [{ messageId: 'missingGuard' }],
+      },
+      {
+        // The reason is the whole point: an empty directive is not an exemption.
+        code: "// rbac-exempt:\napp.put('/x', handler)",
+        errors: [{ messageId: 'exemptionWithoutReason' }],
+      },
+      {
+        // The directive covers the route it sits above, and only that one.
+        code: "// rbac-exempt: self-scoped — own row\napp.put('/a', handler)\napp.put('/b', handler)",
+        errors: [{ messageId: 'missingGuard' }],
+      },
+      {
+        // A guard was added later; the directive is now a lie about the code.
+        code: "// rbac-exempt: self-scoped — own row\napp.put('/x', rbac(['Admin']), handler)",
+        errors: [{ messageId: 'staleExemption' }],
       },
     ],
   });

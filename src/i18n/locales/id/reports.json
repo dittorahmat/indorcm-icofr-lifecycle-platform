@@ -64,6 +64,7 @@
     "statement3": "Sepanjang pengetahuan kami, laporan keuangan dan informasi keuangan lainnya yang termasuk dalam laporan keuangan, menyajikan secara wajar dalam semua hal yang material posisi keuangan dan hasil operasi untuk periode yang disajikan.",
     "statement4": "Kami telah menerapkan kontrol dan prosedur untuk penyusunan laporan keuangan yang dianggap perlu untuk menyusun dan menyajikan laporan keuangan (konsolidasian) secara tepat dan bebas dari salah saji material.",
     "deficiencyTitle": "Detail Defisiensi & Rencana Remediasi",
+    "severity": "Tingkat Defisiensi",
     "noDeficiencies": "Tidak ditemukan defisiensi signifikan atau kelemahan material.",
     "remediationPlan": "Rencana Remediasi",
     "monitorProgress": "Pantau progres melalui Papan Defisiensi",
@@ -122,13 +123,50 @@
       "approver": "Penyetuju (Lini 2)"
     }
   },
-  "customizableDashboard": {    "title": "Kustomisasi Halaman",
+  "customizableDashboard": {
+    "title": "Kustomisasi Halaman",
     "saving": "Menyimpan perubahan...",
     "widgetCatalog": "Katalog Widget",
     "closeCatalog": "Tutup Katalog",
     "resetLayout": "Atur Ulang Layout",
     "addRemoveWidgets": "Tambah/Hapus Widget",
-    "active": "Aktif"
+    "active": "Aktif",
+    "addCustomChart": "Tambah Grafik Kustom",
+    "noData": "Belum ada data",
+    "noSummaryMetrics": "Belum ada metrik ringkasan",
+    "unsupported": "Format tidak didukung",
+    "saveFailed": "Gagal menyimpan tata letak dasbor. Silakan coba lagi.",
+    "kpi": {
+      "entityCluster": "Klaster Entitas",
+      "lastReview": "Review Terakhir",
+      "conclusion": "Kesimpulan",
+      "effective": "Efektif",
+      "ineffective": "Tidak Efektif",
+      "totalControls": "Total Pengendalian"
+    },
+    "config": {
+      "title": "Konfigurasi Widget",
+      "widgetTitle": "Judul Widget",
+      "dataSource": "Sumber Data",
+      "vizType": "Tipe Visualisasi"
+    },
+    "widgets": {
+      "kpiSummary": "Ringkasan KPI Kepatuhan",
+      "riskHeatmap": "Heatmap Risiko (SK-5/2024)",
+      "cosoHeatmap": "Heatmap 17 Prinsip COSO",
+      "deficienciesSeverity": "Defisiensi per Tingkat Keparahan",
+      "deficiencyStatus": "Detail Status Defisiensi",
+      "custom": "Kartu Grafik Kustom"
+    },
+    "sources": {
+      "riskRegistry": "Registri Penilaian Risiko"
+    },
+    "viz": {
+      "summary": "Grup Kartu KPI",
+      "heatmap": "Matriks Heatmap",
+      "bar": "Diagram Batang (Kolom)",
+      "pie": "Diagram Donat (Lingkaran)"
+    }
   },
   "dodReport": {
     "title": "LAMPIRAN 10",
@@ -150,6 +188,11 @@
       "remediated": "Telah Diremediasi",
       "notRemediated": "Belum Diremediasi",
       "searchPlaceholder": "Cari referensi, deskripsi, proses bisnis..."
+    },
+    "severityShort": {
+      "mw": "MW",
+      "sd": "SD",
+      "cd": "CD"
     },
     "summary": {
       "totalEvaluated": "Total Evaluasi DoD",

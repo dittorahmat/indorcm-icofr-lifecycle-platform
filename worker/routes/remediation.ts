@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import type { HonoEnv } from '../app';
 import { ok, notFound } from '../lib/utils';
+import { rbac } from '../lib/guard';
 import { getDb } from '../db';
 import { 
   deficiencies, actionPlans, auditLogs, aggregateDeficiencies, 
@@ -51,7 +52,7 @@ remediation.get('/actionplans', async (c) => {
   return ok(c, { items });
 });
 
-remediation.post('/actionplans', async (c) => {
+remediation.post('/actionplans', rbac(['Line 1', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const userId = c.get('userId');
@@ -108,7 +109,7 @@ remediation.post('/actionplans', async (c) => {
   return ok(c, newPlan);
 });
 
-remediation.put('/actionplans/:id', async (c) => {
+remediation.put('/actionplans/:id', rbac(['Line 1', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const id = c.req.param('id');
   const orgId = c.get('organizationId');
@@ -171,7 +172,7 @@ remediation.put('/actionplans/:id', async (c) => {
   return ok(c, { success: true });
 });
 
-remediation.post('/actionplans/:id/workflow', async (c) => {
+remediation.post('/actionplans/:id/workflow', rbac(['Line 1', 'Line 2', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const id = c.req.param('id');
   const body = await c.req.json<{ action: WorkflowAction; note?: string; assigneeId?: string }>();
@@ -196,7 +197,7 @@ remediation.get('/aggregatedeficiencies', async (c) => {
   return ok(c, { items });
 });
 
-remediation.post('/aggregatedeficiencies', async (c) => {
+remediation.post('/aggregatedeficiencies', rbac(['Line 1', 'Line 2', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const userId = c.get('userId');
@@ -223,7 +224,7 @@ remediation.post('/aggregatedeficiencies', async (c) => {
   return ok(c, newAgg);
 });
 
-remediation.put('/deficiencies/:id', async (c) => {
+remediation.put('/deficiencies/:id', rbac(['Line 1', 'Line 2', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const id = c.req.param('id');
   const orgId = c.get('organizationId');

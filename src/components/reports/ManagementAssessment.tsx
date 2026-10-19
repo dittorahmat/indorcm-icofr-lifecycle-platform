@@ -12,6 +12,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { MobileDesktopBanner } from '@/components/layout/MobileDesktopBanner';
+import type { Deficiency } from '@shared/types';
+import { SEVERITY_TONE_CLASS, severityLabelKey, severityTone } from '@/lib/badge-tone';
+
+/** Lampiran 11 keeps Control Deficiency out of the escalation table. */
+const escalatesToBoard = (deficiency: Deficiency) => severityTone(deficiency.severity) !== 'cd';
 
 interface ManagementAssessmentProps {
   isSigned: boolean;
@@ -100,19 +105,19 @@ export function ManagementAssessment({
                 <TableHeader className="bg-slate-50">
                   <TableRow>
                     <TableHead className="font-bold text-slate-600 uppercase tracking-wider">{t('testing.table.notes')}</TableHead>
-                    <TableHead className="w-[150px] font-bold text-slate-600 uppercase tracking-wider">Severity</TableHead>
+                    <TableHead className="w-[150px] font-bold text-slate-600 uppercase tracking-wider">{t('assessment.severity')}</TableHead>
                     <TableHead className="w-[200px] font-bold text-slate-600 uppercase tracking-wider">{t('assessment.remediationPlan')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {(summaryData?.allDeficiencies || []).filter((d: any) => d.severity !== 'Control Deficiency').map((def: any) => (
+                  {(summaryData?.allDeficiencies || []).filter(escalatesToBoard).map((def: Deficiency) => (
                     <TableRow key={def.id} className="hover:bg-slate-50/50">
                       <TableCell className="font-medium text-slate-800 py-3">{def.description}</TableCell>
-                      <TableCell className="py-3"><Badge variant="outline" className={cn("text-xs font-bold border-none", def.severity === 'Material Weakness' ? "bg-rose-50 text-rose-700" : "bg-amber-50 text-amber-700")}>{def.severity}</Badge></TableCell>
+                      <TableCell className="py-3"><Badge variant="outline" className={cn('text-xs font-bold border-none', SEVERITY_TONE_CLASS[severityTone(def.severity)])}>{t(severityLabelKey(def.severity))}</Badge></TableCell>
                       <TableCell className="text-slate-500 py-3">{t('assessment.monitorProgress')}</TableCell>
                     </TableRow>
                   ))}
-                  {!(summaryData?.allDeficiencies || []).some((d: any) => d.severity !== 'Control Deficiency') && (
+                  {!(summaryData?.allDeficiencies || []).some(escalatesToBoard) && (
                     <TableRow><TableCell colSpan={3} className="text-center py-6 text-slate-400 font-medium">{t('assessment.noDeficiencies')}</TableCell></TableRow>
                   )}
                 </TableBody>

@@ -65,7 +65,7 @@ rcmControlsRoute.post('/controls/:id/approve', rbac(['Admin', 'Line 2']), async 
   return ok(c, result);
 });
 
-rcmControlsRoute.post('/controls/:id/submit-for-approval', async (c) => {
+rcmControlsRoute.post('/controls/:id/submit-for-approval', rbac(['Line 1', 'Line 2', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const controlService = new ControlService(db);
   const id = c.req.param('id') as string;
@@ -82,7 +82,7 @@ rcmControlsRoute.post('/controls/:id/reject', rbac(['Admin', 'Line 2']), async (
   return ok(c, result);
 });
 
-rcmControlsRoute.post('/controls/:id/request-deletion', async (c) => {
+rcmControlsRoute.post('/controls/:id/request-deletion', rbac(['Line 1', 'Line 2', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const controlService = new ControlService(db);
   const id = c.req.param('id') as string;
@@ -96,11 +96,12 @@ rcmControlsRoute.post('/controls/:id/request-deletion', async (c) => {
   return ok(c, result);
 });
 
-rcmControlsRoute.delete('/controls/:id', async (c) => {
+rcmControlsRoute.delete('/controls/:id', rbac(['Line 1', 'Line 2', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const controlService = new ControlService(db);
   const id = c.req.param('id') as string;
-  const bypassWorkflow = c.req.query('bypassWorkflow') === 'true';
-  const result = await controlService.delete(c.get('organizationId'), id, c.get('userRole'), bypassWorkflow);
+  // No bypass query flag: the service decides by the caller's role, because a
+  // client-supplied flag cannot be an authorization decision (see control-service).
+  const result = await controlService.delete(c.get('organizationId'), id, c.get('userRole'));
   return ok(c, result);
 });

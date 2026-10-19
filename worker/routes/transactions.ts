@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import type { HonoEnv } from '../app';
 import { ok, bad, notFound } from '../lib/utils';
+import { rbac } from '../lib/guard';
 import { getDb } from '../db';
 import {
   transactionDetails, transactionUploads
@@ -42,7 +43,7 @@ transactions.get('/transaction-details', async (c) => {
   return ok(c, { items });
 });
 
-transactions.post('/transaction-details', async (c) => {
+transactions.post('/transaction-details', rbac(['Line 1', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const body = await c.req.json<{ 
@@ -103,7 +104,7 @@ transactions.post('/transaction-details', async (c) => {
   return ok(c, { count: body.rows.length });
 });
 
-transactions.delete('/transaction-details/:noGL', async (c) => {
+transactions.delete('/transaction-details/:noGL', rbac(['Line 1', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const noGL = c.req.param('noGL');
@@ -133,7 +134,7 @@ transactions.get('/transaction-uploads', async (c) => {
   return ok(c, { items });
 });
 
-transactions.post('/transaction-details/upload', async (c) => {
+transactions.post('/transaction-details/upload', rbac(['Line 1', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const body = await c.req.json<any>();

@@ -100,3 +100,11 @@ _Avoid_: memilih field baris per-renderer di dalam cell/kartu
 ### Diagram Projection (Projeksi Diagram Editor)
 `src/components/rcm/editor/hooks/bpm-diagram-projection.ts`: proyeksi murni sesi editor — `projectSignatures` (rantai fallback tanda tangan: tersimpan → riwayat workflow → penulis), `comparableDiagramNodes/Edges` (himpunan pembanding `isDirty`), dan `projectDiagramSavePayload` (body `PUT /bpm-diagrams/:id`). Himpunan pembanding `isDirty` adalah keputusan produk dan dikunci test, bukan efek samping refactor.
 _Avoid_: merakit ulang blok tanda tangan di dalam hook state
+
+### Dashboard Draft (Cache-as-Truth)
+Draft layout dashboard yang **adalah** entry cache React Query `['user-preferences']` itu sendiri: setiap edit ditulis lewat `setQueryData`, dan PUT membaca ulang cache saat tembakan, sehingga body yang dikirim selalu layout yang sedang dilihat user. Kontras dengan mirror server-state (`useQuery` → `useState` + `useEffect`), di mana refetch bisa meninggalkan salinan basi yang menimpa nilai server yang lebih baru saat save berikutnya.
+_Avoid_: local state layout, mirror prefs
+
+### Widget Layout Algebra
+Aturan murni penempatan grid dashboard (tambah/hapus/patch, `maxPrevY`, lebar per breakpoint, rekonsiliasi payload `onLayoutChange`) yang tinggal di satu modul `src/components/reports/dashboard-layout.ts`; nama yang terlihat user di sana selalu berupa **kunci i18n**, dan judul default tidak pernah ditulis ke data tersimpan sehingga bundle tetap pemilik tunggal kata-katanya.
+_Avoid_: layout helper, grid utils

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import infrastructure from '../infrastructure';
+import { mutatingRoutes, OVERSIGHT_ROLES, reachableBy } from './rbac-coverage';
 
 /**
  * infrastructure HTTP contract lock. Handlers stay thin adapters; refactors
@@ -29,5 +30,23 @@ describe('infrastructure barrel routes', () => {
     expect(routePaths).toContain('POST /soc-reports');
     expect(routePaths).toContain('POST /soc-reports/:id/evaluate');
     expect(routePaths).toContain('POST /soc-evaluations');
+  });
+});
+
+/**
+ * #97: every mutating route in this barrel must refuse a role that has no
+ * business writing operational data. The subject is the barrel's own route list
+ * and the mechanics live in ./rbac-coverage — see there for why no fixtures are
+ * needed and what a failure means.
+ */
+describe('infrastructure mutating routes carry an rbac guard (#97)', () => {
+  it('declares mutating routes for the guard assertions to cover', () => {
+    expect(mutatingRoutes(infrastructure).length).toBeGreaterThan(0);
+  });
+
+  it('refuses oversight roles on every mutating route', async () => {
+    for (const role of OVERSIGHT_ROLES) {
+      expect(await reachableBy(infrastructure, role), role).toEqual([]);
+    }
   });
 });
