@@ -56,9 +56,13 @@ export type WorksheetRowSource = Pick<
   | 'applicationId'
 >;
 
-/** The fields the debounced text commit accepts. */
-export type WorksheetTextField =
-  | 'bpmCode'
+/** The fields the debounced text commit accepts. `Pick` is load-bearing: every
+ * name must be a real `Control` key, so a field the entity does not have fails to
+ * compile instead of reaching `PUT /controls/:id` and erroring at runtime — the
+ * `bpmCode` column named a BPM *process* column on a *control* row. */
+export type WorksheetTextField = keyof Pick<
+  Control,
+  | 'code'
   | 'businessProcess'
   | 'subProcess'
   | 'name'
@@ -67,7 +71,8 @@ export type WorksheetTextField =
   | 'reference'
   | 'supportingDocs'
   | 'ipos'
-  | 'assertions';
+  | 'assertions'
+>;
 
 export interface WorksheetRowCommit {
   /** Debounced commit for text inputs (fires once the user stops typing). */

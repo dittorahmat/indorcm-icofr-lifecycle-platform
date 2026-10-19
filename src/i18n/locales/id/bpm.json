@@ -191,10 +191,48 @@
     "createFlowFailed": "Gagal membuat diagram. Silakan coba lagi.",
     "deleteRowConfirm": "Hapus baris pemetaan Risiko-Pengendalian ini? Seluruh input worksheet pada baris ini akan dihapus permanen.",
     "columns": {
+      "no": "No",
+      "bpmCode": "No. BPM",
+      "bpmWorkflow": "Alur BPM",
       "businessProcess": "Informasi Proses Bisnis",
       "subProcess": "Informasi Sub-Proses Bisnis",
       "controlName": "Nama Aktivitas Pengendalian",
-      "location": "Lokasi"
+      "location": "Lokasi",
+      "description": "Proses Bisnis (Aktivitas)",
+      "fraudRisk": "Risiko Fraud",
+      "reference": "Referensi",
+      "elcUmbrella": "Payung Kebijakan (ELC)",
+      "supportingDocs": "Dokumen Pendukung",
+      "keyControl": "Pengendalian Utama",
+      "ipos": "IPO",
+      "assertions": "Asersi",
+      "type": "Tipe",
+      "nature": "Sifat",
+      "application": "Aplikasi Signifikan"
+    },
+    "placeholders": {
+      "businessProcess": "Isi Proses...",
+      "subProcess": "Nama Sub-Proses...",
+      "location": "Lokasi...",
+      "description": "Deskripsikan aktivitas...",
+      "application": "Pilih..."
+    },
+    "elc": {
+      "linked": "{{n}} terhubung",
+      "select": "Pilih ELC...",
+      "search": "Cari kebijakan ELC...",
+      "empty": "Tidak ada kebijakan ELC ditemukan."
+    },
+    "options": {
+      "none": "-- Tidak Ada --",
+      "addNewApplication": "+ Tambah Aplikasi Baru",
+      "preventive": "Preventif",
+      "detective": "Detektif",
+      "manual": "Manual",
+      "automated": "Otomatis",
+      "itdmIpe": "ITDM - IPE",
+      "itdmEuc": "ITDM - EUC",
+      "mrc": "MRC"
     }
   },
   "modal": {

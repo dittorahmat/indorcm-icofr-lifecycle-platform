@@ -191,10 +191,48 @@
     "createFlowFailed": "Could not create the diagram. Please try again.",
     "deleteRowConfirm": "Delete this Risk-Control mapping row? All associated worksheet inputs for this row will be deleted permanently.",
     "columns": {
+      "no": "No",
+      "bpmCode": "BPM No.",
+      "bpmWorkflow": "BPM Workflow",
       "businessProcess": "Business Process Information",
       "subProcess": "Sub-Process Information",
       "controlName": "Control Activity Name",
-      "location": "Location"
+      "location": "Location",
+      "description": "Business Process (Activity)",
+      "fraudRisk": "Fraud Risk",
+      "reference": "Reference",
+      "elcUmbrella": "Policy Umbrella (ELC)",
+      "supportingDocs": "Supporting Documents",
+      "keyControl": "Key Control",
+      "ipos": "IPO",
+      "assertions": "Assertions",
+      "type": "Type",
+      "nature": "Nature",
+      "application": "Significant Application"
+    },
+    "placeholders": {
+      "businessProcess": "Enter process...",
+      "subProcess": "Sub-process name...",
+      "location": "Location...",
+      "description": "Describe the activity...",
+      "application": "Select..."
+    },
+    "elc": {
+      "linked": "{{n}} linked",
+      "select": "Select ELC...",
+      "search": "Search ELC policies...",
+      "empty": "No ELC policies found."
+    },
+    "options": {
+      "none": "-- None --",
+      "addNewApplication": "+ Add New Application",
+      "preventive": "Preventive",
+      "detective": "Detective",
+      "manual": "Manual",
+      "automated": "Automated",
+      "itdmIpe": "ITDM - IPE",
+      "itdmEuc": "ITDM - EUC",
+      "mrc": "MRC"
     }
   },
   "modal": {
