@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { changeLogRowMeta, sortChangeLogsDesc } from './changelog-helpers';
-import { findingRowId, findingSeverityTone, formatExposureValue, resolveFindingControlName } from './findings-helpers';
+import { findingRowId, formatExposureValue, resolveFindingControlName } from './findings-helpers';
 import { isAssessmentSigned, summarizeEffectiveness } from './lampiran11-helpers';
 import type { Deficiency } from '@shared/types';
 
@@ -39,9 +39,6 @@ describe('regulatory report helpers (one appendix per module)', () => {
     // Indonesian dot grouping (`src/components/reports/dod/dod-format.ts` owns it).
     expect(formatExposureValue(1500)).toBe('1.500');
     expect(formatExposureValue('x')).toBe('-');
-    expect(findingSeverityTone('Material Weakness')).toBe('mw');
-    expect(findingSeverityTone('Significant Deficiency')).toBe('sd');
-    expect(findingSeverityTone('other')).toBe('cd');
   });
 
   it('keeps screen and Excel resolvers in parity (single seam)', async () => {

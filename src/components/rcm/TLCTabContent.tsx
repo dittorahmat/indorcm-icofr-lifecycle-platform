@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
+import { RISK_RATING_TONE_CLASS, riskRatingTone } from '@/lib/badge-tone';
 import { Control } from '@shared/types';
 import { useNavigate } from 'react-router-dom';
 
@@ -86,9 +87,7 @@ export function TLCTabContent({
                 <TableCell className="text-center py-3">
                   <Badge className={cn(
                     "text-xs font-medium h-6 px-2 uppercase tracking-wider shadow-none border", 
-                    ctrl.riskRating === 'High' ? "bg-rose-50 text-rose-700 border-rose-200" : 
-                    ctrl.riskRating === 'Medium' ? "bg-amber-50 text-amber-700 border-amber-200" :
-                    "bg-emerald-50 text-emerald-700 border-emerald-200"
+                    RISK_RATING_TONE_CLASS[riskRatingTone(ctrl.riskRating)]
                   )}>
                     {ctrl.riskRating}
                   </Badge>
@@ -142,9 +141,7 @@ export function TLCTabContent({
                       variant="outline"
                       className={cn(
                         "text-xs font-medium h-5 px-1.5 uppercase",
-                        ctrl.riskRating === 'High' ? "bg-rose-50 text-rose-700 border-rose-200" : 
-                        ctrl.riskRating === 'Medium' ? "bg-amber-50 text-amber-700 border-amber-200" :
-                        "bg-emerald-50 text-emerald-700 border-emerald-200"
+                        RISK_RATING_TONE_CLASS[riskRatingTone(ctrl.riskRating)]
                       )}
                     >
                       {ctrl.riskRating}

@@ -23,6 +23,14 @@ import { TOETabContent } from './TOETabContent';
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { testSchema, TestFormValues } from './test-schema';
 import { evaluateTestSubmission, getRemediationReadiness } from './testing-compliance-engine';
+import { riskRatingTone, type RiskRatingTone } from '@/lib/badge-tone';
+
+/** Solid rating treatment for the test card header (the only solid surface). */
+const RISK_RATING_SOLID_CLASS: Record<RiskRatingTone, string> = {
+  high: 'bg-rose-500 text-white',
+  medium: 'bg-amber-500 text-white',
+  low: 'bg-emerald-500 text-white',
+};
 
 interface ControlTestCardProps {
   control: Control;
@@ -144,7 +152,7 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
             <Badge 
               className={cn(
                 "text-xs uppercase font-bold tracking-wider px-2.5 sm:px-3 py-1 border-none shadow-xs shrink-0 rounded-md",
-                control.riskRating === 'High' ? 'bg-rose-500 text-white' : 'bg-emerald-500 text-white'
+                RISK_RATING_SOLID_CLASS[riskRatingTone(control.riskRating)]
               )}
             >
               {control.riskRating} RISK
