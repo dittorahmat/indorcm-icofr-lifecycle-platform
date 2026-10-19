@@ -46,3 +46,36 @@ export const resolveUserRole = (memberRole: unknown, sessionRole: unknown): User
   if (isUserRole(sessionRole)) return sessionRole;
   return 'Line 1';
 };
+
+/** The two writes a repair of one membership may have to make (#106 backfill). */
+export interface RoleRepair {
+  /** What `user.role` should hold: the role the request gate grants this row. */
+  userRole: UserRole;
+  /** What `member.role` should hold: Better Auth's vocabulary. */
+  memberRole: MemberRole;
+  needsUserWrite: boolean;
+  needsMemberWrite: boolean;
+}
+
+/**
+ * Plan the repair for one `(user.role, member.role)` pair.
+ *
+ * `user.role` always converges on the role the gate grants the row *today*, so
+ * normalising the membership afterwards cannot change anyone's rights: a
+ * membership that already holds a real `UserRole` is what the gate honours, and
+ * dropping that role into the user column is what keeps it honoured once the
+ * membership is normalised.
+ *
+ * A row with no role anywhere converges on `'Line 1'` — the same floor the gate
+ * applies at runtime, so the repair never grants anything a request would not.
+ */
+export const planRoleRepair = (userRole: unknown, memberRole: unknown): RoleRepair => {
+  const effective = resolveUserRole(memberRole, userRole);
+  const normalised = toMemberRole(effective);
+  return {
+    userRole: effective,
+    memberRole: normalised,
+    needsUserWrite: userRole !== effective,
+    needsMemberWrite: memberRole !== normalised,
+  };
+};

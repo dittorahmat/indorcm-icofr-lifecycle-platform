@@ -7,10 +7,8 @@ import {
   userPreferences
 } from '../db/schema';
 import { eq, and } from 'drizzle-orm';
-import type { Settings } from "@shared/types";
-import type { UserRole } from "@shared/types";
-import { toMemberRole } from "@shared/member-role";
-import { sendEmail } from '../services/email';
+import type { Settings, UserRole } from "@shared/types";
+import { toMemberRole } from "@shared/member-role";import { sendEmail } from '../services/email';
 import { rbac } from '../lib/guard';
 import { isUserLevel, isUserRole } from '@shared/role-options';
 import { buildWebhookPayload, buildSmtpTestEmailHtml, isWebhookProvider } from '../services/notifications/payloads';

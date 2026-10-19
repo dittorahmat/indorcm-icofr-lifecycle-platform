@@ -2,21 +2,20 @@ import 'dotenv/config';
 import { eq } from 'drizzle-orm';
 import { getDb } from '../worker/db';
 import * as schema from '../worker/db/schema';
-import { isUserRole } from '@shared/role-options';
-import { toMemberRole } from '@shared/member-role';
-import type { UserRole } from '@shared/types';
+import { planRoleRepair } from '@shared/member-role';
 
 /**
  * One-off repair for #106 — rows written before the role source was settled.
  *
- * 1. `user.role` is the ICOFR role the request gate and the client surfaces read.
- *    Where an older `POST /users` parked that role in `member.role` and left
- *    `user.role` empty, copy it over. A `user.role` that already holds a real
- *    `UserRole` is authoritative and is never overwritten.
- * 2. `member.role` is normalised to Better Auth's own vocabulary (`admin` for the
- *    super admin, `member` otherwise) — the shape `worker/db/seed.ts` writes.
+ * Two columns carried a role and the writers disagreed: the seed wrote the ICOFR
+ * role to `user.role` and Better Auth's `'admin' | 'member'` to `member.role`,
+ * while the old `POST /users` did the opposite. The plan for each membership comes
+ * from `planRoleRepair`, which converges `user.role` on the role the request gate
+ * grants the row *today* before the membership is normalised — so the repair can
+ * never move a user's effective role, and a row with no role anywhere lands on
+ * `'Line 1'`, the floor the gate already applies at runtime.
  *
- * Idempotent: rows already consistent are skipped. Run with DATABASE_URL set.
+ * Idempotent: rows already consistent plan no writes. Run with DATABASE_URL set.
  */
 async function run() {
   const databaseUrl = process.env.DATABASE_URL;
@@ -31,7 +30,6 @@ async function run() {
   const members = await db.select().from(schema.member);
   let rolesMoved = 0;
   let membershipsNormalised = 0;
-  let unknown = 0;
 
   for (const membership of members) {
     const rows = await db.select({ role: schema.user.role })
@@ -40,36 +38,23 @@ async function run() {
       .limit(1);
     if (rows.length === 0) continue;
 
-    const userRole = rows[0].role;
-    const memberRole = membership.role;
-    const icofrRole: UserRole | null = isUserRole(userRole)
-      ? userRole
-      : isUserRole(memberRole) ? memberRole : null;
+    const plan = planRoleRepair(rows[0].role, membership.role);
 
-    if (icofrRole === null) {
-      // Neither column holds a role: nothing to preserve, and inventing one would
-      // hand out privileges the row never had.
-      unknown++;
-      console.log(`⏩ Membership ${membership.userId}: no ICOFR role in either column — left alone.`);
-      continue;
-    }
-
-    if (!isUserRole(userRole)) {
-      await db.update(schema.user).set({ role: icofrRole }).where(eq(schema.user.id, membership.userId));
+    if (plan.needsUserWrite) {
+      await db.update(schema.user).set({ role: plan.userRole }).where(eq(schema.user.id, membership.userId));
       rolesMoved++;
-      console.log(`✅ ${membership.userId}: user.role ← ${icofrRole} (was ${String(userRole)}).`);
+      console.log(`✅ ${membership.userId}: user.role ← ${plan.userRole} (was ${String(rows[0].role)}).`);
     }
 
-    const betterAuthRole = toMemberRole(icofrRole);
-    if (memberRole !== betterAuthRole) {
-      await db.update(schema.member).set({ role: betterAuthRole }).where(eq(schema.member.id, membership.id));
+    if (plan.needsMemberWrite) {
+      await db.update(schema.member).set({ role: plan.memberRole }).where(eq(schema.member.id, membership.id));
       membershipsNormalised++;
     }
   }
 
   console.log(
-    `\n🎉 Backfill complete — ${rolesMoved} user role(s) moved, ` +
-    `${membershipsNormalised} membership(s) normalised, ${unknown} left alone.`,
+    `\n🎉 Backfill complete — ${rolesMoved} user role(s) written, ` +
+    `${membershipsNormalised} membership(s) normalised.`,
   );
 }
 

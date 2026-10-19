@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { resolveUserRole, toMemberRole } from './member-role';
+import { planRoleRepair, resolveUserRole, toMemberRole } from './member-role';
 import type { UserRole } from './types/common';
 
 describe('toMemberRole (#106)', () => {
@@ -32,5 +32,56 @@ describe('resolveUserRole (#106)', () => {
     expect(resolveUserRole('member', null)).toBe('Line 1');
     expect(resolveUserRole('owner', '')).toBe('Line 1');
     expect(resolveUserRole(42, {})).toBe('Line 1');
+  });
+});
+
+describe('planRoleRepair (#106 backfill)', () => {
+  it('leaves a row the seed already wrote alone', () => {
+    // seeded shape: user.role is the ICOFR role, member.role is 'member'.
+    expect(planRoleRepair('Line 2', 'member')).toEqual({
+      userRole: 'Line 2',
+      memberRole: 'member',
+      needsUserWrite: false,
+      needsMemberWrite: false,
+    });
+  });
+
+  it('moves a role parked on the membership onto the user row', () => {
+    // app-created shape: POST /users used to write the role to member.role only.
+    expect(planRoleRepair(null, 'Line 3')).toEqual({
+      userRole: 'Line 3',
+      memberRole: 'member',
+      needsUserWrite: true,
+      needsMemberWrite: true,
+    });
+  });
+
+  it('keeps the role a stale user column would otherwise lose', () => {
+    // A seeded user promoted through PUT /users: member.role is what the gate
+    // honours, so the promotion must survive the normalisation.
+    expect(planRoleRepair('Line 2', 'CFO')).toEqual({
+      userRole: 'CFO',
+      memberRole: 'member',
+      needsUserWrite: true,
+      needsMemberWrite: true,
+    });
+  });
+
+  it('floors a roleless row at Line 1 rather than inventing more', () => {
+    expect(planRoleRepair(null, null)).toEqual({
+      userRole: 'Line 1',
+      memberRole: 'member',
+      needsUserWrite: true,
+      needsMemberWrite: true,
+    });
+  });
+
+  it('is idempotent: a repaired row plans no further writes', () => {
+    const repaired = planRoleRepair(null, 'Line 3');
+    expect(planRoleRepair(repaired.userRole, repaired.memberRole)).toEqual({
+      ...repaired,
+      needsUserWrite: false,
+      needsMemberWrite: false,
+    });
   });
 });

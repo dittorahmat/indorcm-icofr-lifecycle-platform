@@ -5,6 +5,7 @@ import { Hono } from 'hono';
 import users from '../users';
 import { getDb } from '../../db';
 import type { DrizzleDb } from '../../db';
+import type { HonoEnv } from '../../app';
 import * as schema from '../../db/schema';
 
 vi.mock('../../db', () => ({
@@ -28,7 +29,10 @@ describe('the user role source (#106)', () => {
   const inserted: Written[] = [];
   const updated: Written[] = [];
   let selectedColumns: Record<string, unknown> = {};
-  let app: Hono<any>;
+  let app: Hono<HonoEnv>;
+
+  /** Better Auth is not in the loop here; the middleware only supplies the request context. */
+  const env = { DATABASE_URL: 'postgres://mock' };
 
   const stubDb = (): DrizzleDb => {
     const db: DrizzleDb = Object.create(null);
@@ -65,19 +69,20 @@ describe('the user role source (#106)', () => {
     selectedColumns = {};
     vi.mocked(getDb).mockReturnValue(stubDb());
 
-    app = new Hono();
+    app = new Hono<HonoEnv>();
     app.use('*', async (c, next) => {
       c.set('userId', 'admin-1');
       c.set('organizationId', 'org-1');
       c.set('userRole', 'Admin');
-      c.env = { DATABASE_URL: 'postgres://mock' };
       await next();
     });
     app.route('/api', users);
   });
 
+  const request = (path: string, init?: RequestInit) => app.request(path, init, env);
+
   const postUser = (body: Record<string, unknown>) =>
-    app.request('/api/users', {
+    request('/api/users', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: 'Siti', email: 'siti@bumn.go.id', ...body }),
@@ -99,7 +104,7 @@ describe('the user role source (#106)', () => {
   });
 
   it('moves a role change onto the user row and normalises the membership', async () => {
-    const res = await app.request('/api/users/u-1', {
+    const res = await request('/api/users/u-1', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ role: 'CFO' }),
@@ -111,7 +116,7 @@ describe('the user role source (#106)', () => {
   });
 
   it('leaves both role columns untouched when the body carries no role', async () => {
-    await app.request('/api/users/u-1', {
+    await request('/api/users/u-1', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: 'Siti' }),
@@ -122,7 +127,7 @@ describe('the user role source (#106)', () => {
   });
 
   it('lists the role from the user row, not the membership', async () => {
-    const res = await app.request('/api/users');
+    const res = await request('/api/users');
 
     expect(res.status).toBe(200);
     expect(selectedColumns.role).toBe(schema.user.role);
@@ -131,13 +136,15 @@ describe('the user role source (#106)', () => {
 
   it('keeps the membership column readable by the request gate alone', () => {
     // The regression this file exists for: a second reader of `member.role` that
-    // silently disagrees with `user.role` (the CSA Line-2 query was one). A new
-    // reader is a decision, not a drive-by, so it has to move this expectation.
+    // silently disagrees with `user.role`. That is also how the CSA Line-2 query is
+    // locked — pointing it back at `member.role` re-introduces a second reader and
+    // fails here. A new reader is a decision, not a drive-by, so it has to move
+    // this expectation.
     const readers = readdirSync('worker', { recursive: true, encoding: 'utf-8' })
       .filter((entry) => entry.endsWith('.ts') && !entry.endsWith('.test.ts'))
       .map((entry) => join('worker', entry))
       .filter((file) => readFileSync(file, 'utf-8').includes('schema.member.role'));
 
-    expect(readers).toEqual([join('worker', 'app.ts')]);
+    expect(readers).toEqual([join('worker', 'services', 'request-role.ts')]);
   });
 });

@@ -158,15 +158,28 @@ opposite (role on the membership, `user.role` left NULL). The request gate read
 `member.role` and cast whatever it found to `UserRole`, so every seeded non-Admin
 ran as `'member'` — 403 on every guarded route — and app-created users had no role
 on the row every client surface reads. `shared/member-role.ts` now owns both
-halves: `toMemberRole` (what Better Auth's column holds) and `resolveUserRole`
-(which one wins per request: a `member.role` that IS a `UserRole`, else the
-session's `user.role`, floored at `Line 1`). `worker/app.ts` calls the resolver,
-`POST`/`PUT /users` write `user.role` plus Better Auth's vocabulary, `GET /users`
-and the CSA Line-2 notification query read `user.role`, and
-`scripts/backfill-member-role.ts` moves a role parked on the membership onto the
-user row and normalises the membership (idempotent; a `user.role` that already
-holds a real role is never overwritten). Pinned by `shared/member-role.test.ts`
-and `worker/routes/__tests__/user-role-source.test.ts`.
+halves: `toMemberRole` (what Better Auth's column holds), `resolveUserRole` (which
+one wins per request: a `member.role` that IS a `UserRole`, else the session's
+`user.role`, floored at `Line 1`) and `planRoleRepair` (the backfill's sparse
+update). `worker/services/request-role.ts` holds the gate's half — the middleware
+around it needs a live Better Auth session, so the seam is what makes the rule
+testable — and `worker/app.ts` calls it. `POST`/`PUT /users` write `user.role`
+plus Better Auth's vocabulary, `GET /users` and the CSA Line-2 notification query
+read `user.role`, and `npm run db:backfill-role` repairs existing rows
+(idempotent; `user.role` converges on what the gate grants *today* before the
+membership is normalised, so no repair can move a user's effective role).
+
+Two disclosed edges:
+
+- **A global Admin short-circuits the membership lookup** (`request-role.ts`): one
+  query fewer on the admin hot path, and it cannot demote an Admin whose
+  membership row is stale mid-transition. It also means a per-organization ICOFR
+  role would not scope an Admin — the line to drop the day that is needed.
+- **`member.role` has exactly one reader** (`schema.member.role` appears in
+  `worker/services/request-role.ts` and nowhere else in `worker/**`), pinned by a
+  repo scan in `worker/routes/__tests__/user-role-source.test.ts`; that scan locks
+  a call shape rather than the invariant, so a second reader written through a
+  descriptor would slip past it.
 
 ## Round 11 follow-ups
 
