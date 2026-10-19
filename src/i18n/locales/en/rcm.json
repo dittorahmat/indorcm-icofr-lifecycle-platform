@@ -18,6 +18,7 @@
     "is_fraud": "Fraud Related",
     "risk_rating": "Risk Rating",
     "control_ref": "Control Ref",
+    "controls": "controls",
     "control_name": "Control Activity Name",
     "control_description": "Control Activity Description",
     "supporting_docs": "Supporting Documents",

@@ -421,6 +421,10 @@
       "datePlaceholder": "Tgl (Hari/Bulan/Tahun)"
     }
   },
+  "export": {
+    "title": "Mengekspor Diagram",
+    "generating": "Membuat gambar, mohon tunggu..."
+  },
   "sampling": {
     "title": "Pemilihan Sampel Transaksi",
     "description": "Pilih baris data Journal/GL untuk diuji dalam CSA.",

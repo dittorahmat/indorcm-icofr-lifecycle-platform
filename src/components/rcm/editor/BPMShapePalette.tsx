@@ -160,7 +160,7 @@ export const BPMShapePalette: React.FC<BPMShapePaletteProps> = ({
                   variant="outline"
                   size="icon"
                   className="h-9 w-9 rounded-lg bg-indigo-50 hover:bg-indigo-100 border-indigo-200 text-indigo-700"
-                  title={t('swimlane.add')}
+                  title={t('editor.swimlane.add')}
                   onClick={onCreateSwimlane}
                 >
                   <Columns className="h-4 w-4" />

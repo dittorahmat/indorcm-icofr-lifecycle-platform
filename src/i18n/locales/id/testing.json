@@ -3,6 +3,7 @@
   "description": "Lakukan TOD dan TOE untuk kontrol yang masuk dalam ruang lingkup sesuai dengan Peraturan SK-5.",
   "filterReady": "Siap untuk Pengujian (L2 Tervalidasi)",
   "exportExcel": "Ekspor Excel",
+  "searchPlaceholder": "Cari kontrol...",
   "testDate": "Tanggal Uji",
   "validatedByL2": "Tervalidasi oleh Lini 2:",
   "noControls": "Tidak ada kontrol yang cocok dengan filter saat ini.",

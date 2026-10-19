@@ -114,6 +114,17 @@ describe('TestWorkbench', () => {
     expect(screen.getByText('Rekonsiliasi Bank')).toBeInTheDocument();
   });
 
+  it('reads the search placeholder from the bundle instead of a dead fallback', () => {
+    pageState.records = [validatedControl];
+    render(<TestWorkbench />);
+
+    // This was `t('searchPlaceholder') || "Search controls..."`: the `||` could
+    // never fire, because a missing key makes i18next return the key itself — a
+    // truthy string — so the raw key is what reached the user. strictT validates
+    // the key against the en bundle, so a regression fails here.
+    expect(screen.getByPlaceholderText('searchPlaceholder')).toBeInTheDocument();
+  });
+
   it('exports the ONE shared column set for the visible controls', async () => {
     pageState.records = [validatedControl, pendingControl];
     pageState.processes = [testRecordFixture];

@@ -18,6 +18,7 @@
     "is_fraud": "Terkait Fraud",
     "risk_rating": "Penilaian Risiko",
     "control_ref": "Ref Kontrol",
+    "controls": "kontrol",
     "control_name": "Nama Aktivitas Pengendalian",
     "control_description": "Deskripsi Aktivitas Pengendalian",
     "supporting_docs": "Dokumen Pendukung",
