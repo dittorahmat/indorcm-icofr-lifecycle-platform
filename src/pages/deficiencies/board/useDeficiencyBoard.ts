@@ -17,6 +17,7 @@ import { resolveWorkflowAction } from '@/lib/deficiency-workflow';
 import { exportRegulatoryTableToExcel } from '@/lib/rcm-excel-export';
 import { findingsColumns, findingsFilename, mapFindingsRows } from '@/lib/findings-excel-export';
 import { KANBAN_COLUMNS, type DoDCompletionMetadata, type TranslateFn } from './board-constants';
+import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 import type {
   ActionPlan,
   AggregateDeficiency,
@@ -28,6 +29,7 @@ import type {
 
 export function useDeficiencyBoard(t: TranslateFn) {
   const queryClient = useQueryClient();
+  const { workingYear } = useFiscalYearStore();
   const { user } = useAuth();
   const mockRole = localStorage.getItem('mockRole');
   const userRole = user?.role || mockRole || 'Admin';
@@ -44,8 +46,8 @@ export function useDeficiencyBoard(t: TranslateFn) {
   const [activeId, setActiveId] = React.useState<string | null>(null);
 
   const { data: deficienciesData, isLoading: deficienciesLoading } = useQuery({
-    queryKey: ['deficiencies'],
-    queryFn: () => api<{ items: Deficiency[] }>('/api/deficiencies'),
+    queryKey: ['deficiencies', workingYear],
+    queryFn: () => api<{ items: Deficiency[] }>(`/api/deficiencies?year=${workingYear}`),
   });
 
   const filteredDeficiencies = React.useMemo(() => {
@@ -62,13 +64,13 @@ export function useDeficiencyBoard(t: TranslateFn) {
   }, [deficienciesData, sourceFilter]);
 
   const { data: actionPlansData, isLoading: actionPlansLoading } = useQuery({
-    queryKey: ['actionplans'],
-    queryFn: () => api<{ items: ActionPlan[] }>('/api/actionplans'),
+    queryKey: ['actionplans', workingYear],
+    queryFn: () => api<{ items: ActionPlan[] }>(`/api/actionplans?year=${workingYear}`),
   });
 
   const { data: simulationsData } = useQuery({
-    queryKey: ['simulations'],
-    queryFn: () => api<{ items: MaterialitySimulation[] }>('/api/simulations'),
+    queryKey: ['simulations', workingYear],
+    queryFn: () => api<{ items: MaterialitySimulation[] }>(`/api/simulations?year=${workingYear}`),
   });
 
   const activeSimulation = simulationsData?.items.find((s) => s.status === 'Approved') || simulationsData?.items[0];

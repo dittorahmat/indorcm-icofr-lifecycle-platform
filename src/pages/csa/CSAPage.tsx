@@ -39,10 +39,20 @@ export function CSAPage() {
     queryFn: () => api<{ items: BPMProcess[] }>(`/api/bpm-processes?year=${workingYear}`),
   });
 
-  const assessedBase = React.useMemo(() => {
+  const yearRecords = React.useMemo(() => {
     if (!records?.items) return [];
-    const term = searchTerm.toLowerCase();
+    const strWorkingYear = String(workingYear);
     return records.items.filter(r => {
+      if (!r.period) return true;
+      if (r.period.includes(strWorkingYear)) return true;
+      if (!/\d{4}/.test(r.period)) return true;
+      return false;
+    });
+  }, [records?.items, workingYear]);
+
+  const assessedBase = React.useMemo(() => {
+    const term = searchTerm.toLowerCase();
+    return yearRecords.filter(r => {
       // Assessed scope covers concluded outcomes only (Effective + Ineffective).
       // Records with No Transaction stay hidden. TOE / regulatory review
       // eligibility remains Effective-only downstream.
@@ -52,7 +62,7 @@ export function CSAPage() {
       return (process?.name ?? '').toLowerCase().includes(term) ||
              r.period.toLowerCase().includes(term);
     });
-  }, [records, processes, searchTerm]);
+  }, [yearRecords, processes, searchTerm]);
 
   const resultCounts = React.useMemo(() => ({
     all: assessedBase.length,
@@ -205,7 +215,7 @@ export function CSAPage() {
         <div className="block md:hidden space-y-4">
           <MobileDesktopBanner recordCount={filteredRecords.length} />
           {/* Executive Summary Card */}
-          {records?.items && records.items.length > 0 && (
+          {yearRecords.length > 0 && (
             <div className="p-4 bg-card border rounded-lg shadow-sm space-y-3" data-testid="csa-mobile-executive-summary">
               <div className="flex flex-col min-[420px]:flex-row min-[420px]:items-center justify-between border-b pb-2 flex-wrap gap-2 min-w-0">
                 <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
@@ -213,7 +223,7 @@ export function CSAPage() {
                   {t('page.summary.title', { defaultValue: 'Ringkasan Eksekutif Pengujian' })}
                 </span>
                 <Badge variant="outline" className="text-xs font-semibold">
-                  {records.items.length} {t('page.table.subProcess', { defaultValue: 'Proses' })}
+                  {yearRecords.length} {t('page.table.subProcess', { defaultValue: 'Proses' })}
                 </Badge>
               </div>
 
@@ -223,7 +233,7 @@ export function CSAPage() {
                     {t('page.summary.effective', { defaultValue: 'Efektif' })}
                   </span>
                   <span className="text-lg font-bold text-emerald-800 dark:text-emerald-200">
-                    {records.items.filter(r => r.result === 'Effective').length}
+                    {yearRecords.filter(r => r.result === 'Effective').length}
                   </span>
                 </div>
                 <div className="p-2.5 bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 rounded-md">
@@ -231,7 +241,7 @@ export function CSAPage() {
                     {t('page.summary.ineffective', { defaultValue: 'Defisiensi' })}
                   </span>
                   <span className="text-lg font-bold text-red-800 dark:text-red-200">
-                    {records.items.filter(r => r.result === 'Ineffective').length}
+                    {yearRecords.filter(r => r.result === 'Ineffective').length}
                   </span>
                 </div>
               </div>

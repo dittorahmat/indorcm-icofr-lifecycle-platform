@@ -1,10 +1,9 @@
 import {
-  csaRecords, csaSamples, csaSchedules, testRecords,
-  user, member, todEvaluations, controls
+  csaRecords, csaSamples, csaSchedules,
+  user, member
 } from '../db/schema';
-import { eq, and, desc, SQL } from 'drizzle-orm';
+import { eq, and, desc, SQL, sql } from 'drizzle-orm';
 import type { DrizzleDb } from '../db';
-import type { CSARecord, TestRecord } from "@shared/types";
 import { AuditService } from './audit-service';
 import { DeficiencyService } from './deficiency-service';
 import { collectFailedControlIds, eventForVerdict } from './deficiency-trigger';
@@ -19,9 +18,16 @@ export class CsaDomainService {
     this.defService = new DeficiencyService(db);
   }
 
-  async getSchedules(orgId: string) {
+  async getSchedules(orgId: string, year?: number) {
+    let conditions: SQL = eq(csaSchedules.organizationId, orgId);
+    if (year && !isNaN(year)) {
+      conditions = and(
+        conditions,
+        sql`EXTRACT(YEAR FROM ${csaSchedules.plannedDate}) = ${year}`
+      ) as SQL;
+    }
     return await this.db.select().from(csaSchedules)
-      .where(eq(csaSchedules.organizationId, orgId))
+      .where(conditions)
       .orderBy(desc(csaSchedules.plannedDate));
   }
 

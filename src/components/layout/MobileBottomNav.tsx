@@ -6,6 +6,7 @@ import { useSidebar } from '@/components/ui/sidebar';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
+import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 
 export function MobileBottomNav() {
   const { t } = useTranslation('common');
@@ -22,9 +23,11 @@ export function MobileBottomNav() {
     staleTime: 60 * 1000,
   });
 
+  const { workingYear } = useFiscalYearStore();
+
   const { data: csaSchedules } = useQuery({
-    queryKey: ['csa-schedules'],
-    queryFn: () => api<{ items: any[] }>('/api/csa/schedules'),
+    queryKey: ['csa-schedules', workingYear],
+    queryFn: () => api<{ items: any[] }>(`/api/csa/schedules?year=${workingYear}`),
     refetchOnWindowFocus: true,
     refetchInterval: 5 * 60 * 1000,
     staleTime: 60 * 1000,

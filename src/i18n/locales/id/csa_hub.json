@@ -47,6 +47,10 @@
     "frequency": "Frekuensi",
     "setReminder": "Atur Pengingat",
     "beforeDeadline": "Sebelum Batas Waktu",
+    "detailActivity": "Detail Aktivitas",
+    "detailPlaceholder": "cth. Review Mingguan, Tutup Buku Bulanan",
+    "editDetails": "Ubah Detail",
+    "removeSchedule": "Hapus Jadwal",
     "save": "Simpan Jadwal",
     "reschedule": {
       "title": "Jadwal Ulang Aktivitas",

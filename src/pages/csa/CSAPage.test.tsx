@@ -193,4 +193,34 @@ describe('CSAPage', () => {
       resetPageQueryStore(csaPageQueryState);
     }
   });
+
+  it('filters out records from other fiscal years while keeping active workingYear records', () => {
+    const stamp = new Date('2026-09-01T10:00:00').getTime();
+    const items: TestCsaRecord[] = [
+      { id: 'csa-curr-1', bpmProcessId: 'proc-1', period: '2026-Q3', result: 'Effective', assessmentDate: stamp, samples: [], comments: '' },
+      { id: 'csa-curr-2', bpmProcessId: 'proc-2', period: 'Jan - Des 2026', result: 'Ineffective', assessmentDate: stamp, samples: [], comments: '' },
+      { id: 'csa-curr-3', bpmProcessId: 'proc-3', period: 'Q1', result: 'Effective', assessmentDate: stamp, samples: [], comments: '' },
+      { id: 'csa-old', bpmProcessId: 'proc-old', period: '2025-Q4', result: 'Effective', assessmentDate: stamp, samples: [], comments: '' },
+    ];
+    const processes: TestBpmProcess[] = [
+      { id: 'proc-1', name: 'Active 2026 Proc 1' },
+      { id: 'proc-2', name: 'Active 2026 Proc 2' },
+      { id: 'proc-3', name: 'Active 2026 Proc 3' },
+      { id: 'proc-old', name: 'Old 2025 Process' },
+    ];
+    csaPageQueryState.records = items;
+    csaPageQueryState.processes = processes;
+
+    try {
+      render(<CSAPage />);
+
+      expect(screen.getAllByText('Active 2026 Proc 1')).toHaveLength(2);
+      expect(screen.getAllByText('Active 2026 Proc 2')).toHaveLength(2);
+      expect(screen.getAllByText('Active 2026 Proc 3')).toHaveLength(2);
+      // 2025 record must be filtered out
+      expect(screen.queryByText('Old 2025 Process')).not.toBeInTheDocument();
+    } finally {
+      resetPageQueryStore(csaPageQueryState);
+    }
+  });
 });

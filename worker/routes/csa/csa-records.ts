@@ -3,7 +3,7 @@ import type { HonoEnv } from '../../app';
 import { ok, bad, notFound } from '../../lib/utils';
 import { getDb } from '../../db';
 import { csaRecords, csaSamples, controls } from '../../db/schema';
-import { eq, and, SQL, sql } from 'drizzle-orm';
+import { eq, and, SQL, sql, or } from 'drizzle-orm';
 import { CsaDomainService } from "../../services/csa-domain-service";
 import { runWorkflowTransition } from "../../services/workflow/workflow-drizzle-adapter";
 import { generateCsaPdf } from "../../lib/csa-pdf";
@@ -24,7 +24,23 @@ csaRecordsRoute.get('/csa', async (c) => {
   let conditions: SQL = eq(csaRecords.organizationId, orgId);
   if (controlId) conditions = and(conditions, eq(csaRecords.controlId, controlId)) as SQL;
   if (period) conditions = and(conditions, eq(csaRecords.period, period)) as SQL;
-  if (year) conditions = and(conditions, sql`${csaRecords.period} LIKE ${year + '%'}`) as SQL;
+  if (year) {
+    const yearNum = parseInt(year, 10);
+    conditions = and(
+      conditions,
+      or(
+        sql`${csaRecords.period} LIKE ${'%' + year + '%'}`,
+        and(
+          or(sql`${csaRecords.period} IS NULL`, sql`${csaRecords.period} = ''`, sql`NOT (${csaRecords.period} ~ '[0-9]{4}')`),
+          sql`EXISTS (SELECT 1 FROM controls WHERE controls.id = ${csaRecords.controlId} AND controls.organization_id = ${orgId} AND controls.year = ${yearNum})`
+        ),
+        and(
+          or(sql`${csaRecords.period} IS NULL`, sql`${csaRecords.period} = ''`, sql`NOT (${csaRecords.period} ~ '[0-9]{4}')`),
+          sql`EXTRACT(YEAR FROM ${csaRecords.assessmentDate}) = ${yearNum}`
+        )
+      )
+    ) as SQL;
+  }
   if (bpmProcessId) conditions = and(conditions, eq(csaRecords.bpmProcessId, bpmProcessId)) as SQL;
   if (scheduleId) conditions = and(conditions, eq(csaRecords.scheduleId, scheduleId)) as SQL;
 
