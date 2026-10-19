@@ -4,10 +4,12 @@ import {
   glSnapshots, glRows, notifications, user
 } from '../db/schema';
 import type { DrizzleDb } from '../db';
-import type { MaterialitySimulation, NewGLRow } from '@shared/types';
+import type { MaterialitySimulation, NewGLRow, SimulationStatus, UserRole } from '@shared/types';
 import { AuditService } from './audit-service';
 import { AppError, SIMULATION_NOT_FOUND } from '../lib/utils';
 import { resolveSnapshotStatus } from '@shared/scoping-materiality';
+import { decideTransition } from '@shared/workflow-transitions';
+import { resolveSimulationStatus, simulationStatusColumns } from '@shared/scoping-simulation-status';
 
 /** Chunk size for GL row inserts (single owner; was duplicated per route). */
 const GL_ROW_BATCH_SIZE = 100;
@@ -92,23 +94,39 @@ export class ScopingService {
   /**
    * Submits a simulation for CFO approval.
    */
-  async submitSimulation(orgId: string, userId: string, userRole: string, id: string, body: Partial<MaterialitySimulation>) {
+  async submitSimulation(orgId: string, userId: string, userRole: UserRole, id: string, body: Partial<MaterialitySimulation>) {
     const [existing] = await this.db.select().from(simulations).where(and(eq(simulations.id, id), eq(simulations.organizationId, orgId))).limit(1);
     if (!existing) throw new AppError(SIMULATION_NOT_FOUND, 'Simulation not found', 404);
+
+    const note = body.history?.[0]?.note || "Submitted for approval";
+    // The canonical SCOPING table owns which statuses may be submitted and who
+    // may submit them; the route's rbac is only a coarser pre-filter.
+    const decision = decideTransition({
+      entityType: 'SCOPING',
+      currentStatus: resolveSimulationStatus(existing),
+      action: 'Submit',
+      role: userRole,
+      note,
+    });
+    if (decision.ok === false) throw new AppError(decision.code, decision.message, decision.status);
+
+    // boundary: the SCOPING table's Submit edge lands on Pending CFO —
+    // shared/workflow-transitions.test.ts locks the literal.
+    const nextStatus = decision.nextStatus as SimulationStatus;
 
     const history = existing.history || [];
     const newHistoryEntry = {
       id: crypto.randomUUID(),
-      action: "Submit",
+      action: "Submit" as const,
       role: userRole,
       userId: userId,
       timestamp: Date.now(),
-      note: body.history?.[0]?.note || "Submitted for approval"
+      note,
     };
 
     await this.db.update(simulations)
       .set({ 
-        status: 'Pending CFO', 
+        ...simulationStatusColumns(nextStatus),
         updatedAt: new Date(),
         omValue: body.omValue,
         pmValue: body.pmValue,

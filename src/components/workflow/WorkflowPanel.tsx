@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { WorkflowAction, WorkflowHistoryEntry } from '@shared/types';
+import { WorkflowAction, WorkflowHistoryEntry, ApprovalHistoryEntry } from '@shared/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
@@ -26,7 +26,9 @@ interface WorkflowPanelProps {
   entityType: WorkflowEntityType;
   entityId: string;
   currentStatus: string;
-  history: WorkflowHistoryEntry[];
+  /** Scoping keeps its lifecycle in `ApprovalHistoryEntry`; every other entity
+   *  writes `WorkflowHistoryEntry`. The timeline renders both. */
+  history: (WorkflowHistoryEntry | ApprovalHistoryEntry)[];
   onStatusChange?: (newStatus: string) => void;
   className?: string;
   isDirty?: boolean;

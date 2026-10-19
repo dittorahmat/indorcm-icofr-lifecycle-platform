@@ -11,6 +11,9 @@ export type WorkflowEntityType = 'BPM' | 'ACTION_PLAN' | 'SCOPING' | 'RCM_CHANGE
 export interface StepRule {
   allowedActions: WorkflowAction[];
   nextStatus: Partial<Record<WorkflowAction, string>>;
+  /** Authority per action. May also declare an action with no `nextStatus`
+   *  (row deletion) — `decideTransition` rejects it as a transition, while
+   *  `allowedRolesFor`/`allowedRolesAt` still report who may perform it. */
   requiredRole?: Partial<Record<WorkflowAction, UserRole[]>>;
   requiresNote?: WorkflowAction[];
 }
@@ -77,23 +80,41 @@ export const WORKFLOW_TRANSITION_RULES: Record<WorkflowEntityType, Record<string
       nextStatus: { Submit: 'Pending CFO' },
       requiredRole: { Submit: ['Line 1', 'Line 2', 'Admin'] },
     },
+    // A rejection returns the simulation to the preparer; it stays resubmittable
+    // (and editable, because the lock derives from Submit).
+    Rejected: {
+      allowedActions: ['Submit'],
+      nextStatus: { Submit: 'Pending CFO' },
+      requiredRole: { Submit: ['Line 1', 'Line 2', 'Admin'] },
+    },
     'Pending CFO': {
       allowedActions: ['Reject', 'Review'],
-      nextStatus: { Reject: 'Draft', Review: 'Pending Komut' },
-      requiredRole: { Reject: ['Line 2', 'Admin'], Review: ['Line 2', 'Admin'] },
+      nextStatus: { Reject: 'Rejected', Review: 'Pending Komut' },
+      requiredRole: { Reject: ['CFO', 'Admin'], Review: ['CFO', 'Admin'] },
       requiresNote: ['Reject'],
     },
     'Pending Komut': {
       allowedActions: ['Reject', 'Approve'],
-      nextStatus: { Reject: 'Draft', Approve: 'Approved' },
-      requiredRole: { Reject: ['Line 2', 'Admin'], Approve: ['Line 2', 'Admin'] },
+      nextStatus: { Reject: 'Rejected', Approve: 'Approved' },
+      requiredRole: { Reject: ['Commissioner', 'Admin'], Approve: ['Commissioner', 'Admin'] },
       requiresNote: ['Reject'],
     },
     Approved: {
-      allowedActions: ['Rollback'],
-      nextStatus: { Rollback: 'Draft' },
-      requiredRole: { Rollback: ['Line 2', 'Admin'] },
-      requiresNote: ['Rollback'],
+      allowedActions: ['Request Deletion'],
+      nextStatus: { 'Request Deletion': 'Pending Deletion Approval' },
+      requiredRole: { 'Request Deletion': ['Line 2', 'Admin'] },
+    },
+    // Approving a deletion removes the row instead of moving it, so the action
+    // has no nextStatus. Its authority is still declared here: one table owns
+    // who may act at every step of the lifecycle.
+    'Pending Deletion Approval': {
+      allowedActions: ['Reject Deletion'],
+      nextStatus: { 'Reject Deletion': 'Approved' },
+      requiredRole: {
+        'Reject Deletion': ['CFO', 'Commissioner', 'Admin'],
+        'Approve Deletion': ['CFO', 'Commissioner', 'Admin'],
+      },
+      requiresNote: ['Reject Deletion'],
     },
   },
   RCM_CHANGE: {
@@ -192,6 +213,33 @@ export function requiresNoteFor(entityType: WorkflowEntityType, currentStatus: s
   return WORKFLOW_TRANSITION_RULES[entityType]?.[currentStatus]?.requiresNote?.includes(action) ?? false;
 }
 
+/** Roles declared for one action — including actions with no status transition
+ *  (row deletion), so callers never keep a parallel authority list. */
+export function allowedRolesFor(entityType: WorkflowEntityType, currentStatus: string, action: WorkflowAction): UserRole[] {
+  return WORKFLOW_TRANSITION_RULES[entityType]?.[currentStatus]?.requiredRole?.[action] ?? [];
+}
+
+/** Every role that may act at one step, across all declared actions. */
+export function allowedRolesAt(entityType: WorkflowEntityType, currentStatus: string): UserRole[] {
+  const required = WORKFLOW_TRANSITION_RULES[entityType]?.[currentStatus]?.requiredRole;
+  if (!required) return [];
+  const roles = new Set<UserRole>();
+  for (const list of Object.values(required)) {
+    for (const role of list ?? []) roles.add(role);
+  }
+  return [...roles];
+}
+
+/** Every role that appears anywhere in an entity's lifecycle. Route-level
+ *  `rbac` lists read this, so a route never re-lists roles the table owns. */
+export function entityRoles(entityType: WorkflowEntityType): UserRole[] {
+  const roles = new Set<UserRole>();
+  for (const status of workflowStatusesFor(entityType)) {
+    for (const role of allowedRolesAt(entityType, status)) roles.add(role);
+  }
+  return [...roles];
+}
+
 const WORKFLOW_ENDPOINT_PREFIX: Record<WorkflowEntityType, string> = {
   BPM: '/api/bpm-processes',
   ACTION_PLAN: '/api/actionplans',
@@ -221,6 +269,7 @@ const STATUS_BADGE_TONES: Record<string, StatusBadgeTone> = {
   Approved: 'success',
   Validated: 'success',
   Rejected: 'danger',
+  'Pending Deletion Approval': 'danger',
 };
 
 export function statusBadgeTone(status: string): StatusBadgeTone {

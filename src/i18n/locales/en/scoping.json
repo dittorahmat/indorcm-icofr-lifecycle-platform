@@ -56,7 +56,9 @@
     "notesHint": "Note: Rejection requires a reason to be provided.",
     "rejectBtn": "Reject & Return",
     "approveToKomutBtn": "Approve to Chairman",
-    "approveFinalBtn": "Approve Baseline"
+    "approveFinalBtn": "Approve Baseline",
+    "approveFailed": "Failed to approve the simulation",
+    "rejectFailed": "Failed to reject the simulation"
   },
   "uploadButton": "Upload GL",
   "emptyState": "Upload a GL file to start",

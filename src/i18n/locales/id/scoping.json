@@ -56,7 +56,9 @@
     "notesHint": "Catatan: Penolakan wajib disertai alasan.",
     "rejectBtn": "Tolak & Kembalikan",
     "approveToKomutBtn": "Setujui ke Komut",
-    "approveFinalBtn": "Setujui Baseline"
+    "approveFinalBtn": "Setujui Baseline",
+    "approveFailed": "Gagal menyetujui simulasi",
+    "rejectFailed": "Gagal menolak simulasi"
   },
   "uploadButton": "Unggah GL",
   "emptyState": "Unggah file GL untuk memulai",

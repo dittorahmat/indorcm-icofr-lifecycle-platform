@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { MaterialitySimulation, SimulationStatus } from '@shared/types';
+import { resolveSimulationStatus } from '@shared/scoping-simulation-status';
 import { cn } from '@/lib/utils';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { formatIDR } from '@/components/reports/dod/dod-format';
@@ -69,7 +70,7 @@ export function ScopingEditorHeader({
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-display font-bold tracking-tight leading-none truncate min-w-0 max-w-[52vw] sm:max-w-none">{simState.name}</h1>
-              <StatusBadge status={(simState.workflowStatus || simState.status) as SimulationStatus} />
+              <StatusBadge status={resolveSimulationStatus(simState)} />
             </div>
             <div className="text-xs font-medium text-slate-500 flex items-center gap-1.5 mt-0.5 flex-wrap min-w-0">
               <Badge variant="outline" className="bg-indigo-50/50 border-indigo-100 text-indigo-700 font-semibold px-2 py-0 text-xs rounded-md">
@@ -167,6 +168,8 @@ function StatusBadge({ status }: { status: SimulationStatus }) {
       return <Badge className={cn(base, "bg-blue-600 text-white")}>{t('status.pendingKomut')}</Badge>;
     case 'Rejected': 
       return <Badge className={cn(base, "bg-rose-600 text-white")}>{t('status.rejected')}</Badge>;
+    case 'Pending Deletion Approval':
+      return <Badge className={cn(base, "bg-rose-600 text-white")}>{t('status.pendingDeletion')}</Badge>;
     default: 
       return <Badge className={cn(base, "bg-slate-200 text-slate-600 shadow-none")}>{t('status.draft')}</Badge>;
   }

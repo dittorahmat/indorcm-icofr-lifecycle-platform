@@ -22,6 +22,7 @@ import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { useQueryClient } from '@tanstack/react-query';
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
+import { resolveSimulationStatus } from '@shared/scoping-simulation-status';
 
 import { SmartImportWizard } from '@/components/scoping/SmartImportWizard';
 import { RolloverPrompt } from '@/components/layout/RolloverPrompt';
@@ -74,7 +75,7 @@ export function ScopingPage() {
     const sim = simulations.find(s => s.id === id);
     if (!sim) return;
 
-    if (sim.status === 'Approved') {
+    if (resolveSimulationStatus(sim) === 'Approved') {
       const ok = await confirm({
         title: t('scoping:delete.requestDeletionTitle'),
         description: t('scoping:delete.requestDeletionDesc', { name: sim.name }),

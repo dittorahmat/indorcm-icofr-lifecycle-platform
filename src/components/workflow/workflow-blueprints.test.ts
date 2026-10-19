@@ -43,6 +43,16 @@ describe('workflow blueprints derive from single source', () => {
     expect(isWorkflowLocked('ACTION_PLAN', 'Ineffective')).toBe(false);
     expect(isWorkflowLocked('BPM', 'In Review')).toBe(true);
     expect(isWorkflowLocked('SCOPING', 'Approved')).toBe(true);
+    expect(isWorkflowLocked('SCOPING', 'Rejected')).toBe(false);
+    expect(isWorkflowLocked('SCOPING', 'Pending Deletion Approval')).toBe(true);
+  });
+
+  it('labels the SCOPING deletion steps instead of falling back to the action id', () => {
+    expect(WORKFLOW_BLUEPRINTS.SCOPING.steps.Approved.actions.map(a => a.labelKey))
+      .toEqual(['workflow:requestDeletion']);
+    expect(WORKFLOW_BLUEPRINTS.SCOPING.steps['Pending Deletion Approval'].actions.map(a => a.labelKey))
+      .toEqual(['workflow:rejectDeletion']);
+    expect(WORKFLOW_BLUEPRINTS.SCOPING.steps['Pending Deletion Approval'].actions[0].needsNote).toBe(true);
   });
 
   it('maps badge classes from a single tone table', () => {

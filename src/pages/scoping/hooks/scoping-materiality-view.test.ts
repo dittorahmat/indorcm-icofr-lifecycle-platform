@@ -112,6 +112,7 @@ describe('scoping-materiality-view seam (OM/PM view + dirty fingerprint)', () =>
     expect(isEditorLocked('Draft')).toBe(false);
     expect(isEditorLocked('Rejected')).toBe(false);
     expect(isEditorLocked('Approved')).toBe(true);
+    expect(isEditorLocked('Pending Deletion Approval')).toBe(true);
   });
 
   it('reads error messages from unknown inputs', () => {
