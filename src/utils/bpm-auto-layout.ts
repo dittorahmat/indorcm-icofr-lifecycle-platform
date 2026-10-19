@@ -3,6 +3,7 @@ import {
   getStandardNodeDimensions,
   DEFAULT_SWIMLANE_DIMENSIONS,
   DEFAULT_NODE_SPACING,
+  canonicalHandleForSide,
 } from './bpm-constants';
 
 /**
@@ -440,80 +441,27 @@ function enrichEdgeHandles(
     let sourceHandle: string | undefined = undefined;
     let targetHandle: string | undefined = undefined;
 
-    // Mostly vertical flow
+    // `start` / `end` / `decision` render their own anchors: a decision's
+    // yes/no handles come from the edge label below, the others stay id-less.
     if (Math.abs(dy) >= Math.abs(dx)) {
-      if (dy >= 0) {
-        // Source flows downward
-        if (sType === 'start') {
-          sourceHandle = undefined;
-        } else if (sType === 'decision') {
-          sourceHandle = undefined; // bottom handle on decision has no id
-        } else {
-          sourceHandle = 'bottom'; // source handle on bottom
-        }
-
-        // Target receives from top
-        if (tType === 'end') {
-          targetHandle = undefined;
-        } else if (tType === 'decision') {
-          targetHandle = undefined; // top handle on decision has no id
-        } else {
-          targetHandle = 'top'; // target handle on top
-        }
-      } else {
-        // Flowing upwards (backward loop / revisit)
-        if (sType === 'start') {
-          sourceHandle = undefined;
-        } else if (sType === 'decision') {
-          sourceHandle = undefined;
-        } else {
-          sourceHandle = 't-c-src'; // source handle on top
-        }
-
-        if (tType === 'end') {
-          targetHandle = undefined;
-        } else if (tType === 'decision') {
-          targetHandle = undefined;
-        } else {
-          targetHandle = 'b-c-tgt'; // target handle on bottom
-        }
+      // Mostly vertical flow.
+      const downward = dy >= 0;
+      if (sType !== 'start' && sType !== 'decision') {
+        sourceHandle = canonicalHandleForSide(downward ? 'bottom' : 'top', true);
+      }
+      if (tType !== 'end' && tType !== 'decision') {
+        targetHandle = canonicalHandleForSide(downward ? 'top' : 'bottom', false);
       }
     } else {
-      // Mostly horizontal flow (e.g. across swimlanes or lateral branching)
-      if (dx >= 0) {
-        // Flowing right
-        if (sType === 'start') {
-          sourceHandle = undefined;
-        } else if (sType === 'decision') {
-          sourceHandle = 'yes'; // right handle on decision is 'yes'
-        } else {
-          sourceHandle = 'm-r-src'; // EightConnectionHandles right SOURCE handle
-        }
-
-        if (tType === 'end') {
-          targetHandle = undefined;
-        } else if (tType === 'decision') {
-          targetHandle = undefined; // top handle on decision
-        } else {
-          targetHandle = 'left'; // EightConnectionHandles left TARGET handle
-        }
-      } else {
-        // Flowing left
-        if (sType === 'start') {
-          sourceHandle = undefined;
-        } else if (sType === 'decision') {
-          sourceHandle = 'no'; // left handle on decision is 'no'
-        } else {
-          sourceHandle = 'm-l-src'; // EightConnectionHandles left SOURCE handle
-        }
-
-        if (tType === 'end') {
-          targetHandle = undefined;
-        } else if (tType === 'decision') {
-          targetHandle = undefined;
-        } else {
-          targetHandle = 'right'; // EightConnectionHandles right TARGET handle
-        }
+      // Mostly horizontal flow (across swimlanes or lateral branching).
+      const rightward = dx >= 0;
+      if (sType === 'decision') {
+        sourceHandle = rightward ? 'yes' : 'no';
+      } else if (sType !== 'start') {
+        sourceHandle = canonicalHandleForSide(rightward ? 'right' : 'left', true);
+      }
+      if (tType !== 'end' && tType !== 'decision') {
+        targetHandle = canonicalHandleForSide(rightward ? 'left' : 'right', false);
       }
     }
 
