@@ -159,7 +159,7 @@ simulationLifecycle.post('/simulations/:id/reject', rbac(['CFO', 'Commissioner',
   return ok(c, { success: true });
 });
 
-simulationLifecycle.post('/simulations/:id/request-deletion', async (c) => {
+simulationLifecycle.post('/simulations/:id/request-deletion', rbac(['Line 2', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const id = requireSimulationId(c);
   const orgId = c.get('organizationId');
@@ -208,7 +208,11 @@ simulationLifecycle.post('/simulations/:id/request-deletion', async (c) => {
   return ok(c, { success: true, status: SIMULATION_DELETION_STATUS });
 });
 
-simulationLifecycle.post('/simulations/:id/workflow', async (c) => {
+// The canonical SCOPING table's `requiredRole` union ({Line 1, Line 2, Admin}) is
+// the route-level filter; the per-action role gate stays in runWorkflowTransition,
+// so a role a stage does not admit still gets 403 from the matrix. CFO and
+// Commissioner act on a simulation through /approve and /reject, not here.
+simulationLifecycle.post('/simulations/:id/workflow', rbac(['Line 1', 'Line 2', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const id = requireSimulationId(c);
   const orgId = c.get('organizationId');

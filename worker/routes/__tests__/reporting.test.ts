@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { Hono } from 'hono';
 import reporting from '../reporting';
 import { getDb } from '../../db';
+import { mutatingRoutes, OVERSIGHT_ROLES, reachableBy } from './rbac-coverage';
 import type { DrizzleDb } from '../../db';
 import type { HonoEnv } from '../../app';
 
@@ -121,5 +122,22 @@ describe('GET /reports/summary effectiveness conclusion', () => {
 
     expect(body.data.effectiveness).toBe(100);
     expect(body.data.allDeficiencies).toHaveLength(2);
+  });
+});
+
+/**
+ * #97: every mutating route in this barrel must refuse a role that has no
+ * business writing operational data. The subject is the barrel's own route list
+ * and the mechanics live in ./rbac-coverage — see there for what a failure means.
+ */
+describe('reporting mutating routes carry an rbac guard (#97)', () => {
+  it('declares mutating routes for the guard assertions to cover', () => {
+    expect(mutatingRoutes(reporting).length).toBeGreaterThan(0);
+  });
+
+  it('refuses oversight roles on every mutating route', async () => {
+    for (const role of OVERSIGHT_ROLES) {
+      expect(await reachableBy(reporting, role), role).toEqual([]);
+    }
   });
 });

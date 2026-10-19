@@ -5,6 +5,7 @@ import { getDb } from '../../db';
 import { csaSchedules } from '../../db/schema';
 import { eq, and } from 'drizzle-orm';
 import { CsaDomainService } from "../../services/csa-domain-service";
+import { rbac } from '../../lib/guard';
 
 export const csaSchedulesRoute = new Hono<HonoEnv>();
 
@@ -16,7 +17,7 @@ csaSchedulesRoute.get('/csa/schedules', async (c) => {
   return ok(c, { items });
 });
 
-csaSchedulesRoute.post('/csa/schedules', async (c) => {
+csaSchedulesRoute.post('/csa/schedules', rbac(['Line 2', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const body = await c.req.json<any>();
@@ -25,7 +26,7 @@ csaSchedulesRoute.post('/csa/schedules', async (c) => {
   return ok(c, result);
 });
 
-csaSchedulesRoute.patch('/csa/schedules/:id', async (c) => {
+csaSchedulesRoute.patch('/csa/schedules/:id', rbac(['Line 2', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const id = c.req.param('id');
   const orgId = c.get('organizationId');
@@ -41,7 +42,7 @@ csaSchedulesRoute.patch('/csa/schedules/:id', async (c) => {
   return ok(c, { success: true });
 });
 
-csaSchedulesRoute.delete('/csa/schedules/:id', async (c) => {
+csaSchedulesRoute.delete('/csa/schedules/:id', rbac(['Line 2', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const id = c.req.param('id');
   const orgId = c.get('organizationId');

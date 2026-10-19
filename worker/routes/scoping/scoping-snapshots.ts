@@ -7,6 +7,7 @@ import {
 } from '../../db/schema';
 import { ScopingService, type GlRowIngest } from '../../services/scoping-service';
 import { eq, and, type SQL } from 'drizzle-orm';
+import { rbac } from '../../lib/guard';
 
 const snapshotRoutes = new Hono<HonoEnv>();
 
@@ -29,7 +30,7 @@ snapshotRoutes.get('/gl-snapshots', async (c) => {
   return ok(c, { items });
 });
 
-snapshotRoutes.post('/gl-snapshots', async (c) => {
+snapshotRoutes.post('/gl-snapshots', rbac(['Line 2', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   // Boundary payload: the upload template's columns vary per GL extract, so
@@ -78,7 +79,7 @@ snapshotRoutes.get('/gl-snapshots/:id', async (c) => {
   });
 });
 
-snapshotRoutes.put('/gl-snapshots/:id/mapping', async (c) => {
+snapshotRoutes.put('/gl-snapshots/:id/mapping', rbac(['Line 2', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const id = c.req.param('id');
   const orgId = c.get('organizationId');
@@ -91,7 +92,7 @@ snapshotRoutes.put('/gl-snapshots/:id/mapping', async (c) => {
   return ok(c, { success: true });
 });
 
-snapshotRoutes.post('/gl-snapshots/:id/set-active', async (c) => {
+snapshotRoutes.post('/gl-snapshots/:id/set-active', rbac(['Line 2', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const id = c.req.param('id');
   const orgId = c.get('organizationId');
@@ -110,7 +111,7 @@ snapshotRoutes.get('/gl-snapshots/:id/rows', async (c) => {
   return ok(c, { items });
 });
 
-snapshotRoutes.delete('/gl-snapshots/:id', async (c) => {
+snapshotRoutes.delete('/gl-snapshots/:id', rbac(['Line 2', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const id = c.req.param('id');
   const orgId = c.get('organizationId');
@@ -122,7 +123,10 @@ snapshotRoutes.delete('/gl-snapshots/:id', async (c) => {
 
 // --- GL Rows ---
 
-snapshotRoutes.put('/gl-rows/:noGL/owner-acceptance', async (c) => {
+// Owner acceptance is the department owner's act: the worksheet enables the cell
+// for a Line 1 manager of the assigned department (GLDataGridColumns.canEdit),
+// while Line 2/Admin reach the same screen to edit the mapping.
+snapshotRoutes.put('/gl-rows/:noGL/owner-acceptance', rbac(['Line 1', 'Line 2', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const noGL = c.req.param('noGL');

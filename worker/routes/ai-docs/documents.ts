@@ -6,6 +6,7 @@ import { getStorageBucket } from '../../lib/storage';
 import { documents, documentDepartments, documentGls, documentFslis, documentChunks } from '../../db/schema';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { AIService, invalidateAiCachesForOrg } from '../../services/ai-service';
+import { rbac } from '../../lib/guard';
 
 const aiDocumentsApp = new Hono<HonoEnv>();
 
@@ -38,10 +39,9 @@ aiDocumentsApp.get('/documents', async (c) => {
   return ok(c, { items });
 });
 
-aiDocumentsApp.post('/documents', async (c) => {
-  const role = c.get('userRole');
-  if (role !== 'Admin' && role !== 'Line 2') return bad(c, 'Access Denied');
-
+// Curation of the shared knowledge base is Line 2/Admin's: the handler already
+// checked this inline, now the guard owns it (403 with a stable code).
+aiDocumentsApp.post('/documents', rbac(['Line 2', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const userId = c.get('userId');
@@ -200,10 +200,7 @@ aiDocumentsApp.post('/documents', async (c) => {
   }
 });
 
-aiDocumentsApp.delete('/documents/:id', async (c) => {
-  const role = c.get('userRole');
-  if (role !== 'Admin' && role !== 'Line 2') return bad(c, 'Access Denied: Only Admin or Line 2 can delete documents');
-
+aiDocumentsApp.delete('/documents/:id', rbac(['Line 2', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const id = c.req.param('id');
   const orgId = c.get('organizationId');

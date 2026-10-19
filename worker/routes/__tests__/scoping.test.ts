@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import scoping from '../scoping';
+import { mutatingRoutes, OVERSIGHT_ROLES, reachableBy } from './rbac-coverage';
 
 /**
  * scoping HTTP contract lock. Handlers stay thin adapters; refactors
@@ -37,5 +38,22 @@ describe('scoping barrel routes', () => {
     expect(routePaths).toContain('GET /gl-snapshots/:id/rows');
     expect(routePaths).toContain('DELETE /gl-snapshots/:id');
     expect(routePaths).toContain('PUT /gl-rows/:noGL/owner-acceptance');
+  });
+});
+
+/**
+ * #97: every mutating route in this barrel must refuse a role that has no
+ * business writing operational data. The subject is the barrel's own route list
+ * and the mechanics live in ./rbac-coverage — see there for what a failure means.
+ */
+describe('scoping mutating routes carry an rbac guard (#97)', () => {
+  it('declares mutating routes for the guard assertions to cover', () => {
+    expect(mutatingRoutes(scoping).length).toBeGreaterThan(0);
+  });
+
+  it('refuses oversight roles on every mutating route', async () => {
+    for (const role of OVERSIGHT_ROLES) {
+      expect(await reachableBy(scoping, role), role).toEqual([]);
+    }
   });
 });

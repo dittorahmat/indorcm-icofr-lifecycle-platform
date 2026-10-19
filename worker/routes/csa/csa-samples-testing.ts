@@ -33,7 +33,7 @@ csaSamplesTestingRoute.get('/csa/samples', async (c) => {
   return ok(c, { items });
 });
 
-csaSamplesTestingRoute.post('/csa/samples/batch', async (c) => {
+csaSamplesTestingRoute.post('/csa/samples/batch', rbac(['Line 1', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const { csaRecordId, samples } = await c.req.json<{ csaRecordId: string, samples: any[] }>();
@@ -147,7 +147,7 @@ csaSamplesTestingRoute.get('/tests', async (c) => {
   return ok(c, { items });
 });
 
-csaSamplesTestingRoute.post('/tests', async (c) => {
+csaSamplesTestingRoute.post('/tests', rbac(['Line 1', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const userId = c.get('userId');
@@ -193,7 +193,7 @@ csaSamplesTestingRoute.get('/csa/testing-records', async (c) => {
   return ok(c, { items });
 });
 
-csaSamplesTestingRoute.post('/csa/testing-records', async (c) => {
+csaSamplesTestingRoute.post('/csa/testing-records', rbac(['Line 1', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const userId = c.get('userId');

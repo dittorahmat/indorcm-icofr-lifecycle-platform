@@ -12,6 +12,8 @@ const aiSuggestApp = new Hono<HonoEnv>();
 
 // POST /ai/suggest-risk-controls — manual Lightbulb-triggered Risk/Control
 // suggestions for BPM node property sheets. Body: { kind, noGL, glDesc, bpmName, nodeLabel, riskDescription? }
+// rbac-exempt: generation — the handler writes no lifecycle entity (only an audit
+// entry for the suggestion it returned); quota is the control, not a role list.
 aiSuggestApp.post('/ai/suggest-risk-controls', async (c) => {
   const apiKey = c.env.GEMINI_API_KEY;
   if (!apiKey || apiKey === 'YOUR_GEMINI_API_KEY_HERE') {

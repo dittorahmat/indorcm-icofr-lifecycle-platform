@@ -8,10 +8,11 @@ import {
 } from '../../db/schema';
 import { eq, and } from 'drizzle-orm';
 import { AuditService } from "../../services/audit-service";
+import { rbac } from '../../lib/guard';
 
 const simulationAccounts = new Hono<HonoEnv>();
 
-simulationAccounts.post('/simulations/assign-department', async (c) => {
+simulationAccounts.post('/simulations/assign-department', rbac(['Line 2', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const body = await c.req.json<{ scopingId: string, accountName: string, departmentId: string }>();
@@ -49,7 +50,7 @@ simulationAccounts.post('/simulations/assign-department', async (c) => {
   return ok(c, { success: true });
 });
 
-simulationAccounts.post('/simulations/:id/account-departments/sync', async (c) => {
+simulationAccounts.post('/simulations/:id/account-departments/sync', rbac(['Line 2', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const simId = c.req.param('id');
   const orgId = c.get('organizationId');
@@ -91,7 +92,7 @@ simulationAccounts.get('/simulations/:id/account-applications', async (c) => {
   return ok(c, { items });
 });
 
-simulationAccounts.post('/simulations/:id/account-applications/sync', async (c) => {
+simulationAccounts.post('/simulations/:id/account-applications/sync', rbac(['Line 2', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const simId = c.req.param('id');
   const orgId = c.get('organizationId');
