@@ -4,6 +4,7 @@ import {
   allowedActionsFor,
   allowedRolesAt,
   csaSnapshotStatus,
+  entityRoles,
   forEntity,
   isWorkflowLockedFor,
   statusBadgeTone,
@@ -142,6 +143,11 @@ describe('workflow-transitions single source (T2 RED)', () => {
     expect(allowedRolesAt('SCOPING', 'Pending Deletion Approval').sort())
       .toEqual(['Admin', 'CFO', 'Commissioner']);
     expect(allowedRolesAt('SCOPING', 'Nope')).toEqual([]);
+  });
+
+  it('derives the route-level rbac union from the same table', () => {
+    expect(entityRoles('SCOPING')).toEqual(['Line 1', 'Line 2', 'Admin', 'CFO', 'Commissioner']);
+    expect(entityRoles('CSA')).toEqual(['Line 1', 'Line 2', 'Admin']);
   });
 
   it('builds byte-identical workflow endpoints per entity', () => {

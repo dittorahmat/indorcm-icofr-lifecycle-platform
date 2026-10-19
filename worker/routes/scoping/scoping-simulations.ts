@@ -10,7 +10,7 @@ import type {
   MaterialitySimulation,
 } from "@shared/types";
 import { computeSimulationMateriality, basisProblemForSnapshot } from '@shared/scoping-materiality';
-import { simulationStatusColumns } from '@shared/scoping-simulation-status';
+import { resolveSimulationStatus, simulationStatusColumns } from '@shared/scoping-simulation-status';
 import { ScopingService } from '../../services/scoping-service';
 import { AuditService } from "../../services/audit-service";
 import { getQualitativeDefaults } from '../../services/scoping-defaults';
@@ -225,7 +225,7 @@ simulationRoutes.delete('/simulations/:id', rbac(['Line 2', 'Admin']), async (c)
   // `?bypassWorkflow=true` flag that used to allow it was a client-controlled
   // authorization decision and no client ever sent it. Go through the deletion
   // request instead.
-  if (sim.status === 'Approved' && userRole !== 'Admin') {
+  if (resolveSimulationStatus(sim) === 'Approved' && userRole !== 'Admin') {
     return bad(c, 'Cannot delete an Approved simulation directly. Please submit a Deletion Request for approval.', 403);
   }
 

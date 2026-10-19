@@ -6,7 +6,7 @@ import { simulations } from '../../db/schema';
 import { eq, and } from 'drizzle-orm';
 import type { ApprovalHistoryEntry, WorkflowAction } from "@shared/types";
 import { decideSimulationTransition, resolveSimulationStatus, simulationStatusColumns, SIMULATION_DELETION_STATUS } from "@shared/scoping-simulation-status";
-import { decideTransition } from "@shared/workflow-transitions";
+import { decideTransition, entityRoles } from "@shared/workflow-transitions";
 import { AuditService } from "../../services/audit-service";
 import { invalidateAiCachesForOrg } from "../../services/ai-service";
 import { createNotificationAndSendEmail } from '../../services/email';
@@ -212,10 +212,10 @@ simulationLifecycle.post('/simulations/:id/request-deletion', rbac(['Line 2', 'A
 });
 
 // The canonical SCOPING table's `requiredRole` is the per-action authority; this
-// route-level `rbac` is the union of every role that appears in any SCOPING step
-// (Line 1/2 prepare, CFO reviews, the Commissioner approves). A role a stage does
-// not admit still gets 403 from the matrix, never from a second copy of the rules.
-simulationLifecycle.post('/simulations/:id/workflow', rbac(['Line 1', 'Line 2', 'Admin', 'CFO', 'Commissioner']), async (c) => {
+// route-level `rbac` is the union of every role that appears in any SCOPING step,
+// read from that table. A role a stage does not admit still gets 403 from the
+// matrix, never from a second copy of the rules.
+simulationLifecycle.post('/simulations/:id/workflow', rbac(entityRoles('SCOPING')), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const id = requireSimulationId(c);
   const orgId = c.get('organizationId');

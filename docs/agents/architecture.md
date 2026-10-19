@@ -264,15 +264,17 @@ Two status columns (`simulations.status` and the legacy `workflowStatus`) were
 written by different paths — `/submit` and the approve/reject/deletion routes
 touched only `status`, `/workflow` touched both, and the UI read
 `workflowStatus || status` with the editor locked from `workflowStatus` alone.
-`simulationStatusColumns` now produces both columns at every write (create,
-submit, approve/reject, deletion request, and the panel's local status update),
-the workflow adapter loads through `resolveSimulationStatus` (authoritative
-`status` first, mirror as fallback), and the screens (list, editor header, shell,
-approval queue, sidebar badge) read the same resolver. The panel also receives
+`simulationStatusColumns` now produces both columns at every lifecycle-route write
+(create, submit, approve/reject, deletion request, and the panel's local status
+update) while `/workflow` keeps doing it through `extraFor`, the workflow adapter
+loads through `resolveSimulationStatus` (authoritative `status` first, mirror as
+fallback), and the screens (list, editor header, shell, approval queue, sidebar
+badge) read the same resolver. The panel also receives
 `simulationTimeline(simState)` — the approval log and the generic workflow log
 merged and deduped — so a CFO decision taken in the panel is visible where the
 approval decision is, and the approval queue derives its stages from the table
-(`simulationApprovalStages`) instead of a third status list.
+(`simulationApprovalStages`) instead of a third status list. The `/workflow`
+route's `rbac` union comes from `entityRoles('SCOPING')` for the same reason.
 
 Tests lock the new matrix end to end: the decision contract (`kind:
 'transition' | 'delete'`), the table literals the routes read through,
@@ -290,9 +292,10 @@ Deliberately not changed (disclosed):
   while the table still admits `Line 1` (the panel's submit path allowed it).
   Submission policy was not the issue; the route now at least rejects any status
   outside `Draft`/`Rejected` through the table.
-- **`DELETE /simulations/:id` still hard-deletes a non-Approved row** (the UI's
-  trash button routes an Approved row to `/request-deletion`). That is a data
-  purge, not a workflow transition, and it keeps its own audit.
+- **`DELETE /simulations/:id` still hard-deletes a row**, including an Approved
+  one for `Admin` (the documented bypass), while the UI's trash button routes an
+  Approved row to `/request-deletion`. That is a data purge, not a workflow
+  transition, and it keeps its own audit.
 - **`/simulations/:id/workflow` and `/approve|/reject` remain two entry points**
   for the same transitions; both now read the same table and write the same
   columns. Collapsing them is a route-surface change, not an architecture one.

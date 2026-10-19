@@ -39,6 +39,7 @@ bun-debug.log*
 *.tsbuildinfo
 .vite/
 .cache/
+.tmp-*.txt
 
 # Project specific
 .bootstrap-complete

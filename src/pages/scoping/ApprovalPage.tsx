@@ -28,6 +28,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 import { useTranslation } from 'react-i18next';
 import { useCurrentRole } from '@/hooks/use-current-role';
+import { apiErrorMessage } from './hooks/scoping-materiality-view';
 
 export function ApprovalPage() {
   const { t } = useTranslation('scoping');
@@ -60,6 +61,9 @@ export function ApprovalPage() {
       setSelectedSim(null);
       setNote("");
       toast.success("Simulation approved and moved to next stage");
+    },
+    onError: (err: unknown) => {
+      toast.error(t('approval.approveFailed'), { description: apiErrorMessage(err, t('approval.approveFailed')) });
     }
   });
 
@@ -74,6 +78,9 @@ export function ApprovalPage() {
       setSelectedSim(null);
       setNote("");
       toast.info("Simulation rejected and returned to Line 2");
+    },
+    onError: (err: unknown) => {
+      toast.error(t('approval.rejectFailed'), { description: apiErrorMessage(err, t('approval.rejectFailed')) });
     }
   });
 

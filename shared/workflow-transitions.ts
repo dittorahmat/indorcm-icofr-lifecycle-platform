@@ -230,6 +230,16 @@ export function allowedRolesAt(entityType: WorkflowEntityType, currentStatus: st
   return [...roles];
 }
 
+/** Every role that appears anywhere in an entity's lifecycle. Route-level
+ *  `rbac` lists read this, so a route never re-lists roles the table owns. */
+export function entityRoles(entityType: WorkflowEntityType): UserRole[] {
+  const roles = new Set<UserRole>();
+  for (const status of workflowStatusesFor(entityType)) {
+    for (const role of allowedRolesAt(entityType, status)) roles.add(role);
+  }
+  return [...roles];
+}
+
 const WORKFLOW_ENDPOINT_PREFIX: Record<WorkflowEntityType, string> = {
   BPM: '/api/bpm-processes',
   ACTION_PLAN: '/api/actionplans',
