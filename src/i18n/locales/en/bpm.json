@@ -249,6 +249,10 @@
     "dialogTitle": "BPM Workflow Editor: {{name}}",
     "dialogDescription": "Visual editor for BPM workflow processes",
     "dialogSubtitle": "Mapping business processes, risks, and controls visually.",
+    "sections": {
+      "flowControls": "Flow Controls",
+      "processElements": "Process Elements"
+    },
     "lockPosition": "Lock Position",
     "unlockPosition": "Unlock Position",
     "positionLocked": "Position Locked",
@@ -261,8 +265,6 @@
       "activity": "New Activity",
       "automated": "System Process",
       "decision": "Decision?",
-      "output": "System Output",
-      "physical": "Physical Form",
       "reference": "Reference",
       "swimlane": "Swimlane / Division",
       "manualInput": "Manual Input",
@@ -290,7 +292,14 @@
       "directAccess": "Direct Access",
       "display": "Display",
       "loopLimit": "Loop Limit",
-      "annotation": "Annotation"
+      "annotation": "Annotation",
+      "document": "Physical Document",
+      "archive": "Archive",
+      "system": "System (Automated)",
+      "risk": "Risk",
+      "control": "Control",
+      "dockedRisk": "Risk Badge",
+      "dockedControl": "Control Badge"
     },
     "swimlane": {
       "department": "Department",

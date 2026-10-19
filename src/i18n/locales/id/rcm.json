@@ -277,7 +277,8 @@
     },
     "backlog": {
       "title": "Backlog Migrasi",
-      "drag_hint": "Tarik item untuk diletakkan di kanvas"
+      "drag_hint": "Tarik item untuk diletakkan di kanvas",
+      "empty": "Tidak ada item tertunda"
     },
     "importForCycle": "Impor untuk Siklus",
     "toasts": {

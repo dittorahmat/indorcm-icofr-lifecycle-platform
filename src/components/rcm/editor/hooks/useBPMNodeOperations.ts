@@ -3,6 +3,8 @@ import type { Dispatch, SetStateAction } from 'react';
 import type { Node, Edge } from 'reactflow';
 import { getStandardNodeDimensions, DEFAULT_SWIMLANE_DIMENSIONS } from '@/utils/bpm-constants';
 import { linkedIdsOf, regulatoryPairsOf } from '@shared/control-linkage';
+import { isBpmNodeType } from '@shared/bpm-node-types';
+import { nodeLabelKeyOf } from '@shared/bpm-node-registry';
 
 interface UseBPMNodeOperationsProps {
   isLocked: boolean;
@@ -117,21 +119,31 @@ export function useBPMNodeOperations({
   );
 
   const createActivityNode = useCallback(
-    (type: string) => {
+    (typeOrLabel: string) => {
+      /**
+       * Two callers, two meanings: the shape palette passes a BPM node type,
+       * the RCM auto-link dialog passes a control name to turn into a node.
+       * Only a real type becomes the node type — a control name becomes an
+       * Activity labelled with itself, instead of an unrenderable node whose
+       * label was the raw i18n key the old `type.replace('-','')` lookup missed.
+       */
+      const isShape = isBpmNodeType(typeOrLabel);
+      const nodeType = isShape ? typeOrLabel : 'activity';
+      const label = isShape ? t(nodeLabelKeyOf(typeOrLabel)) : typeOrLabel;
       const id = `node_${Date.now()}`;
-      const dims = getStandardNodeDimensions(type);
+      const dims = getStandardNodeDimensions(nodeType);
       setNodes((nds) => [
         ...nds,
         {
           id,
-          type,
+          type: nodeType,
           position: { x: 100, y: 100 },
           width: dims.width,
           height: dims.height,
           draggable: !isLocked,
           zIndex: 10,
           data: {
-            label: t(`bpm:editor.nodes.${type.replace('-', '')}` as any) || type,
+            label,
             role: t('bpm:editor.roles.default'),
             regulatoryPairs: [],
             isLocked: false,

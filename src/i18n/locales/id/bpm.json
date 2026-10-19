@@ -249,6 +249,10 @@
     "dialogTitle": "Editor Alur Kerja BPM: {{name}}",
     "dialogDescription": "Editor visual untuk proses alur kerja BPM",
     "dialogSubtitle": "Memetakan proses bisnis, risiko, dan pengendalian secara visual.",
+    "sections": {
+      "flowControls": "Kontrol Alur",
+      "processElements": "Elemen Proses"
+    },
     "lockPosition": "Kunci Posisi",
     "unlockPosition": "Buka Kunci Posisi",
     "positionLocked": "Posisi Terkunci",
@@ -261,8 +265,6 @@
       "activity": "Aktivitas Baru",
       "automated": "Proses Sistem",
       "decision": "Keputusan?",
-      "output": "Output Sistem",
-      "physical": "Form Fisik",
       "reference": "Referensi",
       "swimlane": "Swimlane / Divisi",
       "manualInput": "Input Manual",
@@ -290,7 +292,14 @@
       "directAccess": "Akses Langsung",
       "display": "Tampilan",
       "loopLimit": "Batas Perulangan",
-      "annotation": "Anotasi"
+      "annotation": "Anotasi",
+      "document": "Dokumen Fisik",
+      "archive": "Arsip",
+      "system": "Sistem (Otomatis)",
+      "risk": "Risiko",
+      "control": "Pengendalian",
+      "dockedRisk": "Badge Risiko",
+      "dockedControl": "Badge Pengendalian"
     },
     "swimlane": {
       "department": "Departemen",
