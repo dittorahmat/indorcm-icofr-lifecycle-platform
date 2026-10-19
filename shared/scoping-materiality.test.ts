@@ -1,10 +1,40 @@
 import { describe, it, expect } from 'vitest';
-import { aggregateFsliBalances, type MaterialityFsliRow } from './scoping-materiality';
+import {
+  aggregateFsliBalances,
+  computeSimulationMateriality,
+  resolveSnapshotStatus,
+  type MaterialityFsliRow,
+} from './scoping-materiality';
+import type { GLRow } from './types';
 
 const row = (over: Partial<MaterialityFsliRow>): MaterialityFsliRow => ({
   suggestedFsli: 'Kas dan Setara Kas',
   accountName: 'Kas',
   balance: 100,
+  ...over,
+});
+
+const glRow = (over: Partial<GLRow>): GLRow => ({
+  id: 'g',
+  organizationId: 'o',
+  snapshotId: 's',
+  ymd: 'y',
+  entityCode: 'e',
+  parentEntityCode: null,
+  entityId: null,
+  noGL: '1',
+  glDesc: 'desc',
+  currency: 'IDR',
+  balance: 0,
+  fsliBalance: null,
+  fsliCode: 'f',
+  fsliName: 'Revenue',
+  category: 'Revenue',
+  subKategori: 'sk',
+  noUrut: 1,
+  assignedDepartmentIds: [],
+  ownerAcceptance: null,
+  mappingConfidence: 1,
   ...over,
 });
 
@@ -130,5 +160,79 @@ describe('aggregateFsliBalances', () => {
 
   it('returns nothing for an empty TB', () => {
     expect(aggregateFsliBalances([], 100)).toEqual([]);
+  });
+});
+
+/** Contract lock for the derived materiality one create/backfill/submit shares. */
+describe('computeSimulationMateriality', () => {
+  const rows: GLRow[] = [
+    glRow({ id: '1', balance: 1000 }),
+    glRow({ id: '2', balance: -500 }),
+  ];
+
+  it('derives benchmark -> OM -> PM with the Table-25 multiplier', () => {
+    const result = computeSimulationMateriality({
+      rows,
+      basis: 'Revenue',
+      omPercentage: 5,
+      haircutPercentage: 25,
+      locationCount: 2,
+    });
+
+    expect(result.benchmarkValue).toBe(1500);
+    expect(result.multiplier).toBe(1.5);
+    expect(result.omValue).toBe(112.5);
+    expect(result.pmValue).toBe(84.375);
+  });
+
+  it('flags accounts at or above PM as significant', () => {
+    const result = computeSimulationMateriality({
+      rows,
+      basis: 'Revenue',
+      omPercentage: 5,
+      haircutPercentage: 25,
+      locationCount: 1,
+    });
+
+    expect(result.significantAccounts.map((a) => a.name)).toContain('Revenue');
+    expect(result.significantAccounts[0].isQuantitative).toBe(true);
+  });
+
+  it('returns zero materiality when the basis is not in the snapshot', () => {
+    const result = computeSimulationMateriality({
+      rows,
+      basis: 'NonExistent',
+      omPercentage: 5,
+      haircutPercentage: 25,
+      locationCount: 1,
+    });
+
+    expect(result.benchmarkValue).toBe(0);
+    expect(result.omValue).toBe(0);
+    expect(result.pmValue).toBe(0);
+  });
+
+  it('never drops the multiplier below 1', () => {
+    const result = computeSimulationMateriality({
+      rows,
+      basis: 'Revenue',
+      omPercentage: 5,
+      haircutPercentage: 25,
+      locationCount: 0,
+    });
+
+    expect(result.multiplier).toBe(1);
+  });
+});
+
+describe('resolveSnapshotStatus', () => {
+  it('is Mapped once a benchmark FSLI exists', () => {
+    expect(resolveSnapshotStatus(['Revenue'])).toBe('Mapped');
+  });
+
+  it('stays Draft while the benchmark list is empty or missing', () => {
+    expect(resolveSnapshotStatus([])).toBe('Draft');
+    expect(resolveSnapshotStatus(null)).toBe('Draft');
+    expect(resolveSnapshotStatus(undefined)).toBe('Draft');
   });
 });

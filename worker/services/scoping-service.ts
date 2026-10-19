@@ -7,6 +7,7 @@ import type { DrizzleDb } from '../db';
 import type { MaterialitySimulation, NewGLRow } from '@shared/types';
 import { AuditService } from './audit-service';
 import { AppError, SIMULATION_NOT_FOUND } from '../lib/utils';
+import { resolveSnapshotStatus } from '@shared/scoping-materiality';
 
 /** Chunk size for GL row inserts (single owner; was duplicated per route). */
 const GL_ROW_BATCH_SIZE = 100;
@@ -71,7 +72,12 @@ export type GlRowIngest = Omit<NewGLRow, 'id' | 'snapshotId' | 'organizationId'>
 export interface GlSnapshotIngest {
   filename: string;
   year?: string | number | null;
-  status: string;
+  /**
+   * Benchmark FSLI candidates chosen for the snapshot. A snapshot is only
+   * `Mapped` once this list is non-empty — `createGlSnapshot` derives the
+   * stored status from it, so callers no longer pass a status that can lie.
+   */
+  benchmarkFsliNames?: readonly string[] | null;
   isActive: boolean;
   rows: readonly GlRowIngest[];
 }
@@ -167,6 +173,7 @@ export class ScopingService {
   async createGlSnapshot(orgId: string, ingest: GlSnapshotIngest): Promise<{ id: string; uploadDate: Date }> {
     const id = crypto.randomUUID();
     const uploadDate = new Date();
+    const benchmarkFsliNames = ingest.benchmarkFsliNames?.length ? [...ingest.benchmarkFsliNames] : null;
 
     await this.db.transaction(async (tx) => {
       await tx.insert(glSnapshots).values({
@@ -174,10 +181,11 @@ export class ScopingService {
         organizationId: orgId,
         filename: ingest.filename,
         uploadDate,
-        status: ingest.status,
+        // Derived, not claimed: `Mapped` requires a benchmark FSLI list.
+        status: resolveSnapshotStatus(benchmarkFsliNames),
         isActive: ingest.isActive,
         year: normalizeYear(ingest.year),
-        benchmarkFsliNames: null,
+        benchmarkFsliNames,
       });
 
       const rows = ingest.rows.map((row) => ({

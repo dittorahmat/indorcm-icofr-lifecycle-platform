@@ -95,7 +95,11 @@
     "activeSnapshot": "Active Snapshot",
     "multiplierApplied": "Multiplier Applied",
     "unitSuffix": "UNIT",
-    "creating": "Creating..."
+    "creating": "Creating...",
+    "saveBeforeSubmitFailed": "Could not save the materiality draft. Save it manually before submitting.",
+    "quickAddAppUnavailable": "Adding an application is not available from this view yet.",
+    "workflowActionsTitle": "Workflow Actions",
+    "workflowActionsDesc": "Manage simulation lifecycle states and approvals."
   },
   "table": {
     "account": "Account",

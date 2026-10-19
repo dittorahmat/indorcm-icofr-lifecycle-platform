@@ -95,7 +95,11 @@
     "activeSnapshot": "Snapshot Aktif",
     "multiplierApplied": "Multiplier Diterapkan",
     "unitSuffix": "UNIT",
-    "creating": "Membuat..."
+    "creating": "Membuat...",
+    "saveBeforeSubmitFailed": "Gagal menyimpan draft materialitas. Simpan manual sebelum submit.",
+    "quickAddAppUnavailable": "Menambah aplikasi belum tersedia dari tampilan ini.",
+    "workflowActionsTitle": "Aksi Alur Kerja",
+    "workflowActionsDesc": "Kelola status siklus hidup simulasi dan persetujuannya."
   },
   "table": {
     "account": "Akun",

@@ -69,6 +69,7 @@ interface FinalizeBody {
   rcmData?: RcmImportRow[];
   simulationParams?: {
     basis?: string | null;
+    benchmarkFsliNames?: string[] | null;
     omPercentage?: number;
     haircutPercentage?: number;
     locationCount?: number;
@@ -119,7 +120,7 @@ finalizeRoutes.post('/migration/finalize', rbac(['Line 2', 'Admin']), async (c) 
       const { id: snapshotId } = await new ScopingService(tx).createGlSnapshot(orgId, {
         filename: body.tbFileName || `Migration_${year}_TB`,
         year,
-        status: 'Mapped',
+        benchmarkFsliNames: params?.benchmarkFsliNames ?? null,
         isActive: true,
         rows: tbData.map(toGlRow),
       });
