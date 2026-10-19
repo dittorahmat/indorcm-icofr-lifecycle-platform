@@ -20,10 +20,9 @@ import {
   ASSERTION_CODE,
   ASSERTION_FIELDS,
   ASSERTION_TIP,
-  type AssertionTip,
 } from '@shared/assertion-fields';
 
-const ASSERTION_COLS: Array<{ key: AssertionKey; label: string; tip: AssertionTip }> =
+const ASSERTION_COLS: Array<{ key: AssertionKey; label: string; tip: AssertionKey }> =
   ASSERTION_FIELDS.map((field) => ({
     key: ASSERTION_TIP[field],
     label: ASSERTION_CODE[field],

@@ -125,7 +125,11 @@ export const ALL_IPOS: readonly InformationProcessingObjective[] = IPO_FIELDS.ma
   (field) => IPO_VALUE[field],
 );
 
-/** Assertion names stored before the scheme was aligned to Tabel 8 (#105). */
+/**
+ * Assertion names stored before the scheme was aligned to Tabel 8 (#105). Keys
+ * are matched case-insensitively, which is also what makes the pre-#105
+ * `"Cut-off"` spelling resolve.
+ */
 const LEGACY_ASSERTIONS: Record<string, ControlAssertion> = {
   Validity: 'Existence/Occurrence',
   Existence: 'Existence/Occurrence',
@@ -135,20 +139,37 @@ const LEGACY_ASSERTIONS: Record<string, ControlAssertion> = {
   Classification: 'Presentation and Disclosure',
 };
 
+/** Case-insensitive lookup of canonical names, legacy names and short codes. */
+function byName<T extends string>(
+  values: readonly T[],
+  codes: ReadonlyArray<{ code: string; value: T }>,
+  legacy: Record<string, T> = {},
+): Record<string, T> {
+  const index: Record<string, T> = {};
+  for (const [name, value] of Object.entries(legacy)) index[name.toLowerCase()] = value;
+  for (const value of values) index[value.toLowerCase()] = value;
+  for (const { code, value } of codes) index[code.toLowerCase()] = value;
+  return index;
+}
+
+const ASSERTION_INDEX = byName(
+  ALL_ASSERTIONS,
+  ASSERTION_FIELDS.map((field) => ({ code: ASSERTION_CODE[field], value: ASSERTION_VALUE[field] })),
+  LEGACY_ASSERTIONS,
+);
+
+const IPO_INDEX = byName(
+  ALL_IPOS,
+  IPO_FIELDS.map((field) => ({ code: IPO_CODE[field], value: IPO_VALUE[field] })),
+);
+
 /**
  * Resolves anything the platform has ever stored for an assertion — canonical
  * name, legacy name or short code — to its canonical value, or `null`.
  */
 export function toControlAssertion(raw: unknown): ControlAssertion | null {
   if (typeof raw !== 'string') return null;
-  const value = raw.trim();
-  const direct = ALL_ASSERTIONS.find((assertion) => assertion === value);
-  if (direct) return direct;
-  const byCode = ASSERTION_FIELDS.find(
-    (field) => ASSERTION_CODE[field].toUpperCase() === value.toUpperCase(),
-  );
-  if (byCode) return ASSERTION_VALUE[byCode];
-  return LEGACY_ASSERTIONS[value] ?? null;
+  return ASSERTION_INDEX[raw.trim().toLowerCase()] ?? null;
 }
 
 /** Same as {@link toControlAssertion}, for an IPO name or short code. */
@@ -156,13 +177,7 @@ export function toInformationProcessingObjective(
   raw: unknown,
 ): InformationProcessingObjective | null {
   if (typeof raw !== 'string') return null;
-  const value = raw.trim();
-  const direct = ALL_IPOS.find((ipo) => ipo === value);
-  if (direct) return direct;
-  const byCode = IPO_FIELDS.find(
-    (field) => IPO_CODE[field].toUpperCase() === value.toUpperCase(),
-  );
-  return byCode ? IPO_VALUE[byCode] : null;
+  return IPO_INDEX[raw.trim().toLowerCase()] ?? null;
 }
 
 /** Drops unrecognised entries (e.g. the removed `Availability` IPO) from a stored list. */

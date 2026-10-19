@@ -249,7 +249,7 @@
         "ref": "SK-5/2024 Hal. 24 Tabel 8"
       },
       "eo": {
-        "title": "E/O — Existence / Occurrence (Keberadaan / Keterjadian)",
+        "title": "E/O — Existence/Occurrence (Keberadaan / Keterjadian)",
         "desc": "Memastikan saldo aset/liabilitas benar-benar ada pada tanggal pelaporan dan seluruh transaksi yang dicatat benar-benar terjadi selama periode berjalan.",
         "ref": "SK-5/2024 Hal. 24 Tabel 8"
       },
@@ -259,17 +259,17 @@
         "ref": "SK-5/2024 Hal. 24 Tabel 8"
       },
       "ro": {
-        "title": "R&O — Rights & Obligations (Hak & Kewajiban)",
+        "title": "R&O — Rights and Obligation (Hak & Kewajiban)",
         "desc": "Memastikan Perusahaan memegang atau mengendalikan hak atas aset, serta kewajiban yang disajikan merupakan utang sah entitas.",
         "ref": "SK-5/2024 Hal. 24 Tabel 8"
       },
       "va": {
-        "title": "V/A — Valuation & Allocation (Penilaian & Alokasi)",
+        "title": "V/A — Valuation and Allocation (Penilaian & Alokasi)",
         "desc": "Memastikan akun aset, liabilitas, dan ekuitas telah dicatat pada nilai wajar/tepat, serta penyesuaian penyusutan/penurunan nilai dialokasikan dengan benar.",
         "ref": "SK-5/2024 Hal. 24 Tabel 8"
       },
       "pd": {
-        "title": "PD — Presentation & Disclosure (Penyajian & Pengungkapan)",
+        "title": "PD — Presentation and Disclosure (Penyajian & Pengungkapan)",
         "desc": "Memastikan akun dan komponen laporan keuangan digabungkan atau dipisahkan secara tepat, serta diuraikan dan diungkapkan sesuai standar akuntansi.",
         "ref": "SK-5/2024 Hal. 24 Tabel 8"
       },

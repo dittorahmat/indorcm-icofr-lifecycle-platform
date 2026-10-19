@@ -2,6 +2,10 @@
  * This file contains structured prompt templates for AI-assisted migration.
  */
 
+import { ALL_ASSERTIONS, ALL_IPOS } from '@shared/assertion-fields';
+
+const quoted = (values: readonly string[]) => values.map((value) => `"${value}"`).join(', ');
+
 export const NORMALIZATION_PROMPT = `
 As an ICOFR compliance expert, normalize the following free-text values into the system's standard Enums.
 
@@ -20,8 +24,8 @@ Output JSON format:
 export const REGULATORY_GUESSING_PROMPT = `
 As a GRC Auditor specialized in BUMN SK-5/2024, derive missing metadata based on the Control Description.
 
-Assertions: "Completeness", "Accuracy", "Existence/Occurrence", "Cut-Off", "Rights and Obligation", "Valuation and Allocation", "Presentation and Disclosure"
-IPO: "Completeness", "Accuracy", "Validity", "Restricted Access"
+Assertions: ${quoted(ALL_ASSERTIONS)}
+IPO: ${quoted(ALL_IPOS)}
 
 Control: {{title}}
 Description: {{description}}

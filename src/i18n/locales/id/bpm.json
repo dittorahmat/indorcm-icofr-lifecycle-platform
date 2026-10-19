@@ -73,7 +73,7 @@
     "subtitle": "TABEL 8 REGULASI SK-5",
     "tooltip": {
       "eo": {
-        "label": "Existence / Occurrence",
+        "label": "Existence/Occurrence",
         "desc": "Existence: meyakinkan apakah seluruh aset, liabilitas dan ekuitas yang tercantum di laporan posisi keuangan benar-benar ada. Occurrence: meyakinkan apakah seluruh transaksi yang dipresentasikan dalam laporan laba rugi dan penghasilan komprehensif lainnya betul-betul terjadi."
       },
       "c": {
@@ -89,15 +89,15 @@
         "desc": "Meyakinkan apakah transaksi dan peristiwa telah dicatat pada periode akuntansi yang benar."
       },
       "va": {
-        "label": "Valuation & Allocation",
+        "label": "Valuation and Allocation",
         "desc": "Valuation: meyakinkan apakah aset, liabilitas, dan ekuitas dinilai dengan tepat sesuai dengan prinsip akuntansi yang berlaku umum. Allocation: meyakinkan apakah saldo-saldo sudah dialokasikan secara memadai antara laporan posisi keuangan dan laporan laba rugi dan penghasilan komprehensif lainnya."
       },
       "ro": {
-        "label": "Rights & Obligation",
+        "label": "Rights and Obligation",
         "desc": "Rights: meyakinkan apakah perusahaan memiliki hak terhadap suatu aset pada suatu waktu tertentu. Obligation: meyakinkan apakah perusahaan memiliki kewajiban yang menjadi tanggung jawab perusahaan pada suatu waktu tertentu."
       },
       "pd": {
-        "label": "Presentation & Disclosure",
+        "label": "Presentation and Disclosure",
         "desc": "Presentation: meyakinkan apakah pengklasifikasian transaksi dan akun sudah direfleksikan secara tepat di laporan keuangan. Disclosure: meyakinkan apakah pengungkapan dalam catatan atas laporan keuangan sudah memadai agar laporan keuangan itu tidak menyesatkan."
       }
     }

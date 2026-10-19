@@ -73,7 +73,7 @@
     "subtitle": "TABLE 8 REGULATION SK-5",
     "tooltip": {
       "eo": {
-        "label": "Existence / Occurrence",
+        "label": "Existence/Occurrence",
         "desc": "Existence: ensuring all assets, liabilities, and equity listed in the statement of financial position actually exist. Occurrence: ensuring all transactions presented in the statement of profit or loss and other comprehensive income actually occurred."
       },
       "c": {
@@ -89,15 +89,15 @@
         "desc": "Ensuring transactions and events have been recorded in the correct accounting period."
       },
       "va": {
-        "label": "Valuation & Allocation",
+        "label": "Valuation and Allocation",
         "desc": "Valuation: ensuring assets, liabilities, and equity are valued appropriately in accordance with generally accepted accounting principles. Allocation: ensuring balances have been appropriately allocated between the statement of financial position and the statement of profit or loss and other comprehensive income."
       },
       "ro": {
-        "label": "Rights & Obligation",
+        "label": "Rights and Obligation",
         "desc": "Rights: ensuring the company has rights to an asset at a certain time. Obligation: ensuring the company has obligations that are the responsibility of the company at a certain time."
       },
       "pd": {
-        "label": "Presentation & Disclosure",
+        "label": "Presentation and Disclosure",
         "desc": "Presentation: ensuring the classification of transactions and accounts is appropriately reflected in the financial statements. Disclosure: ensuring disclosures in the notes to the financial statements are adequate so that the financial statements are not misleading."
       }
     }
