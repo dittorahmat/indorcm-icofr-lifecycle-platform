@@ -5,14 +5,14 @@ import {
   flexRender,
   ColumnDef,
 } from '@tanstack/react-table';
-import { Control, Application, User, BPMProcess } from '@shared/types';
+import { Control, Application, User, BPMProcess, BPMDiagram } from '@shared/types';
 import { filterWorksheetControls } from '@shared/worksheet-control-scope';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Loader2, PlusCircle, Info, FileSpreadsheet, Workflow as WorkflowIcon, Shield } from 'lucide-react';
+import { Loader2, Info, Workflow as WorkflowIcon } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
@@ -30,13 +30,15 @@ import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { BPMEditor } from '../rcm/BPMEditor';
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
-import { useWorksheetControlUpdate } from './use-worksheet-control-update';
 import { useUnsavedChangesContext } from '@/context/UnsavedChangesContext';
 import { useConfirm } from '@/hooks/use-confirm';
 import { createWorksheetColumns } from './BPMWorksheetColumns';
 import { MobileDesktopBanner } from '@/components/layout/MobileDesktopBanner';
 import { BPMWorksheetMobileCards } from './BPMWorksheetMobileCards';
 import { BPMWorksheetProcedurePanel } from './BPMWorksheetProcedurePanel';
+import { toWorksheetRows } from './worksheet-row';
+import { useWorksheetRowCommit } from './useWorksheetRowCommit';
+import { BPMWorksheetToolbar } from './BPMWorksheetToolbar';
 
 interface BPMWorksheetProps {
   bpmProcessId: string;
@@ -107,7 +109,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
 
   const { data: diagrams } = useQuery({
     queryKey: ['bpm-diagrams'],
-    queryFn: () => api<{ items: any[] }>('/api/bpm-diagrams')
+    queryFn: () => api<{ items: BPMDiagram[] }>('/api/bpm-diagrams')
   });
 
   const { data: currentUser } = useQuery({
@@ -137,8 +139,6 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
       toast.success("Process metadata updated");
     }
   });
-
-  const updateMutation = useWorksheetControlUpdate();
 
   const [standardProcedure, setStandardProcedure] = React.useState("");
   const [bpmCode, setBpmCode] = React.useState("");
@@ -170,17 +170,6 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
     });
   };
 
-  const createDiagramMutation = useMutation({
-    mutationFn: (subProcess: string) => api<{ id: string }>('/api/bpm-diagrams', {
-      method: 'POST',
-      body: JSON.stringify({ name: subProcess, subProcess })
-    }),
-    onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['bpm-diagrams'] });
-      handleOpenDiagram(data.id, variables);
-    }
-  });
-
   const createMutation = useMutation({
     mutationFn: () => api('/api/controls', {
       method: 'POST',
@@ -209,14 +198,6 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
     }
   });
 
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => api(`/api/controls/${id}`, { method: 'DELETE' }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bpm-controls'] });
-      toast.success("Row deleted");
-    }
-  });
-
   const createAppMutation = useMutation({
     mutationFn: (name: string) => api('/api/applications', {
       method: 'POST',
@@ -230,13 +211,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
     }
   });
 
-  const timerRef = React.useRef<NodeJS.Timeout | null>(null);
-  const debouncedUpdate = React.useCallback((id: string, field: string, value: any) => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => {
-      updateMutation.mutate({ id, data: { [field]: value } });
-    }, 500);
-  }, [updateMutation]);
+  const commit = useWorksheetRowCommit({ diagrams, onOpenDiagram: handleOpenDiagram });
 
   const columns = React.useMemo<ColumnDef<Control>[]>(() => createWorksheetColumns({
     t,
@@ -244,13 +219,9 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
     diagrams,
     apps,
     elcControls,
-    handleOpenDiagram,
-    createDiagramMutation,
-    updateMutation,
-    deleteMutation,
-    debouncedUpdate,
+    commit,
     setIsAddingApp,
-  }), [apps, diagrams, handleOpenDiagram, createDiagramMutation, debouncedUpdate, updateMutation, deleteMutation, elcControls, t, confirm]);
+  }), [apps, diagrams, commit, elcControls, t, confirm]);
 
   const table = useReactTable({
     data: controls || [],
@@ -260,37 +231,14 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-slate-50/50 p-4 border-b shrink-0 flex-wrap gap-3 min-w-0 max-w-full">
-        <div className="space-y-0.5 min-w-0">
-          <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2 min-w-0">
-            <FileSpreadsheet className="h-4 w-4 text-primary shrink-0" />
-            <span className="truncate">Control Activity Matrix (RCM) - {subProcessName || fsliName} ({noGL})</span>
-          </h4>
-          <p className="text-xs text-slate-500">Identify risks and control activities at the transaction level.</p>
-        </div>
-        
-        <div className="flex flex-wrap items-center gap-2 w-full min-[480px]:w-auto">
-          <Button 
-            onClick={() => setIsProcedureOpen(!isProcedureOpen)} 
-            variant="outline" 
-            size="sm"
-            className="h-9 min-h-[44px] min-[480px]:min-h-0 gap-2 border-slate-200 text-slate-900 font-bold flex-1 min-[480px]:flex-none justify-center"
-          >
-            <Shield className="h-4 w-4" />
-            {isProcedureOpen ? "Hide Procedure" : "Set Std. Procedure"}
-          </Button>
-          <Button 
-            onClick={() => createMutation.mutate()} 
-            variant="default" 
-            size="sm"
-            className="bg-slate-900 hover:bg-slate-800 font-bold gap-2 shadow-md px-4 h-9 min-h-[44px] min-[480px]:min-h-0 flex-1 min-[480px]:flex-none justify-center"
-            disabled={createMutation.isPending}
-          >
-            {createMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlusCircle className="h-4 w-4" />}
-            {t('worksheet.addRow')}
-          </Button>
-        </div>
-      </div>
+      <BPMWorksheetToolbar
+        scopeName={subProcessName || fsliName}
+        noGL={noGL}
+        isProcedureOpen={isProcedureOpen}
+        onToggleProcedure={() => setIsProcedureOpen(!isProcedureOpen)}
+        onAddRow={() => createMutation.mutate()}
+        isAddingRow={createMutation.isPending}
+      />
 
       <BPMWorksheetProcedurePanel
         isOpen={isProcedureOpen}
@@ -305,7 +253,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
 
       {/* MOBILE VIEW: Control summary cards */}
       <BPMWorksheetMobileCards
-        controls={controls ?? []}
+        rows={toWorksheetRows(controls ?? [])}
         isLoading={isLoading}
         showFullTable={showFullTable}
         onToggleFullTable={() => setShowFullTable(v => !v)}

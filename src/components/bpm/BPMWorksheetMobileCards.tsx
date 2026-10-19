@@ -1,11 +1,11 @@
 import { ChevronDown, ChevronUp, Info, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import type { Control } from '@shared/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import type { WorksheetRow } from './worksheet-row';
 
 interface BPMWorksheetMobileCardsProps {
-  controls: readonly Control[];
+  rows: readonly WorksheetRow[];
   isLoading: boolean;
   showFullTable: boolean;
   onToggleFullTable: () => void;
@@ -13,11 +13,12 @@ interface BPMWorksheetMobileCardsProps {
 
 /**
  * Mobile summary cards for the worksheet (desktop keeps the react-table view).
- * Presentational only: the rows arrive already scoped by
- * `filterWorksheetControls` in the worksheet query.
+ * Presentational only: rows arrive through `toWorksheetRow`, the same row shape
+ * the desktop columns read, and are already scoped by `filterWorksheetControls`
+ * in the worksheet query.
  */
 export function BPMWorksheetMobileCards({
-  controls,
+  rows,
   isLoading,
   showFullTable,
   onToggleFullTable,
@@ -34,44 +35,41 @@ export function BPMWorksheetMobileCards({
           <Loader2 className="h-6 w-6 animate-spin text-primary" />
           <p className="text-xs text-slate-400 font-medium">{t('bpm:mobile.loading')}</p>
         </div>
-      ) : controls.length === 0 ? (
+      ) : rows.length === 0 ? (
         <div className="flex flex-col items-center gap-2 py-8">
           <Info className="h-6 w-6 text-slate-300" />
           <p className="text-xs text-slate-400 font-medium">{t('bpm:mobile.empty')}</p>
         </div>
       ) : (
         <>
-          {controls.map((control) => {
-            const assertions = Array.isArray(control.assertions) ? control.assertions : [];
-            return (
-              <div key={control.id} className="rounded-lg border border-slate-200 bg-white p-4 space-y-2 shadow-sm">
-                <div className="flex items-start justify-between gap-2 flex-wrap">
-                  <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-900 border border-slate-200">
-                    {control.code || '-'}
-                  </span>
-                  {control.isKeyControl && (
-                    <Badge className="bg-indigo-600 text-white font-semibold text-xs shrink-0">
-                      {t('bpm:mobile.keyControl', { defaultValue: 'Kontrol Utama' })}
-                    </Badge>
-                  )}
-                </div>
-                <p className="text-xs font-bold text-slate-800 leading-snug line-clamp-2">{control.name || '-'}</p>
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  {control.type && (
-                    <span className="bg-slate-100 px-2 py-0.5 rounded text-xs font-medium text-slate-700">{control.type}</span>
-                  )}
-                  {control.nature && (
-                    <span className="bg-slate-100 px-2 py-0.5 rounded text-xs font-medium text-slate-700">{control.nature}</span>
-                  )}
-                  {assertions.length > 0 && (
-                    <span className="text-xs text-slate-500 font-medium">
-                      {t('bpm:mobile.assertionsCount', { count: assertions.length, defaultValue: `${assertions.length} asersi` })}
-                    </span>
-                  )}
-                </div>
+          {rows.map((row) => (
+            <div key={row.id} className="rounded-lg border border-slate-200 bg-white p-4 space-y-2 shadow-sm">
+              <div className="flex items-start justify-between gap-2 flex-wrap">
+                <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-900 border border-slate-200">
+                  {row.code || '-'}
+                </span>
+                {row.isKeyControl && (
+                  <Badge className="bg-indigo-600 text-white font-semibold text-xs shrink-0">
+                    {t('bpm:mobile.keyControl', { defaultValue: 'Kontrol Utama' })}
+                  </Badge>
+                )}
               </div>
-            );
-          })}
+              <p className="text-xs font-bold text-slate-800 leading-snug line-clamp-2">{row.name || '-'}</p>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {row.type && (
+                  <span className="bg-slate-100 px-2 py-0.5 rounded text-xs font-medium text-slate-700">{row.type}</span>
+                )}
+                {row.nature && (
+                  <span className="bg-slate-100 px-2 py-0.5 rounded text-xs font-medium text-slate-700">{row.nature}</span>
+                )}
+                {row.assertions.length > 0 && (
+                  <span className="text-xs text-slate-500 font-medium">
+                    {t('bpm:mobile.assertionsCount', { count: row.assertions.length, defaultValue: `${row.assertions.length} asersi` })}
+                  </span>
+                )}
+              </div>
+            </div>
+          ))}
           <Button
             type="button"
             variant="outline"

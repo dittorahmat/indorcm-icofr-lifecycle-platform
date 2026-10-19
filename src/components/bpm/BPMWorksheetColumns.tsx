@@ -8,19 +8,18 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Trash2, Network, Shield, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
+import type { ConfirmFunction } from '@/components/providers/ConfirmProvider';
+import type { WorksheetRowCommit } from './worksheet-row';
+
+type WorksheetTranslate = (key: string, options?: Record<string, unknown>) => string;
 
 interface CreateWorksheetColumnsProps {
-  t: any;
-  confirm: any;
-  diagrams?: { items: any[] };
+  t: WorksheetTranslate;
+  confirm: ConfirmFunction;
+  diagrams?: { items: { id: string; subProcess?: string | null }[] };
   apps?: { items: Application[] };
   elcControls: Control[];
-  handleOpenDiagram: (diagramId: string, subProcess: string) => void;
-  createDiagramMutation: any;
-  updateMutation: any;
-  deleteMutation: any;
-  debouncedUpdate: (id: string, field: string, value: any) => void;
+  commit: WorksheetRowCommit;
   setIsAddingApp: (val: boolean) => void;
 }
 
@@ -30,11 +29,7 @@ export function createWorksheetColumns({
   diagrams,
   apps,
   elcControls,
-  handleOpenDiagram,
-  createDiagramMutation,
-  updateMutation,
-  deleteMutation,
-  debouncedUpdate,
+  commit,
   setIsAddingApp,
 }: CreateWorksheetColumnsProps): ColumnDef<Control>[] {
   return [
@@ -49,11 +44,11 @@ export function createWorksheetColumns({
           onClick={async () => {
             const ok = await confirm({
               title: t('common:actions.deletePermanently'),
-              description: "Delete this Risk-Control mapping row? All associated worksheet inputs for this row will be deleted permanently.",
+              description: t('worksheet.deleteRowConfirm'),
               variant: 'destructive'
             });
             if (ok) {
-              deleteMutation.mutate(row.original.id);
+              commit.remove(row.original.id);
             }
           }}
         >
@@ -76,7 +71,7 @@ export function createWorksheetColumns({
           className="h-11 md:h-9 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 focus:border-slate-400 bg-white px-2 font-mono uppercase w-[100px]"
           placeholder="BPM-001"
           defaultValue={getValue<string>()}
-          onBlur={(e) => debouncedUpdate(row.original.id, 'bpmCode', e.target.value)}
+          onBlur={(e) => commit.saveField(row.original.id, 'bpmCode', e.target.value)}
         />
       ),
       size: 110
@@ -96,18 +91,10 @@ export function createWorksheetColumns({
               "h-11 sm:h-7 min-h-[44px] sm:min-h-0 text-xs gap-1.5 uppercase font-bold mx-2",
               diagram ? "bg-mancity-pattern hover:opacity-90 text-primary-foreground shadow-sm" : "text-slate-400 border-slate-200"
             )}
-            onClick={() => {
-              if (diagram) {
-                handleOpenDiagram(diagram.id, subProcess || "");
-              } else if (subProcess) {
-                createDiagramMutation.mutate(subProcess);
-              } else {
-                toast.error("Please fill Sub-Process name first");
-              }
-            }}
+            onClick={() => commit.openDiagramFor(subProcess || "")}
           >
             <Network className="h-3 w-3" />
-            {diagram ? "View Flow" : "Create Flow"}
+            {diagram ? t('worksheet.viewFlow') : t('worksheet.createFlow')}
           </Button>
         );
       },
@@ -121,7 +108,7 @@ export function createWorksheetColumns({
           className="h-11 md:h-9 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 focus:border-slate-400 bg-white px-2 min-w-[150px]"
           placeholder="Isi Proses..."
           defaultValue={getValue<string>()}
-          onBlur={(e) => debouncedUpdate(row.original.id, 'businessProcess', e.target.value)}
+          onBlur={(e) => commit.saveField(row.original.id, 'businessProcess', e.target.value)}
         />
       )
     },
@@ -133,7 +120,7 @@ export function createWorksheetColumns({
           className="h-11 md:h-9 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 focus:border-slate-400 bg-white px-2 font-bold min-w-[180px]"
           placeholder="Nama Sub-Proses..."
           defaultValue={getValue<string>()}
-          onBlur={(e) => debouncedUpdate(row.original.id, 'subProcess', e.target.value)}
+          onBlur={(e) => commit.saveField(row.original.id, 'subProcess', e.target.value)}
         />
       )
     },
@@ -144,7 +131,7 @@ export function createWorksheetColumns({
         <Input 
           className="h-11 md:h-9 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 focus:border-slate-400 bg-white px-2 font-medium text-slate-900 min-w-[200px]"
           defaultValue={getValue<string>()}
-          onBlur={(e) => debouncedUpdate(row.original.id, 'name', e.target.value)}
+          onBlur={(e) => commit.saveField(row.original.id, 'name', e.target.value)}
         />
       )
     },
@@ -156,7 +143,7 @@ export function createWorksheetColumns({
           className="h-11 md:h-9 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 focus:border-slate-400 bg-white px-2 min-w-[100px]"
           placeholder="Lokasi..."
           defaultValue={getValue<string>()}
-          onBlur={(e) => debouncedUpdate(row.original.id, 'location', e.target.value)}
+          onBlur={(e) => commit.saveField(row.original.id, 'location', e.target.value)}
         />
       )
     },
@@ -168,7 +155,7 @@ export function createWorksheetColumns({
           className="w-full min-h-[60px] text-base md:text-xs border border-slate-200 focus:ring-1 focus:ring-slate-400 bg-white p-2 resize-none min-w-[250px] rounded-md"
           placeholder="Deskripsikan aktivitas..."
           defaultValue={getValue<string>()}
-          onBlur={(e) => debouncedUpdate(row.original.id, 'description', e.target.value)}
+          onBlur={(e) => commit.saveField(row.original.id, 'description', e.target.value)}
         />
       )
     },
@@ -178,7 +165,7 @@ export function createWorksheetColumns({
       cell: ({ row, getValue }) => (
         <Select 
           value={getValue<boolean>() ? 'Y' : 'T'} 
-          onValueChange={(v) => updateMutation.mutate({ id: row.original.id, data: { isFraudRelated: v === 'Y' } })}
+          onValueChange={(v) => commit.patch(row.original.id, { isFraudRelated: v === 'Y' })}
         >
           <SelectTrigger className="h-11 md:h-7 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 bg-white w-full">
             <SelectValue />
@@ -197,7 +184,7 @@ export function createWorksheetColumns({
         <Input 
           className="h-11 md:h-9 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 focus:border-indigo-300 bg-white px-2 min-w-[120px]"
           defaultValue={getValue<string>()}
-          onBlur={(e) => debouncedUpdate(row.original.id, 'reference', e.target.value)}
+          onBlur={(e) => commit.saveField(row.original.id, 'reference', e.target.value)}
         />
       )
     },
@@ -227,7 +214,7 @@ export function createWorksheetColumns({
                           const nextIds = selectedIds.includes(elc.id)
                             ? selectedIds.filter(id => id !== elc.id)
                             : [...selectedIds, elc.id];
-                          updateMutation.mutate({ id: row.original.id, data: { relatedControlIds: nextIds } });
+                          commit.patch(row.original.id, { relatedControlIds: nextIds });
                         }}
                         className="text-xs flex items-center justify-between flex-wrap gap-2"
                       >
@@ -254,7 +241,7 @@ export function createWorksheetColumns({
         <Input 
           className="h-11 md:h-9 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 focus:border-indigo-300 bg-white px-2 min-w-[150px]"
           defaultValue={getValue<string>()}
-          onBlur={(e) => debouncedUpdate(row.original.id, 'supportingDocs', e.target.value)}
+          onBlur={(e) => commit.saveField(row.original.id, 'supportingDocs', e.target.value)}
         />
       )
     },
@@ -264,7 +251,7 @@ export function createWorksheetColumns({
       cell: ({ row, getValue }) => (
         <Select 
           value={getValue<boolean>() ? 'Y' : 'T'} 
-          onValueChange={(v) => updateMutation.mutate({ id: row.original.id, data: { isKeyControl: v === 'Y' } })}
+          onValueChange={(v) => commit.patch(row.original.id, { isKeyControl: v === 'Y' })}
         >
           <SelectTrigger className="h-11 md:h-7 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 bg-white w-full">
             <SelectValue />
@@ -283,7 +270,7 @@ export function createWorksheetColumns({
         <Input 
           className="h-11 md:h-9 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 focus:border-indigo-300 bg-white px-2 min-w-[100px]"
           defaultValue={(getValue<string[]>() || []).join(', ')}
-          onBlur={(e) => debouncedUpdate(row.original.id, 'ipos', e.target.value.split(',').map(s => s.trim()))}
+          onBlur={(e) => commit.saveField(row.original.id, 'ipos', e.target.value.split(',').map(s => s.trim()))}
         />
       )
     },
@@ -294,7 +281,7 @@ export function createWorksheetColumns({
         <Input 
           className="h-11 md:h-9 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 focus:border-indigo-300 bg-white px-2 min-w-[100px]"
           defaultValue={(getValue<string[]>() || []).join(', ')}
-          onBlur={(e) => debouncedUpdate(row.original.id, 'assertions', e.target.value.split(',').map(s => s.trim()))}
+          onBlur={(e) => commit.saveField(row.original.id, 'assertions', e.target.value.split(',').map(s => s.trim()))}
         />
       )
     },
@@ -304,7 +291,7 @@ export function createWorksheetColumns({
       cell: ({ row, getValue }) => (
         <Select 
           value={getValue<string>()} 
-          onValueChange={(v: ControlType) => updateMutation.mutate({ id: row.original.id, data: { type: v } })}
+          onValueChange={(v: ControlType) => commit.patch(row.original.id, { type: v })}
         >
           <SelectTrigger className="h-11 md:h-7 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 bg-white w-full">
             <SelectValue />
@@ -322,7 +309,7 @@ export function createWorksheetColumns({
       cell: ({ row, getValue }) => (
         <Select 
           value={getValue<string>()} 
-          onValueChange={(v: ControlNature) => updateMutation.mutate({ id: row.original.id, data: { nature: v } })}
+          onValueChange={(v: ControlNature) => commit.patch(row.original.id, { nature: v })}
         >
           <SelectTrigger className="h-11 md:h-9 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 bg-white min-w-[80px]">
             <SelectValue />
@@ -347,7 +334,7 @@ export function createWorksheetColumns({
             if (v === 'add-new') {
               setIsAddingApp(true);
             } else {
-              updateMutation.mutate({ id: row.original.id, data: { applicationId: v === 'none' ? undefined : v } });
+              commit.patch(row.original.id, { applicationId: v === 'none' ? undefined : v });
             }
           }}
         >
