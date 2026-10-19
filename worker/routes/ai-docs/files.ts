@@ -2,12 +2,14 @@ import { Hono } from "hono";
 import type { HonoEnv } from '../../app';
 import { ok, bad, notFound } from '../../lib/utils';
 import { getStorageBucket } from '../../lib/storage';
+import { rbac } from '../../lib/guard';
 
 const aiFilesApp = new Hono<HonoEnv>();
 
 // --- File Handling Routes ---
 
-aiFilesApp.post('/upload', async (c) => {
+// A raw blob upload (no entity): evidence and attachments from every line use it.
+aiFilesApp.post('/upload', rbac(['Line 1', 'Line 2', 'Admin']), async (c) => {
   const orgId = c.get('organizationId');
   if (!orgId) return bad(c, 'Organization ID required');
 

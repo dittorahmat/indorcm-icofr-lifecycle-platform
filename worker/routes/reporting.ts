@@ -9,6 +9,7 @@ import {
 import { eq, sql } from 'drizzle-orm';
 import type { Settings } from "@shared/types";
 import { effectivenessScore, summarizeDeficiencies } from '@shared/deficiency-summary';
+import { rbac } from '../lib/guard';
 
 const reporting = new Hono<HonoEnv>();
 
@@ -39,7 +40,9 @@ reporting.get('/reports/summary', async (c) => {
   });
 });
 
-reporting.post('/reports/sign-off', async (c) => {
+// The digital sign-off locks the Asesmen Manajemen, so it carries the same
+// authority the SCOPING approve/reject gates do.
+reporting.post('/reports/sign-off', rbac(['CFO', 'Commissioner', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const userId = c.get('userId');
@@ -78,7 +81,9 @@ reporting.post('/reports/sign-off', async (c) => {
   return ok(c, settings);
 });
 
-reporting.post('/reports/export', async (c) => {
+// Exports render data the caller may already read, so any reporting line may
+// generate them; only the sign-off above is authority-gated.
+reporting.post('/reports/export', rbac(['Line 1', 'Line 2', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const { format } = await c.req.json<{ format: 'csv' | 'xlsx' }>();
@@ -109,7 +114,7 @@ reporting.get('/bpm-exports', async (c) => {
   return ok(c, { items });
 });
 
-reporting.post('/bpm-exports', async (c) => {
+reporting.post('/bpm-exports', rbac(['Line 1', 'Line 2', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const body = await c.req.json<any>();

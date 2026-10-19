@@ -8,14 +8,22 @@ import type { RetrievalRow } from '../../services/ai-service';
 import { AuditService } from '../../services/audit-service';
 import { getAiCacheVersions, createDocMarkerLoader, createApprovedSimulationLoader } from '../../services/ai/ai-cache-versions';
 import { checkDailyRateLimit, isCacheUnversioned, sharedAiRateLimitStore } from '@shared/ai-cache';
+import type { UserRole } from '@shared/types';
 
 import { ICOFR_TOOLS } from '../../services/ai/tool-definitions';
 import { AIToolExecutor, ToolContext } from '../../services/ai/tool-executor';
 
 const aiChatApp = new Hono<HonoEnv>();
 
+// The assistant is open to every signed-in role, but its one persisted action
+// carries the policy of the entity it writes: a CSA schedule is Line 2/Admin's
+// to create (`POST /csa/schedules`).
+const SCHEDULE_WRITE_ROLES: UserRole[] = ['Line 2', 'Admin'];
+
 // --- AI Chatbot Routes ---
 
+// rbac-exempt: assistant — the handler owns no lifecycle entity; the single
+// persisted action (CREATE_SCHEDULE) re-checks the schedule write roles below.
 aiChatApp.post('/ai/chat', async (c) => {
   const apiKey = c.env.GEMINI_API_KEY;
   if (!apiKey || apiKey === 'YOUR_GEMINI_API_KEY_HERE') {
@@ -47,6 +55,9 @@ aiChatApp.post('/ai/chat', async (c) => {
   // Handle direct action confirmation (Agentic Action)
   if (body.actionConfirmation) {
     const { action, data } = body.actionConfirmation;
+    if (action === 'CREATE_SCHEDULE' && !SCHEDULE_WRITE_ROLES.includes(c.get('userRole'))) {
+      return bad(c, 'SCHEDULE_WRITE_FORBIDDEN', 403, 'Access Denied: Insufficient permissions');
+    }
     const db = getDb(c.env.DATABASE_URL);
     if (action === 'CREATE_SCHEDULE') {
       const rawPlannedDate = (data as { plannedDate?: unknown }).plannedDate;

@@ -8,6 +8,7 @@ import { CsaDomainService } from "../../services/csa-domain-service";
 import { runWorkflowTransition } from "../../services/workflow/workflow-drizzle-adapter";
 import { generateCsaPdf } from "../../lib/csa-pdf";
 import type { WorkflowAction } from '@shared/types';
+import { rbac } from '../../lib/guard';
 
 export const csaRecordsRoute = new Hono<HonoEnv>();
 
@@ -31,7 +32,7 @@ csaRecordsRoute.get('/csa', async (c) => {
   return ok(c, { items });
 });
 
-csaRecordsRoute.post('/csa', async (c) => {
+csaRecordsRoute.post('/csa', rbac(['Line 1', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const userId = c.get('userId');
@@ -41,7 +42,7 @@ csaRecordsRoute.post('/csa', async (c) => {
   return ok(c, result);
 });
 
-csaRecordsRoute.put('/csa/:id', async (c) => {
+csaRecordsRoute.put('/csa/:id', rbac(['Line 1', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
   const userId = c.get('userId');
@@ -57,7 +58,9 @@ csaRecordsRoute.put('/csa/:id', async (c) => {
   return ok(c, result);
 });
 
-csaRecordsRoute.post('/csa/:id/workflow', async (c) => {  const db = getDb(c.env.DATABASE_URL);
+// Line 2 validates and advances what Line 1 filled in, so the CSA workflow keeps
+// the repo's workflow-route role union.
+csaRecordsRoute.post('/csa/:id/workflow', rbac(['Line 1', 'Line 2', 'Admin']), async (c) => {  const db = getDb(c.env.DATABASE_URL);
   const id = c.req.param('id');
   const body = await c.req.json<{ action: WorkflowAction; note?: string; assigneeId?: string }>();
 
@@ -74,7 +77,7 @@ csaRecordsRoute.post('/csa/:id/workflow', async (c) => {  const db = getDb(c.env
   return ok(c, result);
 });
 
-csaRecordsRoute.delete('/csa/:id', async (c) => {
+csaRecordsRoute.delete('/csa/:id', rbac(['Line 1', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const id = c.req.param('id');
   const orgId = c.get('organizationId');
