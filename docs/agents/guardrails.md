@@ -58,6 +58,27 @@ requires `onError` user feedback on every touched call site
 (`CODING_STANDARDS.md`); legacy sites burn down boy-scout on touch. Escalate
 the rule to `error` once `npx eslint src` reports zero hits.
 
+## Gates measured and rejected (do not rebuild these)
+
+Both were proposed as mechanical gates and both were killed by measurement, not
+taste. The numbers live here so the next retro does not re-derive them.
+
+- **Hardcoded UI copy detector.** `check:i18n` covers `toast.*` literals and
+  unresolved keys only. A detector over JSX text plus `header` / `placeholder` /
+  `title` / `aria-label` literals fired **804 times across 138 of 308 `.tsx`
+  files**, dominated by enum values rendered raw, dates and format tokens, so a
+  delta gate would fail the next honest change and train people to ignore it.
+  Replacement: the reviewer rule in `CODING_STANDARDS.md`, plus the header-key
+  assertion in `BPMWorksheetColumns.test.ts`.
+- **Doc path existence check** (every repo path named in the agent docs must
+  exist). The 13 agent-facing docs name 334 path tokens; 76 do not resolve, and
+  most are missing *by design*: `docs/agents/arch-hotspots-*.md` are proposal
+  reports naming the modules they propose (`src/lib/format-money.ts`,
+  `shared/assertion-fields.ts`) and the branches to cut (`arch/deepen-7-review`).
+  Restricting the check to the steering docs leaves only directory references
+  (`utils/bpm-auto-layout`) that no extractor resolves without a search path, so
+  the gate would be either noisy or near-empty. Fix a stale pointer by hand.
+
 ## Local pre-commit (fast gates, no new deps)
 
 `.githooks/pre-commit` runs `check:any-delta` + `check:i18n` +
