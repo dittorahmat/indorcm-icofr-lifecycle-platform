@@ -15,7 +15,7 @@ import {
 } from './dashboard-layout';
 
 /** The one cache entry that is both the server truth and the in-progress draft. */
-export const DASHBOARD_QUERY_KEY = ['user-preferences'] as const;
+const DASHBOARD_QUERY_KEY = ['user-preferences'] as const;
 
 interface DashboardPreferences {
   layout?: unknown;
