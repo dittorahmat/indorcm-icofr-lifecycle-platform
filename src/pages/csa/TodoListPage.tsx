@@ -1,27 +1,8 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { Calendar } from '@/components/ui/calendar';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
-import { CSASchedule, BPMProcess, ActionPlan, User } from '@shared/types';
-import { 
-  Plus, 
-  ChevronLeft, 
-  ChevronRight, 
-  Search, 
-  Printer, 
-  Share2, 
-  RefreshCcw,
-  Bell,
-  AlertCircle,
-  CheckCircle2,
-  Clock,
-  MoreHorizontal,
-  ChevronDown,
-  Trash2
-} from 'lucide-react';
+import { CSASchedule, BPMProcess, ActionPlan } from '@shared/types';
 import { 
   format, 
   addMonths, 
@@ -32,28 +13,16 @@ import {
   endOfWeek, 
   eachDayOfInterval, 
   isSameMonth, 
-  isSameDay, 
-  isToday,
-  isPast
+  isSameDay
 } from 'date-fns';
-import { id as idLocale, enUS } from 'date-fns/locale';
-import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 
-import { 
-  Dialog, DialogContent, DialogDescription, DialogHeader, 
-  DialogTitle, DialogFooter, DialogTrigger 
-} from '@/components/ui/dialog';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
+import { TodoScheduleDialog } from './components/TodoScheduleDialog';
+import { TodoRescheduleDialog } from './components/TodoRescheduleDialog';
+import { TodoTaskSidebar } from './components/TodoTaskSidebar';
 import { toast } from 'sonner';
 import { BPMModal } from '@/components/bpm/BPMModal';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
-import { UnsavedChangesDialog } from '@/components/ui/UnsavedChangesDialog';
 import { TodoListFilters } from '@/components/csa/TodoListFilters';
 import { TodoListGrid } from '@/components/csa/TodoListGrid';
 import { MobileTodoAgenda, AgendaEvent } from '@/components/csa/MobileTodoAgenda';
@@ -76,11 +45,18 @@ export function TodoListPage() {
   const [isHubOpen, setIsHubOpen] = useState(false);
   const [selectedHubProcess, setSelectedHubProcess] = useState<{ id: string, name: string, noGL: string, fsliName: string, scheduleId?: string } | null>(null);
 
+  const defaultPlannedDate = useMemo(() => {
+    if (workingYear && workingYear !== new Date().getFullYear().toString()) {
+      return `${workingYear}-01-15`;
+    }
+    return format(new Date(), 'yyyy-MM-dd');
+  }, [workingYear]);
+
   const [formData, setFormData] = useState({
     bpmProcessId: '',
     description: '',
     type: 'CSA',
-    plannedDate: format(new Date(), 'yyyy-MM-dd'),
+    plannedDate: defaultPlannedDate,
     reminderConfig: { value: 30, unit: 'minute' }
   });
 
@@ -95,13 +71,13 @@ export function TodoListPage() {
   useUnsavedChanges((isDirty && isDialogOpen) || (isRescheduleDirty && isRescheduleOpen));
 
   const { data: schedules } = useQuery({
-    queryKey: ['csa-schedules'],
-    queryFn: () => api<{ items: CSASchedule[] }>('/api/csa/schedules'),
+    queryKey: ['csa-schedules', workingYear],
+    queryFn: () => api<{ items: CSASchedule[] }>(`/api/csa/schedules?year=${workingYear}`),
   });
 
   const { data: remediations } = useQuery({
-    queryKey: ['action-plans-all'],
-    queryFn: () => api<{ items: ActionPlan[] }>('/api/actionplans'),
+    queryKey: ['action-plans-all', workingYear],
+    queryFn: () => api<{ items: ActionPlan[] }>(`/api/actionplans?year=${workingYear}`),
   });
 
   const { data: processes } = useQuery({
@@ -114,6 +90,10 @@ export function TodoListPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['csa-schedules'] });
       toast.success(t('common:notifications.success'));
+    },
+    onError: (err: unknown) => {
+      const message = err instanceof Error ? err.message : undefined;
+      toast.error(message || t('common:notifications.error'));
     }
   });
 
@@ -128,6 +108,10 @@ export function TodoListPage() {
       setIsDialogOpen(false);
       setIsEditMode(false);
       setIsDirty(false);
+    },
+    onError: (err: unknown) => {
+      const message = err instanceof Error ? err.message : undefined;
+      toast.error(message || t('common:notifications.error'));
     }
   });
 
@@ -157,6 +141,10 @@ export function TodoListPage() {
       toast.success(t('common:notifications.created'));
       setIsDialogOpen(false);
       setIsDirty(false);
+    },
+    onError: (err: unknown) => {
+      const message = err instanceof Error ? err.message : undefined;
+      toast.error(message || t('common:notifications.error'));
     }
   });
 
@@ -206,7 +194,7 @@ export function TodoListPage() {
       bpmProcessId: '',
       description: '',
       type: 'CSA',
-      plannedDate: format(new Date(), 'yyyy-MM-dd'),
+      plannedDate: defaultPlannedDate,
       reminderConfig: { value: 30, unit: 'minute' }
     });
     setIsDirty(false);
@@ -290,126 +278,16 @@ export function TodoListPage() {
         />
 
         <div className="flex flex-1 overflow-hidden">
-          {/* Calendar Sidebar (Desktop only) */}
-          <div className="hidden md:flex w-64 border-r bg-slate-50/30 flex-col overflow-hidden">
-            <div className="p-4 border-b">
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={setSelectedDate}
-                month={currentDate}
-                onMonthChange={setCurrentDate}
-                className="rounded-md border-none p-0 w-full"
-                classNames={{
-                   month_caption: "hidden",
-                   nav: "hidden",
-                   day: "h-8 w-8 p-0 font-normal aria-selected:opacity-100",
-                   today: "bg-indigo-100 text-indigo-900 font-bold",
-                   selected: "bg-indigo-600 text-white hover:bg-indigo-600 hover:text-white"
-                }}
-              />
-            </div>
-
-            <div className="flex-1 flex flex-col overflow-hidden">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 px-4 py-3 bg-white border-b">
-                {t('common:calendar.todoTitle')}
-              </h3>
-              <ScrollArea className="flex-1">
-                <div className="divide-y divide-slate-100">
-                  {monthlyTaskSummary.length === 0 ? (
-                    <div className="p-8 text-center text-slate-400 text-xs font-medium">
-                      {t('common:calendar.noTasks')}
-                    </div>
-                  ) : (
-                    monthlyTaskSummary.map(({ day, events }) => (
-                      <div key={day.toISOString()} className="p-3 bg-white border-b last:border-b-0">
-                        <p className="text-xs font-bold text-indigo-600 mb-2">{format(day, 'EEEE, d MMM')}</p>
-                        <div className="space-y-1.5">
-                          {events.map((e: any) => {
-                            const isOverdue = e.status !== 'Completed' && isPast(new Date(e.plannedDate || e.targetDate));
-                            const isCompleted = e.status === 'Completed';
-                            const process = processes?.items.find(p => p.id === e.bpmProcessId);
-
-                            return (
-                              <Popover key={e.id}>
-                                <PopoverTrigger asChild>
-                                  <div className="text-xs text-slate-600 truncate flex items-center justify-between gap-1.5 p-1.5 rounded-md hover:bg-slate-50 cursor-pointer transition-colors border border-transparent hover:border-slate-100 group/item flex-wrap">
-                                    <div className="flex items-center gap-2 overflow-hidden">
-                                      <div className={cn(
-                                        "w-2 h-2 rounded-full shrink-0",
-                                        e.eventType === 'REMEDIATION' ? "bg-amber-500" : "bg-indigo-500"
-                                      )} />
-                                      <span className="truncate font-medium">
-                                        {e.displayTitle || t('common:status.active')}
-                                      </span>
-                                    </div>
-                                    <ChevronRight className="h-3 w-3 text-slate-300 opacity-0 group-hover/item:opacity-100 transition-opacity" />
-                                  </div>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-64 max-w-[calc(100vw-2rem)] p-0" align="start" side="right" sideOffset={10} avoidCollisions={true}>
-                                  <div className="p-3 border-b bg-slate-50/50">
-                                    <div className="flex justify-between items-start mb-1 flex-wrap gap-2">
-                                      <Badge variant="outline" className="text-xs uppercase font-bold bg-white">{e.type || 'REMEDIATION'}</Badge>
-                                      <Badge className={cn(
-                                        "text-xs font-mono uppercase",
-                                        isCompleted ? "bg-emerald-600" : isOverdue ? "bg-red-600" : e.status === 'In Progress' ? "bg-amber-500" : "bg-indigo-600"
-                                      )}>
-                                        {e.status === 'Completed' ? t('csa_hub:status.completed') : 
-                                         e.status === 'In Progress' ? t('csa_hub:status.started') : 
-                                         isOverdue ? t('csa_hub:status.overdue') : t('csa_hub:status.pending')}
-                                      </Badge>
-                                    </div>
-                                    <h4 className="text-xs font-black text-slate-800 leading-snug">
-                                      {e.displayTitle || 'Activity Detail'}
-                                    </h4>
-                                    <p className="text-xs text-slate-500 font-medium mt-1 flex items-center gap-1">
-                                      <Clock className="h-3 w-3" /> {format(new Date(e.plannedDate || e.targetDate), 'EEEE, d MMMM yyyy', { locale: i18n.language === 'id' ? idLocale : enUS })}
-                                    </p>
-                                  </div>
-                                  <div className="p-2 grid grid-cols-1 gap-1">
-                                    {e.bpmProcessId && (
-                                      <Button 
-                                        variant="ghost" 
-                                        size="sm" 
-                                        className="justify-start gap-2 h-8 text-xs font-bold text-indigo-600 hover:bg-indigo-50"
-                                        onClick={() => handleOpenHub(e)}
-                                      >
-                                        <CheckCircle2 className="h-3.5 w-3.5" /> {t('csa_hub:actions.execute')}
-                                      </Button>
-                                    )}
-                                    {e.eventType === 'SCHEDULE' && (
-                                      <>
-                                        <Button 
-                                          variant="ghost" 
-                                          size="sm" 
-                                          className="justify-start gap-2 h-8 text-xs font-bold text-slate-600 hover:bg-slate-100"
-                                          onClick={() => handleEditClick(e)}
-                                        >
-                                          <Plus className="h-3.5 w-3.5" /> Edit Details
-                                        </Button>
-                                        <Button 
-                                          variant="ghost" 
-                                          size="sm" 
-                                          className="justify-start gap-2 h-8 text-xs font-bold text-rose-600 hover:bg-rose-50"
-                                          onClick={() => handleDeleteClick(e.id)}
-                                        >
-                                          <Trash2 className="h-3.5 w-3.5" /> Remove Schedule
-                                        </Button>
-                                      </>
-                                    )}
-                                  </div>
-                                </PopoverContent>
-                              </Popover>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </ScrollArea>
-            </div>
-          </div>
+          <TodoTaskSidebar
+            currentDate={currentDate}
+            selectedDate={selectedDate}
+            onSelectDate={setSelectedDate}
+            onMonthChange={setCurrentDate}
+            monthlyTaskSummary={monthlyTaskSummary}
+            onOpenHub={handleOpenHub}
+            onEditClick={handleEditClick}
+            onDeleteClick={handleDeleteClick}
+          />
 
           {/* Desktop Calendar Grid */}
           <div className="hidden md:flex flex-1 overflow-hidden">
@@ -441,134 +319,41 @@ export function TodoListPage() {
             fsliName={selectedHubProcess.fsliName}
             bpmProcessId={selectedHubProcess.id}
             subProcessName={selectedHubProcess.name}
-            year={format(new Date(), 'yyyy')}
+            year={workingYear ? String(workingYear) : format(new Date(), 'yyyy')}
             scheduleId={selectedHubProcess.scheduleId}
             initialTab="csa"
           />
         )}
         
-        <Dialog open={isDialogOpen} onOpenChange={async (open) => {
-          if (!open && isDirty) {
-            const ok = await confirm({
-              title: t('common:unsavedChanges.title'),
-              description: t('common:unsavedChanges.description'),
-              confirmText: t('common:unsavedChanges.discard'),
-              cancelText: t('common:unsavedChanges.stay'),
-              variant: 'destructive',
-            });
-            if (ok) {
-              setIsDialogOpen(false);
-              resetForm();
-            }
-          } else {
-            setIsDialogOpen(open);
-            if (!open) resetForm();
-          }
-        }}>
-          <DialogContent className="max-h-[90dvh] overflow-y-auto p-4 sm:p-6">
-            <DialogHeader>
-              <DialogTitle>{isEditMode ? t('csa_hub:actions.execute') : t('csa_hub:scheduling.newEvent')}</DialogTitle>
-              <DialogDescription>{t('csa_hub:scheduling.description')}</DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label>{t('csa_hub:scheduling.activityType')}</Label>
-                <Select value={formData.type} onValueChange={(v) => updateFormData({ type: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="CSA">{t('csa_hub:scheduling.types.csa')}</SelectItem>
-                    <SelectItem value="TOD">{t('csa_hub:scheduling.types.tod')}</SelectItem>
-                    <SelectItem value="TOE">{t('csa_hub:scheduling.types.toe')}</SelectItem>
-                    <SelectItem value="REMEDIATION">{t('csa_hub:scheduling.types.remediation')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid gap-2">
-                <Label>Detail Activity</Label>
-                <Input 
-                  placeholder="e.g. Weekly Review, Monthly Closing" 
-                  value={formData.description} 
-                  onChange={(e) => updateFormData({ description: e.target.value })} 
-                  className="text-base sm:text-sm"
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label>{t('csa_hub:scheduling.targetDate')}</Label>
-                <Input type="date" value={formData.plannedDate} onChange={(e) => updateFormData({ plannedDate: e.target.value })} className="text-base sm:text-sm" />
-              </div>
-            </div>
-            <DialogFooter className="flex-col-reverse sm:flex-row gap-2">
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)} className="w-full sm:w-auto h-11 sm:h-10 min-h-[44px] sm:min-h-0 justify-center">{t('common:actions.cancel')}</Button>
-              <Button onClick={handleCreate} className="w-full sm:w-auto h-11 sm:h-10 min-h-[44px] sm:min-h-0 justify-center">{t('csa_hub:scheduling.save')}</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <TodoScheduleDialog
+          isOpen={isDialogOpen}
+          isEditMode={isEditMode}
+          isDirty={isDirty}
+          formData={formData}
+          onOpenChange={setIsDialogOpen}
+          onUpdateFormData={updateFormData}
+          onSubmit={handleCreate}
+          onReset={resetForm}
+        />
 
-        {/* Reschedule Dialog */}
-        <Dialog open={isRescheduleOpen} onOpenChange={async (open) => {
-          if (!open && isRescheduleDirty) {
-            const ok = await confirm({
-              title: t('common:unsavedChanges.title'),
-              description: t('common:unsavedChanges.description'),
-              confirmText: t('common:unsavedChanges.discard'),
-              cancelText: t('common:unsavedChanges.stay'),
-              variant: 'destructive',
-            });
-            if (ok) {
-              setIsRescheduleOpen(false);
-              setIsRescheduleDirty(false);
-            }
-            return;
-          }
-          setIsRescheduleOpen(open);
-        }}>
-          <DialogContent className="sm:max-w-[425px] max-h-[90dvh] overflow-y-auto p-4 sm:p-6">
-            <DialogHeader>
-              <DialogTitle>{t('csa_hub:scheduling.reschedule.title')}</DialogTitle>
-              <DialogDescription>{t('csa_hub:scheduling.reschedule.description')}</DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label>{t('csa_hub:scheduling.reschedule.newDate')}</Label>
-                <Input
-                  type="date"
-                  value={rescheduleData.newDate}
-                  onChange={e => {
-                    setRescheduleData(prev => ({ ...prev, newDate: e.target.value }));
-                    setIsRescheduleDirty(true);
-                  }}
-                  className="text-base sm:text-sm"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>{t('csa_hub:scheduling.reschedule.justification')} <span className="text-red-500">*</span></Label>
-                <textarea
-                  className="w-full min-h-[100px] p-3 border rounded-md text-base sm:text-sm focus:ring-2 focus:ring-indigo-500"
-                  placeholder={t('csa_hub:scheduling.reschedule.placeholder')}
-                  value={rescheduleData.justification}
-                  onChange={e => {
-                    setRescheduleData(prev => ({ ...prev, justification: e.target.value }));
-                    setIsRescheduleDirty(true);
-                  }}
-                />
-              </div>
-            </div>
-            <DialogFooter className="flex-col-reverse sm:flex-row gap-2">
-              <Button variant="outline" onClick={() => setIsRescheduleOpen(false)} className="w-full sm:w-auto h-11 sm:h-10 min-h-[44px] sm:min-h-0 justify-center">{t('common:actions.cancel')}</Button>
-              <Button
-                disabled={!rescheduleData.justification.trim() || !rescheduleData.newDate}
-                className="w-full sm:w-auto h-11 sm:h-10 min-h-[44px] sm:min-h-0 justify-center"
-                onClick={() => {
-                  toast.success(t('rcm:matrix.save_success'));
-                  setIsRescheduleOpen(false);
-                  setIsRescheduleDirty(false);
-                }}
-              >
-                {t('csa_hub:scheduling.reschedule.save')}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <TodoRescheduleDialog
+          isOpen={isRescheduleOpen}
+          isRescheduleDirty={isRescheduleDirty}
+          rescheduleData={rescheduleData}
+          onOpenChange={(open) => {
+            setIsRescheduleOpen(open);
+            if (!open) setIsRescheduleDirty(false);
+          }}
+          onUpdateRescheduleData={(updates) => {
+            setRescheduleData(prev => ({ ...prev, ...updates }));
+            setIsRescheduleDirty(true);
+          }}
+          onSubmit={() => {
+            toast.success(t('rcm:matrix.save_success'));
+            setIsRescheduleOpen(false);
+            setIsRescheduleDirty(false);
+          }}
+        />
       </div>
     </AppLayout>
   );

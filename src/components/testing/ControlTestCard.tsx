@@ -24,6 +24,7 @@ import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { testSchema, TestFormValues } from './test-schema';
 import { evaluateTestSubmission, getRemediationReadiness } from './testing-compliance-engine';
 import { riskRatingTone, type RiskRatingTone } from '@/lib/badge-tone';
+import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 
 /** Solid rating treatment for the test card header (the only solid surface). */
 const RISK_RATING_SOLID_CLASS: Record<RiskRatingTone, string> = {
@@ -41,6 +42,7 @@ interface ControlTestCardProps {
 export function ControlTestCard({ control, openDeficiencyDate, history }: ControlTestCardProps) {
   const { t } = useTranslation('testing');
   const queryClient = useQueryClient();
+  const { workingYear } = useFiscalYearStore();
   const [isAuthenticating, setIsAuthenticating] = React.useState(false);
   
   const form = useForm<TestFormValues>({
@@ -126,7 +128,7 @@ export function ControlTestCard({ control, openDeficiencyDate, history }: Contro
     mutation.mutate({
       organizationId: control.organizationId,
       controlId: control.id,
-      period: new Date().getFullYear().toString(),
+      period: control.year ? String(control.year) : (workingYear ? String(workingYear) : new Date().getFullYear().toString()),
       ...values,
     } as any);
   };

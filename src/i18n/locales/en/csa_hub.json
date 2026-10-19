@@ -47,6 +47,10 @@
     "frequency": "Frequency",
     "setReminder": "Set Reminder",
     "beforeDeadline": "Before Deadline",
+    "detailActivity": "Activity Detail",
+    "detailPlaceholder": "e.g. Weekly Review, Monthly Closing",
+    "editDetails": "Edit Details",
+    "removeSchedule": "Remove Schedule",
     "save": "Save Schedule",
     "reschedule": {
       "title": "Reschedule Activity",

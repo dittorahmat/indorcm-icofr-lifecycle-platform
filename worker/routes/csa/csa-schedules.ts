@@ -12,8 +12,10 @@ export const csaSchedulesRoute = new Hono<HonoEnv>();
 csaSchedulesRoute.get('/csa/schedules', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
+  const yearParam = c.req.query('year');
+  const year = yearParam ? parseInt(yearParam, 10) : undefined;
   const service = new CsaDomainService(db);
-  const items = await service.getSchedules(orgId);
+  const items = await service.getSchedules(orgId, year);
   return ok(c, { items });
 });
 

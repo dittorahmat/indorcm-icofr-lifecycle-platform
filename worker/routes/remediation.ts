@@ -4,10 +4,10 @@ import { ok, notFound } from '../lib/utils';
 import { rbac } from '../lib/guard';
 import { getDb } from '../db';
 import { 
-  deficiencies, actionPlans, auditLogs, aggregateDeficiencies, 
-  organization, notifications, controls, rcms
+  deficiencies, actionPlans, aggregateDeficiencies, 
+  organization, controls, rcms
 } from '../db/schema';
-import { eq, and, SQL } from 'drizzle-orm';
+import { eq, and, SQL, sql, or } from 'drizzle-orm';
 import type { Deficiency, ActionPlan, AggregateDeficiency, WorkflowAction } from "@shared/types";
 import { AuditService } from "../services/audit-service";
 import { createNotificationAndSendEmail } from "../services/email";
@@ -19,8 +19,29 @@ const remediation = new Hono<HonoEnv>();
 
 remediation.get('/deficiencies', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
-  console.log('📡 [DEBUG] Querying deficiencies with control & risk metadata from:', c.env.DATABASE_URL?.substring(0, 50) + '...');
   const orgId = c.get('organizationId');
+  const yearParam = c.req.query('year');
+  const year = yearParam ? parseInt(yearParam, 10) : undefined;
+
+  let whereClause: SQL = eq(deficiencies.organizationId, orgId);
+  if (year && !isNaN(year)) {
+    whereClause = and(
+      whereClause,
+      or(
+        sql`${deficiencies.period} LIKE ${'%' + yearParam + '%'}`,
+        and(
+          or(sql`${deficiencies.period} IS NULL`, sql`${deficiencies.period} = ''`, sql`NOT (${deficiencies.period} ~ '[0-9]{4}')`),
+          eq(controls.year, year)
+        ),
+        and(
+          or(sql`${deficiencies.period} IS NULL`, sql`${deficiencies.period} = ''`, sql`NOT (${deficiencies.period} ~ '[0-9]{4}')`),
+          sql`${controls.year} IS NULL`,
+          sql`EXTRACT(YEAR FROM ${deficiencies.identifiedDate}) = ${year}`
+        )
+      )
+    ) as SQL;
+  }
+
   const rows = await db
     .select({
       deficiency: deficiencies,
@@ -32,7 +53,7 @@ remediation.get('/deficiencies', async (c) => {
     .from(deficiencies)
     .leftJoin(controls, eq(deficiencies.controlId, controls.id))
     .leftJoin(rcms, eq(controls.rcmId, rcms.id))
-    .where(eq(deficiencies.organizationId, orgId));
+    .where(whereClause);
 
   const items = rows.map(r => ({
     ...r.deficiency,
@@ -48,7 +69,32 @@ remediation.get('/deficiencies', async (c) => {
 remediation.get('/actionplans', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
-  const items = await db.select().from(actionPlans).where(eq(actionPlans.organizationId, orgId));
+  const yearParam = c.req.query('year');
+  const year = yearParam ? parseInt(yearParam, 10) : undefined;
+
+  let whereClause: SQL = eq(actionPlans.organizationId, orgId);
+  if (year && !isNaN(year)) {
+    whereClause = and(
+      whereClause,
+      or(
+        sql`EXTRACT(YEAR FROM ${actionPlans.targetDate}) = ${year}`,
+        sql`EXTRACT(YEAR FROM ${actionPlans.dueDate}) = ${year}`,
+        sql`EXISTS (
+          SELECT 1 FROM deficiencies
+          LEFT JOIN controls ON deficiencies.control_id = controls.id
+          WHERE deficiencies.id = ${actionPlans.deficiencyId}
+          AND deficiencies.organization_id = ${orgId}
+          AND (
+            deficiencies.period LIKE ${'%' + yearParam + '%'}
+            OR ((deficiencies.period IS NULL OR deficiencies.period = '' OR NOT (deficiencies.period ~ '[0-9]{4}')) AND controls.year = ${year})
+            OR ((deficiencies.period IS NULL OR deficiencies.period = '' OR NOT (deficiencies.period ~ '[0-9]{4}')) AND controls.year IS NULL AND EXTRACT(YEAR FROM deficiencies.identified_date) = ${year})
+          )
+        )`
+      )
+    ) as SQL;
+  }
+
+  const items = await db.select().from(actionPlans).where(whereClause);
   return ok(c, { items });
 });
 

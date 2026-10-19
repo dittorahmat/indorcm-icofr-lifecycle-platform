@@ -27,6 +27,7 @@ import { ControlTestCard } from '@/components/testing/ControlTestCard';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Input } from '@/components/ui/input';
+import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -52,24 +53,25 @@ const itemVariants: Variants = {
 
 export function TestWorkbench() {
   const { t } = useTranslation(['testing', 'reports']);
+  const { workingYear } = useFiscalYearStore();
   const [showOnlyValidated, setShowOnlyValidated] = React.useState(true);
   const [expandedId, setExpandedId] = React.useState<string | null>(null);
   const [searchTerm, setSearchTerm] = React.useState('');
   const { isExporting: isExportingExcel, exportNow } = useExcelExport<TestingResultRow>();
 
   const { data: controlsData, isLoading: controlsLoading } = useQuery({
-    queryKey: ['controls'],
-    queryFn: () => api<{ items: Control[] }>('/api/controls'),
+    queryKey: ['controls', workingYear],
+    queryFn: () => api<{ items: Control[] }>(`/api/controls?year=${workingYear}`),
   });
 
   const { data: deficienciesData, isLoading: deficienciesLoading } = useQuery({
-    queryKey: ['deficiencies'],
-    queryFn: () => api<{ items: Deficiency[] }>('/api/deficiencies'),
+    queryKey: ['deficiencies', workingYear],
+    queryFn: () => api<{ items: Deficiency[] }>(`/api/deficiencies?year=${workingYear}`),
   });
 
   const { data: testsData, isLoading: testsLoading } = useQuery({
-    queryKey: ['tests'],
-    queryFn: () => api<{ items: TestRecord[] }>('/api/tests'),
+    queryKey: ['tests', workingYear],
+    queryFn: () => api<{ items: TestRecord[] }>(`/api/tests?year=${workingYear}`),
   });
 
   const { data: userData } = useQuery({

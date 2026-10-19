@@ -184,7 +184,10 @@ export async function updateDiagram(ctx: DiagramContext, orgId: string, userId: 
   let currentGLCodes: string[] = [];
 
   if (bpmProcessId && body.noGLs !== undefined) {
-    await ctx.db.delete(bpmProcessGlCodes).where(eq(bpmProcessGlCodes.bpmProcessId, bpmProcessId));
+    await ctx.db.delete(bpmProcessGlCodes).where(and(
+      eq(bpmProcessGlCodes.bpmProcessId, bpmProcessId),
+      eq(bpmProcessGlCodes.organizationId, orgId)
+    ));
     if (Array.isArray(body.noGLs) && body.noGLs.length > 0) {
       for (const glCode of body.noGLs) {
         await ctx.db.insert(bpmProcessGlCodes).values({
@@ -195,13 +198,19 @@ export async function updateDiagram(ctx: DiagramContext, orgId: string, userId: 
         });
       }
       noGL = body.noGLs[0];
-      await ctx.db.update(bpmProcesses).set({ noGL }).where(eq(bpmProcesses.id, bpmProcessId));
+      await ctx.db.update(bpmProcesses).set({ noGL }).where(and(
+        eq(bpmProcesses.id, bpmProcessId),
+        eq(bpmProcesses.organizationId, orgId)
+      ));
       currentGLCodes = body.noGLs;
     }
   } else if (bpmProcessId) {
     const existingGLs = await ctx.db.select({ noGL: bpmProcessGlCodes.noGL })
       .from(bpmProcessGlCodes)
-      .where(eq(bpmProcessGlCodes.bpmProcessId, bpmProcessId));
+      .where(and(
+        eq(bpmProcessGlCodes.bpmProcessId, bpmProcessId),
+        eq(bpmProcessGlCodes.organizationId, orgId)
+      ));
     currentGLCodes = existingGLs.map(g => g.noGL);
     if (currentGLCodes.length === 0 && noGL) {
       currentGLCodes = [noGL];
@@ -211,7 +220,10 @@ export async function updateDiagram(ctx: DiagramContext, orgId: string, userId: 
   const glCodesToSync = currentGLCodes.length > 0 ? currentGLCodes : [""];
 
   // 3. Clear existing node-RCM mappings for this diagram
-  await ctx.db.delete(bpmNodeRcms).where(eq(bpmNodeRcms.diagramId, id));
+  await ctx.db.delete(bpmNodeRcms).where(and(
+    eq(bpmNodeRcms.diagramId, id),
+    eq(bpmNodeRcms.organizationId, orgId)
+  ));
 
   const nodes = body.nodes || [];
   const edges = body.edges || [];
@@ -224,7 +236,15 @@ export async function updateDiagram(ctx: DiagramContext, orgId: string, userId: 
   await ctx.sync.syncMappingsFromEdges(orgId, edges, nodes, activeRiskControlPairs, glCodesToSync);
 
   // 6, 7, 8. Cleanup stale data
-  await ctx.sync.cleanupStaleData(orgId, id, activeRiskIds, activeControlIds, activeRiskControlPairs);
+  await ctx.sync.cleanupStaleData(
+    orgId, 
+    id, 
+    activeRiskIds, 
+    activeControlIds, 
+    activeRiskControlPairs, 
+    bpmProcessId,
+    body.subProcess || oldDiagram.subProcess
+  );
 
   // 9. Update Summary Counts in BPM Processes
   await ctx.sync.updateProcessSummaryCounts(orgId, id);

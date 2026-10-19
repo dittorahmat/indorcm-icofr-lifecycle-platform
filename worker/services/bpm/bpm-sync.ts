@@ -261,8 +261,66 @@ export class BpmSyncManager {
     diagramId: string, 
     activeRiskIdsInDiagram: Set<string>, 
     activeControlIdsInDiagram: Set<string>, 
-    activeRiskControlPairs: Set<string>
+    activeRiskControlPairs: Set<string>,
+    bpmProcessId?: string | null,
+    subProcessName?: string | null
   ) {
+    // 1. Collect candidate control IDs associated with this diagram before modifying mappings
+    const candidateControlIds = new Set<string>(activeControlIdsInDiagram);
+
+    const risksOfThisDiagram = await this.db.select({ id: rcms.id })
+      .from(rcms)
+      .where(and(eq(rcms.diagramId, diagramId), eq(rcms.organizationId, orgId)));
+    const riskIdsOfThisDiagram = risksOfThisDiagram.map((r: { id: string }) => r.id);
+    const allDiagramRiskIds = Array.from(new Set([...Array.from(activeRiskIdsInDiagram), ...riskIdsOfThisDiagram]));
+
+    if (allDiagramRiskIds.length > 0) {
+      const mapped = await this.db.select({ controlId: rcmControls.controlId })
+        .from(rcmControls)
+        .where(and(
+          inArray(rcmControls.rcmId, allDiagramRiskIds),
+          eq(rcmControls.organizationId, orgId)
+        ));
+      for (const m of mapped) {
+        if (m.controlId) candidateControlIds.add(m.controlId);
+      }
+
+      const byRcm = await this.db.select({ id: controls.id })
+        .from(controls)
+        .where(and(
+          inArray(controls.rcmId, allDiagramRiskIds),
+          eq(controls.organizationId, orgId)
+        ));
+      for (const c of byRcm) {
+        if (c.id) candidateControlIds.add(c.id);
+      }
+    }
+
+    if (bpmProcessId) {
+      const byProcess = await this.db.select({ id: controls.id })
+        .from(controls)
+        .where(and(
+          eq(controls.bpmProcessId, bpmProcessId),
+          eq(controls.organizationId, orgId)
+        ));
+      for (const c of byProcess) {
+        if (c.id) candidateControlIds.add(c.id);
+      }
+    }
+
+    if (subProcessName) {
+      const bySubProc = await this.db.select({ id: controls.id })
+        .from(controls)
+        .where(and(
+          eq(controls.subProcess, subProcessName),
+          eq(controls.organizationId, orgId)
+        ));
+      for (const c of bySubProc) {
+        if (c.id) candidateControlIds.add(c.id);
+      }
+    }
+
+    // 2. Delete stale rcm_controls for active risks in this diagram
     if (activeRiskIdsInDiagram.size > 0) {
       for (const rcmId of activeRiskIdsInDiagram) {
         const activeCtrlsForThisRisk = Array.from(activeRiskControlPairs)
@@ -285,11 +343,27 @@ export class BpmSyncManager {
       }
     }
 
-    if (activeControlIdsInDiagram.size > 0) {
+    // 3. Remove inactive risks of this diagram and their mappings
+    for (const drId of riskIdsOfThisDiagram) {
+      if (!activeRiskIdsInDiagram.has(drId) && drId.startsWith('R-')) {
+        await this.db.delete(rcmControls).where(and(
+          eq(rcmControls.rcmId, drId),
+          eq(rcmControls.organizationId, orgId)
+        ));
+        await this.db.update(controls)
+          .set({ rcmId: null })
+          .where(and(eq(controls.rcmId, drId), eq(controls.organizationId, orgId)));
+        await this.db.delete(rcms).where(and(eq(rcms.id, drId), eq(rcms.organizationId, orgId)));
+      }
+    }
+
+    // 4. Find orphaned controls among candidate IDs and cascade delete
+    if (candidateControlIds.size > 0) {
+      const candidateList = Array.from(candidateControlIds).map(id => sql`${id}`);
       const orphanCheckResult = await this.db.execute(sql`
         SELECT id FROM controls 
         WHERE organization_id = ${orgId} 
-        AND id IN (${sql.join(Array.from(activeControlIdsInDiagram).map(id => sql`${id}`), sql`, `)})
+        AND id IN (${sql.join(candidateList, sql`, `)})
         AND NOT EXISTS (
           SELECT 1 FROM rcm_controls 
           WHERE rcm_controls.control_id = controls.id 
@@ -297,35 +371,32 @@ export class BpmSyncManager {
         )
       `);
 
-      const orphanIds = (orphanCheckResult.rows || orphanCheckResult).map((r: any) => r.id);
+      const orphanRows = (orphanCheckResult.rows || orphanCheckResult) as Array<{ id: string }>;
+      const orphanIds = orphanRows.map(r => r.id).filter((id): id is string => typeof id === 'string');
 
       if (orphanIds.length > 0) {
-        const ids = orphanIds.map((id: any) => sql`${id}`);
-        await this.db.execute(sql`DELETE FROM csa_samples WHERE csa_record_id IN (SELECT id FROM csa_records WHERE control_id IN (${sql.join(ids, sql`, `)}))`);
-        await this.db.execute(sql`DELETE FROM deficiencies WHERE control_id IN (${sql.join(ids, sql`, `)})`);
-        await this.db.execute(sql`DELETE FROM csa_records WHERE control_id IN (${sql.join(ids, sql`, `)})`);
-        await this.db.execute(sql`DELETE FROM test_records WHERE control_id IN (${sql.join(ids, sql`, `)})`);
-        await this.db.execute(sql`DELETE FROM controls WHERE id IN (${sql.join(ids, sql`, `)})`);
+        const ids = orphanIds.map(id => sql`${id}`);
+        const idList = sql.join(ids, sql`, `);
+        await this.db.execute(sql`DELETE FROM action_plans WHERE organization_id = ${orgId} AND deficiency_id IN (SELECT id FROM deficiencies WHERE organization_id = ${orgId} AND control_id IN (${idList}))`);
+        await this.db.execute(sql`DELETE FROM deficiencies WHERE organization_id = ${orgId} AND control_id IN (${idList})`);
+        await this.db.execute(sql`DELETE FROM tod_evaluations WHERE organization_id = ${orgId} AND control_id IN (${idList})`);
+        await this.db.execute(sql`DELETE FROM csa_samples WHERE organization_id = ${orgId} AND csa_record_id IN (SELECT id FROM csa_records WHERE organization_id = ${orgId} AND control_id IN (${idList}))`);
+        await this.db.execute(sql`DELETE FROM csa_records WHERE organization_id = ${orgId} AND control_id IN (${idList})`);
+        await this.db.execute(sql`DELETE FROM test_samples WHERE organization_id = ${orgId} AND test_record_id IN (SELECT id FROM test_records WHERE organization_id = ${orgId} AND control_id IN (${idList}))`);
+        await this.db.execute(sql`DELETE FROM test_records WHERE organization_id = ${orgId} AND control_id IN (${idList})`);
+        await this.db.execute(sql`DELETE FROM rcm_controls WHERE organization_id = ${orgId} AND control_id IN (${idList})`);
+        await this.db.execute(sql`DELETE FROM controls WHERE organization_id = ${orgId} AND id IN (${idList})`);
       }
-    }
-
-    const risksOfThisDiagram = await this.db.select({ id: rcms.id }).from(rcms).where(eq(rcms.diagramId, diagramId));
-    const riskIdsOfThisDiagram = risksOfThisDiagram.map((r: any) => r.id);
-    
-    for (const drId of riskIdsOfThisDiagram) {
-       if (!activeRiskIdsInDiagram.has(drId) && drId.startsWith('R-')) {
-          await this.db.update(controls)
-            .set({ rcmId: null })
-            .where(and(eq(controls.rcmId, drId), eq(controls.organizationId, orgId)));
-          await this.db.delete(rcms).where(and(eq(rcms.id, drId), eq(rcms.organizationId, orgId)));
-       }
     }
   }
 
   async updateProcessSummaryCounts(orgId: string, diagramId: string) {
     const linkedRisks = await this.db.select({ id: bpmNodeRcms.rcmId })
       .from(bpmNodeRcms)
-      .where(eq(bpmNodeRcms.diagramId, diagramId))
+      .where(and(
+        eq(bpmNodeRcms.diagramId, diagramId),
+        eq(bpmNodeRcms.organizationId, orgId)
+      ))
       .groupBy(bpmNodeRcms.rcmId);
     
     const uniqueBaseRiskIds = new Set(linkedRisks.map((r: any) => extractBaseId(r.id)));
@@ -345,7 +416,13 @@ export class BpmSyncManager {
       controlCount = uniqueBaseControlIds.size;
     }
 
-    const diagResult = await this.db.select().from(bpmDiagrams).where(eq(bpmDiagrams.id, diagramId)).limit(1);
+    const diagResult = await this.db.select()
+      .from(bpmDiagrams)
+      .where(and(
+        eq(bpmDiagrams.id, diagramId),
+        eq(bpmDiagrams.organizationId, orgId)
+      ))
+      .limit(1);
     if (diagResult.length > 0 && diagResult[0].subProcess) {
       await this.db.update(bpmProcesses)
         .set({ riskCount, controlCount })

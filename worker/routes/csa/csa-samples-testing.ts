@@ -3,7 +3,7 @@ import type { HonoEnv } from '../../app';
 import { ok, bad } from '../../lib/utils';
 import { getDb } from '../../db';
 import { csaSamples, todEvaluations, testRecords } from '../../db/schema';
-import { eq, and, desc, SQL } from 'drizzle-orm';
+import { eq, and, desc, SQL, sql, or } from 'drizzle-orm';
 import type { TestRecord } from "@shared/types";
 import type { TestingVerdict } from "@shared/testing-decision";
 import {
@@ -137,8 +137,29 @@ csaSamplesTestingRoute.post('/tod-evaluations', rbac(['Line 2', 'Admin']), async
 csaSamplesTestingRoute.get('/tests', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
+  const yearParam = c.req.query('year');
+  const year = yearParam ? parseInt(yearParam, 10) : undefined;
+
+  let whereClause: SQL = eq(testRecords.organizationId, orgId);
+  if (year && !isNaN(year)) {
+    whereClause = and(
+      whereClause,
+      or(
+        sql`${testRecords.period} LIKE ${'%' + yearParam + '%'}`,
+        and(
+          or(sql`${testRecords.period} IS NULL`, sql`${testRecords.period} = ''`, sql`NOT (${testRecords.period} ~ '[0-9]{4}')`),
+          sql`EXISTS (SELECT 1 FROM controls WHERE controls.id = ${testRecords.controlId} AND controls.organization_id = ${orgId} AND controls.year = ${year})`
+        ),
+        and(
+          or(sql`${testRecords.period} IS NULL`, sql`${testRecords.period} = ''`, sql`NOT (${testRecords.period} ~ '[0-9]{4}')`),
+          sql`EXTRACT(YEAR FROM ${testRecords.testDate}) = ${year}`
+        )
+      )
+    ) as SQL;
+  }
+
   const items = await db.query.testRecords.findMany({
-    where: eq(testRecords.organizationId, orgId),
+    where: whereClause,
     with: {
       samples: true
     },
