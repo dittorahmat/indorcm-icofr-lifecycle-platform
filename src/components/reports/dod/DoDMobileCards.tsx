@@ -26,7 +26,7 @@ export function DoDMobileCards({ rows, showFullTable, onToggle }: DoDMobileCards
             <div key={row.ref} className="rounded-lg border border-border bg-white p-4 space-y-2 shadow-sm">
               <div className="flex items-start justify-between gap-2 flex-wrap">
                 <span className="font-mono text-xs font-bold text-slate-900">{row.ref}</span>
-                <Badge className={sev.className}>{sev.label}</Badge>
+                <Badge className={sev.className}>{t(sev.labelKey)}</Badge>
               </div>
               <p className="text-xs font-medium text-slate-800 leading-snug line-clamp-2">{row.description}</p>
               <p className="text-xs font-mono font-bold text-primary">{formatIDR(row.exposureValue)}</p>

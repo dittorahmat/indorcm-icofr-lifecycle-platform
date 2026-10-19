@@ -64,6 +64,7 @@
     "statement3": "Sepanjang pengetahuan kami, laporan keuangan dan informasi keuangan lainnya yang termasuk dalam laporan keuangan, menyajikan secara wajar dalam semua hal yang material posisi keuangan dan hasil operasi untuk periode yang disajikan.",
     "statement4": "Kami telah menerapkan kontrol dan prosedur untuk penyusunan laporan keuangan yang dianggap perlu untuk menyusun dan menyajikan laporan keuangan (konsolidasian) secara tepat dan bebas dari salah saji material.",
     "deficiencyTitle": "Detail Defisiensi & Rencana Remediasi",
+    "severity": "Tingkat Defisiensi",
     "noDeficiencies": "Tidak ditemukan defisiensi signifikan atau kelemahan material.",
     "remediationPlan": "Rencana Remediasi",
     "monitorProgress": "Pantau progres melalui Papan Defisiensi",
@@ -187,6 +188,11 @@
       "remediated": "Telah Diremediasi",
       "notRemediated": "Belum Diremediasi",
       "searchPlaceholder": "Cari referensi, deskripsi, proses bisnis..."
+    },
+    "severityShort": {
+      "mw": "MW",
+      "sd": "SD",
+      "cd": "CD"
     },
     "summary": {
       "totalEvaluated": "Total Evaluasi DoD",

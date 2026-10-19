@@ -136,8 +136,10 @@ describe('DoDWorksheetDialog (Lampiran 10)', () => {
       />
     );
 
-    // Box 5 default answer is false (No)
-    const mwBadges = screen.getAllByText('Material Weakness');
+    // Box 5 default answer is false (No). Since #99 the severity headline is an
+    // i18n key from the `reports` namespace rather than the raw English string —
+    // this mock loads only `deficiency`, so the key comes back verbatim.
+    const mwBadges = screen.getAllByText('dodReport.summary.materialWeakness');
     expect(mwBadges.length).toBeGreaterThan(0);
   });
 

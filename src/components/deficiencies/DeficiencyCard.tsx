@@ -4,11 +4,12 @@ import { CSS } from '@dnd-kit/utilities';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { GripVertical, Users, History, Calendar, ShieldAlert, Target, Info, AlertTriangle, CheckCircle2, ClipboardCheck, Compass, FlaskConical, FileQuestion } from 'lucide-react';
+import { GripVertical, Users, History, Calendar, ShieldAlert, Target, AlertTriangle, CheckCircle2, ClipboardCheck, Compass, FlaskConical, FileQuestion } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { Deficiency, ActionPlan } from '@shared/types';
 import { cn } from '@/lib/utils';
 import { getDeficiencyDistribution } from '@/lib/compliance-utils';
+import { SEVERITY_SOLID_CLASS, severityLabelKey, severityTone } from '@/lib/badge-tone';
 import { useTranslation } from 'react-i18next';
 
 interface DeficiencyCardProps {
@@ -33,7 +34,7 @@ type SourceBadgeConfig = {
 };
 
 export function DeficiencyCard({ deficiency, actionPlan, draggable = true }: DeficiencyCardProps) {
-  const { t } = useTranslation('deficiency');
+  const { t } = useTranslation(['deficiency', 'reports']);
   const distribution = getDeficiencyDistribution(deficiency.severity);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: actionPlan?.id || deficiency.id,
@@ -57,13 +58,10 @@ export function DeficiencyCard({ deficiency, actionPlan, draggable = true }: Def
 
   const isOverdue = isValidDate && parsedDueDate < new Date() && actionPlan?.status !== 'Verified' && actionPlan?.workflowStatus !== 'Resolved';
 
-  const severityConfig = {
-    'Material Weakness': { color: 'bg-rose-500 text-white', icon: AlertTriangle, border: 'border-rose-100' },
-    'Significant Deficiency': { color: 'bg-amber-500 text-white', icon: ShieldAlert, border: 'border-amber-100' },
-    'Control Deficiency': { color: 'bg-blue-500 text-white', icon: Info, border: 'border-blue-100' },
-  } as const;
-
-  const config = severityConfig[deficiency.severity];
+  // Tone comes from `@/lib/badge-tone`: the old map here was a fourth copy of the
+  // severity vocabulary (keyed by the English string, with an `icon`/`border` no
+  // one read), and an unrecognised severity made `config.color` throw mid-render.
+  const severityClass = SEVERITY_SOLID_CLASS[severityTone(deficiency.severity)];
 
   const getSourceConfig = (source?: string): SourceBadgeConfig => {
     switch (source) {
@@ -130,8 +128,8 @@ export function DeficiencyCard({ deficiency, actionPlan, draggable = true }: Def
         >
           <div className="space-y-2 w-full pr-2">
              <div className="flex flex-wrap items-center gap-1.5">
-                <Badge className={cn("text-xs font-semibold uppercase tracking-wider px-2 py-0.5 border-none shadow-none rounded-md", config.color)}>
-                   {deficiency.severity}
+                <Badge className={cn("text-xs font-semibold uppercase tracking-wider px-2 py-0.5 border-none shadow-none rounded-md", severityClass)}>
+                   {t(severityLabelKey(deficiency.severity), { ns: 'reports' })}
                 </Badge>
                 <Badge variant="outline" className={cn(
                   "text-xs font-semibold uppercase tracking-wider px-2 py-0.5 border rounded-md shadow-none flex items-center gap-1",

@@ -235,7 +235,12 @@
       },
       "signOff": "Certified by Line 3 / Internal Audit Team",
       "saveButton": "Save & Certify DoD Worksheet",
-      "cancelButton": "Cancel"
+      "cancelButton": "Cancel",
+      "impact": {
+        "mw": "Direct impact on the audit opinion on the financial statements",
+        "sd": "Must be reported to the Audit Committee and the Board of Commissioners",
+        "cd": "Operational control deficiency; follow-up by the Process Owner"
+      }
     }
   },
   "toast": {

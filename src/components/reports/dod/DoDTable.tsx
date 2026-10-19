@@ -115,7 +115,7 @@ function DoDTableRow({ row, index }: { row: FormattedDoDRow; index: number }) {
         {formatIDR(row.exposureValue)}
       </TableCell>
       <TableCell className="text-center border-r border-border py-3">
-        <Badge className={sev.className}>{sev.label}</Badge>
+        <Badge className={sev.className}>{t(sev.labelKey)}</Badge>
       </TableCell>
 
       <TableCell className="text-xs text-foreground font-medium border-r border-border py-3">

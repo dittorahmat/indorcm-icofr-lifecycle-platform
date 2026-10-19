@@ -64,6 +64,7 @@
     "statement3": "To our knowledge, the financial statements and other financial information included in the financial statements, fairly present in all material respects the financial condition and results of operations for the period presented.",
     "statement4": "We have implemented controls and procedures for the preparation of financial statements deemed necessary to properly prepare and present the financial statements (consolidated) and free from material misstatement.",
     "deficiencyTitle": "Deficiency Details & Remediation Plan",
+    "severity": "Severity",
     "noDeficiencies": "No significant deficiencies or material weaknesses found.",
     "remediationPlan": "Remediation Plan",
     "monitorProgress": "Monitor progress via Deficiency Board",
@@ -187,6 +188,11 @@
       "remediated": "Remediated",
       "notRemediated": "Not Remediated",
       "searchPlaceholder": "Search reference, description, business process..."
+    },
+    "severityShort": {
+      "mw": "MW",
+      "sd": "SD",
+      "cd": "CD"
     },
     "summary": {
       "totalEvaluated": "Total DoD Evaluated",

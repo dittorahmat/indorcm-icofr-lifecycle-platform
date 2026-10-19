@@ -15,7 +15,7 @@
  * - `null` / `undefined` / non-finite (`NaN`, `±Infinity`) → `'-'`, never `Rp NaN`.
  * - Negatives keep the ICU shape: `-1234` → `-Rp 1.234`.
  */
-import { SEVERITY_TONE_CLASS, severityTone, type SeverityTone } from '@/lib/badge-tone';
+import { SEVERITY_TONE_CLASS, severityLabelKey, severityTone } from '@/lib/badge-tone';
 
 const IDR_CURRENCY_FORMAT = new Intl.NumberFormat('id-ID', {
   style: 'currency',
@@ -33,19 +33,15 @@ export function formatIDRPlain(value: number | null | undefined): string {
   return typeof value === 'number' && Number.isFinite(value) ? IDR_GROUPED_FORMAT.format(value) : '-';
 }
 
-const SEVERITY_LABEL: Record<SeverityTone, string> = {
-  mw: 'MW (Kelemahan Material)',
-  sd: 'SD (Defisiensi Signifikan)',
-  cd: 'CD (Defisiensi Kontrol)',
-};
-
 /**
- * Tone and badge class come from the single owner in `@/lib/badge-tone`; this
- * module contributes only the long-form Indonesian label the DoD report prints.
+ * Tone and badge class come from the single owner in `@/lib/badge-tone`, and the
+ * label travels as an i18n KEY — this module used to hold a hardcoded Indonesian
+ * label table (`'MW (Kelemahan Material)'`), which also disagreed with the
+ * order the DoD cards and filters print (`'Kelemahan Material (MW)'` from the
+ * bundle).
  */
-export function getSeverityMeta(sev: string): { label: string; className: string } {
-  const tone = severityTone(sev);
-  return { label: SEVERITY_LABEL[tone], className: SEVERITY_TONE_CLASS[tone] };
+export function getSeverityMeta(sev: string): { labelKey: string; className: string } {
+  return { labelKey: severityLabelKey(sev), className: SEVERITY_TONE_CLASS[severityTone(sev)] };
 }
 
 export function checkMark(v: boolean): string {
