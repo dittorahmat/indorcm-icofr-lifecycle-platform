@@ -3,6 +3,7 @@ import { drizzle } from 'drizzle-orm/neon-http';
 import * as schema from './schema';
 import { getAuth } from '../auth';
 import { MOCK_USERS, MOCK_DEPARTMENTS, MOCK_RCM, MOCK_CONTROLS } from '../../shared/mock-data';
+import { toMemberRole } from '@shared/member-role';
 import { eq, and, sql } from 'drizzle-orm';
 import crypto from 'node:crypto';
 
@@ -78,7 +79,7 @@ export const seedDatabase = async (databaseUrl: string, authSecret: string, skip
         // Org Membership
         await db.insert(schema.member).values({
             id: crypto.randomUUID(), organizationId: orgId, userId: userId,
-            role: u.role === 'Admin' ? 'admin' : 'member', createdAt: new Date()
+            role: toMemberRole(u.role), createdAt: new Date()
         }).onConflictDoNothing();
     }
 

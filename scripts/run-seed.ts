@@ -4,6 +4,7 @@ import { eq } from 'drizzle-orm';
 import { getDb } from '../worker/db';
 import * as schema from '../worker/db/schema';
 import { MOCK_USERS, MOCK_DEPARTMENTS, MOCK_RCM, MOCK_CONTROLS } from '../shared/mock-data';
+import { toMemberRole } from '@shared/member-role';
 
 const getFriendlyEmail = (u: any): string => {
   if (u.role === 'Line 2') return 'line2@bumn.go.id';
@@ -121,7 +122,7 @@ export const runSeed = async () => {
         id: crypto.randomUUID(),
         organizationId: orgId,
         userId: userId,
-        role: u.role === 'Admin' ? 'admin' : 'member',
+        role: toMemberRole(u.role),
         createdAt: new Date(),
       })
       .onConflictDoNothing();

@@ -22,8 +22,9 @@ import migration from './routes/migration';
 import { getAuth } from './auth';
 import { getDb, dbLocalStorage, createDbAndPool } from './db';
 import * as schema from './db/schema';
-import { eq, and } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import type { UserRole } from '@shared/types';
+import { resolveRequestRole } from './services/request-role';
 import { getMachineFingerprint, verifyLicense, checkLicenseStatus } from './lib/license';
 
 // --- LICENSE CACHE (In-Memory) ---
@@ -303,27 +304,17 @@ export const createApp = () => {
     c.set('userId', session.user.id);
     c.set('organizationId', activeOrgId || '');
 
-    // Fetch real member role for this organization from DB to prevent BFLA/BOLA
-    const globalRole: UserRole = (session.user as any).role || 'Line 1';
-    let realRole: UserRole = globalRole;
-    if (globalRole !== 'Admin' && activeOrgId) {
-      try {
-        const db = getDb(c.env.DATABASE_URL);
-        const mem = await db.select({ role: schema.member.role })
-          .from(schema.member)
-          .where(and(eq(schema.member.userId, session.user.id), eq(schema.member.organizationId, activeOrgId)))
-          .limit(1);
-        if (mem.length > 0 && mem[0].role) {
-          realRole = mem[0].role as UserRole;
-        }
-      } catch (e) {
-        // Fallback to session role
-      }
-    }
-
-    c.set('userRole', realRole);
-    c.set('userLevel', (session.user as any).level || 'Staff');
-    c.set('departmentId', (session.user as any).departmentId || '');
+    // BFLA/BOLA: the role this request runs as comes from the membership row when
+    // it already carries an ICOFR role, and from the session otherwise (#106;
+    // the rule and its tests live in `worker/services/request-role.ts`).
+    c.set('userRole', await resolveRequestRole(
+      getDb(c.env.DATABASE_URL),
+      session.user.id,
+      activeOrgId || '',
+      session.user.role,
+    ));
+    c.set('userLevel', session.user.level || 'Staff');
+    c.set('departmentId', session.user.departmentId || '');
 
     await next();
   });
