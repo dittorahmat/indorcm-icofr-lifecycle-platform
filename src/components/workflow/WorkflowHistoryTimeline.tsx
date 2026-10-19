@@ -3,7 +3,7 @@ import { WorkflowHistoryEntry, ApprovalHistoryEntry } from '@shared/types';
 import { format } from 'date-fns';
 import { 
   CheckCircle2, XCircle, Send, MessageSquare, 
-  User, Clock, History, AlertCircle, RotateCcw, Search, Eye
+  User, Clock, History, RotateCcw, Search, Trash2, Undo2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -36,6 +36,9 @@ export function WorkflowHistoryTimeline({ history }: WorkflowHistoryTimelineProp
       case 'Reject': return <XCircle className="h-3 w-3" />;
       case 'Rollback': return <RotateCcw className="h-3 w-3" />;
       case 'Update': return <History className="h-3 w-3" />;
+      case 'Request Deletion':
+      case 'Approve Deletion': return <Trash2 className="h-3 w-3" />;
+      case 'Reject Deletion': return <Undo2 className="h-3 w-3" />;
       default: return <MessageSquare className="h-3 w-3" />;
     }
   };
@@ -48,13 +51,16 @@ export function WorkflowHistoryTimeline({ history }: WorkflowHistoryTimelineProp
       case 'Reject': return 'bg-red-500';
       case 'Rollback': return 'bg-rose-500';
       case 'Update': return 'bg-amber-500';
+      case 'Request Deletion': return 'bg-amber-600';
+      case 'Approve Deletion': return 'bg-rose-600';
+      case 'Reject Deletion': return 'bg-slate-500';
       default: return 'bg-slate-500';
     }
   };
 
   return (
     <div className="space-y-6 relative before:absolute before:inset-0 before:ml-4 before:-translate-x-px before:h-full before:w-0.5 before:bg-slate-200 dark:before:bg-slate-800">
-      {sortedHistory.map((entry: any, index) => (
+      {sortedHistory.map((entry, index) => (
         <div key={entry.id || index} className="relative flex items-start gap-6 group">
           {/* Timeline Dot */}
           <div className={cn(
@@ -71,7 +77,7 @@ export function WorkflowHistoryTimeline({ history }: WorkflowHistoryTimelineProp
                 <Badge variant="outline" className="text-xs h-4 px-1.5 py-0 uppercase font-bold tracking-tight bg-slate-50">
                   {entry.role}
                 </Badge>
-                {entry.toStatus && (
+                {'toStatus' in entry && entry.toStatus && (
                    <Badge className="text-xs h-3.5 px-1 bg-slate-100 text-slate-600 border-none font-black uppercase">
                      → {entry.toStatus}
                    </Badge>

@@ -1,16 +1,17 @@
 import React from 'react';
-import { ApprovalHistoryEntry } from '@shared/types';
+import { ApprovalHistoryEntry, WorkflowHistoryEntry } from '@shared/types';
 import { format } from 'date-fns';
 import { 
   CheckCircle2, XCircle, Send, MessageSquare, 
-  User, Clock, History, AlertCircle 
+  User, Clock, History, Trash2, Undo2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { useTranslation } from 'react-i18next';
 
 interface ApprovalHistoryTimelineProps {
-  history: ApprovalHistoryEntry[];
+  /** Both scoping history columns: the approval log and the generic workflow log. */
+  history: (ApprovalHistoryEntry | WorkflowHistoryEntry)[];
 }
 
 export function ApprovalHistoryTimeline({ history }: ApprovalHistoryTimelineProps) {
@@ -33,6 +34,9 @@ export function ApprovalHistoryTimeline({ history }: ApprovalHistoryTimelineProp
       case 'Approve': return <CheckCircle2 className="h-3 w-3" />;
       case 'Reject': return <XCircle className="h-3 w-3" />;
       case 'Update': return <History className="h-3 w-3" />;
+      case 'Request Deletion':
+      case 'Approve Deletion': return <Trash2 className="h-3 w-3" />;
+      case 'Reject Deletion': return <Undo2 className="h-3 w-3" />;
       default: return <MessageSquare className="h-3 w-3" />;
     }
   };
@@ -43,13 +47,16 @@ export function ApprovalHistoryTimeline({ history }: ApprovalHistoryTimelineProp
       case 'Approve': return 'bg-green-500';
       case 'Reject': return 'bg-red-500';
       case 'Update': return 'bg-amber-500';
+      case 'Request Deletion': return 'bg-amber-600';
+      case 'Approve Deletion': return 'bg-rose-600';
+      case 'Reject Deletion': return 'bg-slate-500';
       default: return 'bg-slate-500';
     }
   };
 
   return (
     <div className="space-y-6 relative before:absolute before:inset-0 before:ml-4 before:-translate-x-px before:h-full before:w-0.5 before:bg-slate-200 dark:before:bg-slate-800">
-      {sortedHistory.map((entry, index) => (
+      {sortedHistory.map((entry) => (
         <div key={entry.id} className="relative flex items-start gap-6 group">
           {/* Timeline Dot */}
           <div className={cn(
@@ -82,7 +89,7 @@ export function ApprovalHistoryTimeline({ history }: ApprovalHistoryTimelineProp
                   <p className="text-xs text-slate-500 font-medium mb-1">{t('history.userId')} {entry.userId}</p>
                   <p className={cn(
                     "text-xs leading-relaxed",
-                    entry.action === 'Reject' ? "text-red-700 font-medium not-italic" : "text-slate-600"
+                    entry.action === 'Reject' || entry.action === 'Reject Deletion' ? "text-red-700 font-medium not-italic" : "text-slate-600"
                   )}>
                     {entry.note || t('history.noComments')}
                   </p>

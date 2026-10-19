@@ -5,14 +5,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
-  Trash2, Eye, LayoutGrid, Clock, ChevronRight, ChevronDown, ChevronUp, Loader2, MapPin
+  Trash2, LayoutGrid, Clock, ChevronRight, ChevronDown, ChevronUp, Loader2, MapPin
 } from 'lucide-react';
-import { MaterialitySimulation, SimulationStatus, GLSnapshot } from '@shared/types';
+import { MaterialitySimulation, SimulationStatus } from '@shared/types';
+import { resolveSimulationStatus } from '@shared/scoping-simulation-status';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { SignificantLocationModal } from './SignificantLocationModal';
-import { useQuery } from '@tanstack/react-query';
-import { api } from '@/lib/api-client';
 
 import { useSimulationSnapshot } from '@/hooks/use-bpm';
 import { MobileDesktopBanner } from '@/components/layout/MobileDesktopBanner';
@@ -56,21 +55,23 @@ export function SimulationListTable({ data, onSelect, onDelete, isLoading }: Sim
       case 'Pending CFO': return <Badge variant="secondary" className="bg-amber-100 text-amber-700 border-amber-200 font-bold px-3">Review CFO</Badge>;
       case 'Pending Komut': return <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-200 font-bold px-3">Review Komut</Badge>;
       case 'Pending Deletion Approval': return <Badge variant="destructive" className="bg-rose-100 text-rose-800 border-rose-200 font-bold px-3">Pending Deletion</Badge>;
-      case 'Pending Update Approval': return <Badge variant="secondary" className="bg-purple-100 text-purple-700 border-purple-200 font-bold px-3">Pending Update</Badge>;
       case 'Rejected': return <Badge variant="destructive" className="font-bold px-3">Rejected</Badge>;
       default: return <Badge variant="outline" className="font-bold px-3">{status}</Badge>;
     }
   };
 
+  // `status` is authoritative; `workflowStatus` is the legacy mirror.
+  const rows = data.map((sim) => ({ sim, status: resolveSimulationStatus(sim) }));
+
   return (
     <>
       <MobileDesktopBanner recordCount={data.length} />
       <div className="md:hidden space-y-3" data-testid="simulation-mobile-cards">
-        {data.map((sim) => (
+        {rows.map(({ sim, status }) => (
           <div key={sim.id} className="rounded-lg border border-slate-200 bg-white p-4 space-y-2 shadow-sm">
             <div className="flex items-start justify-between gap-2 flex-wrap">
               <p className="text-xs font-bold text-slate-900 leading-snug line-clamp-2 min-w-0 flex-1">{sim.name}</p>
-              {getStatusBadge((sim.workflowStatus || sim.status) as SimulationStatus)}
+              {getStatusBadge(status)}
             </div>
             <div className="flex items-center justify-between gap-2 flex-wrap">
               <span className="text-xs font-black uppercase tracking-wider text-slate-500">{sim.basis}</span>
@@ -84,8 +85,8 @@ export function SimulationListTable({ data, onSelect, onDelete, isLoading }: Sim
                 variant="ghost"
                 size="icon"
                 aria-label="Delete simulation"
-                disabled={sim.status === 'Pending Deletion Approval'}
-                title={sim.status === 'Approved' ? 'Request Deletion' : 'Delete'}
+                disabled={status === 'Pending Deletion Approval'}
+                title={status === 'Approved' ? 'Request Deletion' : 'Delete'}
                 className="min-h-[44px] min-w-[44px] text-slate-300 hover:text-red-600 disabled:opacity-30"
                 onClick={() => onDelete(sim.id)}
               >
@@ -119,13 +120,13 @@ export function SimulationListTable({ data, onSelect, onDelete, isLoading }: Sim
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.map((sim) => (
+          {rows.map(({ sim, status }) => (
             <TableRow key={sim.id} className="group hover:bg-blue-50/30 cursor-pointer transition-colors" onClick={() => onSelect(sim.id)}>
               <TableCell className="font-bold text-slate-900 px-6">
                 {sim.name}
               </TableCell>
               <TableCell>
-                {getStatusBadge((sim.workflowStatus || sim.status) as SimulationStatus)}
+                {getStatusBadge(status)}
               </TableCell>
               <TableCell>
                 <Badge variant="outline" className="text-xs font-black uppercase tracking-widest border-slate-300">
@@ -173,8 +174,8 @@ export function SimulationListTable({ data, onSelect, onDelete, isLoading }: Sim
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    disabled={sim.status === 'Pending Deletion Approval'}
-                    title={sim.status === 'Approved' ? 'Request Deletion' : 'Delete'}
+                    disabled={status === 'Pending Deletion Approval'}
+                    title={status === 'Approved' ? 'Request Deletion' : 'Delete'}
                     className="min-h-[44px] min-w-[44px] text-slate-300 hover:text-red-600 transition-colors disabled:opacity-30"
                     onClick={() => onDelete(sim.id)}
                   >

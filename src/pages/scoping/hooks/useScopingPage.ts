@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { useUnsavedChangesContext } from '@/context/UnsavedChangesContext';
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 import type { 
-  MaterialitySimulation, GLRow, GLSnapshot, QualitativeLevel, Department, Application, SignificantAccount 
+  MaterialitySimulation, GLRow, GLSnapshot, QualitativeLevel, Department, Application
 } from '@shared/types';
 import {
   apiErrorMessage,
@@ -21,10 +21,11 @@ import {
 } from './scoping-materiality-view';
 import { buildEntityHierarchy } from '../utils/hierarchy-utils';
 import { useMaterialityParams } from './use-materiality-params';
+import { resolveSimulationStatus } from '@shared/scoping-simulation-status';
 
 export function useScopingPage() {
   const { t } = useTranslation(['scoping', 'common']);
-  const { setDirty, resetDirty } = useUnsavedChangesContext();
+  const { resetDirty } = useUnsavedChangesContext();
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedSimId = searchParams.get('id');
@@ -168,9 +169,9 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
 
   const params = useMaterialityParams(initialSimulation, setSimState);
   const {
-    draftBasis, setDraftBasis,
-    draftOmPercentage, setDraftOmPercentage,
-    draftHaircutPercentage, setDraftHaircutPercentage,
+    draftBasis,
+    draftOmPercentage,
+    draftHaircutPercentage,
     activeBasis, activeOmPercentage, activeHaircutPercentage,
     syncTo, applyDraft,
   } = params;
@@ -203,7 +204,7 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
 
   // Dirty state tracking
   const isDirty = React.useMemo(() => {
-    if (isEditorLocked(simState.workflowStatus)) {
+    if (isEditorLocked(resolveSimulationStatus(simState))) {
       return false;
     }
     return isScopingDirty(
@@ -373,7 +374,7 @@ export function useScopingEditor(initialSimulation: MaterialitySimulation) {
     localAppMappings,
     localDeptMappings,
     isDirty,
-    isLocked: isEditorLocked(simState.workflowStatus),
+    isLocked: isEditorLocked(resolveSimulationStatus(simState)),
     draftBasis: params.draftBasis,
     setDraftBasis: params.setDraftBasis,
     draftOmPercentage: params.draftOmPercentage,

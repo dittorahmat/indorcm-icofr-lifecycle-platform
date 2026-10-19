@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { EntityTreeFilter } from './EntityTreeFilter';
 import type { EntityNode } from '../utils/hierarchy-utils';
 import type { GLRow, MaterialitySimulation, QualitativeLevel, Department, Application } from '@shared/types';
+import { simulationTimeline } from '@shared/scoping-simulation-status';
 
 interface ScopingEditorContentProps {
   simState: MaterialitySimulation;
@@ -55,6 +56,7 @@ export function ScopingEditorContent({
   isRecalculating = false
 }: ScopingEditorContentProps) {
   const { t } = useTranslation('scoping');
+  const timeline = simulationTimeline(simState);
 
   return (
     <div className="flex flex-col flex-1 min-h-0 min-w-0 space-y-4 relative">
@@ -73,9 +75,9 @@ export function ScopingEditorContent({
             <TabsTrigger value="worksheet" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest px-4 min-h-[44px] flex items-center justify-center flex-1 sm:flex-none whitespace-nowrap min-w-[140px] sm:min-w-0"> {t('approval.tabWorksheet')}</TabsTrigger>
             <TabsTrigger value="history" className="flex items-center justify-center gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest px-4 min-h-[44px] flex-1 sm:flex-none whitespace-nowrap min-w-[140px] sm:min-w-0">
               <History className="h-3 w-3 shrink-0" /> <span className="truncate">{t('approval.tabHistory')}</span>
-              {simState.history && simState.history.length > 0 && (
+              {timeline.length > 0 && (
                 <Badge variant="secondary" className="ml-1 h-4 px-1 text-xs font-black shrink-0">
-                  {simState.history.length}
+                  {timeline.length}
                 </Badge>
               )}
             </TabsTrigger>
@@ -121,7 +123,7 @@ export function ScopingEditorContent({
               <CardDescription>Track all actions and comments for this materiality baseline.</CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
-              <ApprovalHistoryTimeline history={simState.history} />
+              <ApprovalHistoryTimeline history={timeline} />
             </CardContent>
           </Card>
         </TabsContent>

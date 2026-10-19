@@ -32,8 +32,7 @@ export type SimulationStatus =
   | "Pending Komut" 
   | "Approved" 
   | "Rejected"
-  | "Pending Deletion Approval"
-  | "Pending Update Approval";
+  | "Pending Deletion Approval";
 
 export type ControlBPMStatus = 
   | "Draft"

@@ -13,12 +13,14 @@ import {
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { 
-  CheckCircle2, XCircle, Eye, Loader2, ShieldCheck, 
-  AlertCircle, History, MessageSquare, UserCheck
+  XCircle, Eye, Loader2, ShieldCheck, 
+  MessageSquare, UserCheck
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { MaterialitySimulation, GLSnapshot } from '@shared/types';
+import { MaterialitySimulation, GLSnapshot, SimulationStatus } from '@shared/types';
+import { allowedRolesAt } from '@shared/workflow-transitions';
+import { resolveSimulationStatus, simulationTimeline } from '@shared/scoping-simulation-status';
 import { GLDataGrid } from '@/components/scoping/GLDataGrid';
 import { formatIDR } from '@/components/reports/dod/dod-format';
 import { ApprovalHistoryTimeline } from '@/components/scoping/ApprovalHistoryTimeline';
@@ -75,13 +77,12 @@ export function ApprovalPage() {
     }
   });
 
-  // Filter logic based on role
+  // The stages that need a decision and the roles allowed at each of them both
+  // come from the canonical SCOPING table — no second role→status map here.
+  const APPROVAL_STAGES: SimulationStatus[] = ['Pending CFO', 'Pending Komut', 'Pending Deletion Approval'];
   const pendingSims = simulations?.items.filter(s => {
-    if (s.status === 'Pending Deletion Approval') return true;
-    if (userRole === 'CFO') return s.status === 'Pending CFO';
-    if (userRole === 'Commissioner') return s.status === 'Pending Komut';
-    if (userRole === 'Admin') return s.status === 'Pending CFO' || s.status === 'Pending Komut' || s.status === 'Pending Deletion Approval';
-    return false;
+    const status = resolveSimulationStatus(s);
+    return APPROVAL_STAGES.includes(status) && allowedRolesAt('SCOPING', status).includes(userRole);
   }) || [];
 
   const selectedSimId = selectedSim?.id;
@@ -244,7 +245,7 @@ export function ApprovalPage() {
                 </TabsContent>
 
                 <TabsContent value="history">
-                  <ApprovalHistoryTimeline history={selectedSim?.history || []} />
+                  <ApprovalHistoryTimeline history={simulationTimeline(selectedSim ?? {})} />
                 </TabsContent>
               </Tabs>
             </div>

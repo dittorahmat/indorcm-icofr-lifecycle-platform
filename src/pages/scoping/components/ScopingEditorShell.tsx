@@ -13,7 +13,8 @@ import { isJustificationComplete } from '../services/materiality-justification';
 import { ScopingEditorHeader } from './ScopingEditorHeader';
 import { ScopingEditorContent } from './ScopingEditorContent';
 import { MaterialityParamsCard } from './MaterialityParamsCard';
-import type { MaterialitySimulation, SimulationStatus } from '@shared/types';
+import type { MaterialitySimulation } from '@shared/types';
+import { isSimulationStatus, resolveSimulationStatus, simulationTimeline } from '@shared/scoping-simulation-status';
 
 interface ScopingEditorProps {
   simulation: MaterialitySimulation;
@@ -174,8 +175,8 @@ export function ScopingEditor({ simulation, onBack }: ScopingEditorProps) {
              <WorkflowPanel
                 entityType="SCOPING"
                 entityId={simulation.id}
-                currentStatus={simState.workflowStatus || 'Draft'}
-                history={simState.workflowHistory || []}
+                currentStatus={resolveSimulationStatus(simState)}
+                history={simulationTimeline(simState)}
                 className="w-full border-none shadow-2xl"
                 isDirty={isDirty}
                 beforeAction={async (actionId) => {
@@ -203,7 +204,9 @@ export function ScopingEditor({ simulation, onBack }: ScopingEditorProps) {
                 }}
                 onStatusChange={(newStatus) => {
                   queryClient.invalidateQueries({ queryKey: ['simulations'] });
-                  setSimState(prev => ({ ...prev, workflowStatus: newStatus as SimulationStatus }));
+                  if (isSimulationStatus(newStatus)) {
+                    setSimState(prev => ({ ...prev, status: newStatus, workflowStatus: newStatus }));
+                  }
                   setIsWorkflowOpen(false);
                 }}
               />

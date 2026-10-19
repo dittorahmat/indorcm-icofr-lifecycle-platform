@@ -8,7 +8,7 @@ import {
   type WorkflowEntityType,
 } from '@shared/workflow-transitions';
 import {
-  CheckCircle2, XCircle, Send, Search, RotateCcw,
+  CheckCircle2, XCircle, Send, Search, RotateCcw, Trash2, Undo2,
   LucideIcon
 } from 'lucide-react';
 
@@ -59,6 +59,8 @@ const UI_HINTS: Record<WorkflowEntityType, Partial<Record<WorkflowAction, UiHint
     Review: { labelKey: 'workflow:passReview', icon: Search, variant: 'indigo', needsAssignee: true },
     Approve: { labelKey: 'workflow:finalApprove', icon: CheckCircle2, variant: 'emerald' },
     Rollback: { labelKey: 'workflow:rollback', icon: RotateCcw, variant: 'outline' },
+    'Request Deletion': { labelKey: 'workflow:requestDeletion', icon: Trash2, variant: 'outline' },
+    'Reject Deletion': { labelKey: 'workflow:rejectDeletion', icon: Undo2, variant: 'outline' },
   },
   RCM_CHANGE: {
     Submit: { labelKey: 'workflow:submitForReview', icon: Send, needsAssignee: true },

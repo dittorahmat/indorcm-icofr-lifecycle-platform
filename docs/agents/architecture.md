@@ -236,6 +236,60 @@ Deliberately not changed (disclosed):
 - **`useDoDReport`'s matcher stays** its own tolerant predicate (it also accepts
   Indonesian aliases); it is a decoder, not a label declaration.
 
+## Round 12 follow-ups
+
+**#104 — the SCOPING lifecycle lives in the canonical table.** Round 8 had to
+converge only the Approved edge, because production and
+`WORKFLOW_TRANSITION_RULES.SCOPING` described different flows: the table rejected
+at `Pending CFO`/`Pending Komut` to `Draft` under `Line 2`/`Admin`, while the
+routes had CFO acting at `Pending CFO`, the Commissioner at `Pending Komut`,
+rejections landing on `Rejected` (a status the table did not know), and a
+`Pending Deletion Approval` status no row described. The client panel was worse
+off: `/workflow` admitted only `Line 1`/`Line 2`/`Admin`, so the roles the flow is
+built around could never drive it, and the table offered an `Approved → Rollback`
+edge production has no endpoint for.
+
+Owner decision (recorded): extend the table to the production lifecycle, not the
+other way round. The SCOPING rows now carry `Rejected` (resubmittable, so the lock
+derives correctly), `Approved → Request Deletion`, `Pending Deletion Approval →
+Reject Deletion`, the CFO/Commissioner authority per stage, and the
+`Approve Deletion` roles even though that action has no `nextStatus` (it removes
+the row). `allowedRolesFor`/`allowedRolesAt` read that authority, so
+`decideSimulationTransition` no longer keeps its own `SIMULATION_STAGES` role
+arrays, `/request-deletion` validates through `decideTransition`, and
+`ApprovalPage` filters its queue from the table instead of a second role→status
+map. `isEditorLocked` is now literally "the table allows no Submit here".
+
+Two status columns (`simulations.status` and the legacy `workflowStatus`) were
+written by different paths — `/submit` and the approve/reject/deletion routes
+touched only `status`, `/workflow` touched both, and the UI read
+`workflowStatus || status` with the editor locked from `workflowStatus` alone.
+Every SCOPING write now sets both, the workflow adapter loads through
+`resolveSimulationStatus` (authoritative `status` first, mirror as fallback), and
+the screens read the same resolver. The panel also receives
+`simulationTimeline(simState)` — the approval log and the generic workflow log
+merged and deduped — so a CFO decision taken in the panel is visible where the
+approval decision is.
+
+Tests lock the new matrix end to end: the decision contract (`kind:
+'transition' | 'delete'`), the table literals the routes read through,
+`allowedRolesAt` including the non-transition deletion authority, the status set
+and resolver, the timeline merge, and the blueprint labels for the two deletion
+steps.
+
+Deliberately not changed (disclosed):
+
+- **`/simulations/:id/submit` keeps its narrower `rbac(['Line 2','Admin'])`**
+  while the table still admits `Line 1` (the panel's submit path allowed it).
+  Submission policy was not the issue; the route now at least rejects any status
+  outside `Draft`/`Rejected` through the table.
+- **`DELETE /simulations/:id` still hard-deletes a non-Approved row** (the UI's
+  trash button routes an Approved row to `/request-deletion`). That is a data
+  purge, not a workflow transition, and it keeps its own audit.
+- **`/simulations/:id/workflow` and `/approve|/reject` remain two entry points**
+  for the same transitions; both now read the same table and write the same
+  columns. Collapsing them is a route-surface change, not an architecture one.
+
 ## Round 11 follow-ups
 
 Landed in a follow-up pass on the same branch:

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   decideTransition,
   allowedActionsFor,
+  allowedRolesAt,
   csaSnapshotStatus,
   forEntity,
   isWorkflowLockedFor,
@@ -34,10 +35,50 @@ describe('workflow-transitions single source (T2 RED)', () => {
   it('routes SCOPING through CFO → Komut → Approved', () => {
     expect(decideTransition({ entityType: 'SCOPING', currentStatus: 'Draft', action: 'Submit', role: line1 }))
       .toEqual({ ok: true, nextStatus: 'Pending CFO' });
-    expect(decideTransition({ entityType: 'SCOPING', currentStatus: 'Pending CFO', action: 'Review', role: line2 }))
+    expect(decideTransition({ entityType: 'SCOPING', currentStatus: 'Pending CFO', action: 'Review', role: 'CFO' }))
       .toEqual({ ok: true, nextStatus: 'Pending Komut' });
-    expect(decideTransition({ entityType: 'SCOPING', currentStatus: 'Pending Komut', action: 'Approve', role: line2 }))
+    expect(decideTransition({ entityType: 'SCOPING', currentStatus: 'Pending Komut', action: 'Approve', role: 'Commissioner' }))
       .toEqual({ ok: true, nextStatus: 'Approved' });
+  });
+
+  it('routes SCOPING rejection, resubmission and deletion review through the table', () => {
+    expect(decideTransition({
+      entityType: 'SCOPING', currentStatus: 'Pending CFO', action: 'Reject', role: 'CFO', note: 'benchmark too low',
+    })).toEqual({ ok: true, nextStatus: 'Rejected' });
+
+    expect(decideTransition({ entityType: 'SCOPING', currentStatus: 'Rejected', action: 'Submit', role: line1 }))
+      .toEqual({ ok: true, nextStatus: 'Pending CFO' });
+
+    expect(decideTransition({ entityType: 'SCOPING', currentStatus: 'Approved', action: 'Request Deletion', role: line2 }))
+      .toEqual({ ok: true, nextStatus: 'Pending Deletion Approval' });
+
+    expect(decideTransition({
+      entityType: 'SCOPING', currentStatus: 'Pending Deletion Approval', action: 'Reject Deletion',
+      role: 'Commissioner', note: 'baseline still needed',
+    })).toEqual({ ok: true, nextStatus: 'Approved' });
+  });
+
+  it('keeps the SCOPING authority in the table, not in the role names of the route', () => {
+    const wrongStage = decideTransition({
+      entityType: 'SCOPING', currentStatus: 'Pending CFO', action: 'Approve', role: 'Commissioner',
+    });
+    expect(wrongStage.ok).toBe(false);
+    if (!wrongStage.ok) expect(wrongStage.code).toBe('INVALID_ACTION');
+
+    const wrongRole = decideTransition({
+      entityType: 'SCOPING', currentStatus: 'Pending Komut', action: 'Approve', role: 'CFO',
+    });
+    expect(wrongRole.ok).toBe(false);
+    if (!wrongRole.ok) {
+      expect(wrongRole.code).toBe('FORBIDDEN_TRANSITION');
+      expect(wrongRole.status).toBe(403);
+    }
+
+    const line1Deletion = decideTransition({
+      entityType: 'SCOPING', currentStatus: 'Approved', action: 'Request Deletion', role: line1,
+    });
+    expect(line1Deletion.ok).toBe(false);
+    if (!line1Deletion.ok) expect(line1Deletion.code).toBe('FORBIDDEN_TRANSITION');
   });
 
   it('routes RCM_CHANGE Draft → Submit → In Review → Approve → Approved', () => {
@@ -88,6 +129,19 @@ describe('workflow-transitions single source (T2 RED)', () => {
     expect(allowedActionsFor('CSA', 'In Review')).toEqual(['Reject', 'Approve']);
     expect(allowedActionsFor('CSA', 'Validated')).toEqual(['Rollback']);
     expect(allowedActionsFor('CSA', 'Nope')).toEqual([]);
+    expect(allowedActionsFor('SCOPING', 'Approved')).toEqual(['Request Deletion']);
+    expect(allowedActionsFor('SCOPING', 'Pending Deletion Approval')).toEqual(['Reject Deletion']);
+  });
+
+  it('exposes the authority of a step, including actions with no transition', () => {
+    expect(allowedRolesAt('SCOPING', 'Draft')).toEqual(['Line 1', 'Line 2', 'Admin']);
+    expect(allowedRolesAt('SCOPING', 'Pending CFO')).toEqual(['CFO', 'Admin']);
+    expect(allowedRolesAt('SCOPING', 'Pending Komut')).toEqual(['Commissioner', 'Admin']);
+    expect(allowedRolesAt('SCOPING', 'Approved')).toEqual(['Line 2', 'Admin']);
+    // 'Approve Deletion' has no nextStatus, but its authority is still declared.
+    expect(allowedRolesAt('SCOPING', 'Pending Deletion Approval').sort())
+      .toEqual(['Admin', 'CFO', 'Commissioner']);
+    expect(allowedRolesAt('SCOPING', 'Nope')).toEqual([]);
   });
 
   it('builds byte-identical workflow endpoints per entity', () => {
@@ -110,6 +164,9 @@ describe('workflow-transitions single source (T2 RED)', () => {
     expect(isWorkflowLockedFor('BPM', 'Rejected')).toBe(false);
     expect(isWorkflowLockedFor('ACTION_PLAN', 'Ineffective')).toBe(false);
     expect(isWorkflowLockedFor('BPM', 'In Review')).toBe(true);
+    expect(isWorkflowLockedFor('SCOPING', 'Rejected')).toBe(false);
+    expect(isWorkflowLockedFor('SCOPING', 'Approved')).toBe(true);
+    expect(isWorkflowLockedFor('SCOPING', 'Pending Deletion Approval')).toBe(true);
     expect(isWorkflowLockedFor('CSA', 'Nope')).toBe(true);
   });
 
@@ -121,6 +178,7 @@ describe('workflow-transitions single source (T2 RED)', () => {
     expect(statusBadgeTone('Resolved')).toBe('success');
     expect(statusBadgeTone('Approved')).toBe('success');
     expect(statusBadgeTone('Validated')).toBe('success');
+    expect(statusBadgeTone('Pending Deletion Approval')).toBe('danger');
     expect(statusBadgeTone('Nope')).toBe('neutral');
   });
 

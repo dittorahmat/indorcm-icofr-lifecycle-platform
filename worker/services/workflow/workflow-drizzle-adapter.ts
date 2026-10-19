@@ -5,6 +5,7 @@ import {
 } from '../../db/schema';
 import type { WorkflowEntityType } from '@shared/workflow-transitions';
 import { csaSnapshotStatus } from '@shared/workflow-transitions';
+import { resolveSimulationStatus } from '@shared/scoping-simulation-status';
 import { AuditService } from '../audit-service';
 import { DeficiencyService } from '../deficiency-service';
 import { collectFailedControlIds } from '../deficiency-trigger';
@@ -95,7 +96,7 @@ class DrizzleWorkflowStore implements WorkflowTransitionStore {
       if (rows.length === 0) return null;
       const row = rows[0];
       return {
-        status: row.workflowStatus ?? 'Draft',
+        status: resolveSimulationStatus(row),
         history: historyOf(row),
         controlId: null, bpmProcessId: null, period: null, result: null, deficiencyId: null, ownerId: null,
         createdBy: textOf(row.createdBy), name: row.name, planStatus: null, failedControlIds: null,

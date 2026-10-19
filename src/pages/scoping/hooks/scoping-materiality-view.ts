@@ -5,6 +5,7 @@ import {
   identifySignificantAccounts,
 } from '../services/materiality-calc';
 import type { GLRow, MaterialitySimulation } from '@shared/types';
+import { isWorkflowLockedFor } from '@shared/workflow-transitions';
 
 export function apiErrorMessage(err: unknown, fallback: string): string {
   if (err instanceof Error && err.message) return err.message;
@@ -135,5 +136,7 @@ export function isScopingDirty(draft: ReturnType<typeof draftFingerprint>, origi
 }
 
 export function isEditorLocked(workflowStatus: MaterialitySimulation['workflowStatus']): boolean {
-  return workflowStatus !== 'Draft' && workflowStatus !== 'Rejected';
+  // The lock is not a scoping opinion: it is exactly where the canonical table
+  // still allows a Submit.
+  return isWorkflowLockedFor('SCOPING', workflowStatus);
 }

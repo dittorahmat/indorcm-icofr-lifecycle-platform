@@ -24,6 +24,8 @@
   "rollbackIneffective": "Rollback ke Ineffective",
   "validateAndSignOff": "Validasi & Sign Off",
   "rollbackValidation": "Rollback Validasi",
+  "requestDeletion": "Ajukan Penghapusan",
+  "rejectDeletion": "Tolak Penghapusan",
   "quickNotes": {
     "title": "Preset Catatan Cepat",
     "approvedAsPerAttachment": "Disetujui sesuai lampiran",

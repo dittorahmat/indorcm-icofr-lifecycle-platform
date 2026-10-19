@@ -24,6 +24,8 @@
   "rollbackIneffective": "Rollback to Ineffective",
   "validateAndSignOff": "Validate & Sign Off",
   "rollbackValidation": "Rollback Validation",
+  "requestDeletion": "Request Deletion",
+  "rejectDeletion": "Reject Deletion",
   "quickNotes": {
     "title": "Quick Preset Notes",
     "approvedAsPerAttachment": "Approved as per attachment",
