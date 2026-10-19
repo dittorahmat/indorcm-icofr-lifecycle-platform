@@ -7,6 +7,7 @@
     "node": ">=22.0.0"
   },
   "scripts": {
+    "prepare": "node scripts/install-hooks.mjs",
     "dev": "vite --host 0.0.0.0 --port 3000",
     "clean-dev": "rimraf node_modules/.vite .eslintcache tsconfig.tsbuildinfo && npm run dev -- --force",
     "type-check": "npm run type-check:app && npm run type-check:worker",

@@ -48,10 +48,12 @@ jobs:
         run: npm test
 
       - name: Repo gates (delta + API contract)
-        # any-delta / i18n compare the PR diff against its base; the API
-        # contract is whole-tree and runs on every event. check:loc stays
-        # local-only: grandfathered >400 LOC bug-fixes need human judgement,
-        # which CI cannot supply (see docs/agents/guardrails.md).
+        # Delta gates (loc / any-delta / i18n / worker-strings) compare the PR
+        # diff against its base; the API contract is whole-tree and runs on
+        # every event. check:loc runs here too: with `--base` the grandfather
+        # rule is mechanical (a >400 LOC file passes only if it strictly shrank
+        # against the branch point), so CI needs no human judgement to enforce
+        # it - see docs/agents/guardrails.md.
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             BASE="origin/${{ github.base_ref }}"
@@ -60,6 +62,7 @@ jobs:
           fi
           FILES=$(git diff --name-only "$BASE"...HEAD -- src shared worker scripts 2>/dev/null | tr '\n' ' ' || true)
           if [ -n "$FILES" ]; then
+            node scripts/check-loc.mjs --base "$BASE" $FILES
             node scripts/check-any-delta.mjs --base "$BASE" $FILES
             node scripts/check-i18n.mjs --base "$BASE" $FILES
             node scripts/check-worker-strings.mjs --base "$BASE" $FILES

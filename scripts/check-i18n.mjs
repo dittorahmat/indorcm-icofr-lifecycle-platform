@@ -2,8 +2,10 @@
 // Usage:
 //   node scripts/check-i18n.mjs [--base <ref>] <touched-files...>
 // Gate 1 (legacy): fails when a touched file contains MORE hardcoded first-arg
-//   toast literals than its <base> version (default HEAD). New files compare
-//   against zero. Test files excluded.
+//   toast literals than its <base> version. <base> defaults to the branch point
+//   (merge-base with origin/main) so the verdict does not change when you commit
+//   — see scripts/lib/delta-base.mjs. New files compare against zero. Test files
+//   excluded.
 // Gate 2 (missing t keys): fails when a touched src file introduces a NEW
 //   t('ns:key' | 'path') key that does not exist in the en locale bundle
 //   (fallbackLng=en, so a key missing in en renders as a raw key like the
@@ -11,10 +13,17 @@
 //   Dynamic keys (template interpolation, concatenation, whitespace) are
 //   skipped by design. Missing-in-id-but-present-in-en is allowed (English
 //   fallback renders, not a raw key).
+// Scope note: this gate covers toast literals and unresolved keys only.
+// Hardcoded user-visible copy elsewhere (JSX text, header:/placeholder/title
+// literals) is deliberately NOT gated: a detector over it fires ~800 times
+// across ~140 existing files, most of them legitimate (enum values, dates), so
+// it would fail the next honest change. That half of the mandate is a reviewer
+// rule — see CODING_STANDARDS.md.
 import { readFileSync, readdirSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { resolveBase } from './lib/delta-base.mjs';
 
 const TOAST_LITERAL_PATTERN = /toast\.(?:loading|success|error|warning|info)\(\s*["`]/g;
 const STATIC_KEY_PATTERN = /^[A-Za-z0-9_:.~-]+$/;
@@ -166,13 +175,13 @@ function missingKeysIn(text) {
   return [...missing];
 }
 
-let base = 'HEAD';
+let explicitBase = null;
 const files = [];
 {
   const args = process.argv.slice(2);
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--base' && args[i + 1]) {
-      base = args[++i];
+      explicitBase = args[++i];
     } else if (!args[i].startsWith('--')) {
       files.push(args[i]);
     }
@@ -182,6 +191,7 @@ if (files.length === 0) {
   console.log('check-i18n: no files given. Usage: node scripts/check-i18n.mjs [--base <ref>] <files...>');
   process.exit(1);
 }
+const { ref: base, label: baseLabel } = resolveBase(explicitBase);
 
 let errors = 0;
 for (const f of files) {
@@ -226,5 +236,5 @@ for (const f of files) {
   }
 }
 
-console.log('\ncheck-i18n: ' + errors + ' error(s) across ' + files.length + ' file(s).');
+console.log('\ncheck-i18n: ' + errors + ' error(s) across ' + files.length + ' file(s) [base: ' + baseLabel + '].');
 process.exit(errors > 0 ? 1 : 0);
