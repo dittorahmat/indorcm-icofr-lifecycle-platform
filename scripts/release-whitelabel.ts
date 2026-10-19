@@ -30,8 +30,13 @@ function copyRecursive(src: string, dest: string, excludeDirs: string[] = []) {
     fs.readdirSync(src).forEach((child) => {
       copyRecursive(path.join(src, child), path.join(dest, child), excludeDirs);
     });
-  } else {
+  } else if (exists) {
     fs.copyFileSync(src, dest);
+  } else {
+    // `.claude/skills/*` are symlinks into the skill marketplace, which is not
+    // part of the repository: CI checks out a dangling link, `existsSync` is
+    // false and `copyFileSync` would throw ENOENT and fail the whole release.
+    console.warn(`⏩ Skipping absent source: ${path.relative(ROOT_DIR, src)} (dangling symlink)`);
   }
 }
 
