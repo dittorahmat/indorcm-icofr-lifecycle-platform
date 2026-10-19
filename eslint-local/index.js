@@ -36,6 +36,15 @@ const MUTATING_VERBS = new Set(['post', 'put', 'patch', 'delete']);
 const GUARD_CALLEES = new Set(['rbac', 'assertDevAllowed']);
 
 /**
+ * A route may state that no role applies to it, but only with a reason:
+ * `// rbac-exempt: self-scoped — writes the caller's own row`. Requiring the
+ * reason is the point. The alternative the repo rejected was a role list on a
+ * session-scoped write, which expresses the wrong thing (it would deny a role
+ * its own settings) and goes stale the day a role is added.
+ */
+const EXEMPTION = /rbac-exempt:[ \t]*(\S[^\n]*)?/;
+
+/**
  * A route registration has a path literal first — a string starting with '/' —
  * AND at least one more argument (its handler). Both conditions matter: the path
  * keeps `map.get(key)` and `db.delete(row)` out, and the second argument keeps
@@ -136,6 +145,10 @@ const routesRequireRbac = {
     messages: {
       missingGuard:
         'This route mutates without a guard. Add rbac([...]) (or assertDevAllowed for /dev tooling) as middleware — AGENTS.md requires rbac on write routes.',
+      exemptionWithoutReason:
+        '`rbac-exempt:` needs a reason on the same line (`// rbac-exempt: <why no role applies>`). Without one the route still counts as unguarded.',
+      staleExemption:
+        'This route carries a guard, so the rbac-exempt directive above it is dead. Remove the directive instead of leaving a reason that no longer describes the code.',
     },
     schema: [],
   },
@@ -146,7 +159,21 @@ const routesRequireRbac = {
         if (!MUTATING_VERBS.has(method)) return;
         if (!isRouteRegistration(node)) return;
         const guarded = node.arguments.some((argument) => GUARD_CALLEES.has(calleeNameOf(argument)));
-        if (!guarded) context.report({ node, messageId: 'missingGuard' });
+        const directive = context.sourceCode
+          .getCommentsBefore(node)
+          .map((comment) => comment.value)
+          .find((value) => EXEMPTION.test(value));
+        if (guarded) {
+          // A directive left behind after a guard was added reads as a permission
+          // slip to the next reviewer, so it is reported rather than ignored.
+          if (directive) context.report({ node, messageId: 'staleExemption' });
+          return;
+        }
+        if (directive) {
+          if (!EXEMPTION.exec(directive)[1]) context.report({ node, messageId: 'exemptionWithoutReason' });
+          return;
+        }
+        context.report({ node, messageId: 'missingGuard' });
       },
     };
   },

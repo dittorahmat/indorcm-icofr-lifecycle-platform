@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import type { HonoEnv } from '../app';
 import { ok, bad } from '../lib/utils';
+import { rbac } from '../lib/guard';
 import { getDb } from '../db';
 import { systemLicenses } from '../db/schema';
 import { eq } from 'drizzle-orm';
@@ -50,7 +51,7 @@ licenseApp.get('/license/status', async (c) => {
   });
 });
 
-licenseApp.post('/license/activate', async (c) => {
+licenseApp.post('/license/activate', rbac(['Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const { licenseKey } = await c.req.json<{ licenseKey: string }>();
 

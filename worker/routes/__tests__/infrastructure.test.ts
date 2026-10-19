@@ -1,8 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { Hono } from 'hono';
-import type { HonoEnv } from '../../app';
-import type { UserRole } from '@shared/types';
 import infrastructure from '../infrastructure';
+import { mutatingRoutes, OVERSIGHT_ROLES, reachableBy } from './rbac-coverage';
 
 /**
  * infrastructure HTTP contract lock. Handlers stay thin adapters; refactors
@@ -37,38 +35,18 @@ describe('infrastructure barrel routes', () => {
 
 /**
  * #97: every mutating route in this barrel must refuse a role that has no
- * business writing operational data. The guard runs before the handler, so a
- * refused role never reaches the DB and these assertions need no fixtures.
- *
- * Removing an `rbac(...)` makes the handler run instead and answer 500 — which is
- * exactly the regression this pair exists to catch.
+ * business writing operational data. The subject is the barrel's own route list
+ * and the mechanics live in ./rbac-coverage — see there for why no fixtures are
+ * needed and what a failure means.
  */
-const MUTATING_METHODS = ['POST', 'PUT', 'PATCH', 'DELETE'];
-
-function appAs(role: UserRole): Hono<HonoEnv> {
-  const app = new Hono<HonoEnv>();
-  app.use('*', async (c, next) => {
-    c.set('userRole', role);
-    await next();
-  });
-  app.route('/', infrastructure);
-  return app;
-}
-
 describe('infrastructure mutating routes carry an rbac guard (#97)', () => {
-  const mutating = infrastructure.routes.filter((route) => MUTATING_METHODS.includes(route.method));
-
   it('declares mutating routes for the guard assertions to cover', () => {
-    expect(mutating.length).toBeGreaterThan(0);
+    expect(mutatingRoutes(infrastructure).length).toBeGreaterThan(0);
   });
 
   it('refuses oversight roles on every mutating route', async () => {
-    for (const role of ['External Auditor', 'Line 3'] as UserRole[]) {
-      const app = appAs(role);
-      for (const route of mutating) {
-        const response = await app.request(route.path, { method: route.method });
-        expect(response.status, `${role} ${route.method} ${route.path}`).toBe(403);
-      }
+    for (const role of OVERSIGHT_ROLES) {
+      expect(await reachableBy(infrastructure, role), role).toEqual([]);
     }
   });
 });

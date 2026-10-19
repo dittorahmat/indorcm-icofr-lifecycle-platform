@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import license from '../license';
+import { mutatingRoutes, OVERSIGHT_ROLES, reachableBy } from './rbac-coverage';
 
 /**
  * license HTTP contract lock. Handlers stay thin adapters; refactors
@@ -17,5 +18,21 @@ describe('license barrel routes', () => {
 
     expect(routePaths).toContain('GET /license/status');
     expect(routePaths).toContain('POST /license/activate');
+  });
+});
+
+/**
+ * #97: the barrel's mutating routes must refuse a role with no business writing
+ * here. The subject is the barrel's own route list; see ./rbac-coverage.
+ */
+describe('license mutating routes carry an rbac guard (#97)', () => {
+  it('declares mutating routes for the guard assertions to cover', () => {
+    expect(mutatingRoutes(license).length).toBeGreaterThan(0);
+  });
+
+  it('refuses oversight roles on every mutating route', async () => {
+    for (const role of OVERSIGHT_ROLES) {
+      expect(await reachableBy(license, role), role).toEqual([]);
+    }
   });
 });

@@ -64,7 +64,9 @@ rcmItemsRoute.post('/rcm/:id/approve-change', rbac(['Line 2', 'Admin']), async (
   return ok(c, result);
 });
 
-rcmItemsRoute.post('/rcm/:id/workflow', async (c) => {
+// Same shape as bpm.ts: runWorkflowTransition decides the action's roles, the
+// route guard admits every role an RCM change transition can belong to.
+rcmItemsRoute.post('/rcm/:id/workflow', rbac(['Line 1', 'Line 2', 'Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const id = c.req.param('id');
   const body = await c.req.json<{ action: WorkflowAction; note?: string; assigneeId?: string; category?: string; effectiveDate?: string }>();

@@ -14,6 +14,14 @@ import { bad } from "./utils";
  * degrades to `string | undefined` and every drizzle `eq(column, id)`
  * downstream stops compiling. Routes guarded before this typing carry `!` to
  * compensate (`worker/routes/bpm.ts`); new call sites should not have to.
+ *
+ * Not every write wants a role list. A route whose handler writes strictly the
+ * caller's own row (`WHERE userId = c.get('userId')`) is *session-scoped*: a role
+ * list there would deny a role its own settings and go stale the day a role is
+ * added. Those routes say so with a reason instead of a guard:
+ * `// rbac-exempt: self-scoped — writes the caller's own row`
+ * (`local/routes-require-rbac` requires the reason, and reports a directive left
+ * on a route that does carry a guard).
  */
 export const rbac = <P extends string = string>(allowedRoles: UserRole[]): MiddlewareHandler<HonoEnv, P> => {
   return async (c, next) => {

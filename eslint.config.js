@@ -185,7 +185,11 @@ export default tseslint.config(
   // `npm run check:rbac-delta` is now the tooth — a touched worker/routes file
   // may not INCREASE its unguarded count (the gate runs this very rule in
   // memory over the working tree and the base blob, so the two can't disagree).
-  // The remaining 44 stay warn-only so the rest can be burned down per area.
+  // Second pass (same day): 44 -> 28 — nine more guards plus seven *documented*
+  // exemptions for session-scoped writes, which say why no role applies with
+  // `// rbac-exempt: <reason>` (the rule requires the reason and reports a
+  // directive left on a route that does carry a guard). The remaining 28 stay
+  // warn-only so the rest can be burned down per area.
   // Scoped to worker/routes so the rules only see route registrations, not every
   // `.get(`/`.delete(` in the worker.
   {

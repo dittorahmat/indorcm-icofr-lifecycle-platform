@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import type { HonoEnv } from '../app';
 import { ok, bad } from '../lib/utils';
+import { rbac } from '../lib/guard';
 import { getDb } from '../db';
 import { notifications } from '../db/schema';
 import { and, eq, desc, sql } from 'drizzle-orm';
@@ -51,7 +52,9 @@ notificationsApp.get('/notifications', async (c) => {
   }
 });
 
-notificationsApp.post('/notifications', async (c) => {
+// Notifying someone else is a supervisory act: this endpoint honours body.userId
+// and can target another member, unlike the four self-scoped routes below.
+notificationsApp.post('/notifications', rbac(['Line 2', 'Admin']), async (c) => {
   try {
     const db = getDb(c.env.DATABASE_URL);
     const orgId = c.get('organizationId');
@@ -77,6 +80,8 @@ notificationsApp.post('/notifications', async (c) => {
   }
 });
 
+// rbac-exempt: self-scoped — the WHERE clause carries (id, organizationId, userId)
+// from the session, so the caller can only read their own notification.
 notificationsApp.post('/notifications/:id/read', async (c) => {
   try {
     const db = getDb(c.env.DATABASE_URL);
@@ -98,6 +103,7 @@ notificationsApp.post('/notifications/:id/read', async (c) => {
   }
 });
 
+// rbac-exempt: self-scoped — updates only rows where userId is the caller's.
 notificationsApp.post('/notifications/read-all', async (c) => {
   try {
     const db = getDb(c.env.DATABASE_URL);
@@ -117,6 +123,7 @@ notificationsApp.post('/notifications/read-all', async (c) => {
   }
 });
 
+// rbac-exempt: self-scoped — deletes only rows where userId is the caller's.
 notificationsApp.delete('/notifications/:id', async (c) => {
   try {
     const db = getDb(c.env.DATABASE_URL);
@@ -137,6 +144,7 @@ notificationsApp.delete('/notifications/:id', async (c) => {
   }
 });
 
+// rbac-exempt: self-scoped — deletes only rows where userId is the caller's.
 notificationsApp.post('/notifications/clear-all', async (c) => {
   try {
     const db = getDb(c.env.DATABASE_URL);

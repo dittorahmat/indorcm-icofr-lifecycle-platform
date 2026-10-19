@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Hono } from 'hono';
 import users from '../users';
+import { mutatingRoutes, OVERSIGHT_ROLES, reachableBy } from './rbac-coverage';
 import { getDb } from '../../db';
 
 vi.mock('../../db', () => ({
@@ -214,5 +215,30 @@ describe('users barrel URL lock', () => {
     expect(routePaths).toContain('POST /dev/re-seed');
     expect(routePaths).toContain('POST /dev/purge-all');
     expect(routePaths).toContain('POST /dev/purge-scoping');
+  });
+});
+
+/**
+ * #97: every mutating route in this barrel must refuse a role with no business
+ * writing here — except the three the caller's own session owns, which carry an
+ * `rbac-exempt:` directive in users.ts. Listing them keeps the exemption honest in
+ * both directions (a stray guard on one of them fails here and in the rule too).
+ */
+describe('users mutating routes carry an rbac guard (#97)', () => {
+  const sessionScoped = [
+    'PUT /user/preferences',
+    'PUT /user/profile',
+    'PUT /users/me/notification-preferences',
+  ];
+
+  it('declares mutating routes for the guard assertions to cover', () => {
+    expect(mutatingRoutes(users).length).toBeGreaterThan(0);
+  });
+
+  it('refuses oversight roles on every mutating route that is not session-scoped', async () => {
+    for (const role of OVERSIGHT_ROLES) {
+      const reached = await reachableBy(users, role);
+      expect(reached.map((r) => r.route).sort(), role).toEqual([...sessionScoped].sort());
+    }
   });
 });
