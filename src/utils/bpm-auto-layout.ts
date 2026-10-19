@@ -6,75 +6,6 @@ import {
   canonicalHandleForSide,
 } from './bpm-constants';
 
-/**
- * Topologically sort nodes within a lane using depth calculated from edges.
- */
-function buildDepthMap(
-  children: Node[],
-  intraEdges: Edge[]
-): Map<string, number> {
-  const depth = new Map<string, number>();
-  const incoming = new Map<string, number>();
-  const idSet = new Set(children.map((c) => c.id));
-
-  for (const c of children) {
-    incoming.set(c.id, 0);
-  }
-
-  for (const e of intraEdges) {
-    if (idSet.has(e.target)) {
-      incoming.set(e.target, (incoming.get(e.target) ?? 0) + 1);
-    }
-  }
-
-  const outgoing = new Map<string, string[]>();
-  for (const c of children) {
-    outgoing.set(c.id, []);
-  }
-
-  for (const e of intraEdges) {
-    if (idSet.has(e.source) && idSet.has(e.target)) {
-      const arr = outgoing.get(e.source);
-      if (arr) arr.push(e.target);
-    }
-  }
-
-  const queue: string[] = [];
-  for (const c of children) {
-    if ((incoming.get(c.id) ?? 0) === 0) {
-      depth.set(c.id, 0);
-      queue.push(c.id);
-    }
-  }
-
-  let head = 0;
-  while (head < queue.length) {
-    const cur = queue[head++];
-    const curD = depth.get(cur) ?? 0;
-    const succs = outgoing.get(cur) ?? [];
-    for (const nxt of succs) {
-      if (!depth.has(nxt)) {
-        depth.set(nxt, curD + 1);
-        queue.push(nxt);
-      }
-    }
-  }
-
-  let maxD = -1;
-  for (const v of depth.values()) {
-    if (v > maxD) maxD = v;
-  }
-
-  const unvisited = children.filter((c) => !depth.has(c.id));
-  unvisited.sort((a, b) => (a.position?.y ?? 0) - (b.position?.y ?? 0) || (a.position?.x ?? 0) - (b.position?.x ?? 0));
-  for (const u of unvisited) {
-    maxD += 1;
-    depth.set(u.id, maxD);
-  }
-
-  return depth;
-}
-
 export interface AutoLayoutResult {
   nodes: Node[];
   edges: Edge[];
@@ -93,7 +24,6 @@ export function autoArrangeBpmDiagram(
     return { nodes: [], edges: [] };
   }
 
-  const nodeMap = new Map<string, Node>(currentNodes.map((n) => [n.id, { ...n }]));
   const swimlanes = currentNodes.filter((n) => n.type === 'swimlane');
   const nonSwimlaneNodes = currentNodes.filter((n) => n.type !== 'swimlane');
 
