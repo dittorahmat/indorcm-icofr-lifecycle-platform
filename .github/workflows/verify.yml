@@ -68,6 +68,7 @@ jobs:
             node scripts/check-worker-strings.mjs --base "$BASE" $FILES
             node scripts/check-rbac-delta.mjs --base "$BASE" $FILES
           fi
+          node scripts/check-workflows.mjs
           node scripts/check-api-contract.mjs
 
       - name: Setup Bun (lockfile sync check)
