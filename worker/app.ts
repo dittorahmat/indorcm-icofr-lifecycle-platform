@@ -24,6 +24,7 @@ import { getDb, dbLocalStorage, createDbAndPool } from './db';
 import * as schema from './db/schema';
 import { eq, and } from 'drizzle-orm';
 import type { UserRole } from '@shared/types';
+import { resolveUserRole } from '@shared/member-role';
 import { getMachineFingerprint, verifyLicense, checkLicenseStatus } from './lib/license';
 
 // --- LICENSE CACHE (In-Memory) ---
@@ -303,25 +304,27 @@ export const createApp = () => {
     c.set('userId', session.user.id);
     c.set('organizationId', activeOrgId || '');
 
-    // Fetch real member role for this organization from DB to prevent BFLA/BOLA
-    const globalRole: UserRole = (session.user as any).role || 'Line 1';
-    let realRole: UserRole = globalRole;
-    if (globalRole !== 'Admin' && activeOrgId) {
+    // Fetch real member role for this organization from DB to prevent BFLA/BOLA.
+    // #106: `member.role` holds Better Auth's own vocabulary ('admin' | 'member')
+    // until the ICOFR role is applied there, so it only wins when it IS a
+    // `UserRole`; the session's `user.role` is the ICOFR role today. The rule
+    // (and its tests) live in `shared/member-role.ts`.
+    const sessionRole: unknown = session.user.role;
+    let memberRole: unknown = null;
+    if (sessionRole !== 'Admin' && activeOrgId) {
       try {
         const db = getDb(c.env.DATABASE_URL);
         const mem = await db.select({ role: schema.member.role })
           .from(schema.member)
           .where(and(eq(schema.member.userId, session.user.id), eq(schema.member.organizationId, activeOrgId)))
           .limit(1);
-        if (mem.length > 0 && mem[0].role) {
-          realRole = mem[0].role as UserRole;
-        }
-      } catch (e) {
-        // Fallback to session role
+        memberRole = mem[0]?.role ?? null;
+      } catch {
+        // Fall through to the session role.
       }
     }
 
-    c.set('userRole', realRole);
+    c.set('userRole', resolveUserRole(memberRole, sessionRole));
     c.set('userLevel', (session.user as any).level || 'Staff');
     c.set('departmentId', (session.user as any).departmentId || '');
 

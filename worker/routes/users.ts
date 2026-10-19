@@ -8,6 +8,8 @@ import {
 } from '../db/schema';
 import { eq, and } from 'drizzle-orm';
 import type { Settings } from "@shared/types";
+import type { UserRole } from "@shared/types";
+import { toMemberRole } from "@shared/member-role";
 import { sendEmail } from '../services/email';
 import { rbac } from '../lib/guard';
 import { isUserLevel, isUserRole } from '@shared/role-options';
@@ -79,7 +81,10 @@ users.get('/users', async (c) => {
     id: user.id,
     name: user.name,
     email: user.email,
-    role: member.role,
+    // #106: the ICOFR role lives on `user.role` — the same column `GET /user/me`
+    // returns and the client surfaces read. `member.role` is Better Auth's own
+    // vocabulary and would list every seeded user as 'member'.
+    role: user.role,
     level: user.level,
     departmentId: user.departmentId,
   })
@@ -106,6 +111,7 @@ users.post('/users', rbac(['Admin']), async (c) => {
     name: body.name,
     email: body.email,
     emailVerified: false,
+    role,
     level,
     departmentId: body.departmentId,
     createdAt: new Date(),
@@ -116,7 +122,9 @@ users.post('/users', rbac(['Admin']), async (c) => {
     id: crypto.randomUUID(),
     organizationId: orgId,
     userId: id,
-    role,
+    // #106: the ICOFR role goes to `user.role` above; the membership keeps
+    // Better Auth's own vocabulary.
+    role: toMemberRole(role),
     createdAt: new Date(),
   });
 
@@ -131,17 +139,21 @@ users.put('/users/:id', rbac(['Admin']), async (c) => {
   if (body.role !== undefined && !isUserRole(body.role)) return rejectOption(c, new AppError('INVALID_USER_ROLE', `Unknown role: ${String(body.role)}`, 400));
   if (body.level !== undefined && !isUserLevel(body.level)) return rejectOption(c, new AppError('INVALID_USER_LEVEL', `Unknown level: ${String(body.level)}`, 400));
 
+  const nextRole: UserRole | undefined = isUserRole(body.role) ? body.role : undefined;
+
   const db = getDb(c.env.DATABASE_URL);
   await db.update(user).set({
     name: body.name,
     email: body.email,
     level: body.level,
     departmentId: body.departmentId,
+    // #106: a role change moves the ICOFR role, not the membership's vocabulary.
+    role: nextRole,
     updatedAt: new Date(),
   }).where(eq(user.id, id));
 
-  if (body.role) {
-    await db.update(member).set({ role: body.role }).where(and(eq(member.userId, id), eq(member.organizationId, orgId)));
+  if (nextRole) {
+    await db.update(member).set({ role: toMemberRole(nextRole) }).where(and(eq(member.userId, id), eq(member.organizationId, orgId)));
   }
 
   return ok(c, { success: true });

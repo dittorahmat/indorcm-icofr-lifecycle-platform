@@ -174,7 +174,9 @@ export class CsaDomainService {
         .innerJoin(member, eq(user.id, member.userId))
         .where(and(
           eq(member.organizationId, orgId),
-          eq(member.role, 'Line 2')
+          // #106: the ICOFR role is `user.role`; `member.role` is Better Auth's
+          // own vocabulary and would match no seeded Line 2 user.
+          eq(user.role, 'Line 2')
         ));
       
       if (line2Users.length > 0) {

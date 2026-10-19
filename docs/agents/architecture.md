@@ -151,6 +151,23 @@ Two disclosed edges of that change:
   Its `p-6 pb-2` wrapper went away with the extraction — the placement margin now
   rides on the card, so a hidden card cannot leave an empty padded box behind.
 
+**#106 — the ICOFR role has a source again.** Two columns held a role and the
+writers disagreed about which: the seed wrote the ICOFR role to `user.role` and
+Better Auth's `'admin'|'member'` to `member.role`, while `POST /users` did the
+opposite (role on the membership, `user.role` left NULL). The request gate read
+`member.role` and cast whatever it found to `UserRole`, so every seeded non-Admin
+ran as `'member'` — 403 on every guarded route — and app-created users had no role
+on the row every client surface reads. `shared/member-role.ts` now owns both
+halves: `toMemberRole` (what Better Auth's column holds) and `resolveUserRole`
+(which one wins per request: a `member.role` that IS a `UserRole`, else the
+session's `user.role`, floored at `Line 1`). `worker/app.ts` calls the resolver,
+`POST`/`PUT /users` write `user.role` plus Better Auth's vocabulary, `GET /users`
+and the CSA Line-2 notification query read `user.role`, and
+`scripts/backfill-member-role.ts` moves a role parked on the membership onto the
+user row and normalises the membership (idempotent; a `user.role` that already
+holds a real role is never overwritten). Pinned by `shared/member-role.test.ts`
+and `worker/routes/__tests__/user-role-source.test.ts`.
+
 ## Round 11 follow-ups
 
 Landed in a follow-up pass on the same branch:
@@ -228,7 +245,8 @@ Open (deliberately not landed):
   `csaWorklistKey(year)` export on `src/hooks/csa/csa-keys.ts`.
 - **`worker/app.ts:312`** reads the ICOFR role from `member.role` while
   `worker/db/seed.ts:81` writes `'admin'|'member'` there — possible pre-existing
-  role-source mismatch, outside every workstream's owned files.
+  role-source mismatch, outside every workstream's owned files. **Resolved by
+  #106** (`shared/member-role.ts`; see the Round 12 follow-ups entry).
 - **`shared/workflow-transitions.ts` SCOPING row does not describe the
   materiality-simulation lifecycle.** The table declares `Pending CFO` →
   `Reject: 'Draft'` with `requiredRole: Line 2/Admin`, while production (and the
